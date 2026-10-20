@@ -10,14 +10,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | Completo: 18 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
+| Banco remoto no Supabase | Completo: 19 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
 | Testes | 287 cenários de banco, 636 unitários e 40 E2E com axe. Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
 
 ### Implementado
-- **Banco e segurança**: esquema em 18 migrations, RLS em todas as 61 tabelas, 99 políticas e 92 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
+- **Banco e segurança**: esquema em 19 migrations, RLS em todas as 61 tabelas, 99 políticas e 92 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
 - **Autenticação e papéis**: e-mail e senha, login com Google (configurado em 20/10/2026, tela de consentimento ainda em modo de teste), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
@@ -49,7 +49,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 ### Decisões
 - Regras de negócio no banco, com Server Actions validadas por Zod. A interface nunca é a única barreira.
 - Idioma por cookie e cabeçalho, sem prefixo na URL.
-- Vocabulário da interface alinhado ao DMR em 20/10/2026: o papel `creator` aparece como "herói" nos três idiomas, sem flexão de gênero. Código, banco e rotas não mudaram. Neste relatório, "personalidade" segue como nome técnico do papel.
+- Vocabulário da interface alinhado ao DMR em 20/10/2026: o papel `creator` aparece como "herói" nos três idiomas, sem flexão de gênero, e o selo "Personagem fictício" segue o mesmo critério nas bios do seed (migração 0019). Código, banco e rotas não mudaram. Neste relatório, "personalidade" segue como nome técnico do papel.
 - Recomendação determinística como padrão. O LLM só reordena e explica itens que já existem no catálogo.
 - Contas demo criadas pelo admin passam pelo cadastro fechado graças a um marcador que só o servidor grava. O mesmo marcador vindo de um cadastro público é recusado.
 
@@ -114,7 +114,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - `SUPABASE_SERVICE_ROLE_KEY` cadastrada em 20/10/2026 (Sensitive, Production e Preview). Os três crons responderam ok em produção.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
-- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos e as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
+- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, e a 0019 (só dados do seed) pelo conector. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
 0. **Publicar a tela de consentimento do Google**: enquanto estiver em modo de teste, só os e-mails cadastrados como testadores conseguem entrar com Google. Em Google Auth Platform, Público-alvo, clique em Publicar app antes de convidar pessoas.
