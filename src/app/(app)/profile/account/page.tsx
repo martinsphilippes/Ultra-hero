@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Bot, Database, FlaskConical, Timer, TriangleAlert } from "lucide-react";
+import { legalRichTags } from "@/components/legal/rich-tags";
 import { DeleteAccountDialog } from "@/components/me/DeleteAccountDialog";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
@@ -16,7 +17,7 @@ const RETENTION = { analytics: 90, test_orders: 90, logs: 30, audit: 365 } as co
 // Conta e privacidade: resumo do que a POC guarda, prazos de retenção, natureza demonstrativa e exclusão.
 export default async function AccountPage() {
   await requireUser("/profile/account");
-  const [t, tc] = await Promise.all([getTranslations("me.account"), getTranslations("common")]);
+  const [t, tc, tl] = await Promise.all([getTranslations("me.account"), getTranslations("common"), getTranslations("legal.links")]);
 
   const blocks = [
     { key: "demo", icon: FlaskConical, title: t("demo.title"), body: <p className="type-body-sm text-fg-muted">{t("demo.body")}</p> },
@@ -85,6 +86,9 @@ export default async function AccountPage() {
               {t("delete.title")}
             </h2>
             <p className="type-body-sm max-w-prose text-fg-muted">{t("delete.description")}</p>
+            <p className="type-body-sm max-w-prose text-fg-muted">
+              {tl.rich("accountNote", { privacy: legalRichTags.privacy, terms: legalRichTags.terms })}
+            </p>
           </div>
         </div>
         <div>

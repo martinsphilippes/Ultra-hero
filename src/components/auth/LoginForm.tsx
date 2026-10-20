@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useActionState } from "react";
 import { loginAction } from "@/app/(auth)/actions";
+import { legalRichTags } from "@/components/legal/rich-tags";
 import { Button } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { FormField } from "@/components/ui/form-field";
@@ -51,6 +52,10 @@ export function LoginForm({ next, queryError }: LoginFormProps) {
 
       <Divider label={t("divider")} />
       <GoogleButton next={next} />
+      {/* O Google cria a conta no primeiro acesso: a declaração de 18+ e o aceite também valem aqui. */}
+      <p className="type-caption text-center text-fg-muted">
+        {t.rich("login.googleTerms", { terms: legalRichTags.terms, privacy: legalRichTags.privacy })}
+      </p>
 
       <p className="text-center text-sm text-fg-muted">
         {t("login.noAccount")}{" "}

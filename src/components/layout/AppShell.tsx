@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
 import { DEMO_BANNER_COOKIE, isTheme, THEME_COOKIE, type Theme } from "@/lib/theme/constants";
@@ -13,7 +14,7 @@ import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 
-// Casca do consumidor: banner de demo, barra superior (md+), conteúdo e barra inferior (mobile).
+// Casca do consumidor: banner de demo, barra superior (md+), conteúdo com links legais no fim e barra inferior (mobile).
 export async function AppShell({ children }: { children: ReactNode }) {
   const [session, cookieStore, t, ta] = await Promise.all([
     getSessionSummary(),
@@ -61,6 +62,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
         className="mx-auto w-full max-w-content flex-1 px-gutter pb-[calc(var(--spacing-bottomnav)+env(safe-area-inset-bottom)+1.5rem)] pt-6 outline-none md:pb-12"
       >
         {children}
+        <footer className="mt-12 border-t border-border pt-4">
+          <LegalLinks />
+        </footer>
       </main>
 
       <BottomNav />

@@ -1,0 +1,413 @@
+{
+  "meta": {
+    "terms": "Términos de uso",
+    "termsDescription": "Reglas de uso de Ultra Hero, una versión de demostración con contenido educativo, planes simulados y pedidos de prueba.",
+    "privacy": "Política de privacidad",
+    "privacyDescription": "Qué datos trata Ultra Hero, por cuánto tiempo, con quién los comparte y cómo ejerces tus derechos."
+  },
+  "links": {
+    "nav": "Documentos legales",
+    "terms": "Términos de uso",
+    "privacy": "Política de privacidad",
+    "accountNote": "Los plazos de conservación y lo que ocurre con cada dato al eliminar la cuenta se explican en la <privacy>Política de privacidad</privacy>. Las reglas de uso están en los <terms>Términos de uso</terms>."
+  },
+  "page": {
+    "eyebrow": "Documentos legales",
+    "updated": "Última actualización: <time>{date}</time>",
+    "noticeTitle": "Versión de demostración",
+    "noticeBody": "Este texto acompaña una prueba de concepto y está pendiente de revisión jurídica antes de la apertura pública. No es una declaración de cumplimiento legal ni una certificación de ningún tipo.",
+    "toc": "En esta página",
+    "home": "Volver al inicio",
+    "read": {
+      "terms": "Leer los Términos de uso",
+      "privacy": "Leer la Política de privacidad"
+    }
+  },
+  "terms": {
+    "title": "Términos de uso",
+    "intro": "Estos Términos explican las reglas para usar Ultra Hero. Al crear una cuenta o usar la app, los aceptas. Lee también la <privacy>Política de privacidad</privacy>, que explica cómo tratamos tus datos.",
+    "sections": {
+      "about": {
+        "title": "Qué es Ultra Hero",
+        "blocks": {
+          "p1": "Ultra Hero es una prueba de concepto: una app experimental, en fase de demostración, con contenido educativo sobre rutina, entrenamiento, nutrición y gastronomía, programas guiados, personalidades ficticias, planes simulados y una tienda simulada.",
+          "p2": "El objetivo es probar la experiencia y aprender del uso. No es un servicio comercial: <strong>no hay cobros, pagos, ventas ni entregas reales</strong>."
+        }
+      },
+      "eligibility": {
+        "title": "Quién puede usarla",
+        "blocks": {
+          "p1": "Ultra Hero está dirigida <strong>exclusivamente a mayores de 18 años</strong>. Al crear una cuenta, declaras tener 18 años o más. Si tienes menos de 18 años, no crees una cuenta ni uses la app.",
+          "p2": "Las cuentas que parezcan pertenecer a menores de edad pueden ser suspendidas o eliminadas."
+        }
+      },
+      "education": {
+        "title": "Contenido educativo y aviso de salud",
+        "blocks": {
+          "p1": "Todo el contenido es educativo y general. <strong>No sustituye la orientación profesional individual</strong> de médicos, nutricionistas, profesionales de la actividad física u otros profesionales de la salud.",
+          "list1": {
+            "i1": "Nada en la app es una prescripción, un diagnóstico ni un tratamiento individual: ni una dieta, ni un plan de entrenamiento, ni una dosis de suplemento.",
+            "i2": "Las recomendaciones automáticas solo sugieren contenidos del catálogo según tus intereses y tu uso. No evalúan tu salud.",
+            "i3": "Antes de empezar o cambiar tu actividad física o tu alimentación, consulta a un profesional habilitado, sobre todo si tienes alguna condición de salud, estás embarazada, tomas medicamentos o sientes dolor.",
+            "i4": "Detén cualquier ejercicio si sientes dolor, mareo, falta de aire o malestar, y busca atención si es necesario.",
+            "i5": "Las recetas pueden contener alérgenos. Revisa los ingredientes y sigue buenas prácticas de higiene al preparar los alimentos."
+          },
+          "p2": "Tú decides cómo usar la información, respetando tus límites."
+        }
+      },
+      "personalities": {
+        "title": "Personalidades ficticias",
+        "blocks": {
+          "p1": "Las personalidades de la app son personajes ficticios creados para la demostración y aparecen con la indicación “Personaje ficticio”. Los nombres, historias, imágenes y frases no representan a personas reales, y cualquier parecido es coincidencia.",
+          "p2": "Los contenidos atribuidos a estas personalidades no son testimonios, respaldos ni recomendaciones de personas reales. Los proveedores de ejemplo de la tienda simulada también son ficticios."
+        }
+      },
+      "plans": {
+        "title": "Planes y suscripciones simulados",
+        "blocks": {
+          "list1": {
+            "i1": "Los planes, módulos y suscripciones son <strong>simulados</strong>. Los precios que se muestran son ilustrativos.",
+            "i2": "No se pide ningún medio de pago y no se cobra nada, ni ahora ni después.",
+            "i3": "La renovación es solo simulada: el período de demostración avanza automáticamente, sin ningún cobro.",
+            "i4": "Puedes cambiar de módulos o cancelar la suscripción simulada cuando quieras en <plan>Plan y módulos</plan>.",
+            "i5": "Un plan simulado no da derecho a ningún servicio de pago, reembolso, crédito ni condición especial en una eventual versión comercial."
+          }
+        }
+      },
+      "commerce": {
+        "title": "Tienda simulada y pedidos de prueba",
+        "blocks": {
+          "list1": {
+            "i1": "La tienda es 100% simulada. Los productos, precios, envíos y existencias son ilustrativos.",
+            "i2": "Al finalizar una compra, creas un <strong>pedido de prueba</strong>: no hay pago, factura, preparación, envío ni entrega de ningún producto.",
+            "i3": "El destino se elige de una lista de <strong>destinos ficticios</strong>. La app no pide ni usa direcciones reales.",
+            "i4": "El seguimiento del transporte es una simulación automática de etapas.",
+            "i5": "Los pedidos de prueba no generan ninguna obligación de compra, venta, cambio o devolución, ni para ti ni para los proveedores.",
+            "i6": "Mostrar interés en un producto es solo una señal para las métricas de la demostración. No es una reserva ni una compra."
+          }
+        }
+      },
+      "account": {
+        "title": "Cuenta y uso aceptable",
+        "blocks": {
+          "p1": "Para guardar progreso, favoritos, planes y pedidos de prueba, necesitas una cuenta, creada con correo y contraseña o, cuando esté disponible, con el inicio de sesión de Google. Mantén tu contraseña en secreto y cámbiala si sospechas de un uso indebido.",
+          "p2": "Al usar Ultra Hero, te comprometes a no:",
+          "list1": {
+            "i1": "ingresar en la app datos personales de otras personas, direcciones reales, datos de pago o datos de salud (por ejemplo, en tu nombre visible o en el feedback);",
+            "i2": "intentar acceder a cuentas, datos o áreas que no son tuyas, ni eludir límites y reglas de acceso;",
+            "i3": "perjudicar el funcionamiento de la app, por ejemplo con automatizaciones abusivas, sobrecarga o explotación de fallos;",
+            "i4": "enviar contenido ilegal, ofensivo, discriminatorio, engañoso o que viole derechos de terceros;",
+            "i5": "presentar la app, sus contenidos o sus planes simulados como un servicio real o como asesoramiento profesional."
+          },
+          "p3": "Si encuentras una falla de seguridad, avísanos por el canal de contacto indicado al final de esta página, sin explotarla."
+        }
+      },
+      "partners": {
+        "title": "Contenido de socios",
+        "blocks": {
+          "p1": "Los creadores de contenido y los proveedores participan <strong>solo por invitación</strong> del equipo que administra la demostración. Cada socio usa su propio portal y solo ve y gestiona lo que le pertenece.",
+          "list1": {
+            "i1": "Los contenidos enviados por creadores pasan por revisión editorial antes de publicarse.",
+            "i2": "Los productos de los proveedores pueden ser ocultados o suspendidos por la moderación en cualquier momento. Los vínculos entre contenidos y productos también pueden suspenderse, incluso automáticamente cuando un producto cambia de forma relevante.",
+            "i3": "Los socios responden por la veracidad y la legalidad de lo que envían y siguen las mismas reglas de contenido educativo, sin prescripciones individuales.",
+            "i4": "Los socios solo ven lo necesario para la operación simulada. Los proveedores, por ejemplo, ven los artículos y la zona ficticia de entrega de los pedidos de prueba, sin el nombre ni el correo de quien hizo el pedido."
+          }
+        }
+      },
+      "ip": {
+        "title": "Propiedad intelectual",
+        "blocks": {
+          "p1": "La marca, el diseño, los textos, las imágenes y los contenidos de Ultra Hero pertenecen a sus respectivos titulares y están disponibles solo para uso personal y no comercial, dentro de la app, durante la demostración. No está permitido copiar, redistribuir, revender ni explotar comercialmente estos materiales sin autorización.",
+          "p2": "Al enviar contenidos o productos, los socios declaran tener los derechos necesarios y autorizan su exhibición en la app durante la demostración.",
+          "p3": "Los certificados emitidos al completar programas son simbólicos y no tienen valor académico, profesional ni de certificación."
+        }
+      },
+      "availability": {
+        "title": "Disponibilidad, cambios e interruptores de apagado",
+        "blocks": {
+          "p1": "Por ser una demostración, Ultra Hero se ofrece tal como está, sin garantía de funcionamiento continuo, de ausencia de errores ni de conservación permanente de los contenidos.",
+          "p2": "El equipo puede modificar, pausar o desactivar funciones en cualquier momento, incluso sin aviso previo. La tienda simulada y las recomendaciones con inteligencia artificial, por ejemplo, tienen interruptores de apagado (kill switches), que se usan para proteger a las personas y al propio servicio.",
+          "p3": "La demostración puede finalizar. En ese caso, los datos se tratarán según lo indicado en la <privacy>Política de privacidad</privacy>."
+        }
+      },
+      "suspension": {
+        "title": "Suspensión y cierre",
+        "blocks": {
+          "p1": "Podemos limitar, suspender o cerrar el acceso de cuentas, socios, contenidos o productos que infrinjan estos Términos, pongan a personas en riesgo o perjudiquen la demostración. Las principales acciones realizadas desde el panel de administración, como la suspensión de socios y la moderación de contenidos y productos, quedan registradas en una auditoría.",
+          "p2": "Puedes dejar de usar la app cuando quieras y eliminar tu cuenta en cualquier momento en <account>Cuenta y privacidad</account>."
+        }
+      },
+      "limitation": {
+        "title": "Limitaciones de la demostración",
+        "blocks": {
+          "p1": "Ultra Hero es un experimento. En la medida en que lo permita la ley aplicable, el equipo responsable no responde por decisiones tomadas únicamente con base en los contenidos educativos, por interrupciones del servicio, por la pérdida de datos de demostración ni por expectativas de compra, entrega o suscripción, que aquí siempre son simuladas.",
+          "p2": "Nada en estos Términos limita los derechos que la ley te otorga y que no pueden excluirse por contrato."
+        }
+      },
+      "changes": {
+        "title": "Cambios en estos Términos",
+        "blocks": {
+          "p1": "Estos Términos pueden actualizarse, en especial después de la revisión jurídica prevista antes de la apertura pública. La fecha de la última actualización aparece al inicio de esta página."
+        }
+      },
+      "contact": {
+        "title": "Contacto",
+        "blocks": {
+          "p1": "Canal de contacto: el formulario de feedback dentro de la app, disponible en las páginas de contenidos y de programas. Desde ese formulario, el equipo no puede responderte directamente. Se publicará un canal dedicado antes de la apertura pública.",
+          "p2": "La identificación completa del responsable del servicio también se publicará antes de la apertura pública."
+        }
+      }
+    }
+  },
+  "privacy": {
+    "title": "Política de privacidad",
+    "intro": "Esta Política explica, de forma directa, qué datos trata Ultra Hero, para qué, con quién los comparte, cuánto tiempo los conserva y cómo ejerces tus derechos. Describe el funcionamiento actual de esta versión de demostración. Las reglas de uso están en los <terms>Términos de uso</terms>.",
+    "sections": {
+      "who": {
+        "title": "Quiénes somos y qué cubre esta Política",
+        "blocks": {
+          "p1": "Ultra Hero es una prueba de concepto con contenido educativo, personalidades ficticias, suscripciones simuladas y comercio simulado. Esta Política se aplica a la app (web e instalable) y a los portales de socios y de administración.",
+          "p2": "La identificación del responsable del tratamiento y del delegado de protección de datos (DPO) se publicará antes de la apertura pública. Hasta entonces, usa el canal de contacto indicado al final de esta página."
+        }
+      },
+      "collected": {
+        "title": "Datos que recopilamos",
+        "blocks": {
+          "p1": "Solo recopilamos lo necesario para que la demostración funcione:",
+          "list1": {
+            "account": "<strong>Cuenta:</strong> correo, contraseña y nombre visible. La contraseña la gestiona el servicio de autenticación; la app no la guarda en sus propias tablas. Si inicias sesión con Google, cuando esa opción esté disponible, recibimos de Google tu nombre, tu correo y, si existe, la dirección de tu foto de perfil.",
+            "preferences": "<strong>Preferencias:</strong> idioma, tema, avatar elegido entre ilustraciones y zona horaria del dispositivo, que se usa para contar tu racha de días.",
+            "usage": "<strong>Uso del contenido:</strong> intereses, elementos marcados como “no me interesa”, favoritos, listas, progreso, contenidos completados, racha de días, logros, inscripciones en programas y certificados simbólicos (el PDF del certificado incluye tu nombre visible).",
+            "subscription": "<strong>Suscripción simulada:</strong> módulos elegidos, períodos e historial de cambios.",
+            "commerce": "<strong>Comercio simulado:</strong> carrito, pedidos de prueba (artículos, importes ilustrativos y el destino ficticio elegido de una lista) y registros de interés en productos.",
+            "events": "<strong>Eventos de uso:</strong> acciones en la app, como abrir un contenido, completar un programa o iniciar un pedido de prueba, con fecha, idioma y propiedades técnicas, como el identificador del contenido. Cuando tienes la sesión iniciada, los eventos quedan vinculados a tu cuenta; para visitantes sin cuenta, se registran sin identificador. La base de datos rechaza propiedades cuyos nombres indiquen datos personales, como correo, teléfono, CPF (número fiscal brasileño), nombre, dirección o contraseña.",
+            "feedback": "<strong>Feedback opcional:</strong> calificación, comentario de hasta 1.000 caracteres, el contenido o programa desde el que se envió y el idioma.",
+            "recommendations": "<strong>Recomendaciones:</strong> la lista de contenidos recomendados para ti y un registro técnico de cada cálculo (motor usado, tiempo, cantidad de elementos, costo estimado y errores).",
+            "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría."
+          },
+          "p2": "Los proveedores de infraestructura también registran datos técnicos de acceso, como la dirección IP, la fecha y la hora y la información del navegador, en sus propios registros operativos."
+        }
+      },
+      "notCollected": {
+        "title": "Datos que no recopilamos",
+        "blocks": {
+          "list1": {
+            "address": "direcciones reales o de entrega: los destinos de la tienda son ficticios;",
+            "location": "geolocalización;",
+            "payment": "datos de pago, como tarjetas o cuentas bancarias: no se cobra nada;",
+            "health": "datos de salud individuales, como peso, medidas, exámenes, diagnósticos o condiciones médicas;",
+            "documents": "documentos de identidad, teléfono y fecha de nacimiento: declaras cumplir la edad mínima de 18 años al crear la cuenta."
+          },
+          "p1": "No vendemos datos, no los cedemos con fines comerciales ni publicitarios y no usamos herramientas de publicidad ni de analítica de terceros."
+        }
+      },
+      "purposes": {
+        "title": "Para qué usamos los datos",
+        "blocks": {
+          "list1": {
+            "account": "crear y mantener tu cuenta, autenticar tu acceso y enviar los correos de confirmación de registro y de restablecimiento de contraseña;",
+            "personalization": "personalizar la experiencia: idioma, tema, contenidos para continuar y recomendaciones;",
+            "progress": "registrar el progreso, la racha de días, los logros y los certificados simbólicos;",
+            "simulation": "simular planes, suscripciones, carrito y pedidos de prueba;",
+            "metrics": "medir el experimento con métricas agregadas (por ejemplo, cuántas personas completan un contenido) y mejorar el producto con tu feedback;",
+            "security": "proteger el servicio: aplicar límites de uso, investigar abusos e incidentes y registrar las acciones administrativas en una auditoría."
+          }
+        }
+      },
+      "legalBases": {
+        "title": "Bases legales (por confirmar)",
+        "blocks": {
+          "p1": "Las bases legales siguientes son una evaluación preliminar y <strong>aún deben confirmarse</strong> en la revisión jurídica prevista antes de la apertura pública:",
+          "list1": {
+            "service": "cuenta, preferencias, progreso, suscripción simulada y pedidos de prueba: ejecución del servicio que solicitaste;",
+            "interest": "eventos de uso y feedback: interés legítimo en evaluar y mejorar el experimento;",
+            "audit": "auditoría administrativa y seguridad: interés legítimo y, cuando corresponda, cumplimiento de una obligación legal."
+          }
+        }
+      },
+      "cookies": {
+        "title": "Cookies y almacenamiento local",
+        "blocks": {
+          "p1": "Solo usamos las cookies y el almacenamiento necesarios para que la app funcione y recuerde tus elecciones. No usamos cookies de publicidad ni de analítica de terceros.",
+          "table": {
+            "caption": "Cookies que usa Ultra Hero",
+            "headers": {
+              "name": "Cookie",
+              "purpose": "Para qué sirve",
+              "duration": "Duración"
+            },
+            "rows": {
+              "session": {
+                "name": "<code>sb-…-auth-token</code>",
+                "purpose": "Mantiene tu sesión (servicio de autenticación) y puede dividirse en partes. En flujos como la confirmación de registro, el restablecimiento de contraseña o el inicio de sesión con Google, puede crearse una cookie auxiliar terminada en <code>-code-verifier</code> para proteger el flujo.",
+                "duration": "Hasta que cierres sesión (validez técnica de hasta 400 días)"
+              },
+              "locale": {
+                "name": "<code>NEXT_LOCALE</code>",
+                "purpose": "Recuerda el idioma elegido.",
+                "duration": "1 año"
+              },
+              "theme": {
+                "name": "<code>uh-theme</code>",
+                "purpose": "Recuerda el tema elegido (claro, oscuro o del sistema).",
+                "duration": "1 año"
+              },
+              "demo": {
+                "name": "<code>uh-demo-dismissed</code>",
+                "purpose": "Recuerda que cerraste el aviso de demostración.",
+                "duration": "24 horas"
+              },
+              "destination": {
+                "name": "<code>uh-dest</code>",
+                "purpose": "Recuerda el destino ficticio elegido en el carrito de prueba.",
+                "duration": "30 días"
+              },
+              "prices": {
+                "name": "<code>uh-cart-exp</code>",
+                "purpose": "Guarda los precios ilustrativos que viste al agregar artículos al carrito, para avisarte si cambian.",
+                "duration": "30 días"
+              },
+              "seller": {
+                "name": "<code>uh-seller-org</code>",
+                "purpose": "Solo en el portal de proveedores: recuerda qué organización estás gestionando.",
+                "duration": "90 días"
+              }
+            }
+          },
+          "p2": "<strong>Almacenamiento local del navegador:</strong> la clave <code>uh-theme</code> guarda el tema elegido, para que también se aplique en páginas abiertas sin conexión.",
+          "p3": "<strong>Caché de la app:</strong> el service worker guarda en el navegador la página sin conexión, el manifiesto, los íconos y los archivos estáticos de la app, para que cargue más rápido y funcione sin conexión. Esta caché no contiene tus datos personales.",
+          "p4": "<strong>Videos incrustados:</strong> si un contenido muestra un video de YouTube (a través del dominio youtube-nocookie.com) o de Vimeo, el reproductor se carga directamente desde ese servicio cuando el video aparece en la página, y el servicio puede recopilar datos técnicos y usar sus propias cookies, según su política. Los contenidos de ejemplo de la demostración usan un reproductor simulado, sin servicios externos.",
+          "p5": "Puedes borrar las cookies y los datos del sitio en la configuración del navegador. Sin la cookie de sesión, tendrás que volver a iniciar sesión."
+        }
+      },
+      "processors": {
+        "title": "Con quién compartimos los datos",
+        "blocks": {
+          "p1": "Usamos proveedores de tecnología que tratan datos por cuenta nuestra, solo para operar la app:",
+          "list1": {
+            "supabase": "<strong>Supabase:</strong> base de datos y autenticación, incluido el envío de los correos de confirmación de registro y de restablecimiento de contraseña.",
+            "vercel": "<strong>Vercel:</strong> alojamiento de la app y ejecución de las funciones del servidor, incluidas las rutinas automáticas diarias, como la de conservación de datos.",
+            "ai": "<strong>OpenAI o Google (Gemini), solo si las recomendaciones con IA están activadas</strong> por la administración. En la configuración inicial de la demostración, las recomendaciones usan un motor propio, sin IA externa. Cuando la IA está activada, el proveedor elegido solo recibe: tus intereses (etiquetas), tu afinidad por pilar, tu nivel estimado, cuántos contenidos completaste, el idioma de las justificaciones y datos del catálogo (identificadores opacos de contenido, pilar, tipo, dificultad, etiquetas, módulo requerido, si el contenido está destacado, hace cuántos días se publicó y si está disponible en tu plan). <strong>Nunca</strong> recibe tu nombre, tu correo, el identificador de tu cuenta ni textos que hayas escrito. La IA puede desactivarse en cualquier momento con un interruptor de apagado.",
+            "google": "<strong>Google (inicio de sesión):</strong> si eliges iniciar sesión con Google, Google te autentica y nos envía los datos básicos de tu perfil, según su propia política de privacidad."
+          },
+          "p2": "Dentro de la app, los socios solo ven lo necesario para la operación simulada (por ejemplo, los artículos y la zona ficticia de los pedidos de prueba, sin tu nombre ni tu correo). Para la operación y el soporte, el equipo que administra la demostración puede ver datos de las cuentas (como correo, nombre visible, fecha de registro y último acceso), el feedback enviado y los pedidos de prueba. Las principales acciones realizadas desde el panel de administración quedan registradas en una auditoría.",
+          "p3": "La verificación pública de certificados solo muestra el programa, la versión, la fecha de emisión y si el certificado es válido. No muestra tu nombre.",
+          "p4": "No hay socios de pago ni de logística, ni cesión comercial de datos."
+        }
+      },
+      "retention": {
+        "title": "Cuánto tiempo conservamos los datos",
+        "blocks": {
+          "p1": "Los plazos siguientes reflejan el funcionamiento actual de la demostración. Una rutina automática diaria aplica los plazos de eliminación y anonimización indicados en la tabla.",
+          "table": {
+            "caption": "Plazos de conservación por tipo de dato",
+            "headers": {
+              "data": "Dato",
+              "period": "Plazo",
+              "details": "Qué ocurre"
+            },
+            "rows": {
+              "account": {
+                "data": "Cuenta, perfil, preferencias, intereses, favoritos, listas, progreso, logros, certificados y suscripción simulada",
+                "period": "Mientras exista la cuenta",
+                "details": "Se eliminan cuando eliminas la cuenta."
+              },
+              "analytics": {
+                "data": "Eventos de uso",
+                "period": "90 días desde su registro",
+                "details": "Se eliminan automáticamente al vencer el plazo. Si eliminas la cuenta antes, dejan de estar vinculados a ti de inmediato."
+              },
+              "orders": {
+                "data": "Pedidos de prueba vinculados a la cuenta",
+                "period": "90 días desde el pedido",
+                "details": "Al vencer el plazo, se anonimizan: pierden el vínculo con la cuenta y el nombre del destino ficticio. El registro anónimo no se elimina automáticamente y puede permanecer en las métricas de la demostración."
+              },
+              "runs": {
+                "data": "Ejecuciones de recomendación",
+                "period": "30 días",
+                "details": "Se eliminan automáticamente al vencer el plazo."
+              },
+              "logs": {
+                "data": "Registros técnicos del alojamiento y de la base de datos",
+                "period": "Según cada proveedor",
+                "details": "El plazo previsto es de 30 días, pero la app no controla estos registros: siguen la configuración de cada proveedor, que se verificará antes de la apertura pública."
+              },
+              "audit": {
+                "data": "Auditoría administrativa",
+                "period": "365 días",
+                "details": "Se elimina automáticamente al vencer el plazo."
+              },
+              "feedback": {
+                "data": "Feedback",
+                "period": "Por definir",
+                "details": "No se elimina automáticamente en esta versión. Deja de estar vinculado a ti si eliminas la cuenta. Antes de la apertura pública se definirá un plazo."
+              },
+              "backups": {
+                "data": "Copias de seguridad (backups)",
+                "period": "Según el plan del proveedor",
+                "details": "La política de copias de seguridad y restauración se verificará y documentará antes de la apertura pública."
+              }
+            }
+          },
+          "p2": "<strong>Excepciones de conservación:</strong> cuando sea necesario preservar una cuenta o un pedido de prueba, por ejemplo como evidencia de una obligación legal o en la investigación de un incidente, la administración puede abrir una excepción documentada, con alcance, justificación, responsable y fecha de revisión. Mientras esté abierta, la rutina automática no anonimiza el pedido de prueba cubierto y, si la excepción cubre tu cuenta, su eliminación desde la app queda bloqueada hasta que se cierre (la app te lo indica). Las excepciones no cambian los demás plazos de la tabla, y cada una tiene una fecha de revisión obligatoria."
+        }
+      },
+      "rights": {
+        "title": "Tus derechos y cómo ejercerlos en la app",
+        "blocks": {
+          "p1": "Tienes derechos sobre tus datos personales. En esta demostración, la mayoría puede ejercerse directamente en la app:",
+          "list1": {
+            "access": "<strong>Acceder:</strong> consulta tus datos en <profile>Perfil</profile>, <evolution>Evolución</evolution>, <plan>Plan y módulos</plan> y <orders>Mis pedidos de prueba</orders>. El resumen de lo que guardamos y de los plazos está en <account>Cuenta y privacidad</account>.",
+            "correct": "<strong>Corregir:</strong> cambia tu nombre visible, avatar, idioma y tema en <profile>Perfil</profile> y tus intereses en <interests>Intereses</interests>. Para cambiar la contraseña, usa <forgot>Olvidé mi contraseña</forgot>.",
+            "cancel": "<strong>Cancelar la suscripción simulada:</strong> en <plan>Plan y módulos</plan>, cuando quieras.",
+            "delete": "<strong>Eliminar la cuenta:</strong> en <account>Cuenta y privacidad</account>, elige “Eliminar mi cuenta” y escribe la palabra de confirmación indicada."
+          },
+          "p2": "Cuando eliminas la cuenta:",
+          "list2": {
+            "profile": "tu perfil se anonimiza y se elimina junto con la cuenta;",
+            "removed": "se eliminan los intereses, los elementos marcados como “no me interesa”, los favoritos, las listas, el progreso, los contenidos completados, la racha de días, los logros, las inscripciones en programas, los certificados, las recomendaciones, el carrito, la suscripción simulada y los registros de interés en productos;",
+            "unlinked": "los eventos de uso, el feedback, los pedidos de prueba y las ejecuciones de recomendación dejan de estar vinculados a ti, y los pedidos de prueba también pierden el nombre del destino ficticio. Los eventos de uso y las ejecuciones de recomendación se siguen eliminando en los plazos de la tabla anterior; el feedback y los pedidos de prueba anonimizados no se eliminan automáticamente;",
+            "audit": "un registro de la eliminación, con el identificador interno de la cuenta y sin correo ni nombre, permanece en la auditoría hasta 365 días;",
+            "partner": "si actuabas como socio, el perfil de socio y lo publicado en él dejan de estar vinculados a tu cuenta, pero no se eliminan automáticamente. El registro de la invitación, que conserva el correo invitado, también se mantiene. Solicita su eliminación por el canal de contacto;",
+            "session": "se cierra tu sesión en este dispositivo. La eliminación no se puede deshacer.",
+            "blocked": "si hay una excepción de conservación activa para tu cuenta, la eliminación queda bloqueada hasta que se cierre, y la app te lo indica."
+          },
+          "p3": "Aún no disponibles en esta versión: exportar tus datos en un archivo (portabilidad), cambiar el correo de la cuenta y desactivar individualmente los eventos de uso. Para estas solicitudes o cualquier otra sobre tus datos, usa el canal de contacto."
+        }
+      },
+      "security": {
+        "title": "Cómo protegemos los datos",
+        "blocks": {
+          "list1": {
+            "rls": "<strong>Reglas de acceso en la propia base de datos</strong> (Row Level Security): cada persona solo lee y modifica sus propios datos, los socios solo acceden a lo que les pertenece y las operaciones sensibles pasan por funciones del servidor que verifican los permisos.",
+            "keys": "<strong>Claves protegidas:</strong> las credenciales con privilegios elevados y las claves de los proveedores de IA están solo en el servidor, nunca en el navegador.",
+            "passwords": "<strong>Las contraseñas</strong> las gestiona el servicio de autenticación, y la app no las guarda en sus propias tablas.",
+            "minimization": "<strong>Minimización:</strong> los eventos de uso rechazan propiedades cuyos nombres indiquen datos personales, la IA (cuando está activada) no recibe tu nombre, tu correo ni el identificador de tu cuenta y los destinos de entrega son ficticios.",
+            "audit": "<strong>Auditoría y límites:</strong> las principales acciones administrativas quedan registradas, cada cuenta puede enviar hasta 20 mensajes de feedback por día y el uso de IA en las recomendaciones tiene un límite por hora.",
+            "https": "<strong>Conexión cifrada</strong> (HTTPS) entre tu navegador y la app, proporcionada por el servicio de alojamiento."
+          },
+          "p1": "Ningún sistema es totalmente inmune a fallos. Si identificamos un incidente que afecte tus datos, lo gestionaremos y avisaremos a las personas afectadas cuando sea necesario."
+        }
+      },
+      "transfer": {
+        "title": "Transferencias internacionales",
+        "blocks": {
+          "p1": "Algunos de los proveedores mencionados operan a nivel global y pueden almacenar o tratar datos en otros países. Las regiones de almacenamiento y las garantías aplicables a cada proveedor se confirmarán y publicarán antes de la apertura pública."
+        }
+      },
+      "changes": {
+        "title": "Cambios en esta Política",
+        "blocks": {
+          "p1": "Esta Política puede actualizarse, en especial después de la revisión jurídica prevista antes de la apertura pública o cuando cambie el funcionamiento de la app. La fecha de la última actualización aparece al inicio de esta página."
+        }
+      },
+      "contact": {
+        "title": "Contacto",
+        "blocks": {
+          "p1": "Canal de contacto: el formulario de feedback dentro de la app, disponible en las páginas de contenidos y de programas. Desde ese formulario, el equipo no puede responderte directamente. Antes de la apertura pública se publicará un canal dedicado a la privacidad, con la identificación del delegado de protección de datos (DPO).",
+          "p2": "No incluyas datos personales sensibles en tu mensaje de feedback."
+        }
+      }
+    }
+  }
+}

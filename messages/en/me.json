@@ -274,7 +274,7 @@
       "title": "Retention",
       "analytics": "Usage events: {days} days",
       "orders": "Test orders linked to the account: {days} days (then anonymized)",
-      "logs": "Recommendation runs and technical logs: {days} days",
+      "logs": "Recommendation runs: {days} days. Hosting and database logs follow each provider's policy (details in the Privacy Policy).",
       "audit": "Administrative audit: {days} days",
       "exceptions": "Documented exceptions (legal evidence or incident) suspend anonymization while open."
     },

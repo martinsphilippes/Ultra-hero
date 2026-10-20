@@ -1,0 +1,413 @@
+{
+  "meta": {
+    "terms": "Terms of Use",
+    "termsDescription": "Rules for using Ultra Hero, a demo version with educational content, simulated plans and test orders.",
+    "privacy": "Privacy Policy",
+    "privacyDescription": "What data Ultra Hero processes, how long it is kept, who it is shared with and how you exercise your rights."
+  },
+  "links": {
+    "nav": "Legal documents",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy",
+    "accountNote": "Retention periods and what happens to each type of data when you delete your account are explained in the <privacy>Privacy Policy</privacy>. The rules of use are in the <terms>Terms of Use</terms>."
+  },
+  "page": {
+    "eyebrow": "Legal documents",
+    "updated": "Last updated: <time>{date}</time>",
+    "noticeTitle": "Demo version",
+    "noticeBody": "This text accompanies a proof of concept and is pending legal review before public launch. It is not a statement of legal compliance or a certification of any kind.",
+    "toc": "On this page",
+    "home": "Back to home",
+    "read": {
+      "terms": "Read the Terms of Use",
+      "privacy": "Read the Privacy Policy"
+    }
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "intro": "These Terms explain the rules for using Ultra Hero. By creating an account or using the app, you agree to them. Please also read the <privacy>Privacy Policy</privacy>, which explains how we handle your data.",
+    "sections": {
+      "about": {
+        "title": "What Ultra Hero is",
+        "blocks": {
+          "p1": "Ultra Hero is a proof of concept: an experimental app, in a demo phase, with educational content about routine, training, nutrition and cooking, guided programs, fictional personalities, simulated plans and a simulated shop.",
+          "p2": "The goal is to test the experience and learn from how it is used. It is not a commercial service: <strong>there are no real charges, payments, sales or deliveries</strong>."
+        }
+      },
+      "eligibility": {
+        "title": "Who can use it",
+        "blocks": {
+          "p1": "Ultra Hero is intended <strong>only for people aged 18 or over</strong>. By creating an account, you confirm that you are 18 or older. If you are under 18, do not create an account or use the app.",
+          "p2": "Accounts that appear to belong to minors may be suspended or deleted."
+        }
+      },
+      "education": {
+        "title": "Educational content and health notice",
+        "blocks": {
+          "p1": "All content is general and educational. <strong>It does not replace individual professional advice</strong> from doctors, dietitians, fitness professionals or other health professionals.",
+          "list1": {
+            "i1": "Nothing in the app is an individual prescription, diagnosis or treatment: not a diet, not a training plan, not a supplement dose.",
+            "i2": "Automatic recommendations only suggest catalog content based on your interests and activity. They do not assess your health.",
+            "i3": "Before starting or changing physical activity or your diet, talk to a qualified professional, especially if you have a health condition, are pregnant, take medication or feel pain.",
+            "i4": "Stop any exercise if you feel pain, dizziness, shortness of breath or discomfort, and seek care if needed.",
+            "i5": "Recipes may contain allergens. Check the ingredients and follow good food hygiene practices when cooking."
+          },
+          "p2": "You decide how to use the information, within your own limits."
+        }
+      },
+      "personalities": {
+        "title": "Fictional personalities",
+        "blocks": {
+          "p1": "The personalities in the app are fictional characters created for the demo and are labeled “Fictional character”. Names, stories, images and quotes do not represent real people, and any resemblance is coincidental.",
+          "p2": "Content attributed to these personalities is not a testimonial, endorsement or recommendation from a real person. The sample suppliers in the simulated shop are fictional too."
+        }
+      },
+      "plans": {
+        "title": "Simulated plans and subscriptions",
+        "blocks": {
+          "list1": {
+            "i1": "Plans, modules and subscriptions are <strong>simulated</strong>. The prices shown are illustrative.",
+            "i2": "No payment method is requested and nothing is charged, now or later.",
+            "i3": "Renewal is only simulated: the demo period moves forward automatically, without any charge.",
+            "i4": "You can change modules or cancel the simulated subscription at any time in <plan>Plan & modules</plan>.",
+            "i5": "A simulated plan does not entitle you to any paid service, refund, credit or special terms in any future commercial version."
+          }
+        }
+      },
+      "commerce": {
+        "title": "Simulated shop and test orders",
+        "blocks": {
+          "list1": {
+            "i1": "The shop is 100% simulated. Products, prices, shipping and stock are illustrative.",
+            "i2": "When you check out, you create a <strong>test order</strong>: there is no payment, invoice, picking, shipping or delivery of any product.",
+            "i3": "The destination is chosen from a list of <strong>fictional destinations</strong>. The app does not ask for or use a real address.",
+            "i4": "Shipment tracking is an automatic simulation of steps.",
+            "i5": "Test orders create no obligation to buy, sell, exchange or return anything, for you or for suppliers.",
+            "i6": "Showing interest in a product is only a signal for the demo metrics. It is not a reservation or a purchase."
+          }
+        }
+      },
+      "account": {
+        "title": "Account and acceptable use",
+        "blocks": {
+          "p1": "To save progress, favorites, plans and test orders, you need an account, created with email and password or, when available, with Google sign-in. Keep your password confidential and change it if you suspect misuse.",
+          "p2": "When using Ultra Hero, you agree not to:",
+          "list1": {
+            "i1": "enter other people’s personal data, a real address, payment data or health data in the app (for example, in your display name or in feedback);",
+            "i2": "try to access accounts, data or areas that are not yours, or bypass limits and access rules;",
+            "i3": "disrupt the app, for example through abusive automation, overload or exploiting bugs;",
+            "i4": "submit content that is illegal, offensive, discriminatory, misleading or that infringes third-party rights;",
+            "i5": "present the app, its content or its simulated plans as a real service or as professional advice."
+          },
+          "p3": "If you find a security flaw, report it through the contact channel at the end of this page without exploiting it."
+        }
+      },
+      "partners": {
+        "title": "Partner content",
+        "blocks": {
+          "p1": "Content creators and suppliers take part <strong>by invitation only</strong> from the team running the demo. Each partner uses its own portal and only sees and manages what belongs to it.",
+          "list1": {
+            "i1": "Content submitted by creators goes through editorial review before it is published.",
+            "i2": "Supplier products may be hidden or suspended by moderation at any time. Links between content and products may also be suspended, including automatically when a product changes significantly.",
+            "i3": "Partners are responsible for the accuracy and lawfulness of what they submit and follow the same educational content rules, with no individual prescriptions.",
+            "i4": "Partners only see what is needed for the simulated operation. Suppliers, for example, see the items and the fictional delivery zone of test orders, without the name or email of the person who placed the order."
+          }
+        }
+      },
+      "ip": {
+        "title": "Intellectual property",
+        "blocks": {
+          "p1": "The Ultra Hero brand, design, texts, images and content belong to their respective owners and are available only for personal, non-commercial use within the app during the demo. You may not copy, redistribute, resell or commercially exploit these materials without permission.",
+          "p2": "By submitting content or products, partners confirm they hold the necessary rights and authorize their display in the app during the demo.",
+          "p3": "Certificates issued when you complete a program are symbolic and have no academic, professional or certification value."
+        }
+      },
+      "availability": {
+        "title": "Availability, changes and kill switches",
+        "blocks": {
+          "p1": "As a demo, Ultra Hero is provided as is, with no guarantee of continuous operation, absence of errors or permanent preservation of content.",
+          "p2": "The team may change, pause or turn off features at any time, including without prior notice. The simulated shop and AI recommendations, for example, have kill switches, which are used to protect people and the service itself.",
+          "p3": "The demo may be shut down. If that happens, data will be handled as described in the <privacy>Privacy Policy</privacy>."
+        }
+      },
+      "suspension": {
+        "title": "Suspension and termination",
+        "blocks": {
+          "p1": "We may limit, suspend or end access for accounts, partners, content or products that violate these Terms, put people at risk or harm the demo. The main actions taken through the admin panel, such as suspending partners and moderating content and products, are recorded in an audit log.",
+          "p2": "You can stop using the app whenever you want and delete your account at any time in <account>Account & privacy</account>."
+        }
+      },
+      "limitation": {
+        "title": "Limitations of the demo",
+        "blocks": {
+          "p1": "Ultra Hero is an experiment. To the extent permitted by applicable law, the team responsible is not liable for decisions made solely on the basis of the educational content, for downtime, for loss of demo data or for expectations of purchase, delivery or subscription, which are always simulated here.",
+          "p2": "Nothing in these Terms limits rights that the law grants you and that cannot be waived by contract."
+        }
+      },
+      "changes": {
+        "title": "Changes to these Terms",
+        "blocks": {
+          "p1": "These Terms may be updated, especially after the legal review planned before public launch. The date of the last update is shown at the top of this page."
+        }
+      },
+      "contact": {
+        "title": "Contact",
+        "blocks": {
+          "p1": "Contact channel: the feedback form inside the app, available on content and program pages. The team cannot reply to you directly through this form. A dedicated channel will be published before public launch.",
+          "p2": "Full identification of the party responsible for the service will also be published before public launch."
+        }
+      }
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "intro": "This Policy explains, in plain terms, what data Ultra Hero processes, why, who it is shared with, how long it is kept and how you exercise your rights. It describes how this demo version currently works. The rules of use are in the <terms>Terms of Use</terms>.",
+    "sections": {
+      "who": {
+        "title": "Who we are and what this Policy covers",
+        "blocks": {
+          "p1": "Ultra Hero is a proof of concept with educational content, fictional personalities, simulated subscriptions and simulated commerce. This Policy applies to the app (web and installable) and to the partner and admin portals.",
+          "p2": "The identity of the data controller and of the data protection officer (DPO) will be published before public launch. Until then, use the contact channel at the end of this page."
+        }
+      },
+      "collected": {
+        "title": "Data we collect",
+        "blocks": {
+          "p1": "We only collect what the demo needs to work:",
+          "list1": {
+            "account": "<strong>Account:</strong> email, password and display name. The password is handled by the authentication service; the app does not store it in its own tables. If you sign in with Google, when that option is available, we receive your name, your email and, if there is one, the address of your profile photo from Google.",
+            "preferences": "<strong>Preferences:</strong> language, theme, avatar chosen from illustrations and your device’s time zone, used to count your day streak.",
+            "usage": "<strong>Content activity:</strong> interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments and symbolic certificates (the certificate PDF shows your display name).",
+            "subscription": "<strong>Simulated subscription:</strong> chosen modules, periods and change history.",
+            "commerce": "<strong>Simulated commerce:</strong> cart, test orders (items, illustrative amounts and the fictional destination chosen from a list) and records of interest in products.",
+            "events": "<strong>Usage events:</strong> actions in the app, such as opening content, completing a program or starting a test order, with date, language and technical properties such as the content identifier. When you are signed in, events are linked to your account; for visitors without an account, they are recorded without an identifier. The database rejects properties whose names indicate personal data, such as email, phone, CPF (Brazilian taxpayer ID), name, address or password.",
+            "feedback": "<strong>Optional feedback:</strong> rating, a comment of up to 1,000 characters, the content or program it was sent from and the language.",
+            "recommendations": "<strong>Recommendations:</strong> the list of content recommended to you and a technical record of each calculation (engine used, time, number of items, estimated cost and errors).",
+            "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log."
+          },
+          "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
+        }
+      },
+      "notCollected": {
+        "title": "Data we do not collect",
+        "blocks": {
+          "list1": {
+            "address": "a real or delivery address: shop destinations are fictional;",
+            "location": "geolocation;",
+            "payment": "payment data, such as card or bank account details: nothing is charged;",
+            "health": "individual health data, such as weight, body measurements, test results, diagnoses or medical conditions;",
+            "documents": "identity documents, phone number and date of birth: you declare that you meet the minimum age of 18 when you create your account."
+          },
+          "p1": "We do not sell data, we do not pass it on for commercial or advertising purposes and we do not use third-party advertising or analytics tools."
+        }
+      },
+      "purposes": {
+        "title": "How we use data",
+        "blocks": {
+          "list1": {
+            "account": "to create and maintain your account, authenticate your access and send sign-up confirmation and password reset emails;",
+            "personalization": "to personalize the experience: language, theme, content to continue and recommendations;",
+            "progress": "to record progress, day streak, achievements and symbolic certificates;",
+            "simulation": "to simulate plans, subscriptions, the cart and test orders;",
+            "metrics": "to measure the experiment with aggregate metrics (for example, how many people complete a piece of content) and improve the product with your feedback;",
+            "security": "to protect the service: apply usage limits, investigate abuse and incidents and record administrative actions in an audit log."
+          }
+        }
+      },
+      "legalBases": {
+        "title": "Legal bases (to be confirmed)",
+        "blocks": {
+          "p1": "The legal bases below are a preliminary assessment and <strong>are yet to be confirmed</strong> in the legal review planned before public launch:",
+          "list1": {
+            "service": "account, preferences, progress, simulated subscription and test orders: performance of the service you requested;",
+            "interest": "usage events and feedback: legitimate interest in evaluating and improving the experiment;",
+            "audit": "administrative audit and security: legitimate interest and, where applicable, compliance with a legal obligation."
+          }
+        }
+      },
+      "cookies": {
+        "title": "Cookies and local storage",
+        "blocks": {
+          "p1": "We only use cookies and storage needed for the app to work and remember your choices. We do not use advertising or third-party analytics cookies.",
+          "table": {
+            "caption": "Cookies used by Ultra Hero",
+            "headers": {
+              "name": "Cookie",
+              "purpose": "Purpose",
+              "duration": "Duration"
+            },
+            "rows": {
+              "session": {
+                "name": "<code>sb-…-auth-token</code>",
+                "purpose": "Keeps you signed in (authentication service) and may be split into parts. In flows such as sign-up confirmation, password reset or Google sign-in, a helper cookie ending in <code>-code-verifier</code> may be created to protect the flow.",
+                "duration": "Until you sign out (technical validity of up to 400 days)"
+              },
+              "locale": {
+                "name": "<code>NEXT_LOCALE</code>",
+                "purpose": "Remembers the language you chose.",
+                "duration": "1 year"
+              },
+              "theme": {
+                "name": "<code>uh-theme</code>",
+                "purpose": "Remembers the theme you chose (light, dark or system).",
+                "duration": "1 year"
+              },
+              "demo": {
+                "name": "<code>uh-demo-dismissed</code>",
+                "purpose": "Remembers that you dismissed the demo notice.",
+                "duration": "24 hours"
+              },
+              "destination": {
+                "name": "<code>uh-dest</code>",
+                "purpose": "Remembers the fictional destination chosen in the test cart.",
+                "duration": "30 days"
+              },
+              "prices": {
+                "name": "<code>uh-cart-exp</code>",
+                "purpose": "Stores the illustrative prices you saw when adding items to the cart, so we can tell you if they change.",
+                "duration": "30 days"
+              },
+              "seller": {
+                "name": "<code>uh-seller-org</code>",
+                "purpose": "Supplier portal only: remembers which organization you are managing.",
+                "duration": "90 days"
+              }
+            }
+          },
+          "p2": "<strong>Browser local storage:</strong> the <code>uh-theme</code> key stores the theme you chose, so it also applies to pages opened offline.",
+          "p3": "<strong>App cache:</strong> the service worker stores the offline page, the manifest, the icons and the app’s static files in your browser, so it loads faster and works offline. This cache does not contain your personal data.",
+          "p4": "<strong>Embedded videos:</strong> if a piece of content shows a YouTube video (via the youtube-nocookie.com domain) or a Vimeo video, the player is loaded directly from that service when the video appears on the page, and the service may collect technical data and use its own cookies, according to its policy. The demo’s sample content uses a simulated player, with no external service.",
+          "p5": "You can delete cookies and site data in your browser settings. Without the session cookie, you will need to sign in again."
+        }
+      },
+      "processors": {
+        "title": "Who we share data with",
+        "blocks": {
+          "p1": "We use technology providers that process data on our behalf, only to run the app:",
+          "list1": {
+            "supabase": "<strong>Supabase:</strong> database and authentication, including sending sign-up confirmation and password reset emails.",
+            "vercel": "<strong>Vercel:</strong> hosting of the app and execution of server functions, including the automatic daily routines, such as the retention routine.",
+            "ai": "<strong>OpenAI or Google (Gemini), only if AI recommendations are turned on</strong> by the administrators. In the demo’s initial configuration, recommendations use an in-house engine, without external AI. When AI is turned on, the chosen provider only receives: your interests (tags), your affinity per pillar, your estimated level, how many pieces of content you have completed, the language for the explanations and catalog data (opaque content identifiers, pillar, type, difficulty, tags, required module, whether the content is featured, how many days ago it was published and whether it is unlocked in your plan). It <strong>never</strong> receives your name, your email, your account identifier or any text you wrote. AI can be turned off at any time with a kill switch.",
+            "google": "<strong>Google (sign-in):</strong> if you choose to sign in with Google, Google authenticates you and sends us your basic profile data, according to its own privacy policy."
+          },
+          "p2": "Within the app, partners only see what is needed for the simulated operation (for example, the items and fictional zone of test orders, without your name or email). For operations and support, the team running the demo can see account data (such as email, display name, sign-up date and last sign-in), the feedback sent and test orders. The main actions taken through the admin panel are recorded in an audit log.",
+          "p3": "Public certificate verification only shows the program, the version, the issue date and whether the certificate is valid. It does not show your name.",
+          "p4": "There are no payment or logistics partners, and no commercial transfer of data."
+        }
+      },
+      "retention": {
+        "title": "How long we keep data",
+        "blocks": {
+          "p1": "The periods below reflect how the demo currently works. An automatic daily routine applies the deletion and anonymization periods shown in the table.",
+          "table": {
+            "caption": "Retention periods by type of data",
+            "headers": {
+              "data": "Data",
+              "period": "Period",
+              "details": "What happens"
+            },
+            "rows": {
+              "account": {
+                "data": "Account, profile, preferences, interests, favorites, lists, progress, achievements, certificates and simulated subscription",
+                "period": "While the account exists",
+                "details": "Deleted when you delete your account."
+              },
+              "analytics": {
+                "data": "Usage events",
+                "period": "90 days after being recorded",
+                "details": "Deleted automatically after the period. If you delete your account earlier, they are unlinked from you immediately."
+              },
+              "orders": {
+                "data": "Test orders linked to the account",
+                "period": "90 days after the order",
+                "details": "After the period, they are anonymized: the link to the account and the name of the fictional destination are removed. The anonymous record is not deleted automatically and may remain in the demo metrics."
+              },
+              "runs": {
+                "data": "Recommendation runs",
+                "period": "30 days",
+                "details": "Deleted automatically after the period."
+              },
+              "logs": {
+                "data": "Technical logs from hosting and the database",
+                "period": "According to each provider",
+                "details": "The planned period is 30 days, but the app does not control these logs: they follow each provider’s settings, which will be verified before public launch."
+              },
+              "audit": {
+                "data": "Administrative audit log",
+                "period": "365 days",
+                "details": "Deleted automatically after the period."
+              },
+              "feedback": {
+                "data": "Feedback",
+                "period": "To be defined",
+                "details": "Not deleted automatically in this version. Unlinked from you if you delete your account. A period will be defined before public launch."
+              },
+              "backups": {
+                "data": "Backups",
+                "period": "According to the provider’s plan",
+                "details": "The backup and restore policy will be verified and documented before public launch."
+              }
+            }
+          },
+          "p2": "<strong>Retention exceptions:</strong> when an account or a test order must be preserved, for example as evidence for a legal obligation or during an incident investigation, the administrators may open a documented exception with a scope, justification, owner and review date. While it is open, the test order it covers is not anonymized by the automatic routine and, if the exception covers your account, deleting it from the app is blocked until the exception is closed (the app will let you know). Exceptions do not change the other periods in the table, and each one has a mandatory review date."
+        }
+      },
+      "rights": {
+        "title": "Your rights and how to exercise them in the app",
+        "blocks": {
+          "p1": "You have rights over your personal data. In this demo, most of them can be exercised directly in the app:",
+          "list1": {
+            "access": "<strong>Access:</strong> see your data in <profile>Profile</profile>, <evolution>Progress</evolution>, <plan>Plan & modules</plan> and <orders>My test orders</orders>. A summary of what we keep and for how long is in <account>Account & privacy</account>.",
+            "correct": "<strong>Correct:</strong> change your display name, avatar, language and theme in <profile>Profile</profile> and your interests in <interests>Interests</interests>. To change your password, use <forgot>Forgot my password</forgot>.",
+            "cancel": "<strong>Cancel the simulated subscription:</strong> in <plan>Plan & modules</plan>, whenever you want.",
+            "delete": "<strong>Delete your account:</strong> in <account>Account & privacy</account>, choose “Delete my account” and type the confirmation word shown."
+          },
+          "p2": "When you delete your account:",
+          "list2": {
+            "profile": "your profile is anonymized and deleted along with the account;",
+            "removed": "interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments, certificates, recommendations, cart, simulated subscription and records of interest in products are deleted;",
+            "unlinked": "usage events, feedback, test orders and recommendation runs are no longer linked to you, and test orders also lose the name of the fictional destination. Usage events and recommendation runs are still deleted within the periods in the table above; feedback and anonymized test orders are not deleted automatically;",
+            "audit": "a record of the deletion, with the account’s internal identifier and without email or name, stays in the audit log for up to 365 days;",
+            "partner": "if you acted as a partner, the partner profile and what was published under it are unlinked from your account but not deleted automatically. The invitation record, which keeps the invited email address, also remains. Request removal through the contact channel;",
+            "session": "you are signed out on this device. Deletion cannot be undone.",
+            "blocked": "if there is an active retention exception for your account, deletion is blocked until it is closed, and the app will let you know."
+          },
+          "p3": "Not yet available in this version: exporting your data as a file (portability), changing your account email and individually turning off usage events. For these requests or any other request about your data, use the contact channel."
+        }
+      },
+      "security": {
+        "title": "How we protect data",
+        "blocks": {
+          "list1": {
+            "rls": "<strong>Access rules in the database itself</strong> (Row Level Security): each person can only read and change their own data, partners can only access what belongs to them and sensitive operations go through server-side functions that check permissions.",
+            "keys": "<strong>Protected keys:</strong> high-privilege credentials and AI provider keys stay on the server only, never in the browser.",
+            "passwords": "<strong>Passwords</strong> are handled by the authentication service, and the app does not store them in its own tables.",
+            "minimization": "<strong>Minimization:</strong> usage events reject properties whose names indicate personal data, AI (when turned on) does not receive your name, your email or your account identifier, and delivery destinations are fictional.",
+            "audit": "<strong>Audit and limits:</strong> the main administrative actions are recorded, each account can send up to 20 feedback messages per day and the use of AI in recommendations has an hourly limit.",
+            "https": "<strong>Encrypted connection</strong> (HTTPS) between your browser and the app, provided by the hosting service."
+          },
+          "p1": "No system is completely immune to failures. If we identify an incident that affects your data, we will handle it and notify the people affected when necessary."
+        }
+      },
+      "transfer": {
+        "title": "International transfers",
+        "blocks": {
+          "p1": "Some of the providers listed above operate globally and may store or process data in other countries. The storage regions and the safeguards that apply to each provider will be confirmed and published before public launch."
+        }
+      },
+      "changes": {
+        "title": "Changes to this Policy",
+        "blocks": {
+          "p1": "This Policy may be updated, especially after the legal review planned before public launch or when the way the app works changes. The date of the last update is shown at the top of this page."
+        }
+      },
+      "contact": {
+        "title": "Contact",
+        "blocks": {
+          "p1": "Contact channel: the feedback form inside the app, available on content and program pages. The team cannot reply to you directly through this form. A dedicated privacy channel, with the identity of the data protection officer (DPO), will be published before public launch.",
+          "p2": "Do not include sensitive personal data in your feedback message."
+        }
+      }
+    }
+  }
+}

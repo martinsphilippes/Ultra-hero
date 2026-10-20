@@ -274,7 +274,7 @@
       "title": "Retención",
       "analytics": "Eventos de uso: {days} días",
       "orders": "Pedidos de prueba vinculados a la cuenta: {days} días (después, anonimizados)",
-      "logs": "Ejecuciones de recomendación y logs técnicos: {days} días",
+      "logs": "Ejecuciones de recomendación: {days} días. Los logs de hosting y base de datos siguen la política de cada proveedor (detalles en la Política de Privacidad).",
       "audit": "Auditoría administrativa: {days} días",
       "exceptions": "Las excepciones documentadas (evidencia legal o incidente) suspenden la anonimización mientras estén abiertas."
     },

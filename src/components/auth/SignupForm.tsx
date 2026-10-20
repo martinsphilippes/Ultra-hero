@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useActionState } from "react";
 import { signupAction } from "@/app/(auth)/actions";
+import { legalRichTags } from "@/components/legal/rich-tags";
 import { Button } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -63,7 +64,7 @@ export function SignupForm({ next }: SignupFormProps) {
           <PasswordInput name="confirmPassword" autoComplete="new-password" />
         </FormField>
 
-        <p className="type-caption text-fg-muted">{t("signup.terms")}</p>
+        <p className="type-caption text-fg-muted">{t.rich("signup.terms", { terms: legalRichTags.terms, privacy: legalRichTags.privacy })}</p>
 
         <Button type="submit" block size="lg" loading={pending}>
           {t("signup.submit")}

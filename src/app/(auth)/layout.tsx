@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -33,6 +34,9 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
           <span className="type-caption text-fg-muted">{t("demo.banner")}</span>
         </p>
       </main>
+      <footer className="relative px-gutter pb-4 safe-bottom">
+        <LegalLinks align="center" />
+      </footer>
     </div>
   );
 }
