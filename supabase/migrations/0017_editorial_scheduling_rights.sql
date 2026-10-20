@@ -28,6 +28,13 @@ alter policy content_select on public.content
   using (public.content_is_live(status, publish_at) or (select public.is_admin())
          or (creator_id is not null and creator_id = (select public.my_creator_id())));
 
+-- Traduções (título/resumo) de um conteúdo agendado também ficam fora do ar: a subconsulta em
+-- content passa pela política content_select do próprio chamador (admin e dona seguem vendo).
+alter policy content_loc_select on public.content_localizations
+  using ((status = 'published' and exists (select 1 from public.content c where c.id = content_id))
+         or (select public.is_admin())
+         or exists (select 1 from public.content c where c.id = content_id and c.creator_id = (select public.my_creator_id())));
+
 -- Regra única de consumo: agendado não é consumível pelo público (admin e dona continuam podendo).
 create or replace function public.can_access_content(p_content uuid)
 returns boolean language plpgsql stable security definer set search_path = public as $$
@@ -143,14 +150,14 @@ create or replace trigger trg_a_content_guard before update on public.content
 -- publica agora (publish_at = null; published_at = agora quando ainda não estava no ar).
 create or replace function public.admin_review_content(p_content uuid, p_decision public.review_status, p_feedback text, p_publish_at timestamptz)
 returns void language plpgsql security definer set search_path = public as $$
-declare c public.content%rowtype; v_missing text[] := '{}'; v_at timestamptz;
+declare c public.content%rowtype; v_missing text[] := '{}'; v_at timestamptz; v_feedback text := nullif(btrim(coalesce(p_feedback, '')), '');
 begin
   if not public.is_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
   if p_decision not in ('returned', 'approved', 'rejected') then raise exception 'invalid_decision'; end if;
   select * into c from public.content where id = p_content for update;
   if not found then raise exception 'content_not_found'; end if;
 
-  update public.content_reviews set decision = p_decision, feedback = p_feedback, decided_by = auth.uid(), decided_at = now()
+  update public.content_reviews set decision = p_decision, feedback = v_feedback, decided_by = auth.uid(), decided_at = now()
   where content_id = p_content and decision = 'in_review';
 
   if p_decision = 'approved' then
@@ -171,7 +178,7 @@ begin
   end if;
   perform public.audit_log('content.review', 'content', p_content::text,
     jsonb_build_object('status', c.status, 'review_status', c.review_status, 'publish_at', c.publish_at),
-    jsonb_build_object('decision', p_decision, 'publish_at', v_at), p_feedback);
+    jsonb_build_object('decision', p_decision, 'publish_at', v_at), v_feedback);
 end $$;
 
 create or replace function public.admin_review_content(p_content uuid, p_decision public.review_status, p_feedback text default null)
@@ -224,6 +231,11 @@ do $$ begin
   if not exists (select 1 from pg_constraint where conname = 'creator_profiles_rights_status_check') then
     alter table public.creator_profiles add constraint creator_profiles_rights_status_check
       check (rights_status in ('fictional', 'authorized', 'pending'));
+  end if;
+  -- "Autorizado" sem titular não existe: a página pública exibe "autorizado por <titular>".
+  if not exists (select 1 from pg_constraint where conname = 'creator_profiles_rights_holder_check') then
+    alter table public.creator_profiles add constraint creator_profiles_rights_holder_check
+      check (rights_status <> 'authorized' or nullif(btrim(rights_holder), '') is not null);
   end if;
 end $$;
 
@@ -312,6 +324,41 @@ do $$ begin
   if not exists (select 1 from pg_trigger where tgname = 'trg_c_content_link_origin' and tgrelid = 'public.content'::regclass) then
     create trigger trg_c_content_link_origin before insert or update on public.content
       for each row execute function public.content_link_origin();
+  end if;
+end $$;
+
+-- ---------------------------------------------------------------- 3c) nutrição validada (RF-006, RB-08)
+-- O corpo é JSON livre, então a regra vive num trigger: "validado" exige responsável e data real
+-- (para qualquer um) e só admin/sistema grava a marcação de validação — a personalidade nunca se
+-- valida (a server action dela já zera; aqui o banco recusa quem tentar pela API).
+create or replace function public.content_bodies_nutrition_guard()
+returns trigger language plpgsql set search_path = public as $$
+declare n jsonb := new.body -> 'nutrition'; v_validated boolean; v_by text; v_at text;
+begin
+  if n is null or jsonb_typeof(n) <> 'object' then return new; end if;
+  v_validated := coalesce((n ->> 'validated')::boolean, false);
+  v_by := nullif(btrim(coalesce(n ->> 'validated_by', '')), '');
+  v_at := nullif(btrim(coalesce(n ->> 'validated_at', '')), '');
+  if v_validated then
+    if v_by is null or v_at is null or v_at !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then
+      raise exception 'nutrition_validation_incomplete' using errcode = '23514';
+    end if;
+    begin perform v_at::date; exception when others then
+      raise exception 'nutrition_validation_incomplete' using errcode = '23514';
+    end;
+  end if;
+  if auth.uid() is null or public.is_admin() or public.is_trusted_call() then return new; end if;
+  if v_validated or v_by is not null or v_at is not null then
+    raise exception 'nutrition_validation_forbidden' using errcode = '42501';
+  end if;
+  return new;
+end $$;
+revoke execute on function public.content_bodies_nutrition_guard() from public, anon;
+grant execute on function public.content_bodies_nutrition_guard() to authenticated, service_role;
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'trg_a_content_bodies_nutrition' and tgrelid = 'public.content_bodies'::regclass) then
+    create trigger trg_a_content_bodies_nutrition before insert or update on public.content_bodies
+      for each row execute function public.content_bodies_nutrition_guard();
   end if;
 end $$;
 

@@ -518,8 +518,12 @@ select tests.ok('S15 auditoria registra a data agendada', exists (select 1 from 
   and resource_id = public.seed_uuid('content:r2')::text and (after_data ->> 'publish_at')::timestamptz > now()));
 select tests.ok('S15 admin vê e acessa o agendado', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 1
   and public.can_access_content(public.seed_uuid('content:r2')));
+insert into public.content_localizations (content_id, locale, title, status) values (public.seed_uuid('content:r2'), 'en', 'Scheduled title (en)', 'published')
+  on conflict (content_id, locale) do update set title = excluded.title, status = 'published';
+select tests.ok('S15 admin lê a tradução publicada do agendado', (select count(*) from public.content_localizations where content_id = public.seed_uuid('content:r2') and locale = 'en') = 1);
 select tests.anon();
 select tests.ok('S15 visitante não vê o agendado', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 0);
+select tests.ok('S15 visitante não lê a tradução do agendado', (select count(*) from public.content_localizations where content_id = public.seed_uuid('content:r2')) = 0);
 select tests.ok('S15 visitante vê 39 no ar (40 publicados menos o agendado)', (select count(*) from public.content where status = 'published') = 39);
 select tests.ok('S15 busca não devolve o agendado', (select count(*) from public.search_content(null, null, null, null, null, 100, 0) where id = public.seed_uuid('content:r2')) = 0);
 select tests.ok('S15 can_access_content nega o agendado ao visitante', not public.can_access_content(public.seed_uuid('content:r2')));
@@ -527,10 +531,12 @@ select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local
 select tests.ok('S15 consumidor não vê o agendado nem o corpo', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 0
   and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:r2')) = 0);
 select tests.ok('S15 consumidor não acessa o agendado', not public.can_access_content(public.seed_uuid('content:r2')));
+select tests.ok('S15 consumidor não lê a tradução do agendado', (select count(*) from public.content_localizations where content_id = public.seed_uuid('content:r2')) = 0);
 select tests.expect_error('S15 consumidor não conclui o agendado', $q$select public.complete_content(public.seed_uuid('content:r2'), 'America/Sao_Paulo')$q$, 'content_forbidden');
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 select tests.ok('S15 personalidade dona vê e acessa o próprio agendado', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 1
   and public.can_access_content(public.seed_uuid('content:r2')));
+select tests.ok('S15 personalidade dona lê a tradução do próprio agendado', (select count(*) from public.content_localizations where content_id = public.seed_uuid('content:r2') and locale = 'en') = 1);
 select tests.expect_error('S15 personalidade não agenda (coluna protegida)', $q$update public.content set publish_at = now() + interval '1 day' where id = '20000000-0000-4000-8000-000000000001'$q$, 'protected_column');
 select tests.su();
 update public.content set publish_at = now() - interval '1 minute' where id = public.seed_uuid('content:r2');
@@ -538,7 +544,8 @@ select tests.anon();
 select tests.ok('S15 data chegou: visitante vê, busca devolve e o catálogo volta a 40 sem nova ação',
   (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 1
   and (select count(*) from public.search_content(null, null, null, null, null, 100, 0) where id = public.seed_uuid('content:r2')) = 1
-  and (select count(*) from public.content where status = 'published') = 40);
+  and (select count(*) from public.content where status = 'published') = 40
+  and (select count(*) from public.content_localizations where content_id = public.seed_uuid('content:r2') and locale = 'en') = 1);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_set_content_status(public.seed_uuid('content:r3'), 'draft', 'Teste de agendamento');
 select public.admin_review_content(public.seed_uuid('content:r3'), 'approved', 'ok', now() - interval '1 hour');
@@ -589,6 +596,8 @@ select tests.expect_error('S16 visitante não lê creator_rights_private (tabela
 select tests.expect_error('S16 visitante não executa a RPC privada de direitos', $q$select public.admin_set_creator_rights_private(public.seed_uuid('creator:lia'), 'FALSO', null, null)$q$, 'permission denied');
 select tests.ok('S16 seed: todas as personalidades seguem fictícias, sem titular nem validade', (select count(*) from public.creator_profiles where rights_status = 'fictional' and rights_holder is null and rights_valid_until is null) = 8);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S16 autorizado sem titular é recusado (check no banco)', $q$update public.creator_profiles set rights_status = 'authorized', rights_holder = null where id = public.seed_uuid('creator:lia')$q$, '23514');
+select tests.expect_error('S16 autorizado com titular em branco é recusado', $q$update public.creator_profiles set rights_status = 'authorized', rights_holder = '   ' where id = public.seed_uuid('creator:lia')$q$, '23514');
 update public.creator_profiles set rights_status = 'authorized', rights_holder = 'Titular de teste', rights_valid_until = current_date + 30 where id = public.seed_uuid('creator:lia');
 select tests.ok('S16 admin altera os direitos e a auditoria registra', (select rights_status from public.creator_profiles where id = public.seed_uuid('creator:lia')) = 'authorized'
   and exists (select 1 from public.admin_audit where action = 'creator_profiles.update' and resource_id = public.seed_uuid('creator:lia')::text and after_data ->> 'rights_status' = 'authorized'));
@@ -640,6 +649,21 @@ update public.content set media_credit = 'Outro canal', media_license_ref = 'htt
 select tests.ok('S16 personalidade grava e edita licença, referência e crédito do próprio rascunho',
   (select media_license_kind = 'third_party_embed' and media_credit = 'Outro canal' and media_license_ref = 'https://example.com/licenca' from public.content where id = '20000000-0000-4000-8000-000000000002'));
 select tests.expect_error('S16 personalidade não altera a origem do vínculo', $q$update public.content set creator_link_origin = 'admin_assignment' where id = '20000000-0000-4000-8000-000000000002'$q$, 'protected_column');
+
+-- nutrição (RB-08) no banco: a personalidade nunca se valida; o admin só valida com responsável e data real
+select tests.expect_error('S16 personalidade não marca a nutrição como validada', $q$update public.content_bodies set body = body || '{"nutrition":{"per_serving":{"kcal":300},"validated":true,"validated_by":"Eu mesma","validated_at":"2026-10-20","note":""}}'::jsonb where content_id = '20000000-0000-4000-8000-000000000002'$q$, 'nutrition_validation_forbidden');
+select tests.expect_error('S16 personalidade não grava responsável de validação nem com validated=false', $q$update public.content_bodies set body = body || '{"nutrition":{"per_serving":{"kcal":300},"validated":false,"validated_by":"Eu mesma","validated_at":null,"note":""}}'::jsonb where content_id = '20000000-0000-4000-8000-000000000002'$q$, 'nutrition_validation_forbidden');
+update public.content_bodies set body = body || '{"nutrition":{"per_serving":{"kcal":300,"protein_g":12},"validated":false,"validated_by":null,"validated_at":null,"note":"estimativa"}}'::jsonb where content_id = '20000000-0000-4000-8000-000000000002';
+select tests.ok('S16 personalidade grava números sem validação', (select (body -> 'nutrition' -> 'per_serving' ->> 'kcal')::int = 300 and not (body -> 'nutrition' ->> 'validated')::boolean from public.content_bodies where content_id = '20000000-0000-4000-8000-000000000002'));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S16 admin não valida sem responsável e data', $q$update public.content_bodies set body = jsonb_set(body, '{nutrition,validated}', 'true') where content_id = '20000000-0000-4000-8000-000000000002'$q$, 'nutrition_validation_incomplete');
+select tests.expect_error('S16 admin não valida com data que não existe', $q$update public.content_bodies set body = body || '{"nutrition":{"per_serving":{"kcal":300},"validated":true,"validated_by":"Nutricionista CRN 00000","validated_at":"2026-13-45","note":""}}'::jsonb where content_id = '20000000-0000-4000-8000-000000000002'$q$, 'nutrition_validation_incomplete');
+update public.content_bodies set body = body || '{"nutrition":{"per_serving":{"kcal":300,"protein_g":12},"validated":true,"validated_by":"Nutricionista CRN 00000","validated_at":"2026-10-20","note":""}}'::jsonb where content_id = '20000000-0000-4000-8000-000000000002';
+select tests.ok('S16 admin valida com responsável e data', (select (body -> 'nutrition' ->> 'validated')::boolean and body -> 'nutrition' ->> 'validated_by' = 'Nutricionista CRN 00000' from public.content_bodies where content_id = '20000000-0000-4000-8000-000000000002'));
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S16 personalidade não regrava o corpo mantendo a validação do admin', $q$update public.content_bodies set body = jsonb_set(body, '{nutrition,note}', '"ajuste"') where content_id = '20000000-0000-4000-8000-000000000002'$q$, 'nutrition_validation_forbidden');
+update public.content_bodies set body = body || '{"nutrition":{"per_serving":{"kcal":310},"validated":false,"validated_by":null,"validated_at":null,"note":"ajuste"}}'::jsonb where content_id = '20000000-0000-4000-8000-000000000002';
+select tests.ok('S16 personalidade regrava zerando a validação (como faz a server action)', (select not (body -> 'nutrition' ->> 'validated')::boolean and body -> 'nutrition' ->> 'validated_by' is null from public.content_bodies where content_id = '20000000-0000-4000-8000-000000000002'));
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 insert into public.content (id, slug, creator_id, pillar, type, title) values
   ('20000000-0000-4000-8000-000000000003', 'teste-atribuicao-admin', public.seed_uuid('creator:rafael'), 'routine', 'guide', 'Guia atribuído pelo admin');
@@ -664,6 +688,7 @@ select tests.ok('S16 funções novas: triggers e checagem interna sem execute pa
   not has_function_privilege('anon', 'public.creator_rights_guard()', 'execute')
   and not has_function_privilege('anon', 'public.content_media_license_check()', 'execute')
   and not has_function_privilege('anon', 'public.content_link_origin()', 'execute')
+  and not has_function_privilege('anon', 'public.content_bodies_nutrition_guard()', 'execute')
   and not has_function_privilege('anon', 'public.content_assert_media_license(uuid)', 'execute')
   and not has_function_privilege('authenticated', 'public.content_assert_media_license(uuid)', 'execute')
   and (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
