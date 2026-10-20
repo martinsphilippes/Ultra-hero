@@ -58,6 +58,14 @@ export function FeedbackTriageDialog({ id, status, priority, assignee, adminNote
     setError(null);
   }
 
+  // Abre sempre a partir dos valores atuais da linha. Depois de um router.refresh() (ex.: botões de status
+  // ao lado), os props mudam e o estado local ficaria defasado, com "dirty" ligado por um status antigo.
+  function openDialog() {
+    setValues(initial);
+    setError(null);
+    setOpen(true);
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
     const patch = buildPatch();
@@ -84,14 +92,14 @@ export function FeedbackTriageDialog({ id, status, priority, assignee, adminNote
 
   return (
     <>
-      <Button type="button" variant="secondary" size="sm" leadingIcon={<ClipboardList />} onClick={() => setOpen(true)}>
+      <Button type="button" variant="secondary" size="sm" leadingIcon={<ClipboardList />} onClick={openDialog}>
         {t("triage.button")}
       </Button>
       <Dialog
         open={open}
         onOpenChange={(next) => {
           if (pending) return;
-          if (next) setOpen(true);
+          if (next) openDialog();
           else close();
         }}
         title={t("triage.title")}

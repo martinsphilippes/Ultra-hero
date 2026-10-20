@@ -521,6 +521,13 @@ select tests.ok('S18 visitante envia feedback com categoria', public.submit_feed
 select tests.ok('S18 visitante não lê feedback', (select count(*) from public.feedback) = 0);
 select tests.expect_error('S18 visitante não executa a triagem', $q$select public.admin_triage_feedback(gen_random_uuid(), '{}'::jsonb)$q$, 'permission denied');
 select tests.expect_error('S18 visitante não lista admins', $q$select * from public.admin_list_admins()$q$, 'permission denied');
+-- Usuário autenticado sem papel admin (creator1): não tria, não lista admins, não lê feedback, update não altera nada.
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S18 usuário sem papel admin não executa a triagem', $q$select public.admin_triage_feedback((select id from t_fb), '{"priority":"low","assignee":"10000000-0000-4000-8000-000000000004"}'::jsonb)$q$, '42501');
+select tests.ok('S18 usuário sem papel admin não lista admins nem lê feedback', (select count(*) from public.admin_list_admins()) = 0 and (select count(*) from public.feedback) = 0);
+update public.feedback set priority = 'low', assignee = '10000000-0000-4000-8000-000000000004', status = 'archived' where id = (select id from t_fb); -- RLS: 0 linhas
+select tests.su();
+select tests.ok('S18 update de usuário sem papel admin não altera a triagem', (select priority is null and assignee is null and status = 'new' from public.feedback where id = (select id from t_fb)));
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.ok('S18 admin define prioridade, responsável, nota e status',
   (public.admin_triage_feedback((select id from t_fb), jsonb_build_object('priority', 'high', 'assignee', '10000000-0000-4000-8000-000000000001', 'admin_note', 'Verificar filtro', 'status', 'reviewed'), 'triagem inicial') ->> 'priority') = 'high');
