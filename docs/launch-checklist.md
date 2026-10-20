@@ -5,7 +5,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 ## Segurança
 - [x] **(B)** RLS habilitado em todas as tabelas (`select count(*) from pg_tables where schemaname='public' and not rowsecurity` = 0) (verificado no remoto e no local em 20/10/2026: 0 tabelas sem RLS)
 - [x] **(B)** `npm run test:rls` verde (176 asserções) no commit de release (157/157 no commit `229253c`)
-- [x] **(B)** `SUPABASE_SERVICE_ROLE_KEY` só em variáveis de servidor (Vercel), nunca `NEXT_PUBLIC_` (módulo `server-only`; busca no bundle do cliente sem ocorrências em 20/10/2026; a variável ainda não foi cadastrada na Vercel)
+- [x] **(B)** `SUPABASE_SERVICE_ROLE_KEY` só em variáveis de servidor (Vercel), nunca `NEXT_PUBLIC_` (módulo `server-only`; busca no bundle do cliente sem ocorrências; variável cadastrada na Vercel em 20/10/2026 como Sensitive, só Production e Preview; `/api/cron/*` respondendo ok)
 - [x] **(B)** `CRON_SECRET` definido; `/api/cron/*` retorna 403 sem ele (definido na Vercel; 403 com segredo ausente ou errado coberto em `tests/unit/video-cron.test.ts`)
 - [ ] **(B)** Admin de bootstrap confere apenas os e-mails esperados (`app_settings.bootstrap_admin_emails`)
 - [x] Advisors de segurança do Supabase revisados (migração 0016, 20/10/2026: 0 funções sem `search_path`, PUBLIC sem EXECUTE, anon só nas 17 RPCs públicas; restam só os avisos inerentes a RPCs de usuários logados)
@@ -17,7 +17,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 ## Privacidade / LGPD
 - [x] **(B)** Termos e política de privacidade publicados e linkados no cadastro (`/legal/terms` e `/legal/privacy`, commit `2d445ef`; revisão jurídica pendente)
 - [ ] **(B)** Exclusão de conta testada ponta a ponta (anonimização de pedidos verificada)
-- [ ] Retenção automatizada ativa (cron diário) e `retention_jobs` com execuções
+- [x] Retenção automatizada ativa (cron diário) e `retention_jobs` com execuções (primeira execução manual em 20/10/2026 às 20:11 UTC, 0 registros afetados)
 - [ ] Analytics sem PII (função rejeita chaves suspeitas; amostragem manual de `properties`)
 - [ ] Documento `docs/privacy-and-retention.md` revisado por jurídico
 

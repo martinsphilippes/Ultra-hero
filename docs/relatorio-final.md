@@ -103,18 +103,17 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 ## Ambiente e deploy
 - **Vercel**: projeto `ultra-hero`, região gru1 (São Paulo). O deploy é automático a cada push na `master`.
   - Já configuradas: URL e chave publicável do Supabase, `CRON_SECRET` e `NEXT_PUBLIC_SITE_URL`.
-  - Falta `SUPABASE_SERVICE_ROLE_KEY`. Sem ela, os crons respondem `service_role_missing`, criar contas demo e suspender contas ficam desativados, e as recomendações não são gravadas.
+  - `SUPABASE_SERVICE_ROLE_KEY` cadastrada em 20/10/2026 (Sensitive, Production e Preview). Os três crons responderam ok em produção.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
 - **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), e a 0016 pelo conector em 15 blocos. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
-1. **Service role na Vercel**: cadastre `SUPABASE_SERVICE_ROLE_KEY` em Production e Preview, nunca com prefixo `NEXT_PUBLIC_`, e faça um redeploy.
-2. **URLs de autenticação**: em Supabase, Authentication, URL Configuration, coloque `https://ultra-hero.vercel.app` como Site URL. Nas Redirect URLs, coloque `https://ultra-hero.vercel.app/**` e `http://localhost:3000/**`.
-3. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
-4. **Google OAuth**, se quiser: crie as credenciais no Google Cloud com o callback `https://cjcvlfypjoxaynwtmuhz.supabase.co/auth/v1/callback`.
-5. **Revisão jurídica** de Termos e Privacidade. Antes da abertura pública, é preciso definir controlador, encarregado e canal de contato.
-6. **Chaves OpenAI e Gemini**, se quiser, para rodar a comparação entre provedores.
+1. **URLs de autenticação**: em Supabase, Authentication, URL Configuration, coloque `https://ultra-hero.vercel.app` como Site URL. Nas Redirect URLs, coloque `https://ultra-hero.vercel.app/**` e `http://localhost:3000/**`.
+2. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
+3. **Google OAuth**, se quiser: crie as credenciais no Google Cloud com o callback `https://cjcvlfypjoxaynwtmuhz.supabase.co/auth/v1/callback`.
+4. **Revisão jurídica** de Termos e Privacidade. Antes da abertura pública, é preciso definir controlador, encarregado e canal de contato.
+5. **Chaves OpenAI e Gemini**, se quiser, para rodar a comparação entre provedores.
 
 ## Riscos e limitações conhecidos
 - **Um único projeto Supabase** serve de desenvolvimento e produção.
