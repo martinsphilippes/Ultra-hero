@@ -42,15 +42,43 @@ export function parseYouTubeId(raw: string): string | null {
   return candidate && YOUTUBE_ID.test(candidate) ? candidate : null;
 }
 
-/** Extrai o ID numérico de um vídeo do Vimeo a partir de ID ou URL (vimeo.com/<id>, player.vimeo.com/video/<id>). */
+// Nome de canal/grupo/showcase/álbum: só serve para casar o formato e nunca chega ao src do player.
+const VIMEO_SLUG = /^[\w-]+$/;
+const VIMEO_PAGE_HOSTS: readonly string[] = ["vimeo.com", "www.vimeo.com"];
+
+// Allowlist de formatos de URL do Vimeo, segmento a segmento (string = literal exato; RegExp = valor
+// validado). O ID do vídeo é SEMPRE o último segmento, numa posição fixa: nunca "o primeiro número do
+// caminho", que em showcase/álbum é o ID do contêiner, não o do vídeo.
+// Canais (channels/<nome>/<id>) e grupos (groups/<nome>/videos/<id>) são aceitos: são páginas oficiais
+// de um único vídeo, com o ID numa posição inequívoca, como showcase/álbum. Qualquer outro caminho é
+// rejeitado — inclusive os com mais de um número fora destes formatos (vimeo.com/<a>/<b>) e o de vídeo
+// não listado vimeo.com/<id>/<hash>, cujo hash o player exigiria e que não repassamos.
+const VIMEO_URL_SHAPES: ReadonlyArray<{ hosts: readonly string[]; path: ReadonlyArray<string | RegExp> }> = [
+  { hosts: VIMEO_PAGE_HOSTS, path: [VIMEO_ID] }, // vimeo.com/<id>
+  { hosts: VIMEO_PAGE_HOSTS, path: ["channels", VIMEO_SLUG, VIMEO_ID] }, // vimeo.com/channels/<nome>/<id>
+  { hosts: VIMEO_PAGE_HOSTS, path: ["groups", VIMEO_SLUG, "videos", VIMEO_ID] }, // vimeo.com/groups/<nome>/videos/<id>
+  { hosts: VIMEO_PAGE_HOSTS, path: ["showcase", VIMEO_SLUG, "video", VIMEO_ID] }, // vimeo.com/showcase/<showcaseId>/video/<id>
+  { hosts: VIMEO_PAGE_HOSTS, path: ["album", VIMEO_SLUG, "video", VIMEO_ID] }, // vimeo.com/album/<albumId>/video/<id>
+  { hosts: ["player.vimeo.com"], path: ["video", VIMEO_ID] }, // player.vimeo.com/video/<id>
+];
+
+/**
+ * Extrai o ID numérico de um vídeo do Vimeo a partir de ID ou URL num dos formatos de VIMEO_URL_SHAPES
+ * (vimeo.com/<id>, player.vimeo.com/video/<id>, canal, grupo, showcase, álbum). Fora deles, null.
+ */
 export function parseVimeoId(raw: string): string | null {
   const value = raw.trim();
   if (VIMEO_ID.test(value)) return value;
   const url = parseUrl(value);
   if (!url || !VIMEO_HOSTS.has(url.hostname) || (url.protocol !== "https:" && url.protocol !== "http:")) return null;
   const parts = url.pathname.split("/").filter(Boolean);
-  const candidate = parts.find((p) => VIMEO_ID.test(p)) ?? null;
-  return candidate;
+  const matches = VIMEO_URL_SHAPES.some(
+    ({ hosts, path }) =>
+      hosts.includes(url.hostname) &&
+      parts.length === path.length &&
+      path.every((expected, i) => (typeof expected === "string" ? parts[i] === expected : expected.test(parts[i]))),
+  );
+  return matches ? parts[parts.length - 1] : null;
 }
 
 function youtubeLang(locale?: string): string | undefined {

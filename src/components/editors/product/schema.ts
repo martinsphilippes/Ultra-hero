@@ -66,7 +66,11 @@ export const productBaseSchema = z.object({
   image_url: z.enum(PRODUCT_IMAGES, "image_invalid"),
   price_cents_demo: z.number("price_invalid").int("price_invalid").min(0, "price_invalid").max(100_000_000, "price_invalid"),
   product_type: z.enum(PRODUCT_TYPES),
-  attributes: z.record(z.string().regex(/^[a-z0-9_]{1,32}$/, "attribute_key_invalid"), attributeValue),
+  // z.record não propaga a mensagem do esquema da chave: o issue "invalid_key" usa o erro do
+  // próprio record (senão a UI recebe o texto em inglês "Invalid key in record").
+  attributes: z.record(z.string().regex(/^[a-z0-9_]{1,32}$/), attributeValue, {
+    error: (issue) => (issue.code === "invalid_key" ? "attribute_key_invalid" : undefined),
+  }),
   food_info: foodInfoSchema.nullable(),
   status: z.enum(PRODUCT_STATUSES),
   availability: z.enum(AVAILABILITIES),
@@ -128,12 +132,26 @@ export function emptyProductValues(sellerOrgId = ""): ProductFormValues {
   };
 }
 
-// "28,90" | "28.90" | "R$ 1.234,56" -> centavos (NaN se inválido).
+// Sem vírgula, ponto seguido de grupos de 3 dígitos é milhar pt-BR ("1.500", "1.500.000").
+// O primeiro grupo não começa com 0: "0.500" é ambíguo (R$ 0,50 ou R$ 500?) e é rejeitado.
+const THOUSANDS_ONLY = /^-?[1-9]\d{0,2}(\.\d{3})+$/;
+// Sem vírgula e fora do padrão de milhar: inteiro ou ponto decimal com 1–2 casas ("29.9", "29.90").
+const DOT_DECIMAL = /^-?\d+(\.\d{1,2})?$/;
+// Com vírgula (decimal pt-BR): parte inteira sem separador ou com milhar pt-BR bem formado, e 0–2 casas.
+// Mesma regra do ponto: 3+ dígitos depois do separador decimal nunca são centavos. "1,500" (milhar en?),
+// "29,999", "1,500.00" (formato en) e "12.34,56" não têm leitura única em reais e são rejeitados.
+const COMMA_DECIMAL = /^-?(\d*|[1-9]\d{0,2}(\.\d{3})+),\d{0,2}$/;
+
+// "28,90" | "28.90" | "R$ 1.234,56" | "1.500" -> centavos (NaN se inválido ou ambíguo).
 export function parsePriceToCents(input: string): number {
   const raw = input.replace(/[^\d.,-]/g, "").trim();
   if (!raw) return Number.NaN;
   let normalized = raw;
-  if (raw.includes(",")) normalized = raw.replace(/\./g, "").replace(",", ".");
+  if (raw.includes(",")) {
+    if (!COMMA_DECIMAL.test(raw)) return Number.NaN;
+    normalized = raw.replace(/\./g, "").replace(",", ".");
+  } else if (THOUSANDS_ONLY.test(raw)) normalized = raw.replace(/\./g, "");
+  else if (!DOT_DECIMAL.test(raw)) return Number.NaN;
   const value = Number(normalized);
   if (!Number.isFinite(value)) return Number.NaN;
   return Math.round(value * 100);

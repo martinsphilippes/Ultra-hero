@@ -62,7 +62,7 @@ Princípio central: **o cliente nunca decide permissão, preço ou direito de ac
 - `analytics_events` (sem PII — a função rejeita chaves suspeitas; 90 dias). `feedback` opcional e contextual. `recommendation_runs` 30 dias.
 - RLS em 100% das tabelas; funções `security definer` com `search_path` fixo; guards de coluna por papel; `app.trusted` transacional só para RPCs confiáveis (não exposto à API).
 - Chaves: `NEXT_PUBLIC_*` só publicáveis; `SUPABASE_SERVICE_ROLE_KEY` apenas em rotinas de servidor (`src/lib/supabase/admin.ts`).
-- Testes: `npm run test:rls` executa `supabase/tests/rls_scenarios.sql` num Postgres local isolado (155 asserções cobrindo os critérios de aceite).
+- Testes: `npm run test:rls` executa `supabase/tests/rls_scenarios.sql` num Postgres local isolado (157 asserções cobrindo os critérios de aceite).
 
 ## 9. Ambientes
 

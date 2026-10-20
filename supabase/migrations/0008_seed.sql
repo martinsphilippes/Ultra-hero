@@ -6,7 +6,14 @@
 -- =============================================================================
 
 create or replace function public.seed_uuid(p text)
-returns uuid language sql immutable parallel safe strict as $$ select md5('ultra-hero:' || p)::uuid $$;
+returns uuid language sql immutable parallel safe strict as $$
+  -- md5 determinístico com os bits de versão (4) e variante (10xx) do RFC 4122:
+  -- os IDs do seed passam em validadores estritos (z.uuid()) como os de gen_random_uuid().
+  select (substr(h, 1, 12) || '4' || substr(h, 14, 3)
+          || substr('89ab', (('x' || substr(h, 17, 1))::bit(4)::int % 4) + 1, 1)
+          || substr(h, 18, 15))::uuid
+  from (select md5('ultra-hero:' || p) as h) t
+$$;
 
 -- ---------------------------------------------------------------- settings ---
 insert into public.app_settings (key, value, description) values

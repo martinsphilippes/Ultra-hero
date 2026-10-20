@@ -40,15 +40,30 @@ export function scoreCandidate(candidate: Candidate, signals: UserSignals, now =
 
   const score = interestScore + pillarScore + fit + fresh + featured - lockPenalty;
 
-  // Justificativa = componente que mais contribuiu (ordem de prioridade em empates).
-  let reason: Reason = { key: "generic" };
-  if (matchedTags.length > 0) reason = { key: "interest", params: { tag: matchedTags[0] } };
-  else if (pillarScore >= 1.5) reason = { key: "pillar", params: { pillar: candidate.pillar } };
-  else if (featured > 0) reason = { key: "featured" };
-  else if (fresh >= 0.5) reason = { key: "fresh" };
-  else if (fit === 1 && candidate.difficulty) reason = { key: "difficulty" };
+  return { candidate, score: Math.round(score * 1000) / 1000, reason: pickReason({ candidate, matchedTags, interestScore, pillarScore, featured, fresh, fit }) };
+}
 
-  return { candidate, score: Math.round(score * 1000) / 1000, reason };
+// Mínimos para um componente virar justificativa: abaixo disso a frase exibida seria fraca ou falsa
+// ("que você tem explorado" para um pilar secundário, "novidade" para item de quase um mês, "no seu nível" sem nível exato).
+const PILLAR_REASON_MIN = 1.5; // ≥ 75% da afinidade do pilar mais explorado
+const FRESH_REASON_MIN = 0.5; // publicado há no máximo metade da janela (15 dias)
+
+// Justificativa = componente que MAIS contribuiu para o score, entre os que passam do mínimo para ser
+// afirmado ao usuário; empate exato segue a ordem de prioridade interesse > pilar > destaque > novidade > dificuldade.
+// Nenhum elegível → genérica. Assim o "por que recomendamos" é verdadeiro e aponta o fator dominante.
+function pickReason(parts: { candidate: Candidate; matchedTags: string[]; interestScore: number; pillarScore: number; featured: number; fresh: number; fit: number }): Reason {
+  const { candidate, matchedTags, interestScore, pillarScore, featured, fresh, fit } = parts;
+  const options: Array<{ points: number; reason: Reason } | null> = [
+    matchedTags.length > 0 ? { points: interestScore, reason: { key: "interest", params: { tag: matchedTags[0] } } } : null,
+    pillarScore >= PILLAR_REASON_MIN ? { points: pillarScore, reason: { key: "pillar", params: { pillar: candidate.pillar } } } : null,
+    featured > 0 ? { points: featured, reason: { key: "featured" } } : null,
+    fresh >= FRESH_REASON_MIN ? { points: fresh, reason: { key: "fresh" } } : null,
+    fit === 1 && candidate.difficulty ? { points: fit, reason: { key: "difficulty" } } : null,
+  ];
+  let best: { points: number; reason: Reason } | null = null;
+  // `>` estrito: em empate fica o primeiro da lista (maior prioridade)
+  for (const option of options) if (option && (!best || option.points > best.points)) best = option;
+  return best?.reason ?? { key: "generic" };
 }
 
 // Diversidade: no topo (até `limit`) no máximo N itens por pilar; completa com o restante se faltar.

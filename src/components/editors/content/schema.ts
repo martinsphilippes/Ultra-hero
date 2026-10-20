@@ -91,6 +91,8 @@ export const mediaSchema = z.object({
 });
 
 // ---------------------------------------------------------------- formulário completo
+// IDs: z.uuid() (RFC 4122). O seed gera IDs determinísticos já com versão/variante RFC
+// (public.seed_uuid em 0008), então conteúdos e módulos do seed continuam editáveis.
 export const contentFormSchema = z
   .object({
     id: z.uuid().optional(),

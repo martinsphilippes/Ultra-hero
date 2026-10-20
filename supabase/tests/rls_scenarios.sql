@@ -67,6 +67,23 @@ insert into public.role_assignments (user_id, role, scope_type, scope_id) values
 select tests.ok('trigger criou perfis e papel consumer', (select count(*) from public.profiles) = 6
   and (select count(*) from public.role_assignments where role = 'consumer') = 6);
 
+-- ================================================================ S0 · Integridade do seed
+-- Todo id uuid do seed segue o RFC 4122 (versão 1-5, variante 10xx): os validadores do app usam z.uuid().
+do $s0$
+declare r record; v_bad bigint; v_total bigint := 0;
+begin
+  for r in select c.table_name from information_schema.columns c join information_schema.tables t using (table_schema, table_name)
+           where c.table_schema = 'public' and c.column_name = 'id' and c.data_type = 'uuid' and t.table_type = 'BASE TABLE' loop
+    execute format('select count(*) from public.%I where id::text !~ ''^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$''', r.table_name) into v_bad;
+    if v_bad > 0 then raise exception 'FAIL S0 % ids fora do RFC 4122 em public.%', v_bad, r.table_name; end if;
+    execute format('select count(*) from public.%I', r.table_name) into v_total;
+  end loop;
+  raise notice 'PASS S0 ids uuid do seed seguem o RFC 4122 em todas as tabelas públicas';
+end $s0$;
+select tests.ok('S0 seed_uuid é determinístico e RFC 4122', public.seed_uuid('content:r1') = public.seed_uuid('content:r1')
+  and public.seed_uuid('content:r1')::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+  and public.seed_uuid('content:r1') <> public.seed_uuid('content:r2'));
+
 -- ================================================================ S1 · Visitante
 select tests.anon();
 select tests.ok('S1 visitante vê catálogo publicado (40)', (select count(*) from public.content where status = 'published') = 40);

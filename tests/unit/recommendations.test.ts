@@ -1,7 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@/lib/recommendations/candidates";
 import { deterministicEngine, diversify, rankDeterministic, scoreCandidate } from "@/lib/recommendations/deterministic";
-import { decideEngine, DEFAULT_RATE_LIMIT_PER_HOUR, providerHasKey } from "@/lib/recommendations/guardrails";
+import { countRecentRuns, decideEngine, DEFAULT_RATE_LIMIT_PER_HOUR, providerHasKey, readPublicAiSettings } from "@/lib/recommendations/guardrails";
 import { geminiEngine } from "@/lib/recommendations/providers/gemini";
 import { openAiEngine } from "@/lib/recommendations/providers/openai";
 import { buildPrompt, errorMessage, estimateCost, fetchJson, validateOutput } from "@/lib/recommendations/providers/shared";
@@ -169,11 +171,64 @@ describe("scoreCandidate", () => {
     expect(result.reason).toEqual({ key: "interest", params: { tag: "forca" } });
   });
 
-  test.todo(
-    "BUG: a justificativa deveria ser o 'componente que mais contribuiu' (comentário em deterministic.ts), " +
-      "mas é uma cadeia de prioridade com limiares: item de pilar com afinidade 1,4 (afinidade {training: 5, routine: 3.5}), " +
-      "em destaque (0,75) e com dificuldade exata (1) recebe reason 'featured', embora o pilar (1,4) e a dificuldade (1) contribuam mais",
-  );
+  describe("justificativa = componente elegível que mais contribuiu (empate pela prioridade)", () => {
+    it("regressão: destaque (0,75) não é a justificativa quando a dificuldade exata (1) contribui mais; pilar 1,4 fica abaixo do mínimo de 1,5 para ser afirmado", () => {
+      const result = scoreCandidate(
+        candidate({ content_id: "r", pillar: "routine", is_featured: true, difficulty: "beginner" }),
+        signals({ pillarAffinity: { training: 5, routine: 3.5 } }),
+        NOW,
+      );
+      expect(result.score).toBe(3.15); // pilar 1,4 + dificuldade 1 + destaque 0,75
+      expect(result.reason).toEqual({ key: "difficulty" });
+    });
+
+    it("pilar elegível (≥ 1,5) vence destaque, novidade máxima e dificuldade exata porque contribui mais", () => {
+      const result = scoreCandidate(
+        candidate({ content_id: "r", pillar: "routine", is_featured: true, difficulty: "beginner", published_at: daysAgo(0) }),
+        signals({ pillarAffinity: { training: 4, routine: 4 } }),
+        NOW,
+      );
+      expect(result.score).toBe(4.75);
+      expect(result.reason).toEqual({ key: "pillar", params: { pillar: "routine" } });
+    });
+
+    it.each([
+      // [descrição, overrides do item, reason esperado]
+      ["novidade 0,667 < destaque 0,75 → destaque", { is_featured: true, published_at: daysAgo(10) }, "featured"],
+      ["novidade 1 > destaque 0,75 → novidade", { is_featured: true, published_at: daysAgo(0) }, "fresh"],
+      ["novidade 0,9 > destaque 0,75 → novidade", { is_featured: true, published_at: daysAgo(3) }, "fresh"],
+      ["dificuldade exata 1 > destaque 0,75 → dificuldade", { is_featured: true, difficulty: "beginner" }, "difficulty"],
+      ["dificuldade exata 1 > novidade 0,9 → dificuldade", { difficulty: "beginner", published_at: daysAgo(3) }, "difficulty"],
+      ["empate novidade 1 × dificuldade 1 → novidade (prioridade)", { difficulty: "beginner", published_at: daysAgo(0) }, "fresh"],
+      ["dificuldade vizinha (0,5) nunca é afirmada → destaque", { is_featured: true, difficulty: "intermediate" }, "featured"],
+      ["novidade abaixo de 0,5 nunca é afirmada → dificuldade", { difficulty: "beginner", published_at: daysAgo(20) }, "difficulty"],
+    ] as const)("%s", (_label, overrides, key) => {
+      const result = scoreCandidate(candidate({ content_id: "c", ...overrides }), signals(), NOW);
+      expect(result.reason.key).toBe(key);
+    });
+
+    it("a justificativa nunca aponta um componente que contribuiu menos que outro componente afirmável", () => {
+      // pontos de cada justificativa possível, recalculados de forma independente pelo teste
+      const level = "beginner" as const;
+      for (const is_featured of [false, true])
+        for (const days of [null, 0, 3, 10, 15, 20])
+          for (const difficulty of [null, "beginner", "intermediate"] as const)
+            for (const routineAffinity of [0, 2, 2.8, 3, 4]) {
+              const c = candidate({ content_id: "c", pillar: "routine", is_featured, difficulty, published_at: days === null ? null : daysAgo(days) });
+              const result = scoreCandidate(c, signals({ difficultyLevel: level, pillarAffinity: { training: 4, routine: routineAffinity } }), NOW);
+              const pillar = (routineAffinity / 4) * 2;
+              const fresh = days === null ? 0 : Math.max(0, 1 - days / 30);
+              const points: Partial<Record<Reason["key"], number>> = {};
+              if (pillar >= 1.5) points.pillar = pillar;
+              if (is_featured) points.featured = 0.75;
+              if (fresh >= 0.5) points.fresh = fresh;
+              if (difficulty === level) points.difficulty = 1;
+              const max = Math.max(0, ...Object.values(points));
+              if (max === 0) expect(result.reason.key).toBe("generic");
+              else expect(points[result.reason.key]).toBe(max);
+            }
+    });
+  });
 });
 
 describe("diversify", () => {
@@ -389,10 +444,14 @@ describe("serializeReason / parseReason", () => {
 
 type FakeOptions = {
   settings?: Record<string, unknown>;
+  // payload bruto do rpc (sobrepõe `settings`), para simular formatos inesperados
+  rpcData?: unknown;
   rpcThrows?: boolean;
   rpcError?: boolean;
   rateLimitValue?: unknown;
-  recentRuns?: number;
+  recentRuns?: number | null;
+  runsError?: boolean;
+  runsThrows?: boolean;
 };
 
 type FakeCall = { table: string; ops: Array<[string, unknown[]]> };
@@ -402,7 +461,9 @@ function fakeDb(opts: FakeOptions) {
   const client = {
     rpc: async (fn: string) => {
       if (opts.rpcThrows) throw new Error("network down");
-      if (opts.rpcError || fn !== "public_settings") return { data: null, error: { message: "rpc failed" } };
+      // com rpcError + rpcData simula erro acompanhado de payload (não deve ser confiado)
+      if (opts.rpcError || fn !== "public_settings") return { data: opts.rpcError && "rpcData" in opts ? opts.rpcData : null, error: { message: "rpc failed" } };
+      if ("rpcData" in opts) return { data: opts.rpcData, error: null };
       return { data: opts.settings ?? {}, error: null };
     },
     from(table: string) {
@@ -411,7 +472,9 @@ function fakeDb(opts: FakeOptions) {
       const result = () =>
         table === "app_settings"
           ? { data: opts.rateLimitValue === undefined ? null : { value: opts.rateLimitValue }, error: null }
-          : { data: null, count: opts.recentRuns ?? 0, error: null };
+          : opts.runsError
+            ? { data: null, count: null, error: { message: "permission denied for table recommendation_runs" } }
+            : { data: null, count: opts.recentRuns === undefined ? 0 : opts.recentRuns, error: null };
       const builder: Record<string, unknown> = {};
       for (const op of ["select", "eq", "gte"]) {
         builder[op] = (...args: unknown[]) => {
@@ -420,7 +483,8 @@ function fakeDb(opts: FakeOptions) {
         };
       }
       builder.maybeSingle = async () => result();
-      builder.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) => Promise.resolve(result()).then(resolve, reject);
+      builder.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
+        (opts.runsThrows && table === "recommendation_runs" ? Promise.reject(new Error("network down")) : Promise.resolve(result())).then(resolve, reject);
       return builder;
     },
   };
@@ -522,11 +586,63 @@ describe("guardrails", () => {
       expect(decision).toMatchObject({ useLlm: false, skippedBecause: "ai_disabled" });
     });
 
-    test.todo(
-      "BUG: kill switch falha aberto quando public_settings devolve { data: null, error } (supabase-js não lança): " +
-        "readPublicAiSettings trata a ausência de 'ai.enabled' como ligado e, com AI_PROVIDER=openai + chave + service role, " +
-        "decideEngine devolve useLlm=true em vez de skippedBecause='ai_disabled' (o catch do mesmo código já falha fechado)",
-    );
+    it("regressão: erro do rpc ({ data: null, error }, supabase-js não lança) desliga o LLM e não consulta o rate limit", async () => {
+      ready();
+      vi.stubEnv("AI_PROVIDER", "openai");
+      const admin = fakeDb({ rateLimitValue: 12, recentRuns: 0 });
+      const decision = await decideEngine({ db: fakeDb({ rpcError: true }).db, admin: admin.db, userId: "u1" });
+      expect(decision).toMatchObject({ useLlm: false, engine: "deterministic", skippedBecause: "ai_disabled" });
+      expect(admin.calls.some((call) => call.table === "recommendation_runs")).toBe(false);
+      await expect(readPublicAiSettings(fakeDb({ rpcError: true }).db)).resolves.toEqual({ enabled: false, provider: null });
+    });
+
+    it("erro do rpc desliga o LLM mesmo que venha acompanhado de um payload que o ligaria", async () => {
+      ready();
+      const db = fakeDb({ rpcError: true, rpcData: { "ai.enabled": true, "ai.provider": "openai" } }).db;
+      await expect(readPublicAiSettings(db)).resolves.toEqual({ enabled: false, provider: null });
+      const decision = await decideEngine({ db, admin: fakeDb({}).db, userId: "u1" });
+      expect(decision).toMatchObject({ useLlm: false, skippedBecause: "ai_disabled" });
+    });
+
+    it("'ai.enabled' ausente desliga o LLM mesmo com provedor, chave e service role", async () => {
+      ready();
+      vi.stubEnv("AI_PROVIDER", "openai");
+      const fromSettings = await decideEngine({ db: fakeDb({ settings: { "ai.provider": "openai" } }).db, admin: fakeDb({}).db, userId: "u1" });
+      expect(fromSettings).toMatchObject({ useLlm: false, skippedBecause: "ai_disabled" });
+      const empty = await decideEngine({ db: fakeDb({ settings: {} }).db, admin: fakeDb({}).db, userId: "u1" });
+      expect(empty).toMatchObject({ useLlm: false, skippedBecause: "ai_disabled" });
+    });
+
+    it.each([["true"], [1], [null], ["yes"], [{}]])("'ai.enabled' não booleano (%j) é tratado como desligado", async (value) => {
+      ready();
+      const decision = await decideEngine({ db: fakeDb({ settings: { "ai.enabled": value, "ai.provider": "openai" } }).db, admin: fakeDb({}).db, userId: "u1" });
+      expect(decision).toMatchObject({ useLlm: false, skippedBecause: "ai_disabled" });
+    });
+
+    it.each([[null], ["ok"], [[{ "ai.enabled": true }]], [42]])("payload inesperado do rpc sem erro (%j) desliga o LLM", async (rpcData) => {
+      ready();
+      vi.stubEnv("AI_PROVIDER", "openai");
+      const decision = await decideEngine({ db: fakeDb({ rpcData }).db, admin: fakeDb({}).db, userId: "u1" });
+      expect(decision).toMatchObject({ useLlm: false, skippedBecause: "ai_disabled" });
+    });
+
+    it("o valor semeado em 0008_seed.sql passa pelo kill switch (só não chama LLM porque o provedor semeado é o determinístico)", async () => {
+      const seed = readFileSync(path.resolve(__dirname, "../../supabase/migrations/0008_seed.sql"), "utf8");
+      const seeded = (key: string): unknown => {
+        const match = new RegExp(`\\('${key.replace(".", "\\.")}',\\s*'([^']*)'::jsonb`).exec(seed);
+        if (!match) throw new Error(`chave ${key} não encontrada no seed`);
+        return JSON.parse(match[1]) as unknown;
+      };
+      const settings = { "ai.enabled": seeded("ai.enabled"), "ai.provider": seeded("ai.provider") };
+      expect(settings["ai.enabled"]).toBe(true);
+      ready();
+      await expect(readPublicAiSettings(fakeDb({ settings }).db)).resolves.toEqual({ enabled: true, provider: "deterministic" });
+      const seededDecision = await decideEngine({ db: fakeDb({ settings }).db, admin: fakeDb({}).db, userId: "u1" });
+      expect(seededDecision).toMatchObject({ useLlm: false, skippedBecause: "provider_deterministic" });
+      // trocar só o provedor (como o admin faz) libera o LLM: o 'ai.enabled' semeado continua habilitando
+      const switched = await decideEngine({ db: fakeDb({ settings: { ...settings, "ai.provider": "openai" } }).db, admin: fakeDb({}).db, userId: "u1" });
+      expect(switched).toMatchObject({ useLlm: true, engine: "openai" });
+    });
 
     it("provedor das configurações tem precedência sobre AI_PROVIDER", async () => {
       ready();
@@ -570,6 +686,32 @@ describe("guardrails", () => {
       expect(atLimit).toEqual({ useLlm: false, engine: "deterministic", skippedBecause: "rate_limited", rateLimitPerHour: 3 });
       const below = await decideEngine({ db, admin: fakeDb({ rateLimitValue: 3, recentRuns: 2 }).db, userId: "u1" });
       expect(below).toMatchObject({ useLlm: true, engine: "openai" });
+    });
+
+    describe("rate limit falha fechado", () => {
+      let warn: ReturnType<typeof vi.spyOn>;
+      beforeEach(() => {
+        warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      });
+      afterEach(() => warn.mockRestore());
+
+      it.each<[string, FakeOptions]>([
+        ["erro da query ({ count: null, error })", { rateLimitValue: 12, runsError: true }],
+        ["exceção na consulta", { rateLimitValue: 12, runsThrows: true }],
+        ["count ausente sem erro", { rateLimitValue: 12, recentRuns: null }],
+      ])("regressão: %s conta como limite atingido (nunca como 0 execuções)", async (_label, adminOpts) => {
+        ready();
+        const decision = await decideEngine({ db: fakeDb({ settings: { "ai.enabled": true, "ai.provider": "openai" } }).db, admin: fakeDb(adminOpts).db, userId: "u1" });
+        expect(decision).toEqual({ useLlm: false, engine: "deterministic", skippedBecause: "rate_limited", rateLimitPerHour: 12 });
+        await expect(countRecentRuns(fakeDb(adminOpts).db, "u1")).resolves.toBe(Number.POSITIVE_INFINITY);
+        expect(warn).toHaveBeenCalled();
+      });
+
+      it("contagem válida é devolvida como está (inclusive 0) e não gera aviso", async () => {
+        await expect(countRecentRuns(fakeDb({ recentRuns: 0 }).db, "u1")).resolves.toBe(0);
+        await expect(countRecentRuns(fakeDb({ recentRuns: 5 }).db, "u1")).resolves.toBe(5);
+        expect(warn).not.toHaveBeenCalled();
+      });
     });
 
     it("conta só as execuções do próprio usuário na janela de 1 hora", async () => {
@@ -720,15 +862,52 @@ describe("validateOutput", () => {
     expect(() => validateOutput(raw, CATALOG, 8)).toThrow("invalid_schema");
   });
 
-  test.todo(
-    "LACUNA: a lista de bloqueio tem 'medicamento' (pt), 'medication' (en) e 'medicación' (es), mas não 'medicação' nem 'remédio' (pt-BR, idioma padrão): " +
-      "'Substitui a medicação.' passa pela validação — deveria ser descartada como as equivalentes em en/es",
+  it.each([
+    "Substitui a medicação.",
+    "SUBSTITUI A MEDICAÇÃO.",
+    "Pode reduzir a medicacao.",
+    "Funciona como um remédio natural.",
+    "Melhor que remedio para dormir.",
+    "Evita REMÉDIOS para o sono.",
+    "Un remedio casero para dormir.",
+  ])("regressão pt-BR: descarta 'medicação'/'remédio' com e sem acento: %j", (reason) => {
+    const result = validateOutput(llmOutput([{ content_id: "a", reason }]), CATALOG, 8);
+    expect(result.recommendations).toEqual([]);
+    expect(result.discarded).toEqual(["reason:a"]);
+  });
+
+  it.each(["Deberias cocinar esto.", "Sustituye la medicacion.", "Ideal para 1500 calorias por dia.", "Util antes do diagnostico.", "Sin prescripcion necesaria.", "Voce DEVE treinar."])(
+    "lista de bloqueio ignora acentos em todos os termos: %j",
+    (reason) => {
+      const result = validateOutput(llmOutput([{ content_id: "a", reason }]), CATALOG, 8);
+      expect(result.discarded).toEqual(["reason:a"]);
+    },
   );
 
-  test.todo(
-    "BUG: validateOutput com limit 0 devolve 1 recomendação (o corte por limite só é checado depois do push), " +
-      "enquanto rankDeterministic(…, 0) devolve [] — deveria devolver no máximo `limit` itens",
+  it.each(["Combina com seu interesse em nutrição e gastronomia.", "Ajuda a remediar uma rotina corrida com pausas curtas.", "Receita prática do módulo Chef."])(
+    "justificativa educativa com acentos continua aceita: %j",
+    (reason) => {
+      const result = validateOutput(llmOutput([{ content_id: "a", reason }]), CATALOG, 8);
+      expect(result.recommendations).toEqual([{ content_id: "a", score: 8, reason: { key: "text", params: { text: reason } } }]);
+    },
   );
+
+  it.each([0, -1, -10])("regressão: limit %i devolve nenhuma recomendação (como rankDeterministic)", (limit) => {
+    const items = ["a", "b", "c"].map((content_id) => ({ content_id, reason: OK_REASON }));
+    expect(validateOutput(llmOutput(items), CATALOG, limit)).toEqual({ recommendations: [], returned: 3, valid: 0, discarded: [] });
+    expect(rankDeterministic(CATALOG, signals(), limit, NOW)).toEqual([]);
+  });
+
+  it("limit 0 ainda valida o schema", () => {
+    expect(() => validateOutput('{"items":[]}', CATALOG, 0)).toThrow("invalid_schema");
+  });
+
+  it("limit 1 devolve exatamente 1 item com score 1", () => {
+    const items = ["a", "b"].map((content_id) => ({ content_id, reason: OK_REASON }));
+    const result = validateOutput(llmOutput(items), CATALOG, 1);
+    expect(result.recommendations).toEqual([{ content_id: "a", score: 1, reason: { key: "text", params: { text: OK_REASON } } }]);
+    expect(result).toMatchObject({ returned: 2, valid: 1, discarded: [] });
+  });
 });
 
 describe("buildPrompt", () => {

@@ -8,6 +8,7 @@ import { escapeLike } from "@/components/admin-content/lib/search-params";
 import { slugWithSuffix } from "@/components/admin-content/lib/slug";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import type { PickResult } from "@/components/admin-content/SearchPicker";
+import { parseContentForm } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { getUser, hasRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -27,6 +28,7 @@ async function requireAdmin(): Promise<string> {
   return user.id;
 }
 
+// IDs RFC 4122: inclui os do seed (public.seed_uuid gera versão/variante válidas em 0008).
 const uuid = z.uuid();
 
 // ---------------------------------------------------------------- revisão editorial
@@ -112,43 +114,21 @@ export async function setFeaturedAction(kind: "content" | "program", id: string,
 }
 
 // ---------------------------------------------------------------- edição completa (ContentForm)
-const mediaSchema = z.object({
-  provider: z.enum(["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"]),
-  ref: z.string().trim().max(500).nullable(),
-  captions_url: z.string().trim().max(500).nullable(),
-});
-
-const contentValuesSchema = z.object({
-  id: uuid.optional(),
-  title: z.string().trim().min(3).max(140),
-  summary: z.string().trim().max(600),
-  pillar: z.enum(["routine", "training", "nutrition", "gastronomy"]),
-  type: z.enum(["video", "recipe", "workout", "guide", "article"]),
-  source_locale: z.enum(["pt-BR", "en", "es"]),
-  cover_url: z.string().trim().max(500),
-  duration_minutes: z.number().int().positive().max(24 * 60).nullable(),
-  difficulty: z.enum(["beginner", "intermediate", "advanced"]).nullable(),
-  tags: z.array(z.string().trim().min(1).max(40)).max(20),
-  has_captions: z.boolean(),
-  disclaimer_kind: z.enum(["general", "training", "nutrition", "none"]).nullable(),
-  body: z.record(z.string(), z.unknown()),
-  media: mediaSchema,
-  access_level: z.enum(["free", "premium"]).nullable().optional(),
-  required_module_id: uuid.nullable().optional(),
-  completion_mode: z.enum(["manual", "auto"]).nullable().optional(),
-});
-
 type SaveContext = { id?: string | null; creatorId?: string | null };
 
 // Admin cria/edita qualquer conteúdo, inclusive regra de acesso, módulo e conclusão.
+// Valida com o MESMO esquema do formulário (parseContentForm/contentFormSchema), como o portal
+// da personalidade: capa só da própria origem, só provedores habilitados, ID de mídia extraído
+// da URL, legendas same-origin/https e corpo com a forma do tipo. Os campos só do admin
+// (access_level, required_module_id, completion_mode) também fazem parte desse esquema.
 export async function saveContentAction(context: SaveContext, values: ContentFormValues): Promise<ActionResult & { id?: string }> {
   const ctx = z.object({ id: uuid.nullable().optional(), creatorId: uuid.nullable().optional() }).safeParse(context);
-  const parsed = contentValuesSchema.safeParse(values);
-  if (!ctx.success || !parsed.success) return fail("invalid_input");
+  if (!ctx.success) return fail("invalid_input");
+  const parsed = parseContentForm(values);
+  if (!parsed.ok) return fail(parsed.errors.required_module_id === "moduleRequired" ? "premium_requires_module" : "invalid_input");
   const v = parsed.data;
   const accessLevel = v.access_level ?? null;
   const requiredModule = accessLevel === "premium" ? (v.required_module_id ?? null) : null;
-  if (accessLevel === "premium" && !requiredModule) return fail("premium_requires_module");
 
   try {
     const userId = await requireAdmin();

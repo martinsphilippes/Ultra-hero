@@ -7,8 +7,14 @@ const LANGUAGE_NAMES: Record<UserSignals["locale"], string> = { "pt-BR": "Brazil
 const MAX_REASON_CHARS = 140;
 
 // Termos que sugerem prescrição individual: a justificativa é descartada (e o item com ela).
+// Escritos SEM acento: o texto é comparado depois de remover diacríticos (ver hasBlockedTerm),
+// então "medicação"/"medicacao", "remédio"/"remedio", "deberías"/"deberias" etc. caem igualmente.
 const BLOCKLIST =
-  /(você deve|voce deve|you must|you should|debes|deberías|dose|dosagem|dosage|dosis|calorias por dia|calories per day|calorías por día|prescri|diagn[oó]s|medicamento|medication|medicación|tratamento|treatment|tratamiento|emagre|lose weight|adelgaz)/i;
+  /(voce deve|you must|you should|debes|deberias|dose|dosagem|dosage|dosis|calorias por dia|calories per day|prescri|diagnos|medicamento|medicacao|medication|medicacion|remedio|tratamento|treatment|tratamiento|emagre|lose weight|adelgaz)/i;
+
+function hasBlockedTerm(text: string): boolean {
+  return BLOCKLIST.test(text.normalize("NFD").replace(/[̀-ͯ]/g, ""));
+}
 
 export const OUTPUT_SCHEMA = {
   type: "object",
@@ -85,18 +91,19 @@ export function validateOutput(raw: string, candidates: Candidate[], limit: numb
   const recommendations: Recommendation[] = [];
   const total = parsed.data.recommendations.length;
   for (const item of parsed.data.recommendations) {
+    // limite checado antes de aceitar: limit <= 0 devolve [] (como rankDeterministic)
+    if (recommendations.length >= limit) break;
     if (!allowed.has(item.content_id) || seen.has(item.content_id)) {
       discarded.push(`id:${item.content_id}`);
       continue;
     }
     const reason = item.reason.trim().replace(/\s+/g, " ");
-    if (reason.length === 0 || reason.length > MAX_REASON_CHARS || BLOCKLIST.test(reason)) {
+    if (reason.length === 0 || reason.length > MAX_REASON_CHARS || hasBlockedTerm(reason)) {
       discarded.push(`reason:${item.content_id}`);
       continue;
     }
     seen.add(item.content_id);
     recommendations.push({ content_id: item.content_id, score: Math.max(0, limit - recommendations.length), reason: { key: "text", params: { text: reason } } });
-    if (recommendations.length >= limit) break;
   }
   return { recommendations, returned: total, valid: recommendations.length, discarded };
 }

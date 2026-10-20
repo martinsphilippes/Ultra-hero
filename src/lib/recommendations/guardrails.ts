@@ -20,13 +20,18 @@ function asEngine(value: unknown): EngineName | null {
 }
 
 // Configurações públicas (rpc public_settings expõe só chaves não sensíveis).
+// Kill switch falha FECHADO: o LLM só é permitido com 'ai.enabled' === true (o seed grava 'true'::jsonb e o
+// admin grava boolean). Erro do rpc (supabase-js devolve { data: null, error } em vez de lançar), exceção,
+// payload inesperado ou chave ausente/não booleana → IA desligada.
 export async function readPublicAiSettings(db: Db): Promise<{ enabled: boolean; provider: EngineName | null }> {
+  const disabled = { enabled: false, provider: null };
   try {
-    const { data } = await db.rpc("public_settings");
-    const settings = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
-    return { enabled: settings["ai.enabled"] !== false, provider: asEngine(settings["ai.provider"]) };
+    const { data, error } = await db.rpc("public_settings");
+    if (error || !data || typeof data !== "object" || Array.isArray(data)) return disabled;
+    const settings = data as Record<string, unknown>;
+    return { enabled: settings["ai.enabled"] === true, provider: asEngine(settings["ai.provider"]) };
   } catch {
-    return { enabled: false, provider: null };
+    return disabled;
   }
 }
 
@@ -38,10 +43,18 @@ export async function readRateLimit(admin: Db | null): Promise<number> {
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : DEFAULT_RATE_LIMIT_PER_HOUR;
 }
 
+// Execuções do usuário na última hora. Rate limit falha FECHADO: se a contagem não puder ser lida
+// (erro da query, exceção ou count ausente), devolve Infinity para que qualquer `runs >= limite` bloqueie o LLM.
 export async function countRecentRuns(admin: Db, userId: string): Promise<number> {
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { count } = await admin.from("recommendation_runs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", since);
-  return count ?? 0;
+  try {
+    const { count, error } = await admin.from("recommendation_runs").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", since);
+    if (!error && typeof count === "number" && Number.isFinite(count)) return count;
+    console.warn(`[recommendations] não foi possível contar recommendation_runs (${error?.message ?? "count ausente"}); tratando como acima do limite.`);
+  } catch (error) {
+    console.warn("[recommendations] falha ao contar recommendation_runs; tratando como acima do limite:", error instanceof Error ? error.message : error);
+  }
+  return Number.POSITIVE_INFINITY;
 }
 
 export function providerHasKey(engine: EngineName): boolean {

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // "server-only" lança ao ser importado fora de um React Server Component; aqui é só um marcador.
 vi.mock("server-only", () => ({}));
@@ -19,6 +19,8 @@ import { authorizeCron } from "@/app/api/cron/_lib/cron";
 
 const YT_ID = "dQw4w9WgXcQ";
 const VIMEO_ID = "76979871";
+// Outro número no formato de ID do Vimeo (ex.: ID de showcase/álbum/canal) para provar qual número é extraído.
+const OTHER_VIMEO_ID = "10234567";
 
 // Variáveis que os módulos testados leem; limpas antes de cada teste e restauradas depois.
 const MANAGED_ENV = [
@@ -196,6 +198,9 @@ describe("parseVimeoId", () => {
     ["www.vimeo.com/<id>", `https://www.vimeo.com/${VIMEO_ID}`],
     ["player.vimeo.com/video/<id>", `https://player.vimeo.com/video/${VIMEO_ID}?h=abc`],
     ["canal", `https://vimeo.com/channels/staffpicks/${VIMEO_ID}`],
+    ["canal com nome numérico", `https://vimeo.com/channels/${OTHER_VIMEO_ID}/${VIMEO_ID}`],
+    ["grupo", `https://vimeo.com/groups/motion/videos/${VIMEO_ID}`],
+    ["grupo com nome numérico", `https://vimeo.com/groups/${OTHER_VIMEO_ID}/videos/${VIMEO_ID}`],
   ])("extrai o ID de %s", (_label, raw) => {
     expect(parseVimeoId(raw)).toBe(VIMEO_ID);
   });
@@ -222,9 +227,37 @@ describe("parseVimeoId", () => {
     expect(parseVimeoId(raw)).toBeNull();
   });
 
-  test.todo(
-    "BUG: URL de showcase/álbum (vimeo.com/showcase/<showcaseId>/video/<videoId>) devolve o ID do showcase, não o do vídeo — deveria extrair o videoId ou rejeitar",
-  );
+  // Regressão: antes devolvia o primeiro número do caminho, isto é, o ID do showcase/álbum.
+  it.each([
+    ["showcase", `https://vimeo.com/showcase/${OTHER_VIMEO_ID}/video/${VIMEO_ID}`],
+    ["showcase (www, com query)", `https://www.vimeo.com/showcase/${OTHER_VIMEO_ID}/video/${VIMEO_ID}?share=copy`],
+    ["álbum", `https://vimeo.com/album/${OTHER_VIMEO_ID}/video/${VIMEO_ID}`],
+  ])("URL de %s devolve o ID do vídeo, não o do contêiner", (_label, raw) => {
+    expect(parseVimeoId(raw)).toBe(VIMEO_ID);
+  });
+
+  // Allowlist de formatos: caminhos com mais de um número (ou em posição inesperada) fora dos formatos
+  // conhecidos são rejeitados em vez de "chutar" um dos números.
+  it.each([
+    ["dois números soltos", `https://vimeo.com/${OTHER_VIMEO_ID}/${VIMEO_ID}`],
+    ["não listado com hash (vimeo.com/<id>/<hash>)", `https://vimeo.com/${VIMEO_ID}/a1b2c3d4e5`],
+    ["showcase sem vídeo", `https://vimeo.com/showcase/${OTHER_VIMEO_ID}`],
+    ["álbum sem vídeo", `https://vimeo.com/album/${OTHER_VIMEO_ID}`],
+    ["showcase com segmento extra", `https://vimeo.com/showcase/${OTHER_VIMEO_ID}/video/${VIMEO_ID}/extra`],
+    ["showcase com videoId não numérico", `https://vimeo.com/showcase/${OTHER_VIMEO_ID}/video/abc`],
+    ["prefixo desconhecido", `https://vimeo.com/ondemand/${OTHER_VIMEO_ID}/video/${VIMEO_ID}`],
+    ["canal com segmento extra", `https://vimeo.com/channels/staffpicks/${OTHER_VIMEO_ID}/${VIMEO_ID}`],
+    ["grupo sem /videos/", `https://vimeo.com/groups/motion/${VIMEO_ID}`],
+    ["grupo com segmento extra", `https://vimeo.com/groups/motion/videos/${VIMEO_ID}/${OTHER_VIMEO_ID}`],
+    ["player com segmento extra", `https://player.vimeo.com/video/${VIMEO_ID}/${OTHER_VIMEO_ID}`],
+    ["player sem /video/", `https://player.vimeo.com/${VIMEO_ID}`],
+    ["formato de página no host do player", `https://player.vimeo.com/showcase/${OTHER_VIMEO_ID}/video/${VIMEO_ID}`],
+    ["formato do player no host de páginas", `https://vimeo.com/video/${VIMEO_ID}`],
+    ["literal com caixa diferente", `https://vimeo.com/Showcase/${OTHER_VIMEO_ID}/video/${VIMEO_ID}`],
+    ["nome de contêiner com caractere inválido", `https://vimeo.com/channels/a%2Fb/${VIMEO_ID}`],
+  ])("rejeita caminho fora da allowlist: %s", (_label, raw) => {
+    expect(parseVimeoId(raw)).toBeNull();
+  });
 });
 
 describe("parseTranscript", () => {
@@ -383,6 +416,8 @@ describe("resolveVideoSource", () => {
       ["ID puro", VIMEO_ID],
       ["vimeo.com", `https://vimeo.com/${VIMEO_ID}`],
       ["player.vimeo.com", `https://player.vimeo.com/video/${VIMEO_ID}`],
+      ["showcase", `https://vimeo.com/showcase/${OTHER_VIMEO_ID}/video/${VIMEO_ID}`],
+      ["álbum", `https://vimeo.com/album/${OTHER_VIMEO_ID}/video/${VIMEO_ID}`],
     ])("%s vira iframe do player.vimeo.com com dnt=1", async (_label, mediaRef) => {
       const url = iframeUrl(await resolve({ mediaProvider: "embed_vimeo", mediaRef, locale: "pt-BR" }));
       expect(url.hostname).toBe("player.vimeo.com");
@@ -401,6 +436,7 @@ describe("resolveVideoSource", () => {
       ["embed_vimeo", `https://vimeo.evil.com/${VIMEO_ID}`],
       ["embed_vimeo", `https://www.youtube.com/watch?v=${YT_ID}`],
       ["embed_vimeo", "javascript:alert(1)"],
+      ["embed_vimeo", `https://vimeo.com/${OTHER_VIMEO_ID}/${VIMEO_ID}`],
     ] as const)("%s com %s → unavailable/invalid-ref", async (mediaProvider, mediaRef) => {
       await expect(resolve({ mediaProvider, mediaRef })).resolves.toEqual({ type: "unavailable", reason: "invalid-ref" });
     });
