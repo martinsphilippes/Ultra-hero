@@ -1,0 +1,53 @@
+{
+  "confirm": {
+    "justification": "Justificación",
+    "justificationHint": "Registrada en la auditoría junto con la acción.",
+    "justificationRequired": "Indica una justificación de al menos 5 caracteres.",
+    "done": "Acción completada"
+  },
+  "status": {
+    "draft": "Borrador",
+    "published": "Publicado",
+    "archived": "Archivado",
+    "none": "Sin revisión",
+    "in_review": "En revisión",
+    "returned": "Devuelto para ajustes",
+    "approved": "Aprobado",
+    "rejected": "Rechazado",
+    "pending": "Pendiente",
+    "active": "Activo",
+    "suspended": "Suspendido",
+    "accepted": "Aceptado",
+    "expired": "Expirado",
+    "revoked": "Revocado",
+    "clear": "Regular",
+    "hidden": "Oculto",
+    "suggested": "Sugerido",
+    "validated": "Validado",
+    "available": "Disponible",
+    "unavailable": "No disponible",
+    "cancelled": "Cancelado",
+    "confirmed": "Confirmado",
+    "in_progress": "En curso",
+    "completed": "Completado",
+    "partially_completed": "Parcialmente completado",
+    "failed": "Falló",
+    "awaiting": "En espera",
+    "preparing": "Preparando",
+    "ready_for_dispatch": "Listo para despacho",
+    "in_transit": "En tránsito",
+    "delivered": "Entregado",
+    "new": "Nuevo",
+    "reviewed": "Revisado"
+  },
+  "table": {
+    "actions": "Acciones",
+    "createdAt": "Creado el",
+    "updatedAt": "Actualizado el",
+    "status": "Estado",
+    "name": "Nombre",
+    "email": "Correo",
+    "noResults": "No se encontraron registros",
+    "noResultsDescription": "Ajusta los filtros o crea un nuevo registro."
+  }
+}

@@ -52,19 +52,42 @@ returns int language sql stable security definer set search_path = public as $$
 $$;
 
 -- Checkout demonstrativo: revalida, congela snapshots, cria remessas por fornecedor.
+-- (dividido em duas funções: o intermediário do MCP travava com o corpo único longo)
+create or replace function public.checkout_create_fulfillment(p_order uuid, p_user uuid, p_seller uuid, p_seller_name text, p_shipping_share int, p_zone text, p_eta int)
+returns uuid language plpgsql security definer set search_path = public as $$
+declare v_f uuid;
+begin
+  insert into public.test_fulfillments (order_id, seller_org_id, seller_name_snapshot, shipping_cents_snapshot, destination_zone, eta_days)
+  values (p_order, p_seller, p_seller_name, p_shipping_share, p_zone, p_eta)
+  returning id into v_f;
+  insert into public.fulfillment_events (fulfillment_id, from_status, to_status, actor_type, actor_id, note)
+  values (v_f, null, 'awaiting', 'system', null, 'demo_order_confirmed');
+  -- snapshots congelados: nome, imagem, preço ilustrativo, versão do produto
+  insert into public.test_order_items (order_id, fulfillment_id, product_id, seller_org_id, title_snapshot, image_snapshot, price_cents_snapshot, quantity, product_version_snapshot)
+  select p_order, v_f, p.id, p.seller_org_id, p.title, p.image_url, p.price_cents_demo, ci.quantity, p.version
+  from public.cart_items ci join public.carts c on c.id = ci.cart_id join public.products p on p.id = ci.product_id
+  where c.user_id = p_user and p.seller_org_id = p_seller;
+  -- estoque demonstrativo (consistente, sem reserva real)
+  update public.products p set demo_stock = p.demo_stock - ci.quantity
+  from public.cart_items ci join public.carts c on c.id = ci.cart_id
+  where c.user_id = p_user and p.id = ci.product_id and p.seller_org_id = p_seller and p.demo_stock is not null;
+  return v_f;
+end $$;
+revoke execute on function public.checkout_create_fulfillment(uuid, uuid, uuid, text, int, text, int) from public, anon, authenticated;
+
 create or replace function public.checkout_cart(p_destination uuid, p_expected jsonb default '[]'::jsonb, p_accept_changes boolean default false)
 returns uuid language plpgsql security definer set search_path = public as $$
-declare v_uid uuid := auth.uid(); v_issues jsonb; v_dest public.demo_destinations%rowtype; v_order uuid;
-        v_subtotal int := 0; v_sellers int; v_shipping int; v_eta int; r record; v_f uuid;
+declare v_uid uuid := auth.uid(); v_issues jsonb; v_dest public.demo_destinations%rowtype; v_order uuid; v_cart uuid;
+        v_subtotal int := 0; v_sellers int; v_shipping int; v_eta int; r record;
 begin
   if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   if coalesce((public.setting('commerce.enabled'))::boolean, true) is false then raise exception 'commerce_disabled'; end if;
   select * into v_dest from public.demo_destinations where id = p_destination and is_active;
   if not found then raise exception 'invalid_destination'; end if;
 
-  -- bloqueia linhas do carrinho para evitar corrida
-  perform 1 from public.carts where user_id = v_uid for update;
-  if not exists (select 1 from public.cart_items ci join public.carts c on c.id = ci.cart_id where c.user_id = v_uid) then
+  -- bloqueia o carrinho para evitar corrida
+  select id into v_cart from public.carts where user_id = v_uid for update;
+  if v_cart is null or not exists (select 1 from public.cart_items where cart_id = v_cart) then
     raise exception 'cart_empty';
   end if;
 
@@ -76,8 +99,7 @@ begin
   end if;
 
   select sum(p.price_cents_demo * ci.quantity), count(distinct p.seller_org_id) into v_subtotal, v_sellers
-  from public.cart_items ci join public.carts c on c.id = ci.cart_id join public.products p on p.id = ci.product_id
-  where c.user_id = v_uid;
+  from public.cart_items ci join public.products p on p.id = ci.product_id where ci.cart_id = v_cart;
   v_shipping := coalesce(public.quote_shipping(v_dest.zone, v_sellers, v_subtotal), 0);
   select eta_days_max into v_eta from public.demo_shipping_rules where zone = v_dest.zone;
 
@@ -87,29 +109,15 @@ begin
   returning id into v_order;
 
   for r in
-    select p.seller_org_id, o.name as seller_name, sum(p.price_cents_demo * ci.quantity) as seller_subtotal
-    from public.cart_items ci join public.carts c on c.id = ci.cart_id
-    join public.products p on p.id = ci.product_id join public.seller_organizations o on o.id = p.seller_org_id
-    where c.user_id = v_uid group by p.seller_org_id, o.name
+    select p.seller_org_id, o.name as seller_name
+    from public.cart_items ci join public.products p on p.id = ci.product_id join public.seller_organizations o on o.id = p.seller_org_id
+    where ci.cart_id = v_cart group by p.seller_org_id, o.name
   loop
-    insert into public.test_fulfillments (order_id, seller_org_id, seller_name_snapshot, shipping_cents_snapshot, destination_zone, eta_days)
-    values (v_order, r.seller_org_id, r.seller_name, case when v_sellers > 0 then v_shipping / v_sellers else 0 end, v_dest.zone, v_eta)
-    returning id into v_f;
-    insert into public.fulfillment_events (fulfillment_id, from_status, to_status, actor_type, actor_id, note)
-    values (v_f, null, 'awaiting', 'system', null, 'demo_order_confirmed');
-
-    insert into public.test_order_items (order_id, fulfillment_id, product_id, seller_org_id, title_snapshot, image_snapshot, price_cents_snapshot, quantity, product_version_snapshot)
-    select v_order, v_f, p.id, p.seller_org_id, p.title, p.image_url, p.price_cents_demo, ci.quantity, p.version
-    from public.cart_items ci join public.carts c on c.id = ci.cart_id join public.products p on p.id = ci.product_id
-    where c.user_id = v_uid and p.seller_org_id = r.seller_org_id;
-
-    -- estoque demonstrativo (consistente, sem reserva real)
-    update public.products p set demo_stock = p.demo_stock - ci.quantity
-    from public.cart_items ci join public.carts c on c.id = ci.cart_id
-    where c.user_id = v_uid and p.id = ci.product_id and p.seller_org_id = r.seller_org_id and p.demo_stock is not null;
+    perform public.checkout_create_fulfillment(v_order, v_uid, r.seller_org_id, r.seller_name,
+      case when v_sellers > 0 then div(v_shipping, v_sellers) else 0 end, v_dest.zone, v_eta);
   end loop;
 
-  delete from public.cart_items where cart_id = (select id from public.carts where user_id = v_uid);
+  delete from public.cart_items where cart_id = v_cart;
   return v_order;
 end $$;
 
@@ -187,7 +195,7 @@ begin
   for f in select id, status from public.test_fulfillments where order_id = p_order and status in ('awaiting', 'preparing') loop
     update public.test_fulfillments set status = 'cancelled' where id = f.id;
     insert into public.fulfillment_events (fulfillment_id, from_status, to_status, actor_type, actor_id, note)
-    values (f.id, f.status, 'cancelled', case when public.is_admin() then 'admin' else 'consumer' end, v_uid, 'cancelled_by_customer');
+    values (f.id, f.status, 'cancelled', (case when public.is_admin() then 'admin' else 'consumer' end)::public.actor_type, v_uid, 'cancelled_by_customer');
   end loop;
   perform public.recompute_order_status(p_order);
 end $$;

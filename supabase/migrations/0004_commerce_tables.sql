@@ -103,17 +103,17 @@ create or replace function public.products_before_update()
 returns trigger language plpgsql security definer set search_path = public as $$
 declare v_changed text[] := '{}'; v_significant boolean := false;
 begin
-  if old.title is distinct from new.title then v_changed := v_changed || 'title'; v_significant := true; end if;
-  if old.category_id is distinct from new.category_id then v_changed := v_changed || 'category_id'; v_significant := true; end if;
-  if old.product_type is distinct from new.product_type then v_changed := v_changed || 'product_type'; v_significant := true; end if;
-  if old.attributes is distinct from new.attributes then v_changed := v_changed || 'attributes'; v_significant := true; end if;
-  if old.food_info is distinct from new.food_info then v_changed := v_changed || 'food_info'; v_significant := true; end if;
-  if old.description is distinct from new.description then v_changed := v_changed || 'description'; end if;
-  if old.image_url is distinct from new.image_url then v_changed := v_changed || 'image_url'; end if;
-  if old.price_cents_demo is distinct from new.price_cents_demo then v_changed := v_changed || 'price_cents_demo'; end if;
-  if old.availability is distinct from new.availability then v_changed := v_changed || 'availability'; end if;
-  if old.status is distinct from new.status then v_changed := v_changed || 'status'; end if;
-  if old.demo_stock is distinct from new.demo_stock then v_changed := v_changed || 'demo_stock'; end if;
+  if old.title is distinct from new.title then v_changed := array_append(v_changed, 'title'); v_significant := true; end if;
+  if old.category_id is distinct from new.category_id then v_changed := array_append(v_changed, 'category_id'); v_significant := true; end if;
+  if old.product_type is distinct from new.product_type then v_changed := array_append(v_changed, 'product_type'); v_significant := true; end if;
+  if old.attributes is distinct from new.attributes then v_changed := array_append(v_changed, 'attributes'); v_significant := true; end if;
+  if old.food_info is distinct from new.food_info then v_changed := array_append(v_changed, 'food_info'); v_significant := true; end if;
+  if old.description is distinct from new.description then v_changed := array_append(v_changed, 'description'); end if;
+  if old.image_url is distinct from new.image_url then v_changed := array_append(v_changed, 'image_url'); end if;
+  if old.price_cents_demo is distinct from new.price_cents_demo then v_changed := array_append(v_changed, 'price_cents_demo'); end if;
+  if old.availability is distinct from new.availability then v_changed := array_append(v_changed, 'availability'); end if;
+  if old.status is distinct from new.status then v_changed := array_append(v_changed, 'status'); end if;
+  if old.demo_stock is distinct from new.demo_stock then v_changed := array_append(v_changed, 'demo_stock'); end if;
 
   -- fornecedor não reativa produto suspenso/oculto pelo admin
   if old.moderation_status is distinct from new.moderation_status and not public.is_admin() then
@@ -136,7 +136,7 @@ begin
   -- preço/disponibilidade: auditados, não invalidam vínculo
   if v_changed && array['price_cents_demo', 'availability'] then
     insert into public.admin_audit (actor_id, actor_type, action, resource_type, resource_id, before_data, after_data)
-    values (auth.uid(), case when public.is_admin() then 'admin' else 'seller' end, 'product.update', 'product', old.id::text,
+    values (auth.uid(), (case when public.is_admin() then 'admin' else 'seller' end)::public.actor_type, 'product.update', 'product', old.id::text,
       jsonb_build_object('price_cents_demo', old.price_cents_demo, 'availability', old.availability),
       jsonb_build_object('price_cents_demo', new.price_cents_demo, 'availability', new.availability));
   end if;

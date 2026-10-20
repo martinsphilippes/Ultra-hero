@@ -105,7 +105,7 @@ end $$;
 create temporary table seed_content (
   key text, creator text, pillar public.pillar, type public.content_type, title text, summary text,
   minutes int, difficulty text, tags text[], access text, cover int, featured int
-) on commit drop;
+);
 
 insert into seed_content values
   ('r1','lia','routine','video','Ritual matinal de 10 minutos','Um começo de dia simples: água, luz, movimento leve e uma intenção. Sem app, sem pressa.',10,'beginner','{manha,habitos,sono}','free',1,1),
@@ -158,7 +158,7 @@ select public.seed_uuid('content:' || key), public.slugify(title) || '-' || key,
   case when access = 'free' then null else public.seed_uuid('module:' || access) end,
   featured is not null, featured,
   case pillar when 'training' then 'training' when 'nutrition' then 'nutrition' when 'gastronomy' then 'nutrition' else 'general' end,
-  now() - (random() * interval '0 seconds') - make_interval(days => 40 - row_number() over (order by key))
+  now() - make_interval(days => (40 - row_number() over (order by key))::int)
 from seed_content
 on conflict (id) do update set title = excluded.title, summary = excluded.summary, tags = excluded.tags, access_level = excluded.access_level,
   required_module_id = excluded.required_module_id, is_featured = excluded.is_featured, featured_rank = excluded.featured_rank;
@@ -180,7 +180,7 @@ update public.content_bodies set body = body || '{"ingredients":[{"item":"Banana
 
 -- ---------------------------------------------------------------- programas (8)
 create temporary table seed_program (key text, creator text, pillar public.pillar, title text, summary text, weeks int, cover int, featured int,
-  required text[], optional text[]) on commit drop;
+  required text[], optional text[]);
 insert into seed_program values
   ('p1','lia','routine','Manhãs com Intenção','Sete dias para construir um começo de dia calmo e repetível.',1,1,1,'{r1,r4,r2,r9}','{r5}'),
   ('p2','rafael','routine','Reset de Hábitos em 21 dias','Um ciclo de três semanas para revisar, simplificar e sustentar hábitos.',3,2,null,'{r3,r7,r4}','{r8,r10}'),
@@ -263,7 +263,7 @@ insert into public.product_categories (id, code, name, kind, is_food, sort_order
   (public.seed_uuid('cat:lifestyle'), 'lifestyle', '{"pt-BR":"Lifestyle","en":"Lifestyle","es":"Lifestyle"}', 'lifestyle', false, 40)
 on conflict (id) do update set name = excluded.name;
 
-create temporary table seed_product (key text, seller text, cat text, title text, description text, price int, ptype text, stock int, img int, food jsonb, attrs jsonb) on commit drop;
+create temporary table seed_product (key text, seller text, cat text, title text, description text, price int, ptype text, stock int, img int, food jsonb, attrs jsonb);
 insert into seed_product values
   ('m1','vertice','meal','Bowl de frango com legumes (350 g)','Frango grelhado, legumes assados e molho de ervas. Congelado, pronto em 4 minutos. Produto demonstrativo.',2890,'physical',40,1,'{"ingredients":["frango","abobrinha","cenoura","batata-doce","azeite","ervas"],"allergens":[],"storage":"Congelado a -18 °C por até 30 dias."}','{"weight_g":350}'),
   ('m2','vertice','meal','Marmita de carne moída com abóbora (380 g)','Carne moída, abóbora, arroz integral e brócolis. Produto demonstrativo.',2990,'physical',40,2,'{"ingredients":["carne bovina","abóbora","arroz integral","brócolis"],"allergens":[],"storage":"Congelado a -18 °C por até 30 dias."}','{"weight_g":380}'),
@@ -326,3 +326,4 @@ insert into public.demo_shipping_rules (zone, base_cents, per_seller_cents, eta_
 on conflict (zone) do update set base_cents = excluded.base_cents, per_seller_cents = excluded.per_seller_cents;
 
 drop function public.seed_body(public.content_type, text, text, text);
+drop table if exists seed_content, seed_program, seed_product;

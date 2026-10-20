@@ -1,0 +1,25 @@
+{
+  "types": {
+    "video": "Vídeo",
+    "recipe": "Receita",
+    "workout": "Treino",
+    "guide": "Guia",
+    "article": "Artigo"
+  },
+  "difficulty": {
+    "beginner": "Iniciante",
+    "intermediate": "Intermediário",
+    "advanced": "Avançado"
+  },
+  "minutes": "{n} min",
+  "durationLabel": "Duração: {minutes} minutos",
+  "weeks": "{n, plural, =1 {1 semana} other {# semanas}}",
+  "by": "por {name}",
+  "program": "Programa",
+  "premium": "Premium",
+  "unavailable": "Temporariamente indisponível",
+  "fictional": "Personagem fictício",
+  "priceDemo": "preço ilustrativo",
+  "productUnavailable": "Indisponível",
+  "progress": "Progresso"
+}

@@ -1,0 +1,53 @@
+{
+  "confirm": {
+    "justification": "Justification",
+    "justificationHint": "Recorded in the audit trail together with the action.",
+    "justificationRequired": "Provide a justification with at least 5 characters.",
+    "done": "Action completed"
+  },
+  "status": {
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived",
+    "none": "Not reviewed",
+    "in_review": "In review",
+    "returned": "Returned for changes",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "pending": "Pending",
+    "active": "Active",
+    "suspended": "Suspended",
+    "accepted": "Accepted",
+    "expired": "Expired",
+    "revoked": "Revoked",
+    "clear": "Clear",
+    "hidden": "Hidden",
+    "suggested": "Suggested",
+    "validated": "Validated",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "cancelled": "Cancelled",
+    "confirmed": "Confirmed",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "partially_completed": "Partially completed",
+    "failed": "Failed",
+    "awaiting": "Awaiting",
+    "preparing": "Preparing",
+    "ready_for_dispatch": "Ready for dispatch",
+    "in_transit": "In transit",
+    "delivered": "Delivered",
+    "new": "New",
+    "reviewed": "Reviewed"
+  },
+  "table": {
+    "actions": "Actions",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "status": "Status",
+    "name": "Name",
+    "email": "Email",
+    "noResults": "No records found",
+    "noResultsDescription": "Adjust the filters or create a new record."
+  }
+}
