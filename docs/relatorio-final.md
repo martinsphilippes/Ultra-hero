@@ -18,7 +18,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 ### Implementado
 - **Banco e segurança**: esquema em 15 migrations, RLS em todas as 59 tabelas, 95 políticas e 79 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
-- **Autenticação e papéis**: e-mail e senha, botão Google (depende de configuração no Supabase), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
+- **Autenticação e papéis**: e-mail e senha, login com Google (configurado em 20/10/2026, tela de consentimento ainda em modo de teste), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
 - **Jornadas do consumidor**:
@@ -109,11 +109,10 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 - **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), e a 0016 pelo conector em 15 blocos. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
-1. **URLs de autenticação**: em Supabase, Authentication, URL Configuration, coloque `https://ultra-hero.vercel.app` como Site URL. Nas Redirect URLs, coloque `https://ultra-hero.vercel.app/**` e `http://localhost:3000/**`.
-2. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
-3. **Google OAuth**, se quiser: crie as credenciais no Google Cloud com o callback `https://cjcvlfypjoxaynwtmuhz.supabase.co/auth/v1/callback`.
-4. **Revisão jurídica** de Termos e Privacidade. Antes da abertura pública, é preciso definir controlador, encarregado e canal de contato.
-5. **Chaves OpenAI e Gemini**, se quiser, para rodar a comparação entre provedores.
+0. **Publicar a tela de consentimento do Google**: enquanto estiver em modo de teste, só os e-mails cadastrados como testadores conseguem entrar com Google. Em Google Auth Platform, Público-alvo, clique em Publicar app antes de convidar pessoas.
+1. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
+2. **Revisão jurídica** de Termos e Privacidade. Antes da abertura pública, é preciso definir controlador, encarregado e canal de contato.
+3. **Chaves OpenAI e Gemini**, se quiser, para rodar a comparação entre provedores.
 
 ## Riscos e limitações conhecidos
 - **Um único projeto Supabase** serve de desenvolvimento e produção.
