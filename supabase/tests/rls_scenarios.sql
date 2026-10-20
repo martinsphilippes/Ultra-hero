@@ -396,6 +396,13 @@ insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000112
 select tests.ok('S12 setting null = aberto', exists (select 1 from public.profiles where id = '10000000-0000-4000-8000-000000000112'));
 select tests.ok('S12 handle_new_user é security definer com search_path fixo',
   (select p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.handle_new_user()'::regprocedure));
+update public.app_settings set value = 'false'::jsonb where key = 'experiment.open';
+insert into auth.users (id, email, raw_app_meta_data) values ('10000000-0000-4000-8000-000000000113', 'demo-admin@test.local', '{"provider":"email","ultra_hero_demo":true}');
+select tests.ok('S12 fechado + conta demo criada pelo admin (app_metadata): conta criada', exists (select 1 from public.profiles where id = '10000000-0000-4000-8000-000000000113'));
+select tests.expect_error('S12 fechado + marcador demo em user_metadata (controlado pelo usuário) não libera',
+  $q$insert into auth.users (id, email, raw_user_meta_data) values ('10000000-0000-4000-8000-000000000114', 'falso-demo@test.local', '{"ultra_hero_demo":true}')$q$, 'experiment_closed');
+select tests.expect_error('S12 fechado + marcador demo com valor diferente de true não libera',
+  $q$insert into auth.users (id, email, raw_app_meta_data) values ('10000000-0000-4000-8000-000000000115', 'quase-demo@test.local', '{"ultra_hero_demo":"yes"}')$q$, 'experiment_closed');
 update public.app_settings set value = 'true'::jsonb where key = 'experiment.open';
 insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000106', 'aberto@test.local');
 select tests.ok('S12 aberto: qualquer e-mail cria conta', exists (select 1 from public.profiles where id = '10000000-0000-4000-8000-000000000106'));

@@ -18,11 +18,14 @@ declare v_is_bootstrap_admin boolean;
         v_experiment_open jsonb;
         v_email text := lower(coalesce(new.email, ''));
 begin
-  -- Portão do experimento: fechado => só bootstrap admin ou convite pendente não expirado.
+  -- Portão do experimento: fechado => só bootstrap admin, convite pendente não expirado
+  -- ou conta demo criada pelo admin no servidor (app_metadata.ultra_hero_demo = true;
+  -- app_metadata só é gravável com a service role, nunca pelo cadastro público).
   -- Fechado = false (booleano) ou "false" (texto, sem diferenciar maiúsculas/espaços). Ausente/null = aberto.
   select s.value into v_experiment_open from public.app_settings s where s.key = 'experiment.open';
   if lower(btrim(coalesce(v_experiment_open #>> '{}', ''))) = 'false' then
-    if not exists (
+    if coalesce(new.raw_app_meta_data ->> 'ultra_hero_demo', '') <> 'true'
+       and not exists (
          select 1 from public.app_settings s
          where s.key = 'bootstrap_admin_emails' and s.value ? v_email
        )
@@ -31,7 +34,7 @@ begin
          where lower(i.email::text) = v_email and i.status = 'pending' and i.expires_at > now()
        ) then
       raise exception 'experiment_closed'
-        using hint = 'Cadastro fechado (experiment.open = false): apenas convidados ou e-mails de bootstrap.';
+        using hint = 'Cadastro fechado (experiment.open = false): apenas convidados, e-mails de bootstrap ou contas demo criadas pelo admin.';
     end if;
   end if;
 

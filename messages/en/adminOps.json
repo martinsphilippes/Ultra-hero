@@ -51,7 +51,7 @@
     "suspension_failed": "The account access could not be changed in Auth. Nothing was recorded.",
     "account_status_mismatch": "The account state in Auth does not match this action (nothing was recorded). Reload the page and try again.",
     "suspension_unaudited": "The change was applied in Auth but could not be audited or undone. Reload the page and check the account status before trying again.",
-    "experiment_closed": "Sign-ups are closed (experiment.open is off): the database only accepts e-mails with a pending invitation or on the bootstrap list. Create an invitation for this e-mail first, or reopen sign-ups.",
+    "experiment_closed": "The database refused to create this account while sign-ups are closed. Demo accounts created here should pass; check that migration 0015 is applied to the database.",
     "generic": "The action could not be completed. Try again."
   },
   "dashboard": {
@@ -491,7 +491,7 @@
       "ai_rate_limit_per_hour": "Recalculations per hour limit",
       "ai_rate_limit_per_hour_desc": "Maximum recommendation recalculations per user/hour.",
       "experiment_open": "Open sign-up",
-      "experiment_open_desc": "Turning it off closes public sign-up in the database itself; e-mails with a pending invitation or on the bootstrap list can still sign up.",
+      "experiment_open_desc": "Turning it off closes public sign-up in the database itself. Still allowed: e-mails with a pending invitation, e-mails on the bootstrap list and demo accounts created on this page.",
       "transport_minutes_per_step": "Minutes per transport step",
       "transport_minutes_per_step_desc": "Interval between simulated transport steps.",
       "video_provider": "Video provider",

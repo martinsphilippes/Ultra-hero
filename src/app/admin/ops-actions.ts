@@ -614,7 +614,13 @@ export async function createDemoAccount(input: { email: string; role: "seller" |
   try {
     const client = createAdminClient();
     const password = generatePassword();
-    const { data: created, error: createError } = await client.auth.admin.createUser({ email: v.email.toLowerCase(), password, email_confirm: true });
+    const { data: created, error: createError } = await client.auth.admin.createUser({
+      email: v.email.toLowerCase(),
+      password,
+      email_confirm: true,
+      // Marcador gravável só pela service role: libera a conta demo mesmo com o cadastro público fechado (0015).
+      app_metadata: { ultra_hero_demo: true },
+    });
     if (createError || !created.user) {
       const msg = createError?.message ?? "";
       if (/already|exists|registered/i.test(msg)) return fail("user_exists");

@@ -51,7 +51,7 @@
     "suspension_failed": "No se pudo cambiar el acceso de la cuenta en Auth. No se registró nada.",
     "account_status_mismatch": "El estado de la cuenta en Auth no coincide con la acción (no se registró nada). Recarga la página e inténtalo de nuevo.",
     "suspension_unaudited": "El cambio se aplicó en Auth, pero no se pudo auditar ni deshacer. Recarga la página y revisa el estado de la cuenta antes de intentarlo de nuevo.",
-    "experiment_closed": "Registro cerrado (experiment.open desactivado): la base de datos solo acepta correos con invitación pendiente o de la lista de bootstrap. Crea primero una invitación para este correo o reabre el registro.",
+    "experiment_closed": "La base de datos rechazó crear esta cuenta con el registro cerrado. Las cuentas demo creadas aquí deberían pasar; comprueba que la migración 0015 esté aplicada en la base de datos.",
     "generic": "No se pudo completar la acción. Inténtalo de nuevo."
   },
   "dashboard": {
@@ -491,7 +491,7 @@
       "ai_rate_limit_per_hour": "Límite de recálculos por hora",
       "ai_rate_limit_per_hour_desc": "Máximo de recálculos de recomendación por usuario/hora.",
       "experiment_open": "Registro abierto",
-      "experiment_open_desc": "Desactivarlo cierra el registro público en la propia base de datos; los correos con invitación pendiente o de la lista de bootstrap aún pueden registrarse.",
+      "experiment_open_desc": "Desactivarlo cierra el registro público en la propia base de datos. Siguen permitidos: correos con invitación pendiente, correos de la lista de bootstrap y cuentas demo creadas en esta página.",
       "transport_minutes_per_step": "Minutos por etapa del transporte",
       "transport_minutes_per_step_desc": "Intervalo entre etapas del transporte simulado.",
       "video_provider": "Proveedor de video",

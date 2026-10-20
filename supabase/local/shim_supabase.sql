@@ -25,6 +25,8 @@ create table if not exists auth.users (
 );
 -- suspensão de conta (Auth Admin API: ban_duration) — mesma coluna da Supabase
 alter table auth.users add column if not exists banned_until timestamptz;
+-- app_metadata: só o servidor (service role / GoTrue) grava; o cadastro público não controla.
+alter table auth.users add column if not exists raw_app_meta_data jsonb not null default '{}'::jsonb;
 
 create or replace function auth.uid() returns uuid language sql stable as $$
   select nullif(coalesce(

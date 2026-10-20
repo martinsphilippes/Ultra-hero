@@ -51,7 +51,7 @@
     "suspension_failed": "Não foi possível alterar o acesso da conta no Auth. Nada foi registrado.",
     "account_status_mismatch": "O estado da conta no Auth não confere com a ação (nada foi registrado). Recarregue a página e tente de novo.",
     "suspension_unaudited": "A mudança foi aplicada no Auth, mas não pôde ser auditada nem desfeita. Recarregue a página e confira o status da conta antes de tentar de novo.",
-    "experiment_closed": "Cadastro fechado (experiment.open desligado): o banco só aceita e-mails com convite pendente ou da lista de bootstrap. Crie antes um convite para este e-mail ou reabra o cadastro.",
+    "experiment_closed": "O banco recusou a criação desta conta com o cadastro fechado. Contas demo criadas aqui deveriam passar; confira se a migração 0015 está aplicada no banco.",
     "generic": "Não foi possível concluir a ação. Tente novamente."
   },
   "dashboard": {
@@ -491,7 +491,7 @@
       "ai_rate_limit_per_hour": "Limite de recálculos por hora",
       "ai_rate_limit_per_hour_desc": "Máximo de recálculos de recomendação por usuário/hora.",
       "experiment_open": "Cadastro aberto",
-      "experiment_open_desc": "Desligar fecha o cadastro público direto no banco; e-mails com convite pendente e da lista de bootstrap continuam podendo se cadastrar.",
+      "experiment_open_desc": "Desligar fecha o cadastro público direto no banco. Continuam podendo entrar: e-mails com convite pendente, e-mails da lista de bootstrap e contas demo criadas por esta página.",
       "transport_minutes_per_step": "Minutos por etapa do transporte",
       "transport_minutes_per_step_desc": "Intervalo entre etapas do transporte simulado.",
       "video_provider": "Provedor de vídeo",

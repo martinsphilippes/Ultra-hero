@@ -2,7 +2,7 @@
 
 | Camada | Ferramenta | Comando | O que cobre |
 |---|---|---|---|
-| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 152 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas |
+| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 155 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas |
 | Unitários | Vitest | `npm run test` | formatação, helpers, motor determinístico de recomendações, validações Zod |
 | E2E + acessibilidade | Playwright (Pixel 7 + Desktop Chrome) + axe | `npm run test:e2e` | rotas públicas sem violações sérias de WCAG 2.x A/AA, navegação por teclado, troca de idioma, redirecionamentos de rotas protegidas, sinalização de demonstração |
 | Tipos e estilo | tsc, eslint, check-messages | `npm run check` | projeto inteiro |
@@ -36,7 +36,7 @@ Para adicionar um cenário: copie um bloco `S<n>`, crie usuários em `auth.users
 | Frete/destino/pagamento fictícios; nenhum serviço externo | por construção (sem adapters reais) + rótulos na UI (E2E) |
 | Versões, histórico e certificados; arquivado não destrói progresso | RLS S9 |
 | Exclusão de conta, retenção 90/30/365, anonimização | RLS S11 |
-| Cadastro fechado (`experiment.open` = false) só aceita convite pendente ou bootstrap | RLS S12 |
+| Cadastro fechado (`experiment.open` = false) só aceita convite pendente, bootstrap ou conta demo criada pelo admin (marcador em app_metadata, nunca em user_metadata) | RLS S12 |
 | Suspensão/reativação de conta auditada (justificativa; nunca a si mesmo nem admin) | RLS S13 + `tests/unit/experiment-gate.test.ts` |
 | pt-BR/en/es, teclado, foco, contraste, legendas, erros, responsivo | `check-messages`, E2E axe/teclado, revisão manual (checklist) |
 | Dashboard separa interesse, pedido de teste e receita real | RLS S10 (`admin_metrics`) |
