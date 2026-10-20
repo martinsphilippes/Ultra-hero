@@ -4,7 +4,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useId,
+  useRef,
   useState,
   type ComponentProps,
   type KeyboardEvent,
@@ -87,9 +89,11 @@ export function TabsList({ className, onKeyDown, ...props }: TabsListProps) {
       role="tablist"
       onKeyDown={handleKeyDown}
       className={cn(
-        "flex gap-1 overflow-x-auto scrollbar-none",
+        // Celular: as abas dividem a largura e nada rola nem é cortado.
+        // Telas maiores: largura natural; se não couber, rola na horizontal (nunca na vertical).
+        "flex w-full sm:gap-1 sm:overflow-x-auto sm:overflow-y-hidden scrollbar-none",
         variant === "underline" && "border-b border-border",
-        variant === "pill" && "rounded-xl bg-surface-elevated p-1",
+        variant === "pill" && "gap-1 rounded-xl bg-surface-elevated p-1",
         className,
       )}
       {...props}
@@ -103,9 +107,16 @@ export function Tab({ value, icon, className, children, onClick, ...props }: Tab
   const ctx = useTabsContext("Tab");
   const selected = ctx.value === value;
   const underline = ctx.variant === "underline";
+  const ref = useRef<HTMLButtonElement>(null);
+
+  // Se a lista estiver rolando (telas maiores), a aba ativa nunca fica fora da área visível.
+  useEffect(() => {
+    if (selected) ref.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [selected]);
 
   return (
     <button
+      ref={ref}
       type="button"
       role="tab"
       id={`${ctx.baseId}-tab-${value}`}
@@ -117,12 +128,14 @@ export function Tab({ value, icon, className, children, onClick, ...props }: Tab
         ctx.setValue(value);
       }}
       className={cn(
-        "relative inline-flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap px-3 text-sm font-semibold transition-colors",
+        "relative inline-flex min-h-11 min-w-0 items-center gap-2 whitespace-nowrap font-semibold transition-colors",
+        "flex-1 justify-center px-1.5 text-[13px] sm:flex-none sm:justify-start sm:px-3 sm:text-sm",
         "focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus",
         underline
           ? cn(
               "rounded-t-md text-fg-muted hover:text-fg",
-              selected && "text-fg after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-full after:bg-accent",
+              // Sublinhado dentro da caixa (bottom-0): fora dela criava rolagem vertical no contêiner.
+              selected && "text-fg after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-accent",
             )
           : cn("min-h-9 flex-1 justify-center rounded-lg text-fg-muted", selected && "bg-surface text-fg shadow-sm"),
         className,
@@ -130,7 +143,7 @@ export function Tab({ value, icon, className, children, onClick, ...props }: Tab
       {...props}
     >
       {icon && (
-        <span aria-hidden="true" className="[&_svg]:size-4">
+        <span aria-hidden="true" className="hidden sm:inline-flex [&_svg]:size-4">
           {icon}
         </span>
       )}
