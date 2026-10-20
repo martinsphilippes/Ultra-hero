@@ -1,5 +1,5 @@
 // Regras puras da suspensão de conta (Auth Admin API: ban_duration). Usadas pela
-// server action e pela página do usuário; testadas em tests/unit/account-status.test.ts.
+// server action e pela página do usuário; testadas em tests/unit/experiment-gate.test.ts.
 
 /** "Para sempre" no Supabase Auth: 100 anos. `none` remove o ban. */
 export const BAN_FOREVER = "876000h";

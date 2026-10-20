@@ -62,7 +62,7 @@ export default async function EditSellerPage({ params }: { params: Params }) {
       key: "user",
       header: t("memberships.user"),
       cell: (m) => (
-        <Link href={`/admin/users/${m.user_id}${m.email ? `?email=${encodeURIComponent(m.email)}` : ""}`} className="flex min-w-0 flex-col rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+        <Link href={`/admin/users/${m.user_id}`} className="flex min-w-0 flex-col rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
           <span className="truncate font-medium text-accent-text hover:underline">{m.email ?? m.user_id}</span>
           {m.display_name && <span className="truncate type-caption text-fg-muted">{m.display_name}</span>}
         </Link>

@@ -4,7 +4,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 
 ## Segurança
 - [ ] **(B)** RLS habilitado em todas as tabelas (`select count(*) from pg_tables where schemaname='public' and not rowsecurity` = 0)
-- [ ] **(B)** `npm run test:rls` verde (140 asserções) no commit de release
+- [ ] **(B)** `npm run test:rls` verde (152 asserções) no commit de release
 - [ ] **(B)** `SUPABASE_SERVICE_ROLE_KEY` só em variáveis de servidor (Vercel), nunca `NEXT_PUBLIC_`
 - [ ] **(B)** `CRON_SECRET` definido; `/api/cron/*` retorna 403 sem ele
 - [ ] **(B)** Admin de bootstrap confere apenas os e-mails esperados (`app_settings.bootstrap_admin_emails`)

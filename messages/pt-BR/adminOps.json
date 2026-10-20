@@ -49,6 +49,8 @@
     "cannot_suspend_admin": "Contas com papel de admin ativo não podem ser suspensas. Revogue o papel de admin antes.",
     "user_not_found": "Usuário não encontrado.",
     "suspension_failed": "Não foi possível alterar o acesso da conta no Auth. Nada foi registrado.",
+    "account_status_mismatch": "O estado da conta no Auth não confere com a ação (nada foi registrado). Recarregue a página e tente de novo.",
+    "suspension_unaudited": "A mudança foi aplicada no Auth, mas não pôde ser auditada nem desfeita. Recarregue a página e confira o status da conta antes de tentar de novo.",
     "experiment_closed": "Cadastro fechado (experiment.open desligado): o banco só aceita e-mails com convite pendente ou da lista de bootstrap. Crie antes um convite para este e-mail ou reabra o cadastro.",
     "generic": "Não foi possível concluir a ação. Tente novamente."
   },

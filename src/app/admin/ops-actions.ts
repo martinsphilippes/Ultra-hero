@@ -111,7 +111,17 @@ export async function setAccountSuspended(input: { userId: string; suspended: bo
     });
     if (logError) {
       // Auditoria recusou: volta o Auth ao estado anterior para não haver mudança sem registro.
-      await client.auth.admin.updateUserById(userId, { ban_duration: restoreBanDuration(previousBannedUntil) }).catch(() => undefined);
+      const undone = await client.auth.admin
+        .updateUserById(userId, { ban_duration: restoreBanDuration(previousBannedUntil) })
+        .then(
+          ({ error }) => !error,
+          () => false,
+        );
+      if (!undone) {
+        // Mudança aplicada no Auth sem auditoria e sem desfazer: precisa de atenção manual.
+        console.error("[admin] suspensão aplicada no Auth sem auditoria; desfazer falhou", { userId, suspended, audit: logError.message });
+        return fail("suspension_unaudited");
+      }
       return fail(logError);
     }
 

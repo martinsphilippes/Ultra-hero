@@ -2,7 +2,7 @@
 
 | Camada | Ferramenta | Comando | O que cobre |
 |---|---|---|---|
-| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 140 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas |
+| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 152 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas |
 | Unitários | Vitest | `npm run test` | formatação, helpers, motor determinístico de recomendações, validações Zod |
 | E2E + acessibilidade | Playwright (Pixel 7 + Desktop Chrome) + axe | `npm run test:e2e` | rotas públicas sem violações sérias de WCAG 2.x A/AA, navegação por teclado, troca de idioma, redirecionamentos de rotas protegidas, sinalização de demonstração |
 | Tipos e estilo | tsc, eslint, check-messages | `npm run check` | projeto inteiro |

@@ -15,6 +15,12 @@ describe("isExperimentOpen", () => {
     expect(isExperimentOpen({ "experiment.open": false })).toBe(false);
     expect(isExperimentOpen({ "experiment.open": "false" })).toBe(false);
   });
+  it("mesma leitura do trigger: texto sem diferenciar maiúsculas/espaços; null = aberto", () => {
+    expect(isExperimentOpen({ "experiment.open": " FALSE " })).toBe(false);
+    expect(isExperimentOpen({ "experiment.open": "true" })).toBe(true);
+    expect(isExperimentOpen({ "experiment.open": null })).toBe(true);
+    expect(isExperimentOpen({ "experiment.open": 0 })).toBe(true);
+  });
 });
 
 describe("isSignupRefusedByDatabase", () => {

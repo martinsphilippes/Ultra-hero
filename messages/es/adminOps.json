@@ -49,6 +49,8 @@
     "cannot_suspend_admin": "Las cuentas con rol de admin activo no se pueden suspender. Revoca primero el rol de admin.",
     "user_not_found": "Usuario no encontrado.",
     "suspension_failed": "No se pudo cambiar el acceso de la cuenta en Auth. No se registró nada.",
+    "account_status_mismatch": "El estado de la cuenta en Auth no coincide con la acción (no se registró nada). Recarga la página e inténtalo de nuevo.",
+    "suspension_unaudited": "El cambio se aplicó en Auth, pero no se pudo auditar ni deshacer. Recarga la página y revisa el estado de la cuenta antes de intentarlo de nuevo.",
     "experiment_closed": "Registro cerrado (experiment.open desactivado): la base de datos solo acepta correos con invitación pendiente o de la lista de bootstrap. Crea primero una invitación para este correo o reabre el registro.",
     "generic": "No se pudo completar la acción. Inténtalo de nuevo."
   },

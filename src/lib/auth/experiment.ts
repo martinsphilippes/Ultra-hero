@@ -5,11 +5,15 @@ import type { Database } from "@/lib/supabase/database.types";
 // fechado, só cria conta quem está na lista de bootstrap ou tem convite pendente.
 // Aqui ficam apenas leitura (para avisar na interface) e tradução dos erros do Auth.
 
-/** Interpreta o retorno de public_settings(). Setting ausente ou ilegível = aberto. */
+/**
+ * Interpreta o retorno de public_settings(). Setting ausente ou ilegível = aberto.
+ * Mesma regra do trigger (0015): fechado = false ou "false" (sem diferenciar maiúsculas/espaços).
+ */
 export function isExperimentOpen(settings: unknown): boolean {
   if (!settings || typeof settings !== "object" || Array.isArray(settings)) return true;
   const value = (settings as Record<string, unknown>)["experiment.open"];
-  return !(value === false || value === "false");
+  if (value === false) return false;
+  return !(typeof value === "string" && value.trim().toLowerCase() === "false");
 }
 
 /** Lê public_settings() (anon/authenticated). Em erro, assume aberto: o banco continua barrando. */

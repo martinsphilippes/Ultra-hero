@@ -49,6 +49,8 @@
     "cannot_suspend_admin": "Accounts with an active admin role cannot be suspended. Revoke the admin role first.",
     "user_not_found": "User not found.",
     "suspension_failed": "The account access could not be changed in Auth. Nothing was recorded.",
+    "account_status_mismatch": "The account state in Auth does not match this action (nothing was recorded). Reload the page and try again.",
+    "suspension_unaudited": "The change was applied in Auth but could not be audited or undone. Reload the page and check the account status before trying again.",
     "experiment_closed": "Sign-ups are closed (experiment.open is off): the database only accepts e-mails with a pending invitation or on the bootstrap list. Create an invitation for this e-mail first, or reopen sign-ups.",
     "generic": "The action could not be completed. Try again."
   },

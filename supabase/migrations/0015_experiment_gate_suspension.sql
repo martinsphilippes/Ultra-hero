@@ -19,8 +19,9 @@ declare v_is_bootstrap_admin boolean;
         v_email text := lower(coalesce(new.email, ''));
 begin
   -- Portão do experimento: fechado => só bootstrap admin ou convite pendente não expirado.
+  -- Fechado = false (booleano) ou "false" (texto, sem diferenciar maiúsculas/espaços). Ausente/null = aberto.
   select s.value into v_experiment_open from public.app_settings s where s.key = 'experiment.open';
-  if v_experiment_open is not null and v_experiment_open in ('false'::jsonb, '"false"'::jsonb) then
+  if lower(btrim(coalesce(v_experiment_open #>> '{}', ''))) = 'false' then
     if not exists (
          select 1 from public.app_settings s
          where s.key = 'bootstrap_admin_emails' and s.value ? v_email
@@ -82,6 +83,8 @@ grant execute on function public.admin_get_user(uuid) to authenticated;
 -- A suspensão em si é feita pelo servidor (Auth Admin API, service role: ban_duration).
 -- Esta RPC registra a mudança na auditoria em nome do admin autenticado e recusa os
 -- casos proibidos (justificativa vazia, suspender a si mesmo ou um admin ativo).
+-- Só audita o estado real do Auth: "suspensa" exige banned_until no futuro e
+-- "reativada" exige banned_until vazio/vencido (sem registro de mudança que não houve).
 create or replace function public.admin_log_account_status(p_user uuid, p_suspended boolean, p_justification text)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_banned_until timestamptz;
@@ -97,6 +100,9 @@ begin
     where r.user_id = p_user and r.role = 'admin' and r.revoked_at is null
   ) then
     raise exception 'cannot_suspend_admin';
+  end if;
+  if p_suspended is distinct from coalesce(v_banned_until > now(), false) then
+    raise exception 'account_status_mismatch';
   end if;
 
   perform public.audit_log(
