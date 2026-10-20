@@ -443,14 +443,14 @@ isOneToOne: false
                   ]
                 },"feedback": {
                   Row: {
-                    "context": string,"created_at": string,"id": string,"locale": Database["public"]['Enums']["locale_code"] | null,"message": string | null,"rating": number | null,"status": string,"user_id": string | null
+                    "admin_note": string | null,"assignee": string | null,"category": string,"context": string,"created_at": string,"id": string,"locale": Database["public"]['Enums']["locale_code"] | null,"message": string | null,"priority": string | null,"rating": number | null,"status": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "context": string,"created_at"?: string,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"message"?: string | null,"rating"?: number | null,"status"?: string,"user_id"?: string | null
+                    "admin_note"?: string | null,"assignee"?: string | null,"category"?: string,"context": string,"created_at"?: string,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"message"?: string | null,"priority"?: string | null,"rating"?: number | null,"status"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "context"?: string,"created_at"?: string,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"message"?: string | null,"rating"?: number | null,"status"?: string,"user_id"?: string | null
+                    "admin_note"?: string | null,"assignee"?: string | null,"category"?: string,"context"?: string,"created_at"?: string,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"message"?: string | null,"priority"?: string | null,"rating"?: number | null,"status"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -586,6 +586,20 @@ isOneToOne: false
       referencedRelation: "content"
       referencedColumns: ["id"]
     }
+                  ]
+                },"notification_preferences": {
+                  Row: {
+                    "channel_email": boolean,"channel_push": boolean,"commerce_updates": boolean,"editorial_digest": boolean,"streak_reminders": boolean,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"plan_bundle_modules": {
                   Row: {
@@ -1206,6 +1220,11 @@ isOneToOne: false
               "anonymized": boolean,"avatar_url": string,"banned_until": string,"created_at": string,"display_name": string,"email": string,"id": string,"last_sign_in_at": string,"locale": Database["public"]['Enums']["locale_code"],"roles": Json,"timezone": string
             }[]
                            },
+"admin_list_admins":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "display_name": string,"email": string,"id": string
+            }[]
+                           },
 "admin_list_users":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_search"?: string }; Returns: {
               "anonymized": boolean,"created_at": string,"display_name": string,"email": string,"id": string,"last_sign_in_at": string,"roles": (string)[]
@@ -1265,6 +1284,9 @@ isOneToOne: false
                            },
 "admin_substitute_program_item":
 { Args: { "p_original": string,"p_reason": string,"p_replacement": string,"p_version": string }; Returns: undefined
+                           },
+"admin_triage_feedback":
+{ Args: { "p_id": string,"p_justification"?: string,"p_patch": Json }; Returns: Json
                            },
 "admin_user_emails":
 { Args: { "p_ids": (string)[] }; Returns: {
@@ -1442,6 +1464,8 @@ isOneToOne: false
                            },
 "submit_feedback":
 { Args: { "p_context": string,"p_locale"?: Database["public"]['Enums']["locale_code"],"p_message": string,"p_rating": number }; Returns: string
+                           } |
+{ Args: { "p_category": string,"p_context": string,"p_locale": Database["public"]['Enums']["locale_code"],"p_message": string,"p_rating": number }; Returns: string
                            },
 "sync_all_subscriptions":
 { Args: Record<PropertyKey, never>; Returns: number

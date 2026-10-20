@@ -41,6 +41,11 @@
     "cannot_remove_own_admin": "You cannot remove your own admin role.",
     "slug_taken": "A record with this identifier (slug) already exists.",
     "not_found": "Record not found.",
+    "invalid_status": "Invalid status.",
+    "invalid_priority": "Invalid priority.",
+    "invalid_category": "Invalid category.",
+    "assignee_not_admin": "The assignee must have an active admin role.",
+    "note_too_long": "The internal note exceeds 1000 characters.",
     "no_service_role": "Service key not configured on the server.",
     "user_exists": "An account with this e-mail already exists.",
     "retention_exception_active": "There is an active retention exception for this scope.",
@@ -392,9 +397,13 @@
     "filters": {
       "status": "Status",
       "rating": "Rating",
+      "category": "Category",
+      "priority": "Priority",
       "context": "Context (prefix)",
       "contextPlaceholder": "E.g.: content: or page:/explore",
-      "anyRating": "Any rating"
+      "anyRating": "Any rating",
+      "anyCategory": "All categories",
+      "anyPriority": "Any priority"
     },
     "tableCaption": "Feedback list",
     "columns": {
@@ -402,6 +411,10 @@
       "context": "Context",
       "rating": "Rating",
       "message": "Message",
+      "category": "Category",
+      "priority": "Priority",
+      "assignee": "Assignee",
+      "note": "Internal note",
       "locale": "Language",
       "user": "User",
       "status": "Status"
@@ -410,6 +423,35 @@
     "noRating": "No rating",
     "noMessage": "No message",
     "anonymous": "Anonymous",
+    "categories": {
+      "bug": "Problem",
+      "suggestion": "Suggestion",
+      "content": "Content",
+      "commerce": "Test shop",
+      "other": "Other"
+    },
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "noPriority": "No priority",
+    "unassigned": "Unassigned",
+    "noNote": "No note",
+    "triage": {
+      "button": "Triage",
+      "title": "Feedback triage",
+      "description": "Priority, assignee, internal note and status. Every change is recorded in the audit log.",
+      "status": "Status",
+      "priority": "Priority",
+      "assignee": "Assignee",
+      "assigneeHint": "Only accounts with an active admin role.",
+      "note": "Internal note",
+      "noteHint": "Up to 1000 characters. Not shown to the user.",
+      "unchanged": "Nothing changed.",
+      "save": "Save triage",
+      "saved": "Triage recorded."
+    },
     "empty": "No feedback",
     "emptyDescription": "When users send feedback, it shows up here.",
     "markReviewed": "Mark as reviewed",

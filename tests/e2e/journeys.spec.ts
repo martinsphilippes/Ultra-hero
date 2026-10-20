@@ -19,7 +19,7 @@ test.describe("visitante", () => {
   });
 
   test("rotas protegidas redirecionam para login", async ({ page }) => {
-    for (const route of ["/evolution", "/profile", "/admin", "/creator", "/seller", "/orders"]) {
+    for (const route of ["/evolution", "/profile", "/profile/notifications", "/admin", "/admin/feedback", "/creator", "/seller", "/orders"]) {
       await page.goto(route);
       await expect(page).toHaveURL(/\/login\?next=/);
     }
@@ -55,6 +55,27 @@ test.describe("visitante", () => {
     await expect(page.getByRole("tabpanel").getByRole("button", { name: /adicionar ao carrinho/i })).toHaveCount(0);
     // "Usado em": ao menos um link para o conteúdo de origem
     await expect(cards.first().locator('a[href^="/content/"]').first()).toBeVisible();
+  });
+
+  test("widget de feedback oferece categorias com 'Outro' pré-selecionado (um toque ainda basta)", async ({ page }) => {
+    await page.goto("/explore");
+    const firstCard = page.getByRole("link", { name: /.+/ }).filter({ has: page.locator("img") }).first();
+    await expect(firstCard).toBeVisible();
+    await firstCard.click();
+    await expect(page).toHaveURL(/\/(content|programs)\//);
+    await page.getByRole("button", { name: "Feedback" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("radiogroup", { name: "Nota" })).toBeVisible();
+    const categories = dialog.getByRole("radiogroup", { name: "Categoria" });
+    await expect(categories).toBeVisible();
+    await expect(categories.getByRole("radio")).toHaveCount(5);
+    await expect(categories.getByRole("radio", { name: "Outro" })).toBeChecked();
+    // Escolher outra categoria pelo teclado/rótulo (chip com área de toque de 44px) muda a seleção.
+    await categories.getByText("Sugestão").click();
+    await expect(categories.getByRole("radio", { name: "Sugestão" })).toBeChecked();
+    await expect(categories.getByRole("radio", { name: "Outro" })).not.toBeChecked();
+    await expect(dialog.getByRole("button", { name: "Enviar" })).toBeVisible();
   });
 
   test("ambiente de demonstração está sinalizado", async ({ page }) => {

@@ -177,6 +177,7 @@
           "list1": {
             "account": "<strong>Account:</strong> email, password and display name. The password is handled by the authentication service; the app does not store it in its own tables. If you sign in with Google, when that option is available, we receive your name, your email and, if there is one, the address of your profile photo from Google.",
             "preferences": "<strong>Preferences:</strong> language, theme, avatar chosen from illustrations and your device’s time zone, used to count your day streak.",
+            "notifications": "<strong>Notification preferences:</strong> what you agree to receive (editorial digest, streak reminders, test orders) and through which channels. Nothing is sent in this version; your choice is stored to be respected by any future sending.",
             "usage": "<strong>Content activity:</strong> interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments and symbolic certificates (the certificate PDF shows your display name).",
             "subscription": "<strong>Simulated subscription:</strong> chosen modules, periods and change history.",
             "commerce": "<strong>Simulated commerce:</strong> cart, test orders (items, illustrative amounts and the fictional destination chosen from a list) and records of interest in products.",
@@ -311,6 +312,11 @@
                 "data": "Account, profile, preferences, interests, favorites, lists, progress, achievements, certificates and simulated subscription",
                 "period": "While the account exists",
                 "details": "Deleted when you delete your account."
+              },
+              "notifications": {
+                "data": "Notification preferences",
+                "period": "As long as the account exists",
+                "details": "Deleted together with the account. Nothing is sent in this version: the preferences only store your consent for future sending."
               },
               "analytics": {
                 "data": "Usage events",

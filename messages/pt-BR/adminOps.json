@@ -41,6 +41,11 @@
     "cannot_remove_own_admin": "Você não pode remover o seu próprio papel de admin.",
     "slug_taken": "Já existe um registro com este identificador (slug).",
     "not_found": "Registro não encontrado.",
+    "invalid_status": "Status inválido.",
+    "invalid_priority": "Prioridade inválida.",
+    "invalid_category": "Categoria inválida.",
+    "assignee_not_admin": "O responsável precisa ter papel de admin ativo.",
+    "note_too_long": "A nota interna passa de 1000 caracteres.",
     "no_service_role": "Chave de serviço não configurada no servidor.",
     "user_exists": "Já existe uma conta com este e-mail.",
     "retention_exception_active": "Há uma exceção de retenção ativa para este escopo.",
@@ -392,9 +397,13 @@
     "filters": {
       "status": "Status",
       "rating": "Nota",
+      "category": "Categoria",
+      "priority": "Prioridade",
       "context": "Contexto (prefixo)",
       "contextPlaceholder": "Ex.: content: ou page:/explore",
-      "anyRating": "Qualquer nota"
+      "anyRating": "Qualquer nota",
+      "anyCategory": "Todas as categorias",
+      "anyPriority": "Qualquer prioridade"
     },
     "tableCaption": "Lista de feedbacks",
     "columns": {
@@ -402,6 +411,10 @@
       "context": "Contexto",
       "rating": "Nota",
       "message": "Mensagem",
+      "category": "Categoria",
+      "priority": "Prioridade",
+      "assignee": "Responsável",
+      "note": "Nota interna",
       "locale": "Idioma",
       "user": "Usuário",
       "status": "Status"
@@ -410,6 +423,35 @@
     "noRating": "Sem nota",
     "noMessage": "Sem mensagem",
     "anonymous": "Anônimo",
+    "categories": {
+      "bug": "Problema",
+      "suggestion": "Sugestão",
+      "content": "Conteúdo",
+      "commerce": "Loja de teste",
+      "other": "Outro"
+    },
+    "priorities": {
+      "low": "Baixa",
+      "medium": "Média",
+      "high": "Alta"
+    },
+    "noPriority": "Sem prioridade",
+    "unassigned": "Sem responsável",
+    "noNote": "Sem nota",
+    "triage": {
+      "button": "Triar",
+      "title": "Triagem do feedback",
+      "description": "Prioridade, responsável, nota interna e status. Cada mudança fica registrada na auditoria.",
+      "status": "Status",
+      "priority": "Prioridade",
+      "assignee": "Responsável",
+      "assigneeHint": "Só contas com papel de admin ativo.",
+      "note": "Nota interna",
+      "noteHint": "Até 1000 caracteres. Não é mostrada ao usuário.",
+      "unchanged": "Nada mudou.",
+      "save": "Salvar triagem",
+      "saved": "Triagem registrada."
+    },
     "empty": "Nenhum feedback",
     "emptyDescription": "Quando os usuários enviarem feedback, ele aparece aqui.",
     "markReviewed": "Marcar como revisado",
