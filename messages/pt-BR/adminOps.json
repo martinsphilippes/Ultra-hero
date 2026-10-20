@@ -326,7 +326,7 @@
       "updated": "Status atualizado"
     },
     "invite": "Convidar usuário",
-    "linkedTo": "Vinculada a {email}",
+    "linkedTo": "Vinculado a {email}",
     "rights": {
       "fictional": "Fictício",
       "pending": "Em validação",
@@ -613,7 +613,7 @@
     },
     "demoAccounts": {
       "title": "Contas de demonstração",
-      "description": "Cria uma conta já confirmada e vinculada a uma organização ou herói. A senha é exibida uma única vez.",
+      "description": "Cria uma conta já confirmada e vinculada a uma organização ou a um herói. A senha é exibida uma única vez.",
       "unavailable": "Chave de serviço não configurada",
       "unavailableDescription": "Sem SUPABASE_SERVICE_ROLE_KEY no servidor não é possível criar contas. Use Convites: o usuário cria a conta e aceita o link.",
       "goInvitations": "Ir para Convites",

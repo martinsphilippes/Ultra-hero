@@ -159,7 +159,7 @@
     "all": "Todos",
     "count": "{count, plural, =1 {1 herói} other {# heróis}}",
     "emptyTitle": "Nenhum herói neste pilar",
-    "emptyDescription": "Experimente outro pilar ou veja todas.",
+    "emptyDescription": "Experimente outro pilar ou veja todos.",
     "profile": {
       "back": "Heróis",
       "fictional": "Personagem fictício",
