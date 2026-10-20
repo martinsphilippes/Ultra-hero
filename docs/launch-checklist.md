@@ -9,7 +9,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 - [x] **(B)** `CRON_SECRET` definido; `/api/cron/*` retorna 403 sem ele (definido na Vercel; 403 com segredo ausente ou errado coberto em `tests/unit/video-cron.test.ts`)
 - [ ] **(B)** Admin de bootstrap confere apenas os e-mails esperados (`app_settings.bootstrap_admin_emails`)
 - [x] Advisors de segurança do Supabase revisados (migração 0016, 20/10/2026: 0 funções sem `search_path`, PUBLIC sem EXECUTE, anon só nas 17 RPCs públicas; restam só os avisos inerentes a RPCs de usuários logados)
-- [x] Google OAuth com redirect restrito ao domínio do app (20/10/2026: provedor ativo no Supabase, Site URL e Redirect URLs `https://ultra-hero.vercel.app/**`; `/auth/v1/authorize?provider=google` redireciona para o Google; tela de consentimento em modo de teste)
+- [x] Google OAuth com redirect restrito ao domínio do app (20/10/2026: provedor ativo no Supabase, Site URL e Redirect URLs `https://ultra-hero.vercel.app/**`; `/auth/v1/authorize?provider=google` redireciona para o Google; app publicado no Google Auth Platform em 20/10/2026, com página inicial, Política de Privacidade e Termos informados na marca; só escopos básicos, sem verificação do Google)
 - [ ] Headers: `no-store` em rotas autenticadas sensíveis; CSP básica avaliada
 - [ ] Rate limiting: feedback (20/dia), recomendações (setting), auth (Supabase)
 - [ ] Nenhum segredo no repositório (`git log -p | grep -i key` limpo)

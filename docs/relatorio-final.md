@@ -18,7 +18,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 ### Implementado
 - **Banco e segurança**: esquema em 19 migrations, RLS em todas as 61 tabelas, 99 políticas e 92 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
-- **Autenticação e papéis**: e-mail e senha, login com Google (configurado em 20/10/2026, tela de consentimento ainda em modo de teste), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
+- **Autenticação e papéis**: e-mail e senha, login com Google (configurado e publicado em 20/10/2026: qualquer conta Google entra, sem lista de testadores), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
 - **Jornadas do consumidor**:
@@ -117,7 +117,6 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 - **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, e a 0019 (só dados do seed) pelo conector. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
-0. **Publicar a tela de consentimento do Google**: enquanto estiver em modo de teste, só os e-mails cadastrados como testadores conseguem entrar com Google. Em Google Auth Platform, Público-alvo, clique em Publicar app antes de convidar pessoas.
 1. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
 2. **Revisão jurídica** de Termos e Privacidade. Antes da abertura pública, é preciso definir controlador, encarregado e canal de contato.
 3. **Chaves OpenAI e Gemini**, se quiser, para rodar a comparação entre provedores.
