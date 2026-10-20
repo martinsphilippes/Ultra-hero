@@ -44,6 +44,12 @@
     "no_service_role": "Chave de serviço não configurada no servidor.",
     "user_exists": "Já existe uma conta com este e-mail.",
     "retention_exception_active": "Há uma exceção de retenção ativa para este escopo.",
+    "justification_required": "Informe uma justificativa.",
+    "cannot_suspend_self": "Você não pode suspender a sua própria conta.",
+    "cannot_suspend_admin": "Contas com papel de admin ativo não podem ser suspensas. Revogue o papel de admin antes.",
+    "user_not_found": "Usuário não encontrado.",
+    "suspension_failed": "Não foi possível alterar o acesso da conta no Auth. Nada foi registrado.",
+    "experiment_closed": "Cadastro fechado (experiment.open desligado): o banco só aceita e-mails com convite pendente ou da lista de bootstrap. Crie antes um convite para este e-mail ou reabra o cadastro.",
     "generic": "Não foi possível concluir a ação. Tente novamente."
   },
   "dashboard": {
@@ -161,6 +167,25 @@
       "audit": "Auditoria sobre este usuário",
       "auditEmpty": "Nenhuma entrada de auditoria para este usuário.",
       "subscriptionDemo": "Assinatura simulada: nenhuma cobrança real."
+    },
+    "suspension": {
+      "title": "Acesso à conta",
+      "active": "Ativa",
+      "suspendedBadge": "Suspensa",
+      "suspendedUntil": "Suspensa até {date}",
+      "description": "A suspensão bloqueia novos logins e a renovação de sessões. Dados e histórico são mantidos, e a ação pode ser desfeita.",
+      "sessionNote": "Sessões já abertas podem continuar funcionando até o token de acesso atual expirar (em geral, até 1 hora).",
+      "suspend": "Suspender conta",
+      "reactivate": "Reativar conta",
+      "suspendTitle": "Suspender esta conta?",
+      "suspendDescription": "A pessoa deixa de conseguir entrar. A ação fica registrada na auditoria com a sua justificativa.",
+      "reactivateTitle": "Reativar esta conta?",
+      "reactivateDescription": "A pessoa volta a conseguir entrar. A ação fica registrada na auditoria com a sua justificativa.",
+      "suspendedToast": "Conta suspensa",
+      "reactivatedToast": "Conta reativada",
+      "blockedSelf": "Você não pode suspender a sua própria conta.",
+      "blockedAdmin": "Contas com papel de admin ativo não podem ser suspensas. Revogue o papel de admin antes.",
+      "unavailable": "Chave de serviço não configurada: sem SUPABASE_SERVICE_ROLE_KEY no servidor, não é possível suspender nem reativar contas."
     }
   },
   "invitations": {
@@ -464,7 +489,7 @@
       "ai_rate_limit_per_hour": "Limite de recálculos por hora",
       "ai_rate_limit_per_hour_desc": "Máximo de recálculos de recomendação por usuário/hora.",
       "experiment_open": "Cadastro aberto",
-      "experiment_open_desc": "Desligar fecha o cadastro público do experimento.",
+      "experiment_open_desc": "Desligar fecha o cadastro público direto no banco; e-mails com convite pendente e da lista de bootstrap continuam podendo se cadastrar.",
       "transport_minutes_per_step": "Minutos por etapa do transporte",
       "transport_minutes_per_step_desc": "Intervalo entre etapas do transporte simulado.",
       "video_provider": "Provedor de vídeo",

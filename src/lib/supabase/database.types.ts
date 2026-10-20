@@ -1183,13 +1183,16 @@ isOneToOne: false
                            },
 "admin_get_user":
 { Args: { "p_id": string }; Returns: {
-              "anonymized": boolean,"avatar_url": string,"created_at": string,"display_name": string,"email": string,"id": string,"last_sign_in_at": string,"locale": Database["public"]['Enums']["locale_code"],"roles": Json,"timezone": string
+              "anonymized": boolean,"avatar_url": string,"banned_until": string,"created_at": string,"display_name": string,"email": string,"id": string,"last_sign_in_at": string,"locale": Database["public"]['Enums']["locale_code"],"roles": Json,"timezone": string
             }[]
                            },
 "admin_list_users":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_search"?: string }; Returns: {
               "anonymized": boolean,"created_at": string,"display_name": string,"email": string,"id": string,"last_sign_in_at": string,"roles": (string)[]
             }[]
+                           },
+"admin_log_account_status":
+{ Args: { "p_justification": string,"p_suspended": boolean,"p_user": string }; Returns: undefined
                            },
 "admin_metrics":
 { Args: { "p_days"?: number }; Returns: Json

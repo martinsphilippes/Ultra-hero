@@ -44,6 +44,12 @@
     "no_service_role": "Service key not configured on the server.",
     "user_exists": "An account with this e-mail already exists.",
     "retention_exception_active": "There is an active retention exception for this scope.",
+    "justification_required": "Please provide a justification.",
+    "cannot_suspend_self": "You cannot suspend your own account.",
+    "cannot_suspend_admin": "Accounts with an active admin role cannot be suspended. Revoke the admin role first.",
+    "user_not_found": "User not found.",
+    "suspension_failed": "The account access could not be changed in Auth. Nothing was recorded.",
+    "experiment_closed": "Sign-ups are closed (experiment.open is off): the database only accepts e-mails with a pending invitation or on the bootstrap list. Create an invitation for this e-mail first, or reopen sign-ups.",
     "generic": "The action could not be completed. Try again."
   },
   "dashboard": {
@@ -161,6 +167,25 @@
       "audit": "Audit entries about this user",
       "auditEmpty": "No audit entries for this user.",
       "subscriptionDemo": "Simulated subscription: no real billing."
+    },
+    "suspension": {
+      "title": "Account access",
+      "active": "Active",
+      "suspendedBadge": "Suspended",
+      "suspendedUntil": "Suspended until {date}",
+      "description": "Suspension blocks new sign-ins and session renewals. Data and history are kept, and the action can be undone.",
+      "sessionNote": "Sessions already open may keep working until the current access token expires (usually up to 1 hour).",
+      "suspend": "Suspend account",
+      "reactivate": "Reactivate account",
+      "suspendTitle": "Suspend this account?",
+      "suspendDescription": "The person will no longer be able to sign in. The action is recorded in the audit log with your justification.",
+      "reactivateTitle": "Reactivate this account?",
+      "reactivateDescription": "The person will be able to sign in again. The action is recorded in the audit log with your justification.",
+      "suspendedToast": "Account suspended",
+      "reactivatedToast": "Account reactivated",
+      "blockedSelf": "You cannot suspend your own account.",
+      "blockedAdmin": "Accounts with an active admin role cannot be suspended. Revoke the admin role first.",
+      "unavailable": "Service key not configured: without SUPABASE_SERVICE_ROLE_KEY on the server, accounts cannot be suspended or reactivated."
     }
   },
   "invitations": {
@@ -464,7 +489,7 @@
       "ai_rate_limit_per_hour": "Recalculations per hour limit",
       "ai_rate_limit_per_hour_desc": "Maximum recommendation recalculations per user/hour.",
       "experiment_open": "Open sign-up",
-      "experiment_open_desc": "Turning it off closes the experiment's public sign-up.",
+      "experiment_open_desc": "Turning it off closes public sign-up in the database itself; e-mails with a pending invitation or on the bootstrap list can still sign up.",
       "transport_minutes_per_step": "Minutes per transport step",
       "transport_minutes_per_step_desc": "Interval between simulated transport steps.",
       "video_provider": "Video provider",

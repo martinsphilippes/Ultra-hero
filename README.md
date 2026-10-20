@@ -25,7 +25,7 @@ npm run dev                        # http://localhost:3000
 | `npm run typecheck` · `npm run lint` | TypeScript estrito · ESLint |
 | `npm run messages:check` | Garante árvores de tradução idênticas (pt-BR/en/es) |
 | `npm run test` | Vitest (lógica pura) |
-| `npm run test:rls` | 122 cenários de RLS/regras de negócio num Postgres local isolado |
+| `npm run test:rls` | 140 cenários de RLS/regras de negócio num Postgres local isolado |
 | `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado) | Playwright (mobile + desktop) + axe |
 | `npm run db:local:reset` | Sobe Postgres 16 local com shim Supabase + todas as migrations + seed |
 | `npm run db:types` | Regenera `src/lib/supabase/database.types.ts` a partir do banco local |
@@ -97,6 +97,8 @@ Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**
 | `cart_changed: [...]` no checkout | preço/disponibilidade mudou | UI pede confirmação |
 | Recomendações marcadas como fallback | sem chave ou kill switch | `/admin/settings` |
 | `npm run test:rls` falha em `citext` | search_path local | o script já define `public, extensions` |
+| Cadastro recusado ("Database error saving new user" / `experiment_closed`) | `experiment.open` desligado e e-mail sem convite pendente | criar convite para o e-mail ou religar em `/admin/settings` |
+| Usuário não consegue entrar após suspensão | conta suspensa (ban no Auth) | `/admin/users/<id>` → Reativar conta |
 
 ## Licenças e direitos
 

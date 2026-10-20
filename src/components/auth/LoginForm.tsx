@@ -29,7 +29,8 @@ export function LoginForm({ next, queryError }: LoginFormProps) {
     <div className="flex flex-col gap-5">
       <form action={formAction} noValidate className="flex flex-col gap-4">
         <input type="hidden" name="next" value={next} />
-        {errorMessage && <AuthAlert>{errorMessage}</AuthAlert>}
+        {/* Cadastro fechado não é falha do usuário: aviso informativo, não erro. */}
+        {errorMessage && <AuthAlert tone={errorKey === "experimentClosed" ? "info" : "error"}>{errorMessage}</AuthAlert>}
 
         <FormField label={t("fields.email")} required error={fieldErrors.email ? t(`errors.${fieldErrors.email}`) : undefined}>
           <Input name="email" type="email" autoComplete="email" inputMode="email" placeholder={t("fields.emailPlaceholder")} data-autofocus />

@@ -354,5 +354,65 @@ update public.retention_exceptions set closed_at = now();
 select public.run_retention();
 select tests.ok('S11 fechada a exceção, o pedido é anonimizado', (select anonymized_at is not null from public.test_orders where subtotal_cents = 100));
 
+-- ================================================================ S12 · Portão do experimento (experiment.open)
+-- O trigger de auth.users recusa contas novas com o cadastro fechado, exceto bootstrap/convite pendente.
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'experiment.open';
+select tests.expect_error('S12 fechado + sem convite: auth.users recusa com experiment_closed',
+  $q$insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000101', 'stranger@test.local')$q$, 'experiment_closed');
+select tests.ok('S12 recusa não deixa usuário, perfil nem papel', not exists (select 1 from auth.users where email = 'stranger@test.local')
+  and not exists (select 1 from public.profiles where id = '10000000-0000-4000-8000-000000000101')
+  and not exists (select 1 from public.role_assignments where user_id = '10000000-0000-4000-8000-000000000101'));
+insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at) values
+  ('Convidada@Test.local', 'creator', public.seed_uuid('creator:rafael'), 's12-pending', now() + interval '7 days'),
+  ('atrasada@test.local', 'creator', public.seed_uuid('creator:rafael'), 's12-expired', now() - interval '1 day');
+insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at, status, revoked_at) values
+  ('revogada@test.local', 'creator', public.seed_uuid('creator:rafael'), 's12-revoked', now() + interval '7 days', 'revoked', now());
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000102', 'convidada@test.local');
+select tests.ok('S12 fechado + convite pendente: conta criada como consumidora', exists (select 1 from public.profiles where id = '10000000-0000-4000-8000-000000000102')
+  and exists (select 1 from public.role_assignments where user_id = '10000000-0000-4000-8000-000000000102' and role = 'consumer' and revoked_at is null)
+  and (select status from public.invitations where token_hash = 's12-pending') = 'pending');
+update public.app_settings set value = value || '["boot@test.local"]'::jsonb where key = 'bootstrap_admin_emails';
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000103', 'Boot@Test.local');
+select tests.ok('S12 fechado + e-mail de bootstrap: conta criada com papel admin', exists (select 1 from public.role_assignments where user_id = '10000000-0000-4000-8000-000000000103' and role = 'admin' and revoked_at is null));
+select tests.expect_error('S12 fechado + convite expirado: recusado',
+  $q$insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000104', 'atrasada@test.local')$q$, 'experiment_closed');
+select tests.expect_error('S12 fechado + convite revogado: recusado',
+  $q$insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000105', 'revogada@test.local')$q$, 'experiment_closed');
+update public.app_settings set value = 'true'::jsonb where key = 'experiment.open';
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000106', 'aberto@test.local');
+select tests.ok('S12 aberto: qualquer e-mail cria conta', exists (select 1 from public.profiles where id = '10000000-0000-4000-8000-000000000106'));
+delete from public.app_settings where key = 'experiment.open';
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000107', 'semsetting@test.local');
+select tests.ok('S12 setting ausente = aberto', exists (select 1 from public.profiles where id = '10000000-0000-4000-8000-000000000107'));
+insert into public.app_settings (key, value) values ('experiment.open', 'true'::jsonb);
+
+-- ================================================================ S13 · Suspensão auditada de contas
+-- O ban em si é do Auth Admin API (service role); aqui simulamos banned_until e testamos a RPC de auditoria.
+select tests.su();
+update auth.users set banned_until = now() + interval '876000 hours' where id = '10000000-0000-4000-8000-000000000004';
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S13 não-admin não registra suspensão', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, 'Violação dos Termos')$q$, '42501');
+select tests.ok('S13 não-admin não lê usuário por id', (select count(*) from public.admin_get_user('10000000-0000-4000-8000-000000000004')) = 0);
+select tests.anon();
+select tests.expect_error('S13 visitante não executa admin_log_account_status', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, 'Violação dos Termos')$q$, '42501');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S13 justificativa vazia recusada', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, '   ')$q$, 'justification_required');
+select tests.expect_error('S13 admin não suspende a si mesmo', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000001', true, 'Teste de bloqueio')$q$, 'cannot_suspend_self');
+select tests.expect_error('S13 admin não suspende outro admin ativo', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000103', true, 'Teste de bloqueio')$q$, 'cannot_suspend_admin');
+select tests.expect_error('S13 usuário inexistente', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000999', true, 'Teste de bloqueio')$q$, 'user_not_found');
+select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, 'Violação dos Termos (teste)');
+select tests.ok('S13 suspensão gravada na auditoria (ator admin + justificativa)', exists (select 1 from public.admin_audit
+  where action = 'user.suspend' and resource_type = 'user' and resource_id = '10000000-0000-4000-8000-000000000004'
+    and actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin'
+    and justification = 'Violação dos Termos (teste)' and (after_data ->> 'suspended')::boolean and after_data ->> 'banned_until' is not null));
+select tests.ok('S13 admin_get_user devolve banned_until', (select banned_until > now() + interval '50 years' from public.admin_get_user('10000000-0000-4000-8000-000000000004')));
+select tests.su();
+update auth.users set banned_until = null where id = '10000000-0000-4000-8000-000000000004';
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', false, 'Revisão concluída');
+select tests.ok('S13 reativação auditada e banned_until limpo', exists (select 1 from public.admin_audit where action = 'user.reactivate' and resource_id = '10000000-0000-4000-8000-000000000004' and not (after_data ->> 'suspended')::boolean)
+  and (select banned_until is null from public.admin_get_user('10000000-0000-4000-8000-000000000004')));
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
