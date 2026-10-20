@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "home": "Inicio",
+    "explore": "Explorar",
+    "lists": "Mis listas",
+    "list": "{name} · Lista",
+    "personalities": "Personalidades",
+    "personality": "{name} · Personalidad"
+  },
+  "common": {
+    "sectionError": "No se pudo cargar esta sección.",
+    "educationalNote": "Todo el contenido es educativo y no sustituye la orientación profesional individual."
+  },
+  "home": {
+    "eyebrow": "Ultra Hero",
+    "greeting": "Hola, {name}",
+    "greetingFallback": "Hola",
+    "greetingSubtitle": "Continúa donde lo dejaste o descubre algo nuevo hoy.",
+    "visitorTitle": "Rutina, entrenamiento, nutrición y gastronomía en un solo lugar.",
+    "visitorSubtitle": "Contenidos breves, programas guiados y personalidades ficticias para avanzar a tu ritmo. Entorno de demostración: sin cobros reales.",
+    "ctaSignup": "Crear cuenta gratis",
+    "ctaExplore": "Explorar contenidos",
+    "pillarsNav": "Explorar por pilar",
+    "onboarding": {
+      "title": "Cuéntanos tus intereses",
+      "description": "Toma menos de un minuto y hace las recomendaciones más precisas.",
+      "cta": "Empezar"
+    },
+    "featured": {
+      "title": "Destacados",
+      "description": "Curaduría editorial de la semana",
+      "programs": "Programas destacados"
+    },
+    "continue": {
+      "title": "Continuar",
+      "description": "Donde lo dejaste"
+    },
+    "pillars": {
+      "routine": "Hábitos pequeños, mañanas tranquilas y mejor sueño",
+      "training": "Fuerza, movilidad y running desde cero",
+      "nutrition": "Educación alimentaria práctica, sin terrorismo",
+      "gastronomy": "Técnicas de base y comida de la semana"
+    },
+    "personalities": {
+      "title": "Personalidades",
+      "description": "Personajes ficticios creados para la demostración"
+    }
+  },
+  "explore": {
+    "title": "Explorar",
+    "description": "Busca por título, tema, personalidad o programa.",
+    "search": {
+      "label": "Buscar contenidos",
+      "placeholder": "Ej.: sueño, movilidad, viandas…",
+      "submit": "Buscar",
+      "clear": "Limpiar búsqueda",
+      "resultsFor": "Resultados para “{q}”",
+      "showingAll": "{count, plural, =1 {1 contenido encontrado} other {# contenidos encontrados}}",
+      "showingPartial": "Mostrando los primeros {count} contenidos",
+      "emptyTitle": "Nada encontrado",
+      "emptyDescription": "Prueba otras palabras o quita algunos filtros.",
+      "loadMore": "Cargar más",
+      "loadMoreError": "No se pudieron cargar más resultados.",
+      "loadedMore": "{count, plural, =1 {1 contenido más cargado} other {# contenidos más cargados}}",
+      "moreResults": "Más resultados",
+      "endOfResults": "Llegaste al final de los resultados.",
+      "clearAllAction": "Limpiar búsqueda y filtros",
+      "resultsHeading": "Resultados"
+    },
+    "filters": {
+      "title": "Filtros",
+      "summary": "Más filtros",
+      "pillar": "Pilar",
+      "type": "Tipo",
+      "access": "Acceso",
+      "difficulty": "Nivel",
+      "all": "Todos",
+      "clearAll": "Limpiar filtros",
+      "summaryActive": "Más filtros ({count})"
+    },
+    "tabs": {
+      "label": "Secciones de Explorar",
+      "contents": "Contenidos",
+      "programs": "Programas",
+      "products": "Productos",
+      "lists": "Listas"
+    },
+    "programs": {
+      "title": "Biblioteca de programas",
+      "description": "Colecciones guiadas para seguir a tu ritmo.",
+      "count": "{count, plural, =1 {1 programa} other {# programas}}",
+      "emptyTitle": "Ningún programa por aquí",
+      "emptyDescription": "Prueba otro pilar o mira todos los programas.",
+      "seeAll": "Ver todos los programas"
+    },
+    "products": {
+      "title": "Productos de demostración",
+      "description": "Vitrina ilustrativa: sin compras, entregas ni cobros reales.",
+      "emptyTitle": "Ningún producto disponible",
+      "emptyDescription": "La vitrina de demostración está vacía por ahora.",
+      "goToShop": "Ver la tienda de demostración"
+    },
+    "lists": {
+      "title": "Tus listas",
+      "description": "Organiza los contenidos a tu manera.",
+      "favorites": "Favoritos",
+      "favoritesCount": "{count, plural, =1 {1 favorito} other {# favoritos}}",
+      "favoritesEmpty": "Marca un contenido como favorito para encontrarlo aquí.",
+      "favoritesAuto": "Lista automática",
+      "mine": "Mis listas",
+      "create": "Nueva lista",
+      "createTitle": "Crear lista",
+      "createDescription": "Ponle un nombre corto para encontrarla después.",
+      "nameLabel": "Nombre de la lista",
+      "namePlaceholder": "Ej.: Entrenamientos de 15 minutos",
+      "nameHint": "Hasta 60 caracteres.",
+      "rename": "Renombrar",
+      "renameTitle": "Renombrar lista",
+      "delete": "Eliminar",
+      "deleteTitle": "¿Eliminar lista?",
+      "deleteDescription": "“{name}” será eliminada. Los contenidos siguen disponibles en el catálogo.",
+      "items": "{count, plural, =0 {0 elementos} =1 {1 elemento} other {# elementos}}",
+      "updated": "Actualizada {when}",
+      "open": "Abrir lista",
+      "actionsLabel": "Acciones de la lista {name}",
+      "emptyTitle": "Aún no creaste listas",
+      "emptyDescription": "Crea una lista para agrupar contenidos por objetivo, semana o ánimo.",
+      "listEmptyTitle": "Esta lista está vacía",
+      "listEmptyDescription": "Agrega contenidos desde la página de cada contenido.",
+      "removeItem": "Quitar",
+      "removeItemOf": "Quitar “{title}” de la lista",
+      "removed": "Quitado de la lista",
+      "created": "Lista creada",
+      "renamed": "Lista renombrada",
+      "deleted": "Lista eliminada",
+      "backToLists": "Volver a las listas",
+      "visitorTitle": "Inicia sesión para crear listas",
+      "visitorDescription": "Los favoritos y las listas personalizadas se guardan en tu cuenta.",
+      "errors": {
+        "nameRequired": "Escribe un nombre para la lista.",
+        "nameTooLong": "El nombre debe tener como máximo 60 caracteres.",
+        "invalid": "Datos inválidos.",
+        "unauthenticated": "Inicia sesión para continuar.",
+        "notFound": "Lista no encontrada.",
+        "failed": "No se pudo completar. Inténtalo de nuevo."
+      },
+      "visitorCta": "Iniciar sesión",
+      "favoritesMore": "Mostrando tus {count} favoritos más recientes",
+      "openNamed": "Abrir lista {name}",
+      "browseContent": "Explorar contenidos",
+      "notFoundDescription": "Puede haber sido eliminada o pertenecer a otra cuenta."
+    },
+    "eyebrow": "Descubrir"
+  },
+  "personalities": {
+    "title": "Personalidades",
+    "description": "Personajes ficticios que guían los contenidos. No se representa a ninguna persona real.",
+    "filterLabel": "Filtrar por pilar",
+    "all": "Todos",
+    "count": "{count, plural, =1 {1 personalidad} other {# personalidades}}",
+    "emptyTitle": "Ninguna personalidad en este pilar",
+    "emptyDescription": "Prueba otro pilar o mira todas.",
+    "profile": {
+      "back": "Personalidades",
+      "fictional": "Personaje ficticio",
+      "rightsTitle": "Sobre este perfil",
+      "rightsDefault": "Perfil ficticio creado para la demostración. No representa a una persona real ni tiene contrato, imagen o aval.",
+      "pillarsLabel": "Pilares",
+      "coverAlt": "Portada de {name}",
+      "stats": {
+        "contents": "{count, plural, =1 {1 contenido} other {# contenidos}}",
+        "programs": "{count, plural, =1 {1 programa} other {# programas}}"
+      },
+      "tabs": {
+        "label": "Secciones del perfil",
+        "contents": "Contenidos",
+        "programs": "Programas"
+      },
+      "typeFilter": "Filtrar por tipo",
+      "allTypes": "Todos",
+      "contentsEmptyTitle": "Ningún contenido con este filtro",
+      "contentsEmptyDescription": "Prueba otro tipo de contenido.",
+      "programsEmptyTitle": "Ningún programa publicado",
+      "programsEmptyDescription": "Esta personalidad aún no tiene programas."
+    },
+    "eyebrow": "Quienes guían los contenidos",
+    "notFoundTitle": "Personalidad no encontrada",
+    "notFoundDescription": "La dirección puede haber cambiado o el perfil ya no está activo."
+  }
+}

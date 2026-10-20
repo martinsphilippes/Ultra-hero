@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "home": "Home",
+    "explore": "Explore",
+    "lists": "My lists",
+    "list": "{name} · List",
+    "personalities": "Personalities",
+    "personality": "{name} · Personality"
+  },
+  "common": {
+    "sectionError": "We couldn't load this section.",
+    "educationalNote": "All content is educational and does not replace individual professional guidance."
+  },
+  "home": {
+    "eyebrow": "Ultra Hero",
+    "greeting": "Hi, {name}",
+    "greetingFallback": "Hi there",
+    "greetingSubtitle": "Pick up where you left off or discover something new today.",
+    "visitorTitle": "Routine, training, nutrition and cooking in one place.",
+    "visitorSubtitle": "Short lessons, guided programs and fictional personalities to grow at your own pace. Demo environment: no real charges.",
+    "ctaSignup": "Create a free account",
+    "ctaExplore": "Explore content",
+    "pillarsNav": "Explore by pillar",
+    "onboarding": {
+      "title": "Tell us your interests",
+      "description": "It takes under a minute and makes recommendations sharper.",
+      "cta": "Start"
+    },
+    "featured": {
+      "title": "Featured",
+      "description": "This week's editorial picks",
+      "programs": "Featured programs"
+    },
+    "continue": {
+      "title": "Continue",
+      "description": "Where you left off"
+    },
+    "pillars": {
+      "routine": "Small habits, calm mornings and better sleep",
+      "training": "Strength, mobility and running from scratch",
+      "nutrition": "Practical food education, no scare tactics",
+      "gastronomy": "Core techniques and weekly meal prep"
+    },
+    "personalities": {
+      "title": "Personalities",
+      "description": "Fictional characters created for this demo"
+    }
+  },
+  "explore": {
+    "title": "Explore",
+    "description": "Search by title, topic, personality or program.",
+    "search": {
+      "label": "Search content",
+      "placeholder": "E.g. sleep, mobility, meal prep…",
+      "submit": "Search",
+      "clear": "Clear search",
+      "resultsFor": "Results for “{q}”",
+      "showingAll": "{count, plural, =1 {1 item found} other {# items found}}",
+      "showingPartial": "Showing the first {count} items",
+      "emptyTitle": "Nothing found",
+      "emptyDescription": "Try other words or remove some filters.",
+      "loadMore": "Load more",
+      "loadMoreError": "We couldn't load more results.",
+      "loadedMore": "{count, plural, =1 {1 more item loaded} other {# more items loaded}}",
+      "moreResults": "More results",
+      "endOfResults": "You've reached the end of the results.",
+      "clearAllAction": "Clear search and filters",
+      "resultsHeading": "Results"
+    },
+    "filters": {
+      "title": "Filters",
+      "summary": "More filters",
+      "pillar": "Pillar",
+      "type": "Type",
+      "access": "Access",
+      "difficulty": "Level",
+      "all": "All",
+      "clearAll": "Clear filters",
+      "summaryActive": "More filters ({count})"
+    },
+    "tabs": {
+      "label": "Explore sections",
+      "contents": "Content",
+      "programs": "Programs",
+      "products": "Products",
+      "lists": "Lists"
+    },
+    "programs": {
+      "title": "Program library",
+      "description": "Guided collections to follow at your own pace.",
+      "count": "{count, plural, =1 {1 program} other {# programs}}",
+      "emptyTitle": "No programs here",
+      "emptyDescription": "Try another pillar or see all programs.",
+      "seeAll": "See all programs"
+    },
+    "products": {
+      "title": "Demo products",
+      "description": "Illustrative showcase: no real purchase, delivery or charge.",
+      "emptyTitle": "No products available",
+      "emptyDescription": "The demo showcase is empty right now.",
+      "goToShop": "Visit the demo shop"
+    },
+    "lists": {
+      "title": "Your lists",
+      "description": "Organize content your way.",
+      "favorites": "Favorites",
+      "favoritesCount": "{count, plural, =1 {1 favorite} other {# favorites}}",
+      "favoritesEmpty": "Favorite a piece of content to find it here.",
+      "favoritesAuto": "Automatic list",
+      "mine": "My lists",
+      "create": "New list",
+      "createTitle": "Create list",
+      "createDescription": "Give it a short name so you can find it later.",
+      "nameLabel": "List name",
+      "namePlaceholder": "E.g. 15-minute workouts",
+      "nameHint": "Up to 60 characters.",
+      "rename": "Rename",
+      "renameTitle": "Rename list",
+      "delete": "Delete",
+      "deleteTitle": "Delete list?",
+      "deleteDescription": "“{name}” will be removed. The content stays available in the catalog.",
+      "items": "{count, plural, =0 {0 items} =1 {1 item} other {# items}}",
+      "updated": "Updated {when}",
+      "open": "Open list",
+      "actionsLabel": "Actions for list {name}",
+      "emptyTitle": "You haven't created any lists yet",
+      "emptyDescription": "Create a list to group content by goal, week or mood.",
+      "listEmptyTitle": "This list is empty",
+      "listEmptyDescription": "Add content from each content page.",
+      "removeItem": "Remove",
+      "removeItemOf": "Remove “{title}” from the list",
+      "removed": "Removed from the list",
+      "created": "List created",
+      "renamed": "List renamed",
+      "deleted": "List deleted",
+      "backToLists": "Back to lists",
+      "visitorTitle": "Sign in to create lists",
+      "visitorDescription": "Favorites and custom lists are saved to your account.",
+      "errors": {
+        "nameRequired": "Enter a name for the list.",
+        "nameTooLong": "The name must be at most 60 characters.",
+        "invalid": "Invalid data.",
+        "unauthenticated": "Sign in to continue.",
+        "notFound": "List not found.",
+        "failed": "We couldn't complete that. Please try again."
+      },
+      "visitorCta": "Sign in",
+      "favoritesMore": "Showing your {count} most recent favorites",
+      "openNamed": "Open list {name}",
+      "browseContent": "Explore content",
+      "notFoundDescription": "It may have been deleted or belong to another account."
+    },
+    "eyebrow": "Discover"
+  },
+  "personalities": {
+    "title": "Personalities",
+    "description": "Fictional characters who guide the content. No real person is represented.",
+    "filterLabel": "Filter by pillar",
+    "all": "All",
+    "count": "{count, plural, =1 {1 personality} other {# personalities}}",
+    "emptyTitle": "No personalities in this pillar",
+    "emptyDescription": "Try another pillar or see all of them.",
+    "profile": {
+      "back": "Personalities",
+      "fictional": "Fictional character",
+      "rightsTitle": "About this profile",
+      "rightsDefault": "Fictional profile created for the demo. It does not represent a real person and has no contract, likeness or endorsement.",
+      "pillarsLabel": "Pillars",
+      "coverAlt": "Cover of {name}",
+      "stats": {
+        "contents": "{count, plural, =1 {1 item} other {# items}}",
+        "programs": "{count, plural, =1 {1 program} other {# programs}}"
+      },
+      "tabs": {
+        "label": "Profile sections",
+        "contents": "Content",
+        "programs": "Programs"
+      },
+      "typeFilter": "Filter by type",
+      "allTypes": "All",
+      "contentsEmptyTitle": "No content with this filter",
+      "contentsEmptyDescription": "Try another content type.",
+      "programsEmptyTitle": "No published programs",
+      "programsEmptyDescription": "This personality has no programs yet."
+    },
+    "eyebrow": "Who guides the content",
+    "notFoundTitle": "Personality not found",
+    "notFoundDescription": "The address may have changed or the profile is no longer active."
+  }
+}

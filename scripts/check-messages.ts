@@ -22,7 +22,8 @@ function flatten(value: unknown, prefix: string, out: Flat): Flat {
 }
 
 function placeholders(message: string): string {
-  const found = message.match(/\{\s*([a-zA-Z0-9_]+)/g) ?? [];
+  // ignora ramos de plural/select ({=0 {texto}}): só conta {nome} seguido de "," ou "}"
+  const found = message.match(/\{\s*([a-zA-Z0-9_]+)\s*(?=[,}])/g) ?? [];
   return found
     .map((m) => m.replace(/[{\s]/g, ""))
     .sort()

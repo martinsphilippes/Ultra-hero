@@ -1333,7 +1333,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "search_content":
-{ Args: { "p_access"?: Database["public"]['Enums']["access_level"],"p_creator"?: string,"p_limit"?: number,"p_offset"?: number,"p_pillar"?: Database["public"]['Enums']["pillar"],"p_query": string,"p_type"?: Database["public"]['Enums']["content_type"] }; Returns: {
+{ Args: { "p_access"?: Database["public"]['Enums']["access_level"],"p_creator"?: string,"p_difficulty"?: string,"p_limit"?: number,"p_offset"?: number,"p_pillar"?: Database["public"]['Enums']["pillar"],"p_query": string,"p_type"?: Database["public"]['Enums']["content_type"] }; Returns: {
               "access_level": Database["public"]['Enums']["access_level"] | null,
 "archived_at": string | null,
 "completion_mode": Database["public"]['Enums']["completion_mode"] | null,

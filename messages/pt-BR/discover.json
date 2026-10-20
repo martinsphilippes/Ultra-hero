@@ -1,0 +1,190 @@
+{
+  "meta": {
+    "home": "Início",
+    "explore": "Explorar",
+    "lists": "Minhas listas",
+    "list": "{name} · Lista",
+    "personalities": "Personalidades",
+    "personality": "{name} · Personalidade"
+  },
+  "common": {
+    "sectionError": "Não foi possível carregar esta seção.",
+    "educationalNote": "Todo o conteúdo é educativo e não substitui orientação profissional individual."
+  },
+  "home": {
+    "eyebrow": "Ultra Hero",
+    "greeting": "Olá, {name}",
+    "greetingFallback": "Olá",
+    "greetingSubtitle": "Continue de onde parou ou descubra algo novo hoje.",
+    "visitorTitle": "Rotina, treino, nutrição e gastronomia em um só lugar.",
+    "visitorSubtitle": "Conteúdos curtos, programas guiados e personalidades fictícias para evoluir no seu ritmo. Ambiente de demonstração: nenhuma cobrança real.",
+    "ctaSignup": "Criar conta grátis",
+    "ctaExplore": "Explorar conteúdos",
+    "pillarsNav": "Explorar por pilar",
+    "onboarding": {
+      "title": "Conte seus interesses",
+      "description": "Leva menos de um minuto e deixa as recomendações mais certeiras.",
+      "cta": "Começar"
+    },
+    "featured": {
+      "title": "Destaques",
+      "description": "Curadoria editorial da semana",
+      "programs": "Programas em destaque"
+    },
+    "continue": {
+      "title": "Continuar",
+      "description": "De onde você parou"
+    },
+    "pillars": {
+      "routine": "Hábitos pequenos, manhãs calmas e sono melhor",
+      "training": "Força, mobilidade e corrida do zero",
+      "nutrition": "Educação alimentar prática, sem terrorismo",
+      "gastronomy": "Técnicas de base e marmitas da semana"
+    },
+    "personalities": {
+      "title": "Personalidades",
+      "description": "Personagens fictícios criados para a demonstração"
+    }
+  },
+  "explore": {
+    "title": "Explorar",
+    "description": "Busque por título, tema, personalidade ou programa.",
+    "search": {
+      "label": "Buscar conteúdos",
+      "placeholder": "Ex.: sono, mobilidade, marmita…",
+      "submit": "Buscar",
+      "clear": "Limpar busca",
+      "resultsFor": "Resultados para “{q}”",
+      "showingAll": "{count, plural, =1 {1 conteúdo encontrado} other {# conteúdos encontrados}}",
+      "showingPartial": "Mostrando os primeiros {count} conteúdos",
+      "emptyTitle": "Nada encontrado",
+      "emptyDescription": "Tente outras palavras ou remova alguns filtros.",
+      "loadMore": "Carregar mais",
+      "loadMoreError": "Não foi possível carregar mais resultados.",
+      "loadedMore": "{count, plural, =1 {1 conteúdo a mais carregado} other {# conteúdos a mais carregados}}",
+      "moreResults": "Mais resultados",
+      "endOfResults": "Você chegou ao fim dos resultados.",
+      "clearAllAction": "Limpar busca e filtros",
+      "resultsHeading": "Resultados"
+    },
+    "filters": {
+      "title": "Filtros",
+      "summary": "Mais filtros",
+      "pillar": "Pilar",
+      "type": "Tipo",
+      "access": "Acesso",
+      "difficulty": "Nível",
+      "all": "Todos",
+      "clearAll": "Limpar filtros",
+      "summaryActive": "Mais filtros ({count})"
+    },
+    "tabs": {
+      "label": "Seções do Explorar",
+      "contents": "Conteúdos",
+      "programs": "Programas",
+      "products": "Produtos",
+      "lists": "Listas"
+    },
+    "programs": {
+      "title": "Biblioteca de programas",
+      "description": "Coleções guiadas para seguir no seu ritmo.",
+      "count": "{count, plural, =1 {1 programa} other {# programas}}",
+      "emptyTitle": "Nenhum programa por aqui",
+      "emptyDescription": "Experimente outro pilar ou veja todos os programas.",
+      "seeAll": "Ver todos os programas"
+    },
+    "products": {
+      "title": "Produtos de demonstração",
+      "description": "Vitrine ilustrativa: nenhuma compra, entrega ou cobrança real.",
+      "emptyTitle": "Nenhum produto disponível",
+      "emptyDescription": "A vitrine de demonstração está vazia no momento.",
+      "goToShop": "Ver a loja de demonstração"
+    },
+    "lists": {
+      "title": "Suas listas",
+      "description": "Organize conteúdos do seu jeito.",
+      "favorites": "Favoritos",
+      "favoritesCount": "{count, plural, =1 {1 favorito} other {# favoritos}}",
+      "favoritesEmpty": "Favorite um conteúdo para encontrá-lo aqui.",
+      "favoritesAuto": "Lista automática",
+      "mine": "Minhas listas",
+      "create": "Nova lista",
+      "createTitle": "Criar lista",
+      "createDescription": "Dê um nome curto para encontrar depois.",
+      "nameLabel": "Nome da lista",
+      "namePlaceholder": "Ex.: Treinos de 15 minutos",
+      "nameHint": "Até 60 caracteres.",
+      "rename": "Renomear",
+      "renameTitle": "Renomear lista",
+      "delete": "Excluir",
+      "deleteTitle": "Excluir lista?",
+      "deleteDescription": "“{name}” será removida. Os conteúdos continuam disponíveis no catálogo.",
+      "items": "{count, plural, =0 {0 itens} =1 {1 item} other {# itens}}",
+      "updated": "Atualizada {when}",
+      "open": "Abrir lista",
+      "actionsLabel": "Ações da lista {name}",
+      "emptyTitle": "Você ainda não criou listas",
+      "emptyDescription": "Crie uma lista para agrupar conteúdos por objetivo, semana ou humor.",
+      "listEmptyTitle": "Esta lista está vazia",
+      "listEmptyDescription": "Adicione conteúdos pela página de cada conteúdo.",
+      "removeItem": "Remover",
+      "removeItemOf": "Remover “{title}” da lista",
+      "removed": "Removido da lista",
+      "created": "Lista criada",
+      "renamed": "Lista renomeada",
+      "deleted": "Lista excluída",
+      "backToLists": "Voltar às listas",
+      "visitorTitle": "Entre para criar listas",
+      "visitorDescription": "Favoritos e listas personalizadas ficam salvos na sua conta.",
+      "errors": {
+        "nameRequired": "Digite um nome para a lista.",
+        "nameTooLong": "O nome deve ter no máximo 60 caracteres.",
+        "invalid": "Dados inválidos.",
+        "unauthenticated": "Faça login para continuar.",
+        "notFound": "Lista não encontrada.",
+        "failed": "Não foi possível concluir. Tente novamente."
+      },
+      "visitorCta": "Entrar",
+      "favoritesMore": "Mostrando os {count} favoritos mais recentes",
+      "openNamed": "Abrir lista {name}",
+      "browseContent": "Explorar conteúdos",
+      "notFoundDescription": "Ela pode ter sido excluída ou pertencer a outra conta."
+    },
+    "eyebrow": "Descobrir"
+  },
+  "personalities": {
+    "title": "Personalidades",
+    "description": "Personagens fictícios que guiam os conteúdos. Nenhuma pessoa real é representada.",
+    "filterLabel": "Filtrar por pilar",
+    "all": "Todos",
+    "count": "{count, plural, =1 {1 personalidade} other {# personalidades}}",
+    "emptyTitle": "Nenhuma personalidade neste pilar",
+    "emptyDescription": "Experimente outro pilar ou veja todas.",
+    "profile": {
+      "back": "Personalidades",
+      "fictional": "Personagem fictício",
+      "rightsTitle": "Sobre este perfil",
+      "rightsDefault": "Perfil fictício criado para a demonstração. Não representa pessoa real nem possui contrato, imagem ou endosso.",
+      "pillarsLabel": "Pilares",
+      "coverAlt": "Capa de {name}",
+      "stats": {
+        "contents": "{count, plural, =1 {1 conteúdo} other {# conteúdos}}",
+        "programs": "{count, plural, =1 {1 programa} other {# programas}}"
+      },
+      "tabs": {
+        "label": "Seções do perfil",
+        "contents": "Conteúdos",
+        "programs": "Programas"
+      },
+      "typeFilter": "Filtrar por tipo",
+      "allTypes": "Todos",
+      "contentsEmptyTitle": "Nenhum conteúdo com este filtro",
+      "contentsEmptyDescription": "Experimente outro tipo de conteúdo.",
+      "programsEmptyTitle": "Nenhum programa publicado",
+      "programsEmptyDescription": "Esta personalidade ainda não tem programas."
+    },
+    "eyebrow": "Quem guia os conteúdos",
+    "notFoundTitle": "Personalidade não encontrada",
+    "notFoundDescription": "O endereço pode ter mudado ou o perfil não está mais ativo."
+  }
+}
