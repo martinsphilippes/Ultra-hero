@@ -1,0 +1,193 @@
+{
+  "unavailable": {
+    "inactive": {
+      "title": "Personality profile inactive",
+      "description": "Your personality profile is suspended or pending. Meanwhile the portal is read only: you cannot create content, suggest links or edit the profile.",
+      "descriptionNamed": "The profile of {name} is suspended or pending. Meanwhile the portal is read only: you cannot create content, suggest links or edit the profile."
+    },
+    "unlinked": {
+      "title": "Account without a personality profile",
+      "description": "Your account has the personality role but is not linked to an active profile. Accept the invitation you received by email or contact the administration."
+    },
+    "help": "Questions? Contact the Ultra Hero editorial team. Remember: personalities on this platform are fictional and this is a demo environment."
+  },
+  "dashboard": {
+    "title": "Hello, {name}",
+    "description": "Follow your content, editorial reviews and product links.",
+    "stats": "Content summary",
+    "counts": {
+      "draft": "Drafts",
+      "in_review": "Under review",
+      "returned": "Returned",
+      "published": "Published"
+    },
+    "archived": "{count, plural, =1 {1 content item archived} other {# content items archived}} by the administration.",
+    "returnedTitle": "Returned for changes",
+    "returnedDescription": "The editorial team left feedback. Adjust and resubmit for review.",
+    "latestReviews": "Latest reviews",
+    "seeContent": "My content",
+    "profileHint": "Headline, bio, avatar, cover and socials.",
+    "linksHint": "Suggest products related to your content."
+  },
+  "content": {
+    "new": "New content",
+    "newDescription": "Create a draft. You can edit, save and submit it for review when ready.",
+    "description": "Your content in every state. Only drafts that are not under review can be edited.",
+    "viewPublic": "View public page",
+    "columns": {
+      "title": "Content",
+      "review": "Review"
+    },
+    "filters": "List filters",
+    "searchPlaceholder": "Search by title",
+    "allStatuses": "All statuses",
+    "allReviews": "Any review",
+    "count": "{count, plural, =0 {No content} =1 {1 content item} other {# content items}}",
+    "tableCaption": "List of my content with status, review and actions",
+    "emptyTitle": "You have no content yet",
+    "emptyDescription": "Create the first draft: video, recipe, workout, guide or article."
+  },
+  "edit": {
+    "noAccessRule": "No access rule",
+    "accessNote": "Access rule, module, featuring and publishing are set by the administration. You edit title, summary, cover, metadata and the body.",
+    "situation": {
+      "draft": {
+        "title": "Draft",
+        "description": "Edit freely. When complete, submit it for review."
+      },
+      "in_review": {
+        "title": "Under review",
+        "description": "The editorial team is evaluating it. The content stays locked until a decision."
+      },
+      "returned": {
+        "title": "Returned for changes",
+        "description": "Read the feedback, adjust the draft and submit it for review again."
+      },
+      "rejected": {
+        "title": "Rejected",
+        "description": "The editorial team did not approve this version. You can revise the draft and submit it again."
+      },
+      "published": {
+        "title": "Published",
+        "description": "This content is live and is now read only for you. Changes go through the administration."
+      },
+      "archived": {
+        "title": "Archived",
+        "description": "Content archived by the administration. It stays read only."
+      }
+    },
+    "notFoundTitle": "Content not found",
+    "notFoundDescription": "It may have been removed or belong to another personality."
+  },
+  "submit": {
+    "button": "Submit for review",
+    "title": "Submit for editorial review?",
+    "description": "The content stays locked for editing until the team decides. The checklist considers what is already saved.",
+    "confirm": "Submit",
+    "checklist": "Completeness checklist",
+    "items": {
+      "title": "Title filled in",
+      "summary": "Summary filled in",
+      "cover": "Cover chosen",
+      "body": "Body has content",
+      "media": "Video media set",
+      "disclaimer": "Contextual notice chosen"
+    },
+    "ok": "ok",
+    "missing": "pending",
+    "incomplete": "{count, plural, =1 {1 item is missing. Save the form and try again.} other {# items are missing. Save the form and try again.}}",
+    "success": "Submitted for review",
+    "successDescription": "You will be notified here when there is a decision."
+  },
+  "reviews": {
+    "title": "Review history",
+    "description": "Each submission opens a round; the team's decision and feedback appear here.",
+    "empty": "No review rounds yet",
+    "emptyDescription": "When you submit content, the history appears here.",
+    "round": "Round {n}",
+    "submittedAt": "Submitted on {date}",
+    "decidedAt": "decided on {date}",
+    "awaiting": "awaiting decision",
+    "feedback": "Feedback",
+    "noFeedback": "No comments from the team."
+  },
+  "links": {
+    "description": "Suggest demo-store products related to your content. Illustrative prices; no real purchases.",
+    "howTitle": "How it works",
+    "how1": "You suggest; the administration validates or rejects. Only validated links are shown to the public.",
+    "how2": "If the supplier makes a significant change to the product (title, category, type, attributes or food information), the validated link is suspended automatically until revalidated.",
+    "how3": "You can delete a suggestion while it has not been evaluated yet.",
+    "formTitle": "Suggest a link",
+    "content": "Content",
+    "contentHint": "One of your content items (any status except archived).",
+    "noContents": "Create a content item before suggesting links.",
+    "searchProduct": "Product",
+    "searchHint": "Search by title among published, available products.",
+    "searchPlaceholder": "E.g. meal box, notebook, bottle…",
+    "searching": "Searching…",
+    "noResults": "No purchasable product with that title.",
+    "results": "Search results",
+    "selectedProduct": "Selected product: {product}",
+    "note": "Note for the team",
+    "noteHint": "Why this product fits the content (optional).",
+    "submit": "Send suggestion",
+    "suggested": "Suggestion sent",
+    "suggestedDescription": "The administration will evaluate the link.",
+    "mine": "My suggestions",
+    "columns": {
+      "product": "Product",
+      "content": "Content"
+    },
+    "productUnavailable": "Product currently unavailable",
+    "suspendedReason": "Reason: {reason}",
+    "reasonProductChange": "significant product change",
+    "noteLabel": "Note: {note}",
+    "locked": "Decided by the administration",
+    "tableCaption": "Links suggested by me and their statuses",
+    "emptyTitle": "No suggestions yet",
+    "emptyDescription": "Use the form above to suggest the first link.",
+    "deleteTitle": "Delete suggestion?",
+    "deleteDescription": "The suggestion for \"{product}\" will be removed. You can suggest it again later.",
+    "deleted": "Suggestion deleted"
+  },
+  "profile": {
+    "title": "My profile",
+    "description": "What the public sees on your personality page.",
+    "viewPublic": "View public page",
+    "inactiveNotice": "Profile suspended or pending: editing is locked until the administration reactivates it.",
+    "lockedFields": "Name, slug, pillars and the rights note are maintained by the platform. You edit headline, bio, avatar, cover and socials.",
+    "headline": "Headline",
+    "headlineHint": "A short sentence about you (up to 120 characters).",
+    "bio": "Bio",
+    "bioHint": "First-person introduction. Remember: fictional character, educational content.",
+    "avatar": "Avatar",
+    "cover": "Cover",
+    "optionN": "Option {n}",
+    "noneSelected": "No option chosen.",
+    "socials": "Socials (plain text)",
+    "socialsHint": "Shown as text, without automatic links. Fictional profiles: use illustrative handles.",
+    "site": "Website",
+    "savedDescription": "Your public profile has been updated.",
+    "fixFields": "{count, plural, =1 {There is 1 field to fix.} other {There are # fields to fix.}}",
+    "rightsTitle": "Rights and licences note",
+    "rightsDescription": "Record kept by the platform about licences, image and rights of this personality. Read only: changes are made by the administration.",
+    "rightsEmpty": "No note recorded."
+  },
+  "errors": {
+    "generic": "Could not complete. Please try again.",
+    "protected_column": "The field \"{column}\" can only be changed by the administration.",
+    "unauthenticated": "Sign in to continue.",
+    "invalid_input": "Invalid data.",
+    "creator_unavailable": "Your personality profile is not active.",
+    "not_found": "Not found.",
+    "content_not_found": "Content not found.",
+    "content_not_editable": "This content is under review or already published and cannot be edited.",
+    "forbidden": "You do not have permission for this action.",
+    "only_drafts_can_be_submitted": "Only drafts can be submitted for review.",
+    "already_in_review": "This content is already under review.",
+    "content_incomplete": "Fill in at least the title and pillar before submitting.",
+    "link_exists": "A link between this content and this product already exists.",
+    "link_not_deletable": "Only suggestions not yet evaluated can be deleted.",
+    "duplicate": "Duplicate record."
+  }
+}

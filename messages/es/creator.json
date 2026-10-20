@@ -1,0 +1,193 @@
+{
+  "unavailable": {
+    "inactive": {
+      "title": "Perfil de personalidad inactivo",
+      "description": "Tu perfil de personalidad está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil.",
+      "descriptionNamed": "El perfil de {name} está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil."
+    },
+    "unlinked": {
+      "title": "Cuenta sin perfil de personalidad",
+      "description": "Tu cuenta tiene el rol de personalidad, pero no está vinculada a un perfil activo. Acepta la invitación recibida por correo o habla con la administración."
+    },
+    "help": "¿Dudas? Habla con el equipo editorial de Ultra Hero. Recuerda: las personalidades de esta plataforma son ficticias y el entorno es de demostración."
+  },
+  "dashboard": {
+    "title": "Hola, {name}",
+    "description": "Sigue tus contenidos, las revisiones editoriales y los vínculos con productos.",
+    "stats": "Resumen de contenidos",
+    "counts": {
+      "draft": "Borradores",
+      "in_review": "En revisión",
+      "returned": "Devueltos",
+      "published": "Publicados"
+    },
+    "archived": "{count, plural, =1 {1 contenido archivado} other {# contenidos archivados}} por la administración.",
+    "returnedTitle": "Devueltos para ajustes",
+    "returnedDescription": "El equipo editorial dejó comentarios. Ajusta y vuelve a enviar a revisión.",
+    "latestReviews": "Últimas revisiones",
+    "seeContent": "Mis contenidos",
+    "profileHint": "Titular, bio, avatar, portada y redes.",
+    "linksHint": "Sugiere productos relacionados con tus contenidos."
+  },
+  "content": {
+    "new": "Nuevo contenido",
+    "newDescription": "Crea un borrador. Podrás editar, guardar y enviar a revisión cuando esté listo.",
+    "description": "Tus contenidos en todos los estados. Solo los borradores fuera de revisión se pueden editar.",
+    "viewPublic": "Ver página pública",
+    "columns": {
+      "title": "Contenido",
+      "review": "Revisión"
+    },
+    "filters": "Filtros de la lista",
+    "searchPlaceholder": "Buscar por título",
+    "allStatuses": "Todos los estados",
+    "allReviews": "Cualquier revisión",
+    "count": "{count, plural, =0 {Ningún contenido} =1 {1 contenido} other {# contenidos}}",
+    "tableCaption": "Lista de mis contenidos con estado, revisión y acciones",
+    "emptyTitle": "Todavía no tienes contenidos",
+    "emptyDescription": "Crea el primer borrador: video, receta, entrenamiento, guía o artículo."
+  },
+  "edit": {
+    "noAccessRule": "Sin regla de acceso",
+    "accessNote": "La regla de acceso, el módulo, los destacados y la publicación los define la administración. Tú editas título, resumen, portada, metadatos y el cuerpo.",
+    "situation": {
+      "draft": {
+        "title": "Borrador",
+        "description": "Edita con libertad. Cuando esté completo, envíalo a revisión."
+      },
+      "in_review": {
+        "title": "En revisión",
+        "description": "El equipo editorial lo está evaluando. El contenido queda bloqueado hasta la decisión."
+      },
+      "returned": {
+        "title": "Devuelto para ajustes",
+        "description": "Lee los comentarios, ajusta el borrador y envíalo de nuevo a revisión."
+      },
+      "rejected": {
+        "title": "Rechazado",
+        "description": "El equipo editorial no aprobó esta versión. Puedes revisar el borrador y enviarlo de nuevo."
+      },
+      "published": {
+        "title": "Publicado",
+        "description": "Este contenido está en línea y ahora es de solo lectura para ti. Los cambios pasan por la administración."
+      },
+      "archived": {
+        "title": "Archivado",
+        "description": "Contenido archivado por la administración. Queda en solo lectura."
+      }
+    },
+    "notFoundTitle": "Contenido no encontrado",
+    "notFoundDescription": "Puede haber sido eliminado o pertenecer a otra personalidad."
+  },
+  "submit": {
+    "button": "Enviar a revisión",
+    "title": "¿Enviar a revisión editorial?",
+    "description": "El contenido queda bloqueado para edición hasta la decisión del equipo. La lista considera lo que ya está guardado.",
+    "confirm": "Enviar",
+    "checklist": "Lista de completitud",
+    "items": {
+      "title": "Título completado",
+      "summary": "Resumen completado",
+      "cover": "Portada elegida",
+      "body": "Cuerpo con contenido",
+      "media": "Medio del video definido",
+      "disclaimer": "Aviso contextual elegido"
+    },
+    "ok": "ok",
+    "missing": "pendiente",
+    "incomplete": "{count, plural, =1 {Falta 1 elemento. Guarda el formulario e inténtalo de nuevo.} other {Faltan # elementos. Guarda el formulario e inténtalo de nuevo.}}",
+    "success": "Enviado a revisión",
+    "successDescription": "Se te avisará aquí cuando haya una decisión."
+  },
+  "reviews": {
+    "title": "Historial de revisiones",
+    "description": "Cada envío abre una ronda; la decisión y los comentarios del equipo aparecen aquí.",
+    "empty": "Todavía no hay rondas de revisión",
+    "emptyDescription": "Cuando envíes un contenido, el historial aparecerá aquí.",
+    "round": "Ronda {n}",
+    "submittedAt": "Enviado el {date}",
+    "decidedAt": "decidido el {date}",
+    "awaiting": "esperando decisión",
+    "feedback": "Comentarios",
+    "noFeedback": "Sin comentarios del equipo."
+  },
+  "links": {
+    "description": "Sugiere productos de la tienda de demostración relacionados con tus contenidos. Precios ilustrativos; ninguna compra real.",
+    "howTitle": "Cómo funciona",
+    "how1": "Tú sugieres; la administración valida o rechaza. Solo los vínculos validados se muestran al público.",
+    "how2": "Si el proveedor hace un cambio significativo en el producto (título, categoría, tipo, atributos o ficha alimentaria), el vínculo validado se suspende automáticamente hasta una nueva validación.",
+    "how3": "Puedes eliminar una sugerencia mientras todavía no haya sido evaluada.",
+    "formTitle": "Sugerir vínculo",
+    "content": "Contenido",
+    "contentHint": "Uno de tus contenidos (cualquier estado, excepto archivado).",
+    "noContents": "Crea un contenido antes de sugerir vínculos.",
+    "searchProduct": "Producto",
+    "searchHint": "Busca por título entre productos publicados y disponibles.",
+    "searchPlaceholder": "Ej.: vianda, cuaderno, botella…",
+    "searching": "Buscando…",
+    "noResults": "Ningún producto comprable con ese título.",
+    "results": "Resultados de la búsqueda",
+    "selectedProduct": "Producto seleccionado: {product}",
+    "note": "Observación para el equipo",
+    "noteHint": "Por qué este producto combina con el contenido (opcional).",
+    "submit": "Enviar sugerencia",
+    "suggested": "Sugerencia enviada",
+    "suggestedDescription": "La administración evaluará el vínculo.",
+    "mine": "Mis sugerencias",
+    "columns": {
+      "product": "Producto",
+      "content": "Contenido"
+    },
+    "productUnavailable": "Producto no disponible por ahora",
+    "suspendedReason": "Motivo: {reason}",
+    "reasonProductChange": "cambio significativo en el producto",
+    "noteLabel": "Obs.: {note}",
+    "locked": "Decidido por la administración",
+    "tableCaption": "Vínculos sugeridos por mí y sus estados",
+    "emptyTitle": "Todavía no hay sugerencias",
+    "emptyDescription": "Usa el formulario de arriba para sugerir el primer vínculo.",
+    "deleteTitle": "¿Eliminar sugerencia?",
+    "deleteDescription": "Se eliminará la sugerencia del producto \"{product}\". Puedes volver a sugerirlo después.",
+    "deleted": "Sugerencia eliminada"
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "description": "Lo que el público ve en tu página de personalidad.",
+    "viewPublic": "Ver página pública",
+    "inactiveNotice": "Perfil suspendido o pendiente: la edición está bloqueada hasta que la administración lo reactive.",
+    "lockedFields": "Nombre, slug, pilares y la nota de derechos los mantiene la plataforma. Tú editas titular, bio, avatar, portada y redes.",
+    "headline": "Titular",
+    "headlineHint": "Una frase corta sobre ti (hasta 120 caracteres).",
+    "bio": "Bio",
+    "bioHint": "Presentación en primera persona. Recuerda: personaje ficticio, contenido educativo.",
+    "avatar": "Avatar",
+    "cover": "Portada",
+    "optionN": "Opción {n}",
+    "noneSelected": "Ninguna opción elegida.",
+    "socials": "Redes (texto simple)",
+    "socialsHint": "Se muestran como texto, sin enlaces automáticos. Perfiles ficticios: usa identificadores ilustrativos.",
+    "site": "Sitio web",
+    "savedDescription": "Tu perfil público fue actualizado.",
+    "fixFields": "{count, plural, =1 {Hay 1 campo por corregir.} other {Hay # campos por corregir.}}",
+    "rightsTitle": "Nota de derechos y licencias",
+    "rightsDescription": "Registro mantenido por la plataforma sobre licencias, imagen y derechos de esta personalidad. Solo lectura: los cambios los hace la administración.",
+    "rightsEmpty": "Ninguna nota registrada."
+  },
+  "errors": {
+    "generic": "No se pudo completar. Inténtalo de nuevo.",
+    "protected_column": "El campo \"{column}\" solo puede cambiarlo la administración.",
+    "unauthenticated": "Inicia sesión para continuar.",
+    "invalid_input": "Datos inválidos.",
+    "creator_unavailable": "Tu perfil de personalidad no está activo.",
+    "not_found": "No encontrado.",
+    "content_not_found": "Contenido no encontrado.",
+    "content_not_editable": "Este contenido está en revisión o ya fue publicado y no se puede editar.",
+    "forbidden": "No tienes permiso para esta acción.",
+    "only_drafts_can_be_submitted": "Solo los borradores se pueden enviar a revisión.",
+    "already_in_review": "Este contenido ya está en revisión.",
+    "content_incomplete": "Completa al menos el título y el pilar antes de enviar.",
+    "link_exists": "Ya existe un vínculo entre este contenido y este producto.",
+    "link_not_deletable": "Solo se pueden eliminar sugerencias que aún no fueron evaluadas.",
+    "duplicate": "Registro duplicado."
+  }
+}

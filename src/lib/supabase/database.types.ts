@@ -235,14 +235,14 @@ isOneToOne: false
                   ]
                 },"content_product_links": {
                   Row: {
-                    "content_id": string,"created_at": string,"id": string,"note": string | null,"product_id": string,"product_version_at_validation": number | null,"status": Database["public"]['Enums']["link_status"],"suggested_by": string | null,"suggested_by_creator": string | null,"suspended_reason": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                    "admin_note": string | null,"content_id": string,"created_at": string,"id": string,"note": string | null,"product_id": string,"product_version_at_validation": number | null,"status": Database["public"]['Enums']["link_status"],"suggested_by": string | null,"suggested_by_creator": string | null,"suspended_reason": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "content_id": string,"created_at"?: string,"id"?: string,"note"?: string | null,"product_id": string,"product_version_at_validation"?: number | null,"status"?: Database["public"]['Enums']["link_status"],"suggested_by"?: string | null,"suggested_by_creator"?: string | null,"suspended_reason"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "admin_note"?: string | null,"content_id": string,"created_at"?: string,"id"?: string,"note"?: string | null,"product_id": string,"product_version_at_validation"?: number | null,"status"?: Database["public"]['Enums']["link_status"],"suggested_by"?: string | null,"suggested_by_creator"?: string | null,"suspended_reason"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Update: {
-                    "content_id"?: string,"created_at"?: string,"id"?: string,"note"?: string | null,"product_id"?: string,"product_version_at_validation"?: number | null,"status"?: Database["public"]['Enums']["link_status"],"suggested_by"?: string | null,"suggested_by_creator"?: string | null,"suspended_reason"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                    "admin_note"?: string | null,"content_id"?: string,"created_at"?: string,"id"?: string,"note"?: string | null,"product_id"?: string,"product_version_at_validation"?: number | null,"status"?: Database["public"]['Enums']["link_status"],"suggested_by"?: string | null,"suggested_by_creator"?: string | null,"suspended_reason"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
                   }
                   Relationships: [
                     {

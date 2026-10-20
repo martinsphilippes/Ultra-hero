@@ -1,0 +1,223 @@
+{
+  "readOnly": "Read only: this content cannot be edited right now.",
+  "footerNote": "Saving stores a draft. Publishing depends on editorial review.",
+  "actions": {
+    "create": "Create draft"
+  },
+  "sections": {
+    "basics": "Basic information",
+    "cover": "Cover",
+    "coverDescription": "Use one of the pillar's default covers or an image path from the platform itself.",
+    "media": "Video media",
+    "mediaDescription": "In this demo, videos are embedded from YouTube or Vimeo. Without media, the simulated player uses the transcript.",
+    "body": {
+      "video": "Video content",
+      "recipe": "Recipe",
+      "workout": "Workout",
+      "guide": "Text"
+    },
+    "bodyDescription": "Educational content. Avoid individual prescriptions and promises of results.",
+    "access": "Access rule (admin)",
+    "accessDescription": "Defines who can consume it. Without a rule, the content stays \"temporarily unavailable\" even when published."
+  },
+  "fields": {
+    "title": "Title",
+    "summary": "Summary",
+    "summaryHint": "One or two sentences for the card and search.",
+    "pillar": "Pillar",
+    "type": "Type",
+    "typeHint": "Changing the type switches the editor; data from another type is discarded.",
+    "sourceLocale": "Original language",
+    "sourceLocaleHint": "Language the content was written in.",
+    "duration": "Duration (min)",
+    "durationHint": "Estimated time to consume.",
+    "difficulty": "Level",
+    "difficultyNone": "Not set",
+    "disclaimer": "Contextual notice",
+    "disclaimerHint": "Shown to the public alongside the content.",
+    "disclaimerChoose": "Choose…",
+    "tags": "Topics (tags)",
+    "tagsHint": "Up to 12 keywords. Enter or comma adds.",
+    "hasCaptions": "Has captions",
+    "hasCaptionsHint": "Check when the video offers captions."
+  },
+  "types": {
+    "video": "Video",
+    "recipe": "Recipe",
+    "workout": "Workout",
+    "guide": "Guide",
+    "article": "Article"
+  },
+  "difficulty": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "disclaimer": {
+    "general": "General (educational)",
+    "training": "Training (not a prescription)",
+    "nutrition": "Nutrition (not a prescription)",
+    "none": "No notice"
+  },
+  "validation": {
+    "required": "Required field.",
+    "tooLong": "Text is too long.",
+    "tooMany": "Too many items.",
+    "invalidNumber": "Enter a valid whole number.",
+    "invalidCover": "Use a path from the platform itself (e.g. /placeholders/cover-routine-1.svg).",
+    "invalidMediaRef": "Invalid reference for the chosen provider.",
+    "mediaRefRequired": "Enter the video ID or URL.",
+    "providerNotConfigured": "This provider is not configured in this environment.",
+    "invalidUrl": "Use a platform path or an https URL.",
+    "moduleRequired": "Premium content requires a module.",
+    "bodyTypeMismatch": "The body does not match the chosen type.",
+    "invalid": "Invalid value."
+  },
+  "errors": {
+    "summary": "{count, plural, =1 {There is 1 field to fix.} other {There are # fields to fix.}}",
+    "protected_column": "The field \"{column}\" can only be changed by the administration.",
+    "generic": "Could not save. Please try again.",
+    "invalid_input": "Some fields are invalid.",
+    "content_not_editable": "This content is under review or already published and cannot be edited.",
+    "forbidden": "You do not have permission for this action.",
+    "unauthenticated": "Sign in to continue.",
+    "creator_unavailable": "Your personality profile is not active.",
+    "not_found": "Content not found."
+  },
+  "list": {
+    "empty": "No items yet.",
+    "add": "Add item",
+    "remove": "Remove {label}"
+  },
+  "chips": {
+    "hint": "Enter or comma adds.",
+    "selected": "Selected items",
+    "remove": "Remove {value}",
+    "suggestions": "Suggestions"
+  },
+  "cover": {
+    "placeholders": "Pillar default covers",
+    "option": "Cover {n}",
+    "custom": "Custom path",
+    "customHint": "Only paths from the platform itself (starting with /). External images are not accepted.",
+    "preview": "Custom cover preview",
+    "none": "No cover chosen yet."
+  },
+  "media": {
+    "provider": "Provider",
+    "providerHint": "Stream and Mux stay disabled until configured.",
+    "providers": {
+      "none": "No media (simulated player)",
+      "embed_youtube": "YouTube (embed)",
+      "embed_vimeo": "Vimeo (embed)",
+      "cloudflare_stream": "Cloudflare Stream",
+      "mux": "Mux"
+    },
+    "notConfigured": "not configured",
+    "ref": "Video ID or URL",
+    "refHintYoutube": "Accepts the 11-character ID or youtube.com/watch, youtu.be, shorts and embed URLs.",
+    "refHintVimeo": "Accepts the numeric ID or vimeo.com/<id> and player.vimeo.com/video/<id> URLs.",
+    "previewValid": "{provider} · ID recognised: {id}",
+    "previewInvalid": "We could not recognise that ID/URL.",
+    "previewEmpty": "Paste the ID or URL to validate.",
+    "captions": "Captions file (optional)",
+    "captionsHint": "Platform path or https URL of a .vtt file."
+  },
+  "access": {
+    "level": "Access level",
+    "levelHint": "No rule = unavailable to the public.",
+    "levelNone": "No rule set",
+    "levelFree": "Free",
+    "levelPremium": "Premium (module)",
+    "module": "Required module",
+    "moduleHint": "Only applies to premium content.",
+    "moduleHintPremium": "Required for premium content.",
+    "moduleNone": "None",
+    "completion": "Completion mode",
+    "completionHint": "Empty uses the type default.",
+    "completionDefault": "Type default",
+    "completionManual": "Manual",
+    "completionAuto": "Automatic"
+  },
+  "healthClaims": {
+    "label": "Health claims notice",
+    "title": "Careful with health claims",
+    "description": "We found terms that may sound like a promise of cure, guaranteed weight loss, diagnosis or treatment. Platform content is educational and does not replace individual professional guidance. You can still save, but editorial review may ask for changes.",
+    "terms": "Terms found: {terms}"
+  },
+  "body": {
+    "video": {
+      "intro": "Introduction",
+      "introHint": "What the video is about and who it is for.",
+      "keyPoints": "Key points",
+      "keyPointsHint": "Main ideas, one per line.",
+      "keyPoint": "Key point {n}",
+      "transcript": "Transcript",
+      "transcriptHint": "Second at which each segment starts and the spoken text. Used by the simulated player and for accessibility.",
+      "transcriptEmpty": "No transcript segments yet.",
+      "lineTime": "Second of segment {n}",
+      "lineText": "Text of segment {n}",
+      "removeLine": "Remove segment {n}",
+      "addLine": "Add segment"
+    },
+    "recipe": {
+      "servings": "Servings",
+      "prepMinutes": "Prep (min)",
+      "cookMinutes": "Cook (min)",
+      "ingredients": "Ingredients",
+      "ingredientsHint": "Item and quantity (e.g. Olive oil · 1 tablespoon).",
+      "ingredientsEmpty": "No ingredients yet.",
+      "ingredientItem": "Ingredient {n}",
+      "ingredientPlaceholder": "Ingredient",
+      "ingredientQty": "Quantity of ingredient {n}",
+      "qtyPlaceholder": "Quantity",
+      "removeIngredient": "Remove ingredient {n}",
+      "addIngredient": "Add ingredient",
+      "steps": "Method",
+      "stepsHint": "One step per item, in order.",
+      "step": "Step {n}",
+      "allergens": "Allergens",
+      "allergensHint": "List allergens present or possible.",
+      "note": "Note",
+      "noteHint": "Variations, substitutions and reminders (illustrative quantities)."
+    },
+    "workout": {
+      "equipment": "Equipment",
+      "equipmentHint": "Leave empty for bodyweight-only workouts.",
+      "blocks": "Workout blocks",
+      "blocksHint": "E.g. Warm-up, Main, Cool-down.",
+      "blockN": "Block {n}",
+      "blockName": "Name of block {n}",
+      "blockPlaceholder": "Block name",
+      "removeBlock": "Remove block {n}",
+      "exercisesEmpty": "No exercises in this block.",
+      "exerciseName": "Exercise {n}",
+      "exercisePlaceholder": "Exercise",
+      "removeExercise": "Remove exercise {n}",
+      "sets": "Sets of exercise {n}",
+      "setsShort": "Sets",
+      "reps": "Reps of exercise {n}",
+      "repsShort": "Reps / time",
+      "rest": "Rest in seconds of exercise {n}",
+      "restShort": "Rest (s)",
+      "addExercise": "Add exercise",
+      "addBlock": "Add block",
+      "safetyNote": "Safety note",
+      "safetyNoteHint": "E.g. stop if you feel pain and seek a qualified professional."
+    },
+    "guide": {
+      "intro": "Introduction",
+      "introHint": "Brief context before the sections.",
+      "sections": "Sections",
+      "sectionsHint": "Each section has an optional heading and a text.",
+      "sectionN": "Section {n}",
+      "heading": "Heading of section {n}",
+      "removeSection": "Remove section {n}",
+      "text": "Text of section {n}",
+      "addSection": "Add section",
+      "keyPoints": "Key points",
+      "keyPointsHint": "Bullet summary (optional).",
+      "keyPoint": "Key point {n}"
+    }
+  }
+}

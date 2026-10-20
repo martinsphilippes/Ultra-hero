@@ -1,0 +1,223 @@
+{
+  "readOnly": "Somente leitura: este conteúdo não pode ser editado agora.",
+  "footerNote": "Salvar guarda um rascunho. A publicação depende da revisão editorial.",
+  "actions": {
+    "create": "Criar rascunho"
+  },
+  "sections": {
+    "basics": "Informações básicas",
+    "cover": "Capa",
+    "coverDescription": "Use uma das capas padrão do pilar ou um caminho de imagem da própria plataforma.",
+    "media": "Mídia do vídeo",
+    "mediaDescription": "Nesta demonstração, vídeos são incorporados do YouTube ou Vimeo. Sem mídia, o player simulado usa a transcrição.",
+    "body": {
+      "video": "Conteúdo do vídeo",
+      "recipe": "Receita",
+      "workout": "Treino",
+      "guide": "Texto"
+    },
+    "bodyDescription": "Conteúdo educativo. Evite prescrições individuais e promessas de resultado.",
+    "access": "Regra de acesso (admin)",
+    "accessDescription": "Define quem pode consumir. Sem regra, o conteúdo fica \"temporariamente indisponível\" mesmo publicado."
+  },
+  "fields": {
+    "title": "Título",
+    "summary": "Resumo",
+    "summaryHint": "Uma ou duas frases para o card e a busca.",
+    "pillar": "Pilar",
+    "type": "Tipo",
+    "typeHint": "Trocar o tipo troca o editor; dados de outro tipo são descartados.",
+    "sourceLocale": "Idioma original",
+    "sourceLocaleHint": "Idioma em que o conteúdo foi escrito.",
+    "duration": "Duração (min)",
+    "durationHint": "Tempo estimado para consumir.",
+    "difficulty": "Nível",
+    "difficultyNone": "Não informado",
+    "disclaimer": "Aviso contextual",
+    "disclaimerHint": "Exibido ao público junto do conteúdo.",
+    "disclaimerChoose": "Escolher…",
+    "tags": "Temas (tags)",
+    "tagsHint": "Até 12 palavras-chave. Enter ou vírgula adiciona.",
+    "hasCaptions": "Tem legendas",
+    "hasCaptionsHint": "Marque quando o vídeo oferece legendas."
+  },
+  "types": {
+    "video": "Vídeo",
+    "recipe": "Receita",
+    "workout": "Treino",
+    "guide": "Guia",
+    "article": "Artigo"
+  },
+  "difficulty": {
+    "beginner": "Iniciante",
+    "intermediate": "Intermediário",
+    "advanced": "Avançado"
+  },
+  "disclaimer": {
+    "general": "Geral (educativo)",
+    "training": "Treino (não é prescrição)",
+    "nutrition": "Nutrição (não é prescrição)",
+    "none": "Sem aviso"
+  },
+  "validation": {
+    "required": "Campo obrigatório.",
+    "tooLong": "Texto muito longo.",
+    "tooMany": "Itens demais.",
+    "invalidNumber": "Informe um número inteiro válido.",
+    "invalidCover": "Use um caminho da própria plataforma (ex.: /placeholders/cover-routine-1.svg).",
+    "invalidMediaRef": "Referência inválida para o provedor escolhido.",
+    "mediaRefRequired": "Informe o ID ou a URL do vídeo.",
+    "providerNotConfigured": "Este provedor não está configurado neste ambiente.",
+    "invalidUrl": "Use um caminho da plataforma ou uma URL https.",
+    "moduleRequired": "Conteúdo premium exige um módulo.",
+    "bodyTypeMismatch": "O corpo não corresponde ao tipo escolhido.",
+    "invalid": "Valor inválido."
+  },
+  "errors": {
+    "summary": "{count, plural, =1 {Há 1 campo para corrigir.} other {Há # campos para corrigir.}}",
+    "protected_column": "O campo \"{column}\" só pode ser alterado pela administração.",
+    "generic": "Não foi possível salvar. Tente novamente.",
+    "invalid_input": "Alguns campos estão inválidos.",
+    "content_not_editable": "Este conteúdo está em revisão ou já foi publicado e não pode ser editado.",
+    "forbidden": "Você não tem permissão para esta ação.",
+    "unauthenticated": "Entre para continuar.",
+    "creator_unavailable": "Seu perfil de personalidade não está ativo.",
+    "not_found": "Conteúdo não encontrado."
+  },
+  "list": {
+    "empty": "Nenhum item ainda.",
+    "add": "Adicionar item",
+    "remove": "Remover {label}"
+  },
+  "chips": {
+    "hint": "Enter ou vírgula adiciona.",
+    "selected": "Itens selecionados",
+    "remove": "Remover {value}",
+    "suggestions": "Sugestões"
+  },
+  "cover": {
+    "placeholders": "Capas padrão do pilar",
+    "option": "Capa {n}",
+    "custom": "Caminho personalizado",
+    "customHint": "Somente caminhos da própria plataforma (começando com /). Imagens externas não são aceitas.",
+    "preview": "Prévia da capa personalizada",
+    "none": "Nenhuma capa escolhida ainda."
+  },
+  "media": {
+    "provider": "Provedor",
+    "providerHint": "Stream e Mux ficam desabilitados até serem configurados.",
+    "providers": {
+      "none": "Sem mídia (player simulado)",
+      "embed_youtube": "YouTube (incorporado)",
+      "embed_vimeo": "Vimeo (incorporado)",
+      "cloudflare_stream": "Cloudflare Stream",
+      "mux": "Mux"
+    },
+    "notConfigured": "não configurado",
+    "ref": "ID ou URL do vídeo",
+    "refHintYoutube": "Aceita o ID de 11 caracteres ou URLs youtube.com/watch, youtu.be, shorts e embed.",
+    "refHintVimeo": "Aceita o ID numérico ou URLs vimeo.com/<id> e player.vimeo.com/video/<id>.",
+    "previewValid": "{provider} · ID reconhecido: {id}",
+    "previewInvalid": "Não reconhecemos esse ID/URL.",
+    "previewEmpty": "Cole o ID ou a URL para validar.",
+    "captions": "Arquivo de legendas (opcional)",
+    "captionsHint": "Caminho da plataforma ou URL https de um arquivo .vtt."
+  },
+  "access": {
+    "level": "Nível de acesso",
+    "levelHint": "Sem regra = indisponível ao público.",
+    "levelNone": "Sem regra definida",
+    "levelFree": "Gratuito",
+    "levelPremium": "Premium (módulo)",
+    "module": "Módulo exigido",
+    "moduleHint": "Só se aplica a conteúdo premium.",
+    "moduleHintPremium": "Obrigatório para conteúdo premium.",
+    "moduleNone": "Nenhum",
+    "completion": "Modo de conclusão",
+    "completionHint": "Vazio usa o padrão do tipo.",
+    "completionDefault": "Padrão do tipo",
+    "completionManual": "Manual",
+    "completionAuto": "Automático"
+  },
+  "healthClaims": {
+    "label": "Aviso sobre alegações de saúde",
+    "title": "Cuidado com alegações de saúde",
+    "description": "Encontramos termos que podem soar como promessa de cura, emagrecimento garantido, diagnóstico ou tratamento. O conteúdo da plataforma é educativo e não substitui orientação profissional individual. Você pode salvar assim mesmo, mas a revisão editorial pode pedir ajustes.",
+    "terms": "Termos encontrados: {terms}"
+  },
+  "body": {
+    "video": {
+      "intro": "Introdução",
+      "introHint": "Sobre o que é o vídeo e para quem ele serve.",
+      "keyPoints": "Pontos-chave",
+      "keyPointsHint": "Ideias principais, uma por linha.",
+      "keyPoint": "Ponto-chave {n}",
+      "transcript": "Transcrição",
+      "transcriptHint": "Segundo em que cada trecho começa e o texto falado. Usada pelo player simulado e para acessibilidade.",
+      "transcriptEmpty": "Nenhum trecho de transcrição ainda.",
+      "lineTime": "Segundo do trecho {n}",
+      "lineText": "Texto do trecho {n}",
+      "removeLine": "Remover trecho {n}",
+      "addLine": "Adicionar trecho"
+    },
+    "recipe": {
+      "servings": "Porções",
+      "prepMinutes": "Preparo (min)",
+      "cookMinutes": "Cozimento (min)",
+      "ingredients": "Ingredientes",
+      "ingredientsHint": "Item e quantidade (ex.: Azeite · 1 colher de sopa).",
+      "ingredientsEmpty": "Nenhum ingrediente ainda.",
+      "ingredientItem": "Ingrediente {n}",
+      "ingredientPlaceholder": "Ingrediente",
+      "ingredientQty": "Quantidade do ingrediente {n}",
+      "qtyPlaceholder": "Quantidade",
+      "removeIngredient": "Remover ingrediente {n}",
+      "addIngredient": "Adicionar ingrediente",
+      "steps": "Modo de preparo",
+      "stepsHint": "Um passo por item, na ordem.",
+      "step": "Passo {n}",
+      "allergens": "Alérgenos",
+      "allergensHint": "Informe os alérgenos presentes ou possíveis.",
+      "note": "Observação",
+      "noteHint": "Variações, substituições e lembretes (quantidades ilustrativas)."
+    },
+    "workout": {
+      "equipment": "Equipamento",
+      "equipmentHint": "Deixe vazio para treino só com o peso do corpo.",
+      "blocks": "Blocos do treino",
+      "blocksHint": "Ex.: Aquecimento, Principal, Volta à calma.",
+      "blockN": "Bloco {n}",
+      "blockName": "Nome do bloco {n}",
+      "blockPlaceholder": "Nome do bloco",
+      "removeBlock": "Remover bloco {n}",
+      "exercisesEmpty": "Nenhum exercício neste bloco.",
+      "exerciseName": "Exercício {n}",
+      "exercisePlaceholder": "Exercício",
+      "removeExercise": "Remover exercício {n}",
+      "sets": "Séries do exercício {n}",
+      "setsShort": "Séries",
+      "reps": "Repetições do exercício {n}",
+      "repsShort": "Reps / tempo",
+      "rest": "Descanso em segundos do exercício {n}",
+      "restShort": "Descanso (s)",
+      "addExercise": "Adicionar exercício",
+      "addBlock": "Adicionar bloco",
+      "safetyNote": "Nota de segurança",
+      "safetyNoteHint": "Ex.: pare se sentir dor e procure um profissional habilitado."
+    },
+    "guide": {
+      "intro": "Introdução",
+      "introHint": "Contexto breve antes das seções.",
+      "sections": "Seções",
+      "sectionsHint": "Cada seção tem um título opcional e um texto.",
+      "sectionN": "Seção {n}",
+      "heading": "Título da seção {n}",
+      "removeSection": "Remover seção {n}",
+      "text": "Texto da seção {n}",
+      "addSection": "Adicionar seção",
+      "keyPoints": "Pontos-chave",
+      "keyPointsHint": "Resumo em tópicos (opcional).",
+      "keyPoint": "Ponto-chave {n}"
+    }
+  }
+}

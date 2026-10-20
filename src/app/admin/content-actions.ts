@@ -1,0 +1,372 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
+import { z } from "zod";
+import type { ActionResult } from "@/components/admin";
+import { escapeLike } from "@/components/admin-content/lib/search-params";
+import { slugWithSuffix } from "@/components/admin-content/lib/slug";
+import { failWith } from "@/components/admin-content/lib/translate-error";
+import type { PickResult } from "@/components/admin-content/SearchPicker";
+import type { ContentFormValues } from "@/components/editors/types";
+import { getUser, hasRole } from "@/lib/auth/session";
+import { createClient } from "@/lib/supabase/server";
+
+// Ações administrativas de conteúdo: revisão editorial, status, destaque, edição completa
+// (content + content_bodies) e padrões de conclusão por tipo. Regras ficam nas RPCs/RLS;
+// aqui só validamos entrada (Zod), traduzimos erros e revalidamos rotas.
+
+// ---------------------------------------------------------------- helpers ---
+const fail = failWith;
+
+// Camada extra ao RLS/RPC: evita round-trip inútil quando a sessão não é admin.
+async function requireAdmin(): Promise<string> {
+  const user = await getUser();
+  if (!user) throw new Error("unauthenticated");
+  if (!(await hasRole("admin"))) throw new Error("forbidden");
+  return user.id;
+}
+
+const uuid = z.uuid();
+
+// ---------------------------------------------------------------- revisão editorial
+export async function reviewContentAction(contentId: string, decision: "approved" | "returned" | "rejected", feedback: string): Promise<ActionResult> {
+  const parsed = z
+    .object({ contentId: uuid, decision: z.enum(["approved", "returned", "rejected"]), feedback: z.string().trim().max(2000) })
+    .safeParse({ contentId, decision, feedback });
+  if (!parsed.success) return fail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_review_content", {
+      p_content: parsed.data.contentId,
+      p_decision: parsed.data.decision,
+      p_feedback: parsed.data.feedback || undefined,
+    });
+    if (error) return fail(error);
+    revalidatePath("/admin/content");
+    revalidatePath(`/admin/content/${parsed.data.contentId}`);
+    const t = await getTranslations("adminContent.content.review");
+    return { ok: true, message: t(parsed.data.decision) };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- status (publicar/arquivar/rascunho)
+export async function setContentStatusAction(contentId: string, status: "draft" | "published" | "archived", justification: string): Promise<ActionResult> {
+  const parsed = z
+    .object({ contentId: uuid, status: z.enum(["draft", "published", "archived"]), justification: z.string().trim().min(5).max(500) })
+    .safeParse({ contentId, status, justification });
+  if (!parsed.success) return fail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_set_content_status", {
+      p_content: parsed.data.contentId,
+      p_status: parsed.data.status,
+      p_justification: parsed.data.justification,
+    });
+    if (error) return fail(error);
+    revalidatePath("/admin/content");
+    revalidatePath(`/admin/content/${parsed.data.contentId}`);
+    revalidatePath("/admin/featured");
+    const t = await getTranslations("adminContent.content.statusActions");
+    return { ok: true, message: t("changed") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- destaque (conteúdo ou programa)
+export async function setFeaturedAction(kind: "content" | "program", id: string, featured: boolean, rank: number | null): Promise<ActionResult> {
+  const parsed = z
+    .object({ kind: z.enum(["content", "program"]), id: uuid, featured: z.boolean(), rank: z.number().int().min(1).max(999).nullable() })
+    .safeParse({ kind, id, featured, rank });
+  if (!parsed.success) return fail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    let nextRank = parsed.data.rank;
+    // Sem posição informada ao destacar: entra no fim da lista.
+    if (parsed.data.featured && nextRank === null) {
+      const table = parsed.data.kind === "content" ? "content" : "programs";
+      const { data } = await supabase.from(table).select("featured_rank").eq("is_featured", true).order("featured_rank", { ascending: false, nullsFirst: false }).limit(1).maybeSingle();
+      nextRank = (data?.featured_rank ?? 0) + 1;
+    }
+    const { error } = await supabase.rpc("admin_set_featured", {
+      p_kind: parsed.data.kind,
+      p_id: parsed.data.id,
+      p_featured: parsed.data.featured,
+      p_rank: parsed.data.featured ? (nextRank ?? undefined) : undefined,
+    });
+    if (error) return fail(error);
+    revalidatePath("/admin/featured");
+    revalidatePath(parsed.data.kind === "content" ? `/admin/content/${parsed.data.id}` : `/admin/programs/${parsed.data.id}`);
+    revalidatePath("/");
+    const t = await getTranslations("adminContent.content.statusActions");
+    return { ok: true, message: t("featured") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- edição completa (ContentForm)
+const mediaSchema = z.object({
+  provider: z.enum(["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"]),
+  ref: z.string().trim().max(500).nullable(),
+  captions_url: z.string().trim().max(500).nullable(),
+});
+
+const contentValuesSchema = z.object({
+  id: uuid.optional(),
+  title: z.string().trim().min(3).max(140),
+  summary: z.string().trim().max(600),
+  pillar: z.enum(["routine", "training", "nutrition", "gastronomy"]),
+  type: z.enum(["video", "recipe", "workout", "guide", "article"]),
+  source_locale: z.enum(["pt-BR", "en", "es"]),
+  cover_url: z.string().trim().max(500),
+  duration_minutes: z.number().int().positive().max(24 * 60).nullable(),
+  difficulty: z.enum(["beginner", "intermediate", "advanced"]).nullable(),
+  tags: z.array(z.string().trim().min(1).max(40)).max(20),
+  has_captions: z.boolean(),
+  disclaimer_kind: z.enum(["general", "training", "nutrition", "none"]).nullable(),
+  body: z.record(z.string(), z.unknown()),
+  media: mediaSchema,
+  access_level: z.enum(["free", "premium"]).nullable().optional(),
+  required_module_id: uuid.nullable().optional(),
+  completion_mode: z.enum(["manual", "auto"]).nullable().optional(),
+});
+
+type SaveContext = { id?: string | null; creatorId?: string | null };
+
+// Admin cria/edita qualquer conteúdo, inclusive regra de acesso, módulo e conclusão.
+export async function saveContentAction(context: SaveContext, values: ContentFormValues): Promise<ActionResult & { id?: string }> {
+  const ctx = z.object({ id: uuid.nullable().optional(), creatorId: uuid.nullable().optional() }).safeParse(context);
+  const parsed = contentValuesSchema.safeParse(values);
+  if (!ctx.success || !parsed.success) return fail("invalid_input");
+  const v = parsed.data;
+  const accessLevel = v.access_level ?? null;
+  const requiredModule = accessLevel === "premium" ? (v.required_module_id ?? null) : null;
+  if (accessLevel === "premium" && !requiredModule) return fail("premium_requires_module");
+
+  try {
+    const userId = await requireAdmin();
+    const supabase = await createClient();
+    const t = await getTranslations("adminContent.content.form");
+    const fields = {
+      title: v.title,
+      summary: v.summary || null,
+      pillar: v.pillar,
+      type: v.type,
+      source_locale: v.source_locale,
+      cover_url: v.cover_url || null,
+      duration_minutes: v.duration_minutes,
+      difficulty: v.difficulty,
+      tags: v.tags,
+      has_captions: v.has_captions,
+      disclaimer_kind: v.disclaimer_kind,
+      access_level: accessLevel,
+      required_module_id: requiredModule,
+      completion_mode: v.completion_mode ?? null,
+    };
+
+    let contentId = ctx.data.id ?? null;
+    if (contentId) {
+      const update = ctx.data.creatorId ? { ...fields, creator_id: ctx.data.creatorId } : fields;
+      const { error } = await supabase.from("content").update(update).eq("id", contentId);
+      if (error) return fail(error);
+    } else {
+      if (!ctx.data.creatorId) return fail("invalid_input");
+      // Tenta até 3 slugs em caso de colisão improvável.
+      let inserted: string | null = null;
+      let lastError: unknown = null;
+      for (let attempt = 0; attempt < 3 && !inserted; attempt++) {
+        const { data, error } = await supabase
+          .from("content")
+          .insert({ ...fields, slug: slugWithSuffix(v.title), creator_id: ctx.data.creatorId, status: "draft", review_status: "none", created_by: userId })
+          .select("id")
+          .single();
+        if (!error && data) inserted = data.id;
+        else {
+          lastError = error;
+          if (error?.code !== "23505") break;
+        }
+      }
+      if (!inserted) return fail(lastError ?? "generic");
+      contentId = inserted;
+    }
+
+    const { error: bodyError } = await supabase.from("content_bodies").upsert(
+      {
+        content_id: contentId,
+        body: v.body as never,
+        media_provider: v.media.provider,
+        media_ref: v.media.ref || null,
+        captions_url: v.media.captions_url || null,
+      },
+      { onConflict: "content_id" },
+    );
+    if (bodyError) return fail(bodyError);
+
+    revalidatePath("/admin/content");
+    revalidatePath(`/admin/content/${contentId}`);
+    return { ok: true, id: contentId, message: ctx.data.id ? t("updated") : t("created") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- padrões de conclusão por tipo
+const typeSettingsSchema = z
+  .array(
+    z.object({
+      type: z.enum(["video", "recipe", "workout", "guide", "article"]),
+      default_completion_mode: z.enum(["manual", "auto"]),
+      auto_threshold_pct: z.number().int().min(1).max(100),
+    }),
+  )
+  .min(1)
+  .max(5);
+
+export async function saveContentTypeSettingsAction(rows: z.infer<typeof typeSettingsSchema>): Promise<ActionResult> {
+  const parsed = typeSettingsSchema.safeParse(rows);
+  if (!parsed.success) return fail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    for (const row of parsed.data) {
+      const { error } = await supabase
+        .from("content_type_settings")
+        .update({ default_completion_mode: row.default_completion_mode, auto_threshold_pct: row.auto_threshold_pct })
+        .eq("type", row.type);
+      if (error) return fail(error);
+    }
+    revalidatePath("/admin/content/settings");
+    const t = await getTranslations("adminContent.content.typeSettings");
+    return { ok: true, message: t("saved") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- buscas (SearchPicker) ---
+// Conteúdo por título; `publishedOnly` para itens de programa, destaques e vínculos.
+export async function searchContentAction(q: string, publishedOnly = true): Promise<PickResult> {
+  const parsed = z.object({ q: z.string().trim().min(2).max(80), publishedOnly: z.boolean() }).safeParse({ q, publishedOnly });
+  if (!parsed.success) return { ok: true, items: [] };
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    let query = supabase
+      .from("content")
+      .select("id, title, type, pillar, status, creator:creator_profiles(name)")
+      .ilike("title", `%${escapeLike(parsed.data.q)}%`)
+      .order("title")
+      .limit(12);
+    if (parsed.data.publishedOnly) query = query.eq("status", "published");
+    const { data, error } = await query;
+    if (error) return fail(error);
+    const t = await getTranslations("adminContent.common.types");
+    const ts = await getTranslations("adminCommon.status");
+    const rows = (data ?? []) as unknown as { id: string; title: string; type: string; pillar: string; status: string; creator: { name: string } | null }[];
+    return {
+      ok: true,
+      items: rows.map((r) => ({
+        id: r.id,
+        title: r.title,
+        subtitle: [t(r.type as never), r.creator?.name].filter(Boolean).join(" · "),
+        badge: parsed.data.publishedOnly ? null : ts(r.status as never),
+      })),
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// Programas pelo título da versão atual (ou de qualquer versão, se `anyVersion`).
+export async function searchProgramsAction(q: string, publishedOnly = true): Promise<PickResult> {
+  const parsed = z.object({ q: z.string().trim().min(2).max(80), publishedOnly: z.boolean() }).safeParse({ q, publishedOnly });
+  if (!parsed.success) return { ok: true, items: [] };
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    let query = supabase
+      .from("program_versions")
+      .select("id, title, version_no, status, program:programs!program_versions_program_id_fkey(id, slug, status, current_version_id)")
+      .ilike("title", `%${escapeLike(parsed.data.q)}%`)
+      .order("title")
+      .limit(20);
+    if (parsed.data.publishedOnly) query = query.eq("status", "published");
+    const { data, error } = await query;
+    if (error) return fail(error);
+    const ts = await getTranslations("adminCommon.status");
+    const tv = await getTranslations("adminContent.common");
+    const rows = (data ?? []) as unknown as { id: string; title: string; version_no: number; status: string; program: { id: string; slug: string; status: string; current_version_id: string | null } | null }[];
+    // Um item por programa (a versão atual quando existir).
+    const seen = new Set<string>();
+    const items = rows
+      .filter((r) => r.program && (!parsed.data.publishedOnly || r.program.status === "published"))
+      .filter((r) => {
+        const pid = r.program!.id;
+        if (seen.has(pid)) return false;
+        seen.add(pid);
+        return true;
+      })
+      .map((r) => ({ id: r.program!.id, title: r.title, subtitle: `${r.program!.slug} · ${tv("version", { n: r.version_no })}`, badge: ts(r.program!.status as never) }));
+    return { ok: true, items };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// Versões de programa (qualquer status) para a tela de traduções.
+export async function searchProgramVersionsAction(q: string): Promise<PickResult> {
+  const parsed = z.object({ q: z.string().trim().min(2).max(80) }).safeParse({ q });
+  if (!parsed.success) return { ok: true, items: [] };
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("program_versions")
+      .select("id, title, version_no, status, program:programs!program_versions_program_id_fkey(slug)")
+      .ilike("title", `%${escapeLike(parsed.data.q)}%`)
+      .order("title")
+      .limit(15);
+    if (error) return fail(error);
+    const ts = await getTranslations("adminCommon.status");
+    const tv = await getTranslations("adminContent.common");
+    const rows = (data ?? []) as unknown as { id: string; title: string; version_no: number; status: string; program: { slug: string } | null }[];
+    return {
+      ok: true,
+      items: rows.map((r) => ({ id: r.id, title: r.title, subtitle: `${r.program?.slug ?? ""} · ${tv("version", { n: r.version_no })}`, badge: ts(r.status as never) })),
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// Produtos pelo título (qualquer status; o admin vê tudo).
+export async function searchProductsAction(q: string): Promise<PickResult> {
+  const parsed = z.object({ q: z.string().trim().min(2).max(80) }).safeParse({ q });
+  if (!parsed.success) return { ok: true, items: [] };
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, title, status, moderation_status, seller:seller_organizations(name)")
+      .ilike("title", `%${escapeLike(parsed.data.q)}%`)
+      .order("title")
+      .limit(12);
+    if (error) return fail(error);
+    const ts = await getTranslations("adminCommon.status");
+    const rows = (data ?? []) as unknown as { id: string; title: string; status: string; moderation_status: string; seller: { name: string } | null }[];
+    return {
+      ok: true,
+      items: rows.map((r) => ({ id: r.id, title: r.title, subtitle: r.seller?.name ?? null, badge: `${ts(r.status as never)} · ${ts(r.moderation_status as never)}` })),
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}

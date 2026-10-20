@@ -33,7 +33,8 @@
   "creator": {
     "dashboard": "Dashboard",
     "content": "My content",
-    "links": "Product links"
+    "links": "Product links",
+    "profile": "My profile"
   },
   "seller": {
     "dashboard": "Dashboard",

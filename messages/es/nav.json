@@ -33,7 +33,8 @@
   "creator": {
     "dashboard": "Panel",
     "content": "Mis contenidos",
-    "links": "Vínculos de productos"
+    "links": "Vínculos de productos",
+    "profile": "Mi perfil"
   },
   "seller": {
     "dashboard": "Panel",
