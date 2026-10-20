@@ -469,6 +469,88 @@ select tests.ok('S13 RPCs novas são security definer com search_path fixo',
   (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%'))
    from pg_proc p where p.oid in ('public.admin_log_account_status(uuid, boolean, text)'::regprocedure, 'public.admin_get_user(uuid)'::regprocedure)));
 
+-- ================================================================ S17 · Preferências de notificação (0018)
+-- Uma linha por usuário; só o dono lê e grava; sem política de remoção; nada para anon; some com a conta.
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+insert into public.notification_preferences (user_id, editorial_digest, channel_email) values ('10000000-0000-4000-8000-000000000002', true, true);
+select tests.ok('S17 usuário cria as próprias preferências', (select editorial_digest and channel_email and not channel_push from public.notification_preferences where user_id = '10000000-0000-4000-8000-000000000002'));
+update public.notification_preferences set streak_reminders = true, channel_push = true where user_id = '10000000-0000-4000-8000-000000000002';
+select tests.ok('S17 usuário atualiza as próprias preferências', (select streak_reminders and channel_push from public.notification_preferences where user_id = '10000000-0000-4000-8000-000000000002'));
+select tests.expect_error('S17 usuário não cria preferências em nome de outro', $q$insert into public.notification_preferences (user_id) values ('10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.expect_error('S17 usuário não transfere a própria linha para outro usuário', $q$update public.notification_preferences set user_id = '10000000-0000-4000-8000-000000000004' where user_id = '10000000-0000-4000-8000-000000000002'$q$, '42501');
+delete from public.notification_preferences where user_id = '10000000-0000-4000-8000-000000000002'; -- sem política de delete: nenhuma linha afetada
+select tests.ok('S17 sem política de remoção: a linha permanece', exists (select 1 from public.notification_preferences where user_id = '10000000-0000-4000-8000-000000000002'));
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.ok('S17 preferências de outro usuário são invisíveis', (select count(*) from public.notification_preferences) = 0);
+update public.notification_preferences set editorial_digest = false, channel_email = false where user_id = '10000000-0000-4000-8000-000000000002'; -- RLS: 0 linhas
+select tests.su();
+select tests.ok('S17 update de terceiro não altera nada', (select editorial_digest and channel_email from public.notification_preferences where user_id = '10000000-0000-4000-8000-000000000002'));
+select tests.ok('S17 trigger de updated_at instalado', exists (select 1 from pg_trigger where tgrelid = 'public.notification_preferences'::regclass and tgname = 'trg_notification_preferences_updated_at'));
+select tests.ok('S17 políticas usam (select auth.uid()) e não há política de delete nem para anon',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename = 'notification_preferences') = 3
+  and not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'notification_preferences' and (cmd = 'DELETE' or 'anon' = any (roles))));
+select tests.anon();
+select tests.expect_error('S17 visitante não lê preferências', $q$select count(*) from public.notification_preferences$q$, 'permission denied');
+select tests.expect_error('S17 visitante não grava preferências', $q$insert into public.notification_preferences (user_id) values ('10000000-0000-4000-8000-000000000002')$q$, '42501');
+-- exclusão da conta: a linha vai junto (on delete cascade de auth.users), sem alterar anonymize_user_data
+select tests.su();
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000017', 's17@test.local');
+select tests.login('10000000-0000-4000-8000-000000000017', 's17@test.local');
+insert into public.notification_preferences (user_id, commerce_updates) values ('10000000-0000-4000-8000-000000000017', true);
+select public.delete_my_account();
+select tests.su();
+select tests.ok('S17 excluir a conta remove as preferências (cascade)', not exists (select 1 from auth.users where id = '10000000-0000-4000-8000-000000000017')
+  and not exists (select 1 from public.notification_preferences where user_id = '10000000-0000-4000-8000-000000000017'));
+
+-- ================================================================ S18 · Feedback com categoria, prioridade e responsável (0018)
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+create temporary table t_fb as select public.submit_feedback('page:/explore', 4, 'Falta filtro por duração', 'pt-BR', 'suggestion') as id;
+create temporary table t_fb_legacy as select public.submit_feedback('page:/explore', 3, 'assinatura antiga', 'pt-BR') as id;
+select tests.expect_error('S18 categoria inválida rejeitada pela RPC', $q$select public.submit_feedback('page:/', 3, 'x', 'pt-BR', 'spam')$q$, 'invalid_category');
+select tests.expect_error('S18 usuário não insere feedback direto na tabela', $q$insert into public.feedback (context, category) values ('page:/', 'bug')$q$, '42501');
+update public.feedback set priority = 'high', admin_note = 'tentativa', assignee = '10000000-0000-4000-8000-000000000001' where id = (select id from t_fb); -- RLS: 0 linhas
+select tests.expect_error('S18 usuário não executa a triagem', $q$select public.admin_triage_feedback((select id from t_fb), '{"priority":"high"}'::jsonb)$q$, '42501');
+select tests.su();
+select tests.ok('S18 categoria gravada pela RPC', (select category from public.feedback where id = (select id from t_fb)) = 'suggestion');
+select tests.ok('S18 assinatura antiga continua válida (categoria other)', (select category from public.feedback where id = (select id from t_fb_legacy)) = 'other');
+select tests.ok('S18 usuário não altera prioridade, responsável nem nota', (select priority is null and assignee is null and admin_note is null from public.feedback where id = (select id from t_fb)));
+select tests.expect_error('S18 check de categoria vale até para o sistema', $q$insert into public.feedback (context, category) values ('page:/', 'nope')$q$, '23514');
+select tests.expect_error('S18 check de prioridade vale até para o sistema', $q$update public.feedback set priority = 'urgent' where id = (select id from t_fb)$q$, '23514');
+select tests.anon();
+select tests.ok('S18 visitante envia feedback com categoria', public.submit_feedback('page:/', 5, null, 'pt-BR', 'bug') is not null);
+select tests.ok('S18 visitante não lê feedback', (select count(*) from public.feedback) = 0);
+select tests.expect_error('S18 visitante não executa a triagem', $q$select public.admin_triage_feedback(gen_random_uuid(), '{}'::jsonb)$q$, 'permission denied');
+select tests.expect_error('S18 visitante não lista admins', $q$select * from public.admin_list_admins()$q$, 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S18 admin define prioridade, responsável, nota e status',
+  (public.admin_triage_feedback((select id from t_fb), jsonb_build_object('priority', 'high', 'assignee', '10000000-0000-4000-8000-000000000001', 'admin_note', 'Verificar filtro', 'status', 'reviewed'), 'triagem inicial') ->> 'priority') = 'high');
+select tests.ok('S18 triagem persistida', (select priority = 'high' and assignee = '10000000-0000-4000-8000-000000000001' and admin_note = 'Verificar filtro' and status = 'reviewed' from public.feedback where id = (select id from t_fb)));
+select tests.expect_error('S18 prioridade inválida rejeitada', $q$select public.admin_triage_feedback((select id from t_fb), '{"priority":"urgent"}'::jsonb)$q$, 'invalid_priority');
+select tests.expect_error('S18 status inválido rejeitado', $q$select public.admin_triage_feedback((select id from t_fb), '{"status":"done"}'::jsonb)$q$, 'invalid_status');
+select tests.expect_error('S18 responsável precisa ter papel admin', $q$select public.admin_triage_feedback((select id from t_fb), '{"assignee":"10000000-0000-4000-8000-000000000002"}'::jsonb)$q$, 'assignee_not_admin');
+select tests.expect_error('S18 nota acima de 1000 caracteres rejeitada', $q$select public.admin_triage_feedback((select id from t_fb), jsonb_build_object('admin_note', repeat('x', 1001)))$q$, 'note_too_long');
+select tests.expect_error('S18 feedback inexistente', $q$select public.admin_triage_feedback(gen_random_uuid(), '{"status":"archived"}'::jsonb)$q$, 'not_found');
+select tests.ok('S18 null limpa prioridade e responsável', (select (r ->> 'priority') is null and (r ->> 'assignee') is null and (r ->> 'admin_note') = 'Verificar filtro'
+  from public.admin_triage_feedback((select id from t_fb), '{"priority":null,"assignee":null}'::jsonb) r));
+update public.feedback set priority = 'low' where id = (select id from t_fb);
+select tests.ok('S18 admin também altera pela política da tabela', (select priority from public.feedback where id = (select id from t_fb)) = 'low');
+select tests.ok('S18 admin_list_admins lista só admins ativos',
+  (select count(*) from public.admin_list_admins()) = (select count(distinct user_id) from public.role_assignments where role = 'admin' and revoked_at is null)
+  and exists (select 1 from public.admin_list_admins() where id = '10000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.admin_list_admins() where id = '10000000-0000-4000-8000-000000000002'));
+select tests.su();
+select tests.ok('S18 triagem auditada (feedback.triage, ator admin, antes/depois)', (select count(*) from public.admin_audit
+  where action = 'feedback.triage' and resource_type = 'feedback' and resource_id = (select id::text from t_fb)
+    and actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin') = 2
+  and exists (select 1 from public.admin_audit where action = 'feedback.triage' and justification = 'triagem inicial'
+    and before_data ->> 'priority' is null and after_data ->> 'priority' = 'high' and after_data ->> 'status' = 'reviewed'));
+select tests.ok('S18 tentativas recusadas não deixam auditoria', (select count(*) from public.admin_audit where action = 'feedback.triage') = 2);
+select tests.ok('S18 RPCs novas são security definer com search_path fixo e sem anon',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
+   from pg_proc p where p.oid in ('public.admin_triage_feedback(uuid, jsonb, text)'::regprocedure, 'public.admin_list_admins()'::regprocedure)));
+select tests.ok('S18 atalho de 4 argumentos é security invoker (não amplia a lista de anon)',
+  (select not p.prosecdef from pg_proc p where p.oid = 'public.submit_feedback(text, int, text, public.locale_code)'::regprocedure));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

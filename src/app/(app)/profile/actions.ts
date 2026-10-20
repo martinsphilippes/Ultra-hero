@@ -11,6 +11,7 @@ import { rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { setThemeAction } from "@/lib/theme/actions";
 import { themes } from "@/lib/theme/constants";
+import { notificationPreferencesSchema, type NotificationPreferences } from "@/components/me/notifications/schema";
 import { DELETE_CONFIRM_WORD, parseSubscription, type SubscriptionInfo } from "@/components/me/subscription";
 
 // Ações do módulo "Eu": perfil, fuso, plano simulado, interesses, favoritos e exclusão de conta.
@@ -189,6 +190,25 @@ export async function removeFavorite(input: { contentId: string }): Promise<Resu
     if (error) return fail(error.message);
     await trackEvent("favorite.remove", { content_id: parsed.data.contentId, source: "profile" });
     revalidatePath("/profile/favorites");
+    return { ok: true };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- preferências de notificação
+// Nada é enviado na POC: a linha guarda o consentimento (opt-in por tipo e canal) que qualquer
+// envio futuro precisa respeitar. Upsert pelo cliente do usuário: a RLS só aceita a própria linha.
+export async function saveNotificationPreferences(input: NotificationPreferences): Promise<Result> {
+  const parsed = notificationPreferencesSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  try {
+    const user = await getUser();
+    if (!user) return { ok: false, error: "unauthenticated" };
+    const supabase = await createClient();
+    const { error } = await supabase.from("notification_preferences").upsert({ user_id: user.id, ...parsed.data }, { onConflict: "user_id" });
+    if (error) return fail(error.message);
+    revalidatePath("/profile/notifications");
     return { ok: true };
   } catch (error) {
     return fail(error);

@@ -6,6 +6,7 @@
     "interests": "Interests",
     "account": "Account & privacy",
     "favorites": "Favorites",
+    "notifications": "Notifications",
     "onboarding": "Welcome",
     "verify": "Verify certificate"
   },
@@ -145,6 +146,10 @@
       "orders": {
         "title": "Test orders",
         "description": "Demo purchases, no real charges."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "What you agree to receive and through which channel. Nothing is sent in the demo."
       },
       "account": {
         "title": "Account & privacy",
@@ -300,6 +305,59 @@
       }
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Choose what you agree to receive and where. Your preferences apply to any future sending.",
+    "demo": {
+      "title": "Nothing is sent in this demo",
+      "body": "No email or push leaves the app in this version. What you select here is stored as consent and must be respected by any future sending. Transactional messages (sign-up confirmation and password reset) are required for the account to work and cannot be turned off."
+    },
+    "types": {
+      "title": "What you agree to receive",
+      "description": "Everything is off by default. Turn on only what you want.",
+      "editorial_digest": {
+        "label": "Editorial digest",
+        "description": "Catalog news and highlights, at most once a week."
+      },
+      "streak_reminders": {
+        "label": "Streak reminders",
+        "description": "A heads-up when your day streak is about to reset."
+      },
+      "commerce_updates": {
+        "label": "Test orders",
+        "description": "Status changes of your demo orders."
+      }
+    },
+    "transactional": {
+      "title": "Transactional messages",
+      "description": "Required for the account to work. They cannot be turned off.",
+      "always": "Always on",
+      "items": {
+        "confirmation": "Sign-up confirmation",
+        "password": "Password reset",
+        "security": "Account security notices"
+      }
+    },
+    "channels": {
+      "title": "Channels",
+      "description": "Where you would accept the optional messages.",
+      "channel_email": {
+        "label": "Email",
+        "description": "To the account email."
+      },
+      "channel_push": {
+        "label": "Push",
+        "description": "Browser or installed-app notifications, when available."
+      }
+    },
+    "save": "Save preferences",
+    "saved": "Preferences saved.",
+    "errors": {
+      "invalid_input": "Check the options.",
+      "unauthenticated": "Sign in to continue.",
+      "generic": "Could not save. Please try again."
+    }
+  },
   "onboarding": {
     "title": "Welcome to Ultra Hero",
     "description": "Two quick steps to personalize your experience. Optional.",
@@ -372,6 +430,15 @@
       "r4": "Good",
       "r5": "Great"
     },
+    "category": "Category",
+    "categoryHint": "Optional. Helps the team route your feedback.",
+    "categories": {
+      "bug": "Problem",
+      "suggestion": "Suggestion",
+      "content": "Content",
+      "commerce": "Test shop",
+      "other": "Other"
+    },
     "message": "Comment",
     "messageHint": "Optional, up to 1000 characters. Do not include personal data.",
     "submit": "Send",
@@ -379,6 +446,7 @@
     "errors": {
       "rate_limited": "You have sent too many feedbacks today. Try again tomorrow.",
       "feedback_empty": "Give a rating or write a comment.",
+      "invalid_category": "Invalid category.",
       "generic": "Could not send. Please try again."
     }
   },

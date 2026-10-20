@@ -177,6 +177,7 @@
           "list1": {
             "account": "<strong>Cuenta:</strong> correo, contraseña y nombre visible. La contraseña la gestiona el servicio de autenticación; la app no la guarda en sus propias tablas. Si inicias sesión con Google, cuando esa opción esté disponible, recibimos de Google tu nombre, tu correo y, si existe, la dirección de tu foto de perfil.",
             "preferences": "<strong>Preferencias:</strong> idioma, tema, avatar elegido entre ilustraciones y zona horaria del dispositivo, que se usa para contar tu racha de días.",
+            "notifications": "<strong>Preferencias de notificación:</strong> qué aceptas recibir (resumen editorial, recordatorios de racha, pedidos de prueba) y por qué canales. En esta versión nada se envía; tu elección se guarda para respetarse en cualquier envío futuro.",
             "usage": "<strong>Uso del contenido:</strong> intereses, elementos marcados como “no me interesa”, favoritos, listas, progreso, contenidos completados, racha de días, logros, inscripciones en programas y certificados simbólicos (el PDF del certificado incluye tu nombre visible).",
             "subscription": "<strong>Suscripción simulada:</strong> módulos elegidos, períodos e historial de cambios.",
             "commerce": "<strong>Comercio simulado:</strong> carrito, pedidos de prueba (artículos, importes ilustrativos y el destino ficticio elegido de una lista) y registros de interés en productos.",
@@ -311,6 +312,11 @@
                 "data": "Cuenta, perfil, preferencias, intereses, favoritos, listas, progreso, logros, certificados y suscripción simulada",
                 "period": "Mientras exista la cuenta",
                 "details": "Se eliminan cuando eliminas la cuenta."
+              },
+              "notifications": {
+                "data": "Preferencias de notificación",
+                "period": "Mientras exista la cuenta",
+                "details": "Se eliminan junto con la cuenta. En esta versión nada se envía: las preferencias solo guardan tu consentimiento para envíos futuros."
               },
               "analytics": {
                 "data": "Eventos de uso",

@@ -6,6 +6,8 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { BAN_FOREVER, BAN_NONE, restoreBanDuration, suspensionBlock } from "@/components/admin-ops/account-status";
+import type { FeedbackStatus } from "@/components/feedback/constants";
+import { feedbackTriageSchema, type FeedbackTriageInput } from "@/components/feedback/schema";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { requireRole } from "@/lib/auth/session";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
@@ -427,22 +429,32 @@ export async function revokeMembership(input: { membershipId: string; orgId: str
 }
 
 // ---------------------------------------------------------------- feedback
-export async function setFeedbackStatus(input: { id: string; status: "new" | "reviewed" | "archived" }): Promise<Result> {
+// Triagem (status, prioridade, responsável, nota interna) pela RPC admin_triage_feedback:
+// confere is_admin de novo, valida cada campo e grava admin_audit com action 'feedback.triage'.
+export async function triageFeedback(input: FeedbackTriageInput): Promise<Result> {
   await admin();
-  const parsed = z.object({ id: z.uuid(), status: z.enum(["new", "reviewed", "archived"]) }).safeParse(input);
+  const parsed = feedbackTriageSchema.safeParse(input);
   if (!parsed.success) return invalid();
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("feedback").update({ status: parsed.data.status }).eq("id", parsed.data.id).select("id").maybeSingle();
+    const { error } = await supabase.rpc("admin_triage_feedback", {
+      p_id: parsed.data.id,
+      p_patch: parsed.data.patch,
+      p_justification: parsed.data.justification || undefined,
+    });
     if (error) return fail(error);
-    if (!data) return fail("not_found");
     revalidatePath("/admin/feedback");
+    revalidatePath("/admin/audit");
     revalidatePath("/admin");
     const t = await getTranslations("adminOps.feedback");
     return { ok: true, message: t("updated") };
   } catch (error) {
     return fail(error);
   }
+}
+
+export async function setFeedbackStatus(input: { id: string; status: FeedbackStatus }): Promise<Result> {
+  return triageFeedback({ id: input.id, patch: { status: input.status } });
 }
 
 // ---------------------------------------------------------------- configurações

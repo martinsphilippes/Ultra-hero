@@ -31,6 +31,9 @@ test("documentos legais: públicos, um h1, aviso de demonstração, data e tabel
     await expect(table.locator('thead th[scope="col"]').first()).toBeVisible();
     await expect(table.locator('tbody th[scope="row"]').first()).toBeVisible();
   }
+  // Transparência (RF-023): a política lista as preferências de notificação entre os dados guardados.
+  await expect(page.getByRole("rowheader", { name: "Preferências de notificação" })).toBeVisible();
+  await expect(page.locator("main").getByText(/Preferências de notificação:/)).toBeVisible();
   await page.goto("/signup");
   await expect(page.locator('form a[href="/legal/terms"]')).toHaveCount(1);
   await expect(page.locator('form a[href="/legal/privacy"]')).toHaveCount(1);

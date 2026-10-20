@@ -6,6 +6,7 @@
     "interests": "Interesses",
     "account": "Conta e privacidade",
     "favorites": "Favoritos",
+    "notifications": "Notificações",
     "onboarding": "Boas-vindas",
     "verify": "Verificar certificado"
   },
@@ -145,6 +146,10 @@
       "orders": {
         "title": "Pedidos de teste",
         "description": "Compras demonstrativas, sem cobrança real."
+      },
+      "notifications": {
+        "title": "Notificações",
+        "description": "O que você aceita receber e por qual canal. Nada é enviado na demonstração."
       },
       "account": {
         "title": "Conta e privacidade",
@@ -300,6 +305,59 @@
       }
     }
   },
+  "notifications": {
+    "title": "Notificações",
+    "description": "Escolha o que aceita receber e por onde. Suas preferências valem para qualquer envio futuro.",
+    "demo": {
+      "title": "Nada é enviado nesta demonstração",
+      "body": "Nenhum e-mail ou push sai do app nesta versão. O que você marca aqui fica guardado como consentimento e precisa ser respeitado por qualquer envio futuro. As mensagens transacionais (confirmação de cadastro e redefinição de senha) são necessárias para a conta funcionar e não podem ser desligadas."
+    },
+    "types": {
+      "title": "O que você aceita receber",
+      "description": "Tudo desligado por padrão. Ligue só o que quiser.",
+      "editorial_digest": {
+        "label": "Resumo editorial",
+        "description": "Novidades do catálogo e destaques, no máximo uma vez por semana."
+      },
+      "streak_reminders": {
+        "label": "Lembretes de sequência",
+        "description": "Um aviso quando sua sequência de dias estiver prestes a zerar."
+      },
+      "commerce_updates": {
+        "label": "Pedidos de teste",
+        "description": "Mudanças de status dos pedidos demonstrativos."
+      }
+    },
+    "transactional": {
+      "title": "Mensagens transacionais",
+      "description": "Necessárias para a conta funcionar. Não podem ser desligadas.",
+      "always": "Sempre ativa",
+      "items": {
+        "confirmation": "Confirmação de cadastro",
+        "password": "Redefinição de senha",
+        "security": "Avisos de segurança da conta"
+      }
+    },
+    "channels": {
+      "title": "Canais",
+      "description": "Por onde você aceitaria receber as mensagens opcionais.",
+      "channel_email": {
+        "label": "E-mail",
+        "description": "Para o e-mail da conta."
+      },
+      "channel_push": {
+        "label": "Push",
+        "description": "Notificações do navegador ou do app instalado, quando existirem."
+      }
+    },
+    "save": "Salvar preferências",
+    "saved": "Preferências salvas.",
+    "errors": {
+      "invalid_input": "Verifique as opções.",
+      "unauthenticated": "Entre para continuar.",
+      "generic": "Não foi possível salvar. Tente novamente."
+    }
+  },
   "onboarding": {
     "title": "Boas-vindas ao Ultra Hero",
     "description": "Dois passos rápidos para personalizar sua experiência. Opcional.",
@@ -372,6 +430,15 @@
       "r4": "Bom",
       "r5": "Ótimo"
     },
+    "category": "Categoria",
+    "categoryHint": "Opcional. Ajuda a equipe a encaminhar o feedback.",
+    "categories": {
+      "bug": "Problema",
+      "suggestion": "Sugestão",
+      "content": "Conteúdo",
+      "commerce": "Loja de teste",
+      "other": "Outro"
+    },
     "message": "Comentário",
     "messageHint": "Opcional, até 1000 caracteres. Não inclua dados pessoais.",
     "submit": "Enviar",
@@ -379,6 +446,7 @@
     "errors": {
       "rate_limited": "Você já enviou muitos feedbacks hoje. Tente amanhã.",
       "feedback_empty": "Dê uma nota ou escreva um comentário.",
+      "invalid_category": "Categoria inválida.",
       "generic": "Não foi possível enviar. Tente novamente."
     }
   },

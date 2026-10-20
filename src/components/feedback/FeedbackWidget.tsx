@@ -3,6 +3,7 @@
 import { MessageSquare, Send, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
+import { DEFAULT_FEEDBACK_CATEGORY, FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/components/feedback/constants";
 import { submitFeedback } from "@/components/me/feedback/actions";
 import { Button, FormField, Sheet, Textarea, useToast } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -11,20 +12,23 @@ type Props = { context: string; className?: string };
 
 const RATINGS = [1, 2, 3, 4, 5] as const;
 
-// Feedback discreto e contextual: botão → Sheet com nota 1–5 (radio group) + comentário opcional.
-// Nunca abre sozinho. Erros do banco (rate_limited, feedback_empty) chegam traduzidos.
+// Feedback discreto e contextual: botão → Sheet com nota 1–5 (radio group), categoria (chips, padrão "outro")
+// e comentário opcional. Um toque na nota + enviar continua bastando. Nunca abre sozinho.
+// Erros do banco (rate_limited, feedback_empty, invalid_category) chegam traduzidos.
 export function FeedbackWidget({ context, className }: Props) {
   const t = useTranslations("me.feedback");
   const { toast } = useToast();
   const groupId = useId();
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState<number | null>(null);
+  const [category, setCategory] = useState<FeedbackCategory>(DEFAULT_FEEDBACK_CATEGORY);
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function reset() {
     setRating(null);
+    setCategory(DEFAULT_FEEDBACK_CATEGORY);
     setMessage("");
     setError(null);
   }
@@ -37,7 +41,7 @@ export function FeedbackWidget({ context, className }: Props) {
     }
     setError(null);
     startTransition(async () => {
-      const result = await submitFeedback({ context, rating, message: message.trim() });
+      const result = await submitFeedback({ context, rating, message: message.trim(), category });
       if (!result.ok) {
         setError(t.has(`errors.${result.error}`) ? t(`errors.${result.error}`) : t("errors.generic"));
         return;
@@ -102,6 +106,41 @@ export function FeedbackWidget({ context, className }: Props) {
             <p className="type-caption text-fg-muted" aria-live="polite">
               {rating !== null ? `${t("ratingOption", { n: rating })} · ${t(`ratingLabels.r${rating}`)}` : ""}
             </p>
+          </fieldset>
+
+          <fieldset className="flex flex-col gap-2">
+            <legend className="text-sm font-semibold text-fg">{t("category")}</legend>
+            <p className="type-caption text-fg-muted">{t("categoryHint")}</p>
+            <div role="radiogroup" aria-label={t("category")} className="flex flex-wrap gap-2">
+              {FEEDBACK_CATEGORIES.map((value) => {
+                const id = `${groupId}-c-${value}`;
+                const selected = category === value;
+                return (
+                  <div key={value} className="relative">
+                    <input
+                      id={id}
+                      type="radio"
+                      name={`${groupId}-category`}
+                      value={value}
+                      checked={selected}
+                      onChange={() => setCategory(value)}
+                      disabled={pending}
+                      className="peer sr-only"
+                    />
+                    <label
+                      htmlFor={id}
+                      className={cn(
+                        "inline-flex min-h-11 cursor-pointer items-center rounded-full border px-3.5 text-sm font-medium transition-colors",
+                        "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus",
+                        selected ? "border-fg bg-fg text-bg" : "border-border-strong text-fg-muted hover:bg-surface-hover hover:text-fg",
+                      )}
+                    >
+                      {t(`categories.${value}`)}
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
           </fieldset>
 
           <FormField label={t("message")} hint={t("messageHint")} error={error ?? undefined}>

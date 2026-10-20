@@ -41,6 +41,11 @@
     "cannot_remove_own_admin": "No puedes quitar tu propio rol de admin.",
     "slug_taken": "Ya existe un registro con este identificador (slug).",
     "not_found": "Registro no encontrado.",
+    "invalid_status": "Estado inválido.",
+    "invalid_priority": "Prioridad inválida.",
+    "invalid_category": "Categoría inválida.",
+    "assignee_not_admin": "El responsable debe tener rol de admin activo.",
+    "note_too_long": "La nota interna supera los 1000 caracteres.",
     "no_service_role": "Clave de servicio no configurada en el servidor.",
     "user_exists": "Ya existe una cuenta con este correo.",
     "retention_exception_active": "Hay una excepción de retención activa para este alcance.",
@@ -366,9 +371,13 @@
     "filters": {
       "status": "Estado",
       "rating": "Nota",
+      "category": "Categoría",
+      "priority": "Prioridad",
       "context": "Contexto (prefijo)",
       "contextPlaceholder": "Ej.: content: o page:/explore",
-      "anyRating": "Cualquier nota"
+      "anyRating": "Cualquier nota",
+      "anyCategory": "Todas las categorías",
+      "anyPriority": "Cualquier prioridad"
     },
     "tableCaption": "Lista de comentarios",
     "columns": {
@@ -376,6 +385,10 @@
       "context": "Contexto",
       "rating": "Nota",
       "message": "Mensaje",
+      "category": "Categoría",
+      "priority": "Prioridad",
+      "assignee": "Responsable",
+      "note": "Nota interna",
       "locale": "Idioma",
       "user": "Usuario",
       "status": "Estado"
@@ -384,6 +397,35 @@
     "noRating": "Sin nota",
     "noMessage": "Sin mensaje",
     "anonymous": "Anónimo",
+    "categories": {
+      "bug": "Problema",
+      "suggestion": "Sugerencia",
+      "content": "Contenido",
+      "commerce": "Tienda de prueba",
+      "other": "Otro"
+    },
+    "priorities": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "noPriority": "Sin prioridad",
+    "unassigned": "Sin responsable",
+    "noNote": "Sin nota",
+    "triage": {
+      "button": "Triar",
+      "title": "Triaje del comentario",
+      "description": "Prioridad, responsable, nota interna y estado. Cada cambio queda registrado en la auditoría.",
+      "status": "Estado",
+      "priority": "Prioridad",
+      "assignee": "Responsable",
+      "assigneeHint": "Solo cuentas con rol de admin activo.",
+      "note": "Nota interna",
+      "noteHint": "Hasta 1000 caracteres. No se muestra al usuario.",
+      "unchanged": "Nada cambió.",
+      "save": "Guardar triaje",
+      "saved": "Triaje registrado."
+    },
     "empty": "Sin comentarios",
     "emptyDescription": "Cuando los usuarios envíen comentarios, aparecerán aquí.",
     "markReviewed": "Marcar como revisado",
