@@ -1383,6 +1383,9 @@ isOneToOne: false
 "submit_feedback":
 { Args: { "p_context": string,"p_locale"?: Database["public"]['Enums']["locale_code"],"p_message": string,"p_rating": number }; Returns: string
                            },
+"sync_all_subscriptions":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "sync_subscription":
 { Args: { "p_user": string }; Returns: undefined
                            },
