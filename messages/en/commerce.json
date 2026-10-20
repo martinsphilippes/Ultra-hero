@@ -108,6 +108,19 @@
     "notFoundDescription": "This product may have been archived, hidden, or the address changed.",
     "versionLabel": "Version {n}"
   },
+  "quickAdd": {
+    "addToCart": "Add to test cart",
+    "added": "Added to the test cart",
+    "addedDescription": "{title}: {n, plural, =1 {1 unit} other {# units}} in the cart. No real purchase.",
+    "inCart": "In cart: {n}",
+    "viewCart": "View cart",
+    "loginCta": "Sign in to add",
+    "loginHint": "Test cart: no real purchase.",
+    "unavailable": "Not available for the test cart right now.",
+    "limitReached": "Per-product limit reached in the test cart.",
+    "usedIn": "Used in",
+    "moreContents": "{count, plural, =1 {+1 item} other {+# items}}"
+  },
   "cart": {
     "title": "Test cart",
     "description": "Review the items, choose a fictional destination and simulate shipping. Nothing is charged.",

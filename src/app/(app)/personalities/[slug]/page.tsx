@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
-import { Info, Layers, LibraryBig } from "lucide-react";
+import { Info, Layers, LibraryBig, ShoppingBag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ContentCard, ProgramCard } from "@/components/catalog";
+import { ContentCard, ProductActionCard, ProgramCard } from "@/components/catalog";
+import { isCommerceEnabled } from "@/components/commerce/lib/settings";
 import { ChipLink, ChipRow } from "@/components/discover/ChipLink";
 import { CARD_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { UrlTabs } from "@/components/discover/UrlTabs";
 import { Badge, Button, EmptyState, PillarBadge } from "@/components/ui";
-import { CONTENT_CARD_SELECT, PROGRAM_CARD_SELECT, type ContentCardData, type ProgramCardData } from "@/lib/catalog/queries";
+import { getUser } from "@/lib/auth/session";
+import { groupCreatorProducts, maxCartQuantity, type CreatorProduct, type CreatorProductLinkRow } from "@/lib/catalog/creator-products";
+import { CONTENT_CARD_SELECT, PRODUCT_CARD_SELECT, PROGRAM_CARD_SELECT, type ContentCardData, type ProductCardData, type ProgramCardData } from "@/lib/catalog/queries";
 import { CONTENT_TYPES, type ContentType, type Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -30,8 +33,14 @@ type Creator = {
   rights_note: string | null;
 };
 
+// Produto do card + estoque demo (limite por produto no carrinho de teste).
+type LinkedProduct = ProductCardData & { demo_stock: number | null };
+type LinkRow = CreatorProductLinkRow<LinkedProduct>;
+
 const CREATOR_SELECT = "id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_note";
-const TABS = ["conteudos", "programas"] as const;
+// Vínculos validados cujo conteúdo (publicado) é desta personalidade; o !inner aplica o filtro do embed à linha.
+const LINK_SELECT = `id, content:content!inner(id, slug, title, creator_id, status), product:products(${PRODUCT_CARD_SELECT}, demo_stock)`;
+const TABS = ["conteudos", "programas", "produtos"] as const;
 type Tab = (typeof TABS)[number];
 
 const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
@@ -63,22 +72,55 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // Perfil da personalidade: capa, identidade (sempre marcada como fictícia), nota de direitos e abas.
 export default async function PersonalityPage({ params, searchParams }: Props) {
   const [{ slug }, raw] = await Promise.all([params, searchParams]);
-  const [creator, t, tcat] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.profile"), getTranslations("catalog")]);
+  const [creator, t, tcat, user] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.profile"), getTranslations("catalog"), getUser()]);
   if (!creator) notFound();
 
-  const tab = parseTab(first(raw.tab));
+  const requestedTab = parseTab(first(raw.tab));
   const type = parseType(first(raw.type));
 
   // Uma query por coleção (sem N+1); contagens e filtro por tipo derivam do mesmo resultado.
   const supabase = await createClient();
-  const [contentRes, programRes] = await Promise.all([
+  const [contentRes, programRes, linksRes, settingsRes] = await Promise.all([
     supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").order("published_at", { ascending: false }).limit(100),
     supabase.from("programs").select(PROGRAM_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(50),
+    supabase
+      .from("content_product_links")
+      .select(LINK_SELECT)
+      .eq("content.creator_id", creator.id)
+      .eq("content.status", "published")
+      .eq("status", "validated")
+      .order("validated_at", { ascending: false })
+      .order("id")
+      .limit(100),
+    supabase.rpc("public_settings"),
   ]);
   const allContents = (contentRes.data ?? []) as unknown as ContentCardData[];
   const contents = type ? allContents.filter((c) => c.type === type) : allContents;
   const availableTypes = CONTENT_TYPES.filter((ct) => allContents.some((c) => c.type === ct));
   const programs = ((programRes.data ?? []) as unknown as ProgramCardData[]).filter((p) => p.version);
+
+  // Kill switch: desligado, a aba de produtos some e nada é contado.
+  const commerceEnabled = !settingsRes.error && isCommerceEnabled(settingsRes.data);
+
+  // Produtos ligados à personalidade: mesma regra do RelatedProducts (vínculo validado + product_is_purchasable).
+  let products: CreatorProduct<LinkedProduct>[] = [];
+  let inCartByProduct = new Map<string, number>();
+  if (commerceEnabled && !linksRes.error) {
+    const grouped = groupCreatorProducts((linksRes.data ?? []) as unknown as LinkRow[]);
+    const [purchasable, cartRes] = await Promise.all([
+      Promise.all(grouped.map(async ({ product }) => Boolean((await supabase.rpc("product_is_purchasable", { p_product: product.id })).data))),
+      user && grouped.length > 0
+        ? supabase.from("cart_items").select("product_id, quantity").in("product_id", grouped.map(({ product }) => product.id))
+        : Promise.resolve({ data: null }),
+    ]);
+    products = grouped.filter((_, index) => purchasable[index]);
+    inCartByProduct = new Map((cartRes.data ?? []).map((row) => [row.product_id, row.quantity]));
+  }
+
+  // A aba aparece com produtos, ou quando pedida explicitamente na URL (mostra o estado vazio).
+  const showProductsTab = commerceEnabled && (products.length > 0 || requestedTab === "produtos");
+  const tab: Tab = requestedTab === "produtos" && !showProductsTab ? "conteudos" : requestedTab;
+  const productsPath = profileHref(creator.slug, "produtos");
 
   const cover = creator.cover_url ?? `/placeholders/cover-${creator.pillars[0] ?? "routine"}-2.svg`;
   const avatar = creator.avatar_url ?? "/placeholders/avatar-1.svg";
@@ -86,6 +128,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   const tabs = [
     { value: "conteudos", label: `${t("tabs.contents")} · ${allContents.length}`, href: profileHref(creator.slug, "conteudos", type), icon: <LibraryBig /> },
     { value: "programas", label: `${t("tabs.programs")} · ${programs.length}`, href: profileHref(creator.slug, "programas"), icon: <Layers /> },
+    ...(showProductsTab ? [{ value: "produtos", label: `${t("tabs.products")} · ${products.length}`, href: productsPath, icon: <ShoppingBag /> }] : []),
   ];
 
   return (
@@ -119,6 +162,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
             </ul>
             <p className="type-caption text-fg-muted">
               {t("stats.contents", { count: allContents.length })} · {t("stats.programs", { count: programs.length })}
+              {commerceEnabled && products.length > 0 ? ` · ${t("stats.products", { count: products.length })}` : null}
             </p>
           </div>
         </div>
@@ -177,20 +221,57 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
               </ul>
             )}
           </div>
-        ) : programRes.error ? (
+        ) : tab === "programas" ? (
+          programRes.error ? (
+            <InlineError />
+          ) : programs.length === 0 ? (
+            <div className="rounded-2xl border border-border bg-surface">
+              <EmptyState icon={<Layers />} title={t("programsEmptyTitle")} description={t("programsEmptyDescription")} />
+            </div>
+          ) : (
+            <ul className={CARD_GRID}>
+              {programs.map((program) => (
+                <li key={program.id}>
+                  <ProgramCard program={program} />
+                </li>
+              ))}
+            </ul>
+          )
+        ) : linksRes.error ? (
           <InlineError />
-        ) : programs.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface">
-            <EmptyState icon={<Layers />} title={t("programsEmptyTitle")} description={t("programsEmptyDescription")} />
+            <EmptyState
+              icon={<ShoppingBag />}
+              title={t("productsEmptyTitle")}
+              description={t("productsEmptyDescription")}
+              action={
+                <Button asChild variant="secondary">
+                  <Link href="/shop">{t("productsGoToShop")}</Link>
+                </Button>
+              }
+            />
           </div>
         ) : (
-          <ul className={CARD_GRID}>
-            {programs.map((program) => (
-              <li key={program.id}>
-                <ProgramCard program={program} />
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-4">
+            <p className="type-body-sm text-fg-muted">{t("productsNote")}</p>
+            <ul className={CARD_GRID}>
+              {products.map(({ product, usedIn }) => (
+                <li key={product.id}>
+                  <ProductActionCard
+                    product={product}
+                    usedIn={usedIn}
+                    purchasable
+                    maxQuantity={maxCartQuantity(product.demo_stock)}
+                    isLoggedIn={Boolean(user)}
+                    inCart={inCartByProduct.get(product.id) ?? 0}
+                    nextPath={productsPath}
+                    interestContentId={usedIn[0].id}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </UrlTabs>
     </div>

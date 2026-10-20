@@ -169,19 +169,25 @@
       "coverAlt": "Portada de {name}",
       "stats": {
         "contents": "{count, plural, =1 {1 contenido} other {# contenidos}}",
-        "programs": "{count, plural, =1 {1 programa} other {# programas}}"
+        "programs": "{count, plural, =1 {1 programa} other {# programas}}",
+        "products": "{count, plural, =1 {1 producto} other {# productos}}"
       },
       "tabs": {
         "label": "Secciones del perfil",
         "contents": "Contenidos",
-        "programs": "Programas"
+        "programs": "Programas",
+        "products": "Productos"
       },
       "typeFilter": "Filtrar por tipo",
       "allTypes": "Todos",
       "contentsEmptyTitle": "Ningún contenido con este filtro",
       "contentsEmptyDescription": "Prueba otro tipo de contenido.",
       "programsEmptyTitle": "Ningún programa publicado",
-      "programsEmptyDescription": "Esta personalidad aún no tiene programas."
+      "programsEmptyDescription": "Esta personalidad aún no tiene programas.",
+      "productsNote": "Productos de demostración vinculados a los contenidos de esta personalidad. Ninguna compra, cobro o entrega real.",
+      "productsEmptyTitle": "Ningún producto disponible",
+      "productsEmptyDescription": "Los productos vinculados a los contenidos de esta personalidad no están disponibles por ahora.",
+      "productsGoToShop": "Ver la tienda de demostración"
     },
     "eyebrow": "Quienes guían los contenidos",
     "notFoundTitle": "Personalidad no encontrada",

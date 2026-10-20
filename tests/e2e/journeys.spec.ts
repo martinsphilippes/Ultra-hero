@@ -25,6 +25,38 @@ test.describe("visitante", () => {
     }
   });
 
+  // helena-vilar: personalidade do seed (0008) com vínculos validados (g1→m1, g3→k1, g5→m4, g9→k3).
+  test("vê os produtos ligados à personalidade e recebe CTA de login no carrinho de teste", async ({ page }) => {
+    await page.goto("/personalities/helena-vilar");
+    await page.waitForLoadState("networkidle");
+    const tab = page.getByRole("tab", { name: /^produtos\b/i });
+    await expect(tab).toBeVisible();
+    // As abas trocam via router (client); um clique antes da hidratação não navega — repete até a URL mudar.
+    await expect(async () => {
+      await tab.click();
+      await expect(page).toHaveURL(/\/personalities\/helena-vilar\?tab=produtos$/, { timeout: 2_000 });
+    }).toPass({ timeout: 20_000 });
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+
+    const cards = page.getByRole("tabpanel").getByTestId("product-action-card");
+    await expect(cards.first()).toBeVisible();
+    const count = await cards.count();
+    expect(count).toBeGreaterThan(0);
+
+    // "Produtos · N" e a linha de estatísticas batem com o número de cards renderizados
+    const label = (await tab.textContent()) ?? "";
+    expect(Number(label.match(/(\d+)/)?.[1])).toBe(count);
+    await expect(page.getByText(new RegExp(`· ${count} produtos?$`))).toBeVisible();
+
+    // visitante: cada card leva ao login com retorno para a aba de produtos; nenhum botão de adicionar
+    const loginCta = cards.first().getByRole("link", { name: /entrar para adicionar/i });
+    await expect(loginCta).toBeVisible();
+    await expect(loginCta).toHaveAttribute("href", /^\/login\?next=%2Fpersonalities%2Fhelena-vilar%3Ftab%3Dprodutos$/);
+    await expect(page.getByRole("tabpanel").getByRole("button", { name: /adicionar ao carrinho/i })).toHaveCount(0);
+    // "Usado em": ao menos um link para o conteúdo de origem
+    await expect(cards.first().locator('a[href^="/content/"]').first()).toBeVisible();
+  });
+
   test("ambiente de demonstração está sinalizado", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();

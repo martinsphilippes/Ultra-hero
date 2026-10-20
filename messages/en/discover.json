@@ -169,19 +169,25 @@
       "coverAlt": "Cover of {name}",
       "stats": {
         "contents": "{count, plural, =1 {1 item} other {# items}}",
-        "programs": "{count, plural, =1 {1 program} other {# programs}}"
+        "programs": "{count, plural, =1 {1 program} other {# programs}}",
+        "products": "{count, plural, =1 {1 product} other {# products}}"
       },
       "tabs": {
         "label": "Profile sections",
         "contents": "Content",
-        "programs": "Programs"
+        "programs": "Programs",
+        "products": "Products"
       },
       "typeFilter": "Filter by type",
       "allTypes": "All",
       "contentsEmptyTitle": "No content with this filter",
       "contentsEmptyDescription": "Try another content type.",
       "programsEmptyTitle": "No published programs",
-      "programsEmptyDescription": "This personality has no programs yet."
+      "programsEmptyDescription": "This personality has no programs yet.",
+      "productsNote": "Demo products linked to this personality's content. No real purchase, charge or delivery.",
+      "productsEmptyTitle": "No products available",
+      "productsEmptyDescription": "The products linked to this personality's content are not available right now.",
+      "productsGoToShop": "Go to the demo shop"
     },
     "eyebrow": "Who guides the content",
     "notFoundTitle": "Personality not found",

@@ -108,6 +108,19 @@
     "notFoundDescription": "Este producto puede haber sido archivado, ocultado o la dirección cambió.",
     "versionLabel": "Versión {n}"
   },
+  "quickAdd": {
+    "addToCart": "Añadir al carrito de prueba",
+    "added": "Añadido al carrito de prueba",
+    "addedDescription": "{title}: {n, plural, =1 {1 unidad} other {# unidades}} en el carrito. Ninguna compra real.",
+    "inCart": "En el carrito: {n}",
+    "viewCart": "Ver carrito",
+    "loginCta": "Iniciar sesión para añadir",
+    "loginHint": "Carrito de prueba: ninguna compra real.",
+    "unavailable": "No disponible para el carrito de prueba por ahora.",
+    "limitReached": "Límite por producto alcanzado en el carrito de prueba.",
+    "usedIn": "Usado en",
+    "moreContents": "{count, plural, =1 {+1 contenido} other {+# contenidos}}"
+  },
   "cart": {
     "title": "Carrito de prueba",
     "description": "Revisa los artículos, elige un destino ficticio y simula el envío. No se cobra nada.",
