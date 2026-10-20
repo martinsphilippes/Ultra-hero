@@ -1,0 +1,23 @@
+{
+  "generic": {
+    "title": "Algo salió mal",
+    "description": "Ocurrió un error inesperado. Inténtalo de nuevo o vuelve al inicio."
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "La dirección puede haber cambiado o nunca existió."
+  },
+  "offline": {
+    "title": "Estás sin conexión",
+    "description": "No se pudo cargar esta página sin conexión. Revisa tu internet e inténtalo de nuevo."
+  },
+  "forbidden": {
+    "title": "Acceso restringido",
+    "description": "No tienes permiso para acceder a esta sección."
+  },
+  "network": {
+    "title": "Fallo de conexión",
+    "description": "No pudimos comunicarnos con el servidor. Revisa tu internet."
+  },
+  "digest": "Código del error: {digest}"
+}

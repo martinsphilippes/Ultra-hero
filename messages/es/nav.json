@@ -1,0 +1,57 @@
+{
+  "tabs": {
+    "home": "Inicio",
+    "explore": "Explorar",
+    "personalities": "Personalidades",
+    "evolution": "Evolución",
+    "profile": "Perfil"
+  },
+  "portals": {
+    "admin": "Admin",
+    "creator": "Personalidad",
+    "seller": "Proveedor"
+  },
+  "admin": {
+    "dashboard": "Panel",
+    "users": "Usuarios",
+    "invitations": "Invitaciones",
+    "creators": "Personalidades",
+    "content": "Contenidos",
+    "programs": "Programas",
+    "plans": "Planes",
+    "featured": "Destacados",
+    "translations": "Traducciones",
+    "products": "Productos",
+    "links": "Vínculos",
+    "orders": "Pedidos",
+    "feedback": "Comentarios",
+    "metrics": "Métricas",
+    "audit": "Auditoría",
+    "settings": "Configuración"
+  },
+  "creator": {
+    "dashboard": "Panel",
+    "content": "Mis contenidos",
+    "links": "Vínculos de productos"
+  },
+  "seller": {
+    "dashboard": "Panel",
+    "products": "Productos",
+    "fulfillments": "Entregas"
+  },
+  "actions": {
+    "search": "Buscar",
+    "login": "Iniciar sesión",
+    "account": "Mi cuenta",
+    "backToApp": "Volver a la app",
+    "menu": "Menú",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "portalLabel": "Portal",
+  "portalDescription": {
+    "admin": "Administración de Ultra Hero",
+    "creator": "Área de la personalidad",
+    "seller": "Área del proveedor"
+  }
+}

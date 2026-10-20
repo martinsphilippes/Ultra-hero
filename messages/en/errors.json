@@ -1,0 +1,23 @@
+{
+  "generic": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Try again or go back home."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address may have changed or never existed."
+  },
+  "offline": {
+    "title": "You are offline",
+    "description": "This page could not be loaded without a connection. Check your internet and try again."
+  },
+  "forbidden": {
+    "title": "Restricted access",
+    "description": "You do not have permission to access this area."
+  },
+  "network": {
+    "title": "Connection failed",
+    "description": "We could not reach the server. Check your internet."
+  },
+  "digest": "Error code: {digest}"
+}

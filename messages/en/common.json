@@ -1,0 +1,102 @@
+{
+  "app": {
+    "name": "Ultra Hero",
+    "tagline": "Routine, training, nutrition and gastronomy in one place.",
+    "description": "Ultra Hero: content, habits, workouts, nutrition and gastronomy with fictional personalities, programs and progress. Demo environment."
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "retry": "Try again",
+    "seeAll": "See all",
+    "search": "Search",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "remove": "Remove",
+    "continue": "Continue",
+    "finish": "Finish",
+    "start": "Start",
+    "share": "Share",
+    "copy": "Copy",
+    "open": "Open",
+    "dismiss": "Dismiss",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signUp": "Create account",
+    "learnMore": "Learn more",
+    "apply": "Apply",
+    "clear": "Clear",
+    "filter": "Filter",
+    "select": "Select",
+    "more": "More",
+    "goHome": "Go to home",
+    "reload": "Reload"
+  },
+  "states": {
+    "loading": "Loading…",
+    "loadingDescription": "Just a moment.",
+    "error": "Something went wrong",
+    "errorDescription": "We could not complete the action. Please try again.",
+    "empty": "Nothing here yet",
+    "emptyDescription": "When there is something new, it will show up here.",
+    "retry": "Try again",
+    "underConstruction": "Under construction",
+    "underConstructionDescription": "This area is being prepared. Check back soon.",
+    "offline": "You are offline",
+    "offlineDescription": "Connect to the internet to continue.",
+    "saved": "Saved",
+    "success": "All set",
+    "notFound": "Not found",
+    "comingSoon": "Coming soon"
+  },
+  "demo": {
+    "banner": "Demo environment: no real payments, deliveries or charges.",
+    "tag": "Demo",
+    "dismiss": "Dismiss demo notice"
+  },
+  "languages": {
+    "label": "Language",
+    "pt-BR": "Português (Brasil)",
+    "en": "English",
+    "es": "Español",
+    "originalLanguage": "Original language",
+    "untranslated": "Content shown in its original language ({language})"
+  },
+  "theme": {
+    "label": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "system": "System",
+    "current": "Current theme: {theme}",
+    "switchTo": "Switch to {theme}"
+  },
+  "pillars": {
+    "routine": "Routine",
+    "training": "Training",
+    "nutrition": "Nutrition",
+    "gastronomy": "Gastronomy"
+  },
+  "plans": {
+    "free": "Free",
+    "premium": "Premium"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content",
+    "loading": "Loading",
+    "closeDialog": "Close dialog",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNavigation": "Main navigation",
+    "portalNavigation": "Portal navigation",
+    "notifications": "Notifications",
+    "avatarOf": "Photo of {name}",
+    "progress": "Progress",
+    "required": "required",
+    "optional": "optional"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "generic": {
+    "title": "Algo deu errado",
+    "description": "Ocorreu um erro inesperado. Tente novamente ou volte para o início."
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "O endereço pode ter mudado ou nunca existiu."
+  },
+  "offline": {
+    "title": "Você está offline",
+    "description": "Não foi possível carregar esta página sem conexão. Verifique sua internet e tente novamente."
+  },
+  "forbidden": {
+    "title": "Acesso restrito",
+    "description": "Você não tem permissão para acessar esta área."
+  },
+  "network": {
+    "title": "Falha de conexão",
+    "description": "Não conseguimos falar com o servidor. Verifique sua internet."
+  },
+  "digest": "Código do erro: {digest}"
+}

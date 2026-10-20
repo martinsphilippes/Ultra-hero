@@ -18,6 +18,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Assets estáticos (service worker roda em outro contexto global)
+      "public/**",
     ],
   },
 ];

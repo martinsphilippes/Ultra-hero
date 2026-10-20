@@ -1,26 +1,393 @@
 @import "tailwindcss";
 
+/* =============================================================================
+   Ultra Hero · Design system (paleta PROVISÓRIA, não é a marca final)
+   obsidian #0B0B0B · vital orange #FF8A2B · sand #E8E3DB
+   Tema escuro é o padrão. [data-theme="light"] força claro, [data-theme="dark"]
+   força escuro; sem atributo (ou "system") segue prefers-color-scheme.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------- tokens ---- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  --uh-bg: #0b0b0b;
+  --uh-surface: #141414;
+  --uh-surface-elevated: #1b1b1b;
+  --uh-surface-hover: #222222;
+  --uh-border: rgba(255, 255, 255, 0.1);
+  --uh-border-strong: rgba(255, 255, 255, 0.2);
+  --uh-fg: #f2efea;
+  --uh-fg-muted: #a7a199;
+  --uh-fg-subtle: #6f6a64;
+  --uh-accent: #ff8a2b;
+  --uh-accent-hover: #ff9b47;
+  --uh-accent-fg: #0b0b0b;
+  --uh-accent-text: #ffa45c;
+  --uh-accent-soft: rgba(255, 138, 43, 0.14);
+  --uh-success: #3dd68c;
+  --uh-success-soft: rgba(61, 214, 140, 0.14);
+  --uh-warning: #ffc857;
+  --uh-warning-soft: rgba(255, 200, 87, 0.14);
+  --uh-danger: #ff6b6b;
+  --uh-danger-soft: rgba(255, 107, 107, 0.14);
+  --uh-info: #6fb7ff;
+  --uh-info-soft: rgba(111, 183, 255, 0.14);
+  --uh-focus: #ffb070;
+  --uh-overlay: rgba(0, 0, 0, 0.62);
+  --uh-pillar-routine: #9db4ff;
+  --uh-pillar-routine-soft: rgba(125, 156, 255, 0.16);
+  --uh-pillar-training: #ffa45c;
+  --uh-pillar-training-soft: rgba(255, 138, 43, 0.16);
+  --uh-pillar-nutrition: #6ee7a0;
+  --uh-pillar-nutrition-soft: rgba(76, 212, 138, 0.16);
+  --uh-pillar-gastronomy: #ff8fb5;
+  --uh-pillar-gastronomy-soft: rgba(242, 107, 154, 0.16);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --uh-shadow-md: 0 6px 18px -6px rgba(0, 0, 0, 0.55);
+  --uh-shadow-lg: 0 18px 40px -12px rgba(0, 0, 0, 0.65);
+  --uh-shadow-glow: 0 0 0 1px rgba(255, 138, 43, 0.35), 0 10px 30px -8px rgba(255, 138, 43, 0.35);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Tema claro: forçado pelo atributo ou pelo sistema (quando não forçado escuro). */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --uh-bg: #f7f4ef;
+  --uh-surface: #ffffff;
+  --uh-surface-elevated: #ffffff;
+  --uh-surface-hover: #f1ece4;
+  --uh-border: rgba(11, 11, 11, 0.1);
+  --uh-border-strong: rgba(11, 11, 11, 0.2);
+  --uh-fg: #141414;
+  --uh-fg-muted: #5f5a54;
+  --uh-fg-subtle: #8c867e;
+  --uh-accent: #ff8a2b;
+  --uh-accent-hover: #f07a18;
+  --uh-accent-fg: #0b0b0b;
+  --uh-accent-text: #9a3f00;
+  --uh-accent-soft: rgba(255, 138, 43, 0.16);
+  --uh-success: #166b40;
+  --uh-success-soft: rgba(22, 107, 64, 0.12);
+  --uh-warning: #8a5a00;
+  --uh-warning-soft: rgba(255, 200, 87, 0.22);
+  --uh-danger: #c62828;
+  --uh-danger-soft: rgba(198, 40, 40, 0.1);
+  --uh-info: #1d5fb0;
+  --uh-info-soft: rgba(29, 95, 176, 0.1);
+  --uh-focus: #d96a0c;
+  --uh-overlay: rgba(11, 11, 11, 0.45);
+  --uh-pillar-routine: #2f4fcc;
+  --uh-pillar-routine-soft: #e4eaff;
+  --uh-pillar-training: #9e4408;
+  --uh-pillar-training-soft: #ffe8d6;
+  --uh-pillar-nutrition: #176b3a;
+  --uh-pillar-nutrition-soft: #ddf5e6;
+  --uh-pillar-gastronomy: #b0205b;
+  --uh-pillar-gastronomy-soft: #fde1eb;
+  --uh-shadow-sm: 0 1px 2px rgba(11, 11, 11, 0.08);
+  --uh-shadow-md: 0 6px 18px -6px rgba(11, 11, 11, 0.18);
+  --uh-shadow-lg: 0 18px 40px -12px rgba(11, 11, 11, 0.22);
+  --uh-shadow-glow: 0 0 0 1px rgba(255, 138, 43, 0.4), 0 10px 30px -8px rgba(255, 138, 43, 0.3);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --uh-bg: #f7f4ef;
+    --uh-surface: #ffffff;
+    --uh-surface-elevated: #ffffff;
+    --uh-surface-hover: #f1ece4;
+    --uh-border: rgba(11, 11, 11, 0.1);
+    --uh-border-strong: rgba(11, 11, 11, 0.2);
+    --uh-fg: #141414;
+    --uh-fg-muted: #5f5a54;
+    --uh-fg-subtle: #8c867e;
+    --uh-accent: #ff8a2b;
+    --uh-accent-hover: #f07a18;
+    --uh-accent-fg: #0b0b0b;
+    --uh-accent-text: #9a3f00;
+    --uh-accent-soft: rgba(255, 138, 43, 0.16);
+    --uh-success: #166b40;
+    --uh-success-soft: rgba(22, 107, 64, 0.12);
+    --uh-warning: #8a5a00;
+    --uh-warning-soft: rgba(255, 200, 87, 0.22);
+    --uh-danger: #c62828;
+    --uh-danger-soft: rgba(198, 40, 40, 0.1);
+    --uh-info: #1d5fb0;
+    --uh-info-soft: rgba(29, 95, 176, 0.1);
+    --uh-focus: #d96a0c;
+    --uh-overlay: rgba(11, 11, 11, 0.45);
+    --uh-pillar-routine: #2f4fcc;
+    --uh-pillar-routine-soft: #e4eaff;
+    --uh-pillar-training: #9e4408;
+    --uh-pillar-training-soft: #ffe8d6;
+    --uh-pillar-nutrition: #176b3a;
+    --uh-pillar-nutrition-soft: #ddf5e6;
+    --uh-pillar-gastronomy: #b0205b;
+    --uh-pillar-gastronomy-soft: #fde1eb;
+    --uh-shadow-sm: 0 1px 2px rgba(11, 11, 11, 0.08);
+    --uh-shadow-md: 0 6px 18px -6px rgba(11, 11, 11, 0.18);
+    --uh-shadow-lg: 0 18px 40px -12px rgba(11, 11, 11, 0.22);
+    --uh-shadow-glow: 0 0 0 1px rgba(255, 138, 43, 0.4), 0 10px 30px -8px rgba(255, 138, 43, 0.3);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ------------------------------------------------------- tema do Tailwind ---- */
+@theme inline {
+  --color-bg: var(--uh-bg);
+  --color-surface: var(--uh-surface);
+  --color-surface-elevated: var(--uh-surface-elevated);
+  --color-surface-hover: var(--uh-surface-hover);
+  --color-border: var(--uh-border);
+  --color-border-strong: var(--uh-border-strong);
+  --color-fg: var(--uh-fg);
+  --color-fg-muted: var(--uh-fg-muted);
+  --color-fg-subtle: var(--uh-fg-subtle);
+  --color-accent: var(--uh-accent);
+  --color-accent-hover: var(--uh-accent-hover);
+  --color-accent-fg: var(--uh-accent-fg);
+  --color-accent-text: var(--uh-accent-text);
+  --color-accent-soft: var(--uh-accent-soft);
+  --color-success: var(--uh-success);
+  --color-success-soft: var(--uh-success-soft);
+  --color-warning: var(--uh-warning);
+  --color-warning-soft: var(--uh-warning-soft);
+  --color-danger: var(--uh-danger);
+  --color-danger-soft: var(--uh-danger-soft);
+  --color-info: var(--uh-info);
+  --color-info-soft: var(--uh-info-soft);
+  --color-focus: var(--uh-focus);
+  --color-overlay: var(--uh-overlay);
+  --color-pillar-routine: var(--uh-pillar-routine);
+  --color-pillar-routine-soft: var(--uh-pillar-routine-soft);
+  --color-pillar-training: var(--uh-pillar-training);
+  --color-pillar-training-soft: var(--uh-pillar-training-soft);
+  --color-pillar-nutrition: var(--uh-pillar-nutrition);
+  --color-pillar-nutrition-soft: var(--uh-pillar-nutrition-soft);
+  --color-pillar-gastronomy: var(--uh-pillar-gastronomy);
+  --color-pillar-gastronomy-soft: var(--uh-pillar-gastronomy-soft);
+
+  --shadow-sm: var(--uh-shadow-sm);
+  --shadow-md: var(--uh-shadow-md);
+  --shadow-lg: var(--uh-shadow-lg);
+  --shadow-glow: var(--uh-shadow-glow);
+}
+
+@theme {
+  /* Marca (constantes, não mudam com o tema) */
+  --color-obsidian: #0b0b0b;
+  --color-vital: #ff8a2b;
+  --color-sand: #e8e3db;
+
+  /* Sem fontes licenciadas: pilha do sistema */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Raios: cantos mais "cortados" que o padrão, lembrando a marca em degraus */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+
+  /* Escala de espaçamento (base 4px) + medidas de layout */
+  --spacing: 0.25rem;
+  --spacing-gutter: 1rem;
+  --spacing-touch: 2.75rem;
+  --spacing-topbar: 4rem;
+  --spacing-bottomnav: 4rem;
+  --spacing-sidebar: 16rem;
+  --spacing-content: 72rem;
+  --spacing-prose: 42rem;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-fade-in: uh-fade-in 0.25s var(--ease-out-expo) both;
+  --animate-slide-up: uh-slide-up 0.35s var(--ease-out-expo) both;
+  --animate-shimmer: uh-shimmer 1.6s linear infinite;
+
+  @keyframes uh-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes uh-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes uh-shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ base ---- */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--uh-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--uh-bg);
+    color: var(--uh-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+
+  /* Foco sempre visível e consistente */
+  :focus-visible {
+    outline: 2px solid var(--uh-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--uh-accent);
+    color: var(--uh-accent-fg);
+  }
+
+  /* Trava a rolagem do documento enquanto um <dialog> modal está aberto */
+  :root:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(3px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------- tipografia ---------- */
+@utility type-display {
+  font-size: clamp(2.25rem, 1.5rem + 3.5vw, 3.75rem);
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+@utility type-h1 {
+  font-size: clamp(1.75rem, 1.35rem + 1.8vw, 2.5rem);
+  line-height: 1.1;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+@utility type-h2 {
+  font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+@utility type-h3 {
+  font-size: 1.125rem;
+  line-height: 1.35;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+@utility type-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+@utility type-body-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+@utility type-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+@utility type-overline {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+@utility type-numeric {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ------------------------------------------------------- utilitários ---------- */
+/* Área mínima de toque 44px */
+@utility touch {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+/* Canto superior direito "em degraus", eco da marca */
+@utility clip-step {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 28px) 0,
+    calc(100% - 28px) 10px,
+    calc(100% - 14px) 10px,
+    calc(100% - 14px) 20px,
+    100% 20px,
+    100% 100%,
+    0 100%
+  );
+}
+/* Grade técnica sutil para fundos */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, var(--uh-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--uh-border) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+/* Brilho suave do acento em cards/CTAs */
+@utility glow-accent {
+  box-shadow: var(--uh-shadow-glow);
+}
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+/* Skeleton com brilho deslizante */
+@utility shimmer {
+  background: linear-gradient(90deg, var(--uh-surface-elevated) 25%, var(--uh-surface-hover) 50%, var(--uh-surface-elevated) 75%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
 }

@@ -1,0 +1,57 @@
+{
+  "tabs": {
+    "home": "Home",
+    "explore": "Explore",
+    "personalities": "Personalities",
+    "evolution": "Progress",
+    "profile": "Profile"
+  },
+  "portals": {
+    "admin": "Admin",
+    "creator": "Personality",
+    "seller": "Supplier"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "invitations": "Invitations",
+    "creators": "Personalities",
+    "content": "Content",
+    "programs": "Programs",
+    "plans": "Plans",
+    "featured": "Featured",
+    "translations": "Translations",
+    "products": "Products",
+    "links": "Links",
+    "orders": "Orders",
+    "feedback": "Feedback",
+    "metrics": "Metrics",
+    "audit": "Audit log",
+    "settings": "Settings"
+  },
+  "creator": {
+    "dashboard": "Dashboard",
+    "content": "My content",
+    "links": "Product links"
+  },
+  "seller": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "fulfillments": "Fulfillments"
+  },
+  "actions": {
+    "search": "Search",
+    "login": "Sign in",
+    "account": "My account",
+    "backToApp": "Back to app",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "portalLabel": "Portal",
+  "portalDescription": {
+    "admin": "Ultra Hero administration",
+    "creator": "Personality area",
+    "seller": "Supplier area"
+  }
+}

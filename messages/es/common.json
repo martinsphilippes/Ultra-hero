@@ -1,0 +1,102 @@
+{
+  "app": {
+    "name": "Ultra Hero",
+    "tagline": "Rutina, entrenamiento, nutrición y gastronomía en un solo lugar.",
+    "description": "Ultra Hero: contenidos, hábitos, entrenamientos, nutrición y gastronomía con personalidades ficticias, programas y evolución. Entorno de demostración."
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "confirm": "Confirmar",
+    "retry": "Intentar de nuevo",
+    "seeAll": "Ver todo",
+    "search": "Buscar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "add": "Agregar",
+    "remove": "Quitar",
+    "continue": "Continuar",
+    "finish": "Finalizar",
+    "start": "Empezar",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "open": "Abrir",
+    "dismiss": "Descartar",
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "signUp": "Crear cuenta",
+    "learnMore": "Saber más",
+    "apply": "Aplicar",
+    "clear": "Limpiar",
+    "filter": "Filtrar",
+    "select": "Seleccionar",
+    "more": "Más",
+    "goHome": "Ir al inicio",
+    "reload": "Recargar"
+  },
+  "states": {
+    "loading": "Cargando…",
+    "loadingDescription": "Un momento.",
+    "error": "Algo salió mal",
+    "errorDescription": "No pudimos completar la acción. Inténtalo de nuevo.",
+    "empty": "Todavía no hay nada aquí",
+    "emptyDescription": "Cuando haya novedades, aparecerán aquí.",
+    "retry": "Intentar de nuevo",
+    "underConstruction": "En construcción",
+    "underConstructionDescription": "Esta sección se está preparando. Vuelve pronto.",
+    "offline": "Estás sin conexión",
+    "offlineDescription": "Conéctate a internet para continuar.",
+    "saved": "Guardado",
+    "success": "Todo listo",
+    "notFound": "No encontrado",
+    "comingSoon": "Próximamente"
+  },
+  "demo": {
+    "banner": "Entorno de demostración: ningún pago, envío ni cobro es real.",
+    "tag": "Demostración",
+    "dismiss": "Descartar aviso de demostración"
+  },
+  "languages": {
+    "label": "Idioma",
+    "pt-BR": "Português (Brasil)",
+    "en": "English",
+    "es": "Español",
+    "originalLanguage": "Idioma original",
+    "untranslated": "Contenido mostrado en su idioma original ({language})"
+  },
+  "theme": {
+    "label": "Tema",
+    "dark": "Oscuro",
+    "light": "Claro",
+    "system": "Sistema",
+    "current": "Tema actual: {theme}",
+    "switchTo": "Cambiar a {theme}"
+  },
+  "pillars": {
+    "routine": "Rutina",
+    "training": "Entrenamiento",
+    "nutrition": "Nutrición",
+    "gastronomy": "Gastronomía"
+  },
+  "plans": {
+    "free": "Gratis",
+    "premium": "Premium"
+  },
+  "a11y": {
+    "skipToContent": "Saltar al contenido",
+    "loading": "Cargando",
+    "closeDialog": "Cerrar ventana",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "mainNavigation": "Navegación principal",
+    "portalNavigation": "Navegación del portal",
+    "notifications": "Notificaciones",
+    "avatarOf": "Foto de {name}",
+    "progress": "Progreso",
+    "required": "obligatorio",
+    "optional": "opcional"
+  }
+}

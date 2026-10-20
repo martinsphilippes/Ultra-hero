@@ -1,0 +1,14 @@
+// Constantes de tema compartilhadas entre servidor, cliente e middleware.
+export const THEME_COOKIE = "uh-theme";
+export const DEMO_BANNER_COOKIE = "uh-demo-dismissed";
+
+export const themes = ["dark", "light", "system"] as const;
+export type Theme = (typeof themes)[number];
+
+export function isTheme(value: unknown): value is Theme {
+  return typeof value === "string" && (themes as readonly string[]).includes(value);
+}
+
+// Script inline (sem flash): aplica data-theme antes da hidratação.
+// Cookie tem prioridade; localStorage cobre páginas servidas pelo service worker.
+export const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);var t=m?decodeURIComponent(m[1]):null;if(!t){t=localStorage.getItem("${THEME_COOKIE}")}var d=document.documentElement;if(t==="dark"||t==="light"){d.setAttribute("data-theme",t)}else{d.removeAttribute("data-theme")}}catch(e){}})();`;
