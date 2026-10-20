@@ -23,6 +23,8 @@ create table if not exists auth.users (
   created_at timestamptz not null default now(),
   last_sign_in_at timestamptz
 );
+-- suspensão de conta (Auth Admin API: ban_duration) — mesma coluna da Supabase
+alter table auth.users add column if not exists banned_until timestamptz;
 
 create or replace function auth.uid() returns uuid language sql stable as $$
   select nullif(coalesce(

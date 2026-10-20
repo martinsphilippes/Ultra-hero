@@ -46,7 +46,7 @@ export function SignupForm({ next }: SignupFormProps) {
     <div className="flex flex-col gap-5">
       <form action={formAction} noValidate className="flex flex-col gap-4">
         <input type="hidden" name="next" value={next} />
-        {errorKey && <AuthAlert>{err(errorKey)}</AuthAlert>}
+        {errorKey && <AuthAlert tone={errorKey === "experimentClosed" ? "info" : "error"}>{err(errorKey)}</AuthAlert>}
 
         <FormField label={t("fields.displayName")} required error={err(fieldErrors.displayName)}>
           <Input name="displayName" type="text" autoComplete="name" placeholder={t("fields.displayNamePlaceholder")} maxLength={80} data-autofocus />

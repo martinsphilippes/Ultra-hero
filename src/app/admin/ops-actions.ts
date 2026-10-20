@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
+import { BAN_FOREVER, BAN_NONE, restoreBanDuration, suspensionBlock } from "@/components/admin-ops/account-status";
+import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { requireRole } from "@/lib/auth/session";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
@@ -71,6 +73,63 @@ export async function setUserRole(input: { userId: string; role: "admin" | "crea
     revalidatePath("/admin/users");
     const t = await getTranslations("adminOps.users.detail");
     return { ok: true, message: t("roleUpdated") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- suspensão de conta (service role + auditoria)
+// O Auth (service role, só no servidor) aplica/remove o ban; o banco registra a mudança
+// em nome do admin (admin_log_account_status). Sem auditoria, a mudança é desfeita.
+export async function setAccountSuspended(input: { userId: string; suspended: boolean }, justification: string): Promise<Result> {
+  const actor = await admin();
+  if (!hasAdminClient()) return fail("no_service_role");
+  const parsed = z.object({ userId: z.uuid(), suspended: z.boolean(), justification: requiredJustification }).safeParse({ ...input, justification });
+  if (!parsed.success) return invalid();
+  const { userId, suspended } = parsed.data;
+  try {
+    const supabase = await createClient();
+    const { data: rows, error: readError } = await supabase.rpc("admin_get_user", { p_id: userId });
+    if (readError) return fail(readError);
+    const target = rows?.[0];
+    if (!target) return fail("user_not_found");
+    if (suspended) {
+      const block = suspensionBlock({ targetId: userId, actorId: actor.id, roles: target.roles });
+      if (block === "self") return fail("cannot_suspend_self");
+      if (block === "admin") return fail("cannot_suspend_admin");
+    }
+    const previousBannedUntil = (target.banned_until as string | null | undefined) ?? null;
+
+    const client = createAdminClient();
+    const { error: banError } = await client.auth.admin.updateUserById(userId, { ban_duration: suspended ? BAN_FOREVER : BAN_NONE });
+    if (banError) return fail("suspension_failed");
+
+    const { error: logError } = await supabase.rpc("admin_log_account_status", {
+      p_user: userId,
+      p_suspended: suspended,
+      p_justification: parsed.data.justification,
+    });
+    if (logError) {
+      // Auditoria recusou: volta o Auth ao estado anterior para não haver mudança sem registro.
+      const undone = await client.auth.admin
+        .updateUserById(userId, { ban_duration: restoreBanDuration(previousBannedUntil) })
+        .then(
+          ({ error }) => !error,
+          () => false,
+        );
+      if (!undone) {
+        // Mudança aplicada no Auth sem auditoria e sem desfazer: precisa de atenção manual.
+        console.error("[admin] suspensão aplicada no Auth sem auditoria; desfazer falhou", { userId, suspended, audit: logError.message });
+        return fail("suspension_unaudited");
+      }
+      return fail(logError);
+    }
+
+    revalidatePath(`/admin/users/${userId}`);
+    revalidatePath("/admin/users");
+    revalidatePath("/admin/audit");
+    const t = await getTranslations("adminOps.users.suspension");
+    return { ok: true, message: suspended ? t("suspendedToast") : t("reactivatedToast") };
   } catch (error) {
     return fail(error);
   }
@@ -558,7 +617,10 @@ export async function createDemoAccount(input: { email: string; role: "seller" |
     const { data: created, error: createError } = await client.auth.admin.createUser({ email: v.email.toLowerCase(), password, email_confirm: true });
     if (createError || !created.user) {
       const msg = createError?.message ?? "";
-      return fail(/already|exists|registered/i.test(msg) ? "user_exists" : "generic");
+      if (/already|exists|registered/i.test(msg)) return fail("user_exists");
+      // Cadastro fechado (experiment.open): o banco só aceita convidados/bootstrap, inclusive aqui.
+      if (isSignupRefusedByDatabase(createError) && !(await readExperimentOpen(await createClient()))) return fail("experiment_closed");
+      return fail("generic");
     }
     const userId = created.user.id;
 

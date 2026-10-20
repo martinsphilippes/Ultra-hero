@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AccountSuspensionButton } from "@/components/admin-ops/AccountSuspensionButton";
+import { isSuspended, suspensionBlock } from "@/components/admin-ops/account-status";
 import { AuditEntry } from "@/components/admin-ops/AuditEntry";
 import { RoleToggles } from "@/components/admin-ops/RoleToggles";
 import { Badge, DemoBadge, PageHeader } from "@/components/ui";
@@ -10,12 +12,12 @@ import { StatusBadge } from "@/components/admin";
 import { formatDate, formatDateTime, formatNumber } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { getUser } from "@/lib/auth/session";
+import { hasAdminClient } from "@/lib/supabase/admin";
 import type { FnReturns } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = Promise<{ id: string }>;
-type SearchParams = Promise<{ email?: string }>;
-type UserRow = FnReturns<"admin_list_users">[number];
+type UserRow = FnReturns<"admin_get_user">[number];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,35 +25,26 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Não há RPC por id: localiza o usuário na listagem (com dica de e-mail, se vier da lista) ou varrendo páginas.
-async function findUser(supabase: Awaited<ReturnType<typeof createClient>>, id: string, emailHint?: string): Promise<UserRow | null> {
-  if (emailHint) {
-    const { data } = await supabase.rpc("admin_list_users", { p_search: emailHint, p_limit: 10, p_offset: 0 });
-    const hit = data?.find((u) => u.id === id);
-    if (hit) return hit;
-  }
-  for (let page = 0; page < 10; page++) {
-    const { data, error } = await supabase.rpc("admin_list_users", { p_limit: 200, p_offset: page * 200 });
-    if (error) throw new Error(error.message);
-    const hit = data?.find((u) => u.id === id);
-    if (hit) return hit;
-    if (!data || data.length < 200) break;
-  }
-  return null;
+// Usuário por id (RPC só para admin), incluindo banned_until (suspensão no Auth).
+async function getAdminUser(supabase: Awaited<ReturnType<typeof createClient>>, id: string): Promise<UserRow | null> {
+  const { data, error } = await supabase.rpc("admin_get_user", { p_id: id });
+  if (error) throw new Error(error.message);
+  return data?.[0] ?? null;
 }
 
-export default async function AdminUserDetailPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
-  const [{ id }, { email: emailHint }] = await Promise.all([params, searchParams]);
+export default async function AdminUserDetailPage({ params }: { params: Params }) {
+  const { id } = await params;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();
-  const [t, tn, ts, tco, locale, me, user] = await Promise.all([
+  const [t, tn, ts, tco, tsu, locale, me, user] = await Promise.all([
     getTranslations("adminOps.users"),
     getTranslations("nav"),
     getTranslations("adminCommon.status"),
     getTranslations("adminOps.common"),
+    getTranslations("adminOps.users.suspension"),
     getLocale(),
     getUser(),
-    findUser(supabase, id, emailHint),
+    getAdminUser(supabase, id),
   ]);
   if (!user) notFound();
 
@@ -85,6 +78,11 @@ export default async function AdminUserDetailPage({ params, searchParams }: { pa
   const sub = subRes.data;
   const n = (v: number | null) => formatNumber(v ?? 0, locale);
   const dt = (v: string | null | undefined) => (v ? formatDateTime(v, locale) : "—");
+  // Suspensão (ban no Auth): só com service role no servidor; nunca de si mesmo nem de admin ativo.
+  const bannedUntil = (user.banned_until as string | null | undefined) ?? null;
+  const suspended = isSuspended(bannedUntil);
+  const block = suspensionBlock({ targetId: id, actorId: me?.id, roles: user.roles });
+  const canManageAccess = hasAdminClient();
 
   return (
     <div className="flex flex-col gap-8">
@@ -94,8 +92,40 @@ export default async function AdminUserDetailPage({ params, searchParams }: { pa
         eyebrow={tn("admin.users")}
         backHref="/admin/users"
         backLabel={tn("admin.users")}
-        actions={user.anonymized ? <Badge variant="warning">{t("columns.anonymized")}</Badge> : undefined}
+        actions={
+          user.anonymized || suspended ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {suspended && <Badge variant="danger">{tsu("suspendedBadge")}</Badge>}
+              {user.anonymized && <Badge variant="warning">{t("columns.anonymized")}</Badge>}
+            </div>
+          ) : undefined
+        }
       />
+
+      <section aria-labelledby="access-title" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 id="access-title" className="type-h3 text-fg">
+                {tsu("title")}
+              </h2>
+              {suspended ? (
+                <Badge variant="danger">{tsu("suspendedUntil", { date: dt(bannedUntil) })}</Badge>
+              ) : (
+                <Badge variant="success">{tsu("active")}</Badge>
+              )}
+            </div>
+            <p className="type-caption text-fg-muted">{tsu("description")}</p>
+            <p className="type-caption text-fg-muted">{tsu("sessionNote")}</p>
+          </div>
+          <AccountSuspensionButton userId={id} suspended={suspended} disabled={!canManageAccess || (!suspended && block !== null)} />
+        </div>
+        {!canManageAccess ? (
+          <p className="type-caption rounded-lg border border-dashed border-border-strong bg-surface-elevated p-3 text-fg-muted">{tsu("unavailable")}</p>
+        ) : !suspended && block ? (
+          <p className="type-caption text-fg-muted">{block === "self" ? tsu("blockedSelf") : tsu("blockedAdmin")}</p>
+        ) : null}
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section aria-labelledby="profile-title" className="rounded-2xl border border-border bg-surface p-4">

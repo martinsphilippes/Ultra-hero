@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck } from "lucide-react";
+import { CircleAlert, CircleCheck, Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +18,13 @@ export function AuthAlert({ tone = "error", children, className }: AuthAlertProp
         className,
       )}
     >
-      {isError ? <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> : <CircleCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />}
+      {isError ? (
+        <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      ) : tone === "info" ? (
+        <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      ) : (
+        <CircleCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      )}
       <p className="text-fg">{children}</p>
     </div>
   );

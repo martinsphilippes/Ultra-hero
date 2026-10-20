@@ -44,6 +44,14 @@
     "no_service_role": "Clave de servicio no configurada en el servidor.",
     "user_exists": "Ya existe una cuenta con este correo.",
     "retention_exception_active": "Hay una excepción de retención activa para este alcance.",
+    "justification_required": "Indica una justificación.",
+    "cannot_suspend_self": "No puedes suspender tu propia cuenta.",
+    "cannot_suspend_admin": "Las cuentas con rol de admin activo no se pueden suspender. Revoca primero el rol de admin.",
+    "user_not_found": "Usuario no encontrado.",
+    "suspension_failed": "No se pudo cambiar el acceso de la cuenta en Auth. No se registró nada.",
+    "account_status_mismatch": "El estado de la cuenta en Auth no coincide con la acción (no se registró nada). Recarga la página e inténtalo de nuevo.",
+    "suspension_unaudited": "El cambio se aplicó en Auth, pero no se pudo auditar ni deshacer. Recarga la página y revisa el estado de la cuenta antes de intentarlo de nuevo.",
+    "experiment_closed": "Registro cerrado (experiment.open desactivado): la base de datos solo acepta correos con invitación pendiente o de la lista de bootstrap. Crea primero una invitación para este correo o reabre el registro.",
     "generic": "No se pudo completar la acción. Inténtalo de nuevo."
   },
   "dashboard": {
@@ -161,6 +169,25 @@
       "audit": "Auditoría sobre este usuario",
       "auditEmpty": "Sin entradas de auditoría para este usuario.",
       "subscriptionDemo": "Suscripción simulada: ningún cobro real."
+    },
+    "suspension": {
+      "title": "Acceso a la cuenta",
+      "active": "Activa",
+      "suspendedBadge": "Suspendida",
+      "suspendedUntil": "Suspendida hasta {date}",
+      "description": "La suspensión bloquea nuevos inicios de sesión y la renovación de sesiones. Los datos y el historial se conservan, y la acción se puede deshacer.",
+      "sessionNote": "Las sesiones ya abiertas pueden seguir funcionando hasta que caduque el token de acceso actual (por lo general, hasta 1 hora).",
+      "suspend": "Suspender cuenta",
+      "reactivate": "Reactivar cuenta",
+      "suspendTitle": "¿Suspender esta cuenta?",
+      "suspendDescription": "La persona ya no podrá iniciar sesión. La acción queda registrada en la auditoría con tu justificación.",
+      "reactivateTitle": "¿Reactivar esta cuenta?",
+      "reactivateDescription": "La persona podrá volver a iniciar sesión. La acción queda registrada en la auditoría con tu justificación.",
+      "suspendedToast": "Cuenta suspendida",
+      "reactivatedToast": "Cuenta reactivada",
+      "blockedSelf": "No puedes suspender tu propia cuenta.",
+      "blockedAdmin": "Las cuentas con rol de admin activo no se pueden suspender. Revoca primero el rol de admin.",
+      "unavailable": "Clave de servicio no configurada: sin SUPABASE_SERVICE_ROLE_KEY en el servidor, no es posible suspender ni reactivar cuentas."
     }
   },
   "invitations": {
@@ -464,7 +491,7 @@
       "ai_rate_limit_per_hour": "Límite de recálculos por hora",
       "ai_rate_limit_per_hour_desc": "Máximo de recálculos de recomendación por usuario/hora.",
       "experiment_open": "Registro abierto",
-      "experiment_open_desc": "Desactivarlo cierra el registro público del experimento.",
+      "experiment_open_desc": "Desactivarlo cierra el registro público en la propia base de datos; los correos con invitación pendiente o de la lista de bootstrap aún pueden registrarse.",
       "transport_minutes_per_step": "Minutos por etapa del transporte",
       "transport_minutes_per_step_desc": "Intervalo entre etapas del transporte simulado.",
       "video_provider": "Proveedor de video",

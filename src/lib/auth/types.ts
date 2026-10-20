@@ -11,7 +11,9 @@ export type AuthActionState =
 export const initialAuthState: AuthActionState = { status: "idle" };
 
 // Chaves de erro aceitas via query string (?error=) na tela de login.
-export const AUTH_QUERY_ERRORS = ["oauth", "callback", "invalidLink", "sessionRequired"] as const;
+// experimentClosed: conta nova recusada pelo banco com o cadastro fechado (kill switch experiment.open).
+// accountSuspended: conta suspensa pela administração (ban no Auth).
+export const AUTH_QUERY_ERRORS = ["oauth", "callback", "invalidLink", "sessionRequired", "experimentClosed", "accountSuspended"] as const;
 export type AuthQueryError = (typeof AUTH_QUERY_ERRORS)[number];
 
 export function isAuthQueryError(value: unknown): value is AuthQueryError {

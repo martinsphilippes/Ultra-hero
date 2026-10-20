@@ -3,6 +3,7 @@
 import type { AuthError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { getOrigin } from "@/lib/auth/origin";
 import { safeNext } from "@/lib/auth/safe-next";
 import type { AuthActionState, AuthField, AuthFieldErrors } from "@/lib/auth/types";
@@ -66,6 +67,8 @@ function mapAuthError(error: AuthError): string {
     case "session_not_found":
     case "session_expired":
       return "sessionRequired";
+    case "user_banned":
+      return "accountSuspended";
     default:
       return "unknown";
   }
@@ -109,6 +112,10 @@ export async function signupAction(_prev: AuthActionState, formData: FormData): 
   if (error) {
     // E-mail já cadastrado: resposta idêntica ao sucesso para não revelar existência.
     if (error.code === "user_already_exists" || error.code === "email_exists") return { status: "success" };
+    // Banco recusou a conta nova: com o cadastro fechado (kill switch), avisa com educação.
+    if (isSignupRefusedByDatabase(error) && !(await readExperimentOpen(supabase))) {
+      return { status: "error", error: "experimentClosed" };
+    }
     return { status: "error", error: mapAuthError(error) };
   }
 
