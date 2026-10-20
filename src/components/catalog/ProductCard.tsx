@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 type Props = { product: ProductCardData; priority?: boolean; className?: string };
 
 // Card de produto demonstrativo: preço ilustrativo, sempre marcado como demonstração.
+// Sem aria-label no link: o nome acessível é o texto visível (WCAG 2.5.3). Indisponível é sinalizado
+// pelo badge, não por opacidade (que derrubava o contraste do texto abaixo de 4,5:1).
 export async function ProductCard({ product, priority, className }: Props) {
   const [t, locale] = await Promise.all([getTranslations("catalog"), getLocale()]);
   const unavailable = product.availability !== "available";
   return (
-    <Card interactive asChild className={cn("h-full", unavailable && "opacity-80", className)}>
-      <Link href={`/shop/${product.slug}`} aria-label={product.title}>
+    <Card interactive asChild className={cn("h-full", className)}>
+      <Link href={`/shop/${product.slug}`}>
         <CardImage
           src={product.image_url}
           alt=""

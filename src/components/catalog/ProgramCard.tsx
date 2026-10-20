@@ -13,7 +13,7 @@ export async function ProgramCard({ program, priority, className, progressPct }:
   const title = program.version?.title ?? program.slug;
   return (
     <Card interactive asChild className={cn("h-full", className)}>
-      <Link href={`/programs/${program.slug}`} aria-label={title}>
+      <Link href={`/programs/${program.slug}`}>
         <CardImage
           src={program.cover_url ?? "/placeholders/cover-training-1.svg"}
           alt=""

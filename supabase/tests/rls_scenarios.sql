@@ -91,10 +91,10 @@ select tests.ok('S1 visitante não lê corpo de conteúdo', (select count(*) fro
 select tests.ok('S1 visitante vê personalidades ativas (8)', (select count(*) from public.creator_profiles) = 8);
 select tests.ok('S1 visitante vê produtos regulares (23 de 24: 1 indisponível ainda aparece; nenhum oculto)', (select count(*) from public.products) = 24);
 select tests.ok('S1 visitante não vê pedidos', (select count(*) from public.test_orders) = 0);
-select tests.expect_error('S1 visitante não faz checkout', $q$select public.checkout_cart(public.seed_uuid('dest:centro'))$q$, 'unauthenticated');
-select tests.expect_error('S1 visitante não conclui conteúdo', $q$select public.complete_content(public.seed_uuid('content:r1'), 'America/Sao_Paulo')$q$, 'unauthenticated');
+select tests.expect_error('S1 visitante não faz checkout', $q$select public.checkout_cart(public.seed_uuid('dest:centro'))$q$, 'permission denied');
+select tests.expect_error('S1 visitante não conclui conteúdo', $q$select public.complete_content(public.seed_uuid('content:r1'), 'America/Sao_Paulo')$q$, 'permission denied');
 select tests.ok('S1 public_settings disponível e sem chaves sensíveis', (public.public_settings() ? 'commerce.enabled') and not (public.public_settings() ? 'bootstrap_admin_emails'));
-select tests.expect_error('S1 setting() sensível não é executável pelo público', $q$select public.setting('bootstrap_admin_emails')$q$, '42501');
+select tests.expect_error('S1 setting() sensível não é executável pelo público', $q$select public.setting('bootstrap_admin_emails')$q$, 'permission denied');
 
 -- ================================================================ S2 · Consumidor gratuito
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
@@ -436,8 +436,8 @@ select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local
 select tests.expect_error('S13 não-admin não registra suspensão', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, 'Violação dos Termos')$q$, '42501');
 select tests.ok('S13 não-admin não lê usuário por id', (select count(*) from public.admin_get_user('10000000-0000-4000-8000-000000000004')) = 0);
 select tests.anon();
-select tests.expect_error('S13 visitante não executa admin_log_account_status', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, 'Violação dos Termos')$q$, '42501');
-select tests.expect_error('S13 visitante não executa admin_get_user', $q$select * from public.admin_get_user('10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.expect_error('S13 visitante não executa admin_log_account_status', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, 'Violação dos Termos')$q$, 'permission denied');
+select tests.expect_error('S13 visitante não executa admin_get_user', $q$select * from public.admin_get_user('10000000-0000-4000-8000-000000000004')$q$, 'permission denied');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.expect_error('S13 justificativa vazia recusada', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000004', true, '   ')$q$, 'justification_required');
 select tests.expect_error('S13 admin não suspende a si mesmo', $q$select public.admin_log_account_status('10000000-0000-4000-8000-000000000001', true, 'Teste de bloqueio')$q$, 'cannot_suspend_self');
@@ -468,6 +468,43 @@ select tests.ok('S13 grants: visitante sem execute; autenticado com execute (is_
 select tests.ok('S13 RPCs novas são security definer com search_path fixo',
   (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%'))
    from pg_proc p where p.oid in ('public.admin_log_account_status(uuid, boolean, text)'::regprocedure, 'public.admin_get_user(uuid)'::regprocedure)));
+
+-- ================================================================ S14 · Endurecimento (0016): grants e search_path
+select tests.anon();
+select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',
+  $q$select public.admin_set_role('10000000-0000-4000-8000-000000000001', 'admin', true, 'x')$q$, 'permission denied');
+select tests.expect_error('S14 anon não executa checkout_cart',
+  $q$select public.checkout_cart(public.seed_uuid('dest:sp'), '{}'::jsonb, false)$q$, 'permission denied');
+select tests.expect_error('S14 anon não executa select_modules',
+  $q$select public.select_modules(array[public.seed_uuid('module:base')])$q$, 'permission denied');
+select tests.expect_error('S14 anon não executa delete_my_account', $q$select public.delete_my_account()$q$, 'permission denied');
+select tests.expect_error('S14 anon não executa user_entitled_modules de terceiros',
+  $q$select public.user_entitled_modules('10000000-0000-4000-8000-000000000001')$q$, 'permission denied');
+select tests.ok('S14 anon lê configurações públicas', (public.public_settings() ->> 'commerce.enabled') is not null);
+select tests.ok('S14 anon busca no catálogo', (select count(*) from public.search_content('sono')) > 0);
+select tests.ok('S14 anon vê catálogo publicado com políticas reescritas (40)', (select count(*) from public.content where status = 'published') = 40);
+select tests.ok('S14 anon vê produtos publicados', (select count(*) from public.products where status = 'published') > 0);
+select tests.ok('S14 anon consulta certificado inexistente sem erro', coalesce((public.verify_certificate('NAO-EXISTE') ->> 'valid')::boolean, false) = false);
+select public.track_event('page.view', '{"path":"/"}'::jsonb, 'anon-s14', 'pt-BR');
+select tests.su(); -- anon não lê analytics_events; a conferência é feita como sistema
+select tests.ok('S14 anon registra evento sem PII', exists (select 1 from public.analytics_events where anon_id = 'anon-s14'));
+select tests.login('10000000-0000-4000-8000-000000000001', 'consumer@test.local');
+select tests.expect_error('S14 usuário não executa sync_subscription (interna)', $q$select public.sync_subscription(auth.uid())$q$, 'permission denied');
+select tests.expect_error('S14 usuário não executa evaluate_achievements (interna)', $q$select public.evaluate_achievements(auth.uid(), 'UTC')$q$, 'permission denied');
+select tests.expect_error('S14 usuário não executa recompute_order_status (interna)', $q$select public.recompute_order_status(gen_random_uuid())$q$, 'permission denied');
+select tests.ok('S14 usuário continua vendo a própria assinatura (chama sync_subscription por dentro)', (public.my_subscription() ->> 'status') is not null);
+select tests.ok('S14 usuário continua lendo o próprio perfil (política reescrita)', (select count(*) from public.profiles where id = auth.uid()) = 1);
+select tests.su();
+select tests.ok('S14 nenhuma função pública sem search_path fixo',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prolang <> (select oid from pg_language where lanname = 'c')
+     and not exists (select 1 from unnest(coalesce(p.proconfig, '{}')) c where c like 'search_path=%')) = 0);
+select tests.ok('S14 nenhuma política avalia auth.uid()/is_admin() por linha',
+  (select count(*) from pg_policies where schemaname = 'public'
+     and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|my_creator_id)\(\)') = 0);
+select tests.ok('S14 anon só executa a lista pública de security definer',
+  (select string_agg(p.proname, ',' order by p.proname) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef
+     and has_function_privilege('anon', p.oid, 'execute'))
+  = 'can_access_content,has_role,is_admin,is_seller_of,my_creator_id,my_entitled_modules,my_roles,my_seller_org_ids,my_subscription,product_is_purchasable,program_required_items,public_settings,quote_shipping,search_content,submit_feedback,track_event,verify_certificate');
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

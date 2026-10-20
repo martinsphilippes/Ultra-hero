@@ -12,7 +12,7 @@ export async function CreatorCard({ creator, priority, className }: Props) {
   const t = await getTranslations("catalog");
   return (
     <Card interactive asChild className={cn("h-full", className)}>
-      <Link href={`/personalities/${creator.slug}`} aria-label={creator.name}>
+      <Link href={`/personalities/${creator.slug}`}>
         <CardImage src={creator.cover_url ?? "/placeholders/cover-routine-2.svg"} alt="" ratio="wide" priority={priority} />
         <div className="relative -mt-8 flex flex-1 flex-col gap-2 px-4 pb-4">
           <span className="relative inline-flex size-16 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated">

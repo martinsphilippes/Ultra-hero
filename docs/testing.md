@@ -2,7 +2,7 @@
 
 | Camada | Ferramenta | Comando | O que cobre |
 |---|---|---|---|
-| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 157 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas |
+| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 176 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas |
 | Unitários | Vitest | `npm run test` | formatação, helpers, motor determinístico de recomendações, validações Zod |
 | E2E + acessibilidade | Playwright (Pixel 7 + Desktop Chrome) + axe | `npm run test:e2e` | rotas públicas sem violações sérias de WCAG 2.x A/AA, navegação por teclado, troca de idioma, redirecionamentos de rotas protegidas, sinalização de demonstração |
 | Tipos e estilo | tsc, eslint, check-messages | `npm run check` | projeto inteiro |
@@ -25,6 +25,7 @@ Para adicionar um cenário: copie um bloco `S<n>`, crie usuários em `auth.users
 |---|---|
 | IDs do seed seguem o RFC 4122 (validadores estritos do app aceitam dados de demonstração) | RLS S0; unitário `editors.test.ts` |
 | Visitante explora, mas não consome nem confirma pedido | RLS S1; E2E `journeys.spec.ts` |
+| Endurecimento (0016): anon só executa a lista pública de RPCs, funções internas só para o sistema, search_path fixo em todas as funções, políticas avaliadas uma vez por consulta | RLS S14; advisors do Supabase (segurança) sem avisos além dos intencionais |
 | Gratuito consome liberado e faz pedido de teste | RLS S2, S8 |
 | Premium visível, bloqueado no servidor; dependências FULL configuráveis | RLS S2, S3 |
 | Convites válidos/inválidos/expirados | RLS S4 |

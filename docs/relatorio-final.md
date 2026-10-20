@@ -10,10 +10,9 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | **Parcial.** Estão aplicadas 0001 a 0005 e parte da 0006. O restante está em `supabase/remote/apply_remote.sql`, validado e aguardando execução |
-| Testes | 157 cenários de banco, 558 unitários e 32 E2E com axe. Todos passam |
+| Banco remoto no Supabase | Completo: 16 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS e dados idênticos) |
+| Testes | 176 cenários de banco, 558 unitários e 32 E2E com axe. Todos passam |
 
-Enquanto o script do banco não roda, o site abre, mas catálogo, planos, loja e perfil aparecem vazios. As tabelas já têm RLS ligado e ainda não têm políticas, então o banco nega toda leitura.
 
 ## Fase 1 — Conteúdo, consumo e administração
 
@@ -71,7 +70,7 @@ Enquanto o script do banco não roda, o site abre, mas catálogo, planos, loja e
 
 | Camada | Resultado | Comando |
 |---|---|---|
-| Banco: RLS e regras de negócio | 157 de 157 | `npm run test:rls` |
+| Banco: RLS e regras de negócio | 176 de 176 | `npm run test:rls` |
 | Unitários, verificados por mutação | 558 de 558 em 6 arquivos | `npm run test` |
 | E2E com axe, em Pixel 7 e Desktop Chrome | 32 de 32 | `npm run test:e2e` |
 | Tipos, lint e mensagens | Limpos. 16 namespaces e 2.873 chaves por idioma | `npm run check` |
@@ -91,6 +90,7 @@ Enquanto o script do banco não roda, o site abre, mas catálogo, planos, loja e
 - **Bloqueio de prescrição**: não cobria "medicação" e "remédio".
 
 ### Segurança e privacidade
+- **Advisors do Supabase** (20/10/2026, após a migração 0016): nenhuma função sem `search_path`, nenhum EXECUTE implícito para PUBLIC, `anon` restrito às 17 RPCs públicas e políticas avaliadas uma vez por consulta. Restam só os avisos inerentes a RPCs de usuários logados e 17 tabelas com duas políticas permissivas de leitura, por desenho.
 - A chave service role só existe no servidor. Uma busca no bundle do cliente não encontrou referências a ela.
 - Os endpoints de cron exigem `CRON_SECRET`: com segredo ausente ou errado, devolvem 403. Isso está coberto por teste unitário.
 - Retenção: analytics por 90 dias, pedidos de teste anonimizados após 90 dias, execuções de recomendação por 30 dias e auditoria por 365 dias. A exclusão de conta é self-service, e o analytics recusa chaves com cara de dado pessoal.
@@ -106,16 +106,15 @@ Enquanto o script do banco não roda, o site abre, mas catálogo, planos, loja e
   - Falta `SUPABASE_SERVICE_ROLE_KEY`. Sem ela, os crons respondem `service_role_missing`, criar contas demo e suspender contas ficam desativados, e as recomendações não são gravadas.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
-- **Por que o banco remoto não foi aplicado**: o conector do Supabase usado aqui exige confirmação humana para comandos destrutivos, inclusive DELETE dentro do corpo de funções. Neste ambiente essa confirmação não aparece, então o envio expira. O script foi validado localmente sobre uma cópia do estado atual do remoto, com esquema e dados idênticos à referência.
+- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), e a 0016 pelo conector em 15 blocos. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
-1. **Rodar o script do banco**: abra `supabase/remote/apply_remote.sql` no SQL Editor do Supabase e execute uma vez. A última linha deve mostrar 40 conteúdos, 24 produtos, 95 políticas e funcoes_chave igual a 2. Outra opção é me passar um token de acesso temporário para eu aplicar pela API oficial.
-2. **Service role na Vercel**: cadastre `SUPABASE_SERVICE_ROLE_KEY` em Production e Preview, nunca com prefixo `NEXT_PUBLIC_`, e faça um redeploy.
-3. **URLs de autenticação**: em Supabase, Authentication, URL Configuration, coloque `https://ultra-hero.vercel.app` como Site URL. Nas Redirect URLs, coloque `https://ultra-hero.vercel.app/**` e `http://localhost:3000/**`.
-4. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
-5. **Google OAuth**, se quiser: crie as credenciais no Google Cloud com o callback `https://cjcvlfypjoxaynwtmuhz.supabase.co/auth/v1/callback`.
-6. **Revisão jurídica** de Termos e Privacidade. Antes da abertura pública, é preciso definir controlador, encarregado e canal de contato.
-7. **Chaves OpenAI e Gemini**, se quiser, para rodar a comparação entre provedores.
+1. **Service role na Vercel**: cadastre `SUPABASE_SERVICE_ROLE_KEY` em Production e Preview, nunca com prefixo `NEXT_PUBLIC_`, e faça um redeploy.
+2. **URLs de autenticação**: em Supabase, Authentication, URL Configuration, coloque `https://ultra-hero.vercel.app` como Site URL. Nas Redirect URLs, coloque `https://ultra-hero.vercel.app/**` e `http://localhost:3000/**`.
+3. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
+4. **Google OAuth**, se quiser: crie as credenciais no Google Cloud com o callback `https://cjcvlfypjoxaynwtmuhz.supabase.co/auth/v1/callback`.
+5. **Revisão jurídica** de Termos e Privacidade. Antes da abertura pública, é preciso definir controlador, encarregado e canal de contato.
+6. **Chaves OpenAI e Gemini**, se quiser, para rodar a comparação entre provedores.
 
 ## Riscos e limitações conhecidos
 - **Um único projeto Supabase** serve de desenvolvimento e produção.

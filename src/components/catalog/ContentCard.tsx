@@ -32,7 +32,8 @@ export async function ContentCard({ content, priority, progressPct, className }:
 
   return (
     <Card interactive asChild className={cn("h-full", className)}>
-      <Link href={`/content/${content.slug}`} aria-label={content.title}>
+      {/* nome acessível = texto visível do card (WCAG 2.5.3) */}
+      <Link href={`/content/${content.slug}`}>
         <CardImage
           src={content.cover_url ?? "/placeholders/cover-routine-1.svg"}
           alt=""

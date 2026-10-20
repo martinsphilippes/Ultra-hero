@@ -4,11 +4,11 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 
 ## Segurança
 - [x] **(B)** RLS habilitado em todas as tabelas (`select count(*) from pg_tables where schemaname='public' and not rowsecurity` = 0) (verificado no remoto e no local em 20/10/2026: 0 tabelas sem RLS)
-- [x] **(B)** `npm run test:rls` verde (157 asserções) no commit de release (157/157 no commit `229253c`)
+- [x] **(B)** `npm run test:rls` verde (176 asserções) no commit de release (157/157 no commit `229253c`)
 - [x] **(B)** `SUPABASE_SERVICE_ROLE_KEY` só em variáveis de servidor (Vercel), nunca `NEXT_PUBLIC_` (módulo `server-only`; busca no bundle do cliente sem ocorrências em 20/10/2026; a variável ainda não foi cadastrada na Vercel)
 - [x] **(B)** `CRON_SECRET` definido; `/api/cron/*` retorna 403 sem ele (definido na Vercel; 403 com segredo ausente ou errado coberto em `tests/unit/video-cron.test.ts`)
 - [ ] **(B)** Admin de bootstrap confere apenas os e-mails esperados (`app_settings.bootstrap_admin_emails`)
-- [ ] Advisors de segurança do Supabase revisados (funções `security definer` com `search_path`, políticas permissivas)
+- [x] Advisors de segurança do Supabase revisados (migração 0016, 20/10/2026: 0 funções sem `search_path`, PUBLIC sem EXECUTE, anon só nas 17 RPCs públicas; restam só os avisos inerentes a RPCs de usuários logados)
 - [ ] Google OAuth com redirect restrito ao domínio do app
 - [ ] Headers: `no-store` em rotas autenticadas sensíveis; CSP básica avaliada
 - [ ] Rate limiting: feedback (20/dia), recomendações (setting), auth (Supabase)
