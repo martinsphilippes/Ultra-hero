@@ -1585,7 +1585,8 @@ end $$;
 grant execute on function public.advance_simulated_transport(int) to authenticated, service_role;
 
 
--- limpeza de funções de diagnóstico criadas durante a depuração do conector
+-- limpeza de objetos criados durante a depuração do conector MCP
+drop schema if exists mig_tmp cascade;
 do $cleanup$ declare r record; begin for r in select p.oid::regprocedure as f from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname like '\_diag\_%' loop execute 'drop function ' || r.f; end loop; end $cleanup$;
 
 -- registro no histórico de migrations
