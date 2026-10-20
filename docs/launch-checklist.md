@@ -3,10 +3,10 @@
 Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertura pública.
 
 ## Segurança
-- [ ] **(B)** RLS habilitado em todas as tabelas (`select count(*) from pg_tables where schemaname='public' and not rowsecurity` = 0)
-- [ ] **(B)** `npm run test:rls` verde (157 asserções) no commit de release
-- [ ] **(B)** `SUPABASE_SERVICE_ROLE_KEY` só em variáveis de servidor (Vercel), nunca `NEXT_PUBLIC_`
-- [ ] **(B)** `CRON_SECRET` definido; `/api/cron/*` retorna 403 sem ele
+- [x] **(B)** RLS habilitado em todas as tabelas (`select count(*) from pg_tables where schemaname='public' and not rowsecurity` = 0) (verificado no remoto e no local em 20/10/2026: 0 tabelas sem RLS)
+- [x] **(B)** `npm run test:rls` verde (157 asserções) no commit de release (157/157 no commit `229253c`)
+- [x] **(B)** `SUPABASE_SERVICE_ROLE_KEY` só em variáveis de servidor (Vercel), nunca `NEXT_PUBLIC_` (módulo `server-only`; busca no bundle do cliente sem ocorrências em 20/10/2026; a variável ainda não foi cadastrada na Vercel)
+- [x] **(B)** `CRON_SECRET` definido; `/api/cron/*` retorna 403 sem ele (definido na Vercel; 403 com segredo ausente ou errado coberto em `tests/unit/video-cron.test.ts`)
 - [ ] **(B)** Admin de bootstrap confere apenas os e-mails esperados (`app_settings.bootstrap_admin_emails`)
 - [ ] Advisors de segurança do Supabase revisados (funções `security definer` com `search_path`, políticas permissivas)
 - [ ] Google OAuth com redirect restrito ao domínio do app
@@ -15,7 +15,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 - [ ] Nenhum segredo no repositório (`git log -p | grep -i key` limpo)
 
 ## Privacidade / LGPD
-- [ ] **(B)** Termos e política de privacidade publicados e linkados no cadastro
+- [x] **(B)** Termos e política de privacidade publicados e linkados no cadastro (`/legal/terms` e `/legal/privacy`, commit `2d445ef`; revisão jurídica pendente)
 - [ ] **(B)** Exclusão de conta testada ponta a ponta (anonimização de pedidos verificada)
 - [ ] Retenção automatizada ativa (cron diário) e `retention_jobs` com execuções
 - [ ] Analytics sem PII (função rejeita chaves suspeitas; amostragem manual de `properties`)
@@ -31,10 +31,10 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 ## Acessibilidade (WCAG 2.2 AA como referência; não declarar conformidade sem verificar)
 - [ ] Navegação por teclado em: login, Início, Explorar, conteúdo (player), programa, carrinho/checkout, perfil, admin (tabelas e diálogos)
 - [ ] Foco visível e ordem lógica; `aria-current` na navegação; diálogos devolvem foco
-- [ ] Contraste ≥ 4.5:1 nos dois temas (tokens verificados)
+- [x] Contraste ≥ 4.5:1 nos dois temas (tokens verificados) (token `fg-subtle` corrigido no commit `f7eb694`)
 - [ ] Rótulos em todos os campos; mensagens de erro associadas (`aria-describedby`)
 - [ ] Vídeos essenciais com legenda/transcrição (player demo exibe transcrição)
-- [ ] axe (Playwright) sem violações críticas nas rotas principais
+- [x] axe (Playwright) sem violações críticas nas rotas principais (32/32 no commit `229253c`, 9 rotas públicas)
 - [ ] Layout 360px–1440px sem rolagem horizontal
 
 ## Performance e PWA

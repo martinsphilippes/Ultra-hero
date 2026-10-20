@@ -80,7 +80,7 @@ Harness único em `scripts/eval-recommendations.ts` (a criar), mesmo prompt e sc
 
 **Guardrails (valem para qualquer fornecedor):**
 
-- **Kill switch:** flag `AI_RECOMMENDATIONS_ENABLED` (env + admin); desligado por padrão.
+- **Kill switch:** chave `ai.enabled` em `app_settings`, editável em /admin/settings. Implementação: a IA só roda quando `ai.enabled` é exatamente `true`, o provedor configurado (`ai.provider` ou env `AI_PROVIDER`) é `openai` ou `gemini`, existe a chave do provedor e a service role está no servidor. Qualquer erro ao ler a configuração ou ao contar o uso desliga a IA (falha fechada). O seed liga `ai.enabled` com o provedor `deterministic`, então **nenhum LLM é chamado por padrão**: ativar exige trocar o provedor e configurar a chave.
 - **Rate limit por usuário:** no máximo 1 recálculo a cada 24 h e 6 por mês; recálculo é job de servidor, nunca disparado direto pelo cliente.
 - **Máximo de candidatos:** 60 itens por chamada; catálogo é pré-filtrado por plano/idioma/visibilidade antes de montar o prompt.
 - **Validação da saída:** schema Zod estrito; ids fora da lista de candidatos são descartados; justificativa limitada a 140 caracteres e sem termos de prescrição (lista de bloqueio: "você deve", "dose", "calorias por dia"...); menos de 3 itens válidos → cai no fallback.
