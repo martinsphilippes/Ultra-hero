@@ -33,6 +33,10 @@ npm run dev                        # http://localhost:3000
 | `npm run icons` | Regenera ícones PWA (PNG) a partir da marca |
 | `npm run check` | typecheck + lint + mensagens + testes |
 
+### Vocabulário
+
+Na interface, o papel `creator` (quem assina conteúdos e programas) aparece como **herói** em pt-BR, en e es, conforme o DMR 1.0. É um termo de papel, sem flexão de gênero. Código, tabelas (`creator_profiles`) e rotas (`/personalities`, `/creator`) mantêm os nomes originais; a documentação técnica ainda usa "personalidade" para esses identificadores.
+
 ### Banco de dados
 
 Migrations versionadas em `supabase/migrations/0001…0010*.sql` (aplicar **em ordem**). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses).

@@ -240,7 +240,7 @@
     },
     "actor": {
       "consumer": "Tú",
-      "creator": "Personalidad",
+      "creator": "Héroe",
       "seller": "Proveedor",
       "admin": "Administración",
       "system": "Sistema (simulación)"

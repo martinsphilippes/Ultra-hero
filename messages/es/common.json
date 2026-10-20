@@ -2,7 +2,7 @@
   "app": {
     "name": "Ultra Hero",
     "tagline": "Rutina, entrenamiento, nutrición y gastronomía en un solo lugar.",
-    "description": "Ultra Hero: contenidos, hábitos, entrenamientos, nutrición y gastronomía con personalidades ficticias, programas y evolución. Entorno de demostración."
+    "description": "Ultra Hero: contenidos, hábitos, entrenamientos, nutrición y gastronomía con héroes ficticios, programas y evolución. Entorno de demostración."
   },
   "actions": {
     "save": "Guardar",

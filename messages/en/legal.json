@@ -30,7 +30,7 @@
       "about": {
         "title": "What Ultra Hero is",
         "blocks": {
-          "p1": "Ultra Hero is a proof of concept: an experimental app, in a demo phase, with educational content about routine, training, nutrition and cooking, guided programs, fictional personalities, simulated plans and a simulated shop.",
+          "p1": "Ultra Hero is a proof of concept: an experimental app, in a demo phase, with educational content about routine, training, nutrition and cooking, guided programs, fictional heroes, simulated plans and a simulated shop.",
           "p2": "The goal is to test the experience and learn from how it is used. It is not a commercial service: <strong>there are no real charges, payments, sales or deliveries</strong>."
         }
       },
@@ -56,10 +56,10 @@
         }
       },
       "personalities": {
-        "title": "Fictional personalities",
+        "title": "Fictional heroes",
         "blocks": {
-          "p1": "The personalities in the app are fictional characters created for the demo and are labeled “Fictional character”. Names, stories, images and quotes do not represent real people, and any resemblance is coincidental.",
-          "p2": "Content attributed to these personalities is not a testimonial, endorsement or recommendation from a real person. The sample suppliers in the simulated shop are fictional too."
+          "p1": "The heroes in the app are fictional characters created for the demo and are labeled “Fictional character”. Names, stories, images and quotes do not represent real people, and any resemblance is coincidental.",
+          "p2": "Content attributed to these heroes is not a testimonial, endorsement or recommendation from a real person. The sample suppliers in the simulated shop are fictional too."
         }
       },
       "plans": {
@@ -166,7 +166,7 @@
       "who": {
         "title": "Who we are and what this Policy covers",
         "blocks": {
-          "p1": "Ultra Hero is a proof of concept with educational content, fictional personalities, simulated subscriptions and simulated commerce. This Policy applies to the app (web and installable) and to the partner and admin portals.",
+          "p1": "Ultra Hero is a proof of concept with educational content, fictional heroes, simulated subscriptions and simulated commerce. This Policy applies to the app (web and installable) and to the partner and admin portals.",
           "p2": "The identity of the data controller and of the data protection officer (DPO) will be published before public launch. Until then, use the contact channel at the end of this page."
         }
       },

@@ -2,20 +2,20 @@
   "tabs": {
     "home": "Home",
     "explore": "Explore",
-    "personalities": "Personalities",
+    "personalities": "Heroes",
     "evolution": "Progress",
     "profile": "Profile"
   },
   "portals": {
     "admin": "Admin",
-    "creator": "Personality",
+    "creator": "Hero",
     "seller": "Supplier"
   },
   "admin": {
     "dashboard": "Dashboard",
     "users": "Users",
     "invitations": "Invitations",
-    "creators": "Personalities",
+    "creators": "Heroes",
     "sellers": "Suppliers",
     "content": "Content",
     "programs": "Programs",
@@ -54,7 +54,7 @@
   "portalLabel": "Portal",
   "portalDescription": {
     "admin": "Ultra Hero administration",
-    "creator": "Personality area",
+    "creator": "Hero area",
     "seller": "Supplier area"
   }
 }

@@ -1,15 +1,15 @@
 {
   "unavailable": {
     "inactive": {
-      "title": "Perfil de personalidad inactivo",
-      "description": "Tu perfil de personalidad está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil.",
+      "title": "Perfil de héroe inactivo",
+      "description": "Tu perfil de héroe está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil.",
       "descriptionNamed": "El perfil de {name} está suspendido o pendiente. Mientras tanto, el portal es de solo lectura: no puedes crear contenidos, sugerir vínculos ni editar el perfil."
     },
     "unlinked": {
-      "title": "Cuenta sin perfil de personalidad",
-      "description": "Tu cuenta tiene el rol de personalidad, pero no está vinculada a un perfil activo. Acepta la invitación recibida por correo o habla con la administración."
+      "title": "Cuenta sin perfil de héroe",
+      "description": "Tu cuenta tiene el rol de héroe, pero no está vinculada a un perfil activo. Acepta la invitación recibida por correo o habla con la administración."
     },
-    "help": "¿Dudas? Habla con el equipo editorial de Ultra Hero. Recuerda: las personalidades de esta plataforma son ficticias y el entorno es de demostración."
+    "help": "¿Dudas? Habla con el equipo editorial de Ultra Hero. Recuerda: los héroes de esta plataforma son ficticios y el entorno es de demostración."
   },
   "dashboard": {
     "title": "Hola, {name}",
@@ -77,7 +77,7 @@
       }
     },
     "notFoundTitle": "Contenido no encontrado",
-    "notFoundDescription": "Puede haber sido eliminado o pertenecer a otra personalidad."
+    "notFoundDescription": "Puede haber sido eliminado o pertenecer a otro héroe."
   },
   "submit": {
     "button": "Enviar a revisión",
@@ -152,7 +152,7 @@
   },
   "profile": {
     "title": "Mi perfil",
-    "description": "Lo que el público ve en tu página de personalidad.",
+    "description": "Lo que el público ve en tu página de héroe.",
     "viewPublic": "Ver página pública",
     "inactiveNotice": "Perfil suspendido o pendiente: la edición está bloqueada hasta que la administración lo reactive.",
     "lockedFields": "Nombre, slug, pilares y la nota de derechos los mantiene la plataforma. Tú editas titular, bio, avatar, portada y redes.",
@@ -170,7 +170,7 @@
     "savedDescription": "Tu perfil público fue actualizado.",
     "fixFields": "{count, plural, =1 {Hay 1 campo por corregir.} other {Hay # campos por corregir.}}",
     "rightsTitle": "Nota de derechos y licencias",
-    "rightsDescription": "Registro mantenido por la plataforma sobre licencias, imagen y derechos de esta personalidad. Solo lectura: los cambios los hace la administración.",
+    "rightsDescription": "Registro mantenido por la plataforma sobre licencias, imagen y derechos de este héroe. Solo lectura: los cambios los hace la administración.",
     "rightsEmpty": "Ninguna nota registrada."
   },
   "errors": {
@@ -178,7 +178,7 @@
     "protected_column": "El campo \"{column}\" solo puede cambiarlo la administración.",
     "unauthenticated": "Inicia sesión para continuar.",
     "invalid_input": "Datos inválidos.",
-    "creator_unavailable": "Tu perfil de personalidad no está activo.",
+    "creator_unavailable": "Tu perfil de héroe no está activo.",
     "not_found": "No encontrado.",
     "content_not_found": "Contenido no encontrado.",
     "content_not_editable": "Este contenido está en revisión o ya fue publicado y no se puede editar.",

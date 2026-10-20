@@ -49,6 +49,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 ### Decisões
 - Regras de negócio no banco, com Server Actions validadas por Zod. A interface nunca é a única barreira.
 - Idioma por cookie e cabeçalho, sem prefixo na URL.
+- Vocabulário da interface alinhado ao DMR em 20/10/2026: o papel `creator` aparece como "herói" nos três idiomas, sem flexão de gênero. Código, banco e rotas não mudaram. Neste relatório, "personalidade" segue como nome técnico do papel.
 - Recomendação determinística como padrão. O LLM só reordena e explica itens que já existem no catálogo.
 - Contas demo criadas pelo admin passam pelo cadastro fechado graças a um marcador que só o servidor grava. O mesmo marcador vindo de um cadastro público é recusado.
 

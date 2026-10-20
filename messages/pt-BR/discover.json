@@ -4,8 +4,8 @@
     "explore": "Explorar",
     "lists": "Minhas listas",
     "list": "{name} · Lista",
-    "personalities": "Personalidades",
-    "personality": "{name} · Personalidade"
+    "personalities": "Heróis",
+    "personality": "{name} · Herói"
   },
   "common": {
     "sectionError": "Não foi possível carregar esta seção.",
@@ -17,7 +17,7 @@
     "greetingFallback": "Olá",
     "greetingSubtitle": "Continue de onde parou ou descubra algo novo hoje.",
     "visitorTitle": "Rotina, treino, nutrição e gastronomia em um só lugar.",
-    "visitorSubtitle": "Conteúdos curtos, programas guiados e personalidades fictícias para evoluir no seu ritmo. Ambiente de demonstração: nenhuma cobrança real.",
+    "visitorSubtitle": "Conteúdos curtos, programas guiados e heróis fictícios para evoluir no seu ritmo. Ambiente de demonstração: nenhuma cobrança real.",
     "ctaSignup": "Criar conta grátis",
     "ctaExplore": "Explorar conteúdos",
     "pillarsNav": "Explorar por pilar",
@@ -42,13 +42,13 @@
       "gastronomy": "Técnicas de base e marmitas da semana"
     },
     "personalities": {
-      "title": "Personalidades",
+      "title": "Heróis",
       "description": "Personagens fictícios criados para a demonstração"
     }
   },
   "explore": {
     "title": "Explorar",
-    "description": "Busque por título, tema, personalidade ou programa.",
+    "description": "Busque por título, tema, herói ou programa.",
     "search": {
       "label": "Buscar conteúdos",
       "placeholder": "Ex.: sono, mobilidade, marmita…",
@@ -153,15 +153,15 @@
     "eyebrow": "Descobrir"
   },
   "personalities": {
-    "title": "Personalidades",
+    "title": "Heróis",
     "description": "Personagens fictícios que guiam os conteúdos. Nenhuma pessoa real é representada.",
     "filterLabel": "Filtrar por pilar",
     "all": "Todos",
-    "count": "{count, plural, =1 {1 personalidade} other {# personalidades}}",
-    "emptyTitle": "Nenhuma personalidade neste pilar",
+    "count": "{count, plural, =1 {1 herói} other {# heróis}}",
+    "emptyTitle": "Nenhum herói neste pilar",
     "emptyDescription": "Experimente outro pilar ou veja todas.",
     "profile": {
-      "back": "Personalidades",
+      "back": "Heróis",
       "fictional": "Personagem fictício",
       "rightsTitle": "Sobre este perfil",
       "rightsDefault": "Perfil fictício criado para a demonstração. Não representa pessoa real nem possui contrato, imagem ou endosso.",
@@ -183,10 +183,10 @@
       "contentsEmptyTitle": "Nenhum conteúdo com este filtro",
       "contentsEmptyDescription": "Experimente outro tipo de conteúdo.",
       "programsEmptyTitle": "Nenhum programa publicado",
-      "programsEmptyDescription": "Esta personalidade ainda não tem programas.",
-      "productsNote": "Produtos de demonstração ligados aos conteúdos desta personalidade. Nenhuma compra, cobrança ou entrega real.",
+      "programsEmptyDescription": "Este herói ainda não tem programas.",
+      "productsNote": "Produtos de demonstração ligados aos conteúdos deste herói. Nenhuma compra, cobrança ou entrega real.",
       "productsEmptyTitle": "Nenhum produto disponível",
-      "productsEmptyDescription": "Os produtos ligados aos conteúdos desta personalidade não estão disponíveis no momento.",
+      "productsEmptyDescription": "Os produtos ligados aos conteúdos deste herói não estão disponíveis no momento.",
       "productsGoToShop": "Ver a loja de demonstração",
       "rightsPendingBadge": "Direitos em validação",
       "rightsPending": "Autorização de uso de nome e imagem em validação; até lá, o perfil é tratado como fictício.",
@@ -194,7 +194,7 @@
       "rightsValidUntil": "Autorização válida até {date}."
     },
     "eyebrow": "Quem guia os conteúdos",
-    "notFoundTitle": "Personalidade não encontrada",
+    "notFoundTitle": "Herói não encontrado",
     "notFoundDescription": "O endereço pode ter mudado ou o perfil não está mais ativo."
   }
 }

@@ -2,7 +2,7 @@
   "app": {
     "name": "Ultra Hero",
     "tagline": "Routine, training, nutrition and gastronomy in one place.",
-    "description": "Ultra Hero: content, habits, workouts, nutrition and gastronomy with fictional personalities, programs and progress. Demo environment."
+    "description": "Ultra Hero: content, habits, workouts, nutrition and gastronomy with fictional heroes, programs and progress. Demo environment."
   },
   "actions": {
     "save": "Save",

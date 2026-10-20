@@ -1,15 +1,15 @@
 {
   "unavailable": {
     "inactive": {
-      "title": "Personality profile inactive",
-      "description": "Your personality profile is suspended or pending. Meanwhile the portal is read only: you cannot create content, suggest links or edit the profile.",
+      "title": "Hero profile inactive",
+      "description": "Your hero profile is suspended or pending. Meanwhile the portal is read only: you cannot create content, suggest links or edit the profile.",
       "descriptionNamed": "The profile of {name} is suspended or pending. Meanwhile the portal is read only: you cannot create content, suggest links or edit the profile."
     },
     "unlinked": {
-      "title": "Account without a personality profile",
-      "description": "Your account has the personality role but is not linked to an active profile. Accept the invitation you received by email or contact the administration."
+      "title": "Account without a hero profile",
+      "description": "Your account has the hero role but is not linked to an active profile. Accept the invitation you received by email or contact the administration."
     },
-    "help": "Questions? Contact the Ultra Hero editorial team. Remember: personalities on this platform are fictional and this is a demo environment."
+    "help": "Questions? Contact the Ultra Hero editorial team. Remember: heroes on this platform are fictional and this is a demo environment."
   },
   "dashboard": {
     "title": "Hello, {name}",
@@ -77,7 +77,7 @@
       }
     },
     "notFoundTitle": "Content not found",
-    "notFoundDescription": "It may have been removed or belong to another personality."
+    "notFoundDescription": "It may have been removed or belong to another hero."
   },
   "submit": {
     "button": "Submit for review",
@@ -152,7 +152,7 @@
   },
   "profile": {
     "title": "My profile",
-    "description": "What the public sees on your personality page.",
+    "description": "What the public sees on your hero page.",
     "viewPublic": "View public page",
     "inactiveNotice": "Profile suspended or pending: editing is locked until the administration reactivates it.",
     "lockedFields": "Name, slug, pillars and the rights note are maintained by the platform. You edit headline, bio, avatar, cover and socials.",
@@ -170,7 +170,7 @@
     "savedDescription": "Your public profile has been updated.",
     "fixFields": "{count, plural, =1 {There is 1 field to fix.} other {There are # fields to fix.}}",
     "rightsTitle": "Rights and licences note",
-    "rightsDescription": "Record kept by the platform about licences, image and rights of this personality. Read only: changes are made by the administration.",
+    "rightsDescription": "Record kept by the platform about licences, image and rights of this hero. Read only: changes are made by the administration.",
     "rightsEmpty": "No note recorded."
   },
   "errors": {
@@ -178,7 +178,7 @@
     "protected_column": "The field \"{column}\" can only be changed by the administration.",
     "unauthenticated": "Sign in to continue.",
     "invalid_input": "Invalid data.",
-    "creator_unavailable": "Your personality profile is not active.",
+    "creator_unavailable": "Your hero profile is not active.",
     "not_found": "Not found.",
     "content_not_found": "Content not found.",
     "content_not_editable": "This content is under review or already published and cannot be edited.",

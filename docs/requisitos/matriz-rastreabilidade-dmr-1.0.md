@@ -95,7 +95,7 @@ Todas as áreas listadas existem. Estados: 53 telas de carregamento, 31 de erro,
 ## Divergências entre o DMR e o que foi construído
 
 - **Papéis.** O DMR propõe Editor, Gestor de herói, Gestor de campanhas, Administrador e Superadministrador. O app tem consumidor, personalidade, fornecedor e admin, com escopo por perfil ou operação. Gestor de herói equivale ao papel personalidade com escopo. Editor e Superadministrador não existem. O DMR marca esses papéis como propostas a validar.
-- **Vocabulário.** "Herói" no DMR, "personalidade" no app. Trocar o rótulo na interface é uma mudança só de texto, nos três idiomas.
+- **Vocabulário.** "Herói" no DMR, "personalidade" no app até 20/10/2026. A interface passou a dizer "herói" em pt-BR, en e es (termo de papel, sem flexão de gênero: uma mulher também é "herói"). Código, banco e rotas mantêm `creator` e `/personalities`.
 - **Hábitos.** O DMR coloca gamificação como fase futura. O app já tem sequência e conquistas, sem abrir neles. Decisão de 20/10/2026: mantém visível.
 
 ## Próximos incrementos propostos, por valor e custo

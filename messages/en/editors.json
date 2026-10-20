@@ -87,7 +87,7 @@
     "content_not_editable": "This content is under review or already published and cannot be edited.",
     "forbidden": "You do not have permission for this action.",
     "unauthenticated": "Sign in to continue.",
-    "creator_unavailable": "Your personality profile is not active.",
+    "creator_unavailable": "Your hero profile is not active.",
     "not_found": "Content not found.",
     "media_license_mismatch": "License inconsistent with the media: fix the license and save again."
   },
@@ -259,7 +259,7 @@
     },
     "kindHint": {
       "platform_demo": "Illustrative material created for the demo; no real media.",
-      "own": "Produced by the platform or the personality, with own rights.",
+      "own": "Produced by the platform or the hero, with own rights.",
       "licensed": "Media hosted here under a third-party license recorded in the reference.",
       "third_party_embed": "Video embedded from the provider; rights belong to the source channel."
     },

@@ -92,7 +92,7 @@
     "roles": {
       "label": "Roles",
       "consumer": "Consumer",
-      "creator": "Personality",
+      "creator": "Hero",
       "seller": "Seller",
       "admin": "Admin"
     },
@@ -109,7 +109,7 @@
       "title": "Your portals",
       "description": "Operation areas linked to your roles.",
       "admin": "Administration",
-      "creator": "Personality portal",
+      "creator": "Hero portal",
       "seller": "Seller portal"
     },
     "data": {
@@ -157,7 +157,7 @@
       }
     },
     "signOut": "Sign out",
-    "demoNote": "Demo environment: fictional personalities, simulated subscription, no real payments."
+    "demoNote": "Demo environment: fictional heroes, simulated subscription, no real payments."
   },
   "favorites": {
     "title": "Favorites",
@@ -265,7 +265,7 @@
     "description": "Transparency about what the POC stores and how to delete your account.",
     "demo": {
       "title": "Demo nature",
-      "body": "Ultra Hero is a public proof of concept. Personalities are fictional, subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
+      "body": "Ultra Hero is a public proof of concept. Heroes are fictional, subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
     },
     "store": {
       "title": "What we store",

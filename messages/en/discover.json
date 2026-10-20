@@ -4,8 +4,8 @@
     "explore": "Explore",
     "lists": "My lists",
     "list": "{name} · List",
-    "personalities": "Personalities",
-    "personality": "{name} · Personality"
+    "personalities": "Heroes",
+    "personality": "{name} · Hero"
   },
   "common": {
     "sectionError": "We couldn't load this section.",
@@ -17,7 +17,7 @@
     "greetingFallback": "Hi there",
     "greetingSubtitle": "Pick up where you left off or discover something new today.",
     "visitorTitle": "Routine, training, nutrition and cooking in one place.",
-    "visitorSubtitle": "Short lessons, guided programs and fictional personalities to grow at your own pace. Demo environment: no real charges.",
+    "visitorSubtitle": "Short lessons, guided programs and fictional heroes to grow at your own pace. Demo environment: no real charges.",
     "ctaSignup": "Create a free account",
     "ctaExplore": "Explore content",
     "pillarsNav": "Explore by pillar",
@@ -42,13 +42,13 @@
       "gastronomy": "Core techniques and weekly meal prep"
     },
     "personalities": {
-      "title": "Personalities",
+      "title": "Heroes",
       "description": "Fictional characters created for this demo"
     }
   },
   "explore": {
     "title": "Explore",
-    "description": "Search by title, topic, personality or program.",
+    "description": "Search by title, topic, hero or program.",
     "search": {
       "label": "Search content",
       "placeholder": "E.g. sleep, mobility, meal prep…",
@@ -153,15 +153,15 @@
     "eyebrow": "Discover"
   },
   "personalities": {
-    "title": "Personalities",
+    "title": "Heroes",
     "description": "Fictional characters who guide the content. No real person is represented.",
     "filterLabel": "Filter by pillar",
     "all": "All",
-    "count": "{count, plural, =1 {1 personality} other {# personalities}}",
-    "emptyTitle": "No personalities in this pillar",
+    "count": "{count, plural, =1 {1 hero} other {# heroes}}",
+    "emptyTitle": "No heroes in this pillar",
     "emptyDescription": "Try another pillar or see all of them.",
     "profile": {
-      "back": "Personalities",
+      "back": "Heroes",
       "fictional": "Fictional character",
       "rightsTitle": "About this profile",
       "rightsDefault": "Fictional profile created for the demo. It does not represent a real person and has no contract, likeness or endorsement.",
@@ -183,10 +183,10 @@
       "contentsEmptyTitle": "No content with this filter",
       "contentsEmptyDescription": "Try another content type.",
       "programsEmptyTitle": "No published programs",
-      "programsEmptyDescription": "This personality has no programs yet.",
-      "productsNote": "Demo products linked to this personality's content. No real purchase, charge or delivery.",
+      "programsEmptyDescription": "This hero has no programs yet.",
+      "productsNote": "Demo products linked to this hero's content. No real purchase, charge or delivery.",
       "productsEmptyTitle": "No products available",
-      "productsEmptyDescription": "The products linked to this personality's content are not available right now.",
+      "productsEmptyDescription": "The products linked to this hero's content are not available right now.",
       "productsGoToShop": "Go to the demo shop",
       "rightsPendingBadge": "Rights under validation",
       "rightsPending": "Authorization for name and likeness is under validation; until then the profile is treated as fictional.",
@@ -194,7 +194,7 @@
       "rightsValidUntil": "Authorization valid until {date}."
     },
     "eyebrow": "Who guides the content",
-    "notFoundTitle": "Personality not found",
+    "notFoundTitle": "Hero not found",
     "notFoundDescription": "The address may have changed or the profile is no longer active."
   }
 }

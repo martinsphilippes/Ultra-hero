@@ -87,7 +87,7 @@
     "content_not_editable": "Este conteúdo está em revisão ou já foi publicado e não pode ser editado.",
     "forbidden": "Você não tem permissão para esta ação.",
     "unauthenticated": "Entre para continuar.",
-    "creator_unavailable": "Seu perfil de personalidade não está ativo.",
+    "creator_unavailable": "Seu perfil de herói não está ativo.",
     "not_found": "Conteúdo não encontrado.",
     "media_license_mismatch": "Licença incoerente com a mídia: ajuste a licença e salve de novo."
   },
@@ -259,7 +259,7 @@
     },
     "kindHint": {
       "platform_demo": "Material ilustrativo criado para a demonstração; sem mídia real.",
-      "own": "Produzida pela plataforma ou pela personalidade, com direitos próprios.",
+      "own": "Produzida pela plataforma ou pelo herói, com direitos próprios.",
       "licensed": "Mídia hospedada aqui com licença de terceiros registrada na referência.",
       "third_party_embed": "Vídeo incorporado do provedor; os direitos são do canal de origem."
     },

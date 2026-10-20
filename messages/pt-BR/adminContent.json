@@ -9,7 +9,7 @@
     "clearFilters": "Limpar filtros",
     "results": "{n, plural, =0 {0 resultados} =1 {1 resultado} other {# resultados}}",
     "resultsCapped": "Exibindo os primeiros {n} registros. Refine os filtros para ver outros.",
-    "creator": "Personalidade",
+    "creator": "Herói",
     "pillar": "Pilar",
     "type": "Tipo",
     "status": "Status",
@@ -28,7 +28,7 @@
     "description": "Descrição",
     "cover": "Capa (URL)",
     "coverHint": "Use um dos placeholders locais, ex.: /placeholders/cover-routine-1.svg",
-    "noCreator": "Sem personalidade",
+    "noCreator": "Sem herói",
     "untitled": "Sem título",
     "yes": "Sim",
     "no": "Não",
@@ -116,7 +116,7 @@
       "third_party_embed": "Incorporação de terceiros"
     },
     "linkOrigin": {
-      "creator_submission": "Enviado pela personalidade",
+      "creator_submission": "Enviado pelo herói",
       "admin_assignment": "Atribuído pela administração"
     }
   },
@@ -178,7 +178,7 @@
     "table": {
       "caption": "Lista de conteúdos",
       "title": "Título",
-      "creator": "Personalidade",
+      "creator": "Herói",
       "pillar": "Pilar",
       "type": "Tipo",
       "status": "Status",
@@ -224,7 +224,7 @@
       "license": "Licença da mídia",
       "licenseRef": "Referência da licença (interna)",
       "credit": "Crédito público",
-      "linkOrigin": "Origem do vínculo com a personalidade"
+      "linkOrigin": "Origem do vínculo com o herói"
     },
     "summary": {
       "video": "Vídeo · {points, plural, =1 {1 ponto-chave} other {# pontos-chave}} · {transcript, plural, =1 {1 trecho de transcrição} other {# trechos de transcrição}}",
@@ -247,7 +247,7 @@
       "approveTitle": "Aprovar e publicar?",
       "returnTitle": "Devolver para ajustes?",
       "rejectTitle": "Rejeitar conteúdo?",
-      "feedbackLabel": "Feedback para a personalidade",
+      "feedbackLabel": "Feedback para o herói",
       "feedbackHint": "Fica registrado na rodada de revisão e na auditoria.",
       "approved": "Conteúdo aprovado e publicado",
       "returned": "Conteúdo devolvido com feedback",
@@ -280,12 +280,12 @@
     },
     "form": {
       "createTitle": "Novo conteúdo (admin)",
-      "createDescription": "Escolha a personalidade fictícia responsável e preencha os campos. O conteúdo nasce como rascunho.",
+      "createDescription": "Escolha o herói fictício responsável e preencha os campos. O conteúdo nasce como rascunho.",
       "editTitle": "Editar conteúdo",
       "editDescription": "Admin edita qualquer campo, inclusive regra de acesso, módulo e modo de conclusão.",
-      "creatorLabel": "Personalidade responsável",
-      "creatorHint": "Todas as personalidades são fictícias.",
-      "creatorRequired": "Escolha uma personalidade antes de salvar.",
+      "creatorLabel": "Herói responsável",
+      "creatorHint": "Todos os heróis são fictícios.",
+      "creatorRequired": "Escolha um herói antes de salvar.",
       "created": "Conteúdo criado como rascunho",
       "updated": "Conteúdo atualizado"
     },
@@ -318,7 +318,7 @@
       "caption": "Lista de programas",
       "title": "Título (versão atual)",
       "pillar": "Pilar",
-      "creator": "Personalidade",
+      "creator": "Herói",
       "status": "Status",
       "versions": "Versões",
       "enrollments": "Inscrições",
@@ -585,7 +585,7 @@
     "filters": {
       "contentTitle": "Título do conteúdo",
       "productTitle": "Título do produto",
-      "creator": "Personalidade que sugeriu"
+      "creator": "Herói que sugeriu"
     },
     "versionMismatch": "Produto mudou desde a validação",
     "versionOk": "Mesma versão",
@@ -664,7 +664,7 @@
       "noEvents": "Sem eventos.",
       "actor": {
         "consumer": "Consumidor",
-        "creator": "Personalidade",
+        "creator": "Herói",
         "seller": "Fornecedor",
         "admin": "Admin",
         "system": "Sistema"

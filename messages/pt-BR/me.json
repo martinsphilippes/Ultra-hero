@@ -92,7 +92,7 @@
     "roles": {
       "label": "Papéis",
       "consumer": "Consumidor",
-      "creator": "Personalidade",
+      "creator": "Herói",
       "seller": "Fornecedor",
       "admin": "Admin"
     },
@@ -109,7 +109,7 @@
       "title": "Seus portais",
       "description": "Áreas de operação vinculadas aos seus papéis.",
       "admin": "Administração",
-      "creator": "Portal da personalidade",
+      "creator": "Portal do herói",
       "seller": "Portal do fornecedor"
     },
     "data": {
@@ -157,7 +157,7 @@
       }
     },
     "signOut": "Sair da conta",
-    "demoNote": "Ambiente de demonstração: personalidades fictícias, assinatura simulada, nenhum pagamento real."
+    "demoNote": "Ambiente de demonstração: heróis fictícios, assinatura simulada, nenhum pagamento real."
   },
   "favorites": {
     "title": "Favoritos",
@@ -265,7 +265,7 @@
     "description": "Transparência sobre o que a POC guarda e como excluir sua conta.",
     "demo": {
       "title": "Natureza demonstrativa",
-      "body": "O Ultra Hero é uma prova de conceito pública. Personalidades são fictícias, assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
+      "body": "O Ultra Hero é uma prova de conceito pública. Heróis são fictícios, assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
     },
     "store": {
       "title": "O que guardamos",

@@ -9,7 +9,7 @@
     "clearFilters": "Clear filters",
     "results": "{n, plural, =0 {0 results} =1 {1 result} other {# results}}",
     "resultsCapped": "Showing the first {n} records. Refine the filters to see others.",
-    "creator": "Personality",
+    "creator": "Hero",
     "pillar": "Pillar",
     "type": "Type",
     "status": "Status",
@@ -28,7 +28,7 @@
     "description": "Description",
     "cover": "Cover (URL)",
     "coverHint": "Use one of the local placeholders, e.g. /placeholders/cover-routine-1.svg",
-    "noCreator": "No personality",
+    "noCreator": "No hero",
     "untitled": "Untitled",
     "yes": "Yes",
     "no": "No",
@@ -116,7 +116,7 @@
       "third_party_embed": "Third-party embed"
     },
     "linkOrigin": {
-      "creator_submission": "Submitted by the personality",
+      "creator_submission": "Submitted by the hero",
       "admin_assignment": "Assigned by the admin team"
     }
   },
@@ -178,7 +178,7 @@
     "table": {
       "caption": "Content list",
       "title": "Title",
-      "creator": "Personality",
+      "creator": "Hero",
       "pillar": "Pillar",
       "type": "Type",
       "status": "Status",
@@ -224,7 +224,7 @@
       "license": "Media license",
       "licenseRef": "License reference (internal)",
       "credit": "Public credit",
-      "linkOrigin": "Origin of the link to the personality"
+      "linkOrigin": "Origin of the link to the hero"
     },
     "summary": {
       "video": "Video · {points, plural, =1 {1 key point} other {# key points}} · {transcript, plural, =1 {1 transcript segment} other {# transcript segments}}",
@@ -247,7 +247,7 @@
       "approveTitle": "Approve and publish?",
       "returnTitle": "Return for changes?",
       "rejectTitle": "Reject content?",
-      "feedbackLabel": "Feedback for the personality",
+      "feedbackLabel": "Feedback for the hero",
       "feedbackHint": "Recorded in the review round and in the audit trail.",
       "approved": "Content approved and published",
       "returned": "Content returned with feedback",
@@ -280,12 +280,12 @@
     },
     "form": {
       "createTitle": "New content (admin)",
-      "createDescription": "Pick the fictional personality in charge and fill in the fields. The content starts as a draft.",
+      "createDescription": "Pick the fictional hero in charge and fill in the fields. The content starts as a draft.",
       "editTitle": "Edit content",
       "editDescription": "Admin edits any field, including access rule, module and completion mode.",
-      "creatorLabel": "Personality in charge",
-      "creatorHint": "All personalities are fictional.",
-      "creatorRequired": "Pick a personality before saving.",
+      "creatorLabel": "Hero in charge",
+      "creatorHint": "All heroes are fictional.",
+      "creatorRequired": "Pick a hero before saving.",
       "created": "Content created as draft",
       "updated": "Content updated"
     },
@@ -318,7 +318,7 @@
       "caption": "Program list",
       "title": "Title (current version)",
       "pillar": "Pillar",
-      "creator": "Personality",
+      "creator": "Hero",
       "status": "Status",
       "versions": "Versions",
       "enrollments": "Enrollments",
@@ -585,7 +585,7 @@
     "filters": {
       "contentTitle": "Content title",
       "productTitle": "Product title",
-      "creator": "Suggesting personality"
+      "creator": "Suggesting hero"
     },
     "versionMismatch": "Product changed since validation",
     "versionOk": "Same version",
@@ -664,7 +664,7 @@
       "noEvents": "No events.",
       "actor": {
         "consumer": "Consumer",
-        "creator": "Personality",
+        "creator": "Hero",
         "seller": "Seller",
         "admin": "Admin",
         "system": "System"
