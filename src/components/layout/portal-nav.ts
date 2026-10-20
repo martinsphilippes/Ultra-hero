@@ -33,5 +33,6 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "dashboard", href: "/seller" },
     { key: "products", href: "/seller/products" },
     { key: "fulfillments", href: "/seller/fulfillments" },
+    { key: "profile", href: "/seller/profile" },
   ],
 };

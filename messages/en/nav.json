@@ -39,7 +39,8 @@
   "seller": {
     "dashboard": "Dashboard",
     "products": "Products",
-    "fulfillments": "Fulfillments"
+    "fulfillments": "Fulfillments",
+    "profile": "Operation profile"
   },
   "actions": {
     "search": "Search",

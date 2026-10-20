@@ -39,7 +39,8 @@
   "seller": {
     "dashboard": "Painel",
     "products": "Produtos",
-    "fulfillments": "Entregas"
+    "fulfillments": "Entregas",
+    "profile": "Perfil da operação"
   },
   "actions": {
     "search": "Buscar",
