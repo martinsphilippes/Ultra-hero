@@ -10,14 +10,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | Completo: 16 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS e dados idênticos) |
-| Testes | 176 cenários de banco, 558 unitários e 32 E2E com axe. Todos passam |
+| Banco remoto no Supabase | Completo: 18 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
+| Testes | 287 cenários de banco, 636 unitários e 40 E2E com axe. Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
 
 ### Implementado
-- **Banco e segurança**: esquema em 15 migrations, RLS em todas as 59 tabelas, 95 políticas e 79 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
+- **Banco e segurança**: esquema em 18 migrations, RLS em todas as 61 tabelas, 99 políticas e 92 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
 - **Autenticação e papéis**: e-mail e senha, login com Google (configurado em 20/10/2026, tela de consentimento ainda em modo de teste), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
@@ -32,6 +32,13 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 - **Planos simulados**: módulos base, treino, nutrição e chef independentes. FULL não pressupõe Base, e as dependências entre módulos são configuráveis pelo admin.
 - **Administração**: usuários, convites, personalidades, fornecedores, revisão editorial, programas e versões, planos, destaques, traduções, moderação de produtos, vínculos conteúdo↔produto, pedidos, feedback, métricas com CSV, auditoria e configurações com kill switches.
 - **Recomendações**: motor determinístico rotulado na interface e adaptadores OpenAI e Gemini restritos ao catálogo. A IA falha fechada: sem configuração clara ou diante de qualquer erro, fica desligada. Há limite por hora e bloqueio de termos de prescrição em pt, en e es.
+- **Incrementos do DMR 1.0** (20/10/2026, migrações 0017 e 0018, validados em 20 cenários de banco novos):
+  - Agendamento de publicação: o admin aprova ou publica com data futura, e a leitura pública, a busca e o acesso só liberam quando a data chega.
+  - Direitos por herói: status fictício, autorizado ou pendente, titular e validade, com documento e notas numa tabela só do admin. O selo de fictício só sai com autorização válida.
+  - Licença por mídia: tipo de licença, referência e crédito por conteúdo. O banco recusa combinação incompatível com o provedor de vídeo, e o crédito aparece na página.
+  - Nutrição validada: informação por porção nas receitas, exibida só quando marcada como validada por profissional, com nome e data. Só o admin marca.
+  - Preferências de notificação: opt-in por tipo e canal em Perfil, sem envio na POC. A Política de Privacidade descreve o uso.
+  - Feedback com categoria, prioridade, responsável e nota interna, com triagem auditada no admin.
 - **Termos de Uso e Política de Privacidade** em pt-BR, en e es. O texto foi conferido contra o código: cookies reais, dados enviados à IA, retenção e o que a exclusão de conta remove. Os links estão no cadastro, com declaração de 18 anos ou mais, e nos rodapés.
 - **Plataforma**: PWA instalável com página offline, três idiomas com detecção pelo navegador e tema claro e escuro.
 
@@ -66,14 +73,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 ## Fase 3 — Testes, segurança, acessibilidade e documentação
 
-### Evidência de testes (20/10/2026, commit `229253c`, cópia limpa do repositório)
+### Evidência de testes (20/10/2026, commit `4fdb0f2`)
 
 | Camada | Resultado | Comando |
 |---|---|---|
-| Banco: RLS e regras de negócio | 176 de 176 | `npm run test:rls` |
-| Unitários, verificados por mutação | 558 de 558 em 6 arquivos | `npm run test` |
-| E2E com axe, em Pixel 7 e Desktop Chrome | 32 de 32 | `npm run test:e2e` |
-| Tipos, lint e mensagens | Limpos. 16 namespaces e 2.873 chaves por idioma | `npm run check` |
+| Banco: RLS e regras de negócio | 287 de 287 | `npm run test:rls` |
+| Unitários, verificados por mutação | 636 de 636 em 12 arquivos | `npm run test` |
+| E2E com axe, em Pixel 7 e Desktop Chrome | 40 de 40 local, 40 de 40 contra o banco remoto já migrado e 40 de 40 em produção | `npm run test:e2e` |
+| Tipos, lint e mensagens | Limpos. 16 namespaces e 3.085 chaves por idioma | `npm run check` |
 | Build de produção | OK | `npm run build` |
 
 "Verificado por mutação" significa que agentes independentes injetaram defeitos no código-fonte e confirmaram que os testes falham. Os defeitos que passaram despercebidos ganharam testes novos.
@@ -90,7 +97,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 - **Bloqueio de prescrição**: não cobria "medicação" e "remédio".
 
 ### Segurança e privacidade
-- **Advisors do Supabase** (20/10/2026, após a migração 0016): nenhuma função sem `search_path`, nenhum EXECUTE implícito para PUBLIC, `anon` restrito às 17 RPCs públicas e políticas avaliadas uma vez por consulta. Restam só os avisos inerentes a RPCs de usuários logados e 17 tabelas com duas políticas permissivas de leitura, por desenho.
+- **Advisors do Supabase** (20/10/2026, após a migração 0018): nenhuma função sem `search_path`, nenhum EXECUTE implícito para PUBLIC, `anon` restrito às 17 RPCs públicas e políticas avaliadas uma vez por consulta. Restam só os avisos inerentes a RPCs de usuários logados e 17 tabelas com duas políticas permissivas de leitura, por desenho.
 - A chave service role só existe no servidor. Uma busca no bundle do cliente não encontrou referências a ela.
 - Os endpoints de cron exigem `CRON_SECRET`: com segredo ausente ou errado, devolvem 403. Isso está coberto por teste unitário.
 - Retenção: analytics por 90 dias, pedidos de teste anonimizados após 90 dias, execuções de recomendação por 30 dias e auditoria por 365 dias. A exclusão de conta é self-service, e o analytics recusa chaves com cara de dado pessoal.
@@ -106,7 +113,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - `SUPABASE_SERVICE_ROLE_KEY` cadastrada em 20/10/2026 (Sensitive, Production e Preview). Os três crons responderam ok em produção.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
-- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), e a 0016 pelo conector em 15 blocos. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
+- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos e as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
 0. **Publicar a tela de consentimento do Google**: enquanto estiver em modo de teste, só os e-mails cadastrados como testadores conseguem entrar com Google. Em Google Auth Platform, Público-alvo, clique em Publicar app antes de convidar pessoas.
@@ -132,7 +139,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 **Durante o experimento**
 6. **Painel de coortes** de retenção em D1, D7 e D14 por data de cadastro, a métrica que decide se o produto segura o usuário.
-7. **Lembretes de sequência** por notificação do PWA, com opt-in. É a alavanca mais barata de retorno para um produto de hábitos.
+7. **Lembretes de sequência** por notificação do PWA. O opt-in já existe em Perfil › Notificações; falta o envio. É a alavanca mais barata de retorno para um produto de hábitos.
 8. **E2E autenticado em staging**, cobrindo admin, personalidade, fornecedor e checkout de ponta a ponta.
 9. **Mensagens por rota**, carregando só os textos de cada área para reduzir o primeiro carregamento no celular.
 

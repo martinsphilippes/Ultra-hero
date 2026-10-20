@@ -2,9 +2,9 @@
 
 | Camada | Ferramenta | Comando | O que cobre |
 |---|---|---|---|
-| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 176 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas |
-| Unitários | Vitest | `npm run test` | formatação, helpers, motor determinístico de recomendações, validações Zod |
-| E2E + acessibilidade | Playwright (Pixel 7 + Desktop Chrome) + axe | `npm run test:e2e` | rotas públicas sem violações sérias de WCAG 2.x A/AA, navegação por teclado, troca de idioma, redirecionamentos de rotas protegidas, sinalização de demonstração |
+| Regras de negócio + RLS | SQL (psql) em Postgres local isolado | `npm run test:rls` | 287 asserções: visitante, consumidor gratuito, direitos de acesso/assinatura simulada, convites, fluxo editorial, isolamento entre fornecedores, moderação, suspensão de vínculos, checkout multi-fornecedor com snapshots, máquina de estados de remessas, kill switch, programas versionados/substituição/certificado, analytics sem PII, feedback, exclusão de conta, retenção, portão do experimento (`experiment.open`), suspensão auditada de contas, agendamento de publicação, direitos por herói e licença por mídia, nutrição validada só pelo admin, preferências de notificação e triagem de feedback |
+| Unitários | Vitest | `npm run test` | formatação, helpers, motor determinístico de recomendações, validações Zod, regras de agendamento, nutrição, direitos e licença, cron |
+| E2E + acessibilidade | Playwright (Pixel 7 + Desktop Chrome) + axe | `npm run test:e2e` | rotas públicas sem violações sérias de WCAG 2.x A/AA, navegação por teclado, troca de idioma, redirecionamentos de rotas protegidas, sinalização de demonstração, aba de produtos do herói com CTA de login, nota de direitos e crédito de mídia, categorias do feedback |
 | Tipos e estilo | tsc, eslint, check-messages | `npm run check` | projeto inteiro |
 
 ## Como rodar os E2E

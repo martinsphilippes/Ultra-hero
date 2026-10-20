@@ -12,12 +12,12 @@ Onde o DMR diz "herói", o app diz "personalidade". É o mesmo conceito: tabela 
 |---|---|---|---|
 | RF-001 Cadastro e autenticação | Feito | Supabase Auth (senha com hash, sessão com expiração e renovação), e-mail e senha, Google, recuperação de senha, kill switch de cadastro no banco (0015), suspensão auditada. Acesso horizontal coberto pelos cenários RLS S1 a S14. | Limites de abuso: os do Supabase Auth, mais 20 feedbacks por dia e limite por hora na IA. |
 | RF-002 Home orientada a conteúdo | Feito | Início abre com destaques, recomendações, personalidades e atalhos para explorar e loja. Hábitos ficam na aba Evolução, não na abertura. Estados vazios em todas as seções. | — |
-| RF-003 Catálogo de heróis | Parcial | `/personalities` lista só perfis ativos, com selo "personagem fictício", pilares e aviso "sem contrato, imagem ou endosso real". | Não há campo estruturado de autorização por herói (quem autorizou, documento, validade). Hoje é só o texto de aviso. Depende da DP-02. |
-| RF-004 Página de herói | Parcial | Biografia, conteúdos filtráveis por tipo, programas. Aba Produtos com origem da associação ("usado em" aponta o conteúdo de origem) em implementação em 20/10/2026. | Origem registrada de cada associação conteúdo↔herói: o vínculo é `content.creator_id`, sem metadado de autorização. Ver RF-003. |
+| RF-003 Catálogo de heróis | Feito | `/personalities` lista só perfis ativos. Cada herói tem status de direitos (fictício, autorizado ou pendente), titular e validade (0017); documento e notas ficam em `creator_rights_private`, só do admin, por RPC auditada. O selo "personagem fictício" só sai com autorização válida e volta quando ela vence. Só o admin altera esses campos (gatilho). | Contrato e royalties seguem fora do código (DP-07). |
+| RF-004 Página de herói | Feito | Biografia, conteúdos filtráveis por tipo, programas e aba Produtos com "usado em" apontando o conteúdo de origem e adicionar ao carrinho de teste. A origem de cada vínculo conteúdo↔herói fica em `content.creator_link_origin` (envio do herói ou atribuição do admin), gravada por gatilho. | — |
 | RF-005 Biblioteca de treinos | Feito | Tipo `workout` com exercícios, duração, nível, vídeo ou texto, autoria, aviso obrigatório de saúde. Filtros por pilar, tipo, nível, personalidade e acesso. Despublicar e arquivar pelo admin, com auditoria. | — |
-| RF-006 Biblioteca de receitas | Parcial | Tipo `recipe` com ingredientes, preparo, rendimento, alergênicos, autoria e vínculo. Verificador de alegações de saúde bloqueia termos proibidos na edição. | Informação nutricional não tem campo estruturado nem marcação "validada por profissional". Hoje nada é apresentado como certificado, o que atende o aceite por omissão. |
-| RF-007 Calendário editorial | Parcial | Fluxo rascunho → revisão → publicado → arquivado, com rodadas de revisão e auditoria de autor e mudança. | Não há agendamento por data. Proposta: campo `publish_at`, filtro nas políticas de leitura e verificação diária pelo cron. |
-| RF-008 Mídias e vídeos | Parcial | Vídeo por URL do YouTube e Vimeo (lista fechada de domínios), player de demonstração com transcrição, capas internas, reprodução responsiva, mensagens de erro. ADR-001 define a troca por Cloudflare Stream. | Sem upload de arquivo e sem metadados de licença por mídia. Arquivos não autorizados não ficam públicos porque só URLs da lista fechada são aceitas. |
+| RF-006 Biblioteca de receitas | Feito | Tipo `recipe` com ingredientes, preparo, rendimento, alergênicos, autoria, vínculo e informação nutricional por porção (0017). A marcação "validado por profissional" exige nome e data, só o admin grava e a tabela só aparece quando marcada; o portal do herói zera a marcação. Verificador de alegações de saúde na edição. | A validação é declarativa (nome e data); não há registro profissional verificado. |
+| RF-007 Calendário editorial | Feito | Fluxo rascunho → revisão → publicado → arquivado, rodadas de revisão e auditoria. Agendamento por `publish_at` (0017): o admin agenda ao aprovar ou ao publicar, a lista mostra "agendado" e a leitura pública, a busca e o acesso só liberam quando a data chega, sem depender de cron. | Sem visão de calendário por data; o agendamento é por item. |
+| RF-008 Mídias e vídeos | Parcial | Vídeo por URL do YouTube e Vimeo (lista fechada de domínios), player de demonstração com transcrição, capas internas, reprodução responsiva, mensagens de erro. Licença por mídia (0017): tipo (demonstração, própria, licenciada, embed de terceiros), referência e crédito; o banco recusa combinação incompatível entre provedor e licença, e o crédito aparece na página. ADR-001 define a troca por Cloudflare Stream. | Sem upload de arquivo. Arquivos não autorizados não ficam públicos porque só URLs da lista fechada são aceitas. |
 | RF-009 Catálogo de produtos | Feito | 24 produtos e 4 operações (1 própria, 3 fictícias) com imagem, preço demonstrativo, descrição, categoria e disponibilidade. Contagem verificada no banco de produção em 20/10/2026. | — |
 | RF-010 Carrinho | Feito | Adicionar, ajustar e remover, subtotal e total no servidor. Indisponível ou suspenso bloqueia o checkout (RLS S2, S6, S8). | — |
 | RF-011 Checkout demonstrativo | Feito | Destinos predefinidos fictícios, frete fictício, sem pagamento, rótulos de demonstração em todas as telas. Nunca pede endereço real. | — |
@@ -31,8 +31,8 @@ Onde o DMR diz "herói", o app diz "personalidade". É o mesmo conceito: tabela 
 | RF-019 Portal de marcas | Fora da POC | — | P2 no DMR. |
 | RF-020 Lives e eventos | Fora da POC | A arquitetura admite: tipos de conteúdo são um enum extensível, e o controle de acesso por módulo se aplica a qualquer tipo. | P2 no DMR. |
 | RF-021 Hábitos e gamificação | Feito além do pedido | Sequência diária, conquistas e certificados a partir das ações do próprio usuário. Nenhuma rotina de celebridade é registrada. | Não há consentimento específico para gamificação. Se a decisão for mantê-la, incluir opt-in no onboarding. |
-| RF-022 Feedback da comunidade | Parcial | Widget com nota e comentário em toda tela, limite por dia, admin lista e muda status (novo, revisado, arquivado). Nada é publicado automaticamente. | Sem categorias, priorização ou fluxo de moderação. |
-| RF-023 Notificações | Não feito | Só os e-mails de autenticação do Supabase. | Proposta: tabela de preferências por usuário com opt-in por tipo, sem envio na POC. |
+| RF-022 Feedback da comunidade | Feito | Widget com nota, comentário e categoria (bug, sugestão, conteúdo, comércio, outro; "outro" pré-selecionado para manter um toque), limite por dia. Admin faz triagem com status, prioridade, responsável (só admins) e nota interna, tudo auditado (0018). Nada é publicado automaticamente. | Sem resposta ao autor. |
+| RF-023 Notificações | Parcial | Preferências por usuário com opt-in por tipo (resumo editorial, lembretes de sequência, novidades de comércio) e canal (e-mail, push), tela Perfil › Notificações, RLS só do próprio usuário (0018). Política de Privacidade descreve o uso. | Nenhum envio na POC; serviço de e-mail e push ficam para depois. |
 | RF-024 Auditoria | Parcial | `admin_audit` com data, ator, objeto, ação, antes e depois e justificativa. Retenção de 365 dias. Expurgo registrado em `retention_jobs`. Segredos nunca são gravados. | Acesso de leitura a recursos sensíveis não é auditado, só mudanças. |
 
 ## Fluxos ponta a ponta
@@ -83,7 +83,7 @@ Todas as áreas listadas existem. Estados: 53 telas de carregamento, 31 de erro,
 | DP | Situação no código |
 |---|---|
 | DP-01 Gratuito, freemium ou assinatura | Planos e módulos são configuráveis pelo admin; nada cobra. Qualquer modelo cabe sem migração. |
-| DP-02 Heróis com autorização | Falta o campo de autorização. Hoje todos são fictícios e marcados. |
+| DP-02 Heróis com autorização | Campos de autorização existem desde a 0017 (status, titular, validade, documento). Todos os heróis do seed continuam fictícios e marcados. |
 | DP-03 Volume e cadência de conteúdo | Sem limite técnico. Seed tem 40 conteúdos e 8 programas. |
 | DP-04 Vouchers e portais externos | Não implementado. Proposta abaixo. |
 | DP-05 Web, Android, iOS | Web responsiva e PWA instalável. Nativo fora da POC. |
@@ -96,15 +96,15 @@ Todas as áreas listadas existem. Estados: 53 telas de carregamento, 31 de erro,
 
 - **Papéis.** O DMR propõe Editor, Gestor de herói, Gestor de campanhas, Administrador e Superadministrador. O app tem consumidor, personalidade, fornecedor e admin, com escopo por perfil ou operação. Gestor de herói equivale ao papel personalidade com escopo. Editor e Superadministrador não existem. O DMR marca esses papéis como propostas a validar.
 - **Vocabulário.** "Herói" no DMR, "personalidade" no app. Trocar o rótulo na interface é uma mudança só de texto, nos três idiomas.
-- **Hábitos.** O DMR coloca gamificação como fase futura. O app já tem sequência e conquistas, sem abrir neles. Decidir se mantém.
+- **Hábitos.** O DMR coloca gamificação como fase futura. O app já tem sequência e conquistas, sem abrir neles. Decisão de 20/10/2026: mantém visível.
 
 ## Próximos incrementos propostos, por valor e custo
 
-1. **Agendamento de publicação** (RF-007, P0): campo `publish_at`, leitura pública só quando a data chegou, verificação no cron diário. Pequeno.
-2. **Autorização por herói e licença por mídia** (RF-003, RF-004, RF-008, RB-05, RB-06): campos de origem, documento e validade, exibidos na página como "origem registrada". Pequeno a médio.
-3. **Informação nutricional estruturada com validação** (RF-006): campos por porção e marcação "validado por profissional", exibida só quando marcada. Pequeno.
-4. **Preferências de notificação** (RF-023): tabela por usuário com opt-in por tipo e tela em Perfil. Envio fica para depois. Pequeno.
-5. **Feedback com categoria e prioridade** (RF-022): categoria, prioridade e responsável no admin. Pequeno.
+1. **Agendamento de publicação** (RF-007, P0): campo `publish_at`, leitura pública só quando a data chegou. Pequeno. **Feito na 0017** (sem cron: a regra é avaliada na leitura).
+2. **Autorização por herói e licença por mídia** (RF-003, RF-004, RF-008, RB-05, RB-06): campos de origem, documento e validade, exibidos na página como "origem registrada". Pequeno a médio. **Feito na 0017.**
+3. **Informação nutricional estruturada com validação** (RF-006): campos por porção e marcação "validado por profissional", exibida só quando marcada. Pequeno. **Feito na 0017.**
+4. **Preferências de notificação** (RF-023): tabela por usuário com opt-in por tipo e tela em Perfil. Envio fica para depois. Pequeno. **Feito na 0018.**
+5. **Feedback com categoria e prioridade** (RF-022): categoria, prioridade e responsável no admin. Pequeno. **Feito na 0018.**
 6. **Vouchers e campanhas** (RF-017, P1): tabelas `campaigns`, `vouchers`, `redemptions` com cota por campanha, validade, resgate único por usuário, concessão de módulo e trilha de uso. Médio. Só depois da DP-04.
 7. **Exportação de dados do titular** (RNF-07): botão em Conta que gera um arquivo com os dados do usuário. Pequeno.
 8. **Staging separado e monitoramento** (RNF-04, RNF-06): segundo projeto Supabase e captura de erros. Operacional, sem código novo relevante.
