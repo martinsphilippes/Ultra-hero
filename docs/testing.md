@@ -7,6 +7,12 @@
 | E2E + acessibilidade | Playwright (Pixel 7 + Desktop Chrome) + axe | `npm run test:e2e` | rotas públicas sem violações sérias de WCAG 2.x A/AA, navegação por teclado, troca de idioma, redirecionamentos de rotas protegidas, sinalização de demonstração |
 | Tipos e estilo | tsc, eslint, check-messages | `npm run check` | projeto inteiro |
 
+## Como rodar os E2E
+
+`npm run build && npm run test:e2e` (o Playwright sobe `next start -p 3100`; com `E2E_BASE_URL` ele usa um servidor já ativo). Em ambientes com Chromium pré-instalado e sem acesso para baixar navegadores, aponte `PLAYWRIGHT_CHROMIUM_PATH=/caminho/para/chromium`.
+
+Última execução registrada (20/10/2026, build de produção local, projetos Pixel 7 + Desktop Chrome): **26/26 aprovados** — axe sem violações sérias/críticas em `/`, `/explore`, `/personalities`, `/login`, `/signup`, `/shop`, `/offline`; navegação por teclado com `aria-current`; troca de idioma; checkout e rotas protegidas redirecionam para login; sinalização de demonstração. Correções feitas a partir da varredura: contraste do token `fg-subtle` (3,3:1 → ≥4,6:1 nos dois temas) e nome acessível do logotipo contendo o texto visível (WCAG 2.5.3).
+
 ## Como o teste de RLS funciona
 
 `scripts/db/test-rls.sh` recria `ultra_hero_test` (shim Supabase + migrations + seed) e executa `supabase/tests/rls_scenarios.sql` numa única transação (rollback no fim). Papéis são simulados exatamente como o PostgREST faz: `set role authenticated|anon` + `request.jwt.claims`. Funções `tests.ok` e `tests.expect_error` imprimem `PASS` ou abortam.

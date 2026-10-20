@@ -10,6 +10,8 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3100",
     trace: "retain-on-failure",
     locale: "pt-BR",
+    // Permite reutilizar um Chromium já instalado (ex.: PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium) sem baixar outro.
+    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : undefined,
   },
   projects: [
     { name: "mobile", use: { ...devices["Pixel 7"] } },

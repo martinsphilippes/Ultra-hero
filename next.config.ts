@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
     "/*": ["./messages/**/*"],
     "/**/*": ["./messages/**/*"],
   },
+  // A listagem de programas vive na aba "Programas" do Explorar; evita 404 em links diretos.
+  async redirects() {
+    return [{ source: "/programs", destination: "/explore?tab=programas", permanent: true }];
+  },
   async headers() {
     return [
       {

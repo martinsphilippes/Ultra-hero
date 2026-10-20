@@ -22,7 +22,8 @@ test("navegação principal por teclado e aria-current", async ({ page }) => {
   await page.keyboard.press("Tab");
   const skip = page.getByRole("link", { name: /pular|skip|saltar/i });
   await expect(skip).toBeFocused();
-  await expect(page.locator('[aria-current="page"]').first()).toBeVisible();
+  // No mobile a navegação superior fica oculta; a barra inferior deve expor o item ativo.
+  await expect(page.locator('[aria-current="page"]').filter({ visible: true }).first()).toBeVisible();
 });
 
 test("troca de idioma reflete na interface", async ({ page }) => {

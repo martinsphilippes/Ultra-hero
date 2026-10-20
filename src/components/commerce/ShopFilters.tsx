@@ -1,13 +1,13 @@
 "use client";
 
+import { SHOP_SORTS, type ShopSort } from "./shop-sorts";
+
 import { Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useId, useTransition } from "react";
 import { Button, Chip, Input, Select } from "@/components/ui";
 
-export type ShopSort = "newest" | "priceAsc" | "priceDesc" | "title";
-export const SHOP_SORTS: ShopSort[] = ["newest", "priceAsc", "priceDesc", "title"];
 
 type Props = {
   categories: { code: string; label: string }[];

@@ -26,7 +26,7 @@ npm run dev                        # http://localhost:3000
 | `npm run messages:check` | Garante árvores de tradução idênticas (pt-BR/en/es) |
 | `npm run test` | Vitest (lógica pura) |
 | `npm run test:rls` | 122 cenários de RLS/regras de negócio num Postgres local isolado |
-| `npm run test:e2e` | Playwright (mobile + desktop) + axe |
+| `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado) | Playwright (mobile + desktop) + axe |
 | `npm run db:local:reset` | Sobe Postgres 16 local com shim Supabase + todas as migrations + seed |
 | `npm run db:types` | Regenera `src/lib/supabase/database.types.ts` a partir do banco local |
 | `npm run eval:recommendations` | Compara motores de recomendação (determinístico vs provedores com chave) |

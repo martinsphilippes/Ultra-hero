@@ -22,3 +22,7 @@ next-env.d.ts
 .DS_Store
 *.pem
 npm-debug.log*
+
+# Playwright
+test-results/
+playwright-report/
