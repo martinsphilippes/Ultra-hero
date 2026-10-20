@@ -1,0 +1,399 @@
+{
+  "meta": {
+    "evolution": "Progress",
+    "profile": "Profile",
+    "plan": "Plan & modules",
+    "interests": "Interests",
+    "account": "Account & privacy",
+    "favorites": "Favorites",
+    "onboarding": "Welcome",
+    "verify": "Verify certificate"
+  },
+  "evolution": {
+    "title": "Your progress",
+    "description": "Streak, recent activity, achievements and programs in progress.",
+    "streak": {
+      "current": "Current streak",
+      "best": "Best streak",
+      "days": "{n, plural, =0 {0 days} =1 {1 day} other {# days}}",
+      "hint": "One activity per day counts: completing content, advancing in a video or joining a program.",
+      "timezone": "Time zone: {tz}"
+    },
+    "activity": {
+      "title": "Last 14 days",
+      "description": "Days with valid activity",
+      "day": "{date}: {n, plural, =1 {# activity} other {# activities}}",
+      "today": "today"
+    },
+    "stats": {
+      "completions": "Completed content",
+      "programsActive": "Programs in progress",
+      "programsCompleted": "Programs completed",
+      "favorites": "Favorites"
+    },
+    "achievements": {
+      "title": "Achievements",
+      "description": "Symbolic recognition for your pace.",
+      "earnedOn": "Earned on {date}",
+      "locked": "Locked",
+      "earned": "Earned",
+      "rules": {
+        "streak": "{days, plural, =1 {1 day in a row} other {# days in a row}} of activity",
+        "completions": "Complete {count, plural, =1 {# content item} other {# content items}}",
+        "program_completed": "Complete {count, plural, =1 {# program} other {# programs}}",
+        "unknown": "Rule defined by the team"
+      },
+      "names": {
+        "first_step": "First step",
+        "five_done": "On the move",
+        "ten_done": "Consistent",
+        "streak_3": "Three days in a row",
+        "streak_7": "A whole week",
+        "streak_14": "Two weeks",
+        "program_done": "Program completed"
+      }
+    },
+    "programs": {
+      "title": "My programs",
+      "description": "Progress in the version you joined.",
+      "empty": "You are not enrolled in any program yet.",
+      "progress": "{done} of {total} required",
+      "progressLabel": "Progress in {title}",
+      "status": {
+        "active": "In progress",
+        "completed": "Completed",
+        "abandoned": "Abandoned"
+      },
+      "version": "version {n}",
+      "open": "Open program",
+      "certificate": "Download symbolic certificate",
+      "enrolledOn": "Since {date}"
+    },
+    "recent": {
+      "title": "Recent activity",
+      "description": "Your latest completions and progress.",
+      "empty": "No activity recorded yet.",
+      "completed": "Completed",
+      "progress": "Progress: {pct}%",
+      "unavailable": "Content unavailable"
+    },
+    "empty": {
+      "title": "Your journey starts now",
+      "description": "Complete a content item, advance in a video or join a program to start your streak.",
+      "cta": "Explore content"
+    },
+    "disclaimer": "App usage metrics, not health indicators. Educational content; it does not replace professional guidance."
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Your data, preferences and simulated plan.",
+    "emailLabel": "Email",
+    "roles": {
+      "label": "Roles",
+      "consumer": "Consumer",
+      "creator": "Personality",
+      "seller": "Seller",
+      "admin": "Admin"
+    },
+    "plan": {
+      "label": "Plan",
+      "free": "Free",
+      "active": "Simulated subscription active",
+      "cancelled": "Cancelled (access until period end)",
+      "expired": "Expired",
+      "unknown": "Not available",
+      "manage": "Manage plan"
+    },
+    "portals": {
+      "title": "Your portals",
+      "description": "Operation areas linked to your roles.",
+      "admin": "Administration",
+      "creator": "Personality portal",
+      "seller": "Seller portal"
+    },
+    "data": {
+      "title": "Details",
+      "description": "Name, avatar, language and theme.",
+      "displayName": "Display name",
+      "displayNameHint": "Up to 60 characters. Shown on the symbolic certificate.",
+      "avatar": "Avatar",
+      "avatarHint": "Local illustrations; no photo uploads in this demo.",
+      "avatarOption": "Avatar {n}",
+      "language": "Language",
+      "theme": "Theme",
+      "save": "Save changes",
+      "saved": "Profile updated.",
+      "errors": {
+        "invalid_input": "Check the fields.",
+        "unauthenticated": "Sign in to continue.",
+        "generic": "Could not save. Please try again."
+      }
+    },
+    "links": {
+      "plan": {
+        "title": "Plan & modules",
+        "description": "Simulated subscription, bundles and modules."
+      },
+      "interests": {
+        "title": "Interests",
+        "description": "Topics that guide recommendations."
+      },
+      "favorites": {
+        "title": "Favorites",
+        "description": "Content you marked."
+      },
+      "orders": {
+        "title": "Test orders",
+        "description": "Demo purchases, no real charges."
+      },
+      "account": {
+        "title": "Account & privacy",
+        "description": "What we store, for how long and how to delete."
+      }
+    },
+    "signOut": "Sign out",
+    "demoNote": "Demo environment: fictional personalities, simulated subscription, no real payments."
+  },
+  "favorites": {
+    "title": "Favorites",
+    "description": "Content you marked with the heart.",
+    "count": "{n, plural, =1 {# favorite} other {# favorites}}",
+    "remove": "Remove {title} from favorites",
+    "removed": "Removed from favorites.",
+    "empty": {
+      "title": "No favorites yet",
+      "description": "Tap the heart on any content to keep it here.",
+      "cta": "Explore content"
+    },
+    "errors": {
+      "unauthenticated": "Sign in to continue.",
+      "generic": "Could not remove. Please try again."
+    },
+    "removeShort": "Remove from favorites"
+  },
+  "plan": {
+    "title": "Plan & modules",
+    "description": "Simulated subscription for the demo. No payment is made.",
+    "demoNote": "Simulated: no real payment, charge or renewal. Illustrative prices.",
+    "current": {
+      "title": "Your simulated subscription",
+      "status": {
+        "free": "Free",
+        "active": "Active",
+        "cancelled": "Cancelled",
+        "expired": "Expired"
+      },
+      "freeDescription": "You are on the free tier: open content from every pillar.",
+      "periodEnd": "Current period ends on {date}",
+      "autoRenewOn": "Automatic simulated renewal every 30 days",
+      "autoRenewOff": "No automatic renewal",
+      "cancelledNotice": "Subscription cancelled. Module access continues until {date}.",
+      "modules": "Modules",
+      "noModules": "No active modules.",
+      "scheduledRemoval": "Leaves on {date}",
+      "activeModule": "Active"
+    },
+    "bundles": {
+      "title": "Bundles",
+      "description": "Shortcuts to sets of modules. The price is the sum of the modules.",
+      "choose": "Choose bundle",
+      "current": "Current bundle",
+      "total": "Total {price}/month",
+      "demoPrice": "illustrative price",
+      "includes": "Includes: {modules}",
+      "freeIncludes": "Open content from every pillar."
+    },
+    "custom": {
+      "title": "Build my own set",
+      "description": "Pick module by module. Dependencies are shown on each item.",
+      "requires": "Requires: {modules}",
+      "apply": "Apply selection",
+      "total": "Total {price}/month",
+      "selected": "{n, plural, =1 {# module selected} other {# modules selected}}",
+      "unchanged": "No change from the current set.",
+      "moduleLabel": "{name}, {price} per month"
+    },
+    "actions": {
+      "cancel": "Cancel simulated subscription",
+      "cancelTitle": "Cancel the simulated subscription?",
+      "cancelDescription": "Module access continues until the end of the current period. After that you return to free. Nothing is charged or refunded: it is all simulated.",
+      "cancelConfirm": "Cancel subscription",
+      "cancelled": "Simulated subscription cancelled. Access kept until the end of the period.",
+      "backToFree": "Back to free",
+      "backToFreeTitle": "Go back to the free tier?",
+      "backToFreeDescription": "All modules will be scheduled for removal at the end of the current period. Simulated, no charge.",
+      "backToFreeConfirm": "Back to free",
+      "applied": "Selection applied. Additions apply now; removals at the end of the period.",
+      "downgradeHint": "Additions apply immediately; removals are scheduled for the end of the period."
+    },
+    "errors": {
+      "invalid_module": "One of the chosen modules is not available.",
+      "module_dependency_missing": "{module} also requires {required}.",
+      "unauthenticated": "Sign in to continue.",
+      "generic": "Could not update the simulated subscription. Please try again."
+    }
+  },
+  "interests": {
+    "title": "Interests",
+    "description": "Choose topics to guide recommendations. Change them whenever you want.",
+    "groupLabel": "{pillar} topics",
+    "selected": "{n, plural, =1 {# topic selected} other {# topics selected}}",
+    "save": "Save interests",
+    "saved": "Interests saved. Recommendations updated.",
+    "savedNoRecalc": "Interests saved.",
+    "errors": {
+      "invalid_input": "Invalid selection.",
+      "unauthenticated": "Sign in to continue.",
+      "generic": "Could not save. Please try again."
+    },
+    "notInterested": {
+      "title": "Hidden content",
+      "description": "Items marked as “not interested”. They stay out of recommendations.",
+      "empty": "No hidden content.",
+      "restore": "Restore {title}",
+      "restoreShort": "Restore",
+      "restored": "Content restored."
+    }
+  },
+  "account": {
+    "title": "Account & privacy",
+    "description": "Transparency about what the POC stores and how to delete your account.",
+    "demo": {
+      "title": "Demo nature",
+      "body": "Ultra Hero is a public proof of concept. Personalities are fictional, subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
+    },
+    "store": {
+      "title": "What we store",
+      "item1": "Email, display name, avatar (illustration), language, theme and time zone.",
+      "item2": "Interests, favorites, lists, progress, completions and streak.",
+      "item3": "Simulated subscription (modules and periods) and test orders with a fictional destination.",
+      "item4": "Usage events without personal data and optional feedback.",
+      "not": "We do not collect real addresses, geolocation, payment data or individual health data."
+    },
+    "retention": {
+      "title": "Retention",
+      "analytics": "Usage events: {days} days",
+      "orders": "Test orders linked to the account: {days} days (then anonymized)",
+      "logs": "Recommendation runs and technical logs: {days} days",
+      "audit": "Administrative audit: {days} days",
+      "exceptions": "Documented exceptions (legal evidence or incident) suspend anonymization while open."
+    },
+    "ai": {
+      "title": "AI recommendations",
+      "body": "Only if enabled by the administration. They receive only opaque ids, tags and pillars — never name or email."
+    },
+    "delete": {
+      "title": "Delete account",
+      "description": "Anonymizes the profile, removes interests, lists and progress, unlinks events and orders and deletes the account. This cannot be undone.",
+      "button": "Delete my account",
+      "dialogTitle": "Delete your account?",
+      "dialogDescription": "This action is final. To confirm, type {word} below.",
+      "confirmLabel": "Confirmation",
+      "confirmPlaceholder": "Type {word}",
+      "word": "EXCLUIR",
+      "confirm": "Delete permanently",
+      "done": "Account deleted. See you!",
+      "errors": {
+        "retention_exception_active": "There is an active retention exception for this account (legal evidence or incident). Deletion is blocked until it is closed.",
+        "unauthenticated": "Sign in to continue.",
+        "generic": "Could not delete the account. Please try again."
+      }
+    }
+  },
+  "onboarding": {
+    "title": "Welcome to Ultra Hero",
+    "description": "Two quick steps to personalize your experience. Optional.",
+    "step": "Step {n} of {total}",
+    "steps": {
+      "interests": {
+        "title": "Your interests",
+        "description": "Pick as many topics as you like (or none)."
+      },
+      "preferences": {
+        "title": "Language and theme",
+        "description": "You can change this later in your profile."
+      }
+    },
+    "language": "Language",
+    "theme": "Theme",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Finish",
+    "skip": "Skip for now",
+    "done": "All set! Your recommendations now consider your interests.",
+    "errors": {
+      "invalid_input": "Invalid data.",
+      "unauthenticated": "Sign in to continue.",
+      "generic": "Could not finish. Please try again."
+    }
+  },
+  "recommendations": {
+    "title": "For you",
+    "titleVisitor": "Open picks",
+    "description": "Suggestions based on your interests and activity.",
+    "descriptionVisitor": "Open and featured content. Sign in for personalized suggestions.",
+    "disclaimer": "Content suggestions, not health guidance.",
+    "engine": {
+      "label": "Engine",
+      "deterministic": "Deterministic fallback",
+      "openai": "OpenAI",
+      "gemini": "Gemini"
+    },
+    "reasons": {
+      "interest": "Because you are interested in {tag}",
+      "pillar": "More about {pillar}, which you have been exploring",
+      "difficulty": "At your current level",
+      "fresh": "New in the catalog",
+      "featured": "Editorial pick",
+      "text": "{text}",
+      "generic": "Suggestion for you"
+    },
+    "locked": "Requires the {module} module (simulated subscription)",
+    "notInterested": "Not interested",
+    "notInterestedFor": "Not interested: {title}",
+    "notInterestedDone": "Got it. We will not suggest this content.",
+    "empty": "No suggestions yet. Explore the catalog and tell us your interests.",
+    "error": "Could not load suggestions.",
+    "errors": {
+      "unauthenticated": "Sign in to continue.",
+      "generic": "Could not complete the action."
+    }
+  },
+  "feedback": {
+    "button": "Feedback",
+    "title": "Leave your feedback",
+    "description": "Optional and quick. It helps improve the demo.",
+    "rating": "Rating",
+    "ratingOption": "{n} of 5",
+    "ratingLabels": {
+      "r1": "Poor",
+      "r2": "Weak",
+      "r3": "Okay",
+      "r4": "Good",
+      "r5": "Great"
+    },
+    "message": "Comment",
+    "messageHint": "Optional, up to 1000 characters. Do not include personal data.",
+    "submit": "Send",
+    "thanks": "Thanks for your feedback!",
+    "errors": {
+      "rate_limited": "You have sent too many feedbacks today. Try again tomorrow.",
+      "feedback_empty": "Give a rating or write a comment.",
+      "generic": "Could not send. Please try again."
+    }
+  },
+  "verify": {
+    "title": "Verify certificate",
+    "description": "Public lookup of Ultra Hero symbolic certificates.",
+    "valid": "Valid certificate",
+    "invalid": "Certificate not found",
+    "invalidDescription": "Check the code you entered.",
+    "revoked": "Certificate revoked",
+    "program": "Program",
+    "version": "Version {n}",
+    "issued": "Issued on {date}",
+    "code": "Code {code}",
+    "symbolic": "Symbolic certificate: it recognizes the completion of educational content in a demo environment. No professional, academic or legal validity.",
+    "home": "Go to Ultra Hero"
+  }
+}

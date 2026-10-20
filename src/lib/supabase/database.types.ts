@@ -1181,6 +1181,11 @@ isOneToOne: false
 "admin_create_program_version":
 { Args: { "p_copy_from"?: string,"p_program": string }; Returns: string
                            },
+"admin_get_user":
+{ Args: { "p_id": string }; Returns: {
+              "anonymized": boolean,"avatar_url": string,"created_at": string,"display_name": string,"email": string,"id": string,"last_sign_in_at": string,"locale": Database["public"]['Enums']["locale_code"],"roles": Json,"timezone": string
+            }[]
+                           },
 "admin_list_users":
 { Args: { "p_limit"?: number,"p_offset"?: number,"p_search"?: string }; Returns: {
               "anonymized": boolean,"created_at": string,"display_name": string,"email": string,"id": string,"last_sign_in_at": string,"roles": (string)[]
@@ -1200,6 +1205,9 @@ isOneToOne: false
                            },
 "admin_revoke_invitation":
 { Args: { "p_id": string,"p_justification"?: string }; Returns: undefined
+                           },
+"admin_revoke_membership":
+{ Args: { "p_justification"?: string,"p_membership": string }; Returns: undefined
                            },
 "admin_run_retention":
 { Args: Record<PropertyKey, never>; Returns: Json
@@ -1227,6 +1235,11 @@ isOneToOne: false
                            },
 "admin_substitute_program_item":
 { Args: { "p_original": string,"p_reason": string,"p_replacement": string,"p_version": string }; Returns: undefined
+                           },
+"admin_user_emails":
+{ Args: { "p_ids": (string)[] }; Returns: {
+              "display_name": string,"email": string,"id": string
+            }[]
                            },
 "advance_simulated_transport":
 { Args: { "p_minutes_per_step"?: number }; Returns: number

@@ -1,0 +1,399 @@
+{
+  "meta": {
+    "evolution": "Evolução",
+    "profile": "Perfil",
+    "plan": "Plano e módulos",
+    "interests": "Interesses",
+    "account": "Conta e privacidade",
+    "favorites": "Favoritos",
+    "onboarding": "Boas-vindas",
+    "verify": "Verificar certificado"
+  },
+  "evolution": {
+    "title": "Sua evolução",
+    "description": "Sequência, atividade recente, conquistas e programas em andamento.",
+    "streak": {
+      "current": "Sequência atual",
+      "best": "Melhor sequência",
+      "days": "{n, plural, =0 {0 dias} =1 {1 dia} other {# dias}}",
+      "hint": "Vale uma atividade por dia: concluir um conteúdo, avançar em um vídeo ou entrar em um programa.",
+      "timezone": "Fuso: {tz}"
+    },
+    "activity": {
+      "title": "Últimos 14 dias",
+      "description": "Dias com atividade válida",
+      "day": "{date}: {n, plural, =1 {# atividade} other {# atividades}}",
+      "today": "hoje"
+    },
+    "stats": {
+      "completions": "Conteúdos concluídos",
+      "programsActive": "Programas em andamento",
+      "programsCompleted": "Programas concluídos",
+      "favorites": "Favoritos"
+    },
+    "achievements": {
+      "title": "Conquistas",
+      "description": "Reconhecimentos simbólicos pelo seu ritmo.",
+      "earnedOn": "Conquistada em {date}",
+      "locked": "Bloqueada",
+      "earned": "Conquistada",
+      "rules": {
+        "streak": "{days, plural, =1 {1 dia seguido} other {# dias seguidos}} de atividade",
+        "completions": "Concluir {count, plural, =1 {# conteúdo} other {# conteúdos}}",
+        "program_completed": "Concluir {count, plural, =1 {# programa} other {# programas}}",
+        "unknown": "Regra definida pela equipe"
+      },
+      "names": {
+        "first_step": "Primeiro passo",
+        "five_done": "Em movimento",
+        "ten_done": "Constante",
+        "streak_3": "Três dias seguidos",
+        "streak_7": "Uma semana inteira",
+        "streak_14": "Duas semanas",
+        "program_done": "Programa concluído"
+      }
+    },
+    "programs": {
+      "title": "Meus programas",
+      "description": "Progresso na versão em que você entrou.",
+      "empty": "Você ainda não participa de nenhum programa.",
+      "progress": "{done} de {total} obrigatórios",
+      "progressLabel": "Progresso em {title}",
+      "status": {
+        "active": "Em andamento",
+        "completed": "Concluído",
+        "abandoned": "Abandonado"
+      },
+      "version": "versão {n}",
+      "open": "Abrir programa",
+      "certificate": "Baixar certificado simbólico",
+      "enrolledOn": "Desde {date}"
+    },
+    "recent": {
+      "title": "Atividade recente",
+      "description": "Suas últimas conclusões e progressos.",
+      "empty": "Nenhuma atividade registrada ainda.",
+      "completed": "Concluído",
+      "progress": "Progresso: {pct}%",
+      "unavailable": "Conteúdo indisponível"
+    },
+    "empty": {
+      "title": "Sua jornada começa agora",
+      "description": "Conclua um conteúdo, avance em um vídeo ou entre em um programa para iniciar a sequência.",
+      "cta": "Explorar conteúdos"
+    },
+    "disclaimer": "Métricas de uso do app, não indicadores de saúde. Conteúdo educativo; não substitui orientação profissional."
+  },
+  "profile": {
+    "title": "Perfil",
+    "description": "Seus dados, preferências e plano simulado.",
+    "emailLabel": "E-mail",
+    "roles": {
+      "label": "Papéis",
+      "consumer": "Consumidor",
+      "creator": "Personalidade",
+      "seller": "Fornecedor",
+      "admin": "Admin"
+    },
+    "plan": {
+      "label": "Plano",
+      "free": "Gratuito",
+      "active": "Assinatura simulada ativa",
+      "cancelled": "Cancelada (acesso até o fim do período)",
+      "expired": "Expirada",
+      "unknown": "Não disponível",
+      "manage": "Gerenciar plano"
+    },
+    "portals": {
+      "title": "Seus portais",
+      "description": "Áreas de operação vinculadas aos seus papéis.",
+      "admin": "Administração",
+      "creator": "Portal da personalidade",
+      "seller": "Portal do fornecedor"
+    },
+    "data": {
+      "title": "Dados",
+      "description": "Nome, avatar, idioma e tema.",
+      "displayName": "Nome exibido",
+      "displayNameHint": "Até 60 caracteres. Aparece no certificado simbólico.",
+      "avatar": "Avatar",
+      "avatarHint": "Ilustrações locais; não enviamos fotos nesta demonstração.",
+      "avatarOption": "Avatar {n}",
+      "language": "Idioma",
+      "theme": "Tema",
+      "save": "Salvar alterações",
+      "saved": "Perfil atualizado.",
+      "errors": {
+        "invalid_input": "Verifique os campos.",
+        "unauthenticated": "Entre para continuar.",
+        "generic": "Não foi possível salvar. Tente novamente."
+      }
+    },
+    "links": {
+      "plan": {
+        "title": "Plano e módulos",
+        "description": "Assinatura simulada, pacotes e módulos."
+      },
+      "interests": {
+        "title": "Interesses",
+        "description": "Temas que guiam as recomendações."
+      },
+      "favorites": {
+        "title": "Favoritos",
+        "description": "Conteúdos que você marcou."
+      },
+      "orders": {
+        "title": "Pedidos de teste",
+        "description": "Compras demonstrativas, sem cobrança real."
+      },
+      "account": {
+        "title": "Conta e privacidade",
+        "description": "O que guardamos, por quanto tempo e como excluir."
+      }
+    },
+    "signOut": "Sair da conta",
+    "demoNote": "Ambiente de demonstração: personalidades fictícias, assinatura simulada, nenhum pagamento real."
+  },
+  "favorites": {
+    "title": "Favoritos",
+    "description": "Conteúdos que você marcou com o coração.",
+    "count": "{n, plural, =1 {# favorito} other {# favoritos}}",
+    "remove": "Remover {title} dos favoritos",
+    "removed": "Removido dos favoritos.",
+    "empty": {
+      "title": "Nenhum favorito ainda",
+      "description": "Toque no coração em qualquer conteúdo para guardá-lo aqui.",
+      "cta": "Explorar conteúdos"
+    },
+    "errors": {
+      "unauthenticated": "Entre para continuar.",
+      "generic": "Não foi possível remover. Tente novamente."
+    },
+    "removeShort": "Remover dos favoritos"
+  },
+  "plan": {
+    "title": "Plano e módulos",
+    "description": "Assinatura simulada para a demonstração. Nenhum pagamento é feito.",
+    "demoNote": "Simulado: nenhum pagamento, cobrança ou renovação real. Valores ilustrativos.",
+    "current": {
+      "title": "Sua assinatura simulada",
+      "status": {
+        "free": "Gratuito",
+        "active": "Ativa",
+        "cancelled": "Cancelada",
+        "expired": "Expirada"
+      },
+      "freeDescription": "Você está no nível gratuito: conteúdos abertos de todos os pilares.",
+      "periodEnd": "Período atual termina em {date}",
+      "autoRenewOn": "Renovação simulada automática a cada 30 dias",
+      "autoRenewOff": "Sem renovação automática",
+      "cancelledNotice": "Assinatura cancelada. O acesso aos módulos continua até {date}.",
+      "modules": "Módulos",
+      "noModules": "Nenhum módulo ativo.",
+      "scheduledRemoval": "Sai em {date}",
+      "activeModule": "Ativo"
+    },
+    "bundles": {
+      "title": "Pacotes",
+      "description": "Atalhos para conjuntos de módulos. O valor é a soma dos módulos.",
+      "choose": "Escolher pacote",
+      "current": "Pacote atual",
+      "total": "Total {price}/mês",
+      "demoPrice": "valor demonstrativo",
+      "includes": "Inclui: {modules}",
+      "freeIncludes": "Conteúdos abertos de todos os pilares."
+    },
+    "custom": {
+      "title": "Montar meu conjunto",
+      "description": "Escolha módulo a módulo. Dependências aparecem em cada item.",
+      "requires": "Requer: {modules}",
+      "apply": "Aplicar seleção",
+      "total": "Total {price}/mês",
+      "selected": "{n, plural, =1 {# módulo selecionado} other {# módulos selecionados}}",
+      "unchanged": "Nenhuma mudança em relação ao conjunto atual.",
+      "moduleLabel": "{name}, {price} por mês"
+    },
+    "actions": {
+      "cancel": "Cancelar assinatura simulada",
+      "cancelTitle": "Cancelar a assinatura simulada?",
+      "cancelDescription": "O acesso aos módulos continua até o fim do período atual. Depois você volta ao gratuito. Nada é cobrado ou devolvido: tudo é simulado.",
+      "cancelConfirm": "Cancelar assinatura",
+      "cancelled": "Assinatura simulada cancelada. Acesso mantido até o fim do período.",
+      "backToFree": "Voltar ao gratuito",
+      "backToFreeTitle": "Voltar ao nível gratuito?",
+      "backToFreeDescription": "Todos os módulos serão agendados para remoção no fim do período atual. Simulado, sem cobrança.",
+      "backToFreeConfirm": "Voltar ao gratuito",
+      "applied": "Seleção aplicada. Adições valem agora; remoções no fim do período.",
+      "downgradeHint": "Adições valem imediatamente; remoções são agendadas para o fim do período."
+    },
+    "errors": {
+      "invalid_module": "Um dos módulos escolhidos não está disponível.",
+      "module_dependency_missing": "{module} exige também {required}.",
+      "unauthenticated": "Entre para continuar.",
+      "generic": "Não foi possível atualizar a assinatura simulada. Tente novamente."
+    }
+  },
+  "interests": {
+    "title": "Interesses",
+    "description": "Escolha temas para guiar as recomendações. Você pode mudar quando quiser.",
+    "groupLabel": "Temas de {pillar}",
+    "selected": "{n, plural, =1 {# tema selecionado} other {# temas selecionados}}",
+    "save": "Salvar interesses",
+    "saved": "Interesses salvos. Recomendações atualizadas.",
+    "savedNoRecalc": "Interesses salvos.",
+    "errors": {
+      "invalid_input": "Seleção inválida.",
+      "unauthenticated": "Entre para continuar.",
+      "generic": "Não foi possível salvar. Tente novamente."
+    },
+    "notInterested": {
+      "title": "Conteúdos ocultos",
+      "description": "Itens marcados como “não tenho interesse”. Eles ficam fora das recomendações.",
+      "empty": "Nenhum conteúdo oculto.",
+      "restore": "Restaurar {title}",
+      "restoreShort": "Restaurar",
+      "restored": "Conteúdo restaurado."
+    }
+  },
+  "account": {
+    "title": "Conta e privacidade",
+    "description": "Transparência sobre o que a POC guarda e como excluir sua conta.",
+    "demo": {
+      "title": "Natureza demonstrativa",
+      "body": "O Ultra Hero é uma prova de conceito pública. Personalidades são fictícias, assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
+    },
+    "store": {
+      "title": "O que guardamos",
+      "item1": "E-mail, nome exibido, avatar (ilustração), idioma, tema e fuso horário.",
+      "item2": "Interesses, favoritos, listas, progresso, conclusões e sequência.",
+      "item3": "Assinatura simulada (módulos e períodos) e pedidos de teste com destino fictício.",
+      "item4": "Eventos de uso sem dados pessoais e feedback opcional.",
+      "not": "Não coletamos endereço real, geolocalização, dados de pagamento nem dados de saúde individuais."
+    },
+    "retention": {
+      "title": "Retenção",
+      "analytics": "Eventos de uso: {days} dias",
+      "orders": "Pedidos de teste vinculados à conta: {days} dias (depois, anonimizados)",
+      "logs": "Execuções de recomendação e logs técnicos: {days} dias",
+      "audit": "Auditoria administrativa: {days} dias",
+      "exceptions": "Exceções documentadas (evidência legal ou incidente) suspendem a anonimização enquanto estiverem abertas."
+    },
+    "ai": {
+      "title": "Recomendações por IA",
+      "body": "Só se ativadas pela administração. Recebem apenas ids opacos, tags e pilares — nunca nome ou e-mail."
+    },
+    "delete": {
+      "title": "Excluir conta",
+      "description": "Anonimiza o perfil, remove interesses, listas e progresso, desvincula eventos e pedidos e apaga a conta. Não dá para desfazer.",
+      "button": "Excluir minha conta",
+      "dialogTitle": "Excluir sua conta?",
+      "dialogDescription": "Esta ação é definitiva. Para confirmar, digite {word} abaixo.",
+      "confirmLabel": "Confirmação",
+      "confirmPlaceholder": "Digite {word}",
+      "word": "EXCLUIR",
+      "confirm": "Excluir definitivamente",
+      "done": "Conta excluída. Até logo!",
+      "errors": {
+        "retention_exception_active": "Há uma exceção de retenção ativa para esta conta (evidência legal ou incidente). A exclusão fica bloqueada até ela ser encerrada.",
+        "unauthenticated": "Entre para continuar.",
+        "generic": "Não foi possível excluir a conta. Tente novamente."
+      }
+    }
+  },
+  "onboarding": {
+    "title": "Boas-vindas ao Ultra Hero",
+    "description": "Dois passos rápidos para personalizar sua experiência. Opcional.",
+    "step": "Passo {n} de {total}",
+    "steps": {
+      "interests": {
+        "title": "Seus interesses",
+        "description": "Escolha quantos temas quiser (ou nenhum)."
+      },
+      "preferences": {
+        "title": "Idioma e tema",
+        "description": "Você pode mudar isso depois no perfil."
+      }
+    },
+    "language": "Idioma",
+    "theme": "Tema",
+    "next": "Avançar",
+    "back": "Voltar",
+    "finish": "Concluir",
+    "skip": "Pular por agora",
+    "done": "Tudo pronto! Suas recomendações já consideram seus interesses.",
+    "errors": {
+      "invalid_input": "Dados inválidos.",
+      "unauthenticated": "Entre para continuar.",
+      "generic": "Não foi possível concluir. Tente novamente."
+    }
+  },
+  "recommendations": {
+    "title": "Para você",
+    "titleVisitor": "Sugestões abertas",
+    "description": "Sugestões a partir dos seus interesses e da sua atividade.",
+    "descriptionVisitor": "Conteúdos abertos e em destaque. Entre para receber sugestões personalizadas.",
+    "disclaimer": "Sugestões de conteúdo, não orientação de saúde.",
+    "engine": {
+      "label": "Motor",
+      "deterministic": "Fallback determinístico",
+      "openai": "OpenAI",
+      "gemini": "Gemini"
+    },
+    "reasons": {
+      "interest": "Porque você se interessa por {tag}",
+      "pillar": "Mais sobre {pillar}, que você tem explorado",
+      "difficulty": "No seu nível atual",
+      "fresh": "Novidade no catálogo",
+      "featured": "Destaque editorial",
+      "text": "{text}",
+      "generic": "Sugestão para você"
+    },
+    "locked": "Requer o módulo {module} (assinatura simulada)",
+    "notInterested": "Não me interessa",
+    "notInterestedFor": "Não me interessa: {title}",
+    "notInterestedDone": "Entendido. Não vamos sugerir este conteúdo.",
+    "empty": "Ainda não temos sugestões. Explore o catálogo e conte seus interesses.",
+    "error": "Não foi possível carregar as sugestões.",
+    "errors": {
+      "unauthenticated": "Entre para continuar.",
+      "generic": "Não foi possível concluir a ação."
+    }
+  },
+  "feedback": {
+    "button": "Feedback",
+    "title": "Deixe seu feedback",
+    "description": "Opcional e rápido. Ajuda a melhorar a demonstração.",
+    "rating": "Nota",
+    "ratingOption": "{n} de 5",
+    "ratingLabels": {
+      "r1": "Ruim",
+      "r2": "Fraco",
+      "r3": "Ok",
+      "r4": "Bom",
+      "r5": "Ótimo"
+    },
+    "message": "Comentário",
+    "messageHint": "Opcional, até 1000 caracteres. Não inclua dados pessoais.",
+    "submit": "Enviar",
+    "thanks": "Obrigado pelo feedback!",
+    "errors": {
+      "rate_limited": "Você já enviou muitos feedbacks hoje. Tente amanhã.",
+      "feedback_empty": "Dê uma nota ou escreva um comentário.",
+      "generic": "Não foi possível enviar. Tente novamente."
+    }
+  },
+  "verify": {
+    "title": "Verificar certificado",
+    "description": "Consulta pública de certificados simbólicos do Ultra Hero.",
+    "valid": "Certificado válido",
+    "invalid": "Certificado não encontrado",
+    "invalidDescription": "Verifique o código informado.",
+    "revoked": "Certificado revogado",
+    "program": "Programa",
+    "version": "Versão {n}",
+    "issued": "Emitido em {date}",
+    "code": "Código {code}",
+    "symbolic": "Certificado simbólico: reconhece a conclusão de conteúdos educativos em um ambiente de demonstração. Sem validade profissional, acadêmica ou legal.",
+    "home": "Ir para o Ultra Hero"
+  }
+}
