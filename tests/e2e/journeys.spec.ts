@@ -29,4 +29,20 @@ test.describe("visitante", () => {
     await page.goto("/");
     await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();
   });
+
+  // RB-05/RB-06: perfil do seed segue fictício (nota de direitos + selo) e todo conteúdo expõe crédito/licença.
+  test("perfil de personalidade mostra a nota de direitos como fictício e o conteúdo mostra crédito/licença", async ({ page }) => {
+    await page.goto("/personalities/lia-monteiro");
+    const notice = page.getByRole("complementary", { name: /sobre este perfil|about this profile/i });
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText(/fict/i);
+    await expect(notice).not.toContainText(/autorizado por|authorized by/i);
+    await expect(page.getByText(/personagem fictício|fictional character/i).first()).toBeVisible();
+
+    await page.goto("/personalities/helena-vilar?type=recipe");
+    const firstCard = page.getByRole("link", { name: /.+/ }).filter({ has: page.locator("img") }).first();
+    await firstCard.click();
+    await expect(page).toHaveURL(/\/content\//);
+    await expect(page.getByText(/crédito\/licença|credit\/license/i)).toBeVisible();
+  });
 });

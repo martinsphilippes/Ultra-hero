@@ -1054,6 +1054,7 @@ describe("emptyBody e normalizeBody", () => {
       steps: ["Misture"],
       allergens: ["lactose"],
       note: "",
+      nutrition: null,
     });
     expect(bodySchema.safeParse(body).success).toBe(true);
   });

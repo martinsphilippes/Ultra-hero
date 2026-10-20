@@ -52,7 +52,9 @@
     "account_status_mismatch": "The account state in Auth does not match this action (nothing was recorded). Reload the page and try again.",
     "suspension_unaudited": "The change was applied in Auth but could not be audited or undone. Reload the page and check the account status before trying again.",
     "experiment_closed": "The database refused to create this account while sign-ups are closed. Demo accounts created here should pass; check that migration 0015 is applied to the database.",
-    "generic": "The action could not be completed. Try again."
+    "generic": "The action could not be completed. Try again.",
+    "rights_holder_required": "Enter the authorization holder to mark as authorized.",
+    "creator_not_found": "Personality not found."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -267,7 +269,8 @@
       "pillars": "Pillars",
       "status": "Status",
       "user": "Linked user",
-      "fictional": "Fictional"
+      "fictional": "Fictional",
+      "rights": "Rights"
     },
     "empty": "No personalities",
     "emptyDescription": "Create the first fictional personality.",
@@ -289,7 +292,25 @@
       "save": "Save",
       "created": "Personality created",
       "updated": "Personality updated",
-      "placeholderOption": "Placeholder {n}"
+      "placeholderOption": "Placeholder {n}",
+      "rightsSection": "Name and likeness rights (public)",
+      "rightsStatus": "Rights status",
+      "rightsStatusHint": "\"Under validation\" is never shown as authorized; \"authorized\" shows the holder and validity on the public page.",
+      "rights": {
+        "fictional": "Fictional (POC default)",
+        "pending": "Under validation",
+        "authorized": "Authorized"
+      },
+      "rightsHolder": "Authorization holder",
+      "rightsHolderHint": "Who authorized the use of name and likeness (required when authorized).",
+      "rightsValidUntil": "Valid until",
+      "rightsValidUntilHint": "After this date the page shows \"under validation\" again.",
+      "privateSection": "Internal documentation (not public)",
+      "documentRef": "Document reference",
+      "documentRefHint": "Contract, agreement or protocol. Admin only; saving is audited.",
+      "privateNotes": "Internal notes",
+      "privateNotesHint": "Review notes. Admin only.",
+      "reviewedAt": "Documentation reviewed on {date}"
     },
     "status": {
       "activate": "Reactivate",
@@ -300,7 +321,12 @@
       "updated": "Status updated"
     },
     "invite": "Invite user",
-    "linkedTo": "Linked to {email}"
+    "linkedTo": "Linked to {email}",
+    "rights": {
+      "fictional": "Fictional",
+      "pending": "Under validation",
+      "authorized": "Authorized"
+    }
   },
   "sellers": {
     "title": "Suppliers",

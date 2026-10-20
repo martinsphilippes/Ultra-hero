@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { parseContentForm } from "@/components/editors/content/schema";
+import { parseContentForm, stripNutritionValidation } from "@/components/editors/content/schema";
 import type { ActionResult, ContentFormValues } from "@/components/editors/types";
 import { getUser } from "@/lib/auth/session";
 import type { Json } from "@/lib/supabase/database.types";
@@ -30,6 +30,9 @@ function creatorColumns(v: ContentFormValues) {
     type: v.type,
     source_locale: v.source_locale,
     disclaimer_kind: v.disclaimer_kind,
+    media_license_kind: v.media_license_kind,
+    media_license_ref: v.media_license_ref || null,
+    media_credit: v.media_credit || null,
   };
 }
 
@@ -57,7 +60,8 @@ function revalidateContent(id?: string) {
 export async function createContent(values: ContentFormValues): Promise<SaveResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  const parsed = parseContentForm(values);
+  // A personalidade nunca valida nutrição (RB-08): a marcação é zerada antes de validar e gravar.
+  const parsed = parseContentForm(stripNutritionValidation(values));
   if (!parsed.ok) return { ok: false, error: "invalid_input" };
   const v = parsed.data;
 
@@ -91,7 +95,7 @@ export async function createContent(values: ContentFormValues): Promise<SaveResu
 export async function updateContent(values: ContentFormValues): Promise<SaveResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  const parsed = parseContentForm(values);
+  const parsed = parseContentForm(stripNutritionValidation(values));
   if (!parsed.ok || !parsed.data.id) return { ok: false, error: "invalid_input" };
   const v = parsed.data;
   const id = v.id as string;

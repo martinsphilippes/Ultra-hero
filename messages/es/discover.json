@@ -181,7 +181,11 @@
       "contentsEmptyTitle": "Ningún contenido con este filtro",
       "contentsEmptyDescription": "Prueba otro tipo de contenido.",
       "programsEmptyTitle": "Ningún programa publicado",
-      "programsEmptyDescription": "Esta personalidad aún no tiene programas."
+      "programsEmptyDescription": "Esta personalidad aún no tiene programas.",
+      "rightsPendingBadge": "Derechos en validación",
+      "rightsPending": "Autorización de uso de nombre e imagen en validación; hasta entonces, el perfil se trata como ficticio.",
+      "rightsAuthorized": "Uso de nombre e imagen autorizado por {holder}.",
+      "rightsValidUntil": "Autorización válida hasta el {date}."
     },
     "eyebrow": "Quienes guían los contenidos",
     "notFoundTitle": "Personalidad no encontrada",

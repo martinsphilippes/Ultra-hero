@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { BookOpen, ChefHat, Clock, Dumbbell, FileText, Play } from "lucide-react";
+import { BookOpen, ChefHat, Clock, Copyright, Dumbbell, FileText, Play } from "lucide-react";
+import { isScheduled } from "@/components/admin-content/lib/publish-at";
 import { ContentCard } from "@/components/catalog";
 import {
   DisclaimerBanner,
@@ -32,7 +33,7 @@ import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui"
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
-import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
+import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { resolveVideoSource } from "@/lib/video";
@@ -40,9 +41,10 @@ import { resolveVideoSource } from "@/lib/video";
 // Página de conteúdo: metadados públicos + corpo sob RLS. O estado (visitante, bloqueado,
 // indisponível, acessível) é derivado do que o servidor devolve — nunca inferido no cliente.
 
+// Licença: só o tipo e o crédito são públicos; media_license_ref é interna e nunca é selecionada aqui.
 const CONTENT_DETAIL_SELECT =
-  "id, slug, title, summary, cover_url, pillar, type, duration_minutes, difficulty, tags, has_captions, status, access_level, completion_mode, disclaimer_kind, source_locale, published_at, creator_id, " +
-  "required_module:plan_modules(id, code, name), creator:creator_profiles(id, slug, name, headline, avatar_url, is_fictional)";
+  "id, slug, title, summary, cover_url, pillar, type, duration_minutes, difficulty, tags, has_captions, status, access_level, completion_mode, disclaimer_kind, source_locale, published_at, publish_at, creator_id, " +
+  "media_license_kind, media_credit, required_module:plan_modules(id, code, name), creator:creator_profiles(id, slug, name, headline, avatar_url, is_fictional)";
 
 type ContentDetail = {
   id: string;
@@ -62,7 +64,10 @@ type ContentDetail = {
   disclaimer_kind: DisclaimerKind;
   source_locale: LocaleCode;
   published_at: string | null;
+  publish_at: string | null;
   creator_id: string | null;
+  media_license_kind: "platform_demo" | "own" | "licensed" | "third_party_embed";
+  media_credit: string | null;
   required_module: { id: string; code: string; name: string } | null;
   creator: { id: string; slug: string; name: string; headline: string | null; avatar_url: string | null; is_fictional: boolean } | null;
 };
@@ -115,7 +120,7 @@ export default async function ContentPage({ params }: Params) {
     user ? supabase.from("favorites").select("content_id").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
     user ? supabase.from("not_interested").select("content_id").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
     content.creator_id
-      ? supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", content.creator_id).eq("status", "published").neq("id", content.id).order("published_at", { ascending: false }).limit(3)
+      ? supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", content.creator_id).eq("status", "published").or(liveContentFilter()).neq("id", content.id).order("published_at", { ascending: false }).limit(3)
       : null,
     user ? getProfile() : null,
   ]);
@@ -212,6 +217,12 @@ export default async function ContentPage({ params }: Params) {
                 <Badge variant="warning" size="sm">{content.status}</Badge>
               </li>
             ) : null}
+            {/* Só admin e a própria personalidade chegam a um conteúdo agendado (RLS). */}
+            {isScheduled(content.status, content.publish_at) ? (
+              <li>
+                <Badge variant="info" size="sm">{t("scheduledBadge")}</Badge>
+              </li>
+            ) : null}
           </ul>
           <h1 className="type-h1 text-balance text-fg">{title}</h1>
           {summary && <p className="type-body max-w-prose text-fg-muted">{summary}</p>}
@@ -287,6 +298,15 @@ export default async function ContentPage({ params }: Params) {
           {(content.type === "guide" || content.type === "article") && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
         </div>
       )}
+
+      {/* Crédito/licença da mídia (RF-008, RB-06): discreto, sempre visível; a referência interna nunca sai daqui. */}
+      <p className="flex items-start gap-2 type-caption text-fg-muted">
+        <Copyright className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+        <span>
+          {t("licenseLabel")}: {t(`license.${content.media_license_kind}`)}
+          {content.media_credit ? ` · ${content.media_credit}` : ""}
+        </span>
+      </p>
 
       {content.tags.length > 0 && (
         <ul className="flex flex-wrap gap-1.5" aria-label={t("tags")}>

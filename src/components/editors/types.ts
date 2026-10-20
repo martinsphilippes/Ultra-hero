@@ -26,6 +26,12 @@ export type ContentFormValues = {
   /** Corpo estruturado por tipo (ver seed e docs/architecture). */
   body: Record<string, unknown>;
   media: ContentMedia;
+  /** Licença da mídia (RF-008): coerente com o provedor (validado no formulário e no banco). */
+  media_license_kind: "platform_demo" | "own" | "licensed" | "third_party_embed";
+  /** Referência interna da licença/contrato (nunca exibida ao público). */
+  media_license_ref: string;
+  /** Crédito exibido ao público na página do conteúdo. */
+  media_credit: string;
   /** Campos editáveis só pelo admin. */
   access_level?: AccessLevel | null;
   required_module_id?: string | null;

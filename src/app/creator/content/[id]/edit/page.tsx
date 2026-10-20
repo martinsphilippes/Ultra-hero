@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 import { getMyCreator } from "../../../_lib/creator";
 
 const CONTENT_SELECT =
-  "id, slug, title, summary, cover_url, pillar, type, source_locale, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, status, review_status, access_level, required_module_id, completion_mode, published_at, creator_id, required_module:plan_modules(code, name)";
+  "id, slug, title, summary, cover_url, pillar, type, source_locale, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, status, review_status, access_level, required_module_id, completion_mode, published_at, creator_id, " +
+  "media_license_kind, media_license_ref, media_credit, required_module:plan_modules(code, name)";
 
 type ContentRow = {
   id: string;
@@ -41,6 +42,9 @@ type ContentRow = {
   completion_mode: Enums<"completion_mode"> | null;
   published_at: string | null;
   creator_id: string | null;
+  media_license_kind: ContentFormValues["media_license_kind"];
+  media_license_ref: string | null;
+  media_credit: string | null;
   required_module: { code: string; name: string } | null;
 };
 
@@ -108,6 +112,9 @@ export default async function EditContentPage({ params }: Params) {
     disclaimer_kind: content.disclaimer_kind,
     body: (body?.body as Record<string, unknown> | undefined) ?? undefined,
     media: body ? { provider: body.media_provider, ref: body.media_ref, captions_url: body.captions_url } : undefined,
+    media_license_kind: content.media_license_kind,
+    media_license_ref: content.media_license_ref ?? "",
+    media_credit: content.media_credit ?? "",
     access_level: content.access_level,
     required_module_id: content.required_module_id,
     completion_mode: content.completion_mode,

@@ -169,14 +169,14 @@ isOneToOne: false
                   ]
                 },"content": {
                   Row: {
-                    "access_level": Database["public"]['Enums']["access_level"] | null,"archived_at": string | null,"completion_mode": Database["public"]['Enums']["completion_mode"] | null,"cover_url": string | null,"created_at": string,"created_by": string | null,"creator_id": string | null,"difficulty": string | null,"disclaimer_kind": string | null,"duration_minutes": number | null,"featured_rank": number | null,"has_captions": boolean,"id": string,"is_featured": boolean,"pillar": Database["public"]['Enums']["pillar"],"published_at": string | null,"required_module_id": string | null,"review_status": Database["public"]['Enums']["review_status"],"search": unknown,"slug": string,"source_locale": Database["public"]['Enums']["locale_code"],"status": Database["public"]['Enums']["content_status"],"summary": string | null,"tags": (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at": string
+                    "access_level": Database["public"]['Enums']["access_level"] | null,"archived_at": string | null,"completion_mode": Database["public"]['Enums']["completion_mode"] | null,"cover_url": string | null,"created_at": string,"created_by": string | null,"creator_id": string | null,"creator_link_origin": string | null,"difficulty": string | null,"disclaimer_kind": string | null,"duration_minutes": number | null,"featured_rank": number | null,"has_captions": boolean,"id": string,"is_featured": boolean,"media_credit": string | null,"media_license_kind": string,"media_license_ref": string | null,"pillar": Database["public"]['Enums']["pillar"],"publish_at": string | null,"published_at": string | null,"required_module_id": string | null,"review_status": Database["public"]['Enums']["review_status"],"search": unknown,"slug": string,"source_locale": Database["public"]['Enums']["locale_code"],"status": Database["public"]['Enums']["content_status"],"summary": string | null,"tags": (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"pillar": Database["public"]['Enums']["pillar"],"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug": string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at"?: string
+                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"creator_link_origin"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"media_credit"?: string | null,"media_license_kind"?: string,"media_license_ref"?: string | null,"pillar": Database["public"]['Enums']["pillar"],"publish_at"?: string | null,"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug": string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at"?: string
                   }
                   Update: {
-                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"pillar"?: Database["public"]['Enums']["pillar"],"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug"?: string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title"?: string,"type"?: Database["public"]['Enums']["content_type"],"updated_at"?: string
+                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"creator_link_origin"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"media_credit"?: string | null,"media_license_kind"?: string,"media_license_ref"?: string | null,"pillar"?: Database["public"]['Enums']["pillar"],"publish_at"?: string | null,"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug"?: string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title"?: string,"type"?: Database["public"]['Enums']["content_type"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -321,17 +321,37 @@ isOneToOne: false
                   ]
                 },"creator_profiles": {
                   Row: {
-                    "avatar_url": string | null,"bio": string | null,"cover_url": string | null,"created_at": string,"headline": string | null,"id": string,"is_fictional": boolean,"name": string,"pillars": (Database["public"]['Enums']["pillar"])[],"rights_note": string | null,"slug": string,"socials": NonNullable<Json>,"sort_order": number,"status": Database["public"]['Enums']["partner_status"],"updated_at": string,"user_id": string | null
+                    "avatar_url": string | null,"bio": string | null,"cover_url": string | null,"created_at": string,"headline": string | null,"id": string,"is_fictional": boolean,"name": string,"pillars": (Database["public"]['Enums']["pillar"])[],"rights_holder": string | null,"rights_note": string | null,"rights_status": string,"rights_valid_until": string | null,"slug": string,"socials": NonNullable<Json>,"sort_order": number,"status": Database["public"]['Enums']["partner_status"],"updated_at": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name": string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_note"?: string | null,"slug": string,"socials"?: NonNullable<Json>,"sort_order"?: number,"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
+                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name": string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_holder"?: string | null,"rights_note"?: string | null,"rights_status"?: string,"rights_valid_until"?: string | null,"slug": string,"socials"?: NonNullable<Json>,"sort_order"?: number,"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name"?: string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_note"?: string | null,"slug"?: string,"socials"?: NonNullable<Json>,"sort_order"?: number,"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
+                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name"?: string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_holder"?: string | null,"rights_note"?: string | null,"rights_status"?: string,"rights_valid_until"?: string | null,"slug"?: string,"socials"?: NonNullable<Json>,"sort_order"?: number,"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
+                  ]
+                },"creator_rights_private": {
+                  Row: {
+                    "creator_id": string,"document_ref": string | null,"notes": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creator_id": string,"document_ref"?: string | null,"notes"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "creator_id"?: string,"document_ref"?: string | null,"notes"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_rights_private_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: true
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"custom_lists": {
                   Row: {
@@ -1205,6 +1225,8 @@ isOneToOne: false
                            },
 "admin_review_content":
 { Args: { "p_content": string,"p_decision": Database["public"]['Enums']["review_status"],"p_feedback"?: string }; Returns: undefined
+                           } |
+{ Args: { "p_content": string,"p_decision": Database["public"]['Enums']["review_status"],"p_feedback": string,"p_publish_at": string }; Returns: undefined
                            },
 "admin_revoke_invitation":
 { Args: { "p_id": string,"p_justification"?: string }; Returns: undefined
@@ -1217,6 +1239,11 @@ isOneToOne: false
                            },
 "admin_set_content_status":
 { Args: { "p_content": string,"p_justification"?: string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
+                           } |
+{ Args: { "p_content": string,"p_justification": string,"p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
+                           },
+"admin_set_creator_rights_private":
+{ Args: { "p_creator": string,"p_document_ref": string,"p_justification"?: string,"p_notes": string }; Returns: undefined
                            },
 "admin_set_creator_status":
 { Args: { "p_creator": string,"p_justification"?: string,"p_status": Database["public"]['Enums']["partner_status"] }; Returns: undefined
@@ -1283,6 +1310,12 @@ isOneToOne: false
 "compute_streak":
 { Args: { "p_timezone"?: string,"p_user": string }; Returns: number
                            },
+"content_assert_media_license":
+{ Args: { "p_content": string }; Returns: undefined
+                           },
+"content_is_live":
+{ Args: { "p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: boolean
+                           },
 "delete_my_account":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -1312,6 +1345,9 @@ isOneToOne: false
                            },
 "local_date_for":
 { Args: { "p_timezone": string }; Returns: string
+                           },
+"media_license_compatible":
+{ Args: { "p_kind": string,"p_provider": Database["public"]['Enums']["media_provider"] }; Returns: boolean
                            },
 "my_creator_id":
 { Args: Record<PropertyKey, never>; Returns: string
@@ -1357,6 +1393,7 @@ isOneToOne: false
 "created_at": string,
 "created_by": string | null,
 "creator_id": string | null,
+"creator_link_origin": string | null,
 "difficulty": string | null,
 "disclaimer_kind": string | null,
 "duration_minutes": number | null,
@@ -1364,7 +1401,11 @@ isOneToOne: false
 "has_captions": boolean,
 "id": string,
 "is_featured": boolean,
+"media_credit": string | null,
+"media_license_kind": string,
+"media_license_ref": string | null,
 "pillar": Database["public"]['Enums']["pillar"],
+"publish_at": string | null,
 "published_at": string | null,
 "required_module_id": string | null,
 "review_status": Database["public"]['Enums']["review_status"],

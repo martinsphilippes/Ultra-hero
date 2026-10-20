@@ -10,6 +10,7 @@ import { ChipInput, FormSection, NumberField, useValidationMessage } from "./con
 import { GuideEditor } from "./content/GuideEditor";
 import { collectText, findHealthClaims } from "./content/health-claims";
 import { HealthClaimNotice } from "./content/HealthClaimNotice";
+import { LicenseFields } from "./content/LicenseFields";
 import { MediaEditor } from "./content/MediaEditor";
 import { RecipeEditor } from "./content/RecipeEditor";
 import {
@@ -19,6 +20,7 @@ import {
   LOCALE_VALUES,
   PILLAR_VALUES,
   bodyKindFor,
+  coerceLicenseKind,
   emptyBody,
   parseContentForm,
   toFormValues,
@@ -75,7 +77,8 @@ export function ContentForm({ mode, initial, canEditAccess, modules = [], readOn
         : sameFamily
           ? v.body
           : emptyBody(type);
-      return { ...v, type, body, media: type === "video" ? v.media : EMPTY_MEDIA };
+      const media = type === "video" ? v.media : EMPTY_MEDIA;
+      return { ...v, type, body, media, media_license_kind: coerceLicenseKind(media.provider, v.media_license_kind) };
     });
   }
 
@@ -117,7 +120,7 @@ export function ContentForm({ mode, initial, canEditAccess, modules = [], readOn
     values.body.kind === "video" ? (
       <VideoEditor value={values.body} onChange={(body) => patch({ body })} errors={errors} />
     ) : values.body.kind === "recipe" ? (
-      <RecipeEditor value={values.body} onChange={(body) => patch({ body })} errors={errors} />
+      <RecipeEditor value={values.body} onChange={(body) => patch({ body })} errors={errors} canValidate={canEditAccess} />
     ) : values.body.kind === "workout" ? (
       <WorkoutEditor value={values.body} onChange={(body) => patch({ body })} errors={errors} />
     ) : (
@@ -215,9 +218,13 @@ export function ContentForm({ mode, initial, canEditAccess, modules = [], readOn
 
         {values.type === "video" && (
           <FormSection legend={t("sections.media")} description={t("sections.mediaDescription")}>
-            <MediaEditor value={values.media} onChange={(media) => patch({ media })} errors={errors} />
+            <MediaEditor value={values.media} onChange={(media) => patch({ media, media_license_kind: coerceLicenseKind(media.provider, values.media_license_kind) })} errors={errors} />
           </FormSection>
         )}
+
+        <FormSection legend={t("sections.license")} description={t("sections.licenseDescription")}>
+          <LicenseFields provider={values.type === "video" ? values.media.provider : "none"} values={values} onChange={(p) => patch(p)} errors={errors} />
+        </FormSection>
 
         <FormSection legend={t(`sections.body.${bodyKindFor(values.type)}`)} description={t("sections.bodyDescription")}>
           {bodyEditor}

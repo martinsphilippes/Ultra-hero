@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ContentCard, ProgramCard } from "@/components/catalog";
 import { Section } from "@/components/ui";
-import { CONTENT_CARD_SELECT, PROGRAM_CARD_SELECT, type ContentCardData, type ProgramCardData } from "@/lib/catalog/queries";
+import { CONTENT_CARD_SELECT, PROGRAM_CARD_SELECT, liveContentFilter, type ContentCardData, type ProgramCardData } from "@/lib/catalog/queries";
 import { createClient } from "@/lib/supabase/server";
 import { CARD_GRID, SCROLL_CARD } from "../grid";
 import { InlineError } from "../InlineError";
@@ -14,6 +14,7 @@ export async function FeaturedSection() {
       .from("content")
       .select(CONTENT_CARD_SELECT)
       .eq("status", "published")
+      .or(liveContentFilter())
       .eq("is_featured", true)
       .order("featured_rank", { ascending: true, nullsFirst: false })
       .order("published_at", { ascending: false })

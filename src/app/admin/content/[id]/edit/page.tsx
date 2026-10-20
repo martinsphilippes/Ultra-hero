@@ -24,7 +24,7 @@ export default async function AdminContentEditPage({ params }: Params) {
     getTranslations("adminContent.common"),
     supabase
       .from("content")
-      .select("id, title, summary, pillar, type, source_locale, cover_url, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, access_level, required_module_id, completion_mode, creator_id")
+      .select("id, title, summary, pillar, type, source_locale, cover_url, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, access_level, required_module_id, completion_mode, creator_id, media_license_kind, media_license_ref, media_credit")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url").eq("content_id", id).maybeSingle(),
@@ -54,6 +54,9 @@ export default async function AdminContentEditPage({ params }: Params) {
       ref: body?.media_ref ?? null,
       captions_url: body?.captions_url ?? null,
     },
+    media_license_kind: content.media_license_kind as ContentFormValues["media_license_kind"],
+    media_license_ref: content.media_license_ref ?? "",
+    media_credit: content.media_credit ?? "",
     access_level: content.access_level,
     required_module_id: content.required_module_id,
     completion_mode: content.completion_mode,

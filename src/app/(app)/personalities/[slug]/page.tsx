@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Info, Layers, LibraryBig } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { Info, Layers, LibraryBig, ShieldCheck } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,7 +10,10 @@ import { CARD_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { UrlTabs } from "@/components/discover/UrlTabs";
 import { Badge, Button, EmptyState, PillarBadge } from "@/components/ui";
-import { CONTENT_CARD_SELECT, PROGRAM_CARD_SELECT, type ContentCardData, type ProgramCardData } from "@/lib/catalog/queries";
+import type { Locale } from "@/i18n/config";
+import { formatPlainDate } from "@/i18n/format";
+import { CONTENT_CARD_SELECT, PROGRAM_CARD_SELECT, liveContentFilter, type ContentCardData, type ProgramCardData } from "@/lib/catalog/queries";
+import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
 import { CONTENT_TYPES, type ContentType, type Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -28,9 +31,13 @@ type Creator = {
   cover_url: string | null;
   is_fictional: boolean;
   rights_note: string | null;
+  rights_status: string;
+  rights_holder: string | null;
+  rights_valid_until: string | null;
 };
 
-const CREATOR_SELECT = "id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_note";
+// Só os campos públicos de direitos; documento e notas ficam em creator_rights_private (só admin).
+const CREATOR_SELECT = "id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_note, rights_status, rights_holder, rights_valid_until";
 const TABS = ["conteudos", "programas"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -60,19 +67,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("personality", { name: creator.name }), description: creator.headline ?? undefined };
 }
 
-// Perfil da personalidade: capa, identidade (sempre marcada como fictícia), nota de direitos e abas.
+// Perfil da personalidade: capa, identidade, nota de direitos (fictício, em validação ou autorizado) e abas.
 export default async function PersonalityPage({ params, searchParams }: Props) {
   const [{ slug }, raw] = await Promise.all([params, searchParams]);
-  const [creator, t, tcat] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.profile"), getTranslations("catalog")]);
+  const [creator, t, tcat, locale] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.profile"), getTranslations("catalog"), getLocale()]);
   if (!creator) notFound();
 
   const tab = parseTab(first(raw.tab));
   const type = parseType(first(raw.type));
+  // RB-05: só "autorizado" com titular documentado e dentro da validade tira o selo de fictício.
+  const rights = effectiveRightsStatus(creator.rights_status, creator.rights_valid_until);
 
   // Uma query por coleção (sem N+1); contagens e filtro por tipo derivam do mesmo resultado.
   const supabase = await createClient();
   const [contentRes, programRes] = await Promise.all([
-    supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").order("published_at", { ascending: false }).limit(100),
+    supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").or(liveContentFilter()).order("published_at", { ascending: false }).limit(100),
     supabase.from("programs").select(PROGRAM_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(50),
   ]);
   const allContents = (contentRes.data ?? []) as unknown as ContentCardData[];
@@ -107,7 +116,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
           <div className="flex min-w-0 flex-1 flex-col gap-2 sm:pb-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="type-h1 text-balance text-fg">{creator.name}</h1>
-              {creator.is_fictional && <Badge variant="demo">{t("fictional")}</Badge>}
+              {showsFictionalBadge(rights) && <Badge variant="demo">{t("fictional")}</Badge>}
+              {rights === "pending" && <Badge variant="info">{t("rightsPendingBadge")}</Badge>}
             </div>
             {creator.headline && <p className="type-body text-fg-muted">{creator.headline}</p>}
             <ul className="flex flex-wrap gap-1.5" aria-label={t("pillarsLabel")}>
@@ -125,12 +135,33 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
 
         {creator.bio && <p className="type-body max-w-prose whitespace-pre-line text-fg sm:px-4">{creator.bio}</p>}
 
-        {/* Nota de direitos: personagem fictício, sem pessoa real, contrato ou endosso */}
-        <aside aria-label={t("rightsTitle")} className={cn("flex gap-3 rounded-xl border border-dashed border-warning/40 bg-warning-soft/40 p-4 sm:mx-4")}>
-          <Info className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+        {/* Nota de direitos (RB-05): fictício ou em validação nunca aparecem como autorizado;
+            autorizado exibe o titular e a validade registrados pela administração. */}
+        <aside
+          aria-label={t("rightsTitle")}
+          className={cn(
+            "flex gap-3 rounded-xl border border-dashed p-4 sm:mx-4",
+            rights === "authorized" ? "border-success/40 bg-success-soft/40" : "border-warning/40 bg-warning-soft/40",
+          )}
+        >
+          {rights === "authorized" ? (
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
+          ) : (
+            <Info className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+          )}
           <div className="flex flex-col gap-0.5">
             <p className="text-sm font-semibold text-fg">{t("rightsTitle")}</p>
-            <p className="type-body-sm text-fg-muted">{creator.rights_note?.trim() || t("rightsDefault")}</p>
+            {rights === "authorized" ? (
+              <p className="type-body-sm text-fg-muted">
+                {t("rightsAuthorized", { holder: creator.rights_holder ?? "" })}
+                {creator.rights_valid_until ? ` ${t("rightsValidUntil", { date: formatPlainDate(creator.rights_valid_until, locale as Locale) })}` : ""}
+              </p>
+            ) : (
+              <p className="type-body-sm text-fg-muted">
+                {creator.rights_note?.trim() || t("rightsDefault")}
+                {rights === "pending" ? ` ${t("rightsPending")}` : ""}
+              </p>
+            )}
           </div>
         </aside>
       </header>

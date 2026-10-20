@@ -1,23 +1,32 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
-import { createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
+import { RIGHTS_STATUSES, createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
 import { Button, Chip, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
+import type { Locale } from "@/i18n/config";
+import { formatDateTime } from "@/i18n/format";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { slugify } from "./slugify";
 
 const AVATARS = Array.from({ length: 8 }, (_, i) => `/placeholders/avatar-${i + 1}.svg`);
 const COVERS = PILLARS.flatMap((p) => [1, 2, 3].map((n) => `/placeholders/cover-${p}-${n}.svg`));
 
-type Props = { id?: string; initial?: Partial<CreatorFormValues> };
+type Props = {
+  id?: string;
+  initial?: Partial<CreatorFormValues>;
+  /** Metadados da documentação privada (só existe na edição). */
+  privateMeta?: { reviewedAt: string | null };
+};
 
 // Formulário de personalidade (criar/editar). Slug gerado a partir do nome até ser editado à mão.
-export function CreatorForm({ id, initial }: Props) {
+// Direitos (RF-003/RB-05): status, titular e validade são públicos; documento e notas, só do admin.
+export function CreatorForm({ id, initial, privateMeta }: Props) {
   const t = useTranslations("adminOps.creators.form");
   const tp = useTranslations("common.pillars");
   const tc = useTranslations("common.actions");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const { toast } = useToast();
   const [values, setValues] = useState<CreatorFormValues>({
@@ -31,10 +40,16 @@ export function CreatorForm({ id, initial }: Props) {
     isFictional: initial?.isFictional ?? true,
     rightsNote: initial?.rightsNote ?? "",
     sortOrder: initial?.sortOrder ?? 100,
+    rightsStatus: initial?.rightsStatus ?? "fictional",
+    rightsHolder: initial?.rightsHolder ?? "",
+    rightsValidUntil: initial?.rightsValidUntil ?? "",
+    documentRef: initial?.documentRef ?? "",
+    privateNotes: initial?.privateNotes ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const authorized = values.rightsStatus === "authorized";
 
   function set<K extends keyof CreatorFormValues>(key: K, value: CreatorFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -62,6 +77,11 @@ export function CreatorForm({ id, initial }: Props) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
+      {error && (
+        <p role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-fg">
+          {error}
+        </p>
+      )}
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label={t("name")} required>
           <Input
@@ -138,9 +158,42 @@ export function CreatorForm({ id, initial }: Props) {
         </span>
       </div>
       <Switch id="creator-fictional" checked={values.isFictional} onCheckedChange={(c) => set("isFictional", c)} label={t("isFictional")} description={t("isFictionalHint")} disabled={pending} />
-      <FormField label={t("rightsNote")} hint={t("rightsNoteHint")} error={error ?? undefined}>
+      <FormField label={t("rightsNote")} hint={t("rightsNoteHint")}>
         <Textarea value={values.rightsNote ?? ""} maxLength={500} rows={2} disabled={pending} onChange={(e) => set("rightsNote", e.target.value)} />
       </FormField>
+
+      <fieldset className="flex flex-col gap-4 rounded-2xl border border-border bg-surface-elevated p-4">
+        <legend className="px-1 text-sm font-semibold text-fg">{t("rightsSection")}</legend>
+        <FormField label={t("rightsStatus")} hint={t("rightsStatusHint")}>
+          <Select value={values.rightsStatus ?? "fictional"} disabled={pending} onChange={(e) => set("rightsStatus", e.target.value as CreatorFormValues["rightsStatus"])}>
+            {RIGHTS_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {t(`rights.${s}`)}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormField label={t("rightsHolder")} hint={t("rightsHolderHint")} required={authorized}>
+            <Input value={values.rightsHolder ?? ""} maxLength={160} disabled={pending} onChange={(e) => set("rightsHolder", e.target.value)} />
+          </FormField>
+          <FormField label={t("rightsValidUntil")} hint={t("rightsValidUntilHint")}>
+            <Input type="date" value={values.rightsValidUntil ?? ""} disabled={pending} onChange={(e) => set("rightsValidUntil", e.target.value)} />
+          </FormField>
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-4 rounded-2xl border border-dashed border-border p-4">
+        <legend className="px-1 text-sm font-semibold text-fg">{t("privateSection")}</legend>
+        <FormField label={t("documentRef")} hint={t("documentRefHint")}>
+          <Input value={values.documentRef ?? ""} maxLength={300} autoComplete="off" disabled={pending} onChange={(e) => set("documentRef", e.target.value)} />
+        </FormField>
+        <FormField label={t("privateNotes")} hint={t("privateNotesHint")}>
+          <Textarea value={values.privateNotes ?? ""} maxLength={2000} rows={3} disabled={pending} onChange={(e) => set("privateNotes", e.target.value)} />
+        </FormField>
+        {privateMeta?.reviewedAt && <p className="type-caption text-fg-muted">{t("reviewedAt", { date: formatDateTime(privateMeta.reviewedAt, locale) })}</p>}
+      </fieldset>
+
       <div className="flex flex-wrap justify-end gap-2">
         <Button type="button" variant="ghost" onClick={() => router.back()} disabled={pending}>
           {tc("cancel")}

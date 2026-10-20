@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { ActionResult } from "@/components/admin";
 import { escapeLike } from "@/components/admin-content/lib/search-params";
 import { slugWithSuffix } from "@/components/admin-content/lib/slug";
+import { parsePublishAt } from "@/components/admin-content/lib/publish-at";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import type { PickResult } from "@/components/admin-content/SearchPicker";
 import { parseContentForm } from "@/components/editors/content/schema";
@@ -31,50 +32,83 @@ async function requireAdmin(): Promise<string> {
 // IDs RFC 4122: inclui os do seed (public.seed_uuid gera versão/variante válidas em 0008).
 const uuid = z.uuid();
 
+// Agendamento (RF-007): "Publicar em" opcional, ISO, no futuro. Vazio = publicar agora.
+// O banco repete a regra (data passada = agora) e grava publish_at/published_at.
+const publishAtInput = z.string().trim().max(40).nullable().optional();
+
 // ---------------------------------------------------------------- revisão editorial
-export async function reviewContentAction(contentId: string, decision: "approved" | "returned" | "rejected", feedback: string): Promise<ActionResult> {
+export async function reviewContentAction(
+  contentId: string,
+  decision: "approved" | "returned" | "rejected",
+  feedback: string,
+  publishAt?: string | null,
+): Promise<ActionResult> {
   const parsed = z
-    .object({ contentId: uuid, decision: z.enum(["approved", "returned", "rejected"]), feedback: z.string().trim().max(2000) })
-    .safeParse({ contentId, decision, feedback });
+    .object({ contentId: uuid, decision: z.enum(["approved", "returned", "rejected"]), feedback: z.string().trim().max(2000), publishAt: publishAtInput })
+    .safeParse({ contentId, decision, feedback, publishAt });
   if (!parsed.success) return fail("invalid_input");
+  const schedule = parsed.data.decision === "approved" ? parsePublishAt(parsed.data.publishAt) : ({ ok: true, value: null } as const);
+  if (!schedule.ok) return fail(schedule.error);
   try {
     await requireAdmin();
     const supabase = await createClient();
-    const { error } = await supabase.rpc("admin_review_content", {
-      p_content: parsed.data.contentId,
-      p_decision: parsed.data.decision,
-      p_feedback: parsed.data.feedback || undefined,
-    });
+    const { error } = schedule.value
+      ? await supabase.rpc("admin_review_content", {
+          p_content: parsed.data.contentId,
+          p_decision: parsed.data.decision,
+          p_feedback: parsed.data.feedback || "",
+          p_publish_at: schedule.value,
+        })
+      : await supabase.rpc("admin_review_content", {
+          p_content: parsed.data.contentId,
+          p_decision: parsed.data.decision,
+          p_feedback: parsed.data.feedback || undefined,
+        });
     if (error) return fail(error);
     revalidatePath("/admin/content");
     revalidatePath(`/admin/content/${parsed.data.contentId}`);
     const t = await getTranslations("adminContent.content.review");
-    return { ok: true, message: t(parsed.data.decision) };
+    return { ok: true, message: schedule.value ? t("scheduled") : t(parsed.data.decision) };
   } catch (error) {
     return fail(error);
   }
 }
 
-// ---------------------------------------------------------------- status (publicar/arquivar/rascunho)
-export async function setContentStatusAction(contentId: string, status: "draft" | "published" | "archived", justification: string): Promise<ActionResult> {
+// ---------------------------------------------------------------- status (publicar/agendar/arquivar/rascunho)
+export async function setContentStatusAction(
+  contentId: string,
+  status: "draft" | "published" | "archived",
+  justification: string,
+  publishAt?: string | null,
+): Promise<ActionResult> {
   const parsed = z
-    .object({ contentId: uuid, status: z.enum(["draft", "published", "archived"]), justification: z.string().trim().min(5).max(500) })
-    .safeParse({ contentId, status, justification });
+    .object({ contentId: uuid, status: z.enum(["draft", "published", "archived"]), justification: z.string().trim().min(5).max(500), publishAt: publishAtInput })
+    .safeParse({ contentId, status, justification, publishAt });
   if (!parsed.success) return fail("invalid_input");
+  const schedule = parsed.data.status === "published" ? parsePublishAt(parsed.data.publishAt) : ({ ok: true, value: null } as const);
+  if (!schedule.ok) return fail(schedule.error);
   try {
     await requireAdmin();
     const supabase = await createClient();
-    const { error } = await supabase.rpc("admin_set_content_status", {
-      p_content: parsed.data.contentId,
-      p_status: parsed.data.status,
-      p_justification: parsed.data.justification,
-    });
+    // Sem data (ou "publicar agora"): a versão de 3 parâmetros limpa o agendamento.
+    const { error } = schedule.value
+      ? await supabase.rpc("admin_set_content_status", {
+          p_content: parsed.data.contentId,
+          p_status: parsed.data.status,
+          p_justification: parsed.data.justification,
+          p_publish_at: schedule.value,
+        })
+      : await supabase.rpc("admin_set_content_status", {
+          p_content: parsed.data.contentId,
+          p_status: parsed.data.status,
+          p_justification: parsed.data.justification,
+        });
     if (error) return fail(error);
     revalidatePath("/admin/content");
     revalidatePath(`/admin/content/${parsed.data.contentId}`);
     revalidatePath("/admin/featured");
     const t = await getTranslations("adminContent.content.statusActions");
-    return { ok: true, message: t("changed") };
+    return { ok: true, message: schedule.value ? t("scheduled") : t("changed") };
   } catch (error) {
     return fail(error);
   }
@@ -146,6 +180,9 @@ export async function saveContentAction(context: SaveContext, values: ContentFor
       tags: v.tags,
       has_captions: v.has_captions,
       disclaimer_kind: v.disclaimer_kind,
+      media_license_kind: v.media_license_kind,
+      media_license_ref: v.media_license_ref || null,
+      media_credit: v.media_credit || null,
       access_level: accessLevel,
       required_module_id: requiredModule,
       completion_mode: v.completion_mode ?? null,

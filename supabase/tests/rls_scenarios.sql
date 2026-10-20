@@ -506,5 +506,168 @@ select tests.ok('S14 anon só executa a lista pública de security definer',
      and has_function_privilege('anon', p.oid, 'execute'))
   = 'can_access_content,has_role,is_admin,is_seller_of,my_creator_id,my_entitled_modules,my_roles,my_seller_org_ids,my_subscription,product_is_purchasable,program_required_items,public_settings,quote_shipping,search_content,submit_feedback,track_event,verify_certificate');
 
+-- ================================================================ S15 · Agendamento de publicação (0017)
+-- Publicado com publish_at no futuro = agendado: invisível ao público até a data; admin e a
+-- personalidade dona continuam vendo. now() é fixo na transação, então "a data chegou" é simulado
+-- movendo publish_at para o passado como sistema.
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_content_status(public.seed_uuid('content:r2'), 'published', 'Agendamento de teste', now() + interval '1 day');
+select tests.ok('S15 agendado: publicado, publish_at no futuro e published_at = publish_at',
+  (select status = 'published' and publish_at > now() and published_at = publish_at from public.content where id = public.seed_uuid('content:r2')));
+select tests.ok('S15 auditoria registra a data agendada', exists (select 1 from public.admin_audit where action = 'content.set_status'
+  and resource_id = public.seed_uuid('content:r2')::text and (after_data ->> 'publish_at')::timestamptz > now()));
+select tests.ok('S15 admin vê e acessa o agendado', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 1
+  and public.can_access_content(public.seed_uuid('content:r2')));
+select tests.anon();
+select tests.ok('S15 visitante não vê o agendado', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 0);
+select tests.ok('S15 visitante vê 39 no ar (40 publicados menos o agendado)', (select count(*) from public.content where status = 'published') = 39);
+select tests.ok('S15 busca não devolve o agendado', (select count(*) from public.search_content(null, null, null, null, null, 100, 0) where id = public.seed_uuid('content:r2')) = 0);
+select tests.ok('S15 can_access_content nega o agendado ao visitante', not public.can_access_content(public.seed_uuid('content:r2')));
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S15 consumidor não vê o agendado nem o corpo', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 0
+  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:r2')) = 0);
+select tests.ok('S15 consumidor não acessa o agendado', not public.can_access_content(public.seed_uuid('content:r2')));
+select tests.expect_error('S15 consumidor não conclui o agendado', $q$select public.complete_content(public.seed_uuid('content:r2'), 'America/Sao_Paulo')$q$, 'content_forbidden');
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.ok('S15 personalidade dona vê e acessa o próprio agendado', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 1
+  and public.can_access_content(public.seed_uuid('content:r2')));
+select tests.expect_error('S15 personalidade não agenda (coluna protegida)', $q$update public.content set publish_at = now() + interval '1 day' where id = '20000000-0000-4000-8000-000000000001'$q$, 'protected_column');
+select tests.su();
+update public.content set publish_at = now() - interval '1 minute' where id = public.seed_uuid('content:r2');
+select tests.anon();
+select tests.ok('S15 data chegou: visitante vê, busca devolve e o catálogo volta a 40 sem nova ação',
+  (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 1
+  and (select count(*) from public.search_content(null, null, null, null, null, 100, 0) where id = public.seed_uuid('content:r2')) = 1
+  and (select count(*) from public.content where status = 'published') = 40);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_content_status(public.seed_uuid('content:r3'), 'draft', 'Teste de agendamento');
+select public.admin_review_content(public.seed_uuid('content:r3'), 'approved', 'ok', now() - interval '1 hour');
+select tests.ok('S15 aprovação com data no passado publica agora (publish_at nulo)',
+  (select status = 'published' and publish_at is null and published_at <= now() from public.content where id = public.seed_uuid('content:r3')));
+select public.admin_set_content_status(public.seed_uuid('content:r4'), 'draft', 'Teste de agendamento');
+select public.admin_review_content(public.seed_uuid('content:r4'), 'approved', 'ok', now() + interval '2 days');
+select tests.ok('S15 aprovação agendada: publicado com publish_at no futuro e auditoria com a data',
+  (select status = 'published' and publish_at > now() and published_at = publish_at from public.content where id = public.seed_uuid('content:r4'))
+  and exists (select 1 from public.admin_audit where action = 'content.review' and resource_id = public.seed_uuid('content:r4')::text and (after_data ->> 'publish_at')::timestamptz > now()));
+select tests.anon();
+select tests.ok('S15 aprovado agendado fica oculto do visitante', (select count(*) from public.content where id = public.seed_uuid('content:r4')) = 0);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_content_status(public.seed_uuid('content:r4'), 'published', 'Publicar agora');
+select tests.ok('S15 publicar agora (chamada de 3 parâmetros) limpa publish_at e published_at vira agora',
+  (select publish_at is null and published_at = now() from public.content where id = public.seed_uuid('content:r4')));
+select tests.anon();
+select tests.ok('S15 após publicar agora o visitante vê', (select count(*) from public.content where id = public.seed_uuid('content:r4')) = 1);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_content_status(public.seed_uuid('content:r4'), 'published', 'Reagendar', now() + interval '3 days');
+select public.admin_set_content_status(public.seed_uuid('content:r4'), 'draft', 'Voltar a rascunho');
+select tests.ok('S15 voltar a rascunho descarta o agendamento', (select status = 'draft' and publish_at is null from public.content where id = public.seed_uuid('content:r4')));
+select public.admin_set_content_status(public.seed_uuid('content:r4'), 'published', 'Republicar');
+select tests.su();
+select tests.ok('S15 content_is_live é security invoker, com search_path fixo e executável pelo público',
+  (select not p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.content_is_live(public.content_status, timestamptz)'::regprocedure)
+  and has_function_privilege('anon', 'public.content_is_live(public.content_status, timestamptz)', 'execute'));
+select tests.ok('S15 sobrecargas com agendamento: security definer, search_path fixo, sem execute para anon',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
+                   and not has_function_privilege('anon', p.oid, 'execute') and has_function_privilege('authenticated', p.oid, 'execute'))
+   from pg_proc p where p.oid in ('public.admin_review_content(uuid, public.review_status, text, timestamptz)'::regprocedure,
+                                  'public.admin_set_content_status(uuid, public.content_status, text, timestamptz)'::regprocedure)));
+
+-- ================================================================ S16 · Direitos por personalidade, licença de mídia e origem do vínculo (0017)
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S16 personalidade não altera rights_status', $q$update public.creator_profiles set rights_status = 'authorized' where id = public.seed_uuid('creator:lia')$q$, 'protected_column');
+select tests.expect_error('S16 personalidade não altera rights_holder', $q$update public.creator_profiles set rights_holder = 'Eu mesma' where id = public.seed_uuid('creator:lia')$q$, 'protected_column');
+select tests.expect_error('S16 personalidade não altera rights_valid_until', $q$update public.creator_profiles set rights_valid_until = current_date + 30 where id = public.seed_uuid('creator:lia')$q$, 'protected_column');
+update public.creator_profiles set headline = 'Chamada ajustada pela personalidade' where id = public.seed_uuid('creator:lia');
+select tests.ok('S16 personalidade segue editando campos permitidos', (select headline from public.creator_profiles where id = public.seed_uuid('creator:lia')) = 'Chamada ajustada pela personalidade');
+select tests.ok('S16 personalidade não lê creator_rights_private', (select count(*) from public.creator_rights_private) = 0);
+select tests.expect_error('S16 personalidade não grava creator_rights_private', $q$insert into public.creator_rights_private (creator_id, document_ref) values (public.seed_uuid('creator:lia'), 'FALSO')$q$, '42501');
+select tests.expect_error('S16 personalidade não executa a RPC privada de direitos', $q$select public.admin_set_creator_rights_private(public.seed_uuid('creator:lia'), 'FALSO', null, null)$q$, '42501');
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S16 consumidor não lê creator_rights_private', (select count(*) from public.creator_rights_private) = 0);
+select tests.anon();
+select tests.expect_error('S16 visitante não lê creator_rights_private (tabela sem grant para anon)', $q$select count(*) from public.creator_rights_private$q$, 'permission denied');
+select tests.expect_error('S16 visitante não executa a RPC privada de direitos', $q$select public.admin_set_creator_rights_private(public.seed_uuid('creator:lia'), 'FALSO', null, null)$q$, 'permission denied');
+select tests.ok('S16 seed: todas as personalidades seguem fictícias, sem titular nem validade', (select count(*) from public.creator_profiles where rights_status = 'fictional' and rights_holder is null and rights_valid_until is null) = 8);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+update public.creator_profiles set rights_status = 'authorized', rights_holder = 'Titular de teste', rights_valid_until = current_date + 30 where id = public.seed_uuid('creator:lia');
+select tests.ok('S16 admin altera os direitos e a auditoria registra', (select rights_status from public.creator_profiles where id = public.seed_uuid('creator:lia')) = 'authorized'
+  and exists (select 1 from public.admin_audit where action = 'creator_profiles.update' and resource_id = public.seed_uuid('creator:lia')::text and after_data ->> 'rights_status' = 'authorized'));
+select tests.expect_error('S16 rights_status fora da lista é recusado', $q$update public.creator_profiles set rights_status = 'real' where id = public.seed_uuid('creator:lia')$q$, '23514');
+select public.admin_set_creator_rights_private(public.seed_uuid('creator:lia'), '  CONTRATO-TESTE-001  ', 'Nota interna', 'Documentação de teste');
+select tests.ok('S16 admin grava e lê a parte privada (revisor registrado; auditoria sem as notas)',
+  (select document_ref = 'CONTRATO-TESTE-001' and notes = 'Nota interna' and reviewed_by = '10000000-0000-4000-8000-000000000001' and reviewed_at is not null
+   from public.creator_rights_private where creator_id = public.seed_uuid('creator:lia'))
+  and exists (select 1 from public.admin_audit where action = 'creator.rights_private' and resource_id = public.seed_uuid('creator:lia')::text
+              and after_data ->> 'document_ref' = 'CONTRATO-TESTE-001' and (after_data ->> 'has_notes')::boolean and not (after_data ? 'notes')));
+select public.admin_set_creator_rights_private(public.seed_uuid('creator:lia'), 'CONTRATO-TESTE-002', '', null);
+select tests.ok('S16 regravar atualiza em vez de duplicar', (select count(*) from public.creator_rights_private where creator_id = public.seed_uuid('creator:lia')) = 1
+  and (select document_ref = 'CONTRATO-TESTE-002' and notes is null from public.creator_rights_private where creator_id = public.seed_uuid('creator:lia')));
+select tests.expect_error('S16 RPC privada recusa personalidade inexistente', $q$select public.admin_set_creator_rights_private(gen_random_uuid(), 'X', null, null)$q$, 'creator_not_found');
+select tests.anon();
+select tests.ok('S16 campos públicos de direitos visíveis ao visitante (documento fica na tabela privada, negada acima)',
+  (select rights_status = 'authorized' and rights_holder = 'Titular de teste' and rights_valid_until = current_date + 30
+   from public.creator_profiles where id = public.seed_uuid('creator:lia')));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+update public.creator_profiles set rights_status = 'fictional', rights_holder = null, rights_valid_until = null where id = public.seed_uuid('creator:lia');
+
+-- licença de mídia × provedor
+select tests.ok('S16 seed: licença coerente com o provedor em todos os corpos', (select count(*) from public.content c join public.content_bodies b on b.content_id = c.id
+  where not public.media_license_compatible(b.media_provider, c.media_license_kind)) = 0);
+select tests.expect_error('S16 corpo YouTube com licença platform_demo é recusado', $q$update public.content_bodies set media_provider = 'embed_youtube', media_ref = 'dQw4w9WgXcQ' where content_id = public.seed_uuid('content:r1')$q$, 'media_license_mismatch');
+update public.content set media_license_kind = 'third_party_embed', media_credit = 'Canal de teste' where id = public.seed_uuid('content:r1');
+update public.content_bodies set media_provider = 'embed_youtube', media_ref = 'dQw4w9WgXcQ' where content_id = public.seed_uuid('content:r1');
+select tests.ok('S16 third_party_embed aceita o embed', (select media_provider from public.content_bodies where content_id = public.seed_uuid('content:r1')) = 'embed_youtube');
+select tests.expect_error('S16 voltar a sem mídia mantendo third_party_embed é recusado', $q$update public.content_bodies set media_provider = 'none', media_ref = null where content_id = public.seed_uuid('content:r1')$q$, 'media_license_mismatch');
+update public.content set media_license_kind = 'platform_demo', media_credit = null where id = public.seed_uuid('content:r1');
+update public.content_bodies set media_provider = 'none', media_ref = null where content_id = public.seed_uuid('content:r1');
+select tests.expect_error('S16 media_license_kind fora da lista é recusado', $q$update public.content set media_license_kind = 'qualquer' where id = public.seed_uuid('content:r1')$q$, '23514');
+update public.content set media_license_kind = 'third_party_embed' where id = public.seed_uuid('content:r1'); -- estado transitório (o corpo é a escrita final)
+select tests.expect_error('S16 publicação bloqueada com licença incoerente com o corpo', $q$select public.admin_set_content_status(public.seed_uuid('content:r1'), 'published', 'Teste de licença')$q$, 'media_license_mismatch');
+select public.admin_set_content_status(public.seed_uuid('content:r1'), 'draft', 'Teste de licença');
+select tests.expect_error('S16 aprovação bloqueada com licença incoerente com o corpo', $q$select public.admin_review_content(public.seed_uuid('content:r1'), 'approved', 'ok')$q$, 'media_license_mismatch');
+update public.content set media_license_kind = 'platform_demo' where id = public.seed_uuid('content:r1');
+select public.admin_set_content_status(public.seed_uuid('content:r1'), 'published', 'Teste de licença');
+select tests.ok('S16 licença coerente volta a publicar', (select status from public.content where id = public.seed_uuid('content:r1')) = 'published');
+
+-- origem do vínculo; personalidade preenche licença e crédito do próprio rascunho
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind, media_credit, creator_link_origin) values
+  ('20000000-0000-4000-8000-000000000002', 'teste-licenca-lia', public.seed_uuid('creator:lia'), 'routine', 'video', 'Vídeo de teste com licença', 'third_party_embed', 'Canal de teste', 'admin_assignment');
+select tests.ok('S16 vínculo criado pela personalidade registra creator_submission (valor enviado é ignorado)',
+  (select creator_link_origin from public.content where id = '20000000-0000-4000-8000-000000000002') = 'creator_submission');
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('20000000-0000-4000-8000-000000000002', '{"kind":"video","intro":"x"}', 'embed_youtube', 'dQw4w9WgXcQ');
+update public.content set media_credit = 'Outro canal', media_license_ref = 'https://example.com/licenca' where id = '20000000-0000-4000-8000-000000000002';
+select tests.ok('S16 personalidade grava e edita licença, referência e crédito do próprio rascunho',
+  (select media_license_kind = 'third_party_embed' and media_credit = 'Outro canal' and media_license_ref = 'https://example.com/licenca' from public.content where id = '20000000-0000-4000-8000-000000000002'));
+select tests.expect_error('S16 personalidade não altera a origem do vínculo', $q$update public.content set creator_link_origin = 'admin_assignment' where id = '20000000-0000-4000-8000-000000000002'$q$, 'protected_column');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title) values
+  ('20000000-0000-4000-8000-000000000003', 'teste-atribuicao-admin', public.seed_uuid('creator:rafael'), 'routine', 'guide', 'Guia atribuído pelo admin');
+select tests.ok('S16 vínculo criado pelo admin registra admin_assignment', (select creator_link_origin from public.content where id = '20000000-0000-4000-8000-000000000003') = 'admin_assignment');
+update public.content set creator_id = public.seed_uuid('creator:rafael') where id = '20000000-0000-4000-8000-000000000002';
+select tests.ok('S16 reatribuição pelo admin troca a origem para admin_assignment', (select creator_link_origin from public.content where id = '20000000-0000-4000-8000-000000000002') = 'admin_assignment');
+update public.content set title = 'Guia atribuído (editado)' where id = '20000000-0000-4000-8000-000000000003';
+select tests.ok('S16 edição sem trocar a personalidade preserva a origem', (select creator_link_origin from public.content where id = '20000000-0000-4000-8000-000000000003') = 'admin_assignment');
+update public.content set creator_id = null where id = '20000000-0000-4000-8000-000000000003';
+select tests.ok('S16 sem personalidade não há origem', (select creator_link_origin is null from public.content where id = '20000000-0000-4000-8000-000000000003'));
+select tests.ok('S16 seed: todo conteúdo com personalidade tem origem registrada', (select count(*) from public.content where creator_id is not null and creator_link_origin is null) = 0);
+
+-- nutrição validada do seed e endurecimento das funções novas
+select tests.su();
+select tests.ok('S16 seed: g1 e g5 com nutrição validada; g9 com números ainda em validação',
+  (select count(*) from public.content_bodies where content_id in (public.seed_uuid('content:g1'), public.seed_uuid('content:g5'))
+     and (body -> 'nutrition' ->> 'validated')::boolean and body -> 'nutrition' ->> 'validated_by' is not null and body -> 'nutrition' ->> 'validated_at' is not null
+     and (body -> 'nutrition' -> 'per_serving' ->> 'kcal')::numeric > 0) = 2
+  and (select not (body -> 'nutrition' ->> 'validated')::boolean and body -> 'nutrition' ->> 'validated_by' is null and (body -> 'nutrition' -> 'per_serving' ->> 'kcal')::numeric > 0
+       from public.content_bodies where content_id = public.seed_uuid('content:g9')));
+select tests.ok('S16 funções novas: triggers e checagem interna sem execute para anon; RPC privada security definer com search_path fixo',
+  not has_function_privilege('anon', 'public.creator_rights_guard()', 'execute')
+  and not has_function_privilege('anon', 'public.content_media_license_check()', 'execute')
+  and not has_function_privilege('anon', 'public.content_link_origin()', 'execute')
+  and not has_function_privilege('anon', 'public.content_assert_media_license(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.content_assert_media_license(uuid)', 'execute')
+  and (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
+       from pg_proc p where p.oid = 'public.admin_set_creator_rights_private(uuid, text, text, text)'::regprocedure));
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

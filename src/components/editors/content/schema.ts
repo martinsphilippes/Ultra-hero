@@ -15,8 +15,24 @@ export const COMPLETION_VALUES = ["manual", "auto"] as const;
 export const MEDIA_PROVIDER_VALUES = ["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"] as const;
 /** Provedores que a POC consegue reproduzir (os demais aparecem desabilitados: "não configurado"). */
 export const ENABLED_MEDIA_PROVIDERS = ["none", "embed_youtube", "embed_vimeo"] as const;
+/** Licença da mídia (RF-008). Espelha o check de public.content.media_license_kind. */
+export const LICENSE_KIND_VALUES = ["platform_demo", "own", "licensed", "third_party_embed"] as const;
 
 export type ContentTypeValue = (typeof CONTENT_TYPE_VALUES)[number];
+export type LicenseKindValue = (typeof LICENSE_KIND_VALUES)[number];
+
+/** Licenças coerentes com o provedor (espelha public.media_license_compatible, validado também no banco). */
+export function allowedLicenseKinds(provider: string): readonly LicenseKindValue[] {
+  if (provider === "embed_youtube" || provider === "embed_vimeo") return ["third_party_embed"];
+  if (provider === "none") return ["platform_demo", "own"];
+  return ["platform_demo", "own", "licensed"];
+}
+
+/** Mantém a licença escolhida quando ainda é coerente com o provedor; senão cai na primeira permitida. */
+export function coerceLicenseKind(provider: string, kind: string | null | undefined): LicenseKindValue {
+  const allowed = allowedLicenseKinds(provider);
+  return (allowed as readonly string[]).includes(kind ?? "") ? (kind as LicenseKindValue) : allowed[0];
+}
 
 // Caminho relativo à própria origem ("/placeholders/..."): nunca "//host" nem esquema externo.
 export const SAME_ORIGIN_PATH = /^\/(?!\/)[A-Za-z0-9_\-./%]*$/;
@@ -41,6 +57,46 @@ export const videoBodySchema = z.object({
   transcript: z.array(z.object({ t: intField(0, 86_400), text: requiredText(500) })).max(500, { error: "tooMany" }),
 });
 
+// ---------------------------------------------------------------- nutrição (RF-006, RB-08)
+// Números por porção são livres de digitar; "validado" só pode ser verdadeiro com responsável e
+// data (a server action da personalidade zera a validação; só o admin valida).
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const nutrientOrNull = z
+  .number({ error: "invalidNumber" })
+  .min(0, { error: "invalidNumber" })
+  .max(100_000, { error: "invalidNumber" })
+  .nullable();
+
+export const NUTRIENT_KEYS = ["kcal", "protein_g", "carbs_g", "fat_g", "fiber_g", "sodium_mg"] as const;
+export type NutrientKey = (typeof NUTRIENT_KEYS)[number];
+
+export const nutritionPerServingSchema = z.object({
+  kcal: nutrientOrNull,
+  protein_g: nutrientOrNull,
+  carbs_g: nutrientOrNull,
+  fat_g: nutrientOrNull,
+  fiber_g: nutrientOrNull,
+  sodium_mg: nutrientOrNull,
+});
+
+export const nutritionSchema = z
+  .object({
+    per_serving: nutritionPerServingSchema,
+    validated: z.boolean(),
+    validated_by: text(120).nullable(),
+    validated_at: z
+      .string()
+      .regex(ISO_DATE, { error: "invalidDate" })
+      .refine((v) => isValidIsoDate(v), { error: "invalidDate" })
+      .nullable(),
+    note: text(600),
+  })
+  .superRefine((n, ctx) => {
+    if (!n.validated) return;
+    if (!n.validated_by) ctx.addIssue({ code: "custom", message: "validatorRequired", path: ["validated_by"] });
+    if (!n.validated_at) ctx.addIssue({ code: "custom", message: "validatedAtRequired", path: ["validated_at"] });
+  });
+
 export const recipeBodySchema = z.object({
   kind: z.literal("recipe"),
   servings: intOrNull(1, 100),
@@ -50,7 +106,46 @@ export const recipeBodySchema = z.object({
   steps: z.array(requiredText(600)).max(40, { error: "tooMany" }),
   allergens: z.array(requiredText(40)).max(20, { error: "tooMany" }),
   note: text(600),
+  nutrition: nutritionSchema.nullable().default(null),
 });
+
+export type RecipeNutrition = z.infer<typeof nutritionSchema>;
+
+function isValidIsoDate(value: string): boolean {
+  const m = ISO_DATE.exec(value);
+  if (!m) return false;
+  const [y, mo, d] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
+}
+
+export function emptyNutrition(): RecipeNutrition {
+  return {
+    per_serving: { kcal: null, protein_g: null, carbs_g: null, fat_g: null, fiber_g: null, sodium_mg: null },
+    validated: false,
+    validated_by: null,
+    validated_at: null,
+    note: "",
+  };
+}
+
+/** Há algum número por porção informado? */
+export function nutritionHasValues(n: RecipeNutrition | null | undefined): boolean {
+  return Boolean(n && NUTRIENT_KEYS.some((k) => n.per_serving[k] !== null));
+}
+
+/** Nada informado (nem números, nem nota, nem validação) vira null para não gravar objeto vazio. */
+function compactNutrition(n: RecipeNutrition | null): RecipeNutrition | null {
+  if (!n) return null;
+  return nutritionHasValues(n) || n.note.trim() !== "" || n.validated || n.validated_by || n.validated_at ? n : null;
+}
+
+/** A personalidade nunca valida: zera a marcação antes de validar/gravar (só o admin valida). */
+export function stripNutritionValidation<T extends { body: Record<string, unknown> }>(values: T): T {
+  const body = values.body;
+  if (!isRecord(body) || body.kind !== "recipe" || !isRecord(body.nutrition)) return values;
+  return { ...values, body: { ...body, nutrition: { ...body.nutrition, validated: false, validated_by: null, validated_at: null } } };
+}
 
 export const workoutExerciseSchema = z.object({
   name: requiredText(120),
@@ -113,11 +208,19 @@ export const contentFormSchema = z
     disclaimer_kind: z.enum(DISCLAIMER_VALUES).nullable(),
     body: bodySchema,
     media: mediaSchema,
+    // Licença e crédito da mídia (RF-008): ausente = derivada do provedor em finalizeContentValues.
+    media_license_kind: z.enum(LICENSE_KIND_VALUES).optional(),
+    media_license_ref: text(300).optional(),
+    media_credit: text(160).optional(),
     access_level: z.enum(ACCESS_VALUES).nullable().optional(),
     required_module_id: z.uuid().nullable().optional(),
     completion_mode: z.enum(COMPLETION_VALUES).nullable().optional(),
   })
   .superRefine((v, ctx) => {
+    // licença coerente com o provedor (o banco também recusa: media_license_mismatch)
+    if (v.media_license_kind && !(allowedLicenseKinds(v.media.provider) as readonly string[]).includes(v.media_license_kind)) {
+      ctx.addIssue({ code: "custom", message: "licenseMismatch", path: ["media_license_kind"] });
+    }
     // corpo precisa ser do mesmo tipo do conteúdo (guia/artigo compartilham o editor)
     if (bodyKindFor(v.type) !== bodyKindFor(v.body.kind)) {
       ctx.addIssue({ code: "custom", message: "bodyTypeMismatch", path: ["body"] });
@@ -146,11 +249,17 @@ export type FieldErrors = Record<string, string>;
 export function finalizeContentValues(parsed: ContentFormParsed): ContentFormValues {
   const provider = parsed.media.provider;
   const ref = provider === "embed_youtube" || provider === "embed_vimeo" ? parseMediaRef(provider, parsed.media.ref ?? "") : null;
+  const finalProvider = ref ? provider : "none";
+  const body = parsed.body.kind === "recipe" ? { ...parsed.body, nutrition: compactNutrition(parsed.body.nutrition) } : parsed.body;
   return {
     ...parsed,
     cover_url: parsed.cover_url,
     tags: Array.from(new Set(parsed.tags)),
-    media: { provider: ref ? provider : "none", ref, captions_url: parsed.media.captions_url || null },
+    body,
+    media: { provider: finalProvider, ref, captions_url: parsed.media.captions_url || null },
+    media_license_kind: coerceLicenseKind(finalProvider, parsed.media_license_kind),
+    media_license_ref: parsed.media_license_ref ?? "",
+    media_credit: parsed.media_credit ?? "",
   };
 }
 
@@ -179,7 +288,7 @@ export function emptyBody(type: ContentTypeValue): ContentBody {
     case "video":
       return { kind: "video", intro: "", key_points: [], transcript: [] };
     case "recipe":
-      return { kind: "recipe", servings: null, prep_minutes: null, cook_minutes: null, ingredients: [], steps: [], allergens: [], note: "" };
+      return { kind: "recipe", servings: null, prep_minutes: null, cook_minutes: null, ingredients: [], steps: [], allergens: [], note: "", nutrition: null };
     case "workout":
       return { kind: "workout", equipment: [], blocks: [{ name: "", exercises: [] }], safety_note: "" };
     default:
@@ -199,6 +308,31 @@ function int(value: unknown): number | null {
 }
 function strList(value: unknown): string[] {
   return Array.isArray(value) ? value.map(str).filter((v) => v.trim() !== "") : [];
+}
+function numOrNull(value: unknown): number | null {
+  const n = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+  return typeof n === "number" && Number.isFinite(n) ? n : null;
+}
+
+/** Nutrição vinda do banco (forma livre) → forma editável; ausente ou inválida vira null. */
+export function normalizeNutrition(raw: unknown): RecipeNutrition | null {
+  if (!isRecord(raw)) return null;
+  const ps = isRecord(raw.per_serving) ? raw.per_serving : {};
+  const validatedAt = str(raw.validated_at);
+  return {
+    per_serving: {
+      kcal: numOrNull(ps.kcal),
+      protein_g: numOrNull(ps.protein_g),
+      carbs_g: numOrNull(ps.carbs_g),
+      fat_g: numOrNull(ps.fat_g),
+      fiber_g: numOrNull(ps.fiber_g),
+      sodium_mg: numOrNull(ps.sodium_mg),
+    },
+    validated: raw.validated === true,
+    validated_by: str(raw.validated_by).trim() || null,
+    validated_at: ISO_DATE.test(validatedAt) ? validatedAt : null,
+    note: str(raw.note),
+  };
 }
 
 /** Converte um corpo vindo do banco (forma livre) para a forma editável do tipo. Tolerante a campos faltantes. */
@@ -231,6 +365,7 @@ export function normalizeBody(type: ContentTypeValue, raw: unknown): ContentBody
         steps: strList(b.steps),
         allergens: strList(b.allergens),
         note: str(b.note),
+        nutrition: normalizeNutrition(b.nutrition),
       };
     case "workout":
       return {
@@ -284,6 +419,9 @@ export function toFormValues(initial?: Partial<ContentFormValues>): ContentFormV
       ref: initial?.media?.ref ?? null,
       captions_url: initial?.media?.captions_url ?? null,
     },
+    media_license_kind: coerceLicenseKind(initial?.media?.provider ?? "none", initial?.media_license_kind),
+    media_license_ref: initial?.media_license_ref ?? "",
+    media_credit: initial?.media_credit ?? "",
     access_level: initial?.access_level ?? null,
     required_module_id: initial?.required_module_id ?? null,
     completion_mode: initial?.completion_mode ?? null,

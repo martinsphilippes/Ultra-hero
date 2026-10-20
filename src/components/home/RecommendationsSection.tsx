@@ -6,7 +6,7 @@ import { RecommendationsTracker } from "@/components/me/RecommendationsTracker";
 import { Badge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatRelativeTime } from "@/i18n/format";
-import { CONTENT_CARD_SELECT, localizedLabel, type ContentCardData } from "@/lib/catalog/queries";
+import { CONTENT_CARD_SELECT, liveContentFilter, localizedLabel, type ContentCardData } from "@/lib/catalog/queries";
 import { parseReason } from "@/lib/recommendations/reasons";
 import { recalculateRecommendations } from "@/lib/recommendations/recalculate";
 import type { EngineName, Reason } from "@/lib/recommendations/types";
@@ -22,7 +22,7 @@ type CardData = ContentCardData & { required_module_id: string | null };
 async function loadCards(ids: string[]): Promise<Map<string, CardData>> {
   if (ids.length === 0) return new Map();
   const supabase = await createClient();
-  const { data, error } = await supabase.from("content").select(`${CONTENT_CARD_SELECT}, required_module_id`).in("id", ids).eq("status", "published");
+  const { data, error } = await supabase.from("content").select(`${CONTENT_CARD_SELECT}, required_module_id`).in("id", ids).eq("status", "published").or(liveContentFilter());
   if (error) throw new Error(error.message);
   return new Map(((data ?? []) as unknown as CardData[]).map((c) => [c.id, c]));
 }
@@ -75,6 +75,7 @@ export async function RecommendationsSection({ userId, className }: { userId: st
         .from("content")
         .select(CONTENT_CARD_SELECT)
         .eq("status", "published")
+        .or(liveContentFilter())
         .eq("access_level", "free")
         .order("is_featured", { ascending: false })
         .order("featured_rank", { ascending: true, nullsFirst: false })
