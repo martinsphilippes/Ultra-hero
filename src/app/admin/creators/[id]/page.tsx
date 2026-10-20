@@ -22,15 +22,18 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();
-  const [t, tc, ts, tn, { data: creator, error }] = await Promise.all([
+  const [t, tc, ts, tn, { data: creator, error }, { data: privateRow }] = await Promise.all([
     getTranslations("adminOps.creators"),
     getTranslations("adminOps.common"),
     getTranslations("adminCommon.status"),
     getTranslations("nav"),
     supabase.from("creator_profiles").select("*").eq("id", id).maybeSingle(),
+    // Documentação privada: RLS só devolve para admin; nunca vai à página pública.
+    supabase.from("creator_rights_private").select("document_ref, notes, reviewed_at").eq("creator_id", id).maybeSingle(),
   ]);
   if (error) throw new Error(error.message);
   if (!creator) notFound();
+  const rightsVariant = creator.rights_status === "authorized" ? "success" : creator.rights_status === "pending" ? "info" : "demo";
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,6 +52,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
       />
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface-elevated p-3 text-sm">
         {creator.is_fictional && <Badge variant="demo">{tc("fictional")}</Badge>}
+        <Badge variant={rightsVariant}>{t(`rights.${creator.rights_status as "fictional" | "pending" | "authorized"}`)}</Badge>
         {creator.user_id ? (
           <Link href={`/admin/users/${creator.user_id}`} className="font-mono text-xs text-accent-text hover:underline">
             {creator.user_id}
@@ -77,7 +81,13 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
             isFictional: creator.is_fictional,
             rightsNote: creator.rights_note ?? "",
             sortOrder: creator.sort_order,
+            rightsStatus: creator.rights_status as "fictional" | "pending" | "authorized",
+            rightsHolder: creator.rights_holder ?? "",
+            rightsValidUntil: creator.rights_valid_until ?? "",
+            documentRef: privateRow?.document_ref ?? "",
+            privateNotes: privateRow?.notes ?? "",
           }}
+          privateMeta={{ reviewedAt: privateRow?.reviewed_at ?? null }}
         />
       </div>
     </div>

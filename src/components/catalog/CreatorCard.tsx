@@ -3,13 +3,15 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Badge, Card, CardImage, PillarBadge } from "@/components/ui";
 import type { CreatorCardData } from "@/lib/catalog/queries";
+import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
 import { cn } from "@/lib/utils";
 
 type Props = { creator: CreatorCardData; priority?: boolean; className?: string };
 
-// Card de personalidade. Personagens fictícios são sempre identificados como tais.
+// Card de personalidade. O selo de fictício só sai com uso de nome e imagem autorizado e válido (RB-05).
 export async function CreatorCard({ creator, priority, className }: Props) {
   const t = await getTranslations("catalog");
+  const fictional = showsFictionalBadge(effectiveRightsStatus(creator.rights_status, creator.rights_valid_until));
   return (
     <Card interactive asChild className={cn("h-full", className)}>
       <Link href={`/personalities/${creator.slug}`}>
@@ -26,7 +28,7 @@ export async function CreatorCard({ creator, priority, className }: Props) {
             {creator.pillars.map((p) => (
               <PillarBadge key={p} pillar={p} size="sm" />
             ))}
-            {creator.is_fictional ? <Badge variant="demo" size="sm">{t("fictional")}</Badge> : null}
+            {fictional ? <Badge variant="demo" size="sm">{t("fictional")}</Badge> : null}
           </div>
         </div>
       </Link>

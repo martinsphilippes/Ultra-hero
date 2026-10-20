@@ -18,7 +18,9 @@
     },
     "bodyDescription": "Educational content. Avoid individual prescriptions and promises of results.",
     "access": "Access rule (admin)",
-    "accessDescription": "Defines who can consume it. Without a rule, the content stays \"temporarily unavailable\" even when published."
+    "accessDescription": "Defines who can consume it. Without a rule, the content stays \"temporarily unavailable\" even when published.",
+    "license": "Media license and credit",
+    "licenseDescription": "Where the media comes from and who must be credited. Videos embedded from YouTube or Vimeo require the \"third-party embed\" license."
   },
   "fields": {
     "title": "Title",
@@ -71,7 +73,11 @@
     "invalidUrl": "Use a platform path or an https URL.",
     "moduleRequired": "Premium content requires a module.",
     "bodyTypeMismatch": "The body does not match the chosen type.",
-    "invalid": "Invalid value."
+    "invalid": "Invalid value.",
+    "licenseMismatch": "License inconsistent with the media provider.",
+    "validatorRequired": "Enter who validated it.",
+    "validatedAtRequired": "Enter the validation date.",
+    "invalidDate": "Invalid date (use YYYY-MM-DD)."
   },
   "errors": {
     "summary": "{count, plural, =1 {There is 1 field to fix.} other {There are # fields to fix.}}",
@@ -82,7 +88,8 @@
     "forbidden": "You do not have permission for this action.",
     "unauthenticated": "Sign in to continue.",
     "creator_unavailable": "Your personality profile is not active.",
-    "not_found": "Content not found."
+    "not_found": "Content not found.",
+    "media_license_mismatch": "License inconsistent with the media: fix the license and save again."
   },
   "list": {
     "empty": "No items yet.",
@@ -179,7 +186,29 @@
       "allergens": "Allergens",
       "allergensHint": "List allergens present or possible.",
       "note": "Note",
-      "noteHint": "Variations, substitutions and reminders (illustrative quantities)."
+      "noteHint": "Variations, substitutions and reminders (illustrative quantities).",
+      "nutrition": {
+        "title": "Nutrition facts (per serving)",
+        "hint": "Estimated values. Shown to the public only after validation by the admin team.",
+        "fields": {
+          "kcal": "Energy (kcal)",
+          "protein_g": "Protein (g)",
+          "carbs_g": "Carbohydrates (g)",
+          "fat_g": "Fat (g)",
+          "fiber_g": "Fiber (g)",
+          "sodium_mg": "Sodium (mg)"
+        },
+        "note": "Note about the values",
+        "noteHint": "Calculation method, source or caveats.",
+        "validated": "Validated by a professional",
+        "validatedHint": "Releases the numbers to the public. Requires a responsible person and a date.",
+        "validatedBy": "Validated by",
+        "validatedByHint": "Name and credential, e.g. Registered Dietitian 00000.",
+        "validatedAt": "Validation date",
+        "validatedBadge": "Validated by {by} on {date}.",
+        "resetOnSave": "Saving clears the validation; the admin team must validate again.",
+        "adminOnly": "Validation is done by the admin team; until then the public only sees \"under validation\"."
+      }
     },
     "workout": {
       "equipment": "Equipment",
@@ -219,5 +248,24 @@
       "keyPointsHint": "Bullet summary (optional).",
       "keyPoint": "Key point {n}"
     }
+  },
+  "license": {
+    "kind": "License type",
+    "kinds": {
+      "platform_demo": "Platform demo",
+      "own": "Own media",
+      "licensed": "Licensed",
+      "third_party_embed": "Third-party embed"
+    },
+    "kindHint": {
+      "platform_demo": "Illustrative material created for the demo; no real media.",
+      "own": "Produced by the platform or the personality, with own rights.",
+      "licensed": "Media hosted here under a third-party license recorded in the reference.",
+      "third_party_embed": "Video embedded from the provider; rights belong to the source channel."
+    },
+    "credit": "Credit (public)",
+    "creditHint": "Shown on the content page, e.g. channel, photographer or author.",
+    "ref": "License reference (internal)",
+    "refHint": "Contract number, URL or identifier. Never shown to the public."
   }
 }

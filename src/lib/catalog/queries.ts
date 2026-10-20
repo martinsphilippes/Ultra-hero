@@ -41,7 +41,7 @@ export type ProgramCardData = {
   version: { title: string; summary: string | null; estimated_weeks: number | null } | null;
 };
 
-export const CREATOR_CARD_SELECT = "id, slug, name, headline, avatar_url, cover_url, pillars, is_fictional";
+export const CREATOR_CARD_SELECT = "id, slug, name, headline, avatar_url, cover_url, pillars, is_fictional, rights_status, rights_valid_until";
 
 export type CreatorCardData = {
   id: string;
@@ -52,7 +52,15 @@ export type CreatorCardData = {
   cover_url: string | null;
   pillars: Pillar[];
   is_fictional: boolean;
+  rights_status: string;
+  rights_valid_until: string | null;
 };
+
+// Filtro PostgREST "no ar" (RF-007) para listas públicas: a RLS já esconde agendados do público;
+// aqui evita que admin e a própria personalidade vejam agendados misturados no catálogo.
+export function liveContentFilter(now: Date = new Date()): string {
+  return `publish_at.is.null,publish_at.lte.${now.toISOString()}`;
+}
 
 export const PRODUCT_CARD_SELECT =
   "id, slug, title, image_url, price_cents_demo, availability, " +

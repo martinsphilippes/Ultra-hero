@@ -1,10 +1,16 @@
 "use client";
 
-import { Archive, RotateCcw, Star, StarOff, Upload } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Archive, CalendarClock, RotateCcw, Star, StarOff, Upload, Zap } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import { reviewContentAction, setContentStatusAction, setFeaturedAction } from "@/app/admin/content-actions";
 import { ConfirmActionDialog } from "@/components/admin";
+import { Badge, FormField, Input } from "@/components/ui";
+import type { Locale } from "@/i18n/config";
+import { formatDateTime } from "@/i18n/format";
+import { getDeviceTimeZone } from "@/lib/utils/timezone";
 import { ActionButton } from "./ActionButton";
+import { isScheduled, isoToLocalInput, localInputToIso, parsePublishAt } from "./lib/publish-at";
 
 type Props = {
   contentId: string;
@@ -12,15 +18,86 @@ type Props = {
   reviewStatus: "none" | "in_review" | "returned" | "approved" | "rejected";
   isFeatured: boolean;
   hasOpenRound: boolean;
+  /** Agendamento atual (ISO) ou null. */
+  publishAt: string | null;
 };
 
-// Painel de ações do detalhe do conteúdo: decisão editorial, status e destaque.
-export function ContentReviewActions({ contentId, status, reviewStatus, isFeatured, hasOpenRound }: Props) {
+// Painel de ações do detalhe do conteúdo: decisão editorial, agendamento (RF-007), status e destaque.
+// O campo "Publicar em" alimenta tanto a aprovação quanto a publicação direta; vazio = agora.
+export function ContentReviewActions({ contentId, status, reviewStatus, isFeatured, hasOpenRound, publishAt }: Props) {
   const t = useTranslations("adminContent.content.review");
   const ts = useTranslations("adminContent.content.statusActions");
+  const tsch = useTranslations("adminContent.content.schedule");
+  const locale = useLocale() as Locale;
+  const scheduled = isScheduled(status, publishAt);
+  const [tz, setTz] = useState("");
+  const [input, setInput] = useState("");
+
+  // O fuso do dispositivo só existe no cliente: evita divergência entre servidor e navegador.
+  useEffect(() => {
+    const zone = getDeviceTimeZone();
+    setTz(zone);
+    if (scheduled && publishAt) setInput(isoToLocalInput(publishAt, zone));
+  }, [scheduled, publishAt]);
+
+  // ISO do campo (null = publicar agora); erro imediato quando inválido ou no passado (o servidor revalida).
+  const schedule = useMemo(() => {
+    if (!input.trim()) return { ok: true as const, value: null };
+    const iso = localInputToIso(input);
+    if (!iso) return { ok: false as const, error: "publish_at_invalid" as const };
+    return parsePublishAt(iso);
+  }, [input]);
+  const scheduleError = schedule.ok ? null : tsch(schedule.error);
+  const scheduleValue = schedule.ok ? schedule.value : null;
+  const scheduleLabel = scheduleValue ? formatDateTime(scheduleValue, locale, tz || undefined) : null;
+  const scheduledLabel = scheduled && publishAt ? formatDateTime(publishAt, locale, tz || undefined) : null;
 
   return (
     <div className="flex flex-col gap-4">
+      <section aria-labelledby="schedule-field" className="flex flex-col gap-2">
+        <h3 id="schedule-field" className="text-sm font-semibold text-fg">
+          {tsch("title")}
+        </h3>
+        {scheduledLabel && (
+          <div>
+            <Badge variant="info" icon={<CalendarClock />}>
+              {tsch("scheduledFor", { date: scheduledLabel })}
+            </Badge>
+          </div>
+        )}
+        <FormField label={tsch("publishAt")} hint={tz ? tsch("hint", { tz }) : tsch("hintNoTz")} error={scheduleError ?? undefined}>
+          <Input type="datetime-local" value={input} onChange={(e) => setInput(e.target.value)} />
+        </FormField>
+        {scheduled && (
+          <div className="flex flex-wrap gap-2">
+            <ConfirmActionDialog
+              triggerLabel={
+                <>
+                  <Zap className="size-4" aria-hidden="true" /> {ts("publishNow")}
+                </>
+              }
+              triggerVariant="primary"
+              title={ts("publishNowTitle")}
+              description={ts("publishNowDescription")}
+              requireJustification
+              action={(j) => setContentStatusAction(contentId, "published", j, null)}
+            />
+            <ConfirmActionDialog
+              triggerLabel={
+                <>
+                  <CalendarClock className="size-4" aria-hidden="true" /> {ts("reschedule")}
+                </>
+              }
+              title={ts("rescheduleTitle")}
+              description={scheduleLabel ? tsch("willPublishAt", { date: scheduleLabel }) : undefined}
+              requireJustification
+              disabled={!scheduleValue}
+              action={(j) => setContentStatusAction(contentId, "published", j, scheduleValue)}
+            />
+          </div>
+        )}
+      </section>
+
       <section aria-labelledby="review-actions" className="flex flex-col gap-2">
         <h3 id="review-actions" className="text-sm font-semibold text-fg">
           {t("title")}
@@ -29,15 +106,16 @@ export function ContentReviewActions({ contentId, status, reviewStatus, isFeatur
         {!hasOpenRound && reviewStatus !== "in_review" && <p className="type-caption text-warning">{t("notInReview")}</p>}
         <div className="flex flex-wrap gap-2">
           <ConfirmActionDialog
-            triggerLabel={t("approve")}
+            triggerLabel={scheduleValue ? t("approveSchedule") : t("approve")}
             triggerVariant="primary"
             title={t("approveTitle")}
             description={t("description")}
-            confirmLabel={t("approve")}
-            disabled={status === "archived"}
-            action={(feedback) => reviewContentAction(contentId, "approved", feedback)}
+            confirmLabel={scheduleValue ? t("approveSchedule") : t("approve")}
+            disabled={status === "archived" || Boolean(scheduleError)}
+            action={(feedback) => reviewContentAction(contentId, "approved", feedback, scheduleValue)}
           >
             <p className="type-caption text-fg-muted">{t("feedbackHint")}</p>
+            {scheduleLabel && <p className="type-caption text-info">{tsch("willPublishAt", { date: scheduleLabel })}</p>}
           </ConfirmActionDialog>
           <ConfirmActionDialog
             triggerLabel={t("return")}
@@ -67,13 +145,14 @@ export function ContentReviewActions({ contentId, status, reviewStatus, isFeatur
             <ConfirmActionDialog
               triggerLabel={
                 <>
-                  <Upload className="size-4" aria-hidden="true" /> {ts("publish")}
+                  {scheduleValue ? <CalendarClock className="size-4" aria-hidden="true" /> : <Upload className="size-4" aria-hidden="true" />} {scheduleValue ? ts("schedule") : ts("publish")}
                 </>
               }
               title={ts("publishTitle")}
-              description={ts("publishDescription")}
+              description={scheduleLabel ? `${ts("publishDescription")} ${tsch("willPublishAt", { date: scheduleLabel })}` : ts("publishDescription")}
               requireJustification
-              action={(j) => setContentStatusAction(contentId, "published", j)}
+              disabled={Boolean(scheduleError)}
+              action={(j) => setContentStatusAction(contentId, "published", j, scheduleValue)}
             />
           )}
           {status !== "archived" && (

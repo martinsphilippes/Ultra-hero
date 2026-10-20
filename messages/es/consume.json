@@ -24,7 +24,15 @@
     "feedbackTitle": "¿Qué te pareció este contenido?",
     "actionsLabel": "Acciones del contenido",
     "notFoundTitle": "Contenido no encontrado",
-    "notFoundDescription": "Este contenido puede haber sido archivado o la dirección cambió."
+    "notFoundDescription": "Este contenido puede haber sido archivado o la dirección cambió.",
+    "licenseLabel": "Crédito/licencia",
+    "license": {
+      "platform_demo": "demostración de la plataforma",
+      "own": "medio propio",
+      "licensed": "medio con licencia",
+      "third_party_embed": "inserción de terceros"
+    },
+    "scheduledBadge": "Programado"
   },
   "body": {
     "video": {
@@ -46,7 +54,25 @@
       "allergens": "Alérgenos",
       "noAllergens": "Ningún alérgeno informado",
       "note": "Observación",
-      "step": "Paso {n}"
+      "step": "Paso {n}",
+      "nutrition": {
+        "title": "Información nutricional",
+        "perServing": "Valores estimados por porción",
+        "tableCaption": "Tabla nutricional por porción",
+        "nutrient": "Nutriente",
+        "amount": "Cantidad",
+        "fields": {
+          "kcal": "Energía",
+          "protein_g": "Proteínas",
+          "carbs_g": "Carbohidratos",
+          "fat_g": "Grasas",
+          "fiber_g": "Fibra",
+          "sodium_mg": "Sodio"
+        },
+        "validatedBy": "Validado por {by} el {date}",
+        "pending": "Información nutricional en validación.",
+        "disclaimer": "Valores estimados con fines educativos; no sustituyen la orientación nutricional individual."
+      }
     },
     "workout": {
       "equipment": "Equipamiento",

@@ -187,7 +187,11 @@
       "productsNote": "Productos de demostración vinculados a los contenidos de esta personalidad. Ninguna compra, cobro o entrega real.",
       "productsEmptyTitle": "Ningún producto disponible",
       "productsEmptyDescription": "Los productos vinculados a los contenidos de esta personalidad no están disponibles por ahora.",
-      "productsGoToShop": "Ver la tienda de demostración"
+      "productsGoToShop": "Ver la tienda de demostración",
+      "rightsPendingBadge": "Derechos en validación",
+      "rightsPending": "Autorización de uso de nombre e imagen en validación; hasta entonces, el perfil se trata como ficticio.",
+      "rightsAuthorized": "Uso de nombre e imagen autorizado por {holder}.",
+      "rightsValidUntil": "Autorización válida hasta el {date}."
     },
     "eyebrow": "Quienes guían los contenidos",
     "notFoundTitle": "Personalidad no encontrada",

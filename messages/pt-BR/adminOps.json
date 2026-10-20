@@ -52,7 +52,9 @@
     "account_status_mismatch": "O estado da conta no Auth não confere com a ação (nada foi registrado). Recarregue a página e tente de novo.",
     "suspension_unaudited": "A mudança foi aplicada no Auth, mas não pôde ser auditada nem desfeita. Recarregue a página e confira o status da conta antes de tentar de novo.",
     "experiment_closed": "O banco recusou a criação desta conta com o cadastro fechado. Contas demo criadas aqui deveriam passar; confira se a migração 0015 está aplicada no banco.",
-    "generic": "Não foi possível concluir a ação. Tente novamente."
+    "generic": "Não foi possível concluir a ação. Tente novamente.",
+    "rights_holder_required": "Informe o titular da autorização para marcar como autorizado.",
+    "creator_not_found": "Personalidade não encontrada."
   },
   "dashboard": {
     "title": "Painel",
@@ -267,7 +269,8 @@
       "pillars": "Pilares",
       "status": "Status",
       "user": "Usuário vinculado",
-      "fictional": "Fictício"
+      "fictional": "Fictício",
+      "rights": "Direitos"
     },
     "empty": "Nenhuma personalidade",
     "emptyDescription": "Crie a primeira personalidade fictícia.",
@@ -289,7 +292,25 @@
       "save": "Salvar",
       "created": "Personalidade criada",
       "updated": "Personalidade atualizada",
-      "placeholderOption": "Placeholder {n}"
+      "placeholderOption": "Placeholder {n}",
+      "rightsSection": "Direitos de nome e imagem (público)",
+      "rightsStatus": "Situação dos direitos",
+      "rightsStatusHint": "\"Em validação\" nunca é exibido como autorizado; \"autorizado\" mostra titular e validade na página pública.",
+      "rights": {
+        "fictional": "Fictício (padrão da POC)",
+        "pending": "Em validação",
+        "authorized": "Autorizado"
+      },
+      "rightsHolder": "Titular da autorização",
+      "rightsHolderHint": "Quem autorizou o uso de nome e imagem (obrigatório quando autorizado).",
+      "rightsValidUntil": "Válido até",
+      "rightsValidUntilHint": "Depois dessa data a página volta a exibir \"em validação\".",
+      "privateSection": "Documentação interna (não pública)",
+      "documentRef": "Referência do documento",
+      "documentRefHint": "Contrato, termo ou protocolo. Só a administração vê; a gravação é auditada.",
+      "privateNotes": "Notas internas",
+      "privateNotesHint": "Observações da revisão. Só a administração vê.",
+      "reviewedAt": "Documentação revisada em {date}"
     },
     "status": {
       "activate": "Reativar",
@@ -300,7 +321,12 @@
       "updated": "Status atualizado"
     },
     "invite": "Convidar usuário",
-    "linkedTo": "Vinculada a {email}"
+    "linkedTo": "Vinculada a {email}",
+    "rights": {
+      "fictional": "Fictício",
+      "pending": "Em validação",
+      "authorized": "Autorizado"
+    }
   },
   "sellers": {
     "title": "Fornecedores",

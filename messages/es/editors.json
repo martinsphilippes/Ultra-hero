@@ -18,7 +18,9 @@
     },
     "bodyDescription": "Contenido educativo. Evita prescripciones individuales y promesas de resultados.",
     "access": "Regla de acceso (admin)",
-    "accessDescription": "Define quién puede consumirlo. Sin regla, el contenido queda \"temporalmente no disponible\" aunque esté publicado."
+    "accessDescription": "Define quién puede consumirlo. Sin regla, el contenido queda \"temporalmente no disponible\" aunque esté publicado.",
+    "license": "Licencia y crédito del medio",
+    "licenseDescription": "De dónde viene el medio y a quién acreditar. Los videos insertados de YouTube o Vimeo exigen la licencia \"inserción de terceros\"."
   },
   "fields": {
     "title": "Título",
@@ -71,7 +73,11 @@
     "invalidUrl": "Usa una ruta de la plataforma o una URL https.",
     "moduleRequired": "El contenido premium exige un módulo.",
     "bodyTypeMismatch": "El cuerpo no corresponde al tipo elegido.",
-    "invalid": "Valor inválido."
+    "invalid": "Valor inválido.",
+    "licenseMismatch": "Licencia incoherente con el proveedor del medio.",
+    "validatorRequired": "Indica quién validó.",
+    "validatedAtRequired": "Indica la fecha de validación.",
+    "invalidDate": "Fecha inválida (usa AAAA-MM-DD)."
   },
   "errors": {
     "summary": "{count, plural, =1 {Hay 1 campo por corregir.} other {Hay # campos por corregir.}}",
@@ -82,7 +88,8 @@
     "forbidden": "No tienes permiso para esta acción.",
     "unauthenticated": "Inicia sesión para continuar.",
     "creator_unavailable": "Tu perfil de personalidad no está activo.",
-    "not_found": "Contenido no encontrado."
+    "not_found": "Contenido no encontrado.",
+    "media_license_mismatch": "Licencia incoherente con el medio: ajusta la licencia y guarda de nuevo."
   },
   "list": {
     "empty": "Todavía no hay elementos.",
@@ -179,7 +186,29 @@
       "allergens": "Alérgenos",
       "allergensHint": "Indica los alérgenos presentes o posibles.",
       "note": "Observación",
-      "noteHint": "Variaciones, sustituciones y recordatorios (cantidades ilustrativas)."
+      "noteHint": "Variaciones, sustituciones y recordatorios (cantidades ilustrativas).",
+      "nutrition": {
+        "title": "Información nutricional (por porción)",
+        "hint": "Valores estimados. Solo se muestran al público después de validarlos la administración.",
+        "fields": {
+          "kcal": "Energía (kcal)",
+          "protein_g": "Proteínas (g)",
+          "carbs_g": "Carbohidratos (g)",
+          "fat_g": "Grasas (g)",
+          "fiber_g": "Fibra (g)",
+          "sodium_mg": "Sodio (mg)"
+        },
+        "note": "Nota sobre los valores",
+        "noteHint": "Método de cálculo, fuente o salvedades.",
+        "validated": "Validado por profesional",
+        "validatedHint": "Libera la exhibición de los números al público. Exige responsable y fecha.",
+        "validatedBy": "Validado por",
+        "validatedByHint": "Nombre y credencial, p. ej. Nutricionista colegiado 00000.",
+        "validatedAt": "Fecha de validación",
+        "validatedBadge": "Validado por {by} el {date}.",
+        "resetOnSave": "Al guardar, la validación se borra y la administración debe repetirla.",
+        "adminOnly": "La validación la hace la administración; hasta entonces el público solo ve \"en validación\"."
+      }
     },
     "workout": {
       "equipment": "Equipamiento",
@@ -219,5 +248,24 @@
       "keyPointsHint": "Resumen en viñetas (opcional).",
       "keyPoint": "Punto clave {n}"
     }
+  },
+  "license": {
+    "kind": "Tipo de licencia",
+    "kinds": {
+      "platform_demo": "Demostración de la plataforma",
+      "own": "Medio propio",
+      "licensed": "Con licencia",
+      "third_party_embed": "Inserción de terceros"
+    },
+    "kindHint": {
+      "platform_demo": "Material ilustrativo creado para la demostración; sin medio real.",
+      "own": "Producido por la plataforma o por la personalidad, con derechos propios.",
+      "licensed": "Medio alojado aquí con licencia de terceros registrada en la referencia.",
+      "third_party_embed": "Video insertado del proveedor; los derechos son del canal de origen."
+    },
+    "credit": "Crédito (público)",
+    "creditHint": "Se muestra en la página del contenido, p. ej. canal, fotógrafo o autor.",
+    "ref": "Referencia de la licencia (interna)",
+    "refHint": "Número de contrato, URL o identificador. Nunca se muestra al público."
   }
 }

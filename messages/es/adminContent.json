@@ -108,6 +108,16 @@
       "manual": "Manual",
       "auto": "Automática",
       "inherit": "Predeterminado del tipo"
+    },
+    "license": {
+      "platform_demo": "Demostración de la plataforma",
+      "own": "Medio propio",
+      "licensed": "Con licencia",
+      "third_party_embed": "Inserción de terceros"
+    },
+    "linkOrigin": {
+      "creator_submission": "Enviado por la personalidad",
+      "admin_assignment": "Asignado por la administración"
     }
   },
   "errors": {
@@ -148,7 +158,10 @@
     "seller_not_own": "El admin solo crea o edita productos de la operación propia. Los productos de socios solo se moderan.",
     "self_dependency": "Un módulo no puede depender de sí mismo.",
     "invalid_json": "El cuerpo debe ser un objeto JSON válido.",
-    "not_found": "Registro no encontrado."
+    "not_found": "Registro no encontrado.",
+    "publish_at_invalid": "Fecha de publicación inválida.",
+    "publish_at_future": "La fecha de publicación debe estar en el futuro.",
+    "media_license_mismatch": "Licencia del medio incoherente con el proveedor. Edita el contenido e inténtalo de nuevo."
   },
   "content": {
     "title": "Contenidos",
@@ -206,7 +219,12 @@
       "noAccessRule": "Sin regla de acceso: el contenido aparece como “temporalmente no disponible” al público.",
       "slugLabel": "Slug",
       "openPublic": "Ver en la app",
-      "archivedAt": "Archivado el {date}"
+      "archivedAt": "Archivado el {date}",
+      "publishAt": "Publicación programada para",
+      "license": "Licencia del medio",
+      "licenseRef": "Referencia de la licencia (interna)",
+      "credit": "Crédito público",
+      "linkOrigin": "Origen del vínculo con la personalidad"
     },
     "summary": {
       "video": "Video · {points, plural, =1 {1 punto clave} other {# puntos clave}} · {transcript, plural, =1 {1 fragmento de transcripción} other {# fragmentos de transcripción}}",
@@ -234,7 +252,9 @@
       "approved": "Contenido aprobado y publicado",
       "returned": "Contenido devuelto con comentarios",
       "rejected": "Contenido rechazado",
-      "notInReview": "Sin ronda abierta: las decisiones se aplican a la ronda en revisión. Aun así, el admin puede aprobar/devolver directamente."
+      "notInReview": "Sin ronda abierta: las decisiones se aplican a la ronda en revisión. Aun así, el admin puede aprobar/devolver directamente.",
+      "scheduled": "Contenido aprobado y programado",
+      "approveSchedule": "Aprobar y programar"
     },
     "statusActions": {
       "title": "Estado de publicación",
@@ -249,7 +269,14 @@
       "changed": "Estado actualizado",
       "featureOn": "Destacar en Inicio",
       "featureOff": "Quitar de destacados",
-      "featured": "Destacado actualizado"
+      "featured": "Destacado actualizado",
+      "schedule": "Programar publicación",
+      "scheduled": "Publicación programada",
+      "publishNow": "Publicar ahora",
+      "publishNowTitle": "¿Publicar ahora?",
+      "publishNowDescription": "Descarta la programación y pone el contenido al aire de inmediato.",
+      "reschedule": "Reprogramar",
+      "rescheduleTitle": "¿Reprogramar la publicación?"
     },
     "form": {
       "createTitle": "Nuevo contenido (admin)",
@@ -271,6 +298,16 @@
       "threshold": "Umbral automático (%)",
       "thresholdHint": "Entre 1 y 100. Se usa solo en modo automático.",
       "saved": "Valores actualizados"
+    },
+    "schedule": {
+      "title": "Programación",
+      "publishAt": "Publicar el",
+      "hint": "Opcional. Vacío = publicar ahora. Hora en la zona horaria de tu dispositivo ({tz}).",
+      "hintNoTz": "Opcional. Vacío = publicar ahora. Hora en la zona horaria de tu dispositivo.",
+      "scheduledFor": "Programado para {date}",
+      "willPublishAt": "Sale al aire el {date}.",
+      "publish_at_invalid": "Fecha inválida.",
+      "publish_at_future": "La fecha debe estar en el futuro (al menos 1 minuto adelante)."
     }
   },
   "programs": {

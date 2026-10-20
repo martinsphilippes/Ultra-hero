@@ -52,7 +52,9 @@
     "account_status_mismatch": "El estado de la cuenta en Auth no coincide con la acción (no se registró nada). Recarga la página e inténtalo de nuevo.",
     "suspension_unaudited": "El cambio se aplicó en Auth, pero no se pudo auditar ni deshacer. Recarga la página y revisa el estado de la cuenta antes de intentarlo de nuevo.",
     "experiment_closed": "La base de datos rechazó crear esta cuenta con el registro cerrado. Las cuentas demo creadas aquí deberían pasar; comprueba que la migración 0015 esté aplicada en la base de datos.",
-    "generic": "No se pudo completar la acción. Inténtalo de nuevo."
+    "generic": "No se pudo completar la acción. Inténtalo de nuevo.",
+    "rights_holder_required": "Indica el titular de la autorización para marcar como autorizado.",
+    "creator_not_found": "Personalidad no encontrada."
   },
   "dashboard": {
     "title": "Panel",
@@ -267,7 +269,8 @@
       "pillars": "Pilares",
       "status": "Estado",
       "user": "Usuario vinculado",
-      "fictional": "Ficticio"
+      "fictional": "Ficticio",
+      "rights": "Derechos"
     },
     "empty": "Sin personalidades",
     "emptyDescription": "Crea la primera personalidad ficticia.",
@@ -289,7 +292,25 @@
       "save": "Guardar",
       "created": "Personalidad creada",
       "updated": "Personalidad actualizada",
-      "placeholderOption": "Placeholder {n}"
+      "placeholderOption": "Placeholder {n}",
+      "rightsSection": "Derechos de nombre e imagen (público)",
+      "rightsStatus": "Situación de los derechos",
+      "rightsStatusHint": "\"En validación\" nunca se muestra como autorizado; \"autorizado\" muestra titular y vigencia en la página pública.",
+      "rights": {
+        "fictional": "Ficticio (predeterminado de la POC)",
+        "pending": "En validación",
+        "authorized": "Autorizado"
+      },
+      "rightsHolder": "Titular de la autorización",
+      "rightsHolderHint": "Quién autorizó el uso de nombre e imagen (obligatorio cuando está autorizado).",
+      "rightsValidUntil": "Válido hasta",
+      "rightsValidUntilHint": "Después de esa fecha la página vuelve a mostrar \"en validación\".",
+      "privateSection": "Documentación interna (no pública)",
+      "documentRef": "Referencia del documento",
+      "documentRefHint": "Contrato, acuerdo o protocolo. Solo la administración lo ve; el guardado queda auditado.",
+      "privateNotes": "Notas internas",
+      "privateNotesHint": "Observaciones de la revisión. Solo la administración las ve.",
+      "reviewedAt": "Documentación revisada el {date}"
     },
     "status": {
       "activate": "Reactivar",
@@ -300,7 +321,12 @@
       "updated": "Estado actualizado"
     },
     "invite": "Invitar usuario",
-    "linkedTo": "Vinculada a {email}"
+    "linkedTo": "Vinculada a {email}",
+    "rights": {
+      "fictional": "Ficticio",
+      "pending": "En validación",
+      "authorized": "Autorizado"
+    }
   },
   "sellers": {
     "title": "Proveedores",

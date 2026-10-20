@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ContentCard } from "@/components/catalog";
 import { Section } from "@/components/ui";
-import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
+import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
 import { createClient } from "@/lib/supabase/server";
 import type { Pillar } from "@/lib/supabase/helpers";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ export async function PillarSection({ pillar }: { pillar: Pillar }) {
     .from("content")
     .select(CONTENT_CARD_SELECT)
     .eq("status", "published")
+    .or(liveContentFilter())
     .eq("pillar", pillar)
     .order("published_at", { ascending: false })
     .limit(4);

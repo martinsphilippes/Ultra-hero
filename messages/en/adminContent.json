@@ -108,6 +108,16 @@
       "manual": "Manual",
       "auto": "Automatic",
       "inherit": "Type default"
+    },
+    "license": {
+      "platform_demo": "Platform demo",
+      "own": "Own media",
+      "licensed": "Licensed",
+      "third_party_embed": "Third-party embed"
+    },
+    "linkOrigin": {
+      "creator_submission": "Submitted by the personality",
+      "admin_assignment": "Assigned by the admin team"
     }
   },
   "errors": {
@@ -148,7 +158,10 @@
     "seller_not_own": "Admin only creates or edits products of the own operation. Partner products are only moderated.",
     "self_dependency": "A module cannot depend on itself.",
     "invalid_json": "The body must be a valid JSON object.",
-    "not_found": "Record not found."
+    "not_found": "Record not found.",
+    "publish_at_invalid": "Invalid publication date.",
+    "publish_at_future": "The publication date must be in the future.",
+    "media_license_mismatch": "Media license inconsistent with the provider. Edit the content and try again."
   },
   "content": {
     "title": "Content",
@@ -206,7 +219,12 @@
       "noAccessRule": "No access rule: the content shows as “temporarily unavailable” to the public.",
       "slugLabel": "Slug",
       "openPublic": "View in app",
-      "archivedAt": "Archived on {date}"
+      "archivedAt": "Archived on {date}",
+      "publishAt": "Publication scheduled for",
+      "license": "Media license",
+      "licenseRef": "License reference (internal)",
+      "credit": "Public credit",
+      "linkOrigin": "Origin of the link to the personality"
     },
     "summary": {
       "video": "Video · {points, plural, =1 {1 key point} other {# key points}} · {transcript, plural, =1 {1 transcript segment} other {# transcript segments}}",
@@ -234,7 +252,9 @@
       "approved": "Content approved and published",
       "returned": "Content returned with feedback",
       "rejected": "Content rejected",
-      "notInReview": "No open round: decisions apply to the round in review. Even so, the admin may approve/return directly."
+      "notInReview": "No open round: decisions apply to the round in review. Even so, the admin may approve/return directly.",
+      "scheduled": "Content approved and scheduled",
+      "approveSchedule": "Approve and schedule"
     },
     "statusActions": {
       "title": "Publication status",
@@ -249,7 +269,14 @@
       "changed": "Status updated",
       "featureOn": "Feature on Home",
       "featureOff": "Remove from featured",
-      "featured": "Featured updated"
+      "featured": "Featured updated",
+      "schedule": "Schedule publication",
+      "scheduled": "Publication scheduled",
+      "publishNow": "Publish now",
+      "publishNowTitle": "Publish now?",
+      "publishNowDescription": "Drops the schedule and puts the content live immediately.",
+      "reschedule": "Reschedule",
+      "rescheduleTitle": "Reschedule publication?"
     },
     "form": {
       "createTitle": "New content (admin)",
@@ -271,6 +298,16 @@
       "threshold": "Auto threshold (%)",
       "thresholdHint": "Between 1 and 100. Used only in automatic mode.",
       "saved": "Defaults updated"
+    },
+    "schedule": {
+      "title": "Scheduling",
+      "publishAt": "Publish at",
+      "hint": "Optional. Empty = publish now. Time in your device's time zone ({tz}).",
+      "hintNoTz": "Optional. Empty = publish now. Time in your device's time zone.",
+      "scheduledFor": "Scheduled for {date}",
+      "willPublishAt": "Goes live on {date}.",
+      "publish_at_invalid": "Invalid date.",
+      "publish_at_future": "The date must be in the future (at least 1 minute ahead)."
     }
   },
   "programs": {

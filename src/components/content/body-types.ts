@@ -15,6 +15,24 @@ function strList(value: unknown): string[] {
   return Array.isArray(value) ? value.map(str).filter((v): v is string => Boolean(v)) : [];
 }
 
+export type NutritionPerServing = {
+  kcal: number | null;
+  proteinG: number | null;
+  carbsG: number | null;
+  fatG: number | null;
+  fiberG: number | null;
+  sodiumMg: number | null;
+};
+
+export type RecipeNutrition = {
+  perServing: NutritionPerServing;
+  validated: boolean;
+  validatedBy: string | null;
+  /** Data "YYYY-MM-DD" da validação. */
+  validatedAt: string | null;
+  note: string | null;
+};
+
 export type RecipeBody = {
   servings: number | null;
   prepMinutes: number | null;
@@ -23,7 +41,36 @@ export type RecipeBody = {
   steps: string[];
   allergens: string[];
   note: string | null;
+  nutrition: RecipeNutrition | null;
 };
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function parseNutrition(raw: unknown): RecipeNutrition | null {
+  if (!isRecord(raw)) return null;
+  const ps = isRecord(raw.per_serving) ? raw.per_serving : {};
+  const validatedAt = str(raw.validated_at);
+  return {
+    perServing: { kcal: num(ps.kcal), proteinG: num(ps.protein_g), carbsG: num(ps.carbs_g), fatG: num(ps.fat_g), fiberG: num(ps.fiber_g), sodiumMg: num(ps.sodium_mg) },
+    validated: raw.validated === true,
+    validatedBy: str(raw.validated_by),
+    validatedAt: validatedAt && ISO_DATE.test(validatedAt) ? validatedAt : null,
+    note: str(raw.note),
+  };
+}
+
+export function nutritionHasValues(n: RecipeNutrition | null): boolean {
+  return Boolean(n && Object.values(n.perServing).some((v) => v !== null));
+}
+
+export type NutritionDisplay = "hidden" | "validated" | "pending";
+
+// RB-08: números só aparecem quando validados por profissional (responsável + data); com números
+// sem validação, a página diz apenas "em validação"; sem números não há seção.
+export function nutritionDisplayState(n: RecipeNutrition | null): NutritionDisplay {
+  if (!nutritionHasValues(n)) return "hidden";
+  return n!.validated && n!.validatedBy && n!.validatedAt ? "validated" : "pending";
+}
 
 export function parseRecipeBody(body: unknown): RecipeBody {
   const b = isRecord(body) ? body : {};
@@ -45,6 +92,7 @@ export function parseRecipeBody(body: unknown): RecipeBody {
     steps: strList(b.steps),
     allergens: strList(b.allergens),
     note: str(b.note),
+    nutrition: parseNutrition(b.nutrition),
   };
 }
 

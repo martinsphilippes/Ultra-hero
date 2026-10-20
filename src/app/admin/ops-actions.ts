@@ -221,46 +221,85 @@ export async function acceptInvitation(input: { token: string }): Promise<Result
 }
 
 // ---------------------------------------------------------------- personalidades
-const creatorSchema = z.object({
-  name: z.string().trim().min(2).max(80),
-  slug: z.string().trim().regex(SLUG).max(80),
-  headline: z.string().trim().max(140).optional().or(z.literal("")),
-  bio: z.string().trim().max(2000).optional().or(z.literal("")),
-  pillars: z.array(z.enum(PILLARS as [string, ...string[]])).min(1).max(4),
-  avatarUrl: z.string().regex(PLACEHOLDER_PATH),
-  coverUrl: z.string().regex(PLACEHOLDER_PATH),
-  isFictional: z.boolean(),
-  rightsNote: z.string().trim().max(500).optional().or(z.literal("")),
-  sortOrder: z.coerce.number().int().min(0).max(10000),
-});
+// Direitos de nome e imagem (RF-003, RB-05): campos públicos em creator_profiles (auditados pelo
+// trigger audit_partner_changes; só o admin altera) e documentação em creator_rights_private
+// (só admin; gravada pela RPC auditada admin_set_creator_rights_private).
+export const RIGHTS_STATUSES = ["fictional", "pending", "authorized"] as const;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const creatorSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80),
+    slug: z.string().trim().regex(SLUG).max(80),
+    headline: z.string().trim().max(140).optional().or(z.literal("")),
+    bio: z.string().trim().max(2000).optional().or(z.literal("")),
+    pillars: z.array(z.enum(PILLARS as [string, ...string[]])).min(1).max(4),
+    avatarUrl: z.string().regex(PLACEHOLDER_PATH),
+    coverUrl: z.string().regex(PLACEHOLDER_PATH),
+    isFictional: z.boolean(),
+    rightsNote: z.string().trim().max(500).optional().or(z.literal("")),
+    sortOrder: z.coerce.number().int().min(0).max(10000),
+    rightsStatus: z.enum(RIGHTS_STATUSES).default("fictional"),
+    rightsHolder: z.string().trim().max(160).optional().or(z.literal("")),
+    rightsValidUntil: z.string().trim().regex(ISO_DATE).optional().or(z.literal("")),
+    documentRef: z.string().trim().max(300).optional().or(z.literal("")),
+    privateNotes: z.string().trim().max(2000).optional().or(z.literal("")),
+  })
+  .superRefine((v, ctx) => {
+    if (v.rightsStatus === "authorized" && !v.rightsHolder) {
+      ctx.addIssue({ code: "custom", message: "rights_holder_required", path: ["rightsHolder"] });
+    }
+  });
 
 export type CreatorFormValues = z.input<typeof creatorSchema>;
+type CreatorParsed = z.output<typeof creatorSchema>;
+
+function creatorRow(v: CreatorParsed) {
+  return {
+    name: v.name,
+    slug: v.slug,
+    headline: v.headline || null,
+    bio: v.bio || null,
+    pillars: v.pillars as ("routine" | "training" | "nutrition" | "gastronomy")[],
+    avatar_url: v.avatarUrl,
+    cover_url: v.coverUrl,
+    is_fictional: v.isFictional,
+    rights_note: v.rightsNote || null,
+    sort_order: v.sortOrder,
+    rights_status: v.rightsStatus,
+    rights_holder: v.rightsHolder || null,
+    rights_valid_until: v.rightsValidUntil || null,
+  };
+}
+
+async function creatorInvalid(parsed: { success: false; error: z.ZodError }): Promise<Failure> {
+  const code = parsed.error.issues.find((i) => i.message === "rights_holder_required") ? "rights_holder_required" : "invalid_input";
+  return fail(code);
+}
+
+// Só grava (e audita) a parte privada quando algo mudou; a RPC registra revisor e data.
+async function savePrivateRights(supabase: Awaited<ReturnType<typeof createClient>>, creatorId: string, v: CreatorParsed): Promise<Failure | null> {
+  const doc = v.documentRef || "";
+  const notes = v.privateNotes || "";
+  const { data: current } = await supabase.from("creator_rights_private").select("document_ref, notes").eq("creator_id", creatorId).maybeSingle();
+  const unchanged = current ? (current.document_ref ?? "") === doc && (current.notes ?? "") === notes : doc === "" && notes === "";
+  if (unchanged) return null;
+  const { error } = await supabase.rpc("admin_set_creator_rights_private", { p_creator: creatorId, p_document_ref: doc, p_notes: notes });
+  return error ? fail(error) : null;
+}
 
 export async function createCreator(input: CreatorFormValues): Promise<Result<{ id: string }>> {
   await admin();
   const parsed = creatorSchema.safeParse(input);
-  if (!parsed.success) return invalid();
+  if (!parsed.success) return creatorInvalid(parsed);
   const v = parsed.data;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("creator_profiles")
-      .insert({
-        name: v.name,
-        slug: v.slug,
-        headline: v.headline || null,
-        bio: v.bio || null,
-        pillars: v.pillars as ("routine" | "training" | "nutrition" | "gastronomy")[],
-        avatar_url: v.avatarUrl,
-        cover_url: v.coverUrl,
-        is_fictional: v.isFictional,
-        rights_note: v.rightsNote || null,
-        sort_order: v.sortOrder,
-      })
-      .select("id")
-      .single();
+    const { data, error } = await supabase.from("creator_profiles").insert(creatorRow(v)).select("id").single();
     if (error) return fail(error);
+    const privateError = await savePrivateRights(supabase, data.id, v);
     revalidatePath("/admin/creators");
+    if (privateError) return privateError;
     const t = await getTranslations("adminOps.creators.form");
     return { ok: true, id: data.id, message: t("created") };
   } catch (error) {
@@ -271,31 +310,18 @@ export async function createCreator(input: CreatorFormValues): Promise<Result<{ 
 export async function updateCreator(id: string, input: CreatorFormValues): Promise<Result> {
   await admin();
   const parsed = z.object({ id: z.uuid(), values: creatorSchema }).safeParse({ id, values: input });
-  if (!parsed.success) return invalid();
+  if (!parsed.success) return creatorInvalid(parsed);
   const v = parsed.data.values;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("creator_profiles")
-      .update({
-        name: v.name,
-        slug: v.slug,
-        headline: v.headline || null,
-        bio: v.bio || null,
-        pillars: v.pillars as ("routine" | "training" | "nutrition" | "gastronomy")[],
-        avatar_url: v.avatarUrl,
-        cover_url: v.coverUrl,
-        is_fictional: v.isFictional,
-        rights_note: v.rightsNote || null,
-        sort_order: v.sortOrder,
-      })
-      .eq("id", parsed.data.id)
-      .select("id")
-      .maybeSingle();
+    const { data, error } = await supabase.from("creator_profiles").update(creatorRow(v)).eq("id", parsed.data.id).select("id").maybeSingle();
     if (error) return fail(error);
     if (!data) return fail("not_found");
+    const privateError = await savePrivateRights(supabase, parsed.data.id, v);
     revalidatePath("/admin/creators");
     revalidatePath(`/admin/creators/${parsed.data.id}`);
+    revalidatePath("/personalities");
+    if (privateError) return privateError;
     const t = await getTranslations("adminOps.creators.form");
     return { ok: true, message: t("updated") };
   } catch (error) {

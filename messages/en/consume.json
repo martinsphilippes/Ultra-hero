@@ -24,7 +24,15 @@
     "feedbackTitle": "What did you think of this content?",
     "actionsLabel": "Content actions",
     "notFoundTitle": "Content not found",
-    "notFoundDescription": "This content may have been archived or the address changed."
+    "notFoundDescription": "This content may have been archived or the address changed.",
+    "licenseLabel": "Credit/license",
+    "license": {
+      "platform_demo": "platform demo",
+      "own": "own media",
+      "licensed": "licensed media",
+      "third_party_embed": "third-party embed"
+    },
+    "scheduledBadge": "Scheduled"
   },
   "body": {
     "video": {
@@ -46,7 +54,25 @@
       "allergens": "Allergens",
       "noAllergens": "No allergens listed",
       "note": "Note",
-      "step": "Step {n}"
+      "step": "Step {n}",
+      "nutrition": {
+        "title": "Nutrition facts",
+        "perServing": "Estimated values per serving",
+        "tableCaption": "Nutrition table per serving",
+        "nutrient": "Nutrient",
+        "amount": "Amount",
+        "fields": {
+          "kcal": "Energy",
+          "protein_g": "Protein",
+          "carbs_g": "Carbohydrates",
+          "fat_g": "Fat",
+          "fiber_g": "Fiber",
+          "sodium_mg": "Sodium"
+        },
+        "validatedBy": "Validated by {by} on {date}",
+        "pending": "Nutrition facts under validation.",
+        "disclaimer": "Estimated values for educational purposes; not a substitute for individual nutrition advice."
+      }
     },
     "workout": {
       "equipment": "Equipment",

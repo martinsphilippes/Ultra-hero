@@ -4,10 +4,11 @@ import Link from "next/link";
 import { Plus, Settings2 } from "lucide-react";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { FilterBar, type FilterField } from "@/components/admin-content";
+import { isScheduled } from "@/components/admin-content/lib/publish-at";
 import { escapeLike, hasAnyFilter, pickEnum, pickSearch, pickUuid, type SearchParams } from "@/components/admin-content/lib/search-params";
 import { Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
-import { formatDate } from "@/i18n/format";
+import { formatDate, formatDateTime } from "@/i18n/format";
 import { CONTENT_TYPES, PILLARS, type Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,6 +29,7 @@ type Row = {
   review_status: Enums<"review_status">;
   access_level: Enums<"access_level"> | null;
   is_featured: boolean;
+  publish_at: string | null;
   updated_at: string;
   creator: { name: string } | null;
 };
@@ -58,7 +60,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
 
   let query = supabase
     .from("content")
-    .select("id, slug, title, pillar, type, status, review_status, access_level, is_featured, updated_at, creator:creator_profiles(name)")
+    .select("id, slug, title, pillar, type, status, review_status, access_level, is_featured, publish_at, updated_at, creator:creator_profiles(name)")
     .order("updated_at", { ascending: false })
     .limit(LIMIT);
   if (q) query = query.ilike("title", `%${escapeLike(q)}%`);
@@ -115,7 +117,20 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
     },
     { key: "pillar", header: t("table.pillar"), hideOnMobile: true, cell: (row) => <PillarBadge pillar={row.pillar} size="sm" /> },
     { key: "type", header: t("table.type"), hideOnMobile: true, cell: (row) => tc(`types.${row.type}`) },
-    { key: "status", header: t("table.status"), cell: (row) => <StatusBadge status={row.status} label={ts(`status.${row.status}`)} /> },
+    {
+      key: "status",
+      header: t("table.status"),
+      cell: (row) => (
+        <span className="flex flex-wrap gap-1">
+          <StatusBadge status={row.status} label={ts(`status.${row.status}`)} />
+          {isScheduled(row.status, row.publish_at) && row.publish_at && (
+            <Badge variant="info" size="sm">
+              {t("schedule.scheduledFor", { date: formatDateTime(row.publish_at, locale as Locale) })}
+            </Badge>
+          )}
+        </span>
+      ),
+    },
     { key: "review", header: t("table.review"), cell: (row) => <StatusBadge status={row.review_status} label={ts(`status.${row.review_status}`)} /> },
     {
       key: "access",

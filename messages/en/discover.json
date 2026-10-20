@@ -187,7 +187,11 @@
       "productsNote": "Demo products linked to this personality's content. No real purchase, charge or delivery.",
       "productsEmptyTitle": "No products available",
       "productsEmptyDescription": "The products linked to this personality's content are not available right now.",
-      "productsGoToShop": "Go to the demo shop"
+      "productsGoToShop": "Go to the demo shop",
+      "rightsPendingBadge": "Rights under validation",
+      "rightsPending": "Authorization for name and likeness is under validation; until then the profile is treated as fictional.",
+      "rightsAuthorized": "Use of name and likeness authorized by {holder}.",
+      "rightsValidUntil": "Authorization valid until {date}."
     },
     "eyebrow": "Who guides the content",
     "notFoundTitle": "Personality not found",

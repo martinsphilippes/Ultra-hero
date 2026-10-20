@@ -1,25 +1,48 @@
 "use client";
 
 import { Plus, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useId } from "react";
-import { Button, FormField, IconButton, Input, Textarea } from "@/components/ui";
+import { Button, FormField, IconButton, Input, Switch, Textarea } from "@/components/ui";
+import type { Locale } from "@/i18n/config";
+import { formatPlainDate } from "@/i18n/format";
 import { ChipInput, ListEditor, NumberField, useValidationMessage } from "./fields";
-import type { FieldErrors, RecipeBody } from "./schema";
+import { NUTRIENT_KEYS, emptyNutrition, nutritionHasValues, type FieldErrors, type NutrientKey, type RecipeBody, type RecipeNutrition } from "./schema";
 
-type Props = { value: RecipeBody; onChange: (value: RecipeBody) => void; errors: FieldErrors };
+type Props = {
+  value: RecipeBody;
+  onChange: (value: RecipeBody) => void;
+  errors: FieldErrors;
+  /** Só o admin marca a nutrição como validada (a action da personalidade zera a marcação). */
+  canValidate?: boolean;
+};
 
 const COMMON_ALLERGENS = ["glúten", "leite", "ovo", "amendoim", "castanhas", "soja", "peixe", "frutos do mar"];
+const NUTRIENT_STEP: Record<NutrientKey, number> = { kcal: 1, protein_g: 0.1, carbs_g: 0.1, fat_g: 0.1, fiber_g: 0.1, sodium_mg: 1 };
 
-// Corpo de receita: porções, tempos, ingredientes (item + quantidade), passos, alérgenos e observação.
-export function RecipeEditor({ value, onChange, errors }: Props) {
+// Corpo de receita: porções, tempos, ingredientes (item + quantidade), passos, alérgenos, observação
+// e informação nutricional por porção (RF-006): números livres; validação só pelo admin (RB-08).
+export function RecipeEditor({ value, onChange, errors, canValidate = false }: Props) {
   const t = useTranslations("editors.body.recipe");
   const tv = useValidationMessage();
+  const locale = useLocale() as Locale;
   const baseId = useId();
+  const nutrition = value.nutrition ?? emptyNutrition();
 
   function setIngredient(index: number, patch: Partial<RecipeBody["ingredients"][number]>) {
     onChange({ ...value, ingredients: value.ingredients.map((row, i) => (i === index ? { ...row, ...patch } : row)) });
   }
+  function setNutrition(patch: Partial<RecipeNutrition>) {
+    onChange({ ...value, nutrition: { ...nutrition, ...patch } });
+  }
+  function setNutrient(key: NutrientKey, n: number | null) {
+    setNutrition({ per_serving: { ...nutrition.per_serving, [key]: n } });
+  }
+
+  const validatedLabel =
+    nutrition.validated && nutrition.validated_by && nutrition.validated_at
+      ? t("nutrition.validatedBadge", { by: nutrition.validated_by, date: formatPlainDate(nutrition.validated_at, locale) })
+      : null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -92,6 +115,57 @@ export function RecipeEditor({ value, onChange, errors }: Props) {
       <FormField label={t("note")} hint={t("noteHint")} error={tv(errors["body.note"])}>
         <Textarea rows={3} maxLength={600} value={value.note} onChange={(e) => onChange({ ...value, note: e.target.value })} />
       </FormField>
+
+      {/* Informação nutricional por porção: só vai ao público depois de validada pelo admin (RB-08). */}
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-elevated p-4" role="group" aria-labelledby={`${baseId}-nutrition`}>
+        <div className="flex flex-col gap-1">
+          <span id={`${baseId}-nutrition`} className="text-sm font-semibold text-fg">
+            {t("nutrition.title")}
+          </span>
+          <p className="type-caption text-fg-muted">{t("nutrition.hint")}</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {NUTRIENT_KEYS.map((key) => (
+            <NumberField
+              key={key}
+              label={t(`nutrition.fields.${key}`)}
+              value={nutrition.per_serving[key]}
+              onChange={(n) => setNutrient(key, n)}
+              min={0}
+              max={100_000}
+              step={NUTRIENT_STEP[key]}
+              error={tv(errors[`body.nutrition.per_serving.${key}`])}
+            />
+          ))}
+        </div>
+        <FormField label={t("nutrition.note")} hint={t("nutrition.noteHint")} error={tv(errors["body.nutrition.note"])}>
+          <Textarea rows={2} maxLength={600} value={nutrition.note} onChange={(e) => setNutrition({ note: e.target.value })} />
+        </FormField>
+        {canValidate ? (
+          <div className="flex flex-col gap-3 border-t border-border pt-3">
+            <Switch
+              id={`${baseId}-validated`}
+              checked={nutrition.validated}
+              onCheckedChange={(validated) => setNutrition({ validated })}
+              label={t("nutrition.validated")}
+              description={t("nutrition.validatedHint")}
+              disabled={!nutritionHasValues(nutrition) && !nutrition.validated}
+            />
+            {nutrition.validated && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FormField label={t("nutrition.validatedBy")} hint={t("nutrition.validatedByHint")} error={tv(errors["body.nutrition.validated_by"])} required>
+                  <Input value={nutrition.validated_by ?? ""} maxLength={120} onChange={(e) => setNutrition({ validated_by: e.target.value || null })} />
+                </FormField>
+                <FormField label={t("nutrition.validatedAt")} error={tv(errors["body.nutrition.validated_at"])} required>
+                  <Input type="date" value={nutrition.validated_at ?? ""} onChange={(e) => setNutrition({ validated_at: e.target.value || null })} />
+                </FormField>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="border-t border-border pt-3 type-caption text-fg-muted">{validatedLabel ? `${validatedLabel} ${t("nutrition.resetOnSave")}` : t("nutrition.adminOnly")}</p>
+        )}
+      </div>
     </div>
   );
 }

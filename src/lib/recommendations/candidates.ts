@@ -1,5 +1,6 @@
 // Candidatos = catálogo publicado com regra de acesso, menos concluídos e "não tenho interesse" do usuário.
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { liveContentFilter } from "@/lib/catalog/queries";
 import type { Database } from "@/lib/supabase/database.types";
 import type { Candidate, Difficulty } from "./types";
 import { MAX_CANDIDATES } from "./types";
@@ -60,6 +61,7 @@ export async function loadCandidates(db: Db, userId: string | null, max = MAX_CA
     .from("content")
     .select(CANDIDATE_SELECT)
     .eq("status", "published")
+    .or(liveContentFilter())
     .not("access_level", "is", null)
     .order("is_featured", { ascending: false })
     .order("published_at", { ascending: false })

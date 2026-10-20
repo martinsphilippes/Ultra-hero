@@ -13,7 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: `${t("portals.admin")} · ${t("admin.creators")}` };
 }
 
-type CreatorRow = Pick<Tables<"creator_profiles">, "id" | "slug" | "name" | "pillars" | "status" | "user_id" | "is_fictional" | "avatar_url" | "sort_order">;
+type CreatorRow = Pick<Tables<"creator_profiles">, "id" | "slug" | "name" | "pillars" | "status" | "user_id" | "is_fictional" | "avatar_url" | "sort_order" | "rights_status">;
+type RightsStatus = "fictional" | "pending" | "authorized";
+const RIGHTS_VARIANT: Record<RightsStatus, "demo" | "info" | "success"> = { fictional: "demo", pending: "info", authorized: "success" };
 
 // Personalidades fictícias: lista com status, pilares, vínculo e ações auditadas.
 export default async function AdminCreatorsPage() {
@@ -24,7 +26,7 @@ export default async function AdminCreatorsPage() {
     getTranslations("nav"),
   ]);
   const supabase = await createClient();
-  const { data, error } = await supabase.from("creator_profiles").select("id, slug, name, pillars, status, user_id, is_fictional, avatar_url, sort_order").order("sort_order").order("name");
+  const { data, error } = await supabase.from("creator_profiles").select("id, slug, name, pillars, status, user_id, is_fictional, avatar_url, sort_order, rights_status").order("sort_order").order("name");
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as CreatorRow[];
 
@@ -76,6 +78,19 @@ export default async function AdminCreatorsPage() {
           {c.is_fictional ? tc("fictional") : tc("no")}
         </Badge>
       ),
+    },
+    {
+      key: "rights",
+      header: t("columns.rights"),
+      hideOnMobile: true,
+      cell: (c) => {
+        const rights = (c.rights_status as RightsStatus) in RIGHTS_VARIANT ? (c.rights_status as RightsStatus) : "fictional";
+        return (
+          <Badge variant={RIGHTS_VARIANT[rights]} size="sm">
+            {t(`rights.${rights}`)}
+          </Badge>
+        );
+      },
     },
     { key: "actions", header: "", align: "right", cell: (c) => <CreatorStatusButton id={c.id} status={c.status} /> },
   ];

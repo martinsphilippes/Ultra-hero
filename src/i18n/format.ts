@@ -35,6 +35,18 @@ export function formatDateTime(value: Date | string | number, locale: Locale, ti
   }).format(new Date(value));
 }
 
+// Data sem hora ("YYYY-MM-DD", ex.: validade de direitos, data de validação) formatada sem
+// deslocamento de fuso: "2026-10-20" é sempre 20/10/2026, em qualquer servidor ou navegador.
+export function formatPlainDate(
+  value: string,
+  locale: Locale,
+  options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "2-digit", year: "numeric" },
+): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!m) return value;
+  return new Intl.DateTimeFormat(locale, { ...options, timeZone: "UTC" }).format(new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))));
+}
+
 const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
   ["year", 1000 * 60 * 60 * 24 * 365],
   ["month", 1000 * 60 * 60 * 24 * 30],
