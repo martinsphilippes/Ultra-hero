@@ -29,3 +29,6 @@ playwright-report/
 
 # Worktrees temporárias de agentes
 .claude/worktrees/
+
+# Cache do Vitest
+.vitest/

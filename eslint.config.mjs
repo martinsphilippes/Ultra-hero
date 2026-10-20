@@ -18,6 +18,11 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Worktrees temporárias de agentes e cache de testes
+      ".claude/**",
+      ".vitest/**",
+      "playwright-report/**",
+      "test-results/**",
       // Assets estáticos (service worker roda em outro contexto global)
       "public/**",
     ],
