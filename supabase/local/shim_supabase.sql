@@ -43,3 +43,13 @@ create table if not exists supabase_migrations.schema_migrations (
 
 grant usage on schema auth, extensions to anon, authenticated, service_role;
 grant execute on all functions in schema auth to anon, authenticated, service_role;
+
+-- Privilégios padrão iguais aos da Supabase: tabelas/sequências/funções novas em public
+-- ficam acessíveis a anon/authenticated/service_role (RLS continua valendo). As migrations
+-- revogam explicitamente o que não deve ser chamado pela API.
+grant all on all tables in schema public to anon, authenticated, service_role;
+grant all on all sequences in schema public to anon, authenticated, service_role;
+grant execute on all functions in schema public to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;

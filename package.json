@@ -6,7 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "messages:check": "tsx scripts/check-messages.ts",
+    "icons": "node scripts/generate-icons.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:rls": "bash scripts/db/test-rls.sh",
+    "db:local:reset": "bash scripts/db/local-reset.sh",
+    "db:types": "supabase gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:5432/ultra_hero_local --schema public > src/lib/supabase/database.types.ts",
+    "eval:recommendations": "tsx scripts/eval-recommendations.ts",
+    "check": "npm run typecheck && npm run lint && npm run messages:check && npm run test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -1291,6 +1291,9 @@ isOneToOne: false
 "is_seller_of":
 { Args: { "p_org": string }; Returns: boolean
                            },
+"is_trusted_call":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "local_date_for":
 { Args: { "p_timezone": string }; Returns: string
                            },
