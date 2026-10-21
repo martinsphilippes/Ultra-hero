@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CONTENT_TILE_SELECT, daySeed, spreadCreators, TILE_PAGE_SIZE, tileCover, tileLabel } from "@/components/discover/explore/tiles";
+import { CONTENT_TILE_SELECT, daySeed, joinSentences, MAX_OFFSET, pageCursor, readGridHistory, spreadCreators, TILE_PAGE_SIZE, tileCover, tileLabel, writeGridHistory } from "@/components/discover/explore/tiles";
 import { PILLARS } from "@/lib/supabase/helpers";
 
 describe("TILE_PAGE_SIZE", () => {
@@ -145,5 +145,52 @@ describe("CONTENT_TILE_SELECT", () => {
     for (const column of ["summary", "duration_minutes", "difficulty", "published_at", "is_featured", "has_captions"]) {
       expect(columns).not.toContain(column);
     }
+  });
+});
+
+describe("pageCursor: fim da grade no teto de offset", () => {
+  it("há próxima página quando veio uma linha a mais e o próximo offset cabe no teto", () => {
+    expect(pageCursor(TILE_PAGE_SIZE + 1, 0)).toEqual({ hasMore: true, nextOffset: TILE_PAGE_SIZE });
+    expect(pageCursor(TILE_PAGE_SIZE, 0)).toEqual({ hasMore: false, nextOffset: TILE_PAGE_SIZE });
+  });
+
+  it("no teto, a grade termina em vez de pedir um offset que a ação recusaria", () => {
+    const last = Math.floor(MAX_OFFSET / TILE_PAGE_SIZE) * TILE_PAGE_SIZE;
+    expect(pageCursor(TILE_PAGE_SIZE + 1, last - TILE_PAGE_SIZE).hasMore).toBe(true);
+    const atCap = pageCursor(TILE_PAGE_SIZE + 1, last);
+    expect(atCap.hasMore).toBe(false);
+    expect(atCap.nextOffset).toBeGreaterThan(MAX_OFFSET);
+  });
+});
+
+describe("estado da grade no histórico", () => {
+  const key = '{"q":"","seed":1,"locale":"pt-BR"}';
+
+  it("escreve sem apagar o que o roteador guarda e lê de volta", () => {
+    const next = writeGridHistory({ __NA: true, tree: [1] }, { key, pages: 3, slug: "pao" });
+    expect(next.__NA).toBe(true);
+    expect(next.tree).toEqual([1]);
+    expect(readGridHistory(next, key)).toEqual({ key, pages: 3, slug: "pao" });
+  });
+
+  it("ignora estado de outra grade, ausente ou malformado", () => {
+    expect(readGridHistory(null, key)).toBeNull();
+    expect(readGridHistory({}, key)).toBeNull();
+    expect(readGridHistory(writeGridHistory({}, { key: "outra", pages: 2, slug: null }), key)).toBeNull();
+    expect(readGridHistory({ exploreGrid: { key, pages: 0 } }, key)).toBeNull();
+    expect(readGridHistory({ exploreGrid: { key, pages: 1.5 } }, key)).toBeNull();
+    expect(readGridHistory({ exploreGrid: { key, pages: 2, slug: 42 } }, key)).toEqual({ key, pages: 2, slug: null });
+  });
+
+  it("limita a profundidade ao teto de offset", () => {
+    const saved = readGridHistory({ exploreGrid: { key, pages: 10_000, slug: null } }, key);
+    expect(saved!.pages * TILE_PAGE_SIZE).toBeLessThanOrEqual(MAX_OFFSET + TILE_PAGE_SIZE);
+  });
+});
+
+describe("joinSentences: anúncio em frases", () => {
+  it("termina cada frase em ponto e descarta vazias", () => {
+    expect(joinSentences(["15 posts a mais carregados", null, "30 posts na grade", ""])).toBe("15 posts a mais carregados. 30 posts na grade.");
+    expect(joinSentences(["Pronto!", "Fim."])).toBe("Pronto! Fim.");
   });
 });

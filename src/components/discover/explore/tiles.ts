@@ -7,6 +7,16 @@ import type { Pillar } from "@/lib/supabase/helpers";
 /** Quadros por carga: 15 = 5 linhas de 3 colunas. */
 export const TILE_PAGE_SIZE = 15;
 
+/** Maior offset aceito (cerca de 333 cargas): limita o custo de OFFSET no banco. */
+export const MAX_OFFSET = 5000;
+
+// Cursor da próxima página. Ao chegar ao teto, a grade termina (hasMore=false) em vez de pedir um
+// offset que a ação recusaria e virar um erro permanente de "tentar de novo".
+export function pageCursor(rowCount: number, offset: number): { hasMore: boolean; nextOffset: number } {
+  const nextOffset = offset + TILE_PAGE_SIZE;
+  return { hasMore: rowCount > TILE_PAGE_SIZE && nextOffset <= MAX_OFFSET, nextOffset };
+}
+
 /** Semente do feed: muda uma vez por dia (UTC) para a ordem rotacionar sem quebrar a paginação. */
 export function daySeed(now: Date = new Date()): number {
   return Math.floor(now.getTime() / 86_400_000);
@@ -58,3 +68,35 @@ export type ContentTileData = Pick<
 export const CONTENT_TILE_SELECT =
   "id, slug, title, cover_url, pillar, type, access_level, source_locale, " +
   "required_module:plan_modules(code, name), creator:creator_profiles(slug, name, avatar_url)";
+
+// ---------------------------------------------------------------- volta do conteúdo para a grade
+// Ao abrir um quadro, a profundidade da grade (páginas carregadas) e o quadro aberto ficam guardados
+// (sessionStorage da aba). Ao voltar pelo histórico, a grade recarrega as páginas e devolve a posição.
+
+export type GridHistory = { key: string; pages: number; slug: string | null };
+
+const HISTORY_FIELD = "exploreGrid";
+
+/** Lê o estado salvo para esta grade (mesma busca, semente e idioma); null se não houver ou não bater. */
+export function readGridHistory(state: unknown, key: string): GridHistory | null {
+  if (!state || typeof state !== "object") return null;
+  const raw = (state as Record<string, unknown>)[HISTORY_FIELD];
+  if (!raw || typeof raw !== "object") return null;
+  const { key: k, pages, slug } = raw as Record<string, unknown>;
+  if (k !== key || typeof pages !== "number" || !Number.isInteger(pages) || pages < 1) return null;
+  return { key, pages: Math.min(pages, Math.floor(MAX_OFFSET / TILE_PAGE_SIZE) + 1), slug: typeof slug === "string" && slug ? slug : null };
+}
+
+/** Novo objeto de estado: preserva os outros campos e só troca o da grade. */
+export function writeGridHistory(state: unknown, value: GridHistory): Record<string, unknown> {
+  const base = state && typeof state === "object" ? (state as Record<string, unknown>) : {};
+  return { ...base, [HISTORY_FIELD]: value };
+}
+
+/** Frases do anúncio ao leitor de tela, cada uma terminada em ponto. */
+export function joinSentences(parts: Array<string | null | undefined>): string {
+  return parts
+    .filter((part): part is string => Boolean(part && part.trim()))
+    .map((part) => (/[.!?…]$/.test(part.trim()) ? part.trim() : `${part.trim()}.`))
+    .join(" ");
+}

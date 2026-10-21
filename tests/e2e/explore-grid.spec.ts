@@ -97,4 +97,53 @@ test.describe("grade do Explorar", () => {
     // Com menos de uma carga, não há mais nada para carregar.
     await expect(page.getByRole("button", { name: "Carregar mais" })).toHaveCount(0);
   });
+  test("quadro focado pelo teclado mostra o indicador pintado acima da capa", async ({ page }) => {
+    await page.goto("/explore");
+    const tile = firstPage(page).first();
+    await expect(tile).toBeVisible();
+    await tile.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(tile).toBeFocused();
+    const ring = tile.locator("[data-focus-ring]");
+    await expect(ring).toHaveCSS("opacity", "1");
+    // O indicador vem depois da imagem no DOM, então é pintado por cima dela.
+    const ringAfterImage = await tile.evaluate((link) => {
+      const img = link.querySelector("img");
+      const span = link.querySelector("[data-focus-ring]");
+      return Boolean(img && span && img.compareDocumentPosition(span) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(ringAfterImage).toBe(true);
+  });
+
+  test("cada nova carga gera um anúncio com o total na grade", async ({ page }) => {
+    await page.goto("/explore");
+    await expect(firstPage(page)).toHaveCount(15);
+    await page.getByTestId("explore-sentinel").scrollIntoViewIfNeeded();
+    await expect(page.getByTestId("explore-announce")).toContainText("30 posts na grade", { timeout: 15_000 });
+  });
+
+  test("voltar de um conteúdo do 2º lote devolve a grade com as páginas e o quadro à vista", async ({ page }) => {
+    await page.goto("/explore");
+    await expect(firstPage(page)).toHaveCount(15);
+    await page.getByTestId("explore-sentinel").scrollIntoViewIfNeeded();
+    await expect(async () => {
+      expect(await allTiles(page).count()).toBeGreaterThanOrEqual(30);
+    }).toPass({ timeout: 20_000 });
+    // Espera a grade assentar (nenhuma carga em andamento) antes de abrir o quadro.
+    await expect(page.getByText("Carregando mais posts…")).toHaveCount(0);
+    await page.waitForTimeout(500);
+    await expect(page.getByText("Carregando mais posts…")).toHaveCount(0);
+    const target = page.getByTestId("explore-grid").locator(".contents a").first();
+    const href = await target.getAttribute("href");
+    await target.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await page.goBack();
+    await expect(page).toHaveURL(/\/explore$/);
+    await expect(async () => {
+      expect(await allTiles(page).count()).toBeGreaterThanOrEqual(30);
+    }).toPass({ timeout: 20_000 });
+    const back = page.getByTestId("explore-grid").locator(`a[href="${href}"]`);
+    await expect(back).toBeInViewport();
+  });
 });

@@ -616,6 +616,28 @@ begin
     and (select bool_and(l.id = any (v_all)) from t_s19_live l));
 end $s19$;
 
+-- 4b) search_content (0023): desempate único por id; páginas por offset estáveis, disjuntas e completas
+do $s19b$
+declare v_a text; v_b text; v_all uuid[] := '{}'; v_page uuid[]; v_off int := 0;
+begin
+  select string_agg(id::text, ',' order by ordinality) into v_a from public.search_content('', null, null, null, null, 100, 0) with ordinality;
+  select string_agg(id::text, ',' order by ordinality) into v_b from public.search_content('', null, null, null, null, 100, 0) with ordinality;
+  perform tests.ok('S19 search_content: duas chamadas iguais devolvem a mesma sequência de ids', v_a is not null and v_a = v_b);
+  loop
+    select coalesce(array_agg(id order by ordinality), '{}') into v_page from public.search_content('', null, null, null, null, 15, v_off) with ordinality;
+    exit when cardinality(v_page) = 0;
+    if v_off > 0 and v_page && v_all then
+      perform tests.ok(format('S19 search_content: página offset %s repete id de página anterior', v_off), false);
+    end if;
+    v_all := v_all || v_page; v_off := v_off + 15;
+  end loop;
+  perform tests.ok('S19 search_content: páginas de 15 cobrem todo o catálogo no ar sem repetição',
+    cardinality(v_all) = (select count(*) from t_s19_live)
+    and (select count(distinct u) from unnest(v_all) u) = cardinality(v_all));
+  perform tests.ok('S19 search_content termina o ORDER BY em c.id (desempate único)',
+    pg_get_functiondef('public.search_content(text, public.pillar, public.content_type, uuid, public.access_level, int, int, text)'::regprocedure) ~ 'published_at desc, c\.id');
+end $s19b$;
+
 -- 5) semente diferente muda a ordem
 select tests.ok('S19 semente diferente muda a ordem (10 primeiros com sementes 7 e 8)',
   (select string_agg(id::text, ',' order by ordinality) from public.explore_feed(null, null, null, null, 7, 10, 0) with ordinality)

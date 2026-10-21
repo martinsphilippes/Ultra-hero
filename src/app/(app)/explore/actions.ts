@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ACCESS_LEVELS, DIFFICULTIES, MAX_QUERY_LENGTH } from "@/components/discover/explore/params";
 import { exploreFeedPage } from "@/components/discover/explore/feed";
 import { renderContentTiles } from "@/components/discover/explore/renderTiles";
-import { TILE_PAGE_SIZE } from "@/components/discover/explore/tiles";
+import { MAX_OFFSET, TILE_PAGE_SIZE } from "@/components/discover/explore/tiles";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
 import { CONTENT_TYPES, PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
@@ -45,8 +45,8 @@ const tilesSchema = z.object({
   access: z.enum(ACCESS_LEVELS).optional(),
   difficulty: z.enum(DIFFICULTIES).optional(),
   // A semente vem do cliente para a página seguinte continuar a MESMA ordem da primeira (virada de dia no meio da rolagem não repete nem pula).
-  seed: z.number().int().min(0),
-  offset: z.number().int().min(0).max(5000),
+  seed: z.number().int().min(0).max(2_147_483_647),
+  offset: z.number().int().min(0).max(MAX_OFFSET),
 });
 
 export type LoadMoreTilesInput = z.infer<typeof tilesSchema>;

@@ -1,5 +1,6 @@
 import { SearchX } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { getLocale } from "@/i18n/server";
 import Link from "next/link";
 import { ContentTile } from "@/components/catalog";
 import { Button, EmptyState } from "@/components/ui";
@@ -18,6 +19,10 @@ export async function SearchResults({ params }: { params: ExploreParams }) {
   const queryKey = JSON.stringify(query);
   const hasCriteria = Boolean(params.q) || activeFilterCount(params) > 0;
   const seed = daySeed();
+  // A grade remonta quando muda o que gerou a 1ª página: busca, semente (virada do dia) ou idioma.
+  // Qualquer re-render do servidor (troca de idioma/tema, renovação de sessão numa action) preserva o
+  // estado do cliente; sem a semente e o idioma na key, os lotes antigos ficariam misturados aos novos.
+  const gridKey = JSON.stringify({ ...query, seed, locale: await getLocale() });
 
   let page: FeedPage;
   try {
@@ -53,7 +58,7 @@ export async function SearchResults({ params }: { params: ExploreParams }) {
       {hasCriteria && <SearchTracker queryKey={queryKey} qLen={params.q.length} pillar={params.pillar} type={params.type} />}
       {params.q ? <h2 className="type-h3 text-fg">{t("resultsFor", { q: params.q })}</h2> : <h2 className="sr-only">{t("resultsHeading")}</h2>}
 
-      <TileGrid key={queryKey} query={query} seed={seed} nextOffset={page.nextOffset} hasMore={page.hasMore} initialCount={page.items.length}>
+      <TileGrid key={gridKey} gridKey={gridKey} query={query} seed={seed} nextOffset={page.nextOffset} hasMore={page.hasMore} initialCount={page.items.length}>
         {page.items.map((item, index) => (
           <ContentTile key={item.id} content={item} priority={index < 3} />
         ))}

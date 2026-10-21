@@ -36,7 +36,9 @@ export async function ContentTile({ content, priority, className }: Props) {
       href={`/content/${content.slug}`}
       className={cn(
         "group relative block aspect-square overflow-hidden bg-surface-elevated",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus",
+        // O outline global vazaria sob os vizinhos (gap de 2px) e um ring no próprio link fica atrás da
+        // <Image fill>; o indicador é o span abaixo, pintado depois da imagem.
+        "focus-visible:outline-none",
         className,
       )}
     >
@@ -57,6 +59,11 @@ export async function ContentTile({ content, priority, className }: Props) {
       ) : premium ? (
         <Lock aria-hidden="true" className="absolute bottom-1.5 left-1.5 size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
       ) : null}
+      <span
+        aria-hidden="true"
+        data-focus-ring=""
+        className="pointer-events-none absolute inset-0 opacity-0 ring-[3px] ring-inset ring-focus group-focus-visible:opacity-100"
+      />
     </Link>
   );
 }

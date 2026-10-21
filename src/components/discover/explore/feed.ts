@@ -1,9 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { ExploreParams } from "./params";
-import { CONTENT_TILE_SELECT, spreadCreators, TILE_PAGE_SIZE, type ContentTileData } from "./tiles";
-
-const MAX_OFFSET = 5000;
+import { CONTENT_TILE_SELECT, MAX_OFFSET, pageCursor, spreadCreators, TILE_PAGE_SIZE, type ContentTileData } from "./tiles";
 
 export type SearchQuery = Omit<ExploreParams, "tab">;
 export type FeedPage = { items: ContentTileData[]; hasMore: boolean; nextOffset: number };
@@ -18,12 +16,13 @@ export async function exploreFeedPage(query: SearchQuery, seed: number, offset: 
   const q = query.q.trim();
 
   const { data, error } = q
-    ? await supabase.rpc("search_content", { p_query: q, ...filters, p_limit: TILE_PAGE_SIZE + 1, p_offset: safeOffset })
-    : await supabase.rpc("explore_feed", { ...filters, p_seed: Math.max(0, Math.trunc(seed) || 0), p_limit: TILE_PAGE_SIZE + 1, p_offset: safeOffset });
+    ? await supabase.rpc("search_content", { p_query: q, ...filters, p_limit: TILE_PAGE_SIZE + 1, p_offset: safeOffset }).select("id")
+    : await supabase.rpc("explore_feed", { ...filters, p_seed: Math.max(0, Math.trunc(seed) || 0), p_limit: TILE_PAGE_SIZE + 1, p_offset: safeOffset }).select("id");
   if (error) throw error;
 
   const rows = data ?? [];
-  const hasMore = rows.length > TILE_PAGE_SIZE;
+  // Só os ids voltam da RPC (select("id")): os dados do quadro vêm na consulta seguinte.
+  const { hasMore, nextOffset } = pageCursor(rows.length, safeOffset);
   const ids = rows.slice(0, TILE_PAGE_SIZE).map((row) => row.id);
   if (ids.length === 0) return { items: [], hasMore: false, nextOffset: safeOffset };
 
@@ -33,5 +32,5 @@ export async function exploreFeedPage(query: SearchQuery, seed: number, offset: 
   const byId = new Map((tiles as unknown as ContentTileData[]).map((tile) => [tile.id, tile]));
   const items = ids.map((id) => byId.get(id)).filter((tile): tile is ContentTileData => Boolean(tile));
   // Com texto a ordem é por relevância; só o feed ganha o afastamento de vizinhos do mesmo herói.
-  return { items: q ? items : spreadCreators(items), hasMore, nextOffset: safeOffset + TILE_PAGE_SIZE };
+  return { items: q ? items : spreadCreators(items), hasMore, nextOffset };
 }
