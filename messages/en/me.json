@@ -157,7 +157,15 @@
       }
     },
     "signOut": "Sign out",
-    "demoNote": "Demo environment: fictional heroes, simulated subscription, no real payments."
+    "demoNote": "Demo environment: fictional heroes, simulated subscription, no real payments.",
+    "evolution": {
+      "title": "Progress",
+      "description": "Your streak and how far you've come.",
+      "streakLabel": "Current streak",
+      "streakDays": "{n, plural, =0 {0 days} =1 {1 day} other {# days}}",
+      "completions": "{n, plural, =0 {No content completed yet} =1 {1 piece of content completed} other {# pieces of content completed}}",
+      "open": "See progress"
+    }
   },
   "today": {
     "eyebrow": "Today · {date}",

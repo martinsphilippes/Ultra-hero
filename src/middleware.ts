@@ -4,7 +4,7 @@ import { isLibraryKey } from "@/lib/catalog/creator-libraries";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
-const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/evolution", "/profile", "/cart", "/checkout", "/orders", "/onboarding"];
+const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profile", "/cart", "/checkout", "/orders", "/onboarding"];
 
 function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -33,16 +33,27 @@ function heroHubResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 308);
 }
 
+// A Evolução virou seção do Perfil. A rota antiga pode estar em favoritos, atalhos ou e-mails,
+// então vira 308 permanente (preservando a query) antes da checagem de sessão.
+const LEGACY_EVOLUTION = /^\/evolution(?:\/.*)?$/;
+
+function legacyEvolutionResponse(request: NextRequest): NextResponse | null {
+  if (!LEGACY_EVOLUTION.test(request.nextUrl.pathname)) return null;
+  const target = request.nextUrl.clone();
+  target.pathname = "/profile/evolution";
+  return NextResponse.redirect(target, 308);
+}
+
 export async function middleware(request: NextRequest) {
   // Renova a sessão (cookies) em toda requisição.
   const response = await updateSession(request);
 
   const { pathname, search } = request.nextUrl;
-  const hero = heroHubResponse(request);
-  if (hero) {
+  const early = heroHubResponse(request) ?? legacyEvolutionResponse(request);
+  if (early) {
     // Mantém os cookies renovados na resposta.
-    for (const cookie of response.cookies.getAll()) hero.cookies.set(cookie);
-    return hero;
+    for (const cookie of response.cookies.getAll()) early.cookies.set(cookie);
+    return early;
   }
   if (!isProtected(pathname)) return response;
 

@@ -19,10 +19,29 @@ test.describe("visitante", () => {
   });
 
   test("rotas protegidas redirecionam para login", async ({ page }) => {
-    for (const route of ["/evolution", "/profile", "/profile/notifications", "/admin", "/admin/feedback", "/creator", "/seller", "/orders"]) {
+    for (const route of ["/profile/evolution", "/profile", "/profile/notifications", "/admin", "/admin/feedback", "/creator", "/seller", "/orders"]) {
       await page.goto(route);
       await expect(page).toHaveURL(/\/login\?next=/);
     }
+  });
+
+  test("a rota antiga da Evolução vira 308 para o Perfil, preservando a query", async ({ request }) => {
+    for (const [from, to] of [
+      ["/evolution", /\/profile\/evolution$/],
+      ["/evolution?x=1", /\/profile\/evolution\?x=1$/],
+    ] as const) {
+      const res = await request.get(from, { maxRedirects: 0 });
+      expect(res.status()).toBe(308);
+      expect(res.headers()["location"]).toMatch(to);
+    }
+  });
+
+  test("navegação principal tem 4 abas e a Evolução não é uma delas", async ({ page }) => {
+    await page.goto("/explore");
+    const nav = page.getByRole("navigation", { name: "Navegação principal" }).filter({ visible: true }).first();
+    const links = nav.getByRole("link");
+    await expect(links).toHaveCount(4);
+    await expect(links).toHaveText(["Início", "Explorar", "Heróis", "Perfil"]);
   });
 
   // helena-vilar: personalidade do seed (0008) com vínculos validados (g1→m1, g3→k1, g5→m4, g9→k3).

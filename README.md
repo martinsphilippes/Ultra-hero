@@ -80,7 +80,7 @@ Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**
 
 ## Módulos
 
-- **Consumidor**: Início (curadoria → recomendações), Explorar (busca, filtros, programas, produtos, listas), Personalidades, Conteúdo (gate server-side, player abstrato, conclusão, favoritos), Programas (versionados, substituições, certificado simbólico em PDF), Evolução (streak, conquistas), Perfil (planos simulados, interesses, conta/exclusão), Loja/carrinho/checkout/pedidos **de teste**.
+- **Consumidor**: Início (curadoria → recomendações), Explorar (busca, filtros, programas, produtos, listas), Heróis (hub de bibliotecas por herói), Conteúdo (gate server-side, player abstrato, conclusão, favoritos), Programas (versionados, substituições, certificado simbólico em PDF), Perfil ("Hoje" com ritmo do dia, hidratação e descanso locais; Evolução com streak e conquistas em `/profile/evolution`; planos simulados, interesses, conta/exclusão). A barra inferior tem 4 abas: Início, Explorar, Heróis e Perfil, Loja/carrinho/checkout/pedidos **de teste**.
 - **Portais**: Personalidade (`/creator`), Fornecedor (`/seller`), Administração (`/admin`).
 - **Sistema**: cron diário (transporte simulado, retenção, renovações), certificados, recomendações.
 

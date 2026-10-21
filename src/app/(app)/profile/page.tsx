@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, ChevronRight, CreditCard, Heart, LogOut, Package, Shield, ShieldCheck, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
+import { Bell, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
@@ -57,13 +57,17 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
-  const [{ data: subscriptionRaw }, routineRes, checksRes, enrollmentsRes, completionsRes] = await Promise.all([
+  const [{ data: subscriptionRaw }, routineRes, checksRes, enrollmentsRes, completionsRes, streakRes] = await Promise.all([
     supabase.rpc("my_subscription"),
     supabase.from("routine_items").select("id, title, note, time_of_day, weekdays, active, sort_order").eq("user_id", user.id).eq("active", true).order("sort_order"),
     supabase.from("routine_checks").select("item_id, done").eq("user_id", user.id).eq("local_date", today),
     supabase.from("enrollments").select(ENROLLMENT_SELECT).eq("user_id", user.id).eq("status", "active").order("enrolled_at", { ascending: false }),
     supabase.from("completions").select("content_id").eq("user_id", user.id).limit(2000),
+    supabase.rpc("compute_streak", { p_user: user.id, p_timezone: tz }),
   ]);
+  // Resumo da Evolução (a página completa fica em /profile/evolution).
+  const currentStreak = Number(streakRes.data ?? 0);
+  const completionsCount = (completionsRes.data ?? []).length;
   const subscription = parseSubscription(subscriptionRaw);
 
   // Ritmo de hoje: itens manuais válidos na data local + próximos itens obrigatórios dos programas.
@@ -103,6 +107,26 @@ export default async function ProfilePage() {
 
       {/* Hoje: ritmo do dia (banco) + hidratação e descanso (só no aparelho) */}
       <TodaySection localDate={today} suggestions={suggestions} items={routineItems} />
+
+      {/* Evolução: resumo; a página completa virou subpágina do Perfil */}
+      <section aria-labelledby="evolution-title" className="flex flex-col gap-4 rounded-2xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-surface p-5 sm:flex-row sm:items-center" data-testid="profile-evolution">
+        <div className="flex flex-1 items-center gap-4">
+          <span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-fg shadow-sm">
+            <Flame className="size-6" />
+          </span>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <h2 id="evolution-title" className="type-h3 text-fg">
+              {t("evolution.title")}
+            </h2>
+            <p className="type-overline text-accent-text">{t("evolution.streakLabel")}</p>
+            <p className="type-h2 type-numeric text-fg">{t("evolution.streakDays", { n: currentStreak })}</p>
+            <p className="type-caption text-fg-muted">{t("evolution.completions", { n: completionsCount })}</p>
+          </div>
+        </div>
+        <Button asChild variant="secondary" trailingIcon={<ChevronRight />}>
+          <Link href="/profile/evolution">{t("evolution.open")}</Link>
+        </Button>
+      </section>
 
       {/* Visão geral */}
       <section aria-label={t("title")} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start">

@@ -65,7 +65,7 @@ function toRow(data: z.infer<typeof itemSchema>) {
 
 function revalidateToday() {
   revalidatePath("/profile");
-  revalidatePath("/evolution");
+  revalidatePath("/profile/evolution");
 }
 
 // ---------------------------------------------------------------- itens manuais

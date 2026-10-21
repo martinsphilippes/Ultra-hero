@@ -157,7 +157,15 @@
       }
     },
     "signOut": "Sair da conta",
-    "demoNote": "Ambiente de demonstração: heróis fictícios, assinatura simulada, nenhum pagamento real."
+    "demoNote": "Ambiente de demonstração: heróis fictícios, assinatura simulada, nenhum pagamento real.",
+    "evolution": {
+      "title": "Evolução",
+      "description": "Sua sequência e o caminho até aqui.",
+      "streakLabel": "Sequência atual",
+      "streakDays": "{n, plural, =0 {0 dias} =1 {1 dia} other {# dias}}",
+      "completions": "{n, plural, =0 {Nenhum conteúdo concluído ainda} =1 {1 conteúdo concluído} other {# conteúdos concluídos}}",
+      "open": "Ver evolução"
+    }
   },
   "today": {
     "eyebrow": "Hoje · {date}",

@@ -79,7 +79,7 @@ describe("createRoutineItem", () => {
     const result = await createRoutineItem({ title: "  Alongar  ", note: "", timeOfDay: "07:30", weekdays: [5, 1, 1, 3] });
     expect(result).toEqual({ ok: true, id: ITEM_ID });
     expect(server.writes[0]).toMatchObject({ table: "routine_items", op: "insert", payload: { user_id: USER_ID, title: "Alongar", note: null, time_of_day: "07:30:00", weekdays: [1, 3, 5] } });
-    expect(server.revalidated).toEqual(["/profile", "/evolution"]);
+    expect(server.revalidated).toEqual(["/profile", "/profile/evolution"]);
   });
 
   it("sete dias marcados viram null (todos os dias) e sem horário fica null", async () => {
@@ -142,7 +142,7 @@ describe("deleteRoutineItem", () => {
       ["id", ITEM_ID],
       ["user_id", USER_ID],
     ]);
-    expect(server.revalidated).toEqual(["/profile", "/evolution"]);
+    expect(server.revalidated).toEqual(["/profile", "/profile/evolution"]);
   });
 
   it("erro do banco vira failed", async () => {
@@ -156,7 +156,7 @@ describe("toggleRoutineItem", () => {
     const result = await toggleRoutineItem({ itemId: ITEM_ID, done: true, timezone: "America/Sao_Paulo" });
     expect(result).toEqual({ ok: true, check: { done: true, localDate: "2026-10-21", streak: 3 } });
     expect(server.rpcs).toEqual([{ fn: "routine_check", args: { p_item: ITEM_ID, p_timezone: "America/Sao_Paulo", p_done: true } }]);
-    expect(server.revalidated).toEqual(["/profile", "/evolution"]);
+    expect(server.revalidated).toEqual(["/profile", "/profile/evolution"]);
   });
 
   it("desmarcar passa p_done=false e tolera retorno parcial", async () => {

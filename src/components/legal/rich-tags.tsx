@@ -29,7 +29,7 @@ export const legalRichTags = {
   profile: linkTo("/profile"),
   interests: linkTo("/profile/interests"),
   plan: linkTo("/profile/plan"),
-  evolution: linkTo("/evolution"),
+  evolution: linkTo("/profile/evolution"),
   orders: linkTo("/orders"),
   forgot: linkTo("/forgot-password"),
 } satisfies RichTranslationValues;

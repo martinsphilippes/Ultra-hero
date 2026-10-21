@@ -1,33 +1,14 @@
 "use client";
 
-import { Compass, Home, TrendingUp, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentType, SVGProps } from "react";
 import { cn } from "@/lib/utils";
+import { isActivePath, NAV_ITEMS } from "./nav-items";
 
-type NavItem = {
-  key: "home" | "explore" | "personalities" | "evolution" | "profile";
-  href: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
-};
+export { isActivePath, NAV_ITEMS };
 
-// Exatamente 5 abas do consumidor.
-export const NAV_ITEMS: readonly NavItem[] = [
-  { key: "home", href: "/", icon: Home },
-  { key: "explore", href: "/explore", icon: Compass },
-  { key: "personalities", href: "/personalities", icon: Users },
-  { key: "evolution", href: "/evolution", icon: TrendingUp },
-  { key: "profile", href: "/profile", icon: User },
-];
-
-export function isActivePath(pathname: string, href: string) {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-// Barra inferior (mobile): 5 abas com ícone + rótulo e aria-current.
+// Barra inferior (mobile): 4 abas com ícone + rótulo e aria-current.
 export function BottomNav() {
   const t = useTranslations("nav");
   const ta = useTranslations("common.a11y");
@@ -38,7 +19,7 @@ export function BottomNav() {
       aria-label={ta("mainNavigation")}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/90 backdrop-blur-md safe-bottom md:hidden"
     >
-      <ul className="mx-auto grid h-bottomnav max-w-content grid-cols-5">
+      <ul className="mx-auto grid h-bottomnav max-w-content grid-cols-4">
         {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
           const active = isActivePath(pathname, href);
           return (

@@ -19,7 +19,7 @@ Princípio central: **o cliente nunca decide permissão, preço ou direito de ac
 
 | Área | Rotas | Quem acessa |
 |---|---|---|
-| Consumidor | `/`, `/explore`, `/personalities/*`, `/content/[slug]`, `/programs/[slug]`, `/evolution`, `/profile/*`, `/onboarding`, `/shop/*`, `/cart`, `/checkout`, `/orders/*`, `/verify/[code]` | visitante (catálogo) / consumidor logado (consumo, listas, pedidos de teste) |
+| Consumidor | `/`, `/explore`, `/personalities/*`, `/content/[slug]`, `/programs/[slug]`, `/profile/*` (inclui `/profile/evolution`; `/evolution` responde 308), `/onboarding`, `/shop/*`, `/cart`, `/checkout`, `/orders/*`, `/verify/[code]` | visitante (catálogo) / consumidor logado (consumo, listas, pedidos de teste) |
 | Portal da personalidade | `/creator/*` | papel `creator` por convite |
 | Portal do fornecedor | `/seller/*` | papel `seller` por convite (escopo = organização) |
 | Administração | `/admin/*` | papel `admin` (global) |

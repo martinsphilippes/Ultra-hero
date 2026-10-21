@@ -44,7 +44,7 @@ type RequiredItem = FnReturns<"program_required_items">[number];
 const TYPE_ICON = { video: PlayCircle, recipe: ChefHat, workout: Dumbbell, guide: BookOpen, article: FileText } as const;
 
 export default async function EvolutionPage() {
-  const user = await requireUser("/evolution");
+  const user = await requireUser("/profile/evolution");
   const [profile, locale, t, tc] = await Promise.all([getProfile(), getLocale(), getTranslations("me.evolution"), getTranslations("common")]);
   const uiLocale = locale as Locale;
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
@@ -130,7 +130,7 @@ export default async function EvolutionPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} />
+      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} backHref="/profile" backLabel={tc("actions.back")} />
 
       {isNew ? (
         <div className="rounded-2xl border border-dashed border-border-strong bg-surface/60">
