@@ -1347,6 +1347,47 @@ isOneToOne: false
 "evaluate_achievements":
 { Args: { "p_timezone"?: string,"p_user": string }; Returns: string[]
                            },
+"explore_feed":
+{ Args: { "p_access"?: Database["public"]['Enums']["access_level"],"p_difficulty"?: string,"p_limit"?: number,"p_offset"?: number,"p_pillar"?: Database["public"]['Enums']["pillar"],"p_seed"?: number,"p_type"?: Database["public"]['Enums']["content_type"] }; Returns: {
+              "access_level": Database["public"]['Enums']["access_level"] | null,
+"archived_at": string | null,
+"completion_mode": Database["public"]['Enums']["completion_mode"] | null,
+"cover_url": string | null,
+"created_at": string,
+"created_by": string | null,
+"creator_id": string | null,
+"creator_link_origin": string | null,
+"difficulty": string | null,
+"disclaimer_kind": string | null,
+"duration_minutes": number | null,
+"featured_rank": number | null,
+"has_captions": boolean,
+"id": string,
+"is_featured": boolean,
+"media_credit": string | null,
+"media_license_kind": string,
+"media_license_ref": string | null,
+"pillar": Database["public"]['Enums']["pillar"],
+"publish_at": string | null,
+"published_at": string | null,
+"required_module_id": string | null,
+"review_status": Database["public"]['Enums']["review_status"],
+"search": unknown,
+"slug": string,
+"source_locale": Database["public"]['Enums']["locale_code"],
+"status": Database["public"]['Enums']["content_status"],
+"summary": string | null,
+"tags": (string)[],
+"title": string,
+"type": Database["public"]['Enums']["content_type"],
+"updated_at": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "content"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "f_unaccent":
 { Args: { "": string }; Returns: string
                            },
