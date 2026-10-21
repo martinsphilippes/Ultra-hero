@@ -850,6 +850,204 @@ select tests.ok('S20 grants: anon só select; authenticated sem update (status m
 select tests.ok('S20 excluir o produto ou o herói leva a alocação junto (on delete cascade nas duas chaves)',
   (select count(*) from pg_constraint where conrelid = 'public.creator_products'::regclass and contype = 'f' and confdeltype = 'c') = 2);
 
+-- ================================================================ S21 · rotina do dia: routine_items, routine_checks, routine_check, compute_streak (0022)
+-- "Hoje" dentro do Perfil: itens de rotina só do dono (política única routine_items_own; até 20 ativos pelo
+-- gatilho) e marcação diária lida pelo dono e escrita só pela RPC routine_check (security definer: exige item
+-- próprio e ativo e calcula a data local pelo fuso). compute_streak conta um dia com conclusão de conteúdo OU
+-- item de rotina marcado. consumer2 foi excluído no S11: a segunda pessoa aqui é s21 (…0021), criada neste
+-- cenário sem nenhuma conclusão (isola a contagem da sequência) e apagada no fim (cascade, padrão do S17).
+select tests.su();
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000021', 's21@test.local');
+
+-- 1) consumer1 cria e edita itens; checks de título, nota e weekdays; limite de 20 ativos
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+insert into public.routine_items (id, user_id, title, note, time_of_day, weekdays, content_id, sort_order) values
+  ('60000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 'Alongar ao acordar', 'Cinco minutos bastam', '07:00', array[1, 2, 3, 4, 5]::smallint[], null, 10),
+  ('60000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 'Respiração antes de dormir', null, null, null, public.seed_uuid('content:r1'), 20),
+  ('60000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000002', 'Caminhada longa', null, '18:30', array[0, 6]::smallint[], null, 30);
+select tests.ok('S21 consumer1 cria itens com e sem horário, weekdays válidos e null (todos os dias), com e sem conteúdo vinculado',
+  (select count(*) from public.routine_items) = 3
+  and (select time_of_day = '07:00'::time and weekdays = array[1, 2, 3, 4, 5]::smallint[] and content_id is null and active and sort_order = 10 and note = 'Cinco minutos bastam'
+       from public.routine_items where id = '60000000-0000-4000-8000-000000000001')
+  and (select time_of_day is null and weekdays is null and content_id = public.seed_uuid('content:r1') and note is null and sort_order = 20
+       from public.routine_items where id = '60000000-0000-4000-8000-000000000002')
+  and (select time_of_day = '18:30'::time and weekdays = array[0, 6]::smallint[] from public.routine_items where id = '60000000-0000-4000-8000-000000000003'));
+update public.routine_items set title = 'Alongar ao acordar (10 min)', time_of_day = '06:45', weekdays = array[1, 3, 5]::smallint[], sort_order = 5 where id = '60000000-0000-4000-8000-000000000001';
+select tests.ok('S21 consumer1 edita o próprio item', (select title = 'Alongar ao acordar (10 min)' and time_of_day = '06:45'::time and weekdays = array[1, 3, 5]::smallint[] and sort_order = 5
+  from public.routine_items where id = '60000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S21 consumer1 não transfere o item para outra pessoa', $q$update public.routine_items set user_id = '10000000-0000-4000-8000-000000000021' where id = '60000000-0000-4000-8000-000000000001'$q$, '42501');
+-- checks do banco, pelo nome da constraint: assim 23514 aqui nunca se confunde com o routine_limit do gatilho
+select tests.expect_error('S21 título vazio (só espaços) é recusado pelo check', $q$insert into public.routine_items (user_id, title) values ('10000000-0000-4000-8000-000000000002', '   ')$q$, 'violates check constraint "routine_items_title_check"');
+select tests.expect_error('S21 título com 81 caracteres é recusado pelo check', $q$insert into public.routine_items (user_id, title) values ('10000000-0000-4000-8000-000000000002', repeat('a', 81))$q$, 'violates check constraint "routine_items_title_check"');
+select tests.expect_error('S21 nota com 121 caracteres é recusada pelo check', $q$insert into public.routine_items (user_id, title, note) values ('10000000-0000-4000-8000-000000000002', 'Nota longa', repeat('n', 121))$q$, 'violates check constraint "routine_items_note_check"');
+select tests.expect_error('S21 weekdays [7] é recusado pelo check', $q$insert into public.routine_items (user_id, title, weekdays) values ('10000000-0000-4000-8000-000000000002', 'Dia inválido', array[7]::smallint[])$q$, 'violates check constraint "routine_items_weekdays_check"');
+select tests.expect_error('S21 weekdays [-1] é recusado pelo check', $q$insert into public.routine_items (user_id, title, weekdays) values ('10000000-0000-4000-8000-000000000002', 'Dia negativo', array[-1]::smallint[])$q$, 'violates check constraint "routine_items_weekdays_check"');
+select tests.expect_error('S21 weekdays [] é recusado pelo check', $q$insert into public.routine_items (user_id, title, weekdays) values ('10000000-0000-4000-8000-000000000002', 'Sem dia', '{}'::smallint[])$q$, 'violates check constraint "routine_items_weekdays_check"');
+-- weekdays repetido passa no check (subconjunto de 0..6 com cardinalidade 1..7): a normalização fica no app
+insert into public.routine_items (id, user_id, title, weekdays, active) values ('60000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000002', 'Dia repetido', array[1, 1]::smallint[], false);
+select tests.ok('S21 weekdays duplicado ([1,1]) é aceito pelo check (o app normaliza antes de gravar)', (select weekdays = array[1, 1]::smallint[] and not active from public.routine_items where id = '60000000-0000-4000-8000-000000000005'));
+insert into public.routine_items (id, user_id, title, note) values ('60000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000002', repeat('t', 80), repeat('n', 120));
+select tests.ok('S21 limites do check: título com 80 e nota com 120 caracteres são aceitos', exists (select 1 from public.routine_items where id = '60000000-0000-4000-8000-000000000006' and char_length(title) = 80 and char_length(note) = 120));
+insert into public.routine_items (user_id, title, sort_order) select '10000000-0000-4000-8000-000000000002', 'Item de rotina ' || i, 100 + i from generate_series(1, 16) i;
+select tests.ok('S21 20 itens ativos (o inativo não conta para o limite)', (select count(*) from public.routine_items where active) = 20 and (select count(*) from public.routine_items) = 21);
+do $s21$
+begin
+  begin
+    insert into public.routine_items (user_id, title) values ('10000000-0000-4000-8000-000000000002', 'Item 21');
+    raise exception 'FAIL S21 o 21º item ativo foi aceito';
+  exception when check_violation then
+    perform tests.ok('S21 o 21º item ativo é recusado com routine_limit (23514)', sqlerrm = 'routine_limit');
+  end;
+end $s21$;
+update public.routine_items set title = 'Item no limite, editado' where id = '60000000-0000-4000-8000-000000000006';
+select tests.ok('S21 editar um item ativo no limite continua permitido (o próprio não conta contra si)', (select title from public.routine_items where id = '60000000-0000-4000-8000-000000000006') = 'Item no limite, editado');
+update public.routine_items set active = false where id = '60000000-0000-4000-8000-000000000003';
+insert into public.routine_items (id, user_id, title) values ('60000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000002', 'Entrou após desativar um');
+select tests.ok('S21 desativar um item libera a vaga: o novo entra e seguem 20 ativos', (select count(*) from public.routine_items where active) = 20
+  and exists (select 1 from public.routine_items where id = '60000000-0000-4000-8000-000000000004' and active));
+select tests.expect_error('S21 reativar o item desativado com 20 ativos é recusado (routine_limit)', $q$update public.routine_items set active = true where id = '60000000-0000-4000-8000-000000000003'$q$, 'routine_limit');
+
+-- 2) segunda pessoa e visitante: nada de ler, alterar ou apagar o que é de consumer1
+select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
+select tests.ok('S21 segunda pessoa não vê itens de consumer1 (0 linhas)', (select count(*) from public.routine_items) = 0);
+do $s21$
+declare n int;
+begin
+  update public.routine_items set title = 'invadido' where id = '60000000-0000-4000-8000-000000000001';
+  get diagnostics n = row_count;
+  perform tests.ok('S21 segunda pessoa não altera item de consumer1 (0 linhas)', n = 0);
+  delete from public.routine_items where user_id = '10000000-0000-4000-8000-000000000002';
+  get diagnostics n = row_count;
+  perform tests.ok('S21 segunda pessoa não apaga itens de consumer1 (0 linhas)', n = 0);
+end $s21$;
+select tests.expect_error('S21 inserir item com user_id de outra pessoa é recusado', $q$insert into public.routine_items (user_id, title) values ('10000000-0000-4000-8000-000000000002', 'Falso')$q$, '42501');
+select tests.anon();
+select tests.expect_error('S21 visitante não lê routine_items (sem grant)', $q$select count(*) from public.routine_items$q$, 'permission denied');
+select tests.expect_error('S21 visitante não lê routine_checks (sem grant)', $q$select count(*) from public.routine_checks$q$, 'permission denied');
+select tests.expect_error('S21 visitante não grava routine_items (sem grant)', $q$insert into public.routine_items (user_id, title) values ('10000000-0000-4000-8000-000000000002', 'Falso')$q$, 'permission denied');
+select tests.expect_error('S21 visitante não executa routine_check', $q$select public.routine_check('60000000-0000-4000-8000-000000000001', 'UTC')$q$, 'permission denied');
+select tests.su();
+select tests.ok('S21 itens de consumer1 intactos após as tentativas', (select count(*) from public.routine_items where user_id = '10000000-0000-4000-8000-000000000002') = 22
+  and (select title from public.routine_items where id = '60000000-0000-4000-8000-000000000001') = 'Alongar ao acordar (10 min)');
+
+-- 3) routine_checks: sem grant de escrita para authenticated (só a RPC grava)
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S21 consumer1 não insere marcação direto na tabela (sem grant)', $q$insert into public.routine_checks (user_id, item_id, local_date, timezone) values ('10000000-0000-4000-8000-000000000002', '60000000-0000-4000-8000-000000000001', current_date, 'UTC')$q$, '42501');
+select tests.expect_error('S21 consumer1 não altera marcação direto na tabela (sem grant)', $q$update public.routine_checks set done = false where user_id = '10000000-0000-4000-8000-000000000002'$q$, '42501');
+select tests.expect_error('S21 consumer1 não apaga marcação direto na tabela (sem grant)', $q$delete from public.routine_checks where user_id = '10000000-0000-4000-8000-000000000002'$q$, '42501');
+
+-- 4) RPC routine_check: posse e item ativo; data local pelo fuso; idempotente; desmarcar mantém a linha
+select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
+do $s21$
+begin
+  begin
+    perform public.routine_check('60000000-0000-4000-8000-000000000001', 'America/Sao_Paulo');
+    raise exception 'FAIL S21 segunda pessoa marcou item de consumer1';
+  exception when insufficient_privilege then
+    perform tests.ok('S21 segunda pessoa não marca item de consumer1 (routine_item_not_found, 42501)', sqlerrm = 'routine_item_not_found');
+  end;
+end $s21$;
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S21 item inativo não é marcado (routine_item_not_found)', $q$select public.routine_check('60000000-0000-4000-8000-000000000003', 'America/Sao_Paulo')$q$, 'routine_item_not_found');
+select tests.expect_error('S21 item inexistente (routine_item_not_found)', $q$select public.routine_check(gen_random_uuid(), 'America/Sao_Paulo')$q$, 'routine_item_not_found');
+select tests.expect_error('S21 fuso inválido é recusado (invalid_timezone)', $q$select public.routine_check('60000000-0000-4000-8000-000000000001', 'Marte/Olympus')$q$, 'invalid_timezone');
+create temporary table t_s21_c1 as select public.routine_check('60000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') as r;
+select tests.ok('S21 consumer1 marca o item: done, local_date = local_date_for(fuso), fuso gravado e sequência igual a compute_streak',
+  (select (r ->> 'done')::boolean and (r ->> 'local_date')::date = public.local_date_for('America/Sao_Paulo')
+          and (r ->> 'streak')::int = public.compute_streak('10000000-0000-4000-8000-000000000002', 'America/Sao_Paulo') from t_s21_c1)
+  and (select count(*) from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000001') = 1
+  and (select done and local_date = public.local_date_for('America/Sao_Paulo') and timezone = 'America/Sao_Paulo' and user_id = '10000000-0000-4000-8000-000000000002' and checked_at = now()
+       from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000001'));
+select public.routine_check('60000000-0000-4000-8000-000000000001', 'America/Sao_Paulo');
+select tests.ok('S21 marcar de novo não duplica (upsert na chave pessoa+item+dia)', (select count(*) from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000001') = 1
+  and (select count(*) from public.routine_checks) = 1);
+create temporary table t_s21_c0 as select public.routine_check('60000000-0000-4000-8000-000000000001', 'America/Sao_Paulo', false) as r;
+select tests.ok('S21 desmarcar (p_done=false) mantém a linha com done=false', (select not (r ->> 'done')::boolean from t_s21_c0)
+  and (select count(*) = 1 and bool_and(not done) from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000001'));
+create temporary table t_s21_utc as select public.routine_check('60000000-0000-4000-8000-000000000002', '') as r;
+select tests.ok('S21 fuso vazio cai em UTC (data local de UTC e timezone gravado = UTC)', (select (r ->> 'local_date')::date = public.local_date_for('UTC') from t_s21_utc)
+  and (select done and local_date = public.local_date_for('UTC') and timezone = 'UTC' from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000002'));
+create temporary table t_s21_nul as select public.routine_check('60000000-0000-4000-8000-000000000004', null::text) as r;
+select tests.ok('S21 fuso nulo também cai em UTC', (select (r ->> 'local_date')::date = public.local_date_for('UTC') from t_s21_nul)
+  and (select timezone = 'UTC' from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000004'));
+
+-- 5) compute_streak: a segunda pessoa não tem conclusões, então a sequência vem só da rotina
+select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
+insert into public.routine_items (id, user_id, title) values ('60000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000021', 'Ler dez páginas');
+select tests.ok('S21 segunda pessoa vê só o próprio item e começa com sequência 0', (select count(*) from public.routine_items) = 1
+  and public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 0);
+create temporary table t_s21_m1 as select public.routine_check('60000000-0000-4000-8000-000000000011', 'America/Sao_Paulo') as r;
+select tests.ok('S21 item marcado hoje → sequência 1 (na RPC e em compute_streak)', (select (r ->> 'streak')::int from t_s21_m1) = 1
+  and public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 1);
+select tests.ok('S21 segunda pessoa lê só as próprias marcações', (select count(*) from public.routine_checks) = 1
+  and not exists (select 1 from public.routine_checks where user_id <> '10000000-0000-4000-8000-000000000021'));
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S21 consumer1 lê só as próprias marcações (3) e não vê a da segunda pessoa', (select count(*) from public.routine_checks) = 3
+  and not exists (select 1 from public.routine_checks where user_id <> '10000000-0000-4000-8000-000000000002'));
+select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
+create temporary table t_s21_m0 as select public.routine_check('60000000-0000-4000-8000-000000000011', 'America/Sao_Paulo', false) as r;
+select tests.ok('S21 desmarcado → sequência 0', (select (r ->> 'streak')::int from t_s21_m0) = 0
+  and public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 0);
+select tests.su();
+insert into public.routine_checks (user_id, item_id, local_date, done, timezone) values
+  ('10000000-0000-4000-8000-000000000021', '60000000-0000-4000-8000-000000000011', public.local_date_for('America/Sao_Paulo') - 1, true, 'America/Sao_Paulo');
+select tests.ok('S21 hoje ainda sem marcação não zera: conta a partir de ontem → 1', public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 1);
+select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
+create temporary table t_s21_m2 as select public.routine_check('60000000-0000-4000-8000-000000000011', 'America/Sao_Paulo') as r;
+select tests.ok('S21 ontem (rotina) + hoje (rotina) → 2', (select (r ->> 'streak')::int from t_s21_m2) = 2);
+select tests.su();
+insert into public.streak_events (user_id, kind, ref_id, timezone, local_date) values
+  ('10000000-0000-4000-8000-000000000021', 'completion', public.seed_uuid('content:r1'), 'America/Sao_Paulo', public.local_date_for('America/Sao_Paulo') - 2);
+select tests.ok('S21 anteontem (conclusão de conteúdo) + ontem (rotina) + hoje (rotina) → 3', public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 3);
+update public.routine_checks set done = false where user_id = '10000000-0000-4000-8000-000000000021' and local_date = public.local_date_for('America/Sao_Paulo') - 1;
+select tests.ok('S21 dia sem nada no meio quebra a contagem (ontem desmarcado → só hoje = 1)', public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 1);
+
+-- 6) cascata: apagar o item leva as marcações; apagar a conta leva itens, marcações e eventos (padrão do S17)
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+delete from public.routine_items where id = '60000000-0000-4000-8000-000000000001';
+select tests.su();
+select tests.ok('S21 apagar o item remove as marcações dele (cascade) e preserva as dos outros itens',
+  not exists (select 1 from public.routine_items where id = '60000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000001')
+  and (select count(*) from public.routine_checks where user_id = '10000000-0000-4000-8000-000000000002') = 2);
+select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
+select public.delete_my_account();
+select tests.su();
+select tests.ok('S21 excluir a conta remove itens, marcações e eventos de sequência (cascade de auth.users)',
+  not exists (select 1 from auth.users where id = '10000000-0000-4000-8000-000000000021')
+  and not exists (select 1 from public.routine_items where user_id = '10000000-0000-4000-8000-000000000021')
+  and not exists (select 1 from public.routine_checks where user_id = '10000000-0000-4000-8000-000000000021')
+  and not exists (select 1 from public.streak_events where user_id = '10000000-0000-4000-8000-000000000021')
+  and (select count(*) from public.routine_items where user_id = '10000000-0000-4000-8000-000000000002') = 21);
+
+-- 7) segurança: definer/search_path, grants, políticas initplan, RLS, gatilhos e chaves
+select tests.ok('S21 routine_check é security definer com search_path fixo; routine_items_limit (gatilho) e compute_streak também com search_path fixo',
+  (select p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.routine_check(uuid, text, boolean)'::regprocedure)
+  and (select not p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.routine_items_limit()'::regprocedure)
+  and (select p.prosecdef and p.provolatile = 's' and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.compute_streak(uuid, text)'::regprocedure));
+select tests.ok('S21 grants: anon sem nada; authenticated com CRUD em routine_items e só select em routine_checks; RPCs sem anon',
+  not has_table_privilege('anon', 'public.routine_items', 'select') and not has_table_privilege('anon', 'public.routine_checks', 'select')
+  and has_table_privilege('authenticated', 'public.routine_items', 'select') and has_table_privilege('authenticated', 'public.routine_items', 'insert')
+  and has_table_privilege('authenticated', 'public.routine_items', 'update') and has_table_privilege('authenticated', 'public.routine_items', 'delete')
+  and has_table_privilege('authenticated', 'public.routine_checks', 'select') and not has_table_privilege('authenticated', 'public.routine_checks', 'insert')
+  and not has_table_privilege('authenticated', 'public.routine_checks', 'update') and not has_table_privilege('authenticated', 'public.routine_checks', 'delete')
+  and not has_function_privilege('anon', 'public.routine_check(uuid, text, boolean)', 'execute') and has_function_privilege('authenticated', 'public.routine_check(uuid, text, boolean)', 'execute')
+  and not has_function_privilege('anon', 'public.compute_streak(uuid, text)', 'execute') and has_function_privilege('authenticated', 'public.compute_streak(uuid, text)', 'execute')
+  and not has_function_privilege('anon', 'public.routine_items_limit()', 'execute'));
+select tests.ok('S21 políticas: uma em routine_items (ALL) e uma em routine_checks (SELECT), só para authenticated, nenhuma avalia auth.uid() por linha (S14 segue verde)',
+  (select count(*) = 1 and bool_and(cmd = 'ALL' and roles = '{authenticated}'::name[] and policyname = 'routine_items_own') from pg_policies where schemaname = 'public' and tablename = 'routine_items')
+  and (select count(*) = 1 and bool_and(cmd = 'SELECT' and roles = '{authenticated}'::name[] and policyname = 'routine_checks_select_own') from pg_policies where schemaname = 'public' and tablename = 'routine_checks')
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename in ('routine_items', 'routine_checks')
+         and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|my_creator_id)\(\)') = 0);
+select tests.ok('S21 RLS ativa nas duas tabelas, gatilhos instalados e chaves: pessoa e item em cascade, conteúdo em set null',
+  (select bool_and(c.relrowsecurity) from pg_class c where c.oid in ('public.routine_items'::regclass, 'public.routine_checks'::regclass))
+  and exists (select 1 from pg_trigger where tgrelid = 'public.routine_items'::regclass and tgname = 'trg_routine_items_limit')
+  and exists (select 1 from pg_trigger where tgrelid = 'public.routine_items'::regclass and tgname = 'trg_routine_items_updated')
+  and (select confdeltype from pg_constraint where conrelid = 'public.routine_items'::regclass and contype = 'f' and confrelid = 'auth.users'::regclass) = 'c'
+  and (select confdeltype from pg_constraint where conrelid = 'public.routine_items'::regclass and contype = 'f' and confrelid = 'public.content'::regclass) = 'n'
+  and (select count(*) from pg_constraint where conrelid = 'public.routine_checks'::regclass and contype = 'f' and confdeltype = 'c') = 2
+  and (select count(*) from pg_constraint where conrelid = 'public.routine_checks'::regclass and contype = 'p') = 1);
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',
