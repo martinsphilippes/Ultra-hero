@@ -10,14 +10,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | Completo: 20 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
-| Testes | 309 cenários de banco, 655 unitários e 50 E2E com axe. Todos passam |
+| Banco remoto no Supabase | Completo: 21 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
+| Testes | 350 cenários de banco, 665 unitários e 60 E2E com axe. Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
 
 ### Implementado
-- **Banco e segurança**: esquema em 20 migrations, RLS em todas as 61 tabelas, 99 políticas e 93 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
+- **Banco e segurança**: esquema em 21 migrations, RLS em todas as 62 tabelas, 103 políticas e 94 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
 - **Autenticação e papéis**: e-mail e senha, login com Google (configurado e publicado em 20/10/2026: qualquer conta Google entra, sem lista de testadores), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
@@ -41,6 +41,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - Feedback com categoria, prioridade, responsável e nota interna, com triagem auditada no admin.
 - **Termos de Uso e Política de Privacidade** em pt-BR, en e es. O texto foi conferido contra o código: cookies reais, dados enviados à IA, retenção e o que a exclusão de conta remove. Os links estão no cadastro, com declaração de 18 anos ou mais, e nos rodapés.
 - **Plataforma**: PWA instalável com página offline, três idiomas com detecção pelo navegador e tema claro e escuro.
+- **Identidade visual** (21/10/2026): logomarca do material oficial (losango laranja #FF5A1F e wordmark ULTRA HERO), tipografia Manrope para texto e títulos e DM Mono para etiquetas, servidas pelo próprio app, com contraste AA conferido pelo axe. As artes dos heróis fictícios e das capas continuam geradas.
 
 ### Parcial
 - **Vídeo**: embeds YouTube e Vimeo e player de demonstração funcionam. Cloudflare Stream e Mux existem só como interface (ADR-001).
@@ -80,10 +81,10 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 | Camada | Resultado | Comando |
 |---|---|---|
-| Banco: RLS e regras de negócio | 309 de 309 | `npm run test:rls` |
-| Unitários, verificados por mutação | 655 de 655 em 13 arquivos | `npm run test` |
-| E2E com axe, em Pixel 7 e Desktop Chrome | 50 de 50 local contra o banco remoto já migrado | `npm run test:e2e` |
-| Tipos, lint e mensagens | Limpos. 16 namespaces e 3.087 chaves por idioma | `npm run check` |
+| Banco: RLS e regras de negócio | 350 de 350 | `npm run test:rls` |
+| Unitários, verificados por mutação | 665 de 665 em 13 arquivos | `npm run test` |
+| E2E com axe, em Pixel 7 e Desktop Chrome | 60 de 60 local contra o banco remoto já migrado | `npm run test:e2e` |
+| Tipos, lint e mensagens | Limpos. 16 namespaces e 3.128 chaves por idioma | `npm run check` |
 | Build de produção | OK | `npm run build` |
 
 "Verificado por mutação" significa que agentes independentes injetaram defeitos no código-fonte e confirmaram que os testes falham. Os defeitos que passaram despercebidos ganharam testes novos.
@@ -116,7 +117,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - `SUPABASE_SERVICE_ROLE_KEY` cadastrada em 20/10/2026 (Sensitive, Production e Preview). Os três crons responderam ok em produção.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
-- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, a 0019 (só dados do seed) e a 0020 (função do Explorar em grade) pelo conector. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
+- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, a 0019 (só dados do seed), a 0020 (função do Explorar em grade) e a 0021 (produtos Ultra.e Life e alocação produto↔herói) pelo conector, em blocos. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
 1. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
