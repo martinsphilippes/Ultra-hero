@@ -10,7 +10,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | 24 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção). **0025 e 0026 ainda não constam aqui como aplicadas no remoto** (o repositório tem 26) |
+| Banco remoto no Supabase | As 26 migrações aplicadas. 0025 e 0026 aplicadas em 21/10/2026 e conferidas objeto a objeto contra o banco local (código das funções, grants, política, gatilhos e colunas de `stream_uploads` idênticos) |
 | Testes | 543 cenários de banco, 849 unitários e 134 E2E com axe (mais 2 do envio real ao Cloudflare, ligados só com `E2E_STREAM_REAL=1`). Todos passam |
 
 
