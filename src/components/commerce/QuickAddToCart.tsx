@@ -20,7 +20,7 @@ type Props = {
   isLoggedIn: boolean;
   /** Quantidade já no carrinho (0 se nenhuma). */
   inCart: number;
-  /** Para onde voltar depois do login (aba de produtos da personalidade). */
+  /** Para onde voltar depois do login (biblioteca de produtos do herói). */
   nextPath: string;
 };
 

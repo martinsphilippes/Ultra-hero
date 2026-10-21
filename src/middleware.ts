@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isLibraryKey } from "@/lib/catalog/creator-libraries";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
@@ -9,11 +10,40 @@ function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+// Hub do herói: /personalities/[slug] e as bibliotecas /personalities/[slug]/[library].
+const HERO_ROUTE = /^\/personalities\/([^/]+)(?:\/([^/]+))?$/;
+
+// As páginas ficam dentro de loading.tsx (streaming), então redirect() e notFound() chegariam ao
+// navegador com status 200. Aqui, antes do streaming, as abas antigas (?tab=) viram 308 para a
+// biblioteca e um segmento fora de LIBRARY_KEYS vira o 404 global de verdade.
+function heroHubResponse(request: NextRequest): NextResponse | null {
+  const { pathname, searchParams } = request.nextUrl;
+  const match = HERO_ROUTE.exec(pathname);
+  if (!match) return null;
+  const [, slug, library] = match;
+  if (library !== undefined) {
+    if (isLibraryKey(library)) return null;
+    return NextResponse.rewrite(new URL("/_not-found", request.url), { status: 404 });
+  }
+  const tab = searchParams.get("tab");
+  if (tab === null) return null;
+  const target = request.nextUrl.clone();
+  target.search = "";
+  target.pathname = tab === "produtos" || tab === "programas" ? `/personalities/${slug}/${tab}` : `/personalities/${slug}`;
+  return NextResponse.redirect(target, 308);
+}
+
 export async function middleware(request: NextRequest) {
   // Renova a sessão (cookies) em toda requisição.
   const response = await updateSession(request);
 
   const { pathname, search } = request.nextUrl;
+  const hero = heroHubResponse(request);
+  if (hero) {
+    // Mantém os cookies renovados na resposta.
+    for (const cookie of response.cookies.getAll()) hero.cookies.set(cookie);
+    return hero;
+  }
   if (!isProtected(pathname)) return response;
 
   // Os cookies do request já foram atualizados por updateSession; valida o JWT.

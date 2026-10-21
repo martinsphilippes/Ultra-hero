@@ -5,7 +5,8 @@
     "lists": "My lists",
     "list": "{name} · List",
     "personalities": "Heroes",
-    "personality": "{name} · Hero"
+    "personality": "{name} · Hero",
+    "library": "{library} · {name}"
   },
   "common": {
     "sectionError": "We couldn't load this section.",
@@ -174,16 +175,6 @@
         "programs": "{count, plural, =1 {1 program} other {# programs}}",
         "products": "{count, plural, =1 {1 product} other {# products}}"
       },
-      "tabs": {
-        "label": "Profile sections",
-        "contents": "Content",
-        "programs": "Programs",
-        "products": "Products"
-      },
-      "typeFilter": "Filter by type",
-      "allTypes": "All",
-      "contentsEmptyTitle": "No content with this filter",
-      "contentsEmptyDescription": "Try another content type.",
       "programsEmptyTitle": "No published programs",
       "programsEmptyDescription": "This hero has no programs yet.",
       "productsNote": "This hero's products and products linked to their content. Purchases here are simulated: no real purchase, charge or delivery.",
@@ -194,6 +185,34 @@
       "rightsPending": "Authorization for name and likeness is under validation; until then the profile is treated as fictional.",
       "rightsAuthorized": "Use of name and likeness authorized by {holder}.",
       "rightsValidUntil": "Authorization valid until {date}."
+    },
+    "libraries": {
+      "title": "{name}'s libraries",
+      "description": "Everything {name} has published, organized by type and pillar.",
+      "count": "{count, plural, =1 {1 item} other {# items}}",
+      "empty": "No libraries yet",
+      "emptyDescription": "{name} has not published any content, programs or products yet.",
+      "libraryEmpty": "Nothing here yet",
+      "libraryEmptyDescription": "This library of {name} has no items yet.",
+      "back": "Back to {name}",
+      "labels": {
+        "rotina": "Routine",
+        "nutricao": "Nutrition",
+        "receitas": "Recipes",
+        "treinos": "Workouts",
+        "gastronomia": "Gastronomy",
+        "programas": "Programs",
+        "produtos": "Products"
+      },
+      "descriptions": {
+        "rotina": "Habits, calm mornings and better sleep with {name}.",
+        "nutricao": "Practical food education with {name}.",
+        "receitas": "Recipes by {name}, from any pillar.",
+        "treinos": "Strength, mobility and running with {name}.",
+        "gastronomia": "Core techniques and weekly meal prep with {name}.",
+        "programas": "Guided collections by {name} to follow at your own pace.",
+        "produtos": "{name}'s products and products linked to their content."
+      }
     },
     "eyebrow": "Who guides the content",
     "notFoundTitle": "Hero not found",

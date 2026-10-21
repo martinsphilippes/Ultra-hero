@@ -5,7 +5,8 @@
     "lists": "Mis listas",
     "list": "{name} · Lista",
     "personalities": "Héroes",
-    "personality": "{name} · Héroe"
+    "personality": "{name} · Héroe",
+    "library": "{library} · {name}"
   },
   "common": {
     "sectionError": "No se pudo cargar esta sección.",
@@ -174,16 +175,6 @@
         "programs": "{count, plural, =1 {1 programa} other {# programas}}",
         "products": "{count, plural, =1 {1 producto} other {# productos}}"
       },
-      "tabs": {
-        "label": "Secciones del perfil",
-        "contents": "Contenidos",
-        "programs": "Programas",
-        "products": "Productos"
-      },
-      "typeFilter": "Filtrar por tipo",
-      "allTypes": "Todos",
-      "contentsEmptyTitle": "Ningún contenido con este filtro",
-      "contentsEmptyDescription": "Prueba otro tipo de contenido.",
       "programsEmptyTitle": "Ningún programa publicado",
       "programsEmptyDescription": "Este héroe aún no tiene programas.",
       "productsNote": "Productos de este héroe y productos vinculados a sus contenidos. Las compras aquí son simuladas: ninguna compra, cobro o entrega real.",
@@ -194,6 +185,34 @@
       "rightsPending": "Autorización de uso de nombre e imagen en validación; hasta entonces, el perfil se trata como ficticio.",
       "rightsAuthorized": "Uso de nombre e imagen autorizado por {holder}.",
       "rightsValidUntil": "Autorización válida hasta el {date}."
+    },
+    "libraries": {
+      "title": "Bibliotecas de {name}",
+      "description": "Todo lo que {name} publicó, organizado por tipo y pilar.",
+      "count": "{count, plural, =1 {1 elemento} other {# elementos}}",
+      "empty": "Todavía no hay bibliotecas",
+      "emptyDescription": "{name} aún no publicó contenidos, programas ni productos.",
+      "libraryEmpty": "Todavía no hay nada aquí",
+      "libraryEmptyDescription": "Esta biblioteca de {name} aún no tiene elementos.",
+      "back": "Volver a {name}",
+      "labels": {
+        "rotina": "Rutina",
+        "nutricao": "Nutrición",
+        "receitas": "Recetas",
+        "treinos": "Entrenamientos",
+        "gastronomia": "Gastronomía",
+        "programas": "Programas",
+        "produtos": "Productos"
+      },
+      "descriptions": {
+        "rotina": "Hábitos, mañanas tranquilas y mejor sueño con {name}.",
+        "nutricao": "Educación alimentaria práctica con {name}.",
+        "receitas": "Recetas de {name}, de cualquier pilar.",
+        "treinos": "Fuerza, movilidad y carrera con {name}.",
+        "gastronomia": "Técnicas de base y viandas de la semana con {name}.",
+        "programas": "Colecciones guiadas de {name} para seguir a tu ritmo.",
+        "produtos": "Productos de {name} y productos vinculados a sus contenidos."
+      }
     },
     "eyebrow": "Quienes guían los contenidos",
     "notFoundTitle": "Héroe no encontrado",

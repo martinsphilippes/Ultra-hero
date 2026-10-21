@@ -6,7 +6,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const ULTRAE_TITLES = ["e.water Citrus", "e.water Tangerina", "e.creatina Gummy", "e.creatina Pó", "e.focus", "e.daily", "e.melatonina"];
 const STORE = /^https:\/\/selvaje\.lojavirtualnuvem\.com\.br\//;
 
-const productCards = (page: Page) => page.getByRole("tabpanel").getByTestId("product-action-card");
+const productCards = (page: Page) => page.getByTestId("library-products").getByTestId("product-action-card");
 
 async function titlesOf(cards: Locator): Promise<string[]> {
   return cards.evaluateAll((nodes) => nodes.map((n) => n.querySelector("h3")?.textContent?.trim() ?? ""));
@@ -20,13 +20,15 @@ async function expectLoadedImage(img: Locator) {
 }
 
 test.describe("produtos do herói", () => {
-  // rafael-duarte: sem vínculo por conteúdo no seed; a aba existe só pela alocação direta.
+  // rafael-duarte: sem vínculo por conteúdo no seed; a biblioteca existe só pela alocação direta.
   test("herói só com alocação direta mostra os 7 produtos da marca, em ordem e com imagem", async ({ page }) => {
-    await page.goto("/personalities/rafael-duarte?tab=produtos");
-    const tab = page.getByRole("tab", { name: /^produtos\b/i });
-    await expect(tab).toHaveAttribute("aria-selected", "true");
-    await expect(tab).toHaveText(/produtos · 7$/i);
-    await expect(page.getByText(/· 7 produtos$/)).toBeVisible();
+    await page.goto("/personalities/rafael-duarte");
+    await expect(page.getByText(/· 7 produtos$/i)).toBeVisible();
+    const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
+    await expect(button).toHaveText(/7 itens/i);
+    await expect(button).toHaveAttribute("href", "/personalities/rafael-duarte/produtos");
+    await page.goto("/personalities/rafael-duarte/produtos");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos");
 
     const cards = productCards(page);
     await expect(cards).toHaveCount(7);
@@ -46,7 +48,7 @@ test.describe("produtos do herói", () => {
 
   // helena-vilar: tem vínculos validados por conteúdo (seed 0008) além da alocação direta.
   test("herói com as duas origens mostra a marca primeiro e depois os vinculados por conteúdo", async ({ page }) => {
-    await page.goto("/personalities/helena-vilar?tab=produtos");
+    await page.goto("/personalities/helena-vilar/produtos");
     const cards = productCards(page);
     await expect(cards.first()).toBeVisible();
     const count = await cards.count();
@@ -63,14 +65,15 @@ test.describe("produtos do herói", () => {
     await expect(linked.first().getByText(/usado em/i)).toBeVisible();
     for (let i = 0; i < 7; i += 1) await expect(cards.nth(i).locator('a[href^="/content/"]')).toHaveCount(0);
 
-    // cabeçalho e aba contam a união
-    const tab = page.getByRole("tab", { name: /^produtos\b/i });
-    expect(Number(((await tab.textContent()) ?? "").match(/(\d+)/)?.[1])).toBe(count);
-    await expect(page.getByText(new RegExp(`· ${count} produtos$`))).toBeVisible();
+    // cabeçalho do hub e botão da biblioteca contam a união
+    await page.goto("/personalities/helena-vilar");
+    const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
+    expect(Number(((await button.textContent()) ?? "").match(/(\d+)/)?.[1])).toBe(count);
+    await expect(page.getByText(new RegExp(`· ${count} produtos$`, "i"))).toBeVisible();
   });
 
   test("cada card da Ultra.e Life tem o link da loja oficial em nova aba, sem tirar o carrinho de teste", async ({ page }) => {
-    await page.goto("/personalities/rafael-duarte?tab=produtos");
+    await page.goto("/personalities/rafael-duarte/produtos");
     const cards = productCards(page);
     await expect(cards).toHaveCount(7);
     for (const card of await cards.all()) {
