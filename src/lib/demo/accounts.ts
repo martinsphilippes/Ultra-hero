@@ -8,7 +8,7 @@ export const DEMO_ACCOUNTS = [
   { kind: "creator", email: "heroi@demo.ultrahero.app", home: "/creator" },
   { kind: "seller", email: "fornecedor@demo.ultrahero.app", home: "/seller" },
   { kind: "premium", email: "premium@demo.ultrahero.app", home: "/profile" },
-  { kind: "free", email: "gratuito@demo.ultrahero.app", home: "/" },
+  { kind: "free", email: "gratuito@demo.ultrahero.app", home: "/explore" },
 ] as const;
 
 export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];

@@ -1,26 +1,30 @@
-"use client";
-
-import { useTranslations } from "next-intl";
-import { useActionState } from "react";
-import { unlockDemoAccess, type DemoUnlockState } from "@/app/demo-actions";
+import { getTranslations } from "next-intl/server";
 import { Button, Input } from "@/components/ui";
 
-// Campo do código que libera o acesso rápido neste navegador.
-export function DemoUnlockForm() {
-  const t = useTranslations("demo");
-  const [state, action, pending] = useActionState<DemoUnlockState, FormData>(unlockDemoAccess, { status: "idle" });
+// Campo do código que libera o acesso rápido neste navegador (POST comum para /demo/unlock).
+export async function DemoUnlockForm({ wrongCode }: { wrongCode?: boolean }) {
+  const t = await getTranslations("demo");
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form method="post" action="/demo/unlock" className="flex flex-col gap-2">
       <label htmlFor="demo-code" className="text-sm text-fg-muted">
         {t("codeLabel")}
       </label>
       <div className="flex gap-2">
-        <Input id="demo-code" name="code" autoComplete="off" autoCapitalize="characters" spellCheck={false} required aria-invalid={state.status === "error" || undefined} aria-describedby={state.status === "error" ? "demo-code-error" : undefined} />
-        <Button type="submit" variant="primary" loading={pending}>
+        <Input
+          id="demo-code"
+          name="code"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          required
+          aria-invalid={wrongCode || undefined}
+          aria-describedby={wrongCode ? "demo-code-error" : undefined}
+        />
+        <Button type="submit" variant="primary">
           {t("unlock")}
         </Button>
       </div>
-      {state.status === "error" ? (
+      {wrongCode ? (
         <p id="demo-code-error" role="alert" className="type-caption text-danger">
           {t("codeError")}
         </p>

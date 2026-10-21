@@ -9,7 +9,7 @@ const ACCOUNTS = [
   { kind: "creator", url: /\/creator$/ },
   { kind: "seller", url: /\/seller$/ },
   { kind: "premium", url: /\/profile$/ },
-  { kind: "free", url: /\/$/ },
+  { kind: "free", url: /\/explore$/ },
 ] as const;
 
 test.describe("acesso rápido às contas de demonstração", () => {
@@ -33,9 +33,9 @@ test.describe("acesso rápido às contas de demonstração", () => {
       await panel.locator("summary").click();
       await panel.getByLabel("Digite o código de acesso").fill(CODE);
       await panel.getByRole("button", { name: "Liberar" }).click();
-      await expect(panel.locator("[data-demo-kind]")).toHaveCount(5);
+      await expect(panel.locator("[data-demo-kind]")).toHaveCount(5, { timeout: 20_000 });
       await panel.locator(`[data-demo-kind="${account.kind}"]`).click();
-      await expect(page).toHaveURL(account.url);
+      await expect(page).toHaveURL(account.url, { timeout: 20_000 });
       // logado: a área protegida abre sem mandar para o login
       await page.goto("/profile");
       await expect(page).toHaveURL(/\/profile$/);

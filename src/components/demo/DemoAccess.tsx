@@ -9,12 +9,12 @@ const ICON: Record<DemoKind, typeof User> = { admin: ShieldCheck, creator: Spark
 
 // Acesso rápido às contas de demonstração (uma por tipo de acesso), no topo do Início. Fechado por um
 // código: sem ele, aparece só o campo do código; sem as variáveis de ambiente, não aparece nada.
-export async function DemoAccess({ failed }: { failed?: boolean }) {
+export async function DemoAccess({ failed, wrongCode }: { failed?: boolean; wrongCode?: boolean }) {
   if (!isDemoAccessEnabled()) return null;
   const [t, unlocked] = await Promise.all([getTranslations("demo"), isDemoUnlocked()]);
 
   return (
-    <details className="group mx-gutter rounded-2xl border border-border bg-surface md:mx-0" open={unlocked || failed} data-testid="demo-access">
+    <details className="group mx-gutter rounded-2xl border border-border bg-surface md:mx-0" open={unlocked || failed || wrongCode} data-testid="demo-access">
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-semibold text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
         <KeyRound className="size-4 text-accent-text" aria-hidden="true" />
         {t("title")}
@@ -50,7 +50,7 @@ export async function DemoAccess({ failed }: { failed?: boolean }) {
             })}
           </ul>
         ) : (
-          <DemoUnlockForm />
+          <DemoUnlockForm wrongCode={wrongCode} />
         )}
         <p className="type-caption text-fg-subtle">{t("note")}</p>
       </div>

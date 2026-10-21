@@ -21,7 +21,7 @@ export default async function HomePage({ searchParams }: Props) {
   return (
     <div className="-mx-gutter flex flex-col gap-8 md:mx-auto md:w-full md:max-w-[470px]">
       <h1 className="sr-only">{th("title")}</h1>
-      <DemoAccess failed={demo === "error"} />
+      <DemoAccess failed={demo === "error"} wrongCode={demo === "code"} />
       <Suspense fallback={<FeedSkeleton />}>
         <HomeFeed />
       </Suspense>
