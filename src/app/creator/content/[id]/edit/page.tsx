@@ -8,7 +8,7 @@ import { ContentStatusBadges } from "@/components/creator/ContentStatusBadges";
 import { CreatorContentForm } from "@/components/creator/CreatorContentForm";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimeline";
-import { SubmitForReviewButton } from "@/components/creator/SubmitForReviewButton";
+import { PublishButton, UnpublishButton } from "@/components/creator/PublishButtons";
 import { contentChecklist } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { Badge, Button, PageHeader, PillarBadge, PlanBadge, Section } from "@/components/ui";
@@ -65,8 +65,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return content ? { title: content.title } : {};
 }
 
-// Edição de um conteúdo próprio: formulário (somente leitura fora de rascunho/em revisão),
-// envio para revisão com checklist, situação da revisão e linha do tempo com feedback do admin.
+// Edição de um conteúdo próprio: formulário (somente leitura fora de rascunho), Publicar com o
+// checklist como ajuda, Despublicar quando está no ar e o histórico com feedback do admin.
 export default async function EditContentPage({ params }: Params) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
@@ -149,17 +149,19 @@ export default async function EditContentPage({ params }: Params) {
         eyebrow={tn("creator.content")}
         backHref="/creator/content"
         backLabel={tn("creator.content")}
-        actions={
-          <>
+      >
+        {/* Ações abaixo do título: no celular não espremem o cabeçalho. */}
+        {content.status !== "archived" && (
+          <div className="flex flex-wrap items-center gap-2">
+            {content.status === "draft" && <PublishButton contentId={content.id} checklist={checklist} />}
             {content.status === "published" && (
               <Button asChild variant="secondary" trailingIcon={<ExternalLink />}>
                 <Link href={`/content/${content.slug}`}>{t("content.viewPublic")}</Link>
               </Button>
             )}
-            {editable && <SubmitForReviewButton contentId={content.id} checklist={checklist} />}
-          </>
-        }
-      >
+            {content.status === "published" && <UnpublishButton contentId={content.id} />}
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-1.5">
           <ContentStatusBadges status={content.status} review={content.review_status} size="md" />
           <PillarBadge tone="pillar" pillar={content.pillar} />

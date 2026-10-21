@@ -117,12 +117,17 @@ export default async function CreatorContentListPage({ searchParams }: Props) {
         title={tn("creator.content")}
         description={t("content.description")}
         eyebrow={tn("portals.creator")}
-        actions={
-          <Button asChild leadingIcon={<Plus />}>
+      >
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild size="lg" leadingIcon={<Plus />} className="min-h-14 text-base sm:min-w-56">
+            <Link href="/creator/post/new" data-testid="new-post">
+              {t("post.cta")}
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="lg" className="min-h-12">
             <Link href="/creator/content/new">{t("content.new")}</Link>
           </Button>
-        }
-      >
+        </div>
         <form method="get" action="/creator/content" className="grid gap-3 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end" aria-label={t("content.filters")}>
           <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
             {tc("search")}

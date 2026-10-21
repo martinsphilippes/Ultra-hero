@@ -30,6 +30,7 @@
     "settings": "Settings"
   },
   "creator": {
+    "post": "New post",
     "dashboard": "Dashboard",
     "content": "My content",
     "links": "Product links",

@@ -121,6 +121,7 @@
       "mux": "Mux"
     },
     "notConfigured": "not configured",
+    "streamUploaded": "Video uploaded from the phone (Cloudflare Stream). To replace the video, make a new post.",
     "ref": "Video ID or URL",
     "refHintYoutube": "Accepts the 11-character ID or youtube.com/watch, youtu.be, shorts and embed URLs.",
     "refHintVimeo": "Accepts the numeric ID or vimeo.com/<id> and player.vimeo.com/video/<id> URLs.",

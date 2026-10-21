@@ -15,6 +15,9 @@ export const COMPLETION_VALUES = ["manual", "auto"] as const;
 export const MEDIA_PROVIDER_VALUES = ["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"] as const;
 /** Provedores que a POC consegue reproduzir (os demais aparecem desabilitados: "não configurado"). */
 export const ENABLED_MEDIA_PROVIDERS = ["none", "embed_youtube", "embed_vimeo"] as const;
+// uid do Cloudflare Stream (32 hex). Só chega ao formulário pelo composer de post: o editor mantém
+// o vídeo já enviado, sem oferecer a escolha manual do provedor.
+export const STREAM_UID = /^[0-9a-f]{32}$/;
 /** Licença da mídia (RF-008). Espelha o check de public.content.media_license_kind. */
 export const LICENSE_KIND_VALUES = ["platform_demo", "own", "licensed", "third_party_embed"] as const;
 
@@ -234,6 +237,8 @@ export const contentFormSchema = z
     if (m.provider === "embed_youtube" || m.provider === "embed_vimeo") {
       if (!m.ref) ctx.addIssue({ code: "custom", message: "mediaRefRequired", path: ["media", "ref"] });
       else if (!parseMediaRef(m.provider, m.ref)) ctx.addIssue({ code: "custom", message: "invalidMediaRef", path: ["media", "ref"] });
+    } else if (m.provider === "cloudflare_stream") {
+      if (!m.ref || !STREAM_UID.test(m.ref)) ctx.addIssue({ code: "custom", message: "invalidMediaRef", path: ["media", "ref"] });
     } else if (m.provider !== "none") {
       ctx.addIssue({ code: "custom", message: "providerNotConfigured", path: ["media", "provider"] });
     }
@@ -248,7 +253,12 @@ export type FieldErrors = Record<string, string>;
 /** Normaliza (ID de mídia extraído de URL, strings vazias → null) depois da validação. */
 export function finalizeContentValues(parsed: ContentFormParsed): ContentFormValues {
   const provider = parsed.media.provider;
-  const ref = provider === "embed_youtube" || provider === "embed_vimeo" ? parseMediaRef(provider, parsed.media.ref ?? "") : null;
+  const ref =
+    provider === "embed_youtube" || provider === "embed_vimeo"
+      ? parseMediaRef(provider, parsed.media.ref ?? "")
+      : provider === "cloudflare_stream" && STREAM_UID.test(parsed.media.ref ?? "")
+        ? parsed.media.ref
+        : null;
   const finalProvider = ref ? provider : "none";
   const body = parsed.body.kind === "recipe" ? { ...parsed.body, nutrition: compactNutrition(parsed.body.nutrition) } : parsed.body;
   return {

@@ -121,6 +121,7 @@
       "mux": "Mux"
     },
     "notConfigured": "no configurado",
+    "streamUploaded": "Video enviado desde el celular (Cloudflare Stream). Para cambiar el video, haz una nueva publicación.",
     "ref": "ID o URL del video",
     "refHintYoutube": "Acepta el ID de 11 caracteres o URLs youtube.com/watch, youtu.be, shorts y embed.",
     "refHintVimeo": "Acepta el ID numérico o URLs vimeo.com/<id> y player.vimeo.com/video/<id>.",

@@ -13,7 +13,7 @@
   },
   "dashboard": {
     "title": "Hola, {name}",
-    "description": "Sigue tus contenidos, las revisiones editoriales y los vínculos con productos.",
+    "description": "Publica tus videos y sigue tus contenidos, los comentarios del equipo editorial y los vínculos con productos.",
     "stats": "Resumen de contenidos",
     "counts": {
       "draft": "Borradores",
@@ -23,7 +23,7 @@
     },
     "archived": "{count, plural, =1 {1 contenido archivado} other {# contenidos archivados}} por la administración.",
     "returnedTitle": "Devueltos para ajustes",
-    "returnedDescription": "El equipo editorial dejó comentarios. Ajusta y vuelve a enviar a revisión.",
+    "returnedDescription": "El equipo editorial dejó comentarios. Ajusta y publica cuando esté listo.",
     "latestReviews": "Últimas revisiones",
     "seeContent": "Mis contenidos",
     "profileHint": "Titular, bio, avatar, portada y redes.",
@@ -31,8 +31,8 @@
   },
   "content": {
     "new": "Nuevo contenido",
-    "newDescription": "Crea un borrador. Podrás editar, guardar y enviar a revisión cuando esté listo.",
-    "description": "Tus contenidos en todos los estados. Solo los borradores fuera de revisión se pueden editar.",
+    "newDescription": "Crea un borrador de receta, entrenamiento, guía, artículo o video por enlace. Guarda y publica cuando esté listo.",
+    "description": "Tus contenidos en todos los estados. Los borradores se pueden editar; para cambiar uno publicado, despublícalo antes.",
     "viewPublic": "Ver página pública",
     "columns": {
       "title": "Contenido",
@@ -49,42 +49,42 @@
   },
   "edit": {
     "noAccessRule": "Sin regla de acceso",
-    "accessNote": "La regla de acceso, el módulo, los destacados y la publicación los define la administración. Tú editas título, resumen, portada, metadatos y el cuerpo.",
+    "accessNote": "Tú publicas y despublicas tus contenidos. La regla de acceso (gratuito o premium), el módulo y los destacados los define la administración, que también puede archivar un contenido.",
     "situation": {
       "draft": {
         "title": "Borrador",
-        "description": "Edita con libertad. Cuando esté completo, envíalo a revisión."
+        "description": "Edita con libertad. Cuando esté listo, toca Publicar: sale en línea al momento."
       },
       "in_review": {
         "title": "En revisión",
-        "description": "El equipo editorial lo está evaluando. El contenido queda bloqueado hasta la decisión."
+        "description": "Enviado al equipo editorial por el flujo antiguo de revisión. Puedes esperar la decisión o publicar directamente."
       },
       "returned": {
         "title": "Devuelto para ajustes",
-        "description": "Lee los comentarios, ajusta el borrador y envíalo de nuevo a revisión."
+        "description": "Lee los comentarios, ajusta el borrador y publica cuando esté listo."
       },
       "rejected": {
         "title": "Rechazado",
-        "description": "El equipo editorial no aprobó esta versión. Puedes revisar el borrador y enviarlo de nuevo."
+        "description": "El equipo editorial no aprobó esta versión. Revisa el borrador antes de publicar."
       },
       "published": {
         "title": "Publicado",
-        "description": "Este contenido está en línea y ahora es de solo lectura para ti. Los cambios pasan por la administración."
+        "description": "Está en línea. Para editarlo, despublícalo: vuelve a borrador y lo publicas de nuevo."
       },
       "archived": {
         "title": "Archivado",
-        "description": "Contenido archivado por la administración. Queda en solo lectura."
+        "description": "Archivado por la administración. Queda en solo lectura y no vuelve a estar en línea desde aquí."
       }
     },
     "notFoundTitle": "Contenido no encontrado",
     "notFoundDescription": "Puede haber sido eliminado o pertenecer a otro héroe."
   },
-  "submit": {
-    "button": "Enviar a revisión",
-    "title": "¿Enviar a revisión editorial?",
-    "description": "El contenido queda bloqueado para edición hasta la decisión del equipo. La lista considera lo que ya está guardado.",
-    "confirm": "Enviar",
-    "checklist": "Lista de completitud",
+  "publish": {
+    "button": "Publicar",
+    "title": "¿Publicar este contenido?",
+    "description": "Sale en línea al momento, con lo que ya está guardado. La administración puede archivarlo después si hace falta.",
+    "confirm": "Publicar ahora",
+    "checklist": "Lista de ayuda",
     "items": {
       "title": "Título completado",
       "summary": "Resumen completado",
@@ -95,15 +95,98 @@
     },
     "ok": "ok",
     "missing": "pendiente",
-    "incomplete": "{count, plural, =1 {Falta 1 elemento. Guarda el formulario e inténtalo de nuevo.} other {Faltan # elementos. Guarda el formulario e inténtalo de nuevo.}}",
-    "success": "Enviado a revisión",
-    "successDescription": "Se te avisará aquí cuando haya una decisión."
+    "incomplete": "{count, plural, =1 {Falta 1 elemento recomendado. Puedes publicar de todos modos; título, cuerpo y el video (en publicaciones de video) son obligatorios.} other {Faltan # elementos recomendados. Puedes publicar de todos modos; título, cuerpo y el video (en publicaciones de video) son obligatorios.}}",
+    "success": "¡Publicado!",
+    "successDescription": "El contenido ya está en línea.",
+    "unpublish": "Despublicar",
+    "unpublishTitle": "¿Despublicar este contenido?",
+    "unpublishDescription": "Sale de línea y vuelve a borrador para que lo edites. Después solo tienes que publicarlo de nuevo.",
+    "unpublishConfirm": "Despublicar",
+    "unpublished": "Despublicado",
+    "unpublishedDescription": "El contenido volvió a borrador."
+  },
+  "post": {
+    "cta": "Nueva publicación",
+    "title": "Nueva publicación",
+    "description": "Graba o elige un video de hasta 3 minutos, ponle un título y publícalo.",
+    "draftTitle": "Publicación en video",
+    "steps": {
+      "label": "Pasos de la publicación",
+      "pick": "Elegir",
+      "compose": "Enviar y escribir",
+      "done": "Publicado"
+    },
+    "record": "Grabar video",
+    "recordHint": "Abre la cámara del celular",
+    "gallery": "Elegir de la galería",
+    "galleryHint": "Usa un video que ya está en el dispositivo",
+    "limits": "Hasta 3 minutos · hasta 2 GB",
+    "checking": "Leyendo el video…",
+    "notConfigured": "El video aún no está configurado: pide al administrador que active Cloudflare Stream.",
+    "preview": "Vista previa del video",
+    "uploadLabel": "Envío del video",
+    "starting": "Preparando el envío…",
+    "uploading": "Enviando… {pct}%",
+    "uploaded": "Video enviado",
+    "uploadInBackground": "Puedes escribir mientras el video se sube.",
+    "formTitle": "Texto de la publicación",
+    "titleLabel": "Título",
+    "titlePlaceholder": "Ej.: Desayuno en 5 minutos",
+    "captionLabel": "Descripción",
+    "captionPlaceholder": "Cuenta en pocas líneas qué hay en el video",
+    "optional": "opcional",
+    "counter": "{count}/{max}",
+    "pillarLabel": "Pilar",
+    "publish": "Publicar",
+    "publishing": "Publicando…",
+    "processing": "Procesando video…",
+    "processingHint": "Cloudflare está preparando el video. Suele tardar menos de un minuto.",
+    "retryPublish": "Intentar publicar de nuevo",
+    "publishHintUpload": "El botón se habilita cuando el video termine de subirse.",
+    "publishHintTitle": "Escribe un título para publicar.",
+    "retry": "Intentar de nuevo",
+    "discard": "Descartar video",
+    "discardTitle": "¿Descartar este video?",
+    "discardDescription": "El envío se detiene y vuelves a elegir otro video. Lo que escribiste se pierde.",
+    "discardConfirm": "Descartar",
+    "discarded": "Video descartado",
+    "discardedKept": "El borrador quedó guardado en Mis contenidos; puedes abrirlo y publicarlo después.",
+    "doneTitle": "¡Publicado!",
+    "doneDescription": "Tu publicación ya está en línea.",
+    "viewPost": "Ver publicación",
+    "another": "Hacer otra publicación",
+    "leaveWarning": "El video todavía se está enviando. Si sales ahora, el envío se detiene.",
+    "errors": {
+      "generic": "No se pudo completar. Inténtalo de nuevo.",
+      "unauthenticated": "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
+      "forbidden": "Esta cuenta no puede publicar este video.",
+      "creator_unavailable": "Tu perfil de héroe no está activo.",
+      "invalid_input": "Revisa los campos e inténtalo de nuevo.",
+      "video_not_configured": "El video aún no está configurado: pide al administrador que active Cloudflare Stream.",
+      "not_video": "Este archivo no es un video. Graba uno nuevo o elige otro de la galería.",
+      "empty_file": "El archivo está vacío. Elige otro video.",
+      "file_too_large": "El video supera los 2 GB. Elige uno más pequeño.",
+      "too_long": "El video dura más de 3 minutos. Recórtalo en el celular e inténtalo de nuevo.",
+      "network": "Se cayó la conexión. Cuando vuelva, toca Intentar de nuevo: el envío sigue desde donde se detuvo.",
+      "upload_failed": "Cloudflare rechazó el envío. Toca Intentar de nuevo.",
+      "upload_expired": "El enlace de envío venció. Toca Intentar de nuevo para empezar un envío nuevo.",
+      "provider_error": "El servicio de video no respondió. Inténtalo de nuevo en un momento.",
+      "processing": "El video todavía se está procesando.",
+      "processing_timeout": "El video todavía se está procesando. Intenta publicar de nuevo en unos minutos.",
+      "video_failed": "Cloudflare no pudo procesar este video. Descártalo y envía otro.",
+      "missing_title": "Escribe un título para publicar.",
+      "missing_body": "El video no quedó vinculado a esta publicación. Descártalo y envíalo de nuevo.",
+      "missing_media": "El video no quedó vinculado a esta publicación. Descártalo y envíalo de nuevo.",
+      "not_draft": "Esta publicación ya no es un borrador (ya fue publicada o archivada).",
+      "media_license_mismatch": "La licencia del video no coincide con el medio. Abre la publicación en Mis contenidos para ajustarla.",
+      "duplicate": "No se pudo crear la publicación ahora. Inténtalo de nuevo."
+    }
   },
   "reviews": {
     "title": "Historial de revisiones",
-    "description": "Cada envío abre una ronda; la decisión y los comentarios del equipo aparecen aquí.",
+    "description": "Cada publicación (o envío a revisión) abre una ronda; las decisiones y los comentarios del equipo aparecen aquí.",
     "empty": "Todavía no hay rondas de revisión",
-    "emptyDescription": "Cuando envíes un contenido, el historial aparecerá aquí.",
+    "emptyDescription": "Cuando publiques un contenido, el historial aparecerá aquí.",
     "round": "Ronda {n}",
     "submittedAt": "Enviado el {date}",
     "decidedAt": "decidido el {date}",
@@ -188,6 +271,19 @@
     "content_incomplete": "Completa al menos el título y el pilar antes de enviar.",
     "link_exists": "Ya existe un vínculo entre este contenido y este producto.",
     "link_not_deletable": "Solo se pueden eliminar sugerencias que aún no fueron evaluadas.",
-    "duplicate": "Registro duplicado."
+    "duplicate": "Registro duplicado.",
+    "video_not_configured": "El video aún no está configurado: pide al administrador que active Cloudflare Stream.",
+    "processing": "El video todavía se está procesando en Cloudflare. Intenta publicar de nuevo en un momento.",
+    "video_failed": "Cloudflare no pudo procesar este video. Haz una nueva publicación con otro video.",
+    "too_long": "El video dura más de 3 minutos y no se puede publicar.",
+    "missing_title": "Completa el título antes de publicar.",
+    "missing_body": "Guarda el formulario antes de publicar: el cuerpo todavía no se guardó.",
+    "missing_media": "Una publicación de video necesita video: define el medio y guarda antes de publicar.",
+    "media_license_mismatch": "La licencia del medio no coincide con el proveedor. Ajústala en Licencia y guarda.",
+    "not_draft": "Solo los borradores se pueden publicar.",
+    "not_published": "Este contenido no está publicado.",
+    "network": "Se cayó la conexión. Inténtalo de nuevo.",
+    "provider_error": "El servicio de video no respondió. Inténtalo de nuevo en un momento.",
+    "file_too_large": "El video supera los 2 GB."
   }
 }

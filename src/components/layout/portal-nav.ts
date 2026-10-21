@@ -24,6 +24,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "settings", href: "/admin/settings" },
   ],
   creator: [
+    // Postar é a ação principal do herói: primeiro item do menu.
+    { key: "post", href: "/creator/post/new" },
     { key: "dashboard", href: "/creator" },
     { key: "content", href: "/creator/content" },
     { key: "links", href: "/creator/links" },
