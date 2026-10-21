@@ -4,7 +4,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 
 ## Segurança
 - [x] **(B)** RLS habilitado em todas as tabelas (`select count(*) from pg_tables where schemaname='public' and not rowsecurity` = 0) (verificado no remoto e no local em 20/10/2026: 0 tabelas sem RLS)
-- [x] **(B)** `npm run test:rls` verde (405 asserções) no commit de release (405/405 na `master` em 21/10/2026, com as migrações 0017 a 0023)
+- [x] **(B)** `npm run test:rls` verde (430 asserções) no commit de release (430/430 na `master` em 21/10/2026, com as migrações 0017 a 0024)
 - [x] **(B)** `SUPABASE_SERVICE_ROLE_KEY` só em variáveis de servidor (Vercel), nunca `NEXT_PUBLIC_` (módulo `server-only`; busca no bundle do cliente sem ocorrências; variável cadastrada na Vercel em 20/10/2026 como Sensitive, só Production e Preview; `/api/cron/*` respondendo ok)
 - [x] **(B)** `CRON_SECRET` definido; `/api/cron/*` retorna 403 sem ele (definido na Vercel; 403 com segredo ausente ou errado coberto em `tests/unit/video-cron.test.ts`)
 - [ ] **(B)** Admin de bootstrap confere apenas os e-mails esperados (`app_settings.bootstrap_admin_emails`)
