@@ -1,6 +1,6 @@
 import "server-only";
 import type { Enums } from "@/lib/supabase/helpers";
-import { CloudflareStreamProvider } from "./providers/cloudflare-stream";
+import { CloudflareStreamProvider, isCloudflareStreamConfigured } from "./providers/cloudflare-stream";
 import { getDemoSource } from "./providers/demo";
 import { EmbedProvider } from "./providers/embed";
 import { MuxProvider } from "./providers/mux";
@@ -16,6 +16,15 @@ import {
 export * from "./types";
 export { parseYouTubeId, parseVimeoId } from "./providers/embed";
 export { parseTranscript } from "./providers/demo";
+export {
+  CloudflareStreamError,
+  CloudflareStreamProvider,
+  MAX_UPLOAD_BYTES,
+  isStreamUid,
+  thumbnailPath,
+  thumbnailUrl,
+  type VideoStatus,
+} from "./providers/cloudflare-stream";
 
 // Normaliza valores aceitos em VIDEO_PROVIDER / app_settings "video.provider".
 export function normalizeProviderKind(value: unknown): VideoProviderKind | null {
@@ -45,6 +54,20 @@ function instantiate(kind: VideoProviderKind): VideoProvider {
 export function getVideoProvider(kind?: VideoProviderKind | null, settingValue?: unknown): VideoProvider {
   const resolved = kind ?? normalizeProviderKind(process.env.VIDEO_PROVIDER) ?? normalizeProviderKind(settingValue) ?? "embed";
   return instantiate(resolved);
+}
+
+/** Instância única do Cloudflare Stream, tipada com os métodos de upload e status. */
+export function getStreamProvider(): CloudflareStreamProvider {
+  return instantiate("cloudflare-stream") as CloudflareStreamProvider;
+}
+
+/**
+ * true quando o herói pode enviar vídeo: provedor da plataforma é cloudflare-stream (env
+ * VIDEO_PROVIDER > setting "video.provider") e as três variáveis do Stream estão definidas.
+ */
+export function isVideoUploadConfigured(settingValue?: unknown): boolean {
+  const kind = normalizeProviderKind(process.env.VIDEO_PROVIDER) ?? normalizeProviderKind(settingValue);
+  return kind === "cloudflare-stream" && isCloudflareStreamConfigured();
 }
 
 /**

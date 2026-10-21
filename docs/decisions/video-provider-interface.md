@@ -6,7 +6,7 @@
 
 ## 1. Objetivo
 
-Isolar o app do fornecedor de vídeo. Páginas e componentes só conhecem `VideoProvider`; o fornecedor é escolhido por variável de ambiente. No POC roda `EmbedProvider` (custo zero). `CloudflareStreamProvider` e `MuxProvider` existem como stubs que falham de forma clara se faltarem chaves.
+Isolar o app do fornecedor de vídeo. Páginas e componentes só conhecem `VideoProvider`; o fornecedor é escolhido por variável de ambiente. No POC roda `EmbedProvider` (custo zero). `CloudflareStreamProvider` atende o vídeo gravado pelo herói (upload tus + iframe, seção 5.2); `MuxProvider` é stub. Ambos falham de forma clara se faltarem chaves.
 
 ## 2. Modelo de dados
 
@@ -139,13 +139,18 @@ Validação com `zod` no boot (`src/lib/env.ts`): se `VIDEO_PROVIDER` for pago e
 - `createUploadUrl`/`handleWebhook` não implementados; o portal do criador aceita colar um link e valida o ID com regex.
 - **Env:** nenhuma. CSP precisa liberar `frame-src` para os domínios acima.
 
-### 5.2 `CloudflareStreamProvider` (stub)
+### 5.2 `CloudflareStreamProvider` (implementado sem assinatura; testado com fetch simulado)
 
-- Playback: `https://customer-{CODE}.cloudflarestream.com/{uid}/manifest/video.m3u8`; se `signed`, substitui `uid` por JWT (RS256) com `sub: uid`, `exp`, `nbf`, claims `userId` em `kid`-metadata; legendas em `/captions/{lang}/vtt`.
-- Upload: `POST /accounts/{id}/stream/direct_upload` com `maxDurationSeconds`, `requireSignedURLs: premium`, `meta.creatorId`; protocolo `tus` acima de 200 MB.
-- Webhook: validar `Webhook-Signature` (HMAC-SHA256 com segredo da conta); evento `ready`/`error`.
-- Legendas: após `ready`, chamar `POST /captions/{lang}/generate` para `pt`, `en`, `es`.
-- **Env:** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_STREAM_API_TOKEN`, `CLOUDFLARE_STREAM_CUSTOMER_CODE`, `CLOUDFLARE_STREAM_SIGNING_KEY_ID`, `CLOUDFLARE_STREAM_SIGNING_KEY_PEM` (base64), `CLOUDFLARE_STREAM_WEBHOOK_SECRET`.
+Uso no produto: o herói grava no celular e publica direto (até 180 s). Código em `src/lib/video/providers/cloudflare-stream.ts`; miniatura em `src/app/media/stream/[uid]/thumbnail/route.ts`; testes em `tests/unit/cloudflare-stream.test.ts`.
+
+- **Upload (tus, direto do navegador):** o servidor chama `POST https://api.cloudflare.com/client/v4/accounts/{account_id}/stream?direct_user=true` com `Authorization: Bearer <token>`, `Tus-Resumable: 1.0.0`, `Upload-Length: <bytes>`, `Upload-Creator: <creatorId>` e `Upload-Metadata` (pares `chave base64(valor)` separados por vírgula) com `maxDurationSeconds` (180), `expiry` (RFC 3339, +30 min) e `name` (nome do arquivo saneado). A resposta traz a URL de uso único no header `Location` e o uid no header `stream-media-id`; o navegador envia o arquivo com `tus-js-client` direto para essa URL (o arquivo não passa pelo nosso servidor). Escolhemos tus mesmo para arquivos pequenos porque o POST simples do Direct Creator Upload aceita só até 200 MB e o tus retoma upload interrompido no celular. Arquivos ≤ 0 ou > 2 GB são recusados antes da rede. `requiresignedurls` **não** é enviado: a regra free/premium é do admin e a assinatura ainda não está ativa.
+- **Status:** `GET /accounts/{account_id}/stream/{uid}` → `result.readyToStream`, `result.status.state` (`pendingupload`, `downloading`, `queued`, `inprogress`, `ready`, `error`, `live-inprogress`), `result.duration` (segundos; `-1` = desconhecida), `result.creator`. Mapeamento: `error` → `errored`; `ready` com `readyToStream` → `ready`; o resto → `pending`. Erro HTTP vira `CloudflareStreamError` com `status` (404 = vídeo inexistente).
+- **Playback:** `{ type: "iframe", url: "https://customer-{CODE}.cloudflarestream.com/{uid}/iframe?poster=<miniatura codificada>" }`. Iframe em vez de HLS porque o projeto não tem `hls.js`; o player do Stream cobre Safari e Chrome. `getEmbed` devolve a mesma URL com `aspectRatio: "16/9"`: o `MediaRef` não guarda dimensões, e o player encaixa vídeo vertical com faixas laterais.
+- **Premium (`signed: true`):** sem `CLOUDFLARE_STREAM_SIGNING_KEY_ID`/`_PEM` → `NotConfiguredError` (a página mostra "indisponível"). Com as chaves, o token JWT ainda não foi implementado e o erro continua explícito.
+- **Miniatura:** `https://customer-{CODE}.cloudflarestream.com/{uid}/thumbnails/thumbnail.jpg?time=<n>s&height=<px>`. O app serve por proxy em `GET /media/stream/{uid}/thumbnail` (mesmo domínio, otimizado pelo `next/image`, `Cache-Control: public, max-age=86400, s-maxage=86400`): 404 para uid inválido, vídeo inexistente ou Stream não configurado; 502 se o Cloudflare falhar. O `cover_url` do conteúdo recebe esse caminho (`thumbnailPath(uid)`).
+- **Ainda não feito:** webhook (`Webhook-Signature`), legendas automáticas, token assinado.
+- **Env:** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_STREAM_API_TOKEN`, `CLOUDFLARE_STREAM_CUSTOMER_CODE` (obrigatórias; sem elas `NotConfiguredError` e `isVideoUploadConfigured()` = false); `CLOUDFLARE_STREAM_SIGNING_KEY_ID`/`_PEM` só para premium; `CLOUDFLARE_STREAM_WEBHOOK_SECRET` quando houver webhook.
+- **Fontes (verificadas em 2026-10-21):** [Direct Creator Uploads](https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/), [Resumable uploads (tus)](https://developers.cloudflare.com/stream/uploading-videos/resumable-uploads/), [API: Get video](https://developers.cloudflare.com/api/resources/stream/methods/get/), [Stream Player](https://developers.cloudflare.com/stream/viewing-videos/using-the-stream-player/), [Miniaturas](https://developers.cloudflare.com/stream/viewing-videos/displaying-thumbnails/).
 
 ### 5.3 `MuxProvider` (stub)
 
@@ -159,7 +164,7 @@ Validação com `zod` no boot (`src/lib/env.ts`): se `VIDEO_PROVIDER` for pago e
 
 | Variável                                    | Embed   | Cloudflare          | Mux        | Pública? |
 | ------------------------------------------- | ------- | ------------------- | ---------- | -------- |
-| `VIDEO_PROVIDER`                            | `embed` | `cloudflare-stream` | `mux`      | não      |
+| `VIDEO_PROVIDER`                            | `embed` | `cloudflare_stream` | `mux`      | não      |
 | `CLOUDFLARE_ACCOUNT_ID`                     | —       | obrig.              | —          | não      |
 | `CLOUDFLARE_STREAM_API_TOKEN`               | —       | obrig.              | —          | não      |
 | `CLOUDFLARE_STREAM_CUSTOMER_CODE`           | —       | obrig.              | —          | não      |
