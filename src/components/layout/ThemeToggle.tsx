@@ -2,7 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { IconButton } from "@/components/ui/icon-button";
 import { setThemeAction } from "@/lib/theme/actions";
 import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
@@ -16,6 +16,13 @@ export function ThemeToggle({ initialTheme, className }: ThemeToggleProps) {
   const t = useTranslations("common.theme");
   const [theme, setTheme] = useState<ResolvedTheme>(initialTheme);
   const [, startTransition] = useTransition();
+
+  // O script inicial pode ter aplicado a escolha guardada no aparelho antes de o cookie chegar ao
+  // servidor (recarregar logo após trocar): o botão segue o tema que está de fato na tela.
+  useEffect(() => {
+    const applied = document.documentElement.getAttribute("data-theme");
+    if (applied === "dark" || applied === "light") setTheme(applied);
+  }, []);
 
   const next: ResolvedTheme = theme === "light" ? "dark" : "light";
 
