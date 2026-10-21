@@ -4,7 +4,8 @@ import { CloudflareStreamError, type VideoStatus } from "@/lib/video/providers/c
 
 // Limpeza diária dos envios do composer, com service role e Cloudflare simulados: apaga vídeo de
 // envio descartado, remove rascunho nunca publicado cujo vídeo ficou incompleto/com erro/sumiu, e
-// nunca toca publicado, conteúdo que já esteve no ar nem vídeo bom.
+// nunca toca publicado, conteúdo que já esteve no ar nem vídeo bom. A fila do passo (b) vem da
+// RPC stream_cleanup_candidates; o mock reproduz o SQL (testado de verdade no S24 do RLS).
 
 const NOW = new Date("2026-10-22T03:00:00Z");
 const uid = (n: number) => n.toString(16).padStart(32, "0");
@@ -15,8 +16,10 @@ type Row = {
   expires_at: string;
   discarded_at: string | null;
   provider_deleted_at: string | null;
+  checked_at?: string | null;
 };
-type Content = { id: string; status: string; published_at: string | null };
+// media_ref: uid do Stream que o corpo do conteúdo usa (null = corpo sem vídeo do Stream)
+type Content = { id: string; status: string; published_at: string | null; media_ref: string | null };
 
 let uploads: Row[];
 let contents: Content[];
@@ -25,11 +28,32 @@ let statuses: Record<string, VideoStatus | Error>;
 let deleted: string[];
 let deleteFails: Set<string>;
 let queries: { table: string; filters: string[] }[];
+let candidateCalls: { p_cutoff: string; p_limit: number }[];
+
+// Espelho de stream_cleanup_candidates (0026).
+function candidates(cutoff: string, limit: number) {
+  const live = (c: Content) => c.status !== "draft" || c.published_at !== null;
+  return uploads
+    .filter((u) => u.discarded_at === null && u.provider_deleted_at === null && u.expires_at < cutoff)
+    .filter((u) => !contents.some((c) => c.media_ref === u.uid && live(c)))
+    .sort((a, b) => (a.checked_at ?? "").localeCompare(b.checked_at ?? "") || a.expires_at.localeCompare(b.expires_at))
+    .slice(0, limit)
+    .map((u) => ({
+      uid: u.uid,
+      draft_id: contents.find((c) => c.media_ref === u.uid && !live(c) && (u.content_id === null || c.id === u.content_id))?.id ?? null,
+      referenced: contents.some((c) => c.media_ref === u.uid),
+    }));
+}
 
 function adminMock() {
   return {
     rpc: async (fn: string, args: Record<string, unknown>) => {
       if (fn === "audit_log") audits.push(args);
+      if (fn === "stream_cleanup_candidates") {
+        const call = args as { p_cutoff: string; p_limit: number };
+        candidateCalls.push(call);
+        return { data: candidates(call.p_cutoff, call.p_limit), error: null };
+      }
       return { data: null, error: null };
     },
     from(table: string) {
@@ -129,6 +153,7 @@ beforeEach(() => {
   deleted = [];
   deleteFails = new Set();
   queries = [];
+  candidateCalls = [];
 });
 
 describe("cleanupStreamUploads", () => {
@@ -150,7 +175,7 @@ describe("cleanupStreamUploads", () => {
   });
 
   it("(b) vencido com rascunho nunca publicado e vídeo incompleto: apaga rascunho e vídeo, marca e audita", async () => {
-    contents.push({ id: "c1", status: "draft", published_at: null });
+    contents.push({ id: "c1", status: "draft", published_at: null, media_ref: uid(3) });
     uploads.push({ uid: uid(3), content_id: "c1", expires_at: old, discarded_at: null, provider_deleted_at: null });
     statuses[uid(3)] = { state: "incomplete", durationSec: null, creatorId: "c", reason: null };
     const result = await cleanup();
@@ -162,7 +187,7 @@ describe("cleanupStreamUploads", () => {
   });
 
   it("(b) vídeo com erro ou que sumiu (404) também sai; 404 não chama DELETE", async () => {
-    contents.push({ id: "c1", status: "draft", published_at: null }, { id: "c2", status: "draft", published_at: null });
+    contents.push({ id: "c1", status: "draft", published_at: null, media_ref: uid(4) }, { id: "c2", status: "draft", published_at: null, media_ref: uid(5) });
     uploads.push({ uid: uid(4), content_id: "c1", expires_at: old, discarded_at: null, provider_deleted_at: null });
     uploads.push({ uid: uid(5), content_id: "c2", expires_at: old, discarded_at: null, provider_deleted_at: null });
     statuses[uid(4)] = { state: "errored", durationSec: null, creatorId: "c", reason: "ERR_NON_VIDEO" };
@@ -174,21 +199,56 @@ describe("cleanupStreamUploads", () => {
     expect(result).toMatchObject({ stream_drafts_removed: 2, stream_videos_deleted: 2 });
   });
 
-  it("(b) envio que nem virou rascunho (content_id nulo) e ficou incompleto: só apaga o vídeo", async () => {
+  it("(b) envio que nenhum corpo usa (nem virou rascunho): órfão, apaga o vídeo sem consultar o Cloudflare", async () => {
     uploads.push({ uid: uid(6), content_id: null, expires_at: old, discarded_at: null, provider_deleted_at: null });
-    statuses[uid(6)] = { state: "incomplete", durationSec: null, creatorId: "c", reason: null };
+    statuses[uid(6)] = { state: "ready", durationSec: 20, creatorId: "c", reason: null };
     const result = await cleanup();
     expect(deleted).toEqual([uid(6)]);
+    expect(audits).toHaveLength(0);
+    expect(result).toMatchObject({ stream_drafts_removed: 0, stream_videos_deleted: 1, stream_checked: 0 });
+  });
+
+  it("(b) rascunho que trocou o vídeo por YouTube no editor fica; só o vídeo vencido sai", async () => {
+    contents.push({ id: "yt", status: "draft", published_at: null, media_ref: null });
+    uploads.push({ uid: uid(12), content_id: "yt", expires_at: old, discarded_at: null, provider_deleted_at: null });
+    statuses[uid(12)] = { state: "incomplete", durationSec: null, creatorId: "c", reason: null };
+    const result = await cleanup();
+    expect(contents.map((c) => c.id)).toEqual(["yt"]);
+    expect(deleted).toEqual([uid(12)]);
     expect(audits).toHaveLength(0);
     expect(result).toMatchObject({ stream_drafts_removed: 0, stream_videos_deleted: 1 });
   });
 
+  it("(b) vídeo pronto é conferido e vai para o fim da fila (checked_at), sem apagar", async () => {
+    contents.push({ id: "good", status: "draft", published_at: null, media_ref: uid(13) });
+    uploads.push({ uid: uid(13), content_id: "good", expires_at: old, discarded_at: null, provider_deleted_at: null });
+    const result = await cleanup();
+    expect(uploads[0]).toMatchObject({ checked_at: NOW.toISOString(), discarded_at: null });
+    expect(contents).toHaveLength(1);
+    expect(result).toMatchObject({ stream_checked: 1, stream_videos_deleted: 0 });
+  });
+
+  it("(b) 100 publicados vencidos na frente não travam a fila: o envio abandonado mais novo sai", async () => {
+    for (let i = 0; i < 120; i++) {
+      contents.push({ id: `pub${i}`, status: "published", published_at: "2026-10-01T10:00:00Z", media_ref: uid(500 + i) });
+      uploads.push({ uid: uid(500 + i), content_id: `pub${i}`, expires_at: "2026-10-01T00:00:00Z", discarded_at: null, provider_deleted_at: null });
+    }
+    contents.push({ id: "abandoned", status: "draft", published_at: null, media_ref: uid(14) });
+    uploads.push({ uid: uid(14), content_id: "abandoned", expires_at: old, discarded_at: null, provider_deleted_at: null });
+    statuses[uid(14)] = { state: "incomplete", durationSec: null, creatorId: "c", reason: null };
+    const result = await cleanup();
+    expect(candidateCalls).toEqual([{ p_cutoff: "2026-10-22T02:00:00.000Z", p_limit: 100 }]);
+    expect(deleted).toEqual([uid(14)]);
+    expect(contents.some((c) => c.id === "abandoned")).toBe(false);
+    expect(result).toMatchObject({ stream_checked: 1, stream_drafts_removed: 1, stream_videos_deleted: 1 });
+  });
+
   it("nunca toca publicado, despublicado (já esteve no ar), vídeo bom nem envio na validade", async () => {
     contents.push(
-      { id: "pub", status: "published", published_at: "2026-10-20T10:00:00Z" },
-      { id: "was", status: "draft", published_at: "2026-10-20T10:00:00Z" },
-      { id: "good", status: "draft", published_at: null },
-      { id: "young", status: "draft", published_at: null },
+      { id: "pub", status: "published", published_at: "2026-10-20T10:00:00Z", media_ref: uid(7) },
+      { id: "was", status: "draft", published_at: "2026-10-20T10:00:00Z", media_ref: uid(8) },
+      { id: "good", status: "draft", published_at: null, media_ref: uid(9) },
+      { id: "young", status: "draft", published_at: null, media_ref: uid(10) },
     );
     uploads.push(
       { uid: uid(7), content_id: "pub", expires_at: old, discarded_at: null, provider_deleted_at: null },
@@ -209,7 +269,7 @@ describe("cleanupStreamUploads", () => {
   });
 
   it("erro do Cloudflare ao consultar (fora 404) não apaga nada", async () => {
-    contents.push({ id: "c1", status: "draft", published_at: null });
+    contents.push({ id: "c1", status: "draft", published_at: null, media_ref: uid(11) });
     uploads.push({ uid: uid(11), content_id: "c1", expires_at: old, discarded_at: null, provider_deleted_at: null });
     statuses[uid(11)] = new CloudflareStreamError(500, "internal");
     const result = await cleanup();

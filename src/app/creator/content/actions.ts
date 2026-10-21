@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { failFrom } from "../_lib/action-utils";
 import { insertCreatorContent } from "../_lib/content-insert";
 import { creatorActionContext } from "../_lib/creator-action";
+import { setDraftSlug } from "../_lib/draft-slug";
 import { checkStreamVideo, readVideoUploadConfigured } from "../_lib/video-post";
 
 // Ações do herói sobre conteúdo. O herói grava rascunhos próprios e publica/despublica direto
@@ -127,6 +128,13 @@ export async function publishContent(input: { id: string }): Promise<ActionResul
     if (!(await readVideoUploadConfigured(supabase))) return { ok: false, error: "video_not_configured" };
     const video = await checkStreamVideo(body.media_ref, creatorId);
     if (!video.ok) return video;
+    // Rascunho do composer publicado pelo editor (ex.: saiu da tela enquanto processava): troca o
+    // slug provisório pelo do título atual, como o composer faz, enquanto nunca foi ao ar.
+    const { data: row } = await supabase.from("content").select("title, published_at").eq("id", id).maybeSingle();
+    if (row && row.published_at === null && row.title?.trim()) {
+      const slugFailure = await setDraftSlug(ctx, id, row.title);
+      if (slugFailure) return slugFailure;
+    }
   }
 
   const { data, error } = await supabase.rpc("creator_publish_content", { p_content: id });

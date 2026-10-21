@@ -151,12 +151,15 @@
     "discardConfirm": "Discard",
     "discarded": "Video discarded",
     "discardedDeleted": "The draft and the video were deleted.",
+    "discardFailed": "Couldn't discard",
+    "discardFailedDescription": "Try again. Meanwhile, the draft stays in My content.",
     "doneTitle": "Published!",
     "doneDescription": "Your post is live.",
     "viewPost": "View post",
     "another": "Make another post",
     "leaveWarning": "The video is still uploading. If you leave now, the upload stops.",
     "leaveWarningProcessing": "The video is uploaded and being prepared. If you leave now, the post stays as a draft in My content.",
+    "leaveWarningText": "The video stays as a draft in My content, but the title and caption you wrote will be lost.",
     "sr": {
       "starting": "Preparing the video upload.",
       "progress": "Upload at {pct}%.",
@@ -197,7 +200,8 @@
       "invalid_slug": "Could not create the post address. Change the title and try again.",
       "already_published": "This post has been live before; open it in My content to edit.",
       "not_stream": "This draft has no video uploaded from the phone.",
-      "content_in_use": "This draft is linked to a program and cannot be deleted. Contact the administration."
+      "content_in_use": "This draft is linked to a program and cannot be deleted. Contact the administration.",
+      "publish_network": "The connection dropped. When it's back, tap Try publishing again."
     }
   },
   "reviews": {

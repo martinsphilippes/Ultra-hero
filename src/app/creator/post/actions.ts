@@ -12,7 +12,7 @@ import { getStreamProvider, thumbnailPath } from "@/lib/video";
 import { failFrom, type ActionFailure } from "../_lib/action-utils";
 import { insertCreatorContent } from "../_lib/content-insert";
 import { creatorActionContext, type CreatorActionContext } from "../_lib/creator-action";
-import { uniqueSlug } from "../_lib/slug";
+import { setDraftSlug } from "../_lib/draft-slug";
 import { checkStreamVideo, providerFailure, readVideoUploadConfigured } from "../_lib/video-post";
 
 // Composer de post em vídeo do herói. O ticket de upload, o vínculo uid → herói (stream_uploads,
@@ -168,19 +168,6 @@ async function loadOwnContent(ctx: CreatorActionContext, contentId: string): Pro
   // A RLS já esconde conteúdo de outros heróis; a comparação é a defesa extra (e não revela ids).
   if (!data || data.creator_id !== ctx.creatorId) return { ok: false, error: "forbidden" };
   return data as OwnDraft;
-}
-
-// Slug definitivo a partir do título final (o rascunho nasceu com o título provisório). Em
-// colisão tenta outro sufixo uma vez.
-async function setDraftSlug(ctx: CreatorActionContext, contentId: string, title: string): Promise<ActionFailure | null> {
-  let lastError: { message?: string; code?: string } | null = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const { error } = await ctx.supabase.rpc("creator_set_draft_slug", { p_content: contentId, p_slug: uniqueSlug(title) });
-    if (!error) return null;
-    lastError = error;
-    if (rpcErrorCode(error.message) !== "slug_taken") break;
-  }
-  return failFrom(lastError);
 }
 
 export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar }): Promise<PublishResult> {

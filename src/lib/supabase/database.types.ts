@@ -1119,14 +1119,14 @@ isOneToOne: false
                   ]
                 },"stream_uploads": {
                   Row: {
-                    "content_id": string | null,"created_at": string,"creator_id": string,"discarded_at": string | null,"expires_at": string,"provider_deleted_at": string | null,"uid": string
+                    "checked_at": string | null,"content_id": string | null,"created_at": string,"creator_id": string,"discarded_at": string | null,"expires_at": string,"provider_deleted_at": string | null,"uid": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "content_id"?: string | null,"created_at"?: string,"creator_id": string,"discarded_at"?: string | null,"expires_at": string,"provider_deleted_at"?: string | null,"uid": string
+                    "checked_at"?: string | null,"content_id"?: string | null,"created_at"?: string,"creator_id": string,"discarded_at"?: string | null,"expires_at": string,"provider_deleted_at"?: string | null,"uid": string
                   }
                   Update: {
-                    "content_id"?: string | null,"created_at"?: string,"creator_id"?: string,"discarded_at"?: string | null,"expires_at"?: string,"provider_deleted_at"?: string | null,"uid"?: string
+                    "checked_at"?: string | null,"content_id"?: string | null,"created_at"?: string,"creator_id"?: string,"discarded_at"?: string | null,"expires_at"?: string,"provider_deleted_at"?: string | null,"uid"?: string
                   }
                   Relationships: [
                     {
@@ -1652,6 +1652,11 @@ isOneToOne: false
                            },
 "slugify":
 { Args: { "p": string }; Returns: string
+                           },
+"stream_cleanup_candidates":
+{ Args: { "p_cutoff": string,"p_limit": number }; Returns: {
+              "draft_id": string,"referenced": boolean,"uid": string
+            }[]
                            },
 "submit_content_for_review":
 { Args: { "p_content": string }; Returns: undefined

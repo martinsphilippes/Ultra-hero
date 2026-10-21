@@ -151,12 +151,15 @@
     "discardConfirm": "Descartar",
     "discarded": "Video descartado",
     "discardedDeleted": "El borrador y el video fueron eliminados.",
+    "discardFailed": "No se pudo descartar",
+    "discardFailedDescription": "Inténtalo de nuevo. Mientras tanto, el borrador sigue en Mis contenidos.",
     "doneTitle": "¡Publicado!",
     "doneDescription": "Tu publicación ya está en línea.",
     "viewPost": "Ver publicación",
     "another": "Hacer otra publicación",
     "leaveWarning": "El video todavía se está enviando. Si sales ahora, el envío se detiene.",
     "leaveWarningProcessing": "El video ya se envió y se está preparando. Si sales ahora, la publicación queda como borrador en Mis contenidos.",
+    "leaveWarningText": "El video queda como borrador en Mis contenidos, pero el título y la descripción que escribiste se pierden.",
     "sr": {
       "starting": "Preparando el envío del video.",
       "progress": "Envío al {pct}%.",
@@ -197,7 +200,8 @@
       "invalid_slug": "No fue posible generar la dirección de la publicación. Cambia el título e inténtalo de nuevo.",
       "already_published": "Esta publicación ya estuvo en línea; ábrela en Mis contenidos para editarla.",
       "not_stream": "Este borrador no tiene video enviado desde el celular.",
-      "content_in_use": "Este borrador está vinculado a un programa y no se puede eliminar. Habla con la administración."
+      "content_in_use": "Este borrador está vinculado a un programa y no se puede eliminar. Habla con la administración.",
+      "publish_network": "Se cayó la conexión. Cuando vuelva, toca Intentar publicar de nuevo."
     }
   },
   "reviews": {

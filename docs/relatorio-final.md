@@ -11,13 +11,13 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
 | Banco remoto no Supabase | 24 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção). **0025 e 0026 ainda não constam aqui como aplicadas no remoto** (o repositório tem 26) |
-| Testes | 527 cenários de banco, 840 unitários e 134 E2E com axe (mais 2 do envio real ao Cloudflare, ligados só com `E2E_STREAM_REAL=1`). Todos passam |
+| Testes | 535 cenários de banco, 846 unitários e 134 E2E com axe (mais 2 do envio real ao Cloudflare, ligados só com `E2E_STREAM_REAL=1`). Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
 
 ### Implementado
-- **Banco e segurança**: esquema em 26 migrations, RLS em todas as 67 tabelas, 108 políticas e 103 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
+- **Banco e segurança**: esquema em 26 migrations, RLS em todas as 67 tabelas, 108 políticas e 104 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
 - **Autenticação e papéis**: e-mail e senha, login com Google (configurado e publicado em 20/10/2026: qualquer conta Google entra, sem lista de testadores), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
@@ -88,10 +88,10 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 | Camada | Resultado | Comando |
 |---|---|---|
-| Banco: RLS e regras de negócio | 527 de 527 (banco local com as 26 migrações) | `npm run test:rls` |
-| Unitários (os anteriores verificados por mutação; os desta rodada ainda não) | 840 de 840 em 22 arquivos | `npm run test` |
+| Banco: RLS e regras de negócio | 535 de 535 (banco local com as 26 migrações) | `npm run test:rls` |
+| Unitários (os anteriores verificados por mutação; os desta rodada ainda não) | 846 de 846 em 22 arquivos | `npm run test` |
 | E2E com axe, em Pixel 7 e Desktop Chrome | 134 de 134 local contra o banco remoto (2 pulados: envio real ao Cloudflare, só com `E2E_STREAM_REAL=1`) | `npm run test:e2e` |
-| Tipos, lint e mensagens | Limpos. 18 namespaces e 3.413 chaves por idioma | `npm run check` |
+| Tipos, lint e mensagens | Limpos. 18 namespaces e 3.417 chaves por idioma | `npm run check` |
 | Build de produção | OK | `npm run build` |
 
 "Verificado por mutação" significa que agentes independentes injetaram defeitos no código-fonte e confirmaram que os testes falham. Os defeitos que passaram despercebidos ganharam testes novos.

@@ -31,7 +31,9 @@ const POLL_LIMIT_MS = 3 * 60 * 1000;
 const METADATA_TIMEOUT_MS = 10_000;
 // Logo depois do tus terminar o Cloudflare ainda pode marcar pendingupload por um instante.
 const INCOMPLETE_GRACE_TRIES = 3;
-const GUARD_KEY = "__ultraPostGuard";
+// Envio que parou por rede com o navegador "online" (sinal fraco, Wi-Fi sem internet, aba suspensa):
+// o evento "online" nunca chega, então tenta de novo sozinho nesses intervalos (o último se repete).
+const AUTO_RETRY_MS = [5000, 15000, 30000, 60000];
 
 // Lê a duração bruta pelo próprio navegador; sem metadados (codec que o desktop não abre) devolve null.
 function readDuration(url: string): Promise<number | null> {
@@ -94,6 +96,12 @@ export function PostComposer({ configured, defaultPillar }: Props) {
   const pollRef = useRef<number | null>(null);
   const lastQuarterRef = useRef(0);
   const firstStepRef = useRef(true);
+  // Entrada extra no histórico que segura o "voltar" enquanto sair perde algo. Controlada por ref:
+  // o roteador do Next reescreve history.state a cada action com revalidatePath, então uma marca
+  // no estado some e a guarda era empilhada de novo (entradas mortas no voltar do Android).
+  const guardRef = useRef({ armed: false, ignorePop: false });
+  const leaveRef = useRef<string | null>(null);
+  const autoRetryRef = useRef(0);
   // Cada vídeo escolhido (e a saída da tela) ganha uma geração: respostas atrasadas de um vídeo
   // descartado ou de uma tela desmontada são ignoradas.
   const generationRef = useRef(0);
@@ -169,14 +177,58 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     headingRef.current?.focus();
   }, [step]);
 
-  const busy = upload.state === "starting" || upload.state === "uploading" || publish.state === "publishing" || publish.state === "processing";
-  // Com o envio terminado, sair só deixa o post como rascunho: o aviso muda.
-  const leaveMessage = upload.state === "done" ? t("leaveWarningProcessing") : t("leaveWarning");
+  const uploadBusy = upload.state === "starting" || upload.state === "uploading";
+  const publishBusy = publish.state === "publishing" || publish.state === "processing";
+  // Vídeo enviado e texto digitado mas ainda não publicado: título e legenda só são salvos ao
+  // publicar, então sair também perde algo (o rascunho fica com o título provisório).
+  const unsavedText = step === "compose" && upload.state === "done" && publish.state === "idle" && (title.trim() !== "" || caption.trim() !== "");
+  const leaveMessage = uploadBusy ? t("leaveWarning") : publishBusy ? t("leaveWarningProcessing") : unsavedText ? t("leaveWarningText") : null;
+  const guarding = leaveMessage !== null;
 
-  // Sair no meio do envio: fechar/recarregar (beforeunload), links internos do app (clique em
-  // captura, antes do roteador) e o voltar do navegador (entrada extra no histórico).
   useEffect(() => {
-    if (!busy) return;
+    leaveRef.current = leaveMessage;
+  }, [leaveMessage]);
+
+  // Voltar do navegador: um listener só, que decide pelos refs. Ao sair da entrada de guarda,
+  // confirma; se ficar, empilha de novo; se sair, segue o voltar.
+  useEffect(() => {
+    const guard = guardRef.current;
+    const onPop = () => {
+      if (guard.ignorePop) {
+        guard.ignorePop = false; // o history.back() que consumiu a guarda
+        return;
+      }
+      if (!guard.armed) return;
+      guard.armed = false;
+      const leaving = leaveRef.current;
+      if (!leaving || window.confirm(leaving)) {
+        window.history.back();
+        return;
+      }
+      window.history.pushState(window.history.state, "", window.location.href);
+      guard.armed = true;
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Guarda empilhada uma vez enquanto sair perde algo; quando deixa de perder (enviado, erro,
+  // publicado, descartado) ela é consumida, senão o 1º "voltar" depois ficava parado na tela.
+  useEffect(() => {
+    const guard = guardRef.current;
+    if (guarding && !guard.armed) {
+      window.history.pushState(window.history.state, "", window.location.href);
+      guard.armed = true;
+    } else if (!guarding && guard.armed) {
+      guard.armed = false;
+      guard.ignorePop = true;
+      window.history.back();
+    }
+  }, [guarding]);
+
+  // Fechar/recarregar (beforeunload) e links internos do app (clique em captura, antes do roteador).
+  useEffect(() => {
+    if (!leaveMessage) return;
     const warn = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = leaveMessage;
@@ -187,31 +239,13 @@ export function PostComposer({ configured, defaultPillar }: Props) {
       event.preventDefault();
       event.stopPropagation();
     };
-    const armGuard = () => {
-      const state = (window.history.state ?? {}) as Record<string, unknown>;
-      if (!state[GUARD_KEY]) window.history.pushState({ ...state, [GUARD_KEY]: true }, "", window.location.href);
-    };
-    let leaving = false;
-    const onPop = (event: PopStateEvent) => {
-      if (leaving || (event.state as Record<string, unknown> | null)?.[GUARD_KEY]) return;
-      // saiu da entrada de guarda: confirma; se ficar, arma de novo, senão segue o voltar
-      if (window.confirm(leaveMessage)) {
-        leaving = true;
-        window.history.back();
-      } else {
-        armGuard();
-      }
-    };
-    armGuard();
     window.addEventListener("beforeunload", warn);
     document.addEventListener("click", onClick, true);
-    window.addEventListener("popstate", onPop);
     return () => {
       window.removeEventListener("beforeunload", warn);
       document.removeEventListener("click", onClick, true);
-      window.removeEventListener("popstate", onPop);
     };
-  }, [busy, leaveMessage]);
+  }, [leaveMessage]);
 
   const runTus = useCallback(
     async (file: File, uploadUrl: string, generation: number) => {
@@ -225,7 +259,11 @@ export function PostComposer({ configured, defaultPillar }: Props) {
           retryDelays: RETRY_DELAYS,
           // O link vem do servidor a cada envio; nada a guardar no navegador.
           storeFingerprintForResuming: false,
-          onProgress: (sent, total) => current() && updateUpload({ state: "uploading", pct: uploadPercent(sent, total) }),
+          onProgress: (sent, total) => {
+            if (!current()) return;
+            autoRetryRef.current = 0; // voltou a andar: a próxima queda recomeça do intervalo curto
+            updateUpload({ state: "uploading", pct: uploadPercent(sent, total) });
+          },
           onSuccess: () => current() && updateUpload({ state: "done" }),
           onError: (error) => current() && updateUpload({ state: "error", error: classifyUploadError(error) }),
         });
@@ -265,19 +303,41 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     await runTus(picked.file, session.uploadUrl, generation);
   }, [runTus, updateUpload]);
 
-  // Conexão de volta: retoma sozinho o envio que parou por falta de rede.
+  // Envio parado por rede retoma sozinho: no evento "online" (estava offline), ao voltar para a aba
+  // e, com o navegador dizendo que está online (sinal fraco, timeout), por tempo.
   const networkDown = upload.state === "error" && upload.error === "network";
   useEffect(() => {
     if (!networkDown) return;
+    let done = false;
     const resume = () => {
-      setAnnouncement(t("sr.resuming"));
+      if (done) return;
+      done = true;
+      // anúncio depois do beginUpload: ele anuncia "Preparando" de forma síncrona e o
+      // "Retomando" sobrescreveria só se viesse antes (o leitor ouviria que recomeçou do zero)
       void beginUpload();
+      setAnnouncement(t("sr.resuming"));
     };
-    window.addEventListener("online", resume, { once: true });
-    return () => window.removeEventListener("online", resume);
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && navigator.onLine !== false) resume();
+    };
+    let timer: number | null = null;
+    if (navigator.onLine !== false) {
+      const delay = AUTO_RETRY_MS[Math.min(autoRetryRef.current, AUTO_RETRY_MS.length - 1)];
+      autoRetryRef.current += 1;
+      timer = window.setTimeout(resume, delay);
+    }
+    window.addEventListener("online", resume);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      done = true;
+      if (timer !== null) window.clearTimeout(timer);
+      window.removeEventListener("online", resume);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [networkDown, beginUpload, t]);
 
   async function retryUpload() {
+    autoRetryRef.current = 0;
     // Link vencido: o rascunho antigo (e o vídeo incompleto) é descartado e um envio novo começa.
     if (upload.state === "error" && upload.error === "upload_expired" && sessionRef.current) {
       const old = sessionRef.current;
@@ -371,9 +431,15 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     }
     setDiscarding(false);
     setDiscardOpen(false);
+    if (failure) {
+      // Nada foi apagado: a tela fica como estava (o rascunho segue em Meus conteúdos) e o envio
+      // interrompido acima volta a andar.
+      toast({ title: t("discardFailed"), description: t("discardFailedDescription"), variant: "error" });
+      if (upload.state === "starting" || upload.state === "uploading") void beginUpload();
+      return;
+    }
     reset();
-    if (failure) toast({ title: t("discarded"), description: message(failure), variant: "error" });
-    else if (id) toast({ title: t("discarded"), description: t("discardedDeleted"), variant: "success" });
+    if (id) toast({ title: t("discarded"), description: t("discardedDeleted"), variant: "success" });
   }
 
   const trimmedTitle = title.trim();
@@ -420,7 +486,8 @@ export function PostComposer({ configured, defaultPillar }: Props) {
         }
         setPublish({ state: "error", error: result.error });
       } catch {
-        if (generation === generationRef.current) setPublish({ state: "error", error: "network" });
+        // código próprio: "network" fala do envio que retoma sozinho; publicar só retoma no toque
+        if (generation === generationRef.current) setPublish({ state: "error", error: "publish_network" });
       }
     };
     await attempt();

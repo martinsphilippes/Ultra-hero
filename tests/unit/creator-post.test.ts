@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/creator/post/actions";
 import { createContent, publishContent, unpublishContent, updateContent } from "@/app/creator/content/actions";
 import type { ContentFormValues } from "@/components/editors/types";
+import { slugify, uniqueSlug } from "@/app/creator/_lib/slug";
 import { MAX_POST_BYTES, durationMinutes, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "@/components/creator/post/validation";
 
 // Composer de post em vídeo do herói: server actions sem Next, Supabase nem Cloudflare. Confere que
@@ -32,6 +33,7 @@ const state = vi.hoisted(() => ({
   uploadCount: 0,
   rpcError: null as string | null,
   slugTaken: 0,
+  discardUid: undefined as string | null | undefined,
   insertError: null as { message: string; code?: string } | null,
   bodyError: null as { message: string; code?: string } | null,
   adminInsertError: null as { message: string } | null,
@@ -126,7 +128,7 @@ vi.mock("@/lib/supabase/server", () => ({
         return { data: { id: args?.p_content, slug: args?.p_slug }, error: null };
       }
       if (state.rpcError) return { data: null, error: { message: state.rpcError } };
-      if (fn === "creator_discard_video_draft") return { data: { id: args?.p_content, uid: ids.UID }, error: null };
+      if (fn === "creator_discard_video_draft") return { data: { id: args?.p_content, uid: state.discardUid === undefined ? ids.UID : state.discardUid }, error: null };
       const status = fn === "creator_unpublish_content" ? "draft" : "published";
       // Como a RPC real: devolve o slug que está na linha (não um valor fixo que esconderia o bug).
       return { data: { id: args?.p_content, slug: state.content?.slug, status }, error: null };
@@ -189,12 +191,13 @@ beforeEach(() => {
   state.configured = true;
   state.hasAdmin = true;
   state.settings = { "video.provider": "cloudflare_stream" };
-  state.content = { id: ids.CONTENT, slug: "post-em-video-abc123", status: "draft", creator_id: ids.CREATOR, published_at: null };
+  state.content = { id: ids.CONTENT, slug: "post-em-video-abc123", status: "draft", creator_id: ids.CREATOR, published_at: null, title: "Treino de perna" };
   state.body = { media_provider: "cloudflare_stream", media_ref: ids.UID };
   state.profile = { pillars: ["nutrition", "gastronomy"] };
   state.uploadCount = 0;
   state.rpcError = null;
   state.slugTaken = 0;
+  state.discardUid = undefined;
   state.insertError = null;
   state.bodyError = null;
   state.adminInsertError = null;
@@ -480,6 +483,13 @@ describe("discardVideoPost", () => {
     expect(state.writes.filter((w) => w.op === "delete")).toHaveLength(0);
   });
 
+  it("uid nulo da RPC (envio não é deste rascunho): apaga só o rascunho, nunca chama o Cloudflare", async () => {
+    state.discardUid = null;
+    expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: true, deleted: true });
+    expect(state.deleted).toHaveLength(0);
+    expect(state.adminWrites).toHaveLength(0);
+  });
+
   it("falha do Cloudflare não volta erro para a pessoa (a limpeza diária tenta de novo)", async () => {
     const { CloudflareStreamError } = await import("@/lib/video");
     state.deleteError = new CloudflareStreamError(500, "internal");
@@ -504,7 +514,19 @@ describe("publicar/despublicar pelo editor", () => {
     state.status = { state: "incomplete", durationSec: null, creatorId: ids.CREATOR, reason: null };
     expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: false, error: "upload_incomplete" });
     state.status = { state: "ready", durationSec: 60, creatorId: ids.CREATOR, reason: null };
-    expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: true, slug: "post-em-video-abc123" });
+    const result = await publishContent({ id: ids.CONTENT });
+    // slug provisório trocado pelo do título atual antes de ir ao ar (como no composer)
+    const slugCall = state.rpcs.find((r) => r.fn === "creator_set_draft_slug");
+    expect(String(slugCall?.args?.p_slug)).toMatch(/^treino-de-perna-[a-z0-9]{1,6}$/);
+    expect(result).toEqual({ ok: true, slug: slugCall?.args?.p_slug });
+    const fns = state.rpcs.map((r) => r.fn);
+    expect(fns.indexOf("creator_set_draft_slug")).toBeLessThan(fns.indexOf("creator_publish_content"));
+  });
+
+  it("editor: rascunho do Stream que já esteve no ar mantém o slug", async () => {
+    state.content = { ...state.content!, slug: "ja-teve-link", published_at: "2026-10-01T10:00:00Z" };
+    expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: true, slug: "ja-teve-link" });
+    expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_set_draft_slug");
   });
 
   it("conteúdo sem Stream publica direto pela RPC; despublicar usa creator_unpublish_content", async () => {
@@ -551,6 +573,17 @@ describe("editor completo com vídeo do Stream", () => {
   it("criar conteúdo novo apontando para um uid do Stream é recusado (só o composer cria)", async () => {
     expect(await createContent({ ...form(ids.UID), id: undefined })).toEqual({ ok: false, error: "forbidden" });
     expect(state.writes).toHaveLength(0);
+  });
+});
+
+describe("slug do título", () => {
+  it("corte em 60 que cai num separador não deixa hífen na ponta nem hífen duplo com o sufixo", () => {
+    const title = "Treino rápido de 3 minutos para começar o dia com energia e foco total!";
+    expect(slugify(title)).toBe("treino-rapido-de-3-minutos-para-comecar-o-dia-com-energia-e");
+    for (let i = 0; i < 50; i++) expect(uniqueSlug(title)).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+    // vários tamanhos de título: o resultado sempre casa com o formato que a RPC aceita
+    const words = "a bc def ghij klmno pqrstu vwxyzab ".repeat(6);
+    for (let n = 50; n < words.length; n++) expect(uniqueSlug(words.slice(0, n))).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
   });
 });
 

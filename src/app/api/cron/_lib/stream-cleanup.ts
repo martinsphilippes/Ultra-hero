@@ -5,8 +5,9 @@ import type { VideoStatus } from "@/lib/video/providers/cloudflare-stream";
 // Limpeza diária dos envios do composer (chamada pelo cron de retenção, com o service role):
 //  (a) envio descartado cujo vídeo ainda não foi apagado no Cloudflare (o descarte é melhor
 //      esforço) → apaga e marca provider_deleted_at;
-//  (b) envio vencido há mais de 1 h cujo rascunho nunca foi ao ar (ou que nem virou rascunho) e
-//      cujo vídeo ficou incompleto, com erro ou sumiu → apaga rascunho e vídeo e marca o envio.
+//  (b) envio vencido há mais de 1 h cujo uid não está (nem esteve) no ar e cujo vídeo ficou
+//      incompleto, com erro ou sumiu (ou que nenhum corpo usa) → apaga o rascunho que ainda usa
+//      o uid, apaga o vídeo e marca o envio.
 // Nunca toca conteúdo publicado (ou que já esteve no ar) nem envio dentro da validade.
 
 type Admin = SupabaseClient<Database>;
@@ -59,40 +60,43 @@ export async function cleanupStreamUploads(admin: Admin, provider: StreamCleanup
   let budget = STREAM_CLEANUP_LIMIT - result.stream_videos_deleted - result.stream_errors;
   if (budget <= 0) return result;
 
-  // (b) vencidos com rascunho nunca publicado (ou sem rascunho)
+  // (b) vencidos que não estão (nem estiveram) no ar. O banco filtra e ordena a fila
+  // (stream_cleanup_candidates, 0026): publicados não ocupam a janela e os envios conferidos com
+  // vídeo pronto vão para o fim (checked_at), senão a limpeza emperrava nos mesmos 100.
   const cutoff = new Date(now.getTime() - GRACE_MS).toISOString();
-  const { data: expired, error: expiredError } = await admin
-    .from("stream_uploads")
-    .select("uid, content_id, content(id, status, published_at)")
-    .is("discarded_at", null)
-    .is("provider_deleted_at", null)
-    .lt("expires_at", cutoff)
-    .order("expires_at", { ascending: true })
-    .limit(STATUS_CHECK_LIMIT);
+  const { data: expired, error: expiredError } = await admin.rpc("stream_cleanup_candidates", { p_cutoff: cutoff, p_limit: STATUS_CHECK_LIMIT });
   if (expiredError) throw new Error(expiredError.message);
 
   for (const row of expired ?? []) {
     if (budget <= 0) break;
-    const content = Array.isArray(row.content) ? row.content[0] : row.content;
-    // conteúdo publicado, arquivado ou que já esteve no ar: fora do alcance da limpeza
-    if (content && (content.status !== "draft" || content.published_at !== null)) continue;
+    // draft_id só vem quando o corpo do rascunho nunca publicado ainda usa este uid (trocou para
+    // YouTube no editor: o rascunho fica, só o vídeo sai)
+    const draftId = (row.draft_id as string | null) ?? null;
 
     let gone = false;
-    result.stream_checked += 1;
-    try {
-      const status = await provider.getVideoStatus(row.uid);
-      if (status.state !== "incomplete" && status.state !== "errored") continue; // vídeo bom: o herói ainda pode publicar
-    } catch (error) {
-      if (!isNotFound(error)) {
-        result.stream_errors += 1;
-        continue;
+    // Envio que nenhum corpo usa é órfão: sai sem perguntar ao Cloudflare.
+    if (row.referenced) {
+      result.stream_checked += 1;
+      try {
+        const status = await provider.getVideoStatus(row.uid);
+        if (status.state !== "incomplete" && status.state !== "errored") {
+          // vídeo bom: o herói ainda pode publicar; volta para o fim da fila
+          const { error } = await admin.from("stream_uploads").update({ checked_at: stamp }).eq("uid", row.uid);
+          if (error) result.stream_errors += 1;
+          continue;
+        }
+      } catch (error) {
+        if (!isNotFound(error)) {
+          result.stream_errors += 1;
+          continue;
+        }
+        gone = true;
       }
-      gone = true;
     }
     budget -= 1;
 
-    if (content) {
-      const { error } = await admin.from("content").delete().eq("id", content.id).eq("status", "draft").is("published_at", null);
+    if (draftId) {
+      const { error } = await admin.from("content").delete().eq("id", draftId).eq("status", "draft").is("published_at", null);
       if (error) {
         result.stream_errors += 1;
         continue;
@@ -101,8 +105,8 @@ export async function cleanupStreamUploads(admin: Admin, provider: StreamCleanup
       await admin.rpc("audit_log", {
         p_action: "content.cleanup_discard",
         p_resource_type: "content",
-        p_resource_id: content.id,
-        p_before: { status: content.status, media_ref: row.uid },
+        p_resource_id: draftId,
+        p_before: { status: "draft", media_ref: row.uid },
         p_actor_type: "system",
       });
     }
@@ -113,9 +117,11 @@ export async function cleanupStreamUploads(admin: Admin, provider: StreamCleanup
     }
     try {
       if (!gone) await provider.deleteVideo(row.uid);
-    } catch {
-      result.stream_errors += 1; // fica descartado sem provider_deleted_at: o passo (a) tenta amanhã
-      continue;
+    } catch (error) {
+      if (!isNotFound(error)) {
+        result.stream_errors += 1; // fica descartado sem provider_deleted_at: o passo (a) tenta amanhã
+        continue;
+      }
     }
     const { error } = await admin.from("stream_uploads").update({ provider_deleted_at: stamp }).eq("uid", row.uid);
     if (error) result.stream_errors += 1;

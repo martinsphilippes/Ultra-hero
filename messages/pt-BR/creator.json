@@ -151,12 +151,15 @@
     "discardConfirm": "Descartar",
     "discarded": "Vídeo descartado",
     "discardedDeleted": "O rascunho e o vídeo foram apagados.",
+    "discardFailed": "Não foi possível descartar",
+    "discardFailedDescription": "Tente de novo. Enquanto isso, o rascunho continua em Meus conteúdos.",
     "doneTitle": "Publicado!",
     "doneDescription": "Seu post já está no ar.",
     "viewPost": "Ver post",
     "another": "Fazer outro post",
     "leaveWarning": "O vídeo ainda está sendo enviado. Se sair agora, o envio para.",
     "leaveWarningProcessing": "O vídeo já foi enviado e está sendo preparado. Se sair agora, o post fica como rascunho em Meus conteúdos.",
+    "leaveWarningText": "O vídeo fica como rascunho em Meus conteúdos, mas o título e a legenda que você escreveu se perdem.",
     "sr": {
       "starting": "Preparando o envio do vídeo.",
       "progress": "Envio em {pct}%.",
@@ -197,7 +200,8 @@
       "invalid_slug": "Não foi possível gerar o endereço do post. Mude o título e tente de novo.",
       "already_published": "Este post já esteve no ar; abra em Meus conteúdos para editar.",
       "not_stream": "Este rascunho não tem vídeo enviado pelo celular.",
-      "content_in_use": "Este rascunho está ligado a um programa e não pode ser apagado. Fale com a administração."
+      "content_in_use": "Este rascunho está ligado a um programa e não pode ser apagado. Fale com a administração.",
+      "publish_network": "A conexão caiu. Quando ela voltar, toque em Tentar publicar de novo."
     }
   },
   "reviews": {

@@ -1440,6 +1440,70 @@ select tests.expect_error('S24 despublicado (já esteve no ar) não é descartad
 select tests.expect_error('S24 despublicado mantém o slug: already_published', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000001', 'novo-slug-s24')$q$, 'already_published');
 select tests.ok('S24 recusas não apagaram nada', exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000001'));
 
+-- 5b) um uid serve a um conteúdo só; descarte só devolve o envio DESTE rascunho
+select tests.su();
+insert into public.stream_uploads (uid, creator_id, expires_at) values
+  ('a2400000000000000000000000000004', public.seed_uuid('creator:lia'), now() + interval '30 minutes'),
+  ('a2400000000000000000000000000005', public.seed_uuid('creator:lia'), now() + interval '30 minutes');
+update public.stream_uploads set content_id = '24000000-0000-4000-8000-000000000001' where uid = 'a2400000000000000000000000000001';
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
+  ('24000000-0000-4000-8000-000000000007', 's24-clone', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 clone', 'own');
+select tests.expect_error('S24 herói não clona no rascunho o uid de post que já esteve no ar', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000007', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000001')$q$, 'stream_media_forbidden');
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000006', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000005');
+select tests.expect_error('S24 envio livre já usado por outro corpo não serve a um segundo rascunho', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000007', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000005')$q$, 'stream_media_forbidden');
+-- (A) corpo clonado gravado por caminho de sistema (ou antes da 0026): o descarte apaga só o rascunho
+select tests.su();
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000007', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000001');
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+create temporary table t_s24_clone as select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000007') as r;
+select tests.su();
+select tests.ok('S24 descartar rascunho com uid clonado de post já no ar: uid nulo, envio e post intactos',
+  (select r ->> 'uid' is null from t_s24_clone)
+  and not exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000007')
+  and (select discarded_at is null and content_id = '24000000-0000-4000-8000-000000000001' from public.stream_uploads where uid = 'a2400000000000000000000000000001')
+  and exists (select 1 from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000001' and media_ref = 'a2400000000000000000000000000001'));
+-- (B) corpo sem vínculo do herói (uid da Lia no rascunho do Rafael, gravado por caminho de sistema)
+update public.content_bodies set media_ref = 'a2400000000000000000000000000004' where content_id = '24000000-0000-4000-8000-000000000005';
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+create temporary table t_s24_foreign as select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000005') as r;
+select tests.su();
+select tests.ok('S24 descartar rascunho com uid sem vínculo do herói: uid nulo e envio da Lia intacto',
+  (select r ->> 'uid' is null from t_s24_foreign)
+  and not exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000005')
+  and (select discarded_at is null from public.stream_uploads where uid = 'a2400000000000000000000000000004'));
+-- trocar a mídia do rascunho nunca publicado descarta o envio (a limpeza apaga o vídeo)
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+update public.content_bodies set media_provider = 'none', media_ref = null where content_id = '24000000-0000-4000-8000-000000000006';
+select tests.su();
+select tests.ok('S24 rascunho que sai do Stream descarta o próprio envio',
+  (select discarded_at is not null and provider_deleted_at is null from public.stream_uploads where uid = 'a2400000000000000000000000000005'));
+
+-- 5c) fila da limpeza diária: só o service role; filtra no banco publicados/já no ar e anda por checked_at
+select tests.ok('S24 stream_cleanup_candidates: security invoker, search_path fixo, só service_role executa',
+  (select not p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.stream_cleanup_candidates(timestamptz, integer)'::regprocedure)
+  and has_function_privilege('service_role', 'public.stream_cleanup_candidates(timestamptz, integer)', 'execute')
+  and not has_function_privilege('authenticated', 'public.stream_cleanup_candidates(timestamptz, integer)', 'execute')
+  and not has_function_privilege('anon', 'public.stream_cleanup_candidates(timestamptz, integer)', 'execute'));
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
+  ('24000000-0000-4000-8000-000000000009', 's24-fila', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 fila', 'own');
+insert into public.stream_uploads (uid, creator_id, content_id, created_at, expires_at) values
+  ('a2400000000000000000000000000006', public.seed_uuid('creator:lia'), '24000000-0000-4000-8000-000000000009', now() - interval '9 hours', now() - interval '3 hours'),
+  ('a2400000000000000000000000000007', public.seed_uuid('creator:lia'), null, now() - interval '8 hours', now() - interval '2 hours');
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000009', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000006');
+update public.stream_uploads set expires_at = now() - interval '4 hours' where uid = 'a2400000000000000000000000000001';
+create temporary table t_s24_queue as select * from public.stream_cleanup_candidates(now() - interval '1 hour', 100) where uid like 'a24%';
+select tests.ok('S24 fila: envio de post que já esteve no ar fica fora; rascunho e envio órfão entram com draft_id/referenced',
+  not exists (select 1 from t_s24_queue where uid = 'a2400000000000000000000000000001')
+  and exists (select 1 from t_s24_queue where uid = 'a2400000000000000000000000000006' and draft_id = '24000000-0000-4000-8000-000000000009' and referenced)
+  and exists (select 1 from t_s24_queue where uid = 'a2400000000000000000000000000007' and draft_id is null and not referenced)
+  and not exists (select 1 from t_s24_queue where uid in ('a2400000000000000000000000000004', 'a2400000000000000000000000000005')));
+update public.stream_uploads set checked_at = now() where uid = 'a2400000000000000000000000000006';
+select tests.ok('S24 fila: envio conferido (vídeo pronto) vai para o fim',
+  (select array_agg(q.uid order by q.ord) from public.stream_cleanup_candidates(now() - interval '1 hour', 100) with ordinality as q(uid, draft_id, referenced, ord)
+   where q.uid in ('a2400000000000000000000000000006', 'a2400000000000000000000000000007'))
+  = array['a2400000000000000000000000000007', 'a2400000000000000000000000000006']);
+
 -- 6) slug do rascunho: dono, formato, duplicado
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
 select tests.expect_error('S24 outro herói não troca slug alheio', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino-s24-roubado')$q$, 'forbidden');
