@@ -1,11 +1,8 @@
 {
-  "title": "Acesso rápido às contas de demonstração",
-  "codeLabel": "Digite o código de acesso",
-  "unlock": "Liberar",
-  "codeError": "Código incorreto.",
+  "title": "Entrar com uma conta de demonstração",
   "listLabel": "Contas de demonstração",
   "signInFailed": "Não foi possível entrar nessa conta. Tente de novo.",
-  "note": "Ambiente de demonstração. Ao tocar numa conta, você sai da conta atual e entra nela.",
+  "note": "Ambiente de demonstração. Ao tocar numa conta, você entra nela na hora (e sai da conta atual, se houver).",
   "kinds": {
     "admin": {
       "label": "Admin",

@@ -1,11 +1,8 @@
 {
-  "title": "Quick access to demo accounts",
-  "codeLabel": "Enter the access code",
-  "unlock": "Unlock",
-  "codeError": "Wrong code.",
+  "title": "Sign in with a demo account",
   "listLabel": "Demo accounts",
   "signInFailed": "We couldn't sign in to that account. Try again.",
-  "note": "Demo environment. Tapping an account signs you out of the current one and into it.",
+  "note": "Demo environment. Tapping an account signs you in right away (and out of the current one, if any).",
   "kinds": {
     "admin": {
       "label": "Admin",
