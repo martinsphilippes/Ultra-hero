@@ -62,8 +62,9 @@ export function liveContentFilter(now: Date = new Date()): string {
   return `publish_at.is.null,publish_at.lte.${now.toISOString()}`;
 }
 
+// attributes entra só pelo external_url (link da loja oficial); o resto do jsonb fica na página do produto.
 export const PRODUCT_CARD_SELECT =
-  "id, slug, title, image_url, price_cents_demo, availability, " +
+  "id, slug, title, image_url, price_cents_demo, availability, attributes, " +
   "category:product_categories(code, name), seller:seller_organizations(slug, name)";
 
 export type ProductCardData = {
@@ -73,6 +74,8 @@ export type ProductCardData = {
   image_url: string;
   price_cents_demo: number;
   availability: "available" | "unavailable";
+  /** jsonb livre do produto; opcional porque a loja usa um select próprio sem ele. */
+  attributes?: unknown;
   category: { code: string; name: Record<string, string> } | null;
   seller: { slug: string; name: string } | null;
 };

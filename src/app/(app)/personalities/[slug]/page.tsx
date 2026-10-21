@@ -14,7 +14,7 @@ import { Badge, Button, EmptyState, PillarBadge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { getUser } from "@/lib/auth/session";
-import { groupCreatorProducts, maxCartQuantity, type CreatorProduct, type CreatorProductLinkRow } from "@/lib/catalog/creator-products";
+import { groupCreatorProducts, maxCartQuantity, mergeCreatorProducts, type CreatorProduct, type CreatorProductDirectRow, type CreatorProductLinkRow } from "@/lib/catalog/creator-products";
 import { CONTENT_CARD_SELECT, PRODUCT_CARD_SELECT, PROGRAM_CARD_SELECT, liveContentFilter, type ContentCardData, type ProductCardData, type ProgramCardData } from "@/lib/catalog/queries";
 import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
 import { CONTENT_TYPES, type ContentType, type Pillar } from "@/lib/supabase/helpers";
@@ -42,11 +42,14 @@ type Creator = {
 // Produto do card + estoque demo (limite por produto no carrinho de teste).
 type LinkedProduct = ProductCardData & { demo_stock: number | null };
 type LinkRow = CreatorProductLinkRow<LinkedProduct>;
+type DirectRow = CreatorProductDirectRow<LinkedProduct>;
 
 // Só os campos públicos de direitos; documento e notas ficam em creator_rights_private (só admin).
 const CREATOR_SELECT = "id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_note, rights_status, rights_holder, rights_valid_until";
 // Vínculos validados cujo conteúdo (publicado) é desta personalidade; o !inner aplica o filtro do embed à linha.
 const LINK_SELECT = `id, content:content!inner(id, slug, title, creator_id, status), product:products(${PRODUCT_CARD_SELECT}, demo_stock)`;
+// Alocação direta produto↔herói (creator_products): o embed vem nulo quando a RLS esconde o produto.
+const DIRECT_SELECT = `id, status, sort_order, product:products(${PRODUCT_CARD_SELECT}, demo_stock)`;
 const TABS = ["conteudos", "programas", "produtos"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -89,7 +92,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
 
   // Uma query por coleção (sem N+1); contagens e filtro por tipo derivam do mesmo resultado.
   const supabase = await createClient();
-  const [contentRes, programRes, linksRes, settingsRes] = await Promise.all([
+  const [contentRes, programRes, linksRes, directRes, settingsRes] = await Promise.all([
     supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").or(liveContentFilter()).order("published_at", { ascending: false }).limit(100),
     supabase.from("programs").select(PROGRAM_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(50),
     supabase
@@ -101,6 +104,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
       .order("validated_at", { ascending: false })
       .order("id")
       .limit(100),
+    supabase.from("creator_products").select(DIRECT_SELECT).eq("creator_id", creator.id).eq("status", "validated").order("sort_order").order("id").limit(100),
     supabase.rpc("public_settings"),
   ]);
   const allContents = (contentRes.data ?? []) as unknown as ContentCardData[];
@@ -111,11 +115,13 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   // Kill switch: desligado, a aba de produtos some e nada é contado.
   const commerceEnabled = !settingsRes.error && isCommerceEnabled(settingsRes.data);
 
-  // Produtos ligados à personalidade: mesma regra do RelatedProducts (vínculo validado + product_is_purchasable).
+  // Produtos do herói: alocação direta validada primeiro, depois os ligados por conteúdo (sem repetir).
+  // Mesma regra de compra do RelatedProducts: vínculo validado + product_is_purchasable.
+  const productsError = Boolean(linksRes.error || directRes.error);
   let products: CreatorProduct<LinkedProduct>[] = [];
   let inCartByProduct = new Map<string, number>();
-  if (commerceEnabled && !linksRes.error) {
-    const grouped = groupCreatorProducts((linksRes.data ?? []) as unknown as LinkRow[]);
+  if (commerceEnabled && !productsError) {
+    const grouped = mergeCreatorProducts((directRes.data ?? []) as unknown as DirectRow[], groupCreatorProducts((linksRes.data ?? []) as unknown as LinkRow[]));
     const [purchasable, cartRes] = await Promise.all([
       Promise.all(grouped.map(async ({ product }) => Boolean((await supabase.rpc("product_is_purchasable", { p_product: product.id })).data))),
       user && grouped.length > 0
@@ -268,7 +274,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
               ))}
             </ul>
           )
-        ) : linksRes.error ? (
+        ) : productsError ? (
           <InlineError />
         ) : products.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface">
@@ -297,7 +303,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
                     isLoggedIn={Boolean(user)}
                     inCart={inCartByProduct.get(product.id) ?? 0}
                     nextPath={productsPath}
-                    interestContentId={usedIn[0].id}
+                    interestContentId={usedIn[0]?.id}
                   />
                 </li>
               ))}

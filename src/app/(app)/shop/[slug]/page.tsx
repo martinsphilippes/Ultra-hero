@@ -9,6 +9,7 @@ import { AddToCartForm } from "@/components/commerce/AddToCartForm";
 import { CommerceEventTracker } from "@/components/commerce/CommerceEventTracker";
 import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { FoodInfoBlock, parseFoodInfo } from "@/components/commerce/FoodInfoBlock";
+import { OfficialStoreLink } from "@/components/commerce/OfficialStoreLink";
 import { Badge, DemoBadge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
@@ -92,7 +93,8 @@ export default async function ProductPage({ params }: Params) {
   const uiLocale = locale as Locale;
   const path = `/shop/${product.slug}`;
   const foodInfo = product.category?.is_food ? parseFoodInfo(product.food_info) : null;
-  const attributes = Object.entries(product.attributes ?? {});
+  // external_url vira o link "Ver na loja oficial"; na lista de características só sobra o resto.
+  const attributes = Object.entries(product.attributes ?? {}).filter(([key]) => key !== "external_url");
   const lowStock = product.demo_stock !== null && product.demo_stock > 0 && product.demo_stock <= 5;
   const outOfStock = product.demo_stock !== null && product.demo_stock <= 0;
   const unavailable = !purchasable;
@@ -165,6 +167,9 @@ export default async function ProductPage({ params }: Params) {
           </div>
 
           <AddToCartForm productId={product.id} priceCents={product.price_cents_demo} maxQuantity={maxQuantity} purchasable={purchasable} isLoggedIn={Boolean(user)} inCart={inCart} nextPath={path} />
+
+          {/* A compra aqui segue simulada; a loja oficial da marca fica num link externo. */}
+          <OfficialStoreLink attributes={product.attributes} className="w-fit" />
 
           <DemoNotice>{td("notice")}</DemoNotice>
 

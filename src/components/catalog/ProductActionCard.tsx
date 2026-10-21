@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { OfficialStoreLink } from "@/components/commerce/OfficialStoreLink";
 import { QuickAddToCart } from "@/components/commerce/QuickAddToCart";
 import { ProductInterestTracker } from "@/components/content/ProductInterestTracker";
 import { Badge, Card, CardImage, DemoBadge } from "@/components/ui";
@@ -95,6 +96,8 @@ export async function ProductActionCard({ product, usedIn, purchasable, maxQuant
             {hidden > 0 ? <span> {tq("moreContents", { count: hidden })}</span> : null}
           </p>
         ) : null}
+        {/* Loja oficial (quando a marca tem uma): controle irmão, fora do link do produto. */}
+        <OfficialStoreLink attributes={product.attributes} className="-my-2 w-fit" />
         <div className="mt-auto">
           <QuickAddToCart
             productId={product.id}

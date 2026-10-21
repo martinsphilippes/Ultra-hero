@@ -53,8 +53,8 @@ test.describe("visitante", () => {
     await expect(loginCta).toBeVisible();
     await expect(loginCta).toHaveAttribute("href", /^\/login\?next=%2Fpersonalities%2Fhelena-vilar%3Ftab%3Dprodutos$/);
     await expect(page.getByRole("tabpanel").getByRole("button", { name: /adicionar ao carrinho/i })).toHaveCount(0);
-    // "Usado em": ao menos um link para o conteúdo de origem
-    await expect(cards.first().locator('a[href^="/content/"]').first()).toBeVisible();
+    // "Usado em": ao menos um card (os vinculados por conteúdo vêm depois dos alocados diretamente) com link para o conteúdo de origem
+    await expect(cards.filter({ has: page.locator('a[href^="/content/"]') }).first().locator('a[href^="/content/"]').first()).toBeVisible();
   });
 
   test("widget de feedback oferece categorias com 'Outro' pré-selecionado (um toque ainda basta)", async ({ page }) => {

@@ -23,7 +23,7 @@
   },
   "shop": {
     "title": "Loja de demonstração",
-    "description": "Produtos fictícios de fornecedores fictícios, ligados às receitas, treinos e rotinas do app.",
+    "description": "Produtos da marca Ultra.e Life e de fornecedores fictícios, ligados às receitas, treinos e rotinas do app. As compras aqui são simuladas.",
     "searchLabel": "Buscar produtos",
     "searchPlaceholder": "Buscar por nome ou descrição",
     "filtersLabel": "Filtros da loja",
@@ -54,6 +54,8 @@
       "partner": "parceiro"
     },
     "fictionalSeller": "Fornecedor fictício",
+    "officialStore": "Ver na loja oficial",
+    "opensNewTab": "abre em nova aba",
     "categoryLabel": "Categoria",
     "typeLabel": "Tipo",
     "type": {
@@ -76,7 +78,15 @@
       "weight_kg": "Peso (kg)",
       "pages": "Páginas",
       "color": "Cor",
-      "uv": "Proteção UV"
+      "uv": "Proteção UV",
+      "brand": "Marca",
+      "format": "Formato",
+      "pack": "Unidades por pack",
+      "flavor": "Sabor",
+      "units": "Unidades",
+      "serving": "Porção",
+      "launch": "Lançamento",
+      "source": "Fonte dos dados"
     },
     "foodInfo": {
       "title": "Informações alimentares",

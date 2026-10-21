@@ -352,6 +352,43 @@ export async function setCreatorStatus(input: { id: string; status: "active" | "
   }
 }
 
+// ---------------------------------------------------------------- produtos do herói (alocação direta)
+export const CREATOR_PRODUCT_STATUSES = ["validated", "suspended", "rejected"] as const;
+export type CreatorProductStatus = (typeof CREATOR_PRODUCT_STATUSES)[number];
+
+// Define a alocação produto↔herói pela RPC auditada (upsert). A página pública do herói é
+// revalidada pelo slug para a aba Produtos refletir na hora.
+export async function setCreatorProduct(input: { creatorId: string; productId: string; status: CreatorProductStatus }, note: string): Promise<Result> {
+  await admin();
+  const parsed = z
+    .object({ creatorId: z.uuid(), productId: z.uuid(), status: z.enum(CREATOR_PRODUCT_STATUSES), note: justificationSchema })
+    .safeParse({ ...input, note });
+  if (!parsed.success) return invalid();
+  const { creatorId, productId, status } = parsed.data;
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_set_creator_product", { p_creator: creatorId, p_product: productId, p_status: status, p_note: parsed.data.note || undefined });
+    if (error) return failCreatorProduct(error);
+    const { data: creator } = await supabase.from("creator_profiles").select("slug").eq("id", creatorId).maybeSingle();
+    revalidatePath("/admin/creators");
+    revalidatePath(`/admin/creators/${creatorId}`);
+    revalidatePath("/admin/audit");
+    if (creator?.slug) revalidatePath(`/personalities/${creator.slug}`);
+    const t = await getTranslations("adminOps.creators.products.toasts");
+    return { ok: true, message: t(status) };
+  } catch (error) {
+    return failCreatorProduct(error);
+  }
+}
+
+// Erros próprios da alocação (product_not_found etc.) antes do mapa geral de adminOps.errors.
+async function failCreatorProduct(error: unknown): Promise<Failure> {
+  const code = error && typeof error === "object" && "message" in error ? rpcErrorCode((error as { message?: string }).message) : "";
+  const t = await getTranslations("adminOps.creators.products.errors");
+  if (code && t.has(code)) return { ok: false, error: t(code) };
+  return fail(error);
+}
+
 // ---------------------------------------------------------------- fornecedores
 const sellerSchema = z.object({
   name: z.string().trim().min(2).max(80),

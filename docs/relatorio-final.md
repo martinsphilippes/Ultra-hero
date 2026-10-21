@@ -64,6 +64,8 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - Remessas vão até "pronto para despacho".
 - **Comércio simulado**:
   - 24 produtos fictícios de 4 operações: 1 própria e 3 parceiras.
+  - **Produtos reais da marca Ultra.e Life** (21/10/2026, migração 0021): 7 produtos (e.water Citrus e Tangerina, e.creatina Gummy e Pó, e.focus, e.daily e e.melatonina) com imagem real, preço da marca e link "Ver na loja oficial" (nova aba, só https validada), nas categorias Suplementos e Hidratação. O fornecedor "Ultra.e Life" não é fictício e não leva o selo. As compras seguem simuladas: o carrinho de teste continua igual e a loja oficial é só um link externo.
+  - **Alocação produto↔herói validada pelo admin** (tabela `creator_products`, RPC `admin_set_creator_product` auditada): a aba Produtos do herói une as alocações diretas validadas (primeiro, na ordem da vitrine) com os produtos vinculados por conteúdo (depois, com "usado em"), sem repetir. Em `/admin/creators/[id]`, a seção "Produtos do herói" lista todos os produtos publicados com o status da alocação e as ações validar, suspender e rejeitar. No seed, todos os 8 heróis receberam os 7 produtos validados.
   - Carrinho com vários fornecedores e checkout com snapshot congelado.
   - Remessas independentes, transporte simulado pelo sistema e cancelamento de pedido de teste.
   - Destinos e frete fictícios, com rótulos de demonstração em todas as telas.

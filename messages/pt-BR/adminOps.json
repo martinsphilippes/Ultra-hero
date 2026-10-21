@@ -59,7 +59,8 @@
     "experiment_closed": "O banco recusou a criação desta conta com o cadastro fechado. Contas demo criadas aqui deveriam passar; confira se a migração 0015 está aplicada no banco.",
     "generic": "Não foi possível concluir a ação. Tente novamente.",
     "rights_holder_required": "Informe o titular da autorização para marcar como autorizado.",
-    "creator_not_found": "Herói não encontrado."
+    "creator_not_found": "Herói não encontrado.",
+    "product_not_found": "Produto não encontrado."
   },
   "dashboard": {
     "title": "Painel",
@@ -331,6 +332,48 @@
       "fictional": "Fictício",
       "pending": "Em validação",
       "authorized": "Autorizado"
+    },
+    "products": {
+      "title": "Produtos do herói",
+      "description": "Alocação direta produto↔herói. Só o que está validado aparece na aba Produtos da página pública; suspenso e rejeitado somem.",
+      "tableCaption": "Produtos publicados e situação da alocação para este herói",
+      "columns": {
+        "product": "Produto",
+        "seller": "Fornecedor",
+        "status": "Alocação",
+        "actions": "Ações"
+      },
+      "actions": {
+        "validate": "Validar",
+        "suspend": "Suspender",
+        "reject": "Rejeitar",
+        "validateTitle": "Validar produto para este herói?",
+        "validateDescription": "O produto passa a aparecer na aba Produtos da página pública do herói.",
+        "suspendTitle": "Suspender a alocação?",
+        "suspendDescription": "O produto some da página pública do herói. Pode ser validado de novo depois.",
+        "rejectTitle": "Rejeitar a alocação?",
+        "rejectDescription": "O produto some da página pública do herói e fica marcado como rejeitado."
+      },
+      "statuses": {
+        "validated": "Validado",
+        "suspended": "Suspenso",
+        "rejected": "Rejeitado",
+        "suggested": "Sugerido",
+        "none": "Sem alocação"
+      },
+      "toasts": {
+        "validated": "Produto validado para o herói",
+        "suspended": "Alocação suspensa",
+        "rejected": "Alocação rejeitada"
+      },
+      "errors": {
+        "product_not_found": "Produto não encontrado.",
+        "creator_not_found": "Herói não encontrado.",
+        "invalid_status": "Status de alocação inválido."
+      },
+      "empty": "Nenhum produto publicado",
+      "emptyDescription": "Publique um produto na loja para alocá-lo a este herói.",
+      "count": "{n, plural, =1 {# produto validado} other {# produtos validados}}"
     }
   },
   "sellers": {
