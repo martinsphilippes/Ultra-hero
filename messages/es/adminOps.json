@@ -59,7 +59,8 @@
     "experiment_closed": "La base de datos rechazó crear esta cuenta con el registro cerrado. Las cuentas demo creadas aquí deberían pasar; comprueba que la migración 0015 esté aplicada en la base de datos.",
     "generic": "No se pudo completar la acción. Inténtalo de nuevo.",
     "rights_holder_required": "Indica el titular de la autorización para marcar como autorizado.",
-    "creator_not_found": "Héroe no encontrado."
+    "creator_not_found": "Héroe no encontrado.",
+    "product_not_found": "Producto no encontrado."
   },
   "dashboard": {
     "title": "Panel",
@@ -331,6 +332,48 @@
       "fictional": "Ficticio",
       "pending": "En validación",
       "authorized": "Autorizado"
+    },
+    "products": {
+      "title": "Productos del héroe",
+      "description": "Asignación directa producto↔héroe. Solo lo validado aparece en la pestaña Productos de la página pública; suspendido y rechazado desaparecen.",
+      "tableCaption": "Productos publicados y situación de la asignación para este héroe",
+      "columns": {
+        "product": "Producto",
+        "seller": "Proveedor",
+        "status": "Asignación",
+        "actions": "Acciones"
+      },
+      "actions": {
+        "validate": "Validar",
+        "suspend": "Suspender",
+        "reject": "Rechazar",
+        "validateTitle": "¿Validar el producto para este héroe?",
+        "validateDescription": "El producto pasa a aparecer en la pestaña Productos de la página pública del héroe.",
+        "suspendTitle": "¿Suspender la asignación?",
+        "suspendDescription": "El producto desaparece de la página pública del héroe. Puede validarse de nuevo después.",
+        "rejectTitle": "¿Rechazar la asignación?",
+        "rejectDescription": "El producto desaparece de la página pública del héroe y queda marcado como rechazado."
+      },
+      "statuses": {
+        "validated": "Validado",
+        "suspended": "Suspendido",
+        "rejected": "Rechazado",
+        "suggested": "Sugerido",
+        "none": "Sin asignación"
+      },
+      "toasts": {
+        "validated": "Producto validado para el héroe",
+        "suspended": "Asignación suspendida",
+        "rejected": "Asignación rechazada"
+      },
+      "errors": {
+        "product_not_found": "Producto no encontrado.",
+        "creator_not_found": "Héroe no encontrado.",
+        "invalid_status": "Estado de asignación inválido."
+      },
+      "empty": "Ningún producto publicado",
+      "emptyDescription": "Publica un producto en la tienda para asignarlo a este héroe.",
+      "count": "{n, plural, =1 {# producto validado} other {# productos validados}}"
     }
   },
   "sellers": {

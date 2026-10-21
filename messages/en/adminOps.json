@@ -59,7 +59,8 @@
     "experiment_closed": "The database refused to create this account while sign-ups are closed. Demo accounts created here should pass; check that migration 0015 is applied to the database.",
     "generic": "The action could not be completed. Try again.",
     "rights_holder_required": "Enter the authorization holder to mark as authorized.",
-    "creator_not_found": "Hero not found."
+    "creator_not_found": "Hero not found.",
+    "product_not_found": "Product not found."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -331,6 +332,48 @@
       "fictional": "Fictional",
       "pending": "Under validation",
       "authorized": "Authorized"
+    },
+    "products": {
+      "title": "Hero products",
+      "description": "Direct product↔hero allocation. Only validated items appear in the Products tab of the public page; suspended and rejected ones are hidden.",
+      "tableCaption": "Published products and allocation status for this hero",
+      "columns": {
+        "product": "Product",
+        "seller": "Seller",
+        "status": "Allocation",
+        "actions": "Actions"
+      },
+      "actions": {
+        "validate": "Validate",
+        "suspend": "Suspend",
+        "reject": "Reject",
+        "validateTitle": "Validate product for this hero?",
+        "validateDescription": "The product starts appearing in the Products tab of the hero's public page.",
+        "suspendTitle": "Suspend the allocation?",
+        "suspendDescription": "The product disappears from the hero's public page. It can be validated again later.",
+        "rejectTitle": "Reject the allocation?",
+        "rejectDescription": "The product disappears from the hero's public page and is marked as rejected."
+      },
+      "statuses": {
+        "validated": "Validated",
+        "suspended": "Suspended",
+        "rejected": "Rejected",
+        "suggested": "Suggested",
+        "none": "Not allocated"
+      },
+      "toasts": {
+        "validated": "Product validated for the hero",
+        "suspended": "Allocation suspended",
+        "rejected": "Allocation rejected"
+      },
+      "errors": {
+        "product_not_found": "Product not found.",
+        "creator_not_found": "Hero not found.",
+        "invalid_status": "Invalid allocation status."
+      },
+      "empty": "No published products",
+      "emptyDescription": "Publish a product in the shop to allocate it to this hero.",
+      "count": "{n, plural, =1 {# validated product} other {# validated products}}"
     }
   },
   "sellers": {

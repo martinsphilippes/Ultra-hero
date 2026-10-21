@@ -23,7 +23,7 @@
   },
   "shop": {
     "title": "Demo store",
-    "description": "Fictional products from fictional sellers, linked to the app's recipes, workouts and routines.",
+    "description": "Products from the Ultra.e Life brand and from fictional sellers, linked to the app's recipes, workouts and routines. Purchases here are simulated.",
     "searchLabel": "Search products",
     "searchPlaceholder": "Search by name or description",
     "filtersLabel": "Store filters",
@@ -54,6 +54,8 @@
       "partner": "partner"
     },
     "fictionalSeller": "Fictional seller",
+    "officialStore": "View in the official store",
+    "opensNewTab": "opens in a new tab",
     "categoryLabel": "Category",
     "typeLabel": "Type",
     "type": {
@@ -76,7 +78,15 @@
       "weight_kg": "Weight (kg)",
       "pages": "Pages",
       "color": "Color",
-      "uv": "UV protection"
+      "uv": "UV protection",
+      "brand": "Brand",
+      "format": "Format",
+      "pack": "Units per pack",
+      "flavor": "Flavor",
+      "units": "Units",
+      "serving": "Serving",
+      "launch": "Launch",
+      "source": "Data source"
     },
     "foodInfo": {
       "title": "Food information",
