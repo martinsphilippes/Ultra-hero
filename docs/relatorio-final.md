@@ -11,7 +11,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
 | Banco remoto no Supabase | Completo: 21 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
-| Testes | 350 cenários de banco, 665 unitários e 60 E2E com axe. Todos passam |
+| Testes | 350 cenários de banco, 675 unitários e 72 E2E com axe. Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
@@ -83,9 +83,9 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 | Camada | Resultado | Comando |
 |---|---|---|
 | Banco: RLS e regras de negócio | 350 de 350 | `npm run test:rls` |
-| Unitários, verificados por mutação | 665 de 665 em 13 arquivos | `npm run test` |
-| E2E com axe, em Pixel 7 e Desktop Chrome | 60 de 60 local contra o banco remoto já migrado | `npm run test:e2e` |
-| Tipos, lint e mensagens | Limpos. 16 namespaces e 3.128 chaves por idioma | `npm run check` |
+| Unitários, verificados por mutação | 675 de 675 em 14 arquivos | `npm run test` |
+| E2E com axe, em Pixel 7 e Desktop Chrome | 72 de 72 local contra o banco remoto já migrado | `npm run test:e2e` |
+| Tipos, lint e mensagens | Limpos. 16 namespaces e 3.143 chaves por idioma | `npm run check` |
 | Build de produção | OK | `npm run build` |
 
 "Verificado por mutação" significa que agentes independentes injetaram defeitos no código-fonte e confirmaram que os testes falham. Os defeitos que passaram despercebidos ganharam testes novos.
