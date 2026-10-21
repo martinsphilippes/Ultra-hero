@@ -28,12 +28,15 @@ import {
   type DisclaimerKind,
 } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
+import { AllergyReminder } from "@/components/recipes/AllergyReminder";
+import { RecipeGate } from "@/components/recipes/RecipeGate";
 import { AddToListButton, CompleteButton, FavoriteButton, NotInterestedButton } from "@/components/library";
 import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
 import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
+import { getRecipeGate } from "@/lib/recipes/gate";
 import { createClient } from "@/lib/supabase/server";
 import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { resolveVideoSource } from "@/lib/video";
@@ -172,6 +175,10 @@ export default async function ContentPage({ params }: Params) {
   const allowManual = content.type === "video" && video?.type === "iframe";
   const readingAuto = (content.type === "guide" || content.type === "article") && mode === "auto";
 
+  // Receita só abre depois da etapa demonstrativa (vale para todos, inclusive quem tem acesso ao módulo).
+  const recipeGate = content.type === "recipe" ? await getRecipeGate() : null;
+  const recipeBlocked = Boolean(recipeGate && !recipeGate.completed);
+
   const TypeIcon = TYPE_ICON[content.type];
   const cover = content.cover_url ?? `/placeholders/cover-${content.pillar}-1.svg`;
 
@@ -252,7 +259,7 @@ export default async function ContentPage({ params }: Params) {
               <FavoriteButton contentId={content.id} initial={isFavorite} path={path} />
               <AddToListButton contentId={content.id} />
               <NotInterestedButton contentId={content.id} initial={notInterested} />
-              {state === "accessible" && (
+              {state === "accessible" && !recipeBlocked && (
                 <CompleteButton
                   contentId={content.id}
                   mode={mode}
@@ -272,11 +279,15 @@ export default async function ContentPage({ params }: Params) {
       {showLanguageNotice && <LanguageNotice sourceLocale={content.source_locale} />}
       <DisclaimerBanner kind={content.disclaimer_kind} />
 
-      {/* Corpo por estado de acesso */}
-      {state === "visitor" && <TeaserCard nextPath={path} />}
-      {state === "locked" && <LockCard moduleName={content.required_module?.name ?? tcat("premium")} />}
-      {state === "unavailable" && <UnavailableCard />}
-      {state === "accessible" && (
+      {/* Corpo por estado de acesso; receitas passam antes pela etapa demonstrativa */}
+      {recipeBlocked && <RecipeGate nextPath={path} />}
+      {!recipeBlocked && state === "visitor" && <TeaserCard nextPath={path} />}
+      {!recipeBlocked && state === "locked" && <LockCard moduleName={content.required_module?.name ?? tcat("premium")} />}
+      {!recipeBlocked && state === "unavailable" && <UnavailableCard />}
+      {!recipeBlocked && state === "accessible" && content.type === "recipe" && recipeGate ? (
+        <AllergyReminder restrictions={recipeGate.restrictions} allergies={recipeGate.allergies} path={path} />
+      ) : null}
+      {!recipeBlocked && state === "accessible" && (
         <div className="flex flex-col gap-6">
           {readingAuto && !completedAt && <ReadingTracker contentId={content.id} targetId="content-body" threshold={threshold} path={path} />}
           {content.type === "video" && video && (

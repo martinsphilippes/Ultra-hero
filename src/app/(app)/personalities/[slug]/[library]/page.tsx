@@ -6,10 +6,13 @@ import { ContentTile, ProductActionCard, ProgramCard } from "@/components/catalo
 import { CARD_GRID, TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { LIBRARY_ICON } from "@/components/discover/personalities/LibraryList";
+import { RecipeGate } from "@/components/recipes/RecipeGate";
+import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { hubHref, loadCreator, loadCreatorHub, type HubLibrary } from "@/lib/catalog/creator-hub";
 import { isLibraryKey, type LibraryKey } from "@/lib/catalog/creator-libraries";
 import { maxCartQuantity } from "@/lib/catalog/creator-products";
+import { getRecipeGate } from "@/lib/recipes/gate";
 
 type Props = { params: Promise<{ slug: string; library: string }> };
 
@@ -30,6 +33,19 @@ export default async function LibraryPage({ params }: Props) {
   const [creator, t, tp] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.libraries"), getTranslations("discover.personalities.profile")]);
   if (!creator) notFound();
 
+  // Receitas: bloqueadas até a etapa demonstrativa ser concluída (vale para todos e para o app inteiro).
+  if (library === "receitas") {
+    const gate = await getRecipeGate();
+    if (!gate.completed) {
+      return (
+        <div className="flex flex-col gap-6">
+          <PageHeader backHref={hubHref(creator.slug)} backLabel={t("back", { name: creator.name })} eyebrow={creator.name} title={t("labels.receitas")} />
+          <RecipeGate nextPath={hubHref(creator.slug, "receitas")} />
+        </div>
+      );
+    }
+  }
+
   const hub = await loadCreatorHub(creator);
   const current = hub.libraries.find((item) => item.key === library);
   const error = library === "programas" ? hub.errors.programs : library === "produtos" ? hub.errors.products : hub.errors.contents;
@@ -48,7 +64,7 @@ export default async function LibraryPage({ params }: Props) {
 
       {error ? (
         <InlineError />
-      ) : !current ? (
+      ) : !current || current.count === 0 ? (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState
             icon={<Icon />}
@@ -62,18 +78,23 @@ export default async function LibraryPage({ params }: Props) {
           />
         </div>
       ) : (
-        <LibraryBody library={current} slug={creator.slug} hub={hub} />
+        <LibraryBody library={current} slug={creator.slug} hub={hub} hero={{ slug: creator.slug, name: creator.name }} />
       )}
     </div>
   );
 }
 
-type BodyProps = { library: HubLibrary; slug: string; hub: Awaited<ReturnType<typeof loadCreatorHub>> };
+type BodyProps = { library: HubLibrary; slug: string; hub: Awaited<ReturnType<typeof loadCreatorHub>>; hero: { slug: string; name: string } };
 
-async function LibraryBody({ library, slug, hub }: BodyProps) {
+async function LibraryBody({ library, slug, hub, hero }: BodyProps) {
   const tp = await getTranslations("discover.personalities.profile");
   const tl = await getTranslations("discover.personalities.libraries");
   const key: LibraryKey = library.key;
+
+  // Receitas: cards com a assinatura do chef e o endosso do herói quando a receita não é dele.
+  if (library.kind === "content" && key === "receitas") {
+    return <RecipeList recipes={library.items} hero={hero} />;
+  }
 
   if (library.kind === "content") {
     // Mesma grade do Explorar: 3 colunas de quadrados, sangrando no celular e centrada no desktop.

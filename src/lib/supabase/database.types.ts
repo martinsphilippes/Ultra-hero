@@ -359,6 +359,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"creator_recipe_links": {
+                  Row: {
+                    "content_id": string,"created_at": string,"created_by": string | null,"creator_id": string,"id": string,"sort_order": number,"status": Database["public"]['Enums']["link_status"],"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"created_at"?: string,"created_by"?: string | null,"creator_id": string,"id"?: string,"sort_order"?: number,"status"?: Database["public"]['Enums']["link_status"],"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Update: {
+                    "content_id"?: string,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string,"id"?: string,"sort_order"?: number,"status"?: Database["public"]['Enums']["link_status"],"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_recipe_links_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creator_recipe_links_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"creator_rights_private": {
                   Row: {
                     "creator_id": string,"document_ref": string | null,"notes": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"updated_at": string
@@ -919,6 +945,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"recipe_onboarding": {
+                  Row: {
+                    "allergies": (string)[],"completed_at": string,"notice_accepted_at": string,"restrictions": (string)[],"updated_at": string,"user_id": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "allergies"?: (string)[],"completed_at"?: string,"notice_accepted_at": string,"restrictions"?: (string)[],"updated_at"?: string,"user_id": string,"version"?: number
+                  }
+                  Update: {
+                    "allergies"?: (string)[],"completed_at"?: string,"notice_accepted_at"?: string,"restrictions"?: (string)[],"updated_at"?: string,"user_id"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"recommendation_runs": {
                   Row: {
                     "candidates": number | null,"cost_estimate_usd": number | null,"created_at": string,"engine": string,"error": string | null,"id": string,"input_tokens": number | null,"latency_ms": number | null,"output_tokens": number | null,"provider_model": string | null,"returned": number | null,"trigger": string,"user_id": string | null,"valid_rate": number | null
@@ -1329,6 +1369,9 @@ isOneToOne: false
                            },
 "admin_set_creator_product":
 { Args: { "p_creator": string,"p_note"?: string,"p_product": string,"p_sort"?: number,"p_status": Database["public"]['Enums']["link_status"] }; Returns: string
+                           },
+"admin_set_creator_recipe":
+{ Args: { "p_content": string,"p_creator": string,"p_sort"?: number,"p_status": Database["public"]['Enums']["link_status"] }; Returns: string
                            },
 "admin_set_creator_rights_private":
 { Args: { "p_creator": string,"p_document_ref": string,"p_justification"?: string,"p_notes": string }; Returns: undefined

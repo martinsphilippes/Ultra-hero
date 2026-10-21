@@ -46,10 +46,9 @@ test.describe("hub do herói", () => {
     await expectNoSeriousAxe(page);
   });
 
-  test("clicar em Receitas abre a biblioteca com a grade de quadrados e o cabeçalho de volta", async ({ page }) => {
+  test("clicar em Receitas abre a biblioteca com o cabeçalho de volta e, para visitante, a etapa demonstrativa", async ({ page }) => {
     await page.goto("/personalities/helena-vilar");
     const recipes = libraries(page).filter({ hasText: "Receitas" });
-    const expected = Number(((await recipes.textContent()) ?? "").match(/(\d+)/)?.[1]);
     await recipes.click();
     await expect(page).toHaveURL(/\/personalities\/helena-vilar\/receitas$/);
 
@@ -59,19 +58,9 @@ test.describe("hub do herói", () => {
     await expect(back).toBeVisible();
     await expect(back).toHaveAttribute("href", "/personalities/helena-vilar");
     await expect(page).toHaveTitle(/Receitas · Helena Vilar/);
-
-    const tiles = page.getByTestId("library-grid").locator("> a");
-    await expect(tiles).toHaveCount(expected);
-    const boxes = await Promise.all((await tiles.all()).map((tile) => tile.boundingBox()));
-    for (const box of boxes) {
-      expect(box).not.toBeNull();
-      expect(Math.abs(box!.width - box!.height)).toBeLessThanOrEqual(2);
-    }
-    if (boxes.length >= 3) expect(boxes[0]!.y).toBeCloseTo(boxes[2]!.y, 0);
+    // Receitas só abrem depois da etapa demonstrativa (vale para todos).
+    await expect(page.getByTestId("recipe-gate")).toBeVisible();
     // quadro: só capa + ícones, nome acessível no sr-only, link para o conteúdo
-    await expect(tiles.first().locator("img")).toHaveAttribute("alt", "");
-    await expect(tiles.first().locator("span.sr-only")).toHaveText(/Receita/i);
-    await expect(tiles.first()).toHaveAttribute("href", /^\/content\//);
     await expectNoSeriousAxe(page);
 
     await back.click();

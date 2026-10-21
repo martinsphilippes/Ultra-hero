@@ -185,7 +185,8 @@
             "events": "<strong>Eventos de uso:</strong> ações no app, como abrir um conteúdo, concluir um programa ou iniciar um pedido de teste, com data, idioma e propriedades técnicas, como o identificador do conteúdo. Quando você está conectado, os eventos ficam vinculados à sua conta; para visitantes sem conta, são registrados sem identificador. O banco de dados recusa propriedades cujos nomes indiquem dados pessoais, como e-mail, telefone, CPF, nome, endereço ou senha.",
             "feedback": "<strong>Feedback opcional:</strong> nota, comentário de até 1.000 caracteres, o conteúdo ou programa de onde foi enviado e o idioma.",
             "recommendations": "<strong>Recomendações:</strong> a lista de conteúdos recomendados para você e um registro técnico de cada cálculo (motor usado, tempo, quantidade de itens, custo estimado e erros).",
-            "partners": "<strong>Parceiros e administração:</strong> se você for convidado como parceiro, o e-mail para o qual o convite foi enviado, os dados do perfil de parceiro e o que você enviar. As principais ações feitas pelo painel de administração, como mudanças de papéis, convites, moderação e configurações, ficam registradas em auditoria."
+            "partners": "<strong>Parceiros e administração:</strong> se você for convidado como parceiro, o e-mail para o qual o convite foi enviado, os dados do perfil de parceiro e o que você enviar. As principais ações feitas pelo painel de administração, como mudanças de papéis, convites, moderação e configurações, ficam registradas em auditoria.",
+            "recipeStep": "<strong>Etapa de receitas:</strong> o aceite do aviso e as restrições e alergias que você marcar (de uma lista fixa, sem texto livre). Alergias e restrições são dados sensíveis de saúde: usamos só para lembrar você na página de cada receita, com o seu consentimento, e você pode mudar ou apagar quando quiser."
           },
           "p2": "Os provedores de infraestrutura também registram dados técnicos de acesso, como endereço IP, data e hora e informações do navegador, em seus próprios logs operacionais."
         }
@@ -359,6 +360,11 @@
                 "data": "Cópias de segurança (backups)",
                 "period": "Conforme o plano do provedor",
                 "details": "A política de backup e restauração será verificada e documentada antes da abertura pública."
+              },
+              "recipeStep": {
+                "data": "Etapa de receitas (aviso, restrições e alergias)",
+                "period": "Enquanto a conta existir",
+                "details": "Apagadas junto com a conta. Você também pode mudar ou desmarcar tudo refazendo a etapa a partir de qualquer receita."
               }
             }
           },

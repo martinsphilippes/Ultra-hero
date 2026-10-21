@@ -16,9 +16,10 @@ export async function CreatorCard({ creator, priority, className }: Props) {
     <Card interactive asChild className={cn("h-full", className)}>
       <Link href={`/personalities/${creator.slug}`}>
         <CardImage src={creator.cover_url ?? "/placeholders/cover-routine-2.svg"} alt="" ratio="wide" priority={priority} />
-        <div className="relative -mt-8 flex flex-1 flex-col gap-2 px-4 pb-4">
-          <span className="relative inline-flex size-16 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated">
-            <Image src={creator.avatar_url ?? "/placeholders/avatar-1.svg"} alt="" fill unoptimized sizes="64px" className="object-cover" />
+        {/* Foto grande, como num perfil de rede social: ocupa boa parte da largura do card no celular. */}
+        <div className="relative -mt-16 flex flex-1 flex-col gap-2 px-4 pb-4 sm:-mt-12">
+          <span className="relative inline-flex size-32 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated shadow-sm sm:size-24">
+            <Image src={creator.avatar_url ?? "/placeholders/avatar-1.svg"} alt="" fill unoptimized sizes="128px" className="object-cover" />
           </span>
           <div>
             <h3 className="type-h3 text-fg">{creator.name}</h3>

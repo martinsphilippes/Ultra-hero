@@ -48,13 +48,16 @@ type Input<C extends LibraryContent, P, R> = {
   contents?: readonly C[] | null;
   programs?: readonly P[] | null;
   products?: readonly R[] | null;
+  /** Bibliotecas que aparecem mesmo vazias (Receitas existe em todo herói). */
+  always?: readonly LibraryKey[];
 };
 
 /**
- * Monta as bibliotecas na ordem fixa de LIBRARY_KEYS, só com as que têm pelo menos um item.
+ * Monta as bibliotecas na ordem fixa de LIBRARY_KEYS, só com as que têm pelo menos um item (ou que
+ * estão em `always`).
  * A ordem dos itens dentro de cada biblioteca é a ordem de chegada (as queries já ordenam).
  */
-export function buildCreatorLibraries<C extends LibraryContent, P, R>({ contents, programs, products }: Input<C, P, R>): CreatorLibrary<C, P, R>[] {
+export function buildCreatorLibraries<C extends LibraryContent, P, R>({ contents, programs, products, always = [] }: Input<C, P, R>): CreatorLibrary<C, P, R>[] {
   const byKey = new Map<ContentLibraryKey, C[]>(CONTENT_LIBRARY_KEYS.map((key) => [key, []]));
   for (const content of contents ?? []) byKey.get(contentLibraryKey(content))!.push(content);
 
@@ -66,5 +69,5 @@ export function buildCreatorLibraries<C extends LibraryContent, P, R>({ contents
     { key: "programas", kind: "programs", count: (programs ?? []).length, items: [...(programs ?? [])] },
     { key: "produtos", kind: "products", count: (products ?? []).length, items: [...(products ?? [])] },
   ];
-  return all.filter((library) => library.count > 0);
+  return all.filter((library) => library.count > 0 || always.includes(library.key));
 }

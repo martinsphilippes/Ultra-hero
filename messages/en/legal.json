@@ -185,7 +185,8 @@
             "events": "<strong>Usage events:</strong> actions in the app, such as opening content, completing a program or starting a test order, with date, language and technical properties such as the content identifier. When you are signed in, events are linked to your account; for visitors without an account, they are recorded without an identifier. The database rejects properties whose names indicate personal data, such as email, phone, CPF (Brazilian taxpayer ID), name, address or password.",
             "feedback": "<strong>Optional feedback:</strong> rating, a comment of up to 1,000 characters, the content or program it was sent from and the language.",
             "recommendations": "<strong>Recommendations:</strong> the list of content recommended to you and a technical record of each calculation (engine used, time, number of items, estimated cost and errors).",
-            "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log."
+            "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log.",
+            "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime."
           },
           "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
         }
@@ -359,6 +360,11 @@
                 "data": "Backups",
                 "period": "According to the provider’s plan",
                 "details": "The backup and restore policy will be verified and documented before public launch."
+              },
+              "recipeStep": {
+                "data": "Recipe step (notice, restrictions and allergies)",
+                "period": "While the account exists",
+                "details": "Deleted with the account. You can also change or clear everything by redoing the step from any recipe."
               }
             }
           },

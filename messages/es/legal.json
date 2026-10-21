@@ -185,7 +185,8 @@
             "events": "<strong>Eventos de uso:</strong> acciones en la app, como abrir un contenido, completar un programa o iniciar un pedido de prueba, con fecha, idioma y propiedades técnicas, como el identificador del contenido. Cuando tienes la sesión iniciada, los eventos quedan vinculados a tu cuenta; para visitantes sin cuenta, se registran sin identificador. La base de datos rechaza propiedades cuyos nombres indiquen datos personales, como correo, teléfono, CPF (número fiscal brasileño), nombre, dirección o contraseña.",
             "feedback": "<strong>Feedback opcional:</strong> calificación, comentario de hasta 1.000 caracteres, el contenido o programa desde el que se envió y el idioma.",
             "recommendations": "<strong>Recomendaciones:</strong> la lista de contenidos recomendados para ti y un registro técnico de cada cálculo (motor usado, tiempo, cantidad de elementos, costo estimado y errores).",
-            "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría."
+            "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría.",
+            "recipeStep": "<strong>Etapa de recetas:</strong> la aceptación del aviso y las restricciones y alergias que marques (de una lista fija, sin texto libre). Las alergias y restricciones son datos sensibles de salud: solo las usamos para recordártelas en la página de cada receta, con tu consentimiento, y puedes cambiarlas o borrarlas cuando quieras."
           },
           "p2": "Los proveedores de infraestructura también registran datos técnicos de acceso, como la dirección IP, la fecha y la hora y la información del navegador, en sus propios registros operativos."
         }
@@ -359,6 +360,11 @@
                 "data": "Copias de seguridad (backups)",
                 "period": "Según el plan del proveedor",
                 "details": "La política de copias de seguridad y restauración se verificará y documentará antes de la apertura pública."
+              },
+              "recipeStep": {
+                "data": "Etapa de recetas (aviso, restricciones y alergias)",
+                "period": "Mientras exista la cuenta",
+                "details": "Se borran con la cuenta. También puedes cambiarlas o desmarcarlas rehaciendo la etapa desde cualquier receta."
               }
             }
           },

@@ -1,0 +1,94 @@
+{
+  "gate": {
+    "brand": "Ultra Hero",
+    "eyebrow": "Recetas",
+    "description": "Tu acceso actual no permite abrir recetas. Tus registros simples siguen en Hoy.",
+    "badge": "Etapa 0 de {total} · pendiente",
+    "cardTitle": "Etapa demostrativa pendiente.",
+    "cardDescription": "No hay revisión profesional. Completa la etapa demostrativa para abrir solo el contenido de demostración.",
+    "stepsLabel": "{total} pasos de la etapa demostrativa",
+    "steps": {
+      "notice": "Aceptar el aviso",
+      "diet": "Restricciones y alergias",
+      "interests": "Intereses",
+      "confirm": "Confirmar"
+    },
+    "start": "Ver etapa demostrativa",
+    "backToToday": "Volver a Hoy"
+  },
+  "onboarding": {
+    "metaTitle": "Etapa demostrativa de recetas",
+    "eyebrow": "Recetas",
+    "title": "Etapa demostrativa",
+    "description": "Cuatro pasos rápidos para abrir las recetas de demostración.",
+    "cancel": "Volver",
+    "progress": "Paso {step} de {total}",
+    "back": "Volver",
+    "next": "Continuar",
+    "finish": "Terminar y abrir recetas",
+    "notice": {
+      "title": "Acepta el aviso",
+      "description": "Las recetas de Ultra Hero son contenido de demostración.",
+      "item1": "No hay revisión de nutricionista ni de otro profesional de la salud.",
+      "item2": "Las recetas no sustituyen la orientación profesional ni tratan condiciones de salud.",
+      "item3": "Revisa siempre los ingredientes, sobre todo si tienes alergia o restricción.",
+      "accept": "Leí y acepto el aviso"
+    },
+    "diet": {
+      "title": "Restricciones y alergias",
+      "description": "Marca lo que se aplica a ti. Si nada se aplica, solo continúa.",
+      "restrictionsLabel": "Restricciones alimentarias",
+      "allergiesLabel": "Alergias",
+      "privacy": "Solo lo usamos para recordártelo en la página de cada receta. Puedes cambiarlo o borrarlo cuando quieras."
+    },
+    "interests": {
+      "title": "Tus intereses",
+      "description": "Elige los temas que más van contigo."
+    },
+    "confirm": {
+      "title": "Confirma",
+      "description": "Revisa tus elecciones antes de abrir las recetas.",
+      "notice": "Aviso",
+      "noticeAccepted": "Aceptado",
+      "none": "Ninguna",
+      "interests": "Intereses",
+      "interestsCount": "{n, plural, =0 {Ningún tema} =1 {1 tema} other {# temas}}"
+    },
+    "restrictions": {
+      "vegetarian": "Vegetariana",
+      "vegan": "Vegana",
+      "pescatarian": "Pescetariana",
+      "lactose_free": "Sin lactosa",
+      "gluten_free": "Sin gluten",
+      "low_sugar": "Poco azúcar",
+      "low_sodium": "Poca sal"
+    },
+    "allergies": {
+      "peanut": "Cacahuete",
+      "tree_nuts": "Frutos secos",
+      "milk": "Leche",
+      "egg": "Huevo",
+      "wheat": "Trigo",
+      "soy": "Soja",
+      "fish": "Pescado",
+      "shellfish": "Mariscos",
+      "sesame": "Sésamo"
+    },
+    "errors": {
+      "invalid": "Revisa tus elecciones e inténtalo de nuevo.",
+      "unauthenticated": "Inicia sesión para terminar.",
+      "failed": "No se pudo guardar. Inténtalo de nuevo."
+    }
+  },
+  "library": {
+    "type": "Receta",
+    "signedBy": "Receta de {chef}",
+    "endorsedBy": "Recomendada por {hero}",
+    "endorsementNote": "{hero} recomienda estas recetas. Cada una lleva la firma del chef que la creó."
+  },
+  "reminder": {
+    "title": "Revisa los ingredientes",
+    "description": "Nos indicaste: {items}. Esta receta no tiene revisión profesional; revisa cada ingrediente antes de cocinar.",
+    "edit": "Revisar restricciones y alergias"
+  }
+}

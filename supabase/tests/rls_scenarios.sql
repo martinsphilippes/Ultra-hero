@@ -1070,6 +1070,80 @@ select tests.ok('S21 RLS ativa nas duas tabelas, gatilhos instalados e chaves: p
   and (select count(*) from pg_constraint where conrelid = 'public.routine_checks'::regclass and contype = 'f' and confdeltype = 'c') = 2
   and (select count(*) from pg_constraint where conrelid = 'public.routine_checks'::regclass and contype = 'p') = 1);
 
+-- ================================================================ S22 · receitas por herói e etapa demonstrativa (0024)
+-- creator_recipe_links: herói indica receitas assinadas por um chef. Público vê só validados; só o admin
+-- escreve (RPC auditada), só receitas e nunca a receita do próprio herói. recipe_onboarding: uma linha por
+-- pessoa, só do dono, listas fixas de restrições e alergias; some com a conta.
+select tests.su();
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000022', 's22@test.local');
+
+-- 1) seed: todo herói indica as receitas que não são dele, já validadas
+select tests.ok('S22 seed: cada herói indica todas as receitas de outros chefs e nenhuma própria',
+  (select count(*) from public.creator_recipe_links) =
+    (select count(*) from public.creator_profiles cp join public.content c on c.type = 'recipe' and c.creator_id is not null and c.creator_id <> cp.id)
+  and not exists (select 1 from public.creator_recipe_links l join public.content c on c.id = l.content_id where c.creator_id = l.creator_id or c.type <> 'recipe')
+  and not exists (select 1 from public.creator_recipe_links where status <> 'validated'));
+
+-- 2) visitante e consumidor leem só validados e não escrevem
+select tests.su();
+update public.creator_recipe_links set status = 'suspended' where creator_id = public.seed_uuid('creator:lia') and content_id = (select id from public.content where type = 'recipe' order by slug limit 1);
+select tests.anon();
+select tests.ok('S22 visitante vê vínculos validados e não vê o suspenso',
+  (select count(*) from public.creator_recipe_links) > 0 and not exists (select 1 from public.creator_recipe_links where status <> 'validated'));
+select tests.expect_error('S22 visitante não insere vínculo', $q$insert into public.creator_recipe_links (creator_id, content_id) values (public.seed_uuid('creator:lia'), (select id from public.content where type = 'recipe' limit 1))$q$, '42501');
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S22 consumidor não insere vínculo', $q$insert into public.creator_recipe_links (creator_id, content_id) values (public.seed_uuid('creator:lia'), (select id from public.content where type = 'recipe' limit 1))$q$, '42501');
+select tests.expect_error('S22 consumidor não altera vínculos (sem grant)', $q$update public.creator_recipe_links set status = 'rejected'$q$, '42501');
+select tests.expect_error('S22 consumidor não apaga vínculos (sem grant)', $q$delete from public.creator_recipe_links$q$, '42501');
+select tests.expect_error('S22 consumidor não usa a RPC do admin', $q$select public.admin_set_creator_recipe(public.seed_uuid('creator:lia'), (select id from public.content where type = 'recipe' limit 1), 'validated')$q$, 'forbidden');
+select tests.anon();
+select tests.expect_error('S22 visitante não executa a RPC do admin', $q$select public.admin_set_creator_recipe(public.seed_uuid('creator:lia'), (select id from public.content where type = 'recipe' limit 1), 'validated')$q$, '42501');
+
+-- 3) admin: RPC valida, recusa não-receita e receita própria, e audita
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S22 admin vê também o vínculo suspenso', exists (select 1 from public.creator_recipe_links where status = 'suspended'));
+select public.admin_set_creator_recipe(public.seed_uuid('creator:lia'), (select id from public.content where type = 'recipe' order by slug limit 1), 'validated', 5);
+select tests.ok('S22 admin revalida o vínculo pela RPC (status, ordem, validated_by) e a ação fica auditada',
+  (select status = 'validated' and sort_order = 5 and validated_by = '10000000-0000-4000-8000-000000000001' from public.creator_recipe_links
+     where creator_id = public.seed_uuid('creator:lia') and content_id = (select id from public.content where type = 'recipe' order by slug limit 1))
+  and exists (select 1 from public.admin_audit where action = 'creator_recipe.set_status'));
+select tests.expect_error('S22 RPC recusa conteúdo que não é receita', $q$select public.admin_set_creator_recipe(public.seed_uuid('creator:lia'), (select id from public.content where type <> 'recipe' limit 1), 'validated')$q$, 'recipe_not_found');
+select tests.expect_error('S22 RPC recusa ligar o herói à própria receita', $q$select public.admin_set_creator_recipe(c.creator_id, c.id, 'validated') from public.content c where c.type = 'recipe' and c.creator_id is not null limit 1$q$, 'own_recipe');
+select tests.expect_error('S22 RPC recusa status inválido', $q$select public.admin_set_creator_recipe(public.seed_uuid('creator:lia'), (select id from public.content where type = 'recipe' limit 1), 'suggested')$q$, 'invalid_status');
+
+-- 4) recipe_onboarding: só do dono, listas fixas, aviso obrigatório
+select tests.login('10000000-0000-4000-8000-000000000022', 's22@test.local');
+insert into public.recipe_onboarding (user_id, notice_accepted_at, restrictions, allergies) values ('10000000-0000-4000-8000-000000000022', now(), array['vegetarian'], array['peanut', 'egg']);
+select tests.ok('S22 pessoa conclui a etapa com restrições e alergias das listas', (select restrictions = array['vegetarian'] and allergies = array['peanut', 'egg'] and completed_at is not null from public.recipe_onboarding));
+update public.recipe_onboarding set allergies = '{}' where user_id = '10000000-0000-4000-8000-000000000022';
+select tests.ok('S22 pessoa atualiza as próprias escolhas', (select allergies = '{}' from public.recipe_onboarding));
+select tests.expect_error('S22 restrição fora da lista é recusada', $q$update public.recipe_onboarding set restrictions = array['carnivora'] where user_id = '10000000-0000-4000-8000-000000000022'$q$, 'violates check constraint');
+select tests.expect_error('S22 alergia fora da lista é recusada', $q$update public.recipe_onboarding set allergies = array['texto livre'] where user_id = '10000000-0000-4000-8000-000000000022'$q$, 'violates check constraint');
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S22 outra pessoa não vê a etapa de ninguém', (select count(*) from public.recipe_onboarding) = 0);
+select tests.expect_error('S22 outra pessoa não grava etapa em nome de outro', $q$insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('10000000-0000-4000-8000-000000000022', now())$q$, '42501');
+select tests.expect_error('S22 etapa sem aceite do aviso é recusada', $q$insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('10000000-0000-4000-8000-000000000002', null)$q$, '23502');
+do $s22$ declare n int; begin
+  update public.recipe_onboarding set allergies = array['milk']; get diagnostics n = row_count;
+  perform tests.ok('S22 outra pessoa não altera a etapa alheia (0 linhas)', n = 0);
+  delete from public.recipe_onboarding; get diagnostics n = row_count;
+  perform tests.ok('S22 outra pessoa não apaga a etapa alheia (0 linhas)', n = 0);
+end $s22$;
+select tests.anon();
+select tests.expect_error('S22 visitante não lê a etapa', $q$select * from public.recipe_onboarding$q$, '42501');
+
+-- 5) exclusão de conta leva a etapa junto (cascade)
+select tests.login('10000000-0000-4000-8000-000000000022', 's22@test.local');
+select public.delete_my_account();
+select tests.su();
+select tests.ok('S22 exclusão de conta apaga a etapa de receitas', not exists (select 1 from public.recipe_onboarding where user_id = '10000000-0000-4000-8000-000000000022'));
+
+-- 6) segurança: RLS ativa, função do admin com search_path fixo e sem execute para anon
+select tests.ok('S22 RLS ativa nas duas tabelas e RPC do admin security definer com search_path fixo, sem execute para anon',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.creator_recipe_links'::regclass, 'public.recipe_onboarding'::regclass))
+  and (select prosecdef and proconfig is not null from pg_proc where oid = 'public.admin_set_creator_recipe(uuid, uuid, public.link_status, int)'::regprocedure)
+  and not has_function_privilege('anon', 'public.admin_set_creator_recipe(uuid, uuid, public.link_status, int)', 'execute'));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

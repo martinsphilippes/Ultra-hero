@@ -1,0 +1,94 @@
+{
+  "gate": {
+    "brand": "Ultra Hero",
+    "eyebrow": "Recipes",
+    "description": "Your current access doesn't open recipes yet. Your simple logs stay in Today.",
+    "badge": "Step 0 of {total} · pending",
+    "cardTitle": "Demo step pending.",
+    "cardDescription": "There is no professional review. Complete the demo step to open the demo content only.",
+    "stepsLabel": "{total} demo steps",
+    "steps": {
+      "notice": "Accept the notice",
+      "diet": "Restrictions and allergies",
+      "interests": "Interests",
+      "confirm": "Confirm"
+    },
+    "start": "Start the demo step",
+    "backToToday": "Back to Today"
+  },
+  "onboarding": {
+    "metaTitle": "Recipe demo step",
+    "eyebrow": "Recipes",
+    "title": "Demo step",
+    "description": "Four quick steps to open the demo recipes.",
+    "cancel": "Back",
+    "progress": "Step {step} of {total}",
+    "back": "Back",
+    "next": "Continue",
+    "finish": "Finish and open recipes",
+    "notice": {
+      "title": "Accept the notice",
+      "description": "Ultra Hero recipes are demo content.",
+      "item1": "There is no review by a dietitian or any other health professional.",
+      "item2": "Recipes don't replace professional advice or treat health conditions.",
+      "item3": "Always check the ingredients, especially if you have an allergy or restriction.",
+      "accept": "I have read and accept the notice"
+    },
+    "diet": {
+      "title": "Restrictions and allergies",
+      "description": "Mark what applies to you. If nothing applies, just continue.",
+      "restrictionsLabel": "Dietary restrictions",
+      "allergiesLabel": "Allergies",
+      "privacy": "We only use this to remind you on each recipe page. You can change or delete it anytime."
+    },
+    "interests": {
+      "title": "Your interests",
+      "description": "Pick the topics that suit you best."
+    },
+    "confirm": {
+      "title": "Confirm",
+      "description": "Review your choices before opening the recipes.",
+      "notice": "Notice",
+      "noticeAccepted": "Accepted",
+      "none": "None",
+      "interests": "Interests",
+      "interestsCount": "{n, plural, =0 {No topics} =1 {1 topic} other {# topics}}"
+    },
+    "restrictions": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "pescatarian": "Pescatarian",
+      "lactose_free": "Lactose-free",
+      "gluten_free": "Gluten-free",
+      "low_sugar": "Low sugar",
+      "low_sodium": "Low salt"
+    },
+    "allergies": {
+      "peanut": "Peanut",
+      "tree_nuts": "Tree nuts",
+      "milk": "Milk",
+      "egg": "Egg",
+      "wheat": "Wheat",
+      "soy": "Soy",
+      "fish": "Fish",
+      "shellfish": "Shellfish",
+      "sesame": "Sesame"
+    },
+    "errors": {
+      "invalid": "Check your choices and try again.",
+      "unauthenticated": "Sign in to finish.",
+      "failed": "We couldn't save. Try again."
+    }
+  },
+  "library": {
+    "type": "Recipe",
+    "signedBy": "Recipe by {chef}",
+    "endorsedBy": "Recommended by {hero}",
+    "endorsementNote": "{hero} recommends these recipes. Each one is signed by the chef who created it."
+  },
+  "reminder": {
+    "title": "Check the ingredients",
+    "description": "You told us: {items}. This recipe has no professional review; check every ingredient before cooking.",
+    "edit": "Review restrictions and allergies"
+  }
+}

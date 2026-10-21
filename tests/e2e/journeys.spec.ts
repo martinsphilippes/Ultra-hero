@@ -118,7 +118,8 @@ test.describe("visitante", () => {
     await expect(notice).not.toContainText(/autorizado por|authorized by/i);
     await expect(page.getByText(/personagem fictício|fictional character/i).first()).toBeVisible();
 
-    await page.goto("/personalities/helena-vilar/receitas");
+    // Receitas ficam atrás da etapa demonstrativa: o crédito/licença é conferido num conteúdo de rotina.
+    await page.goto("/personalities/lia-monteiro/rotina");
     const firstCard = page.getByTestId("library-grid").locator("> a").first();
     await firstCard.click();
     await expect(page).toHaveURL(/\/content\//);

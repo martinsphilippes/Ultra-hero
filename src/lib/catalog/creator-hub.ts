@@ -53,6 +53,8 @@ export type CreatorHub = {
 const CREATOR_SELECT = "id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_note, rights_status, rights_holder, rights_valid_until";
 // Vínculos validados cujo conteúdo (publicado) é desta personalidade; o !inner aplica o filtro do embed à linha.
 const LINK_SELECT = `id, content:content!inner(id, slug, title, creator_id, status), product:products(${PRODUCT_CARD_SELECT}, demo_stock)`;
+// Receitas que o herói indica (creator_recipe_links): assinadas pelo chef (content.creator).
+const RECIPE_LINK_SELECT = `sort_order, content:content!inner(${CONTENT_TILE_SELECT}, status, publish_at)`;
 // Alocação direta produto↔herói (creator_products): o embed vem nulo quando a RLS esconde o produto.
 const DIRECT_SELECT = `id, status, sort_order, product:products(${PRODUCT_CARD_SELECT}, demo_stock)`;
 
@@ -72,7 +74,7 @@ export const loadCreator = cache(async (slug: string): Promise<Creator | null> =
 // então o hub e cada página de biblioteca mostram sempre os mesmos números.
 export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub> => {
   const [supabase, user] = await Promise.all([createClient(), getUser()]);
-  const [contentRes, programRes, linksRes, directRes, settingsRes] = await Promise.all([
+  const [contentRes, programRes, linksRes, directRes, settingsRes, recipeLinksRes] = await Promise.all([
     supabase.from("content").select(CONTENT_TILE_SELECT).eq("creator_id", creator.id).eq("status", "published").or(liveContentFilter()).order("published_at", { ascending: false }).limit(100),
     supabase.from("programs").select(PROGRAM_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(50),
     supabase
@@ -86,8 +88,24 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
       .limit(100),
     supabase.from("creator_products").select(DIRECT_SELECT).eq("creator_id", creator.id).eq("status", "validated").order("sort_order").order("id").limit(100),
     supabase.rpc("public_settings"),
+    supabase
+      .from("creator_recipe_links")
+      .select(RECIPE_LINK_SELECT)
+      .eq("creator_id", creator.id)
+      .eq("status", "validated")
+      .eq("content.status", "published")
+      .or(liveContentFilter(), { referencedTable: "content" })
+      .order("sort_order")
+      .limit(100),
   ]);
-  const contents = (contentRes.data ?? []) as unknown as ContentTileData[];
+  // Conteúdos do herói + receitas que ele indica (sem repetir): as indicadas entram em Receitas
+  // com a assinatura do chef que as fez.
+  const own = (contentRes.data ?? []) as unknown as ContentTileData[];
+  const ownIds = new Set(own.map((c) => c.id));
+  const endorsed = ((recipeLinksRes.data ?? []) as unknown as { content: ContentTileData | null }[])
+    .map((row) => row.content)
+    .filter((c): c is ContentTileData => Boolean(c) && !ownIds.has(c!.id));
+  const contents = [...own, ...endorsed];
   const programs = ((programRes.data ?? []) as unknown as ProgramCardData[]).filter((p) => p.version);
   const commerceEnabled = !settingsRes.error && isCommerceEnabled(settingsRes.data);
 
@@ -112,10 +130,10 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
     contents,
     programs,
     products,
-    libraries: buildCreatorLibraries({ contents, programs, products }),
+    libraries: buildCreatorLibraries({ contents, programs, products, always: ["receitas"] }),
     commerceEnabled,
     inCartByProduct,
     isLoggedIn: Boolean(user),
-    errors: { contents: Boolean(contentRes.error), programs: Boolean(programRes.error), products: productsError },
+    errors: { contents: Boolean(contentRes.error || recipeLinksRes.error), programs: Boolean(programRes.error), products: productsError },
   };
 });

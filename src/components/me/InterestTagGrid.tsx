@@ -37,7 +37,7 @@ export function InterestTagGrid({ groups, selected, onChange, disabled }: Props)
                   <Chip
                     key={option.tag}
                     selected={active}
-                    variant={group.pillar ?? "accent"}
+                    variant="neutral"
                     icon={active ? <Check /> : undefined}
                     onClick={() => toggle(option.tag)}
                     disabled={disabled}

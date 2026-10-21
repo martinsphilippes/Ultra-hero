@@ -4,7 +4,7 @@ import { isLibraryKey } from "@/lib/catalog/creator-libraries";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
-const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profile", "/cart", "/checkout", "/orders", "/onboarding"];
+const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profile", "/recipes", "/cart", "/checkout", "/orders", "/onboarding"];
 
 function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
