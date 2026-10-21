@@ -1,8 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Skeleton, VisuallyHidden } from "@/components/ui";
-import { CardsSkeleton } from "@/components/discover/SectionSkeleton";
 
-// Esqueleto do perfil da personalidade (capa, avatar, identidade, abas e grade).
+// Esqueleto do hub do herói (capa, avatar, identidade e a lista de bibliotecas).
 export default function Loading() {
   const t = useTranslations("common.states");
   return (
@@ -21,12 +20,22 @@ export default function Loading() {
           </div>
         </div>
       </div>
-      <Skeleton className="h-16 w-full rounded-xl sm:mx-4 sm:w-[calc(100%-2rem)]" />
-      <div className="flex gap-3 border-b border-border pb-3">
-        <Skeleton className="h-6 w-28" />
-        <Skeleton className="h-6 w-28" />
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-7 w-56 max-w-full" />
+        <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex min-h-16 items-center gap-4 px-4 py-3">
+              <Skeleton className="size-11 rounded-xl" />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton variant="text" className="h-3 w-16" />
+              </div>
+              <Skeleton className="size-5 rounded-full" />
+            </div>
+          ))}
+        </div>
       </div>
-      <CardsSkeleton />
+      <Skeleton className="h-16 w-full rounded-xl" />
     </div>
   );
 }

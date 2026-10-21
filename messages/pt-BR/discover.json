@@ -5,7 +5,8 @@
     "lists": "Minhas listas",
     "list": "{name} · Lista",
     "personalities": "Heróis",
-    "personality": "{name} · Herói"
+    "personality": "{name} · Herói",
+    "library": "{library} · {name}"
   },
   "common": {
     "sectionError": "Não foi possível carregar esta seção.",
@@ -174,16 +175,6 @@
         "programs": "{count, plural, =1 {1 programa} other {# programas}}",
         "products": "{count, plural, =1 {1 produto} other {# produtos}}"
       },
-      "tabs": {
-        "label": "Seções do perfil",
-        "contents": "Conteúdos",
-        "programs": "Programas",
-        "products": "Produtos"
-      },
-      "typeFilter": "Filtrar por tipo",
-      "allTypes": "Todos",
-      "contentsEmptyTitle": "Nenhum conteúdo com este filtro",
-      "contentsEmptyDescription": "Experimente outro tipo de conteúdo.",
       "programsEmptyTitle": "Nenhum programa publicado",
       "programsEmptyDescription": "Este herói ainda não tem programas.",
       "productsNote": "Produtos deste herói e produtos ligados aos seus conteúdos. As compras aqui são simuladas: nenhuma compra, cobrança ou entrega real.",
@@ -194,6 +185,34 @@
       "rightsPending": "Autorização de uso de nome e imagem em validação; até lá, o perfil é tratado como fictício.",
       "rightsAuthorized": "Uso de nome e imagem autorizado por {holder}.",
       "rightsValidUntil": "Autorização válida até {date}."
+    },
+    "libraries": {
+      "title": "Bibliotecas de {name}",
+      "description": "Tudo o que {name} publicou, organizado por tipo e pilar.",
+      "count": "{count, plural, =1 {1 item} other {# itens}}",
+      "empty": "Nenhuma biblioteca ainda",
+      "emptyDescription": "{name} ainda não publicou conteúdos, programas ou produtos.",
+      "libraryEmpty": "Nada por aqui ainda",
+      "libraryEmptyDescription": "Esta biblioteca de {name} ainda não tem itens.",
+      "back": "Voltar para {name}",
+      "labels": {
+        "rotina": "Rotina",
+        "nutricao": "Nutrição",
+        "receitas": "Receitas",
+        "treinos": "Treinos",
+        "gastronomia": "Gastronomia",
+        "programas": "Programas",
+        "produtos": "Produtos"
+      },
+      "descriptions": {
+        "rotina": "Hábitos, manhãs calmas e sono melhor com {name}.",
+        "nutricao": "Educação alimentar prática com {name}.",
+        "receitas": "Receitas de {name}, de qualquer pilar.",
+        "treinos": "Força, mobilidade e corrida com {name}.",
+        "gastronomia": "Técnicas de base e marmitas com {name}.",
+        "programas": "Coleções guiadas de {name} para seguir no seu ritmo.",
+        "produtos": "Produtos de {name} e produtos ligados aos seus conteúdos."
+      }
     },
     "eyebrow": "Quem guia os conteúdos",
     "notFoundTitle": "Herói não encontrado",

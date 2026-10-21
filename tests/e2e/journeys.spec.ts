@@ -28,31 +28,28 @@ test.describe("visitante", () => {
   // helena-vilar: personalidade do seed (0008) com vínculos validados (g1→m1, g3→k1, g5→m4, g9→k3).
   test("vê os produtos ligados à personalidade e recebe CTA de login no carrinho de teste", async ({ page }) => {
     await page.goto("/personalities/helena-vilar");
-    await page.waitForLoadState("networkidle");
-    const tab = page.getByRole("tab", { name: /^produtos\b/i });
-    await expect(tab).toBeVisible();
-    // As abas trocam via router (client); um clique antes da hidratação não navega — repete até a URL mudar.
-    await expect(async () => {
-      await tab.click();
-      await expect(page).toHaveURL(/\/personalities\/helena-vilar\?tab=produtos$/, { timeout: 2_000 });
-    }).toPass({ timeout: 20_000 });
-    await expect(tab).toHaveAttribute("aria-selected", "true");
+    const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
+    await expect(button).toBeVisible();
+    const label = (await button.textContent()) ?? "";
+    await button.click();
+    await expect(page).toHaveURL(/\/personalities\/helena-vilar\/produtos$/);
 
-    const cards = page.getByRole("tabpanel").getByTestId("product-action-card");
+    const cards = page.getByTestId("product-action-card");
     await expect(cards.first()).toBeVisible();
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
 
-    // "Produtos · N" e a linha de estatísticas batem com o número de cards renderizados
-    const label = (await tab.textContent()) ?? "";
+    // "Produtos · N itens" no hub bate com o número de cards renderizados na biblioteca
     expect(Number(label.match(/(\d+)/)?.[1])).toBe(count);
-    await expect(page.getByText(new RegExp(`· ${count} produtos?$`))).toBeVisible();
+    await page.goBack();
+    await expect(page.getByText(new RegExp(`· ${count} produtos?$`, "i"))).toBeVisible();
+    await page.goForward();
 
-    // visitante: cada card leva ao login com retorno para a aba de produtos; nenhum botão de adicionar
+    // visitante: cada card leva ao login com retorno para a biblioteca de produtos; nenhum botão de adicionar
     const loginCta = cards.first().getByRole("link", { name: /entrar para adicionar/i });
     await expect(loginCta).toBeVisible();
-    await expect(loginCta).toHaveAttribute("href", /^\/login\?next=%2Fpersonalities%2Fhelena-vilar%3Ftab%3Dprodutos$/);
-    await expect(page.getByRole("tabpanel").getByRole("button", { name: /adicionar ao carrinho/i })).toHaveCount(0);
+    await expect(loginCta).toHaveAttribute("href", /^\/login\?next=%2Fpersonalities%2Fhelena-vilar%2Fprodutos$/);
+    await expect(page.getByRole("button", { name: /adicionar ao carrinho/i })).toHaveCount(0);
     // "Usado em": ao menos um card (os vinculados por conteúdo vêm depois dos alocados diretamente) com link para o conteúdo de origem
     await expect(cards.filter({ has: page.locator('a[href^="/content/"]') }).first().locator('a[href^="/content/"]').first()).toBeVisible();
   });
@@ -92,8 +89,8 @@ test.describe("visitante", () => {
     await expect(notice).not.toContainText(/autorizado por|authorized by/i);
     await expect(page.getByText(/personagem fictício|fictional character/i).first()).toBeVisible();
 
-    await page.goto("/personalities/helena-vilar?type=recipe");
-    const firstCard = page.getByRole("link", { name: /.+/ }).filter({ has: page.locator("img") }).first();
+    await page.goto("/personalities/helena-vilar/receitas");
+    const firstCard = page.getByTestId("library-grid").locator("> a").first();
     await firstCard.click();
     await expect(page).toHaveURL(/\/content\//);
     await expect(page.getByText(/crédito\/licença|credit\/license/i)).toBeVisible();
