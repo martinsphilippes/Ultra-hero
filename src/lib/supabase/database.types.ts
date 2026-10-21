@@ -1117,6 +1117,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"stream_uploads": {
+                  Row: {
+                    "content_id": string | null,"created_at": string,"creator_id": string,"discarded_at": string | null,"expires_at": string,"provider_deleted_at": string | null,"uid": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id"?: string | null,"created_at"?: string,"creator_id": string,"discarded_at"?: string | null,"expires_at": string,"provider_deleted_at"?: string | null,"uid": string
+                  }
+                  Update: {
+                    "content_id"?: string | null,"created_at"?: string,"creator_id"?: string,"discarded_at"?: string | null,"expires_at"?: string,"provider_deleted_at"?: string | null,"uid"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stream_uploads_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stream_uploads_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"subscription_events": {
                   Row: {
                     "created_at": string,"event": string,"id": number,"payload": NonNullable<Json>,"subscription_id": string
@@ -1450,8 +1476,14 @@ isOneToOne: false
 "content_is_live":
 { Args: { "p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: boolean
                            },
+"creator_discard_video_draft":
+{ Args: { "p_content": string }; Returns: Json
+                           },
 "creator_publish_content":
 { Args: { "p_content": string }; Returns: Json
+                           },
+"creator_set_draft_slug":
+{ Args: { "p_content": string,"p_slug": string }; Returns: Json
                            },
 "creator_unpublish_content":
 { Args: { "p_content": string }; Returns: Json

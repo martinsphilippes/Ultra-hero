@@ -251,18 +251,26 @@ describe("CloudflareStreamProvider.getVideoStatus", () => {
   it("faz GET autenticado no vídeo", async () => {
     configure();
     const fetchMock = mockFetch(videoResponse({ readyToStream: true, status: { state: "ready" }, duration: 42.5, creator: CREATOR }));
-    await expect(provider.getVideoStatus(UID)).resolves.toEqual({ state: "ready", durationSec: 42.5, creatorId: CREATOR });
+    await expect(provider.getVideoStatus(UID)).resolves.toEqual({ state: "ready", durationSec: 42.5, creatorId: CREATOR, reason: null });
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toBe(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/stream/${UID}`);
     expect((init?.headers as Record<string, string>).Authorization).toBe(`Bearer ${TOKEN}`);
   });
 
   it.each([
-    [{ readyToStream: false, status: { state: "pendingupload" }, duration: -1 }, { state: "pending", durationSec: null, creatorId: null }],
-    [{ readyToStream: false, status: { state: "inprogress" }, duration: -1, creator: "" }, { state: "pending", durationSec: null, creatorId: null }],
-    [{ readyToStream: false, status: { state: "ready" }, duration: 10 }, { state: "pending", durationSec: 10, creatorId: null }],
-    [{ readyToStream: false, status: { state: "error" }, duration: -1, creator: CREATOR }, { state: "errored", durationSec: null, creatorId: CREATOR }],
-    [{}, { state: "pending", durationSec: null, creatorId: null }],
+    // pendingupload = o arquivo ainda não chegou inteiro (envio parado ou recém-terminado)
+    [{ readyToStream: false, status: { state: "pendingupload" }, duration: -1 }, { state: "incomplete", durationSec: null, creatorId: null, reason: null }],
+    [{ readyToStream: false, status: { state: "queued" }, duration: -1, creator: CREATOR }, { state: "pending", durationSec: null, creatorId: CREATOR, reason: null }],
+    [{ readyToStream: false, status: { state: "downloading" }, duration: -1 }, { state: "pending", durationSec: null, creatorId: null, reason: null }],
+    [{ readyToStream: false, status: { state: "inprogress" }, duration: -1, creator: "" }, { state: "pending", durationSec: null, creatorId: null, reason: null }],
+    [{ readyToStream: false, status: { state: "ready" }, duration: 10 }, { state: "pending", durationSec: 10, creatorId: null, reason: null }],
+    [{ readyToStream: false, status: { state: "error" }, duration: -1, creator: CREATOR }, { state: "errored", durationSec: null, creatorId: CREATOR, reason: null }],
+    [
+      { readyToStream: false, status: { state: "error", errorReasonCode: "ERR_DURATION_EXCEED_CONSTRAINT" }, duration: 200, creator: CREATOR },
+      { state: "errored", durationSec: 200, creatorId: CREATOR, reason: "ERR_DURATION_EXCEED_CONSTRAINT" },
+    ],
+    [{ status: { state: "inprogress", errorReasonCode: "" } }, { state: "pending", durationSec: null, creatorId: null, reason: null }],
+    [{}, { state: "pending", durationSec: null, creatorId: null, reason: null }],
   ])("mapeia %j", async (result, expected) => {
     configure();
     mockFetch(videoResponse(result));
@@ -273,6 +281,42 @@ describe("CloudflareStreamProvider.getVideoStatus", () => {
     configure();
     mockFetch(new Response(JSON.stringify({ success: false, errors: [{ code: 10003, message: "Not Found" }] }), { status: 404 }));
     await expect(provider.getVideoStatus(UID)).rejects.toMatchObject({ name: "CloudflareStreamError", status: 404 });
+  });
+});
+
+describe("CloudflareStreamProvider.deleteVideo", () => {
+  const provider = new CloudflareStreamProvider();
+
+  it("valida o uid e a configuração antes da rede", async () => {
+    const fetchMock = mockFetch(new Response(null, { status: 200 }));
+    await expect(provider.deleteVideo(UID)).rejects.toThrow(NotConfiguredError);
+    configure();
+    await expect(provider.deleteVideo("../accounts")).rejects.toThrow(InvalidMediaRefError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("faz DELETE autenticado no vídeo", async () => {
+    configure();
+    const fetchMock = mockFetch(new Response(null, { status: 200 }));
+    await expect(provider.deleteVideo(UID)).resolves.toBeUndefined();
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/stream/${UID}`);
+    expect(init?.method).toBe("DELETE");
+    expect((init?.headers as Record<string, string>).Authorization).toBe(`Bearer ${TOKEN}`);
+  });
+
+  it("404 conta como apagado (outra tentativa já removeu)", async () => {
+    configure();
+    mockFetch(new Response(JSON.stringify({ success: false, errors: [{ code: 10003, message: "Not Found" }] }), { status: 404 }));
+    await expect(provider.deleteVideo(UID)).resolves.toBeUndefined();
+  });
+
+  it("outros erros HTTP e falha de rede viram CloudflareStreamError", async () => {
+    configure();
+    mockFetch(new Response(JSON.stringify({ success: false, errors: [{ code: 10000, message: "Authentication error" }] }), { status: 403 }));
+    await expect(provider.deleteVideo(UID)).rejects.toMatchObject({ name: "CloudflareStreamError", status: 403 });
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
+    await expect(provider.deleteVideo(UID)).rejects.toMatchObject({ name: "CloudflareStreamError", status: 0 });
   });
 });
 

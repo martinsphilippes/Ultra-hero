@@ -147,15 +147,25 @@
     "retry": "Tentar de novo",
     "discard": "Descartar vídeo",
     "discardTitle": "Descartar este vídeo?",
-    "discardDescription": "O envio para e você volta para escolher outro vídeo. O que você escreveu se perde.",
+    "discardDescription": "O envio para, o rascunho e o vídeo são apagados e você volta para escolher outro vídeo.",
     "discardConfirm": "Descartar",
     "discarded": "Vídeo descartado",
-    "discardedKept": "O rascunho ficou guardado em Meus conteúdos; você pode abrir e publicar depois.",
+    "discardedDeleted": "O rascunho e o vídeo foram apagados.",
     "doneTitle": "Publicado!",
     "doneDescription": "Seu post já está no ar.",
     "viewPost": "Ver post",
     "another": "Fazer outro post",
     "leaveWarning": "O vídeo ainda está sendo enviado. Se sair agora, o envio para.",
+    "leaveWarningProcessing": "O vídeo já foi enviado e está sendo preparado. Se sair agora, o post fica como rascunho em Meus conteúdos.",
+    "sr": {
+      "starting": "Preparando o envio do vídeo.",
+      "progress": "Envio em {pct}%.",
+      "uploaded": "Vídeo enviado. Já dá para publicar.",
+      "error": "O envio parou.",
+      "resuming": "Conexão de volta. Retomando o envio.",
+      "publishing": "Publicando o post.",
+      "processing": "O vídeo está sendo preparado. Aguarde."
+    },
     "errors": {
       "generic": "Não foi possível concluir. Tente de novo.",
       "unauthenticated": "Sua sessão expirou. Entre de novo para continuar.",
@@ -166,8 +176,8 @@
       "not_video": "Esse arquivo não é um vídeo. Grave um novo ou escolha outro da galeria.",
       "empty_file": "O arquivo está vazio. Escolha outro vídeo.",
       "file_too_large": "O vídeo passa de 2 GB. Escolha um vídeo menor.",
-      "too_long": "O vídeo passa de 3 minutos. Corte no celular e tente de novo.",
-      "network": "A conexão caiu. Quando voltar, toque em Tentar de novo: o envio continua de onde parou.",
+      "too_long": "O vídeo passa de 3 minutos. Grave de novo com até 3 minutos ou escolha um vídeo mais curto da galeria.",
+      "network": "A conexão caiu. O envio continua sozinho quando a internet voltar, ou toque em Tentar de novo.",
       "upload_failed": "O Cloudflare recusou o envio. Toque em Tentar de novo.",
       "upload_expired": "O link de envio venceu. Toque em Tentar de novo para começar um envio novo.",
       "provider_error": "O serviço de vídeo não respondeu. Tente de novo em instantes.",
@@ -179,7 +189,15 @@
       "missing_media": "O vídeo não ficou ligado a este post. Descarte e envie de novo.",
       "not_draft": "Este post não é mais rascunho (já foi publicado ou arquivado).",
       "media_license_mismatch": "A licença do vídeo não combina com a mídia. Abra o post em Meus conteúdos para ajustar.",
-      "duplicate": "Não foi possível criar o post agora. Tente de novo."
+      "duplicate": "Não foi possível criar o post agora. Tente de novo.",
+      "upload_incomplete": "O vídeo não terminou de subir. Toque em Tentar de novo ou descarte e envie outra vez.",
+      "too_many_uploads": "Você enviou muitos vídeos na última hora. Espere um pouco e tente de novo.",
+      "stream_media_forbidden": "Este vídeo não foi enviado por esta conta e não pode ser usado aqui.",
+      "slug_taken": "Não foi possível gerar o endereço do post. Toque em publicar de novo.",
+      "invalid_slug": "Não foi possível gerar o endereço do post. Mude o título e tente de novo.",
+      "already_published": "Este post já esteve no ar; abra em Meus conteúdos para editar.",
+      "not_stream": "Este rascunho não tem vídeo enviado pelo celular.",
+      "content_in_use": "Este rascunho está ligado a um programa e não pode ser apagado. Fale com a administração."
     }
   },
   "reviews": {
@@ -275,7 +293,7 @@
     "video_not_configured": "Vídeo ainda não configurado: peça ao administrador para ligar o Cloudflare Stream.",
     "processing": "O vídeo ainda está sendo processado no Cloudflare. Tente publicar de novo em instantes.",
     "video_failed": "O Cloudflare não conseguiu processar este vídeo. Faça um novo post com outro vídeo.",
-    "too_long": "O vídeo passa de 3 minutos e não pode ser publicado.",
+    "too_long": "O vídeo passa de 3 minutos e não pode ser publicado. Grave de novo com até 3 minutos ou escolha um vídeo mais curto da galeria.",
     "missing_title": "Preencha o título antes de publicar.",
     "missing_body": "Salve o formulário antes de publicar: o corpo ainda não foi gravado.",
     "missing_media": "Post de vídeo precisa de vídeo: defina a mídia e salve antes de publicar.",
@@ -284,6 +302,8 @@
     "not_published": "Este conteúdo não está publicado.",
     "network": "A conexão caiu. Tente de novo.",
     "provider_error": "O serviço de vídeo não respondeu. Tente de novo em instantes.",
-    "file_too_large": "O vídeo passa de 2 GB."
+    "file_too_large": "O vídeo passa de 2 GB.",
+    "upload_incomplete": "O vídeo não terminou de subir para o Cloudflare. Envie de novo pelo Novo post.",
+    "stream_media_forbidden": "Este vídeo não foi enviado por esta conta e não pode ser usado aqui."
   }
 }

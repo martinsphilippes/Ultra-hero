@@ -5,8 +5,8 @@ import type { ContentFormValues } from "@/components/editors/types";
 import { MAX_POST_BYTES, durationMinutes, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "@/components/creator/post/validation";
 
 // Composer de post em vídeo do herói: server actions sem Next, Supabase nem Cloudflare. Confere que
-// dono e uid vêm da sessão/banco (nunca do cliente), o mapeamento de erros para creator.post.errors
-// e as regras puras de arquivo/duração que o navegador aplica antes de enviar.
+// dono e uid vêm da sessão/banco (nunca do cliente), o vínculo stream_uploads gravado pelo service
+// role, o mapeamento de erros para creator.post.errors e as regras puras de arquivo/duração.
 
 const ids = vi.hoisted(() => ({
   USER: "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
@@ -17,25 +17,33 @@ const ids = vi.hoisted(() => ({
 }));
 
 type Write = { table: string; op: string; payload?: Record<string, unknown>; filters: [string, unknown][] };
+type Status = { state: string; durationSec: number | null; creatorId: string | null; reason: string | null };
 
 const state = vi.hoisted(() => ({
   user: null as { id: string } | null,
   isCreator: true,
   creatorId: null as string | null,
   configured: true,
+  hasAdmin: true,
   settings: {} as Record<string, unknown>,
   content: null as Record<string, unknown> | null,
   body: null as Record<string, unknown> | null,
   profile: { pillars: ["nutrition", "gastronomy"] } as Record<string, unknown> | null,
+  uploadCount: 0,
   rpcError: null as string | null,
+  slugTaken: 0,
   insertError: null as { message: string; code?: string } | null,
-  deletedRows: [] as { id: string }[],
-  status: { state: "ready", durationSec: 95.4, creatorId: null } as { state: string; durationSec: number | null; creatorId: string | null },
+  bodyError: null as { message: string; code?: string } | null,
+  adminInsertError: null as { message: string } | null,
+  status: { state: "ready", durationSec: 95.4, creatorId: null, reason: null } as Status,
   statusError: null as Error | null,
   ticketError: null as Error | null,
+  deleteError: null as Error | null,
   tickets: [] as Record<string, unknown>[],
   statusCalls: [] as string[],
+  deleted: [] as string[],
   writes: [] as Write[],
+  adminWrites: [] as Write[],
   rpcs: [] as { fn: string; args?: Record<string, unknown> }[],
   revalidated: [] as string[],
 }));
@@ -66,34 +74,86 @@ vi.mock("@/lib/video", async (importOriginal) => {
         if (state.statusError) throw state.statusError;
         return state.status;
       },
+      deleteVideo: async (uid: string) => {
+        state.deleted.push(uid);
+        if (state.deleteError) throw state.deleteError;
+      },
     }),
   };
 });
+
+// Cliente do service role: só grava stream_uploads (vínculo, content_id, descarte) e desfaz rascunho.
+vi.mock("@/lib/supabase/admin", () => ({
+  hasAdminClient: () => state.hasAdmin,
+  createAdminClient: () => {
+    if (!state.hasAdmin) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada no servidor.");
+    return {
+      from: (table: string) => {
+        const record = (op: string, payload?: Record<string, unknown>) => {
+          const entry: Write = { table, op, payload, filters: [] };
+          state.adminWrites.push(entry);
+          const chain = {
+            eq(column: string, value: unknown) {
+              entry.filters.push([column, value]);
+              return chain;
+            },
+            then: (resolve: (v: unknown) => void) => resolve({ data: null, error: op === "insert" ? state.adminInsertError : null }),
+          };
+          return chain;
+        };
+        return {
+          insert: (payload: Record<string, unknown>) => record("insert", payload),
+          update: (payload: Record<string, unknown>) => record("update", payload),
+          delete: () => record("delete"),
+        };
+      },
+    };
+  },
+}));
+
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     rpc: async (fn: string, args?: Record<string, unknown>) => {
       state.rpcs.push({ fn, args });
       if (fn === "my_creator_id") return { data: state.creatorId, error: null };
       if (fn === "public_settings") return { data: state.settings, error: null };
+      if (fn === "creator_set_draft_slug") {
+        if (state.slugTaken > 0) {
+          state.slugTaken -= 1;
+          return { data: null, error: { message: "slug_taken" } };
+        }
+        if (state.content) state.content = { ...state.content, slug: args?.p_slug };
+        return { data: { id: args?.p_content, slug: args?.p_slug }, error: null };
+      }
       if (state.rpcError) return { data: null, error: { message: state.rpcError } };
+      if (fn === "creator_discard_video_draft") return { data: { id: args?.p_content, uid: ids.UID }, error: null };
       const status = fn === "creator_unpublish_content" ? "draft" : "published";
-      return { data: { id: args?.p_content, slug: "receita-de-domingo-x1y2z3", status }, error: null };
+      // Como a RPC real: devolve o slug que está na linha (não um valor fixo que esconderia o bug).
+      return { data: { id: args?.p_content, slug: state.content?.slug, status }, error: null };
     },
     from: (table: string) => {
       const entry: Write = { table, op: "select", filters: [] };
       const rowFor = () => (table === "content" ? state.content : table === "content_bodies" ? state.body : table === "creator_profiles" ? state.profile : null);
+      const result = () => {
+        if (entry.op === "insert" && table === "content_bodies") return { data: null, error: state.bodyError };
+        if (table === "stream_uploads") return { data: null, error: null, count: state.uploadCount };
+        return { data: null, error: null };
+      };
       const chain = {
         eq(column: string, value: unknown) {
           entry.filters.push([column, value]);
+          return chain;
+        },
+        gte(column: string, value: unknown) {
+          entry.filters.push([`${column}>=`, value]);
           return chain;
         },
         maybeSingle: async () => ({ data: rowFor(), error: null }),
         select: () => ({
           single: async () =>
             state.insertError ? { data: null, error: state.insertError } : { data: { id: ids.CONTENT, slug: `${String(entry.payload?.slug)}` }, error: null },
-          then: (resolve: (v: unknown) => void) => resolve({ data: state.deletedRows, error: null }),
         }),
-        then: (resolve: (v: unknown) => void) => resolve({ data: null, error: null }),
+        then: (resolve: (v: unknown) => void) => resolve(result()),
       };
       return {
         select: () => chain,
@@ -127,21 +187,29 @@ beforeEach(() => {
   state.isCreator = true;
   state.creatorId = ids.CREATOR;
   state.configured = true;
+  state.hasAdmin = true;
   state.settings = { "video.provider": "cloudflare_stream" };
-  state.content = { id: ids.CONTENT, slug: "post-em-video-abc123", status: "draft", creator_id: ids.CREATOR };
+  state.content = { id: ids.CONTENT, slug: "post-em-video-abc123", status: "draft", creator_id: ids.CREATOR, published_at: null };
   state.body = { media_provider: "cloudflare_stream", media_ref: ids.UID };
   state.profile = { pillars: ["nutrition", "gastronomy"] };
+  state.uploadCount = 0;
   state.rpcError = null;
+  state.slugTaken = 0;
   state.insertError = null;
-  state.deletedRows = [];
-  state.status = { state: "ready", durationSec: 95.4, creatorId: ids.CREATOR };
+  state.bodyError = null;
+  state.adminInsertError = null;
+  state.status = { state: "ready", durationSec: 95.4, creatorId: ids.CREATOR, reason: null };
   state.statusError = null;
   state.ticketError = null;
+  state.deleteError = null;
   state.tickets.length = 0;
   state.statusCalls.length = 0;
+  state.deleted.length = 0;
   state.writes.length = 0;
+  state.adminWrites.length = 0;
   state.rpcs.length = 0;
   state.revalidated.length = 0;
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
 const START = { fileSize: 48_000_000, fileName: "VID_20261021.mp4", durationSec: 95.4 };
@@ -153,6 +221,13 @@ describe("startVideoPost", () => {
     expect(await startVideoPost(START)).toEqual({ ok: false, error: "video_not_configured" });
     expect(state.tickets).toHaveLength(0);
     expect(state.writes).toHaveLength(0);
+  });
+
+  it("sem service role no servidor também é 'não configurado' (o vínculo não teria quem gravar)", async () => {
+    state.hasAdmin = false;
+    expect(await startVideoPost(START)).toEqual({ ok: false, error: "video_not_configured" });
+    expect(state.tickets).toHaveLength(0);
+    expect(state.rpcs.map((r) => r.fn)).not.toContain("public_settings");
   });
 
   it("lê o setting video.provider de public_settings", async () => {
@@ -174,10 +249,15 @@ describe("startVideoPost", () => {
     expect(state.writes).toHaveLength(0);
   });
 
-  it("fluxo feliz: ticket de 180 s no nome do herói da sessão e rascunho com cloudflare_stream + own + miniatura", async () => {
+  it("fluxo feliz: ticket de 180 s, vínculo pelo service role, rascunho com cloudflare_stream + own e content_id no vínculo", async () => {
     const result = await startVideoPost(START);
     expect(result).toEqual({ ok: true, contentId: ids.CONTENT, uploadUrl: "https://upload.cloudflarestream.com/tus/abc" });
     expect(state.tickets[0]).toEqual({ creatorId: ids.CREATOR, maxDurationSec: 180, premium: false, fileSize: 48_000_000, fileName: "VID_20261021.mp4" });
+
+    // vínculo antes do rascunho (o gatilho do corpo exige), com o herói da sessão e a validade do ticket
+    expect(state.adminWrites[0]).toEqual({ table: "stream_uploads", op: "insert", payload: { uid: ids.UID, creator_id: ids.CREATOR, expires_at: "2026-10-21T12:30:00Z" }, filters: [] });
+    expect(state.adminWrites[1]).toEqual({ table: "stream_uploads", op: "update", payload: { content_id: ids.CONTENT }, filters: [["uid", ids.UID]] });
+    expect(state.adminWrites).toHaveLength(2);
 
     const content = state.writes.find((w) => w.table === "content" && w.op === "insert")!;
     expect(content.payload).toMatchObject({
@@ -202,6 +282,27 @@ describe("startVideoPost", () => {
       captions_url: null,
     });
     expect(state.revalidated).toEqual(["/creator", "/creator/content"]);
+    expect(state.deleted).toHaveLength(0);
+  });
+
+  it("conta os envios do próprio herói na última hora e recusa a partir de 10, sem pedir ticket", async () => {
+    state.uploadCount = 9;
+    expect(await startVideoPost(START)).toMatchObject({ ok: true });
+    state.uploadCount = 10;
+    state.tickets.length = 0;
+    expect(await startVideoPost(START)).toEqual({ ok: false, error: "too_many_uploads" });
+    expect(state.tickets).toHaveLength(0);
+  });
+
+  it("vínculo recusado pelo banco: apaga o vídeo no Cloudflare e não cria rascunho", async () => {
+    state.adminInsertError = { message: "too_many_uploads" };
+    expect(await startVideoPost(START)).toEqual({ ok: false, error: "too_many_uploads" });
+    expect(state.deleted).toEqual([ids.UID]);
+    expect(state.writes).toHaveLength(0);
+    state.deleted.length = 0;
+    state.adminInsertError = { message: "connection reset" };
+    expect(await startVideoPost(START)).toEqual({ ok: false, error: "upload_failed" });
+    expect(state.deleted).toEqual([ids.UID]);
   });
 
   it("herói sem pilares cai em rotina", async () => {
@@ -228,29 +329,60 @@ describe("startVideoPost", () => {
     state.ticketError = new NotConfiguredError("cloudflare-stream", ["CLOUDFLARE_ACCOUNT_ID"]);
     expect(await startVideoPost(START)).toEqual({ ok: false, error: "video_not_configured" });
     expect(state.writes).toHaveLength(0);
+    expect(state.adminWrites).toHaveLength(0);
   });
 
-  it("erro do banco ao criar o rascunho vira chave de mensagem", async () => {
+  it("erro do banco ao criar o rascunho: chave de mensagem e envio desfeito (descartado + vídeo apagado)", async () => {
     state.insertError = { message: "new row violates row-level security policy for table \"content\"" };
     expect(await startVideoPost(START)).toEqual({ ok: false, error: "forbidden" });
+    expect(state.adminWrites.map((w) => [w.op, Object.keys(w.payload ?? {})])).toEqual([
+      ["insert", ["uid", "creator_id", "expires_at"]],
+      ["update", ["discarded_at", "content_id"]],
+      ["update", ["provider_deleted_at"]],
+    ]);
+    expect(state.deleted).toEqual([ids.UID]);
+  });
+
+  it("corpo recusado pelo gatilho: apaga o rascunho recém-criado e o vídeo", async () => {
+    state.bodyError = { message: "stream_media_forbidden" };
+    expect(await startVideoPost(START)).toEqual({ ok: false, error: "stream_media_forbidden" });
+    expect(state.adminWrites.find((w) => w.table === "content" && w.op === "delete")?.filters).toEqual([
+      ["id", ids.CONTENT],
+      ["status", "draft"],
+    ]);
+    expect(state.deleted).toEqual([ids.UID]);
   });
 });
 
 describe("publishVideoPost", () => {
   it("vídeo ainda processando devolve processing, mas o texto já fica salvo", async () => {
-    state.status = { state: "pending", durationSec: null, creatorId: ids.CREATOR };
+    state.status = { state: "pending", durationSec: null, creatorId: ids.CREATOR, reason: null };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "processing" });
     const update = state.writes.find((w) => w.table === "content" && w.op === "update")!;
     expect(update.payload).toEqual({ title: "Receita de domingo", summary: "Arroz de forno em 3 passos.", pillar: "gastronomy" });
     expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_publish_content");
+    expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_set_draft_slug");
   });
 
-  it("errored → video_failed; duração acima de 185 s → too_long; creator diferente → forbidden", async () => {
-    state.status = { state: "errored", durationSec: null, creatorId: ids.CREATOR };
+  it("envio que não chegou inteiro (pendingupload) → upload_incomplete", async () => {
+    state.status = { state: "incomplete", durationSec: null, creatorId: ids.CREATOR, reason: null };
+    expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "upload_incomplete" });
+  });
+
+  it("errored → video_failed; cortado pelo limite de duração → too_long; acima de 185 s → too_long", async () => {
+    state.status = { state: "errored", durationSec: null, creatorId: ids.CREATOR, reason: "ERR_NON_VIDEO" };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "video_failed" });
-    state.status = { state: "ready", durationSec: 190, creatorId: ids.CREATOR };
+    state.status = { state: "errored", durationSec: 200, creatorId: ids.CREATOR, reason: "ERR_DURATION_EXCEED_CONSTRAINT" };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "too_long" });
-    state.status = { state: "ready", durationSec: 60, creatorId: ids.OTHER_CREATOR };
+    state.status = { state: "ready", durationSec: 190, creatorId: ids.CREATOR, reason: null };
+    expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "too_long" });
+    expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_publish_content");
+  });
+
+  it("creator do vídeo tem de ser o herói: outro herói ou campo vazio → forbidden", async () => {
+    state.status = { state: "ready", durationSec: 60, creatorId: ids.OTHER_CREATOR, reason: null };
+    expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
+    state.status = { state: "ready", durationSec: 30, creatorId: null, reason: null };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
     expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_publish_content");
   });
@@ -260,21 +392,40 @@ describe("publishVideoPost", () => {
     expect(state.statusCalls).toEqual([ids.UID]);
   });
 
-  it("sucesso: chama creator_publish_content, grava duração e revalida as vitrines", async () => {
+  it("sucesso: troca o slug provisório pelo do título final, publica e devolve o slug da linha", async () => {
     const result = await publishVideoPost(PUBLISH);
-    expect(result).toEqual({ ok: true, slug: "receita-de-domingo-x1y2z3" });
+    const slugCall = state.rpcs.find((r) => r.fn === "creator_set_draft_slug");
+    expect(slugCall?.args?.p_content).toBe(ids.CONTENT);
+    expect(String(slugCall?.args?.p_slug)).toMatch(/^receita-de-domingo-[a-z0-9]{1,6}$/);
+    expect(result).toEqual({ ok: true, slug: slugCall?.args?.p_slug });
+    expect(result).not.toEqual({ ok: true, slug: "post-em-video-abc123" });
+    const fns = state.rpcs.map((r) => r.fn);
+    expect(fns.indexOf("creator_set_draft_slug")).toBeLessThan(fns.indexOf("creator_publish_content"));
     expect(state.rpcs.find((r) => r.fn === "creator_publish_content")?.args).toEqual({ p_content: ids.CONTENT });
     expect(state.writes.filter((w) => w.op === "update").map((w) => w.payload)).toContainEqual({ duration_minutes: 2 });
     expect(state.revalidated).toEqual(["/creator", "/creator/content", "/", "/explore"]);
   });
 
-  it("creatorId vazio no Cloudflare não bloqueia (vídeo antigo sem campo creator)", async () => {
-    state.status = { state: "ready", durationSec: 30, creatorId: null };
-    expect(await publishVideoPost(PUBLISH)).toEqual({ ok: true, slug: "receita-de-domingo-x1y2z3" });
+  it("slug já usado: tenta outro sufixo uma vez; duas colisões viram slug_taken", async () => {
+    state.slugTaken = 1;
+    expect(await publishVideoPost(PUBLISH)).toMatchObject({ ok: true });
+    expect(state.rpcs.filter((r) => r.fn === "creator_set_draft_slug")).toHaveLength(2);
+    state.rpcs.length = 0;
+    state.content = { ...state.content!, status: "draft" };
+    state.slugTaken = 2;
+    expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "slug_taken" });
+    expect(state.rpcs.filter((r) => r.fn === "creator_set_draft_slug")).toHaveLength(2);
+    expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_publish_content");
+  });
+
+  it("rascunho que já esteve no ar mantém o slug (não chama creator_set_draft_slug)", async () => {
+    state.content = { ...state.content!, slug: "ja-teve-link", published_at: "2026-10-01T10:00:00Z" };
+    expect(await publishVideoPost(PUBLISH)).toEqual({ ok: true, slug: "ja-teve-link" });
+    expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_set_draft_slug");
   });
 
   it("rascunho de outro herói (ou invisível pela RLS) → forbidden, sem gravar nada", async () => {
-    state.content = { id: ids.CONTENT, slug: "x", status: "draft", creator_id: ids.OTHER_CREATOR };
+    state.content = { id: ids.CONTENT, slug: "x", status: "draft", creator_id: ids.OTHER_CREATOR, published_at: null };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
     state.content = null;
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
@@ -291,15 +442,17 @@ describe("publishVideoPost", () => {
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "missing_media" });
   });
 
-  it("erros da RPC viram chaves (missing_media, media_license_mismatch)", async () => {
+  it("erros da RPC viram chaves (missing_media, media_license_mismatch, forbidden sem vínculo)", async () => {
     state.rpcError = "missing_media";
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "missing_media" });
     state.rpcError = "media_license_mismatch: cloudflare_stream x third_party_embed";
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "media_license_mismatch" });
+    state.rpcError = "forbidden";
+    expect(await publishVideoPost(PUBLISH)).toEqual({ ok: false, error: "forbidden" });
   });
 
   it("segundo toque depois de publicado devolve o mesmo slug sem chamar a RPC", async () => {
-    state.content = { id: ids.CONTENT, slug: "ja-no-ar", status: "published", creator_id: ids.CREATOR };
+    state.content = { id: ids.CONTENT, slug: "ja-no-ar", status: "published", creator_id: ids.CREATOR, published_at: "2026-10-21T10:00:00Z" };
     expect(await publishVideoPost(PUBLISH)).toEqual({ ok: true, slug: "ja-no-ar" });
     expect(state.rpcs.map((r) => r.fn)).not.toContain("creator_publish_content");
   });
@@ -316,28 +469,42 @@ describe("publishVideoPost", () => {
 });
 
 describe("discardVideoPost", () => {
-  it("a RLS não deixa o herói apagar: o rascunho fica e a action avisa", async () => {
-    expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: true, deleted: false });
-    expect(state.writes.find((w) => w.op === "delete")?.filters).toEqual([["id", ids.CONTENT]]);
+  it("chama a RPC de descarte, apaga o vídeo no Cloudflare e marca provider_deleted_at", async () => {
+    expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: true, deleted: true });
+    expect(state.rpcs.find((r) => r.fn === "creator_discard_video_draft")?.args).toEqual({ p_content: ids.CONTENT });
+    expect(state.deleted).toEqual([ids.UID]);
+    expect(state.adminWrites).toEqual([
+      { table: "stream_uploads", op: "update", payload: { provider_deleted_at: expect.any(String) }, filters: [["uid", ids.UID]] },
+    ]);
+    // o herói não apaga conteúdo direto pela API
+    expect(state.writes.filter((w) => w.op === "delete")).toHaveLength(0);
   });
 
-  it("se a regra permitir, apaga; publicado ou de outro herói não", async () => {
-    state.deletedRows = [{ id: ids.CONTENT }];
+  it("falha do Cloudflare não volta erro para a pessoa (a limpeza diária tenta de novo)", async () => {
+    const { CloudflareStreamError } = await import("@/lib/video");
+    state.deleteError = new CloudflareStreamError(500, "internal");
     expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: true, deleted: true });
-    state.content = { id: ids.CONTENT, slug: "x", status: "published", creator_id: ids.CREATOR };
-    expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: false, error: "not_draft" });
-    state.content = { id: ids.CONTENT, slug: "x", status: "draft", creator_id: ids.OTHER_CREATOR };
-    expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: false, error: "forbidden" });
+    expect(state.adminWrites).toHaveLength(0);
+  });
+
+  it("erros da RPC: publicado, já esteve no ar, de outro herói, sem vídeo do Stream; id inválido", async () => {
+    for (const code of ["not_draft", "already_published", "forbidden", "not_stream"]) {
+      state.rpcError = code;
+      expect(await discardVideoPost({ contentId: ids.CONTENT })).toEqual({ ok: false, error: code });
+    }
+    expect(state.deleted).toHaveLength(0);
     expect(await discardVideoPost({ contentId: "nao-e-uuid" })).toEqual({ ok: false, error: "invalid_input" });
   });
 });
 
 describe("publicar/despublicar pelo editor", () => {
   it("vídeo do Stream passa pela mesma checagem do composer", async () => {
-    state.status = { state: "pending", durationSec: null, creatorId: ids.CREATOR };
+    state.status = { state: "pending", durationSec: null, creatorId: ids.CREATOR, reason: null };
     expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: false, error: "processing" });
-    state.status = { state: "ready", durationSec: 60, creatorId: ids.CREATOR };
-    expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: true, slug: "receita-de-domingo-x1y2z3" });
+    state.status = { state: "incomplete", durationSec: null, creatorId: ids.CREATOR, reason: null };
+    expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: false, error: "upload_incomplete" });
+    state.status = { state: "ready", durationSec: 60, creatorId: ids.CREATOR, reason: null };
+    expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: true, slug: "post-em-video-abc123" });
   });
 
   it("conteúdo sem Stream publica direto pela RPC; despublicar usa creator_unpublish_content", async () => {
@@ -402,14 +569,23 @@ describe("validação do vídeo no navegador", () => {
     expect(validateVideoFile({ type: "video/mp4", size: MAX_POST_BYTES + 1 })).toBe("file_too_large");
   });
 
-  it("duração: até 180 s passa, acima não; desconhecida segue (o Cloudflare corta)", () => {
+  it("duração bruta: até 180 s passa; 180,04 s já não (sem arredondar para baixo); desconhecida segue", () => {
     expect(validateDuration(180)).toBeNull();
+    expect(validateDuration(180.04)).toBe("too_long");
     expect(validateDuration(180.1)).toBe("too_long");
     expect(validateDuration(null)).toBeNull();
+    expect(validateDuration(Number.NaN)).toBeNull();
+    expect(validateDuration(Number.POSITIVE_INFINITY)).toBeNull();
+  });
+
+  it("normalizeDuration arredonda para cima no décimo e descarta valores inválidos", () => {
     expect(normalizeDuration(Number.POSITIVE_INFINITY)).toBeNull();
     expect(normalizeDuration(Number.NaN)).toBeNull();
     expect(normalizeDuration(0)).toBeNull();
-    expect(normalizeDuration(95.437)).toBe(95.4);
+    expect(normalizeDuration(95.437)).toBe(95.5);
+    expect(normalizeDuration(180)).toBe(180);
+    expect(normalizeDuration(180.04)).toBe(180.1);
+    expect(normalizeDuration(0.3)).toBe(0.3);
   });
 
   it("percentual e minutos", () => {

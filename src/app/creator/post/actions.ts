@@ -5,20 +5,26 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { CAPTION_MAX, MAX_POST_BYTES, MAX_POST_SECONDS, SERVER_MAX_POST_SECONDS, TITLE_MAX, durationMinutes } from "@/components/creator/post/validation";
 import { LOCALE_VALUES, PILLAR_VALUES } from "@/components/editors/content/schema";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
-import type { LocaleCode, Pillar } from "@/lib/supabase/helpers";
+import { rpcErrorCode, type LocaleCode, type Pillar } from "@/lib/supabase/helpers";
 import { getStreamProvider, thumbnailPath } from "@/lib/video";
 import { failFrom, type ActionFailure } from "../_lib/action-utils";
 import { insertCreatorContent } from "../_lib/content-insert";
 import { creatorActionContext, type CreatorActionContext } from "../_lib/creator-action";
+import { uniqueSlug } from "../_lib/slug";
 import { checkStreamVideo, providerFailure, readVideoUploadConfigured } from "../_lib/video-post";
 
-// Composer de post em vídeo do herói. O ticket de upload e o rascunho nascem juntos no servidor:
-// o uid do Cloudflare fica preso ao rascunho do dono no banco e o cliente só conhece o contentId.
+// Composer de post em vídeo do herói. O ticket de upload, o vínculo uid → herói (stream_uploads,
+// gravado só pelo service role) e o rascunho nascem juntos no servidor; o banco recusa corpo e
+// publicação com uid sem esse vínculo (0026). O cliente só conhece o contentId.
 
 type StartResult = { ok: true; contentId: string; uploadUrl: string } | ActionFailure;
 type PublishResult = { ok: true; slug: string } | ActionFailure;
 type DiscardResult = { ok: true; deleted: boolean } | ActionFailure;
+
+/** Tickets por herói por hora; o gatilho de stream_uploads aplica o mesmo teto. */
+const UPLOADS_PER_HOUR = 10;
 
 const startSchema = z.object({
   fileSize: z.number().int().positive().max(MAX_POST_BYTES),
@@ -40,6 +46,31 @@ function revalidatePost() {
   revalidatePath("/creator/content");
 }
 
+type Admin = ReturnType<typeof createAdminClient>;
+
+// Apaga o vídeo no Cloudflare e marca o envio. Melhor esforço: se falhar, a limpeza diária
+// (cron de retenção) encontra o envio descartado sem provider_deleted_at e tenta de novo.
+async function deleteProviderVideo(admin: Admin | null, uid: string): Promise<boolean> {
+  try {
+    await getStreamProvider().deleteVideo(uid);
+  } catch (error) {
+    console.warn("[post] falha ao apagar vídeo no Cloudflare", uid, (error as Error).message);
+    return false;
+  }
+  if (admin) {
+    const { error } = await admin.from("stream_uploads").update({ provider_deleted_at: new Date().toISOString() }).eq("uid", uid);
+    if (error) console.warn("[post] falha ao marcar vídeo apagado", uid, error.message);
+  }
+  return true;
+}
+
+// Desfaz um ticket que não virou rascunho: envio descartado e vídeo apagado (nada fica órfão).
+async function abandonUpload(admin: Admin, uid: string, contentId?: string) {
+  if (contentId) await admin.from("content").delete().eq("id", contentId).eq("status", "draft");
+  await admin.from("stream_uploads").update({ discarded_at: new Date().toISOString(), content_id: null }).eq("uid", uid);
+  await deleteProviderVideo(admin, uid);
+}
+
 export async function startVideoPost(input: { fileSize: number; fileName?: string; durationSec?: number | null }): Promise<StartResult> {
   const parsed = startSchema.safeParse(input);
   if (!parsed.success) {
@@ -55,6 +86,17 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
   const { supabase, creatorId, userId } = ctx;
   if (!(await readVideoUploadConfigured(supabase))) return { ok: false, error: "video_not_configured" };
 
+  // Limite antes de pedir o ticket (a RLS deixa o herói contar os próprios envios); o gatilho do
+  // banco segura corrida entre duas abas.
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { count, error: countError } = await supabase
+    .from("stream_uploads")
+    .select("uid", { count: "exact", head: true })
+    .eq("creator_id", creatorId)
+    .gte("created_at", since);
+  if (countError) return failFrom(countError);
+  if ((count ?? 0) >= UPLOADS_PER_HOUR) return { ok: false, error: "too_many_uploads" };
+
   let ticket;
   try {
     ticket = await getStreamProvider().createUploadUrl({ creatorId, maxDurationSec: MAX_POST_SECONDS, premium: false, fileSize, fileName });
@@ -62,6 +104,16 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
     return providerFailure(error, "upload");
   }
   const uid = ticket.mediaRef.id;
+
+  // Vínculo uid → herói da sessão, só pelo service role. Sem ele o vídeo não serve para nada:
+  // apaga no Cloudflare e devolve o erro.
+  const admin = createAdminClient();
+  const { error: linkError } = await admin.from("stream_uploads").insert({ uid, creator_id: creatorId, expires_at: ticket.expiresAt });
+  if (linkError) {
+    await deleteProviderVideo(null, uid);
+    const code = rpcErrorCode(linkError.message);
+    return { ok: false, error: code === "too_many_uploads" ? code : "upload_failed" };
+  }
 
   const [{ data: profile }, t, locale] = await Promise.all([
     supabase.from("creator_profiles").select("pillars").eq("id", creatorId).maybeSingle(),
@@ -85,8 +137,12 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
     has_captions: false,
     media_license_kind: "own",
   });
-  if (!inserted.ok) return inserted;
+  if (!inserted.ok) {
+    await abandonUpload(admin, uid);
+    return inserted;
+  }
 
+  // Corpo com o cliente do usuário: o gatilho da 0026 confere o vínculo recém-gravado.
   const { error: bodyError } = await supabase.from("content_bodies").insert({
     content_id: inserted.id,
     body: { kind: "video", intro: "", key_points: [], transcript: [] } as unknown as NonNullable<Json>,
@@ -94,18 +150,37 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
     media_ref: uid,
     captions_url: null,
   });
+  if (bodyError) {
+    await abandonUpload(admin, uid, inserted.id);
+    return failFrom(bodyError);
+  }
+
+  const { error: attachError } = await admin.from("stream_uploads").update({ content_id: inserted.id }).eq("uid", uid);
+  if (attachError) console.warn("[post] falha ao ligar envio ao rascunho", uid, attachError.message);
   revalidatePost();
-  if (bodyError) return failFrom(bodyError);
   return { ok: true, contentId: inserted.id, uploadUrl: ticket.uploadUrl };
 }
 
-type OwnDraft = { id: string; slug: string; status: string; creator_id: string | null };
+type OwnDraft = { id: string; slug: string; status: string; creator_id: string | null; published_at: string | null };
 
 async function loadOwnContent(ctx: CreatorActionContext, contentId: string): Promise<OwnDraft | ActionFailure> {
-  const { data } = await ctx.supabase.from("content").select("id, slug, status, creator_id").eq("id", contentId).maybeSingle();
+  const { data } = await ctx.supabase.from("content").select("id, slug, status, creator_id, published_at").eq("id", contentId).maybeSingle();
   // A RLS já esconde conteúdo de outros heróis; a comparação é a defesa extra (e não revela ids).
   if (!data || data.creator_id !== ctx.creatorId) return { ok: false, error: "forbidden" };
   return data as OwnDraft;
+}
+
+// Slug definitivo a partir do título final (o rascunho nasceu com o título provisório). Em
+// colisão tenta outro sufixo uma vez.
+async function setDraftSlug(ctx: CreatorActionContext, contentId: string, title: string): Promise<ActionFailure | null> {
+  let lastError: { message?: string; code?: string } | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { error } = await ctx.supabase.rpc("creator_set_draft_slug", { p_content: contentId, p_slug: uniqueSlug(title) });
+    if (!error) return null;
+    lastError = error;
+    if (rpcErrorCode(error.message) !== "slug_taken") break;
+  }
+  return failFrom(lastError);
 }
 
 export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar }): Promise<PublishResult> {
@@ -136,6 +211,12 @@ export async function publishVideoPost(input: { contentId: string; title: string
   const minutes = durationMinutes(video.durationSec);
   if (minutes !== null) await supabase.from("content").update({ duration_minutes: minutes }).eq("id", contentId);
 
+  // Só rascunho que nunca foi ao ar troca de slug: depois disso o link já pode ter circulado.
+  if (content.published_at === null) {
+    const slugFailure = await setDraftSlug(ctx, contentId, title);
+    if (slugFailure) return slugFailure;
+  }
+
   const { data: published, error } = await supabase.rpc("creator_publish_content", { p_content: contentId });
   if (error) return failFrom(error);
   const slug = (published as { slug?: string } | null)?.slug ?? content.slug;
@@ -152,14 +233,21 @@ export async function discardVideoPost(input: { contentId: string }): Promise<Di
   const ctx = await creatorActionContext();
   if (!ctx.ok) return ctx;
 
-  const content = await loadOwnContent(ctx, parsed.data.contentId);
-  if ("ok" in content) return content;
-  if (content.status !== "draft") return { ok: false, error: "not_draft" };
-
-  // Hoje a RLS só deixa o admin apagar conteúdo (content_delete_admin): para o herói o delete não
-  // afeta linha nenhuma e o rascunho fica em "Meus conteúdos". Se a regra mudar, passa a apagar.
-  const { data: removed, error } = await ctx.supabase.from("content").delete().eq("id", content.id).select("id");
+  // A RPC confere dono, rascunho nunca publicado e vídeo do Stream; apaga o conteúdo e marca o
+  // envio como descartado. O vídeo no Cloudflare sai em seguida (melhor esforço).
+  const { data, error } = await ctx.supabase.rpc("creator_discard_video_draft", { p_content: parsed.data.contentId });
+  if (error) return failFrom(error);
   revalidatePost();
-  if (error) return { ok: true, deleted: false };
-  return { ok: true, deleted: (removed ?? []).length > 0 };
+
+  const uid = (data as { uid?: string } | null)?.uid;
+  if (uid) {
+    let admin: Admin | null = null;
+    try {
+      admin = createAdminClient();
+    } catch {
+      admin = null; // sem service role a limpeza diária também não roda; o vídeo fica para o admin
+    }
+    await deleteProviderVideo(admin, uid);
+  }
+  return { ok: true, deleted: true };
 }

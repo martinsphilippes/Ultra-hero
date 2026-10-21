@@ -1162,7 +1162,11 @@ select tests.ok('S23 RPCs security definer, search_path fixo, executáveis por a
    from pg_proc p where p.oid in ('public.creator_publish_content(uuid)'::regprocedure, 'public.creator_unpublish_content(uuid)'::regprocedure)));
 
 -- 1) rascunhos do herói (creator1 = Lia): vídeo do celular, vídeo que o admin marca premium,
---    guia sem corpo, vídeo sem mídia e guia com título em branco
+--    guia sem corpo, vídeo sem mídia e guia com título em branco. Desde a 0026 o uid do Stream
+--    precisa de vínculo em stream_uploads (gravado pelo servidor no ticket): o sistema registra antes.
+insert into public.stream_uploads (uid, creator_id, expires_at)
+select u, public.seed_uuid('creator:lia'), now() + interval '30 minutes'
+from unnest(array['a2300000000000000000000000000001', 'a2300000000000000000000000000002', 'a2300000000000000000000000000004', 'a230000000000000000000000000001b']) as u;
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 insert into public.content (id, slug, creator_id, pillar, type, title, summary, media_license_kind) values
   ('23000000-0000-4000-8000-000000000001', 's23-video-celular', public.seed_uuid('creator:lia'), 'training', 'video', 'Treino relampago S23 gravado no celular', 'Vídeo curto do herói', 'own'),
@@ -1171,8 +1175,8 @@ insert into public.content (id, slug, creator_id, pillar, type, title, summary, 
   ('23000000-0000-4000-8000-000000000004', 's23-video-sem-midia', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S23 sem midia', null, 'own'),
   ('23000000-0000-4000-8000-000000000005', 's23-titulo-branco', public.seed_uuid('creator:lia'), 'routine', 'guide', '   ', null, 'platform_demo');
 insert into public.content_bodies (content_id, body, media_provider, media_ref) values
-  ('23000000-0000-4000-8000-000000000001', '{"kind":"video","intro":""}', 'cloudflare_stream', 'cf-s23-uid-0001'),
-  ('23000000-0000-4000-8000-000000000002', '{"kind":"video","intro":"x"}', 'cloudflare_stream', 'cf-s23-uid-0002'),
+  ('23000000-0000-4000-8000-000000000001', '{"kind":"video","intro":""}', 'cloudflare_stream', 'a2300000000000000000000000000001'),
+  ('23000000-0000-4000-8000-000000000002', '{"kind":"video","intro":"x"}', 'cloudflare_stream', 'a2300000000000000000000000000002'),
   ('23000000-0000-4000-8000-000000000004', '{}', 'none', null),
   ('23000000-0000-4000-8000-000000000005', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}', 'none', null);
 select tests.ok('S23 rascunhos criados sem regra de acesso', (select count(*) from public.content where id::text like '23000000-%' and status = 'draft' and access_level is null) = 5);
@@ -1211,7 +1215,7 @@ select tests.expect_error('S23 publicado não é editável pelo herói (guarda s
 do $s23$ declare n int; begin
   update public.content_bodies set media_ref = 'outro' where content_id = '23000000-0000-4000-8000-000000000001'; get diagnostics n = row_count;
   perform tests.ok('S23 herói não altera o corpo publicado (RLS do corpo: 0 linhas)', n = 0
-    and (select media_ref from public.content_bodies where content_id = '23000000-0000-4000-8000-000000000001') = 'cf-s23-uid-0001');
+    and (select media_ref from public.content_bodies where content_id = '23000000-0000-4000-8000-000000000001') = 'a2300000000000000000000000000001');
 end $s23$;
 select tests.ok('S23 sinalizador de confiança desligado após a RPC', not public.is_trusted_call());
 select tests.anon();
@@ -1251,10 +1255,13 @@ select tests.expect_error('S23 arquivado pelo admin: herói não republica (not_
 -- 5) pré-condições: corpo, mídia do vídeo, título e licença
 select tests.expect_error('S23 sem content_bodies: missing_body', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000003')$q$, 'missing_body');
 select tests.expect_error('S23 vídeo sem media_ref e sem corpo: missing_media', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000004')$q$, 'missing_media');
+-- uid em branco não passa pelo gatilho da 0026 para o herói; o sistema grava para testar a RPC
+select tests.su();
 update public.content_bodies set body = '{"kind":"video","intro":"texto"}', media_provider = 'cloudflare_stream', media_ref = '  ' where content_id = '23000000-0000-4000-8000-000000000004';
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 select tests.expect_error('S23 vídeo com media_ref em branco (mesmo com corpo): missing_media', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000004')$q$, 'missing_media');
 select tests.expect_error('S23 título em branco: missing_title', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000005')$q$, 'missing_title');
-update public.content_bodies set media_ref = 'cf-s23-uid-0004' where content_id = '23000000-0000-4000-8000-000000000004';
+update public.content_bodies set media_ref = 'a2300000000000000000000000000004' where content_id = '23000000-0000-4000-8000-000000000004';
 update public.content set media_license_kind = 'third_party_embed' where id = '23000000-0000-4000-8000-000000000004'; -- estado transitório: o corpo é a escrita final
 select tests.expect_error('S23 licença incoerente com o provedor: checagem da aprovação barra', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000004')$q$, 'media_license_mismatch');
 update public.content set media_license_kind = 'own' where id = '23000000-0000-4000-8000-000000000004'; -- o S16 exige licença coerente em todos os corpos
@@ -1279,8 +1286,8 @@ select tests.ok('S23 despublicar devolve {id, slug, status=draft}', (select r = 
 select tests.ok('S23 despublicado: rascunho, review_status none, sem agendamento, regra de acesso mantida',
   (select status = 'draft' and review_status = 'none' and publish_at is null and access_level = 'free' from public.content where id = '23000000-0000-4000-8000-000000000001'));
 update public.content set title = 'Treino relampago S23 editado' where id = '23000000-0000-4000-8000-000000000001';
-update public.content_bodies set media_ref = 'cf-s23-uid-0001b' where content_id = '23000000-0000-4000-8000-000000000001';
-select tests.ok('S23 dono edita título e mídia depois de despublicar', (select c.title = 'Treino relampago S23 editado' and b.media_ref = 'cf-s23-uid-0001b'
+update public.content_bodies set media_ref = 'a230000000000000000000000000001b' where content_id = '23000000-0000-4000-8000-000000000001';
+select tests.ok('S23 dono edita título e mídia depois de despublicar', (select c.title = 'Treino relampago S23 editado' and b.media_ref = 'a230000000000000000000000000001b'
   from public.content c join public.content_bodies b on b.content_id = c.id where c.id = '23000000-0000-4000-8000-000000000001'));
 select tests.expect_error('S23 despublicar de novo: not_published', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000001')$q$, 'not_published');
 select tests.anon();
@@ -1301,6 +1308,159 @@ select tests.ok('S23 auditoria content.creator_unpublish com ator herói', (sele
 -- 8) limpeza: nada do S23 fica no ar e o Rafael volta sem usuário (S14/S15 contam o catálogo)
 update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael') and user_id = '10000000-0000-4000-8000-000000000023';
 select tests.ok('S23 nada do cenário ficou no ar', not exists (select 1 from public.content where id::text like '23000000-%' and status = 'published'));
+
+-- ================================================================ S24 · dono do vídeo do Stream amarrado no banco (0026)
+-- stream_uploads é gravada só pelo servidor (service role) no ticket; o herói lê os próprios.
+-- Gatilho em content_bodies: cloudflare_stream exige vínculo do próprio herói (não descartado).
+-- creator_publish_content recusa uid sem vínculo; creator_discard_video_draft apaga só rascunho de
+-- vídeo próprio nunca publicado; creator_set_draft_slug troca o slug do rascunho nunca publicado.
+-- Tudo termina fora do ar (o S14 conta 40 no ar) e o Rafael volta sem usuário.
+select tests.su();
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000023' where id = public.seed_uuid('creator:rafael') and user_id is null;
+select tests.ok('S24 stream_uploads com RLS e uma única política (SELECT, só authenticated, initplan)',
+  (select relrowsecurity from pg_class where oid = 'public.stream_uploads'::regclass)
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename = 'stream_uploads') = 1
+  and (select bool_and(cmd = 'SELECT' and roles = '{authenticated}') from pg_policies where schemaname = 'public' and tablename = 'stream_uploads'));
+select tests.ok('S24 sem escrita para anon/authenticated; service_role escreve',
+  not has_table_privilege('anon', 'public.stream_uploads', 'select') and not has_table_privilege('anon', 'public.stream_uploads', 'insert')
+  and not has_table_privilege('authenticated', 'public.stream_uploads', 'insert') and not has_table_privilege('authenticated', 'public.stream_uploads', 'update')
+  and not has_table_privilege('authenticated', 'public.stream_uploads', 'delete') and has_table_privilege('authenticated', 'public.stream_uploads', 'select')
+  and has_table_privilege('service_role', 'public.stream_uploads', 'insert') and has_table_privilege('service_role', 'public.stream_uploads', 'update'));
+select tests.ok('S24 RPCs novas security definer, search_path fixo, executáveis por authenticated e service_role e nunca por anon',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
+                   and has_function_privilege('authenticated', p.oid, 'execute') and has_function_privilege('service_role', p.oid, 'execute')
+                   and not has_function_privilege('anon', p.oid, 'execute'))
+   from pg_proc p where p.oid in ('public.creator_discard_video_draft(uuid)'::regprocedure, 'public.creator_set_draft_slug(uuid, text)'::regprocedure,
+                                  'public.creator_publish_content(uuid)'::regprocedure)));
+select tests.ok('S24 gatilhos ligados (limite por hora e guarda do corpo)',
+  exists (select 1 from pg_trigger where tgname = 'trg_a_stream_uploads_rate_limit' and tgrelid = 'public.stream_uploads'::regclass)
+  and exists (select 1 from pg_trigger where tgname = 'trg_a_content_bodies_stream' and tgrelid = 'public.content_bodies'::regclass));
+
+-- envios registrados pelo sistema: três da Lia e um do Rafael
+insert into public.stream_uploads (uid, creator_id, expires_at) values
+  ('a2400000000000000000000000000001', public.seed_uuid('creator:lia'), now() + interval '30 minutes'),
+  ('a2400000000000000000000000000002', public.seed_uuid('creator:lia'), now() + interval '30 minutes'),
+  ('a2400000000000000000000000000003', public.seed_uuid('creator:lia'), now() + interval '30 minutes'),
+  ('a24000000000000000000000000000f1', public.seed_uuid('creator:rafael'), now() + interval '30 minutes');
+select tests.expect_error('S24 uid fora do formato do Stream é recusado', $q$insert into public.stream_uploads (uid, creator_id, expires_at) values ('../x', public.seed_uuid('creator:lia'), now())$q$, '23514');
+
+-- 1) herói lê só os próprios envios e não escreve na tabela
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.ok('S24 herói vê só os próprios envios', (select count(*) from public.stream_uploads where uid like 'a24%') = 3
+  and not exists (select 1 from public.stream_uploads where uid = 'a24000000000000000000000000000f1'));
+select tests.expect_error('S24 herói não insere em stream_uploads', $q$insert into public.stream_uploads (uid, creator_id, expires_at) values ('a24000000000000000000000000000aa', public.seed_uuid('creator:lia'), now() + interval '1 hour')$q$, 'permission denied');
+select tests.expect_error('S24 herói não reabre envio (update)', $q$update public.stream_uploads set discarded_at = null where uid = 'a2400000000000000000000000000001'$q$, 'permission denied');
+select tests.expect_error('S24 herói não apaga envio', $q$delete from public.stream_uploads where uid = 'a2400000000000000000000000000001'$q$, 'permission denied');
+select tests.anon();
+select tests.expect_error('S24 visitante não lê stream_uploads', $q$select count(*) from public.stream_uploads$q$, 'permission denied');
+select tests.expect_error('S24 visitante não executa creator_discard_video_draft', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000001')$q$, 'permission denied');
+select tests.expect_error('S24 visitante não executa creator_set_draft_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000001', 'x')$q$, 'permission denied');
+
+-- 2) rascunhos da Lia: gravar cloudflare_stream exige vínculo próprio
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
+  ('24000000-0000-4000-8000-000000000001', 'post-em-video-s24a', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 publicado', 'own'),
+  ('24000000-0000-4000-8000-000000000002', 'post-em-video-s24b', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 descartado', 'own'),
+  ('24000000-0000-4000-8000-000000000003', 'post-em-video-s24c', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 slug', 'own'),
+  ('24000000-0000-4000-8000-000000000004', 's24-guia', public.seed_uuid('creator:lia'), 'routine', 'guide', 'Guia S24', 'platform_demo');
+select tests.expect_error('S24 herói não grava cloudflare_stream sem vínculo', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000001', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000ee')$q$, 'stream_media_forbidden');
+select tests.expect_error('S24 herói não grava o uid de outro herói (público no cover_url)', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000001', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000f1')$q$, 'stream_media_forbidden');
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values
+  ('24000000-0000-4000-8000-000000000001', '{"kind":"video","intro":""}', 'cloudflare_stream', 'a2400000000000000000000000000001'),
+  ('24000000-0000-4000-8000-000000000002', '{"kind":"video","intro":""}', 'cloudflare_stream', 'a2400000000000000000000000000002'),
+  ('24000000-0000-4000-8000-000000000003', '{"kind":"video","intro":""}', 'cloudflare_stream', 'a2400000000000000000000000000003');
+select tests.ok('S24 com vínculo próprio grava', (select count(*) from public.content_bodies where content_id::text like '24000000-%' and media_provider = 'cloudflare_stream') = 3);
+select tests.expect_error('S24 herói não troca o uid por um de outro herói (update)', $q$update public.content_bodies set media_ref = 'a24000000000000000000000000000f1' where content_id = '24000000-0000-4000-8000-000000000001'$q$, 'stream_media_forbidden');
+update public.content_bodies set body = '{"kind":"video","intro":"texto novo"}' where content_id = '24000000-0000-4000-8000-000000000001';
+select tests.ok('S24 editar o texto do corpo sem mexer na mídia continua livre', (select body ->> 'intro' from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000001') = 'texto novo');
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
+  ('24000000-0000-4000-8000-000000000005', 's24-rafael', public.seed_uuid('creator:rafael'), 'training', 'video', 'Video S24 Rafael', 'own');
+select tests.expect_error('S24 outro herói não grava o uid da Lia no próprio rascunho', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000005', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000001')$q$, 'stream_media_forbidden');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000005', '{"kind":"video"}', 'cloudflare_stream', 'a24000000000000000000000000000ee');
+select tests.ok('S24 admin grava sem vínculo (governa o catálogo)', exists (select 1 from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000005'));
+
+-- 3) publicar recusa uid sem vínculo do próprio herói (corpo gravado por caminho de sistema ou antigo)
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+select tests.expect_error('S24 publicar com uid sem vínculo do herói: forbidden', $q$select public.creator_publish_content('24000000-0000-4000-8000-000000000005')$q$, 'forbidden');
+select tests.su();
+update public.content_bodies set media_ref = 'a24000000000000000000000000000ff' where content_id = '24000000-0000-4000-8000-000000000003';
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S24 publicar com uid trocado fora do gatilho: forbidden', $q$select public.creator_publish_content('24000000-0000-4000-8000-000000000003')$q$, 'forbidden');
+select tests.su();
+update public.content_bodies set media_ref = 'a2400000000000000000000000000003' where content_id = '24000000-0000-4000-8000-000000000003';
+update public.stream_uploads set discarded_at = now() where uid = 'a2400000000000000000000000000003';
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S24 publicar com envio descartado: forbidden', $q$select public.creator_publish_content('24000000-0000-4000-8000-000000000003')$q$, 'forbidden');
+select tests.su();
+select tests.ok('S24 publicações recusadas deixam rascunho', (select count(*) from public.content where id in ('24000000-0000-4000-8000-000000000003', '24000000-0000-4000-8000-000000000005') and status = 'draft') = 2);
+
+-- 4) limite: mais de 10 envios do mesmo herói na última hora é recusado; envios antigos não contam
+select tests.su();
+insert into public.stream_uploads (uid, creator_id, expires_at)
+select md5('s24-rate-' || g), public.seed_uuid('creator:davi'), now() + interval '30 minutes' from generate_series(1, 10) g;
+select tests.expect_error('S24 11º envio na mesma hora: too_many_uploads', $q$insert into public.stream_uploads (uid, creator_id, expires_at) values (md5('s24-rate-11'), public.seed_uuid('creator:davi'), now() + interval '30 minutes')$q$, 'too_many_uploads');
+insert into public.stream_uploads (uid, creator_id, created_at, expires_at)
+select md5('s24-old-' || g), public.seed_uuid('creator:bruna'), now() - interval '2 hours', now() - interval '90 minutes' from generate_series(1, 12) g;
+insert into public.stream_uploads (uid, creator_id, expires_at) values (md5('s24-old-new'), public.seed_uuid('creator:bruna'), now() + interval '30 minutes');
+select tests.ok('S24 limite conta só a última hora (12 antigos + 1 novo aceitos) e é por herói',
+  (select count(*) from public.stream_uploads where creator_id = public.seed_uuid('creator:bruna')) = 13
+  and (select count(*) from public.stream_uploads where creator_id = public.seed_uuid('creator:davi')) = 10);
+
+-- 5) descartar: só rascunho de vídeo próprio nunca publicado
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+select tests.expect_error('S24 outro herói não descarta rascunho alheio', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S24 consumidor não descarta', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+select tests.expect_error('S24 id inexistente também responde forbidden', $q$select public.creator_discard_video_draft(gen_random_uuid())$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S24 rascunho sem vídeo do Stream: not_stream', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000004')$q$, 'not_stream');
+create temporary table t_s24_discard as select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000002') as r;
+select tests.ok('S24 descartar devolve {id, uid}', (select r = jsonb_build_object('id', '24000000-0000-4000-8000-000000000002'::uuid, 'uid', 'a2400000000000000000000000000002') from t_s24_discard));
+select tests.su();
+select tests.ok('S24 descarte apaga conteúdo e corpo e marca o envio (content_id nulo pelo FK)',
+  not exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000002')
+  and not exists (select 1 from public.content_bodies where content_id = '24000000-0000-4000-8000-000000000002')
+  and (select discarded_at = now() and content_id is null and provider_deleted_at is null from public.stream_uploads where uid = 'a2400000000000000000000000000002'));
+select tests.ok('S24 descarte auditado como content.creator_discard (ator herói)',
+  exists (select 1 from public.admin_audit where action = 'content.creator_discard' and resource_id = '24000000-0000-4000-8000-000000000002'
+            and actor_type = 'creator' and actor_id = '10000000-0000-4000-8000-000000000004' and before_data ->> 'media_ref' = 'a2400000000000000000000000000002'));
+select tests.ok('S24 sinalizador de confiança desligado', not public.is_trusted_call());
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
+  ('24000000-0000-4000-8000-000000000006', 's24-reuso', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S24 reuso', 'own');
+select tests.expect_error('S24 uid descartado não volta a ser usado', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('24000000-0000-4000-8000-000000000006', '{"kind":"video"}', 'cloudflare_stream', 'a2400000000000000000000000000002')$q$, 'stream_media_forbidden');
+select public.creator_publish_content('24000000-0000-4000-8000-000000000001');
+select tests.ok('S24 com vínculo próprio publica', (select status from public.content where id = '24000000-0000-4000-8000-000000000001') = 'published');
+select tests.expect_error('S24 publicado não é descartado: not_draft', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000001')$q$, 'not_draft');
+select tests.expect_error('S24 publicado não troca slug: not_draft', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000001', 'novo-slug-s24')$q$, 'not_draft');
+select public.creator_unpublish_content('24000000-0000-4000-8000-000000000001');
+select tests.expect_error('S24 despublicado (já esteve no ar) não é descartado: already_published', $q$select public.creator_discard_video_draft('24000000-0000-4000-8000-000000000001')$q$, 'already_published');
+select tests.expect_error('S24 despublicado mantém o slug: already_published', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000001', 'novo-slug-s24')$q$, 'already_published');
+select tests.ok('S24 recusas não apagaram nada', exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000001'));
+
+-- 6) slug do rascunho: dono, formato, duplicado
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+select tests.expect_error('S24 outro herói não troca slug alheio', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino-s24-roubado')$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S24 slug com maiúscula: invalid_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'Treino-S24')$q$, 'invalid_slug');
+select tests.expect_error('S24 slug com hífen duplo: invalid_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino--s24')$q$, 'invalid_slug');
+select tests.expect_error('S24 slug com hífen na ponta: invalid_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', '-treino')$q$, 'invalid_slug');
+select tests.expect_error('S24 slug acima de 120: invalid_slug', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', repeat('a', 121))$q$, 'invalid_slug');
+select tests.expect_error('S24 slug de outro conteúdo: slug_taken', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 's23-video-celular')$q$, 'slug_taken');
+select tests.ok('S24 sinalizador desligado depois do slug_taken', not public.is_trusted_call());
+select tests.expect_error('S24 herói segue sem mudar slug direto (coluna protegida)', $q$update public.content set slug = 'treino-s24-direto' where id = '24000000-0000-4000-8000-000000000003'$q$, 'protected_column');
+create temporary table t_s24_slug as select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino-de-perna-s24-x1y2z3') as r;
+select tests.ok('S24 dono troca o slug do rascunho e recebe {id, slug}',
+  (select r = jsonb_build_object('id', '24000000-0000-4000-8000-000000000003'::uuid, 'slug', 'treino-de-perna-s24-x1y2z3') from t_s24_slug)
+  and (select slug from public.content where id = '24000000-0000-4000-8000-000000000003') = 'treino-de-perna-s24-x1y2z3'
+  and not public.is_trusted_call());
+
+-- 7) limpeza: nada do S24 no ar e o Rafael volta sem usuário
+select tests.su();
+update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael') and user_id = '10000000-0000-4000-8000-000000000023';
+select tests.ok('S24 nada do cenário ficou no ar', not exists (select 1 from public.content where id::text like '24000000-%' and status = 'published'));
 
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();

@@ -10,14 +10,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | Completo: 24 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
-| Testes | 430 cenários de banco, 733 unitários e 108 E2E com axe. Todos passam |
+| Banco remoto no Supabase | 24 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção). **0025 e 0026 ainda não constam aqui como aplicadas no remoto** (o repositório tem 26) |
+| Testes | 527 cenários de banco, 840 unitários e 134 E2E com axe (mais 2 do envio real ao Cloudflare, ligados só com `E2E_STREAM_REAL=1`). Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
 
 ### Implementado
-- **Banco e segurança**: esquema em 24 migrations, RLS em todas as 66 tabelas, 107 políticas e 97 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
+- **Banco e segurança**: esquema em 26 migrations, RLS em todas as 67 tabelas, 108 políticas e 103 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
 - **Autenticação e papéis**: e-mail e senha, login com Google (configurado e publicado em 20/10/2026: qualquer conta Google entra, sem lista de testadores), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
@@ -62,8 +62,9 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 ### Implementado
 - **Portal da personalidade** (só por convite): rascunhos, publicação direta, histórico de rodadas, sugestão de produtos e perfil público.
-  - **Novo post com vídeo do celular** (21/10/2026), em `/creator/post/new`: botão "+ Novo post" no topo do painel e da lista de conteúdos e primeiro item do menu do portal. Tela de uma coluna com botões grandes: "Gravar vídeo" abre a câmera do celular e "Escolher da galeria" abre os vídeos do aparelho. O navegador confere tipo, até 2 GB e até 3 minutos antes de enviar. O vídeo sobe direto para o Cloudflare Stream por tus (retoma se a conexão cair, aviso antes de sair da página) enquanto o herói escreve título, legenda e pilar. "Publicar" libera quando o envio termina e espera o Cloudflare processar ("Processando vídeo…"). O ticket e o rascunho nascem juntos no servidor, então o uid do vídeo fica preso ao rascunho do dono e o cliente nunca o informa; antes de publicar, o servidor confere estado, duração e dono do vídeo no Cloudflare. Sem as chaves do Stream (estado atual da produção), a tela abre com "Vídeo ainda não configurado" e os botões de vídeo desabilitados. Descartar um envio não apaga o rascunho (a RLS só deixa o admin apagar): ele fica em Meus conteúdos.
+  - **Novo post com vídeo do celular** (21/10/2026), em `/creator/post/new`: botão "+ Novo post" no topo do painel e da lista de conteúdos e primeiro item do menu do portal. Tela de uma coluna com botões grandes: "Gravar vídeo" abre a câmera do celular e "Escolher da galeria" abre os vídeos do aparelho. O navegador confere tipo, até 2 GB e até 3 minutos antes de enviar. O vídeo sobe direto para o Cloudflare Stream por tus (retoma se a conexão cair, aviso antes de sair da página) enquanto o herói escreve título, legenda e pilar. "Publicar" libera quando o envio termina e espera o Cloudflare processar ("Processando vídeo…"). O ticket e o rascunho nascem juntos no servidor, então o uid do vídeo fica preso ao rascunho do dono e o cliente nunca o informa; antes de publicar, o servidor confere estado, duração e dono do vídeo no Cloudflare. Sem as chaves do Stream (estado atual da produção), a tela abre com "Vídeo ainda não configurado" e os botões de vídeo desabilitados. Descartar apaga o rascunho e o vídeo (RPC `creator_discard_video_draft`, só rascunho de vídeo próprio que nunca foi ao ar); sair pela navegação interna ou pelo voltar no meio do envio pede confirmação, a conexão que volta retoma o envio sozinha e o slug do post sai do título final (`creator_set_draft_slug`).
   - **Publicação direta** (migração 0025): o herói publica e despublica o próprio conteúdo sem fila; o editor troca "Enviar para revisão" por "Publicar" (com o checklist como ajuda) e "Despublicar". A administração continua definindo regra de acesso, módulo e destaque e pode arquivar.
+  - **Dono do vídeo amarrado no banco** (migração 0026): o uid do Cloudflare é público (vai na capa), então a checagem não pode viver só na action. Cada ticket de upload grava `stream_uploads` (uid → herói, validade, descarte), só pelo service role; o herói lê os próprios envios e não escreve. Um gatilho em `content_bodies` recusa `cloudflare_stream` sem vínculo do próprio herói (`stream_media_forbidden`) e `creator_publish_content` recusa publicar sem ele; o servidor também exige que o campo `creator` do vídeo no Cloudflare seja o herói. Limite de 10 envios por herói por hora (action e gatilho). Limpeza diária no cron de retenção (até 50 por execução): apaga no Cloudflare o vídeo de envio descartado e remove rascunho nunca publicado cujo envio venceu com vídeo incompleto, com erro ou inexistente; nunca toca publicado nem envio na validade. Sem `SUPABASE_SERVICE_ROLE_KEY` no servidor (caso do `.env.local`), a tela de novo post mostra "não configurado".
 - **Portal do fornecedor**:
   - Produtos com versões e publicação direta, com moderação posterior do admin.
   - O fornecedor não pode reativar um produto suspenso.
@@ -83,14 +84,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 ## Fase 3 — Testes, segurança, acessibilidade e documentação
 
-### Evidência de testes (21/10/2026, `master` após o Explorar em grade)
+### Evidência de testes (21/10/2026, após a 0026: dono do vídeo do Stream no banco)
 
 | Camada | Resultado | Comando |
 |---|---|---|
-| Banco: RLS e regras de negócio | 430 de 430 | `npm run test:rls` |
-| Unitários, verificados por mutação | 733 de 733 em 19 arquivos | `npm run test` |
-| E2E com axe, em Pixel 7 e Desktop Chrome | 108 de 108 local contra o banco remoto já migrado | `npm run test:e2e` |
-| Tipos, lint e mensagens | Limpos. 17 namespaces e 3.278 chaves por idioma | `npm run check` |
+| Banco: RLS e regras de negócio | 527 de 527 (banco local com as 26 migrações) | `npm run test:rls` |
+| Unitários (os anteriores verificados por mutação; os desta rodada ainda não) | 840 de 840 em 22 arquivos | `npm run test` |
+| E2E com axe, em Pixel 7 e Desktop Chrome | 134 de 134 local contra o banco remoto (2 pulados: envio real ao Cloudflare, só com `E2E_STREAM_REAL=1`) | `npm run test:e2e` |
+| Tipos, lint e mensagens | Limpos. 18 namespaces e 3.413 chaves por idioma | `npm run check` |
 | Build de produção | OK | `npm run build` |
 
 "Verificado por mutação" significa que agentes independentes injetaram defeitos no código-fonte e confirmaram que os testes falham. Os defeitos que passaram despercebidos ganharam testes novos.

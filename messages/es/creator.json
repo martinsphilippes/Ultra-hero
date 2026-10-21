@@ -147,15 +147,25 @@
     "retry": "Intentar de nuevo",
     "discard": "Descartar video",
     "discardTitle": "¿Descartar este video?",
-    "discardDescription": "El envío se detiene y vuelves a elegir otro video. Lo que escribiste se pierde.",
+    "discardDescription": "El envío se detiene, el borrador y el video se eliminan y vuelves a elegir otro video.",
     "discardConfirm": "Descartar",
     "discarded": "Video descartado",
-    "discardedKept": "El borrador quedó guardado en Mis contenidos; puedes abrirlo y publicarlo después.",
+    "discardedDeleted": "El borrador y el video fueron eliminados.",
     "doneTitle": "¡Publicado!",
     "doneDescription": "Tu publicación ya está en línea.",
     "viewPost": "Ver publicación",
     "another": "Hacer otra publicación",
     "leaveWarning": "El video todavía se está enviando. Si sales ahora, el envío se detiene.",
+    "leaveWarningProcessing": "El video ya se envió y se está preparando. Si sales ahora, la publicación queda como borrador en Mis contenidos.",
+    "sr": {
+      "starting": "Preparando el envío del video.",
+      "progress": "Envío al {pct}%.",
+      "uploaded": "Video enviado. Ya puedes publicar.",
+      "error": "El envío se detuvo.",
+      "resuming": "Volvió la conexión. Reanudando el envío.",
+      "publishing": "Publicando tu contenido.",
+      "processing": "El video se está preparando. Espera."
+    },
     "errors": {
       "generic": "No se pudo completar. Inténtalo de nuevo.",
       "unauthenticated": "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
@@ -166,8 +176,8 @@
       "not_video": "Este archivo no es un video. Graba uno nuevo o elige otro de la galería.",
       "empty_file": "El archivo está vacío. Elige otro video.",
       "file_too_large": "El video supera los 2 GB. Elige uno más pequeño.",
-      "too_long": "El video dura más de 3 minutos. Recórtalo en el celular e inténtalo de nuevo.",
-      "network": "Se cayó la conexión. Cuando vuelva, toca Intentar de nuevo: el envío sigue desde donde se detuvo.",
+      "too_long": "El video dura más de 3 minutos. Graba de nuevo con hasta 3 minutos o elige un video más corto de la galería.",
+      "network": "Se cayó la conexión. El envío continúa solo cuando vuelva internet, o toca Intentar de nuevo.",
       "upload_failed": "Cloudflare rechazó el envío. Toca Intentar de nuevo.",
       "upload_expired": "El enlace de envío venció. Toca Intentar de nuevo para empezar un envío nuevo.",
       "provider_error": "El servicio de video no respondió. Inténtalo de nuevo en un momento.",
@@ -179,7 +189,15 @@
       "missing_media": "El video no quedó vinculado a esta publicación. Descártalo y envíalo de nuevo.",
       "not_draft": "Esta publicación ya no es un borrador (ya fue publicada o archivada).",
       "media_license_mismatch": "La licencia del video no coincide con el medio. Abre la publicación en Mis contenidos para ajustarla.",
-      "duplicate": "No se pudo crear la publicación ahora. Inténtalo de nuevo."
+      "duplicate": "No se pudo crear la publicación ahora. Inténtalo de nuevo.",
+      "upload_incomplete": "El video no terminó de subir. Toca Intentar de nuevo o descártalo y envíalo otra vez.",
+      "too_many_uploads": "Enviaste muchos videos en la última hora. Espera un poco e inténtalo de nuevo.",
+      "stream_media_forbidden": "Este video no fue enviado por esta cuenta y no se puede usar aquí.",
+      "slug_taken": "No fue posible generar la dirección de la publicación. Toca publicar de nuevo.",
+      "invalid_slug": "No fue posible generar la dirección de la publicación. Cambia el título e inténtalo de nuevo.",
+      "already_published": "Esta publicación ya estuvo en línea; ábrela en Mis contenidos para editarla.",
+      "not_stream": "Este borrador no tiene video enviado desde el celular.",
+      "content_in_use": "Este borrador está vinculado a un programa y no se puede eliminar. Habla con la administración."
     }
   },
   "reviews": {
@@ -275,7 +293,7 @@
     "video_not_configured": "El video aún no está configurado: pide al administrador que active Cloudflare Stream.",
     "processing": "El video todavía se está procesando en Cloudflare. Intenta publicar de nuevo en un momento.",
     "video_failed": "Cloudflare no pudo procesar este video. Haz una nueva publicación con otro video.",
-    "too_long": "El video dura más de 3 minutos y no se puede publicar.",
+    "too_long": "El video dura más de 3 minutos y no se puede publicar. Graba de nuevo con hasta 3 minutos o elige un video más corto de la galería.",
     "missing_title": "Completa el título antes de publicar.",
     "missing_body": "Guarda el formulario antes de publicar: el cuerpo todavía no se guardó.",
     "missing_media": "Una publicación de video necesita video: define el medio y guarda antes de publicar.",
@@ -284,6 +302,8 @@
     "not_published": "Este contenido no está publicado.",
     "network": "Se cayó la conexión. Inténtalo de nuevo.",
     "provider_error": "El servicio de video no respondió. Inténtalo de nuevo en un momento.",
-    "file_too_large": "El video supera los 2 GB."
+    "file_too_large": "El video supera los 2 GB.",
+    "upload_incomplete": "El video no terminó de subir a Cloudflare. Envíalo de nuevo desde Nueva publicación.",
+    "stream_media_forbidden": "Este video no fue enviado por esta cuenta y no se puede usar aquí."
   }
 }

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 // Composer de post do herói com a conta de demonstração "Herói / Chef". Só telas e estados:
 // nada é publicado nem enviado (o banco dos E2E é o remoto, visível para todos). O envio real
-// para o Cloudflare só roda com as chaves do Stream, que o ambiente local não tem.
+// para o Cloudflare fica em creator-post-real.spec.ts, ligado só com E2E_STREAM_REAL=1.
 
 async function loginAsHero(page: Page) {
   await page.goto("/login");
@@ -36,7 +36,7 @@ test.describe("portal do herói: novo post em vídeo", () => {
     await expect(page.getByTestId("new-post")).toHaveAttribute("href", "/creator/post/new");
   });
 
-  test("/creator/post/new abre com Gravar vídeo e Escolher da galeria; sem chaves, aviso e botões desabilitados", async ({ page }) => {
+  test("/creator/post/new abre com Gravar vídeo e Escolher da galeria; habilitados com o Stream configurado, senão aviso e desabilitados", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/creator/post/new");
     await expect(page.getByRole("heading", { level: 1, name: "Novo post" })).toBeVisible();
@@ -54,11 +54,17 @@ test.describe("portal do herói: novo post em vídeo", () => {
     await expect(page.getByTestId("post-camera-input")).toHaveAttribute("capture", "environment");
     await expect(page.getByTestId("post-gallery-input")).not.toHaveAttribute("capture", /.*/);
 
+    // Adaptativo: com Stream + service role (produção) os botões ficam habilitados e sem aviso;
+    // sem eles (local), aviso e botões desabilitados. Nada é enviado aqui.
     const notice = page.getByTestId("video-not-configured");
-    test.skip((await notice.count()) === 0, "Cloudflare Stream configurado neste ambiente: o envio real não roda nos E2E");
-    await expect(notice).toContainText("Vídeo ainda não configurado: peça ao administrador para ligar o Cloudflare Stream.");
-    await expect(record).toBeDisabled();
-    await expect(gallery).toBeDisabled();
+    if ((await notice.count()) === 0) {
+      await expect(record).toBeEnabled();
+      await expect(gallery).toBeEnabled();
+    } else {
+      await expect(notice).toContainText("Vídeo ainda não configurado: peça ao administrador para ligar o Cloudflare Stream.");
+      await expect(record).toBeDisabled();
+      await expect(gallery).toBeDisabled();
+    }
 
     await page.waitForLoadState("networkidle");
     // Só o conteúdo da página: o atalho "Minha conta" do cabeçalho do portal tem um achado antigo
