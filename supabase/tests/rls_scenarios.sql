@@ -89,7 +89,7 @@ select tests.anon();
 select tests.ok('S1 visitante vê catálogo publicado (40)', (select count(*) from public.content where status = 'published') = 40);
 select tests.ok('S1 visitante não lê corpo de conteúdo', (select count(*) from public.content_bodies) = 0);
 select tests.ok('S1 visitante vê personalidades ativas (8)', (select count(*) from public.creator_profiles) = 8);
-select tests.ok('S1 visitante vê produtos regulares (23 de 24: 1 indisponível ainda aparece; nenhum oculto)', (select count(*) from public.products) = 24);
+select tests.ok('S1 visitante vê produtos regulares (31 = 24 do seed + 7 Ultra.e Life; 1 indisponível ainda aparece; nenhum oculto)', (select count(*) from public.products) = 31);
 select tests.ok('S1 visitante não vê pedidos', (select count(*) from public.test_orders) = 0);
 select tests.expect_error('S1 visitante não faz checkout', $q$select public.checkout_cart(public.seed_uuid('dest:centro'))$q$, 'permission denied');
 select tests.expect_error('S1 visitante não conclui conteúdo', $q$select public.complete_content(public.seed_uuid('content:r1'), 'America/Sao_Paulo')$q$, 'permission denied');

@@ -319,6 +319,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"creator_products": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"creator_id": string,"id": string,"note": string | null,"product_id": string,"sort_order": number,"status": Database["public"]['Enums']["link_status"],"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"creator_id": string,"id"?: string,"note"?: string | null,"product_id": string,"sort_order"?: number,"status"?: Database["public"]['Enums']["link_status"],"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"creator_id"?: string,"id"?: string,"note"?: string | null,"product_id"?: string,"sort_order"?: number,"status"?: Database["public"]['Enums']["link_status"],"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_products_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creator_products_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"creator_profiles": {
                   Row: {
                     "avatar_url": string | null,"bio": string | null,"cover_url": string | null,"created_at": string,"headline": string | null,"id": string,"is_fictional": boolean,"name": string,"pillars": (Database["public"]['Enums']["pillar"])[],"rights_holder": string | null,"rights_note": string | null,"rights_status": string,"rights_valid_until": string | null,"slug": string,"socials": NonNullable<Json>,"sort_order": number,"status": Database["public"]['Enums']["partner_status"],"updated_at": string,"user_id": string | null
@@ -1260,6 +1286,9 @@ isOneToOne: false
 { Args: { "p_content": string,"p_justification"?: string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
                            } |
 { Args: { "p_content": string,"p_justification": string,"p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
+                           },
+"admin_set_creator_product":
+{ Args: { "p_creator": string,"p_note"?: string,"p_product": string,"p_sort"?: number,"p_status": Database["public"]['Enums']["link_status"] }; Returns: string
                            },
 "admin_set_creator_rights_private":
 { Args: { "p_creator": string,"p_document_ref": string,"p_justification"?: string,"p_notes": string }; Returns: undefined
