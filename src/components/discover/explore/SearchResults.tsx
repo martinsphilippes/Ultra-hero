@@ -1,24 +1,27 @@
 import { SearchX } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ContentCard } from "@/components/catalog";
+import { ContentTile } from "@/components/catalog";
 import { Button, EmptyState } from "@/components/ui";
 import { InlineError } from "../InlineError";
-import { LoadMore } from "./LoadMore";
+import { exploreFeedPage, type FeedPage, type SearchQuery } from "./feed";
 import { activeFilterCount, exploreHref, type ExploreParams } from "./params";
-import { PAGE_SIZE, searchContentPage, type SearchQuery } from "./search";
 import { SearchTracker } from "./SearchTracker";
+import { TileGrid } from "./TileGrid";
+import { daySeed } from "./tiles";
 
-// Primeira página da busca (RPC search_content) + "carregar mais" no cliente.
+// Aba Conteúdos do Explorar: grade estilo Instagram. Primeira página no servidor
+// (explore_feed sem texto, search_content com texto) + rolagem infinita no cliente.
 export async function SearchResults({ params }: { params: ExploreParams }) {
   const t = await getTranslations("discover.explore.search");
   const query: SearchQuery = { q: params.q, pillar: params.pillar, type: params.type, access: params.access, difficulty: params.difficulty };
   const queryKey = JSON.stringify(query);
   const hasCriteria = Boolean(params.q) || activeFilterCount(params) > 0;
+  const seed = daySeed();
 
-  let page: Awaited<ReturnType<typeof searchContentPage>>;
+  let page: FeedPage;
   try {
-    page = await searchContentPage(query, 0);
+    page = await exploreFeedPage(query, seed, 0);
   } catch {
     return <InlineError />;
   }
@@ -48,20 +51,15 @@ export async function SearchResults({ params }: { params: ExploreParams }) {
   return (
     <div className="flex flex-col gap-4">
       {hasCriteria && <SearchTracker queryKey={queryKey} qLen={params.q.length} pillar={params.pillar} type={params.type} />}
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        {params.q ? <h2 className="type-h3 text-fg">{t("resultsFor", { q: params.q })}</h2> : <h2 className="sr-only">{t("resultsHeading")}</h2>}
-        <p className="type-caption text-fg-muted">
-          {page.hasMore ? t("showingPartial", { count: page.items.length }) : t("showingAll", { count: page.items.length })}
-        </p>
-      </div>
+      {params.q ? <h2 className="type-h3 text-fg">{t("resultsFor", { q: params.q })}</h2> : <h2 className="sr-only">{t("resultsHeading")}</h2>}
 
-      <LoadMore key={queryKey} query={query} nextOffset={page.nextOffset} hasMore={page.hasMore} pageSize={PAGE_SIZE} initialCount={page.items.length}>
+      <TileGrid key={queryKey} query={query} seed={seed} nextOffset={page.nextOffset} hasMore={page.hasMore} initialCount={page.items.length}>
         {page.items.map((item, index) => (
-          <ContentCard key={item.id} content={item} priority={index === 0} />
+          <ContentTile key={item.id} content={item} priority={index < 3} />
         ))}
-      </LoadMore>
+      </TileGrid>
 
-      {params.q || params.pillar || params.type || params.access || params.difficulty ? (
+      {hasCriteria ? (
         <p className="type-caption text-fg-subtle">
           <Link href={exploreHref(params, { q: null, pillar: null, type: null, access: null, difficulty: null })} className="font-semibold text-accent-text hover:underline">
             {t("clearAllAction")}

@@ -55,17 +55,19 @@
       "submit": "Search",
       "clear": "Clear search",
       "resultsFor": "Results for “{q}”",
-      "showingAll": "{count, plural, =1 {1 item found} other {# items found}}",
-      "showingPartial": "Showing the first {count} items",
       "emptyTitle": "Nothing found",
       "emptyDescription": "Try other words or remove some filters.",
-      "loadMore": "Load more",
-      "loadMoreError": "We couldn't load more results.",
-      "loadedMore": "{count, plural, =1 {1 more item loaded} other {# more items loaded}}",
-      "moreResults": "More results",
-      "endOfResults": "You've reached the end of the results.",
       "clearAllAction": "Clear search and filters",
       "resultsHeading": "Results"
+    },
+    "grid": {
+      "loading": "Loading more posts…",
+      "loadMore": "Load more",
+      "loadMoreError": "We couldn't load more posts.",
+      "retry": "Try again",
+      "loadedMore": "{count, plural, =1 {1 more post loaded} other {# more posts loaded}}",
+      "end": "You've seen all the posts",
+      "count": "{count, plural, =1 {1 post in the grid} other {# posts in the grid}}"
     },
     "filters": {
       "title": "Filters",

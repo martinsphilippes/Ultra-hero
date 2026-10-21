@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Skeleton, SkeletonCard, VisuallyHidden } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { CARD_GRID, RAIL, RAIL_ITEM, SCROLL_CARD } from "./grid";
+import { CARD_GRID, RAIL, RAIL_ITEM, SCROLL_CARD, TILE_GRID } from "./grid";
 
 type Layout = "grid" | "scroll" | "rail";
 
@@ -38,6 +38,19 @@ export function SectionSkeleton({ layout = "grid", cards = 3, className }: Props
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+// Esqueleto da grade do Explorar: uma carga inteira de quadros (15), nas mesmas colunas da grade real.
+export function TilesSkeleton({ count = 15, className }: { count?: number; className?: string }) {
+  const t = useTranslations("common.states");
+  return (
+    <div role="status" aria-busy="true" className={cn(TILE_GRID, className)}>
+      <VisuallyHidden>{t("loading")}</VisuallyHidden>
+      {Array.from({ length: count }).map((_, i) => (
+        <Skeleton key={i} className="aspect-square w-full rounded-none" />
+      ))}
     </div>
   );
 }

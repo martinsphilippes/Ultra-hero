@@ -39,7 +39,7 @@ Onde o DMR diz "herói", o app diz "personalidade". É o mesmo conceito: tabela 
 
 | Jornada | Estado | Onde |
 |---|---|---|
-| J-01 Descoberta | Feito | Início → personalidades → perfil → conteúdo → volta ao explorar. E2E de visitante. |
+| J-01 Descoberta | Feito | Início → personalidades → perfil → conteúdo → volta ao explorar. No Explorar, a aba Conteúdos é uma grade estilo Instagram (3 colunas, 15 quadros por carga, rolagem infinita) com variedade de heróis garantida pela RPC `explore_feed` (0020): cada rodada traz no máximo um post por herói, em ordem rotacionada por dia; com texto digitado vale a relevância de `search_content`. E2E de visitante e `explore-grid.spec.ts`. |
 | J-02 Administração editorial | Parcial | Rascunho → revisão → publicação → arquivamento. Sem agendamento e sem licença de mídia. |
 | J-03 Compra demonstrativa | Feito | Loja → produto → carrinho → destino predefinido → confirmação → histórico → status. RLS S8. |
 | J-04 Operação do fornecedor | Feito | Login com escopo → catálogo próprio → disponibilidade → pedidos próprios. RLS S6, S8. |
