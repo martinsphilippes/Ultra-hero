@@ -5,7 +5,7 @@ import { FormField, Input, Select } from "@/components/ui";
 import type { ContentMedia } from "../types";
 import { useValidationMessage } from "./fields";
 import { parseMediaRef } from "./media";
-import { ENABLED_MEDIA_PROVIDERS, type FieldErrors } from "./schema";
+import { ENABLED_MEDIA_PROVIDERS, STREAM_UID, type FieldErrors } from "./schema";
 
 type Props = { value: ContentMedia; onChange: (value: ContentMedia) => void; errors: FieldErrors };
 
@@ -19,13 +19,15 @@ export function MediaEditor({ value, onChange, errors }: Props) {
   const isEmbed = value.provider === "embed_youtube" || value.provider === "embed_vimeo";
   const parsedId = isEmbed && value.ref ? parseMediaRef(value.provider, value.ref) : null;
   const refTouched = Boolean(value.ref && value.ref.trim());
+  // Vídeo enviado pelo composer: o Stream aparece habilitado só para manter esse vídeo.
+  const streamUploaded = value.provider === "cloudflare_stream" && STREAM_UID.test(value.ref ?? "");
 
   return (
     <div className="flex flex-col gap-4">
       <FormField label={t("provider")} hint={t("providerHint")} error={tv(errors["media.provider"])}>
         <Select value={value.provider} onChange={(e) => onChange({ ...value, provider: e.target.value as ContentMedia["provider"], ref: e.target.value === "none" ? null : value.ref })}>
           {OFFERED.map((p) => {
-            const enabled = (ENABLED_MEDIA_PROVIDERS as readonly string[]).includes(p);
+            const enabled = (ENABLED_MEDIA_PROVIDERS as readonly string[]).includes(p) || (p === "cloudflare_stream" && streamUploaded);
             return (
               <option key={p} value={p} disabled={!enabled}>
                 {t(`providers.${p}`)}
@@ -35,6 +37,8 @@ export function MediaEditor({ value, onChange, errors }: Props) {
           })}
         </Select>
       </FormField>
+
+      {streamUploaded && <p className="type-caption text-fg-muted">{t("streamUploaded")}</p>}
 
       {isEmbed && (
         <FormField label={t("ref")} hint={t(value.provider === "embed_youtube" ? "refHintYoutube" : "refHintVimeo")} error={tv(errors["media.ref"])} required>

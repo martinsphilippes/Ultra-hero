@@ -13,7 +13,7 @@
   },
   "dashboard": {
     "title": "Olá, {name}",
-    "description": "Acompanhe seus conteúdos, as revisões editoriais e os vínculos com produtos.",
+    "description": "Publique seus vídeos e acompanhe conteúdos, feedback da equipe editorial e vínculos com produtos.",
     "stats": "Resumo dos conteúdos",
     "counts": {
       "draft": "Rascunhos",
@@ -23,7 +23,7 @@
     },
     "archived": "{count, plural, =1 {1 conteúdo arquivado} other {# conteúdos arquivados}} pela administração.",
     "returnedTitle": "Devolvidos para ajustes",
-    "returnedDescription": "A equipe editorial deixou feedback. Ajuste e reenvie para revisão.",
+    "returnedDescription": "A equipe editorial deixou feedback. Ajuste e publique quando estiver pronto.",
     "latestReviews": "Últimas revisões",
     "seeContent": "Meus conteúdos",
     "profileHint": "Headline, bio, avatar, capa e redes.",
@@ -31,8 +31,8 @@
   },
   "content": {
     "new": "Novo conteúdo",
-    "newDescription": "Crie um rascunho. Você poderá editar, salvar e enviar para revisão quando estiver pronto.",
-    "description": "Seus conteúdos em todos os estados. Só rascunhos fora de revisão podem ser editados.",
+    "newDescription": "Crie um rascunho de receita, treino, guia, artigo ou vídeo por link. Salve e publique quando estiver pronto.",
+    "description": "Seus conteúdos em todos os estados. Rascunhos podem ser editados; para mudar um publicado, despublique antes.",
     "viewPublic": "Ver página pública",
     "columns": {
       "title": "Conteúdo",
@@ -49,42 +49,42 @@
   },
   "edit": {
     "noAccessRule": "Sem regra de acesso",
-    "accessNote": "Regra de acesso, módulo, destaque e publicação são definidos pela administração. Você edita título, resumo, capa, metadados e o corpo.",
+    "accessNote": "Você publica e despublica seus conteúdos. Regra de acesso (gratuito ou premium), módulo e destaque são definidos pela administração, que também pode arquivar um conteúdo.",
     "situation": {
       "draft": {
         "title": "Rascunho",
-        "description": "Edite à vontade. Quando estiver completo, envie para revisão."
+        "description": "Edite à vontade. Quando estiver pronto, toque em Publicar: ele vai ao ar na hora."
       },
       "in_review": {
         "title": "Em revisão",
-        "description": "A equipe editorial está avaliando. O conteúdo fica bloqueado até a decisão."
+        "description": "Enviado à equipe editorial pelo fluxo antigo de revisão. Você pode esperar a decisão ou publicar direto."
       },
       "returned": {
         "title": "Devolvido para ajustes",
-        "description": "Leia o feedback, ajuste o rascunho e envie de novo para revisão."
+        "description": "Leia o feedback, ajuste o rascunho e publique quando estiver pronto."
       },
       "rejected": {
         "title": "Rejeitado",
-        "description": "A equipe editorial não aprovou esta versão. Você pode revisar o rascunho e enviar novamente."
+        "description": "A equipe editorial não aprovou esta versão. Revise o rascunho antes de publicar."
       },
       "published": {
         "title": "Publicado",
-        "description": "Este conteúdo está no ar e agora é somente leitura para você. Alterações passam pela administração."
+        "description": "Está no ar. Para editar, despublique: ele volta a rascunho e você publica de novo."
       },
       "archived": {
         "title": "Arquivado",
-        "description": "Conteúdo arquivado pela administração. Fica somente leitura."
+        "description": "Arquivado pela administração. Fica somente leitura e não volta ao ar por aqui."
       }
     },
     "notFoundTitle": "Conteúdo não encontrado",
     "notFoundDescription": "Ele pode ter sido removido ou pertencer a outro herói."
   },
-  "submit": {
-    "button": "Enviar para revisão",
-    "title": "Enviar para revisão editorial?",
-    "description": "O conteúdo fica bloqueado para edição até a decisão da equipe. O checklist considera o que já está salvo.",
-    "confirm": "Enviar",
-    "checklist": "Checklist de completude",
+  "publish": {
+    "button": "Publicar",
+    "title": "Publicar este conteúdo?",
+    "description": "Ele vai ao ar na hora, com o que já está salvo. A administração pode arquivar depois, se precisar.",
+    "confirm": "Publicar agora",
+    "checklist": "Checklist de ajuda",
     "items": {
       "title": "Título preenchido",
       "summary": "Resumo preenchido",
@@ -95,15 +95,98 @@
     },
     "ok": "ok",
     "missing": "pendente",
-    "incomplete": "{count, plural, =1 {Falta 1 item. Salve o formulário e tente de novo.} other {Faltam # itens. Salve o formulário e tente de novo.}}",
-    "success": "Enviado para revisão",
-    "successDescription": "Você será avisado aqui quando houver decisão."
+    "incomplete": "{count, plural, =1 {Falta 1 item recomendado. Você pode publicar assim mesmo; título, corpo e o vídeo (em posts de vídeo) são obrigatórios.} other {Faltam # itens recomendados. Você pode publicar assim mesmo; título, corpo e o vídeo (em posts de vídeo) são obrigatórios.}}",
+    "success": "Publicado!",
+    "successDescription": "O conteúdo já está no ar.",
+    "unpublish": "Despublicar",
+    "unpublishTitle": "Despublicar este conteúdo?",
+    "unpublishDescription": "Ele sai do ar e volta a rascunho para você editar. Depois é só publicar de novo.",
+    "unpublishConfirm": "Despublicar",
+    "unpublished": "Despublicado",
+    "unpublishedDescription": "O conteúdo voltou a rascunho."
+  },
+  "post": {
+    "cta": "Novo post",
+    "title": "Novo post",
+    "description": "Grave ou escolha um vídeo de até 3 minutos, dê um título e publique.",
+    "draftTitle": "Post em vídeo",
+    "steps": {
+      "label": "Etapas do post",
+      "pick": "Escolher",
+      "compose": "Enviar e escrever",
+      "done": "Publicado"
+    },
+    "record": "Gravar vídeo",
+    "recordHint": "Abre a câmera do celular",
+    "gallery": "Escolher da galeria",
+    "galleryHint": "Use um vídeo que já está no aparelho",
+    "limits": "Até 3 minutos · até 2 GB",
+    "checking": "Lendo o vídeo…",
+    "notConfigured": "Vídeo ainda não configurado: peça ao administrador para ligar o Cloudflare Stream.",
+    "preview": "Prévia do vídeo",
+    "uploadLabel": "Envio do vídeo",
+    "starting": "Preparando o envio…",
+    "uploading": "Enviando… {pct}%",
+    "uploaded": "Vídeo enviado",
+    "uploadInBackground": "Pode escrever enquanto o vídeo sobe.",
+    "formTitle": "Texto do post",
+    "titleLabel": "Título",
+    "titlePlaceholder": "Ex.: Café da manhã em 5 minutos",
+    "captionLabel": "Legenda",
+    "captionPlaceholder": "Conte em poucas linhas o que tem no vídeo",
+    "optional": "opcional",
+    "counter": "{count}/{max}",
+    "pillarLabel": "Pilar",
+    "publish": "Publicar",
+    "publishing": "Publicando…",
+    "processing": "Processando vídeo…",
+    "processingHint": "O Cloudflare está preparando o vídeo. Costuma levar menos de um minuto.",
+    "retryPublish": "Tentar publicar de novo",
+    "publishHintUpload": "O botão libera quando o vídeo terminar de subir.",
+    "publishHintTitle": "Escreva um título para publicar.",
+    "retry": "Tentar de novo",
+    "discard": "Descartar vídeo",
+    "discardTitle": "Descartar este vídeo?",
+    "discardDescription": "O envio para e você volta para escolher outro vídeo. O que você escreveu se perde.",
+    "discardConfirm": "Descartar",
+    "discarded": "Vídeo descartado",
+    "discardedKept": "O rascunho ficou guardado em Meus conteúdos; você pode abrir e publicar depois.",
+    "doneTitle": "Publicado!",
+    "doneDescription": "Seu post já está no ar.",
+    "viewPost": "Ver post",
+    "another": "Fazer outro post",
+    "leaveWarning": "O vídeo ainda está sendo enviado. Se sair agora, o envio para.",
+    "errors": {
+      "generic": "Não foi possível concluir. Tente de novo.",
+      "unauthenticated": "Sua sessão expirou. Entre de novo para continuar.",
+      "forbidden": "Esta conta não pode postar este vídeo.",
+      "creator_unavailable": "Seu perfil de herói não está ativo.",
+      "invalid_input": "Confira os campos e tente de novo.",
+      "video_not_configured": "Vídeo ainda não configurado: peça ao administrador para ligar o Cloudflare Stream.",
+      "not_video": "Esse arquivo não é um vídeo. Grave um novo ou escolha outro da galeria.",
+      "empty_file": "O arquivo está vazio. Escolha outro vídeo.",
+      "file_too_large": "O vídeo passa de 2 GB. Escolha um vídeo menor.",
+      "too_long": "O vídeo passa de 3 minutos. Corte no celular e tente de novo.",
+      "network": "A conexão caiu. Quando voltar, toque em Tentar de novo: o envio continua de onde parou.",
+      "upload_failed": "O Cloudflare recusou o envio. Toque em Tentar de novo.",
+      "upload_expired": "O link de envio venceu. Toque em Tentar de novo para começar um envio novo.",
+      "provider_error": "O serviço de vídeo não respondeu. Tente de novo em instantes.",
+      "processing": "O vídeo ainda está sendo processado.",
+      "processing_timeout": "O vídeo ainda está sendo processado. Tente publicar de novo em alguns minutos.",
+      "video_failed": "O Cloudflare não conseguiu processar este vídeo. Descarte e envie outro.",
+      "missing_title": "Escreva um título para publicar.",
+      "missing_body": "O vídeo não ficou ligado a este post. Descarte e envie de novo.",
+      "missing_media": "O vídeo não ficou ligado a este post. Descarte e envie de novo.",
+      "not_draft": "Este post não é mais rascunho (já foi publicado ou arquivado).",
+      "media_license_mismatch": "A licença do vídeo não combina com a mídia. Abra o post em Meus conteúdos para ajustar.",
+      "duplicate": "Não foi possível criar o post agora. Tente de novo."
+    }
   },
   "reviews": {
     "title": "Histórico de revisões",
-    "description": "Cada envio abre uma rodada; a decisão e o feedback da equipe aparecem aqui.",
+    "description": "Cada publicação (ou envio para revisão) abre uma rodada; decisões e feedback da equipe aparecem aqui.",
     "empty": "Nenhuma rodada de revisão ainda",
-    "emptyDescription": "Quando você enviar um conteúdo, o histórico aparece aqui.",
+    "emptyDescription": "Quando você publicar um conteúdo, o histórico aparece aqui.",
     "round": "Rodada {n}",
     "submittedAt": "Enviado em {date}",
     "decidedAt": "decidido em {date}",
@@ -188,6 +271,19 @@
     "content_incomplete": "Preencha pelo menos título e pilar antes de enviar.",
     "link_exists": "Já existe um vínculo entre este conteúdo e este produto.",
     "link_not_deletable": "Só sugestões ainda não avaliadas podem ser excluídas.",
-    "duplicate": "Registro duplicado."
+    "duplicate": "Registro duplicado.",
+    "video_not_configured": "Vídeo ainda não configurado: peça ao administrador para ligar o Cloudflare Stream.",
+    "processing": "O vídeo ainda está sendo processado no Cloudflare. Tente publicar de novo em instantes.",
+    "video_failed": "O Cloudflare não conseguiu processar este vídeo. Faça um novo post com outro vídeo.",
+    "too_long": "O vídeo passa de 3 minutos e não pode ser publicado.",
+    "missing_title": "Preencha o título antes de publicar.",
+    "missing_body": "Salve o formulário antes de publicar: o corpo ainda não foi gravado.",
+    "missing_media": "Post de vídeo precisa de vídeo: defina a mídia e salve antes de publicar.",
+    "media_license_mismatch": "A licença da mídia não combina com o provedor. Ajuste em Licença e salve.",
+    "not_draft": "Só rascunhos podem ser publicados.",
+    "not_published": "Este conteúdo não está publicado.",
+    "network": "A conexão caiu. Tente de novo.",
+    "provider_error": "O serviço de vídeo não respondeu. Tente de novo em instantes.",
+    "file_too_large": "O vídeo passa de 2 GB."
   }
 }

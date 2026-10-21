@@ -52,12 +52,18 @@ export default async function CreatorHomePage() {
         title={t("dashboard.title", { name: ctx.profile.name })}
         description={t("dashboard.description")}
         eyebrow={tn("portals.creator")}
-        actions={
-          <Button asChild leadingIcon={<Plus />}>
+      >
+        {/* Postar vídeo é o caminho principal: botão grande no topo, largura total no celular. */}
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild size="lg" leadingIcon={<Plus />} className="min-h-14 text-base sm:min-w-56">
+            <Link href="/creator/post/new" data-testid="new-post">
+              {t("post.cta")}
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="lg" className="min-h-12">
             <Link href="/creator/content/new">{t("content.new")}</Link>
           </Button>
-        }
-      >
+        </div>
         <div className="flex items-center gap-3">
           <Avatar src={ctx.profile.avatar_url} name={ctx.profile.name} size="md" alt="" />
           <div className="flex min-w-0 flex-col">

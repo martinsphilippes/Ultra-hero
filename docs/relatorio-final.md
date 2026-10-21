@@ -48,7 +48,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 - **Identidade visual** (21/10/2026): logomarca do material oficial (losango laranja #FF5A1F e wordmark ULTRA HERO), tipografia Manrope para texto e títulos e DM Mono para etiquetas, servidas pelo próprio app, com contraste AA conferido pelo axe. As artes dos heróis fictícios e das capas continuam geradas.
 
 ### Parcial
-- **Vídeo**: embeds YouTube e Vimeo e player de demonstração funcionam. Cloudflare Stream e Mux existem só como interface (ADR-001).
+- **Vídeo**: embeds YouTube e Vimeo e player de demonstração funcionam. O herói posta vídeo gravado no celular pelo Cloudflare Stream (veja Fase 2), mas o envio real só liga quando as chaves do Stream estiverem na Vercel; até lá a tela de novo post abre com o aviso para o administrador. Mux existe só como interface (ADR-001).
 - **IA real**: os adaptadores foram testados com respostas simuladas, mas não com OpenAI e Gemini de verdade, porque não há chaves. A comparação roda com `npm run eval:recommendations`.
 
 ### Decisões
@@ -61,7 +61,9 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 ## Fase 2 — Portais de parceiros e comércio 100% simulado
 
 ### Implementado
-- **Portal da personalidade** (só por convite): rascunhos, envio para revisão, histórico de rodadas, sugestão de produtos e perfil público.
+- **Portal da personalidade** (só por convite): rascunhos, publicação direta, histórico de rodadas, sugestão de produtos e perfil público.
+  - **Novo post com vídeo do celular** (21/10/2026), em `/creator/post/new`: botão "+ Novo post" no topo do painel e da lista de conteúdos e primeiro item do menu do portal. Tela de uma coluna com botões grandes: "Gravar vídeo" abre a câmera do celular e "Escolher da galeria" abre os vídeos do aparelho. O navegador confere tipo, até 2 GB e até 3 minutos antes de enviar. O vídeo sobe direto para o Cloudflare Stream por tus (retoma se a conexão cair, aviso antes de sair da página) enquanto o herói escreve título, legenda e pilar. "Publicar" libera quando o envio termina e espera o Cloudflare processar ("Processando vídeo…"). O ticket e o rascunho nascem juntos no servidor, então o uid do vídeo fica preso ao rascunho do dono e o cliente nunca o informa; antes de publicar, o servidor confere estado, duração e dono do vídeo no Cloudflare. Sem as chaves do Stream (estado atual da produção), a tela abre com "Vídeo ainda não configurado" e os botões de vídeo desabilitados. Descartar um envio não apaga o rascunho (a RLS só deixa o admin apagar): ele fica em Meus conteúdos.
+  - **Publicação direta** (migração 0025): o herói publica e despublica o próprio conteúdo sem fila; o editor troca "Enviar para revisão" por "Publicar" (com o checklist como ajuda) e "Despublicar". A administração continua definindo regra de acesso, módulo e destaque e pode arquivar.
 - **Portal do fornecedor**:
   - Produtos com versões e publicação direta, com moderação posterior do admin.
   - O fornecedor não pode reativar um produto suspenso.
@@ -151,6 +153,6 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 9. **Mensagens por rota**, carregando só os textos de cada área para reduzir o primeiro carregamento no celular.
 
 **Depois do experimento, se validar**
-10. **Vídeo** com Cloudflare Stream, conforme a ADR-001: legenda, proteção de conteúdo e custo previsível.
+10. **Vídeo**: enviar as chaves do Cloudflare Stream para a Vercel (o novo post já existe) e implementar a URL assinada para conteúdo premium e as legendas, conforme a ADR-001.
 11. **IA**: rodar a comparação OpenAI vs Gemini com chaves reais e decidir com dados de custo e qualidade.
 12. **Pagamentos reais** só depois da validação: gateway com Pix, antifraude, nota fiscal e termos de venda, sem guardar dados de cartão.

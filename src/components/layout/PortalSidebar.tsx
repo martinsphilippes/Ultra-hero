@@ -12,6 +12,7 @@ import {
   Menu,
   MessageSquare,
   Package,
+  SquarePlus,
   ScrollText,
   Settings,
   ShoppingBag,
@@ -53,6 +54,7 @@ const ICONS: Record<string, LucideIcon> = {
   audit: ScrollText,
   settings: Settings,
   fulfillments: Truck,
+  post: SquarePlus,
 };
 
 function isActive(pathname: string, href: string, root: string) {

@@ -947,7 +947,16 @@ describe("mediaSchema e provedores habilitados", () => {
     expect(mediaSchema.safeParse({ provider: "embed_youtube", ref: YOUTUBE_ID, captions_url: `/${"x".repeat(500)}` }).success).toBe(false);
   });
 
-  it.each(["cloudflare_stream", "mux", "upload"])("o formulário rejeita o provedor não configurado %s", (provider) => {
+  it("cloudflare_stream só passa com uid do Stream (vídeo enviado pelo composer) e o uid é preservado", () => {
+    const uid = "0123456789abcdef0123456789abcdef";
+    expect(contentErrors(validVideoForm({ media: { provider: "cloudflare_stream", ref: "abc123", captions_url: null } }))).toEqual({ "media.ref": "invalidMediaRef" });
+    expect(contentErrors(validVideoForm({ media: { provider: "cloudflare_stream", ref: null, captions_url: null } }))).toEqual({ "media.ref": "invalidMediaRef" });
+    const parsed = parseContentForm(validVideoForm({ media: { provider: "cloudflare_stream", ref: uid, captions_url: null }, media_license_kind: "own" }));
+    expect(parsed.ok && parsed.data.media).toEqual({ provider: "cloudflare_stream", ref: uid, captions_url: null });
+    expect(parsed.ok && parsed.data.media_license_kind).toBe("own");
+  });
+
+  it.each(["mux", "upload"])("o formulário rejeita o provedor não configurado %s", (provider) => {
     // a forma (mediaSchema) conhece o provedor; a restrição aos habilitados fica no contentFormSchema
     expect(mediaSchema.safeParse({ provider, ref: "abc123", captions_url: null }).success).toBe(true);
     expect(contentErrors(validVideoForm({ media: { provider, ref: "abc123", captions_url: null } }))).toEqual({

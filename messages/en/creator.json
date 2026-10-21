@@ -13,7 +13,7 @@
   },
   "dashboard": {
     "title": "Hello, {name}",
-    "description": "Follow your content, editorial reviews and product links.",
+    "description": "Publish your videos and follow your content, editorial feedback and product links.",
     "stats": "Content summary",
     "counts": {
       "draft": "Drafts",
@@ -23,7 +23,7 @@
     },
     "archived": "{count, plural, =1 {1 content item archived} other {# content items archived}} by the administration.",
     "returnedTitle": "Returned for changes",
-    "returnedDescription": "The editorial team left feedback. Adjust and resubmit for review.",
+    "returnedDescription": "The editorial team left feedback. Adjust and publish when ready.",
     "latestReviews": "Latest reviews",
     "seeContent": "My content",
     "profileHint": "Headline, bio, avatar, cover and socials.",
@@ -31,8 +31,8 @@
   },
   "content": {
     "new": "New content",
-    "newDescription": "Create a draft. You can edit, save and submit it for review when ready.",
-    "description": "Your content in every state. Only drafts that are not under review can be edited.",
+    "newDescription": "Create a draft of a recipe, workout, guide, article or linked video. Save and publish when ready.",
+    "description": "Your content in every state. Drafts can be edited; to change a published item, unpublish it first.",
     "viewPublic": "View public page",
     "columns": {
       "title": "Content",
@@ -49,42 +49,42 @@
   },
   "edit": {
     "noAccessRule": "No access rule",
-    "accessNote": "Access rule, module, featuring and publishing are set by the administration. You edit title, summary, cover, metadata and the body.",
+    "accessNote": "You publish and unpublish your content. Access rule (free or premium), module and featuring are set by the administration, which can also archive content.",
     "situation": {
       "draft": {
         "title": "Draft",
-        "description": "Edit freely. When complete, submit it for review."
+        "description": "Edit freely. When ready, tap Publish: it goes live right away."
       },
       "in_review": {
         "title": "Under review",
-        "description": "The editorial team is evaluating it. The content stays locked until a decision."
+        "description": "Sent to the editorial team through the old review flow. You can wait for the decision or publish directly."
       },
       "returned": {
         "title": "Returned for changes",
-        "description": "Read the feedback, adjust the draft and submit it for review again."
+        "description": "Read the feedback, adjust the draft and publish when ready."
       },
       "rejected": {
         "title": "Rejected",
-        "description": "The editorial team did not approve this version. You can revise the draft and submit it again."
+        "description": "The editorial team did not approve this version. Review the draft before publishing."
       },
       "published": {
         "title": "Published",
-        "description": "This content is live and is now read only for you. Changes go through the administration."
+        "description": "It is live. To edit, unpublish it: it goes back to draft and you publish again."
       },
       "archived": {
         "title": "Archived",
-        "description": "Content archived by the administration. It stays read only."
+        "description": "Archived by the administration. Read-only, and it cannot go live again from here."
       }
     },
     "notFoundTitle": "Content not found",
     "notFoundDescription": "It may have been removed or belong to another hero."
   },
-  "submit": {
-    "button": "Submit for review",
-    "title": "Submit for editorial review?",
-    "description": "The content stays locked for editing until the team decides. The checklist considers what is already saved.",
-    "confirm": "Submit",
-    "checklist": "Completeness checklist",
+  "publish": {
+    "button": "Publish",
+    "title": "Publish this content?",
+    "description": "It goes live right away with what is already saved. The administration can archive it later if needed.",
+    "confirm": "Publish now",
+    "checklist": "Helper checklist",
     "items": {
       "title": "Title filled in",
       "summary": "Summary filled in",
@@ -95,15 +95,98 @@
     },
     "ok": "ok",
     "missing": "pending",
-    "incomplete": "{count, plural, =1 {1 item is missing. Save the form and try again.} other {# items are missing. Save the form and try again.}}",
-    "success": "Submitted for review",
-    "successDescription": "You will be notified here when there is a decision."
+    "incomplete": "{count, plural, =1 {1 recommended item is missing. You can publish anyway; title, body and the video (for video posts) are required.} other {# recommended items are missing. You can publish anyway; title, body and the video (for video posts) are required.}}",
+    "success": "Published!",
+    "successDescription": "The content is live.",
+    "unpublish": "Unpublish",
+    "unpublishTitle": "Unpublish this content?",
+    "unpublishDescription": "It goes offline and back to draft so you can edit it. Then just publish again.",
+    "unpublishConfirm": "Unpublish",
+    "unpublished": "Unpublished",
+    "unpublishedDescription": "The content is back to draft."
+  },
+  "post": {
+    "cta": "New post",
+    "title": "New post",
+    "description": "Record or choose a video up to 3 minutes long, add a title and publish.",
+    "draftTitle": "Video post",
+    "steps": {
+      "label": "Post steps",
+      "pick": "Choose",
+      "compose": "Upload and write",
+      "done": "Published"
+    },
+    "record": "Record video",
+    "recordHint": "Opens your phone camera",
+    "gallery": "Choose from gallery",
+    "galleryHint": "Use a video already on your device",
+    "limits": "Up to 3 minutes · up to 2 GB",
+    "checking": "Reading the video…",
+    "notConfigured": "Video is not set up yet: ask the administrator to turn on Cloudflare Stream.",
+    "preview": "Video preview",
+    "uploadLabel": "Video upload",
+    "starting": "Preparing the upload…",
+    "uploading": "Uploading… {pct}%",
+    "uploaded": "Video uploaded",
+    "uploadInBackground": "You can write while the video uploads.",
+    "formTitle": "Post text",
+    "titleLabel": "Title",
+    "titlePlaceholder": "E.g. Breakfast in 5 minutes",
+    "captionLabel": "Caption",
+    "captionPlaceholder": "Say in a few lines what the video is about",
+    "optional": "optional",
+    "counter": "{count}/{max}",
+    "pillarLabel": "Pillar",
+    "publish": "Publish",
+    "publishing": "Publishing…",
+    "processing": "Processing video…",
+    "processingHint": "Cloudflare is preparing the video. It usually takes less than a minute.",
+    "retryPublish": "Try publishing again",
+    "publishHintUpload": "The button unlocks when the video finishes uploading.",
+    "publishHintTitle": "Write a title to publish.",
+    "retry": "Try again",
+    "discard": "Discard video",
+    "discardTitle": "Discard this video?",
+    "discardDescription": "The upload stops and you go back to choose another video. What you wrote is lost.",
+    "discardConfirm": "Discard",
+    "discarded": "Video discarded",
+    "discardedKept": "The draft was kept in My content; you can open and publish it later.",
+    "doneTitle": "Published!",
+    "doneDescription": "Your post is live.",
+    "viewPost": "View post",
+    "another": "Make another post",
+    "leaveWarning": "The video is still uploading. If you leave now, the upload stops.",
+    "errors": {
+      "generic": "Could not complete. Please try again.",
+      "unauthenticated": "Your session expired. Sign in again to continue.",
+      "forbidden": "This account cannot post this video.",
+      "creator_unavailable": "Your hero profile is not active.",
+      "invalid_input": "Check the fields and try again.",
+      "video_not_configured": "Video is not set up yet: ask the administrator to turn on Cloudflare Stream.",
+      "not_video": "This file is not a video. Record a new one or pick another from your gallery.",
+      "empty_file": "The file is empty. Choose another video.",
+      "file_too_large": "The video is larger than 2 GB. Choose a smaller one.",
+      "too_long": "The video is longer than 3 minutes. Trim it on your phone and try again.",
+      "network": "The connection dropped. When it is back, tap Try again: the upload resumes where it stopped.",
+      "upload_failed": "Cloudflare refused the upload. Tap Try again.",
+      "upload_expired": "The upload link expired. Tap Try again to start a new upload.",
+      "provider_error": "The video service did not respond. Try again in a moment.",
+      "processing": "The video is still processing.",
+      "processing_timeout": "The video is still processing. Try publishing again in a few minutes.",
+      "video_failed": "Cloudflare could not process this video. Discard it and upload another.",
+      "missing_title": "Write a title to publish.",
+      "missing_body": "The video is not attached to this post. Discard it and upload again.",
+      "missing_media": "The video is not attached to this post. Discard it and upload again.",
+      "not_draft": "This post is no longer a draft (already published or archived).",
+      "media_license_mismatch": "The video licence does not match the media. Open the post in My content to fix it.",
+      "duplicate": "Could not create the post right now. Try again."
+    }
   },
   "reviews": {
     "title": "Review history",
-    "description": "Each submission opens a round; the team's decision and feedback appear here.",
+    "description": "Each publication (or review submission) opens a round; the team's decisions and feedback appear here.",
     "empty": "No review rounds yet",
-    "emptyDescription": "When you submit content, the history appears here.",
+    "emptyDescription": "When you publish content, the history appears here.",
     "round": "Round {n}",
     "submittedAt": "Submitted on {date}",
     "decidedAt": "decided on {date}",
@@ -188,6 +271,19 @@
     "content_incomplete": "Fill in at least the title and pillar before submitting.",
     "link_exists": "A link between this content and this product already exists.",
     "link_not_deletable": "Only suggestions not yet evaluated can be deleted.",
-    "duplicate": "Duplicate record."
+    "duplicate": "Duplicate record.",
+    "video_not_configured": "Video is not set up yet: ask the administrator to turn on Cloudflare Stream.",
+    "processing": "The video is still processing on Cloudflare. Try publishing again in a moment.",
+    "video_failed": "Cloudflare could not process this video. Make a new post with another video.",
+    "too_long": "The video is longer than 3 minutes and cannot be published.",
+    "missing_title": "Fill in the title before publishing.",
+    "missing_body": "Save the form before publishing: the body has not been saved yet.",
+    "missing_media": "A video post needs a video: set the media and save before publishing.",
+    "media_license_mismatch": "The media licence does not match the provider. Adjust it under Licence and save.",
+    "not_draft": "Only drafts can be published.",
+    "not_published": "This content is not published.",
+    "network": "The connection dropped. Try again.",
+    "provider_error": "The video service did not respond. Try again in a moment.",
+    "file_too_large": "The video is larger than 2 GB."
   }
 }

@@ -30,6 +30,7 @@
     "settings": "Configuración"
   },
   "creator": {
+    "post": "Nueva publicación",
     "dashboard": "Panel",
     "content": "Mis contenidos",
     "links": "Vínculos de productos",
