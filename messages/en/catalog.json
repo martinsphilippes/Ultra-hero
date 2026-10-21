@@ -21,5 +21,9 @@
   "fictional": "Fictional character",
   "priceDemo": "illustrative price",
   "productUnavailable": "Unavailable",
-  "progress": "Progress"
+  "progress": "Progress",
+  "tile": {
+    "premium": "Requires the {plan} plan",
+    "unavailable": "Unavailable"
+  }
 }

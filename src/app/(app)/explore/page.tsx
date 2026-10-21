@@ -9,7 +9,7 @@ import { ProductsTab } from "@/components/discover/explore/ProductsTab";
 import { ProgramsTab } from "@/components/discover/explore/ProgramsTab";
 import { SearchForm } from "@/components/discover/explore/SearchForm";
 import { SearchResults } from "@/components/discover/explore/SearchResults";
-import { CardsSkeleton } from "@/components/discover/SectionSkeleton";
+import { CardsSkeleton, TilesSkeleton } from "@/components/discover/SectionSkeleton";
 import { UrlTabs } from "@/components/discover/UrlTabs";
 import { PageHeader } from "@/components/ui";
 
@@ -42,7 +42,7 @@ export default async function ExplorePage({ searchParams }: Props) {
         {params.tab === "conteudos" && (
           <div className="flex flex-col gap-5">
             <ContentFilters params={params} />
-            <Suspense key={JSON.stringify(params)} fallback={<CardsSkeleton />}>
+            <Suspense key={JSON.stringify(params)} fallback={<TilesSkeleton />}>
               <SearchResults params={params} />
             </Suspense>
           </div>

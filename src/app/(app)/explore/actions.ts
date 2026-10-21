@@ -4,14 +4,15 @@ import { revalidatePath } from "next/cache";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { ACCESS_LEVELS, DIFFICULTIES, MAX_QUERY_LENGTH } from "@/components/discover/explore/params";
-import { renderContentCards } from "@/components/discover/explore/renderCards";
-import { PAGE_SIZE, searchContentPage } from "@/components/discover/explore/search";
+import { exploreFeedPage } from "@/components/discover/explore/feed";
+import { renderContentTiles } from "@/components/discover/explore/renderTiles";
+import { TILE_PAGE_SIZE } from "@/components/discover/explore/tiles";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
 import { CONTENT_TYPES, PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
-// Ações do Explorar: paginação da busca, evento de busca e listas pessoais (criar/renomear/excluir/remover item).
+// Ações do Explorar: paginação da grade, evento de busca e listas pessoais (criar/renomear/excluir/remover item).
 // Tudo validado com Zod; a posse das listas é garantida pela RLS (custom_lists / list_items).
 
 export type ActionError = { ok: false; error: string };
@@ -36,26 +37,28 @@ function revalidateLists(listId?: string) {
   if (listId) revalidatePath(`/explore/lists/${listId}`);
 }
 
-// ---------------------------------------------------------------- busca: carregar mais
-const searchSchema = z.object({
+// ---------------------------------------------------------------- grade: carregar mais
+const tilesSchema = z.object({
   q: z.string().max(MAX_QUERY_LENGTH).catch(""),
   pillar: z.enum(PILLARS).optional(),
   type: z.enum(CONTENT_TYPES).optional(),
   access: z.enum(ACCESS_LEVELS).optional(),
   difficulty: z.enum(DIFFICULTIES).optional(),
+  // A semente vem do cliente para a página seguinte continuar a MESMA ordem da primeira (virada de dia no meio da rolagem não repete nem pula).
+  seed: z.number().int().min(0),
   offset: z.number().int().min(0).max(5000),
 });
 
-export type LoadMoreInput = z.infer<typeof searchSchema>;
+export type LoadMoreTilesInput = z.infer<typeof tilesSchema>;
 
-// Devolve os cards já renderizados no servidor (RSC) + cursor para a próxima página.
-export async function loadMoreContent(input: LoadMoreInput): Promise<Result<{ nodes: ReactNode; count: number; hasMore: boolean; nextOffset: number }>> {
-  const parsed = searchSchema.safeParse(input);
+// Devolve os quadros já renderizados no servidor (RSC) + cursor para a próxima página.
+export async function loadMoreTiles(input: LoadMoreTilesInput): Promise<Result<{ nodes: ReactNode; count: number; hasMore: boolean; nextOffset: number }>> {
+  const parsed = tilesSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   try {
-    const { offset, ...query } = parsed.data;
-    const page = await searchContentPage({ ...query, q: query.q.trim() }, offset);
-    return { ok: true, nodes: renderContentCards(page.items), count: page.items.length, hasMore: page.hasMore, nextOffset: page.nextOffset };
+    const { offset, seed, ...query } = parsed.data;
+    const page = await exploreFeedPage({ ...query, q: query.q.trim() }, seed, offset);
+    return { ok: true, nodes: renderContentTiles(page.items), count: page.items.length, hasMore: page.hasMore, nextOffset: page.nextOffset };
   } catch (error) {
     return fail(error);
   }
@@ -71,7 +74,7 @@ export async function trackSearch(input: { qLen: number; pillar?: string | null;
     })
     .safeParse(input);
   if (!parsed.success) return;
-  await trackEvent("search", { q_len: parsed.data.qLen, pillar: parsed.data.pillar ?? null, type: parsed.data.type ?? null, page_size: PAGE_SIZE });
+  await trackEvent("search", { q_len: parsed.data.qLen, pillar: parsed.data.pillar ?? null, type: parsed.data.type ?? null, page_size: TILE_PAGE_SIZE });
 }
 
 // ---------------------------------------------------------------- listas pessoais

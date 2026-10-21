@@ -55,17 +55,19 @@
       "submit": "Buscar",
       "clear": "Limpiar búsqueda",
       "resultsFor": "Resultados para “{q}”",
-      "showingAll": "{count, plural, =1 {1 contenido encontrado} other {# contenidos encontrados}}",
-      "showingPartial": "Mostrando los primeros {count} contenidos",
       "emptyTitle": "Nada encontrado",
       "emptyDescription": "Prueba otras palabras o quita algunos filtros.",
-      "loadMore": "Cargar más",
-      "loadMoreError": "No se pudieron cargar más resultados.",
-      "loadedMore": "{count, plural, =1 {1 contenido más cargado} other {# contenidos más cargados}}",
-      "moreResults": "Más resultados",
-      "endOfResults": "Llegaste al final de los resultados.",
       "clearAllAction": "Limpiar búsqueda y filtros",
       "resultsHeading": "Resultados"
+    },
+    "grid": {
+      "loading": "Cargando más publicaciones…",
+      "loadMore": "Cargar más",
+      "loadMoreError": "No se pudieron cargar más publicaciones.",
+      "retry": "Intentar de nuevo",
+      "loadedMore": "{count, plural, =1 {1 publicación más cargada} other {# publicaciones más cargadas}}",
+      "end": "Viste todas las publicaciones",
+      "count": "{count, plural, =1 {1 publicación en la cuadrícula} other {# publicaciones en la cuadrícula}}"
     },
     "filters": {
       "title": "Filtros",

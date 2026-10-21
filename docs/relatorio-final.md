@@ -23,7 +23,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
 - **Jornadas do consumidor**:
   - Início com recomendações.
-  - Explorar com abas e busca por pilar, tipo, personalidade, acesso e dificuldade.
+  - Explorar com abas e busca por pilar, tipo, herói, acesso e dificuldade. A aba Conteúdos é uma grade estilo Instagram: 3 colunas de quadros quadrados só com a capa, ícone do tipo e cadeado quando restrito, 15 por carga com rolagem infinita e variedade de heróis (no máximo um post por herói em cada rodada, ordem rotacionada por dia).
   - Personalidades e página de conteúdo com player de demonstração e transcrição.
   - Programas com inscrição, versões, substituições e certificado verificável.
   - Evolução com sequência e conquistas.
