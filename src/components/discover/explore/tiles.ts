@@ -12,9 +12,9 @@ export const MAX_OFFSET = 5000;
 
 // Cursor da próxima página. Ao chegar ao teto, a grade termina (hasMore=false) em vez de pedir um
 // offset que a ação recusaria e virar um erro permanente de "tentar de novo".
-export function pageCursor(rowCount: number, offset: number): { hasMore: boolean; nextOffset: number } {
-  const nextOffset = offset + TILE_PAGE_SIZE;
-  return { hasMore: rowCount > TILE_PAGE_SIZE && nextOffset <= MAX_OFFSET, nextOffset };
+export function pageCursor(rowCount: number, offset: number, pageSize: number = TILE_PAGE_SIZE): { hasMore: boolean; nextOffset: number } {
+  const nextOffset = offset + pageSize;
+  return { hasMore: rowCount > pageSize && nextOffset <= MAX_OFFSET, nextOffset };
 }
 
 /** Semente do feed: muda uma vez por dia (UTC) para a ordem rotacionar sem quebrar a paginação. */

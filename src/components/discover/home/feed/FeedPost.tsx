@@ -1,0 +1,69 @@
+import { Ban, BookOpen, ChefHat, Dumbbell, FileText, Lock, PlayCircle } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import Image from "next/image";
+import Link from "next/link";
+import { tileCover } from "@/components/discover/explore/tiles";
+import { Avatar } from "@/components/ui";
+import type { FeedPostData } from "./posts";
+
+const TYPE_ICON = { video: PlayCircle, recipe: ChefHat, workout: Dumbbell, guide: BookOpen, article: FileText } as const;
+
+type Props = { post: FeedPostData; priority?: boolean };
+
+// Post do feed do Início, no formato do Instagram: herói no topo (leva ao perfil dele), capa grande
+// 4:5 (de borda a borda no celular) e legenda com tipo, título e resumo. Capa e título abrem o post.
+export async function FeedPost({ post, priority }: Props) {
+  const t = await getTranslations("catalog");
+  const Icon = TYPE_ICON[post.type];
+  const unavailable = post.access_level === null;
+  const premium = post.access_level === "premium";
+  const src = tileCover(post.cover_url, post.pillar);
+  const href = `/content/${post.slug}`;
+  const titleId = `post-${post.id}`;
+  const restriction = unavailable ? t("tile.unavailable") : premium ? t("tile.premium", { plan: post.required_module?.name ?? t("premium") }) : null;
+
+  return (
+    <article aria-labelledby={titleId} className="flex flex-col" data-testid="feed-post">
+      {post.creator ? (
+        <Link
+          href={`/personalities/${post.creator.slug}`}
+          className="flex min-h-14 items-center gap-3 self-start px-gutter py-2 md:px-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          data-testid="feed-post-hero"
+        >
+          <Avatar src={post.creator.avatar_url} name={post.creator.name} alt="" size="sm" />
+          <span className="text-sm font-semibold text-fg">{post.creator.name}</span>
+        </Link>
+      ) : (
+        <div className="min-h-3" />
+      )}
+
+      <Link
+        href={href}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="group relative block aspect-[4/5] overflow-hidden bg-surface-elevated md:rounded-lg"
+        data-testid="feed-post-cover"
+      >
+        <Image src={src} alt="" fill priority={priority} unoptimized={src.endsWith(".svg")} sizes="(min-width: 768px) 470px, 100vw" className="object-cover" />
+        {/* Ícones brancos com sombra: legíveis sobre qualquer capa sem escurecer a imagem. */}
+        <Icon className="absolute right-3 top-3 size-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
+        {unavailable ? (
+          <Ban className="absolute bottom-3 left-3 size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
+        ) : premium ? (
+          <Lock className="absolute bottom-3 left-3 size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
+        ) : null}
+      </Link>
+
+      <div className="flex flex-col gap-1 px-gutter pt-3 md:px-0">
+        <p className="type-caption text-fg-muted">{[t(`types.${post.type}`), restriction].filter(Boolean).join(" · ")}</p>
+        <h2 id={titleId} className="text-base font-semibold leading-snug text-fg">
+          {/* O link do título é o alvo de teclado e leitor de tela; a capa repete o destino só para o toque. */}
+          <Link href={href} className="hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+            {post.title}
+          </Link>
+        </h2>
+        {post.summary ? <p className="type-body-sm line-clamp-2 text-fg-muted">{post.summary}</p> : null}
+      </div>
+    </article>
+  );
+}

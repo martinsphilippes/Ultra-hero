@@ -6,7 +6,6 @@ import { CreatorCard } from "@/components/catalog";
 import { ChipLink, ChipRow } from "@/components/discover/ChipLink";
 import { CARD_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
-import { PILLAR_ICON } from "@/components/discover/pillars";
 import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import { CREATOR_CARD_SELECT, type CreatorCardData } from "@/lib/catalog/queries";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
@@ -56,14 +55,11 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
           <ChipLink href="/personalities" selected={!pillar}>
             {t("all")}
           </ChipLink>
-          {PILLARS.map((p) => {
-            const Icon = PILLAR_ICON[p];
-            return (
-              <ChipLink key={p} href={`/personalities?pillar=${p}`} selected={pillar === p} variant={p} icon={<Icon />}>
-                {tp(p)}
-              </ChipLink>
-            );
-          })}
+          {PILLARS.map((p) => (
+            <ChipLink key={p} href={`/personalities?pillar=${p}`} selected={pillar === p}>
+              {tp(p)}
+            </ChipLink>
+          ))}
         </ChipRow>
       </PageHeader>
 

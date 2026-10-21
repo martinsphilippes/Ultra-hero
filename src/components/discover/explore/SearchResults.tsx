@@ -6,7 +6,7 @@ import { ContentTile } from "@/components/catalog";
 import { Button, EmptyState } from "@/components/ui";
 import { InlineError } from "../InlineError";
 import { exploreFeedPage, type FeedPage, type SearchQuery } from "./feed";
-import { activeFilterCount, exploreHref, type ExploreParams } from "./params";
+import { activeFilterCount, type ExploreParams } from "./params";
 import { SearchTracker } from "./SearchTracker";
 import { TileGrid } from "./TileGrid";
 import { daySeed } from "./tiles";
@@ -64,13 +64,6 @@ export async function SearchResults({ params }: { params: ExploreParams }) {
         ))}
       </TileGrid>
 
-      {hasCriteria ? (
-        <p className="type-caption text-fg-subtle">
-          <Link href={exploreHref(params, { q: null, pillar: null, type: null, access: null, difficulty: null })} className="font-semibold text-accent-text hover:underline">
-            {t("clearAllAction")}
-          </Link>
-        </p>
-      ) : null}
     </div>
   );
 }

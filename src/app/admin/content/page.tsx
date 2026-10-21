@@ -115,7 +115,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
         </div>
       ),
     },
-    { key: "pillar", header: t("table.pillar"), hideOnMobile: true, cell: (row) => <PillarBadge pillar={row.pillar} size="sm" /> },
+    { key: "pillar", header: t("table.pillar"), hideOnMobile: true, cell: (row) => <PillarBadge tone="pillar" pillar={row.pillar} size="sm" /> },
     { key: "type", header: t("table.type"), hideOnMobile: true, cell: (row) => tc(`types.${row.type}`) },
     {
       key: "status",

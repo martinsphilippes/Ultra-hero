@@ -80,7 +80,7 @@ export default async function AdminProgramsPage({ searchParams }: { searchParams
         </div>
       ),
     },
-    { key: "pillar", header: t("table.pillar"), hideOnMobile: true, cell: (row) => <PillarBadge pillar={row.pillar} size="sm" /> },
+    { key: "pillar", header: t("table.pillar"), hideOnMobile: true, cell: (row) => <PillarBadge tone="pillar" pillar={row.pillar} size="sm" /> },
     { key: "creator", header: t("table.creator"), hideOnMobile: true, cell: (row) => row.creator?.name ?? tc("noCreator") },
     { key: "status", header: t("table.status"), cell: (row) => <StatusBadge status={row.status} label={ts(`status.${row.status}`)} /> },
     { key: "versions", header: t("table.versions"), align: "right", cell: (row) => <Badge size="sm">{row.versions?.[0]?.count ?? 0}</Badge> },

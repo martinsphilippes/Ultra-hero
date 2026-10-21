@@ -50,7 +50,7 @@ export default async function AdminCreatorsPage() {
       cell: (c) => (
         <span className="flex flex-wrap gap-1">
           {c.pillars.map((p) => (
-            <PillarBadge key={p} pillar={p} size="sm" />
+            <PillarBadge tone="pillar" key={p} pillar={p} size="sm" />
           ))}
         </span>
       ),

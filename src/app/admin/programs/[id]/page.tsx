@@ -128,7 +128,7 @@ export default async function AdminProgramDetailPage({ params }: Params) {
         actions={<NewVersionDialog programId={program.id} versions={versions.map((v) => ({ id: v.id, version_no: v.version_no, title: v.title }))} />}
       >
         <div className="flex flex-wrap items-center gap-2">
-          <PillarBadge pillar={program.pillar} size="sm" />
+          <PillarBadge tone="pillar" pillar={program.pillar} size="sm" />
           <StatusBadge status={program.status} label={ts(`status.${program.status}`)} />
           {program.is_featured && (
             <Badge variant="accent" size="sm">

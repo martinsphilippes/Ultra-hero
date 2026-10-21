@@ -13,38 +13,17 @@
     "educationalNote": "All content is educational and does not replace individual professional guidance."
   },
   "home": {
-    "eyebrow": "Ultra Hero",
-    "greeting": "Hi, {name}",
-    "greetingFallback": "Hi there",
-    "greetingSubtitle": "Pick up where you left off or discover something new today.",
-    "visitorTitle": "Routine, training, nutrition and cooking in one place.",
-    "visitorSubtitle": "Short lessons, guided programs and fictional heroes to grow at your own pace. Demo environment: no real charges.",
-    "ctaSignup": "Create a free account",
-    "ctaExplore": "Explore content",
-    "pillarsNav": "Explore by pillar",
-    "onboarding": {
-      "title": "Tell us your interests",
-      "description": "It takes under a minute and makes recommendations sharper.",
-      "cta": "Start"
-    },
-    "featured": {
-      "title": "Featured",
-      "description": "This week's editorial picks",
-      "programs": "Featured programs"
-    },
-    "continue": {
-      "title": "Continue",
-      "description": "Where you left off"
-    },
-    "pillars": {
-      "routine": "Small habits, calm mornings and better sleep",
-      "training": "Strength, mobility and running from scratch",
-      "nutrition": "Practical food education, no scare tactics",
-      "gastronomy": "Core techniques and weekly meal prep"
-    },
-    "personalities": {
-      "title": "Heroes",
-      "description": "Fictional characters created for this demo"
+    "feed": {
+      "title": "Feed",
+      "loading": "Loading more posts…",
+      "loadMore": "Load more",
+      "loadError": "We couldn't load more posts.",
+      "retry": "Try again",
+      "loadedMore": "{count, plural, =1 {1 more post loaded} other {# more posts loaded}}",
+      "end": "You've seen all the posts",
+      "emptyTitle": "No posts here yet",
+      "emptyDescription": "The heroes haven't posted anything yet.",
+      "emptyCta": "Go to Explore"
     }
   },
   "explore": {
@@ -58,7 +37,7 @@
       "resultsFor": "Results for “{q}”",
       "emptyTitle": "Nothing found",
       "emptyDescription": "Try other words or remove some filters.",
-      "clearAllAction": "Clear search and filters",
+      "clearAllAction": "Clear search",
       "resultsHeading": "Results"
     },
     "grid": {
@@ -69,17 +48,6 @@
       "loadedMore": "{count, plural, =1 {1 more post loaded} other {# more posts loaded}}",
       "end": "You've seen all the posts",
       "count": "{count, plural, =1 {1 post in the grid} other {# posts in the grid}}"
-    },
-    "filters": {
-      "title": "Filters",
-      "summary": "More filters",
-      "pillar": "Pillar",
-      "type": "Type",
-      "access": "Access",
-      "difficulty": "Level",
-      "all": "All",
-      "clearAll": "Clear filters",
-      "summaryActive": "More filters ({count})"
     },
     "tabs": {
       "label": "Explore sections",

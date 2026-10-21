@@ -229,7 +229,7 @@ export default async function EvolutionPage() {
                   </div>
                   {enrollment.status !== "abandoned" ? (
                     <div className="flex flex-col gap-1">
-                      <ProgressBar value={progress.pct} label={t("programs.progressLabel", { title })} tone={pillar} size="sm" />
+                      <ProgressBar value={progress.pct} label={t("programs.progressLabel", { title })} size="sm" />
                       {enrollment.status === "active" ? <p className="type-caption text-fg-muted">{t("programs.progress", { done: progress.done, total: progress.total })}</p> : null}
                     </div>
                   ) : null}

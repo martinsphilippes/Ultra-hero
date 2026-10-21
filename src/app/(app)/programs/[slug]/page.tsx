@@ -222,9 +222,9 @@ export default async function ProgramPage({ params }: Params) {
             </div>
           ) : (
             <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center">
-              <ProgressRing value={progressPct} label={t("progressLabel")} tone={program.pillar} size={80} />
+              <ProgressRing value={progressPct} label={t("progressLabel")} size={80} />
               <div className="flex min-w-0 flex-1 flex-col gap-2">
-                <ProgressBar value={progressPct} label={t("progressLabel")} tone={program.pillar} />
+                <ProgressBar value={progressPct} label={t("progressLabel")} />
                 <p className="type-body-sm text-fg">{t("progressText", { done: requiredDone, total: required.length })}</p>
                 <p className="type-caption text-fg-muted">
                   {t("enrolledOn", { date: formatDate(enrollment.enrolled_at, uiLocale, undefined, tz) })}

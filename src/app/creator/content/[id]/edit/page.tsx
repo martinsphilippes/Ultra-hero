@@ -162,7 +162,7 @@ export default async function EditContentPage({ params }: Params) {
       >
         <div className="flex flex-wrap items-center gap-1.5">
           <ContentStatusBadges status={content.status} review={content.review_status} size="md" />
-          <PillarBadge pillar={content.pillar} />
+          <PillarBadge tone="pillar" pillar={content.pillar} />
           <Badge>{tcat(`types.${content.type}`)}</Badge>
           {content.access_level ? <PlanBadge plan={content.access_level} /> : <Badge variant="warning">{t("edit.noAccessRule")}</Badge>}
           {content.required_module && <Badge variant="accent">{content.required_module.name}</Badge>}

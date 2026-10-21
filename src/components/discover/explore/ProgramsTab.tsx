@@ -7,10 +7,9 @@ import { PROGRAM_CARD_SELECT, type ProgramCardData } from "@/lib/catalog/queries
 import { createClient } from "@/lib/supabase/server";
 import { CARD_GRID } from "../grid";
 import { InlineError } from "../InlineError";
-import { PillarChips } from "./Filters";
 import { exploreHref, type ExploreParams } from "./params";
 
-// Biblioteca de programas publicados, com filtro por pilar na URL.
+// Biblioteca de programas publicados.
 export async function ProgramsTab({ params }: { params: ExploreParams }) {
   const [supabase, t] = await Promise.all([createClient(), getTranslations("discover.explore.programs")]);
   let query = supabase
@@ -33,7 +32,6 @@ export async function ProgramsTab({ params }: { params: ExploreParams }) {
         <h2 className="type-h3 text-fg">{t("title")}</h2>
         <p className="type-body-sm text-fg-muted">{t("description")}</p>
       </div>
-      <PillarChips params={params} tab="programas" />
 
       {error ? (
         <InlineError />

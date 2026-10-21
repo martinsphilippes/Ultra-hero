@@ -84,7 +84,7 @@ export default async function CreatorContentListPage({ searchParams }: Props) {
             {row.title}
           </Link>
           <span className="flex flex-wrap gap-1">
-            <PillarBadge pillar={row.pillar} size="sm" />
+            <PillarBadge tone="pillar" pillar={row.pillar} size="sm" />
             <Badge size="sm">{tcat(`types.${row.type}`)}</Badge>
           </span>
         </span>

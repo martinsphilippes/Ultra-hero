@@ -130,7 +130,7 @@ export default async function AdminContentDetailPage({ params }: Params) {
         }
       >
         <div className="flex flex-wrap items-center gap-2">
-          <PillarBadge pillar={content.pillar} size="sm" />
+          <PillarBadge tone="pillar" pillar={content.pillar} size="sm" />
           <Badge size="sm">{tc(`types.${content.type}`)}</Badge>
           <StatusBadge status={content.status} label={ts(content.status)} />
           {scheduled && content.publish_at && (

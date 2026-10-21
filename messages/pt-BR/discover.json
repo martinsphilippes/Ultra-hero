@@ -13,38 +13,17 @@
     "educationalNote": "Todo o conteúdo é educativo e não substitui orientação profissional individual."
   },
   "home": {
-    "eyebrow": "Ultra Hero",
-    "greeting": "Olá, {name}",
-    "greetingFallback": "Olá",
-    "greetingSubtitle": "Continue de onde parou ou descubra algo novo hoje.",
-    "visitorTitle": "Rotina, treino, nutrição e gastronomia em um só lugar.",
-    "visitorSubtitle": "Conteúdos curtos, programas guiados e heróis fictícios para evoluir no seu ritmo. Ambiente de demonstração: nenhuma cobrança real.",
-    "ctaSignup": "Criar conta grátis",
-    "ctaExplore": "Explorar conteúdos",
-    "pillarsNav": "Explorar por pilar",
-    "onboarding": {
-      "title": "Conte seus interesses",
-      "description": "Leva menos de um minuto e deixa as recomendações mais certeiras.",
-      "cta": "Começar"
-    },
-    "featured": {
-      "title": "Destaques",
-      "description": "Curadoria editorial da semana",
-      "programs": "Programas em destaque"
-    },
-    "continue": {
-      "title": "Continuar",
-      "description": "De onde você parou"
-    },
-    "pillars": {
-      "routine": "Hábitos pequenos, manhãs calmas e sono melhor",
-      "training": "Força, mobilidade e corrida do zero",
-      "nutrition": "Educação alimentar prática, sem terrorismo",
-      "gastronomy": "Técnicas de base e marmitas da semana"
-    },
-    "personalities": {
-      "title": "Heróis",
-      "description": "Personagens fictícios criados para a demonstração"
+    "feed": {
+      "title": "Feed",
+      "loading": "Carregando mais posts…",
+      "loadMore": "Carregar mais",
+      "loadError": "Não foi possível carregar mais posts.",
+      "retry": "Tentar de novo",
+      "loadedMore": "{count, plural, =1 {1 post a mais carregado} other {# posts a mais carregados}}",
+      "end": "Você viu todos os posts",
+      "emptyTitle": "Nenhum post por aqui ainda",
+      "emptyDescription": "Os heróis ainda não publicaram nada.",
+      "emptyCta": "Ir para o Explorar"
     }
   },
   "explore": {
@@ -58,7 +37,7 @@
       "resultsFor": "Resultados para “{q}”",
       "emptyTitle": "Nada encontrado",
       "emptyDescription": "Tente outras palavras ou remova alguns filtros.",
-      "clearAllAction": "Limpar busca e filtros",
+      "clearAllAction": "Limpar busca",
       "resultsHeading": "Resultados"
     },
     "grid": {
@@ -69,17 +48,6 @@
       "loadedMore": "{count, plural, =1 {1 post a mais carregado} other {# posts a mais carregados}}",
       "end": "Você viu todos os posts",
       "count": "{count, plural, =1 {1 post na grade} other {# posts na grade}}"
-    },
-    "filters": {
-      "title": "Filtros",
-      "summary": "Mais filtros",
-      "pillar": "Pilar",
-      "type": "Tipo",
-      "access": "Acesso",
-      "difficulty": "Nível",
-      "all": "Todos",
-      "clearAll": "Limpar filtros",
-      "summaryActive": "Mais filtros ({count})"
     },
     "tabs": {
       "label": "Seções do Explorar",

@@ -1,54 +1,26 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import { ContinueSection } from "@/components/discover/home/ContinueSection";
-import { FeaturedSection } from "@/components/discover/home/FeaturedSection";
-import { HomeHero } from "@/components/discover/home/HomeHero";
-import { PersonalitiesStrip } from "@/components/discover/home/PersonalitiesStrip";
-import { PillarSection } from "@/components/discover/home/PillarSection";
-import { SectionSkeleton } from "@/components/discover/SectionSkeleton";
-import { RecommendationsSection } from "@/components/home/RecommendationsSection";
-import { getUser } from "@/lib/auth/session";
-import { PILLARS } from "@/lib/supabase/helpers";
+import { FeedSkeleton } from "@/components/discover/home/feed/FeedSkeleton";
+import { HomeFeed } from "@/components/discover/home/feed/HomeFeed";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("discover.meta");
   return { title: t("home") };
 }
 
-// Início: content-first. Cada seção busca seus dados num Suspense próprio para não travar a página.
+// Início: feed infinito de posts dos heróis, um abaixo do outro, como no Instagram. No celular a capa
+// vai de borda a borda; no computador o feed fica numa coluna central.
 export default async function HomePage() {
-  const [user, t] = await Promise.all([getUser(), getTranslations("discover.common")]);
+  const [t, th] = await Promise.all([getTranslations("discover.common"), getTranslations("discover.home.feed")]);
 
   return (
-    <div className="flex flex-col gap-10">
-      <HomeHero />
-
-      <Suspense fallback={<SectionSkeleton cards={3} />}>
-        <FeaturedSection />
+    <div className="-mx-gutter flex flex-col gap-8 md:mx-auto md:w-full md:max-w-[470px]">
+      <h1 className="sr-only">{th("title")}</h1>
+      <Suspense fallback={<FeedSkeleton />}>
+        <HomeFeed />
       </Suspense>
-
-      {user && (
-        <Suspense fallback={<SectionSkeleton layout="scroll" cards={3} />}>
-          <ContinueSection userId={user.id} />
-        </Suspense>
-      )}
-
-      <Suspense fallback={<SectionSkeleton layout="scroll" cards={3} />}>
-        <RecommendationsSection userId={user?.id ?? null} />
-      </Suspense>
-
-      {PILLARS.map((pillar) => (
-        <Suspense key={pillar} fallback={<SectionSkeleton layout="rail" cards={4} />}>
-          <PillarSection pillar={pillar} />
-        </Suspense>
-      ))}
-
-      <Suspense fallback={<SectionSkeleton layout="scroll" cards={3} />}>
-        <PersonalitiesStrip />
-      </Suspense>
-
-      <p className="type-caption max-w-prose text-fg-subtle">{t("educationalNote")}</p>
+      <p className="type-caption px-gutter text-fg-subtle md:px-0">{t("educationalNote")}</p>
     </div>
   );
 }

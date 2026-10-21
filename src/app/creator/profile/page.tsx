@@ -43,7 +43,7 @@ export default async function CreatorProfilePage() {
               <StatusBadge status={profile.status} label={ts(profile.status)} />
               {profile.is_fictional && <Badge variant="demo" size="sm">{tcat("fictional")}</Badge>}
               {profile.pillars.map((p) => (
-                <PillarBadge key={p} pillar={p} size="sm" />
+                <PillarBadge tone="pillar" key={p} pillar={p} size="sm" />
               ))}
             </span>
           </div>

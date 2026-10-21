@@ -83,20 +83,17 @@ test.describe("grade do Explorar", () => {
     const tiles = firstPage(page);
     expect(await tiles.count()).toBeGreaterThan(0);
     expect(await tiles.count()).toBeLessThanOrEqual(15);
-    await expect(page.getByRole("link", { name: "Limpar busca e filtros" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Limpar busca" })).toHaveCount(1);
   });
 
-  test("filtrar por pilar mostra menos quadros que o feed completo", async ({ page }) => {
-    await page.goto("/explore");
-    const total = await firstPage(page).count();
-    await page.goto("/explore?pillar=training");
-    await expect(page.getByTestId("explore-grid")).toBeVisible();
-    const filtered = await firstPage(page).count();
-    expect(filtered).toBeGreaterThan(0);
-    expect(filtered).toBeLessThan(total);
-    // Com menos de uma carga, não há mais nada para carregar.
-    await expect(page.getByRole("button", { name: "Carregar mais" })).toHaveCount(0);
+  test("Explorar tem só a busca: sem chips de pilar nem mais filtros, e filtro antigo na URL é ignorado", async ({ page }) => {
+    await page.goto("/explore?pillar=training&type=recipe");
+    await expect(firstPage(page)).toHaveCount(15);
+    await expect(page.getByRole("searchbox").or(page.getByRole("textbox")).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Treino", exact: true })).toHaveCount(0);
+    await expect(page.getByText("Mais filtros")).toHaveCount(0);
   });
+
   test("quadro focado pelo teclado mostra o indicador pintado acima da capa", async ({ page }) => {
     await page.goto("/explore");
     const tile = firstPage(page).first();
