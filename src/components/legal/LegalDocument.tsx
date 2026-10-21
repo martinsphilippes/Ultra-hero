@@ -10,7 +10,7 @@ import { legalLinkClass, legalRichTags } from "./rich-tags";
 export type LegalDoc = "terms" | "privacy";
 
 // Versão vigente dos textos. Ao alterar o conteúdo de messages/<locale>/legal.json, atualize a data.
-const LAST_UPDATED = "2026-10-20";
+const LAST_UPDATED = "2026-10-21";
 
 // Estrutura de messages/<locale>/legal.json → <doc>.sections.<id>.blocks.<id>:
 // string = parágrafo; { caption, headers, rows } = tabela; demais objetos = lista de itens.

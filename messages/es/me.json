@@ -159,6 +159,99 @@
     "signOut": "Cerrar sesión",
     "demoNote": "Entorno de demostración: héroes ficticios, suscripción simulada, ningún pago real."
   },
+  "today": {
+    "eyebrow": "Hoy · {date}",
+    "title": "Tu día, en foco.",
+    "description": "El ritmo viene de los programas en los que estás y de lo que añades. Hidratación y descanso quedan solo en este dispositivo.",
+    "rhythm": {
+      "title": "Ritmo de hoy",
+      "counter": "{done} de {total, plural, =1 {# ítem hecho} other {# ítems hechos}}",
+      "empty": "Nada en el ritmo de hoy",
+      "emptyDescription": "Entra en un programa o añade un ítem para armar tu día.",
+      "emptyProgramCta": "Ver programas",
+      "add": "Añadir ítem",
+      "addTitle": "Nuevo ítem de rutina",
+      "editTitle": "Editar ítem",
+      "form": {
+        "title": "Título",
+        "titlePlaceholder": "Ej.: Estirar 10 minutos",
+        "note": "Nota",
+        "notePlaceholder": "Opcional, hasta 120 caracteres",
+        "time": "Hora",
+        "timeHint": "Sin hora, el ítem queda al final de la lista.",
+        "weekdays": "Días de la semana",
+        "allDays": "Todos los días",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "dayShort": {
+          "0": "D",
+          "1": "L",
+          "2": "M",
+          "3": "X",
+          "4": "J",
+          "5": "V",
+          "6": "S"
+        },
+        "dayLong": {
+          "0": "Domingo",
+          "1": "Lunes",
+          "2": "Martes",
+          "3": "Miércoles",
+          "4": "Jueves",
+          "5": "Viernes",
+          "6": "Sábado"
+        }
+      },
+      "fromProgram": "Programa: {name}",
+      "byHero": "Con {name}",
+      "openContent": "Abrir {title}",
+      "markDone": "Marcar como hecho",
+      "markUndone": "Desmarcar",
+      "done": "Hecho",
+      "itemMenu": "Opciones de {title}",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleteTitle": "¿Eliminar ítem?",
+      "deleteDescription": "“{title}” sale de tu rutina y sus marcas se borran. No se puede deshacer.",
+      "deleteConfirm": "Eliminar",
+      "toasts": {
+        "created": "Ítem añadido a tu día.",
+        "updated": "Ítem actualizado.",
+        "deleted": "Ítem eliminado.",
+        "checked": "¡Hecho!",
+        "unchecked": "Marca eliminada.",
+        "streak": "Racha: {n, plural, =0 {ningún día aún} =1 {# día} other {# días}}"
+      },
+      "errors": {
+        "routine_limit": "Ya tienes 20 ítems activos. Elimina uno para añadir otro.",
+        "routine_item_not_found": "Este ítem ya no existe. Recarga la página.",
+        "invalid_timezone": "Zona horaria inválida.",
+        "invalid": "Revisa los campos.",
+        "failed": "No se pudo guardar. Inténtalo de nuevo."
+      }
+    },
+    "hydration": {
+      "title": "Hidratación",
+      "value": "Agua registrada hoy: {value}",
+      "goalLabel": "agua registrada · meta {goal}",
+      "goalSelect": "Meta diaria",
+      "goalOption": "{goal}",
+      "add": "Añadir 250 ml",
+      "remove": "Quitar 250 ml",
+      "localNote": "Registro local: queda solo en este dispositivo y no se envía a Ultra Hero.",
+      "noStorage": "Este navegador no guarda registros locales: el valor se pierde al salir de la página.",
+      "progressLabel": "Progreso de la hidratación de hoy"
+    },
+    "rest": {
+      "title": "Registrar descanso",
+      "description": "Registro local, sin metas prescritas.",
+      "rested": "Hoy descansé",
+      "hours": "Horas de sueño",
+      "hoursHint": "Opcional, de media en media hora.",
+      "localNote": "Registro local: queda solo en este dispositivo y no se envía a Ultra Hero.",
+      "noStorage": "Este navegador no guarda registros locales: la marca se pierde al salir de la página."
+    }
+  },
   "favorites": {
     "title": "Favoritos",
     "description": "Contenidos que marcaste con el corazón.",

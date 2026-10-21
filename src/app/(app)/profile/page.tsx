@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Bell, ChevronRight, CreditCard, Heart, LogOut, Package, Shield, ShieldCheck, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
+import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
+import type { RhythmItem } from "@/components/me/today/RhythmBlock";
+import { TodaySection } from "@/components/me/today/TodaySection";
 import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
+import { itemsForDate, pickProgramSuggestions, shortTime, sortRoutine, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
 import { isTheme, type Theme } from "@/lib/theme/constants";
 
@@ -15,7 +19,22 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("profile") };
 }
 
-// Perfil: visão geral (avatar, nome, e-mail, papéis, plano simulado, portais), dados editáveis e atalhos.
+// Perfil: "Hoje" (ritmo do dia: programas + itens manuais), visão geral (avatar, nome, e-mail, papéis,
+// plano simulado, portais), dados editáveis e atalhos.
+
+// Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
+type EnrollmentWithItems = {
+  id: string;
+  status: "active" | "completed" | "abandoned";
+  program: { slug: string } | null;
+  version: {
+    title: string;
+    items: { position: number; is_required: boolean; content: { id: string; slug: string; title: string; cover_url: string | null; creator: { name: string } | null } | null }[];
+  } | null;
+};
+
+const ENROLLMENT_SELECT =
+  "id, status, program:programs(slug), version:program_versions(title, items:program_items(position, is_required, content:content(id, slug, title, cover_url, creator:creator_profiles(name))))";
 
 const PORTALS: Array<{ role: Exclude<AppRole, "consumer">; href: string; icon: LucideIcon }> = [
   { role: "admin", href: "/admin", icon: ShieldCheck },
@@ -36,8 +55,39 @@ export default async function ProfilePage() {
   const user = await requireUser("/profile");
   const [profile, roles, locale, t, tc] = await Promise.all([getProfile(), getRoles(), getLocale(), getTranslations("me.profile"), getTranslations("common")]);
   const supabase = await createClient();
-  const { data: subscriptionRaw } = await supabase.rpc("my_subscription");
+  const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
+  const today = localDateIn(tz);
+  const [{ data: subscriptionRaw }, routineRes, checksRes, enrollmentsRes, completionsRes] = await Promise.all([
+    supabase.rpc("my_subscription"),
+    supabase.from("routine_items").select("id, title, note, time_of_day, weekdays, active, sort_order").eq("user_id", user.id).eq("active", true).order("sort_order"),
+    supabase.from("routine_checks").select("item_id, done").eq("user_id", user.id).eq("local_date", today),
+    supabase.from("enrollments").select(ENROLLMENT_SELECT).eq("user_id", user.id).eq("status", "active").order("enrolled_at", { ascending: false }),
+    supabase.from("completions").select("content_id").eq("user_id", user.id).limit(2000),
+  ]);
   const subscription = parseSubscription(subscriptionRaw);
+
+  // Ritmo de hoje: itens manuais válidos na data local + próximos itens obrigatórios dos programas.
+  const doneToday = new Set((checksRes.data ?? []).filter((c) => c.done).map((c) => c.item_id));
+  const routineItems: RhythmItem[] = sortRoutine(itemsForDate(routineRes.data ?? [], today)).map((item) => ({
+    id: item.id,
+    title: item.title,
+    note: item.note,
+    time: shortTime(item.time_of_day),
+    weekdays: item.weekdays,
+    done: doneToday.has(item.id),
+  }));
+  const enrollments: EnrollmentLike[] = ((enrollmentsRes.data ?? []) as unknown as EnrollmentWithItems[]).map((e) => ({
+    id: e.id,
+    status: e.status,
+    programName: e.version?.title ?? "",
+    programSlug: e.program?.slug ?? "",
+    items: (e.version?.items ?? []).map((i) => ({
+      position: i.position,
+      is_required: i.is_required,
+      content: i.content ? { id: i.content.id, slug: i.content.slug, title: i.content.title, cover_url: i.content.cover_url, creatorName: i.content.creator?.name ?? null } : null,
+    })),
+  }));
+  const suggestions = pickProgramSuggestions(enrollments, (completionsRes.data ?? []).map((c) => c.content_id));
 
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
@@ -50,6 +100,9 @@ export default async function ProfilePage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
+
+      {/* Hoje: ritmo do dia (banco) + hidratação e descanso (só no aparelho) */}
+      <TodaySection localDate={today} suggestions={suggestions} items={routineItems} />
 
       {/* Visão geral */}
       <section aria-label={t("title")} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start">
