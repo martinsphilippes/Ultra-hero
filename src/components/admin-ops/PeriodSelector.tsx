@@ -4,9 +4,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { SegmentedControl } from "@/components/ui";
-
-export const PERIODS = ["7", "14", "30"] as const;
-export type Period = (typeof PERIODS)[number];
+import { PERIODS, type Period } from "./period";
 
 // Seletor de período (7/14/30 dias) que atualiza ?days= na URL (Server Component relê os dados).
 export function PeriodSelector({ value }: { value: Period }) {
@@ -33,8 +31,4 @@ export function PeriodSelector({ value }: { value: Period }) {
       />
     </div>
   );
-}
-
-export function parsePeriod(raw: string | undefined): Period {
-  return (PERIODS as readonly string[]).includes(raw ?? "") ? (raw as Period) : "14";
 }
