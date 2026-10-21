@@ -147,15 +147,28 @@
     "retry": "Try again",
     "discard": "Discard video",
     "discardTitle": "Discard this video?",
-    "discardDescription": "The upload stops and you go back to choose another video. What you wrote is lost.",
+    "discardDescription": "The upload stops, the draft and the video are deleted and you go back to choose another video.",
     "discardConfirm": "Discard",
     "discarded": "Video discarded",
-    "discardedKept": "The draft was kept in My content; you can open and publish it later.",
+    "discardedDeleted": "The draft and the video were deleted.",
+    "discardFailed": "Couldn't discard",
+    "discardFailedDescription": "Try again. Meanwhile, the draft stays in My content.",
     "doneTitle": "Published!",
     "doneDescription": "Your post is live.",
     "viewPost": "View post",
     "another": "Make another post",
     "leaveWarning": "The video is still uploading. If you leave now, the upload stops.",
+    "leaveWarningProcessing": "The video is uploaded and being prepared. If you leave now, the post stays as a draft in My content.",
+    "leaveWarningText": "The video stays as a draft in My content, but the title and caption you wrote will be lost.",
+    "sr": {
+      "starting": "Preparing the video upload.",
+      "progress": "Upload at {pct}%.",
+      "uploaded": "Video uploaded. You can publish now.",
+      "error": "The upload stopped.",
+      "resuming": "Connection is back. Resuming the upload.",
+      "publishing": "Publishing the post.",
+      "processing": "The video is being prepared. Please wait."
+    },
     "errors": {
       "generic": "Could not complete. Please try again.",
       "unauthenticated": "Your session expired. Sign in again to continue.",
@@ -166,8 +179,8 @@
       "not_video": "This file is not a video. Record a new one or pick another from your gallery.",
       "empty_file": "The file is empty. Choose another video.",
       "file_too_large": "The video is larger than 2 GB. Choose a smaller one.",
-      "too_long": "The video is longer than 3 minutes. Trim it on your phone and try again.",
-      "network": "The connection dropped. When it is back, tap Try again: the upload resumes where it stopped.",
+      "too_long": "The video is longer than 3 minutes. Record again with up to 3 minutes or pick a shorter video from your gallery.",
+      "network": "The connection dropped. The upload resumes on its own when the internet is back, or tap Try again.",
       "upload_failed": "Cloudflare refused the upload. Tap Try again.",
       "upload_expired": "The upload link expired. Tap Try again to start a new upload.",
       "provider_error": "The video service did not respond. Try again in a moment.",
@@ -179,7 +192,16 @@
       "missing_media": "The video is not attached to this post. Discard it and upload again.",
       "not_draft": "This post is no longer a draft (already published or archived).",
       "media_license_mismatch": "The video licence does not match the media. Open the post in My content to fix it.",
-      "duplicate": "Could not create the post right now. Try again."
+      "duplicate": "Could not create the post right now. Try again.",
+      "upload_incomplete": "The video did not finish uploading. Tap Try again or discard it and upload again.",
+      "too_many_uploads": "You uploaded too many videos in the last hour. Wait a little and try again.",
+      "stream_media_forbidden": "This video was not uploaded by this account and cannot be used here.",
+      "slug_taken": "Could not create the post address. Tap publish again.",
+      "invalid_slug": "Could not create the post address. Change the title and try again.",
+      "already_published": "This post has been live before; open it in My content to edit.",
+      "not_stream": "This draft has no video uploaded from the phone.",
+      "content_in_use": "This draft is linked to a program and cannot be deleted. Contact the administration.",
+      "publish_network": "The connection dropped. When it's back, tap Try publishing again."
     }
   },
   "reviews": {
@@ -275,7 +297,7 @@
     "video_not_configured": "Video is not set up yet: ask the administrator to turn on Cloudflare Stream.",
     "processing": "The video is still processing on Cloudflare. Try publishing again in a moment.",
     "video_failed": "Cloudflare could not process this video. Make a new post with another video.",
-    "too_long": "The video is longer than 3 minutes and cannot be published.",
+    "too_long": "The video is longer than 3 minutes and cannot be published. Record again with up to 3 minutes or pick a shorter video from your gallery.",
     "missing_title": "Fill in the title before publishing.",
     "missing_body": "Save the form before publishing: the body has not been saved yet.",
     "missing_media": "A video post needs a video: set the media and save before publishing.",
@@ -284,6 +306,8 @@
     "not_published": "This content is not published.",
     "network": "The connection dropped. Try again.",
     "provider_error": "The video service did not respond. Try again in a moment.",
-    "file_too_large": "The video is larger than 2 GB."
+    "file_too_large": "The video is larger than 2 GB.",
+    "upload_incomplete": "The video did not finish uploading to Cloudflare. Upload it again from New post.",
+    "stream_media_forbidden": "This video was not uploaded by this account and cannot be used here."
   }
 }

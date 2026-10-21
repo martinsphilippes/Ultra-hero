@@ -6,8 +6,10 @@ export function slugify(input: string): string {
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
+    .replace(/^-+/, "")
+    .slice(0, 60)
+    // depois do corte: o 60º caractere pode ser um separador, e "…-" + "-sufixo" vira hífen duplo
+    .replace(/-+$/, "");
 }
 
 export function uniqueSlug(title: string): string {

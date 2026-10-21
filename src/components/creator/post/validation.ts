@@ -29,15 +29,19 @@ export function validateVideoFile(file: { type?: string | null; size: number; na
 /**
  * Normaliza a duração lida do <video>: NaN/Infinity (webm gravado no navegador, codec que o
  * desktop não lê) viram null, e o envio segue porque o Cloudflare aplica o limite de qualquer jeito.
+ * Arredonda para cima (décimo de segundo): 180,04 s não pode virar 180 e passar do limite.
  */
 export function normalizeDuration(raw: number | null | undefined): number | null {
   if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return null;
-  return Math.round(raw * 10) / 10;
+  return Math.ceil(Math.round(raw * 1000) / 100) / 10;
 }
 
-/** Acima de 3 minutos não envia. Duração desconhecida passa (o provedor corta). */
-export function validateDuration(seconds: number | null): DurationProblem | null {
-  if (seconds === null) return null;
+/**
+ * Acima de 3 minutos não envia; recebe a duração bruta do <video>, sem arredondar para baixo.
+ * Duração desconhecida (null, NaN, Infinity) passa: o ticket do Cloudflare corta em 180 s.
+ */
+export function validateDuration(seconds: number | null | undefined): DurationProblem | null {
+  if (typeof seconds !== "number" || !Number.isFinite(seconds)) return null;
   return seconds > MAX_POST_SECONDS ? "too_long" : null;
 }
 

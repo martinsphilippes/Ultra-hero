@@ -105,14 +105,20 @@ export function sanitizeFileName(raw: string | undefined): string {
 }
 
 export type VideoStatus = {
-  state: "pending" | "ready" | "errored";
+  /**
+   * incomplete = pendingupload (o arquivo ainda não chegou inteiro); pending = na fila ou
+   * codificando (queued/inprogress/downloading, ou ready sem readyToStream).
+   */
+  state: "incomplete" | "pending" | "ready" | "errored";
   durationSec: number | null;
   creatorId: string | null;
+  /** status.errorReasonCode do Cloudflare (ex.: ERR_DURATION_EXCEED_CONSTRAINT); null sem erro. */
+  reason: string | null;
 };
 
 type StreamVideo = {
   readyToStream?: boolean;
-  status?: { state?: string };
+  status?: { state?: string; errorReasonCode?: string | null };
   duration?: number;
   creator?: string | null;
   meta?: Record<string, unknown>;
@@ -215,11 +221,42 @@ export class CloudflareStreamProvider implements VideoProvider {
     const video = body.result ?? {};
     const raw = video.status?.state;
     // "ready" só conta com readyToStream: antes disso o player mostraria erro.
-    const state: VideoStatus["state"] = raw === "error" ? "errored" : raw === "ready" && video.readyToStream ? "ready" : "pending";
+    const state: VideoStatus["state"] =
+      raw === "error"
+        ? "errored"
+        : raw === "ready" && video.readyToStream
+          ? "ready"
+          : raw === "pendingupload"
+            ? "incomplete"
+            : "pending";
     // O Cloudflare usa -1 para duração desconhecida.
     const durationSec = typeof video.duration === "number" && video.duration >= 0 ? video.duration : null;
     const creatorId = typeof video.creator === "string" && video.creator ? video.creator : null;
-    return { state, durationSec, creatorId };
+    const code = video.status?.errorReasonCode;
+    const reason = typeof code === "string" && code ? code : null;
+    return { state, durationSec, creatorId, reason };
+  }
+
+  /**
+   * Apaga o vídeo no Cloudflare (descarte e limpeza diária). 404 conta como apagado: o vídeo pode
+   * já ter sido removido por outra tentativa. Lança CloudflareStreamError nos demais erros.
+   */
+  async deleteVideo(uid: string): Promise<void> {
+    if (!isStreamUid(uid)) throw new InvalidMediaRefError("uid do Cloudflare Stream inválido");
+    this.assertConfigured();
+
+    let response: Response;
+    try {
+      response = await fetch(this.apiUrl(`/${uid}`), {
+        method: "DELETE",
+        headers: { Authorization: this.authHeader() },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+    } catch (error) {
+      throw new CloudflareStreamError(0, `falha de rede ao apagar vídeo (${(error as Error).message})`);
+    }
+    if (response.ok || response.status === 404) return;
+    throw new CloudflareStreamError(response.status, await readApiError(response));
   }
 
   /**
