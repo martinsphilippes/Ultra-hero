@@ -48,7 +48,7 @@ export function Badge({ variant = "neutral", size = "md", icon, className, child
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center rounded-md border font-semibold uppercase leading-none tracking-wider whitespace-nowrap",
+        "inline-flex shrink-0 items-center rounded-md border font-mono font-medium uppercase leading-none tracking-wider whitespace-nowrap",
         badgeVariants[variant],
         sizes[size],
         className,

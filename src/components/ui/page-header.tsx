@@ -54,9 +54,7 @@ export function PageHeader({ title, description, eyebrow, backHref, backLabel, a
 export function StepMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true" className={cn("size-3.5 shrink-0 text-accent", className)}>
-      <path d="M1 15h14l-2.5-4h-9z" fill="currentColor" />
-      <path d="M4 9.5h8l-2-3.5H6z" fill="currentColor" opacity="0.75" />
-      <path d="M6.5 4.5h3L8 1.5z" fill="currentColor" opacity="0.5" />
+      <path d="M8 1.5 14.5 8 8 14.5 1.5 8z" fill="currentColor" />
     </svg>
   );
 }

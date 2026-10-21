@@ -1,4 +1,4 @@
-// Gera os ícones PWA (PNG) a partir da marca em degraus, sem dependências.
+// Gera os ícones PWA (PNG) a partir da marca (losango laranja), sem dependências.
 // Uso: node scripts/generate-icons.mjs
 // Saída: public/icons/icon-192.png, icon-512.png, icon-maskable-512.png,
 //        src/app/apple-icon.png (180) e src/app/favicon.ico (PNG 32/16 embutidos).
@@ -11,16 +11,10 @@ const ICONS_DIR = path.join(ROOT, "public", "icons");
 const APP_DIR = path.join(ROOT, "src", "app");
 
 const OBSIDIAN = [11, 11, 11];
-const ORANGE = [255, 138, 43];
-const ORANGE_LIGHT = [255, 164, 92];
-const SAND = [232, 227, 219];
+const ORANGE = [255, 90, 31];
 
-// Mesma geometria do Logo.tsx (quadro 64x64): três trapézios empilhados.
-const SHAPES = [
-  { color: ORANGE, points: [[4, 58], [60, 58], [50, 42], [14, 42]] },
-  { color: ORANGE_LIGHT, points: [[15, 37], [49, 37], [41, 21], [23, 21]] },
-  { color: SAND, points: [[24.5, 16], [39.5, 16], [35, 6], [29, 6]] },
-];
+// Mesma geometria do Logo.tsx (quadro 64x64): losango (quadrado a 45°).
+const SHAPES = [{ color: ORANGE, points: [[32, 6], [58, 32], [32, 58], [6, 32]] }];
 
 // ---------------------------------------------------------------- geometria --
 function pointInPolygon(x, y, points) {

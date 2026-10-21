@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
@@ -8,6 +9,18 @@ import { SkipLink } from "@/components/ui/skip-link";
 import { ToastProvider } from "@/components/ui/toast";
 import { isTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
 import "./globals.css";
+
+// Tipografia da marca, servida pelo próprio app (sem chamada ao Google Fonts no cliente):
+// Manrope variável para texto e títulos; DM Mono para etiquetas e legendas.
+const manrope = localFont({ src: "./fonts/manrope-latin.woff2", weight: "200 800", variable: "--font-manrope", display: "swap" });
+const dmMono = localFont({
+  src: [
+    { path: "./fonts/dm-mono-400-latin.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/dm-mono-500-latin.woff2", weight: "500", style: "normal" },
+  ],
+  variable: "--font-dm-mono",
+  display: "swap",
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("common.app");
@@ -39,7 +52,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const theme = isTheme(themeCookie) && themeCookie !== "system" ? themeCookie : undefined;
 
   return (
-    <html lang={locale} data-theme={theme} suppressHydrationWarning>
+    <html lang={locale} data-theme={theme} suppressHydrationWarning className={`${manrope.variable} ${dmMono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 const A4_LANDSCAPE: [number, number] = [841.89, 595.28];
-const ACCENT = rgb(1, 0.541, 0.169); // #ff8a2b
+const ACCENT = rgb(1, 0.353, 0.122); // #ff5a1f
 const OBSIDIAN = rgb(0.043, 0.043, 0.043); // #0b0b0b
 const PAPER = rgb(0.969, 0.957, 0.937); // #f7f4ef
 const MUTED = rgb(0.4, 0.38, 0.36);

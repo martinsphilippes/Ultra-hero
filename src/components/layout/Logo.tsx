@@ -2,12 +2,15 @@ import { cn } from "@/lib/utils";
 
 type LogoMarkProps = {
   className?: string;
-  /** Cores fixas da marca (padrão) ou herdadas de currentColor. */
+  /** Cor fixa da marca (padrão) ou herdada de currentColor. */
   monochrome?: boolean;
   title?: string;
 };
 
-// Marca: triângulo em degraus (três trapézios empilhados, subindo).
+/** Laranja da marca, igual ao do material oficial (losango). */
+export const BRAND_ORANGE = "#FF5A1F";
+
+// Marca: losango laranja (quadrado a 45°), como no material oficial do Ultra Hero.
 export function LogoMark({ className, monochrome = false, title }: LogoMarkProps) {
   return (
     <svg
@@ -17,9 +20,7 @@ export function LogoMark({ className, monochrome = false, title }: LogoMarkProps
       className={cn("size-8 shrink-0", className)}
     >
       {title && <title>{title}</title>}
-      <path d="M4 58h56L50 42H14z" fill={monochrome ? "currentColor" : "#FF8A2B"} />
-      <path d="M15 37h34l-8-16H23z" fill={monochrome ? "currentColor" : "#FFA45C"} opacity={monochrome ? 0.75 : 1} />
-      <path d="M24.5 16h15L35 6h-6z" fill={monochrome ? "currentColor" : "#E8E3DB"} opacity={monochrome ? 0.5 : 1} />
+      <path d="M32 6 58 32 32 58 6 32z" fill={monochrome ? "currentColor" : BRAND_ORANGE} />
     </svg>
   );
 }
@@ -30,19 +31,15 @@ type LogoProps = {
   withWordmark?: boolean;
 };
 
-const markSizes = { sm: "size-7", md: "size-8", lg: "size-12" };
+const markSizes = { sm: "size-5", md: "size-6", lg: "size-9" };
 const textSizes = { sm: "text-sm", md: "text-base", lg: "text-2xl" };
 
-// Marca + wordmark "ULTRA HERO".
+// Marca + wordmark "ULTRA HERO": caixa alta, peso extra e espaçamento largo, como no material oficial.
 export function Logo({ className, size = "md", withWordmark = true }: LogoProps) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <LogoMark className={markSizes[size]} />
-      {withWordmark && (
-        <span className={cn("font-extrabold uppercase leading-none tracking-[0.18em] text-fg", textSizes[size])}>
-          Ultra <span className="text-accent-text">Hero</span>
-        </span>
-      )}
+      {withWordmark && <span className={cn("font-extrabold uppercase leading-none tracking-[0.16em] text-fg", textSizes[size])}>Ultra Hero</span>}
     </span>
   );
 }
