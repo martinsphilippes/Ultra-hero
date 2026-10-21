@@ -687,6 +687,169 @@ select tests.ok('S19 estado restaurado: catálogo no ar igual à referência',
   (select count(*) from public.content where public.content_is_live(status, publish_at)) = (select count(*) from t_s19_live)
   and not exists (select id from t_s19_live except select id from public.content where public.content_is_live(status, publish_at)));
 
+-- ================================================================ S20 · creator_products: produtos do herói (0021)
+-- Alocação direta produto↔herói. Público vê só validated; admin vê tudo; herói vê as próprias linhas em
+-- qualquer status. Herói só insere sugestão para si (suggested, created_by = ele) e só exclui a própria
+-- sugestão; não há grant de update para authenticated: status muda só pela RPC admin_set_creator_product.
+-- A junção com products herda a RLS de products: produto fora do ar some mesmo com a alocação validada.
+select tests.su();
+-- 1) seed: 56 linhas validadas, 7 por herói, 8 heróis, ordem fixa da vitrine
+select tests.ok('S20 seed: 56 alocações validadas, 7 por herói em 8 heróis, só produtos Ultra.e Life',
+  (select count(*) from public.creator_products) = 56
+  and (select count(*) from public.creator_products where status = 'validated' and validated_at is not null) = 56
+  and (select count(distinct creator_id) from public.creator_products) = 8
+  and not exists (select creator_id from public.creator_products group by creator_id having count(*) <> 7)
+  and (select count(distinct product_id) from public.creator_products) = 7
+  and not exists (select 1 from public.creator_products cp join public.products p on p.id = cp.product_id where p.seller_org_id <> public.seed_uuid('seller:ultrae')));
+select tests.ok('S20 seed: sort_order 10..70 na ordem da vitrine (citrus, tangerina, gummy, pó, focus, daily, melatonina)',
+  (select array_agg(p.slug order by cp.sort_order) from public.creator_products cp join public.products p on p.id = cp.product_id where cp.creator_id = public.seed_uuid('creator:lia'))
+    = array['e-water-citrus', 'e-water-tangerina', 'e-creatina-gummy', 'e-creatina-po', 'e-focus', 'e-daily', 'e-melatonina']
+  and (select array_agg(distinct sort_order order by sort_order) from public.creator_products) = array[10, 20, 30, 40, 50, 60, 70]);
+select tests.anon();
+select tests.ok('S20 visitante vê as 56 alocações e, na junção com products, os 7 produtos Ultra.e Life publicados com imagem e loja oficial',
+  (select count(*) from public.creator_products) = 56
+  and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 56
+  and (select count(distinct p.id) from public.creator_products cp join public.products p on p.id = cp.product_id
+       where p.status = 'published' and p.seller_org_id = public.seed_uuid('seller:ultrae')) = 7
+  and (select bool_and(p.image_url like '/products/%.jpg' and p.attributes ->> 'external_url' like 'https://selvaje.lojavirtualnuvem.com.br/%' and p.price_cents_demo in (6990, 8990))
+       from public.creator_products cp join public.products p on p.id = cp.product_id));
+
+-- 2) linhas não validadas ficam invisíveis ao público (criadas como sistema para Lia e Rafael)
+select tests.su();
+insert into public.creator_products (creator_id, product_id, status, note) values
+  (public.seed_uuid('creator:lia'), public.seed_uuid('product:m1'), 'suggested', 'sugestão pendente'),
+  (public.seed_uuid('creator:lia'), public.seed_uuid('product:k1'), 'suspended', 'fora de linha'),
+  (public.seed_uuid('creator:lia'), public.seed_uuid('product:a1'), 'rejected', 'não combina'),
+  (public.seed_uuid('creator:rafael'), public.seed_uuid('product:k2'), 'suggested', null);
+select tests.anon();
+select tests.ok('S20 visitante não vê suggested/suspended/rejected (segue vendo 56, 7 de Lia)',
+  (select count(*) from public.creator_products) = 56
+  and not exists (select 1 from public.creator_products where status <> 'validated')
+  and (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia')) = 7
+  and (select count(*) from public.creator_products where product_id in (public.seed_uuid('product:m1'), public.seed_uuid('product:k1'), public.seed_uuid('product:a1'), public.seed_uuid('product:k2'))) = 0);
+select tests.expect_error('S20 visitante não insere alocação (sem grant)', $q$insert into public.creator_products (creator_id, product_id) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'))$q$, 'permission denied');
+
+-- 3) produto despublicado some da junção do visitante mesmo com a alocação validada
+select tests.su();
+update public.products set status = 'draft' where id = public.seed_uuid('product:ue-focus');
+select tests.anon();
+select tests.ok('S20 produto despublicado: a alocação segue visível, mas a junção com products não o traz (48 de 56)',
+  (select count(*) from public.creator_products where product_id = public.seed_uuid('product:ue-focus')) = 8
+  and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id where cp.product_id = public.seed_uuid('product:ue-focus')) = 0
+  and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 48
+  and (select count(*) from public.creator_products cp left join public.products p on p.id = cp.product_id where p.id is null) = 8);
+select tests.su();
+update public.products set status = 'published' where id = public.seed_uuid('product:ue-focus');
+select tests.anon();
+select tests.ok('S20 republicado: a junção volta a 56',
+  (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 56
+  and (select status from public.products where id = public.seed_uuid('product:ue-focus')) = 'published');
+
+-- 4) herói (creator1 = Lia): sugere para si; não valida, não sugere para outro, não assina por terceiro
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+insert into public.creator_products (id, creator_id, product_id, status, created_by, note) values
+  ('50000000-0000-4000-8000-000000000001', public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'suggested', '10000000-0000-4000-8000-000000000004', 'Caderno que uso na rotina');
+insert into public.creator_products (id, creator_id, product_id, created_by) values
+  ('50000000-0000-4000-8000-000000000002', public.seed_uuid('creator:lia'), public.seed_uuid('product:l2'), '10000000-0000-4000-8000-000000000004'); -- status pelo default
+select tests.ok('S20 herói sugere produto para si (suggested, created_by = ele, sort_order padrão 100)',
+  (select count(*) from public.creator_products where id in ('50000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000002')
+     and status = 'suggested' and created_by = '10000000-0000-4000-8000-000000000004' and validated_by is null and validated_at is null and sort_order = 100) = 2);
+select tests.expect_error('S20 herói não insere alocação já validada', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'validated', '10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.expect_error('S20 herói não sugere para outro herói', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:rafael'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.expect_error('S20 herói não assina a sugestão com created_by de terceiro', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
+select tests.expect_error('S20 herói não insere sem created_by', $q$insert into public.creator_products (creator_id, product_id) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'))$q$, '42501');
+select tests.ok('S20 herói vê as próprias linhas em qualquer status (12 de Lia) e só validated dos outros (61 no total)',
+  (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia')) = 12
+  and (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia') and status <> 'validated') = 5
+  and (select count(*) from public.creator_products) = 61
+  and not exists (select 1 from public.creator_products where creator_id <> public.seed_uuid('creator:lia') and status <> 'validated'));
+do $s20$
+declare n int;
+begin
+  delete from public.creator_products where creator_id = public.seed_uuid('creator:lia') and product_id = public.seed_uuid('product:ue-focus');
+  get diagnostics n = row_count;
+  perform tests.ok('S20 herói não exclui alocação validada (0 linhas)', n = 0);
+  delete from public.creator_products where creator_id = public.seed_uuid('creator:rafael') and product_id = public.seed_uuid('product:k2');
+  get diagnostics n = row_count;
+  perform tests.ok('S20 herói não exclui sugestão de outro herói (0 linhas)', n = 0);
+  delete from public.creator_products where id = '50000000-0000-4000-8000-000000000002';
+  get diagnostics n = row_count;
+  perform tests.ok('S20 herói exclui a própria sugestão (1 linha)', n = 1);
+end $s20$;
+select tests.ok('S20 após a exclusão a sugestão some e a validada permanece',
+  not exists (select 1 from public.creator_products where id = '50000000-0000-4000-8000-000000000002')
+  and exists (select 1 from public.creator_products where creator_id = public.seed_uuid('creator:lia') and product_id = public.seed_uuid('product:ue-focus') and status = 'validated'));
+select tests.expect_error('S20 herói não altera alocação (sem grant de update)', $q$update public.creator_products set status = 'validated' where id = '50000000-0000-4000-8000-000000000001'$q$, '42501');
+select tests.expect_error('S20 herói não executa a RPC de status', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated')$q$, 'forbidden');
+
+-- 5) consumidor: nada de inserir; vê só validated
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S20 consumidor não sugere alocação (não é herói)', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
+select tests.expect_error('S20 consumidor não insere nem fingindo created_by do herói', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
+select tests.ok('S20 consumidor vê só validated (56)', (select count(*) from public.creator_products) = 56 and not exists (select 1 from public.creator_products where status <> 'validated'));
+select tests.expect_error('S20 consumidor não executa a RPC de status', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated')$q$, 'forbidden');
+
+-- 6) RPC admin_set_creator_product: valida, suspende, rejeita, cria, ordena; tudo auditado
+select tests.anon();
+select tests.expect_error('S20 visitante não executa a RPC de status', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated')$q$, 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S20 admin vê tudo (61: 56 validadas + 4 de Lia + 1 de Rafael)', (select count(*) from public.creator_products) = 61);
+create temporary table t_s20_v as select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated', 'ok') as id;
+select tests.ok('S20 admin valida a sugestão do herói: mesma linha, validated_by/validated_at preenchidos, created_by preservado, nota gravada',
+  (select id from t_s20_v) = '50000000-0000-4000-8000-000000000001'
+  and (select status = 'validated' and validated_by = '10000000-0000-4000-8000-000000000001' and validated_at is not null
+         and created_by = '10000000-0000-4000-8000-000000000004' and note = 'ok' and sort_order = 100
+       from public.creator_products where id = '50000000-0000-4000-8000-000000000001'));
+select tests.anon();
+select tests.ok('S20 validada pelo admin, a sugestão aparece ao público', (select count(*) from public.creator_products where id = '50000000-0000-4000-8000-000000000001') = 1);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'suspended');
+select tests.ok('S20 admin suspende: status suspended, validated_by/validated_at mantidos, nota mantida sem p_note',
+  (select status = 'suspended' and validated_by = '10000000-0000-4000-8000-000000000001' and validated_at is not null and note = 'ok'
+   from public.creator_products where id = '50000000-0000-4000-8000-000000000001'));
+select tests.anon();
+select tests.ok('S20 suspensa, some do público', (select count(*) from public.creator_products where id = '50000000-0000-4000-8000-000000000001') = 0);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'rejected', 'Fora da linha editorial');
+select tests.ok('S20 admin rejeita: status rejected e nota nova',
+  (select status = 'rejected' and note = 'Fora da linha editorial' from public.creator_products where id = '50000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S20 RPC não aceita suggested', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'suggested')$q$, 'invalid_status');
+select tests.expect_error('S20 RPC recusa produto inexistente', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), gen_random_uuid(), 'validated')$q$, 'product_not_found');
+select tests.expect_error('S20 RPC recusa herói inexistente', $q$select public.admin_set_creator_product(gen_random_uuid(), public.seed_uuid('product:l1'), 'validated')$q$, 'creator_not_found');
+select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated', null, 15);
+select tests.ok('S20 p_sort altera sort_order (15) e revalida', (select status = 'validated' and sort_order = 15 from public.creator_products where id = '50000000-0000-4000-8000-000000000001'));
+select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated', '  ');
+select tests.ok('S20 sem p_sort o sort_order fica (15); nota em branco não apaga a anterior',
+  (select sort_order = 15 and note = 'Fora da linha editorial' from public.creator_products where id = '50000000-0000-4000-8000-000000000001'));
+create temporary table t_s20_new as select public.admin_set_creator_product(public.seed_uuid('creator:rafael'), public.seed_uuid('product:k1'), 'validated', 'Kit da revisão semanal', 5) as id;
+select tests.ok('S20 RPC cria e valida numa só chamada (created_by = admin, sort_order 5)',
+  (select status = 'validated' and created_by = '10000000-0000-4000-8000-000000000001' and validated_by = '10000000-0000-4000-8000-000000000001' and sort_order = 5 and note = 'Kit da revisão semanal'
+   from public.creator_products where id = (select id from t_s20_new) and creator_id = public.seed_uuid('creator:rafael') and product_id = public.seed_uuid('product:k1')));
+select tests.ok('S20 cada chamada bem-sucedida da RPC gera auditoria creator_product.set_status (6), com ator admin e antes/depois',
+  (select count(*) from public.admin_audit where action = 'creator_product.set_status') = 6
+  and (select count(*) from public.admin_audit where action = 'creator_product.set_status' and resource_type = 'creator_product'
+         and actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin' and resource_id = '50000000-0000-4000-8000-000000000001') = 5
+  and exists (select 1 from public.admin_audit where action = 'creator_product.set_status' and resource_id = '50000000-0000-4000-8000-000000000001'
+              and before_data ->> 'status' = 'suggested' and after_data ->> 'status' = 'validated' and justification = 'ok')
+  and exists (select 1 from public.admin_audit where action = 'creator_product.set_status' and resource_id = (select id::text from t_s20_new)
+              and before_data is null and after_data ->> 'status' = 'validated' and (after_data ->> 'sort_order')::int = 5));
+select tests.su();
+select tests.ok('S20 RPC é security definer com search_path fixo, sem execute para anon e com execute para authenticated',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.admin_set_creator_product(uuid, uuid, public.link_status, text, int)'::regprocedure)
+  and not has_function_privilege('anon', 'public.admin_set_creator_product(uuid, uuid, public.link_status, text, int)', 'execute')
+  and has_function_privilege('authenticated', 'public.admin_set_creator_product(uuid, uuid, public.link_status, text, int)', 'execute'));
+select tests.ok('S20 políticas: 4 em creator_products, anon só no select, nenhuma avalia auth.uid()/is_admin()/my_creator_id() por linha',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename = 'creator_products') = 4
+  and not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'creator_products' and cmd <> 'SELECT' and 'anon' = any (roles))
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename = 'creator_products'
+         and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|my_creator_id)\(\)') = 0);
+select tests.ok('S20 grants: anon só select; authenticated sem update (status muda só pela RPC)',
+  has_table_privilege('anon', 'public.creator_products', 'select') and not has_table_privilege('anon', 'public.creator_products', 'insert')
+  and has_table_privilege('authenticated', 'public.creator_products', 'insert') and has_table_privilege('authenticated', 'public.creator_products', 'delete')
+  and not has_table_privilege('authenticated', 'public.creator_products', 'update'));
+select tests.ok('S20 excluir o produto ou o herói leva a alocação junto (on delete cascade nas duas chaves)',
+  (select count(*) from pg_constraint where conrelid = 'public.creator_products'::regclass and contype = 'f' and confdeltype = 'c') = 2);
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',
