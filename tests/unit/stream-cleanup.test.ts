@@ -29,6 +29,9 @@ let deleted: string[];
 let deleteFails: Set<string>;
 let queries: { table: string; filters: string[] }[];
 let candidateCalls: { p_cutoff: string; p_limit: number }[];
+let discardCalls: string[];
+// simula o herói mexendo no conteúdo entre a leitura da fila e o descarte (consulta ao Cloudflare)
+let discardRace: ((uid: string) => void) | null;
 
 // Espelho de stream_cleanup_candidates (0026).
 function candidates(cutoff: string, limit: number) {
@@ -36,6 +39,7 @@ function candidates(cutoff: string, limit: number) {
   return uploads
     .filter((u) => u.discarded_at === null && u.provider_deleted_at === null && u.expires_at < cutoff)
     .filter((u) => !contents.some((c) => c.media_ref === u.uid && live(c)))
+    .filter((u) => !contents.some((c) => c.id === u.content_id && live(c)))
     .sort((a, b) => (a.checked_at ?? "").localeCompare(b.checked_at ?? "") || a.expires_at.localeCompare(b.expires_at))
     .slice(0, limit)
     .map((u) => ({
@@ -45,10 +49,37 @@ function candidates(cutoff: string, limit: number) {
     }));
 }
 
+// Espelho de stream_cleanup_discard (0026): confere tudo de novo antes de apagar e marcar.
+function discard(p_uid: string, p_draft: string | null): boolean {
+  const live = (c: Content) => c.status !== "draft" || c.published_at !== null;
+  const s = uploads.find((u) => u.uid === p_uid);
+  if (!s || s.discarded_at !== null || s.provider_deleted_at !== null) return false;
+  if (contents.some((c) => c.id === s.content_id && live(c))) return false;
+  if (contents.some((c) => c.media_ref === p_uid && live(c))) return false;
+  if (p_draft === null) {
+    if (contents.some((c) => c.media_ref === p_uid)) return false;
+  } else {
+    const c = contents.find((x) => x.id === p_draft);
+    if (!c || live(c) || (s.content_id !== null && s.content_id !== p_draft) || c.media_ref !== p_uid) return false;
+    if (contents.some((x) => x.media_ref === p_uid && x.id !== p_draft)) return false;
+    contents = contents.filter((x) => x.id !== p_draft);
+    uploads.forEach((u) => (u.content_id = u.content_id === p_draft ? null : u.content_id)); // FK on delete set null
+    audits.push({ p_action: "content.cleanup_discard", p_resource_id: p_draft, p_actor_type: "system" });
+  }
+  s.discarded_at = NOW.toISOString();
+  return true;
+}
+
 function adminMock() {
   return {
     rpc: async (fn: string, args: Record<string, unknown>) => {
       if (fn === "audit_log") audits.push(args);
+      if (fn === "stream_cleanup_discard") {
+        const { p_uid, p_draft } = args as { p_uid: string; p_draft: string | null };
+        discardCalls.push(p_uid);
+        if (discardRace) discardRace(p_uid);
+        return { data: discard(p_uid, p_draft), error: null };
+      }
       if (fn === "stream_cleanup_candidates") {
         const call = args as { p_cutoff: string; p_limit: number };
         candidateCalls.push(call);
@@ -154,6 +185,8 @@ beforeEach(() => {
   deleteFails = new Set();
   queries = [];
   candidateCalls = [];
+  discardCalls = [];
+  discardRace = null;
 });
 
 describe("cleanupStreamUploads", () => {
@@ -266,6 +299,46 @@ describe("cleanupStreamUploads", () => {
     expect(uploads.every((u) => u.discarded_at === null)).toBe(true);
     // só o rascunho "good" foi conferido no Cloudflare: publicado/já no ar nem chegam a consultar
     expect(result).toMatchObject({ stream_checked: 1, stream_drafts_removed: 0, stream_videos_deleted: 0 });
+  });
+
+  it("post que já esteve no ar, despublicado e com a mídia trocada: o vídeo dele não sai", async () => {
+    contents.push({ id: "was2", status: "draft", published_at: "2026-10-20T10:00:00Z", media_ref: null });
+    uploads.push({ uid: uid(15), content_id: "was2", expires_at: old, discarded_at: null, provider_deleted_at: null });
+    statuses[uid(15)] = { state: "ready", durationSec: 20, creatorId: "c", reason: null };
+    const result = await cleanup();
+    expect(deleted).toHaveLength(0);
+    expect(uploads[0]).toMatchObject({ discarded_at: null, provider_deleted_at: null });
+    expect(result).toMatchObject({ stream_checked: 0, stream_videos_deleted: 0 });
+  });
+
+  it("herói troca a mídia do rascunho enquanto a limpeza consulta o Cloudflare: rascunho e vídeo ficam", async () => {
+    contents.push({ id: "c1", status: "draft", published_at: null, media_ref: uid(16) });
+    uploads.push({ uid: uid(16), content_id: "c1", expires_at: old, discarded_at: null, provider_deleted_at: null });
+    statuses[uid(16)] = { state: "errored", durationSec: null, creatorId: "c", reason: null };
+    discardRace = () => {
+      contents[0].media_ref = null;
+    };
+    const result = await cleanup();
+    expect(discardCalls).toEqual([uid(16)]);
+    expect(contents.map((c) => c.id)).toEqual(["c1"]);
+    expect(deleted).toHaveLength(0);
+    expect(audits).toHaveLength(0);
+    expect(result).toMatchObject({ stream_drafts_removed: 0, stream_videos_deleted: 0 });
+  });
+
+  it("herói publica enquanto a limpeza consulta o Cloudflare: nada é apagado", async () => {
+    contents.push({ id: "c1", status: "draft", published_at: null, media_ref: uid(17) });
+    uploads.push({ uid: uid(17), content_id: "c1", expires_at: old, discarded_at: null, provider_deleted_at: null });
+    statuses[uid(17)] = { state: "incomplete", durationSec: null, creatorId: "c", reason: null };
+    discardRace = () => {
+      contents[0].status = "published";
+      contents[0].published_at = NOW.toISOString();
+    };
+    const result = await cleanup();
+    expect(contents[0].status).toBe("published");
+    expect(deleted).toHaveLength(0);
+    expect(uploads[0]).toMatchObject({ discarded_at: null, provider_deleted_at: null });
+    expect(result).toMatchObject({ stream_drafts_removed: 0, stream_videos_deleted: 0 });
   });
 
   it("erro do Cloudflare ao consultar (fora 404) não apaga nada", async () => {

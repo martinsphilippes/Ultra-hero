@@ -1658,6 +1658,9 @@ isOneToOne: false
               "draft_id": string,"referenced": boolean,"uid": string
             }[]
                            },
+"stream_cleanup_discard":
+{ Args: { "p_draft": string,"p_uid": string }; Returns: boolean
+                           },
 "submit_content_for_review":
 { Args: { "p_content": string }; Returns: undefined
                            },

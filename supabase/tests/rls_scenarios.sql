@@ -1504,6 +1504,46 @@ select tests.ok('S24 fila: envio conferido (vídeo pronto) vai para o fim',
    where q.uid in ('a2400000000000000000000000000006', 'a2400000000000000000000000000007'))
   = array['a2400000000000000000000000000007', 'a2400000000000000000000000000006']);
 
+-- 5d) post que já esteve no ar e trocou a mídia: o envio dele nunca entra na fila nem é descartado
+select tests.ok('S24 stream_cleanup_discard: security invoker, search_path fixo, só service_role executa',
+  (select not p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.stream_cleanup_discard(text, uuid)'::regprocedure)
+  and has_function_privilege('service_role', 'public.stream_cleanup_discard(text, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.stream_cleanup_discard(text, uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.stream_cleanup_discard(text, uuid)', 'execute'));
+update public.content_bodies set media_provider = 'none', media_ref = null where content_id = '24000000-0000-4000-8000-000000000001';
+select tests.ok('S24 despublicado que trocou a mídia: envio fora da fila e não descartável (vídeo é histórico do post)',
+  not exists (select 1 from public.stream_cleanup_candidates(now() - interval '1 hour', 500) q where q.uid = 'a2400000000000000000000000000001')
+  and public.stream_cleanup_discard('a2400000000000000000000000000001', null) = false
+  and (select discarded_at is null from public.stream_uploads where uid = 'a2400000000000000000000000000001'));
+update public.content_bodies set media_provider = 'cloudflare_stream', media_ref = 'a2400000000000000000000000000001' where content_id = '24000000-0000-4000-8000-000000000001';
+
+-- 5e) descarte da limpeza confere de novo, com as linhas travadas, antes de apagar
+select tests.ok('S24 stream_cleanup_discard recusa rascunho que não é o do envio',
+  public.stream_cleanup_discard('a2400000000000000000000000000006', '24000000-0000-4000-8000-000000000003') = false
+  and exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000003'));
+update public.content set status = 'published', published_at = now() where id = '24000000-0000-4000-8000-000000000009';
+select tests.ok('S24 stream_cleanup_discard não apaga rascunho que foi publicado depois da leitura da fila',
+  public.stream_cleanup_discard('a2400000000000000000000000000006', '24000000-0000-4000-8000-000000000009') = false
+  and exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000009')
+  and (select discarded_at is null from public.stream_uploads where uid = 'a2400000000000000000000000000006'));
+update public.content set status = 'draft', published_at = null where id = '24000000-0000-4000-8000-000000000009';
+select tests.ok('S24 stream_cleanup_discard recusa uid órfão que algum corpo passou a usar',
+  public.stream_cleanup_discard('a2400000000000000000000000000006', null) = false);
+-- a chamada fica num comando à parte: no mesmo comando as subconsultas ainda veriam o estado anterior
+create temporary table t_s24_cleanup as select public.stream_cleanup_discard('a2400000000000000000000000000006', '24000000-0000-4000-8000-000000000009') as r;
+select tests.ok('S24 stream_cleanup_discard apaga o rascunho abandonado, marca o envio e audita como sistema',
+  (select r from t_s24_cleanup) = true
+  and not exists (select 1 from public.content where id = '24000000-0000-4000-8000-000000000009')
+  and (select discarded_at is not null and content_id is null from public.stream_uploads where uid = 'a2400000000000000000000000000006')
+  and exists (select 1 from public.admin_audit where action = 'content.cleanup_discard' and resource_id = '24000000-0000-4000-8000-000000000009' and actor_type = 'system'));
+create temporary table t_s24_orphan as select public.stream_cleanup_discard('a2400000000000000000000000000007', null) as r;
+select tests.ok('S24 stream_cleanup_discard marca o órfão sem corpo e é idempotente',
+  (select r from t_s24_orphan) = true
+  and (select discarded_at is not null from public.stream_uploads where uid = 'a2400000000000000000000000000007'));
+select tests.ok('S24 stream_cleanup_discard repetido não faz nada',
+  public.stream_cleanup_discard('a2400000000000000000000000000007', null) = false
+  and public.stream_cleanup_discard('a2400000000000000000000000000006', '24000000-0000-4000-8000-000000000009') = false);
+
 -- 6) slug do rascunho: dono, formato, duplicado
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
 select tests.expect_error('S24 outro herói não troca slug alheio', $q$select public.creator_set_draft_slug('24000000-0000-4000-8000-000000000003', 'treino-s24-roubado')$q$, 'forbidden');

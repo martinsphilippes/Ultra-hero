@@ -47,11 +47,15 @@ grant all on table public.stream_uploads to service_role;
 -- Vídeos que já existiam antes desta migração: vínculo do uid com o dono do conteúdo, desde que
 -- o uid apareça em conteúdos de um só herói (uid compartilhado entre heróis, ou também usado por
 -- conteúdo da plataforma, sem herói, não é herdado: o filtro fica no HAVING, não no WHERE).
--- Roda antes do gatilho de limite para não contar o histórico como envio novo.
+-- Roda antes do gatilho de limite para não contar o histórico como envio novo. expires_at
+-- 'infinity': vídeo antigo não tem ticket vencido, então a limpeza diária nunca o pega (senão um
+-- rascunho antigo seria apagado na primeira execução). O not exists deixa a reaplicação inócua
+-- (com o gatilho de limite já criado, linhas em conflito também disparariam o limite).
 insert into public.stream_uploads (uid, creator_id, content_id, created_at, expires_at)
-select b.media_ref, min(c.creator_id::text)::uuid, (array_agg(c.id order by c.created_at))[1], min(c.created_at), min(c.created_at)
+select b.media_ref, min(c.creator_id::text)::uuid, (array_agg(c.id order by c.created_at))[1], min(c.created_at), 'infinity'::timestamptz
 from public.content_bodies b join public.content c on c.id = b.content_id
 where b.media_provider = 'cloudflare_stream' and b.media_ref ~ '^[0-9a-f]{32}$'
+  and not exists (select 1 from public.stream_uploads s where s.uid = b.media_ref)
 group by b.media_ref
 having count(distinct c.creator_id) = 1 and bool_and(c.creator_id is not null)
 on conflict (uid) do nothing;
@@ -277,8 +281,66 @@ language sql stable set search_path = public as $$
       select 1 from public.content_bodies b join public.content c on c.id = b.content_id
       where b.media_provider = 'cloudflare_stream' and b.media_ref = s.uid
         and (c.status <> 'draft' or c.published_at is not null))
+    -- o conteúdo do envio já esteve no ar e trocou de mídia (despublicou e editou, ou o admin
+    -- trocou): o vídeo é histórico daquele post e não sai pela limpeza
+    and not exists (
+      select 1 from public.content c
+      where c.id = s.content_id and (c.status <> 'draft' or c.published_at is not null))
   order by s.checked_at asc nulls first, s.expires_at asc
   limit least(greatest(coalesce(p_limit, 0), 0), 500)
 $$;
 revoke execute on function public.stream_cleanup_candidates(timestamptz, int) from public, anon, authenticated;
 grant execute on function public.stream_cleanup_candidates(timestamptz, int) to service_role;
+
+-- ---------------------------------------------------------------- 8) descarte pela limpeza diária
+-- A fila é lida de uma vez e cada item espera o Cloudflare (até 15 s): nesse meio-tempo o herói
+-- pode ter trocado a mídia ou publicado. Esta função confere tudo de novo, com as linhas travadas,
+-- e só então apaga o rascunho e marca o envio. Devolve false quando algo mudou (o cron não apaga o
+-- vídeo e a próxima execução reavalia). p_draft nulo: só marca, e só se nenhum corpo usa o uid.
+-- security invoker e só para o service role (o cron); fora da lista pública do S14.
+create or replace function public.stream_cleanup_discard(p_uid text, p_draft uuid)
+returns boolean language plpgsql set search_path = public as $$
+declare s public.stream_uploads%rowtype; c public.content%rowtype;
+begin
+  select * into s from public.stream_uploads where uid = p_uid for update;
+  if not found or s.discarded_at is not null or s.provider_deleted_at is not null then return false; end if;
+  -- conteúdo do envio que já esteve no ar nunca entra (mesma regra da fila)
+  if exists (select 1 from public.content x where x.id = s.content_id and (x.status <> 'draft' or x.published_at is not null)) then
+    return false;
+  end if;
+  -- algum conteúdo que está ou esteve no ar usa o uid
+  if exists (select 1 from public.content_bodies b join public.content x on x.id = b.content_id
+             where b.media_provider = 'cloudflare_stream' and b.media_ref = p_uid
+               and (x.status <> 'draft' or x.published_at is not null)) then
+    return false;
+  end if;
+
+  if p_draft is null then
+    if exists (select 1 from public.content_bodies b where b.media_provider = 'cloudflare_stream' and b.media_ref = p_uid) then
+      return false;
+    end if;
+  else
+    select * into c from public.content where id = p_draft for update;
+    if not found or c.status <> 'draft' or c.published_at is not null or c.creator_id is distinct from s.creator_id
+       or (s.content_id is not null and s.content_id <> p_draft)
+       or not exists (select 1 from public.content_bodies b
+                      where b.content_id = p_draft and b.media_provider = 'cloudflare_stream' and b.media_ref = p_uid)
+       or exists (select 1 from public.content_bodies b
+                  where b.media_provider = 'cloudflare_stream' and b.media_ref = p_uid and b.content_id <> p_draft) then
+      return false;
+    end if;
+    begin
+      delete from public.content where id = p_draft;
+    exception when foreign_key_violation then
+      return false; -- entrou num programa ou foi concluído por alguém: fica
+    end;
+    perform public.audit_log('content.cleanup_discard', 'content', p_draft::text,
+      jsonb_build_object('status', c.status, 'slug', c.slug, 'title', c.title, 'media_ref', p_uid),
+      null, null, 'system');
+  end if;
+
+  update public.stream_uploads set discarded_at = now() where uid = p_uid;
+  return true;
+end $$;
+revoke execute on function public.stream_cleanup_discard(text, uuid) from public, anon, authenticated;
+grant execute on function public.stream_cleanup_discard(text, uuid) to service_role;

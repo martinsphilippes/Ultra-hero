@@ -6,8 +6,9 @@ import type { VideoStatus } from "@/lib/video/providers/cloudflare-stream";
 //  (a) envio descartado cujo vídeo ainda não foi apagado no Cloudflare (o descarte é melhor
 //      esforço) → apaga e marca provider_deleted_at;
 //  (b) envio vencido há mais de 1 h cujo uid não está (nem esteve) no ar e cujo vídeo ficou
-//      incompleto, com erro ou sumiu (ou que nenhum corpo usa) → apaga o rascunho que ainda usa
-//      o uid, apaga o vídeo e marca o envio.
+//      incompleto, com erro ou sumiu (ou que nenhum corpo usa) → stream_cleanup_discard apaga o
+//      rascunho que ainda usa o uid e marca o envio (conferindo de novo no banco), e só então o
+//      vídeo sai do Cloudflare.
 // Nunca toca conteúdo publicado (ou que já esteve no ar) nem envio dentro da validade.
 
 type Admin = SupabaseClient<Database>;
@@ -95,26 +96,16 @@ export async function cleanupStreamUploads(admin: Admin, provider: StreamCleanup
     }
     budget -= 1;
 
-    if (draftId) {
-      const { error } = await admin.from("content").delete().eq("id", draftId).eq("status", "draft").is("published_at", null);
-      if (error) {
-        result.stream_errors += 1;
-        continue;
-      }
-      result.stream_drafts_removed += 1;
-      await admin.rpc("audit_log", {
-        p_action: "content.cleanup_discard",
-        p_resource_type: "content",
-        p_resource_id: draftId,
-        p_before: { status: "draft", media_ref: row.uid },
-        p_actor_type: "system",
-      });
-    }
-    const { error: markError } = await admin.from("stream_uploads").update({ discarded_at: stamp }).eq("uid", row.uid);
-    if (markError) {
+    // O banco confere tudo de novo com as linhas travadas (a fila foi lida antes das consultas ao
+    // Cloudflare): se o herói trocou a mídia ou publicou nesse meio-tempo, nada é apagado.
+    // p_draft nulo é válido (envio órfão); o gerador de tipos não marca parâmetros de função como anuláveis
+    const { data: discardedNow, error: discardError } = await admin.rpc("stream_cleanup_discard", { p_uid: row.uid, p_draft: draftId as string });
+    if (discardError) {
       result.stream_errors += 1;
       continue;
     }
+    if (discardedNow !== true) continue;
+    if (draftId) result.stream_drafts_removed += 1;
     try {
       if (!gone) await provider.deleteVideo(row.uid);
     } catch (error) {
