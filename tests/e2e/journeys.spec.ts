@@ -61,7 +61,7 @@ test.describe("visitante", () => {
     // "Produtos · N itens" no hub bate com o número de cards renderizados na biblioteca
     expect(Number(label.match(/(\d+)/)?.[1])).toBe(count);
     await page.goBack();
-    await expect(page.getByText(new RegExp(`· ${count} produtos?$`, "i"))).toBeVisible();
+    await expect(page.getByTestId("hero-stats")).toContainText(new RegExp(`${count}\\s*produtos?`, "i"));
     await page.goForward();
 
     // visitante: cada card leva ao login com retorno para a biblioteca de produtos; nenhum botão de adicionar

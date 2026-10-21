@@ -100,4 +100,29 @@ test.describe("hub do herói", () => {
     expect(response?.status()).toBe(404);
     await expect(page.getByText(/não encontrad/i).first()).toBeVisible();
   });
+  test("perfil no formato do Instagram: foto pequena, bio em uma linha com mais e posts 3 por linha", async ({ page }) => {
+    await page.goto("/personalities/lia-monteiro");
+    const avatar = page.locator("header img").first();
+    const box = (await avatar.boundingBox())!;
+    expect(box.width).toBeLessThanOrEqual(100);
+
+    const bio = page.getByTestId("hero-bio");
+    const line = bio.locator("p");
+    const oneLine = (await line.boundingBox())!.height;
+    expect(oneLine).toBeLessThan(30);
+    // "mais" só aparece quando a bio não cabe numa linha (sempre no celular com a bio do seed).
+    const more = bio.getByRole("button", { name: "mais" });
+    if (await more.count()) {
+      await more.click();
+      expect((await line.boundingBox())!.height).toBeGreaterThan(oneLine);
+      await expect(bio.getByRole("button", { name: "menos" })).toHaveAttribute("aria-expanded", "true");
+    }
+
+    const posts = page.getByTestId("hero-posts").locator("> a");
+    expect(await posts.count()).toBeGreaterThan(0);
+    const boxes = await Promise.all((await posts.all()).slice(0, 4).map((tile) => tile.boundingBox()));
+    if (boxes.length >= 3) expect(boxes[0]!.y).toBeCloseTo(boxes[2]!.y, 0);
+    if (boxes.length >= 4) expect(boxes[3]!.y).toBeGreaterThan(boxes[0]!.y);
+    for (const b of boxes) expect(Math.abs(b!.width - b!.height)).toBeLessThanOrEqual(2);
+  });
 });

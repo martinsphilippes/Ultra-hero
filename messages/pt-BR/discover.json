@@ -152,7 +152,20 @@
       "rightsPendingBadge": "Direitos em validação",
       "rightsPending": "Autorização de uso de nome e imagem em validação; até lá, o perfil é tratado como fictício.",
       "rightsAuthorized": "Uso de nome e imagem autorizado por {holder}.",
-      "rightsValidUntil": "Autorização válida até {date}."
+      "rightsValidUntil": "Autorização válida até {date}.",
+      "bioMore": "mais",
+      "bioLess": "menos",
+      "postsTitle": "Posts",
+      "postsEmpty": "Nenhum post ainda.",
+      "statsLabel": "Números do perfil",
+      "statLabels": {
+        "postsOne": "post",
+        "postsOther": "posts",
+        "programsOne": "programa",
+        "programsOther": "programas",
+        "productsOne": "produto",
+        "productsOther": "produtos"
+      }
     },
     "libraries": {
       "title": "Bibliotecas de {name}",

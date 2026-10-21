@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Info, LibraryBig, ShieldCheck } from "lucide-react";
+import { Info, ShieldCheck } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
+import { ContentTile } from "@/components/catalog";
+import { TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
-import { LibraryList } from "@/components/discover/personalities/LibraryList";
-import { Badge, EmptyState, PillarBadge } from "@/components/ui";
+import { HeroBio } from "@/components/discover/personalities/HeroBio";
+import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
+import { Badge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { hubHref, loadCreator, loadCreatorHub } from "@/lib/catalog/creator-hub";
@@ -24,8 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("personality", { name: creator.name }), description: creator.headline ?? undefined };
 }
 
-// Hub do herói (RF-004): capa, identidade, bibliotecas por tipo e pilar e a nota de direitos
-// (fictício, em validação ou autorizado). Cada biblioteca tem a sua própria página.
+// Perfil do herói no formato do Instagram (RF-004): foto pequena, nome e números, bio em uma linha,
+// bibliotecas como destaques e a grade de posts 3 por linha. A nota de direitos (fictício, em
+// validação ou autorizado) fica discreta no fim. Cada biblioteca tem a sua própria página.
 export default async function PersonalityPage({ params, searchParams }: Props) {
   const [{ slug }, raw] = await Promise.all([params, searchParams]);
 
@@ -41,63 +45,67 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   const hub = await loadCreatorHub(creator);
   const hasError = hub.errors.contents || hub.errors.programs || hub.errors.products;
 
-  const cover = creator.cover_url ?? `/placeholders/cover-${creator.pillars[0] ?? "routine"}-2.svg`;
   const avatar = creator.avatar_url ?? "/placeholders/avatar-1.svg";
+  // Grade de posts: só o que o herói publicou (as receitas que ele indica ficam na biblioteca Receitas).
+  const posts = hub.contents.filter((c) => c.creator?.slug === creator.slug);
+  const statLabel = (key: "posts" | "programs" | "products", n: number) => t(`statLabels.${key}${n === 1 ? "One" : "Other"}`);
+  const stats = [
+    { key: "posts", value: posts.length, label: statLabel("posts", posts.length) },
+    { key: "programs", value: hub.programs.length, label: statLabel("programs", hub.programs.length) },
+    ...(hub.commerceEnabled ? [{ key: "products", value: hub.products.length, label: statLabel("products", hub.products.length) }] : []),
+  ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <Link href="/personalities" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
         ← {t("back")}
       </Link>
 
-      <header className="flex flex-col gap-4">
-        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[3/1]">
-          <Image src={cover} alt={t("coverAlt", { name: creator.name })} fill priority unoptimized={cover.endsWith(".svg")} sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-obsidian/60 via-transparent to-transparent" />
-        </div>
-
-        <div className="-mt-14 flex flex-col gap-4 px-2 sm:-mt-16 sm:flex-row sm:items-end sm:px-4">
-          <span className="relative inline-flex size-24 shrink-0 overflow-hidden rounded-full border-4 border-bg bg-surface-elevated shadow-md sm:size-28">
-            <Image src={avatar} alt="" fill unoptimized={avatar.endsWith(".svg")} sizes="112px" className="object-cover" />
+      {/* Cabeçalho no formato do Instagram: foto pequena, nome e números lado a lado; o que importa são os posts. */}
+      <header className="flex flex-col gap-3">
+        <div className="flex items-center gap-5">
+          <span className="relative inline-flex size-20 shrink-0 overflow-hidden rounded-full border border-border bg-surface-elevated sm:size-24">
+            <Image src={avatar} alt="" fill priority unoptimized={avatar.endsWith(".svg")} sizes="96px" className="object-cover" />
           </span>
-          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:pb-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="type-h1 text-balance text-fg">{creator.name}</h1>
-              {showsFictionalBadge(rights) && <Badge variant="demo">{t("fictional")}</Badge>}
-              {rights === "pending" && <Badge variant="info">{t("rightsPendingBadge")}</Badge>}
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h1 className="truncate text-xl font-semibold text-fg">{creator.name}</h1>
+              {showsFictionalBadge(rights) && <Badge variant="demo" size="sm">{t("fictional")}</Badge>}
+              {rights === "pending" && <Badge variant="info" size="sm">{t("rightsPendingBadge")}</Badge>}
             </div>
-            {creator.headline && <p className="type-body text-fg-muted">{creator.headline}</p>}
-            <ul className="flex flex-wrap gap-1.5" aria-label={t("pillarsLabel")}>
-              {creator.pillars.map((pillar) => (
-                <li key={pillar}>
-                  <PillarBadge pillar={pillar} />
+            <ul className="flex gap-5" aria-label={t("statsLabel")} data-testid="hero-stats">
+              {stats.map((stat) => (
+                <li key={stat.key} className="flex flex-col leading-tight">
+                  <span className="text-base font-semibold text-fg type-numeric">{stat.value}</span>
+                  <span className="text-xs text-fg-muted">{stat.label}</span>
                 </li>
               ))}
             </ul>
-            <p className="type-overline text-fg-muted">
-              {t("stats.contents", { count: hub.contents.length })} · {t("stats.programs", { count: hub.programs.length })}
-              {hub.commerceEnabled && hub.products.length > 0 ? ` · ${t("stats.products", { count: hub.products.length })}` : null}
-            </p>
           </div>
         </div>
-
-        {creator.bio && <p className="type-body max-w-prose whitespace-pre-line text-fg sm:px-4">{creator.bio}</p>}
+        <HeroBio headline={creator.headline} bio={creator.bio} />
       </header>
 
-      <section aria-labelledby="hero-libraries-title" className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 id="hero-libraries-title" className="type-h2 text-fg">
-            {tl("title", { name: creator.name })}
-          </h2>
-          <p className="type-body-sm text-fg-muted">{tl("description", { name: creator.name })}</p>
-        </div>
+      <section aria-labelledby="hero-libraries-title" className="flex flex-col gap-2">
+        <h2 id="hero-libraries-title" className="sr-only">
+          {tl("title", { name: creator.name })}
+        </h2>
         {hasError ? <InlineError /> : null}
-        {hub.libraries.length > 0 ? (
-          <LibraryList slug={creator.slug} libraries={hub.libraries} />
-        ) : hasError ? null : (
-          <div className="rounded-2xl border border-border bg-surface">
-            <EmptyState icon={<LibraryBig />} title={tl("empty")} description={tl("emptyDescription", { name: creator.name })} />
+        {hub.libraries.length > 0 ? <LibraryHighlights slug={creator.slug} libraries={hub.libraries} /> : null}
+      </section>
+
+      <section aria-labelledby="hero-posts-title" className="flex flex-col gap-2">
+        <h2 id="hero-posts-title" className="sr-only">
+          {t("postsTitle")}
+        </h2>
+        {posts.length > 0 ? (
+          <div className={TILE_GRID} data-testid="hero-posts">
+            {posts.map((post, index) => (
+              <ContentTile key={post.id} content={post} priority={index < 3} />
+            ))}
           </div>
+        ) : hasError ? null : (
+          <p className="rounded-xl border border-dashed border-border-strong px-4 py-6 text-center type-body-sm text-fg-muted">{t("postsEmpty")}</p>
         )}
       </section>
 
@@ -106,7 +114,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
       <aside
         aria-label={t("rightsTitle")}
         className={cn(
-          "flex gap-3 rounded-xl border border-dashed p-4",
+          "flex gap-3 rounded-xl border border-dashed p-3",
           rights === "authorized" ? "border-success/40 bg-success-soft/40" : "border-warning/40 bg-warning-soft/40",
         )}
       >

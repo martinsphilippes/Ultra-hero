@@ -152,7 +152,20 @@
       "rightsPendingBadge": "Rights under validation",
       "rightsPending": "Authorization for name and likeness is under validation; until then the profile is treated as fictional.",
       "rightsAuthorized": "Use of name and likeness authorized by {holder}.",
-      "rightsValidUntil": "Authorization valid until {date}."
+      "rightsValidUntil": "Authorization valid until {date}.",
+      "bioMore": "more",
+      "bioLess": "less",
+      "postsTitle": "Posts",
+      "postsEmpty": "No posts yet.",
+      "statsLabel": "Profile numbers",
+      "statLabels": {
+        "postsOne": "post",
+        "postsOther": "posts",
+        "programsOne": "program",
+        "programsOther": "programs",
+        "productsOne": "product",
+        "productsOther": "products"
+      }
     },
     "libraries": {
       "title": "{name}'s libraries",

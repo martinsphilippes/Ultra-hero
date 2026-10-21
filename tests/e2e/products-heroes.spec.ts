@@ -23,7 +23,7 @@ test.describe("produtos do herói", () => {
   // rafael-duarte: sem vínculo por conteúdo no seed; a biblioteca existe só pela alocação direta.
   test("herói só com alocação direta mostra os 7 produtos da marca, em ordem e com imagem", async ({ page }) => {
     await page.goto("/personalities/rafael-duarte");
-    await expect(page.getByText(/· 7 produtos$/i)).toBeVisible();
+    await expect(page.getByTestId("hero-stats")).toContainText(/7\s*produtos/i);
     const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
     await expect(button).toHaveText(/7 itens/i);
     await expect(button).toHaveAttribute("href", "/personalities/rafael-duarte/produtos");
@@ -69,7 +69,7 @@ test.describe("produtos do herói", () => {
     await page.goto("/personalities/helena-vilar");
     const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
     expect(Number(((await button.textContent()) ?? "").match(/(\d+)/)?.[1])).toBe(count);
-    await expect(page.getByText(new RegExp(`· ${count} produtos$`, "i"))).toBeVisible();
+    await expect(page.getByTestId("hero-stats")).toContainText(new RegExp(`${count}\\s*produtos`, "i"));
   });
 
   test("cada card da Ultra.e Life tem o link da loja oficial em nova aba, sem tirar o carrinho de teste", async ({ page }) => {
