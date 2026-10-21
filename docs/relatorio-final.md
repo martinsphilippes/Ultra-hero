@@ -10,14 +10,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | Completo: 19 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
-| Testes | 287 cenários de banco, 636 unitários e 40 E2E com axe. Todos passam |
+| Banco remoto no Supabase | Completo: 20 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
+| Testes | 309 cenários de banco, 655 unitários e 50 E2E com axe. Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
 
 ### Implementado
-- **Banco e segurança**: esquema em 19 migrations, RLS em todas as 61 tabelas, 99 políticas e 92 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
+- **Banco e segurança**: esquema em 20 migrations, RLS em todas as 61 tabelas, 99 políticas e 93 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
 - **Autenticação e papéis**: e-mail e senha, login com Google (configurado e publicado em 20/10/2026: qualquer conta Google entra, sem lista de testadores), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
@@ -74,14 +74,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 
 ## Fase 3 — Testes, segurança, acessibilidade e documentação
 
-### Evidência de testes (20/10/2026, commit `4fdb0f2`)
+### Evidência de testes (21/10/2026, `master` após o Explorar em grade)
 
 | Camada | Resultado | Comando |
 |---|---|---|
-| Banco: RLS e regras de negócio | 287 de 287 | `npm run test:rls` |
-| Unitários, verificados por mutação | 636 de 636 em 12 arquivos | `npm run test` |
-| E2E com axe, em Pixel 7 e Desktop Chrome | 40 de 40 local, 40 de 40 contra o banco remoto já migrado e 40 de 40 em produção | `npm run test:e2e` |
-| Tipos, lint e mensagens | Limpos. 16 namespaces e 3.085 chaves por idioma | `npm run check` |
+| Banco: RLS e regras de negócio | 309 de 309 | `npm run test:rls` |
+| Unitários, verificados por mutação | 655 de 655 em 13 arquivos | `npm run test` |
+| E2E com axe, em Pixel 7 e Desktop Chrome | 50 de 50 local contra o banco remoto já migrado | `npm run test:e2e` |
+| Tipos, lint e mensagens | Limpos. 16 namespaces e 3.087 chaves por idioma | `npm run check` |
 | Build de produção | OK | `npm run build` |
 
 "Verificado por mutação" significa que agentes independentes injetaram defeitos no código-fonte e confirmaram que os testes falham. Os defeitos que passaram despercebidos ganharam testes novos.
@@ -114,7 +114,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - `SUPABASE_SERVICE_ROLE_KEY` cadastrada em 20/10/2026 (Sensitive, Production e Preview). Os três crons responderam ok em produção.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
-- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, e a 0019 (só dados do seed) pelo conector. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
+- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, a 0019 (só dados do seed) e a 0020 (função do Explorar em grade) pelo conector. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
 1. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.
