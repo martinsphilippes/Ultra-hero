@@ -12,7 +12,7 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
 import { itemsForDate, pickProgramSuggestions, shortTime, sortRoutine, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
-import { isTheme, type Theme } from "@/lib/theme/constants";
+import { resolveTheme } from "@/lib/theme/constants";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("me.meta");
@@ -98,7 +98,7 @@ export default async function ProfilePage() {
   const roleSet = Array.from(new Set(roles.map((r) => r.role)));
   const portals = PORTALS.filter((p) => roleSet.includes(p.role));
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
-  const theme: Theme = isTheme(profile?.theme) ? profile.theme : "system";
+  const theme = resolveTheme(profile?.theme);
   const planKey = subscription.status === "anonymous" ? "unknown" : subscription.status;
 
   return (

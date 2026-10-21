@@ -1,15 +1,15 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, Monitor, Moon, Sun } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { finishOnboarding, skipOnboarding } from "@/app/onboarding/actions";
 import { Button, FormField, ProgressBar, SegmentedControl, Select, useToast } from "@/components/ui";
 import { locales, type Locale } from "@/i18n/config";
-import { THEME_COOKIE, type Theme } from "@/lib/theme/constants";
+import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
 import { InterestTagGrid, type InterestGroup } from "./InterestTagGrid";
 
-type Props = { groups: InterestGroup[]; initialTags: string[]; initialLocale: Locale; initialTheme: Theme };
+type Props = { groups: InterestGroup[]; initialTags: string[]; initialLocale: Locale; initialTheme: ResolvedTheme };
 
 const TOTAL_STEPS = 2;
 
@@ -22,14 +22,13 @@ export function OnboardingWizard({ groups, initialTags, initialLocale, initialTh
   const [step, setStep] = useState<1 | 2>(1);
   const [tags, setTags] = useState<string[]>(initialTags);
   const [locale, setLocale] = useState<Locale>(initialLocale);
-  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [theme, setTheme] = useState<ResolvedTheme>(initialTheme);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  function applyTheme(value: Theme) {
+  function applyTheme(value: ResolvedTheme) {
     const root = document.documentElement;
-    if (value === "system") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", value);
+    root.setAttribute("data-theme", value);
     try {
       localStorage.setItem(THEME_COOKIE, value);
     } catch {
@@ -90,7 +89,7 @@ export function OnboardingWizard({ groups, initialTags, initialLocale, initialTh
             </FormField>
             <div className="flex flex-col gap-1.5">
               <span className="text-sm font-semibold text-fg">{t("theme")}</span>
-              <SegmentedControl<Theme>
+              <SegmentedControl<ResolvedTheme>
                 aria-label={t("theme")}
                 value={theme}
                 onValueChange={(value) => {
@@ -100,7 +99,6 @@ export function OnboardingWizard({ groups, initialTags, initialLocale, initialTh
                 options={[
                   { value: "dark", label: tt("dark"), icon: <Moon /> },
                   { value: "light", label: tt("light"), icon: <Sun /> },
-                  { value: "system", label: tt("system"), icon: <Monitor /> },
                 ]}
               />
             </div>

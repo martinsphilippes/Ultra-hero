@@ -6,13 +6,13 @@ import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
-import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme/constants";
+import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 
 // Aceite de convite: cartão centralizado, fora da casca do app (mesmo padrão das telas de auth).
 export default async function InviteLayout({ children }: { children: ReactNode }) {
   const [cookieStore, t] = await Promise.all([cookies(), getTranslations("common")]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
-  const theme: Theme = isTheme(themeCookie) ? themeCookie : "system";
+  const theme = resolveTheme(themeCookie);
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-grid">

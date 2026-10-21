@@ -1,29 +1,26 @@
 "use client";
 
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { IconButton } from "@/components/ui/icon-button";
 import { setThemeAction } from "@/lib/theme/actions";
-import { THEME_COOKIE, type Theme } from "@/lib/theme/constants";
+import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
 
-const order: Theme[] = ["dark", "light", "system"];
-const icons = { dark: <Moon />, light: <Sun />, system: <Monitor /> };
+const icons = { dark: <Moon />, light: <Sun /> };
 
-type ThemeToggleProps = { initialTheme: Theme; className?: string };
+type ThemeToggleProps = { initialTheme: ResolvedTheme; className?: string };
 
-// Alterna escuro → claro → sistema. Aplica na hora (sem flash) e persiste via action.
+// Alterna claro ↔ escuro (o app abre no claro). Aplica na hora (sem flash) e persiste via action.
 export function ThemeToggle({ initialTheme, className }: ThemeToggleProps) {
   const t = useTranslations("common.theme");
-  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [theme, setTheme] = useState<ResolvedTheme>(initialTheme);
   const [, startTransition] = useTransition();
 
-  const next = order[(order.indexOf(theme) + 1) % order.length];
+  const next: ResolvedTheme = theme === "light" ? "dark" : "light";
 
-  const apply = (value: Theme) => {
-    const root = document.documentElement;
-    if (value === "system") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", value);
+  const apply = (value: ResolvedTheme) => {
+    document.documentElement.setAttribute("data-theme", value);
     try {
       localStorage.setItem(THEME_COOKIE, value);
     } catch {

@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { SkipLink } from "@/components/ui/skip-link";
 import { ToastProvider } from "@/components/ui/toast";
-import { isTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
+import { resolveTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
 import "./globals.css";
 
 // Tipografia da marca, servida pelo próprio app (sem chamada ao Google Fonts no cliente):
@@ -40,8 +40,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0B0B0B" },
-    { media: "(prefers-color-scheme: light)", color: "#F7F4EF" },
+    // O app abre no claro independentemente do tema do aparelho.
+    { color: "#F7F4EF" },
   ],
 };
 
@@ -49,7 +49,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const [locale, cookieStore] = await Promise.all([getLocale(), cookies()]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
-  const theme = isTheme(themeCookie) && themeCookie !== "system" ? themeCookie : undefined;
+  const theme = resolveTheme(themeCookie);
 
   return (
     <html lang={locale} data-theme={theme} suppressHydrationWarning className={`${manrope.variable} ${dmMono.variable}`}>

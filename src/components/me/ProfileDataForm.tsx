@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,10 +8,10 @@ import { useState, useTransition, type FormEvent } from "react";
 import { updateProfile } from "@/app/(app)/profile/actions";
 import { Button, FormField, Input, SegmentedControl, Select, useToast } from "@/components/ui";
 import { locales, type Locale } from "@/i18n/config";
-import { THEME_COOKIE, type Theme } from "@/lib/theme/constants";
+import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
 import { cn } from "@/lib/utils";
 
-type Props = { displayName: string; avatarUrl: string | null; locale: Locale; theme: Theme };
+type Props = { displayName: string; avatarUrl: string | null; locale: Locale; theme: ResolvedTheme };
 
 const AVATARS = Array.from({ length: 8 }, (_, i) => `/placeholders/avatar-${i + 1}.svg`);
 
@@ -25,16 +25,15 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme }: Props
   const [name, setName] = useState(displayName);
   const [avatar, setAvatar] = useState<string | null>(avatarUrl && AVATARS.includes(avatarUrl) ? avatarUrl : null);
   const [lang, setLang] = useState<Locale>(locale);
-  const [mode, setMode] = useState<Theme>(theme);
+  const [mode, setMode] = useState<ResolvedTheme>(theme);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const dirty = name.trim() !== displayName || avatar !== avatarUrl || lang !== locale || mode !== theme;
 
-  function applyTheme(value: Theme) {
+  function applyTheme(value: ResolvedTheme) {
     const root = document.documentElement;
-    if (value === "system") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", value);
+    root.setAttribute("data-theme", value);
     try {
       localStorage.setItem(THEME_COOKIE, value);
     } catch {
@@ -116,14 +115,13 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme }: Props
           <span className="text-sm font-semibold text-fg" id="theme-label">
             {t("theme")}
           </span>
-          <SegmentedControl<Theme>
+          <SegmentedControl<ResolvedTheme>
             aria-label={t("theme")}
             value={mode}
             onValueChange={setMode}
             options={[
               { value: "dark", label: tt("dark"), icon: <Moon /> },
               { value: "light", label: tt("light"), icon: <Sun /> },
-              { value: "system", label: tt("system"), icon: <Monitor /> },
             ]}
           />
         </div>

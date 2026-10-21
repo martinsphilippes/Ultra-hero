@@ -3,8 +3,9 @@
 /* =============================================================================
    Ultra Hero · Design system (paleta PROVISÓRIA, não é a marca final)
    obsidian #0B0B0B · vital orange #FF5A1F · sand #E8E3DB
-   Tema escuro é o padrão. [data-theme="light"] força claro, [data-theme="dark"]
-   força escuro; sem atributo (ou "system") segue prefers-color-scheme.
+   O app sempre abre no claro: o layout raiz e o script inicial gravam data-theme
+   ("light", ou "dark" quando a pessoa escolheu). Os tokens de :root (escuro) e o
+   bloco de prefers-color-scheme só valem na falta do atributo.
    ============================================================================= */
 
 /* ---------------------------------------------------------------- tokens ---- */

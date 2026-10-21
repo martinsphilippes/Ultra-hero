@@ -8,7 +8,7 @@ import { getProfile, requireUser } from "@/lib/auth/session";
 import { localizedLabel } from "@/lib/catalog/queries";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
-import { isTheme, type Theme } from "@/lib/theme/constants";
+import { resolveTheme } from "@/lib/theme/constants";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("me.meta");
@@ -34,7 +34,7 @@ export default async function OnboardingPage() {
     byPillar.get(key)!.push({ tag: row.tag, label: localizedLabel(row.label, uiLocale) || row.tag });
   }
   const groups: InterestGroup[] = [...PILLARS, null].filter((p) => byPillar.has(p)).map((pillar) => ({ pillar, tags: byPillar.get(pillar)! }));
-  const theme: Theme = isTheme(profile?.theme) ? profile.theme : "system";
+  const theme = resolveTheme(profile?.theme);
 
   return (
     <div className="flex flex-col gap-6">

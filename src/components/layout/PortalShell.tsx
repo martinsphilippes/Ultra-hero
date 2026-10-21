@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { getSessionSummary } from "@/lib/auth/session";
-import { isTheme, THEME_COOKIE, type Theme } from "@/lib/theme/constants";
+import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
 import { PortalMobileMenu, PortalNavList } from "./PortalSidebar";
@@ -24,7 +24,7 @@ export async function PortalShell({ portal, children }: PortalShellProps) {
     getTranslations("common"),
   ]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
-  const theme: Theme = isTheme(themeCookie) ? themeCookie : "system";
+  const theme = resolveTheme(themeCookie);
 
   return (
     <div className="flex min-h-dvh">

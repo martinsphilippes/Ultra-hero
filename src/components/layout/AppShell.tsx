@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
-import { DEMO_BANNER_COOKIE, isTheme, THEME_COOKIE, type Theme } from "@/lib/theme/constants";
+import { DEMO_BANNER_COOKIE, resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import { BottomNav, TopNavLinks } from "./AppNav";
 import { DemoBanner } from "./DemoBanner";
 import { LocaleSwitcher } from "./LocaleSwitcher";
@@ -23,7 +23,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
     getTranslations("common.a11y"),
   ]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
-  const theme: Theme = isTheme(themeCookie) ? themeCookie : "system";
+  const theme = resolveTheme(themeCookie);
   const demoDismissed = cookieStore.get(DEMO_BANNER_COOKIE)?.value === "1";
 
   return (
