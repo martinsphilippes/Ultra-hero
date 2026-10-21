@@ -75,6 +75,16 @@ test.describe("visitante", () => {
     await expect(dialog.getByRole("button", { name: "Enviar" })).toBeVisible();
   });
 
+  // "Hoje" no Perfil: a Política de Privacidade (pt-BR) diz que hidratação e descanso ficam só no aparelho
+  // e que os itens de rotina são guardados. Os fluxos logados do "Hoje" não têm E2E (sem contas de teste).
+  test("política de privacidade explica o registro local de hidratação e os itens de rotina", async ({ page }) => {
+    await page.goto("/legal/privacy");
+    const main = page.locator("main");
+    await expect(main.getByText(/registros de hidratação e descanso: ficam só no seu aparelho/)).toBeVisible();
+    await expect(main.getByText(/Itens de rotina:/)).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "Itens de rotina e marcações diárias" })).toBeVisible();
+  });
+
   test("ambiente de demonstração está sinalizado", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();

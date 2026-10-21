@@ -179,6 +179,7 @@
             "preferences": "<strong>Preferências:</strong> idioma, tema, avatar escolhido entre ilustrações e fuso horário do dispositivo, usado para contar sua sequência de dias.",
             "notifications": "<strong>Preferências de notificação:</strong> o que você aceita receber (resumo editorial, lembretes de sequência, pedidos de teste) e por quais canais. Nesta versão nada é enviado; a escolha fica guardada para ser respeitada em qualquer envio futuro.",
             "usage": "<strong>Uso do conteúdo:</strong> interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas e certificados simbólicos (o PDF do certificado traz seu nome exibido).",
+            "routine": "<strong>Itens de rotina:</strong> título, horário, dias e a marcação diária, para montar o seu Hoje e contar a sequência.",
             "subscription": "<strong>Assinatura simulada:</strong> módulos escolhidos, períodos e histórico de mudanças.",
             "commerce": "<strong>Comércio simulado:</strong> carrinho, pedidos de teste (itens, valores ilustrativos e o destino fictício escolhido em uma lista) e registros de interesse em produtos.",
             "events": "<strong>Eventos de uso:</strong> ações no app, como abrir um conteúdo, concluir um programa ou iniciar um pedido de teste, com data, idioma e propriedades técnicas, como o identificador do conteúdo. Quando você está conectado, os eventos ficam vinculados à sua conta; para visitantes sem conta, são registrados sem identificador. O banco de dados recusa propriedades cujos nomes indiquem dados pessoais, como e-mail, telefone, CPF, nome, endereço ou senha.",
@@ -197,6 +198,7 @@
             "location": "geolocalização;",
             "payment": "dados de pagamento, como cartão, conta bancária ou Pix: nada é cobrado;",
             "health": "dados de saúde individuais, como peso, medidas, exames, diagnósticos ou condições médicas;",
+            "hydration": "registros de hidratação e descanso: ficam só no seu aparelho, no armazenamento local do navegador, e nunca são enviados ao app;",
             "documents": "documentos (como CPF), telefone e data de nascimento: a idade mínima de 18 anos é declarada por você ao criar a conta."
           },
           "p1": "Não vendemos dados, não os repassamos para fins comerciais ou de publicidade e não usamos ferramentas de publicidade ou de análise de terceiros."
@@ -317,6 +319,11 @@
                 "data": "Preferências de notificação",
                 "period": "Enquanto a conta existir",
                 "details": "São apagadas junto com a conta. Nada é enviado nesta versão: as preferências só guardam o seu consentimento para envios futuros."
+              },
+              "routine": {
+                "data": "Itens de rotina e marcações diárias",
+                "period": "Enquanto a conta existir",
+                "details": "São apagados junto com a conta. Hidratação e descanso não entram aqui: ficam só no seu aparelho."
               },
               "analytics": {
                 "data": "Eventos de uso",

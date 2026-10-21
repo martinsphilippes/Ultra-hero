@@ -179,6 +179,7 @@
             "preferences": "<strong>Preferencias:</strong> idioma, tema, avatar elegido entre ilustraciones y zona horaria del dispositivo, que se usa para contar tu racha de días.",
             "notifications": "<strong>Preferencias de notificación:</strong> qué aceptas recibir (resumen editorial, recordatorios de racha, pedidos de prueba) y por qué canales. En esta versión nada se envía; tu elección se guarda para respetarse en cualquier envío futuro.",
             "usage": "<strong>Uso del contenido:</strong> intereses, elementos marcados como “no me interesa”, favoritos, listas, progreso, contenidos completados, racha de días, logros, inscripciones en programas y certificados simbólicos (el PDF del certificado incluye tu nombre visible).",
+            "routine": "<strong>Ítems de rutina:</strong> título, hora, días y la marca diaria, para armar tu Hoy y contar la racha.",
             "subscription": "<strong>Suscripción simulada:</strong> módulos elegidos, períodos e historial de cambios.",
             "commerce": "<strong>Comercio simulado:</strong> carrito, pedidos de prueba (artículos, importes ilustrativos y el destino ficticio elegido de una lista) y registros de interés en productos.",
             "events": "<strong>Eventos de uso:</strong> acciones en la app, como abrir un contenido, completar un programa o iniciar un pedido de prueba, con fecha, idioma y propiedades técnicas, como el identificador del contenido. Cuando tienes la sesión iniciada, los eventos quedan vinculados a tu cuenta; para visitantes sin cuenta, se registran sin identificador. La base de datos rechaza propiedades cuyos nombres indiquen datos personales, como correo, teléfono, CPF (número fiscal brasileño), nombre, dirección o contraseña.",
@@ -197,6 +198,7 @@
             "location": "geolocalización;",
             "payment": "datos de pago, como tarjetas o cuentas bancarias: no se cobra nada;",
             "health": "datos de salud individuales, como peso, medidas, exámenes, diagnósticos o condiciones médicas;",
+            "hydration": "registros de hidratación y descanso: quedan solo en tu dispositivo, en el almacenamiento local del navegador, y nunca se envían a la app;",
             "documents": "documentos de identidad, teléfono y fecha de nacimiento: declaras cumplir la edad mínima de 18 años al crear la cuenta."
           },
           "p1": "No vendemos datos, no los cedemos con fines comerciales ni publicitarios y no usamos herramientas de publicidad ni de analítica de terceros."
@@ -317,6 +319,11 @@
                 "data": "Preferencias de notificación",
                 "period": "Mientras exista la cuenta",
                 "details": "Se eliminan junto con la cuenta. En esta versión nada se envía: las preferencias solo guardan tu consentimiento para envíos futuros."
+              },
+              "routine": {
+                "data": "Ítems de rutina y marcas diarias",
+                "period": "Mientras exista la cuenta",
+                "details": "Se eliminan junto con la cuenta. Hidratación y descanso no entran aquí: quedan solo en tu dispositivo."
               },
               "analytics": {
                 "data": "Eventos de uso",

@@ -10,14 +10,14 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | Completo: 21 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
+| Banco remoto no Supabase | Completo: 22 migrações aplicadas e conferidas contra a referência local (grants, políticas, RLS, gatilhos e funções idênticos; os dados só diferem pelo uso real em produção) |
 | Testes | 350 cenários de banco, 675 unitários e 72 E2E com axe. Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
 
 ### Implementado
-- **Banco e segurança**: esquema em 21 migrations, RLS em todas as 62 tabelas, 103 políticas e 94 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
+- **Banco e segurança**: esquema em 22 migrations, RLS em todas as 64 tabelas, 105 políticas e 96 funções. As RPCs `security definer` têm `search_path` fixo. Colunas protegidas são travadas por gatilho, e uma flag transacional separa ações do sistema. Ações administrativas ficam auditadas.
 - **Autenticação e papéis**: e-mail e senha, login com Google (configurado e publicado em 20/10/2026: qualquer conta Google entra, sem lista de testadores), convites com token em hash SHA-256 e expiração, e admin inicial definido por e-mail. Papéis: consumidor, personalidade, fornecedor e admin, com escopo.
 - **Kill switch de cadastro**: com "cadastro aberto" desligado, o próprio banco recusa contas novas. As exceções são convidados com convite válido, e-mails da lista de admin inicial e contas demo criadas pelo admin.
 - **Suspensão de contas**: o admin suspende e reativa consumidores com justificativa obrigatória e registro na auditoria. Não é possível suspender a si mesmo nem outro admin.
@@ -27,8 +27,8 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - Heróis: a página do herói é um hub. Depois do cabeçalho (foto, nome, headline, pilares, selo, contagens e bio) vêm as bibliotecas do herói como botões em largura total, por tipo e pilar (Rotina, Nutrição, Receitas, Treinos, Gastronomia, Programas e Produtos), só as que têm itens, com contagem. Cada biblioteca abre a sua página: grade de quadrados para conteúdos (como o Explorar), cards para programas e cards com carrinho de teste para produtos. Cada conteúdo entra numa única biblioteca (receita, depois treino, depois pilar). As abas antigas redirecionam para a biblioteca correspondente.
   - Página de conteúdo com player de demonstração e transcrição.
   - Programas com inscrição, versões, substituições e certificado verificável.
-  - Evolução com sequência e conquistas.
-  - Perfil com planos simulados, interesses, favoritos, listas e exclusão de conta.
+  - Evolução com sequência e conquistas. A faixa de 14 dias e a melhor sequência unem conclusões de conteúdo (`streak_events`) e itens de rotina marcados (`routine_checks`), e `compute_streak` conta um dia como ativo com qualquer um dos dois.
+  - Perfil com planos simulados, interesses, favoritos, listas e exclusão de conta. Desde 21/10/2026 abre com **"Hoje"** (migração 0022): data local no fuso do perfil, "Seu dia, em foco." e o **Ritmo de hoje** com contador feito/total, que une os próximos itens obrigatórios dos programas em que a pessoa está inscrita (até 2 por programa e 3 no total, marcados com a mesma RPC de conclusão de conteúdo) e os itens manuais (título, nota, horário e dias da semana; até 20 ativos, só do dono por RLS; marcação diária pela RPC `routine_check`, que calcula a data local e devolve a sequência). **Hidratação** (passos de 250 ml, meta ajustável) e **Registrar descanso** (descansei hoje e horas opcionais, sem metas prescritas) ficam só no aparelho, no armazenamento local do navegador, lidos depois de montar e com aviso quando o navegador bloqueia o storage; nada disso vai ao banco. A Política de Privacidade descreve os itens de rotina entre os dados guardados e o registro local entre os não coletados (versão de 21/10/2026). A exclusão de conta cobre as tabelas novas: `routine_items` e `routine_checks` têm chave estrangeira para `auth.users` com `on delete cascade`, e `delete_my_account` apaga o usuário de auth.
   - Onboarding e feedback contextual.
 - **Planos simulados**: módulos base, treino, nutrição e chef independentes. FULL não pressupõe Base, e as dependências entre módulos são configuráveis pelo admin.
 - **Administração**: usuários, convites, personalidades, fornecedores, revisão editorial, programas e versões, planos, destaques, traduções, moderação de produtos, vínculos conteúdo↔produto, pedidos, feedback, métricas com CSV, auditoria e configurações com kill switches.
@@ -118,7 +118,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - `SUPABASE_SERVICE_ROLE_KEY` cadastrada em 20/10/2026 (Sensitive, Production e Preview). Os três crons responderam ok em produção.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
-- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, a 0019 (só dados do seed), a 0020 (função do Explorar em grade) e a 0021 (produtos Ultra.e Life e alocação produto↔herói) pelo conector, em blocos. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
+- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, a 0019 (só dados do seed), a 0020 (função do Explorar em grade), a 0021 (produtos Ultra.e Life e alocação produto↔herói) e a 0022 (itens de rotina e marcação diária do "Hoje") pelo conector, em blocos. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
 1. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.

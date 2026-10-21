@@ -159,6 +159,99 @@
     "signOut": "Sign out",
     "demoNote": "Demo environment: fictional heroes, simulated subscription, no real payments."
   },
+  "today": {
+    "eyebrow": "Today · {date}",
+    "title": "Your day, in focus.",
+    "description": "Your rhythm comes from the programs you are in and from what you add. Hydration and rest stay on this device only.",
+    "rhythm": {
+      "title": "Today's rhythm",
+      "counter": "{done} of {total, plural, =1 {# item done} other {# items done}}",
+      "empty": "Nothing in today's rhythm",
+      "emptyDescription": "Join a program or add an item to build your day.",
+      "emptyProgramCta": "See programs",
+      "add": "Add item",
+      "addTitle": "New routine item",
+      "editTitle": "Edit item",
+      "form": {
+        "title": "Title",
+        "titlePlaceholder": "E.g. Stretch for 10 minutes",
+        "note": "Note",
+        "notePlaceholder": "Optional, up to 120 characters",
+        "time": "Time",
+        "timeHint": "Without a time, the item goes to the end of the list.",
+        "weekdays": "Days of the week",
+        "allDays": "Every day",
+        "save": "Save",
+        "cancel": "Cancel",
+        "dayShort": {
+          "0": "S",
+          "1": "M",
+          "2": "T",
+          "3": "W",
+          "4": "T",
+          "5": "F",
+          "6": "S"
+        },
+        "dayLong": {
+          "0": "Sunday",
+          "1": "Monday",
+          "2": "Tuesday",
+          "3": "Wednesday",
+          "4": "Thursday",
+          "5": "Friday",
+          "6": "Saturday"
+        }
+      },
+      "fromProgram": "Program: {name}",
+      "byHero": "With {name}",
+      "openContent": "Open {title}",
+      "markDone": "Mark as done",
+      "markUndone": "Unmark",
+      "done": "Done",
+      "itemMenu": "Options for {title}",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteTitle": "Delete item?",
+      "deleteDescription": "“{title}” leaves your routine and its check marks are erased. This cannot be undone.",
+      "deleteConfirm": "Delete",
+      "toasts": {
+        "created": "Item added to your day.",
+        "updated": "Item updated.",
+        "deleted": "Item deleted.",
+        "checked": "Done!",
+        "unchecked": "Check mark removed.",
+        "streak": "Streak: {n, plural, =0 {no days yet} =1 {# day} other {# days}}"
+      },
+      "errors": {
+        "routine_limit": "You already have 20 active items. Delete one to add another.",
+        "routine_item_not_found": "This item no longer exists. Reload the page.",
+        "invalid_timezone": "Invalid time zone.",
+        "invalid": "Check the fields.",
+        "failed": "Could not save. Try again."
+      }
+    },
+    "hydration": {
+      "title": "Hydration",
+      "value": "Water logged today: {value}",
+      "goalLabel": "water logged · goal {goal}",
+      "goalSelect": "Daily goal",
+      "goalOption": "{goal}",
+      "add": "Add 250 ml",
+      "remove": "Remove 250 ml",
+      "localNote": "Local log: stays on this device only and is never sent to Ultra Hero.",
+      "noStorage": "This browser does not keep local logs: the value is lost when you leave the page.",
+      "progressLabel": "Today's hydration progress"
+    },
+    "rest": {
+      "title": "Log rest",
+      "description": "Local log, no prescribed goals.",
+      "rested": "I rested today",
+      "hours": "Hours of sleep",
+      "hoursHint": "Optional, in half-hour steps.",
+      "localNote": "Local log: stays on this device only and is never sent to Ultra Hero.",
+      "noStorage": "This browser does not keep local logs: the check mark is lost when you leave the page."
+    }
+  },
   "favorites": {
     "title": "Favorites",
     "description": "Content you marked with the heart.",

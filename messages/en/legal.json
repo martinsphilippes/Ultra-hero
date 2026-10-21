@@ -179,6 +179,7 @@
             "preferences": "<strong>Preferences:</strong> language, theme, avatar chosen from illustrations and your device’s time zone, used to count your day streak.",
             "notifications": "<strong>Notification preferences:</strong> what you agree to receive (editorial digest, streak reminders, test orders) and through which channels. Nothing is sent in this version; your choice is stored to be respected by any future sending.",
             "usage": "<strong>Content activity:</strong> interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments and symbolic certificates (the certificate PDF shows your display name).",
+            "routine": "<strong>Routine items:</strong> title, time, days and the daily check mark, used to build your Today and count your streak.",
             "subscription": "<strong>Simulated subscription:</strong> chosen modules, periods and change history.",
             "commerce": "<strong>Simulated commerce:</strong> cart, test orders (items, illustrative amounts and the fictional destination chosen from a list) and records of interest in products.",
             "events": "<strong>Usage events:</strong> actions in the app, such as opening content, completing a program or starting a test order, with date, language and technical properties such as the content identifier. When you are signed in, events are linked to your account; for visitors without an account, they are recorded without an identifier. The database rejects properties whose names indicate personal data, such as email, phone, CPF (Brazilian taxpayer ID), name, address or password.",
@@ -197,6 +198,7 @@
             "location": "geolocation;",
             "payment": "payment data, such as card or bank account details: nothing is charged;",
             "health": "individual health data, such as weight, body measurements, test results, diagnoses or medical conditions;",
+            "hydration": "hydration and rest logs: they stay on your device only, in the browser's local storage, and are never sent to the app;",
             "documents": "identity documents, phone number and date of birth: you declare that you meet the minimum age of 18 when you create your account."
           },
           "p1": "We do not sell data, we do not pass it on for commercial or advertising purposes and we do not use third-party advertising or analytics tools."
@@ -317,6 +319,11 @@
                 "data": "Notification preferences",
                 "period": "As long as the account exists",
                 "details": "Deleted together with the account. Nothing is sent in this version: the preferences only store your consent for future sending."
+              },
+              "routine": {
+                "data": "Routine items and daily check marks",
+                "period": "As long as the account exists",
+                "details": "Deleted together with the account. Hydration and rest are not included: they stay on your device only."
               },
               "analytics": {
                 "data": "Usage events",
