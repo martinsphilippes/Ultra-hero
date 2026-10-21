@@ -558,6 +558,135 @@ select tests.ok('S18 RPCs novas são security definer com search_path fixo e sem
 select tests.ok('S18 atalho de 4 argumentos é security invoker (não amplia a lista de anon)',
   (select not p.prosecdef from pg_proc p where p.oid = 'public.submit_feedback(text, int, text, public.locale_code)'::regprocedure));
 
+-- ================================================================ S19 · explore_feed: feed do Explorar em grade (0020)
+-- Security invoker: a RLS já esconde rascunho e agendado do público; a função repete content_is_live
+-- para admin e herói não verem os próprios rascunhos no feed. Ordem determinística por semente, cada
+-- rodada com no máximo um post por herói, então paginar por offset não repete nem pula. now() é fixo
+-- na transação: "a data chegou" é simulado movendo publish_at para o passado como sistema.
+select tests.su();
+select tests.ok('S19 explore_feed é security invoker, com search_path fixo, executável por anon e authenticated',
+  (select not p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p
+    where p.oid = 'public.explore_feed(public.pillar, public.content_type, public.access_level, text, integer, integer, integer)'::regprocedure)
+  and has_function_privilege('anon', 'public.explore_feed(public.pillar, public.content_type, public.access_level, text, integer, integer, integer)', 'execute')
+  and has_function_privilege('authenticated', 'public.explore_feed(public.pillar, public.content_type, public.access_level, text, integer, integer, integer)', 'execute'));
+-- Referência medida como sistema (fora da RLS): tudo que está no ar, com os atributos filtráveis.
+create temporary table t_s19_live as
+  select id, creator_id, pillar, type, access_level, difficulty from public.content where public.content_is_live(status, publish_at);
+grant select on t_s19_live to anon, authenticated; -- o visitante e o herói comparam o feed com a referência
+select tests.ok('S19 referência: 40 no ar, de 8 heróis, todos com herói', (select count(*) from t_s19_live) = 40
+  and (select count(distinct creator_id) from t_s19_live) = 8 and not exists (select 1 from t_s19_live where creator_id is null));
+
+-- 1) visitante recebe exatamente o catálogo no ar
+select tests.anon();
+select tests.ok('S19 visitante executa explore_feed e recebe todo o catálogo no ar (p_limit=100)',
+  (select count(*) from public.explore_feed(null, null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live)
+  and not exists (select id from public.explore_feed(null, null, null, null, 7, 100, 0) except select id from t_s19_live)
+  and (select bool_and(status = 'published' and (publish_at is null or publish_at <= now())) from public.explore_feed(null, null, null, null, 7, 100, 0)));
+
+-- 3) variedade: a primeira rodada traz um post por herói. Entre rodadas a função não impede que o último
+-- de uma e o primeiro da seguinte sejam do mesmo herói (com este seed, as sementes 1 e 6 repetem);
+-- a semente 7 dá 15 posições sem repetição seguida. Se o seed de conteúdo mudar, troque a semente.
+select tests.ok('S19 primeira rodada: com p_limit = nº de heróis no ar, nenhum herói se repete',
+  (select count(*) = (select count(distinct creator_id) from t_s19_live) and count(distinct creator_id) = count(*)
+   from public.explore_feed(null, null, null, null, 7, (select count(distinct creator_id) from t_s19_live)::int, 0)));
+select tests.ok('S19 15 primeiras posições sem dois posts seguidos do mesmo herói (semente 7)',
+  (select count(*) = 15 and not bool_or(same)
+   from (select creator_id = lag(creator_id) over (order by ordinality) as same
+         from public.explore_feed(null, null, null, null, 7, 15, 0) with ordinality) x));
+
+-- 4) estabilidade e paginação: mesma semente, mesma sequência; páginas de 15 disjuntas e completas
+do $s19$
+declare v_a text; v_b text; v_all uuid[] := '{}'; v_page uuid[]; v_off int := 0; v_pages int := 0;
+begin
+  select string_agg(id::text, ',' order by ordinality) into v_a from public.explore_feed(null, null, null, null, 7, 100, 0) with ordinality;
+  select string_agg(id::text, ',' order by ordinality) into v_b from public.explore_feed(null, null, null, null, 7, 100, 0) with ordinality;
+  perform tests.ok('S19 duas chamadas com a mesma semente devolvem a mesma sequência de ids', v_a is not null and v_a = v_b);
+  loop
+    select coalesce(array_agg(id order by ordinality), '{}') into v_page from public.explore_feed(null, null, null, null, 7, 15, v_off) with ordinality;
+    exit when cardinality(v_page) = 0;
+    if v_off > 0 then
+      perform tests.ok(format('S19 página offset %s (limit 15) é disjunta das anteriores', v_off), not (v_page && v_all));
+    end if;
+    v_all := v_all || v_page; v_off := v_off + 15; v_pages := v_pages + 1;
+  end loop;
+  perform tests.ok('S19 união das páginas de 15 em 15 cobre todo o catálogo no ar sem repetição',
+    v_pages = ceil((select count(*) from t_s19_live) / 15.0)
+    and cardinality(v_all) = (select count(*) from t_s19_live)
+    and (select count(distinct u) from unnest(v_all) u) = cardinality(v_all)
+    and (select bool_and(l.id = any (v_all)) from t_s19_live l));
+end $s19$;
+
+-- 5) semente diferente muda a ordem
+select tests.ok('S19 semente diferente muda a ordem (10 primeiros com sementes 7 e 8)',
+  (select string_agg(id::text, ',' order by ordinality) from public.explore_feed(null, null, null, null, 7, 10, 0) with ordinality)
+  <> (select string_agg(id::text, ',' order by ordinality) from public.explore_feed(null, null, null, null, 8, 10, 0) with ordinality));
+
+-- 6) filtros: contagem igual à direta na referência e só linhas que satisfazem o filtro
+select tests.ok('S19 filtro p_pillar (training) bate com a contagem direta',
+  (select count(*) from t_s19_live where pillar = 'training') > 0
+  and (select count(*) from public.explore_feed('training', null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live where pillar = 'training')
+  and (select bool_and(pillar = 'training') from public.explore_feed('training', null, null, null, 7, 100, 0)));
+select tests.ok('S19 filtro p_type (recipe) bate com a contagem direta',
+  (select count(*) from t_s19_live where type = 'recipe') > 0
+  and (select count(*) from public.explore_feed(null, 'recipe', null, null, 7, 100, 0)) = (select count(*) from t_s19_live where type = 'recipe')
+  and (select bool_and(type = 'recipe') from public.explore_feed(null, 'recipe', null, null, 7, 100, 0)));
+select tests.ok('S19 filtro p_access (premium) bate com a contagem direta',
+  (select count(*) from t_s19_live where access_level = 'premium') > 0
+  and (select count(*) from public.explore_feed(null, null, 'premium', null, 7, 100, 0)) = (select count(*) from t_s19_live where access_level = 'premium')
+  and (select bool_and(access_level = 'premium') from public.explore_feed(null, null, 'premium', null, 7, 100, 0)));
+select tests.ok('S19 filtro p_difficulty (intermediate) bate com a contagem direta',
+  (select count(*) from t_s19_live where difficulty = 'intermediate') > 0
+  and (select count(*) from public.explore_feed(null, null, null, 'intermediate', 7, 100, 0)) = (select count(*) from t_s19_live where difficulty = 'intermediate')
+  and (select bool_and(difficulty = 'intermediate') from public.explore_feed(null, null, null, 'intermediate', 7, 100, 0)));
+select tests.ok('S19 filtros combinados (training + premium + intermediate) batem com a contagem direta',
+  (select count(*) from t_s19_live where pillar = 'training' and access_level = 'premium' and difficulty = 'intermediate') > 0
+  and (select count(*) from public.explore_feed('training', null, 'premium', 'intermediate', 7, 100, 0))
+    = (select count(*) from t_s19_live where pillar = 'training' and access_level = 'premium' and difficulty = 'intermediate')
+  and (select bool_and(pillar = 'training' and access_level = 'premium' and difficulty = 'intermediate') from public.explore_feed('training', null, 'premium', 'intermediate', 7, 100, 0)));
+select tests.ok('S19 filtro sem conteúdo correspondente devolve vazio (advanced)',
+  (select count(*) from public.explore_feed(null, null, null, 'advanced', 7, 100, 0)) = (select count(*) from t_s19_live where difficulty = 'advanced'));
+
+-- 7) limites de p_limit e p_offset
+select tests.ok('S19 limites: p_limit 0 ou negativo devolve 1 linha; p_limit=1000 devolve no máximo 100; p_offset=-5 equivale a 0',
+  (select count(*) from public.explore_feed(null, null, null, null, 7, 0, 0)) = 1
+  and (select count(*) from public.explore_feed(null, null, null, null, 7, -3, 0)) = 1
+  and (select count(*) from public.explore_feed(null, null, null, null, 7, 1000, 0)) = least((select count(*) from t_s19_live), 100)
+  and (select string_agg(id::text, ',' order by ordinality) from public.explore_feed(null, null, null, null, 7, 15, -5) with ordinality)
+    = (select string_agg(id::text, ',' order by ordinality) from public.explore_feed(null, null, null, null, 7, 15, 0) with ordinality));
+
+-- 2) e 8) agendado e rascunho ficam fora do feed para visitante, herói dona e admin; a data chegando basta.
+-- Ajustes feitos como sistema sobre o seed (t1 de Camila agendado; r5 de Lia, herói do creator1, em rascunho).
+select tests.su();
+update public.content set publish_at = now() + interval '1 day' where id = public.seed_uuid('content:t1');
+update public.content set status = 'draft' where id = public.seed_uuid('content:r5');
+select tests.anon();
+select tests.ok('S19 visitante: agendado e rascunho fora do feed (catálogo cai em 2)',
+  (select count(*) from public.explore_feed(null, null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live) - 2
+  and not exists (select 1 from public.explore_feed(null, null, null, null, 7, 100, 0) where id in (public.seed_uuid('content:t1'), public.seed_uuid('content:r5'))));
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.ok('S19 herói vê o próprio rascunho na tabela (RLS) mas não no feed',
+  (select count(*) from public.content where id = public.seed_uuid('content:r5')) = 1
+  and not exists (select 1 from public.explore_feed(null, null, null, null, 7, 100, 0) where id = public.seed_uuid('content:r5'))
+  and (select count(*) from public.explore_feed(null, null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live) - 2);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S19 admin vê rascunho e agendado na tabela (RLS) mas não no feed',
+  (select count(*) from public.content where id in (public.seed_uuid('content:t1'), public.seed_uuid('content:r5'))) = 2
+  and not exists (select 1 from public.explore_feed(null, null, null, null, 7, 100, 0) where id in (public.seed_uuid('content:t1'), public.seed_uuid('content:r5')))
+  and (select count(*) from public.explore_feed(null, null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live) - 2);
+select tests.su();
+update public.content set publish_at = now() - interval '1 minute' where id = public.seed_uuid('content:t1');
+select tests.anon();
+select tests.ok('S19 data chegou: o agendado entra no feed sem nova ação',
+  exists (select 1 from public.explore_feed(null, null, null, null, 7, 100, 0) where id = public.seed_uuid('content:t1'))
+  and (select count(*) from public.explore_feed(null, null, null, null, 7, 100, 0)) = (select count(*) from t_s19_live) - 1);
+-- restaura o seed: S14 e S15 contam 40 no ar e S15 agenda outros conteúdos
+select tests.su();
+update public.content set publish_at = null where id = public.seed_uuid('content:t1');
+update public.content set status = 'published' where id = public.seed_uuid('content:r5');
+select tests.ok('S19 estado restaurado: catálogo no ar igual à referência',
+  (select count(*) from public.content where public.content_is_live(status, publish_at)) = (select count(*) from t_s19_live)
+  and not exists (select id from t_s19_live except select id from public.content where public.content_is_live(status, publish_at)));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',
