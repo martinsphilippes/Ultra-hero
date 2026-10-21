@@ -975,6 +975,46 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"routine_checks": {
+                  Row: {
+                    "checked_at": string,"done": boolean,"item_id": string,"local_date": string,"timezone": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "checked_at"?: string,"done"?: boolean,"item_id": string,"local_date": string,"timezone": string,"user_id": string
+                  }
+                  Update: {
+                    "checked_at"?: string,"done"?: boolean,"item_id"?: string,"local_date"?: string,"timezone"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "routine_checks_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "routine_items"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"routine_items": {
+                  Row: {
+                    "active": boolean,"content_id": string | null,"created_at": string,"id": string,"note": string | null,"sort_order": number,"time_of_day": string | null,"title": string,"updated_at": string,"user_id": string,"weekdays": (number)[] | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"content_id"?: string | null,"created_at"?: string,"id"?: string,"note"?: string | null,"sort_order"?: number,"time_of_day"?: string | null,"title": string,"updated_at"?: string,"user_id": string,"weekdays"?: (number)[] | null
+                  }
+                  Update: {
+                    "active"?: boolean,"content_id"?: string | null,"created_at"?: string,"id"?: string,"note"?: string | null,"sort_order"?: number,"time_of_day"?: string | null,"title"?: string,"updated_at"?: string,"user_id"?: string,"weekdays"?: (number)[] | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "routine_items_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"seller_memberships": {
                   Row: {
                     "created_at": string,"id": string,"org_id": string,"revoked_at": string | null,"role": string,"user_id": string
@@ -1472,6 +1512,9 @@ isOneToOne: false
                            },
 "recompute_order_status":
 { Args: { "p_order": string }; Returns: undefined
+                           },
+"routine_check":
+{ Args: { "p_done"?: boolean,"p_item": string,"p_timezone": string }; Returns: Json
                            },
 "run_retention":
 { Args: Record<PropertyKey, never>; Returns: Json
