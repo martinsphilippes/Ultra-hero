@@ -1,0 +1,31 @@
+{
+  "title": "Quick access to demo accounts",
+  "codeLabel": "Enter the access code",
+  "unlock": "Unlock",
+  "codeError": "Wrong code.",
+  "listLabel": "Demo accounts",
+  "signInFailed": "We couldn't sign in to that account. Try again.",
+  "note": "Demo environment. Tapping an account signs you out of the current one and into it.",
+  "kinds": {
+    "admin": {
+      "label": "Admin",
+      "description": "Full administration"
+    },
+    "creator": {
+      "label": "Hero / Chef",
+      "description": "Helena Vilar, hero portal"
+    },
+    "seller": {
+      "label": "Supplier",
+      "description": "Cozinha Vértice, supplier portal"
+    },
+    "premium": {
+      "label": "Premium member",
+      "description": "All modules of the simulated plan"
+    },
+    "free": {
+      "label": "Free member",
+      "description": "No subscription"
+    }
+  }
+}

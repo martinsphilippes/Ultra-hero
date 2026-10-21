@@ -1,0 +1,31 @@
+{
+  "title": "Acesso rápido às contas de demonstração",
+  "codeLabel": "Digite o código de acesso",
+  "unlock": "Liberar",
+  "codeError": "Código incorreto.",
+  "listLabel": "Contas de demonstração",
+  "signInFailed": "Não foi possível entrar nessa conta. Tente de novo.",
+  "note": "Ambiente de demonstração. Ao tocar numa conta, você sai da conta atual e entra nela.",
+  "kinds": {
+    "admin": {
+      "label": "Admin",
+      "description": "Administração completa"
+    },
+    "creator": {
+      "label": "Herói / Chef",
+      "description": "Helena Vilar, portal do herói"
+    },
+    "seller": {
+      "label": "Fornecedor",
+      "description": "Cozinha Vértice, portal do fornecedor"
+    },
+    "premium": {
+      "label": "Consumidor premium",
+      "description": "Todos os módulos do plano simulado"
+    },
+    "free": {
+      "label": "Consumidor gratuito",
+      "description": "Sem assinatura"
+    }
+  }
+}
