@@ -69,7 +69,7 @@ export function TileGrid({ query, seed, nextOffset, hasMore, initialCount, child
     [cursor, query, seed, t],
   );
 
-  // Sentinela abaixo da grade: ao se aproximar (600px antes), carrega a próxima página.
+  // Sentinela abaixo da grade: ao se aproximar (200px antes), carrega a próxima página.
   // Recriado a cada cursor para o observador reavaliar a posição depois de anexar um lote.
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") {
@@ -82,7 +82,7 @@ export function TileGrid({ query, seed, nextOffset, hasMore, initialCount, child
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) load(true);
       },
-      { rootMargin: "600px 0px" },
+      { rootMargin: "200px 0px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
