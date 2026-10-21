@@ -1144,6 +1144,164 @@ select tests.ok('S22 RLS ativa nas duas tabelas e RPC do admin security definer 
   and (select prosecdef and proconfig is not null from pg_proc where oid = 'public.admin_set_creator_recipe(uuid, uuid, public.link_status, int)'::regprocedure)
   and not has_function_privilege('anon', 'public.admin_set_creator_recipe(uuid, uuid, public.link_status, int)', 'execute'));
 
+-- ================================================================ S23 · publicação direta pelo herói (0025)
+-- creator_publish_content: o dono publica o próprio rascunho sem fila do admin (vídeo do celular =
+-- cloudflare_stream + licença 'own'); sem regra de acesso vira free, premium do admin é preservado.
+-- creator_unpublish_content: volta a rascunho editável. O admin segue arquivando depois; o fluxo de
+-- revisão antigo continua. Tudo que este cenário publica termina fora do ar (o S14 conta 40 no ar).
+select tests.su();
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+-- segundo herói: vincula o Rafael do seed a um usuário de teste (desfeito no fim do cenário)
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000023' where id = public.seed_uuid('creator:rafael') and user_id is null;
+select tests.ok('S23 licença own + cloudflare_stream é aceita (vídeo gravado pelo herói)',
+  public.media_license_compatible('cloudflare_stream', 'own') and not public.media_license_compatible('cloudflare_stream', 'third_party_embed'));
+select tests.ok('S23 RPCs security definer, search_path fixo, executáveis por authenticated e service_role e nunca por anon',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
+                   and has_function_privilege('authenticated', p.oid, 'execute') and has_function_privilege('service_role', p.oid, 'execute')
+                   and not has_function_privilege('anon', p.oid, 'execute'))
+   from pg_proc p where p.oid in ('public.creator_publish_content(uuid)'::regprocedure, 'public.creator_unpublish_content(uuid)'::regprocedure)));
+
+-- 1) rascunhos do herói (creator1 = Lia): vídeo do celular, vídeo que o admin marca premium,
+--    guia sem corpo, vídeo sem mídia e guia com título em branco
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, summary, media_license_kind) values
+  ('23000000-0000-4000-8000-000000000001', 's23-video-celular', public.seed_uuid('creator:lia'), 'training', 'video', 'Treino relampago S23 gravado no celular', 'Vídeo curto do herói', 'own'),
+  ('23000000-0000-4000-8000-000000000002', 's23-video-premium', public.seed_uuid('creator:lia'), 'training', 'video', 'Video premium S23', null, 'own'),
+  ('23000000-0000-4000-8000-000000000003', 's23-guia-sem-corpo', public.seed_uuid('creator:lia'), 'routine', 'guide', 'Guia S23 sem corpo', null, 'platform_demo'),
+  ('23000000-0000-4000-8000-000000000004', 's23-video-sem-midia', public.seed_uuid('creator:lia'), 'training', 'video', 'Video S23 sem midia', null, 'own'),
+  ('23000000-0000-4000-8000-000000000005', 's23-titulo-branco', public.seed_uuid('creator:lia'), 'routine', 'guide', '   ', null, 'platform_demo');
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values
+  ('23000000-0000-4000-8000-000000000001', '{"kind":"video","intro":""}', 'cloudflare_stream', 'cf-s23-uid-0001'),
+  ('23000000-0000-4000-8000-000000000002', '{"kind":"video","intro":"x"}', 'cloudflare_stream', 'cf-s23-uid-0002'),
+  ('23000000-0000-4000-8000-000000000004', '{}', 'none', null),
+  ('23000000-0000-4000-8000-000000000005', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}', 'none', null);
+select tests.ok('S23 rascunhos criados sem regra de acesso', (select count(*) from public.content where id::text like '23000000-%' and status = 'draft' and access_level is null) = 5);
+select tests.anon();
+select tests.ok('S23 visitante não vê o rascunho antes de publicar', (select count(*) from public.content where id = '23000000-0000-4000-8000-000000000001') = 0);
+
+-- 2) quem não é dono não publica: visitante sem execute, consumidor e outro herói recebem forbidden
+select tests.expect_error('S23 visitante não executa creator_publish_content', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'permission denied');
+select tests.expect_error('S23 visitante não executa creator_unpublish_content', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000001')$q$, 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S23 consumidor não publica conteúdo do herói', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'forbidden');
+select tests.expect_error('S23 consumidor recebe forbidden também para id inexistente', $q$select public.creator_publish_content(gen_random_uuid())$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+select tests.ok('S23 segundo herói está vinculado ao Rafael', public.my_creator_id() = public.seed_uuid('creator:rafael'));
+select tests.expect_error('S23 outro herói não publica rascunho alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, '42501');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S23 admin sem perfil de herói também não usa a RPC do herói (tem as próprias)', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'forbidden');
+select tests.su();
+select tests.ok('S23 tentativas recusadas não mudaram nada nem auditaram', (select status = 'draft' and review_status = 'none' from public.content where id = '23000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.admin_audit where action = 'content.creator_publish'));
+
+-- 3) o dono publica o vídeo: no ar, free, autoaprovação registrada e auditada
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+create temporary table t_s23_pub as select public.creator_publish_content('23000000-0000-4000-8000-000000000001') as r;
+select tests.ok('S23 retorno {id, slug, status}', (select r = jsonb_build_object('id', '23000000-0000-4000-8000-000000000001'::uuid, 'slug', 's23-video-celular', 'status', 'published') from t_s23_pub));
+select tests.ok('S23 publicado, aprovado, free, published_at agora, sem agendamento e no ar',
+  (select status = 'published' and review_status = 'approved' and access_level = 'free' and required_module_id is null
+          and published_at = now() and publish_at is null and public.content_is_live(status, publish_at)
+   from public.content where id = '23000000-0000-4000-8000-000000000001'));
+select tests.ok('S23 rodada de autoaprovação registrada (dono decide, feedback padrão) e visível ao herói',
+  (select count(*) = 1 and bool_and(decision = 'approved' and submitted_by = '10000000-0000-4000-8000-000000000004' and decided_by = '10000000-0000-4000-8000-000000000004'
+                                    and decided_at is not null and feedback = 'Publicação direta pelo herói' and round = 1)
+   from public.content_reviews where content_id = '23000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S23 publicar de novo: not_draft', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000001')$q$, 'not_draft');
+select tests.expect_error('S23 publicado não é editável pelo herói (guarda segue ligada)', $q$update public.content set title = 'x' where id = '23000000-0000-4000-8000-000000000001'$q$, 'content_not_editable');
+do $s23$ declare n int; begin
+  update public.content_bodies set media_ref = 'outro' where content_id = '23000000-0000-4000-8000-000000000001'; get diagnostics n = row_count;
+  perform tests.ok('S23 herói não altera o corpo publicado (RLS do corpo: 0 linhas)', n = 0
+    and (select media_ref from public.content_bodies where content_id = '23000000-0000-4000-8000-000000000001') = 'cf-s23-uid-0001');
+end $s23$;
+select tests.ok('S23 sinalizador de confiança desligado após a RPC', not public.is_trusted_call());
+select tests.anon();
+select tests.ok('S23 visitante vê o vídeo publicado (select)', (select count(*) from public.content where id = '23000000-0000-4000-8000-000000000001') = 1);
+select tests.ok('S23 visitante encontra no explore_feed', exists (select 1 from public.explore_feed(null, 'video', null, null, 7, 100, 0) where id = '23000000-0000-4000-8000-000000000001'));
+select tests.ok('S23 visitante encontra no search_content', exists (select 1 from public.search_content('relampago S23') where id = '23000000-0000-4000-8000-000000000001'));
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S23 consumidor logado consome o vídeo free e lê o corpo', public.can_access_content('23000000-0000-4000-8000-000000000001')
+  and (select count(*) from public.content_bodies where content_id = '23000000-0000-4000-8000-000000000001') = 1);
+select tests.su();
+select tests.ok('S23 auditoria content.creator_publish com ator herói, antes e depois',
+  exists (select 1 from public.admin_audit where action = 'content.creator_publish' and resource_type = 'content'
+            and resource_id = '23000000-0000-4000-8000-000000000001' and actor_id = '10000000-0000-4000-8000-000000000004' and actor_type = 'creator'
+            and before_data ->> 'status' = 'draft' and before_data -> 'access_level' = 'null'::jsonb
+            and after_data ->> 'status' = 'published' and after_data ->> 'access_level' = 'free' and after_data ->> 'media_provider' = 'cloudflare_stream'));
+
+-- 4) premium definido pelo admin é preservado
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+update public.content set access_level = 'premium', required_module_id = public.seed_uuid('module:training_full') where id = '23000000-0000-4000-8000-000000000002';
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+select tests.expect_error('S23 outro herói não despublica nem publica o premium alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select public.creator_publish_content('23000000-0000-4000-8000-000000000002');
+select tests.ok('S23 premium do admin preservado com o mesmo módulo', (select status = 'published' and access_level = 'premium' and required_module_id = public.seed_uuid('module:training_full')
+  from public.content where id = '23000000-0000-4000-8000-000000000002'));
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S23 premium no ar não libera consumo sem o módulo', not public.can_access_content('23000000-0000-4000-8000-000000000002'));
+select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
+select tests.expect_error('S23 outro herói não despublica conteúdo alheio', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+-- o admin continua governando depois: arquiva o publicado pelo herói, que não volta ao ar por conta própria
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_content_status('23000000-0000-4000-8000-000000000002', 'archived', 'Teste S23: admin arquiva publicação direta');
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S23 arquivado pelo admin: herói não despublica (not_published)', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000002')$q$, 'not_published');
+select tests.expect_error('S23 arquivado pelo admin: herói não republica (not_draft)', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'not_draft');
+
+-- 5) pré-condições: corpo, mídia do vídeo, título e licença
+select tests.expect_error('S23 sem content_bodies: missing_body', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000003')$q$, 'missing_body');
+select tests.expect_error('S23 vídeo sem media_ref e sem corpo: missing_media', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000004')$q$, 'missing_media');
+update public.content_bodies set body = '{"kind":"video","intro":"texto"}', media_provider = 'cloudflare_stream', media_ref = '  ' where content_id = '23000000-0000-4000-8000-000000000004';
+select tests.expect_error('S23 vídeo com media_ref em branco (mesmo com corpo): missing_media', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000004')$q$, 'missing_media');
+select tests.expect_error('S23 título em branco: missing_title', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000005')$q$, 'missing_title');
+update public.content_bodies set media_ref = 'cf-s23-uid-0004' where content_id = '23000000-0000-4000-8000-000000000004';
+update public.content set media_license_kind = 'third_party_embed' where id = '23000000-0000-4000-8000-000000000004'; -- estado transitório: o corpo é a escrita final
+select tests.expect_error('S23 licença incoerente com o provedor: checagem da aprovação barra', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000004')$q$, 'media_license_mismatch');
+update public.content set media_license_kind = 'own' where id = '23000000-0000-4000-8000-000000000004'; -- o S16 exige licença coerente em todos os corpos
+select tests.ok('S23 falhas de pré-condição deixam tudo em rascunho e sem rodada de revisão',
+  (select count(*) from public.content where id in ('23000000-0000-4000-8000-000000000003', '23000000-0000-4000-8000-000000000004', '23000000-0000-4000-8000-000000000005') and status = 'draft' and access_level is null) = 3
+  and not exists (select 1 from public.content_reviews where content_id in ('23000000-0000-4000-8000-000000000003', '23000000-0000-4000-8000-000000000004', '23000000-0000-4000-8000-000000000005')));
+
+-- 6) fluxo antigo segue: enviado à revisão e depois publicado direto fecha a rodada aberta (sem duplicar)
+insert into public.content_bodies (content_id, body) values ('23000000-0000-4000-8000-000000000003', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}');
+select public.submit_content_for_review('23000000-0000-4000-8000-000000000003');
+select tests.ok('S23 submit_content_for_review continua funcionando', (select review_status from public.content where id = '23000000-0000-4000-8000-000000000003') = 'in_review');
+select public.creator_publish_content('23000000-0000-4000-8000-000000000003');
+select tests.ok('S23 publicar direto um conteúdo em revisão fecha a rodada aberta como aprovada',
+  (select status = 'published' and review_status = 'approved' from public.content where id = '23000000-0000-4000-8000-000000000003')
+  and (select count(*) = 1 and bool_and(decision = 'approved' and decided_by = '10000000-0000-4000-8000-000000000004')
+       from public.content_reviews where content_id = '23000000-0000-4000-8000-000000000003'));
+
+-- 7) despublicar volta a rascunho editável e tira do ar
+select tests.expect_error('S23 despublicar rascunho: not_published', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000005')$q$, 'not_published');
+create temporary table t_s23_unpub as select public.creator_unpublish_content('23000000-0000-4000-8000-000000000001') as r;
+select tests.ok('S23 despublicar devolve {id, slug, status=draft}', (select r = jsonb_build_object('id', '23000000-0000-4000-8000-000000000001'::uuid, 'slug', 's23-video-celular', 'status', 'draft') from t_s23_unpub));
+select tests.ok('S23 despublicado: rascunho, review_status none, sem agendamento, regra de acesso mantida',
+  (select status = 'draft' and review_status = 'none' and publish_at is null and access_level = 'free' from public.content where id = '23000000-0000-4000-8000-000000000001'));
+update public.content set title = 'Treino relampago S23 editado' where id = '23000000-0000-4000-8000-000000000001';
+update public.content_bodies set media_ref = 'cf-s23-uid-0001b' where content_id = '23000000-0000-4000-8000-000000000001';
+select tests.ok('S23 dono edita título e mídia depois de despublicar', (select c.title = 'Treino relampago S23 editado' and b.media_ref = 'cf-s23-uid-0001b'
+  from public.content c join public.content_bodies b on b.content_id = c.id where c.id = '23000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S23 despublicar de novo: not_published', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000001')$q$, 'not_published');
+select tests.anon();
+select tests.ok('S23 despublicado some do select, do explore_feed e da busca do visitante',
+  (select count(*) from public.content where id = '23000000-0000-4000-8000-000000000001') = 0
+  and not exists (select 1 from public.explore_feed(null, null, null, null, 7, 100, 0) where id = '23000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.search_content('relampago S23') where id = '23000000-0000-4000-8000-000000000001'));
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select public.creator_publish_content('23000000-0000-4000-8000-000000000001');
+select tests.ok('S23 republicar depois de editar abre a 2ª rodada de autoaprovação', (select status from public.content where id = '23000000-0000-4000-8000-000000000001') = 'published'
+  and (select array_agg(round order by round) from public.content_reviews where content_id = '23000000-0000-4000-8000-000000000001') = array[1, 2]);
+select public.creator_unpublish_content('23000000-0000-4000-8000-000000000001');
+select public.creator_unpublish_content('23000000-0000-4000-8000-000000000003');
+select tests.su();
+select tests.ok('S23 auditoria content.creator_unpublish com ator herói', (select count(*) from public.admin_audit where action = 'content.creator_unpublish'
+  and actor_type = 'creator' and actor_id = '10000000-0000-4000-8000-000000000004' and before_data ->> 'status' = 'published' and after_data ->> 'status' = 'draft') = 3);
+
+-- 8) limpeza: nada do S23 fica no ar e o Rafael volta sem usuário (S14/S15 contam o catálogo)
+update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael') and user_id = '10000000-0000-4000-8000-000000000023';
+select tests.ok('S23 nada do cenário ficou no ar', not exists (select 1 from public.content where id::text like '23000000-%' and status = 'published'));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

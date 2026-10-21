@@ -1450,6 +1450,12 @@ isOneToOne: false
 "content_is_live":
 { Args: { "p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: boolean
                            },
+"creator_publish_content":
+{ Args: { "p_content": string }; Returns: Json
+                           },
+"creator_unpublish_content":
+{ Args: { "p_content": string }; Returns: Json
+                           },
 "delete_my_account":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
