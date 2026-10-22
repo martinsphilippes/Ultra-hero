@@ -10,7 +10,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | As 26 migrações aplicadas. 0025 e 0026 aplicadas em 21/10/2026 e conferidas objeto a objeto contra o banco local (código das funções, grants, política, gatilhos e colunas de `stream_uploads` idênticos) |
+| Banco remoto no Supabase | As 29 migrações aplicadas. 0027–0029 (receitas, fase 1) aplicadas em 22/10/2026 a partir do arquivo exato do commit (conferido por md5), com dry-run do backfill antes; contagens idênticas ao banco local (169 funções, 139 políticas, 84 tabelas) e corpos das receitas publicadas inalterados (md5 igual antes e depois) |
 | Testes | 543 cenários de banco, 849 unitários e 134 E2E com axe (mais 2 do envio real ao Cloudflare, ligados só com `E2E_STREAM_REAL=1`). Todos passam |
 
 
@@ -124,7 +124,7 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
   - `SUPABASE_SERVICE_ROLE_KEY` cadastrada em 20/10/2026 (Sensitive, Production e Preview). Os três crons responderam ok em produção.
 - **Crons**: o plano Hobby só permite execuções diárias, às 03:00, 03:30 e 04:00 UTC. O transporte simulado também avança ao abrir a página de pedidos.
 - **Supabase**: projeto `ultra-hero` em sa-east-1, Postgres 17.
-- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, a 0019 (só dados do seed), a 0020 (função do Explorar em grade), a 0021 (produtos Ultra.e Life e alocação produto↔herói) a 0022 (itens de rotina e marcação diária do "Hoje") pelo conector, em blocos, a 0023 (desempate único na busca) e a 0024 (receitas por herói e etapa demonstrativa) pelo conector. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
+- **Como o banco remoto foi aplicado**: 0001 a 0005 pelo conector, 0006 a 0015 e o seed pelo SQL Editor (o conector exige confirmação humana para comandos destrutivos e ela não aparece neste ambiente), a 0016 pelo conector em 15 blocos as 0017 e 0018 pelo conector em 16 blocos, com E2E 40/40 contra o banco remoto antes de publicar o código, a 0019 (só dados do seed), a 0020 (função do Explorar em grade), a 0021 (produtos Ultra.e Life e alocação produto↔herói) a 0022 (itens de rotina e marcação diária do "Hoje") pelo conector, em blocos, a 0023 (desempate único na busca) e a 0024 (receitas por herói e etapa demonstrativa) pelo conector. Da 0027 em diante, o banco baixa o arquivo da migração direto do GitHub pela extensão `http` (schema `extensions`, que a API não expõe) e só executa se o md5 bater com o do repositório; a 0029 foi em duas partes, com o dry-run no meio. Depois de cada etapa, grants, políticas, RLS e dados foram conferidos contra a referência local.
 
 ## O que depende de você, em ordem
 1. **SMTP próprio**: o envio padrão de e-mails do Supabase tem limite baixo e serve só para testes.

@@ -23,7 +23,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 - [ ] Documento `docs/privacy-and-retention.md` revisado por jurídico
 
 ## Integridade do produto
-- [ ] **(B)** Receitas fase 1 (0027–0029): deploy deste código ANTES de aplicar a 0027 (o app antigo lê `content_localizations.body`, que a 0027 tira do grant); 0029 só pelo roteiro manual com dry-run (`docs/decisions/recipes-module.md`, "Aplicação no remoto")
+- [x] **(B)** Receitas fase 1 (0027–0029): app publicado antes (E2E 146/146 contra produção com o banco antigo), 0027 e 0028 aplicadas, 0029 com dry-run (41 ingredientes e 28 etapas literais, 8 receitas) e bloco final; E2E 146/146 depois e nenhum erro de execução na Vercel (22/10/2026)
 - [ ] **(B)** Conteúdo publicado sempre com regra de acesso e corpo (consulta: `content where status='published' and (access_level is null or id not in (select content_id from content_bodies))` = 0)
 - [ ] **(B)** Rótulos de demonstração em catálogo, carrinho, checkout, pedidos, planos
 - [ ] Personalidades marcadas como fictícias; nenhuma imagem/nome real
