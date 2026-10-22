@@ -195,8 +195,61 @@ test.describe("Modo Cozinha (conta free)", () => {
     await expect(all).toBeVisible();
     // g1 rende 2: com 4 porções, "300 g" de frango vira "600 g"; texto livre não é ajustado
     await expect(all).toContainText("600 g");
-    await expect(all).toContainText("não ajustado automaticamente");
+    // o mesmo aviso da página (uma chave só: recipes.page.notScaled)
+    await expect(all).toContainText("Não ajustado automaticamente");
     await expect(page.getByTestId("cook-back")).toHaveAttribute("href", `${RECIPE_PATH}?porcoes=4`);
+  });
+
+  // Integração das fases 3 e 4: a mesma receita com ?porcoes=4 mostra as mesmas quantidades na página e
+  // no Modo Cozinha (uma regra de porções), o botão não sai na impressão e a volta mantém as porções.
+  test("g1 com ?porcoes=4: as mesmas 3 quantidades na página e no Modo Cozinha, e a volta com as mesmas porções", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile", "jornada do celular (projeto mobile)");
+    await loginFree(page);
+    await openRecipeWithStep(page);
+    await page.goto(`${RECIPE_PATH}?porcoes=4`);
+    await page.getByTestId("recipe-view").waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
+    const link = page.getByTestId("recipe-cook-mode");
+    test.skip((await link.count()) === 0, "receita sem estrutura neste banco");
+    await expect(page.getByTestId("servings-value")).toHaveValue("4");
+
+    const names = ["Peito de frango", "Azeite", "Abobrinha"];
+    const onPage: string[] = [];
+    for (const name of names) {
+      const amount = page.getByTestId("recipe-ingredient").filter({ hasText: name }).first().getByTestId("recipe-ingredient-amount");
+      onPage.push(((await amount.textContent()) ?? "").trim());
+    }
+    // g1 rende 2: 300 g → 600 g, 2 colheres → 4, 1 → 2 (a receita do seed)
+    expect(onPage).toEqual(["600 g", "4 colheres de sopa", "2"]);
+    const herbsOnPage = page.getByTestId("recipe-ingredient").filter({ hasText: "Molho de ervas" });
+    await expect(herbsOnPage.getByTestId("recipe-ingredient-not-scaled")).toHaveText("Não ajustado automaticamente");
+
+    // impressão: a linha de ações (com o Modo Cozinha) não sai no papel; as quantidades ajustadas saem
+    await page.emulateMedia({ media: "print" });
+    await expect(link).toBeHidden();
+    await expect(page.getByTestId("recipe-ingredient").filter({ hasText: names[0] })).toContainText(onPage[0]);
+    await page.emulateMedia({ media: "screen" });
+
+    await expect(link).toHaveText("Modo Cozinha");
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${RECIPE_PATH}/cozinha\\?porcoes=4$`));
+    await expect(page.getByTestId("cook-mode")).toBeVisible();
+    await page.getByTestId("cook-ingredients-open").click();
+    const all = page.getByTestId("cook-all-ingredients");
+    await expect(all).toBeVisible();
+    const inKitchen: string[] = [];
+    for (const name of names) {
+      const amount = all.getByTestId("cook-ingredient").filter({ has: page.getByTestId("cook-ingredient-name").getByText(name, { exact: true }) }).getByTestId("cook-ingredient-amount");
+      inKitchen.push(((await amount.textContent()) ?? "").trim());
+    }
+    expect(inKitchen).toEqual(onPage);
+    await expect(all.getByTestId("cook-ingredient").filter({ hasText: "Molho de ervas" }).getByTestId("cook-ingredient-not-scaled")).toHaveText("Não ajustado automaticamente");
+    await page.keyboard.press("Escape");
+
+    // voltar leva à página com o mesmo ?porcoes=
+    await page.getByTestId("cook-back").click();
+    await expect(page).toHaveURL(new RegExp(`${RECIPE_PATH}\\?porcoes=4$`));
+    await expect(page.getByTestId("servings-value")).toHaveValue("4");
+    await expect(page.getByTestId("recipe-ingredient").filter({ hasText: names[0] })).toContainText(onPage[0]);
   });
 });
 
@@ -222,6 +275,11 @@ test.describe("Minha coleção de receitas (conta free)", () => {
       await page.goto("/profile/receitas");
       await expect(page.getByRole("heading", { level: 1, name: "Minha coleção de receitas" })).toBeVisible();
       await expect(page.getByTestId("saved-list")).toContainText(RECIPE.title);
+      // o card da coleção é o RecipeCard do catálogo: tempo, porções e alérgenos como no Explorar
+      const card = page.getByTestId("saved-list").getByTestId("recipe-card").filter({ hasText: RECIPE.title });
+      await expect(card.getByTestId("recipe-card-time")).toBeVisible();
+      await expect(card).toContainText("2 porções");
+      await expect(card.getByTestId("recipe-card-allergens")).toBeVisible();
       // remover das salvas pede confirmação; cancelar mantém a receita
       await page.getByRole("button", { name: `Remover ${RECIPE.title} das salvas` }).click();
       const confirmRemove = page.getByRole("dialog", { name: "Remover das salvas?" });

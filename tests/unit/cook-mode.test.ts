@@ -9,9 +9,7 @@ import {
   formatClock,
   keyToNav,
   parseCookProgress,
-  parseServingsParam,
   recipeHref,
-  scaleQuantity,
   serializeCookProgress,
   shouldAlarmOnRestore,
   startTimer,
@@ -22,9 +20,12 @@ import {
 } from "@/lib/recipes/cook-mode";
 import { UNIT_LABELS_PT } from "@/lib/recipes/quantity";
 import type { RecipeIngredientRow, RecipeRows } from "@/lib/recipes/rows";
+import { parseServingsParam } from "@/lib/recipes/scale";
 
-// Modo Cozinha (fase 4): porções da URL, arredondamento de cozinha, etapas com os ingredientes
-// ligados, navegação por teclado/gesto, cronômetro pelo horário de término e progresso por 24 h.
+// Modo Cozinha (fase 4): porções da URL (a mesma regra da página, scale.ts), etapas com os
+// ingredientes ligados, navegação por teclado/gesto, cronômetro pelo horário de término e progresso
+// por 24 h. O arredondamento de cozinha é testado em recipe-page.test.ts (uma regra só) e a igualdade
+// página × Modo Cozinha em recipe-servings-parity.test.ts.
 
 const ing = (id: string, position: number, name: string, extra: Partial<RecipeIngredientRow> = {}): RecipeIngredientRow => ({
   id,
@@ -85,44 +86,22 @@ const G1: Pick<RecipeRows, "details" | "ingredients" | "steps" | "stepIngredient
 const opts = { contentId: "c1", slug: "bowl-g1", title: "Bowl", labels: UNIT_LABELS_PT, locale: "pt-BR" };
 
 describe("porções vindas da URL", () => {
-  it("aceita de 1 a 50, ignora valor inválido, igual à base ou sem porção-base", () => {
-    expect(parseServingsParam("4", 2)).toBe(4);
-    expect(parseServingsParam(["6", "8"], 2)).toBe(6);
-    expect(parseServingsParam("2", 2)).toBeNull();
-    expect(parseServingsParam("0", 2)).toBeNull();
-    expect(parseServingsParam("51", 2)).toBeNull();
-    expect(parseServingsParam("4.5", 2)).toBeNull();
-    expect(parseServingsParam("abc", 2)).toBeNull();
-    expect(parseServingsParam("4", null)).toBeNull();
-    expect(parseServingsParam(undefined, 2)).toBeNull();
+  it("a mesma leitura da página: de 1 a 50, inteiro; o resto não ajusta", () => {
+    expect(parseServingsParam("4")).toBe(4);
+    expect(parseServingsParam(["6", "8"])).toBe(6);
+    expect(parseServingsParam("2")).toBe(2); // igual à base: fator 1, a URL de volta mantém o número
+    for (const bad of ["0", "51", "4.5", "abc", undefined]) expect(parseServingsParam(bad)).toBeNull();
   });
 
   it("leva o ajuste para o Modo Cozinha e de volta para a receita", () => {
     expect(cookModeHref("bowl-g1", "4")).toBe("/content/bowl-g1/cozinha?porcoes=4");
     expect(cookModeHref("bowl-g1", "<script>")).toBe("/content/bowl-g1/cozinha");
     expect(cookModeHref("bowl-g1", null)).toBe("/content/bowl-g1/cozinha");
+    // fora de 1–50 não vai para a URL (antes passava qualquer número de 1 a 3 dígitos)
+    expect(cookModeHref("bowl-g1", "0")).toBe("/content/bowl-g1/cozinha");
+    expect(cookModeHref("bowl-g1", "99")).toBe("/content/bowl-g1/cozinha");
     expect(recipeHref("bowl-g1", 4)).toBe("/content/bowl-g1?porcoes=4");
     expect(recipeHref("bowl-g1", null)).toBe("/content/bowl-g1");
-  });
-});
-
-describe("arredondamento de cozinha", () => {
-  it("fator 1 não mexe em nada", () => {
-    expect(scaleQuantity(1 / 3, "cup", 1)).toEqual({ quantity: 1 / 3, approx: false });
-  });
-  it("g e ml em múltiplos de 5 com 2 algarismos significativos acima de 10", () => {
-    expect(scaleQuantity(300, "g", 2)).toEqual({ quantity: 600, approx: false });
-    expect(scaleQuantity(450, "g", 1.5)).toEqual({ quantity: 680, approx: true }); // 675 → 680
-    expect(scaleQuantity(100, "ml", 1 / 3)).toEqual({ quantity: 35, approx: true }); // 33,3 → 33 → 35
-    expect(scaleQuantity(1.5, "l", 2)).toEqual({ quantity: 3, approx: false });
-    expect(scaleQuantity(1.5, "kg", 1.25)).toEqual({ quantity: 1.9, approx: true });
-  });
-  it("colheres e xícaras no quarto mais próximo; contagem em meia unidade", () => {
-    expect(scaleQuantity(2, "tbsp", 1.5)).toEqual({ quantity: 3, approx: false });
-    expect(scaleQuantity(1, "cup", 1 / 3)).toEqual({ quantity: 0.25, approx: true });
-    expect(scaleQuantity(1, null, 1.5)).toEqual({ quantity: 1.5, approx: false });
-    expect(scaleQuantity(1, "clove", 1 / 3)).toEqual({ quantity: 0.5, approx: true });
-    expect(scaleQuantity(10, null, 0.35)).toEqual({ quantity: 3.5, approx: false });
   });
 });
 
@@ -161,14 +140,24 @@ describe("modelo do Modo Cozinha", () => {
     expect(model.baseServings).toBe(2);
   });
 
-  it("3 porções de uma receita de 2 arredonda com '≈' e usa o separador do idioma", () => {
+  it("3 porções de uma receita de 2 arredonda como a página (kg com 2 casas) e usa o separador do idioma", () => {
     const pt = buildCookModel(G1, { ...opts, servings: 3 });
     expect(pt.ingredients.find((i) => i.name === "Peito de frango")).toMatchObject({ amount: "450 g", approx: false });
     expect(pt.ingredients.find((i) => i.name === "Abobrinha")).toMatchObject({ amount: "1 1/2", approx: false });
     const kg = buildCookModel({ ...G1, ingredients: [ing("k", 1, "Farinha", { quantity: 1.5, unit: "kg" })], stepIngredients: [] }, { ...opts, servings: 3 });
-    expect(kg.ingredients[0]).toMatchObject({ amount: "2,3 kg", approx: true });
+    expect(kg.ingredients[0]).toMatchObject({ amount: "2,25 kg", approx: false });
     const en = buildCookModel({ ...G1, ingredients: [ing("k", 1, "Flour", { quantity: 1.5, unit: "kg" })], stepIngredients: [] }, { ...opts, locale: "en", servings: 3 });
-    expect(en.ingredients[0].amount).toBe("2.3 kg");
+    expect(en.ingredients[0].amount).toBe("2.25 kg");
+    // 1 xícara para 1/3 → 1/4 com "≈" (o arredondamento afastou mais de 1% do cálculo)
+    const cup = buildCookModel({ ...G1, details: { ...G1.details!, servings: 3 }, ingredients: [ing("c", 1, "Arroz", { quantity: 1, unit: "cup" })], stepIngredients: [] }, { ...opts, servings: 1 });
+    expect(cup.ingredients[0]).toMatchObject({ amount: "1/4 xícara", approx: true });
+  });
+
+  it("?porcoes= igual às porções da receita: nada ajustado, nenhum aviso", () => {
+    const model = buildCookModel(G1, { ...opts, servings: 2 });
+    expect(model.servings).toBe(2);
+    expect(model.ingredients.every((i) => !i.notScaled && !i.approx)).toBe(true);
+    expect(model.ingredients.find((i) => i.name === "Peito de frango")?.amount).toBe("300 g");
   });
 
   it("sem porção-base ignora o ajuste", () => {

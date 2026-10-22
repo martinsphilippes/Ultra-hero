@@ -3,17 +3,17 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Bookmark, ChefHat, Heart, History, ListChecks } from "lucide-react";
-import { ContentCard } from "@/components/catalog";
 import { RemoveFromListButton } from "@/components/discover/explore/RemoveFromListButton";
-import { CARD_GRID } from "@/components/discover/grid";
 import { UrlTabs } from "@/components/discover/UrlTabs";
+import { RecipeCard } from "@/components/recipes/catalog/RecipeCard";
+import { RECIPE_GRID } from "@/components/recipes/catalog/grid";
 import { HistoryPanel } from "@/components/recipes/collection/HistoryPanel";
 import { RemoveRecipeButton } from "@/components/recipes/collection/RemoveRecipeButton";
 import { Button, EmptyState, ErrorState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate, formatRelativeTime } from "@/i18n/format";
 import { requireUser } from "@/lib/auth/session";
-import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
+import { RECIPE_CARD_SELECT, toRecipeCard, type RecipeCardData } from "@/lib/recipes/card";
 import { categoryCounts, collectionHref, parseCollectionParams, type CollectionTab } from "@/lib/recipes/collection";
 import { historyCutoff, loadHistoryPref, RECIPE_HISTORY_LIMIT } from "@/lib/recipes/history";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +25,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 type SearchParams = { searchParams: Promise<Record<string, string | string[] | undefined>> };
-type CardRow = { content_id: string; content: ContentCardData | null };
+// O card da coleção é o RecipeCard do catálogo (foto 4:5, chef, tempo, porções, alérgenos e dietas
+// declarados), lido com o mesmo RECIPE_CARD_SELECT: a mesma receita aparece igual nos dois lugares.
+type CardRaw = Parameters<typeof toRecipeCard>[0];
+
+function toCardRows<T extends { content_id: string; content: CardRaw | null }>(rows: readonly T[]): (Omit<T, "content"> & { content: RecipeCardData })[] {
+  return rows.flatMap((r) => (r.content ? [{ ...r, content: toRecipeCard(r.content) }] : []));
+}
 
 const chipClass =
   "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
@@ -55,12 +61,12 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
   if (params.tab === "salvas") {
     const { data, error } = await supabase
       .from("favorites")
-      .select(`content_id, created_at, content:content!inner(${CONTENT_CARD_SELECT})`)
+      .select(`content_id, created_at, content:content!inner(${RECIPE_CARD_SELECT})`)
       .eq("user_id", user.id)
       .eq("content.type", "recipe")
       .order("created_at", { ascending: false })
       .limit(200);
-    const rows = ((data ?? []) as unknown as CardRow[]).filter((r): r is CardRow & { content: ContentCardData } => Boolean(r.content));
+    const rows = toCardRows((data ?? []) as unknown as { content_id: string; content: CardRaw | null }[]);
     const ids = rows.map((r) => r.content_id);
     const [linksRes, catsRes] = ids.length
       ? await Promise.all([
@@ -127,11 +133,11 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
             <EmptyState size="sm" icon={<ChefHat />} title={t("saved.emptyCategory")} />
           </div>
         ) : (
-          <ul className={CARD_GRID} aria-label={t("tabs.saved")} data-testid="saved-list">
+          <ul className={RECIPE_GRID} aria-label={t("tabs.saved")} data-testid="saved-list">
             {visible.map((row, index) => (
               <li key={row.content_id} className="flex h-full flex-col gap-2">
                 <div className="flex-1">
-                  <ContentCard content={row.content} priority={index === 0} />
+                  <RecipeCard recipe={row.content} priority={index === 0} />
                 </div>
                 <RemoveRecipeButton kind="saved" contentId={row.content_id} title={row.content.title} />
               </li>
@@ -146,15 +152,15 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
     const { data: items } = listIds.length
       ? await supabase
           .from("list_items")
-          .select(`list_id, added_at, content:content!inner(${CONTENT_CARD_SELECT})`)
+          .select(`list_id, added_at, content:content!inner(${RECIPE_CARD_SELECT})`)
           .in("list_id", listIds)
           .eq("content.type", "recipe")
           .order("added_at", { ascending: false })
       : { data: [] };
-    const byList = new Map<string, ContentCardData[]>();
-    for (const item of (items ?? []) as unknown as { list_id: string; content: ContentCardData | null }[]) {
+    const byList = new Map<string, RecipeCardData[]>();
+    for (const item of (items ?? []) as unknown as { list_id: string; content: CardRaw | null }[]) {
       if (!item.content) continue;
-      byList.set(item.list_id, [...(byList.get(item.list_id) ?? []), item.content]);
+      byList.set(item.list_id, [...(byList.get(item.list_id) ?? []), toRecipeCard(item.content)]);
     }
     const withRecipes = (lists ?? []).filter((l) => byList.has(l.id));
     const withoutRecipes = (lists ?? []).length - withRecipes.length;
@@ -188,11 +194,11 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
                   <Link href={`/explore/lists/${list.id}`}>{t("lists.open")}</Link>
                 </Button>
               </div>
-              <ul className={CARD_GRID}>
+              <ul className={RECIPE_GRID}>
                 {recipes.map((content) => (
                   <li key={content.id} className="flex h-full flex-col gap-2">
                     <div className="flex-1">
-                      <ContentCard content={content} />
+                      <RecipeCard recipe={content} />
                     </div>
                     <RemoveFromListButton listId={list.id} contentId={content.id} title={content.title} />
                   </li>
@@ -217,13 +223,13 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
       pref.available && pref.enabled
         ? await supabase
             .from("recipe_view_history")
-            .select(`content_id, viewed_at, content:content(${CONTENT_CARD_SELECT})`)
+            .select(`content_id, viewed_at, content:content(${RECIPE_CARD_SELECT})`)
             .eq("user_id", user.id)
             .gte("viewed_at", historyCutoff().toISOString())
             .order("viewed_at", { ascending: false })
             .limit(RECIPE_HISTORY_LIMIT)
         : { data: [] };
-    const rows = ((history ?? []) as unknown as (CardRow & { viewed_at: string })[]).filter((r): r is CardRow & { viewed_at: string; content: ContentCardData } => Boolean(r.content));
+    const rows = toCardRows((history ?? []) as unknown as { content_id: string; viewed_at: string; content: CardRaw | null }[]);
 
     panel = !pref.available ? (
       <div className="rounded-2xl border border-border bg-surface" data-testid="history-unavailable">
@@ -245,11 +251,11 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
             <EmptyState size="sm" icon={<History />} title={t("history.emptyTitle")} description={t("history.emptyDescription")} />
           </div>
         ) : (
-          <ul className={CARD_GRID} aria-label={t("tabs.history")} data-testid="history-list">
+          <ul className={RECIPE_GRID} aria-label={t("tabs.history")} data-testid="history-list">
             {rows.map((row) => (
               <li key={row.content_id} className="flex h-full flex-col gap-2">
                 <div className="flex-1">
-                  <ContentCard content={row.content} />
+                  <RecipeCard recipe={row.content} />
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="type-caption text-fg-muted">{t("history.viewed", { when: formatRelativeTime(row.viewed_at, uiLocale) })}</p>

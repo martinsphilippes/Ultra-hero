@@ -856,7 +856,7 @@
     },
     "invite": {
       "title": "Abra as receitas com a etapa demonstrativa",
-      "description": "Os cards ficam abertos a todos. Para ver ingredientes, preparo e o modo cozinha, conclua a etapa demonstrativa ({total} passos rápidos).",
+      "description": "Os cards ficam abertos a todos. Para ver ingredientes, preparo e o Modo Cozinha, conclua a etapa demonstrativa ({total} passos rápidos).",
       "action": "Fazer a etapa",
       "visitorAction": "Entrar e fazer a etapa"
     }

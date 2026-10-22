@@ -12,7 +12,6 @@
     "progress": "Step {n} of {total}",
     "doneCount": "{n, plural, =0 {No steps done} =1 {1 of {total} steps done} other {# of {total} steps done}}",
     "stepIngredients": "In this step",
-    "notScaled": "not adjusted automatically",
     "stepDone": "Step done",
     "noSteps": "This recipe has no steps for cook mode yet.",
     "settings": "Cook mode preferences",

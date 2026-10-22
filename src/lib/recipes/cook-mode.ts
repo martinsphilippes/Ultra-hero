@@ -1,65 +1,23 @@
-// Modo Cozinha (fase 4): regras puras para o servidor, o navegador e os testes. Ajuste de porções vindo
-// da URL (?porcoes=), modelo das etapas com os ingredientes de cada uma, navegação por teclado/gesto,
-// cronômetro pelo horário de término e o progresso guardado no aparelho por 24 h.
-import { METRIC_UNITS, type RecipeUnit } from "./codes";
-import { formatIngredientAmount, type UnitLabels } from "./view-model";
+// Modo Cozinha (fase 4): regras puras para o servidor, o navegador e os testes. Modelo das etapas com
+// os ingredientes de cada uma, navegação por teclado/gesto, cronômetro pelo horário de término e o
+// progresso guardado no aparelho por 24 h. O ajuste de porções (?porcoes=) é o MESMO da página da
+// receita (scale.ts + scaledAmount): a mesma receita com o mesmo N mostra as mesmas quantidades.
+import { formatIngredientAmount, scaledAmount, type UnitLabels } from "./view-model";
 import type { RecipeIngredientRow, RecipeRows } from "./rows";
 import { recipeMediaUrl } from "./media";
+import { parseServingsParam, servingsFactor } from "./scale";
 
 // ---------------------------------------------------------------- porções
-export const MIN_SERVINGS = 1;
-
-/** Endereço do Modo Cozinha levando o ajuste de porções da página da receita. */
+/** Endereço do Modo Cozinha levando o ajuste de porções da página (só um inteiro de 1 a 50). */
 export function cookModeHref(slug: string, servings: string | null | undefined): string {
   const base = `/content/${slug}/cozinha`;
-  return servings && /^\d{1,3}$/.test(servings) ? `${base}?porcoes=${servings}` : base;
+  const n = parseServingsParam(servings);
+  return n !== null ? `${base}?porcoes=${n}` : base;
 }
 
 /** Volta à receita completa com o mesmo ajuste de porções. */
 export function recipeHref(slug: string, servings: number | null): string {
   return servings ? `/content/${slug}?porcoes=${servings}` : `/content/${slug}`;
-}
-export const MAX_SERVINGS = 50;
-
-/** Porções pedidas na URL; sem porção-base, inválidas ou iguais à base valem como "sem ajuste" (null). */
-export function parseServingsParam(raw: string | string[] | null | undefined, base: number | null): number | null {
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  if (!base || value === null || value === undefined || !/^\d{1,3}$/.test(value.trim())) return null;
-  const n = Number(value.trim());
-  if (n < MIN_SERVINGS || n > MAX_SERVINGS || n === base) return null;
-  return n;
-}
-
-const SPOON_UNITS: readonly RecipeUnit[] = ["tsp", "tbsp", "cup"];
-
-function twoSignificant(v: number): number {
-  const magnitude = Math.pow(10, Math.floor(Math.log10(v)) - 1);
-  return Math.round(v / magnitude) * magnitude;
-}
-
-/**
- * Quantidade multiplicada e arredondada como numa cozinha: massa e volume com 2 algarismos
- * significativos acima de 10 (g e ml em múltiplos de 5), colheres e xícaras no quarto mais próximo,
- * contagens em meia unidade. `approx` marca quando o arredondamento mudou o número (mostra "≈").
- */
-export function scaleQuantity(quantity: number, unit: RecipeUnit | null, factor: number): { quantity: number; approx: boolean } {
-  if (factor === 1) return { quantity, approx: false };
-  const raw = quantity * factor;
-  let rounded: number;
-  if (unit !== null && METRIC_UNITS.includes(unit)) {
-    if (raw > 10) {
-      rounded = twoSignificant(raw);
-      if (unit === "g" || unit === "ml") rounded = Math.max(5, Math.round(rounded / 5) * 5);
-    } else {
-      rounded = Math.max(0.1, Math.round(raw * 10) / 10);
-    }
-  } else if (unit !== null && SPOON_UNITS.includes(unit)) {
-    rounded = Math.max(0.25, Math.round(raw * 4) / 4);
-  } else {
-    rounded = Math.max(0.5, Math.round(raw * 2) / 2);
-  }
-  rounded = Math.round(rounded * 1000) / 1000;
-  return { quantity: rounded, approx: Math.abs(rounded - raw) > 1e-6 };
 }
 
 // ---------------------------------------------------------------- modelo do Modo Cozinha
@@ -99,30 +57,12 @@ export type CookModel = {
 };
 
 function cookIngredient(i: RecipeIngredientRow, factor: number, labels: UnitLabels, locale: string): CookIngredient {
-  if (i.to_taste) return { id: i.id, name: i.name, amount: null, approx: false, toTaste: true, optional: i.optional, note: i.note, notScaled: factor !== 1 };
-  if (i.quantity !== null) {
-    const scaled = scaleQuantity(i.quantity, i.unit, factor);
-    return {
-      id: i.id,
-      name: i.name,
-      amount: formatIngredientAmount(scaled.quantity, i.unit, null, labels, locale),
-      approx: scaled.approx,
-      toTaste: false,
-      optional: i.optional,
-      note: i.note,
-      notScaled: false,
-    };
-  }
-  return {
-    id: i.id,
-    name: i.name,
-    amount: formatIngredientAmount(null, null, i.quantity_text, labels, locale),
-    approx: false,
-    toTaste: false,
-    optional: i.optional,
-    note: i.note,
-    notScaled: factor !== 1,
-  };
+  const common = { id: i.id, name: i.name, toTaste: i.to_taste, optional: i.optional, note: i.note };
+  // "a gosto" não tem número: igual à página, só o aviso quando as porções mudam
+  if (i.to_taste) return { ...common, amount: null, approx: false, notScaled: factor !== 1 };
+  if (factor === 1) return { ...common, amount: formatIngredientAmount(i.quantity, i.unit, i.quantity_text, labels, locale), approx: false, notScaled: false };
+  const scaled = scaledAmount({ quantity: i.quantity, unit: i.unit, quantityText: i.quantity_text }, factor, labels, locale);
+  return { ...common, amount: scaled.text, approx: scaled.approx, notScaled: !scaled.scaled };
 }
 
 export function buildCookModel(
@@ -131,7 +71,8 @@ export function buildCookModel(
 ): CookModel {
   const base = rows.details?.servings ?? null;
   const servings = base ? opts.servings : null;
-  const factor = base && servings ? servings / base : 1;
+  // o mesmo fator da página (servingsFactor limita a 1–50 e ignora receita sem porções)
+  const factor = servingsFactor(base, servings);
   const locale = opts.locale ?? "pt-BR";
   const ingredients = [...rows.ingredients].sort((a, b) => a.position - b.position).map((i) => cookIngredient(i, factor, opts.labels, locale));
   const byId = new Map(ingredients.map((i) => [i.id, i]));
