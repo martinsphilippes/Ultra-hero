@@ -1,6 +1,5 @@
 import { Search } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { Button, FormField, Input, Select } from "@/components/ui";
 
 export type FilterOption = { value: string; label: string };
@@ -54,8 +53,10 @@ export async function FilterBar({ action, fields, active, hidden }: Props) {
         </Button>
         {active && (
           <Button asChild size="sm" variant="ghost">
-            {/* limpar mantém os campos ocultos (a aba atual), como o próprio formulário */}
-            <Link href={hidden && Object.keys(hidden).length > 0 ? `${action}?${new URLSearchParams(hidden).toString()}` : action}>{t("clearFilters")}</Link>
+            {/* limpar mantém os campos ocultos (a aba atual), como o próprio formulário. Navegação de
+                documento (<a>), como o envio GET do formulário: o roteador do Next às vezes descartava a
+                ida para a mesma rota com outros parâmetros e a tela não mudava (visto em /admin/links) */}
+            <a href={hidden && Object.keys(hidden).length > 0 ? `${action}?${new URLSearchParams(hidden).toString()}` : action}>{t("clearFilters")}</a>
           </Button>
         )}
       </div>
