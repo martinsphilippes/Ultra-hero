@@ -6,7 +6,8 @@ import { CONTENT_TILE_SELECT } from "@/components/discover/explore/tiles";
 import { getUser } from "@/lib/auth/session";
 import { buildCreatorLibraries, type CreatorLibrary } from "@/lib/catalog/creator-libraries";
 import { groupCreatorProducts, mergeCreatorProducts, type CreatorProduct, type CreatorProductDirectRow, type CreatorProductLinkRow } from "@/lib/catalog/creator-products";
-import { PRODUCT_CARD_SELECT, PROGRAM_CARD_SELECT, liveContentFilter, type ProductCardData, type ProgramCardData } from "@/lib/catalog/queries";
+import type { ProgramShelfSource } from "@/lib/catalog/program-shelves";
+import { PRODUCT_CARD_SELECT, PROGRAM_CARD_SELECT, liveContentFilter, type ProductCardData } from "@/lib/catalog/queries";
 import type { Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,11 +35,11 @@ export type HubProduct = ProductCardData & { demo_stock: number | null };
 type LinkRow = CreatorProductLinkRow<HubProduct>;
 type DirectRow = CreatorProductDirectRow<HubProduct>;
 
-export type HubLibrary = CreatorLibrary<ContentTileData, ProgramCardData, CreatorProduct<HubProduct>>;
+export type HubLibrary = CreatorLibrary<ContentTileData, ProgramShelfSource, CreatorProduct<HubProduct>>;
 
 export type CreatorHub = {
   contents: ContentTileData[];
-  programs: ProgramCardData[];
+  programs: ProgramShelfSource[];
   products: CreatorProduct<HubProduct>[];
   libraries: HubLibrary[];
   /** Kill switch do comércio: desligado, produtos somem e nada é contado. */
@@ -76,7 +77,7 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
   const [supabase, user] = await Promise.all([createClient(), getUser()]);
   const [contentRes, programRes, linksRes, directRes, settingsRes, recipeLinksRes] = await Promise.all([
     supabase.from("content").select(CONTENT_TILE_SELECT).eq("creator_id", creator.id).eq("status", "published").or(liveContentFilter()).order("published_at", { ascending: false }).limit(100),
-    supabase.from("programs").select(PROGRAM_CARD_SELECT).eq("creator_id", creator.id).eq("status", "published").order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(50),
+    supabase.from("programs").select(`${PROGRAM_CARD_SELECT}, current_version_id`).eq("creator_id", creator.id).eq("status", "published").order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(50),
     supabase
       .from("content_product_links")
       .select(LINK_SELECT)
@@ -106,7 +107,7 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
     .map((row) => row.content)
     .filter((c): c is ContentTileData => Boolean(c) && !ownIds.has(c!.id));
   const contents = [...own, ...endorsed];
-  const programs = ((programRes.data ?? []) as unknown as ProgramCardData[]).filter((p) => p.version);
+  const programs = ((programRes.data ?? []) as unknown as ProgramShelfSource[]).filter((p) => p.version);
   const commerceEnabled = !settingsRes.error && isCommerceEnabled(settingsRes.data);
 
   // Produtos do herói: alocação direta validada primeiro, depois os ligados por conteúdo (sem repetir).

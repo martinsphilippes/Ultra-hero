@@ -25,5 +25,32 @@
   "tile": {
     "premium": "Requer plano {plan}",
     "unavailable": "Indisponível"
+  },
+  "programShelf": {
+    "eyebrow": "{pillar} · Programa",
+    "steps": "{n, plural, =1 {1 etapa} other {# etapas}}",
+    "progress": "{done} de {total} concluídas",
+    "completed": "Programa concluído",
+    "view": "Ver programa",
+    "continue": "Continuar",
+    "listLabel": "Etapas de {title}",
+    "previous": "Etapas anteriores de {title}",
+    "next": "Próximas etapas de {title}",
+    "step": "Etapa {n}",
+    "stepOfSr": "de {total}:",
+    "stepOf": "Etapa {n} de {total}: {title}",
+    "state": {
+      "done": "concluída",
+      "locked": "requer plano {plan}",
+      "unavailable": "indisponível"
+    },
+    "doneBadge": "Concluída",
+    "unavailableTitle": "Conteúdo indisponível",
+    "sections": {
+      "essential": "Essencial",
+      "beyond": "Para ir além"
+    },
+    "noSteps": "Este programa ainda não tem etapas disponíveis.",
+    "count": "{count, plural, =1 {1 programa} other {# programas}}"
   }
 }
