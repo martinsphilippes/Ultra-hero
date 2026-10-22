@@ -10,12 +10,16 @@ import { expect, test, type Page } from "@playwright/test";
 
 const FIXTURE = path.join(__dirname, "..", "fixtures", "avatar-640x480.jpg");
 
-async function loginAsHero(page: Page) {
+async function loginAs(page: Page, kind: "creator" | "premium", home: RegExp) {
   await page.goto("/login");
   const panel = page.getByTestId("demo-access");
   test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator('[data-demo-kind="creator"]').click();
-  await expect(page).toHaveURL(/\/creator$/, { timeout: 20_000 });
+  await panel.locator(`[data-demo-kind="${kind}"]`).click();
+  await expect(page).toHaveURL(home, { timeout: 20_000 });
+}
+
+async function loginAsHero(page: Page) {
+  await loginAs(page, "creator", /\/creator$/);
 }
 
 // src de next/image vem como /_next/image?url=<codificada>: decodifica para achar o bucket
@@ -152,6 +156,12 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     await page.goto("/creator/profile");
     const publicHref = await page.getByRole("link", { name: "Ver página pública" }).getAttribute("href");
     expect(publicHref).toMatch(/^\/personalities\//);
+    // Herói demo com a foto oficial do perfil (/heroes/*.webp, 0030): a tela só devolve ilustrações,
+    // então enviar e remover deixaria o herói sem a foto oficial. Só roda com E2E_AVATAR_REAL_HERO=1
+    // (e aí é preciso restaurar avatar_url do herói pelo banco depois).
+    await page.goto(publicHref!);
+    const officialPhoto = (await avatarSrc(page, "main header img")).includes("/heroes/");
+    test.skip(officialPhoto && process.env.E2E_AVATAR_REAL_HERO !== "1", "herói demo usa a foto oficial; defina E2E_AVATAR_REAL_HERO=1 para trocar e restaurar pelo banco");
 
     await page.goto("/profile");
     await expect(page.getByTestId("avatar-photo-unavailable"), "0031 ou service role ausentes neste ambiente").toHaveCount(0);
@@ -199,5 +209,32 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     expect(await avatarSrc(page, 'header a[href="/profile"] img')).not.toContain("/avatars/");
     await page.goto(publicHref!);
     expect(await avatarSrc(page, "main header img")).not.toContain("/avatars/");
+  });
+
+  test("conta comum: envia pela galeria, aparece no cabeçalho e remove", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
+    test.setTimeout(180_000);
+    await loginAs(page, "premium", /\/profile$/);
+    await page.goto("/profile");
+    const profileRadio = page.locator('input[type="radio"][name="avatar"]:checked');
+    original = { profile: (await profileRadio.count()) > 0 ? await profileRadio.getAttribute("value") : null, creator: null };
+    await expect(page.getByTestId("avatar-photo-unavailable"), "0031 ou service role ausentes neste ambiente").toHaveCount(0);
+    await page.waitForLoadState("networkidle");
+    const [chooser] = await Promise.all([
+      page.waitForEvent("filechooser"),
+      page.getByTestId("avatar-photo").getByRole("button", { name: "Escolher da galeria" }).click(),
+    ]);
+    await chooser.setFiles(FIXTURE);
+    const dialog = page.getByRole("dialog", { name: "Prévia da foto" });
+    await expect(dialog).toBeVisible({ timeout: 20_000 });
+    await dialog.getByRole("button", { name: "Usar esta foto" }).click();
+    await expect(page.getByText("Foto atualizada.").first()).toBeVisible({ timeout: 30_000 });
+    await page.reload();
+    expect(await avatarSrc(page, 'header a[href="/profile"] img')).toContain("/storage/v1/object/public/avatars/");
+    await page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Remover", exact: true }).click();
+    await expect(page.getByText("Foto removida.").first()).toBeVisible({ timeout: 20_000 });
+    await page.reload();
+    expect(await avatarSrc(page, 'header a[href="/profile"] img')).not.toContain("/avatars/");
   });
 });
