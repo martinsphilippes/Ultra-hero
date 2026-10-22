@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { parseRpcError, rpcErrorToString } from "@/components/commerce/lib/errors";
 import { readExpectedPrices, writeExpectedPrices } from "@/components/commerce/server/cookies";
@@ -15,8 +16,14 @@ export type CommerceResult<T extends object = Record<never, never>> = ({ ok: tru
 
 const uuid = z.uuid();
 
-export async function addToCart(input: { productId: string; quantity: number; priceCents: number }): Promise<CommerceResult<{ quantity: number }>> {
-  const parsed = z.object({ productId: uuid, quantity: z.number().int().min(1).max(20), priceCents: z.number().int().min(0) }).safeParse(input);
+/** Origem do interesse comercial: os mesmos valores do check de product_interest.source (0004). */
+export type InterestSource = "catalog" | "content_link" | "recommendation" | "search";
+const SOURCES = ["catalog", "content_link", "recommendation", "search"] as const satisfies readonly InterestSource[];
+
+export async function addToCart(input: { productId: string; quantity: number; priceCents: number; source?: InterestSource }): Promise<CommerceResult<{ quantity: number }>> {
+  const parsed = z
+    .object({ productId: uuid, quantity: z.number().int().min(1).max(20), priceCents: z.number().int().min(0), source: z.enum(SOURCES).default("catalog") })
+    .safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
@@ -33,9 +40,11 @@ export async function addToCart(input: { productId: string; quantity: number; pr
     expected[parsed.data.productId] = parsed.data.priceCents;
     await writeExpectedPrices(expected);
 
-    // interesse comercial (métrica distinta de pedido de teste) + eventos
-    await supabase.from("product_interest").insert({ user_id: user.id, product_id: parsed.data.productId, source: "catalog" });
-    await trackEvent("product.interest", { product_id: parsed.data.productId, source: "catalog" });
+    // interesse comercial (métrica distinta de pedido de teste) + eventos; o navegador do E2E (cookie
+    // uh-e2e, o mesmo que desliga trackEvent) não grava interesse, para não deixar linhas no remoto
+    const e2e = (await cookies()).get("uh-e2e")?.value === "1";
+    if (!e2e) await supabase.from("product_interest").insert({ user_id: user.id, product_id: parsed.data.productId, source: parsed.data.source });
+    await trackEvent("product.interest", { product_id: parsed.data.productId, source: parsed.data.source });
     await trackEvent("cart.add", { product_id: parsed.data.productId, quantity: parsed.data.quantity });
 
     revalidatePath("/cart");

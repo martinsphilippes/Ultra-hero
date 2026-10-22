@@ -1,0 +1,149 @@
+{
+  "add": {
+    "button": "Add to shopping list",
+    "title": "Add to shopping list",
+    "description": "Amounts for {n, plural, =1 {1 serving} other {# servings}}, not converted into packages.",
+    "descriptionNoServings": "Recipe amounts, not converted into packages.",
+    "hint": "“To taste” items and items without an amount start unchecked. Adding the same recipe again updates the amounts and does not repeat items.",
+    "listLabel": "Ingredients for the list",
+    "selectAll": "Check all",
+    "selectNone": "Uncheck all",
+    "toTaste": "to taste",
+    "noAmount": "no amount",
+    "optional": "optional",
+    "selected": "{n, plural, =0 {No items selected} =1 {1 item selected} other {# items selected}}",
+    "submit": "{n, plural, =0 {Add items} =1 {Add 1 item} other {Add # items}}",
+    "cancel": "Cancel",
+    "added": "Shopping list updated",
+    "addedDescription": "{added, plural, =0 {No new items} =1 {1 new item} other {# new items}} and {updated, plural, =0 {none updated} =1 {1 updated} other {# updated}}.",
+    "viewList": "View list"
+  },
+  "page": {
+    "title": "Shopping list",
+    "description": "Ingredients from the recipes you chose, with the recipe amounts (not converted into packages). Purchases are test-only.",
+    "back": "Profile",
+    "count": "{n, plural, =1 {1 item} other {# items}} · {checked, plural, =0 {none bought} =1 {1 bought} other {# bought}}",
+    "clearChecked": "Clear bought items",
+    "clearAll": "Clear list",
+    "clearAllTitle": "Clear the shopping list?",
+    "clearAllDescription": "This deletes every item on the list, from all recipes. It cannot be undone.",
+    "clearAllConfirm": "Clear list",
+    "cancel": "Cancel",
+    "cleared": "Shopping list cleared",
+    "clearedChecked": "{n, plural, =0 {No bought items to clear} =1 {1 bought item removed} other {# bought items removed}}",
+    "recipeUnavailable": "Recipe unavailable",
+    "otherItems": "Other items",
+    "itemsLabel": "Items for {title}",
+    "announceChecked": "{name} marked as bought",
+    "announceUnchecked": "{name} unchecked",
+    "edit": "Edit amount of {name}",
+    "amountLabel": "Amount of {name}",
+    "amountHint": "E.g. 2, 1/2, 1.5 or 500 g. Units are not converted.",
+    "save": "Save",
+    "saved": "Amount updated",
+    "remove": "Remove {name} from the list",
+    "removed": "{name} removed from the list",
+    "noAmount": "No amount",
+    "alsoIn": "Also in {recipes}",
+    "commerceOffTitle": "Test purchases are off",
+    "commerceOffDescription": "The test cart is turned off right now. The list keeps working."
+  },
+  "kit": {
+    "title": "Kit or product for this recipe",
+    "note": "The package may not match the recipe amount.",
+    "unavailable": "Currently unavailable",
+    "none": "No matching product",
+    "hiddenProduct": "Recipe product",
+    "productLabel": "Matching product:"
+  },
+  "empty": {
+    "title": "Your shopping list is empty",
+    "description": "Open a recipe and tap “Add to shopping list”. Amounts follow the servings you choose.",
+    "cta": "Explore recipes"
+  },
+  "unavailable": {
+    "title": "Shopping list unavailable",
+    "description": "The shopping list is not available in this environment yet."
+  },
+  "errors": {
+    "forbidden": "You can't use the list with this recipe yet. Complete the recipes step or check your plan.",
+    "shopping_list_full": "Your list has reached the 300-item limit. Clear bought items or remove items to add more.",
+    "shopping_unavailable": "The shopping list is not available yet.",
+    "invalid_input": "We couldn't read the selected items. Reload the page and try again.",
+    "invalid_amount": "Invalid amount. Use a number (2, 1/2, 1.5) or a short text.",
+    "not_found": "This item is no longer on the list.",
+    "unauthenticated": "Sign in to use the shopping list.",
+    "confirmation_required": "Confirm to clear the list.",
+    "generic": "We couldn't update the list. Try again."
+  },
+  "editor": {
+    "label": "Matching product",
+    "optional": "optional",
+    "hint": "A suggestion for the shopping list of people who cook the recipe. It only counts after the admin team validates it.",
+    "saveFirst": "Save the draft to choose a product for this ingredient.",
+    "search": "Search a product for {name}",
+    "choose": "Choose product",
+    "change": "Suggest another product",
+    "cancel": "Cancel",
+    "withdraw": "Withdraw suggestion",
+    "withdrawn": "Suggestion withdrawn",
+    "suggested": "Product sent for validation",
+    "validatedLine": "Validated: {title}",
+    "pendingLine": "Suggestion: {title}",
+    "lastLine": "Previous: {title}",
+    "hiddenProduct": "product offline",
+    "reason": "Reason: {reason}",
+    "status": {
+      "pending": "Pending validation",
+      "validated": "Validated",
+      "suspended": "Suspended",
+      "rejected": "Rejected",
+      "unavailable": "Unavailable"
+    },
+    "errors": {
+      "forbidden": "This ingredient is not from one of your recipes or has not been saved yet.",
+      "product_not_found": "Product not found.",
+      "invalid_input": "Choose a product from the list.",
+      "unavailable": "Ingredient links are not available in this environment yet.",
+      "generic": "We couldn't save the suggestion. Try again."
+    }
+  },
+  "admin": {
+    "tabsLabel": "Link type",
+    "tabs": {
+      "content": "Content",
+      "ingredients": "Ingredients"
+    },
+    "description": "Heroes' suggestions for each ingredient's matching product. Only the validated link shows on the shopping list; validating a new one suspends the previous one for the same ingredient.",
+    "filters": {
+      "status": "Status",
+      "recipe": "Recipe",
+      "product": "Product",
+      "all": "All"
+    },
+    "table": {
+      "caption": "Links between ingredients and products",
+      "recipe": "Recipe",
+      "ingredient": "Ingredient",
+      "product": "Product",
+      "status": "Status",
+      "note": "Note",
+      "date": "Updated on",
+      "actions": "Actions"
+    },
+    "productUnavailable": "Product unavailable",
+    "productHidden": "Product offline",
+    "unavailable": "Ingredient links are not available in this environment yet.",
+    "actions": {
+      "validate": "Validate",
+      "validateTitle": "Validate this link?",
+      "validateDescription": "The product will show on the shopping list of anyone who adds this ingredient. If the ingredient already has a validated product, that one is suspended.",
+      "reject": "Reject",
+      "rejectTitle": "Reject the suggestion?",
+      "suspend": "Suspend",
+      "suspendTitle": "Suspend the link?",
+      "done": "Link updated"
+    },
+    "empty": "No ingredient links with this status."
+  }
+}

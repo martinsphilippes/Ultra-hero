@@ -6,14 +6,20 @@ import type { Locale } from "@/i18n/config";
 import { localizedLabel, type ProductCardData } from "@/lib/catalog/queries";
 import { cn } from "@/lib/utils";
 
-type Props = { product: ProductCardData; priority?: boolean; className?: string };
+type Props = {
+  product: ProductCardData;
+  priority?: boolean;
+  className?: string;
+  /** Indisponível por outra regra além de availability (ex.: sem estoque de demonstração). */
+  unavailable?: boolean;
+};
 
 // Card de produto demonstrativo: preço ilustrativo, sempre marcado como demonstração.
 // Sem aria-label no link: o nome acessível é o texto visível (WCAG 2.5.3). Indisponível é sinalizado
 // pelo badge, não por opacidade (que derrubava o contraste do texto abaixo de 4,5:1).
-export async function ProductCard({ product, priority, className }: Props) {
+export async function ProductCard({ product, priority, className, unavailable: forced = false }: Props) {
   const [t, locale] = await Promise.all([getTranslations("catalog"), getLocale()]);
-  const unavailable = product.availability !== "available";
+  const unavailable = forced || product.availability !== "available";
   return (
     <Card interactive asChild className={cn("h-full", className)}>
       <Link href={`/shop/${product.slug}`}>
