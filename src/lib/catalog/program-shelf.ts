@@ -24,10 +24,14 @@ export type ShelfStep = {
   substituted: boolean;
 };
 
-/** Etapas de uma versão na ordem de position, com as substituições aplicadas (= program_required_items). */
+/**
+ * Etapas de uma versão com as substituições aplicadas (= program_required_items), na ordem da página
+ * do programa: por position e agrupadas por seção na ordem em que cada uma aparece primeiro — o admin
+ * pode intercalar seções, e "Etapa 2 de 3" tem de ser o mesmo item nos dois lugares.
+ */
 export function resolveShelfSteps(versionId: string, items: readonly ShelfItemRow[], substitutions: readonly ShelfSubstitutionRow[]): ShelfStep[] {
   const replacement = new Map(substitutions.filter((s) => s.version_id === versionId).map((s) => [s.original_content_id, s.replacement_content_id]));
-  return items
+  const sorted = items
     .filter((item) => item.version_id === versionId)
     .sort((a, b) => a.position - b.position || a.content_id.localeCompare(b.content_id))
     .map((item) => {
@@ -41,6 +45,13 @@ export function resolveShelfSteps(versionId: string, items: readonly ShelfItemRo
         substituted: replaced !== undefined,
       };
     });
+  const groups = new Map<string, ShelfStep[]>();
+  for (const step of sorted) {
+    const key = step.section ?? "";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(step);
+  }
+  return [...groups.values()].flat();
 }
 
 /** O mínimo do conteúdo que o estado precisa. */
@@ -60,13 +71,15 @@ type StateInput = {
 };
 
 /**
- * Estado do quadrado. Ordem: indisponível > concluída > bloqueada > aberta. O cadeado segue a mesma
- * regra da página do programa (premium sem o módulo); para visitante, todo premium tem cadeado —
- * o mesmo que o quadro público do Explorar já mostra, nada além.
+ * Estado do quadrado. Ordem: concluída > indisponível > bloqueada > aberta. Concluída vem primeiro
+ * porque a conclusão vale pelo id, esteja o conteúdo no ar ou não (como a página do programa e
+ * check_program_completion): sem isso o "n de m" do inscrito perderia uma etapa já feita.
+ * O cadeado segue a mesma regra da página do programa (premium sem o módulo); para visitante, todo
+ * premium tem cadeado — o mesmo que o quadro público do Explorar já mostra, nada além.
  */
 export function shelfStepState({ step, content, enrolled, completedIds, entitledModules }: StateInput): ShelfStepState {
-  if (!content || content.access_level === null) return "unavailable";
   if (enrolled && (completedIds.has(step.contentId) || completedIds.has(step.originalContentId))) return "done";
+  if (!content || content.access_level === null) return "unavailable";
   if (content.access_level === "premium" && !(content.required_module_id && entitledModules.has(content.required_module_id))) return "locked";
   return "open";
 }

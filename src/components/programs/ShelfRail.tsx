@@ -5,6 +5,9 @@ import { useCallback, useEffect, useRef, useState, type FocusEvent, type ReactNo
 import { IconButton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
+// Mesmo visual do disabled nativo, sem hover nem afundar ao clicar.
+const ARROW_DISABLED = "aria-disabled:cursor-default aria-disabled:opacity-55 aria-disabled:hover:bg-transparent aria-disabled:active:translate-y-0";
+
 type Props = {
   /** Cabeçalho da prateleira (eyebrow, título, meta), renderizado no servidor. */
   header: ReactNode;
@@ -19,7 +22,8 @@ type Props = {
 };
 
 // Trilho horizontal de uma prateleira: rolagem por toque com snap no celular (sangra até a borda,
-// primeiro quadrado alinhado à margem) e, no desktop, setas ‹ › desabilitadas nas pontas.
+// primeiro quadrado alinhado à margem) e, no desktop, setas ‹ › desabilitadas nas pontas (aria-disabled,
+// não disabled: a seta que chega à ponta continua focada em vez de jogar o foco para o <body>).
 // Teclado: os quadrados são links; o foco rola o item para a vista (scroll-padding nas margens).
 export function ShelfRail({ header, action, listLabel, previousLabel, nextLabel, children, className }: Props) {
   const ref = useRef<HTMLOListElement>(null);
@@ -49,6 +53,8 @@ export function ShelfRail({ header, action, listLabel, previousLabel, nextLabel,
   const scrollByPage = (direction: -1 | 1) => {
     const el = ref.current;
     if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    if (direction < 0 ? el.scrollLeft <= 1 : el.scrollLeft >= max - 1) return; // na ponta: seta inerte
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     // Avança quase uma tela: o último quadrado parcialmente visível vira o primeiro.
     el.scrollBy({ left: direction * Math.max(el.clientWidth * 0.85, 120), behavior: reduce ? "auto" : "smooth" });
@@ -75,8 +81,8 @@ export function ShelfRail({ header, action, listLabel, previousLabel, nextLabel,
         <div className="flex shrink-0 items-center gap-1">
           {action}
           <div className="hidden items-center gap-1 md:flex">
-            <IconButton label={previousLabel} icon={<ChevronLeft />} variant="ghost" disabled={edges.start} onClick={() => scrollByPage(-1)} data-shelf-prev="" />
-            <IconButton label={nextLabel} icon={<ChevronRight />} variant="ghost" disabled={edges.end} onClick={() => scrollByPage(1)} data-shelf-next="" />
+            <IconButton label={previousLabel} icon={<ChevronLeft />} variant="ghost" aria-disabled={edges.start || undefined} className={ARROW_DISABLED} onClick={() => scrollByPage(-1)} data-shelf-prev="" />
+            <IconButton label={nextLabel} icon={<ChevronRight />} variant="ghost" aria-disabled={edges.end || undefined} className={ARROW_DISABLED} onClick={() => scrollByPage(1)} data-shelf-next="" />
           </div>
         </div>
       </div>

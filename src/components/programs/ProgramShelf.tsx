@@ -48,8 +48,9 @@ export async function ProgramShelf({ shelf, priority = false, headingLevel = "h2
         <StepMark />
         <span className="type-overline truncate text-accent-text">{t("eyebrow", { pillar: tp(shelf.pillar) })}</span>
       </div>
-      <Heading id={headingId} className="type-h3 line-clamp-2 text-balance text-fg">
-        <Link href={href} className="rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+      {/* line-clamp no link, não no título: o overflow do h2 cortaria o contorno de foco (fica 4px fora do link) */}
+      <Heading id={headingId} className="type-h3 text-balance text-fg">
+        <Link href={href} className="line-clamp-2 rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
           {shelf.title}
         </Link>
       </Heading>
@@ -84,7 +85,15 @@ export async function ProgramShelf({ shelf, priority = false, headingLevel = "h2
             // relative: os trechos sr-only (absolutos) ficam presos ao quadrado; sem isso escapariam do trilho e
             // alargariam a página no celular
             <li key={`${data.step.originalContentId}-${data.step.contentId}`} className={cn(STEP_WIDTH, "relative shrink-0 snap-start")}>
-              {hasSections ? <SectionLabel section={data.step.section} show={starts[index]} labels={{ essential: t("sections.essential"), beyond: t("sections.beyond") }} /> : null}
+              {hasSections ? (
+                <SectionLabel
+                  section={data.step.section}
+                  show={starts[index]}
+                  // o rótulo pode passar por cima do quadrado seguinte só se ali não começar outra seção
+                  clip={starts[index + 1] === true}
+                  labels={{ essential: t("sections.essential"), beyond: t("sections.beyond") }}
+                />
+              ) : null}
               <StepTile
                 data={data}
                 n={index + 1}
@@ -120,13 +129,18 @@ function stepStateText(data: ShelfStepData, t: Translator, tc: Translator): stri
 }
 
 // Rótulo discreto da seção ("Essencial" / "Para ir além"), só no primeiro quadrado de cada uma;
-// nos outros, um espaço vazio do mesmo tamanho mantém as capas alinhadas.
-function SectionLabel({ section, show, labels }: { section: string | null; show: boolean; labels: { essential: string; beyond: string } }) {
+// nos outros, um espaço vazio do mesmo tamanho mantém as capas alinhadas. Sem reticências: o quadrado
+// tem ~109px no Pixel 7 e "Para ir más allá" (es) precisa de 135px; o texto avança sobre o espaço vazio
+// do quadrado seguinte. Só corta (clip) quando o seguinte abre outra seção e teria o próprio rótulo.
+function SectionLabel({ section, show, clip, labels }: { section: string | null; show: boolean; clip: boolean; labels: { essential: string; beyond: string } }) {
   const kind = shelfSectionKind(section);
   if (!show || !kind) return <span aria-hidden="true" className="mb-1.5 block h-4" />;
   const text = kind === "essential" ? labels.essential : kind === "beyond" ? labels.beyond : (section ?? "");
   return (
-    <p className={cn("mb-1.5 flex h-4 items-center gap-1.5 truncate type-overline", kind === "essential" ? "text-accent-text" : "text-fg-muted")}>
+    <p
+      data-testid="shelf-section"
+      className={cn("mb-1.5 flex h-4 items-center gap-1.5 type-overline", clip ? "truncate" : "whitespace-nowrap", kind === "essential" ? "text-accent-text" : "text-fg-muted")}
+    >
       <span aria-hidden="true" className={cn("h-3 w-0.5 shrink-0 rounded-full", kind === "essential" ? "bg-accent" : "bg-border-strong")} />
       {text}
     </p>
@@ -178,7 +192,8 @@ function StepTile({ data, n, total, priority, labels }: { data: ShelfStepData; n
       </span>
       <Icon aria-hidden="true" className="absolute right-1.5 top-1.5 size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
       {done ? (
-        <span aria-hidden="true" className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 rounded bg-success px-1.5 py-0.5 font-mono text-[0.625rem] font-medium uppercase leading-none tracking-wider text-white">
+        // text-bg, não branco: no escuro o success é claro (#3dd68c) e o branco daria 1,87:1
+        <span aria-hidden="true" data-testid="shelf-done-badge" className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 rounded bg-success px-1.5 py-0.5 font-mono text-[0.625rem] font-medium uppercase leading-none tracking-wider text-bg">
           <Check aria-hidden="true" className="size-3" strokeWidth={3} />
           {labels.done}
         </span>

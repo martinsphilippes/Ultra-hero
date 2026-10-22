@@ -49,6 +49,18 @@ describe("resolveShelfSteps", () => {
     ]);
   });
 
+  it("agrupa por seção na ordem em que cada uma aparece, como a página do programa (seções intercaladas)", () => {
+    // o admin pode adicionar A (Essencial), B (Para ir além) e C (Essencial): a página mostra A, C, B
+    const mixed = [item("v", "A", 1, true, "Essencial"), item("v", "B", 2, false, "Para ir além"), item("v", "C", 3, true, "Essencial")];
+    const steps = resolveShelfSteps("v", mixed, []);
+    expect(steps.map((s) => s.contentId)).toEqual(["A", "C", "B"]);
+    // e o rótulo de cada seção aparece uma vez só
+    expect(sectionStarts(steps)).toEqual([true, false, true]);
+    // sem seção conta como um grupo próprio, na posição em que aparece
+    const loose = [item("v", "x", 1, true, null), item("v", "y", 2, true, "Essencial"), item("v", "z", 3, true, null)];
+    expect(resolveShelfSteps("v", loose, []).map((s) => s.contentId)).toEqual(["x", "z", "y"]);
+  });
+
   it("empate de position é estável pelo conteúdo e não muta a entrada", () => {
     const tie = [item("v", "b", 1), item("v", "a", 1)];
     expect(resolveShelfSteps("v", tie, []).map((s) => s.contentId)).toEqual(["a", "b"]);
@@ -62,9 +74,15 @@ describe("shelfStepState", () => {
   const premium = { access_level: "premium" as const, required_module_id: "m-base" };
   const none = new Set<string>();
 
-  it("conteúdo escondido pela RLS ou sem nível de acesso fica indisponível (mesmo concluído)", () => {
-    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: new Set(["c1"]), entitledModules: none })).toBe("unavailable");
+  it("conteúdo escondido pela RLS ou sem nível de acesso fica indisponível", () => {
+    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: none, entitledModules: none })).toBe("unavailable");
+    expect(shelfStepState({ step, content: null, enrolled: false, completedIds: new Set(["c1"]), entitledModules: none })).toBe("unavailable");
     expect(shelfStepState({ step, content: { access_level: null, required_module_id: null }, enrolled: false, completedIds: none, entitledModules: none })).toBe("unavailable");
+  });
+
+  it("inscrito que já concluiu uma etapa que saiu do ar continua com ela concluída (= página do programa)", () => {
+    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: new Set(["c1"]), entitledModules: none })).toBe("done");
+    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: new Set(["c0"]), entitledModules: none })).toBe("done");
   });
 
   it("concluída só para inscrito, pelo conteúdo efetivo ou pelo original", () => {
@@ -105,6 +123,17 @@ describe("progresso e próxima etapa", () => {
   it("conta só as obrigatórias, como a página do programa", () => {
     const states: ShelfStepState[] = ["done", "open", "done", "locked"];
     expect(shelfProgress(steps, states)).toEqual({ done: 1, total: 3 });
+  });
+
+  it("obrigatória concluída que saiu do ar continua contando (2 de 4, como a página e check_program_completion)", () => {
+    // Manhãs com Intenção: obrigatórias r1, r4, r2, r9; concluiu r1 e r4; o admin arquivou r4
+    const ids = ["r1", "r4", "r2", "r9"];
+    const done = new Set(["r1", "r4"]);
+    const states = ids.map((id) =>
+      shelfStepState({ step: { contentId: id, originalContentId: id }, content: id === "r4" ? null : { access_level: "free", required_module_id: null }, enrolled: true, completedIds: done, entitledModules: new Set() }),
+    );
+    expect(states).toEqual(["done", "done", "open", "open"]);
+    expect(shelfProgress(ids.map(() => ({ isRequired: true })), states)).toEqual({ done: 2, total: 4 });
   });
 
   it("sem obrigatórias, conta todas", () => {
@@ -158,6 +187,36 @@ describe("rótulos", () => {
       const m = load(locale);
       expect(Object.keys(m).sort()).toEqual(Object.keys(load("pt-BR")).sort());
       expect(m.stepOf).toMatch(/\{n\}.*\{total\}.*\{title\}/);
+    }
+  });
+});
+
+describe("selo 'Concluída' legível nos dois temas", () => {
+  const css = readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+  const source = readFileSync(path.join(process.cwd(), "src/components/programs/ProgramShelf.tsx"), "utf8");
+  // :root é o escuro; [data-theme="light"] é o claro
+  const block = (selector: string) => css.slice(css.indexOf(`${selector} {`), css.indexOf("}", css.indexOf(`${selector} {`)));
+  const token = (selector: string, name: string) => block(selector).match(new RegExp(`--uh-${name}:\\s*(#[0-9a-f]{6})`, "i"))![1];
+  const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const contrast = (a: string, b: string) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  it("usa bg-success com text-bg (branco daria 1,87:1 no escuro)", () => {
+    const badge = source.split("\n").find((line) => line.includes('data-testid="shelf-done-badge"'))!;
+    expect(badge).toContain("bg-success");
+    expect(badge).toContain("text-bg");
+    expect(badge).not.toContain("text-white");
+    expect(contrast("#ffffff", token(":root", "success"))).toBeLessThan(4.5);
+  });
+
+  it("text-bg sobre bg-success passa 4,5:1 no escuro e no claro", () => {
+    for (const selector of [":root", ':root[data-theme="light"]']) {
+      expect(contrast(token(selector, "bg"), token(selector, "success")), selector).toBeGreaterThanOrEqual(4.5);
     }
   });
 });

@@ -115,6 +115,50 @@ test.describe("prateleiras de programas", () => {
     }
   });
 
+  test("teclado: o contorno de foco do título da prateleira não é cortado", async ({ page }) => {
+    await page.goto(LIBRARY);
+    const link = shelves(page).first().getByRole("heading", { level: 2 }).getByRole("link");
+    await link.focus();
+    await expect(link).toBeFocused();
+    // o contorno fica fora da caixa do link (2px + offset 2px); nenhum ancestro com overflow pode cortá-lo
+    const clipped = await link.evaluate((el) => {
+      const style = getComputedStyle(el);
+      if (style.outlineStyle === "none" || parseFloat(style.outlineWidth) === 0) return "sem contorno";
+      const reach = parseFloat(style.outlineWidth) + Math.max(0, parseFloat(style.outlineOffset));
+      const box = el.getBoundingClientRect();
+      for (let node = el.parentElement; node && node.tagName !== "SECTION"; node = node.parentElement) {
+        const s = getComputedStyle(node);
+        if (s.overflowX === "visible" && s.overflowY === "visible") continue;
+        const r = node.getBoundingClientRect();
+        if (box.left - reach < r.left - 0.5 || box.right + reach > r.right + 0.5 || box.top - reach < r.top - 0.5 || box.bottom + reach > r.bottom + 0.5) {
+          return `${node.tagName.toLowerCase()} (overflow ${s.overflowX}/${s.overflowY}) corta o contorno`;
+        }
+      }
+      return null;
+    });
+    expect(clipped).toBeNull();
+  });
+
+  test("rótulos de seção aparecem inteiros no celular (es no Pixel 7; pt-BR em 360px)", async ({ page, isMobile }) => {
+    test.skip(!isMobile, "largura do celular");
+    const notElided = (label: Locator) =>
+      label.evaluate((el) => !(getComputedStyle(el).textOverflow === "ellipsis" && el.scrollWidth > el.clientWidth));
+    await page.goto(LIBRARY);
+    await page.context().addCookies([{ name: "NEXT_LOCALE", value: "es", url: page.url() }]);
+    await page.reload();
+    const beyondEs = shelves(page).first().getByText("Para ir más allá", { exact: true });
+    await expect(beyondEs).toBeAttached();
+    expect(await notElided(beyondEs), "'Para ir más allá' sem reticências").toBe(true);
+
+    await page.context().addCookies([{ name: "NEXT_LOCALE", value: "pt-BR", url: page.url() }]);
+    await page.setViewportSize({ width: 360, height: 780 });
+    await page.reload();
+    const beyond = shelves(page).first().getByText("Para ir além", { exact: true });
+    await expect(beyond).toBeAttached();
+    expect(await notElided(beyond), "'Para ir além' sem reticências").toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  });
+
   test("clicar num quadrado abre o conteúdo da etapa", async ({ page }) => {
     await page.goto(LIBRARY);
     const tile = steps(shelves(page).first()).nth(1);
@@ -156,14 +200,21 @@ test.describe("prateleiras de programas", () => {
     await next.click();
     await expect.poll(() => rail.evaluate((el) => el.scrollLeft)).toBeGreaterThan(100);
     await expect(prev).toBeEnabled();
-    // até o fim: a seta "próximas" desabilita e o último quadrado fica inteiro
+    // até o fim pelo teclado: a seta "próximas" desabilita (aria-disabled) e o foco continua nela,
+    // sem cair no <body>; o último quadrado fica inteiro
+    await next.focus();
     for (let i = 0; i < 5 && (await next.isEnabled()); i++) {
-      // force: entre a checagem e o clique a rolagem suave pode terminar e desabilitar a seta (clique vira no-op)
-      await next.click({ force: true });
+      await page.keyboard.press("Enter");
       await page.waitForTimeout(400);
     }
     await expect(next).toBeDisabled();
+    await expect(next).toBeFocused();
     await expect.poll(() => visibleFraction(page, steps(shelf).last())).toBeGreaterThan(0.99);
+    // Enter na seta desabilitada não faz nada
+    const atEnd = await rail.evaluate((el) => el.scrollLeft);
+    await page.keyboard.press("Enter");
+    await page.waitForTimeout(300);
+    expect(await rail.evaluate((el) => el.scrollLeft)).toBe(atEnd);
     await prev.click();
     await expect(next).toBeEnabled();
   });
