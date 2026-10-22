@@ -186,6 +186,10 @@
         "title": "Minha coleção de receitas",
         "description": "Receitas salvas, listas e histórico opcional."
       },
+      "shoppingList": {
+        "title": "Lista de compras",
+        "description": "Ingredientes das receitas, por receita, com o kit de teste."
+      },
       "orders": {
         "title": "Pedidos de teste",
         "description": "Compras demonstrativas, sem cobrança real."

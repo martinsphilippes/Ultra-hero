@@ -186,6 +186,10 @@
         "title": "My recipe collection",
         "description": "Saved recipes, lists and optional history."
       },
+      "shoppingList": {
+        "title": "Shopping list",
+        "description": "Recipe ingredients, grouped by recipe, with the test kit."
+      },
       "orders": {
         "title": "Test orders",
         "description": "Demo purchases, no real charges."

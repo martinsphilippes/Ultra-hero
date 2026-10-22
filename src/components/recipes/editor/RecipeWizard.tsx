@@ -13,7 +13,9 @@ import { parseRecipeIncomplete, type RecipeChecklistCode } from "@/lib/recipes/c
 import { buildPayload, draftIssue, sameDraft, type DraftIssue, type RecipeDraft } from "@/lib/recipes/draft";
 import { draftStorageKey, parseStoredDraft, serializeDraft, shouldOfferRecovery, type StoredDraft } from "@/lib/recipes/draft-recovery";
 import { RECIPE_EDITOR_STEPS, fieldIdForPath, stepForPath, stepIndex, type RecipeEditorStep } from "@/lib/recipes/editor-steps";
+import { canSuggestProduct, summarizeIngredientLinks, type IngredientLink } from "@/lib/recipes/ingredient-products";
 import { cn } from "@/lib/utils";
+import { IngredientProductField } from "./IngredientProductField";
 import { BasicsStep } from "./steps/BasicsStep";
 import { ExtrasStep } from "./steps/ExtrasStep";
 import { IngredientsStep } from "./steps/IngredientsStep";
@@ -34,6 +36,8 @@ type Props = {
   videoConfigured: boolean;
   currentCoverUrl: string | null;
   nutritionValidated: boolean;
+  /** Vínculos ingrediente ↔ produto da receita (fase 5); ausente ou indisponível: o campo não aparece. */
+  ingredientProducts?: { available: boolean; links: IngredientLink[] };
 };
 
 type SaveOutcome = "ok" | "invalid" | "stale" | "failed";
@@ -96,6 +100,8 @@ export function RecipeWizard(props: Props) {
   const [publishing, setPublishing] = useState(false);
   // envio de vídeo correndo na etapa Mídia: trocar de etapa desmontaria o envio e o abortaria
   const [videoUploading, setVideoUploading] = useState(false);
+  // vínculos ingrediente ↔ produto: mudam na hora pelas RPCs (não entram no rascunho)
+  const [productLinks, setProductLinks] = useState<IngredientLink[]>(props.ingredientProducts?.links ?? []);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
   const draftRef = useRef(draft);
@@ -386,6 +392,8 @@ export function RecipeWizard(props: Props) {
   const index = stepIndex(step);
   const disabled = Boolean(recovery) || publishing;
   const stepProps = { draft, setDraft, errorFor, disabled, announce };
+  const savedIngredientIds = useMemo(() => new Set(saved.ingredients.map((i) => i.id)), [saved]);
+  const linkSummaries = useMemo(() => summarizeIngredientLinks(productLinks), [productLinks]);
   const timeFormat = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" });
 
   return (
@@ -457,7 +465,27 @@ export function RecipeWizard(props: Props) {
         </div>
 
         {step === "basicos" && <BasicsStep {...stepProps} categories={categories} />}
-        {step === "ingredientes" && <IngredientsStep {...stepProps} />}
+        {step === "ingredientes" && (
+          <IngredientsStep
+            {...stepProps}
+            productField={
+              props.ingredientProducts?.available
+                ? (ing) => (
+                    <IngredientProductField
+                      ingredientId={ing.id}
+                      ingredientName={ing.name.trim()}
+                      // só ingrediente já gravado: o id do navegador ainda não existe no banco
+                      saved={canSuggestProduct(ing.id, savedIngredientIds)}
+                      summary={linkSummaries.get(ing.id)}
+                      onLinked={(link, replaced) => setProductLinks((all) => [...all.filter((l) => l.id !== replaced && l.id !== link.id), link])}
+                      onWithdrawn={(linkId) => setProductLinks((all) => all.filter((l) => l.id !== linkId))}
+                      disabled={disabled}
+                    />
+                  )
+                : undefined
+            }
+          />
+        )}
         {step === "preparo" && contentId && (
           <PreparationStep {...stepProps} contentId={contentId} creatorId={creatorId} uploadsEnabled={uploadsEnabled} onMediaUploaded={onMediaUploaded} onDeleteMedia={onDeleteMedia} />
         )}

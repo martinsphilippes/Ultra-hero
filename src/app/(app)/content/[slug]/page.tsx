@@ -34,6 +34,7 @@ import { RecipeGallery } from "@/components/recipes/view/RecipeGallery";
 import { RecipeRating } from "@/components/recipes/view/RecipeRating";
 import { RecipeShareButtons } from "@/components/recipes/view/RecipeShareButtons";
 import { RecipeView } from "@/components/recipes/view/RecipeView";
+import { AddToShoppingList, AddToShoppingListView } from "@/components/recipes/shopping/AddToShoppingList";
 import { RelatedRecipes } from "@/components/recipes/view/RelatedRecipes";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { loadRecipeLd, loadRatingState } from "@/components/recipes/view/recipe-page-data";
@@ -363,6 +364,12 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
                   <CookModeLink slug={content.slug} />
                 </Suspense>
               ) : null}
+              {/* Lista de compras (fase 5): mesma regra do RecipeGate; quem não abre a receita vê o convite */}
+              {recipeOpen && structured && structured.model.ingredients.length > 0 ? (
+                <Suspense fallback={<AddToShoppingListView contentId={content.id} ingredients={structured.model.ingredients} baseServings={structured.model.servings} locale={uiLocale} servings={servingsParam} />}>
+                  <AddToShoppingList contentId={content.id} ingredients={structured.model.ingredients} baseServings={structured.model.servings} locale={uiLocale} />
+                </Suspense>
+              ) : null}
               {user && state === "accessible" && !recipeBlocked && (
                 <CompleteButton
                   contentId={content.id}
@@ -456,7 +463,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
       )}
 
       <div className="print:hidden">
-        <RelatedProducts contentId={content.id} />
+        <RelatedProducts contentId={content.id} showUnavailable={isRecipe} />
       </div>
 
       {isRecipe && structured ? (

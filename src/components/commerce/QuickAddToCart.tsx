@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
-import { addToCart } from "@/app/(app)/shop/actions";
+import { addToCart, type InterestSource } from "@/app/(app)/shop/actions";
 import { splitErrorString } from "@/components/commerce/lib/errors";
 import { Button, VisuallyHidden, useToast } from "@/components/ui";
 
@@ -22,11 +22,13 @@ type Props = {
   inCart: number;
   /** Para onde voltar depois do login (biblioteca de produtos do herói). */
   nextPath: string;
+  /** Origem do interesse (product_interest.source); a lista de compras usa "content_link". */
+  source?: InterestSource;
 };
 
 // Botão único "Adicionar ao carrinho de teste" (1 unidade por clique) para cards fora da loja.
 // Mesmas regras do AddToCartForm: só logado, só comprável, limite min(20, estoque demo).
-export function QuickAddToCart({ productId, productTitle, priceCents, maxQuantity, purchasable, isLoggedIn, inCart, nextPath }: Props) {
+export function QuickAddToCart({ productId, productTitle, priceCents, maxQuantity, purchasable, isLoggedIn, inCart, nextPath, source }: Props) {
   const t = useTranslations("commerce.quickAdd");
   const te = useTranslations("commerce.errors");
   const { toast } = useToast();
@@ -58,7 +60,7 @@ export function QuickAddToCart({ productId, productTitle, priceCents, maxQuantit
   function submit() {
     setError(null);
     startTransition(async () => {
-      const result = await addToCart({ productId, quantity: 1, priceCents });
+      const result = await addToCart({ productId, quantity: 1, priceCents, ...(source ? { source } : {}) });
       if (result.ok) {
         setCurrent(result.quantity);
         toast({

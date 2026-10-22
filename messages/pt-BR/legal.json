@@ -191,7 +191,8 @@
             "heroVideos": "<strong>Vídeos dos heróis:</strong> se você é herói e grava ou envia um vídeo pelo app, o arquivo vai direto do seu aparelho para o Cloudflare Stream. O app guarda só o identificador do vídeo, o conteúdo ao qual ele pertence e as datas de envio e de descarte (para limitar envios e limpar vídeos abandonados).",
             "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é herói e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos heróis.",
             "recipeHistory": "<strong>Histórico de receitas vistas (opcional):</strong> desligado por padrão. Se você ligar em <recipes>Minha coleção de receitas</recipes>, guardamos só qual receita você abriu e a data do último acesso a cada uma (nada mais), para mostrar a lista a você. Só você vê. Desligar ou usar “Limpar histórico” apaga tudo na hora, e cada registro é apagado depois de 90 dias.",
-            "recipeRatings": "<strong>Avaliações de receitas:</strong> se você concluiu uma receita, pode dar de 1 a 5 estrelas. Guardamos a nota, a receita e a data, ligadas à sua conta; ninguém vê a sua nota, só a média da receita (a partir de 3 avaliações, sem contar as contas de demonstração). Você pode trocar a nota quando quiser."
+            "recipeRatings": "<strong>Avaliações de receitas:</strong> se você concluiu uma receita, pode dar de 1 a 5 estrelas. Guardamos a nota, a receita e a data, ligadas à sua conta; ninguém vê a sua nota, só a média da receita (a partir de 3 avaliações, sem contar as contas de demonstração). Você pode trocar a nota quando quiser.",
+            "shoppingList": "<strong>Lista de compras (opcional):</strong> se você usar “Adicionar à lista de compras” numa receita, guardamos os itens que escolher (nome, quantidade, unidade, a receita de origem, se já comprou e a ordem), ligados à sua conta, para montar a sua <shopping>Lista de compras</shopping>. Só você vê: nem a administração lê a lista. Os itens ficam até você remover, usar “Limpar comprados” ou “Limpar lista”, ou excluir a conta. Comprar o kit da receita usa o carrinho de teste, sem cobrança."
           },
           "p2": "Os provedores de infraestrutura também registram dados técnicos de acesso, como endereço IP, data e hora e informações do navegador, em seus próprios logs operacionais."
         }
@@ -397,6 +398,11 @@
                 "data": "Avaliações de receitas (estrelas)",
                 "period": "Enquanto a conta existir",
                 "details": "São apagadas junto com a conta; a média da receita é recalculada na hora."
+              },
+              "shoppingList": {
+                "data": "Lista de compras",
+                "period": "Até você remover ou excluir a conta",
+                "details": "Não tem exclusão automática por prazo: os itens ficam até você remover um item, usar “Limpar comprados” ou “Limpar lista”. São apagados junto com a conta."
               }
             }
           },
@@ -416,7 +422,7 @@
           "p2": "Quando você exclui a conta:",
           "list2": {
             "profile": "seu perfil é anonimizado e apagado junto com a conta;",
-            "removed": "interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas, certificados, recomendações, carrinho, assinatura simulada e registros de interesse em produtos são apagados;",
+            "removed": "interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas, certificados, recomendações, lista de compras, carrinho, assinatura simulada e registros de interesse em produtos são apagados;",
             "unlinked": "eventos de uso, feedback, pedidos de teste e execuções de recomendação deixam de ser vinculados a você, e os pedidos de teste também perdem o nome do destino fictício. Eventos de uso e execuções de recomendação continuam sendo excluídos nos prazos da tabela acima; feedback e pedidos de teste anonimizados não têm exclusão automática;",
             "audit": "um registro da exclusão, com o identificador interno da conta e sem e-mail ou nome, fica na auditoria por até 365 dias;",
             "partner": "se você atuava como parceiro, o perfil de parceiro e o que foi publicado nele deixam de ser vinculados à sua conta, mas não são apagados automaticamente. O registro do convite, que guarda o e-mail convidado, também é mantido. Peça a remoção pelo canal de contato;",

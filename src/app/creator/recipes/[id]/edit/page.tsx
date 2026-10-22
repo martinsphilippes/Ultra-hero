@@ -7,6 +7,7 @@ import { z } from "zod";
 import { StatusBadge } from "@/components/admin";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { RecipeWizard } from "@/components/recipes/editor/RecipeWizard";
+import { loadIngredientProductLinks } from "@/components/recipes/editor/load-ingredient-products";
 import { RecipeRowActions } from "@/components/recipes/portal/RecipeRowActions";
 import { Button, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -83,12 +84,13 @@ export default async function EditRecipePage({ params, searchParams }: Params) {
     );
   }
 
-  const [rows, categories, reviewRequired, uploadsEnabled, videoConfigured] = await Promise.all([
+  const [rows, categories, reviewRequired, uploadsEnabled, videoConfigured, ingredientProducts] = await Promise.all([
     loadRecipeRows(supabase, id, { withVideo: true }),
     loadRecipeCategories(supabase, locale),
     loadRecipeReviewRequired(supabase),
     loadUploadsEnabled(supabase),
     readVideoUploadConfigured(supabase),
+    loadIngredientProductLinks(supabase, id),
   ]);
   const draft = draftFromRows(content, rows);
 
@@ -114,6 +116,7 @@ export default async function EditRecipePage({ params, searchParams }: Params) {
         videoConfigured={videoConfigured}
         currentCoverUrl={content.cover_url}
         nutritionValidated={Boolean(rows.nutrition?.validated)}
+        ingredientProducts={ingredientProducts}
       />
     </div>
   );

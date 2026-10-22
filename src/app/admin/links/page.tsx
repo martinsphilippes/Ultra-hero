@@ -3,7 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { FilterBar, type FilterField } from "@/components/admin-content";
+import { IngredientLinksPanel } from "@/components/admin-content/IngredientLinksPanel";
 import { CreateLinkDialog, LinkActions } from "@/components/admin-content/LinkAdminActions";
+import { LinkTabsNav } from "@/components/admin-content/LinkTabsNav";
 import { escapeLike, hasAnyFilter, pickEnum, pickSearch, pickUuid, type SearchParams } from "@/components/admin-content/lib/search-params";
 import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -44,12 +46,28 @@ function suspensionLabel(reason: string | null, t: (key: "autoSuspend" | "adminS
 
 export default async function AdminLinksPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams;
-  const [t, tc, ts, locale] = await Promise.all([
+  const [t, tc, ts, tsh, locale] = await Promise.all([
     getTranslations("adminContent.links"),
     getTranslations("adminContent.common"),
     getTranslations("adminCommon"),
+    getTranslations("shopping.admin"),
     getLocale(),
   ]);
+  // Abas (fase 5): Conteúdos (content_product_links) e Ingredientes (recipe_ingredient_products)
+  const tab = pickEnum(params, "aba", ["ingredientes"] as const) ?? "conteudos";
+  const tabs = [
+    { value: "conteudos", label: tsh("tabs.content"), href: "/admin/links" },
+    { value: "ingredientes", label: tsh("tabs.ingredients"), href: "/admin/links?aba=ingredientes" },
+  ];
+  if (tab === "ingredientes") {
+    return (
+      <div className="flex flex-col gap-6">
+        <PageHeader title={t("title")} />
+        <LinkTabsNav tabs={tabs} value={tab} label={tsh("tabsLabel")} />
+        <IngredientLinksPanel params={params} />
+      </div>
+    );
+  }
   const supabase = await createClient();
   const status = pickEnum(params, "status", STATES);
   const contentQ = pickSearch(params, "content");
@@ -147,6 +165,7 @@ export default async function AdminLinksPage({ searchParams }: { searchParams: P
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} actions={<CreateLinkDialog />} />
+      <LinkTabsNav tabs={tabs} value={tab} label={tsh("tabsLabel")} />
       <FilterBar action="/admin/links" fields={fields} active={hasAnyFilter(params, ["status", "content", "product", "creator"])} />
       <p className="type-caption text-fg-muted" aria-live="polite">
         {tc("results", { n: rows.length })}

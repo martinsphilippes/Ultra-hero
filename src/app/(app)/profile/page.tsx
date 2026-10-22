@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
+import { Bell, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
@@ -43,11 +43,12 @@ const PORTALS: Array<{ role: Exclude<AppRole, "consumer">; href: string; icon: L
   { role: "seller", href: "/seller", icon: Store },
 ];
 
-const LINKS: Array<{ key: "plan" | "interests" | "favorites" | "recipes" | "orders" | "notifications" | "account"; href: string; icon: LucideIcon }> = [
+const LINKS: Array<{ key: "plan" | "interests" | "favorites" | "recipes" | "shoppingList" | "orders" | "notifications" | "account"; href: string; icon: LucideIcon }> = [
   { key: "plan", href: "/profile/plan", icon: CreditCard },
   { key: "interests", href: "/profile/interests", icon: Sparkles },
   { key: "favorites", href: "/profile/favorites", icon: Heart },
   { key: "recipes", href: "/profile/receitas", icon: ChefHat },
+  { key: "shoppingList", href: "/profile/lista-de-compras", icon: ShoppingBasket },
   { key: "orders", href: "/orders", icon: Package },
   { key: "notifications", href: "/profile/notifications", icon: Bell },
   { key: "account", href: "/profile/account", icon: Shield },

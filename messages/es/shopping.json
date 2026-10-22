@@ -1,0 +1,158 @@
+{
+  "add": {
+    "button": "Añadir a la lista de compras",
+    "title": "Añadir a la lista de compras",
+    "description": "Cantidades para {n, plural, =1 {1 porción} other {# porciones}}, sin conversión a envases.",
+    "descriptionNoServings": "Cantidades de la receta, sin conversión a envases.",
+    "hint": "Los ingredientes “al gusto” o sin cantidad empiezan desmarcados. Añadir la misma receta de nuevo actualiza las cantidades y no repite elementos.",
+    "listLabel": "Ingredientes para la lista",
+    "selectAll": "Marcar todos",
+    "selectNone": "Desmarcar todos",
+    "toTaste": "al gusto",
+    "noAmount": "sin cantidad",
+    "optional": "opcional",
+    "selected": "{n, plural, =0 {Ningún elemento elegido} =1 {1 elemento elegido} other {# elementos elegidos}}",
+    "submit": "{n, plural, =0 {Añadir elementos} =1 {Añadir 1 elemento} other {Añadir # elementos}}",
+    "cancel": "Cancelar",
+    "added": "Lista de compras actualizada",
+    "addedDescription": "{added, plural, =0 {Ningún elemento nuevo} =1 {1 elemento nuevo} other {# elementos nuevos}} y {updated, plural, =0 {ninguno actualizado} =1 {1 actualizado} other {# actualizados}}.",
+    "viewList": "Ver lista"
+  },
+  "page": {
+    "title": "Lista de compras",
+    "description": "Los ingredientes de las recetas que elegiste, con las cantidades de la receta (sin conversión a envases). Las compras son de prueba.",
+    "back": "Perfil",
+    "count": "{n, plural, =1 {1 elemento} other {# elementos}} · {checked, plural, =0 {ninguno comprado} =1 {1 comprado} other {# comprados}}",
+    "clearChecked": "Quitar los comprados",
+    "clearCheckedTitle": "¿Quitar los artículos comprados?",
+    "clearCheckedDescription": "{n, plural, =1 {Se quitará 1 artículo comprado de la lista} other {Se quitarán # artículos comprados de la lista}}. No se puede deshacer.",
+    "clearCheckedConfirm": "Quitar comprados",
+    "clearAll": "Vaciar lista",
+    "clearAllTitle": "¿Vaciar la lista de compras?",
+    "clearAllDescription": "Esto borra todos los elementos de la lista, de todas las recetas. No se puede deshacer.",
+    "clearAllConfirm": "Vaciar lista",
+    "cancel": "Cancelar",
+    "cleared": "Lista de compras vaciada",
+    "clearedChecked": "{n, plural, =0 {No hay comprados para quitar} =1 {1 elemento comprado quitado} other {# elementos comprados quitados}}",
+    "recipeUnavailable": "Receta no disponible",
+    "otherItems": "Otros elementos",
+    "itemsLabel": "Elementos de {title}",
+    "announceChecked": "{name} marcado como comprado",
+    "announceUnchecked": "{name} desmarcado",
+    "edit": "Editar la cantidad de {name}",
+    "amountLabel": "Cantidad de {name}",
+    "amountHint": "P. ej.: 2, 1/2, 1,5 o 500 g. Sin conversión de unidades.",
+    "save": "Guardar",
+    "saved": "Cantidad actualizada",
+    "remove": "Quitar {name} de la lista",
+    "removed": "{name} quitado de la lista",
+    "noAmount": "Sin cantidad",
+    "alsoIn": "También en {recipes}",
+    "commerceOffTitle": "Compras de prueba desactivadas",
+    "commerceOffDescription": "El carrito de prueba está desactivado en este momento. La lista sigue funcionando."
+  },
+  "kit": {
+    "title": "Kit o producto de esta receta",
+    "note": "El envase puede no corresponder a la cantidad de la receta.",
+    "unavailable": "No disponible por ahora",
+    "none": "Sin producto correspondiente",
+    "hiddenProduct": "Producto de la receta",
+    "productLabel": "Producto correspondiente:"
+  },
+  "empty": {
+    "title": "Tu lista de compras está vacía",
+    "description": "Abre una receta y toca “Añadir a la lista de compras”. Las cantidades siguen las porciones que elijas.",
+    "cta": "Explorar recetas"
+  },
+  "unavailable": {
+    "title": "Lista de compras no disponible",
+    "description": "La lista de compras todavía no está disponible en este entorno."
+  },
+  "errors": {
+    "forbidden": "Todavía no puedes usar la lista con esta receta. Haz el paso de recetas o revisa tu plan.",
+    "shopping_list_full": "Tu lista llegó al límite de 300 elementos. Quita los comprados o elimina elementos para añadir más.",
+    "shopping_unavailable": "La lista de compras todavía no está disponible.",
+    "invalid_input": "No pudimos leer los elementos elegidos. Recarga la página e inténtalo de nuevo.",
+    "invalid_amount": "Cantidad no válida. Usa un número (2, 1/2, 1,5) o un texto corto.",
+    "not_found": "Este elemento ya no está en la lista.",
+    "unauthenticated": "Inicia sesión para usar la lista de compras.",
+    "confirmation_required": "Confirma para vaciar la lista.",
+    "generic": "No pudimos actualizar la lista. Inténtalo de nuevo."
+  },
+  "editor": {
+    "label": "Producto correspondiente",
+    "optional": "opcional",
+    "hint": "Sugerencia para la lista de compras de quien cocina la receta. Solo vale después de que la administración la valide.",
+    "saveFirst": "Guarda el borrador para elegir el producto de este ingrediente.",
+    "search": "Buscar producto para {name}",
+    "choose": "Elegir producto",
+    "change": "Sugerir otro producto",
+    "cancel": "Cancelar",
+    "withdraw": "Retirar sugerencia",
+    "withdrawn": "Sugerencia retirada",
+    "suggested": "Producto enviado para validación",
+    "validatedLine": "Validado: {title}",
+    "pendingLine": "Sugerencia: {title}",
+    "lastLine": "Anterior: {title}",
+    "hiddenProduct": "producto fuera de línea",
+    "reason": "Motivo: {reason}",
+    "status": {
+      "pending": "Pendiente de validación",
+      "validated": "Validado",
+      "suspended": "Suspendido",
+      "rejected": "Rechazado",
+      "unavailable": "No disponible"
+    },
+    "errors": {
+      "forbidden": "Este ingrediente no es de una receta tuya o todavía no se ha guardado.",
+      "product_not_found": "Producto no encontrado.",
+      "invalid_input": "Elige un producto de la lista.",
+      "unavailable": "Los vínculos de ingredientes todavía no están disponibles en este entorno.",
+      "generic": "No pudimos guardar la sugerencia. Inténtalo de nuevo.",
+      "already_decided": "La administración ya decidió este producto para este ingrediente (validado, rechazado o suspendido). Elige otro producto o pide una nueva revisión a la administración."
+    }
+  },
+  "suspension": {
+    "replaced": "Sustituido por otro producto validado",
+    "product_significant_change": "El producto cambió y necesita una nueva validación",
+    "ingredient_changed": "El ingrediente cambió y el producto necesita una nueva validación",
+    "admin": "Suspendido por la administración"
+  },
+  "admin": {
+    "tabsLabel": "Tipo de vínculo",
+    "tabs": {
+      "content": "Contenidos",
+      "ingredients": "Ingredientes"
+    },
+    "description": "Sugerencias de los héroes para el producto correspondiente de cada ingrediente. Solo el vínculo validado aparece en la lista de compras; validar uno nuevo suspende el anterior del mismo ingrediente.",
+    "filters": {
+      "status": "Estado",
+      "recipe": "Receta",
+      "product": "Producto"
+    },
+    "table": {
+      "caption": "Vínculos entre ingredientes y productos",
+      "recipe": "Receta",
+      "ingredient": "Ingrediente",
+      "product": "Producto",
+      "status": "Estado",
+      "note": "Observación",
+      "date": "Actualizado el",
+      "actions": "Acciones"
+    },
+    "productUnavailable": "Producto no disponible",
+    "productHidden": "Producto fuera de línea",
+    "unavailable": "Los vínculos de ingredientes todavía no están disponibles en este entorno.",
+    "actions": {
+      "validate": "Validar",
+      "validateTitle": "¿Validar este vínculo?",
+      "validateDescription": "El producto pasa a aparecer en la lista de compras de quien añada este ingrediente. Si el ingrediente ya tiene uno validado, ese se suspende.",
+      "reject": "Rechazar",
+      "rejectTitle": "¿Rechazar la sugerencia?",
+      "suspend": "Suspender",
+      "suspendTitle": "¿Suspender el vínculo?",
+      "done": "Vínculo actualizado"
+    },
+    "empty": "Ningún vínculo de ingrediente en este estado."
+  }
+}

@@ -191,7 +191,8 @@
             "heroVideos": "<strong>Videos de los héroes:</strong> si eres héroe y grabas o envías un video en la app, el archivo va directo de tu dispositivo a Cloudflare Stream. La app solo guarda el identificador del video, el contenido al que pertenece y las fechas de envío y de descarte (para limitar envíos y limpiar videos abandonados).",
             "recipePhotos": "<strong>Fotos y videos de recetas:</strong> si eres héroe y subes fotos a una receta, la foto se reduce en tu dispositivo (pierde la ubicación y los datos de la cámara) y queda en un espacio privado del almacenamiento de Supabase, vinculada a la receta. Quién las ve: las fotos de la galería, todos, mientras la receta está publicada; las fotos de los pasos, solo quien puede abrir la receta; el borrador, solo tú y la administración. El video de una receta sigue la regla de los videos de los héroes.",
             "recipeHistory": "<strong>Historial de recetas vistas (opcional):</strong> desactivado por defecto. Si lo activas en <recipes>Mi colección de recetas</recipes>, guardamos solo qué receta abriste y la fecha del último acceso a cada una (nada más), para mostrarte la lista. Solo tú lo ves. Desactivarlo o usar “Borrar historial” borra todo al instante, y cada registro se borra después de 90 días.",
-            "recipeRatings": "<strong>Valoraciones de recetas:</strong> si completaste una receta, puedes darle de 1 a 5 estrellas. Guardamos la nota, la receta y la fecha, vinculadas a tu cuenta; nadie ve tu nota, solo el promedio de la receta (a partir de 3 valoraciones, sin contar las cuentas de demostración). Puedes cambiar la nota cuando quieras."
+            "recipeRatings": "<strong>Valoraciones de recetas:</strong> si completaste una receta, puedes darle de 1 a 5 estrellas. Guardamos la nota, la receta y la fecha, vinculadas a tu cuenta; nadie ve tu nota, solo el promedio de la receta (a partir de 3 valoraciones, sin contar las cuentas de demostración). Puedes cambiar la nota cuando quieras.",
+            "shoppingList": "<strong>Lista de compras (opcional):</strong> si usas “Añadir a la lista de compras” en una receta, guardamos los elementos que elijas (nombre, cantidad, unidad, la receta de origen, si ya lo compraste y el orden), vinculados a tu cuenta, para armar tu <shopping>Lista de compras</shopping>. Solo tú la ves: ni la administración la lee. Los elementos se quedan hasta que los quites, uses “Quitar los comprados” o “Vaciar lista”, o elimines la cuenta. Comprar el kit de la receta usa el carrito de prueba, sin cobro."
           },
           "p2": "Los proveedores de infraestructura también registran datos técnicos de acceso, como la dirección IP, la fecha y la hora y la información del navegador, en sus propios registros operativos."
         }
@@ -397,6 +398,11 @@
                 "data": "Valoraciones de recetas (estrellas)",
                 "period": "Mientras exista la cuenta",
                 "details": "Se borran junto con la cuenta; el promedio de la receta se recalcula en el momento."
+              },
+              "shoppingList": {
+                "data": "Lista de compras",
+                "period": "Hasta que la quites o elimines la cuenta",
+                "details": "No tiene borrado automático por plazo: los elementos se quedan hasta que quites uno, uses “Quitar los comprados” o “Vaciar lista”. Se borran junto con la cuenta."
               }
             }
           },
@@ -416,7 +422,7 @@
           "p2": "Cuando eliminas la cuenta:",
           "list2": {
             "profile": "tu perfil se anonimiza y se elimina junto con la cuenta;",
-            "removed": "se eliminan los intereses, los elementos marcados como “no me interesa”, los favoritos, las listas, el progreso, los contenidos completados, la racha de días, los logros, las inscripciones en programas, los certificados, las recomendaciones, el carrito, la suscripción simulada y los registros de interés en productos;",
+            "removed": "se eliminan los intereses, los elementos marcados como “no me interesa”, los favoritos, las listas, el progreso, los contenidos completados, la racha de días, los logros, las inscripciones en programas, los certificados, las recomendaciones, la lista de compras, el carrito, la suscripción simulada y los registros de interés en productos;",
             "unlinked": "los eventos de uso, el feedback, los pedidos de prueba y las ejecuciones de recomendación dejan de estar vinculados a ti, y los pedidos de prueba también pierden el nombre del destino ficticio. Los eventos de uso y las ejecuciones de recomendación se siguen eliminando en los plazos de la tabla anterior; el feedback y los pedidos de prueba anonimizados no se eliminan automáticamente;",
             "audit": "un registro de la eliminación, con el identificador interno de la cuenta y sin correo ni nombre, permanece en la auditoría hasta 365 días;",
             "partner": "si actuabas como socio, el perfil de socio y lo publicado en él dejan de estar vinculados a tu cuenta, pero no se eliminan automáticamente. El registro de la invitación, que conserva el correo invitado, también se mantiene. Solicita su eliminación por el canal de contacto;",

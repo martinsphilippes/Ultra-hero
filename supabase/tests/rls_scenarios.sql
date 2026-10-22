@@ -2955,6 +2955,54 @@ select tests.ok('S34 limpeza: Helena sem usuário, sem pedido e sem credenciais'
   (select user_id is null and credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
   and not exists (select 1 from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
 
+-- ================================================================ S35 · Trocar o ingrediente suspende o produto validado (0033)
+-- recipe_save regrava o ingrediente pelo mesmo id (on conflict do update set name = ...): renomear
+-- suspende o vínculo validado ('ingredient_changed'); posição, quantidade e caixa/espaços não.
+-- Usuário próprio (…0035) ligado à Helena e desligado no fim; nomes de g1 restaurados.
+select tests.su();
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000035', 's35helena@test.local');
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000035' where id = public.seed_uuid('creator:helena') and user_id is null;
+create temporary table t_s35_ing as
+  select id, position, name, quantity from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position in (1, 2);
+grant select on t_s35_ing to authenticated;
+select tests.login('10000000-0000-4000-8000-000000000035', 's35helena@test.local');
+create temporary table t_s35_l1 as select public.creator_suggest_ingredient_product((select id from t_s35_ing where position = 1), public.seed_uuid('product:m1'), null) as id;
+create temporary table t_s35_l2 as select public.creator_suggest_ingredient_product((select id from t_s35_ing where position = 2), public.seed_uuid('product:m2'), null) as id;
+grant select on t_s35_l1, t_s35_l2 to authenticated;
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_ingredient_product((select id from t_s35_l1), 'validated', null);
+select public.admin_set_ingredient_product((select id from t_s35_l2), 'validated', null);
+-- a mesma escrita do recipe_save (o herói não tem update direto; a RPC é security definer)
+select tests.su();
+update public.recipe_ingredients set position = 60, quantity = quantity + 1, name = '  ' || upper(name) || ' '
+  where id = (select id from t_s35_ing where position = 1);
+select tests.ok('S35 mudar posição, quantidade ou só caixa/espaços do nome não suspende',
+  (select bool_and(status = 'validated') from public.recipe_ingredient_products where id in ((select id from t_s35_l1), (select id from t_s35_l2))));
+update public.recipe_ingredients set name = 'Whisky 12 anos' where id = (select id from t_s35_ing where position = 1);
+select tests.ok('S35 renomear o ingrediente suspende o vínculo validado (ingredient_changed); o do outro ingrediente segue validado',
+  (select status = 'suspended' and suspended_reason = 'ingredient_changed' from public.recipe_ingredient_products where id = (select id from t_s35_l1))
+  and (select status = 'validated' from public.recipe_ingredient_products where id = (select id from t_s35_l2)));
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+-- o item do S30 (Peito de frango → m1) é readicionado como a action faz (update): o produto sai
+update public.shopping_list_items set quantity = 300 where ingredient_id = (select id from t_s35_ing where position = 1);
+select tests.ok('S35 consumidor não vê o vínculo suspenso e o item readicionado fica sem produto',
+  not exists (select 1 from public.recipe_ingredient_products where ingredient_id = (select id from t_s35_ing where position = 1))
+  and (select count(*) = 1 and bool_and(product_id is null) from public.shopping_list_items where ingredient_id = (select id from t_s35_ing where position = 1)));
+select tests.su();
+select tests.ok('S35 gatilho: security definer com search_path fixo, sem execute para anon (lista do S14 inalterada)',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute')
+   from pg_proc p where p.oid = 'public.recipe_ingredients_links_suspend()'::regprocedure)
+  and exists (select 1 from pg_trigger where tgname = 'trg_z_recipe_ingredients_links' and tgrelid = 'public.recipe_ingredients'::regclass));
+-- limpeza: nomes, posições e quantidades do seed; sem vínculos; Helena sem usuário
+update public.recipe_ingredients i set position = t.position, name = t.name, quantity = t.quantity from t_s35_ing t where i.id = t.id and t.position = 1;
+delete from public.recipe_ingredient_products where id in ((select id from t_s35_l1), (select id from t_s35_l2));
+update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:helena') and user_id = '10000000-0000-4000-8000-000000000035';
+delete from auth.users where id = '10000000-0000-4000-8000-000000000035';
+select tests.ok('S35 limpeza: g1 como no seed, sem vínculos e Helena sem usuário',
+  (select bool_and(i.name = t.name and i.position = t.position and i.quantity is not distinct from t.quantity) from public.recipe_ingredients i join t_s35_ing t on t.id = i.id)
+  and not exists (select 1 from public.recipe_ingredient_products where content_id = public.seed_uuid('content:g1'))
+  and (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
+
 -- ================================================================ S36 · Histórico como o app grava e a coleção (fase 4, sem migração)
 -- A página da receita insere só content_id e, quando a receita já está no histórico, atualiza só
 -- viewed_at: o upsert do PostgREST (do update set content_id = excluded.content_id) fica fora do grant

@@ -2,7 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button, Checkbox, FormField, IconButton, Input, Select } from "@/components/ui";
 import { RECIPE_LIMITS, RECIPE_UNITS, type RecipeUnit } from "@/lib/recipes/codes";
 import { emptyIngredient, focusIndexAfterRemove, moveItem, type DraftIngredient, type DraftSubstitution } from "@/lib/recipes/draft";
@@ -18,7 +18,7 @@ const amountInputProps = { enterKeyHint: "next", autoComplete: "off" } as const;
 // Etapa 2: ingredientes com quantidade numérica ("1/2", "1,5", "2 1/2"), unidade dos códigos do
 // banco, "a gosto", opcional, observação e até 5 substituições. Reordenar com ↑/↓ (sem arrastar),
 // com anúncio da nova posição.
-export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce }: StepProps) {
+export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce, productField }: StepProps & { productField?: (ingredient: DraftIngredient) => ReactNode }) {
   const t = useTranslations("recipes.editor.ingredients");
   const tu = useTranslations("recipes.structured.units");
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -112,6 +112,8 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce 
                 <FormField id={fieldIdForPath(`${base}.note`)} label={t("note")} error={errorFor(`${base}.note`)}>
                   <Input value={ing.note} maxLength={200} placeholder={t("notePlaceholder")} onChange={(e) => update(index, { note: e.target.value })} disabled={disabled} />
                 </FormField>
+                {/* "Produto correspondente" (fase 5): sugestão para a lista de compras, validada pelo admin */}
+                {productField ? productField(ing) : null}
 
                 <div className="flex flex-col gap-2" role="group" aria-label={`${t("substitutions")} · ${label(index)}`}>
                   <span className="text-sm font-semibold text-fg">{t("substitutions")}</span>

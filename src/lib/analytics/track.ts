@@ -38,6 +38,7 @@ export type AnalyticsEvent =
   | "recipe.share"
   | "recipe.print"
   | "recipe.rate"
+  | "recipe.shopping_add"
   | "onboarding.complete"
   | "account.delete"
   | "error.critical";

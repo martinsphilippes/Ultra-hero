@@ -191,7 +191,8 @@
             "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos).",
             "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos.",
             "recipeHistory": "<strong>Recently viewed recipes (optional):</strong> off by default. If you turn it on in <recipes>My recipe collection</recipes>, we only keep which recipe you opened and the date you last opened each one (nothing else), to show you the list. Only you can see it. Turning it off or using “Clear history” deletes everything right away, and each entry is deleted after 90 days.",
-            "recipeRatings": "<strong>Recipe ratings:</strong> if you completed a recipe, you can give it 1 to 5 stars. We keep the rating, the recipe and the date, linked to your account; nobody sees your rating, only the recipe's average (from 3 ratings, demo accounts excluded). You can change your rating at any time."
+            "recipeRatings": "<strong>Recipe ratings:</strong> if you completed a recipe, you can give it 1 to 5 stars. We keep the rating, the recipe and the date, linked to your account; nobody sees your rating, only the recipe's average (from 3 ratings, demo accounts excluded). You can change your rating at any time.",
+            "shoppingList": "<strong>Shopping list (optional):</strong> if you use “Add to shopping list” on a recipe, we keep the items you choose (name, amount, unit, the source recipe, whether you already bought it and the order), linked to your account, to build your <shopping>Shopping list</shopping>. Only you can see it: not even the admin team reads the list. Items stay until you remove them, use “Clear bought items” or “Clear list”, or delete your account. Buying the recipe kit uses the test cart, with no charge."
           },
           "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
         }
@@ -397,6 +398,11 @@
                 "data": "Recipe ratings (stars)",
                 "period": "While the account exists",
                 "details": "They are deleted with the account; the recipe average is recalculated right away."
+              },
+              "shoppingList": {
+                "data": "Shopping list",
+                "period": "Until you remove it or delete your account",
+                "details": "There is no automatic deletion by time: items stay until you remove an item, use “Clear bought items” or “Clear list”. They are deleted with the account."
               }
             }
           },
@@ -416,7 +422,7 @@
           "p2": "When you delete your account:",
           "list2": {
             "profile": "your profile is anonymized and deleted along with the account;",
-            "removed": "interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments, certificates, recommendations, cart, simulated subscription and records of interest in products are deleted;",
+            "removed": "interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments, certificates, recommendations, shopping list, cart, simulated subscription and records of interest in products are deleted;",
             "unlinked": "usage events, feedback, test orders and recommendation runs are no longer linked to you, and test orders also lose the name of the fictional destination. Usage events and recommendation runs are still deleted within the periods in the table above; feedback and anonymized test orders are not deleted automatically;",
             "audit": "a record of the deletion, with the account’s internal identifier and without email or name, stays in the audit log for up to 365 days;",
             "partner": "if you acted as a partner, the partner profile and what was published under it are unlinked from your account but not deleted automatically. The invitation record, which keeps the invited email address, also remains. Request removal through the contact channel;",
