@@ -10,6 +10,9 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3100",
     trace: "retain-on-failure",
     locale: "pt-BR",
+    // Fuso do público do app. As contas demo guardam o fuso do último navegador (TimezoneSync): sem isto o
+    // E2E (UTC) deixava as contas em UTC e quem abria do Brasil via horários 3 h adiantados.
+    timezoneId: "America/Sao_Paulo",
     // Permite reutilizar um Chromium já instalado (ex.: PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium) sem baixar outro.
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : undefined,
   },
