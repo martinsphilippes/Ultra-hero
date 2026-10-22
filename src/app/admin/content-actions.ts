@@ -281,6 +281,27 @@ export async function saveContentTypeSettingsAction(rows: z.infer<typeof typeSet
   }
 }
 
+// ---------------------------------------------------------------- regra de revisão por tipo (P1)
+// Só pela RPC auditada (o gatilho da 0027 recusa o update direto da coluna), com justificativa.
+export async function setReviewRequiredAction(type: string, on: boolean, justification: string): Promise<ActionResult> {
+  const parsed = z
+    .object({ type: z.enum(["video", "recipe", "workout", "guide", "article"]), on: z.boolean(), justification: z.string().trim().min(5).max(500) })
+    .safeParse({ type, on, justification });
+  if (!parsed.success) return fail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_set_review_required", { p_type: parsed.data.type, p_on: parsed.data.on, p_reason: parsed.data.justification });
+    if (error) return fail(error);
+    revalidatePath("/admin/content/settings");
+    revalidatePath("/creator/recipes");
+    const t = await getTranslations("recipes.admin");
+    return { ok: true, message: t("changed") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
 // ---------------------------------------------------------------- buscas (SearchPicker) ---
 // Conteúdo por título; `publishedOnly` para itens de programa, destaques e vínculos.
 export async function searchContentAction(q: string, publishedOnly = true): Promise<PickResult> {

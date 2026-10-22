@@ -166,7 +166,11 @@
     "recipe_incomplete": "The recipe can't go live: missing {fields}.",
     "type_locked": "A recipe's type doesn't change (and other content doesn't become a recipe).",
     "recipe_body_managed": "This recipe's body only changes through the recipe editor.",
-    "review_required_protected": "The review rule only changes through the audited settings action."
+    "review_required_protected": "The review rule only changes through the audited settings action.",
+    "justification_required": "Give a justification with at least 5 characters.",
+    "type_not_found": "Content type without settings.",
+    "credentials_empty": "The hero has no credentials request to approve.",
+    "creator_not_found": "Hero not found."
   },
   "content": {
     "title": "Content",

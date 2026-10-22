@@ -1,9 +1,11 @@
 import { CloudflareStreamProvider, isCloudflareStreamConfigured } from "@/lib/video/providers/cloudflare-stream";
 import { runCronJob } from "../_lib/cron";
+import { cleanupRecipeOrphans } from "../_lib/recipe-orphans";
 import { cleanupStreamUploads } from "../_lib/stream-cleanup";
 
 // Retenção diária: analytics 90d, pedidos de teste 90d (anonimiza), auditoria 365d, runs/logs 30d;
-// e limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar).
+// limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar) e das fotos de
+// receita órfãs no bucket recipe-media.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -22,7 +24,14 @@ async function handler(request: Request) {
         stream = { stream_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
       }
     }
-    return { counts, stream };
+    // fotos de receita órfãs no Storage: falha aqui também não derruba o resto
+    let recipeMedia: Record<string, unknown>;
+    try {
+      recipeMedia = await cleanupRecipeOrphans(admin);
+    } catch (orphanError) {
+      recipeMedia = { recipe_orphans_error: orphanError instanceof Error ? orphanError.message : String(orphanError) };
+    }
+    return { counts, stream, recipe_media: recipeMedia };
   });
 }
 

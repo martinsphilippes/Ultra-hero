@@ -34,7 +34,8 @@
     "dashboard": "Panel",
     "content": "Mis contenidos",
     "links": "Vínculos de productos",
-    "profile": "Mi perfil"
+    "profile": "Mi perfil",
+    "recipes": "Mis Recetas"
   },
   "seller": {
     "dashboard": "Panel",

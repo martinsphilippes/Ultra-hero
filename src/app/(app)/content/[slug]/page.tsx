@@ -30,6 +30,8 @@ import {
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { AllergyReminder } from "@/components/recipes/AllergyReminder";
 import { RecipeGate } from "@/components/recipes/RecipeGate";
+import { RecipeView } from "@/components/recipes/view/RecipeView";
+import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { AddToListButton, CompleteButton, FavoriteButton, NotInterestedButton } from "@/components/library";
 import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -38,6 +40,8 @@ import { getProfile, getUser } from "@/lib/auth/session";
 import { loadLocalizedBody } from "@/lib/catalog/localized-body";
 import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
 import { getRecipeGate } from "@/lib/recipes/gate";
+import { isLive, isRecipeMediaUrl } from "@/lib/recipes/media";
+import { hasRecipeDetails } from "@/lib/recipes/rows";
 import { createClient } from "@/lib/supabase/server";
 import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { resolveVideoSource } from "@/lib/video";
@@ -182,6 +186,13 @@ export default async function ContentPage({ params }: Params) {
   // Receita só abre depois da etapa demonstrativa (vale para todos, inclusive quem tem acesso ao módulo).
   const recipeGate = content.type === "recipe" ? await getRecipeGate() : null;
   const recipeBlocked = Boolean(recipeGate && !recipeGate.completed);
+  // Receita com recipe_details (as novas e as antigas convertidas pela 0029) usa o renderizador
+  // estruturado; sem detalhes (banco sem a 0027) fica a página antiga, que lê o corpo v1.
+  const live = isLive(content.status, content.publish_at);
+  const structured =
+    content.type === "recipe" && state === "accessible" && !recipeBlocked && (await hasRecipeDetails(supabase, content.id))
+      ? await loadRecipeView(supabase, { contentId: content.id, title, premium: content.access_level === "premium", userId: user?.id, locale: uiLocale, poster: content.cover_url })
+      : null;
 
   const TypeIcon = TYPE_ICON[content.type];
   const cover = content.cover_url ?? `/placeholders/cover-${content.pillar}-1.svg`;
@@ -196,7 +207,8 @@ export default async function ContentPage({ params }: Params) {
           ← {t("backToExplore")}
         </Link>
         <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[3/1]">
-          <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg")} sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
+          {/* foto de receita fora do ar: o otimizador busca sem a sessão e não a veria */}
+          <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
           <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
             <PillarBadge pillar={content.pillar} />
@@ -308,7 +320,12 @@ export default async function ContentPage({ params }: Params) {
               path={path}
             />
           )}
-          {content.type === "recipe" && <RecipeBody recipe={parseRecipeBody(body)} />}
+          {content.type === "recipe" &&
+            (structured ? (
+              <RecipeView model={structured.model} video={structured.video} unoptimizedImages={!live} />
+            ) : (
+              <RecipeBody recipe={parseRecipeBody(body)} />
+            ))}
           {content.type === "workout" && <WorkoutBody workout={parseWorkoutBody(body)} />}
           {(content.type === "guide" || content.type === "article") && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
         </div>

@@ -1,6 +1,6 @@
 # Decisão: módulo de receitas estruturadas
 
-Status: **aprovado** (22/10/2026). Fase 1 implementada em `0027_recipes_structured.sql`, `0028_recipe_media_storage.sql` e `0029_recipes_backfill.sql`, cenários S25–S32 em `supabase/tests/rls_scenarios.sql`, códigos e quantidades em `src/lib/recipes/`.
+Status: **aprovado** (22/10/2026). Fase 1 implementada em `0027_recipes_structured.sql`, `0028_recipe_media_storage.sql` e `0029_recipes_backfill.sql`, cenários S25–S32 em `supabase/tests/rls_scenarios.sql`, códigos e quantidades em `src/lib/recipes/`. Fase 2 (Portal do Chef e `RecipeView`) implementada sem migração nova; ver a seção "Fase 2" abaixo.
 
 Este arquivo é a cópia do documento de desenho (revisão 2) com as respostas do responsável às perguntas da seção 5.4 e o registro de onde a implementação da fase 1 se afastou do texto. Onde o desenho e este cabeçalho divergem, vale o cabeçalho.
 
@@ -46,6 +46,32 @@ Aplicação:
 - A leitura do corpo traduzido usa `content_localized_body` e cai para a leitura antiga quando a função não existe (PGRST202), para o app funcionar antes da migração no remoto.
 
 Adiado para a fase 2: ligação do `recipe_orphan_media` ao cron, interface em `/admin` para o interruptor de revisão e a fila de aprovação de credenciais.
+
+## Fase 2 (Portal do Chef e renderizador) — implementada, sem migração nova
+
+Tudo roda sobre as RPCs e políticas já aplicadas (0027–0029): **não houve 0032** nem cenários S34+. Banco local conferido com a suíte inteira (800 cenários).
+
+Entregue:
+
+- `/creator/recipes` (Minhas Receitas): busca por título, filtros por categoria, situação (rascunho, em revisão, devolvida, agendada, publicada, arquivada), dificuldade e data de atualização, por GET com Zod `.catch`; indicadores de `creator_recipe_stats(30)` só com dado real (visitantes a partir de 5, favoritos acima de zero, nota com 3 avaliações; a coluna some quando nenhuma receita tem dado); ações editar/abrir, visualizar, ver no app, versões, duplicar, despublicar, retirar da revisão, arquivar, restaurar e excluir rascunho nunca publicado.
+- `/creator/recipes/new` e `/creator/recipes/[id]/edit?step=…`: `RecipeWizard` em 6 etapas (regras puras em `src/lib/recipes/draft.ts`, `payload.ts`, `checklist.ts`, `draft-recovery.ts`, `editor-steps.ts`), gravação por `recipe_save` ao trocar de etapa, em "Salvar rascunho" e a cada 30 s (uma gravação por vez), cópia local `uh-recipe-draft:<id>` com "Recuperar | Descartar", diálogo de conflito para `stale_draft`, resumo de erros com links que focam o campo. Situações sem edição (em revisão, no ar, agendada, arquivada) mostram o estado e as ações.
+- Fotos: redução no navegador (2048 px, WebP 0,82 ou JPEG, sem EXIF), envio direto ao bucket `recipe-media` com a sessão do herói, conferência dos bytes mágicos na action (apaga e recusa com `invalid_image`) e `recipe_register_media`; proxy `/media/recipe/[id]` com a RLS de quem pede, bytes conferidos contra o tipo do banco, `nosniff`, CSP `default-src 'none'` e cache público só para galeria de receita no ar.
+- Vídeo: link do YouTube/Vimeo (mesmos parsers da reprodução) ou envio pelo fluxo do composer (ticket tus com `stream_uploads.content_id` = a receita; o uid entra no rascunho e é gravado na hora). A licença acompanha o provedor.
+- `/creator/recipes/[id]/preview` e `/creator/recipes/[id]/versions` (data, motivo, autor, seções alteradas e "Restaurar no rascunho").
+- `RecipeView` (componente de servidor) em `/content/[slug]` para toda receita com `recipe_details` (inclusive as convertidas pela 0029); sem detalhes, a página antiga continua (o ramo v1 sai na fase 3).
+- Pendências da fase 1: cron diário de órfãos (`/api/cron/retention` chama `recipe_orphan_media` e apaga pela API do Storage, em lotes de 100; banco sem a função pula), "Revisão antes de publicar" por tipo em `/admin/content/settings` (`admin_set_review_required` com justificativa) e a fila de credenciais (P7) em `/admin/creators`, com aprovar/reprovar auditados; o herói informa especialidades e pede credenciais em `/creator/profile`.
+- Privacidade: `legal.json` (3 idiomas) e `docs/privacy-and-retention.md` citam as fotos de receita, quem vê e o prazo.
+
+Desvios da fase 2 em relação à seção 4.1:
+
+- O editor antigo **não redireciona**: segue só para leitura, e o aviso traz "Editar no editor de receitas" (pedido da tarefa). Para o admin o aviso continua só de leitura.
+- Fica para depois: edição pelo admin com o `RecipeWizard`, resumo estruturado e "Validar nutrição" em `/admin/content/[id]`, tela de "Categorias de receita". As 3 chaves de `/admin/settings` já existiam (fase 1).
+- A fila de credenciais mora em `/admin/creators` (o "/admin/heroes" do texto). A situação "reprovada" vem da última decisão em `admin_audit` depois da última edição do pedido.
+- O envio de foto **não depende da service role** (usa a sessão do herói e as políticas da 0028); dependem dela só a limpeza diária de órfãos e o vídeo pelo Stream. O E2E de envio real continua atrás de `E2E_RECIPE_MEDIA_REAL=1` e foi rodado contra produção (mobile e desktop), com o rascunho e as fotos apagados no fim.
+- Progresso do envio de foto em etapas (preparar, enviar, conferir): o `upload` do supabase-js não informa bytes. Recusa da política do Storage (cota, interruptor, rascunho que deixou de ser editável) aparece numa mensagem só, porque o Storage não diz o motivo; `demo_upload_forbidden` não existe (P3).
+- O filtro "Devolvida" inclui a rejeitada.
+- O dono e o admin continuam vendo a tela da etapa demonstrativa na página pública quando não a fizeram (P2 segue em aberto); a prévia do chef não passa por ela.
+- O E2E de g1 no `RecipeView` público pula quando a conta `premium` de demonstração não fez a etapa (o caso hoje em produção); a renderização de g1 a partir das tabelas é coberta no Vitest (`recipe-view.test.ts`).
 
 ---
 

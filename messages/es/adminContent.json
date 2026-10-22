@@ -166,7 +166,11 @@
     "recipe_incomplete": "La receta no puede publicarse: falta {fields}.",
     "type_locked": "El tipo de una receta no cambia (ni otro contenido se convierte en receta).",
     "recipe_body_managed": "El cuerpo de esta receta solo cambia en el editor de recetas.",
-    "review_required_protected": "La regla de revisión solo cambia con la acción auditada de configuración."
+    "review_required_protected": "La regla de revisión solo cambia con la acción auditada de configuración.",
+    "justification_required": "Indica una justificación de al menos 5 caracteres.",
+    "type_not_found": "Tipo de contenido sin configuración.",
+    "credentials_empty": "El héroe no tiene solicitud de credenciales para aprobar.",
+    "creator_not_found": "Héroe no encontrado."
   },
   "content": {
     "title": "Contenidos",

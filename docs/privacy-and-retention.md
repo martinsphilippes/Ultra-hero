@@ -13,9 +13,10 @@
 | Eventos de uso (sem PII), feedback opcional | `analytics_events`, `feedback` | métricas do experimento | legítimo interesse (a confirmar) |
 | Ações administrativas | `admin_audit` | segurança e responsabilização | legítimo interesse / obrigação |
 | Etapa de receitas (aceite, restrições e alergias de lista fixa) | `recipe_onboarding` | lembrar a pessoa na página de cada receita; desde a 0027 também libera a receita no banco (`can_access_content`) | consentimento (dado sensível de saúde; a confirmar) |
-| Vídeos gravados ou enviados por heróis | arquivo no **Cloudflare Stream**; no banco só o uid, o conteúdo, as datas de envio/descarte (`stream_uploads`) | publicar vídeos curtos dos heróis; limitar envios e limpar vídeos abandonados | execução do serviço (herói) |
+| Vídeos gravados ou enviados por heróis | arquivo no **Cloudflare Stream**; no banco só o uid, o conteúdo, as datas de envio/descarte (`stream_uploads`) | publicar vídeos curtos dos heróis (posts e, desde a fase 2 de receitas, o vídeo opcional da receita); limitar envios e limpar vídeos abandonados | execução do serviço (herói) |
+| Fotos de receitas enviadas por heróis (fase 2) | bucket privado `recipe-media` no **Supabase Storage** (`<herói>/<receita>/<uuid>.<webp, jpg ou png>`), reduzidas no aparelho a 2048 px sem EXIF/localização; no banco tipo e tamanho lidos do Storage, texto alternativo, legenda, quem enviou e a data da confirmação de direito de uso (`recipe_media`) | galeria, capa e fotos de etapa das receitas; servidas só pelo proxy `/media/recipe/[id]`, que decide a cada pedido pela RLS: galeria de receita no ar para todos, foto de etapa só com acesso à receita, rascunho só para o herói dono e o admin | execução do serviço (herói) |
 
-Modelado na 0027 e **ainda sem tela** (cada fase do módulo de receitas atualiza esta tabela e `legal.json` quando passar a coletar): fotos de receita (bucket privado `recipe-media` no Supabase Storage), avaliações por estrelas, comentários (desligados), lista de compras, histórico opcional de receitas vistas (90 dias) e indicadores agregados para o herói.
+Modelado na 0027 e **ainda sem tela** (cada fase do módulo de receitas atualiza esta tabela e `legal.json` quando passar a coletar): avaliações por estrelas, comentários (desligados), lista de compras, histórico opcional de receitas vistas (90 dias) e indicadores agregados para o herói.
 
 **Não coletamos**: endereço real, geolocalização, dados de pagamento, dados de saúde individuais. Conteúdo é educativo, sem prescrição.
 
@@ -28,6 +29,7 @@ Modelado na 0027 e **ainda sem tela** (cada fase do módulo de receitas atualiza
 | Logs técnicos / execuções de recomendação | 30 dias | `recommendation_runs` + política dos provedores (Vercel/Supabase) |
 | Auditoria administrativa | 365 dias | `admin_audit` |
 | Vídeos de heróis (Cloudflare Stream) | enquanto o conteúdo existir; rascunho descartado, trocado ou abandonado (envio vencido sem ir ao ar) é apagado | cron diário (`stream_cleanup_candidates`/`stream_cleanup_discard`, API do Stream); receita nunca é apagada pela limpeza, só perde o vídeo |
+| Fotos de receitas (Supabase Storage) | enquanto a foto fizer parte da receita; foto removida no editor ou de rascunho excluído sai na hora | `recipe_delete_media`/`creator_delete_recipe_draft` devolvem os caminhos e a action apaga pela API do Storage; o que sobrar (exclusão que falhou, envio nunca registrado) sai pelo cron diário depois de 24 h (`recipe_orphan_media` + API do Storage, nunca `delete` por SQL) |
 | Histórico de receitas vistas (opcional, quando a tela existir) | 90 dias | `recipe_view_history` + `run_retention()`; desligar apaga tudo na hora; a data do acesso e a do consentimento (`history_enabled_at`) são sempre do relógio do banco, o cliente não as define |
 | Backups | conforme plano Supabase (verificar e documentar antes da abertura) | provedor |
 
@@ -41,7 +43,7 @@ Exceções (evidência legal/incidente): `retention_exceptions` com escopo, just
 
 ## Compartilhamento com terceiros
 
-- Supabase (banco/auth) e Vercel (hospedagem): operadores. 
+- Supabase (banco/auth e, desde a fase 2 de receitas, o Storage das fotos de receita) e Vercel (hospedagem): operadores. 
 - Cloudflare (Stream): operador dos vídeos gravados ou enviados pelos heróis (upload direto do aparelho, processamento, armazenamento e entrega; o player é carregado do Cloudflare). Não recebe nome nem e-mail: o vídeo fica ligado ao conteúdo. Citado em `legal.json` (3 idiomas) desde 22/10/2026.
 - IA (OpenAI/Gemini) **só se ativada**: recebe ids opacos, tags e pilares — nunca e-mail/nome. Desligável por kill switch.
 - Nenhum repasse comercial, parceiro de logística ou pagamento.

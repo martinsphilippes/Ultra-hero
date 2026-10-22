@@ -166,7 +166,11 @@
     "recipe_incomplete": "A receita não pode ir ao ar: falta {fields}.",
     "type_locked": "O tipo de uma receita não muda (nem outro conteúdo vira receita).",
     "recipe_body_managed": "O corpo desta receita só muda pelo editor de receitas.",
-    "review_required_protected": "A regra de revisão só muda pela ação auditada de configurações."
+    "review_required_protected": "A regra de revisão só muda pela ação auditada de configurações.",
+    "justification_required": "Informe uma justificativa com pelo menos 5 caracteres.",
+    "type_not_found": "Tipo de conteúdo sem configuração.",
+    "credentials_empty": "O herói não tem pedido de credenciais para aprovar.",
+    "creator_not_found": "Herói não encontrado."
   },
   "content": {
     "title": "Conteúdos",

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
+import { CredentialsQueue } from "@/components/admin-ops/CredentialsQueue";
 import { CreatorStatusButton } from "@/components/admin-ops/StatusActions";
 import { Avatar, Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
 import type { Tables } from "@/lib/supabase/helpers";
@@ -111,6 +112,8 @@ export default async function AdminCreatorsPage() {
         }
       />
       <DataTable columns={columns} rows={rows} rowKey={(c) => c.id} caption={t("tableCaption")} emptyTitle={t("empty")} emptyDescription={t("emptyDescription")} />
+      {/* fila de credenciais do chef (P7): aprovação antes de o texto ir ao perfil público */}
+      <CredentialsQueue />
     </div>
   );
 }
