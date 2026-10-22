@@ -180,7 +180,7 @@
             "profilePhoto": "<strong>Profile photo (optional):</strong> if you take or pick a photo, it is cropped to a square and resized on your device before upload, with no location data or other camera metadata, and stored in Supabase Storage at a public address that cannot be listed. It shows as your avatar in the app; if you are a hero, it also shows on your public page, which any visitor can see. To limit uploads (up to 20 per day) and delete unused photos, we keep the date, size and type of each upload.",
             "notifications": "<strong>Notification preferences:</strong> what you agree to receive (editorial digest, streak reminders, test orders) and through which channels. Nothing is sent in this version; your choice is stored to be respected by any future sending.",
             "usage": "<strong>Content activity:</strong> interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments and symbolic certificates (the certificate PDF shows your display name).",
-            "routine": "<strong>Routine items:</strong> title, time, days and the daily check mark, used to build your Today and count your streak.",
+            "routine": "<strong>Routine items (old):</strong> title, time, days and the check marks you made when Today accepted hand-made items. Since 22 Oct 2026 they no longer show and cannot be edited in Today, but they remain stored in your account (and old check marks still count toward your streak) until a decision is made about them; you will be told before any deletion.",
             "subscription": "<strong>Simulated subscription:</strong> chosen modules, periods and change history.",
             "commerce": "<strong>Simulated commerce:</strong> cart, test orders (items, illustrative amounts and the fictional destination chosen from a list) and records of interest in products.",
             "events": "<strong>Usage events:</strong> actions in the app, such as opening content, completing a program or starting a test order, with date, language and technical properties such as the content identifier. When you are signed in, events are linked to your account; for visitors without an account, they are recorded without an identifier. The database rejects properties whose names indicate personal data, such as email, phone, CPF (Brazilian taxpayer ID), name, address or password.",
@@ -204,8 +204,8 @@
             "address": "a real or delivery address: shop destinations are fictional;",
             "location": "geolocation;",
             "payment": "payment data, such as card or bank account details: nothing is charged;",
-            "health": "individual health data, such as weight, body measurements, test results, diagnoses or medical conditions;",
-            "hydration": "hydration and rest logs: they stay on your device only, in the browser's local storage, and are never sent to the app;",
+            "health": "individual health data, such as weight, body measurements, test results, diagnoses or medical conditions, nor data from watches, rings or bands: Today does not connect to any brand yet, and the demo watch (in demo accounts and behind the “See an example” button) is generated on the spot on the server, uses none of your data, is not stored and does not go into usage events;",
+            "hydration": "hydration and rest logs: Today no longer accepts them. The old ones stayed only on your device; the new Today erases them from the browser's local storage once, without reading or sending anything to the app;",
             "documents": "identity documents, phone number and date of birth: you declare that you meet the minimum age of 18 when you create your account."
           },
           "p1": "We do not sell data, we do not pass it on for commercial or advertising purposes and we do not use third-party advertising or analytics tools."
@@ -285,7 +285,7 @@
               }
             }
           },
-          "p2": "<strong>Browser local storage:</strong> the <code>uh-theme</code> key stores the theme you chose, so it also applies to pages opened offline. In cook mode, the <code>uh-cook:…</code> keys (one per account and recipe, deleted after 24 hours) keep the steps you marked and the timers for 24 hours, and <code>uh-cook-sound</code> remembers whether the alarm sound is on. On a recipe page, the <code>uh-recipe-check:…</code> keys (one per account and recipe, deleted after 24 hours) keep the ingredients you ticked as ready. These local keys never leave your device. Adjusted servings are not stored in your account: they go in the page address (<code>?porcoes=</code>), which the server reads to show the amounts, and the first servings change in each visit creates a usage event with only the number of servings (see “Usage events”).",
+          "p2": "<strong>Browser local storage:</strong> the <code>uh-theme</code> key stores the theme you chose, so it also applies to pages opened offline. In cook mode, the <code>uh-cook:…</code> keys (one per account and recipe, deleted after 24 hours) keep the steps you marked and the timers for 24 hours, and <code>uh-cook-sound</code> remembers whether the alarm sound is on. On a recipe page, the <code>uh-recipe-check:…</code> keys (one per account and recipe, deleted after 24 hours) keep the ingredients you ticked as ready. The <code>uh:today:migrated</code> key only records that the old hydration and rest logs (<code>uh:today:…</code>) have been erased from this device. These local keys never leave your device. Adjusted servings are not stored in your account: they go in the page address (<code>?porcoes=</code>), which the server reads to show the amounts, and the first servings change in each visit creates a usage event with only the number of servings (see “Usage events”).",
           "p3": "<strong>App cache:</strong> the service worker stores the offline page, the manifest, the icons and the app’s static files in your browser, so it loads faster and works offline. This cache does not contain your personal data.",
           "p4": "<strong>Embedded videos:</strong> if a piece of content shows a YouTube video (via the youtube-nocookie.com domain) or a Vimeo video, the player is loaded directly from that service when the video appears on the page, and the service may collect technical data and use its own cookies, according to its policy. The demo’s sample content uses a simulated player, with no external service.",
           "p5": "You can delete cookies and site data in your browser settings. Without the session cookie, you will need to sign in again."
@@ -332,7 +332,7 @@
               "routine": {
                 "data": "Routine items and daily check marks",
                 "period": "As long as the account exists",
-                "details": "Deleted together with the account. Hydration and rest are not included: they stay on your device only."
+                "details": "Deleted together with the account. They no longer show in Today but remain stored until a decision is made about them. Hydration and rest no longer exist: the old logs stayed only on the device and are erased from it."
               },
               "profilePhoto": {
                 "data": "Profile photo",
