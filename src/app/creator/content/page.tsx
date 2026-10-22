@@ -37,6 +37,11 @@ type Row = {
   updated_at: string;
 };
 
+// Receita tem editor próprio (Portal do Chef); os demais tipos seguem no editor de conteúdo.
+function editHref(row: { id: string; type: string }): string {
+  return row.type === "recipe" ? `/creator/recipes/${row.id}/edit` : `/creator/content/${row.id}/edit`;
+}
+
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 // Lista dos conteúdos da personalidade com filtros (GET, sem JS) e etiquetas de status/revisão.
@@ -80,7 +85,7 @@ export default async function CreatorContentListPage({ searchParams }: Props) {
       header: t("content.columns.title"),
       cell: (row) => (
         <span className="flex min-w-0 flex-col gap-1">
-          <Link href={`/creator/content/${row.id}/edit`} data-content-type={row.type} className="line-clamp-2 font-semibold text-fg underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+          <Link href={editHref(row)} data-content-type={row.type} className="line-clamp-2 font-semibold text-fg underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
             {row.title}
           </Link>
           <span className="flex flex-wrap gap-1">
@@ -99,7 +104,7 @@ export default async function CreatorContentListPage({ searchParams }: Props) {
       cell: (row) => (
         <span className="flex flex-wrap justify-end gap-1">
           <Button asChild variant="secondary" size="sm">
-            <Link href={`/creator/content/${row.id}/edit`}>{row.status === "draft" && row.review_status !== "in_review" ? tc("edit") : tc("open")}</Link>
+            <Link href={editHref(row)}>{row.status === "draft" && row.review_status !== "in_review" ? tc("edit") : tc("open")}</Link>
           </Button>
           {row.status === "published" && (
             <Button asChild variant="ghost" size="sm" trailingIcon={<ExternalLink />}>

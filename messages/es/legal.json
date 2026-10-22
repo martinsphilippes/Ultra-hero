@@ -188,7 +188,8 @@
             "recommendations": "<strong>Recomendaciones:</strong> la lista de contenidos recomendados para ti y un registro técnico de cada cálculo (motor usado, tiempo, cantidad de elementos, costo estimado y errores).",
             "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría.",
             "recipeStep": "<strong>Etapa de recetas:</strong> la aceptación del aviso y las restricciones y alergias que marques (de una lista fija, sin texto libre). Las alergias y restricciones son datos sensibles de salud: solo las usamos para recordártelas en la página de cada receta, con tu consentimiento, y puedes cambiarlas o borrarlas cuando quieras.",
-            "heroVideos": "<strong>Videos de los héroes:</strong> si eres héroe y grabas o envías un video en la app, el archivo va directo de tu dispositivo a Cloudflare Stream. La app solo guarda el identificador del video, el contenido al que pertenece y las fechas de envío y de descarte (para limitar envíos y limpiar videos abandonados)."
+            "heroVideos": "<strong>Videos de los héroes:</strong> si eres héroe y grabas o envías un video en la app, el archivo va directo de tu dispositivo a Cloudflare Stream. La app solo guarda el identificador del video, el contenido al que pertenece y las fechas de envío y de descarte (para limitar envíos y limpiar videos abandonados).",
+            "recipePhotos": "<strong>Fotos y videos de recetas:</strong> si eres héroe y subes fotos a una receta, la foto se reduce en tu dispositivo (pierde la ubicación y los datos de la cámara) y queda en un espacio privado del almacenamiento de Supabase, vinculada a la receta. Quién las ve: las fotos de la galería, todos, mientras la receta está publicada; las fotos de los pasos, solo quien puede abrir la receta; el borrador, solo tú y la administración. El video de una receta sigue la regla de los videos de los héroes."
           },
           "p2": "Los proveedores de infraestructura también registran datos técnicos de acceso, como la dirección IP, la fecha y la hora y la información del navegador, en sus propios registros operativos."
         }
@@ -378,6 +379,11 @@
                 "data": "Videos enviados por héroes",
                 "period": "Mientras exista el contenido",
                 "details": "El video de un borrador que descartas, cambias o abandonas (envío vencido que nunca se publicó) se elimina de Cloudflare con la rutina diaria. El video de un contenido que ya estuvo publicado queda como historial de ese contenido."
+              },
+              "recipePhotos": {
+                "data": "Fotos de recetas subidas por héroes",
+                "period": "Mientras la foto forme parte de la receta",
+                "details": "Una foto quitada en el editor o de un borrador eliminado se borra de inmediato; si esa eliminación falla, o si una subida no llega a registrarse, la rutina diaria borra la foto sin receta después de 24 horas. Las fotos de una receta que ya estuvo publicada quedan con la receta."
               }
             }
           },

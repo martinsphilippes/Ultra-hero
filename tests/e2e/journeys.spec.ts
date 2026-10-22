@@ -115,6 +115,14 @@ test.describe("visitante", () => {
     await expect(main.locator("time[datetime='2026-10-22']")).toBeVisible();
   });
 
+  // Receitas fase 2: fotos enviadas pelo chef (bucket privado no Supabase Storage), quem vê e o prazo.
+  test("política de privacidade cita as fotos de receitas, quem vê e o prazo", async ({ page }) => {
+    await page.goto("/legal/privacy");
+    const main = page.locator("main");
+    await expect(main.getByText(/Fotos e vídeos de receitas:/)).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "Fotos de receitas enviadas por heróis" })).toBeVisible();
+  });
+
   test("ambiente de demonstração está sinalizado", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();

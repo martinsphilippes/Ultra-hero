@@ -188,7 +188,8 @@
             "recommendations": "<strong>Recommendations:</strong> the list of content recommended to you and a technical record of each calculation (engine used, time, number of items, estimated cost and errors).",
             "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log.",
             "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime.",
-            "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos)."
+            "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos).",
+            "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos."
           },
           "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
         }
@@ -378,6 +379,11 @@
                 "data": "Videos uploaded by heroes",
                 "period": "While the content exists",
                 "details": "A draft video you discard, replace or abandon (an expired upload that never went live) is deleted from Cloudflare by the daily routine. Video from content that has been live stays as that content's history."
+              },
+              "recipePhotos": {
+                "data": "Recipe photos uploaded by heroes",
+                "period": "While the photo is part of the recipe",
+                "details": "A photo removed in the editor or from a deleted draft is deleted right away; if that deletion fails, or if an upload is never registered, the daily routine deletes the photo without a recipe after 24 hours. Photos of a recipe that has been live stay with the recipe."
               }
             }
           },

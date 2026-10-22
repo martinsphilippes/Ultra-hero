@@ -188,7 +188,7 @@ export default async function EditContentPage({ params }: Params) {
         </div>
       </div>
 
-      {isRecipe && <RecipeLegacyNotice />}
+      {isRecipe && <RecipeLegacyNotice editHref={`/creator/recipes/${content.id}/edit`} />}
 
       <p className="type-caption text-fg-muted">{t("edit.accessNote")}</p>
 

@@ -5,6 +5,8 @@ const VARIANTS: Record<string, BadgeVariant> = {
   draft: "neutral",
   published: "success",
   archived: "warning",
+  // receitas do herói: publicada com data futura
+  scheduled: "info",
   // revisão editorial
   none: "neutral",
   in_review: "info",

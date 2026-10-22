@@ -2899,6 +2899,62 @@ delete from auth.users where id = '33000000-0000-4000-8000-000000000002';
 select tests.ok('S33 o Rafael volta ao seed, sem usuário e com a ilustração',
   (select user_id is null and avatar_url = (select avatar_url from t_s33_seed) from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
 
+-- ================================================================ S34 · Credenciais decididas sobre o texto que o admin viu (0032)
+-- O herói edita o pedido entre a abertura da fila e o clique: a decisão com o texto antigo é recusada
+-- (request_changed) e nada vai ao perfil público. A decisão fica no pedido para o herói ver
+-- "reprovadas"; editar o texto limpa a decisão. Usuário próprio (…0034), desvinculado no fim.
+select tests.su();
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000034', 's34helena@test.local');
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000034' where id = public.seed_uuid('creator:helena') and user_id is null;
+select tests.login('10000000-0000-4000-8000-000000000034', 's34helena@test.local');
+insert into public.creator_credentials_requests (creator_id, text) values (public.seed_uuid('creator:helena'), 'Chef formada pelo Senac');
+select tests.ok('S34 pedido novo sem decisão', (select decision is null and decided_at is null from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
+select tests.expect_error('S34 herói não grava a própria decisão (fora do grant)',
+  $q$update public.creator_credentials_requests set decision = 'approved' where creator_id = public.seed_uuid('creator:helena')$q$, '42501');
+-- a fila do admin mostrou 'Chef formada pelo Senac'; antes do clique o herói troca o texto
+update public.creator_credentials_requests set text = 'Nutricionista CRN 12345, cura diabetes' where creator_id = public.seed_uuid('creator:helena');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S34 aprovar com o texto que a fila mostrou, já editado pelo herói: request_changed',
+  $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'S34 conferido na fila', 'Chef formada pelo Senac')$q$, 'request_changed');
+select tests.expect_error('S34 reprovar com texto antigo também é recusado',
+  $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), false, 'S34 não confere', 'Chef formada pelo Senac')$q$, 'request_changed');
+select tests.ok('S34 nada foi ao perfil público nem à auditoria',
+  (select credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
+  and not exists (select 1 from public.admin_audit where action = 'creator.credentials' and resource_id = public.seed_uuid('creator:helena')::text
+                  and justification like 'S34 %'));
+-- tudo roda numa transação (now() fixo): o pedido ganha uma data antiga para a comparação valer
+select tests.su();
+update public.creator_credentials_requests set updated_at = '2020-01-01T00:00:00Z' where creator_id = public.seed_uuid('creator:helena');
+create temporary table t_s34_before as select updated_at from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena');
+grant select on t_s34_before to authenticated;
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), false, 'Registro não confere', '  Nutricionista CRN 12345, cura diabetes ');
+select tests.ok('S34 reprovar com o texto atual: decisão no pedido, sem mudar o updated_at do pedido',
+  (select decision = 'rejected' and decided_at is not null and updated_at = (select updated_at from t_s34_before)
+   from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
+select tests.login('10000000-0000-4000-8000-000000000034', 's34helena@test.local');
+select tests.ok('S34 o herói lê a própria reprovação', (select decision = 'rejected' from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
+update public.creator_credentials_requests set text = 'Chef formada pelo Senac (2015)' where creator_id = public.seed_uuid('creator:helena');
+select tests.ok('S34 editar o texto limpa a decisão (pedido volta a aguardar)',
+  (select decision is null and decided_at is null and updated_at > (select updated_at from t_s34_before) from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'Conferido de novo', 'Chef formada pelo Senac (2015)');
+select tests.ok('S34 aprovar com o texto atual publica exatamente esse texto e marca a decisão',
+  (select credentials = 'Chef formada pelo Senac (2015)' and credentials_approved_at is not null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
+  and (select decision = 'approved' from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
+select tests.ok('S34 RPC de 4 argumentos: security definer com search_path fixo, sem anon; a de 3 argumentos saiu',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute')
+   from pg_proc p where p.oid = 'public.admin_set_creator_credentials(uuid, boolean, text, text)'::regprocedure)
+  and to_regprocedure('public.admin_set_creator_credentials(uuid, boolean, text)') is null
+  and not has_function_privilege('anon', 'public.creator_credentials_request_reset_decision()', 'execute'));
+select tests.su();
+delete from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena');
+update public.creator_profiles set user_id = null, credentials = null where id = public.seed_uuid('creator:helena') and user_id = '10000000-0000-4000-8000-000000000034';
+delete from auth.users where id = '10000000-0000-4000-8000-000000000034';
+select tests.ok('S34 limpeza: Helena sem usuário, sem pedido e sem credenciais',
+  (select user_id is null and credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
+  and not exists (select 1 from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

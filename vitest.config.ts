@@ -9,4 +9,7 @@ export default defineConfig({
     reporters: ["default"],
   },
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
+  // o tsconfig do Next usa jsx "preserve"; nos testes os componentes síncronos são renderizados
+  // em HTML (react-dom/server), então o JSX precisa ser transformado aqui
+  oxc: { jsx: { runtime: "automatic" } },
 });

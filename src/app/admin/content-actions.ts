@@ -7,6 +7,7 @@ import type { ActionResult } from "@/components/admin";
 import { escapeLike } from "@/components/admin-content/lib/search-params";
 import { slugWithSuffix } from "@/components/admin-content/lib/slug";
 import { parsePublishAt } from "@/components/admin-content/lib/publish-at";
+import { reviewChangeAllowed } from "@/components/admin-content/lib/review-required";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import type { PickResult } from "@/components/admin-content/SearchPicker";
 import { parseContentForm } from "@/components/editors/content/schema";
@@ -276,6 +277,29 @@ export async function saveContentTypeSettingsAction(rows: z.infer<typeof typeSet
     revalidatePath("/admin/content/settings");
     const t = await getTranslations("adminContent.content.typeSettings");
     return { ok: true, message: t("saved") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- regra de revisão por tipo (P1)
+// Só pela RPC auditada (o gatilho da 0027 recusa o update direto da coluna), com justificativa.
+export async function setReviewRequiredAction(type: string, on: boolean, justification: string): Promise<ActionResult> {
+  const parsed = z
+    .object({ type: z.enum(["video", "recipe", "workout", "guide", "article"]), on: z.boolean(), justification: z.string().trim().min(5).max(500) })
+    .safeParse({ type, on, justification });
+  if (!parsed.success) return fail("invalid_input");
+  // só receita tem "Enviar para revisão" no portal: ligar para outro tipo travaria o herói
+  if (!reviewChangeAllowed(parsed.data.type, parsed.data.on)) return fail("review_flow_unavailable");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_set_review_required", { p_type: parsed.data.type, p_on: parsed.data.on, p_reason: parsed.data.justification });
+    if (error) return fail(error);
+    revalidatePath("/admin/content/settings");
+    revalidatePath("/creator/recipes");
+    const t = await getTranslations("recipes.admin");
+    return { ok: true, message: t("changed") };
   } catch (error) {
     return fail(error);
   }

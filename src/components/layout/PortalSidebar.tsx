@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   BarChart3,
+  ChefHat,
   ClipboardList,
   FileText,
   Languages,
@@ -55,6 +56,7 @@ const ICONS: Record<string, LucideIcon> = {
   settings: Settings,
   fulfillments: Truck,
   post: SquarePlus,
+  recipes: ChefHat,
 };
 
 function isActive(pathname: string, href: string, root: string) {

@@ -1,6 +1,6 @@
 # Decisão: módulo de receitas estruturadas
 
-Status: **aprovado** (22/10/2026). Fase 1 implementada em `0027_recipes_structured.sql`, `0028_recipe_media_storage.sql` e `0029_recipes_backfill.sql`, cenários S25–S32 em `supabase/tests/rls_scenarios.sql`, códigos e quantidades em `src/lib/recipes/`.
+Status: **aprovado** (22/10/2026). Fase 1 implementada em `0027_recipes_structured.sql`, `0028_recipe_media_storage.sql` e `0029_recipes_backfill.sql`, cenários S25–S32 em `supabase/tests/rls_scenarios.sql`, códigos e quantidades em `src/lib/recipes/`. Fase 2 (Portal do Chef e `RecipeView`) implementada, com a `0032_recipes_phase2_credentials.sql` (credenciais decididas sobre o texto que o admin viu) e o cenário S34; ver a seção "Fase 2" abaixo.
 
 Este arquivo é a cópia do documento de desenho (revisão 2) com as respostas do responsável às perguntas da seção 5.4 e o registro de onde a implementação da fase 1 se afastou do texto. Onde o desenho e este cabeçalho divergem, vale o cabeçalho.
 
@@ -46,6 +46,39 @@ Aplicação:
 - A leitura do corpo traduzido usa `content_localized_body` e cai para a leitura antiga quando a função não existe (PGRST202), para o app funcionar antes da migração no remoto.
 
 Adiado para a fase 2: ligação do `recipe_orphan_media` ao cron, interface em `/admin` para o interruptor de revisão e a fila de aprovação de credenciais.
+
+## Fase 2 (Portal do Chef e renderizador) — implementada
+
+Quase tudo roda sobre as RPCs e políticas já aplicadas (0027–0029). A revisão independente pediu uma migração só: a **0032** (`0032_recipes_phase2_credentials.sql`, cenário **S34**):
+
+- `admin_set_creator_credentials(p_creator, p_approved, p_reason, p_expected_text default null)`: a decisão vale só para o texto que a fila mostrou ao admin. A RPC trava o pedido (`for update`) e recusa com `request_changed` se o herói editou depois que a fila abriu (antes, aprovar publicava o texto atual, que nenhum admin tinha lido). O 4º parâmetro tem default nulo para o app já publicado continuar funcionando durante o deploy; o app novo sempre manda o texto. A versão de 3 argumentos sai.
+- `creator_credentials_requests.decision` (`approved`/`rejected`) e `decided_at`, gravados pela RPC; o herói lê pela RLS de dono e vê "Reprovadas" em `/creator/profile`. Editar o texto limpa a decisão. Os grants de insert/update do herói continuam só em `text` (e `creator_id` no insert).
+- O `updated_at` do pedido (e a limpeza da decisão) só correm quando o texto muda (`before update of text`).
+- Sem a 0032 (remoto antes da aplicação), o app confere o texto do pedido antes de chamar a RPC antiga (estreita a corrida para milissegundos) e o herói vê "Aguardando" como antes.
+
+Entregue:
+
+- `/creator/recipes` (Minhas Receitas): busca por título, filtros por categoria, situação (rascunho, em revisão, devolvida, agendada, publicada, arquivada), dificuldade e data de atualização, por GET com Zod `.catch`; indicadores de `creator_recipe_stats(30)` só com dado real (visitantes a partir de 5, favoritos acima de zero, nota com 3 avaliações; a coluna some quando nenhuma receita tem dado); ações editar/abrir, visualizar, ver no app, versões, duplicar, despublicar, retirar da revisão, arquivar, restaurar e excluir rascunho nunca publicado.
+- `/creator/recipes/new` e `/creator/recipes/[id]/edit?step=…`: `RecipeWizard` em 6 etapas (regras puras em `src/lib/recipes/draft.ts`, `payload.ts`, `checklist.ts`, `draft-recovery.ts`, `editor-steps.ts`), gravação por `recipe_save` ao trocar de etapa, em "Salvar rascunho" e a cada 30 s (uma gravação por vez), cópia local `uh-recipe-draft:<herói>:<id>` (separada por herói: num aparelho compartilhado a receita nova de um não aparece para outro) com "Recuperar | Descartar", diálogo de conflito para `stale_draft`, resumo de erros com links que focam o campo. Situações sem edição (em revisão, no ar, agendada, arquivada) mostram o estado e as ações.
+- Fotos: redução no navegador (2048 px, WebP 0,82 ou JPEG, sem EXIF), envio direto ao bucket `recipe-media` com a sessão do herói, conferência dos bytes mágicos na action (apaga e recusa com `invalid_image`) e `recipe_register_media`; proxy `/media/recipe/[id]` com a RLS de quem pede, bytes conferidos contra o tipo do banco, `nosniff`, CSP `default-src 'none'` e cache público só para galeria de receita no ar.
+- Vídeo: link do YouTube/Vimeo (mesmos parsers da reprodução) ou envio pelo fluxo do composer (ticket tus com `stream_uploads.content_id` = a receita; o uid entra no rascunho e é gravado na hora). A licença acompanha o provedor.
+- `/creator/recipes/[id]/preview` e `/creator/recipes/[id]/versions` (data, motivo, autor, seções alteradas e "Restaurar no rascunho").
+- `RecipeView` (componente de servidor) em `/content/[slug]` para toda receita com `recipe_details` (inclusive as convertidas pela 0029); sem detalhes, a página antiga continua (o ramo v1 sai na fase 3).
+- Pendências da fase 1: cron diário de órfãos (`/api/cron/retention` chama `recipe_orphan_media` e apaga pela API do Storage, em lotes de 100; banco sem a função pula), "Revisão antes de publicar" por tipo em `/admin/content/settings` (`admin_set_review_required` com justificativa) e a fila de credenciais (P7) em `/admin/creators`, com aprovar/reprovar auditados; o herói informa especialidades e pede credenciais em `/creator/profile`.
+- Privacidade: `legal.json` (3 idiomas) e `docs/privacy-and-retention.md` citam as fotos de receita, quem vê e o prazo.
+
+Desvios da fase 2 em relação à seção 4.1:
+
+- O editor antigo **não redireciona**: segue só para leitura, e o aviso traz "Editar no editor de receitas" (pedido da tarefa). Para o admin o aviso continua só de leitura.
+- `/admin/content/[id]` resume a receita estruturada pelas tabelas (ingredientes, etapas, porções, alérgenos declarados, "nenhum" declarado ou "não informados"; o marcador `{kind:'recipe',schema:2}` do corpo não vira mais "0 ingredientes") e abre `/admin/content/[id]/preview`, o mesmo `RecipeView` lido com o cliente do admin, para a revisão quando a regra estiver ligada.
+- "Exigir revisão" só pode ser **ligada para receita**, o único tipo com "Enviar para revisão" no portal; os outros tipos aparecem sem "Ligar" (e, se já estiverem ligados pela RPC, só com "Desligar"). A action recusa com `review_flow_unavailable`.
+- Fica para depois: edição pelo admin com o `RecipeWizard`, "Validar nutrição" em `/admin/content/[id]`, tela de "Categorias de receita". As 3 chaves de `/admin/settings` já existiam (fase 1).
+- A fila de credenciais mora em `/admin/creators` (o "/admin/heroes" do texto). A situação "reprovada" vem de `creator_credentials_requests.decision` (0032) ou, para decisões antigas, da última decisão em `admin_audit` depois da última edição do pedido.
+- O envio de foto **não depende da service role** (usa a sessão do herói e as políticas da 0028); dependem dela só a limpeza diária de órfãos e o vídeo pelo Stream. O E2E de envio real continua atrás de `E2E_RECIPE_MEDIA_REAL=1` e foi rodado contra produção (mobile e desktop), com o rascunho e as fotos apagados no fim.
+- Progresso do envio de foto em etapas (preparar, enviar, conferir): o `upload` do supabase-js não informa bytes. Recusa da política do Storage (cota, interruptor, rascunho que deixou de ser editável) aparece numa mensagem só, porque o Storage não diz o motivo; `demo_upload_forbidden` não existe (P3).
+- O filtro "Devolvida" inclui a rejeitada.
+- O dono e o admin continuam vendo a tela da etapa demonstrativa na página pública quando não a fizeram (P2 segue em aberto); a prévia do chef não passa por ela.
+- O E2E de g1 no `RecipeView` público pula quando a conta `premium` de demonstração não fez a etapa (o caso hoje em produção); a renderização de g1 a partir das tabelas é coberta no Vitest (`recipe-view.test.ts`).
 
 ---
 
@@ -801,7 +834,7 @@ Formato do payload (espelhado em `src/lib/recipes/payload.ts`, Zod compartilhado
 | `admin_validate_recipe_nutrition(p_content, p_validated, p_by, p_at, p_note)` | `nutrition_validation_incomplete` se faltar responsável ou data. Auditoria |
 | `admin_upsert_recipe_category(p_code, p_name, p_sort, p_active)` | Auditoria |
 | `admin_moderate_recipe_comment(p_comment, p_decision, p_reason)` | Motivo obrigatório fora de `approved`. Auditoria |
-| `admin_set_creator_credentials(p_creator, p_approved, p_reason)` | Aprovar copia o texto de `creator_credentials_requests` para `creator_profiles.credentials` e grava `credentials_approved_at`; reprovar limpa os dois. Auditoria (P7) |
+| `admin_set_creator_credentials(p_creator, p_approved, p_reason, p_expected_text)` | Aprovar copia o texto de `creator_credentials_requests` para `creator_profiles.credentials` e grava `credentials_approved_at`; reprovar limpa os dois. Desde a 0032, recusa com `request_changed` se o texto não for o que o admin viu e grava a decisão no pedido. Auditoria (P7) |
 
 **Internas** (sem execute para authenticated):
 - `recipe_assert_publishable(p_content)` lança `recipe_incomplete: a,b,c` com os códigos:
@@ -1342,6 +1375,11 @@ A privacidade já foi atualizada fase a fase; aqui se faz só uma revisão final
    3. o bloco final numa transação; em seguida conferir: nenhuma receita sem `recipe_details`; 41 ingredientes, 28 etapas e 8 `restore_point`; nenhuma linha `recipe.backfill_failed` em `admin_audit` (o `WARNING` não volta pela Management API); md5 dos corpos igual ao do passo 0;
    4. registrar `0029_recipes_backfill` em `supabase_migrations.schema_migrations`.
 6. Regenerar `database.types.ts` e rodar o E2E contra produção.
+
+**Fase 2 (0032)**, depois que 0030 e 0031 (outras frentes) estiverem no remoto; o app desta fase funciona antes e depois da 0032:
+1. `node scripts/db/remote-apply.mjs --only 0032` (uma transação).
+2. Conferir: `select pg_get_function_identity_arguments('public.admin_set_creator_credentials'::regproc)` = `p_creator uuid, p_approved boolean, p_reason text, p_expected_text text` (só uma versão); `has_function_privilege('anon', 'public.admin_set_creator_credentials(uuid, boolean, text, text)', 'execute')` falso; colunas `decision` e `decided_at` em `creator_credentials_requests`; os gatilhos `trg_creator_credentials_requests_updated` e `trg_creator_credentials_request_decision` com `UPDATE OF text`; `get_advisors` (security) sem itens novos.
+3. Regenerar `database.types.ts` contra o remoto e comparar com o do repositório (deve sair igual).
 
 Reversão de emergência da 0027 (só o que quebra o app antigo): `grant select on public.content_localizations to anon, authenticated;` e recriar `can_access_content` como na 0017.
 

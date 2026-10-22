@@ -313,6 +313,7 @@
     "file_too_large": "O vídeo passa de 2 GB.",
     "upload_incomplete": "O vídeo não terminou de subir para o Cloudflare. Envie de novo pelo Novo post.",
     "stream_media_forbidden": "Este vídeo não foi enviado por esta conta e não pode ser usado aqui.",
-    "recipe_editor_pending": "A edição de receitas volta com o novo editor."
+    "recipe_editor_pending": "A edição de receitas volta com o novo editor.",
+    "review_required": "A administração exige revisão para este tipo de conteúdo e ele ainda não tem envio para revisão no portal. Fale com a administração."
   }
 }

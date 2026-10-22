@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, Pencil } from "lucide-react";
+import { ExternalLink, Eye, Pencil } from "lucide-react";
 import { StatusBadge } from "@/components/admin";
 import { JsonView, KeyValue, Panel } from "@/components/admin-content";
 import { ContentReviewActions } from "@/components/admin-content/ContentReviewActions";
-import { summarizeBody } from "@/components/admin-content/lib/body-summary";
+import { summarizeBody, summarizeRecipeRows } from "@/components/admin-content/lib/body-summary";
 import { isScheduled } from "@/components/admin-content/lib/publish-at";
 import { Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
+import { hasRecipeDetails, loadRecipeRows } from "@/lib/recipes/rows";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -77,19 +78,22 @@ export default async function AdminContentDetailPage({ params }: Params) {
   if (!content) notFound();
 
   const supabase = await createClient();
-  const [t, tc, ts, locale, bodyRes, reviewsRes] = await Promise.all([
+  const [t, tc, ts, ta, locale, bodyRes, reviewsRes, structured] = await Promise.all([
     getTranslations("adminContent.content"),
     getTranslations("adminContent.common"),
     getTranslations("adminCommon.status"),
+    getTranslations("recipes.onboarding.allergies"),
     getLocale(),
     supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url, updated_at").eq("content_id", id).maybeSingle(),
     supabase.from("content_reviews").select("id, round, submitted_at, decision, feedback, decided_at").eq("content_id", id).order("round", { ascending: false }),
+    // receita estruturada (0027): o resumo sai das tabelas, não do corpo v1 (que vira só um marcador)
+    content.type === "recipe" ? hasRecipeDetails(supabase, id) : Promise.resolve(false),
   ]);
   const body = (bodyRes.data as Body | null) ?? null;
   const reviews = (reviewsRes.data ?? []) as Review[];
   const hasOpenRound = reviews.some((r) => r.decision === "in_review");
   const uiLocale = locale as Locale;
-  const summary = body ? summarizeBody(content.type, body.body) : null;
+  const summary = structured ? summarizeRecipeRows(await loadRecipeRows(supabase, id)) : body ? summarizeBody(content.type, body.body) : null;
   const scheduled = isScheduled(content.status, content.publish_at);
 
   const summaryText = (() => {
@@ -99,6 +103,17 @@ export default async function AdminContentDetailPage({ params }: Params) {
         return t("summary.video", { points: summary.points, transcript: summary.transcript });
       case "recipe":
         return `${t("summary.recipe", { ingredients: summary.ingredients, steps: summary.steps, servings: summary.servings })} · ${summary.allergens.length ? t("summary.allergens", { list: summary.allergens.join(", ") }) : t("summary.noAllergens")}`;
+      case "recipeStructured": {
+        const allergens = !summary.allergensDeclared
+          ? t("summary.allergensUndeclared")
+          : summary.allergens.length
+            ? t("summary.allergens", { list: summary.allergens.map((a) => (ta.has(a) ? ta(a) : a)).join(", ") })
+            : t("summary.allergensNone");
+        const servings = summary.servings ? t("summary.servings", { n: summary.servings }) : t("summary.servingsMissing");
+        return [t("summary.recipeCounts", { ingredients: summary.ingredients, steps: summary.steps }), servings, allergens].join(" · ");
+      }
+      case "structured":
+        return t("summary.structured");
       case "workout":
         return `${t("summary.workout", { blocks: summary.blocks, exercises: summary.exercises })} · ${summary.safetyNote ? t("summary.safetyNote") : t("summary.noSafetyNote")}`;
       case "guide":
@@ -118,6 +133,13 @@ export default async function AdminContentDetailPage({ params }: Params) {
         backLabel={tc("backToList")}
         actions={
           <>
+            {structured && (
+              <Button asChild variant="ghost" size="sm" leadingIcon={<Eye />}>
+                <Link href={`/admin/content/${content.id}/preview`} data-testid="admin-recipe-preview">
+                  {t("detail.preview")}
+                </Link>
+              </Button>
+            )}
             {content.status === "published" && (
               <Button asChild variant="ghost" size="sm" leadingIcon={<ExternalLink />}>
                 <Link href={`/content/${content.slug}`}>{t("detail.openPublic")}</Link>
