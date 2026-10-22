@@ -50,6 +50,7 @@ export default async function RecipePreviewPage({ params }: Params) {
       </div>
       <RecipeView
         contentId={id}
+        viewerId={ctx.userId ?? null}
         syncUrl={false}
         model={model}
         video={video}

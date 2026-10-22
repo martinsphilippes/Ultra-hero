@@ -257,7 +257,8 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
                 <div className="flex-1">
                   <RecipeCard recipe={row.content} />
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
+                {/* empilhado: na grade de 2 colunas do celular a legenda e o botão não cabem lado a lado */}
+                <div className="flex flex-col items-start gap-1">
                   <p className="type-caption text-fg-muted">{t("history.viewed", { when: formatRelativeTime(row.viewed_at, uiLocale) })}</p>
                   <RemoveRecipeButton kind="history" contentId={row.content_id} title={row.content.title} />
                 </div>

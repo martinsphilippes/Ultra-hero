@@ -111,6 +111,12 @@ const ing = (id: string, position: number, name: string, extra: Partial<RecipeIn
   ...extra,
 });
 
+// Receita acima do limite do ajuste (o editor aceita até 100 porções; o ajuste vai até 50).
+const BIG = recipeRows(60, [
+  ing("b1", 1, "Farinha", { quantity: 1000, unit: "g" }),
+  ing("b2", 2, "Manteiga", { quantity_text: "um pote" }),
+]);
+
 // Unidades e marcas que o seed não cobre: kg, ml, mg, colher de chá, opcional e "a gosto" opcional.
 const EXTRA = recipeRows(3, [
   ing("x1", 1, "Farinha", { quantity: 1.5, unit: "kg" }),
@@ -157,7 +163,8 @@ function lines(html: string, item: string, read: (chunk: string) => Line): Line[
     .map((chunk) => read(chunk.split("</li>")[0]));
 }
 
-function pageLines(locale: Loc, rows: RecipeRows, n: number): Line[] {
+/** n = null: a página sem ?porcoes= (e o Modo Cozinha sem porções na URL). */
+function pageLines(locale: Loc, rows: RecipeRows, n: number | null): Line[] {
   const labels = unitLabels(locale);
   const tv = LOCALES[locale].recipes.view;
   const model = buildRecipeViewModel(rows, { labels, title: "Receita", locale });
@@ -165,13 +172,14 @@ function pageLines(locale: Loc, rows: RecipeRows, n: number): Line[] {
     locale,
     createElement(RecipeIngredientsPanel, {
       contentId: "c1",
+      userId: USER,
       ingredients: model.ingredients,
       labels: { title: tv.ingredients, optional: tv.optional, toTaste: tv.toTaste, substitutes: tv.substitutes },
       unitLabels: labels,
       locale,
       baseServings: model.servings,
       // a página lê ?porcoes= com a mesma função
-      initialServings: parseServingsParam(String(n)),
+      initialServings: n === null ? null : parseServingsParam(String(n)),
     }),
   );
   return lines(html, "recipe-ingredient", (chunk) => ({
@@ -184,9 +192,10 @@ function pageLines(locale: Loc, rows: RecipeRows, n: number): Line[] {
 }
 
 /** As duas listas do Modo Cozinha: "Nesta etapa" (`step`) e todos os ingredientes do painel (`all`). */
-function cookLines(locale: Loc, rows: RecipeRows, n: number, list: "step" | "all" = "step"): Line[] {
+function cookLines(locale: Loc, rows: RecipeRows, n: number | null, list: "step" | "all" = "step"): Line[] {
   const tv = LOCALES[locale].recipes.view;
-  const model = buildCookModel(rows, { contentId: "c1", slug: "receita", title: "Receita", labels: unitLabels(locale), locale, servings: parseServingsParam(String(n)) });
+  const servings = n === null ? null : parseServingsParam(String(n));
+  const model = buildCookModel(rows, { contentId: "c1", slug: "receita", title: "Receita", labels: unitLabels(locale), locale, servings });
   const full = render(locale, createElement(CookMode, { model, userId: USER, recipeHref: "/content/receita", completedLabel: null }));
   const marker = `data-testid="${list === "step" ? "cook-step-ingredients" : "cook-all-ingredients"}"`;
   expect(full, `lista ${list} renderizada`).toContain(marker);
@@ -219,6 +228,22 @@ describe("porções: página da receita × Modo Cozinha", () => {
         }
       });
     }
+  }
+
+  for (const locale of Object.keys(LOCALES) as Loc[]) {
+    it(`receita de 60 porções (${locale}): sem ?porcoes= (e com ?porcoes=60, fora de 1–50) mostra os números do chef nos dois lados`, () => {
+      for (const n of [null, 60]) {
+        const page = pageLines(locale, BIG, n);
+        expect(page.map((l) => l.amount), `N=${n}`).toEqual(["1000 g", "um pote"]);
+        expect(page.every((l) => l.notScaled === null), `N=${n}: sem aviso`).toBe(true);
+        expect(cookLines(locale, BIG, n, "step")).toEqual(page);
+        expect(cookLines(locale, BIG, n, "all")).toEqual(page);
+      }
+      // com N = 4 os dois lados ajustam igual
+      const page4 = pageLines(locale, BIG, 4);
+      expect(page4[0].amount).toBe("≈ 65 g");
+      expect(cookLines(locale, BIG, 4, "all")).toEqual(page4);
+    });
   }
 
   it("confere valores conhecidos (pt-BR)", () => {

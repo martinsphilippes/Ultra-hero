@@ -40,7 +40,9 @@ export function RemoveRecipeButton({ kind, contentId, title }: Props) {
       onClick={kind === "saved" ? () => setConfirming(true) : onRemove}
       loading={pending}
       aria-label={kind === "saved" ? t("saved.removeLabel", { title }) : t("history.removeLabel", { title })}
-      className="self-start text-fg-muted"
+      // no histórico o rótulo é longo ("Remove from history"): quebra dentro da coluna de 2 por linha
+      // do celular em vez de passar da borda do card e fazer a página rolar na horizontal
+      className={kind === "history" ? "h-auto min-h-11 max-w-full self-start whitespace-normal py-2 text-left text-fg-muted" : "self-start text-fg-muted"}
       data-testid={kind === "saved" ? "saved-remove" : "history-remove"}
     >
       {kind === "saved" ? t("saved.remove") : t("history.remove")}

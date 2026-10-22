@@ -393,6 +393,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
         (structured ? (
           <RecipeView
             contentId={content.id}
+            viewerId={user?.id ?? null}
             model={structured.model}
             video={structured.video}
             unoptimizedImages={!live}

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { RecipeIngredientList } from "@/components/recipes/view/RecipeIngredientList";
 import { matchDeclaredAllergens } from "@/lib/recipes/allergy-match";
-import { ingredientCheckKey, INGREDIENT_CHECK_TTL_MS, readIngredientChecks, writeIngredientChecks } from "@/lib/recipes/ingredient-check";
+import { ingredientCheckKey, INGREDIENT_CHECK_TTL_MS, readIngredientChecks, staleIngredientCheckKeys, writeIngredientChecks } from "@/lib/recipes/ingredient-check";
 import { buildRecipeJsonLd, isoDuration, recipesSeoIndexEnabled, serializeJsonLd } from "@/lib/recipes/jsonld";
 import { UNIT_LABELS_PT } from "@/lib/recipes/quantity";
 import type { RecipeRows } from "@/lib/recipes/rows";
@@ -45,6 +45,9 @@ describe("ajuste de porções", () => {
     expect(servingsFactor(2, 4)).toBe(2);
     expect(servingsFactor(2, null)).toBe(1);
     expect(servingsFactor(null, 4)).toBe(1);
+    // receita acima do limite do ajuste (até 100 no editor): nas porções originais, nada muda
+    expect(servingsFactor(60, 60)).toBe(1);
+    expect(servingsFactor(60, 50)).toBeCloseTo(50 / 60);
   });
 
   it("g1 de 2 para 4 porções: '300 g' vira '600 g' e '3 colheres' não ajusta", () => {
@@ -148,7 +151,28 @@ describe("marcações do checklist (24 h no aparelho)", () => {
     expect(readIngredientChecks("{nope", ["a1"], now)).toEqual([]);
     expect(readIngredientChecks(JSON.stringify({ at: "x", ids: ["a1"] }), ["a1"], now)).toEqual([]);
     expect(writeIngredientChecks([], now)).toBeNull();
-    expect(ingredientCheckKey("c1")).toBe("uh-recipe-check:c1");
+  });
+
+  it("uma chave por conta e receita: outra conta no mesmo aparelho não lê as marcações", () => {
+    expect(ingredientCheckKey("u1", "c1")).toBe("uh-recipe-check:u1:c1");
+    expect(ingredientCheckKey("u2", "c1")).not.toBe(ingredientCheckKey("u1", "c1"));
+  });
+
+  it("limpeza ao montar: apaga vencidas, ilegíveis e as antigas sem conta; mantém as válidas e as de outros prefixos", () => {
+    const fresh = writeIngredientChecks(["a1"], now)!;
+    const old = writeIngredientChecks(["a1"], now - INGREDIENT_CHECK_TTL_MS - 1)!;
+    const stale = staleIngredientCheckKeys(
+      [
+        ["uh-recipe-check:u1:c1", fresh],
+        ["uh-recipe-check:u1:c2", old],
+        ["uh-recipe-check:u2:c3", "{nope"],
+        ["uh-recipe-check:c1", fresh],
+        ["uh-cook:u1:c1", old],
+        ["uh-theme", "dark"],
+      ],
+      now,
+    );
+    expect(stale).toEqual(["uh-recipe-check:u1:c2", "uh-recipe-check:u2:c3", "uh-recipe-check:c1"]);
   });
 });
 

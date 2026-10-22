@@ -66,6 +66,7 @@ export default async function AdminRecipePreviewPage({ params }: Params) {
       </div>
       <RecipeView
         contentId={id}
+        viewerId={user?.id ?? null}
         syncUrl={false}
         model={model}
         video={video}

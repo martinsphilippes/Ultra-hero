@@ -308,6 +308,15 @@ test.describe("Minha coleção de receitas (conta free)", () => {
       await expect(page.getByTestId("history-list")).toContainText(RECIPE.title);
       // o nome acessível começa pelo texto visível (controle por voz)
       await expect(page.getByRole("button", { name: `Tirar do histórico: ${RECIPE.title}` })).toBeVisible();
+      // grade de 2 colunas num Android de 360 px: o botão cabe no card e a página não rola de lado
+      const viewport = page.viewportSize();
+      await page.setViewportSize({ width: 360, height: 780 });
+      const historyItem = page.getByTestId("history-list").locator("li").filter({ hasText: RECIPE.title });
+      const itemBox = await historyItem.boundingBox();
+      const removeBox = await historyItem.getByTestId("history-remove").boundingBox();
+      expect(itemBox && removeBox && removeBox.x + removeBox.width <= itemBox.x + itemBox.width + 0.5, JSON.stringify({ itemBox, removeBox })).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+      if (viewport) await page.setViewportSize(viewport);
 
       // desligar pede confirmação ("isto apaga o histórico"); cancelar mantém
       await historySwitch.click();
