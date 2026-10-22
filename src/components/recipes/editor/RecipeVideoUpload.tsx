@@ -28,12 +28,18 @@ function readDuration(file: File): Promise<number | null> {
   });
 }
 
-type Props = { contentId: string; disabled?: boolean; onStarted: (uid: string) => void };
+type Props = {
+  contentId: string;
+  disabled?: boolean;
+  onStarted: (uid: string) => void;
+  /** Fim do envio iniciado em onStarted (true = arquivo inteiro no Cloudflare). */
+  onFinished?: (ok: boolean) => void;
+};
 
 // Envio de vídeo da receita pelo Cloudflare Stream, no mesmo fluxo do composer: o servidor cria o
 // ticket (tus) já ligado à receita em stream_uploads; o arquivo vai direto do aparelho ao Cloudflare.
 // O uid entra no rascunho assim que o ticket existe (onStarted); o processamento termina depois.
-export function RecipeVideoUpload({ contentId, disabled = false, onStarted }: Props) {
+export function RecipeVideoUpload({ contentId, disabled = false, onStarted, onFinished }: Props) {
   const t = useTranslations("recipes.editor.media");
   const te = useTranslations("creator.post.errors");
   const errorText = useRecipeErrorText();
@@ -44,6 +50,17 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted }: Pr
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => () => void uploadRef.current?.abort(false).catch(() => undefined), []);
+
+  // fechar ou recarregar a aba no meio do envio perde o vídeo: o navegador pede confirmação
+  useEffect(() => {
+    if (pct === null) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [pct]);
 
   const message = (code: string) => (te.has(code) ? te(code) : errorText(code));
 
@@ -61,6 +78,7 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted }: Pr
       return;
     }
     setPct(0);
+    let started = false;
     try {
       const result = await startRecipeVideoUpload({ contentId, fileSize: file.size, fileName: file.name, durationSec });
       if (!result.ok) {
@@ -69,6 +87,7 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted }: Pr
         return;
       }
       onStarted(result.uid);
+      started = true;
       const { Upload: TusUpload } = await import("tus-js-client");
       const tus = new TusUpload(file, {
         uploadUrl: result.uploadUrl,
@@ -79,10 +98,12 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted }: Pr
         onSuccess: () => {
           setPct(null);
           setDone(true);
+          onFinished?.(true);
         },
         onError: () => {
           setPct(null);
           setError(message("upload_failed"));
+          onFinished?.(false);
         },
       });
       uploadRef.current = tus;
@@ -90,6 +111,7 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted }: Pr
     } catch {
       setPct(null);
       setError(message("network"));
+      if (started) onFinished?.(false);
     }
   }
 

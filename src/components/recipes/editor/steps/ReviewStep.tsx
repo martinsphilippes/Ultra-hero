@@ -33,7 +33,7 @@ type Props = {
   checklist: ChecklistEntry[];
   reviewRequired: boolean;
   busy: boolean;
-  /** Itens que o banco recusou na última tentativa (recipe_incomplete). */
+  /** Itens que o banco recusou na última tentativa (recipe_incomplete), enquanto o rascunho não muda. */
   serverMissing: RecipeChecklistCode[];
   goTo: (step: RecipeEditorStep) => void;
   onPreview: () => void;
@@ -51,7 +51,8 @@ export function ReviewStep({ draft, checklist, reviewRequired, busy, serverMissi
   const [when, setWhen] = useState("");
   const [dateError, setDateError] = useState<string | null>(null);
   const missing = checklist.filter((c) => !c.ok || serverMissing.includes(c.code));
-  const ready = missing.length === 0;
+  // a recusa do banco só destaca: quem decide de novo é o banco (ex.: vídeo do Stream que terminou)
+  const ready = checklist.every((c) => c.ok);
   const ingredients = draft.ingredients.filter((i) => !isBlankIngredient(i)).length;
   const steps = draft.steps.filter((s) => !isBlankStep(s)).length;
   const photos = draft.media.filter((m) => m.role === "gallery").length;
@@ -92,19 +93,19 @@ export function ReviewStep({ draft, checklist, reviewRequired, busy, serverMissi
       </StepSection>
 
       <StepSection title={t("checklistTitle")}>
-        <p className={ready ? "type-body-sm text-success" : "type-body-sm text-warning"} aria-live="polite">
-          {ready ? t("ready") : t("missing", { count: missing.length })}
+        <p className={missing.length === 0 ? "type-body-sm text-success" : "type-body-sm text-warning"} aria-live="polite">
+          {missing.length === 0 ? t("ready") : t("missing", { count: missing.length })}
         </p>
-        <ul className="flex flex-col gap-1.5" data-testid="recipe-checklist">
+        <ul className="flex flex-col gap-2" data-testid="recipe-checklist">
           {checklist.map((item) => {
             const ok = item.ok && !serverMissing.includes(item.code);
             return (
-              <li key={item.code} className="flex items-start gap-2 text-sm" data-ok={ok ? "true" : "false"}>
-                {ok ? <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" /> : <CircleX className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />}
-                <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
+              <li key={item.code} className="flex items-center gap-2 text-sm" data-ok={ok ? "true" : "false"}>
+                {ok ? <CircleCheck className="size-4 shrink-0 text-success" aria-hidden="true" /> : <CircleX className="size-4 shrink-0 text-warning" aria-hidden="true" />}
+                <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
                   <span className={ok ? "text-fg" : "text-fg-muted"}>{tc(item.code)}</span>
                   {!ok && (
-                    <Button type="button" variant="link" onClick={() => goTo(CHECKLIST_STEP[item.code])}>
+                    <Button type="button" variant="link" className="min-h-11 px-1" onClick={() => goTo(CHECKLIST_STEP[item.code])}>
                       {t("goTo", { step: ts(CHECKLIST_STEP[item.code]) })}
                     </Button>
                   )}

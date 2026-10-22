@@ -8,6 +8,7 @@ import { CreatorProfileForm } from "@/components/creator/CreatorProfileForm";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { socialsFrom } from "@/components/creator/profile-schema";
 import { Avatar, Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
+import { credentialsState, type CredentialsRequest } from "@/lib/recipes/credentials";
 import { createClient } from "@/lib/supabase/server";
 import { getMyCreator } from "../_lib/creator";
 
@@ -24,11 +25,15 @@ export default async function CreatorProfilePage() {
   const active = ctx.creatorId !== null;
   // perfil de chef (0027): especialidades públicas e pedido de credenciais; sem as colunas, sem a seção
   const supabase = await createClient();
-  const [chefRes, requestRes] = await Promise.all([
+  const requestQuery = (columns: string) => supabase.from("creator_credentials_requests").select(columns).eq("creator_id", profile.id).maybeSingle();
+  const [chefRes, firstRequest] = await Promise.all([
     supabase.from("creator_profiles").select("specialties, credentials, credentials_approved_at").eq("id", profile.id).maybeSingle(),
-    supabase.from("creator_credentials_requests").select("text").eq("creator_id", profile.id).maybeSingle(),
+    requestQuery("text, updated_at, decision"),
   ]);
+  // banco sem a 0032 (sem a coluna decision): sem como saber da reprovação, fica "aguardando"
+  const requestRes = firstRequest.error ? await requestQuery("text, updated_at") : firstRequest;
   const chef = chefRes.error ? null : (chefRes.data as { specialties: string[] | null; credentials: string | null; credentials_approved_at: string | null } | null);
+  const request = (requestRes.data as unknown as CredentialsRequest | null) ?? null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,8 +87,8 @@ export default async function CreatorProfilePage() {
       {chef && (
         <ChefProfileForm
           specialties={chef.specialties ?? []}
-          request={(requestRes.data as { text: string } | null)?.text ?? null}
-          approved={chef.credentials_approved_at ? chef.credentials : null}
+          request={request?.text ?? null}
+          status={request ? credentialsState(request, chef, undefined) : "none"}
           readOnly={!active}
         />
       )}

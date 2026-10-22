@@ -57,6 +57,8 @@ export type RecipeDraft = {
   videoDirty: boolean;
   tags: string[];
   allergensDeclared: boolean;
+  /** "Contém alérgenos" escolhido; com a lista ainda vazia não conta como declaração (ver allergensPending). */
+  allergensSome: boolean;
   allergens: RecipeAllergen[];
   allergenNotes: string;
   diets: RecipeDiet[];
@@ -107,6 +109,7 @@ export function emptyDraft(): RecipeDraft {
     videoDirty: false,
     tags: [],
     allergensDeclared: false,
+    allergensSome: false,
     allergens: [],
     allergenNotes: "",
     diets: [],
@@ -183,6 +186,7 @@ export function draftFromRows(content: Pick<RecipeContentRow, "title" | "summary
     videoDirty: false,
     tags: content.tags ?? [],
     allergensDeclared: d?.allergens_declared ?? false,
+    allergensSome: Boolean(d?.allergens_declared && (d?.allergens ?? []).length > 0),
     allergens: (d?.allergens ?? []).filter((a): a is RecipeAllergen => (RECIPE_ALLERGENS as readonly string[]).includes(a)),
     allergenNotes: d?.allergen_notes ?? "",
     diets: (d?.diets ?? []).filter((x): x is RecipeDiet => (RECIPE_DIETS as readonly string[]).includes(x)),
@@ -197,6 +201,11 @@ export function draftFromRows(content: Pick<RecipeContentRow, "title" | "summary
     pillar: content.pillar ?? "gastronomy",
     disclaimerKind: content.disclaimer_kind ?? null,
   };
+}
+
+/** "Contém alérgenos" escolhido sem nenhum alérgeno marcado: a declaração ainda não vale. */
+export function allergensPending(draft: Pick<RecipeDraft, "allergensDeclared" | "allergensSome" | "allergens">): boolean {
+  return draft.allergensDeclared && Boolean(draft.allergensSome) && draft.allergens.length === 0;
 }
 
 /** Soma de preparo + cozimento + descanso (vazio conta 0). */
@@ -376,9 +385,10 @@ export function buildPayload(draft: RecipeDraft): BuildResult {
       total_minutes: total,
       story: orNull(draft.story),
       diets: draft.diets,
-      // "nenhum" é declaração explícita; sem declarar, a lista vai vazia
-      allergens: draft.allergensDeclared ? draft.allergens : [],
-      allergens_declared: draft.allergensDeclared,
+      // "nenhum" é declaração explícita; sem declarar, a lista vai vazia. "Contém" sem nenhum marcado
+      // não vira "nenhum": vai como não declarado (o checklist segura a publicação)
+      allergens: draft.allergensDeclared && !allergensPending(draft) ? draft.allergens : [],
+      allergens_declared: draft.allergensDeclared && !allergensPending(draft),
       allergen_notes: orNull(draft.allergenNotes),
       cover_media_id: coverOk ? draft.coverMediaId : null,
     },
@@ -451,4 +461,15 @@ export function moveItem<T>(list: T[], from: number, to: number): T[] {
   const [item] = next.splice(from, 1);
   next.splice(to, 0, item);
   return next;
+}
+
+/**
+ * Para onde vai o foco depois de remover o item `index` de uma lista com `length` itens: o item que
+ * ocupou a mesma posição, ou o anterior quando era o último; null quando a lista ficou vazia (o
+ * foco vai para "Adicionar"). O botão focado sai do DOM e o foco não pode cair no body.
+ */
+export function focusIndexAfterRemove(index: number, length: number): number | null {
+  const remaining = length - 1;
+  if (remaining <= 0) return null;
+  return Math.min(index, remaining - 1);
 }

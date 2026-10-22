@@ -2,7 +2,7 @@
 // public.recipe_publishable_missing (0027). É ajuda na tela; quem decide é o banco (gatilho e RPC),
 // que confere também o que o navegador não sabe (vídeo do Stream ainda válido, por exemplo).
 import { RECIPE_CHECKLIST_CODES, type RecipeChecklistCode } from "./codes";
-import { effectiveTotal, isBlankIngredient, isBlankStep, timesSum, toInt, type RecipeDraft } from "./draft";
+import { allergensPending, effectiveTotal, isBlankIngredient, isBlankStep, timesSum, toInt, type RecipeDraft } from "./draft";
 import { allowedRecipeLicenses, coerceRecipeLicense } from "./payload";
 
 export type ChecklistEntry = { code: RecipeChecklistCode; ok: boolean };
@@ -34,7 +34,7 @@ export function recipeChecklist(draft: RecipeDraft, opts: { currentCoverUrl: str
   if (!draft.ingredients.some((i) => !isBlankIngredient(i))) missing.add("ingredients");
   if (!draft.steps.some((s) => !isBlankStep(s))) missing.add("steps");
   if (!draft.categories.some((c) => !active || active.includes(c))) missing.add("category");
-  if (!draft.allergensDeclared) missing.add("allergens");
+  if (!draft.allergensDeclared || allergensPending(draft)) missing.add("allergens");
   if (!(allowedRecipeLicenses(provider) as readonly string[]).includes(coerceRecipeLicense(provider, draft.licenseKind))) missing.add("license");
   if (provider === "cloudflare_stream" && !filled(draft.video.ref)) missing.add("stream");
 
@@ -43,4 +43,29 @@ export function recipeChecklist(draft: RecipeDraft, opts: { currentCoverUrl: str
 
 export function checklistComplete(entries: ChecklistEntry[]): boolean {
   return entries.every((e) => e.ok);
+}
+
+const RECIPE_MEDIA_PREFIX = "/media/recipe/";
+
+/**
+ * cover_url que o banco deixa depois de recipe_save (0027): foto escolhida vira /media/recipe/<id>;
+ * sem foto escolhida, uma foto desta receita que era capa sai e o placeholder do pilar continua.
+ * O editor espelha a regra para o checklist não aceitar uma capa que o banco já zerou.
+ */
+export function coverUrlAfterSave(current: string | null, coverMediaId: string | null): string | null {
+  if (coverMediaId) return `${RECIPE_MEDIA_PREFIX}${coverMediaId}`;
+  return current?.startsWith(RECIPE_MEDIA_PREFIX) ? null : current;
+}
+
+/** recipe_delete_media zera cover_url quando a foto apagada era a capa. */
+export function coverUrlAfterDelete(current: string | null, mediaId: string): string | null {
+  return current === `${RECIPE_MEDIA_PREFIX}${mediaId}` ? null : current;
+}
+
+/**
+ * Itens que o banco recusou (recipe_incomplete) valem só para o rascunho daquela tentativa: qualquer
+ * mudança volta ao checklist da tela, e a pessoa pode tentar de novo depois de corrigir.
+ */
+export function serverMissingFor<D>(entry: { codes: RecipeChecklistCode[]; draft: D } | null, draft: D): RecipeChecklistCode[] {
+  return entry && entry.draft === draft ? entry.codes : [];
 }

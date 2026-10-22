@@ -5,7 +5,9 @@ import { RecipeIngredientList } from "@/components/recipes/view/RecipeIngredient
 import { RECIPE_UNITS } from "@/lib/recipes/codes";
 import { UNIT_LABELS_PT } from "@/lib/recipes/quantity";
 import type { RecipeRows } from "@/lib/recipes/rows";
-import { buildRecipeViewModel, formatIngredientAmount, formatStepDuration } from "@/lib/recipes/view-model";
+import { buildRecipeViewModel, formatIngredientAmount, formatStepDuration, type UnitLabels } from "@/lib/recipes/view-model";
+import enRecipes from "../../messages/en/recipes.json";
+import esRecipes from "../../messages/es/recipes.json";
 
 // Renderizador estruturado (RecipeView): modelo montado a partir das tabelas (fixture de g1 e g9 do
 // seed) e a lista de ingredientes renderizada como na página — "Batata-doce · 1 · média" e
@@ -83,6 +85,27 @@ describe("buildRecipeViewModel (g1 a partir das tabelas)", () => {
     expect(formatIngredientAmount(null, null, "  ", UNIT_LABELS_PT)).toBeNull();
     expect(formatStepDuration(3725)).toEqual({ h: 1, m: 2, s: 5 });
     expect(Object.keys(UNIT_LABELS_PT).sort()).toEqual([...RECIPE_UNITS].sort());
+  });
+  it("separador decimal e plural pelo idioma (rótulos dos JSON de en e es)", () => {
+    const labelsOf = (units: Record<string, { one: string; other: string }>) =>
+      Object.fromEntries(RECIPE_UNITS.map((u) => [u, [units[u].one, units[u].other] as const])) as UnitLabels;
+    const en = labelsOf(enRecipes.structured.units);
+    const es = labelsOf(esRecipes.structured.units);
+    // pt-BR: vírgula, plural a partir de 2
+    expect(formatIngredientAmount(1.5, "cup", null, UNIT_LABELS_PT, "pt-BR")).toBe("1 1/2 xícara");
+    expect(formatIngredientAmount(2, "cup", null, UNIT_LABELS_PT, "pt-BR")).toBe("2 xícaras");
+    // en: ponto, plural acima de 1
+    expect(formatIngredientAmount(1.5, "cup", null, en, "en")).toBe("1 1/2 cups");
+    expect(formatIngredientAmount(0.5, "l", null, en, "en")).toBe("0.5 L");
+    expect(formatIngredientAmount(1.25, "tbsp", null, en, "en")).toBe("1 1/4 tablespoons");
+    expect(formatIngredientAmount(1, "cup", null, en, "en")).toBe("1 cup");
+    expect(formatIngredientAmount(0.5, "cup", null, en, "en")).toBe("1/2 cup");
+    // es: vírgula, plural acima de 1
+    expect(formatIngredientAmount(1.5, "cup", null, es, "es")).toBe("1 1/2 tazas");
+    expect(formatIngredientAmount(1.5, "l", null, es, "es")).toBe("1,5 L");
+    // o modelo repassa o idioma
+    const model = buildRecipeViewModel({ ...G1, ingredients: [{ ...G1.ingredients[0], quantity: 1.5, unit: "cup", quantity_text: null, to_taste: false }] }, { labels: en, title: "x", locale: "en" });
+    expect(model.ingredients[0].amount).toBe("1 1/2 cups");
   });
 });
 

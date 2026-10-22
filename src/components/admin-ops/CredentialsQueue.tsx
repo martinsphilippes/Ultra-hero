@@ -8,7 +8,7 @@ import { credentialsState } from "@/lib/recipes/credentials";
 import { createClient } from "@/lib/supabase/server";
 import { CredentialsDecision } from "./CredentialsDecision";
 
-type RequestRow = { creator_id: string; text: string; updated_at: string };
+type RequestRow = { creator_id: string; text: string; updated_at: string; decision?: string | null };
 type ProfileRow = { id: string; name: string; slug: string; credentials: string | null; credentials_approved_at: string | null };
 type AuditRow = { resource_id: string | null; after_data: { approved?: boolean } | null; created_at: string };
 type QueueRow = { creatorId: string; name: string; slug: string; text: string; updatedAt: string; state: "pending" | "approved" | "rejected" };
@@ -18,10 +18,13 @@ type QueueRow = { creatorId: string; name: string; slug: string; text: string; u
 export async function CredentialsQueue() {
   const [t, locale] = await Promise.all([getTranslations("recipes.admin.credentials"), getLocale()]);
   const supabase = await createClient();
-  const { data: requests, error } = await supabase.from("creator_credentials_requests").select("creator_id, text, updated_at").order("updated_at", { ascending: false }).limit(100);
+  const query = (columns: string) => supabase.from("creator_credentials_requests").select(columns).order("updated_at", { ascending: false }).limit(100);
+  let { data: requests, error } = await query("creator_id, text, updated_at, decision");
+  // banco sem a 0032 (sem a coluna decision): a situação sai só da auditoria
+  if (error) ({ data: requests, error } = await query("creator_id, text, updated_at"));
   // banco sem a 0027: a fila não aparece
   if (error) return null;
-  const list = (requests ?? []) as RequestRow[];
+  const list = (requests ?? []) as unknown as RequestRow[];
   const ids = list.map((r) => r.creator_id);
   const [profilesRes, auditRes] = await Promise.all([
     ids.length ? supabase.from("creator_profiles").select("id, name, slug, credentials, credentials_approved_at").in("id", ids) : null,
@@ -58,7 +61,7 @@ export async function CredentialsQueue() {
       key: "actions",
       header: "",
       align: "right",
-      cell: (r) => <CredentialsDecision creatorId={r.creatorId} name={r.name} canApprove={r.state !== "approved"} canReject={r.state !== "rejected"} />,
+      cell: (r) => <CredentialsDecision creatorId={r.creatorId} name={r.name} text={r.text} canApprove={r.state !== "approved"} canReject={r.state !== "rejected"} />,
     },
   ];
 

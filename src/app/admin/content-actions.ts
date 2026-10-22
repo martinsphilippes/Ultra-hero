@@ -7,6 +7,7 @@ import type { ActionResult } from "@/components/admin";
 import { escapeLike } from "@/components/admin-content/lib/search-params";
 import { slugWithSuffix } from "@/components/admin-content/lib/slug";
 import { parsePublishAt } from "@/components/admin-content/lib/publish-at";
+import { reviewChangeAllowed } from "@/components/admin-content/lib/review-required";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import type { PickResult } from "@/components/admin-content/SearchPicker";
 import { parseContentForm } from "@/components/editors/content/schema";
@@ -288,6 +289,8 @@ export async function setReviewRequiredAction(type: string, on: boolean, justifi
     .object({ type: z.enum(["video", "recipe", "workout", "guide", "article"]), on: z.boolean(), justification: z.string().trim().min(5).max(500) })
     .safeParse({ type, on, justification });
   if (!parsed.success) return fail("invalid_input");
+  // só receita tem "Enviar para revisão" no portal: ligar para outro tipo travaria o herói
+  if (!reviewChangeAllowed(parsed.data.type, parsed.data.on)) return fail("review_flow_unavailable");
   try {
     await requireAdmin();
     const supabase = await createClient();

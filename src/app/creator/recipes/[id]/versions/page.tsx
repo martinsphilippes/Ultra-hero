@@ -28,8 +28,9 @@ export default async function RecipeVersionsPage({ params }: Params) {
   if (!z.uuid().safeParse(id).success) notFound();
   const [t, tp, tn, locale, ctx] = await Promise.all([getTranslations("recipes.versions"), getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getMyCreator()]);
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("title")} />;
+  const creatorId = ctx.creatorId;
   const supabase = await createClient();
-  const content = await loadOwnRecipeContent(supabase, id, ctx.creatorId);
+  const content = await loadOwnRecipeContent(supabase, id, creatorId);
   if (!content) notFound();
 
   const { data, error } = await supabase
@@ -77,7 +78,7 @@ export default async function RecipeVersionsPage({ params }: Params) {
         v.reason === "restore_point" ? (
           <span className="type-caption text-fg-muted">{t("notRestorable")}</span>
         ) : editable ? (
-          <RestoreVersionButton versionId={v.id} contentId={id} versionNo={v.version_no} />
+          <RestoreVersionButton versionId={v.id} contentId={id} creatorId={creatorId} versionNo={v.version_no} />
         ) : (
           <span className="type-caption text-fg-muted">{t("notEditable")}</span>
         ),

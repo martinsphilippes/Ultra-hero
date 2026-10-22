@@ -126,6 +126,18 @@ describe("buildPayload", () => {
     expect(r.ok && r.payload.details).toMatchObject({ allergens: [], allergens_declared: true });
   });
 
+  it("alérgenos: 'Contém alérgenos' sem nenhum marcado não vira 'Nenhum alérgeno' (vai como não declarado)", () => {
+    const d = base();
+    d.allergensDeclared = true;
+    d.allergensSome = true;
+    d.allergens = [];
+    let r = buildPayload(d);
+    expect(r.ok && r.payload.details).toMatchObject({ allergens: [], allergens_declared: false });
+    d.allergens = ["egg"];
+    r = buildPayload(d);
+    expect(r.ok && r.payload.details).toMatchObject({ allergens: ["egg"], allergens_declared: true });
+  });
+
   it("nutrição com vírgula arredonda em 1 casa; desligada vira null (remove a linha)", () => {
     const d = base();
     d.nutritionEnabled = true;

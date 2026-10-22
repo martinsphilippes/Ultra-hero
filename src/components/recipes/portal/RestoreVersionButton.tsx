@@ -12,7 +12,7 @@ import { useRecipeErrorText } from "./use-recipe-error";
 // "Restaurar no rascunho": a RPC reconstrói as tabelas a partir da versão (fotos que já não existem
 // não voltam; nutrição volta sem validação). A cópia local do editor é descartada para não trazer
 // de volta o rascunho antigo por cima da versão restaurada.
-export function RestoreVersionButton({ versionId, contentId, versionNo }: { versionId: string; contentId: string; versionNo: number }) {
+export function RestoreVersionButton({ versionId, contentId, creatorId, versionNo }: { versionId: string; contentId: string; creatorId: string; versionNo: number }) {
   const t = useTranslations("recipes.versions");
   const tc = useTranslations("common.actions");
   const errorText = useRecipeErrorText();
@@ -32,7 +32,7 @@ export function RestoreVersionButton({ versionId, contentId, versionNo }: { vers
           return;
         }
         try {
-          window.localStorage.removeItem(draftStorageKey(contentId));
+          window.localStorage.removeItem(draftStorageKey(creatorId, contentId));
         } catch {
           // sem acesso ao armazenamento local: nada a limpar
         }

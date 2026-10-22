@@ -11,7 +11,7 @@ import { RECIPE_LIMITS } from "@/lib/recipes/codes";
 import { fieldIdForPath } from "@/lib/recipes/editor-steps";
 import { recipeMediaUrl } from "@/lib/recipes/media";
 import { coerceRecipeLicense, type RecipeVideoProvider } from "@/lib/recipes/payload";
-import { parseRecipeVideoLink, recipeVideoLinkText } from "@/lib/recipes/video";
+import { parseRecipeVideoLink, recipeVideoLinkText, streamPanel, type StreamUploadPhase } from "@/lib/recipes/video";
 import { cn } from "@/lib/utils";
 import { RecipeImageUploader } from "../RecipeImageUploader";
 import { RecipeVideoUpload } from "../RecipeVideoUpload";
@@ -26,6 +26,8 @@ type Props = StepProps & {
   onDeleteMedia: (mediaId: string) => Promise<boolean>;
   /** Grava o rascunho logo depois de o ticket do Stream existir (o uid não pode ficar só no aparelho). */
   onRequestSave: () => void;
+  /** Envio de vídeo em andamento: o assistente segura a troca de etapa (desmontar aborta o envio). */
+  onUploadingChange?: (uploading: boolean) => void;
 };
 
 type VideoMode = "none" | "link" | "stream";
@@ -33,7 +35,7 @@ const modeOf = (provider: RecipeVideoProvider): VideoMode => (provider === "none
 
 // Etapa 4: galeria (até 12, capa primeiro, texto alternativo obrigatório, legenda, reordenação) e
 // vídeo opcional por link do YouTube/Vimeo ou envio pelo Cloudflare Stream (fluxo do composer).
-export function MediaStep({ draft, setDraft, errorFor, disabled, announce, contentId, creatorId, uploadsEnabled, videoConfigured, onMediaUploaded, onDeleteMedia, onRequestSave }: Props) {
+export function MediaStep({ draft, setDraft, errorFor, disabled, announce, contentId, creatorId, uploadsEnabled, videoConfigured, onMediaUploaded, onDeleteMedia, onRequestSave, onUploadingChange }: Props) {
   const t = useTranslations("recipes.editor.media");
   const ti = useTranslations("recipes.editor.ingredients");
   const tc = useTranslations("common.actions");
@@ -44,6 +46,12 @@ export function MediaStep({ draft, setDraft, errorFor, disabled, announce, conte
   const [removing, setRemoving] = useState<{ id: string; n: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [videoStatus, setVideoStatus] = useState<string | null>(null);
+  const [streamPhase, setStreamPhase] = useState<StreamUploadPhase>("idle");
+
+  function changeStreamPhase(next: StreamUploadPhase) {
+    setStreamPhase(next);
+    onUploadingChange?.(next === "uploading");
+  }
 
   const galleryIdx = draft.media.map((m, i) => (m.role === "gallery" ? i : -1)).filter((i) => i >= 0);
   const galleryFull = galleryIdx.length >= RECIPE_LIMITS.gallery || draft.media.length >= RECIPE_LIMITS.media;
@@ -68,6 +76,8 @@ export function MediaStep({ draft, setDraft, errorFor, disabled, announce, conte
   }
 
   function changeMode(next: VideoMode) {
+    // sair do modo de envio desmonta o envio (abortado de propósito): libera a navegação
+    if (next !== "stream" && streamPhase !== "idle") changeStreamPhase("idle");
     setMode(next);
     setLinkError(null);
     if (next === "none") setVideo("none", null);
@@ -200,7 +210,7 @@ export function MediaStep({ draft, setDraft, errorFor, disabled, announce, conte
           <p className="type-caption text-success">{t("videoLinkOk", { provider: t(`providers.${draft.video.provider}`) })}</p>
         ) : null}
         {mode === "stream" &&
-          (draft.video.provider === "cloudflare_stream" && draft.video.ref ? (
+          (streamPanel(draft.video, streamPhase) === "current" ? (
             <div className="flex flex-col gap-2">
               <p className="type-body-sm text-fg">{t("videoCurrentStream")}</p>
               <div className="flex flex-wrap gap-2">
@@ -218,8 +228,14 @@ export function MediaStep({ draft, setDraft, errorFor, disabled, announce, conte
               contentId={contentId}
               disabled={disabled}
               onStarted={(uid) => {
+                changeStreamPhase("uploading");
+                setVideoStatus(null);
                 setVideo("cloudflare_stream", uid);
                 onRequestSave();
+              }}
+              onFinished={(ok) => {
+                changeStreamPhase(ok ? "idle" : "failed");
+                if (ok) setVideoStatus(t("videoUploaded"));
               }}
             />
           ) : (

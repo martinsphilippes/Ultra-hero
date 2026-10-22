@@ -2,11 +2,10 @@
 
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { ChipInput } from "@/components/editors/content/fields";
 import { Checkbox, Chip, FormField, Input, Select, Textarea } from "@/components/ui";
 import { RECIPE_ALLERGENS, RECIPE_DIETS, RECIPE_NUTRITION_SOURCES } from "@/lib/recipes/codes";
-import { NUTRITION_FIELDS, type RecipeDraft } from "@/lib/recipes/draft";
+import { NUTRITION_FIELDS, allergensPending, type RecipeDraft } from "@/lib/recipes/draft";
 import { fieldIdForPath } from "@/lib/recipes/editor-steps";
 import { RECIPE_LICENSE_KINDS, allowedRecipeLicenses, type RecipeLicenseKind } from "@/lib/recipes/payload";
 import { cn } from "@/lib/utils";
@@ -15,9 +14,10 @@ import { FieldError, StepSection, type StepProps } from "../shared";
 type AllergenMode = "undeclared" | "none" | "some";
 type Props = StepProps & { nutritionValidated: boolean };
 
-function initialMode(d: RecipeDraft): AllergenMode {
+// o modo fica no rascunho (allergensSome): "Contém" sem marcar nada não pode virar "Nenhum" calado
+function allergenMode(d: RecipeDraft): AllergenMode {
   if (!d.allergensDeclared) return "undeclared";
-  return d.allergens.length > 0 ? "some" : "none";
+  return d.allergensSome ? "some" : "none";
 }
 
 // Etapa 5: etiquetas, alérgenos (declarar é obrigatório para publicar, com "Nenhum alérgeno"
@@ -28,16 +28,16 @@ export function ExtrasStep({ draft, setDraft, errorFor, disabled, nutritionValid
   const ta = useTranslations("recipes.onboarding.allergies");
   const td = useTranslations("recipes.onboarding.restrictions");
   const tl = useTranslations("editors.license");
-  const [mode, setMode] = useState<AllergenMode>(initialMode(draft));
+  const mode = allergenMode(draft);
+  const pickOne = allergensPending(draft);
   const set = (patch: Partial<RecipeDraft>) => setDraft((d) => ({ ...d, ...patch }));
   const allowed = allowedRecipeLicenses(draft.video.provider);
   const allergenId = fieldIdForPath("details.allergens_declared");
 
   function changeMode(next: AllergenMode) {
-    setMode(next);
-    if (next === "undeclared") set({ allergensDeclared: false, allergens: [] });
-    else if (next === "none") set({ allergensDeclared: true, allergens: [] });
-    else set({ allergensDeclared: true });
+    if (next === "undeclared") set({ allergensDeclared: false, allergensSome: false, allergens: [] });
+    else if (next === "none") set({ allergensDeclared: true, allergensSome: false, allergens: [] });
+    else set({ allergensDeclared: true, allergensSome: true });
   }
 
   return (
@@ -61,7 +61,7 @@ export function ExtrasStep({ draft, setDraft, errorFor, disabled, nutritionValid
           <FieldError id={allergenId} message={errorFor("details.allergens_declared")} />
         </fieldset>
         {mode === "some" && (
-          <div role="group" aria-label={t("allergensList")} className="flex flex-wrap gap-2">
+          <div role="group" aria-label={t("allergensList")} aria-describedby={pickOne ? "recipe-allergens-pick-one" : undefined} className="flex flex-wrap gap-2">
             {RECIPE_ALLERGENS.map((a) => {
               const selected = draft.allergens.includes(a);
               return (
@@ -78,6 +78,11 @@ export function ExtrasStep({ draft, setDraft, errorFor, disabled, nutritionValid
               );
             })}
           </div>
+        )}
+        {pickOne && (
+          <p id="recipe-allergens-pick-one" className="type-caption font-medium text-warning" data-testid="allergens-pick-one">
+            {t("allergensPickOne")}
+          </p>
         )}
         {mode !== "undeclared" && (
           <FormField id={fieldIdForPath("details.allergen_notes")} label={t("allergenNotes")} hint={t("allergenNotesHint")} error={errorFor("details.allergen_notes")}>

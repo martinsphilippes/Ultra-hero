@@ -55,13 +55,18 @@ export type RecipeViewModel = {
   ratingAvg: number | null;
 };
 
-/** "2 colheres de sopa" com os rótulos do idioma (plural a partir de 2). */
-export function formatIngredientAmount(quantity: number | null, unit: RecipeUnit | null, quantityText: string | null, labels: UnitLabels): string | null {
+/**
+ * "2 colheres de sopa" com os rótulos e as regras do idioma: separador decimal (vírgula em pt-BR e
+ * es, ponto em en) e plural (pt-BR a partir de 2; en e es acima de 1: "1 1/2 cups", "1,5 tazas").
+ */
+export function formatIngredientAmount(quantity: number | null, unit: RecipeUnit | null, quantityText: string | null, labels: UnitLabels, locale = "pt-BR"): string | null {
   if (quantity !== null) {
-    const amount = formatAmount(quantity, unit);
+    const raw = formatAmount(quantity, unit);
+    const amount = locale.startsWith("en") ? raw.replace(",", ".") : raw;
     if (!unit) return amount;
     const [singular, plural] = labels[unit];
-    return `${amount} ${quantity >= 2 ? plural : singular}`;
+    const many = locale.startsWith("pt") ? quantity >= 2 : quantity > 1;
+    return `${amount} ${many ? plural : singular}`;
   }
   return quantityText?.trim() ? quantityText.trim() : null;
 }
@@ -70,7 +75,7 @@ function photo(m: RecipeMediaRow, fallbackAlt: string): ViewPhoto {
   return { id: m.id, src: recipeMediaUrl(m.id), alt: m.alt_text?.trim() || fallbackAlt, caption: m.caption, width: m.width, height: m.height };
 }
 
-export function buildRecipeViewModel(rows: RecipeRows, opts: { labels: UnitLabels; title: string }): RecipeViewModel {
+export function buildRecipeViewModel(rows: RecipeRows, opts: { labels: UnitLabels; title: string; locale?: string }): RecipeViewModel {
   const d = rows.details;
   const gallery = rows.media.filter((m) => m.role === "gallery").sort((a, b) => a.position - b.position);
   const coverId = d?.cover_media_id ?? null;
@@ -97,11 +102,11 @@ export function buildRecipeViewModel(rows: RecipeRows, opts: { labels: UnitLabel
       .map((i) => ({
         id: i.id,
         name: i.name,
-        amount: i.to_taste ? null : formatIngredientAmount(i.quantity, i.unit, i.quantity_text, opts.labels),
+        amount: i.to_taste ? null : formatIngredientAmount(i.quantity, i.unit, i.quantity_text, opts.labels, opts.locale),
         toTaste: i.to_taste,
         optional: i.optional,
         note: i.note,
-        substitutions: i.substitutions.map((s) => ({ name: s.name, amount: formatIngredientAmount(s.quantity, s.unit, s.quantity_text, opts.labels), note: s.note })),
+        substitutions: i.substitutions.map((s) => ({ name: s.name, amount: formatIngredientAmount(s.quantity, s.unit, s.quantity_text, opts.labels, opts.locale), note: s.note })),
       })),
     steps: [...rows.steps]
       .sort((a, b) => a.position - b.position)

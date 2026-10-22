@@ -170,7 +170,9 @@
     "justification_required": "Informe uma justificativa com pelo menos 5 caracteres.",
     "type_not_found": "Tipo de conteúdo sem configuração.",
     "credentials_empty": "O herói não tem pedido de credenciais para aprovar.",
-    "creator_not_found": "Herói não encontrado."
+    "creator_not_found": "Herói não encontrado.",
+    "request_changed": "O herói editou o pedido depois que a fila abriu. Recarregue a página e leia o texto novo antes de decidir.",
+    "review_flow_unavailable": "Este tipo não tem “Enviar para revisão” no portal do herói. A revisão só pode ser ligada para receitas."
   },
   "content": {
     "title": "Conteúdos",
@@ -233,7 +235,11 @@
       "license": "Licença da mídia",
       "licenseRef": "Referência da licença (interna)",
       "credit": "Crédito público",
-      "linkOrigin": "Origem do vínculo com o herói"
+      "linkOrigin": "Origem do vínculo com o herói",
+      "preview": "Prévia da receita",
+      "previewTitle": "Prévia da receita (admin)",
+      "previewBanner": "Prévia para revisão: é assim que a receita aparece no app, inclusive em rascunho ou em revisão.",
+      "backToDetail": "Voltar ao conteúdo"
     },
     "summary": {
       "video": "Vídeo · {points, plural, =1 {1 ponto-chave} other {# pontos-chave}} · {transcript, plural, =1 {1 trecho de transcrição} other {# trechos de transcrição}}",
@@ -245,7 +251,13 @@
       "noAllergens": "Alérgenos: nenhum informado",
       "safetyNote": "Com nota de segurança",
       "noSafetyNote": "Sem nota de segurança",
-      "empty": "Corpo vazio"
+      "empty": "Corpo vazio",
+      "recipeCounts": "Receita · {ingredients, plural, =1 {1 ingrediente} other {# ingredientes}} · {steps, plural, =1 {1 passo} other {# passos}}",
+      "servings": "{n, plural, =1 {1 porção} other {# porções}}",
+      "servingsMissing": "porções não informadas",
+      "allergensNone": "Alérgenos: nenhum (declarado pelo chef)",
+      "allergensUndeclared": "Alérgenos: não informados",
+      "structured": "Receita estruturada: veja a prévia"
     },
     "review": {
       "title": "Decisão editorial",

@@ -6,19 +6,21 @@ import { useState, useTransition } from "react";
 import { requestCredentials, saveSpecialties, withdrawCredentials } from "@/app/creator/profile/chef-actions";
 import { ChipInput } from "@/components/editors/content/fields";
 import { Button, FormField, Textarea, useToast } from "@/components/ui";
-import { CREDENTIALS_MAX_LENGTH, SPECIALTIES_MAX, SPECIALTY_MAX_LENGTH } from "@/lib/recipes/credentials";
+import { CREDENTIALS_MAX_LENGTH, SPECIALTIES_MAX, SPECIALTY_MAX_LENGTH, type CredentialsState } from "@/lib/recipes/credentials";
 
 type Props = {
   specialties: string[];
   request: string | null;
-  /** O texto aprovado que está hoje no perfil público (null = nada aprovado). */
-  approved: string | null;
+  /** Situação do pedido calculada no servidor (credentialsState); "none" sem pedido. */
+  status: CredentialsState | "none";
   readOnly?: boolean;
 };
 
+const STATUS_KEY = { none: "statusNone", pending: "statusPending", approved: "statusApproved", rejected: "statusRejected" } as const;
+
 // Especialidades (até 6, públicas) e pedido de credenciais (P7): o texto só aparece no perfil
 // depois da aprovação do admin, com o rótulo "Credenciais informadas pelo herói".
-export function ChefProfileForm({ specialties: initialSpecialties, request, approved, readOnly = false }: Props) {
+export function ChefProfileForm({ specialties: initialSpecialties, request, status, readOnly = false }: Props) {
   const t = useTranslations("recipes.chef");
   const te = useTranslations("creator.errors");
   const { toast } = useToast();
@@ -27,7 +29,6 @@ export function ChefProfileForm({ specialties: initialSpecialties, request, appr
   const [text, setText] = useState(request ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const status = request ? (approved && approved === request.trim() ? "statusApproved" : "statusPending") : "statusNone";
   const errorText = (code: string) => (te.has(code) ? te(code) : te("generic"));
 
   function run(action: () => Promise<{ ok: boolean; error?: string }>, done: string) {
@@ -68,8 +69,8 @@ export function ChefProfileForm({ specialties: initialSpecialties, request, appr
           <Textarea rows={3} maxLength={CREDENTIALS_MAX_LENGTH} value={text} onChange={(e) => setText(e.target.value)} />
         </FormField>
         <p className="type-caption text-fg-muted">{t("credentialsNotice")}</p>
-        <p className="type-body-sm font-medium text-fg" role="status">
-          {t(status)}
+        <p className={status === "rejected" ? "type-body-sm font-medium text-danger" : "type-body-sm font-medium text-fg"} role="status" data-testid="chef-credentials-status" data-status={status}>
+          {t(STATUS_KEY[status])}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button type="button" onClick={() => run(() => requestCredentials({ text }), t("sent"))} disabled={!text.trim() || text.trim() === (request ?? "").trim()} loading={pending}>

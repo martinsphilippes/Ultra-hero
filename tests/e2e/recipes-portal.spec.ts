@@ -8,6 +8,8 @@ import path from "node:path";
 // RecipeView, recarregar e conferir, perder a rede e "Recuperar", e EXCLUIR o rascunho no fim
 // (nada fica no remoto; sobras de execuções anteriores deste projeto são apagadas no início).
 // Publicar de verdade fica para a fase 6 (P4). Envio real de foto só com E2E_RECIPE_MEDIA_REAL=1.
+// A decisão de credenciais presa ao texto (0032) é coberta no S34 e no Vitest: o remoto ainda não
+// tem a 0032 e a fila não é exercitada aqui (aprovar mexeria no perfil público de um herói).
 
 const REAL_MEDIA = process.env.E2E_RECIPE_MEDIA_REAL === "1";
 
@@ -120,6 +122,15 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await page.getByTestId("ingredient-item").nth(0).getByTestId("move-down").click();
       await expect(page.getByTestId("ingredient-name").nth(0)).toHaveValue("Farinha de aveia");
       await expect(page.getByText("agora é o item 2 de 2", { exact: false })).toBeAttached();
+      // quantidade com teclado de texto ("1/2" no celular), não o decimal
+      await expect(page.getByTestId("ingredient-amount").nth(0)).not.toHaveAttribute("inputmode", "decimal");
+      // remover o último: o foco vai ao item anterior e a remoção é anunciada
+      await page.getByTestId("add-ingredient").click();
+      await page.getByTestId("ingredient-name").nth(2).fill("Sal");
+      await page.getByRole("button", { name: "Remover Ingrediente 3: Sal" }).click();
+      await expect(page.getByTestId("ingredient-item")).toHaveCount(2);
+      await expect(page.getByTestId("ingredient-name").nth(1)).toBeFocused();
+      await expect(page.getByText("Item removido: Ingrediente 3: Sal.")).toBeAttached();
       await clickNext(page, "preparo");
 
       // ---- etapa 3: duas etapas, uma com duração e ingrediente ligado
@@ -144,8 +155,11 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       }
       await clickNext(page, "complementos");
 
-      // ---- etapa 5: "Nenhum alérgeno" é declaração explícita
+      // ---- etapa 5: "Contém" sem nada marcado fica pendente; "Nenhum alérgeno" é declaração explícita
+      await page.getByTestId("allergens-some").check();
+      await expect(page.getByTestId("allergens-pick-one")).toBeVisible();
       await page.getByTestId("allergens-none").check();
+      await expect(page.getByTestId("allergens-pick-one")).toHaveCount(0);
       await clickNext(page, "revisao");
 
       // ---- etapa 6: checklist verde e o botão do modo atual (sem publicar: P4, fase 6)
@@ -231,7 +245,30 @@ test.describe("admin: revisão por tipo e fila de credenciais", () => {
     const review = page.getByTestId("review-required-settings");
     await expect(review).toBeVisible();
     await expect(review.locator('tr[data-type="recipe"]')).toContainText(/Ligada|Desligada/);
+    // só receita tem "Enviar para revisão" no portal: os outros tipos não ganham "Ligar"
+    await expect(review.locator('tr[data-type="recipe"]')).toHaveAttribute("data-toggle", "toggle");
+    for (const type of ["video", "workout", "guide", "article"]) {
+      const row = review.locator(`tr[data-type="${type}"]`);
+      await expect(row).not.toHaveAttribute("data-toggle", "toggle");
+      await expect(row.getByRole("button", { name: "Ligar" })).toHaveCount(0);
+    }
     await page.goto("/admin/creators");
     await expect(page.getByRole("heading", { level: 2, name: "Credenciais dos heróis" })).toBeVisible();
+  });
+
+  test("detalhe de receita estruturada resume pelas tabelas e abre a prévia com o RecipeView", async ({ page }) => {
+    await loginAs(page, "admin", /\/admin$/);
+    await page.goto(`/admin/content?q=${encodeURIComponent("Bowl de frango grelhado")}`);
+    await page.getByRole("link", { name: "Bowl de frango grelhado com legumes assados" }).first().click();
+    await expect(page).toHaveURL(/\/admin\/content\/[0-9a-f-]+$/, { timeout: 20_000 });
+    await expect(page.getByRole("heading", { level: 2, name: "Metadados" })).toBeVisible({ timeout: 20_000 });
+    const preview = page.getByTestId("admin-recipe-preview");
+    test.skip((await preview.count()) === 0, "banco sem recipe_details para g1");
+    await expect(page.getByText(/Receita · \d+ ingredientes · \d+ passos/)).toBeVisible();
+    await expect(page.getByText("Receita · 0 ingredientes")).toHaveCount(0);
+    await preview.click();
+    await expect(page.getByTestId("admin-recipe-preview-banner")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("recipe-view")).toBeVisible();
+    await expect(page.getByTestId("recipe-ingredient").filter({ hasText: "Peito de frango" })).toContainText("300 g");
   });
 });

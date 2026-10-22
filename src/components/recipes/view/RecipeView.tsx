@@ -30,7 +30,8 @@ export async function loadUnitLabels(): Promise<UnitLabels> {
 }
 
 export async function buildViewModel(rows: RecipeRows, title: string): Promise<RecipeViewModel> {
-  return buildRecipeViewModel(rows, { labels: await loadUnitLabels(), title });
+  const [labels, locale] = await Promise.all([loadUnitLabels(), getLocale()]);
+  return buildRecipeViewModel(rows, { labels, title, locale });
 }
 
 type Header = {

@@ -481,7 +481,8 @@
       "remove": "Remove {label}",
       "moveUp": "Move up {label}",
       "moveDown": "Move down {label}",
-      "moved": "{label} is now item {n} of {total}."
+      "moved": "{label} is now item {n} of {total}.",
+      "removed": "Removed: {label}."
     },
     "prep": {
       "listLabel": "Method steps",
@@ -595,7 +596,8 @@
       "nutritionPending": "Shown as “provided by the chef” until the administration validates it.",
       "chefNote": "Chef's note",
       "chefNoteHint": "Optional. Only shows to people who can open the recipe.",
-      "licenseTitle": "License for photos and video"
+      "licenseTitle": "License for photos and video",
+      "allergensPickOne": "Select at least one allergen. Until one is selected, the recipe counts as allergens not declared."
     },
     "review": {
       "checklistTitle": "To publish",
@@ -768,7 +770,8 @@
       "rejectDescription": "The text leaves the public profile. The hero can edit the request and send it again.",
       "approvedDone": "Credentials approved.",
       "rejectedDone": "Credentials rejected."
-    }
+    },
+    "reviewNoFlow": "The hero portal has no “Submit for review” for this type: it can only be turned off."
   },
   "chef": {
     "title": "Specialties and credentials",
@@ -786,6 +789,7 @@
     "statusPending": "Awaiting the administration's approval.",
     "statusNone": "No request sent.",
     "sent": "Request sent for approval.",
-    "withdrawn": "Request withdrawn."
+    "withdrawn": "Request withdrawn.",
+    "statusRejected": "Rejected by the administration. Edit the text and send it again."
   }
 }

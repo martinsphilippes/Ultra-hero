@@ -22,3 +22,15 @@ export function recipeVideoLinkText(provider: string, ref: string | null): strin
   if (provider === "embed_vimeo") return `https://vimeo.com/${ref}`;
   return "";
 }
+
+export type StreamUploadPhase = "idle" | "uploading" | "failed";
+
+/**
+ * O que a etapa Mídia mostra no modo "Enviar do aparelho". O uid entra no rascunho logo que o ticket
+ * existe, mas o envio (tus) ainda corre no componente de envio: trocar para o painel "vídeo atual"
+ * nessa hora desmontaria o envio (abortando-o) e sumiria com o progresso. O painel só aparece sem
+ * envio em andamento; envio que falhou continua no componente, com o erro e o "Escolher vídeo".
+ */
+export function streamPanel(video: { provider: string; ref: string | null }, phase: StreamUploadPhase): "current" | "uploader" {
+  return video.provider === "cloudflare_stream" && video.ref && phase === "idle" ? "current" : "uploader";
+}

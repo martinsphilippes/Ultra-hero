@@ -481,7 +481,8 @@
       "remove": "Remover {label}",
       "moveUp": "Subir {label}",
       "moveDown": "Descer {label}",
-      "moved": "{label} agora é o item {n} de {total}."
+      "moved": "{label} agora é o item {n} de {total}.",
+      "removed": "Item removido: {label}."
     },
     "prep": {
       "listLabel": "Etapas do preparo",
@@ -595,7 +596,8 @@
       "nutritionPending": "Aparece como “informada pelo chef” até a administração validar.",
       "chefNote": "Nota do chef",
       "chefNoteHint": "Opcional. Aparece só para quem pode abrir a receita.",
-      "licenseTitle": "Licença das fotos e do vídeo"
+      "licenseTitle": "Licença das fotos e do vídeo",
+      "allergensPickOne": "Marque ao menos um alérgeno. Enquanto nada estiver marcado, a receita fica com alérgenos não declarados."
     },
     "review": {
       "checklistTitle": "Para publicar",
@@ -768,7 +770,8 @@
       "rejectDescription": "O texto sai do perfil público. O herói pode editar o pedido e enviar de novo.",
       "approvedDone": "Credenciais aprovadas.",
       "rejectedDone": "Credenciais reprovadas."
-    }
+    },
+    "reviewNoFlow": "Sem “Enviar para revisão” no portal do herói para este tipo: só dá para desligar."
   },
   "chef": {
     "title": "Especialidades e credenciais",
@@ -786,6 +789,7 @@
     "statusPending": "Aguardando aprovação da administração.",
     "statusNone": "Nenhum pedido enviado.",
     "sent": "Pedido enviado para aprovação.",
-    "withdrawn": "Pedido retirado."
+    "withdrawn": "Pedido retirado.",
+    "statusRejected": "Reprovadas pela administração. Edite o texto e envie de novo."
   }
 }

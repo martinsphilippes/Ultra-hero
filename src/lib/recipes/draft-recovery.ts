@@ -4,8 +4,12 @@ import { isRecipeDraft, sameDraft, type RecipeDraft } from "./draft";
 
 export const DRAFT_STORAGE_VERSION = 1;
 
-export function draftStorageKey(contentId: string): string {
-  return `uh-recipe-draft:${contentId}`;
+/**
+ * Chave da cópia local, separada por herói: num aparelho compartilhado (ou na troca de conta demo)
+ * a receita nova de um herói não aparece como "Recuperar" para outro.
+ */
+export function draftStorageKey(creatorId: string, contentId: string): string {
+  return `uh-recipe-draft:${creatorId}:${contentId}`;
 }
 
 export type StoredDraft = {
@@ -29,6 +33,9 @@ export function parseStoredDraft(raw: string | null | undefined): StoredDraft | 
     const value = JSON.parse(raw) as Partial<StoredDraft>;
     if (value?.v !== DRAFT_STORAGE_VERSION || typeof value.savedAt !== "number" || typeof value.baseUpdatedAt !== "string") return null;
     if (!isRecipeDraft(value.draft)) return null;
+    // cópia gravada antes do campo allergensSome: deduz do que foi declarado
+    const draft = value.draft;
+    if (typeof draft.allergensSome !== "boolean") draft.allergensSome = draft.allergensDeclared && draft.allergens.length > 0;
     return value as StoredDraft;
   } catch {
     return null;

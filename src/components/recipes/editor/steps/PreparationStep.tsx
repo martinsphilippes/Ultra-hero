@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import type { RegisteredMedia } from "@/app/creator/recipes/actions";
 import { Button, Checkbox, FormField, Input, Textarea } from "@/components/ui";
 import { RECIPE_LIMITS } from "@/lib/recipes/codes";
-import { emptyStep, isBlankIngredient, moveItem, type DraftStep } from "@/lib/recipes/draft";
+import { emptyStep, focusIndexAfterRemove, isBlankIngredient, moveItem, type DraftStep } from "@/lib/recipes/draft";
 import { fieldIdForPath } from "@/lib/recipes/editor-steps";
 import { recipeMediaUrl } from "@/lib/recipes/media";
 import { RecipeImageUploader } from "../RecipeImageUploader";
@@ -21,6 +21,7 @@ type Props = StepProps & {
   onDeleteMedia: (mediaId: string) => Promise<boolean>;
 };
 
+const ADD_ID = "recipe-add-step";
 const numberProps = { inputMode: "numeric" as const, pattern: "[0-9-]*", autoComplete: "off" };
 
 // Etapa 3: etapas numeradas com instrução, duração (min:s), temperatura, dica, foto da etapa (só
@@ -44,6 +45,14 @@ export function PreparationStep({ draft, setDraft, errorFor, disabled, announce,
     setDraft((d) => ({ ...d, steps: moveItem(d.steps, from, to) }));
     announce(ti("moved", { label: label(from), n: to + 1, total: draft.steps.length }));
     setFocusId(fieldIdForPath(`steps.${to}.instruction`));
+  }
+
+  function remove(index: number) {
+    const itemLabel = label(index);
+    setDraft((d) => ({ ...d, steps: d.steps.filter((_, i) => i !== index) }));
+    announce(ti("removed", { label: itemLabel }));
+    const next = focusIndexAfterRemove(index, draft.steps.length);
+    setFocusId(next === null ? ADD_ID : fieldIdForPath(`steps.${next}.instruction`));
   }
 
   function add() {
@@ -72,7 +81,7 @@ export function PreparationStep({ draft, setDraft, errorFor, disabled, announce,
                       total={draft.steps.length}
                       label={label(index)}
                       onMove={(to) => move(index, to)}
-                      onRemove={() => setDraft((d) => ({ ...d, steps: d.steps.filter((_, i) => i !== index) }))}
+                      onRemove={() => remove(index)}
                       disabled={disabled}
                     />
                   </div>
@@ -159,7 +168,7 @@ export function PreparationStep({ draft, setDraft, errorFor, disabled, announce,
         })}
       </ol>
       <div>
-        <Button type="button" variant="secondary" leadingIcon={<Plus />} onClick={add} disabled={disabled || draft.steps.length >= RECIPE_LIMITS.steps} data-testid="add-step">
+        <Button id={ADD_ID} type="button" variant="secondary" leadingIcon={<Plus />} onClick={add} disabled={disabled || draft.steps.length >= RECIPE_LIMITS.steps} data-testid="add-step">
           {t("add")}
         </Button>
       </div>

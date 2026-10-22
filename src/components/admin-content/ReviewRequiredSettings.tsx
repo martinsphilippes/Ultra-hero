@@ -3,11 +3,13 @@
 import { useTranslations } from "next-intl";
 import { setReviewRequiredAction } from "@/app/admin/content-actions";
 import { ConfirmActionDialog, StatusBadge } from "@/components/admin";
+import { reviewToggle } from "./lib/review-required";
 
 type Row = { type: "video" | "recipe" | "workout" | "guide" | "article"; on: boolean };
 
 // "Exigir revisão" por tipo (P1, desligada por padrão): cada mudança passa por
-// admin_set_review_required, com justificativa obrigatória e registro em admin_audit.
+// admin_set_review_required, com justificativa obrigatória e registro em admin_audit. Ligar só
+// para receita (único tipo com "Enviar para revisão" no portal); os outros só podem ser desligados.
 export function ReviewRequiredSettings({ rows }: { rows: Row[] }) {
   const t = useTranslations("recipes.admin");
   const tc = useTranslations("adminContent.common");
@@ -32,8 +34,9 @@ export function ReviewRequiredSettings({ rows }: { rows: Row[] }) {
         <tbody className="divide-y divide-border">
           {rows.map((row) => {
             const typeLabel = tc(`types.${row.type}`);
+            const toggle = reviewToggle(row.type, row.on);
             return (
-              <tr key={row.type} data-type={row.type}>
+              <tr key={row.type} data-type={row.type} data-toggle={toggle}>
                 <th scope="row" className="px-4 py-3 text-left font-medium text-fg">
                   {typeLabel}
                 </th>
@@ -41,13 +44,18 @@ export function ReviewRequiredSettings({ rows }: { rows: Row[] }) {
                   <StatusBadge status={row.on ? "in_review" : "none"} label={row.on ? t("reviewOn") : t("reviewOff")} />
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <ConfirmActionDialog
-                    triggerLabel={row.on ? t("turnOff") : t("turnOn")}
-                    title={row.on ? t("confirmOffTitle", { type: typeLabel }) : t("confirmOnTitle", { type: typeLabel })}
-                    description={t("confirmDescription")}
-                    requireJustification
-                    action={(justification) => setReviewRequiredAction(row.type, !row.on, justification)}
-                  />
+                  <span className="flex flex-col items-end gap-1">
+                    {toggle !== "locked" && (
+                      <ConfirmActionDialog
+                        triggerLabel={row.on ? t("turnOff") : t("turnOn")}
+                        title={row.on ? t("confirmOffTitle", { type: typeLabel }) : t("confirmOnTitle", { type: typeLabel })}
+                        description={t("confirmDescription")}
+                        requireJustification
+                        action={(justification) => setReviewRequiredAction(row.type, !row.on, justification)}
+                      />
+                    )}
+                    {toggle !== "toggle" && <span className="type-caption text-fg-muted">{t("reviewNoFlow")}</span>}
+                  </span>
                 </td>
               </tr>
             );

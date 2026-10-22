@@ -5,10 +5,15 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Button, Checkbox, FormField, IconButton, Input, Select } from "@/components/ui";
 import { RECIPE_LIMITS, RECIPE_UNITS, type RecipeUnit } from "@/lib/recipes/codes";
-import { emptyIngredient, moveItem, type DraftIngredient, type DraftSubstitution } from "@/lib/recipes/draft";
+import { emptyIngredient, focusIndexAfterRemove, moveItem, type DraftIngredient, type DraftSubstitution } from "@/lib/recipes/draft";
 import { fieldIdForPath } from "@/lib/recipes/editor-steps";
 import { parseQuantity } from "@/lib/recipes/quantity";
 import { ItemControls, StepSection, type StepProps } from "../shared";
+
+const ADD_ID = "recipe-add-ingredient";
+// Quantidade aceita "1/2", "2 1/2" e texto livre ("1 média"): teclado de texto, não o decimal (que no
+// celular não tem "/" nem letras).
+const amountInputProps = { enterKeyHint: "next", autoComplete: "off" } as const;
 
 // Etapa 2: ingredientes com quantidade numérica ("1/2", "1,5", "2 1/2"), unidade dos códigos do
 // banco, "a gosto", opcional, observação e até 5 substituições. Reordenar com ↑/↓ (sem arrastar),
@@ -42,8 +47,12 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce 
 
   function remove(index: number) {
     const id = draft.ingredients[index].id;
+    const itemLabel = label(index);
     // a etapa que usava o ingrediente perde só o vínculo
     setDraft((d) => ({ ...d, ingredients: d.ingredients.filter((_, i) => i !== index), steps: d.steps.map((s) => ({ ...s, ingredientIds: s.ingredientIds.filter((x) => x !== id) })) }));
+    announce(t("removed", { label: itemLabel }));
+    const next = focusIndexAfterRemove(index, draft.ingredients.length);
+    setFocusId(next === null ? ADD_ID : fieldIdForPath(`ingredients.${next}.name`));
   }
 
   function add() {
@@ -88,7 +97,7 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce 
                     hint={parsed.kind === "text" ? t("textHint") : t("amountHint")}
                     error={errorFor(`${base}.amount`) ?? errorFor(`${base}.quantity`) ?? errorFor(`${base}.quantity_text`)}
                   >
-                    <Input value={ing.amount} maxLength={60} inputMode="decimal" onChange={(e) => update(index, { amount: e.target.value })} disabled={disabled || ing.toTaste} data-testid="ingredient-amount" />
+                    <Input value={ing.amount} maxLength={60} {...amountInputProps} onChange={(e) => update(index, { amount: e.target.value })} disabled={disabled || ing.toTaste} data-testid="ingredient-amount" />
                   </FormField>
                   <FormField id={fieldIdForPath(`${base}.unit`)} label={t("unit")} error={errorFor(`${base}.unit`)}>
                     <Select value={ing.unit} onChange={(e) => update(index, { unit: e.target.value as RecipeUnit | "" })} disabled={disabled || ing.toTaste} data-testid="ingredient-unit">
@@ -116,7 +125,7 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce 
                           <Input value={sub.name} maxLength={120} aria-label={`${t("name")} · ${subLabel}`} onChange={(e) => updateSub(index, sIndex, { name: e.target.value })} disabled={disabled} />
                         </FormField>
                         <FormField id={fieldIdForPath(`${sBase}.amount`)} label={t("amount")} error={errorFor(`${sBase}.amount`)}>
-                          <Input value={sub.amount} maxLength={60} inputMode="decimal" onChange={(e) => updateSub(index, sIndex, { amount: e.target.value })} disabled={disabled} />
+                          <Input value={sub.amount} maxLength={60} {...amountInputProps} onChange={(e) => updateSub(index, sIndex, { amount: e.target.value })} disabled={disabled} />
                         </FormField>
                         <FormField id={fieldIdForPath(`${sBase}.unit`)} label={t("unit")} error={errorFor(`${sBase}.unit`)}>
                           <Select value={sub.unit} onChange={(e) => updateSub(index, sIndex, { unit: e.target.value as RecipeUnit | "" })} disabled={disabled}>
@@ -150,7 +159,7 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce 
         })}
       </ol>
       <div>
-        <Button type="button" variant="secondary" leadingIcon={<Plus />} onClick={add} disabled={disabled || draft.ingredients.length >= RECIPE_LIMITS.ingredients} data-testid="add-ingredient">
+        <Button id={ADD_ID} type="button" variant="secondary" leadingIcon={<Plus />} onClick={add} disabled={disabled || draft.ingredients.length >= RECIPE_LIMITS.ingredients} data-testid="add-ingredient">
           {t("add")}
         </Button>
       </div>

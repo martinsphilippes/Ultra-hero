@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checklistComplete, recipeChecklist } from "@/lib/recipes/checklist";
+import { checklistComplete, coverUrlAfterDelete, coverUrlAfterSave, recipeChecklist, serverMissingFor } from "@/lib/recipes/checklist";
 import { RECIPE_CHECKLIST_CODES } from "@/lib/recipes/codes";
 import { emptyDraft, emptyIngredient, emptyStep, type RecipeDraft } from "@/lib/recipes/draft";
 import { draftStorageKey, parseStoredDraft, serializeDraft, shouldOfferRecovery } from "@/lib/recipes/draft-recovery";
@@ -45,6 +45,16 @@ describe("recipeChecklist", () => {
     d.coverMediaId = null;
     expect(missing(d, "/media/recipe/11111111-1111-4111-8111-111111111111")).toEqual(["cover"]);
   });
+  it("alérgenos: 'Contém' sem nenhum marcado fica pendente; com um marcado ou 'Nenhum' fica ok", () => {
+    const d = complete();
+    d.allergensSome = true;
+    expect(missing(d)).toEqual(["allergens"]);
+    d.allergens = ["egg"];
+    expect(missing(d)).toEqual([]);
+    d.allergensSome = false;
+    d.allergens = [];
+    expect(missing(d)).toEqual([]);
+  });
   it("tempos incoerentes (g2/g4) dão 'times'; categoria desativada não conta", () => {
     const d = complete();
     d.totalTouched = true;
@@ -60,16 +70,52 @@ describe("recipeChecklist", () => {
   });
 });
 
+describe("capa e recusa do banco na mesma sessão", () => {
+  const PHOTO = "11111111-1111-4111-8111-111111111111";
+  const PLACEHOLDER = "/placeholders/cover-gastronomy-1.svg";
+  it("cover_url acompanha recipe_save e recipe_delete_media (mesma regra da 0027)", () => {
+    expect(coverUrlAfterSave(PLACEHOLDER, PHOTO)).toBe(`/media/recipe/${PHOTO}`);
+    expect(coverUrlAfterSave(`/media/recipe/${PHOTO}`, null)).toBeNull();
+    expect(coverUrlAfterSave(PLACEHOLDER, null)).toBe(PLACEHOLDER);
+    expect(coverUrlAfterDelete(`/media/recipe/${PHOTO}`, PHOTO)).toBeNull();
+    expect(coverUrlAfterDelete(PLACEHOLDER, PHOTO)).toBe(PLACEHOLDER);
+  });
+  it("placeholder → foto vira capa e é gravada → foto apagada: o checklist pede capa (como o banco)", () => {
+    const d = complete();
+    let cover: string | null = PLACEHOLDER;
+    cover = coverUrlAfterSave(cover, PHOTO); // gravou com a foto como capa
+    cover = coverUrlAfterDelete(cover, PHOTO); // apagou a foto
+    expect(missing(d, cover)).toEqual(["cover"]);
+    // sem espelhar (cover_url da carga da página), a tela dizia "tudo pronto"
+    expect(missing(d, PLACEHOLDER)).toEqual([]);
+  });
+  it("recusa do banco vale só para o rascunho daquela tentativa", () => {
+    const tried = complete();
+    const entry = { codes: ["cover" as const], draft: tried };
+    expect(serverMissingFor(entry, tried)).toEqual(["cover"]);
+    expect(serverMissingFor(entry, { ...tried, title: "Outra" })).toEqual([]);
+    expect(serverMissingFor(null, tried)).toEqual([]);
+  });
+});
+
 describe("cópia local do rascunho", () => {
   const server = complete();
   const local = { ...complete(), title: "Panqueca editada offline" };
   it("chave por receita e formato versionado; lixo é ignorado", () => {
-    expect(draftStorageKey("abc")).toBe("uh-recipe-draft:abc");
+    expect(draftStorageKey("c1", "abc")).toBe("uh-recipe-draft:c1:abc");
+    // receita nova: cada herói tem a sua cópia (aparelho compartilhado não vaza o rascunho)
+    expect(draftStorageKey("heroi-a", "new")).not.toBe(draftStorageKey("heroi-b", "new"));
     const raw = serializeDraft(local, "2026-10-22T10:00:00Z", 1_000);
     expect(parseStoredDraft(raw)).toMatchObject({ v: 1, savedAt: 1_000, baseUpdatedAt: "2026-10-22T10:00:00Z" });
     expect(parseStoredDraft("{")).toBeNull();
     expect(parseStoredDraft(JSON.stringify({ v: 2, savedAt: 1, baseUpdatedAt: "x", draft: local }))).toBeNull();
     expect(parseStoredDraft(null)).toBeNull();
+  });
+  it("cópia antiga sem allergensSome: deduz do que foi declarado (não oferece recuperação à toa)", () => {
+    const legacy = { ...complete(), allergens: ["egg"] } as Partial<RecipeDraft>;
+    delete legacy.allergensSome;
+    const parsed = parseStoredDraft(JSON.stringify({ v: 1, savedAt: 1, baseUpdatedAt: "x", draft: legacy }));
+    expect(parsed?.draft.allergensSome).toBe(true);
   });
   it("oferece recuperar quando a cópia foi editada sobre a versão atual do servidor, qualquer que seja o relógio", () => {
     const stored = parseStoredDraft(serializeDraft(local, "2026-10-22T10:00:00Z", 0))!;

@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRecipeDraft, deleteRecipeMedia, publishRecipe, saveRecipe, submitRecipe, type RegisteredMedia } from "@/app/creator/recipes/actions";
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
 import { Button, Dialog, useToast } from "@/components/ui";
-import { recipeChecklist } from "@/lib/recipes/checklist";
+import { coverUrlAfterDelete, coverUrlAfterSave, recipeChecklist, serverMissingFor } from "@/lib/recipes/checklist";
 import { parseRecipeIncomplete, type RecipeChecklistCode } from "@/lib/recipes/codes";
 import { buildPayload, draftIssue, sameDraft, type DraftIssue, type RecipeDraft } from "@/lib/recipes/draft";
 import { draftStorageKey, parseStoredDraft, serializeDraft, shouldOfferRecovery, type StoredDraft } from "@/lib/recipes/draft-recovery";
@@ -68,7 +68,7 @@ function removeLocal(key: string) {
 // rascunho" e a cada 30 s com mudança; "Recuperar | Descartar" quando a cópia local é mais nova;
 // conflito (stale_draft) abre diálogo; erro de validação foca o primeiro campo e lista os demais.
 export function RecipeWizard(props: Props) {
-  const { mode, contentId, creatorId, categories, reviewRequired, uploadsEnabled, videoConfigured, currentCoverUrl, nutritionValidated } = props;
+  const { mode, contentId, creatorId, categories, reviewRequired, uploadsEnabled, videoConfigured, nutritionValidated } = props;
   const t = useTranslations("recipes.editor");
   const tf = useTranslations("recipes.editor.fieldNames");
   const tval = useTranslations("recipes.editor.validation");
@@ -76,7 +76,7 @@ export function RecipeWizard(props: Props) {
   const locale = useLocale();
   const router = useRouter();
   const { toast } = useToast();
-  const storageKey = draftStorageKey(contentId ?? "new");
+  const storageKey = draftStorageKey(creatorId, contentId ?? "new");
 
   const [draft, setDraftState] = useState<RecipeDraft>(props.initialDraft);
   const [saved, setSaved] = useState<RecipeDraft>(props.initialDraft);
@@ -89,8 +89,13 @@ export function RecipeWizard(props: Props) {
   const [recovery, setRecovery] = useState<StoredDraft | null>(null);
   const [staleOpen, setStaleOpen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
-  const [serverMissing, setServerMissing] = useState<RecipeChecklistCode[]>([]);
+  // recusa do banco presa ao rascunho daquela tentativa (qualquer mudança libera tentar de novo)
+  const [serverMissingEntry, setServerMissingEntry] = useState<{ codes: RecipeChecklistCode[]; draft: RecipeDraft } | null>(null);
+  // cover_url do banco acompanha as gravações e exclusões da sessão (o da carga da página envelhece)
+  const [coverUrl, setCoverUrl] = useState<string | null>(props.currentCoverUrl);
   const [publishing, setPublishing] = useState(false);
+  // envio de vídeo correndo na etapa Mídia: trocar de etapa desmontaria o envio e o abortaria
+  const [videoUploading, setVideoUploading] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
   const draftRef = useRef(draft);
@@ -216,6 +221,7 @@ export function RecipeWizard(props: Props) {
         }
         setUpdatedAt(result.updatedAt);
         updatedRef.current = result.updatedAt;
+        setCoverUrl((url) => coverUrlAfterSave(url, built.payload.details.cover_media_id ?? null));
         setSaved(current);
         setIssues([]);
         setSavedAt(new Date());
@@ -307,6 +313,7 @@ export function RecipeWizard(props: Props) {
         });
         setDraftState(strip);
         setSaved(strip);
+        setCoverUrl((url) => coverUrlAfterDelete(url, mediaId));
         if (result.updatedAt) {
           setUpdatedAt(result.updatedAt);
           updatedRef.current = result.updatedAt;
@@ -325,7 +332,7 @@ export function RecipeWizard(props: Props) {
   async function publish(kind: "publish" | "submit", at: string | null) {
     if (!contentId) return;
     setPublishing(true);
-    setServerMissing([]);
+    setServerMissingEntry(null);
     try {
       if (dirty) {
         const outcome = await save();
@@ -335,7 +342,7 @@ export function RecipeWizard(props: Props) {
       if (!result.ok) {
         if (result.error === "recipe_incomplete") {
           const missing = parseRecipeIncomplete(`recipe_incomplete: ${result.detail ?? ""}`);
-          setServerMissing(missing);
+          setServerMissingEntry({ codes: missing, draft: draftRef.current });
           setSaveError(errorText(result.error));
         } else {
           setSaveError(errorText(result.error));
@@ -374,7 +381,8 @@ export function RecipeWizard(props: Props) {
     setRecovery(null);
   }
 
-  const checklist = useMemo(() => recipeChecklist(draft, { currentCoverUrl, activeCategories: categories.map((c) => c.code) }), [draft, currentCoverUrl, categories]);
+  const checklist = useMemo(() => recipeChecklist(draft, { currentCoverUrl: coverUrl, activeCategories: categories.map((c) => c.code) }), [draft, coverUrl, categories]);
+  const serverMissing = serverMissingFor(serverMissingEntry, draft);
   const index = stepIndex(step);
   const disabled = Boolean(recovery) || publishing;
   const stepProps = { draft, setDraft, errorFor, disabled, announce };
@@ -408,7 +416,7 @@ export function RecipeWizard(props: Props) {
               <button
                 type="button"
                 onClick={() => void goTo(s)}
-                disabled={mode === "new" || disabled || saving}
+                disabled={mode === "new" || disabled || saving || videoUploading}
                 aria-current={s === step ? "step" : undefined}
                 aria-label={`${i + 1}. ${t(`steps.${s}`)}`}
                 className={cn(
@@ -427,10 +435,11 @@ export function RecipeWizard(props: Props) {
       {issues.length > 0 && (
         <div role="alert" className="flex flex-col gap-2 rounded-2xl border border-danger/30 bg-danger-soft p-4" data-testid="recipe-issues">
           <p className="font-semibold text-fg">{t("errors.summaryTitle", { count: issues.length })}</p>
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-2">
             {issues.map((issue) => (
               <li key={issue.path}>
-                <Button type="button" variant="link" onClick={() => changeStep(stepForPath(issue.path), issue.fieldId)}>
+                {/* alvo de toque de 44 px: no celular é o caminho para corrigir */}
+                <Button type="button" variant="link" className="min-h-11 px-1 text-left" onClick={() => changeStep(stepForPath(issue.path), issue.fieldId)}>
                   {t("errors.goToField", { field: fieldLabel(issue.path), step: t(`steps.${stepForPath(issue.path)}`) })}
                 </Button>
               </li>
@@ -462,6 +471,7 @@ export function RecipeWizard(props: Props) {
             onMediaUploaded={onMediaUploaded}
             onDeleteMedia={onDeleteMedia}
             onRequestSave={() => window.setTimeout(() => void save({ quiet: true }), 0)}
+            onUploadingChange={setVideoUploading}
           />
         )}
         {step === "complementos" && <ExtrasStep {...stepProps} nutritionValidated={nutritionValidated} />}
@@ -493,7 +503,7 @@ export function RecipeWizard(props: Props) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-2">
             {mode === "edit" && index > 0 && (
-              <Button type="button" variant="ghost" leadingIcon={<ArrowLeft />} onClick={() => void goTo(RECIPE_EDITOR_STEPS[index - 1])} disabled={disabled || saving}>
+              <Button type="button" variant="ghost" leadingIcon={<ArrowLeft />} onClick={() => void goTo(RECIPE_EDITOR_STEPS[index - 1])} disabled={disabled || saving || videoUploading}>
                 {t("back")}
               </Button>
             )}
@@ -509,7 +519,7 @@ export function RecipeWizard(props: Props) {
             )}
           </div>
           {step !== "revisao" && (
-            <Button type="button" trailingIcon={<ArrowRight />} onClick={() => void next()} loading={saving} disabled={disabled} data-testid="recipe-next">
+            <Button type="button" trailingIcon={<ArrowRight />} onClick={() => void next()} loading={saving} disabled={disabled || videoUploading} data-testid="recipe-next">
               {mode === "new" ? t("create") : t("next")}
             </Button>
           )}

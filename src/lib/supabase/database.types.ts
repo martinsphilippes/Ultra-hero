@@ -327,14 +327,14 @@ isOneToOne: false
                   ]
                 },"creator_credentials_requests": {
                   Row: {
-                    "creator_id": string,"text": string,"updated_at": string
+                    "creator_id": string,"decided_at": string | null,"decision": string | null,"text": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "creator_id": string,"text": string,"updated_at"?: string
+                    "creator_id": string,"decided_at"?: string | null,"decision"?: string | null,"text": string,"updated_at"?: string
                   }
                   Update: {
-                    "creator_id"?: string,"text"?: string,"updated_at"?: string
+                    "creator_id"?: string,"decided_at"?: string | null,"decision"?: string | null,"text"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -1779,7 +1779,7 @@ isOneToOne: false
 { Args: { "p_content": string,"p_justification": string,"p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
                            },
 "admin_set_creator_credentials":
-{ Args: { "p_approved": boolean,"p_creator": string,"p_reason": string }; Returns: undefined
+{ Args: { "p_approved": boolean,"p_creator": string,"p_expected_text"?: string,"p_reason": string }; Returns: undefined
                            },
 "admin_set_creator_product":
 { Args: { "p_creator": string,"p_note"?: string,"p_product": string,"p_sort"?: number,"p_status": Database["public"]['Enums']["link_status"] }; Returns: string

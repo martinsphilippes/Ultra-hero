@@ -154,7 +154,7 @@ export default async function MyRecipesPage({ searchParams }: Props) {
           {
             key: "stats",
             header: t("columns.stats"),
-            hideOnMobile: true,
+            // visível também no celular (portal mobile-first): só aparece quando há dado real
             cell: (row: ViewRow) => (
               <span className="flex flex-col gap-0.5 type-caption text-fg-muted" title={t("stats.hint")}>
                 <span>{row.stats.visitors !== null ? t("stats.visitors", { n: row.stats.visitors }) : t("stats.none")}</span>

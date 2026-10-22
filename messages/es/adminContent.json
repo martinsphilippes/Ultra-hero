@@ -170,7 +170,9 @@
     "justification_required": "Indica una justificación de al menos 5 caracteres.",
     "type_not_found": "Tipo de contenido sin configuración.",
     "credentials_empty": "El héroe no tiene solicitud de credenciales para aprobar.",
-    "creator_not_found": "Héroe no encontrado."
+    "creator_not_found": "Héroe no encontrado.",
+    "request_changed": "El héroe editó la solicitud después de abrir la cola. Recarga la página y lee el texto nuevo antes de decidir.",
+    "review_flow_unavailable": "Este tipo no tiene “Enviar a revisión” en el portal del héroe. La revisión solo se puede activar para recetas."
   },
   "content": {
     "title": "Contenidos",
@@ -233,7 +235,11 @@
       "license": "Licencia del medio",
       "licenseRef": "Referencia de la licencia (interna)",
       "credit": "Crédito público",
-      "linkOrigin": "Origen del vínculo con el héroe"
+      "linkOrigin": "Origen del vínculo con el héroe",
+      "preview": "Vista previa de la receta",
+      "previewTitle": "Vista previa de la receta (admin)",
+      "previewBanner": "Vista previa para revisión: así se ve la receta en la app, incluso como borrador o en revisión.",
+      "backToDetail": "Volver al contenido"
     },
     "summary": {
       "video": "Video · {points, plural, =1 {1 punto clave} other {# puntos clave}} · {transcript, plural, =1 {1 fragmento de transcripción} other {# fragmentos de transcripción}}",
@@ -245,7 +251,13 @@
       "noAllergens": "Alérgenos: ninguno indicado",
       "safetyNote": "Con nota de seguridad",
       "noSafetyNote": "Sin nota de seguridad",
-      "empty": "Cuerpo vacío"
+      "empty": "Cuerpo vacío",
+      "recipeCounts": "Receta · {ingredients, plural, =1 {1 ingrediente} other {# ingredientes}} · {steps, plural, =1 {1 paso} other {# pasos}}",
+      "servings": "{n, plural, =1 {1 porción} other {# porciones}}",
+      "servingsMissing": "porciones no informadas",
+      "allergensNone": "Alérgenos: ninguno (declarado por el chef)",
+      "allergensUndeclared": "Alérgenos: no informados",
+      "structured": "Receta estructurada: ve la vista previa"
     },
     "review": {
       "title": "Decisión editorial",
