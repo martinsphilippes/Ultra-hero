@@ -49,6 +49,8 @@ export default async function RecipePreviewPage({ params }: Params) {
         </Button>
       </div>
       <RecipeView
+        contentId={id}
+        syncUrl={false}
         model={model}
         video={video}
         unoptimizedImages={!isLive(content.status, content.publish_at)}

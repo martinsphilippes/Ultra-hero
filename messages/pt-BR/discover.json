@@ -6,7 +6,8 @@
     "list": "{name} · Lista",
     "personalities": "Heróis",
     "personality": "{name} · Herói",
-    "library": "{library} · {name}"
+    "library": "{library} · {name}",
+    "recipes": "Receitas"
   },
   "common": {
     "sectionError": "Não foi possível carregar esta seção.",
@@ -29,6 +30,7 @@
   "explore": {
     "title": "Explorar",
     "description": "Busque por título, tema, herói ou programa.",
+    "recipesDescription": "Receitas dos chefs com busca por nome, chef ou ingrediente e filtros.",
     "search": {
       "label": "Buscar conteúdos",
       "placeholder": "Ex.: sono, mobilidade, marmita…",
@@ -52,6 +54,7 @@
     "tabs": {
       "label": "Seções do Explorar",
       "contents": "Conteúdos",
+      "recipes": "Receitas",
       "programs": "Programas",
       "products": "Produtos",
       "lists": "Listas"

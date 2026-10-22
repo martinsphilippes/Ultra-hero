@@ -33,17 +33,25 @@ export type AnalyticsEvent =
   | "progress.update"
   | "feedback.submit"
   | "search"
+  | "recipe.catalog_filter"
+  | "recipe.scale"
+  | "recipe.share"
+  | "recipe.print"
+  | "recipe.rate"
   | "onboarding.complete"
   | "account.delete"
   | "error.critical";
 
 const ANON_COOKIE = "uh-anon";
+// Navegador de teste (E2E contra produção): nada é registrado, para não sujar os números reais.
+const E2E_COOKIE = "uh-e2e";
 
 // Registra um evento no servidor. Nunca envia PII (a função SQL também bloqueia chaves suspeitas).
 export async function trackEvent(event: AnalyticsEvent, properties: Record<string, string | number | boolean | null> = {}) {
   try {
-    const supabase = await createClient();
     const jar = await cookies();
+    if (jar.get(E2E_COOKIE)?.value === "1") return;
+    const supabase = await createClient();
     const anonId = jar.get(ANON_COOKIE)?.value ?? null;
     const locale = await getLocaleFromCookie();
     await supabase.rpc("track_event", {

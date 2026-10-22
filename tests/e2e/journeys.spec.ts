@@ -123,6 +123,13 @@ test.describe("visitante", () => {
     await expect(page.getByRole("rowheader", { name: "Fotos de receitas enviadas por heróis" })).toBeVisible();
   });
 
+  // Receitas fase 3: avaliações por estrelas (o que fica guardado e por quanto tempo).
+  test("política de privacidade cita as avaliações de receitas e o prazo", async ({ page }) => {
+    await page.goto("/legal/privacy");
+    await expect(page.locator("main").getByText(/Avaliações de receitas:/)).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "Avaliações de receitas (estrelas)" })).toBeVisible();
+  });
+
   test("ambiente de demonstração está sinalizado", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();

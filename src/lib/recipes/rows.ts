@@ -143,34 +143,41 @@ export async function hasRecipeDetails(supabase: Client, contentId: string): Pro
 
 /**
  * Lê as tabelas da receita. Tabelas que a pessoa não pode ler (visitante em recipe_extras, por
- * exemplo) voltam vazias em vez de derrubar a página. `withBody` lê também o vídeo (content_bodies).
+ * exemplo) voltam vazias em vez de derrubar a página. `withVideo` lê também o vídeo (content_bodies).
+ * `publicOnly` (receita fechada) lê só a parte pública (detalhes, categorias e mídia): extras,
+ * ingredientes, etapas, vínculos e nutrição não aparecem nesse modo e nem vão ao banco.
  */
-export async function loadRecipeRows(supabase: Client, contentId: string, options: { withVideo?: boolean } = {}): Promise<RecipeRows> {
+export async function loadRecipeRows(supabase: Client, contentId: string, options: { withVideo?: boolean; publicOnly?: boolean } = {}): Promise<RecipeRows> {
+  const full = !options.publicOnly;
   const [details, extras, cats, ings, steps, links, media, nutrition, body] = await Promise.all([
     supabase
       .from("recipe_details")
       .select("servings, yield_text, prep_minutes, cook_minutes, rest_minutes, total_minutes, story, diets, allergens, allergens_declared, allergen_notes, cover_media_id, rating_count, rating_sum")
       .eq("content_id", contentId)
       .maybeSingle(),
-    supabase.from("recipe_extras").select("chef_note").eq("content_id", contentId).maybeSingle(),
+    full ? supabase.from("recipe_extras").select("chef_note").eq("content_id", contentId).maybeSingle() : null,
     supabase.from("recipe_category_links").select("category_code").eq("content_id", contentId),
-    supabase
-      .from("recipe_ingredients")
-      .select("id, position, name, quantity, unit, quantity_text, to_taste, optional, note, substitutions")
-      .eq("content_id", contentId)
-      .order("position"),
-    supabase.from("recipe_steps").select("id, position, instruction, duration_seconds, temperature_c, tip, image_media_id").eq("content_id", contentId).order("position"),
-    supabase.from("recipe_step_ingredients").select("step_id, ingredient_id").eq("content_id", contentId),
+    full
+      ? supabase
+          .from("recipe_ingredients")
+          .select("id, position, name, quantity, unit, quantity_text, to_taste, optional, note, substitutions")
+          .eq("content_id", contentId)
+          .order("position")
+      : null,
+    full ? supabase.from("recipe_steps").select("id, position, instruction, duration_seconds, temperature_c, tip, image_media_id").eq("content_id", contentId).order("position") : null,
+    full ? supabase.from("recipe_step_ingredients").select("step_id, ingredient_id").eq("content_id", contentId) : null,
     supabase.from("recipe_media").select("id, role, position, mime, width, height, alt_text, caption, storage_path").eq("content_id", contentId).order("role").order("position"),
-    supabase
-      .from("recipe_nutrition")
-      .select("kcal, protein_g, carbs_g, fat_g, fiber_g, sodium_mg, source, source_note, validated, validated_by, validated_at, validation_note")
-      .eq("content_id", contentId)
-      .maybeSingle(),
+    full
+      ? supabase
+          .from("recipe_nutrition")
+          .select("kcal, protein_g, carbs_g, fat_g, fiber_g, sodium_mg, source, source_note, validated, validated_by, validated_at, validation_note")
+          .eq("content_id", contentId)
+          .maybeSingle()
+      : null,
     options.withVideo ? supabase.from("content_bodies").select("media_provider, media_ref").eq("content_id", contentId).maybeSingle() : null,
   ]);
   const d = details.data as (RecipeDetailsRow & Record<string, unknown>) | null;
-  const n = nutrition.data as Record<string, unknown> | null;
+  const n = nutrition?.data as Record<string, unknown> | null;
   const b = body?.data as { media_provider: RecipeVideo["provider"]; media_ref: string | null } | null | undefined;
   return {
     details: d
@@ -182,9 +189,9 @@ export async function loadRecipeRows(supabase: Client, contentId: string, option
           rating_sum: d.rating_sum ?? 0,
         }
       : null,
-    chefNote: (extras.data as { chef_note: string | null } | null)?.chef_note ?? null,
+    chefNote: (extras?.data as { chef_note: string | null } | null)?.chef_note ?? null,
     categories: ((cats.data ?? []) as { category_code: string }[]).map((c) => c.category_code),
-    ingredients: ((ings.data ?? []) as Record<string, unknown>[]).map((i) => ({
+    ingredients: ((ings?.data ?? []) as Record<string, unknown>[]).map((i) => ({
       id: String(i.id),
       position: Number(i.position),
       name: String(i.name),
@@ -196,8 +203,8 @@ export async function loadRecipeRows(supabase: Client, contentId: string, option
       note: (i.note ?? null) as string | null,
       substitutions: substitutionsFrom(i.substitutions),
     })),
-    steps: ((steps.data ?? []) as RecipeStepRow[]).map((s) => ({ ...s, position: Number(s.position) })),
-    stepIngredients: (links.data ?? []) as { step_id: string; ingredient_id: string }[],
+    steps: ((steps?.data ?? []) as RecipeStepRow[]).map((s) => ({ ...s, position: Number(s.position) })),
+    stepIngredients: (links?.data ?? []) as { step_id: string; ingredient_id: string }[],
     media: ((media.data ?? []) as RecipeMediaRow[]).map((m) => ({ ...m, position: Number(m.position) })),
     nutrition: n
       ? {

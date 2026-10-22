@@ -190,7 +190,8 @@
             "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime.",
             "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos).",
             "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos.",
-            "recipeHistory": "<strong>Recently viewed recipes (optional):</strong> off by default. If you turn it on in <recipes>My recipe collection</recipes>, we only keep which recipe you opened and the date you last opened each one (nothing else), to show you the list. Only you can see it. Turning it off or using “Clear history” deletes everything right away, and each entry is deleted after 90 days."
+            "recipeHistory": "<strong>Recently viewed recipes (optional):</strong> off by default. If you turn it on in <recipes>My recipe collection</recipes>, we only keep which recipe you opened and the date you last opened each one (nothing else), to show you the list. Only you can see it. Turning it off or using “Clear history” deletes everything right away, and each entry is deleted after 90 days.",
+            "recipeRatings": "<strong>Recipe ratings:</strong> if you completed a recipe, you can give it 1 to 5 stars. We keep the rating, the recipe and the date, linked to your account; nobody sees your rating, only the recipe's average (from 3 ratings, demo accounts excluded). You can change your rating at any time."
           },
           "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
         }
@@ -391,6 +392,11 @@
                 "data": "Recently viewed recipes (optional)",
                 "period": "90 days after the last time you opened each recipe",
                 "details": "Only exists if you turn the history on. Turning it off or using “Clear history” deletes it right away; the daily routine deletes anything older than 90 days; it is also deleted with your account."
+              },
+              "recipeRatings": {
+                "data": "Recipe ratings (stars)",
+                "period": "While the account exists",
+                "details": "They are deleted with the account; the recipe average is recalculated right away."
               }
             }
           },

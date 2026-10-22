@@ -6,7 +6,8 @@
     "list": "{name} · List",
     "personalities": "Heroes",
     "personality": "{name} · Hero",
-    "library": "{library} · {name}"
+    "library": "{library} · {name}",
+    "recipes": "Recipes"
   },
   "common": {
     "sectionError": "We couldn't load this section.",
@@ -29,6 +30,7 @@
   "explore": {
     "title": "Explore",
     "description": "Search by title, topic, hero or program.",
+    "recipesDescription": "Chefs' recipes with search by name, chef or ingredient, plus filters.",
     "search": {
       "label": "Search content",
       "placeholder": "E.g. sleep, mobility, meal prep…",
@@ -52,6 +54,7 @@
     "tabs": {
       "label": "Explore sections",
       "contents": "Content",
+      "recipes": "Recipes",
       "programs": "Programs",
       "products": "Products",
       "lists": "Lists"

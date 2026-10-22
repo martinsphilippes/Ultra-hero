@@ -30,11 +30,12 @@ export async function UserMenu({ session }: UserMenuProps) {
     <div className="flex items-center gap-1">
       <Link
         href="/profile"
-        aria-label={t("account")}
         title={t("account")}
         className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg px-1 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <Avatar src={session.avatarUrl} name={session.displayName} size="sm" alt="" />
+        {/* nome acessível pelo conteúdo: com aria-label, o nome visível no desktop ficava fora dele (axe) */}
+        <span className="sr-only">{t("account")}</span>
         <span className="hidden max-w-32 truncate text-sm font-semibold lg:inline">{session.displayName}</span>
       </Link>
       <form action="/auth/signout" method="post" className="hidden md:block">

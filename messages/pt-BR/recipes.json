@@ -81,15 +81,9 @@
     }
   },
   "library": {
-    "type": "Receita",
     "signedBy": "Receita de {chef}",
     "endorsedBy": "Indicada por {hero}",
     "endorsementNote": "{hero} indica estas receitas. Cada uma é assinada pelo chef que a criou."
-  },
-  "reminder": {
-    "title": "Confira os ingredientes",
-    "description": "Você informou: {items}. Esta receita não tem revisão profissional; confira cada ingrediente antes de preparar.",
-    "edit": "Rever restrições e alergias"
   },
   "structured": {
     "legacyEditor": {
@@ -793,5 +787,124 @@
     "sent": "Pedido enviado para aprovação.",
     "withdrawn": "Pedido retirado.",
     "statusRejected": "Reprovadas pela administração. Edite o texto e envie de novo."
+  },
+  "catalog": {
+    "search": {
+      "label": "Buscar receitas",
+      "placeholder": "Nome, chef ou ingrediente",
+      "submit": "Buscar",
+      "clear": "Limpar busca",
+      "hint": "A busca por ingrediente vale para as receitas que você pode abrir."
+    },
+    "filters": {
+      "quick": "Atalhos de filtro",
+      "button": "Filtros",
+      "open": "Abrir",
+      "close": "Fechar",
+      "title": "Filtrar receitas",
+      "category": "Categoria",
+      "time": "Tempo total",
+      "timeUpTo": "Até {n} min",
+      "difficulty": "Dificuldade",
+      "any": "Qualquer",
+      "diets": "Dietas",
+      "dietsHint": "Só receitas em que o chef declarou a dieta.",
+      "allergens": "Sem alérgeno",
+      "allergensHint": "Só entram receitas em que o chef declarou os alérgenos. Não há revisão profissional: confira sempre os ingredientes.",
+      "declaredShort": "declarado pelo chef",
+      "without": "Sem {allergen}",
+      "sort": "Ordenar",
+      "sorts": {
+        "relevance": "Relevância",
+        "recent": "Mais recentes",
+        "quick": "Mais rápidas"
+      },
+      "apply": "Ver receitas",
+      "clearAll": "Limpar tudo",
+      "active": "Filtros ativos",
+      "remove": "Remover filtro: {label}"
+    },
+    "results": {
+      "heading": "Receitas",
+      "headingChef": "Receitas de {name}",
+      "resultsFor": "Receitas para “{q}”",
+      "emptyTitle": "Nenhuma receita encontrada",
+      "emptyDescription": "Tente outras palavras ou remova alguns filtros.",
+      "emptyNoneTitle": "Nenhuma receita publicada ainda",
+      "emptyNoneDescription": "As receitas dos chefs aparecem aqui assim que forem publicadas.",
+      "clearFilters": "Limpar filtros",
+      "errorTitle": "Não foi possível carregar as receitas",
+      "errorDescription": "Verifique a conexão e tente de novo."
+    },
+    "grid": {
+      "count": "{count, plural, =1 {1 receita na lista} other {# receitas na lista}}",
+      "loaded": "{count, plural, =0 {Nenhuma receita a mais.} =1 {1 receita a mais carregada.} other {# receitas a mais carregadas.}}",
+      "end": "Você viu todas as receitas.",
+      "loadMore": "Carregar mais",
+      "loading": "Carregando receitas…",
+      "error": "Não foi possível carregar mais receitas.",
+      "retry": "Tentar de novo"
+    },
+    "card": {
+      "minutes": "{m} min",
+      "hours": "{m, plural, =0 {{h} h} other {{h} h {m} min}}",
+      "servings": "{n, plural, =1 {1 porção} other {# porções}}",
+      "allergensUnknown": "Alérgenos não informados",
+      "allergensNone": "Sem alérgenos declarados",
+      "allergensDeclared": "Contém: {list}",
+      "dietsLabel": "Dietas declaradas pelo chef"
+    },
+    "invite": {
+      "title": "Abra as receitas com a etapa demonstrativa",
+      "description": "Os cards ficam abertos a todos. Para ver ingredientes, preparo e o modo cozinha, conclua a etapa demonstrativa ({total} passos rápidos).",
+      "action": "Fazer a etapa",
+      "visitorAction": "Entrar e fazer a etapa"
+    }
+  },
+  "page": {
+    "servings": "Porções",
+    "servingsLess": "Menos uma porção",
+    "servingsMore": "Mais uma porção",
+    "servingsInput": "Número de porções",
+    "servingsAnnounce": "Quantidades para {n, plural, =1 {1 porção} other {# porções}}.",
+    "servingsPrint": "Quantidades para {n, plural, =1 {1 porção} other {# porções}}",
+    "servingsReset": "Voltar a {n}",
+    "notScaled": "Não ajustado automaticamente",
+    "checklistHint": "Marque o que já separou. As marcações ficam só neste aparelho por 24 horas.",
+    "checksClear": "Limpar marcações",
+    "checksCleared": "Marcações limpas.",
+    "checkIngredient": "Separei: {name}",
+    "share": "Compartilhar",
+    "print": "Imprimir",
+    "linkCopied": "Link copiado.",
+    "copyManually": "Copie o endereço da receita:",
+    "allergyMatch": "Esta receita declara {allergens}, que você marcou.",
+    "allergyMatchHint": "O alérgeno foi declarado pelo chef e não há revisão profissional. Confira cada ingrediente antes de preparar.",
+    "allergyMatchEdit": "Rever restrições e alergias",
+    "rating": {
+      "legend": "Sua avaliação",
+      "star": "{n, plural, =1 {1 estrela} other {# estrelas}}",
+      "hint": "Você concluiu esta receita: dê uma nota de 1 a 5.",
+      "yours": "Sua nota: {n} de 5.",
+      "saved": "Avaliação salva.",
+      "errors": {
+        "invalid": "Escolha de 1 a 5 estrelas.",
+        "unauthenticated": "Entre na sua conta para avaliar.",
+        "forbidden": "Só quem concluiu a receita pode avaliar, e o chef não avalia a própria.",
+        "failed": "Não foi possível salvar a avaliação. Tente de novo."
+      }
+    },
+    "related": {
+      "moreFrom": "Mais de {chef}",
+      "similar": "Parecidas"
+    }
+  },
+  "chefProfile": {
+    "specialties": "Especialidades",
+    "own": "Assinadas por {hero}",
+    "endorsed": "Indicadas por {hero}",
+    "filtersScope": "A busca e os filtros valem para as receitas assinadas por {hero}.",
+    "endorsedHidden": "{count, plural, =1 {1 receita indicada fica de fora enquanto a busca ou um filtro estiver ativo.} other {# receitas indicadas ficam de fora enquanto a busca ou um filtro estiver ativo.}}",
+    "showAll": "Ver todas"
   }
 }

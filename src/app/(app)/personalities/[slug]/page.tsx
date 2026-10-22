@@ -8,6 +8,7 @@ import { TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
+import { ChefHighlights } from "@/components/recipes/catalog/ChefHighlights";
 import { Badge } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import type { Locale } from "@/i18n/config";
@@ -85,6 +86,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
           </div>
         </div>
         <HeroBio headline={creator.headline} bio={creator.bio} />
+        {/* perfil do chef: especialidades e credenciais aprovadas pelo admin (P7) */}
+        <ChefHighlights creatorId={creator.id} />
       </header>
 
       <section aria-labelledby="hero-libraries-title" className="flex flex-col gap-2">

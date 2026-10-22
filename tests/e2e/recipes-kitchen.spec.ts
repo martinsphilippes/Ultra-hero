@@ -57,7 +57,7 @@ test.describe("Modo Cozinha (conta free)", () => {
     test.setTimeout(120_000);
     await loginFree(page);
     await openRecipeWithStep(page);
-    const link = page.getByTestId("cook-mode-link");
+    const link = page.getByTestId("recipe-cook-mode");
     test.skip((await link.count()) === 0, "receita sem estrutura neste banco");
     // relógio controlado a partir daqui: o cronômetro é conferido sem esperar 25 minutos
     await page.clock.install();
@@ -186,7 +186,7 @@ test.describe("Modo Cozinha (conta free)", () => {
     await openRecipeWithStep(page);
     await page.goto(`${RECIPE_PATH}?porcoes=4`);
     await page.getByTestId("recipe-view").waitFor({ state: "visible", timeout: 15_000 }).catch(() => undefined);
-    const link = page.getByTestId("cook-mode-link");
+    const link = page.getByTestId("recipe-cook-mode");
     test.skip((await link.count()) === 0, "receita sem estrutura neste banco");
     await expect(link).toHaveAttribute("href", `${RECIPE_PATH}/cozinha?porcoes=4`);
     await link.click();

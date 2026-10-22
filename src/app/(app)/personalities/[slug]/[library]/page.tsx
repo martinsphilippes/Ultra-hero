@@ -6,15 +6,16 @@ import { ContentTile, ProductActionCard, ProgramCard } from "@/components/catalo
 import { CARD_GRID, TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { LIBRARY_ICON } from "@/components/discover/personalities/LibraryList";
-import { RecipeGate } from "@/components/recipes/RecipeGate";
-import { RecipeList } from "@/components/recipes/RecipeList";
+import { ChefRecipes } from "@/components/recipes/catalog/ChefRecipes";
+import { RecipeInviteBand } from "@/components/recipes/catalog/RecipeInviteBand";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { hubHref, loadCreator, loadCreatorHub, type HubLibrary } from "@/lib/catalog/creator-hub";
 import { isLibraryKey, type LibraryKey } from "@/lib/catalog/creator-libraries";
 import { maxCartQuantity } from "@/lib/catalog/creator-products";
+import { parseRecipeCatalogParams, recipeCatalogHref } from "@/lib/recipes/catalog-params";
 import { getRecipeGate } from "@/lib/recipes/gate";
 
-type Props = { params: Promise<{ slug: string; library: string }> };
+type Props = { params: Promise<{ slug: string; library: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, library } = await params;
@@ -26,25 +27,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Uma biblioteca do herói (RF-004): grade de quadrados para conteúdos, cards para programas e
 // cards com ação para produtos. Segmento fora de LIBRARY_KEYS é 404.
-export default async function LibraryPage({ params }: Props) {
-  const { slug, library } = await params;
+export default async function LibraryPage({ params, searchParams }: Props) {
+  const [{ slug, library }, raw] = await Promise.all([params, searchParams]);
   if (!isLibraryKey(library)) notFound();
 
   const [creator, t, tp] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.libraries"), getTranslations("discover.personalities.profile")]);
   if (!creator) notFound();
 
-  // Receitas: bloqueadas até a etapa demonstrativa ser concluída (vale para todos e para o app inteiro).
-  if (library === "receitas") {
-    const gate = await getRecipeGate();
-    if (!gate.completed) {
-      return (
-        <div className="flex flex-col gap-6">
-          <PageHeader backHref={hubHref(creator.slug)} backLabel={t("back", { name: creator.name })} eyebrow={creator.name} title={t("labels.receitas")} />
-          <RecipeGate nextPath={hubHref(creator.slug, "receitas")} />
-        </div>
-      );
-    }
-  }
+  // Receitas (P2): os cards ficam abertos a todos, com a faixa da etapa demonstrativa para quem ainda
+  // não a fez; abrir a receita é que pede a etapa (o banco garante por can_access_content).
+  const recipeParams = library === "receitas" ? parseRecipeCatalogParams(raw) : null;
+  const gate = recipeParams ? await getRecipeGate() : null;
 
   const hub = await loadCreatorHub(creator);
   const current = hub.libraries.find((item) => item.key === library);
@@ -62,6 +55,10 @@ export default async function LibraryPage({ params }: Props) {
         description={t(`descriptions.${library}`, { name: creator.name })}
       />
 
+      {recipeParams && gate && !gate.completed ? (
+        <RecipeInviteBand nextPath={recipeCatalogHref(hubHref(creator.slug, "receitas"), recipeParams)} loggedIn={gate.loggedIn} />
+      ) : null}
+
       {error ? (
         <InlineError />
       ) : !current || current.count === 0 ? (
@@ -78,22 +75,28 @@ export default async function LibraryPage({ params }: Props) {
           />
         </div>
       ) : (
-        <LibraryBody library={current} slug={creator.slug} hub={hub} hero={{ slug: creator.slug, name: creator.name }} />
+        <LibraryBody library={current} slug={creator.slug} hub={hub} hero={{ id: creator.id, slug: creator.slug, name: creator.name }} recipeParams={recipeParams} />
       )}
     </div>
   );
 }
 
-type BodyProps = { library: HubLibrary; slug: string; hub: Awaited<ReturnType<typeof loadCreatorHub>>; hero: { slug: string; name: string } };
+type BodyProps = {
+  library: HubLibrary;
+  slug: string;
+  hub: Awaited<ReturnType<typeof loadCreatorHub>>;
+  hero: { id: string; slug: string; name: string };
+  recipeParams: ReturnType<typeof parseRecipeCatalogParams> | null;
+};
 
-async function LibraryBody({ library, slug, hub, hero }: BodyProps) {
+async function LibraryBody({ library, slug, hub, hero, recipeParams }: BodyProps) {
   const tp = await getTranslations("discover.personalities.profile");
   const tl = await getTranslations("discover.personalities.libraries");
   const key: LibraryKey = library.key;
 
-  // Receitas: cards com a assinatura do chef e o endosso do herói quando a receita não é dele.
+  // Receitas: as assinadas pelo herói (com busca e filtros) e depois as que ele indica.
   if (library.kind === "content" && key === "receitas") {
-    return <RecipeList recipes={library.items} hero={hero} />;
+    return <ChefRecipes recipes={library.items} hero={hero} params={recipeParams ?? parseRecipeCatalogParams({})} />;
   }
 
   if (library.kind === "content") {
