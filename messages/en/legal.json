@@ -189,7 +189,8 @@
             "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log.",
             "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime.",
             "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos).",
-            "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos."
+            "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos.",
+            "recipeRatings": "<strong>Recipe ratings:</strong> if you completed a recipe, you can give it 1 to 5 stars. We keep the rating, the recipe and the date, linked to your account; nobody sees your rating, only the recipe's average (from 3 ratings, demo accounts excluded). You can change your rating at any time."
           },
           "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
         }
@@ -384,6 +385,11 @@
                 "data": "Recipe photos uploaded by heroes",
                 "period": "While the photo is part of the recipe",
                 "details": "A photo removed in the editor or from a deleted draft is deleted right away; if that deletion fails, or if an upload is never registered, the daily routine deletes the photo without a recipe after 24 hours. Photos of a recipe that has been live stay with the recipe."
+              },
+              "recipeRatings": {
+                "data": "Recipe ratings (stars)",
+                "period": "While the account exists",
+                "details": "They are deleted with the account; the recipe average is recalculated right away."
               }
             }
           },

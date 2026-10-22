@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { SkipLink } from "@/components/ui/skip-link";
 import { ToastProvider } from "@/components/ui/toast";
+import { getOrigin } from "@/lib/auth/origin";
 import { resolveTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
 import "./globals.css";
 
@@ -23,8 +24,10 @@ const dmMono = localFont({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("common.app");
+  const [t, origin] = await Promise.all([getTranslations("common.app"), getOrigin()]);
   return {
+    // base dos endereços absolutos (canonical, Open Graph): NEXT_PUBLIC_SITE_URL ou a origem da request
+    metadataBase: new URL(origin),
     title: { default: "Ultra Hero", template: "%s · Ultra Hero" },
     description: t("description"),
     applicationName: "Ultra Hero",

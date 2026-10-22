@@ -2,7 +2,8 @@ import { z } from "zod";
 import { CONTENT_TYPES, PILLARS, type ContentType, type Pillar } from "@/lib/supabase/helpers";
 
 // Parâmetros da URL do Explorar. Tudo que é filtro vive na URL (compartilhável, sem JS).
-export const EXPLORE_TABS = ["conteudos", "programas", "produtos", "listas"] as const;
+// A aba "receitas" tem filtros próprios (decisão 1), lidos por parseRecipeCatalogParams.
+export const EXPLORE_TABS = ["conteudos", "receitas", "programas", "produtos", "listas"] as const;
 export type ExploreTab = (typeof EXPLORE_TABS)[number];
 
 export const DIFFICULTIES = ["beginner", "intermediate", "advanced"] as const;

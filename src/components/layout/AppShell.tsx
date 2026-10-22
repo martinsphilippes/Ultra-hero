@@ -28,9 +28,12 @@ export async function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <DemoBanner initiallyDismissed={demoDismissed} />
+      {/* Impressão (receitas): só o conteúdo da página; a casca do app fica de fora */}
+      <div className="print:hidden">
+        <DemoBanner initiallyDismissed={demoDismissed} />
+      </div>
 
-      <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top">
+      <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-4 px-gutter">
           <Link
             href="/"
@@ -59,15 +62,17 @@ export async function AppShell({ children }: { children: ReactNode }) {
       <main
         id="main"
         tabIndex={-1}
-        className="mx-auto w-full max-w-content flex-1 px-gutter pb-[calc(var(--spacing-bottomnav)+env(safe-area-inset-bottom)+1.5rem)] pt-6 outline-none md:pb-12"
+        className="mx-auto w-full max-w-content flex-1 px-gutter pb-[calc(var(--spacing-bottomnav)+env(safe-area-inset-bottom)+1.5rem)] pt-6 outline-none md:pb-12 print:max-w-none print:p-0"
       >
         {children}
-        <footer className="mt-12 border-t border-border pt-4">
+        <footer className="mt-12 border-t border-border pt-4 print:hidden">
           <LegalLinks />
         </footer>
       </main>
 
-      <BottomNav />
+      <div className="print:hidden">
+        <BottomNav />
+      </div>
     </div>
   );
 }

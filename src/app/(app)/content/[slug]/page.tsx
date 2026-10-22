@@ -14,7 +14,6 @@ import {
   LanguageNotice,
   LockCard,
   ReadingTracker,
-  RecipeBody,
   RelatedProducts,
   TeaserCard,
   UnavailableCard,
@@ -22,16 +21,21 @@ import {
   ViewTracker,
   WorkoutBody,
   parseGuideBody,
-  parseRecipeBody,
   parseVideoBody,
   parseWorkoutBody,
   type DisclaimerKind,
 } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
-import { AllergyReminder } from "@/components/recipes/AllergyReminder";
+import { recipeCategoryOptions } from "@/components/recipes/catalog/RecipeCatalog";
 import { RecipeGate } from "@/components/recipes/RecipeGate";
+import { CookModeLink } from "@/components/recipes/view/CookModeLink";
+import { RecipeGallery } from "@/components/recipes/view/RecipeGallery";
+import { RecipeRating } from "@/components/recipes/view/RecipeRating";
+import { RecipeShareButtons } from "@/components/recipes/view/RecipeShareButtons";
 import { RecipeView } from "@/components/recipes/view/RecipeView";
+import { RelatedRecipes } from "@/components/recipes/view/RelatedRecipes";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
+import { loadRecipeLd, loadRatingState } from "@/components/recipes/view/recipe-page-data";
 import { AddToListButton, CompleteButton, FavoriteButton, NotInterestedButton } from "@/components/library";
 import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -41,7 +45,9 @@ import { loadLocalizedBody } from "@/lib/catalog/localized-body";
 import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
 import { getRecipeGate } from "@/lib/recipes/gate";
 import { isLive, isRecipeMediaUrl } from "@/lib/recipes/media";
+import { recipesSeoIndexEnabled } from "@/lib/recipes/jsonld";
 import { hasRecipeDetails } from "@/lib/recipes/rows";
+import { parseServingsParam } from "@/lib/recipes/scale";
 import { createClient } from "@/lib/supabase/server";
 import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { resolveVideoSource } from "@/lib/video";
@@ -83,6 +89,7 @@ type ContentDetail = {
 const TYPE_ICON = { video: Play, recipe: ChefHat, workout: Dumbbell, guide: BookOpen, article: FileText } as const;
 
 type Params = { params: Promise<{ slug: string }> };
+type PageProps = Params & { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 // Memoizado por request: generateMetadata e a página compartilham a mesma consulta.
 const loadContent = cache(async (slug: string): Promise<ContentDetail | null> => {
@@ -91,15 +98,33 @@ const loadContent = cache(async (slug: string): Promise<ContentDetail | null> =>
   return (data as unknown as ContentDetail | null) ?? null;
 });
 
+// SEO (fase 3): endereço canônico sem parâmetros (?porcoes= não vira outra página), Open Graph com a
+// capa e cartão grande. Placeholder SVG não serve de prévia social e fica de fora.
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const content = await loadContent(slug);
   if (!content) return {};
-  return { title: content.title, description: content.summary ?? undefined };
+  const path = `/content/${content.slug}`;
+  const image = content.cover_url && !content.cover_url.endsWith(".svg") ? content.cover_url : null;
+  const description = content.summary ?? undefined;
+  return {
+    title: content.title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: "article",
+      url: path,
+      title: content.title,
+      description,
+      siteName: "Ultra Hero",
+      ...(image ? { images: [{ url: image, alt: content.title }] } : {}),
+    },
+    twitter: { card: image ? "summary_large_image" : "summary", title: content.title, description, ...(image ? { images: [image] } : {}) },
+  };
 }
 
-export default async function ContentPage({ params }: Params) {
-  const { slug } = await params;
+export default async function ContentPage({ params, searchParams }: PageProps) {
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
   const [content, user, locale, t, tc, tcat] = await Promise.all([
     loadContent(slug),
     getUser(),
@@ -184,15 +209,56 @@ export default async function ContentPage({ params }: Params) {
   const readingAuto = (content.type === "guide" || content.type === "article") && mode === "auto";
 
   // Receita só abre depois da etapa demonstrativa (vale para todos, inclusive quem tem acesso ao módulo).
-  const recipeGate = content.type === "recipe" ? await getRecipeGate() : null;
+  const isRecipe = content.type === "recipe";
+  const recipeGate = isRecipe ? await getRecipeGate() : null;
   const recipeBlocked = Boolean(recipeGate && !recipeGate.completed);
-  // Receita com recipe_details (as novas e as antigas convertidas pela 0029) usa o renderizador
-  // estruturado; sem detalhes (banco sem a 0027) fica a página antiga, que lê o corpo v1.
+  const recipeOpen = isRecipe && state === "accessible" && !recipeBlocked;
+  // Toda receita é estruturada desde a 0029 (o ramo do corpo v1 saiu na fase 3). Fechada, mostra só a
+  // parte pública (a mesma do card: fotos, história, tempos, porções, alérgenos e dietas declarados)
+  // e o bloqueio no lugar de ingredientes e preparo (P2). Sem recipe_details: indisponível.
   const live = isLive(content.status, content.publish_at);
   const structured =
-    content.type === "recipe" && state === "accessible" && !recipeBlocked && (await hasRecipeDetails(supabase, content.id))
-      ? await loadRecipeView(supabase, { contentId: content.id, title, premium: content.access_level === "premium", userId: user?.id, locale: uiLocale, poster: content.cover_url })
+    isRecipe && (await hasRecipeDetails(supabase, content.id))
+      ? await loadRecipeView(supabase, {
+          contentId: content.id,
+          title,
+          premium: content.access_level === "premium",
+          userId: user?.id,
+          locale: uiLocale,
+          poster: content.cover_url,
+          publicOnly: !recipeOpen,
+        })
       : null;
+  const servingsParam = parseServingsParam(query.porcoes);
+  const [rating, categories] =
+    recipeOpen && structured
+      ? await Promise.all([loadRatingState(supabase, { contentId: content.id, creatorId: content.creator_id, userId: user?.id ?? null, completed: Boolean(completedAt) }), recipeCategoryOptions()])
+      : [null, null];
+  // JSON-LD só com RECIPES_SEO_INDEX (P6); ingredientes e preparo só para quem abre a receita
+  const recipeJsonLd =
+    isRecipe && structured && live && recipesSeoIndexEnabled()
+      ? await loadRecipeLd({
+          path,
+          title,
+          summary,
+          cover: content.cover_url,
+          publishedAt: content.published_at,
+          tags: content.tags,
+          chef: content.creator,
+          model: structured.model,
+          open: recipeOpen,
+          categoryLabels: categories,
+        })
+      : null;
+  const recipeLocked = recipeOpen ? null : recipeBlocked ? (
+    <RecipeGate nextPath={path} />
+  ) : state === "visitor" ? (
+    <TeaserCard nextPath={path} />
+  ) : state === "locked" ? (
+    <LockCard moduleName={content.required_module?.name ?? tcat("premium")} />
+  ) : (
+    <UnavailableCard />
+  );
 
   const TypeIcon = TYPE_ICON[content.type];
   const cover = content.cover_url ?? `/placeholders/cover-${content.pillar}-1.svg`;
@@ -203,10 +269,18 @@ export default async function ContentPage({ params }: Params) {
 
       {/* Cabeçalho com capa */}
       <header className="flex flex-col gap-5">
-        <Link href="/explore" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+        <Link
+          href={isRecipe ? "/explore?tab=receitas" : "/explore"}
+          className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus print:hidden"
+        >
           ← {t("backToExplore")}
         </Link>
-        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[3/1]">
+        {structured && structured.model.photos.length > 0 ? (
+          <div className="print:hidden">
+            <RecipeGallery photos={structured.model.photos} unoptimized={!live} />
+          </div>
+        ) : (
+        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[3/1] print:hidden">
           {/* foto de receita fora do ar: o otimizador busca sem a sessão e não a veria */}
           <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
@@ -221,6 +295,7 @@ export default async function ContentPage({ params }: Params) {
             )}
           </div>
         </div>
+        )}
 
         <div className="flex flex-col gap-3">
           <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 type-caption text-fg-muted" aria-label={t("summaryLabel")}>
@@ -270,12 +345,18 @@ export default async function ContentPage({ params }: Params) {
             </Link>
           )}
 
-          {user && (
-            <div className="flex flex-wrap items-center gap-2 pt-1" role="group" aria-label={t("actionsLabel")}>
-              <FavoriteButton contentId={content.id} initial={isFavorite} path={path} />
-              <AddToListButton contentId={content.id} />
-              <NotInterestedButton contentId={content.id} initial={notInterested} />
-              {state === "accessible" && !recipeBlocked && (
+          {(user || isRecipe) && (
+            <div className="flex flex-wrap items-center gap-2 pt-1 print:hidden" role="group" aria-label={t("actionsLabel")}>
+              {user ? (
+                <>
+                  <FavoriteButton contentId={content.id} initial={isFavorite} path={path} />
+                  <AddToListButton contentId={content.id} />
+                  <NotInterestedButton contentId={content.id} initial={notInterested} />
+                </>
+              ) : null}
+              {isRecipe ? <RecipeShareButtons title={title} path={path} canPrint={Boolean(recipeOpen && structured)} /> : null}
+              {recipeOpen && structured ? <CookModeLink path={path} /> : null}
+              {user && state === "accessible" && !recipeBlocked && (
                 <CompleteButton
                   contentId={content.id}
                   mode={mode}
@@ -295,15 +376,34 @@ export default async function ContentPage({ params }: Params) {
       {showLanguageNotice && <LanguageNotice sourceLocale={content.source_locale} />}
       <DisclaimerBanner kind={content.disclaimer_kind} />
 
-      {/* Corpo por estado de acesso; receitas passam antes pela etapa demonstrativa */}
-      {recipeBlocked && <RecipeGate nextPath={path} />}
-      {!recipeBlocked && state === "visitor" && <TeaserCard nextPath={path} />}
-      {!recipeBlocked && state === "locked" && <LockCard moduleName={content.required_module?.name ?? tcat("premium")} />}
-      {!recipeBlocked && state === "unavailable" && <UnavailableCard />}
-      {!recipeBlocked && state === "accessible" && content.type === "recipe" && recipeGate ? (
-        <AllergyReminder restrictions={recipeGate.restrictions} allergies={recipeGate.allergies} path={path} />
-      ) : null}
-      {!recipeBlocked && state === "accessible" && (
+      {recipeJsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: recipeJsonLd }} /> : null}
+
+      {/* Receita: a parte pública sempre; ingredientes e preparo só com a etapa e o acesso (P2) */}
+      {isRecipe &&
+        (structured ? (
+          <RecipeView
+            contentId={content.id}
+            model={structured.model}
+            video={structured.video}
+            unoptimizedImages={!live}
+            showGallery={false}
+            mode={recipeOpen ? "full" : "public"}
+            gate={recipeLocked}
+            initialServings={servingsParam}
+            markedAllergies={recipeGate?.allergies ?? []}
+            path={path}
+            categoryLabels={categories ? Object.fromEntries(categories.map((c) => [c.code, c.label])) : undefined}
+            footer={rating?.canRate ? <RecipeRating contentId={content.id} path={path} initial={rating.stars} /> : null}
+          />
+        ) : (
+          (recipeLocked ?? <UnavailableCard />)
+        ))}
+
+      {/* Corpo por estado de acesso (demais tipos) */}
+      {!isRecipe && state === "visitor" && <TeaserCard nextPath={path} />}
+      {!isRecipe && state === "locked" && <LockCard moduleName={content.required_module?.name ?? tcat("premium")} />}
+      {!isRecipe && state === "unavailable" && <UnavailableCard />}
+      {!isRecipe && state === "accessible" && (
         <div className="flex flex-col gap-6">
           {readingAuto && !completedAt && <ReadingTracker contentId={content.id} targetId="content-body" threshold={threshold} path={path} />}
           {content.type === "video" && video && (
@@ -320,12 +420,6 @@ export default async function ContentPage({ params }: Params) {
               path={path}
             />
           )}
-          {content.type === "recipe" &&
-            (structured ? (
-              <RecipeView model={structured.model} video={structured.video} unoptimizedImages={!live} />
-            ) : (
-              <RecipeBody recipe={parseRecipeBody(body)} />
-            ))}
           {content.type === "workout" && <WorkoutBody workout={parseWorkoutBody(body)} />}
           {(content.type === "guide" || content.type === "article") && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
         </div>
@@ -341,7 +435,7 @@ export default async function ContentPage({ params }: Params) {
       </p>
 
       {content.tags.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5" aria-label={t("tags")}>
+        <ul className="flex flex-wrap gap-1.5 print:hidden" aria-label={t("tags")}>
           {content.tags.map((tag) => (
             <li key={tag}>
               <Badge variant="neutral">#{tag}</Badge>
@@ -350,9 +444,15 @@ export default async function ContentPage({ params }: Params) {
         </ul>
       )}
 
-      <RelatedProducts contentId={content.id} />
+      <div className="print:hidden">
+        <RelatedProducts contentId={content.id} />
+      </div>
 
-      {content.creator && more.length > 0 && (
+      {isRecipe && structured ? (
+        <RelatedRecipes contentId={content.id} chef={content.creator ? { id: content.creator.id, slug: content.creator.slug, name: content.creator.name } : null} categories={structured.model.categories} />
+      ) : null}
+
+      {!isRecipe && content.creator && more.length > 0 && (
         <Section id="more-from-creator" title={t("moreFromCreator", { name: content.creator.name })} href={`/personalities/${content.creator.slug}`} seeAllLabel={tc("actions.seeAll")}>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {more.map((item) => (
@@ -362,7 +462,7 @@ export default async function ContentPage({ params }: Params) {
         </Section>
       )}
 
-      <section aria-label={t("feedbackTitle")} className="pt-2">
+      <section aria-label={t("feedbackTitle")} className="pt-2 print:hidden">
         <FeedbackWidget context={`content:${content.id}`} />
       </section>
     </div>

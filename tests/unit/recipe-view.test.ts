@@ -56,7 +56,8 @@ describe("buildRecipeViewModel (g1 a partir das tabelas)", () => {
       ["Molho de ervas", "3 colheres", null, true, false],
       ["Sal", null, null, false, true],
     ]);
-    expect(model.ingredients[0].substitutions).toEqual([{ name: "Tofu firme", amount: "300 g", note: null }]);
+    // a quantidade crua vai junto para o ajuste de porções recalcular no navegador (fase 3)
+    expect(model.ingredients[0].substitutions).toEqual([{ name: "Tofu firme", amount: "300 g", note: null, quantity: 300, unit: "g", quantityText: null }]);
   });
   it("etapas numeradas pela posição, com duração, temperatura, foto, dica e ingredientes da etapa", () => {
     expect(model.steps.map((s) => [s.number, s.instruction, s.durationSeconds, s.temperatureC])).toEqual([

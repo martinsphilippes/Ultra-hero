@@ -65,6 +65,8 @@ export default async function AdminRecipePreviewPage({ params }: Params) {
         </Button>
       </div>
       <RecipeView
+        contentId={id}
+        syncUrl={false}
         model={model}
         video={video}
         unoptimizedImages={!isLive(content.status, content.publish_at)}

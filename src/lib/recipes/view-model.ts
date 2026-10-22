@@ -4,11 +4,15 @@
 import type { RecipeAllergen, RecipeDiet, RecipeUnit } from "./codes";
 import { formatAmount } from "./quantity";
 import { recipeMediaUrl } from "./media";
+import { scaleQuantity } from "./scale";
 import type { RecipeMediaRow, RecipeNutritionRow, RecipeRows } from "./rows";
 
 export type UnitLabels = Record<RecipeUnit, readonly [string, string]>;
 
-export type ViewIngredient = {
+/** Quantidade crua (para o ajuste de porções recalcular no navegador). */
+export type ViewQuantity = { quantity: number | null; unit: RecipeUnit | null; quantityText: string | null };
+
+export type ViewIngredient = ViewQuantity & {
   id: string;
   name: string;
   /** "300 g", "2 colheres de sopa", "1/2 maço", "3 colheres" (texto livre) ou null ("a gosto" vem à parte). */
@@ -16,7 +20,7 @@ export type ViewIngredient = {
   toTaste: boolean;
   optional: boolean;
   note: string | null;
-  substitutions: { name: string; amount: string | null; note: string | null }[];
+  substitutions: (ViewQuantity & { name: string; amount: string | null; note: string | null })[];
 };
 
 export type ViewStep = {
@@ -106,7 +110,17 @@ export function buildRecipeViewModel(rows: RecipeRows, opts: { labels: UnitLabel
         toTaste: i.to_taste,
         optional: i.optional,
         note: i.note,
-        substitutions: i.substitutions.map((s) => ({ name: s.name, amount: formatIngredientAmount(s.quantity, s.unit, s.quantity_text, opts.labels, opts.locale), note: s.note })),
+        quantity: i.to_taste ? null : i.quantity,
+        unit: i.to_taste ? null : i.unit,
+        quantityText: i.to_taste ? null : i.quantity_text,
+        substitutions: i.substitutions.map((s) => ({
+          name: s.name,
+          amount: formatIngredientAmount(s.quantity, s.unit, s.quantity_text, opts.labels, opts.locale),
+          note: s.note,
+          quantity: s.quantity,
+          unit: s.unit,
+          quantityText: s.quantity_text,
+        })),
       })),
     steps: [...rows.steps]
       .sort((a, b) => a.position - b.position)
@@ -142,6 +156,20 @@ export function buildRecipeViewModel(rows: RecipeRows, opts: { labels: UnitLabel
     ratingCount,
     ratingAvg: ratingCount >= 3 && d ? Math.round((d.rating_sum / ratingCount) * 10) / 10 : null,
   };
+}
+
+export type ScaledAmount = { text: string | null; approx: boolean; scaled: boolean };
+
+/**
+ * Quantidade de um item com o fator de porções: só o número muda ("300 g" → "600 g"); texto livre
+ * e "a gosto" voltam como estão com `scaled: false` (a tela diz "não ajustado automaticamente").
+ */
+export function scaledAmount(item: ViewQuantity, factor: number, labels: UnitLabels, locale = "pt-BR"): ScaledAmount {
+  if (item.quantity === null) {
+    return { text: formatIngredientAmount(null, item.unit, item.quantityText, labels, locale), approx: false, scaled: false };
+  }
+  const { quantity, approx } = scaleQuantity(item.quantity, item.unit, factor);
+  return { text: formatIngredientAmount(quantity, item.unit, null, labels, locale), approx, scaled: true };
 }
 
 /** "25 min", "1 h 05 min", "45 s" para a duração da etapa. */

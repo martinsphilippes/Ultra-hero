@@ -46,20 +46,22 @@ test.describe("hub do herói", () => {
     await expectNoSeriousAxe(page);
   });
 
-  test("clicar em Receitas abre a biblioteca com o cabeçalho de volta e, para visitante, a etapa demonstrativa", async ({ page }) => {
+  test("clicar em Receitas abre a biblioteca com o cabeçalho de volta e, para visitante, os cards com a faixa da etapa", async ({ page }) => {
     await page.goto("/personalities/helena-vilar");
     const recipes = libraries(page).filter({ hasText: "Receitas" });
     await recipes.click();
     await expect(page).toHaveURL(/\/personalities\/helena-vilar\/receitas$/);
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Receitas");
-    await expect(page.getByText("Helena Vilar", { exact: true })).toBeVisible();
+    // os cards também levam o nome da chef: o primeiro é o sobretítulo do cabeçalho
+    await expect(page.getByText("Helena Vilar", { exact: true }).first()).toBeVisible();
     const back = page.getByRole("link", { name: "Voltar para Helena Vilar" });
     await expect(back).toBeVisible();
     await expect(back).toHaveAttribute("href", "/personalities/helena-vilar");
     await expect(page).toHaveTitle(/Receitas · Helena Vilar/);
-    // Receitas só abrem depois da etapa demonstrativa (vale para todos).
-    await expect(page.getByTestId("recipe-gate")).toBeVisible();
+    // P2 (fase 3): os cards ficam abertos a todos; a faixa convida para a etapa que abre a receita.
+    await expect(page.getByTestId("recipe-invite")).toBeVisible();
+    await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     // quadro: só capa + ícones, nome acessível no sr-only, link para o conteúdo
     await expectNoSeriousAxe(page);
 

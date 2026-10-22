@@ -189,7 +189,8 @@
             "partners": "<strong>Parceiros e administração:</strong> se você for convidado como parceiro, o e-mail para o qual o convite foi enviado, os dados do perfil de parceiro e o que você enviar. As principais ações feitas pelo painel de administração, como mudanças de papéis, convites, moderação e configurações, ficam registradas em auditoria.",
             "recipeStep": "<strong>Etapa de receitas:</strong> o aceite do aviso e as restrições e alergias que você marcar (de uma lista fixa, sem texto livre). Alergias e restrições são dados sensíveis de saúde: usamos só para lembrar você na página de cada receita, com o seu consentimento, e você pode mudar ou apagar quando quiser.",
             "heroVideos": "<strong>Vídeos dos heróis:</strong> se você é herói e grava ou envia um vídeo pelo app, o arquivo vai direto do seu aparelho para o Cloudflare Stream. O app guarda só o identificador do vídeo, o conteúdo ao qual ele pertence e as datas de envio e de descarte (para limitar envios e limpar vídeos abandonados).",
-            "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é herói e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos heróis."
+            "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é herói e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos heróis.",
+            "recipeRatings": "<strong>Avaliações de receitas:</strong> se você concluiu uma receita, pode dar de 1 a 5 estrelas. Guardamos a nota, a receita e a data, ligadas à sua conta; ninguém vê a sua nota, só a média da receita (a partir de 3 avaliações, sem contar as contas de demonstração). Você pode trocar a nota quando quiser."
           },
           "p2": "Os provedores de infraestrutura também registram dados técnicos de acesso, como endereço IP, data e hora e informações do navegador, em seus próprios logs operacionais."
         }
@@ -384,6 +385,11 @@
                 "data": "Fotos de receitas enviadas por heróis",
                 "period": "Enquanto a foto fizer parte da receita",
                 "details": "Foto removida no editor ou de rascunho excluído é apagada na hora; se essa exclusão falhar, ou se um envio não chegar a ser registrado, a rotina diária apaga a foto sem receita depois de 24 horas. Fotos de receita que já esteve no ar ficam com a receita."
+              },
+              "recipeRatings": {
+                "data": "Avaliações de receitas (estrelas)",
+                "period": "Enquanto a conta existir",
+                "details": "São apagadas junto com a conta; a média da receita é recalculada na hora."
               }
             }
           },

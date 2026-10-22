@@ -7,14 +7,23 @@ import { resolveVideoSource } from "@/lib/video";
 import type { ResolvedVideo } from "@/lib/video/types";
 import { buildViewModel } from "./RecipeView";
 
-type Input = { contentId: string; title: string; premium: boolean; userId?: string; locale?: string; poster?: string | null };
+type Input = {
+  contentId: string;
+  title: string;
+  premium: boolean;
+  userId?: string;
+  locale?: string;
+  poster?: string | null;
+  /** Receita fechada (sem a etapa ou sem acesso): só a parte pública, sem ler nem resolver o vídeo. */
+  publicOnly?: boolean;
+};
 
 /**
  * Tabelas da receita → modelo do RecipeView + vídeo resolvido no servidor (as chaves do provedor
  * nunca chegam ao navegador). Receita sem vídeo não mostra a seção ("none" não vira player simulado).
  */
 export async function loadRecipeView(supabase: SupabaseClient<Database>, input: Input): Promise<{ model: RecipeViewModel; video: ResolvedVideo | null }> {
-  const rows = await loadRecipeRows(supabase, input.contentId, { withVideo: true });
+  const rows = await loadRecipeRows(supabase, input.contentId, { withVideo: !input.publicOnly });
   const model = await buildViewModel(rows, input.title);
   const v = rows.video;
   let video: ResolvedVideo | null = null;

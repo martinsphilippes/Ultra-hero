@@ -392,3 +392,15 @@
   background-size: 200% 100%;
   animation: var(--animate-shimmer);
 }
+
+/* Impressão (receita): fundo branco, texto escuro e sem sombras; a casca do app sai por print:hidden */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  * {
+    box-shadow: none !important;
+  }
+}

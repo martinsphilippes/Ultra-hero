@@ -81,15 +81,9 @@
     }
   },
   "library": {
-    "type": "Recipe",
     "signedBy": "Recipe by {chef}",
     "endorsedBy": "Recommended by {hero}",
     "endorsementNote": "{hero} recommends these recipes. Each one is signed by the chef who created it."
-  },
-  "reminder": {
-    "title": "Check the ingredients",
-    "description": "You told us: {items}. This recipe has no professional review; check every ingredient before cooking.",
-    "edit": "Review restrictions and allergies"
   },
   "structured": {
     "legacyEditor": {
@@ -791,5 +785,125 @@
     "sent": "Request sent for approval.",
     "withdrawn": "Request withdrawn.",
     "statusRejected": "Rejected by the administration. Edit the text and send it again."
+  },
+  "catalog": {
+    "search": {
+      "label": "Search recipes",
+      "placeholder": "Name, chef or ingredient",
+      "submit": "Search",
+      "clear": "Clear search",
+      "hint": "Ingredient search covers the recipes you can open."
+    },
+    "filters": {
+      "quick": "Filter shortcuts",
+      "button": "Filters",
+      "open": "Open",
+      "close": "Close",
+      "title": "Filter recipes",
+      "category": "Category",
+      "time": "Total time",
+      "timeUpTo": "Up to {n} min",
+      "difficulty": "Difficulty",
+      "any": "Any",
+      "diets": "Diets",
+      "dietsHint": "Only recipes where the chef declared the diet.",
+      "allergens": "Without allergen",
+      "allergensHint": "Only recipes where the chef declared the allergens. There is no professional review: always check the ingredients.",
+      "declaredShort": "declared by the chef",
+      "without": "No {allergen}",
+      "sort": "Sort",
+      "sorts": {
+        "relevance": "Relevance",
+        "recent": "Most recent",
+        "quick": "Quickest"
+      },
+      "apply": "Show recipes",
+      "clearAll": "Clear all",
+      "active": "Active filters",
+      "remove": "Remove filter: {label}"
+    },
+    "results": {
+      "heading": "Recipes",
+      "headingChef": "Recipes by {name}",
+      "resultsFor": "Recipes for “{q}”",
+      "emptyTitle": "No recipes found",
+      "emptyDescription": "Try other words or remove some filters.",
+      "emptyNoneTitle": "No recipes published yet",
+      "emptyNoneDescription": "Chefs' recipes show up here as soon as they are published.",
+      "clearFilters": "Clear filters",
+      "errorTitle": "Couldn't load the recipes",
+      "errorDescription": "Check your connection and try again."
+    },
+    "grid": {
+      "count": "{count, plural, =1 {1 recipe in the list} other {# recipes in the list}}",
+      "loaded": "{count, plural, =0 {No more recipes.} =1 {1 more recipe loaded.} other {# more recipes loaded.}}",
+      "end": "You've seen all the recipes.",
+      "loadMore": "Load more",
+      "loading": "Loading recipes…",
+      "error": "Couldn't load more recipes.",
+      "retry": "Try again"
+    },
+    "card": {
+      "minutes": "{m} min",
+      "hours": "{m, plural, =0 {{h} h} other {{h} h {m} min}}",
+      "servings": "{n, plural, =1 {1 serving} other {# servings}}",
+      "allergensUnknown": "Allergens not provided",
+      "allergensNone": "No allergens declared",
+      "allergensDeclared": "Contains: {list}",
+      "dietsLabel": "Diets declared by the chef"
+    },
+    "invite": {
+      "title": "Unlock the recipes with the demo step",
+      "description": "Cards are open to everyone. To see ingredients, method and cooking mode, complete the demo step ({total} quick steps).",
+      "action": "Start the step",
+      "visitorAction": "Sign in and start the step"
+    }
+  },
+  "page": {
+    "servings": "Servings",
+    "servingsLess": "One serving less",
+    "servingsMore": "One serving more",
+    "servingsInput": "Number of servings",
+    "servingsAnnounce": "Quantities for {n, plural, =1 {1 serving} other {# servings}}.",
+    "servingsPrint": "Quantities for {n, plural, =1 {1 serving} other {# servings}}",
+    "servingsReset": "Back to {n}",
+    "notScaled": "Not adjusted automatically",
+    "checklistHint": "Tick what you've set aside. Ticks stay on this device only, for 24 hours.",
+    "checksClear": "Clear ticks",
+    "checksCleared": "Ticks cleared.",
+    "checkIngredient": "Set aside: {name}",
+    "share": "Share",
+    "print": "Print",
+    "linkCopied": "Link copied.",
+    "copyManually": "Copy the recipe address:",
+    "cookMode": "Cooking mode",
+    "allergyMatch": "This recipe declares {allergens}, which you marked.",
+    "allergyMatchHint": "The allergen was declared by the chef and there is no professional review. Check every ingredient before cooking.",
+    "allergyMatchEdit": "Review restrictions and allergies",
+    "rating": {
+      "legend": "Your rating",
+      "star": "{n, plural, =1 {1 star} other {# stars}}",
+      "hint": "You completed this recipe: rate it from 1 to 5.",
+      "yours": "Your rating: {n} of 5.",
+      "saved": "Rating saved.",
+      "errors": {
+        "invalid": "Pick 1 to 5 stars.",
+        "unauthenticated": "Sign in to rate.",
+        "forbidden": "Only people who completed the recipe can rate it, and chefs can't rate their own.",
+        "failed": "Couldn't save the rating. Try again."
+      }
+    },
+    "related": {
+      "moreFrom": "More from {chef}",
+      "similar": "Similar recipes"
+    }
+  },
+  "chefProfile": {
+    "specialties": "Specialties",
+    "own": "Signed by {hero}",
+    "endorsed": "Recommended by {hero}",
+    "filtersScope": "Search and filters apply to the recipes signed by {hero}.",
+    "endorsedHidden": "{count, plural, =1 {1 recommended recipe is hidden while a search or filter is active.} other {# recommended recipes are hidden while a search or filter is active.}}",
+    "showAll": "Show all"
   }
 }

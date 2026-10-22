@@ -7,10 +7,13 @@ import { ACCESS_LEVELS, DIFFICULTIES, MAX_QUERY_LENGTH } from "@/components/disc
 import { exploreFeedPage } from "@/components/discover/explore/feed";
 import { renderContentTiles } from "@/components/discover/explore/renderTiles";
 import { MAX_OFFSET, TILE_PAGE_SIZE } from "@/components/discover/explore/tiles";
+import { renderRecipeCards } from "@/components/recipes/catalog/renderRecipeCards";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
 import { CONTENT_TYPES, PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import { fetchRecipeCatalog } from "@/lib/recipes/catalog";
+import { catalogFilterNames, recipeCatalogParamsSchema } from "@/lib/recipes/catalog-params";
 
 // Ações do Explorar: paginação da grade, evento de busca e listas pessoais (criar/renomear/excluir/remover item).
 // Tudo validado com Zod; a posse das listas é garantida pela RLS (custom_lists / list_items).
@@ -62,6 +65,39 @@ export async function loadMoreTiles(input: LoadMoreTilesInput): Promise<Result<{
   } catch (error) {
     return fail(error);
   }
+}
+
+// ---------------------------------------------------------------- catálogo de receitas: carregar mais
+const recipesSchema = z.object({
+  params: recipeCatalogParamsSchema,
+  creator: z.uuid().nullable(),
+  // cursor de recipe_catalog: "rn" (relevância) ou "chave|uuid"; a função recusa o malformado
+  cursor: z.string().min(1).max(120),
+});
+
+export type LoadMoreRecipesInput = z.input<typeof recipesSchema>;
+
+// Próxima página do catálogo (aba Receitas ou biblioteca do chef), com os cards já renderizados.
+export async function loadMoreRecipes(input: LoadMoreRecipesInput): Promise<Result<{ nodes: ReactNode; count: number; nextCursor: string | null }>> {
+  const parsed = recipesSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  try {
+    const supabase = await createClient();
+    const page = await fetchRecipeCatalog(supabase, parsed.data.params, { creator: parsed.data.creator, cursor: parsed.data.cursor });
+    return { ok: true, nodes: renderRecipeCards(page.items), count: page.items.length, nextCursor: page.nextCursor };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// Evento recipe.catalog_filter: só os NOMES dos filtros usados, nunca os valores (dieta e alergia
+// são dado de saúde) nem o texto buscado.
+export async function trackRecipeCatalogFilter(input: { params: z.input<typeof recipeCatalogParamsSchema>; scope: "explore" | "chef" }): Promise<void> {
+  const parsed = z.object({ params: recipeCatalogParamsSchema, scope: z.enum(["explore", "chef"]) }).safeParse(input);
+  if (!parsed.success) return;
+  const names = catalogFilterNames(parsed.data.params);
+  if (names.length === 0) return;
+  await trackEvent("recipe.catalog_filter", { filters: names.join(","), scope: parsed.data.scope });
 }
 
 // Evento "search" sem o texto digitado (só o tamanho e os filtros).

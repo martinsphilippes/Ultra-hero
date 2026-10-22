@@ -24,6 +24,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 
 ## Integridade do produto
 - [x] **(B)** Receitas fase 1 (0027–0029): app publicado antes (E2E 146/146 contra produção com o banco antigo), 0027 e 0028 aplicadas, 0029 com dry-run (41 ingredientes e 28 etapas literais, 8 receitas) e bloco final; E2E 146/146 depois e nenhum erro de execução na Vercel (22/10/2026)
+- [ ] **(B)** Receitas fase 3 (catálogo, página da receita e perfil do chef; sem migração): `RECIPES_SEO_INDEX` **desligada** na Vercel (P6: sem sitemap de receitas nem JSON-LD enquanto os chefs forem fictícios); conferir em produção `/robots.txt` (sem `Sitemap:`), `/sitemap.xml` vazio e uma receita sem `application/ld+json`
 - [ ] **(B)** Conteúdo publicado sempre com regra de acesso e corpo (consulta: `content where status='published' and (access_level is null or id not in (select content_id from content_bodies))` = 0)
 - [ ] **(B)** Rótulos de demonstração em catálogo, carrinho, checkout, pedidos, planos
 - [ ] Personalidades marcadas como fictícias; nenhuma imagem/nome real
