@@ -24,6 +24,9 @@
     "back": "Profile",
     "count": "{n, plural, =1 {1 item} other {# items}} · {checked, plural, =0 {none bought} =1 {1 bought} other {# bought}}",
     "clearChecked": "Clear bought items",
+    "clearCheckedTitle": "Remove the bought items?",
+    "clearCheckedDescription": "{n, plural, =1 {1 bought item will be removed from the list} other {# bought items will be removed from the list}}. This can't be undone.",
+    "clearCheckedConfirm": "Remove bought items",
     "clearAll": "Clear list",
     "clearAllTitle": "Clear the shopping list?",
     "clearAllDescription": "This deletes every item on the list, from all recipes. It cannot be undone.",
@@ -105,8 +108,15 @@
       "product_not_found": "Product not found.",
       "invalid_input": "Choose a product from the list.",
       "unavailable": "Ingredient links are not available in this environment yet.",
-      "generic": "We couldn't save the suggestion. Try again."
+      "generic": "We couldn't save the suggestion. Try again.",
+      "already_decided": "This product has already been decided by the admin team for this ingredient (approved, rejected or suspended). Pick another product or ask the admin team for a new review."
     }
+  },
+  "suspension": {
+    "replaced": "Replaced by another approved product",
+    "product_significant_change": "The product changed and needs a new review",
+    "ingredient_changed": "The ingredient changed and the product needs a new review",
+    "admin": "Suspended by the admin team"
   },
   "admin": {
     "tabsLabel": "Link type",
@@ -118,8 +128,7 @@
     "filters": {
       "status": "Status",
       "recipe": "Recipe",
-      "product": "Product",
-      "all": "All"
+      "product": "Product"
     },
     "table": {
       "caption": "Links between ingredients and products",

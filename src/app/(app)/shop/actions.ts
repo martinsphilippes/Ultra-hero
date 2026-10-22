@@ -4,13 +4,15 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { parseRpcError, rpcErrorToString } from "@/components/commerce/lib/errors";
+import { isCommerceEnabled } from "@/components/commerce/lib/settings";
 import { readExpectedPrices, writeExpectedPrices } from "@/components/commerce/server/cookies";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
 // Ações da loja de demonstração: adicionar ao carrinho de teste e eventos de analytics.
-// Regras (produto comprável, estoque demo, limite 20) vivem na função SQL cart_set_item.
+// Regras (produto comprável, estoque demo, limite 20) vivem na função SQL cart_set_item; o kill switch
+// do comércio é conferido aqui (cart_set_item não o lê).
 
 export type CommerceResult<T extends object = Record<never, never>> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -29,6 +31,10 @@ export async function addToCart(input: { productId: string; quantity: number; pr
   if (!user) return { ok: false, error: "unauthenticated" };
   try {
     const supabase = await createClient();
+    // kill switch: cart_set_item não confere "commerce.enabled" (só checkout_cart), então a action barra
+    // aqui — uma aba aberta antes do desligamento ou uma chamada direta não enchem o carrinho
+    const settings = await supabase.rpc("public_settings");
+    if (settings.error || !isCommerceEnabled(settings.data)) return { ok: false, error: "commerce_disabled" };
     // soma à quantidade já existente (limite 20, imposto também pelo banco)
     const { data: existing } = await supabase.from("cart_items").select("quantity").eq("product_id", parsed.data.productId).maybeSingle();
     const quantity = Math.min(20, (existing?.quantity ?? 0) + parsed.data.quantity);

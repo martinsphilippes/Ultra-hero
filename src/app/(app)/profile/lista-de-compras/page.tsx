@@ -22,7 +22,7 @@ export default async function ShoppingListPage() {
   const user = await requireUser(SHOPPING_LIST_PATH);
   const [t, labels, locale] = await Promise.all([getTranslations("shopping"), loadUnitLabels(), getLocale()]);
   const supabase = await createClient();
-  const data = await loadShoppingList(supabase, user.id, { labels, locale });
+  const data = await loadShoppingList(supabase, user.id, { labels, locale, toTasteLabel: t("add.toTaste") });
 
   const header = <PageHeader title={t("page.title")} description={t("page.description")} backHref="/profile" backLabel={t("page.back")} />;
 

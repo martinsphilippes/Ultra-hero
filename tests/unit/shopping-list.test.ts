@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { relatedProductsToShow } from "@/lib/catalog/related-products";
-import { canSuggestProduct, ingredientLinkDisplay, summarizeIngredientLinks, type IngredientLink } from "@/lib/recipes/ingredient-products";
+import { canSuggestProduct, ingredientLinkDisplay, summarizeIngredientLinks, suspensionReasonKey, type IngredientLink } from "@/lib/recipes/ingredient-products";
 import {
   buildShoppingRows,
   defaultShoppingSelection,
@@ -182,6 +182,21 @@ describe("vínculo ingrediente ↔ produto no editor", () => {
     expect(r.last?.id).toBe("r");
   });
 
+  it("validar B suspende A ('replaced') na mesma transação: mesmo updated_at, e A não aparece como 'Anterior'", () => {
+    const same = "2026-10-22T10:00:00Z";
+    const s = summarizeIngredientLinks([link({ id: "b", status: "validated", updatedAt: same }), link({ id: "a", status: "suspended", suspendedReason: "replaced", updatedAt: same })]).get("i1")!;
+    expect([s.validated?.id, s.last]).toEqual(["b", null]);
+  });
+
+  it("motivos automáticos de suspensão viram chave de tradução; texto do admin fica como está", () => {
+    expect(suspensionReasonKey("replaced")).toBe("replaced");
+    expect(suspensionReasonKey("product_significant_change")).toBe("product_significant_change");
+    expect(suspensionReasonKey("ingredient_changed")).toBe("ingredient_changed");
+    expect(suspensionReasonKey("admin")).toBe("admin");
+    expect(suspensionReasonKey("Embalagem errada")).toBeNull();
+    expect(suspensionReasonKey(null)).toBeNull();
+  });
+
   it("situação ao lado: pendente, validado, recusado e indisponível (produto sem venda ou fora do ar)", () => {
     expect(ingredientLinkDisplay(link({}))).toEqual({ status: "pending", unavailable: false });
     expect(ingredientLinkDisplay(link({ status: "validated" }))).toEqual({ status: "validated", unavailable: false });
@@ -208,6 +223,7 @@ const state = vi.hoisted(() => ({
   rpc: (() => ({ data: true, error: null })) as (name: string, args: unknown) => { data: unknown; error: { code?: string; message: string } | null },
   events: [] as string[],
   cookies: {} as Record<string, string>,
+  revalidated: [] as string[],
 }));
 
 function fakeClient() {
@@ -229,6 +245,8 @@ function fakeClient() {
         delete: () => ((op.op = "delete"), b),
         eq: (c: string, v: unknown) => (op.filters.push(["eq", c, v]), b),
         in: (c: string, v: unknown) => (op.filters.push(["in", c, v]), b),
+        order: () => b,
+        limit: () => b,
         maybeSingle: run,
         then: (ok: (r: Res) => unknown, ko?: (e: unknown) => unknown) => run().then(ok, ko),
       };
@@ -238,15 +256,18 @@ function fakeClient() {
 }
 
 vi.mock("server-only", () => ({}));
-vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
+vi.mock("next/cache", () => ({ revalidatePath: (p: string) => void state.revalidated.push(p) }));
+vi.mock("next-intl/server", () => ({ getTranslations: async () => (k: string) => k }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: (k: string) => (k in state.cookies ? { value: state.cookies[k] } : undefined) }) }));
-vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user }));
+vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async () => true }));
 vi.mock("@/lib/analytics/track", () => ({ trackEvent: async (e: string) => void state.events.push(e) }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => fakeClient() }));
 vi.mock("@/components/commerce/server/cookies", () => ({ readExpectedPrices: async () => ({}), writeExpectedPrices: async () => undefined }));
 
 const { addRecipeToShoppingList, clearShoppingList, setShoppingItemChecked } = await import("@/app/(app)/profile/lista-de-compras/actions");
 const { addToCart } = await import("@/app/(app)/shop/actions");
+const { suggestIngredientProduct } = await import("@/app/creator/recipes/ingredient-product-actions");
+const { loadShoppingList } = await import("@/components/recipes/shopping/load-shopping-list");
 
 const USER = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
 const RECIPE = "c735f164-4244-4816-9602-a023d64f6d23";
@@ -271,6 +292,7 @@ beforeEach(() => {
   state.rpcs = [];
   state.events = [];
   state.cookies = {};
+  state.revalidated = [];
   state.rpc = () => ({ data: true, error: null });
   state.respond = recipeDb();
 });
@@ -333,6 +355,22 @@ describe("addRecipeToShoppingList", () => {
     ]);
   });
 
+  it("os updates saem juntos (sem N+1 em série): com erro no primeiro, os cinco já foram enviados e a action falha", async () => {
+    let first = true;
+    state.respond = (op) => {
+      if (op.table === "shopping_list_items" && op.op === "update") {
+        if (first) {
+          first = false;
+          return { data: null, error: { code: "XX000", message: "boom" } };
+        }
+        return { data: null, error: null };
+      }
+      return recipeDb(ids)(op);
+    };
+    expect(await addRecipeToShoppingList({ contentId: RECIPE, ingredientIds: ids })).toEqual({ ok: false, error: "generic" });
+    expect(state.ops.filter((o) => o.table === "shopping_list_items" && o.op === "update")).toHaveLength(5);
+  });
+
   it("corrida com outra aba (23505 no lote): cai para inserir um a um e atualiza o que já entrou", async () => {
     let batch = true;
     state.respond = (op) => {
@@ -375,6 +413,12 @@ describe("ações da lista", () => {
     expect(await setShoppingItemChecked({ id, checked: true })).toEqual({ ok: false, error: "not_found" });
     expect(state.ops[0]).toMatchObject({ op: "update", payload: { checked: true }, filters: [["eq", "id", id], ["eq", "user_id", USER]] });
   });
+
+  it("marcar comprado revalida a página (o voltar do celular não reaproveita a lista antiga)", async () => {
+    state.respond = () => ({ data: [{ id: "d0000000-0000-4000-8000-000000000001" }], error: null });
+    expect(await setShoppingItemChecked({ id: "d0000000-0000-4000-8000-000000000001", checked: true })).toEqual({ ok: true });
+    expect(state.revalidated).toEqual(["/profile/lista-de-compras"]);
+  });
 });
 
 describe("addToCart com origem", () => {
@@ -400,5 +444,93 @@ describe("addToCart com origem", () => {
     await addToCart({ productId: PRODUCT, quantity: 1, priceCents: 1990, source: "content_link" });
     expect(state.ops.some((o) => o.table === "product_interest")).toBe(false);
     expect(state.rpcs.some((r) => r.name === "cart_set_item")).toBe(true);
+  });
+});
+
+describe("addToCart com o comércio desligado", () => {
+  const PRODUCT = "e0000000-0000-4000-8000-000000000001";
+
+  it("commerce.enabled = false: commerce_disabled, sem cart_set_item nem product_interest", async () => {
+    state.respond = () => ({ data: null, error: null });
+    state.rpc = (name) => (name === "public_settings" ? { data: { "commerce.enabled": false }, error: null } : { data: null, error: null });
+    expect(await addToCart({ productId: PRODUCT, quantity: 1, priceCents: 1990, source: "content_link" })).toEqual({ ok: false, error: "commerce_disabled" });
+    expect(state.rpcs.map((r) => r.name)).toEqual(["public_settings"]);
+    expect(state.ops).toEqual([]);
+    expect(state.events).toEqual([]);
+  });
+
+  it("sem conseguir ler a configuração também não grava (fecha no seguro)", async () => {
+    state.rpc = (name) => (name === "public_settings" ? { data: null, error: { message: "boom" } } : { data: null, error: null });
+    expect(await addToCart({ productId: PRODUCT, quantity: 1, priceCents: 1990 })).toEqual({ ok: false, error: "commerce_disabled" });
+    expect(state.rpcs.some((r) => r.name === "cart_set_item")).toBe(false);
+  });
+});
+
+describe("suggestIngredientProduct (sugerir antes de retirar a pendente)", () => {
+  const ING = "a0000000-0000-4000-8000-000000000002";
+  const PENDING = "b0000000-0000-4000-8000-000000000001";
+  const DECIDED = "b0000000-0000-4000-8000-000000000002";
+  const NEW = "b0000000-0000-4000-8000-000000000003";
+  const PRODUCT = "e0000000-0000-4000-8000-000000000002";
+  const row = (id: string, status: string) => ({ id, ingredient_id: ING, status, note: null, suspended_reason: null, updated_at: "2026-10-22T10:00:00Z", product: { id: PRODUCT, title: "Kit" } });
+
+  function setup(linkId: string, status: string) {
+    state.rpc = (name) => {
+      if (name === "my_creator_id") return { data: "c0000000-0000-4000-8000-000000000001", error: null };
+      if (name === "creator_suggest_ingredient_product") return { data: linkId, error: null };
+      return { data: true, error: null };
+    };
+    state.respond = (op) => (op.table === "recipe_ingredient_products" ? { data: row(linkId, status), error: null } : { data: null, error: null });
+  }
+
+  it("produto já recusado/suspenso/validado para o ingrediente: already_decided e a pendente não é retirada", async () => {
+    for (const status of ["rejected", "suspended", "validated"]) {
+      state.rpcs = [];
+      setup(DECIDED, status);
+      expect(await suggestIngredientProduct({ ingredientId: ING, productId: PRODUCT, replaceLinkId: PENDING })).toEqual({ ok: false, error: "already_decided" });
+      expect(state.rpcs.some((r) => r.name === "creator_withdraw_ingredient_product")).toBe(false);
+    }
+  });
+
+  it("sugestão nova: a RPC de sugerir vem antes de retirar a pendente anterior", async () => {
+    setup(NEW, "suggested");
+    const result = await suggestIngredientProduct({ ingredientId: ING, productId: PRODUCT, replaceLinkId: PENDING });
+    expect(result).toMatchObject({ ok: true, link: { id: NEW, status: "suggested" } });
+    const names = state.rpcs.map((r) => r.name);
+    expect(names.indexOf("creator_suggest_ingredient_product")).toBeLessThan(names.indexOf("creator_withdraw_ingredient_product"));
+    expect(state.rpcs.find((r) => r.name === "creator_withdraw_ingredient_product")?.args).toEqual({ p_link: PENDING });
+  });
+
+  it("escolher de novo o mesmo produto pendente não retira a própria sugestão", async () => {
+    setup(PENDING, "suggested");
+    expect(await suggestIngredientProduct({ ingredientId: ING, productId: PRODUCT, replaceLinkId: PENDING })).toMatchObject({ ok: true, link: { id: PENDING } });
+    expect(state.rpcs.some((r) => r.name === "creator_withdraw_ingredient_product")).toBe(false);
+  });
+});
+
+describe("loadShoppingList: 'a gosto' chega à lista", () => {
+  it("item de ingrediente a gosto sem quantidade mostra o rótulo; sem quantidade comum continua null", async () => {
+    const base = { content_id: null, quantity: null, unit: null, quantity_text: null, product_id: null, checked: false, created_at: "2026-10-22T10:00:00Z" };
+    state.rpc = () => ({ data: {}, error: null });
+    state.respond = (op) =>
+      op.table === "shopping_list_items"
+        ? {
+            data: [
+              { ...base, id: "s1", ingredient_id: "i1", name: "Sal", position: 6, ingredient: { to_taste: true } },
+              { ...base, id: "s2", ingredient_id: "i2", name: "Água", position: 7, ingredient: { to_taste: false } },
+              { ...base, id: "s3", ingredient_id: "i3", name: "Pimenta", position: 8, quantity_text: "1 pitada", ingredient: { to_taste: true } },
+            ],
+            error: null,
+          }
+        : { data: [], error: null };
+    const data = await loadShoppingList(fakeClient() as never, USER, { labels: {} as never, locale: "pt-BR", toTasteLabel: "a gosto" });
+    const items = data.groups.flatMap((g) => g.items);
+    expect(items.map((i) => [i.name, i.amount])).toEqual([
+      ["Sal", "a gosto"],
+      ["Água", null],
+      ["Pimenta", "1 pitada"],
+    ]);
+    const select = state.ops.find((o) => o.table === "shopping_list_items");
+    expect(select?.op).toBe("select");
   });
 });

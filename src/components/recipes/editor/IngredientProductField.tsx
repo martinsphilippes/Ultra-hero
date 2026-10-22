@@ -2,11 +2,11 @@
 
 import { PackageSearch } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { searchIngredientProducts, suggestIngredientProduct, withdrawIngredientProduct } from "@/app/creator/recipes/ingredient-product-actions";
 import { SearchPicker, type PickItem } from "@/components/admin-content/SearchPicker";
 import { Badge, Button } from "@/components/ui";
-import { ingredientLinkDisplay, type IngredientLink, type IngredientLinkSummary } from "@/lib/recipes/ingredient-products";
+import { ingredientLinkDisplay, suspensionReasonKey, type IngredientLink, type IngredientLinkSummary } from "@/lib/recipes/ingredient-products";
 
 type Props = {
   ingredientId: string;
@@ -23,7 +23,10 @@ const STATUS_VARIANT = { pending: "info", validated: "success", suspended: "warn
 
 function LinkLine({ link, kind }: { link: IngredientLink; kind: "validatedLine" | "pendingLine" | "lastLine" }) {
   const t = useTranslations("shopping.editor");
+  const tr = useTranslations("shopping.suspension");
   const display = ingredientLinkDisplay(link);
+  // motivo automático do banco traduzido; texto livre do admin aparece como está
+  const reasonKey = suspensionReasonKey(link.suspendedReason);
   const title = link.product?.title ?? t("hiddenProduct");
   return (
     <div className="flex flex-col gap-1" data-testid="ingredient-product-link" data-status={display.status}>
@@ -39,7 +42,7 @@ function LinkLine({ link, kind }: { link: IngredientLink; kind: "validatedLine" 
         ) : null}
       </p>
       {link.status === "rejected" && link.note ? <p className="type-caption text-fg-muted">{t("reason", { reason: link.note })}</p> : null}
-      {link.status === "suspended" && link.suspendedReason ? <p className="type-caption text-fg-muted">{t("reason", { reason: link.suspendedReason })}</p> : null}
+      {link.status === "suspended" && link.suspendedReason ? <p className="type-caption text-fg-muted">{t("reason", { reason: reasonKey ? tr(reasonKey) : link.suspendedReason })}</p> : null}
     </div>
   );
 }
@@ -54,8 +57,28 @@ export function IngredientProductField({ ingredientId, ingredientName, saved, su
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [pending, startTransition] = useTransition();
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const chooseRef = useRef<HTMLButtonElement>(null);
   const errorText = (code: string) => (t.has(`errors.${code}`) ? t(`errors.${code}`) : t("errors.generic"));
   const hasAny = Boolean(summary?.validated || summary?.pending);
+
+  // abrir a busca leva o foco ao campo (o botão focado some); fechar, escolher ou retirar devolve o
+  // foco ao botão — só depois da transição, porque durante ela o botão fica desabilitado
+  const restoreFocus = useRef(false);
+  useEffect(() => {
+    if (picking) pickerRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+    else if (!pending && restoreFocus.current) {
+      restoreFocus.current = false;
+      chooseRef.current?.focus();
+    }
+  }, [picking, pending]);
+  const focusChoose = () => {
+    restoreFocus.current = true;
+  };
+  function closePicker() {
+    focusChoose();
+    setPicking(false);
+  }
 
   function choose(item: PickItem | null) {
     if (!item) return;
@@ -68,8 +91,9 @@ export function IngredientProductField({ ingredientId, ingredientName, saved, su
         return;
       }
       onLinked(result.link, replaced);
-      setPicking(false);
-      setStatus(t("suggested"));
+      closePicker();
+      // a action só devolve ok com uma sugestão nova pendente; mesmo assim, anuncia só nesse caso
+      if (result.link.status === "suggested") setStatus(t("suggested"));
     });
   }
 
@@ -83,6 +107,8 @@ export function IngredientProductField({ ingredientId, ingredientName, saved, su
       }
       onWithdrawn(linkId);
       setStatus(t("withdrawn"));
+      // a linha pendente (com o botão focado) desmontou
+      focusChoose();
     });
   }
 
@@ -110,17 +136,17 @@ export function IngredientProductField({ ingredientId, ingredientName, saved, su
           ) : null}
           {summary?.last ? <LinkLine link={summary.last} kind="lastLine" /> : null}
           {picking ? (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2" ref={pickerRef}>
               <SearchPicker label={t("search", { name: ingredientName || "…" })} search={searchIngredientProducts} value={null} onChange={choose} disabled={disabled || pending} />
               <div>
-                <Button type="button" variant="ghost" onClick={() => setPicking(false)} disabled={pending}>
+                <Button type="button" variant="ghost" onClick={closePicker} disabled={pending}>
                   {t("cancel")}
                 </Button>
               </div>
             </div>
           ) : (
             <div>
-              <Button type="button" variant="secondary" onClick={() => setPicking(true)} disabled={disabled || pending} loading={pending} data-testid="ingredient-product-choose">
+              <Button ref={chooseRef} type="button" variant="secondary" onClick={() => setPicking(true)} disabled={disabled || pending} loading={pending} data-testid="ingredient-product-choose">
                 {hasAny ? t("change") : t("choose")}
               </Button>
             </div>

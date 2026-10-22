@@ -24,6 +24,9 @@
     "back": "Perfil",
     "count": "{n, plural, =1 {1 item} other {# itens}} · {checked, plural, =0 {nenhum comprado} =1 {1 comprado} other {# comprados}}",
     "clearChecked": "Limpar comprados",
+    "clearCheckedTitle": "Remover os itens comprados?",
+    "clearCheckedDescription": "{n, plural, =1 {1 item comprado será removido da lista} other {# itens comprados serão removidos da lista}}. Não dá para desfazer.",
+    "clearCheckedConfirm": "Remover comprados",
     "clearAll": "Limpar lista",
     "clearAllTitle": "Limpar a lista de compras?",
     "clearAllDescription": "Isto apaga todos os itens da lista, de todas as receitas. Não dá para desfazer.",
@@ -105,8 +108,15 @@
       "product_not_found": "Produto não encontrado.",
       "invalid_input": "Escolha um produto da lista.",
       "unavailable": "Os vínculos de ingredientes ainda não estão disponíveis neste ambiente.",
-      "generic": "Não foi possível salvar a sugestão. Tente de novo."
+      "generic": "Não foi possível salvar a sugestão. Tente de novo.",
+      "already_decided": "Este produto já foi decidido pela administração para este ingrediente (validado, recusado ou suspenso). Escolha outro produto ou peça uma nova revisão à administração."
     }
+  },
+  "suspension": {
+    "replaced": "Substituído por outro produto validado",
+    "product_significant_change": "O produto mudou e precisa de nova validação",
+    "ingredient_changed": "O ingrediente mudou e o produto precisa de nova validação",
+    "admin": "Suspenso pela administração"
   },
   "admin": {
     "tabsLabel": "Tipo de vínculo",
@@ -118,8 +128,7 @@
     "filters": {
       "status": "Situação",
       "recipe": "Receita",
-      "product": "Produto",
-      "all": "Todas"
+      "product": "Produto"
     },
     "table": {
       "caption": "Vínculos entre ingredientes e produtos",

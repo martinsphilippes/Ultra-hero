@@ -17,7 +17,7 @@ export type ShoppingOffer = { state: OfferState; product: ShoppingProduct | null
 export type ShoppingListItemView = {
   id: string;
   name: string;
-  /** "600 g", "1/2 maço", "3 colheres" ou null (sem quantidade / "a gosto"). */
+  /** "600 g", "1/2 maço", "3 colheres", "a gosto" (ingrediente a gosto sem quantidade) ou null. */
   amount: string | null;
   /** Texto inicial do campo "Editar quantidade" (sem a unidade, que o item mantém). */
   amountInput: string;
@@ -56,16 +56,23 @@ const asUnit = (u: string | null): RecipeUnit | null => ((RECIPE_UNITS as readon
  * (recipe_ingredient_products), cada um num dos 4 estados. O vínculo vale pelo que está validado
  * agora (o product_id gravado na linha pode ter envelhecido). Sem a tabela: "indisponível".
  */
-export async function loadShoppingList(supabase: Client, userId: string, opts: { labels: UnitLabels; locale: string }): Promise<ShoppingListData> {
+export async function loadShoppingList(supabase: Client, userId: string, opts: { labels: UnitLabels; locale: string; toTasteLabel?: string }): Promise<ShoppingListData> {
   const empty = (status: ShoppingListData["status"]): ShoppingListData => ({ status, commerceEnabled: true, groups: [], total: 0, checked: 0 });
   const itemsRes = await supabase
     .from("shopping_list_items")
-    .select("id, content_id, ingredient_id, name, quantity, unit, quantity_text, product_id, checked, position, created_at")
+    // to_taste do ingrediente (a RLS de recipe_ingredients usa can_access_content): a linha da lista não
+    // guarda "a gosto", e sem isto o item aparecia "Sem quantidade" enquanto a receita diz "a gosto"
+    .select("id, content_id, ingredient_id, name, quantity, unit, quantity_text, product_id, checked, position, created_at, ingredient:recipe_ingredients(to_taste)")
     .eq("user_id", userId)
     .order("created_at", { ascending: true })
     .limit(SHOPPING_LIST_LIMIT);
   if (itemsRes.error) return empty(isMissingRelation(itemsRes.error) ? "unavailable" : "error");
-  const rows: ShoppingItemRow[] = (itemsRes.data ?? []).map((r) => ({ ...r, quantity: r.quantity === null ? null : Number(r.quantity), unit: asUnit(r.unit) }));
+  const toTaste = new Set<string>();
+  const rows: ShoppingItemRow[] = (itemsRes.data ?? []).map(({ ingredient, ...r }) => {
+    const ing = (Array.isArray(ingredient) ? ingredient[0] : ingredient) as { to_taste: boolean } | null | undefined;
+    if (ing?.to_taste) toTaste.add(r.id);
+    return { ...r, quantity: r.quantity === null ? null : Number(r.quantity), unit: asUnit(r.unit) };
+  });
 
   const contentIds = [...new Set(rows.map((r) => r.content_id).filter((id): id is string => Boolean(id)))];
   const ingredientIds = [...new Set(rows.map((r) => r.ingredient_id).filter((id): id is string => Boolean(id)))];
@@ -124,7 +131,7 @@ export async function loadShoppingList(supabase: Client, userId: string, opts: {
         items: g.items.map((r) => ({
           id: r.id,
           name: r.name,
-          amount: formatIngredientAmount(r.quantity, r.unit, r.quantity_text, opts.labels, opts.locale),
+          amount: formatIngredientAmount(r.quantity, r.unit, r.quantity_text, opts.labels, opts.locale) ?? (toTaste.has(r.id) ? (opts.toTasteLabel ?? null) : null),
           amountInput: r.quantity !== null ? (opts.locale.startsWith("en") ? formatAmount(r.quantity, r.unit).replace(",", ".") : formatAmount(r.quantity, r.unit)) : (r.quantity_text ?? ""),
           unit: r.unit,
           checked: r.checked,

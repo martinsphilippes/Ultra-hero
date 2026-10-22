@@ -107,12 +107,13 @@ export async function addRecipeToShoppingList(input: { contentId: string; ingred
       }
     } else return fail(error);
   }
-  for (const { ingredientId } of plan.updates) {
-    const row = rows.find((r) => r.ingredient_id === ingredientId)!;
-    const err = await update(row);
-    if (err) return fail(err);
-    updated += 1;
-  }
+  // em paralelo: cada update mexe numa linha diferente (user_id, ingredient_id) e o gatilho só pega o
+  // advisory lock no INSERT, então não há disputa; numa receita de 60 itens são 60 idas e voltas a menos
+  const byId = new Map(rows.map((r) => [r.ingredient_id, r]));
+  const errors = await Promise.all(plan.updates.map(({ ingredientId }) => update(byId.get(ingredientId)!)));
+  const firstErr = errors.find(Boolean);
+  if (firstErr) return fail(firstErr);
+  updated += plan.updates.length;
 
   revalidatePath(SHOPPING_LIST_PATH);
   await trackEvent("recipe.shopping_add", { items: rows.length });
@@ -121,7 +122,7 @@ export async function addRecipeToShoppingList(input: { contentId: string; ingred
 
 const idSchema = z.object({ id: z.uuid() });
 
-/** Marcar comprado (a tela já mudou; aqui só confirma). */
+/** Marcar comprado (a tela já mudou; aqui confirma e revalida a página). */
 export async function setShoppingItemChecked(input: { id: string; checked: boolean }): Promise<ShoppingResult> {
   const parsed = z.object({ id: z.uuid(), checked: z.boolean() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
@@ -131,7 +132,10 @@ export async function setShoppingItemChecked(input: { id: string; checked: boole
   const { data, error } = await supabase.from("shopping_list_items").update({ checked: parsed.data.checked }).eq("id", parsed.data.id).eq("user_id", user.id).select("id");
   if (error) return fail(error);
   if (!data || data.length === 0) return { ok: false, error: "not_found" };
-  // sem revalidatePath: a tela já mudou (otimista) e recarregar a lista a cada toque pesaria no celular
+  // revalida para o Router Cache não guardar a lista antiga: o voltar/avançar do celular reaproveita a
+  // página em cache, e sem isto o item voltava desmarcado (e "Limpar comprados" ficava sem efeito).
+  // A resposta da própria action já traz a árvore nova; os overrides otimistas continuam valendo.
+  revalidatePath(SHOPPING_LIST_PATH);
   return { ok: true };
 }
 

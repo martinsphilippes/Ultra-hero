@@ -8,13 +8,14 @@ import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { FilterBar, type FilterField } from "./FilterBar";
 import { IngredientLinkActions } from "./IngredientLinkActions";
-import { pickEnum, type SearchParams } from "./lib/search-params";
+import { firstParam, pickEnum, type SearchParams } from "./lib/search-params";
+import { suspensionReasonKey } from "@/lib/recipes/ingredient-products";
 
 // Aba "Ingredientes" de /admin/links (fase 5): fila das sugestões dos heróis para o produto de cada
 // ingrediente (recipe_ingredient_products, 0027). Abre na fila (sugeridos); validar, suspender e
 // recusar passam pela RPC auditada. Só o validado chega à lista de compras.
 
-const STATES = ["suggested", "validated", "suspended", "rejected", "all"] as const;
+const STATES = ["suggested", "validated", "suspended", "rejected"] as const;
 const LIMIT = 100;
 
 type Row = {
@@ -28,8 +29,15 @@ type Row = {
 };
 
 export async function IngredientLinksPanel({ params }: { params: SearchParams }) {
-  const [t, ts, locale] = await Promise.all([getTranslations("shopping.admin"), getTranslations("adminCommon"), getLocale()]);
-  const status = pickEnum(params, "situacao", STATES) ?? "suggested";
+  const [t, ts, tr, locale] = await Promise.all([getTranslations("shopping.admin"), getTranslations("adminCommon"), getTranslations("shopping.suspension"), getLocale()]);
+  // motivos automáticos ('replaced', 'product_significant_change', …) traduzidos; texto do admin como está
+  const suspensionText = (reason: string) => {
+    const key = suspensionReasonKey(reason);
+    return key ? tr(key) : reason;
+  };
+  // sem o parâmetro abre na fila (sugeridos); "Todos" do FilterBar manda situacao= (vazio) = todas
+  const status: (typeof STATES)[number] | "all" =
+    params.situacao !== undefined && firstParam(params, "situacao") === "" ? "all" : (pickEnum(params, "situacao", STATES) ?? "suggested");
   const supabase = await createClient();
 
   let query = supabase
@@ -47,8 +55,8 @@ export async function IngredientLinksPanel({ params }: { params: SearchParams })
       name: "situacao",
       label: t("filters.status"),
       type: "select",
-      value: status,
-      options: STATES.map((s) => ({ value: s, label: s === "all" ? t("filters.all") : ts(`status.${s}`) })),
+      value: status === "all" ? "" : status,
+      options: STATES.map((s) => ({ value: s, label: ts(`status.${s}`) })),
     },
   ];
   const filters = <FilterBar action="/admin/links" fields={fields} active={status !== "suggested"} hidden={{ aba: "ingredientes" }} />;
@@ -112,7 +120,7 @@ export async function IngredientLinksPanel({ params }: { params: SearchParams })
       cell: (row) => (
         <div className="flex flex-col gap-1">
           <StatusBadge status={row.status} label={ts(`status.${row.status}`)} />
-          {row.status === "suspended" && row.suspended_reason ? <span className="type-caption text-fg-muted">{row.suspended_reason}</span> : null}
+          {row.status === "suspended" && row.suspended_reason ? <span className="type-caption text-fg-muted">{suspensionText(row.suspended_reason)}</span> : null}
         </div>
       ),
     },

@@ -3,7 +3,7 @@
 import { Pencil, ShoppingCart, Trash2, TriangleAlert } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useId, useState, useTransition, type FormEvent } from "react";
+import { useId, useRef, useState, useTransition, type FormEvent } from "react";
 import {
   clearCheckedShoppingItems,
   clearShoppingList,
@@ -82,6 +82,8 @@ function ShoppingItem({ item, checked, onToggle, onRemove, onAnnounce }: ItemPro
   const [value, setValue] = useState(item.amountInput);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // devolve o foco ao lápis que abriu a edição (o formulário com o foco desmonta)
+  const focusEdit = () => window.setTimeout(() => document.getElementById(`${fieldId}-edit`)?.focus(), 0);
 
   function save(event: FormEvent) {
     event.preventDefault();
@@ -95,13 +97,12 @@ function ShoppingItem({ item, checked, onToggle, onRemove, onAnnounce }: ItemPro
       // a action revalida a página: a resposta já traz a lista nova (sem um segundo refresh)
       setEditing(false);
       onAnnounce(t("saved"));
-      // devolve o foco ao botão que abriu a edição
-      window.setTimeout(() => document.getElementById(`${fieldId}-edit`)?.focus(), 0);
+      focusEdit();
     });
   }
 
   return (
-    <li className="flex flex-col gap-2 py-2" data-testid="shopping-item" data-checked={checked ? "true" : "false"}>
+    <li className="flex flex-col gap-2 py-2" data-testid="shopping-item" data-item-id={item.id} data-checked={checked ? "true" : "false"}>
       <div className="flex items-start justify-between gap-2">
         <div className={checked ? "min-w-0 flex-1 [&_.font-medium]:line-through [&_.font-medium]:decoration-fg-muted" : "min-w-0 flex-1"}>
           <Checkbox id={`${fieldId}-check`} checked={checked} onChange={(e) => onToggle(item, e.target.checked)} label={item.name} description={item.amount ?? t("noAmount")} data-testid="shopping-item-check" />
@@ -143,7 +144,15 @@ function ShoppingItem({ item, checked, onToggle, onRemove, onAnnounce }: ItemPro
             <Button type="submit" loading={pending} data-testid="shopping-item-save">
               {t("save")}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setEditing(false)} disabled={pending}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setEditing(false);
+                focusEdit();
+              }}
+              disabled={pending}
+            >
               {t("cancel")}
             </Button>
           </div>
@@ -171,7 +180,7 @@ function ShoppingItem({ item, checked, onToggle, onRemove, onAnnounce }: ItemPro
 }
 
 // Lista agrupada por receita com as ações: marcar comprado (otimista, anunciado em aria-live), editar
-// a quantidade, remover, "Limpar comprados" e "Limpar lista" (com confirmação). O servidor confirma
+// a quantidade, remover, "Limpar comprados" e "Limpar lista" (ambos com confirmação). O servidor confirma
 // cada ação; se falhar, a marcação volta e o erro é anunciado.
 export function ShoppingListView({ data }: { data: ShoppingListData }) {
   const t = useTranslations("shopping");
@@ -179,8 +188,16 @@ export function ShoppingListView({ data }: { data: ShoppingListData }) {
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const [removed, setRemoved] = useState<Set<string>>(() => new Set());
   const [announce, setAnnounce] = useState("");
+  // confirmação antes de apagar: "Limpar comprados" e "Limpar lista" (nenhum dos dois tem desfazer)
+  // o tipo fica guardado ao fechar, para o texto não trocar durante a animação de saída
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmKind, setConfirmKind] = useState<"checked" | "all">("all");
+  const openConfirm = (kind: "checked" | "all") => {
+    setConfirmKind(kind);
+    setConfirmOpen(true);
+  };
   const [pending, startTransition] = useTransition();
+  const countRef = useRef<HTMLParagraphElement>(null);
 
   const errorText = (code: string) => (t.has(`errors.${code}`) ? t(`errors.${code}`) : t("errors.generic"));
   const isChecked = (item: ShoppingListItemView) => overrides[item.id] ?? item.checked;
@@ -201,7 +218,14 @@ export function ShoppingListView({ data }: { data: ShoppingListData }) {
   }
 
   function remove(item: ShoppingListItemView) {
+    // o <li> com o botão focado desmonta: o foco vai para o item seguinte (ou o anterior, ou o contador)
+    const index = all.findIndex((i) => i.id === item.id);
+    const target = all[index + 1] ?? all[index - 1] ?? null;
     setRemoved((s) => new Set(s).add(item.id));
+    window.setTimeout(() => {
+      const box = target ? document.querySelector<HTMLInputElement>(`[data-item-id="${target.id}"] input[type="checkbox"]`) : null;
+      (box ?? countRef.current)?.focus();
+    }, 0);
     setAnnounce(t("page.removed", { name: item.name }));
     void removeShoppingItem({ id: item.id }).then((result) => {
       if (result.ok) return;
@@ -222,6 +246,7 @@ export function ShoppingListView({ data }: { data: ShoppingListData }) {
         toast({ title: errorText(result.error), variant: "error" });
         return;
       }
+      setConfirmOpen(false);
       const message = t("page.clearedChecked", { n: result.removed });
       setAnnounce(message);
       toast({ title: message, variant: "success" });
@@ -254,15 +279,22 @@ export function ShoppingListView({ data }: { data: ShoppingListData }) {
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="type-caption text-fg-muted" data-testid="shopping-count">
+        <p ref={countRef} tabIndex={-1} className="type-caption text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" data-testid="shopping-count">
           {t("page.count", { n: all.length, checked: checkedCount })}
         </p>
         <div className="flex flex-wrap gap-2">
           {/* aria-disabled: sem comprados o botão continua focável e não some do teclado */}
-          <Button type="button" variant="secondary" onClick={clearChecked} aria-disabled={checkedCount === 0 || undefined} className="aria-disabled:opacity-55" loading={pending && !confirmOpen} data-testid="shopping-clear-checked">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => checkedCount > 0 && openConfirm("checked")}
+            aria-disabled={checkedCount === 0 || undefined}
+            className="aria-disabled:opacity-55"
+            data-testid="shopping-clear-checked"
+          >
             {t("page.clearChecked")}
           </Button>
-          <Button type="button" variant="ghost" leadingIcon={<Trash2 />} onClick={() => setConfirmOpen(true)} data-testid="shopping-clear-all">
+          <Button type="button" variant="ghost" leadingIcon={<Trash2 />} onClick={() => openConfirm("all")} data-testid="shopping-clear-all">
             {t("page.clearAll")}
           </Button>
         </div>
@@ -311,17 +343,23 @@ export function ShoppingListView({ data }: { data: ShoppingListData }) {
       <Dialog
         open={confirmOpen}
         onOpenChange={(open) => !pending && setConfirmOpen(open)}
-        title={t("page.clearAllTitle")}
-        description={t("page.clearAllDescription")}
+        title={confirmKind === "checked" ? t("page.clearCheckedTitle") : t("page.clearAllTitle")}
+        description={confirmKind === "checked" ? t("page.clearCheckedDescription", { n: checkedCount }) : t("page.clearAllDescription")}
         size="sm"
         footer={
           <>
             <Button type="button" variant="ghost" onClick={() => setConfirmOpen(false)} disabled={pending}>
               {t("page.cancel")}
             </Button>
-            <Button type="button" variant="danger" onClick={clearAll} loading={pending} data-testid="shopping-clear-all-confirm">
-              {t("page.clearAllConfirm")}
-            </Button>
+            {confirmKind === "checked" ? (
+              <Button type="button" variant="danger" onClick={clearChecked} loading={pending} data-testid="shopping-clear-checked-confirm">
+                {t("page.clearCheckedConfirm")}
+              </Button>
+            ) : (
+              <Button type="button" variant="danger" onClick={clearAll} loading={pending} data-testid="shopping-clear-all-confirm">
+                {t("page.clearAllConfirm")}
+              </Button>
+            )}
           </>
         }
       />

@@ -37,8 +37,9 @@ export function summarizeIngredientLinks(links: IngredientLink[]): Map<string, I
   }
   for (const entry of out.values()) {
     if (entry.pending && entry.last && entry.last.updatedAt < entry.pending.updatedAt) entry.last = null;
-    // a recusa antiga não interessa quando há um validado mais novo
-    if (entry.validated && entry.last && entry.last.updatedAt < entry.validated.updatedAt) entry.last = null;
+    // a recusa antiga não interessa quando há um validado mais novo; "<=" porque validar suspende o
+    // anterior ('replaced') na mesma transação, com o mesmo updated_at do novo validado
+    if (entry.validated && entry.last && entry.last.updatedAt <= entry.validated.updatedAt) entry.last = null;
   }
   return out;
 }
@@ -57,4 +58,12 @@ export function ingredientLinkDisplay(link: Pick<IngredientLink, "status" | "pro
 /** Ingrediente ainda não gravado no banco (id do navegador): a RPC recusaria com forbidden. */
 export function canSuggestProduct(ingredientId: string, savedIds: ReadonlySet<string>): boolean {
   return savedIds.has(ingredientId);
+}
+
+/** Motivos de suspensão gravados pelo banco (0027/0033), traduzidos na tela; o resto é texto do admin. */
+export const SUSPENSION_REASONS = ["replaced", "product_significant_change", "ingredient_changed", "admin"] as const;
+export type SuspensionReason = (typeof SUSPENSION_REASONS)[number];
+
+export function suspensionReasonKey(reason: string | null | undefined): SuspensionReason | null {
+  return (SUSPENSION_REASONS as readonly string[]).includes(reason ?? "") ? (reason as SuspensionReason) : null;
 }

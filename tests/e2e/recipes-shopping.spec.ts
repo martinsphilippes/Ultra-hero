@@ -129,6 +129,17 @@ test.describe("lista de compras (só leitura)", () => {
     await expect(page).toHaveURL(/\/admin\/links\?aba=ingredientes$/);
     await expect(tabs.getByRole("link", { name: "Ingredientes" })).toHaveAttribute("aria-current", "page");
     await expect(page.getByTestId("ingredient-links")).toContainText("Só o vínculo validado aparece na lista de compras");
+    const status = page.getByLabel("Situação");
+    await expect(status).toHaveValue("suggested");
+    // um só "Todos" (o do FilterBar, que manda situacao= vazio = todas as situações)
+    await expect(status.getByRole("option", { name: /^Tod[oa]s$/ })).toHaveCount(1);
+    await status.selectOption("");
+    await page.getByRole("button", { name: "Aplicar filtros" }).click();
+    await expect(page).toHaveURL(/aba=ingredientes&situacao=$/);
+    await expect(page.getByLabel("Situação")).toHaveValue("");
+    // "Limpar filtros" fica na aba Ingredientes e volta à fila
+    await page.getByRole("link", { name: "Limpar filtros" }).click();
+    await expect(page).toHaveURL(/\/admin\/links\?aba=ingredientes$/);
     await expect(page.getByLabel("Situação")).toHaveValue("suggested");
     await expectNoSeriousAxe(page);
   });
@@ -245,9 +256,20 @@ test.describe("lista de compras (conta premium)", () => {
 
       // 3) marcar comprado: otimista e anunciado
       const first = group.getByTestId("shopping-item").first();
+      // a Server Action é um POST na própria página; espera o servidor confirmar antes de navegar
+      const checkSaved = page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes(LIST_PATH));
       await first.getByTestId("shopping-item-check").check();
+      await checkSaved;
       await expect(page.getByTestId("shopping-announce")).toHaveText("Salsinha marcado como comprado");
       await expect(page.getByTestId("shopping-count")).toHaveText("5 itens · 1 comprado");
+      // ir à receita e voltar (gesto de voltar do celular): a marcação revalidou a página, então o
+      // Router Cache não devolve a lista antiga desmarcada
+      await group.getByRole("link", { name: G3.title }).click();
+      await expect(page).toHaveURL(new RegExp(`${G3_PATH}$`));
+      await page.goBack();
+      await expect(page).toHaveURL(new RegExp(`${LIST_PATH}$`));
+      await expect(page.getByTestId("shopping-count")).toHaveText("5 itens · 1 comprado");
+      await expect(group.getByTestId("shopping-item").first()).toHaveAttribute("data-checked", "true");
 
       // 4) editar a quantidade (sem conversão: só o número muda)
       await first.getByTestId("shopping-item-edit").click();
@@ -273,6 +295,10 @@ test.describe("lista de compras (conta premium)", () => {
       await group.getByTestId("shopping-item").filter({ hasText: "Limão" }).getByTestId("shopping-item-check").check();
       await expect(page.getByTestId("shopping-count")).toHaveText("5 itens · 1 comprado");
       await page.getByTestId("shopping-clear-checked").click();
+      // apaga sem desfazer: pede confirmação com a contagem
+      const confirmChecked = page.getByRole("dialog", { name: "Remover os itens comprados?" });
+      await expect(confirmChecked).toContainText("1 item comprado será removido da lista. Não dá para desfazer.");
+      await confirmChecked.getByTestId("shopping-clear-checked-confirm").click();
       await expect(page.getByText("1 item comprado removido").first()).toBeVisible();
       await expect(group.getByTestId("shopping-item")).toHaveCount(4);
       await expect(group).not.toContainText("Limão");

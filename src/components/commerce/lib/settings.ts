@@ -1,5 +1,6 @@
 // Leitura do kill switch "commerce.enabled" a partir do retorno de public_settings().
-// Setting ausente ou ilegível = ligado (o banco continua barrando checkout/carrinho se estiver desligado).
+// Setting ausente ou ilegível = ligado. Desligado: o banco barra só o checkout (checkout_cart); o
+// carrinho é barrado pela action addToCart, que confere esta mesma leitura antes de cart_set_item.
 export function isCommerceEnabled(settings: unknown): boolean {
   if (!settings || typeof settings !== "object" || Array.isArray(settings)) return true;
   const value = (settings as Record<string, unknown>)["commerce.enabled"];

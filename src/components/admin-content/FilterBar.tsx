@@ -24,7 +24,9 @@ type Props = {
 export async function FilterBar({ action, fields, active, hidden }: Props) {
   const t = await getTranslations("adminContent.common");
   return (
-    <form method="get" action={action} role="search" aria-label={t("filters")} className="rounded-xl border border-border bg-surface p-3 md:p-4">
+    // key pelos valores aplicados: os campos são não controlados (defaultValue), e numa navegação do
+    // cliente ("Limpar filtros") o React reaproveitaria o select com o valor antigo
+    <form key={fields.map((f) => `${f.name}=${f.value}`).join("&")} method="get" action={action} role="search" aria-label={t("filters")} className="rounded-xl border border-border bg-surface p-3 md:p-4">
       {hidden && Object.entries(hidden).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {fields.map((field) => (
@@ -52,7 +54,8 @@ export async function FilterBar({ action, fields, active, hidden }: Props) {
         </Button>
         {active && (
           <Button asChild size="sm" variant="ghost">
-            <Link href={action}>{t("clearFilters")}</Link>
+            {/* limpar mantém os campos ocultos (a aba atual), como o próprio formulário */}
+            <Link href={hidden && Object.keys(hidden).length > 0 ? `${action}?${new URLSearchParams(hidden).toString()}` : action}>{t("clearFilters")}</Link>
           </Button>
         )}
       </div>

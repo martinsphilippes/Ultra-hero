@@ -53,7 +53,8 @@ const suggestSchema = z.object({ ingredientId: z.uuid(), productId: z.uuid(), re
 
 /**
  * Sugere o produto do ingrediente. Uma sugestão pendente por ingrediente: a anterior (do mesmo
- * herói, ainda pendente) é retirada antes. O validado continua valendo até o admin decidir a nova.
+ * herói, ainda pendente) só é retirada depois que a nova existe. O validado continua valendo até o
+ * admin decidir a nova.
  */
 export async function suggestIngredientProduct(input: { ingredientId: string; productId: string; replaceLinkId?: string | null }): Promise<IngredientProductResult<{ link: IngredientLink }>> {
   const parsed = suggestSchema.safeParse(input);
@@ -61,16 +62,21 @@ export async function suggestIngredientProduct(input: { ingredientId: string; pr
   const ctx = await creatorActionContext();
   if (!ctx.ok) return { ok: false, error: ctx.error === "unauthenticated" ? "unauthenticated" : "forbidden" };
   const { supabase } = ctx;
-  if (parsed.data.replaceLinkId) {
-    const withdrawn = await supabase.rpc("creator_withdraw_ingredient_product", { p_link: parsed.data.replaceLinkId });
-    // já decidida pelo admin (não está mais pendente): segue e cria a nova sugestão mesmo assim
-    if (withdrawn.error && rpcErrorCode(withdrawn.error.message) !== "forbidden") return fail(withdrawn.error);
-  }
+  const { replaceLinkId } = parsed.data;
+  // a RPC faz "on conflict (ingredient_id, product_id) do nothing" e devolve o vínculo que já existe,
+  // em qualquer situação: por isso sugerir vem antes de retirar, e a situação devolvida é conferida
   const { data: linkId, error } = await supabase.rpc("creator_suggest_ingredient_product", { p_ingredient: parsed.data.ingredientId, p_product: parsed.data.productId, p_note: null as unknown as string });
   if (error || typeof linkId !== "string") return fail(error);
   const { data: row, error: readError } = await supabase.from("recipe_ingredient_products").select(INGREDIENT_LINK_SELECT).eq("id", linkId).maybeSingle();
   if (readError || !row) return fail(readError);
   const [link] = await toIngredientLinks(supabase, [row as never]);
+  // o par já foi validado, recusado ou suspenso pelo admin: nada entra na fila e a pendente fica
+  if (link.status !== "suggested") return { ok: false, error: "already_decided" };
+  if (replaceLinkId && replaceLinkId !== link.id) {
+    const withdrawn = await supabase.rpc("creator_withdraw_ingredient_product", { p_link: replaceLinkId });
+    // já decidida pelo admin (não está mais pendente): a nova sugestão vale mesmo assim
+    if (withdrawn.error && rpcErrorCode(withdrawn.error.message) !== "forbidden") return fail(withdrawn.error);
+  }
   revalidatePath("/admin/links");
   return { ok: true, link };
 }
