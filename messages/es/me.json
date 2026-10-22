@@ -212,95 +212,216 @@
   },
   "today": {
     "eyebrow": "Hoy · {date}",
-    "title": "Tu día, en foco.",
-    "description": "El ritmo viene de los programas en los que estás y de lo que añades. Hidratación y descanso quedan solo en este dispositivo.",
-    "rhythm": {
-      "title": "Ritmo de hoy",
-      "counter": "{done} de {total, plural, =1 {# ítem hecho} other {# ítems hechos}}",
-      "empty": "Nada en el ritmo de hoy",
-      "emptyDescription": "Entra en un programa o añade un ítem para armar tu día.",
-      "emptyProgramCta": "Ver programas",
-      "add": "Añadir ítem",
-      "addTitle": "Nuevo ítem de rutina",
-      "editTitle": "Editar ítem",
-      "form": {
-        "title": "Título",
-        "titlePlaceholder": "Ej.: Estirar 10 minutos",
-        "note": "Nota",
-        "notePlaceholder": "Opcional, hasta 120 caracteres",
-        "time": "Hora",
-        "timeHint": "Sin hora, el ítem queda al final de la lista.",
-        "weekdays": "Días de la semana",
-        "allDays": "Todos los días",
-        "save": "Guardar",
-        "cancel": "Cancelar",
-        "dayShort": {
-          "0": "D",
-          "1": "L",
-          "2": "M",
-          "3": "X",
-          "4": "J",
-          "5": "V",
-          "6": "S"
+    "title": "Hoy — Tu día, en foco",
+    "description": "Medido por tu reloj: tu noche y tu día hasta ahora. Nada que escribir.",
+    "demo": {
+      "title": "Datos de demostración",
+      "body": "Simulan un {device}. Nada aquí es de una persona real y nada se guarda: los números se generan al momento.",
+      "tag": "Demo"
+    },
+    "example": {
+      "title": "Ejemplo",
+      "body": "Un reloj simulado ({device}) para que veas cómo funcionará Hoy. No es tu perfil, no usa tus datos y nada se guarda.",
+      "tag": "Ejemplo",
+      "pageTitle": "Ejemplo de Hoy con reloj",
+      "back": "Volver al Perfil"
+    },
+    "source": "{device} (simulado) · sincronizado a las {time}",
+    "sourceAt": "{device} (simulado) · {time}",
+    "sourceOn": "{device} (simulado) · {date}, {time}",
+    "syncHint": "Con un reloj real, los datos llegan cuando se sincroniza con la app {app}. No hay botón de actualizar.",
+    "night": {
+      "title": "Tu noche",
+      "lastNight": "El reloj aún no se sincronizó después de que despertaste. Esta es la última noche disponible ({date})."
+    },
+    "day": {
+      "title": "Tu día hasta ahora",
+      "until": "hasta las {time}",
+      "noData": "Aún no hay datos de hoy: el reloj se sincroniza después de que despiertas."
+    },
+    "comparison": {
+      "below": "por debajo de tu rango habitual",
+      "within": "dentro de tu rango habitual",
+      "above": "por encima de tu rango habitual",
+      "learning": "aprendiendo lo habitual"
+    },
+    "computedByUs": "Calculado por Ultra Hero · puede diferir del número de tu reloj.",
+    "openDetail": "Ver detalles",
+    "cards": {
+      "bodyBattery": {
+        "title": "Body Battery™ · Garmin",
+        "value": "{value} a las {time}",
+        "charged": "Cargó +{n} durante la noche",
+        "range": "máx. {high} · mín. {low}",
+        "scale": "Escala de Garmin, de 5 a 100."
+      },
+      "vendorReadiness": {
+        "title": "Índice de preparación de la marca"
+      },
+      "garminNote": "Garmin no comparte Training Readiness ni Training Status con otras apps.",
+      "appleNote": "Tu Apple Watch tiene su propia Preparación, pero Apple no la comparte con otras apps.",
+      "disposition": {
+        "title": "Disposición Ultra Hero",
+        "below": "Por debajo de lo habitual",
+        "within": "Dentro de lo habitual",
+        "above": "Por encima de lo habitual",
+        "basis": "Con base en tu VFC, FC en reposo, sueño, carga y temperatura de la noche.",
+        "ours": "Ver nuestro cálculo",
+        "score": "Disposición Ultra Hero: {score} de 100 ({band})",
+        "notBrand": "No es la Preparación de Apple ni el Training Readiness de Garmin.",
+        "component": "{name}: peso {weight} · {direction}",
+        "components": {
+          "hrv": "VFC nocturna",
+          "sleep": "Sueño",
+          "rhr": "FC en reposo",
+          "load": "Carga de los últimos días",
+          "temp": "Temperatura de la noche"
         },
-        "dayLong": {
-          "0": "Domingo",
-          "1": "Lunes",
-          "2": "Martes",
-          "3": "Miércoles",
-          "4": "Jueves",
-          "5": "Viernes",
-          "6": "Sábado"
+        "pushUp": "lo subió",
+        "pushDown": "lo bajó",
+        "neutral": "neutro"
+      },
+      "sleep": {
+        "title": "Sueño",
+        "window": "{start} → {end}",
+        "vendorScore": "puntuación {brand} {score}",
+        "stages": "Profundo {deep} · REM {rem} · Ligero {light} · Despierto {awake}"
+      },
+      "vitals": {
+        "title": "Señales de la noche",
+        "summary": "{within} de {total} dentro de tu rango habitual",
+        "learning": "Aprendiendo lo habitual",
+        "item": "{name} {value} ({comparison})",
+        "short": {
+          "hr_resting": "FC en reposo",
+          "hrv_night": "VFC",
+          "resp_rate_sleep": "Respiración",
+          "spo2_night_avg": "SpO₂",
+          "skin_temp_delta_c": "Temperatura"
+        },
+        "compShort": {
+          "below": "por debajo",
+          "within": "en rango",
+          "above": "por encima",
+          "learning": "aprendiendo"
         }
       },
+      "activity": {
+        "title": "Actividad",
+        "rings": "Anillos del Apple Watch",
+        "move": "Movimiento",
+        "exercise": "Ejercicio",
+        "stand": "De pie",
+        "ring": "{name}: {value} de {goal} ({percent} de la meta del reloj)",
+        "steps": "{steps, plural, =1 {# paso} other {# pasos}}",
+        "stepsGoal": "{percent} de la meta del reloj ({goal})",
+        "intensityWeek": "Intensidad en la semana: {value} de {goal} min",
+        "floors": "{n, plural, =1 {# piso subido} other {# pisos subidos}}",
+        "distanceKcal": "{distance} · {kcal} activas",
+        "intensityCalc": "Intensidad: {value} min (calculado por Ultra Hero)",
+        "load": "Carga del día {value} · {comparison}"
+      },
+      "workouts": {
+        "title": "Entrenamientos",
+        "session": "{sport} · {duration}",
+        "hr": "FC media {avg} · máx. {max}",
+        "speed": "{value} km/h",
+        "load": "Carga del día {value} · {comparison}",
+        "origin": "Entrenamiento iniciado en el reloj",
+        "sports": {
+          "run": "Carrera",
+          "trail_run": "Trail",
+          "walk": "Caminata",
+          "cycle": "Ciclismo",
+          "strength": "Fuerza"
+        }
+      },
+      "stress": {
+        "title": "Estrés",
+        "avg": "Media {value} hasta ahora ({level})",
+        "levels": {
+          "rest": "reposo",
+          "low": "bajo",
+          "medium": "medio",
+          "high": "alto"
+        },
+        "high": "Estrés alto: {value}",
+        "scale": "Escala de Garmin, de 0 a 100, medida por la VFC a lo largo del día."
+      },
+      "environment": {
+        "title": "Entorno",
+        "noise": "ruido medio {value}",
+        "daylight": "luz del día {value}"
+      },
+      "safety": {
+        "title": "Seguridad",
+        "fall": "Tu reloj registró una posible caída a las {time}. Si lo necesitas, busca ayuda."
+      }
+    },
+    "wellness": "Datos del reloj, para bienestar. No es un diagnóstico y no sustituye la evaluación médica.",
+    "aboutLink": "Sobre tus datos",
+    "connect": {
+      "title": "Conectar reloj",
+      "body": "Pronto, Hoy mostrará lo que tu reloj mide solo: sueño, corazón, actividad y entrenamientos. Nada que escribir.",
+      "brandsLabel": "Marcas previstas",
+      "soon": "Pronto",
+      "privacy": "Aún no hay conexión con ninguna marca y Ultra Hero no recopila datos de salud.",
+      "exampleCta": "Ver un ejemplo",
+      "exampleHint": "Abre un reloj simulado, separado de tu perfil."
+    },
+    "programs": {
+      "title": "Continúa tus programas",
+      "description": "Los próximos pasos de los programas en los que estás.",
+      "counter": "{done} de {total, plural, =1 {# paso hecho} other {# pasos hechos}}",
+      "empty": "Ningún programa en curso",
+      "emptyDescription": "Únete a un programa para ver aquí los próximos pasos.",
+      "emptyCta": "Ver programas",
       "fromProgram": "Programa: {name}",
       "byHero": "Con {name}",
       "openContent": "Abrir {title}",
       "markDone": "Marcar como hecho",
-      "markUndone": "Desmarcar",
-      "done": "Hecho",
-      "itemMenu": "Opciones de {title}",
-      "edit": "Editar",
-      "delete": "Eliminar",
-      "deleteTitle": "¿Eliminar ítem?",
-      "deleteDescription": "“{title}” sale de tu rutina y sus marcas se borran. No se puede deshacer.",
-      "deleteConfirm": "Eliminar",
-      "toasts": {
-        "created": "Ítem añadido a tu día.",
-        "updated": "Ítem actualizado.",
-        "deleted": "Ítem eliminado.",
-        "checked": "¡Hecho!",
-        "unchecked": "Marca eliminada.",
-        "streak": "Racha: {n, plural, =0 {ningún día aún} =1 {# día} other {# días}}"
-      },
-      "errors": {
-        "routine_limit": "Ya tienes 20 ítems activos. Elimina uno para añadir otro.",
-        "routine_item_not_found": "Este ítem ya no existe. Recarga la página.",
-        "invalid_timezone": "Zona horaria inválida.",
-        "invalid": "Revisa los campos.",
-        "failed": "No se pudo guardar. Inténtalo de nuevo."
-      }
+      "done": "Hecho"
     },
-    "hydration": {
-      "title": "Hidratación",
-      "value": "Agua registrada hoy: {value}",
-      "goalLabel": "agua registrada · meta {goal}",
-      "goalSelect": "Meta diaria",
-      "goalOption": "{goal}",
-      "add": "Añadir 250 ml",
-      "remove": "Quitar 250 ml",
-      "localNote": "Registro local: queda solo en este dispositivo y no se envía a Ultra Hero.",
-      "noStorage": "Este navegador no guarda registros locales: el valor se pierde al salir de la página.",
-      "progressLabel": "Progreso de la hidratación de hoy"
+    "detail": {
+      "back": "Volver a Hoy",
+      "metaTitle": "{section} · Hoy",
+      "now": "Hoy",
+      "measuredTitle": "Lo que midió el reloj",
+      "at": "a las {time}",
+      "onDate": "{date}, {time}",
+      "usual": "Rango habitual: {low} a {high}",
+      "trendTitle": "Tendencia de {name}",
+      "periodLabel": "Período",
+      "days": "{n} días",
+      "chartSummary": "{name} en los últimos {n} días: media {avg}; hoy {today}. La franja sombreada es tu rango habitual.",
+      "noToday": "sin dato",
+      "partial": "parcial",
+      "band": "Rango habitual",
+      "tableToggle": "Ver como tabla",
+      "tableCaption": "{name} por día",
+      "colDate": "Día",
+      "colValue": "Valor",
+      "howTitle": "Cómo se mide",
+      "sourceTitle": "Fuente",
+      "source": "{device} (simulado). Última sincronización a las {time}.",
+      "hrvMethod": "VFC por el método {method} (no mezclamos métodos).",
+      "notFound": "Este reloj no mide esta parte del día."
     },
-    "rest": {
-      "title": "Registrar descanso",
-      "description": "Registro local, sin metas prescritas.",
-      "rested": "Hoy descansé",
-      "hours": "Horas de sueño",
-      "hoursHint": "Opcional, de media en media hora.",
-      "localNote": "Registro local: queda solo en este dispositivo y no se envía a Ultra Hero.",
-      "noStorage": "Este navegador no guarda registros locales: la marca se pierde al salir de la página."
+    "about": {
+      "metaTitle": "Sobre tus datos",
+      "title": "Sobre tus datos",
+      "intro": "En esta fase Ultra Hero no lee ningún reloj real y no recopila datos de salud. El reloj simulado se genera al momento, a partir de la cuenta y la fecha, y no se guarda ni se envía a nadie.",
+      "rule": "Regla de Hoy: solo entra lo que el reloj mide solo, con el uso — automáticamente o en un entrenamiento iniciado en él. Nada se escribe.",
+      "modelTitle": "Lo que mide el {device}",
+      "modelHidden": "Lo que este modelo no mide queda oculto en Hoy — nunca aparece como cero.",
+      "vendorTitle": "Lo que cada marca no comparte con otras apps",
+      "vendorIntro": "Estos números existen en la app de la marca, pero no salen a otras apps. Cuando tiene sentido, mostramos un cálculo nuestro, siempre etiquetado.",
+      "regulatedTitle": "Funciones médicas que la app no lee",
+      "regulatedIntro": "Son funciones de dispositivo médico regulado. Ultra Hero es de bienestar y no las lee ni las pide.",
+      "onDemandTitle": "Mediciones que requieren un gesto tuyo (fuera por ahora)",
+      "manualTitle": "Lo que nunca entra, porque se escribe y no se mide",
+      "privacyTitle": "Privacidad",
+      "privacyBody": "Los antiguos registros de hidratación y descanso quedaban solo en este dispositivo; el nuevo Hoy los borró del navegador sin enviar nada. Lee la <privacy>Política de Privacidad</privacy>."
     }
   },
   "favorites": {

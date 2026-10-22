@@ -5,22 +5,24 @@ import { Bell, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package,
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
-import type { RhythmItem } from "@/components/me/today/RhythmBlock";
+import { ContinuePrograms } from "@/components/me/today/ContinuePrograms";
 import { TodaySection } from "@/components/me/today/TodaySection";
 import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
-import { itemsForDate, pickProgramSuggestions, shortTime, sortRoutine, type EnrollmentLike } from "@/lib/routine/today";
+import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
+import { resolveWatchView } from "@/lib/wearables/context";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("me.meta");
   return { title: t("profile") };
 }
 
-// Perfil: "Hoje" (ritmo do dia: programas + itens manuais), visão geral (avatar, nome, e-mail, papéis,
+// Perfil: "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado), "Continue seus
+// programas" depois da Evolução, visão geral (avatar, nome, e-mail, papéis,
 // plano simulado, portais), dados editáveis e atalhos.
 
 // Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
@@ -66,10 +68,8 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
-  const [{ data: subscriptionRaw }, routineRes, checksRes, enrollmentsRes, completionsRes, streakRes] = await Promise.all([
+  const [{ data: subscriptionRaw }, enrollmentsRes, completionsRes, streakRes] = await Promise.all([
     supabase.rpc("my_subscription"),
-    supabase.from("routine_items").select("id, title, note, time_of_day, weekdays, active, sort_order").eq("user_id", user.id).eq("active", true).order("sort_order"),
-    supabase.from("routine_checks").select("item_id, done").eq("user_id", user.id).eq("local_date", today),
     supabase.from("enrollments").select(ENROLLMENT_SELECT).eq("user_id", user.id).eq("status", "active").order("enrolled_at", { ascending: false }),
     supabase.from("completions").select("content_id").eq("user_id", user.id).limit(2000),
     supabase.rpc("compute_streak", { p_user: user.id, p_timezone: tz }),
@@ -79,16 +79,8 @@ export default async function ProfilePage() {
   const completionsCount = (completionsRes.data ?? []).length;
   const subscription = parseSubscription(subscriptionRaw);
 
-  // Ritmo de hoje: itens manuais válidos na data local + próximos itens obrigatórios dos programas.
-  const doneToday = new Set((checksRes.data ?? []).filter((c) => c.done).map((c) => c.item_id));
-  const routineItems: RhythmItem[] = sortRoutine(itemsForDate(routineRes.data ?? [], today)).map((item) => ({
-    id: item.id,
-    title: item.title,
-    note: item.note,
-    time: shortTime(item.time_of_day),
-    weekdays: item.weekdays,
-    done: doneToday.has(item.id),
-  }));
+  // Itens de rotina criados à mão saíram do Hoje (F1): os dados ficam no banco (decisão reversível,
+  // Q5) e a sequência continua contando as marcações antigas (Q10). Programas: próximos passos.
   const enrollments: EnrollmentLike[] = ((enrollmentsRes.data ?? []) as unknown as EnrollmentWithItems[]).map((e) => ({
     id: e.id,
     status: e.status,
@@ -105,6 +97,8 @@ export default async function ProfilePage() {
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
   const roleSet = Array.from(new Set(roles.map((r) => r.role)));
+  // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio".
+  const watchView = resolveWatchView({ user, roles: roleSet, timeZone: tz, example: false });
   const portals = PORTALS.filter((p) => roleSet.includes(p.role));
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
@@ -114,8 +108,8 @@ export default async function ProfilePage() {
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
 
-      {/* Hoje: ritmo do dia (banco) + hidratação e descanso (só no aparelho) */}
-      <TodaySection localDate={today} suggestions={suggestions} items={routineItems} />
+      {/* Hoje: só o que o relógio mede (nada digitado); nada de saúde vai ao banco */}
+      <TodaySection localDate={today} view={watchView} />
 
       {/* Evolução: resumo; a página completa virou subpágina do Perfil */}
       <section aria-labelledby="evolution-title" className="flex flex-col gap-4 rounded-2xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-surface p-5 sm:flex-row sm:items-center" data-testid="profile-evolution">
@@ -136,6 +130,9 @@ export default async function ProfilePage() {
           <Link href="/profile/evolution">{t("evolution.open")}</Link>
         </Button>
       </section>
+
+      {/* Continue seus programas: as sugestões dos programas que antes ficavam no Hoje */}
+      <ContinuePrograms suggestions={suggestions} />
 
       {/* Visão geral */}
       <section aria-label={t("title")} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start">

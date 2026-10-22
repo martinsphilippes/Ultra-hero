@@ -180,7 +180,7 @@
             "profilePhoto": "<strong>Foto de perfil (opcional):</strong> se você tirar ou escolher uma foto, ela é recortada em quadrado e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu avatar no app; se você é herói, aparece também na sua página pública, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar fotos sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
             "notifications": "<strong>Preferências de notificação:</strong> o que você aceita receber (resumo editorial, lembretes de sequência, pedidos de teste) e por quais canais. Nesta versão nada é enviado; a escolha fica guardada para ser respeitada em qualquer envio futuro.",
             "usage": "<strong>Uso do conteúdo:</strong> interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas e certificados simbólicos (o PDF do certificado traz seu nome exibido).",
-            "routine": "<strong>Itens de rotina:</strong> título, horário, dias e a marcação diária, para montar o seu Hoje e contar a sequência.",
+            "routine": "<strong>Itens de rotina (antigos):</strong> título, horário, dias e as marcações que você fez quando o Hoje aceitava itens criados à mão. Desde 22/10/2026 eles não aparecem nem podem ser editados no Hoje, mas continuam guardados na sua conta (e as marcações antigas seguem contando na sequência) até a decisão sobre eles; você será avisado antes de qualquer exclusão.",
             "subscription": "<strong>Assinatura simulada:</strong> módulos escolhidos, períodos e histórico de mudanças.",
             "commerce": "<strong>Comércio simulado:</strong> carrinho, pedidos de teste (itens, valores ilustrativos e o destino fictício escolhido em uma lista) e registros de interesse em produtos.",
             "events": "<strong>Eventos de uso:</strong> ações no app, como abrir um conteúdo, concluir um programa ou iniciar um pedido de teste, com data, idioma e propriedades técnicas, como o identificador do conteúdo. Quando você está conectado, os eventos ficam vinculados à sua conta; para visitantes sem conta, são registrados sem identificador. O banco de dados recusa propriedades cujos nomes indiquem dados pessoais, como e-mail, telefone, CPF, nome, endereço ou senha.",
@@ -203,8 +203,8 @@
             "address": "endereço real ou de entrega: os destinos da loja são fictícios;",
             "location": "geolocalização;",
             "payment": "dados de pagamento, como cartão, conta bancária ou Pix: nada é cobrado;",
-            "health": "dados de saúde individuais, como peso, medidas, exames, diagnósticos ou condições médicas;",
-            "hydration": "registros de hidratação e descanso: ficam só no seu aparelho, no armazenamento local do navegador, e nunca são enviados ao app;",
+            "health": "dados de saúde individuais, como peso, medidas, exames, diagnósticos ou condições médicas, nem dados de relógios, anéis ou pulseiras: o Hoje ainda não se conecta a nenhuma marca, e o relógio de demonstração (das contas demo e do botão “Ver um exemplo”) é gerado na hora no servidor, não usa dados seus, não é guardado e não vai para os eventos de uso;",
+            "hydration": "registros de hidratação e descanso: o Hoje deixou de aceitá-los. Os antigos ficavam só no seu aparelho; o novo Hoje os apaga do armazenamento local do navegador uma única vez, sem ler nem enviar nada ao app;",
             "documents": "documentos (como CPF), telefone e data de nascimento: a idade mínima de 18 anos é declarada por você ao criar a conta."
           },
           "p1": "Não vendemos dados, não os repassamos para fins comerciais ou de publicidade e não usamos ferramentas de publicidade ou de análise de terceiros."
@@ -284,7 +284,7 @@
               }
             }
           },
-          "p2": "<strong>Armazenamento local do navegador:</strong> a chave <code>uh-theme</code> guarda o tema escolhido, para que ele também valha em páginas abertas sem conexão. No Modo Cozinha, as chaves <code>uh-cook:…</code> (uma por conta e receita, apagadas depois de 24 horas) guardam as etapas marcadas e os cronômetros por 24 horas, e <code>uh-cook-sound</code> lembra se o som do alarme está ligado. Na página da receita, as chaves <code>uh-recipe-check:…</code> (uma por conta e receita, apagadas depois de 24 horas) guardam os ingredientes que você marcou como separados. Essas chaves locais não saem do aparelho. As porções ajustadas não ficam guardadas na sua conta: vão no endereço da página (<code>?porcoes=</code>), que o servidor lê para mostrar as quantidades, e a primeira mudança de porções em cada visita gera um evento de uso só com o número de porções (veja “Eventos de uso”).",
+          "p2": "<strong>Armazenamento local do navegador:</strong> a chave <code>uh-theme</code> guarda o tema escolhido, para que ele também valha em páginas abertas sem conexão. No Modo Cozinha, as chaves <code>uh-cook:…</code> (uma por conta e receita, apagadas depois de 24 horas) guardam as etapas marcadas e os cronômetros por 24 horas, e <code>uh-cook-sound</code> lembra se o som do alarme está ligado. Na página da receita, as chaves <code>uh-recipe-check:…</code> (uma por conta e receita, apagadas depois de 24 horas) guardam os ingredientes que você marcou como separados. A chave <code>uh:today:migrated</code> só marca que os antigos registros de hidratação e descanso (<code>uh:today:…</code>) já foram apagados deste aparelho. Essas chaves locais não saem do aparelho. As porções ajustadas não ficam guardadas na sua conta: vão no endereço da página (<code>?porcoes=</code>), que o servidor lê para mostrar as quantidades, e a primeira mudança de porções em cada visita gera um evento de uso só com o número de porções (veja “Eventos de uso”).",
           "p3": "<strong>Cache do app:</strong> o service worker guarda no navegador a página offline, o manifesto, os ícones e arquivos estáticos do app, para carregar mais rápido e funcionar sem conexão. Esse cache não contém seus dados pessoais.",
           "p4": "<strong>Vídeos incorporados:</strong> se um conteúdo exibir vídeo do YouTube (pelo domínio youtube-nocookie.com) ou do Vimeo, o player é carregado diretamente desse serviço quando o vídeo aparece na página, e o serviço pode coletar dados técnicos e usar cookies próprios, conforme a política dele. Os conteúdos de exemplo da demonstração usam um player simulado, sem serviço externo.",
           "p5": "Você pode apagar cookies e dados do site nas configurações do navegador. Sem o cookie de sessão, será preciso entrar de novo."
@@ -331,7 +331,7 @@
               "routine": {
                 "data": "Itens de rotina e marcações diárias",
                 "period": "Enquanto a conta existir",
-                "details": "São apagados junto com a conta. Hidratação e descanso não entram aqui: ficam só no seu aparelho."
+                "details": "São apagados junto com a conta. Não aparecem mais no Hoje, mas continuam guardados até a decisão sobre eles. Hidratação e descanso não existem mais: os registros antigos ficavam só no aparelho e são apagados dele."
               },
               "profilePhoto": {
                 "data": "Foto de perfil",

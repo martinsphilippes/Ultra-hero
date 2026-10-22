@@ -23,7 +23,13 @@
 
 Modelado na 0027 e **ainda sem tela** (cada fase do módulo de receitas atualiza esta tabela e `legal.json` quando passar a coletar): comentários (desligados), lista de compras e indicadores agregados para o herói. As avaliações por estrelas ganharam tela na fase 3 e o histórico opcional de receitas vistas na fase 4 (linhas acima); as duas fases estão integradas e citadas em `legal.json` (3 idiomas), inclusive as chaves locais do checklist e do Modo Cozinha. O catálogo (fase 3) **não usa** as restrições e alergias da etapa: filtros de dieta e alérgeno só valem quando a pessoa os marca, e o evento `recipe.catalog_filter` leva só os nomes dos filtros; o cruzamento com as alergias marcadas acontece só na página da receita e só com os alérgenos declarados pelo chef.
 
-**Não coletamos**: endereço real, geolocalização, dados de pagamento, dados de saúde individuais. Conteúdo é educativo, sem prescrição.
+**Não coletamos**: endereço real, geolocalização, dados de pagamento, dados de saúde individuais — **inclusive de relógios, anéis e pulseiras**. Conteúdo é educativo, sem prescrição.
+
+**Hoje com relógio (F1 + F2, 22/10/2026; desenho em `docs/decisions/hoje-relogio.md`):**
+- O Hoje não aceita mais nada digitado. **Hidratação e descanso deixaram de existir**: os registros antigos ficavam só no aparelho (`localStorage` `uh:today:<data>:hydration`, `uh:today:<data>:rest`, `uh:today:hydration-goal`) e o novo Hoje os apaga uma única vez, sem ler o conteúdo nem enviar nada; a chave `uh:today:migrated` só marca que a limpeza já rodou.
+- **Nenhum dado de saúde é coletado em F1/F2.** Nenhuma marca está conectada. O "relógio simulado" das contas demo e do botão "Ver um exemplo" é gerado na hora, no servidor, a partir da persona da conta e da data local (`src/lib/wearables/demo.ts`); não é gravado no banco, não vai para `analytics_events` e não usa dado da pessoa.
+- Itens de rotina criados à mão (`routine_items`/`routine_checks`) saíram da interface, mas **não foram apagados** (decisão reversível, Q5) e as marcações antigas continuam contando na sequência (Q10). Seguem apagados junto com a conta.
+- Ler dados reais de relógio (F3 em diante) exige, antes, a mudança desta política e de `legal.json`, consentimento por categoria, RIPD e encarregado nomeado (§15 do documento de desenho).
 
 ## Retenção aprovada
 

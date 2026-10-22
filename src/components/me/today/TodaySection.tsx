@@ -1,27 +1,25 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import type { Locale } from "@/i18n/config";
-import type { ProgramSuggestion } from "@/lib/routine/today";
+import type { WatchView } from "@/lib/wearables/context";
 import { ymdToDate } from "../dates";
-import { HydrationBlock } from "./HydrationBlock";
-import { RestBlock } from "./RestBlock";
-import { RhythmBlock, type RhythmItem } from "./RhythmBlock";
+import { ConnectWatchCard } from "./ConnectWatchCard";
+import { LegacyTodayCleanup } from "./LegacyTodayCleanup";
+import { WatchToday } from "./WatchToday";
 
 type Props = {
   /** Data local de hoje (YYYY-MM-DD) no fuso do perfil (ou UTC). */
   localDate: string;
-  suggestions: ProgramSuggestion[];
-  items: RhythmItem[];
+  view: WatchView;
 };
 
-// "Hoje" no topo do Perfil: ritmo do dia (programas + itens manuais, no banco) e registros locais
-// de hidratação e descanso (só no aparelho). A data vem pronta do servidor para não depender do relógio do cliente.
-export async function TodaySection({ localDate, suggestions, items }: Props) {
+// "Hoje — Seu dia, em foco" no topo do Perfil: só o que o relógio mede sozinho (nada para digitar).
+// Conta demo → relógio simulado da persona; conta real → card "Conectar relógio" com "Ver um exemplo".
+export async function TodaySection({ localDate, view }: Props) {
   const [t, locale] = await Promise.all([getTranslations("me.today"), getLocale()]);
-  const uiLocale = locale as Locale;
-  const dateLabel = new Intl.DateTimeFormat(uiLocale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(ymdToDate(localDate));
+  const dateLabel = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(ymdToDate(localDate));
 
   return (
     <section aria-labelledby="today-title" className="flex flex-col gap-4" data-testid="today-section">
+      <LegacyTodayCleanup />
       <div className="flex flex-col gap-1">
         <p className="type-overline text-accent-text">
           <time dateTime={localDate}>{t("eyebrow", { date: dateLabel })}</time>
@@ -31,11 +29,7 @@ export async function TodaySection({ localDate, suggestions, items }: Props) {
         </h2>
         <p className="type-body-sm max-w-prose text-fg-muted">{t("description")}</p>
       </div>
-      <RhythmBlock suggestions={suggestions} items={items} />
-      <div className="grid gap-4 md:grid-cols-2">
-        <HydrationBlock localDate={localDate} locale={uiLocale} />
-        <RestBlock localDate={localDate} />
-      </div>
+      {view.kind === "connect" ? <ConnectWatchCard /> : <WatchToday snapshot={view.snapshot} mode={view.kind} />}
     </section>
   );
 }

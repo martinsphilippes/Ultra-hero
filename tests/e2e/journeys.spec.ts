@@ -94,13 +94,15 @@ test.describe("visitante", () => {
     await expect(dialog.getByRole("button", { name: "Enviar" })).toBeVisible();
   });
 
-  // "Hoje" no Perfil: a Política de Privacidade (pt-BR) diz que hidratação e descanso ficam só no aparelho
-  // e que os itens de rotina são guardados. Os fluxos logados do "Hoje" não têm E2E (sem contas de teste).
-  test("política de privacidade explica o registro local de hidratação e os itens de rotina", async ({ page }) => {
+  // "Hoje" com relógio (F1 + F2): a Política (pt-BR) diz que hidratação e descanso deixaram de existir
+  // (apagados do aparelho), que nenhum dado de relógio é coletado e que os itens de rotina antigos
+  // continuam guardados. Os fluxos logados do Hoje estão em today-watch.spec.ts (contas demo).
+  test("política de privacidade explica o fim do registro local de hidratação e os itens de rotina", async ({ page }) => {
     await page.goto("/legal/privacy");
     const main = page.locator("main");
-    await expect(main.getByText(/registros de hidratação e descanso: ficam só no seu aparelho/)).toBeVisible();
-    await expect(main.getByText(/Itens de rotina:/)).toBeVisible();
+    await expect(main.getByText(/registros de hidratação e descanso: o Hoje deixou de aceitá-los/)).toBeVisible();
+    await expect(main.getByText(/nem dados de relógios, anéis ou pulseiras/)).toBeVisible();
+    await expect(main.getByText(/Itens de rotina \(antigos\):/)).toBeVisible();
     await expect(page.getByRole("rowheader", { name: "Itens de rotina e marcações diárias" })).toBeVisible();
   });
 

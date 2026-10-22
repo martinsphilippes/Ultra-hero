@@ -212,95 +212,216 @@
   },
   "today": {
     "eyebrow": "Today · {date}",
-    "title": "Your day, in focus.",
-    "description": "Your rhythm comes from the programs you are in and from what you add. Hydration and rest stay on this device only.",
-    "rhythm": {
-      "title": "Today's rhythm",
-      "counter": "{done} of {total, plural, =1 {# item done} other {# items done}}",
-      "empty": "Nothing in today's rhythm",
-      "emptyDescription": "Join a program or add an item to build your day.",
-      "emptyProgramCta": "See programs",
-      "add": "Add item",
-      "addTitle": "New routine item",
-      "editTitle": "Edit item",
-      "form": {
-        "title": "Title",
-        "titlePlaceholder": "E.g. Stretch for 10 minutes",
-        "note": "Note",
-        "notePlaceholder": "Optional, up to 120 characters",
-        "time": "Time",
-        "timeHint": "Without a time, the item goes to the end of the list.",
-        "weekdays": "Days of the week",
-        "allDays": "Every day",
-        "save": "Save",
-        "cancel": "Cancel",
-        "dayShort": {
-          "0": "S",
-          "1": "M",
-          "2": "T",
-          "3": "W",
-          "4": "T",
-          "5": "F",
-          "6": "S"
+    "title": "Today — Your day, in focus",
+    "description": "Measured by your watch: your night and your day so far. Nothing to type.",
+    "demo": {
+      "title": "Demo data",
+      "body": "They simulate a {device}. Nothing here belongs to a real person, and nothing is stored: the numbers are generated on the spot.",
+      "tag": "Demo"
+    },
+    "example": {
+      "title": "Example",
+      "body": "A simulated watch ({device}) so you can see how Today will work. It is not your profile, uses none of your data and nothing is stored.",
+      "tag": "Example",
+      "pageTitle": "Example of Today with a watch",
+      "back": "Back to Profile"
+    },
+    "source": "{device} (simulated) · synced at {time}",
+    "sourceAt": "{device} (simulated) · {time}",
+    "sourceOn": "{device} (simulated) · {date}, {time}",
+    "syncHint": "With a real watch, data arrives when it syncs with the {app} app. There is no refresh button.",
+    "night": {
+      "title": "Your night",
+      "lastNight": "The watch has not synced since you woke up. This is the last night available ({date})."
+    },
+    "day": {
+      "title": "Your day so far",
+      "until": "until {time}",
+      "noData": "No data for today yet: the watch syncs after you wake up."
+    },
+    "comparison": {
+      "below": "below your usual range",
+      "within": "within your usual range",
+      "above": "above your usual range",
+      "learning": "learning your usual"
+    },
+    "computedByUs": "Calculated by Ultra Hero · may differ from your watch's number.",
+    "openDetail": "See details",
+    "cards": {
+      "bodyBattery": {
+        "title": "Body Battery™ · Garmin",
+        "value": "{value} at {time}",
+        "charged": "Charged +{n} overnight",
+        "range": "high {high} · low {low}",
+        "scale": "Garmin's scale, from 5 to 100."
+      },
+      "vendorReadiness": {
+        "title": "Brand readiness score"
+      },
+      "garminNote": "Garmin does not share Training Readiness and Training Status with other apps.",
+      "appleNote": "Your Apple Watch has its own Readiness, but Apple does not share it with other apps.",
+      "disposition": {
+        "title": "Ultra Hero Daily Balance",
+        "below": "Below your usual",
+        "within": "Within your usual",
+        "above": "Above your usual",
+        "basis": "Based on your HRV, resting heart rate, sleep, load and overnight temperature.",
+        "ours": "See our calculation",
+        "score": "Ultra Hero Daily Balance: {score} of 100 ({band})",
+        "notBrand": "It is not Apple's Readiness nor Garmin's Training Readiness.",
+        "component": "{name}: weight {weight} · {direction}",
+        "components": {
+          "hrv": "Overnight HRV",
+          "sleep": "Sleep",
+          "rhr": "Resting heart rate",
+          "load": "Recent load",
+          "temp": "Overnight temperature"
         },
-        "dayLong": {
-          "0": "Sunday",
-          "1": "Monday",
-          "2": "Tuesday",
-          "3": "Wednesday",
-          "4": "Thursday",
-          "5": "Friday",
-          "6": "Saturday"
+        "pushUp": "pulled it up",
+        "pushDown": "pulled it down",
+        "neutral": "neutral"
+      },
+      "sleep": {
+        "title": "Sleep",
+        "window": "{start} → {end}",
+        "vendorScore": "{brand} score {score}",
+        "stages": "Deep {deep} · REM {rem} · Light {light} · Awake {awake}"
+      },
+      "vitals": {
+        "title": "Night signals",
+        "summary": "{within} of {total} within your usual range",
+        "learning": "Learning your usual",
+        "item": "{name} {value} ({comparison})",
+        "short": {
+          "hr_resting": "Resting HR",
+          "hrv_night": "HRV",
+          "resp_rate_sleep": "Breathing",
+          "spo2_night_avg": "SpO₂",
+          "skin_temp_delta_c": "Temperature"
+        },
+        "compShort": {
+          "below": "below",
+          "within": "in range",
+          "above": "above",
+          "learning": "learning"
         }
       },
+      "activity": {
+        "title": "Activity",
+        "rings": "Apple Watch rings",
+        "move": "Move",
+        "exercise": "Exercise",
+        "stand": "Stand",
+        "ring": "{name}: {value} of {goal} ({percent} of the watch goal)",
+        "steps": "{steps, plural, =1 {# step} other {# steps}}",
+        "stepsGoal": "{percent} of the watch goal ({goal})",
+        "intensityWeek": "Intensity this week: {value} of {goal} min",
+        "floors": "{n, plural, =1 {# floor climbed} other {# floors climbed}}",
+        "distanceKcal": "{distance} · {kcal} active",
+        "intensityCalc": "Intensity: {value} min (calculated by Ultra Hero)",
+        "load": "Day load {value} · {comparison}"
+      },
+      "workouts": {
+        "title": "Workouts",
+        "session": "{sport} · {duration}",
+        "hr": "Avg HR {avg} · max {max}",
+        "speed": "{value} km/h",
+        "load": "Day load {value} · {comparison}",
+        "origin": "Workout started on the watch",
+        "sports": {
+          "run": "Run",
+          "trail_run": "Trail run",
+          "walk": "Walk",
+          "cycle": "Ride",
+          "strength": "Strength"
+        }
+      },
+      "stress": {
+        "title": "Stress",
+        "avg": "Average {value} so far ({level})",
+        "levels": {
+          "rest": "rest",
+          "low": "low",
+          "medium": "medium",
+          "high": "high"
+        },
+        "high": "High stress: {value}",
+        "scale": "Garmin's 0–100 scale, measured from HRV through the day."
+      },
+      "environment": {
+        "title": "Environment",
+        "noise": "average noise {value}",
+        "daylight": "daylight {value}"
+      },
+      "safety": {
+        "title": "Safety",
+        "fall": "Your watch recorded a possible fall at {time}. If you need to, seek help."
+      }
+    },
+    "wellness": "Watch data, for wellbeing. It is not a diagnosis and does not replace medical advice.",
+    "aboutLink": "About your data",
+    "connect": {
+      "title": "Connect a watch",
+      "body": "Soon, Today will show what your watch measures on its own: sleep, heart, activity and workouts. Nothing to type.",
+      "brandsLabel": "Planned brands",
+      "soon": "Soon",
+      "privacy": "There is no connection to any brand yet, and Ultra Hero does not collect health data.",
+      "exampleCta": "See an example",
+      "exampleHint": "Opens a simulated watch, kept apart from your profile."
+    },
+    "programs": {
+      "title": "Continue your programs",
+      "description": "The next steps of the programs you are in.",
+      "counter": "{done} of {total, plural, =1 {# step done} other {# steps done}}",
+      "empty": "No program in progress",
+      "emptyDescription": "Join a program to see its next steps here.",
+      "emptyCta": "See programs",
       "fromProgram": "Program: {name}",
       "byHero": "With {name}",
       "openContent": "Open {title}",
       "markDone": "Mark as done",
-      "markUndone": "Unmark",
-      "done": "Done",
-      "itemMenu": "Options for {title}",
-      "edit": "Edit",
-      "delete": "Delete",
-      "deleteTitle": "Delete item?",
-      "deleteDescription": "“{title}” leaves your routine and its check marks are erased. This cannot be undone.",
-      "deleteConfirm": "Delete",
-      "toasts": {
-        "created": "Item added to your day.",
-        "updated": "Item updated.",
-        "deleted": "Item deleted.",
-        "checked": "Done!",
-        "unchecked": "Check mark removed.",
-        "streak": "Streak: {n, plural, =0 {no days yet} =1 {# day} other {# days}}"
-      },
-      "errors": {
-        "routine_limit": "You already have 20 active items. Delete one to add another.",
-        "routine_item_not_found": "This item no longer exists. Reload the page.",
-        "invalid_timezone": "Invalid time zone.",
-        "invalid": "Check the fields.",
-        "failed": "Could not save. Try again."
-      }
+      "done": "Done"
     },
-    "hydration": {
-      "title": "Hydration",
-      "value": "Water logged today: {value}",
-      "goalLabel": "water logged · goal {goal}",
-      "goalSelect": "Daily goal",
-      "goalOption": "{goal}",
-      "add": "Add 250 ml",
-      "remove": "Remove 250 ml",
-      "localNote": "Local log: stays on this device only and is never sent to Ultra Hero.",
-      "noStorage": "This browser does not keep local logs: the value is lost when you leave the page.",
-      "progressLabel": "Today's hydration progress"
+    "detail": {
+      "back": "Back to Today",
+      "metaTitle": "{section} · Today",
+      "now": "Today",
+      "measuredTitle": "What the watch measured",
+      "at": "at {time}",
+      "onDate": "{date}, {time}",
+      "usual": "Usual range: {low} to {high}",
+      "trendTitle": "{name} trend",
+      "periodLabel": "Period",
+      "days": "{n} days",
+      "chartSummary": "{name} over the last {n} days: average {avg}; today {today}. The shaded band is your usual range.",
+      "noToday": "no data",
+      "partial": "partial",
+      "band": "Usual range",
+      "tableToggle": "View as table",
+      "tableCaption": "{name} by day",
+      "colDate": "Day",
+      "colValue": "Value",
+      "howTitle": "How it is measured",
+      "sourceTitle": "Source",
+      "source": "{device} (simulated). Last sync at {time}.",
+      "hrvMethod": "HRV by the {method} method (methods are never mixed).",
+      "notFound": "This watch does not measure this part of the day."
     },
-    "rest": {
-      "title": "Log rest",
-      "description": "Local log, no prescribed goals.",
-      "rested": "I rested today",
-      "hours": "Hours of sleep",
-      "hoursHint": "Optional, in half-hour steps.",
-      "localNote": "Local log: stays on this device only and is never sent to Ultra Hero.",
-      "noStorage": "This browser does not keep local logs: the check mark is lost when you leave the page."
+    "about": {
+      "metaTitle": "About your data",
+      "title": "About your data",
+      "intro": "At this stage Ultra Hero does not read any real watch and does not collect health data. The simulated watch is generated on the spot from the account and the date, and it is neither stored nor sent to anyone.",
+      "rule": "Today's rule: only what the watch measures on its own, through use — automatically or in a workout started on it. Nothing is typed.",
+      "modelTitle": "What the {device} measures",
+      "modelHidden": "What this model does not measure stays hidden in Today — it never shows as zero.",
+      "vendorTitle": "What each brand does not share with other apps",
+      "vendorIntro": "These numbers exist in the brand's app but are not shared with other apps. When it makes sense, we show our own calculation, always labelled.",
+      "regulatedTitle": "Medical features the app does not read",
+      "regulatedIntro": "These are regulated medical-device features. Ultra Hero is for wellbeing and neither reads nor requests them.",
+      "onDemandTitle": "Measurements that need an action from you (left out for now)",
+      "manualTitle": "What never comes in, because it is typed, not measured",
+      "privacyTitle": "Privacy",
+      "privacyBody": "The old hydration and rest logs stayed only on this device; the new Today erased them from the browser without sending anything. Read the <privacy>Privacy Policy</privacy>."
     }
   },
   "favorites": {
