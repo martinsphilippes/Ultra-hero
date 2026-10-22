@@ -27,7 +27,8 @@ export async function TodaySection({ localDate, view }: Props) {
         <h2 id="today-title" className="type-h2 text-fg">
           {t("title")}
         </h2>
-        <p className="type-body-sm max-w-prose text-fg-muted">{t("description")}</p>
+        {/* sem relógio, não prometer "medido pelo seu relógio": a integração ainda não existe */}
+        <p className="type-body-sm max-w-prose text-fg-muted">{view.kind === "connect" ? t("descriptionConnect") : t("description")}</p>
       </div>
       {view.kind === "connect" ? <ConnectWatchCard /> : <WatchToday snapshot={view.snapshot} mode={view.kind} />}
     </section>

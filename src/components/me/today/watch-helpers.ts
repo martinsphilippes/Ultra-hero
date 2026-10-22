@@ -1,7 +1,7 @@
 // Ajudantes de apresentação do Hoje com relógio (sem React): o que mostrar em cada card,
 // comparação com a faixa habitual e rótulos de fonte. Testáveis em node.
 
-import { MODEL_INFO, metricsForSection, modelMeasures, type DetailSectionId, type MetricCode } from "@/lib/wearables/catalog";
+import { metricDef, MODEL_INFO, metricsForSection, modelMeasures, type DetailSectionId, type MetricCode } from "@/lib/wearables/catalog";
 import type { MetricPoint, WatchSnapshot } from "@/lib/wearables/demo";
 import { compare, type Comparison } from "@/lib/wearables/derived";
 
@@ -16,6 +16,22 @@ export function value(snapshot: WatchSnapshot, code: MetricCode): number | null 
 
 export function comparisonOf(snapshot: WatchSnapshot, code: MetricCode): Comparison {
   return compare(value(snapshot, code), snapshot.baselines[code] ?? null);
+}
+
+/**
+ * "Faixa habitual" do detalhe: só para o que é medido (não para metas fixas do relógio, horários
+ * nem cálculos nossos) e com largura de verdade; limitada à escala plausível da métrica
+ * (ex.: Body Battery nunca abaixo de 5).
+ */
+export function usualRange(snapshot: WatchSnapshot, code: MetricCode): { low: number; high: number } | null {
+  const base = snapshot.baselines[code];
+  const def = metricDef(code);
+  if (!base || !def || def.goal || def.unit === "clock" || def.mode === "C") return null;
+  const [min, max] = def.plaus ?? [Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY];
+  const low = Math.min(max, Math.max(min, base.low));
+  const high = Math.min(max, Math.max(min, base.high));
+  if (!(high > low) || high <= 0) return null;
+  return { low, high };
 }
 
 /** Faixas de estresse da Garmin (0–25 repouso, 26–50 baixo, 51–75 médio, 76–100 alto). */

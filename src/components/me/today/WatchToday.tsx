@@ -8,7 +8,7 @@ import type { WatchSnapshot } from "@/lib/wearables/demo";
 import { formatClock, formatDistance, formatDuration, formatInteger, formatMetric, formatNoonClock, formatPace, formatPercent, formatDecimal } from "@/lib/wearables/format";
 import { cn } from "@/lib/utils";
 import { ymdToDate } from "../dates";
-import { comparisonOf, indexCardKind, point, stressLevel, value } from "./watch-helpers";
+import { comparisonOf, indexCardKind, point, sectionAvailable, stressLevel, value } from "./watch-helpers";
 
 type Props = {
   snapshot: WatchSnapshot;
@@ -40,6 +40,9 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
   const nightAt = snapshot.night ? snapshot.night.endClock : snapshot.syncedAt;
   const nightSource = snapshot.night && !nightToday ? t("sourceOn", { device, date: nightDateLabel, time: clock(nightAt) }) : sourceAt(nightAt);
   const comparisonText = (code: Parameters<typeof comparisonOf>[1]) => t(`comparison.${comparisonOf(snapshot, code)}`);
+  const shortDate = (ymd: string) => new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(ymdToDate(ymd));
+  // valor de outro dia (ex.: Body Battery de ontem antes da sincronização da manhã) leva a data dele
+  const pointSource = (p: { date: string; at: number }) => (p.date === snapshot.date ? sourceAt(p.at) : t("sourceOn", { device, date: shortDate(p.date), time: clock(p.at) }));
 
   // ---------------------------------------------------------------- Sua noite
   const nightCards: ReactNode[] = [];
@@ -50,7 +53,7 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
     const high = value(snapshot, "body_battery_high");
     const low = value(snapshot, "body_battery_low");
     nightCards.push(
-      <TodayCard key="index" href={href("readiness")} title={t("cards.bodyBattery.title")} tag={tag} heading={cardHeading} source={sourceAt(now!.at)} testId="today-card-readiness" detailLabel={t("openDetail")}>
+      <TodayCard key="index" href={href("readiness")} title={t("cards.bodyBattery.title")} tag={tag} heading={cardHeading} source={pointSource(now!)} testId="today-card-readiness" detailLabel={t("openDetail")}>
         <p className="type-h2 type-numeric text-fg">{t("cards.bodyBattery.value", { value: now!.value, time: clock(now!.at) })}</p>
         {charged !== null ? <p className="type-body-sm text-fg">{t("cards.bodyBattery.charged", { n: charged })}</p> : null}
         {high !== null && low !== null ? <p className="type-caption type-numeric text-fg-muted">{t("cards.bodyBattery.range", { high, low })}</p> : null}
@@ -86,7 +89,8 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
       <TodayCard key="sleep" href={href("sleep")} title={t("cards.sleep.title")} tag={tag} heading={cardHeading} source={nightSource} testId="today-card-sleep" detailLabel={t("openDetail")}>
         <p className="type-h2 type-numeric text-fg">
           {formatDuration(asleep, locale)}
-          {score !== null ? <span className="ml-2 type-body-sm font-semibold text-fg-muted">{t("cards.sleep.vendorScore", { brand: tw(`brands.${info.brand}`), score })}</span> : null}
+          {/* separador real (não só margem) para o leitor de tela não colar "min" e "nota" */}
+          {score !== null ? <span className="type-body-sm font-semibold text-fg-muted">{" · "}{t("cards.sleep.vendorScore", { brand: tw(`brands.${info.brand}`), score })}</span> : null}
         </p>
         {start !== null && end !== null ? <p className="type-body-sm type-numeric text-fg">{t("cards.sleep.window", { start: formatNoonClock(start, locale), end: formatNoonClock(end, locale) })}</p> : null}
         <p className="type-caption text-fg-muted">{comparisonText("sleep_asleep_min")}</p>
@@ -129,7 +133,7 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
   const dayCards: ReactNode[] = [];
   const workouts = snapshot.workouts;
   const load = point(snapshot, "cardio_load_day_uh");
-  const loadLine = load ? t("cards.activity.load", { value: formatInteger(load.value, locale), comparison: comparisonText("cardio_load_day_uh") }) : null;
+  const loadLine = load ? t("cards.workouts.load", { value: formatInteger(load.value, locale), comparison: comparisonText("cardio_load_day_uh") }) : null;
   const steps = value(snapshot, "steps");
 
   if (nightToday) {
@@ -155,7 +159,6 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
             ))}
           </ul>
           {steps !== null ? <p className="type-caption type-numeric text-fg-muted">{t("cards.activity.steps", { steps: Math.round(steps) })}{value(snapshot, "distance_m") !== null ? ` · ${formatDistance(value(snapshot, "distance_m")!, locale)}` : ""}</p> : null}
-          {workouts.length === 0 && loadLine ? <p className="type-caption text-fg-muted">{loadLine}</p> : null}
         </TodayCard>,
       );
     } else if (steps !== null) {
@@ -179,12 +182,22 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
           {floors !== null ? <p className="type-caption type-numeric text-fg-muted">{t("cards.activity.floors", { n: floors })}</p> : null}
           {weighted !== null ? <p className="type-caption type-numeric text-fg-muted">{t("cards.activity.intensityCalc", { value: formatInteger(weighted, locale) })}</p> : null}
           {distance !== null && kcal !== null ? <p className="type-caption type-numeric text-fg-muted">{t("cards.activity.distanceKcal", { distance: formatDistance(distance, locale), kcal: `${formatInteger(kcal, locale)} kcal` })}</p> : null}
-          {workouts.length === 0 && loadLine ? <p className="type-caption text-fg-muted">{loadLine}</p> : null}
         </TodayCard>,
       );
     }
 
-    if (workouts.length > 0) {
+    // Treinos: com treino hoje, o card completo; sem treino, um card compacto que ainda leva ao
+    // detalhe (VO₂máx, idade fitness, zonas, cargas de 7/28 dias), que é o caminho em dias de descanso.
+    if (workouts.length === 0 && sectionAvailable(snapshot, "workouts")) {
+      const vo2 = point(snapshot, "vo2max");
+      dayCards.push(
+        <TodayCard key="workouts" href={href("workouts")} title={t("cards.workouts.title")} tag={tag} heading={cardHeading} source={sourceAt(snapshot.syncedAt)} testId="today-card-workouts" detailLabel={t("openDetail")}>
+          <p className="type-body-sm text-fg">{t("cards.workouts.none")}</p>
+          {vo2 ? <p className="type-caption type-numeric text-fg">{t("cards.workouts.vo2", { value: formatMetric("vo2max", vo2.value, locale), date: shortDate(vo2.date) })}</p> : null}
+          {loadLine ? <p className="type-caption text-fg-muted">{loadLine}</p> : null}
+        </TodayCard>,
+      );
+    } else if (workouts.length > 0) {
       dayCards.push(
         <TodayCard key="workouts" href={href("workouts")} title={t("cards.workouts.title")} tag={tag} heading={cardHeading} source={sourceAt(workouts[workouts.length - 1].endMin)} testId="today-card-workouts" detailLabel={t("openDetail")}>
           {workouts.map((w, i) => (
@@ -242,7 +255,7 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
           <Watch className="size-4 shrink-0 text-accent-text" aria-hidden="true" />
           {t("source", { device, time: syncTime })}
         </p>
-        <p className="type-caption text-fg-muted">{t("syncHint", { app: info.syncApp })}</p>
+        <p className="type-caption text-fg-muted">{t("syncHint", { app: tw(`syncApps.${info.syncApp}`) })}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

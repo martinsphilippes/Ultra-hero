@@ -107,11 +107,20 @@
     "whoop": "WHOOP",
     "polar": "Polar"
   },
+  "syncApps": {
+    "appleHealth": "Salud",
+    "garminConnect": "Garmin Connect",
+    "samsungHealth": "Samsung Health",
+    "fitbit": "Fitbit",
+    "oura": "Oura",
+    "whoop": "WHOOP",
+    "polarFlow": "Polar Flow"
+  },
   "howMeasured": {
     "readiness": "El índice principal viene de la marca cuando lo comparte (Body Battery de Garmin, con la escala original de 5 a 100). Cuando no, mostramos la Disposición Ultra Hero: compara tu VFC nocturna, FC en reposo, sueño, carga y temperatura con tus últimos 28 días.",
     "sleep": "El reloj detecta el sueño por el movimiento y la frecuencia cardíaca. La noche pertenece al día en que despiertas. Con Apple Watch, el tiempo en la cama no aparece: ese dato viene del iPhone, no del reloj.",
     "vitals": "Señales de la noche compara la FC en reposo, la VFC, la respiración, la SpO₂ y la temperatura de la noche con tu rango habitual (mediana ± desviación de los últimos 28 días). Solo cuentan las lecturas tomadas durante el sueño; con menos de 2 lecturas de VFC en la noche, el valor no aparece.",
-    "activity": "Pasos, distancia y calorías vienen solo del reloj (no sumamos el celular). Las metas son las del propio reloj; Ultra Hero no sugiere metas.",
+    "activity": "Pasos, distancia y calorías vienen solo del reloj (no sumamos el celular). Las metas son las del propio reloj; Ultra Hero no sugiere metas. La frecuencia cardíaca del día (media, mínima, máxima y caminando) y la VFC y la respiración durante el día también están aquí; las lecturas del sueño están en Señales de la noche.",
     "workouts": "Solo entran entrenamientos iniciados o detectados en el reloj; los escritos o subidos por la web quedan fuera. La carga del día suma los minutos en cada zona de frecuencia cardíaca × el número de la zona (TRIMP de Edwards).",
     "stress": "El estrés lo mide Garmin a partir de la variabilidad de la frecuencia cardíaca, de 0 a 100, mientras estás quieto. Mostramos la escala y los niveles de Garmin.",
     "environment": "El ruido ambiental y el tiempo a la luz del día los mide el Apple Watch cuando esas funciones están activadas en los ajustes del reloj."

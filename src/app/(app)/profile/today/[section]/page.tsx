@@ -6,7 +6,7 @@ import { Info } from "lucide-react";
 import { ymdToDate } from "@/components/me/dates";
 import { TrendChart, type TrendPoint } from "@/components/me/today/TrendChart";
 import { WatchDemoLabel } from "@/components/me/today/WatchToday";
-import { indexCardKind, sectionAvailable, sectionPoints, trendCodes } from "@/components/me/today/watch-helpers";
+import { indexCardKind, sectionAvailable, sectionPoints, trendCodes, usualRange } from "@/components/me/today/watch-helpers";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { isDetailSection, metricDef, MODEL_INFO, type MetricCode } from "@/lib/wearables/catalog";
 import type { MetricPoint, WatchSnapshot } from "@/lib/wearables/demo";
@@ -65,7 +65,7 @@ export default async function TodayDetailPage({ params, searchParams }: { params
         </h2>
         <dl className="flex flex-col divide-y divide-border" data-testid="detail-metrics">
           {points.map((p) => {
-            const base = snapshot.baselines[p.code];
+            const usual = usualRange(snapshot, p.code);
             const def = metricDef(p.code);
             return (
               <div key={p.code} className="flex flex-col gap-0.5 py-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4" data-metric={p.code}>
@@ -77,7 +77,7 @@ export default async function TodayDetailPage({ params, searchParams }: { params
                   <span className="type-body font-semibold type-numeric text-fg">{formatMetric(p.code, p.value, locale)}</span>
                   <span className="type-caption type-numeric text-fg-muted">
                     {when(p)}
-                    {base && base.high > 0 && def?.unit !== "clock" && def?.mode !== "C" ? ` · ${t("detail.usual", { low: formatMetric(p.code, def?.unit === "c_delta" ? base.low : Math.max(0, base.low), locale), high: formatMetric(p.code, base.high, locale) })}` : null}
+                    {usual ? ` · ${t("detail.usual", { low: formatMetric(p.code, usual.low, locale), high: formatMetric(p.code, usual.high, locale) })}` : null}
                   </span>
                 </dd>
               </div>
@@ -126,7 +126,8 @@ export default async function TodayDetailPage({ params, searchParams }: { params
                 locale={locale}
                 summary={t("detail.chartSummary", { name, n: period, avg: avg === null ? t("detail.noToday") : formatMetric(code, avg, locale), today: todayPoint?.display ?? t("detail.noToday") })}
                 points={pts}
-                band={snapshot.baselines[code] ?? null}
+                // dias passados no gráfico são inteiros: a banda é a faixa de dias inteiros
+                band={snapshot.fullDayBaselines[code] ?? snapshot.baselines[code] ?? null}
                 bandLabel={t("detail.band")}
                 partialLabel={t("detail.partial")}
                 zeroBased={ZERO_BASED.has(code)}

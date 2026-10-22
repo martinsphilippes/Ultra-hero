@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { indexCardKind, sectionAvailable } from "@/components/me/today/watch-helpers";
+import { comparisonOf, indexCardKind, sectionAvailable, usualRange } from "@/components/me/today/watch-helpers";
 import { metricDef, modelMeasures, type MetricCode } from "@/lib/wearables/catalog";
 import { isDemoUser, localNow, resolveWatchView } from "@/lib/wearables/context";
 import { DEMO_PERSONAS, dayIndexOf, demoPersonaFor, generateWatchDay, HISTORY_DAYS, ymdOf, type DemoPersonaKey, type WatchSnapshot } from "@/lib/wearables/demo";
@@ -124,6 +124,64 @@ describe("gerador do relógio simulado", () => {
     expect(early.night?.date).toBe("2026-10-21");
     expect(early.values.sleep_asleep_min?.date).toBe("2026-10-21");
     expect(early.history[HISTORY_DAYS - 1].values.sleep_asleep_min).toBeUndefined();
+  });
+
+  it("dia parcial é comparado com os dias anteriores no MESMO horário (não 'abaixo do habitual' toda manhã)", () => {
+    for (const persona of PERSONAS) {
+      for (const minutes of [9 * 60, 12 * 60]) {
+        let below = 0;
+        let n = 0;
+        for (let d = 0; d < 40; d++) {
+          const snap = generateWatchDay(persona, ymdOf(dayIndexOf("2026-03-01") + d), minutes);
+          if (!snap.night?.isToday) continue;
+          n++;
+          if (comparisonOf(snap, "cardio_load_day_uh") === "below") below++;
+        }
+        // antes da correção: 100% "below" às 09:00 e às 12:00 em todas as contas
+        expect(n, persona).toBeGreaterThan(20);
+        expect(below / n, `${persona} ${minutes / 60}h`).toBeLessThan(0.35);
+      }
+    }
+    // a faixa de passos às 19:35 é a de 19:35 dos dias anteriores, não a de dias inteiros
+    const evening = generateWatchDay("premium", "2026-10-22", 19 * 60 + 35);
+    expect(evening.baselines.steps!.median).toBeLessThan(evening.fullDayBaselines.steps!.median);
+  }, 60_000);
+
+  it("faixa habitual do detalhe: nunca para metas, e dentro da escala da métrica", () => {
+    const apple = generateWatchDay("premium", "2026-10-22", 19 * 60 + 35);
+    expect(usualRange(apple, "move_goal_kcal")).toBeNull();
+    expect(usualRange(apple, "cardio_load_day_uh")).toBeNull(); // cálculo nosso: sem "faixa habitual" no detalhe
+    expect(usualRange(apple, "steps")).not.toBeNull();
+    for (const minutes of [10, 8 * 60, 13 * 60, 22 * 60]) {
+      const garmin = generateWatchDay("free", "2026-10-22", minutes);
+      expect(usualRange(garmin, "steps_goal")).toBeNull();
+      for (const code of ["body_battery_now", "body_battery_low", "body_battery_high"] as MetricCode[]) {
+        const r = usualRange(garmin, code);
+        if (r) expect(r.low, `${minutes}:${code}`).toBeGreaterThanOrEqual(5);
+      }
+    }
+  });
+
+  it("antes da sincronização da manhã, o Body Battery é o último de ontem (com a data dele) e não há médias do dia", () => {
+    const early = generateWatchDay("free", "2026-10-22", 10);
+    const lastNight = generateWatchDay("free", "2026-10-21", 1439);
+    expect(early.night?.isToday).toBe(false);
+    expect(early.values.body_battery_now).toMatchObject({ value: lastNight.history.at(-1)!.values.body_battery_now, date: "2026-10-21" });
+    expect(early.values.body_battery_now!.value).toBeLessThan(90); // antes: 99 "às 00:05" (a noite inteira já carregada)
+    for (const code of ["hr_avg", "hr_max", "hrv_day_avg", "resp_rate_day_avg", "stress_avg", "stress_max"] as MetricCode[]) expect(early.values[code], code).toBeUndefined();
+    expect(early.history.at(-1)!.values.body_battery_high).toBeUndefined();
+    // depois de acordar e sincronizar, volta a ser o de hoje
+    const later = generateWatchDay("free", "2026-10-22", 13 * 60);
+    expect(later.values.body_battery_now?.date).toBe("2026-10-22");
+    expect(later.values.stress_avg).toBeDefined();
+  });
+
+  it("dia de descanso ainda tem caminho para o detalhe de Treinos (VO₂máx com a data, cargas)", () => {
+    const rest = generateWatchDay("premium", "2026-10-22", 7 * 60 + 45);
+    expect(rest.workouts).toHaveLength(0);
+    expect(sectionAvailable(rest, "workouts")).toBe(true);
+    expect(rest.values.vo2max).toMatchObject({ value: 44.8, date: "2026-10-21" });
+    expect(rest.values.training_load_chronic_28d).toBeDefined();
   });
 
   it("índices: Garmin tem Body Battery principal; Apple tem Disposição Ultra Hero principal", () => {

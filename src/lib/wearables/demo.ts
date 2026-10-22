@@ -350,20 +350,21 @@ function dayValues(persona: Persona, raw: RawDay, atMin: number, weekBefore: num
     floors_descended: Math.round(raw.floorsDownFull * f + (w?.sport === "trail_run" ? 17 : 0)),
     floors_goal: 10,
     sedentary_min: Math.round(awakeSoFar * 0.62),
-    hr_avg: Math.round(raw.rhr + 13 + (w ? 4 : 0)),
+    // médias/máximas "do dia" só existem depois de acordar (antes disso não há dia para resumir)
+    hr_avg: f > 0 ? Math.round(raw.rhr + 13 + (w ? 4 : 0)) : undefined,
     hr_min: raw.lowestHr,
-    hr_max: w ? w.maxHr : Math.round(raw.rhr + 55),
-    hr_walking_avg: Math.round(raw.rhr + 36),
-    hrv_day_avg: round1(raw.hrvNight * 0.72),
+    hr_max: f > 0 ? (w ? w.maxHr : Math.round(raw.rhr + 55)) : undefined,
+    hr_walking_avg: f > 0 ? Math.round(raw.rhr + 36) : undefined,
+    hrv_day_avg: f > 0 ? round1(raw.hrvNight * 0.72) : undefined,
     hr_zone1_min: zones[0],
     hr_zone2_min: zones[1],
     hr_zone3_min: zones[2],
     hr_zone4_min: zones[3],
     hr_zone5_min: zones[4],
     cardio_load_day_uh: edwardsTrimp(zones),
-    resp_rate_day_avg: round1(raw.resp + 2.1),
-    stress_avg: raw.stressAvg,
-    stress_max: raw.stressMax,
+    resp_rate_day_avg: f > 0 ? round1(raw.resp + 2.1) : undefined,
+    stress_avg: f > 0 ? raw.stressAvg : undefined,
+    stress_max: f > 0 ? raw.stressMax : undefined,
     stress_rest_min: Math.round(stressMinutes * restF),
     stress_low_min: Math.round(stressMinutes * lowF),
     stress_medium_min: Math.round(stressMinutes * mediumF),
@@ -442,13 +443,21 @@ export type WatchSnapshot = {
   lastWorkoutDate: string | null;
   /** Últimos 30 dias (hoje parcial), para as tendências de 7/30 dias. */
   history: HistoryDay[];
+  /**
+   * Faixa habitual de cada valor mostrado. Para o que acumula ao longo do dia, vem dos 28 dias
+   * anteriores cortados no MESMO horário de hoje (o dia parcial só se compara com dias parciais).
+   */
   baselines: Partial<Record<MetricCode, Baseline | null>>;
+  /** Faixa habitual de dias inteiros, para a banda dos gráficos de tendência (dias passados são inteiros). */
+  fullDayBaselines: Partial<Record<MetricCode, Baseline | null>>;
   disposition: DispositionResult | null;
   nightVitals: NightVitalsResult | null;
 };
 
 export const HISTORY_DAYS = 30;
 const GENERATED_DAYS = HISTORY_DAYS + 30; // 30 visíveis + linha de base de 28 dias para cada um
+
+const BODY_BATTERY_CODES = ["body_battery_now", "body_battery_high", "body_battery_low", "body_battery_charged", "body_battery_drained"] as const satisfies readonly MetricCode[];
 
 const MIN_SPREAD: Partial<Record<MetricCode, number>> = {
   hr_resting: 1,
@@ -492,14 +501,18 @@ export function generateWatchDay(personaKey: DemoPersonaKey, date: string, nowMi
 
   // Valores brutos por dia (noite + dia), já filtrados pelo que o modelo mede.
   const series: HistoryDay[] = [];
+  const weekBefore: number[] = [];
   let weekAccum = 0;
   for (let i = 0; i < raws.length; i++) {
     const raw = raws[i];
     const isToday = i === raws.length - 1;
     if (weekdayOfIndex(raw.dayIndex) === 1) weekAccum = 0; // semana da Garmin começa na segunda
+    weekBefore.push(weekAccum);
     const { values: day } = dayValues(persona, raw, isToday ? syncedAt : 1440, weekAccum);
     weekAccum += (day.intensity_min_moderate ?? 0) + 2 * (day.intensity_min_vigorous ?? 0);
     const night = isToday && !nightIsToday ? {} : nightValues(persona, raw);
+    // sem a noite de hoje sincronizada, o Body Battery de hoje (que depende dela) ainda não existe
+    if (isToday && !nightIsToday) for (const code of BODY_BATTERY_CODES) delete day[code];
     series.push({ date: raw.date, partial: isToday, values: { ...night, ...day } });
   }
 
@@ -559,7 +572,7 @@ export function generateWatchDay(personaKey: DemoPersonaKey, date: string, nowMi
   const values: Partial<Record<MetricCode, MetricPoint>> = {};
   const nightCodes = new Set<string>(Object.keys(nightValues(persona, nightRaw)));
   ["disposition_uh", "night_vitals_uh", "sleep_regularity"].forEach((c) => nightCodes.add(c));
-  const { workout } = dayValues(persona, today, syncedAt, 0);
+  const { values: todayDayRaw, workout } = dayValues(persona, today, syncedAt, 0);
   for (const [code, value] of Object.entries(nightSource)) {
     if (!nightCodes.has(code) || !isMetricCode(code) || typeof value !== "number") continue;
     values[code] = { code, value, date: nightDate, at: nightRaw.wakeMin, ...(code === "hrv_night" ? { sampleCount: nightRaw.hrvSamples, method: hrvMethod } : {}), ...(code.startsWith("spo2_night") ? { sampleCount: nightRaw.spo2Samples } : {}) };
@@ -587,10 +600,29 @@ export function generateWatchDay(personaKey: DemoPersonaKey, date: string, nowMi
     values.fitness_age = { code: "fitness_age", value: Math.round(clamp(38 - (persona.vo2 - 44) * 0.8, 20, 70)), date, at: syncedAt };
   }
 
+  // Antes da sincronização da manhã, o Body Battery de hoje ainda não existe: mostra o último valor
+  // de ontem (fim do dia, com a data dele), coerente com a noite de ontem em "Sua noite".
+  if (!nightIsToday) {
+    const yesterday = series[series.length - 2].values;
+    for (const code of BODY_BATTERY_CODES) {
+      const v = yesterday[code];
+      if (typeof v === "number") values[code] = { code, value: v, date: nightDate, at: 1439 };
+      else delete values[code];
+    }
+  }
+
+  // Dias anteriores cortados no mesmo horário de hoje: senão um dia parcial (ex.: 08:00) seria
+  // comparado com dias inteiros e sairia "abaixo do habitual" toda manhã.
+  const sameTimeCodes = new Set<string>(Object.keys(todayDayRaw));
+  const priorSameTime = raws.slice(-29, -1).map((raw, k) => measured(model, dayValues(persona, raw, syncedAt, weekBefore[raws.length - 29 + k]).values));
   const baselines: Partial<Record<MetricCode, Baseline | null>> = {};
+  const fullDayBaselines: Partial<Record<MetricCode, Baseline | null>> = {};
   for (const code of Object.keys(values) as MetricCode[]) {
-    const prior = nightCodes.has(code) ? nightPrior : priorFull;
-    baselines[code] = baseline(prior.map((p) => p[code] ?? null), MIN_SPREAD[code] ?? 0);
+    const minSpread = MIN_SPREAD[code] ?? 0;
+    const shifted = !nightIsToday && (BODY_BATTERY_CODES as readonly string[]).includes(code);
+    const prior = nightCodes.has(code) || shifted ? nightPrior : sameTimeCodes.has(code) ? priorSameTime : priorFull;
+    baselines[code] = baseline(prior.map((p) => p[code] ?? null), minSpread);
+    fullDayBaselines[code] = baseline((nightCodes.has(code) || shifted ? nightPrior : priorFull).map((p) => p[code] ?? null), minSpread);
   }
 
   // Índices da noite mostrada (para o card e o detalhe "ver nosso cálculo").
@@ -621,6 +653,7 @@ export function generateWatchDay(personaKey: DemoPersonaKey, date: string, nowMi
     lastWorkoutDate,
     history,
     baselines,
+    fullDayBaselines,
     disposition: modelMeasures(model, "disposition_uh") ? disp : null,
     nightVitals: vitals,
   };

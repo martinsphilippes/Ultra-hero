@@ -214,6 +214,7 @@
     "eyebrow": "Today · {date}",
     "title": "Today — Your day, in focus",
     "description": "Measured by your watch: your night and your day so far. Nothing to type.",
+    "descriptionConnect": "Coming soon: your day measured by your watch. Nothing to type.",
     "demo": {
       "title": "Demo data",
       "body": "They simulate a {device}. Nothing here belongs to a real person, and nothing is stored: the numbers are generated on the spot.",
@@ -229,7 +230,7 @@
     "source": "{device} (simulated) · synced at {time}",
     "sourceAt": "{device} (simulated) · {time}",
     "sourceOn": "{device} (simulated) · {date}, {time}",
-    "syncHint": "With a real watch, data arrives when it syncs with the {app} app. There is no refresh button.",
+    "syncHint": "Once watch connections exist, data will arrive when the watch syncs with the {app} app, with no refresh button.",
     "night": {
       "title": "Your night",
       "lastNight": "The watch has not synced since you woke up. This is the last night available ({date})."
@@ -318,11 +319,12 @@
         "intensityWeek": "Intensity this week: {value} of {goal} min",
         "floors": "{n, plural, =1 {# floor climbed} other {# floors climbed}}",
         "distanceKcal": "{distance} · {kcal} active",
-        "intensityCalc": "Intensity: {value} min (calculated by Ultra Hero)",
-        "load": "Day load {value} · {comparison}"
+        "intensityCalc": "Intensity: {value} min (calculated by Ultra Hero)"
       },
       "workouts": {
         "title": "Workouts",
+        "none": "No workout today so far.",
+        "vo2": "Latest estimated VO₂ max: {value} ({date})",
         "session": "{sport} · {duration}",
         "hr": "Avg HR {avg} · max {max}",
         "speed": "{value} km/h",
@@ -365,7 +367,7 @@
       "body": "Soon, Today will show what your watch measures on its own: sleep, heart, activity and workouts. Nothing to type.",
       "brandsLabel": "Planned brands",
       "soon": "Soon",
-      "privacy": "There is no connection to any brand yet, and Ultra Hero does not collect health data.",
+      "privacy": "There is no connection to any brand yet, and Ultra Hero does not collect data from watches, rings or bands.",
       "exampleCta": "See an example",
       "exampleHint": "Opens a simulated watch, kept apart from your profile."
     },
@@ -410,7 +412,7 @@
     "about": {
       "metaTitle": "About your data",
       "title": "About your data",
-      "intro": "At this stage Ultra Hero does not read any real watch and does not collect health data. The simulated watch is generated on the spot from the account and the date, and it is neither stored nor sent to anyone.",
+      "intro": "At this stage Ultra Hero does not read any real watch and does not collect data from your watch. The simulated watch is generated on the spot from the account and the date, and it is neither stored nor sent to anyone.",
       "rule": "Today's rule: only what the watch measures on its own, through use — automatically or in a workout started on it. Nothing is typed.",
       "modelTitle": "What the {device} measures",
       "modelHidden": "What this model does not measure stays hidden in Today — it never shows as zero.",

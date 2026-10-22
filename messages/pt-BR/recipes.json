@@ -2,7 +2,7 @@
   "gate": {
     "brand": "Ultra Hero",
     "eyebrow": "Receitas",
-    "description": "O acesso atual não permite abrir receitas. Seus registros simples continuam em Hoje.",
+    "description": "O acesso atual não permite abrir receitas.",
     "badge": "Etapa 0 de {total} · etapa pendente",
     "cardTitle": "Etapa demonstrativa pendente.",
     "cardDescription": "Não há revisão profissional. Conclua a etapa demonstrativa para abrir apenas o conteúdo de demonstração.",

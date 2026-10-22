@@ -107,11 +107,20 @@
     "whoop": "WHOOP",
     "polar": "Polar"
   },
+  "syncApps": {
+    "appleHealth": "Health",
+    "garminConnect": "Garmin Connect",
+    "samsungHealth": "Samsung Health",
+    "fitbit": "Fitbit",
+    "oura": "Oura",
+    "whoop": "WHOOP",
+    "polarFlow": "Polar Flow"
+  },
   "howMeasured": {
     "readiness": "The main score comes from the brand when it shares one (Garmin's Body Battery, on its original 5–100 scale). When it does not, we show the Ultra Hero Daily Balance: it compares your overnight HRV, resting heart rate, sleep, load and temperature with your last 28 days.",
     "sleep": "The watch detects sleep from movement and heart rate. A night belongs to the day you wake up. With Apple Watch, time in bed does not show: that comes from the iPhone, not the watch.",
     "vitals": "Night signals compares resting heart rate, HRV, breathing, SpO₂ and overnight temperature with your usual range (median ± spread of the last 28 days). Only readings taken during sleep count; with fewer than 2 HRV readings in the night, the value is not shown.",
-    "activity": "Steps, distance and calories come only from the watch (the phone is not added). Goals are the watch's own; Ultra Hero does not suggest goals.",
+    "activity": "Steps, distance and calories come only from the watch (the phone is not added). Goals are the watch's own; Ultra Hero does not suggest goals. Daytime heart rate (average, minimum, maximum and walking) and daytime HRV and breathing are here too; sleep readings are in Night signals.",
     "workouts": "Only workouts started or detected on the watch count; typed or web-uploaded workouts are left out. The day load adds the minutes in each heart-rate zone × the zone number (Edwards TRIMP).",
     "stress": "Stress is measured by Garmin from heart-rate variability, from 0 to 100, while you are still. We show Garmin's own scale and levels.",
     "environment": "Environmental noise and time in daylight are measured by Apple Watch when those features are turned on in the watch settings."

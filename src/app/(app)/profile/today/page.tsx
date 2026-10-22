@@ -23,7 +23,7 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
       <LegacyTodayCleanup />
       <PageHeader
         title={view.kind === "example" ? t("example.pageTitle") : t("title")}
-        description={t("description")}
+        description={view.kind === "connect" ? t("descriptionConnect") : t("description")}
         backHref="/profile"
         backLabel={t("example.back")}
         actions={view.kind === "connect" ? null : <DemoBadge />}

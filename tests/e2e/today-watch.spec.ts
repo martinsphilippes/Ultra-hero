@@ -79,6 +79,8 @@ for (const kind of ["premium", "free"] as const) {
         await expect(today.getByTestId("today-card-readiness")).toContainText("Training Readiness");
         // Garmin não mede ruído ambiente: a linha de Ambiente não existe
         await expect(today.getByTestId("today-environment")).toHaveCount(0);
+        // nota da marca separada da duração por " · " (o leitor de tela não lê "minnota")
+        await expect(today.getByTestId("today-card-sleep")).toContainText(/ · nota Garmin \d+/);
       }
       await expect(today).toContainText("Não é diagnóstico");
 
@@ -157,12 +159,31 @@ for (const kind of ["premium", "free"] as const) {
       await expect(page.getByTestId("today-detail")).toHaveCount(0);
     });
 
+    test("card Treinos leva ao detalhe mesmo em dia sem treino (VO₂máx, cargas)", async () => {
+      await page.goto("/profile");
+      const card = page.getByTestId("today-section").getByTestId("today-card-workouts");
+      // antes da sincronização da manhã o bloco "Seu dia" ainda não tem cards
+      test.skip((await card.count()) === 0, "relógio simulado ainda não sincronizou depois do despertar");
+      await expect(card).toContainText(/Carga do dia \d+/);
+      await card.click();
+      await expect(page).toHaveURL(/\/profile\/today\/workouts$/, { timeout: 15_000 });
+      const detail = page.getByTestId("today-detail");
+      await expect(detail.getByRole("heading", { level: 1, name: "Treinos" })).toBeVisible();
+      await expect(detail.locator("[data-metric='vo2max']")).toBeVisible();
+      await expect(detail.locator("[data-metric='training_load_chronic_28d']")).toBeVisible();
+      // "Sinais da noite" só lista leituras do sono (FC do dia fica em Atividade)
+      await page.goto("/profile/today/vitals");
+      await expect(page.getByTestId("today-detail").locator("[data-metric='hr_avg'], [data-metric='hr_max'], [data-metric='hr_walking_avg']")).toHaveCount(0);
+    });
+
     if (kind === "premium") {
       test("Sobre seus dados lista o que a marca não compartilha e as funções reguladas", async () => {
         await page.goto("/profile/today/about");
         const about = page.getByTestId("today-about");
         await expect(about.getByRole("heading", { level: 1, name: "Sobre seus dados" })).toBeVisible();
-        await expect(about).toContainText("não coleta dado de saúde");
+        // a afirmação é sobre o relógio (alergias da etapa de receitas são dado de saúde coletado)
+        await expect(about).toContainText("não coleta dados do seu relógio");
+        await expect(about).not.toContainText("não coleta dado de saúde");
         await expect(about.getByTestId("about-regulated")).toContainText("Eletrocardiograma (ECG)");
         await expect(about).toContainText("Training Readiness");
         await expect(about).toContainText("Água e hidratação");

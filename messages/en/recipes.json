@@ -2,7 +2,7 @@
   "gate": {
     "brand": "Ultra Hero",
     "eyebrow": "Recipes",
-    "description": "Your current access doesn't open recipes yet. Your simple logs stay in Today.",
+    "description": "Your current access does not allow opening recipes.",
     "badge": "Step 0 of {total} · pending",
     "cardTitle": "Demo step pending.",
     "cardDescription": "There is no professional review. Complete the demo step to open the demo content only.",

@@ -54,6 +54,8 @@ export type MetricDef = {
   plaus?: readonly [number, number];
   /** Índice da marca: mostra escala e rótulo originais, nunca normalizados. */
   vendorScore?: boolean;
+  /** Meta do próprio relógio: não tem "faixa habitual" (é fixa, não medida). */
+  goal?: boolean;
 };
 
 const ALL = WATCH_MODELS;
@@ -99,15 +101,16 @@ export const METRICS = [
   m("nap_min", "sleep", "sleep", "min", "sum", "A", "v1d", [...APPLE, ...GARMIN, "galaxy", "oura", "whoop"], { plaus: [0, 300] }),
   m("sleep_hr_lowest", "sleep", "sleep", "bpm", "min", "A", "v1d", ALL, { plaus: [25, 240] }),
 
-  // ------------------------------------------------------------ coração (Sinais da noite)
+  // ------------------------------------------------------------ coração
   m("hr_resting", "heart", "vitals", "bpm", "last", "A", "v1", without("galaxy"), { plaus: [30, 120] }),
   m("hrv_night", "heart", "vitals", "ms", "night", "A", "v1", without("galaxy"), { plaus: [3, 300] }),
   m("vo2max", "heart", "workouts", "ml_kg_min", "last", "T", "v1", [...APPLE, ...GARMIN, "galaxy", "pixel", "oura"], { plaus: [10, 95] }),
-  m("hr_avg", "heart", "vitals", "bpm", "avg", "A", "v1d", ALL, { plaus: [25, 240] }),
-  m("hr_min", "heart", "vitals", "bpm", "min", "A", "v1d", ALL, { plaus: [25, 240] }),
-  m("hr_max", "heart", "vitals", "bpm", "max", "A", "v1d", ALL, { plaus: [25, 240] }),
-  m("hr_walking_avg", "heart", "vitals", "bpm", "last", "A", "v1d", APPLE, { plaus: [25, 240] }),
-  m("hrv_day_avg", "heart", "vitals", "ms", "avg", "A", "v1d", [...APPLE, "pixel"], { plaus: [3, 300] }),
+  // FC/VFC/respiração do dia ficam no detalhe de Atividade: "Sinais da noite" só tem leituras do sono.
+  m("hr_avg", "heart", "activity", "bpm", "avg", "A", "v1d", ALL, { plaus: [25, 240] }),
+  m("hr_min", "heart", "activity", "bpm", "min", "A", "v1d", ALL, { plaus: [25, 240] }),
+  m("hr_max", "heart", "activity", "bpm", "max", "A", "v1d", ALL, { plaus: [25, 240] }),
+  m("hr_walking_avg", "heart", "activity", "bpm", "last", "A", "v1d", APPLE, { plaus: [25, 240] }),
+  m("hrv_day_avg", "heart", "activity", "ms", "avg", "A", "v1d", [...APPLE, "pixel"], { plaus: [3, 300] }),
   m("hr_recovery_1min", "heart", "workouts", "bpm", "last", "T", "v1d", APPLE, { plaus: [0, 100] }),
   m("fitness_age", "heart", "workouts", "years", "last", "A", "v1d", GARMIN, { plaus: [15, 100] }),
   m("hr_zone1_min", "heart", "workouts", "min", "sum", "A", "v1d", without("oura"), { plaus: [0, 1440] }),
@@ -122,21 +125,21 @@ export const METRICS = [
   m("distance_m", "activity", "activity", "m", "sum", "A", "v1", [...APPLE, ...GARMIN, "pixel", "oura", "polar"], { plaus: [0, 200_000] }),
   m("active_kcal", "activity", "activity", "kcal", "sum", "A", "v1", without("galaxy"), { plaus: [0, 10_000] }),
   m("basal_kcal", "activity", "activity", "kcal", "sum", "A", "v1d", [...APPLE, ...GARMIN], { plaus: [500, 5000] }),
-  m("move_goal_kcal", "activity", "activity", "kcal", "last", "A", "v1", APPLE, { plaus: [10, 5000] }),
-  m("exercise_goal_min", "activity", "activity", "min", "last", "A", "v1", APPLE, { plaus: [1, 240] }),
-  m("stand_goal_h", "activity", "activity", "h", "last", "A", "v1", APPLE, { plaus: [1, 24] }),
+  m("move_goal_kcal", "activity", "activity", "kcal", "last", "A", "v1", APPLE, { plaus: [10, 5000], goal: true }),
+  m("exercise_goal_min", "activity", "activity", "min", "last", "A", "v1", APPLE, { plaus: [1, 240], goal: true }),
+  m("stand_goal_h", "activity", "activity", "h", "last", "A", "v1", APPLE, { plaus: [1, 24], goal: true }),
   m("exercise_min", "activity", "activity", "min", "sum", "A", "v1", APPLE, { plaus: [0, 1440] }),
   m("stand_hours", "activity", "activity", "h", "sum", "A", "v1", APPLE, { plaus: [0, 24] }),
   m("stand_min", "activity", "activity", "min", "sum", "A", "v1d", APPLE, { plaus: [0, 1440] }),
-  m("steps_goal", "activity", "activity", "count", "last", "A", "v1", GARMIN, { plaus: [100, 100_000] }),
+  m("steps_goal", "activity", "activity", "count", "last", "A", "v1", GARMIN, { plaus: [100, 100_000], goal: true }),
   m("intensity_min_week", "activity", "activity", "min", "week", "A", "v1", GARMIN, { plaus: [0, 10_080] }),
-  m("intensity_goal_week_min", "activity", "activity", "min", "last", "A", "v1", GARMIN, { plaus: [1, 10_080] }),
+  m("intensity_goal_week_min", "activity", "activity", "min", "last", "A", "v1", GARMIN, { plaus: [1, 10_080], goal: true }),
   m("intensity_min_moderate", "activity", "activity", "min", "sum", "A", "v1d", [...GARMIN, "oura"], { plaus: [0, 1440] }),
   m("intensity_min_vigorous", "activity", "activity", "min", "sum", "A", "v1d", [...GARMIN, "oura"], { plaus: [0, 1440] }),
   m("intensity_min_weighted", "activity", "activity", "min", "computed", "C", "v1", ["galaxy", "pixel", "oura", "whoop", "polar"], { plaus: [0, 2880] }),
   m("floors_climbed", "activity", "activity", "count", "sum", "A", "v1", [...APPLE, ...GARMIN], { plaus: [0, 500] }),
   m("floors_descended", "activity", "activity", "count", "sum", "A", "v1d", GARMIN, { plaus: [0, 500] }),
-  m("floors_goal", "activity", "activity", "count", "last", "A", "v1d", GARMIN, { plaus: [1, 500] }),
+  m("floors_goal", "activity", "activity", "count", "last", "A", "v1d", GARMIN, { plaus: [1, 500], goal: true }),
   m("sedentary_min", "activity", "activity", "min", "sum", "A", "v1d", [...GARMIN, "oura"], { plaus: [0, 1440] }),
   m("wheelchair_pushes", "activity", "activity", "count", "sum", "A", "v1", APPLE, { plaus: [0, 100_000] }),
   m("wheelchair_distance_m", "activity", "activity", "m", "sum", "A", "v1", APPLE, { plaus: [0, 200_000] }),
@@ -152,7 +155,7 @@ export const METRICS = [
   m("resp_rate_sleep", "breathing", "vitals", "rpm", "night", "A", "v1", without("galaxy"), { plaus: [4, 40] }),
   m("spo2_night_avg", "breathing", "vitals", "pct", "night", "A", "v1", ["apple_s12", ...GARMIN, "galaxy", "pixel", "oura", "whoop"], { plaus: [70, 100] }),
   m("spo2_night_min", "breathing", "vitals", "pct", "night", "A", "v1", ["apple_s12", ...GARMIN, "galaxy", "pixel", "oura", "whoop"], { plaus: [70, 100] }),
-  m("resp_rate_day_avg", "breathing", "vitals", "rpm", "avg", "A", "v1d", GARMIN, { plaus: [4, 40] }),
+  m("resp_rate_day_avg", "breathing", "activity", "rpm", "avg", "A", "v1d", GARMIN, { plaus: [4, 40] }),
 
   // ------------------------------------------------------------ temperatura (Sinais da noite)
   m("skin_temp_delta_c", "temperature", "vitals", "c_delta", "night", "A", "v1", [...APPLE, "garmin_fenix", "pixel", "oura", "whoop", "polar"], { plaus: [-5, 5] }),
@@ -202,6 +205,8 @@ export function metricsForSection(section: TodaySectionId): MetricDef[] {
 }
 
 // ---------------------------------------------------------------- modelos (§13.3)
+export type SyncAppKey = "appleHealth" | "garminConnect" | "samsungHealth" | "fitbit" | "oura" | "whoop" | "polarFlow";
+
 export type WatchModelInfo = {
   id: WatchModelId;
   brand: WatchBrand;
@@ -213,20 +218,20 @@ export type WatchModelInfo = {
   hrvMethod: "sdnn" | "rmssd";
   /** Caminho técnico para ler o dado real (fases futuras). */
   path: "native_ios" | "native_android" | "oauth";
-  /** App da marca onde a pessoa sincroniza. */
-  syncApp: string;
+  /** App da marca onde a pessoa sincroniza: chave de wearables.syncApps (o nome muda por idioma, ex.: Saúde/Health/Salud). */
+  syncApp: SyncAppKey;
 };
 
 export const MODEL_INFO: Record<WatchModelId, WatchModelInfo> = {
-  apple_s12: { id: "apple_s12", brand: "apple", vendorIndex: null, hiddenIndexNote: "apple_readiness", hrvMethod: "sdnn", path: "native_ios", syncApp: "Saúde" },
-  apple_se3: { id: "apple_se3", brand: "apple", vendorIndex: null, hiddenIndexNote: null, hrvMethod: "sdnn", path: "native_ios", syncApp: "Saúde" },
-  garmin_fenix: { id: "garmin_fenix", brand: "garmin", vendorIndex: "body_battery", hiddenIndexNote: "garmin", hrvMethod: "rmssd", path: "oauth", syncApp: "Garmin Connect" },
-  garmin_vivo: { id: "garmin_vivo", brand: "garmin", vendorIndex: "body_battery", hiddenIndexNote: "garmin", hrvMethod: "rmssd", path: "oauth", syncApp: "Garmin Connect" },
-  galaxy: { id: "galaxy", brand: "samsung", vendorIndex: null, hiddenIndexNote: null, hrvMethod: "rmssd", path: "native_android", syncApp: "Samsung Health" },
-  pixel: { id: "pixel", brand: "google", vendorIndex: null, hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "Fitbit" },
-  oura: { id: "oura", brand: "oura", vendorIndex: "readiness_vendor", hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "Oura" },
-  whoop: { id: "whoop", brand: "whoop", vendorIndex: "readiness_vendor", hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "WHOOP" },
-  polar: { id: "polar", brand: "polar", vendorIndex: "readiness_vendor", hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "Polar Flow" },
+  apple_s12: { id: "apple_s12", brand: "apple", vendorIndex: null, hiddenIndexNote: "apple_readiness", hrvMethod: "sdnn", path: "native_ios", syncApp: "appleHealth" },
+  apple_se3: { id: "apple_se3", brand: "apple", vendorIndex: null, hiddenIndexNote: null, hrvMethod: "sdnn", path: "native_ios", syncApp: "appleHealth" },
+  garmin_fenix: { id: "garmin_fenix", brand: "garmin", vendorIndex: "body_battery", hiddenIndexNote: "garmin", hrvMethod: "rmssd", path: "oauth", syncApp: "garminConnect" },
+  garmin_vivo: { id: "garmin_vivo", brand: "garmin", vendorIndex: "body_battery", hiddenIndexNote: "garmin", hrvMethod: "rmssd", path: "oauth", syncApp: "garminConnect" },
+  galaxy: { id: "galaxy", brand: "samsung", vendorIndex: null, hiddenIndexNote: null, hrvMethod: "rmssd", path: "native_android", syncApp: "samsungHealth" },
+  pixel: { id: "pixel", brand: "google", vendorIndex: null, hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "fitbit" },
+  oura: { id: "oura", brand: "oura", vendorIndex: "readiness_vendor", hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "oura" },
+  whoop: { id: "whoop", brand: "whoop", vendorIndex: "readiness_vendor", hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "whoop" },
+  polar: { id: "polar", brand: "polar", vendorIndex: "readiness_vendor", hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "polarFlow" },
 };
 
 /** Marcas do card "Conectar relógio" (todas "em breve": nenhuma conexão real existe ainda). */

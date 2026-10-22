@@ -214,6 +214,7 @@
     "eyebrow": "Hoy · {date}",
     "title": "Hoy — Tu día, en foco",
     "description": "Medido por tu reloj: tu noche y tu día hasta ahora. Nada que escribir.",
+    "descriptionConnect": "Pronto: tu día medido por el reloj. Nada que escribir.",
     "demo": {
       "title": "Datos de demostración",
       "body": "Simulan un {device}. Nada aquí es de una persona real y nada se guarda: los números se generan al momento.",
@@ -229,7 +230,7 @@
     "source": "{device} (simulado) · sincronizado a las {time}",
     "sourceAt": "{device} (simulado) · {time}",
     "sourceOn": "{device} (simulado) · {date}, {time}",
-    "syncHint": "Con un reloj real, los datos llegan cuando se sincroniza con la app {app}. No hay botón de actualizar.",
+    "syncHint": "Cuando exista la conexión con relojes, los datos llegarán cuando el reloj se sincronice con la app {app}, sin botón de actualizar.",
     "night": {
       "title": "Tu noche",
       "lastNight": "El reloj aún no se sincronizó después de que despertaste. Esta es la última noche disponible ({date})."
@@ -318,11 +319,12 @@
         "intensityWeek": "Intensidad en la semana: {value} de {goal} min",
         "floors": "{n, plural, =1 {# piso subido} other {# pisos subidos}}",
         "distanceKcal": "{distance} · {kcal} activas",
-        "intensityCalc": "Intensidad: {value} min (calculado por Ultra Hero)",
-        "load": "Carga del día {value} · {comparison}"
+        "intensityCalc": "Intensidad: {value} min (calculado por Ultra Hero)"
       },
       "workouts": {
         "title": "Entrenamientos",
+        "none": "Ningún entrenamiento hoy hasta ahora.",
+        "vo2": "Último VO₂máx estimado: {value} ({date})",
         "session": "{sport} · {duration}",
         "hr": "FC media {avg} · máx. {max}",
         "speed": "{value} km/h",
@@ -365,7 +367,7 @@
       "body": "Pronto, Hoy mostrará lo que tu reloj mide solo: sueño, corazón, actividad y entrenamientos. Nada que escribir.",
       "brandsLabel": "Marcas previstas",
       "soon": "Pronto",
-      "privacy": "Aún no hay conexión con ninguna marca y Ultra Hero no recopila datos de salud.",
+      "privacy": "Aún no hay conexión con ninguna marca, y Ultra Hero no recopila datos de relojes, anillos ni pulseras.",
       "exampleCta": "Ver un ejemplo",
       "exampleHint": "Abre un reloj simulado, separado de tu perfil."
     },
@@ -410,7 +412,7 @@
     "about": {
       "metaTitle": "Sobre tus datos",
       "title": "Sobre tus datos",
-      "intro": "En esta fase Ultra Hero no lee ningún reloj real y no recopila datos de salud. El reloj simulado se genera al momento, a partir de la cuenta y la fecha, y no se guarda ni se envía a nadie.",
+      "intro": "En esta fase Ultra Hero no lee ningún reloj real y no recopila datos de tu reloj. El reloj simulado se genera al momento, a partir de la cuenta y la fecha, y no se guarda ni se envía a nadie.",
       "rule": "Regla de Hoy: solo entra lo que el reloj mide solo, con el uso — automáticamente o en un entrenamiento iniciado en él. Nada se escribe.",
       "modelTitle": "Lo que mide el {device}",
       "modelHidden": "Lo que este modelo no mide queda oculto en Hoy — nunca aparece como cero.",

@@ -112,4 +112,24 @@ describe("catálogo de métricas do relógio", () => {
       for (const s of DETAIL_SECTIONS) expect(m.howMeasured[s]).toBeTruthy();
     }
   });
+
+  it("'Sinais da noite' só tem leituras do sono; FC, VFC e respiração do dia ficam em Atividade", () => {
+    const vitals = METRICS.filter((d) => d.section === "vitals").map((d) => d.code);
+    expect(vitals.every((code) => !/_day_|^hr_(avg|min|max|walking)/.test(code)), vitals.join(",")).toBe(true);
+    for (const code of ["hr_avg", "hr_min", "hr_max", "hr_walking_avg", "hrv_day_avg", "resp_rate_day_avg"]) expect(metricDef(code)?.section, code).toBe("activity");
+  });
+
+  it("metas do relógio são marcadas (sem 'faixa habitual')", () => {
+    const goals = METRICS.filter((d) => "goal" in d && d.goal).map((d) => d.code).sort();
+    expect(goals).toEqual(["exercise_goal_min", "floors_goal", "intensity_goal_week_min", "move_goal_kcal", "stand_goal_h", "steps_goal"]);
+  });
+
+  it("nome do app de sincronização vem das mensagens e muda por idioma (Saúde / Health / Salud)", () => {
+    for (const locale of LOCALES) {
+      const apps = messages[locale].syncApps;
+      for (const info of Object.values(MODEL_INFO)) expect(apps[info.syncApp], `${locale}:${info.syncApp}`).toBeTruthy();
+    }
+    expect(MODEL_INFO.apple_s12.syncApp).toBe("appleHealth");
+    expect([messages["pt-BR"].syncApps.appleHealth, messages.en.syncApps.appleHealth, messages.es.syncApps.appleHealth]).toEqual(["Saúde", "Health", "Salud"]);
+  });
 });
