@@ -125,7 +125,7 @@
   },
   "personalities": {
     "title": "Héroes",
-    "description": "Personajes ficticios que guían los contenidos. No se representa a ninguna persona real.",
+    "description": "Personajes ficticios que guían los contenidos. Fotos ilustrativas.",
     "filterLabel": "Filtrar por pilar",
     "all": "Todos",
     "count": "{count, plural, =1 {1 héroe} other {# héroes}}",
@@ -135,7 +135,7 @@
       "back": "Héroes",
       "fictional": "Personaje ficticio",
       "rightsTitle": "Sobre este perfil",
-      "rightsDefault": "Perfil ficticio creado para la demostración. No representa a una persona real ni tiene contrato, imagen o aval.",
+      "rightsDefault": "Perfil ficticio creado para la demostración. Fotos ilustrativas; sin contrato ni aval.",
       "pillarsLabel": "Pilares",
       "coverAlt": "Portada de {name}",
       "stats": {

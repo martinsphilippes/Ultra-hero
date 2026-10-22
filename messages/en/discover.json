@@ -125,7 +125,7 @@
   },
   "personalities": {
     "title": "Heroes",
-    "description": "Fictional characters who guide the content. No real person is represented.",
+    "description": "Fictional characters who guide the content. Photos are illustrative.",
     "filterLabel": "Filter by pillar",
     "all": "All",
     "count": "{count, plural, =1 {1 hero} other {# heroes}}",
@@ -135,7 +135,7 @@
       "back": "Heroes",
       "fictional": "Fictional character",
       "rightsTitle": "About this profile",
-      "rightsDefault": "Fictional profile created for the demo. It does not represent a real person and has no contract, likeness or endorsement.",
+      "rightsDefault": "Fictional profile created for the demo. Illustrative photos; no contract or endorsement.",
       "pillarsLabel": "Pillars",
       "coverAlt": "Cover of {name}",
       "stats": {

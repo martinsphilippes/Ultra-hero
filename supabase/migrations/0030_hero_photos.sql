@@ -71,3 +71,10 @@ update public.content c
   ) as v (slug, cover_url)
  where c.slug = v.slug
    and (c.cover_url is null or c.cover_url like '/placeholders/%');
+
+-- Com as fotos reais, o aviso de cada perfil passa a dizer que as fotos são ilustrativas; o perfil
+-- continua fictício e sem contrato ou endosso. Só troca o texto padrão do seed (aviso editado pelo
+-- admin fica como está).
+update public.creator_profiles
+   set rights_note = 'Perfil fictício. Fotos ilustrativas; sem contrato ou endosso real.'
+ where rights_note = 'Perfil fictício. Sem contrato, imagem ou endosso real.';
