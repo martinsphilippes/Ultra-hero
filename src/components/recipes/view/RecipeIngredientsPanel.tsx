@@ -2,13 +2,16 @@
 
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type MouseEvent } from "react";
 import { trackRecipeEvent } from "@/app/(app)/content/recipe-actions";
 import { IconButton } from "@/components/ui";
 import { ingredientCheckKey, readIngredientChecks, writeIngredientChecks } from "@/lib/recipes/ingredient-check";
-import { clampServings, SERVINGS_MAX, SERVINGS_MIN, servingsFactor, servingsHref } from "@/lib/recipes/scale";
+import { clampServings, parseServingsParam, SERVINGS_MAX, SERVINGS_MIN, servingsFactor, servingsHref } from "@/lib/recipes/scale";
 import { scaledAmount, type ScaledAmount, type UnitLabels, type ViewIngredient } from "@/lib/recipes/view-model";
 import { RecipeIngredientList, type IngredientListLabels } from "./RecipeIngredientList";
+
+// Aparência de desabilitado para os botões − e + no limite (aria-disabled mantém o foco).
+const STEP_LIMIT = "aria-disabled:cursor-not-allowed aria-disabled:opacity-55";
 
 type Props = {
   contentId: string;
@@ -30,6 +33,10 @@ type Props = {
 export function RecipeIngredientsPanel({ contentId, ingredients, labels, unitLabels, locale, baseServings, initialServings, syncUrl = true }: Props) {
   const t = useTranslations("recipes.page");
   const [servings, setServings] = useState<number | null>(initialServings ?? baseServings);
+  // Texto do campo enquanto a pessoa digita: o campo pode ficar vazio (apagar o "2" para digitar "6")
+  // sem virar 26; só um inteiro de 1 a 50 muda as porções, e ao sair do campo volta ao valor aceito.
+  const [draft, setDraft] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [checked, setChecked] = useState<Set<string>>(() => new Set());
   const [announce, setAnnounce] = useState("");
   const tracked = useRef(false);
@@ -84,10 +91,13 @@ export function RecipeIngredientsPanel({ contentId, ingredients, labels, unitLab
     [persist],
   );
 
-  const clearChecks = () => {
+  const clearChecks = (event: MouseEvent<HTMLButtonElement>) => {
+    // o botão some com as marcações: o foco vai para a primeira caixa, não para o <body>
+    const first = event.currentTarget.closest("section")?.querySelector<HTMLInputElement>('input[type="checkbox"]');
     setChecked(new Set());
     persist(new Set());
     setAnnounce(t("checksCleared"));
+    first?.focus();
   };
 
   const changeServings = (value: number) => {
@@ -112,28 +122,63 @@ export function RecipeIngredientsPanel({ contentId, ingredients, labels, unitLab
             {t("servings")}
           </span>
           <div className="flex items-center gap-1 print:hidden">
-            <IconButton label={t("servingsLess")} icon={<Minus />} variant="secondary" disabled={servings <= SERVINGS_MIN} onClick={() => changeServings(servings - 1)} data-testid="servings-less" />
+            {/* aria-disabled em vez de disabled: no limite o botão continua com o foco do teclado */}
+            <IconButton
+              label={t("servingsLess")}
+              icon={<Minus />}
+              variant="secondary"
+              aria-disabled={servings <= SERVINGS_MIN || undefined}
+              className={STEP_LIMIT}
+              onClick={() => {
+                setDraft(null);
+                if (servings > SERVINGS_MIN) changeServings(servings - 1);
+              }}
+              data-testid="servings-less"
+            />
             <input
+              ref={inputRef}
               type="number"
               inputMode="numeric"
               min={SERVINGS_MIN}
               max={SERVINGS_MAX}
-              value={servings}
+              value={draft ?? servings}
               onChange={(event) => {
-                const n = Number(event.target.value);
-                if (Number.isFinite(n) && n >= SERVINGS_MIN) changeServings(n);
+                setDraft(event.target.value);
+                const n = parseServingsParam(event.target.value);
+                if (n !== null && n !== servings) changeServings(n);
+              }}
+              onBlur={() => setDraft(null)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") setDraft(null);
               }}
               aria-label={t("servingsInput")}
               className="h-11 w-16 rounded-lg border border-border-strong bg-surface text-center text-base font-semibold text-fg type-numeric focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               data-testid="servings-value"
             />
-            <IconButton label={t("servingsMore")} icon={<Plus />} variant="secondary" disabled={servings >= SERVINGS_MAX} onClick={() => changeServings(servings + 1)} data-testid="servings-more" />
+            <IconButton
+              label={t("servingsMore")}
+              icon={<Plus />}
+              variant="secondary"
+              aria-disabled={servings >= SERVINGS_MAX || undefined}
+              className={STEP_LIMIT}
+              onClick={() => {
+                setDraft(null);
+                if (servings < SERVINGS_MAX) changeServings(servings + 1);
+              }}
+              data-testid="servings-more"
+            />
           </div>
           <span className="hidden text-sm text-fg print:inline">{t("servingsPrint", { n: servings })}</span>
           {servings !== baseServings ? (
             <button
               type="button"
-              onClick={() => changeServings(baseServings)}
+              onClick={() => {
+                setDraft(null);
+                changeServings(baseServings);
+                // o botão some ao voltar às porções originais: o foco fica no campo
+                inputRef.current?.focus();
+              }}
+              data-testid="servings-reset"
               className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus print:hidden"
             >
               <RotateCcw className="size-4" aria-hidden="true" />

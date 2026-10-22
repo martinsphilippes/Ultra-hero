@@ -85,9 +85,10 @@ export function RecipeIngredientList({ ingredients, labels, headingId = "recipe-
             </>
           );
           return (
-            <li key={ing.id} className="flex flex-col gap-1 px-4 py-2.5 text-sm print:break-inside-avoid" data-testid="recipe-ingredient" data-checked={checklist ? String(done) : undefined}>
+            <li key={ing.id} className={cn("flex flex-col gap-1 text-sm print:break-inside-avoid", !checklist && "px-4 py-2.5")} data-testid="recipe-ingredient" data-checked={checklist ? String(done) : undefined}>
               {checklist ? (
-                <label className="flex min-h-7 cursor-pointer items-start gap-3">
+                // o padding fica no label: a linha inteira (≥ 44px) marca o item, sem faixa morta entre vizinhos
+                <label className="flex min-h-11 cursor-pointer items-start gap-3 px-4 py-2.5" data-testid="recipe-ingredient-check">
                   <input
                     type="checkbox"
                     checked={done}

@@ -23,7 +23,7 @@ type Input = {
  * nunca chegam ao navegador). Receita sem vídeo não mostra a seção ("none" não vira player simulado).
  */
 export async function loadRecipeView(supabase: SupabaseClient<Database>, input: Input): Promise<{ model: RecipeViewModel; video: ResolvedVideo | null }> {
-  const rows = await loadRecipeRows(supabase, input.contentId, { withVideo: !input.publicOnly });
+  const rows = await loadRecipeRows(supabase, input.contentId, { withVideo: !input.publicOnly, publicOnly: input.publicOnly });
   const model = await buildViewModel(rows, input.title);
   const v = rows.video;
   let video: ResolvedVideo | null = null;

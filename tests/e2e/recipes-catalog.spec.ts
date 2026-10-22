@@ -156,13 +156,60 @@ test.describe("receita aberta (conta free com a etapa)", () => {
     await expect(page).toHaveURL(/porcoes=4/);
     await expect(page.getByTestId("recipe-cook-mode")).toHaveAttribute("href", `/content/${G1.slug}/cozinha?porcoes=4`);
 
+    // digitar no campo: apagar o "4" deixa o campo vazio e "6" dá 6 porções (não 46)
+    const field = page.getByTestId("servings-value");
+    await field.click();
+    await field.press("End");
+    await field.press("Backspace");
+    await expect(field).toHaveValue("");
+    await field.pressSequentially("6");
+    await expect(field).toHaveValue("6");
+    await expect(page).toHaveURL(/porcoes=6/);
+    await expect(chicken).toContainText("900 g");
+    // "0" não é aceito, mas o campo mostra o que foi digitado; ao sair, volta ao último valor válido
+    await field.press("Backspace");
+    await field.pressSequentially("0");
+    await expect(field).toHaveValue("0");
+    await field.blur();
+    await expect(field).toHaveValue("6");
+    await field.fill("4");
+    await expect(page).toHaveURL(/porcoes=4/);
+
     // recarregar mantém as porções (servidor lê ?porcoes=) e a marcação do checklist (24 h no aparelho)
     await page.getByRole("checkbox", { name: "Separei: Azeite" }).check();
     await page.reload();
     await expect(page.getByTestId("recipe-ingredient").filter({ hasText: "Peito de frango" })).toContainText("600 g");
     await expect(page.getByRole("checkbox", { name: "Separei: Azeite" })).toBeChecked();
-    await page.getByTestId("ingredient-checks-clear").click();
+    // "Limpar marcações" pelo teclado: o botão some e o foco vai para a primeira caixa (não para o <body>)
+    await page.getByTestId("ingredient-checks-clear").focus();
+    await page.keyboard.press("Enter");
     await expect(page.getByRole("checkbox", { name: "Separei: Azeite" })).not.toBeChecked();
+    await expect(page.getByTestId("ingredient-checks-clear")).toHaveCount(0);
+    await expect(page.getByTestId("recipe-ingredient").first().getByRole("checkbox")).toBeFocused();
+
+    // cada item do checklist é um alvo de toque de 44px ou mais, na largura toda da linha
+    const row = page.getByTestId("recipe-ingredient").first();
+    const [rowBox, labelBox] = await Promise.all([row.boundingBox(), row.getByTestId("recipe-ingredient-check").boundingBox()]);
+    expect(labelBox!.height).toBeGreaterThanOrEqual(44);
+    expect(labelBox!.height).toBeGreaterThanOrEqual(rowBox!.height - 1);
+    expect(labelBox!.width).toBeGreaterThanOrEqual(rowBox!.width - 1);
+
+    // no limite, o "−" continua focado (aria-disabled) e outro Enter não faz nada; "Voltar a 2" some e
+    // o foco vai para o campo
+    await page.getByTestId("servings-value").fill("2");
+    const less = page.getByTestId("servings-less");
+    await less.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("servings-value")).toHaveValue("1");
+    await expect(less).toBeFocused();
+    await expect(less).toHaveAttribute("aria-disabled", "true");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("servings-value")).toHaveValue("1");
+    await page.getByTestId("servings-reset").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("servings-value")).toHaveValue("2");
+    await expect(page.getByTestId("servings-reset")).toHaveCount(0);
+    await expect(page.getByTestId("servings-value")).toBeFocused();
 
     // imprimir chama window.print (stub); compartilhar sem Web Share copia o link
     await page.evaluate(() => {
@@ -199,6 +246,23 @@ test.describe("perfil público do chef", () => {
     await expect.poll(() => cardSlugs(page)).toEqual(["panqueca-de-aveia-e-banana-g9"]);
     await expect(page.getByTestId("chef-endorsed")).toHaveCount(0);
     await expectNoSeriousAxe(page);
+  });
+
+  test("Helena: o atalho 'Até 15 min' filtra a partir da biblioteca sem parâmetros", async ({ page }) => {
+    await page.goto("/personalities/helena-vilar/receitas");
+    await expect(page.getByTestId("recipe-card").first()).toBeVisible();
+    await page.getByTestId("recipe-filters").getByRole("link", { name: "Até 15 min" }).click();
+    await expect(page).toHaveURL(/\/personalities\/helena-vilar\/receitas\?tempo=15$/);
+    await expect(page.getByTestId("recipe-active-filters")).toContainText("Até 15 min");
+    await expect(page.getByTestId("recipe-filters").getByRole("link", { name: "Até 15 min", exact: true })).toHaveAttribute("aria-current", "true");
+    const times = await page.getByTestId("recipe-card-time").allTextContents();
+    expect(times.length).toBeGreaterThan(0);
+    for (const time of times) expect(Number(time.replace(/\D/g, ""))).toBeLessThanOrEqual(15);
+    // categoria a partir de um filtro já ativo (consulta → consulta) também navega
+    const category = page.getByTestId("recipe-filters").getByRole("link", { name: "Café da manhã" });
+    await category.click();
+    await expect(page).toHaveURL(/tempo=15/);
+    await expect(page).toHaveURL(/cat=cafe-da-manha/);
   });
 
   test("herói sem receitas próprias: só as indicadas, sem busca nem filtros", async ({ page }) => {

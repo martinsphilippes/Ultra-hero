@@ -1,6 +1,5 @@
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChipLink, ChipRow } from "@/components/discover/ChipLink";
 import { Button, IconButton, Input } from "@/components/ui";
@@ -79,7 +78,7 @@ export async function RecipeSearchForm({ params, base, fixed, idPrefix }: Common
         </div>
         {params.q ? (
           <IconButton asChild label={t("clear")} icon={<X />} variant="secondary">
-            <Link href={recipeCatalogHref(base, { ...params, q: "" }, fixed)} scroll={false} />
+            <a href={recipeCatalogHref(base, { ...params, q: "" }, fixed)} />
           </IconButton>
         ) : null}
         <Button type="submit" variant="primary">
@@ -120,6 +119,8 @@ type FiltersProps = Common & { categories: RecipeCategoryOption[] };
 // os campos (<details> + formulário GET: abre e envia sem JavaScript) e os filtros ativos como chips
 // removíveis com "Limpar tudo". Dieta e alérgeno trazem "declarado pelo chef" e só valem quando a
 // pessoa marca: nada vem pré-marcado da etapa demonstrativa (seção 2.6).
+// Links e chips são <a> comuns (navegação de documento, como o GetForm): na biblioteca do chef o
+// roteador do Next abortava a ida de /receitas para /receitas?tempo=15 e a tela não mudava.
 export async function RecipeFilters({ params, base, fixed, idPrefix, categories }: FiltersProps) {
   const [t, tcat, ta, td, ts] = await Promise.all([
     getTranslations("recipes.catalog.filters"),
@@ -154,7 +155,7 @@ export async function RecipeFilters({ params, base, fixed, idPrefix, categories 
         {RECIPE_TIME_LIMITS.map((n) => {
           const selected = params.tempo === n;
           return (
-            <ChipLink key={n} href={href({ ...params, tempo: selected ? null : n })} selected={selected}>
+            <ChipLink key={n} document href={href({ ...params, tempo: selected ? null : n })} selected={selected}>
               {t("timeUpTo", { n })}
             </ChipLink>
           );
@@ -162,7 +163,7 @@ export async function RecipeFilters({ params, base, fixed, idPrefix, categories 
         {categories.map((c) => {
           const selected = params.cat === c.code;
           return (
-            <ChipLink key={c.code} href={href({ ...params, cat: selected ? null : c.code })} selected={selected}>
+            <ChipLink key={c.code} document href={href({ ...params, cat: selected ? null : c.code })} selected={selected}>
               {c.label}
             </ChipLink>
           );
@@ -238,9 +239,7 @@ export async function RecipeFilters({ params, base, fixed, idPrefix, categories 
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-4">
             <Button asChild variant="ghost">
-              <Link href={href({ ...EMPTY_RECIPE_PARAMS, q: params.q })} scroll={false}>
-                {t("clearAll")}
-              </Link>
+              <a href={href({ ...EMPTY_RECIPE_PARAMS, q: params.q })}>{t("clearAll")}</a>
             </Button>
             <Button type="submit" variant="primary" data-testid="recipe-filters-apply">
               {t("apply")}
@@ -252,25 +251,23 @@ export async function RecipeFilters({ params, base, fixed, idPrefix, categories 
       {active.length > 0 ? (
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t("active")} data-testid="recipe-active-filters">
           {active.map((f) => (
-            <Link
+            <a
               key={`${f.key}-${f.value}`}
               href={href(withoutRecipeFilter(params, f))}
-              scroll={false}
               aria-label={t("remove", { label: labelOf(f) })}
               className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-fg bg-fg px-3.5 text-sm font-medium text-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               {labelOf(f)}
               <X className="size-4" aria-hidden="true" />
-            </Link>
+            </a>
           ))}
-          <Link
+          <a
             href={href({ ...EMPTY_RECIPE_PARAMS, q: params.q })}
-            scroll={false}
             className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             data-testid="recipe-filters-clear"
           >
             {t("clearAll")}
-          </Link>
+          </a>
         </div>
       ) : null}
     </div>

@@ -1,6 +1,5 @@
 import { BadgeCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import type { ContentTileData } from "@/components/discover/explore/tiles";
 import { hubHref } from "@/lib/catalog/creator-hub";
 import type { RecipeCardData } from "@/lib/recipes/card";
@@ -59,9 +58,9 @@ export async function ChefRecipes({ recipes, hero, params }: Props) {
       {criteria && endorsedIds.length > 0 ? (
         <p className="rounded-xl border border-dashed border-border px-4 py-3 type-body-sm text-fg-muted" data-testid="chef-endorsed-hidden">
           {t("endorsedHidden", { count: endorsedIds.length })}{" "}
-          <Link href={recipeCatalogHref(base, EMPTY_RECIPE_PARAMS)} scroll={false} className="font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+          <a href={recipeCatalogHref(base, EMPTY_RECIPE_PARAMS)} className="font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
             {t("showAll")}
-          </Link>
+          </a>
         </p>
       ) : null}
 

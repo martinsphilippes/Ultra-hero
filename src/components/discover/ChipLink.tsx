@@ -10,32 +10,41 @@ type ChipLinkProps = {
   icon?: ReactNode;
   children: ReactNode;
   className?: string;
+  /** Navegação de documento (<a>), sem o roteador do Next (ver o catálogo de receitas). */
+  document?: boolean;
 };
 
 // Chip de filtro navegável: o estado vive na URL e funciona sem JavaScript.
-export function ChipLink({ href, selected = false, variant = "neutral", icon, children, className }: ChipLinkProps) {
-  return (
-    <Link
-      href={href}
-      scroll={false}
-      aria-current={selected ? "true" : undefined}
-      className={cn(
-        "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-        selected
-          ? variant === "neutral"
-            ? "border-fg bg-fg text-bg"
-            : cn(badgeVariants[variant], "font-semibold")
-          : "border-border-strong bg-transparent text-fg-muted hover:bg-surface-hover hover:text-fg",
-        className,
-      )}
-    >
+export function ChipLink({ href, selected = false, variant = "neutral", icon, children, className, document = false }: ChipLinkProps) {
+  const props = {
+    href,
+    "aria-current": selected ? ("true" as const) : undefined,
+    className: cn(
+      "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors",
+      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+      selected
+        ? variant === "neutral"
+          ? "border-fg bg-fg text-bg"
+          : cn(badgeVariants[variant], "font-semibold")
+        : "border-border-strong bg-transparent text-fg-muted hover:bg-surface-hover hover:text-fg",
+      className,
+    ),
+  };
+  const content = (
+    <>
       {icon && (
         <span aria-hidden="true" className="[&_svg]:size-4">
           {icon}
         </span>
       )}
       {children}
+    </>
+  );
+  return document ? (
+    <a {...props}>{content}</a>
+  ) : (
+    <Link {...props} scroll={false}>
+      {content}
     </Link>
   );
 }

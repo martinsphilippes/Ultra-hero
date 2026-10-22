@@ -1,6 +1,5 @@
 import { SearchX } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { Button, EmptyState } from "@/components/ui";
 import { fetchRecipeCatalog, loadRecipeCategories, type RecipeCatalogPage, type RecipeCategoryOption } from "@/lib/recipes/catalog";
 import { EMPTY_RECIPE_PARAMS, hasRecipeCriteria, recipeCatalogHref, type RecipeCatalogParams } from "@/lib/recipes/catalog-params";
@@ -67,9 +66,7 @@ export async function RecipeCatalog({ params, base, fixed, creator = null, showS
             action={
               criteria ? (
                 <Button asChild variant="secondary">
-                  <Link href={recipeCatalogHref(base, EMPTY_RECIPE_PARAMS, fixed)} scroll={false}>
-                    {t("clearFilters")}
-                  </Link>
+                  <a href={recipeCatalogHref(base, EMPTY_RECIPE_PARAMS, fixed)}>{t("clearFilters")}</a>
                 </Button>
               ) : undefined
             }

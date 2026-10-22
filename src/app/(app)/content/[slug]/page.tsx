@@ -154,7 +154,8 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
     user ? supabase.from("content_progress").select("position_seconds, progress_pct").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
     user ? supabase.from("favorites").select("content_id").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
     user ? supabase.from("not_interested").select("content_id").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
-    content.creator_id
+    // receitas usam "Parecidas" (RelatedRecipes); "Mais de {herói}" é só dos outros tipos
+    content.creator_id && content.type !== "recipe"
       ? supabase.from("content").select(CONTENT_CARD_SELECT).eq("creator_id", content.creator_id).eq("status", "published").or(liveContentFilter()).neq("id", content.id).order("published_at", { ascending: false }).limit(3)
       : null,
     user ? getProfile() : null,

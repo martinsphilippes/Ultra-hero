@@ -123,6 +123,19 @@ describe("lista de ingredientes com porções e checklist", () => {
     expect(html).toMatch(/data-checked="true"/);
     expect(html).toContain("line-through");
   });
+
+  it("checklist: o label ocupa a linha toda com toque mínimo de 44px (o padding saiu do <li>)", () => {
+    const html = renderToStaticMarkup(
+      createElement(RecipeIngredientList, { ingredients: model.ingredients, labels, checklist: { checked: new Set<string>(), onToggle: () => {}, label: (n: string) => `Separei: ${n}` } }),
+    );
+    const labelsHtml = html.match(/<label [^>]*data-testid="recipe-ingredient-check"[^>]*>/g) ?? [];
+    expect(labelsHtml).toHaveLength(5);
+    for (const tag of labelsHtml) expect(tag).toMatch(/min-h-11[^"]*px-4 py-2\.5/);
+    for (const li of html.match(/<li [^>]*>/g) ?? []) expect(li).not.toMatch(/py-2\.5/);
+    // sem checklist (prévia do chef), o <li> mantém o padding
+    const plain = renderToStaticMarkup(createElement(RecipeIngredientList, { ingredients: model.ingredients, labels }));
+    for (const li of plain.match(/<li [^>]*>/g) ?? []) expect(li).toMatch(/px-4 py-2\.5/);
+  });
 });
 
 describe("marcações do checklist (24 h no aparelho)", () => {
