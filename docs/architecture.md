@@ -9,7 +9,7 @@
 | App | Next.js 15 (App Router, RSC, Server Actions), React 19, TypeScript strict, Tailwind v4, next-intl | PWA mobile-first, pt-BR/en/es, tema escuro/claro/sistema |
 | Dados | Supabase Postgres 17 + RLS + funções `security definer` | Fonte única de verdade para autorização e regras de negócio |
 | Auth | Supabase Auth (e-mail/senha, Google OAuth) | Cadastro público só para consumidores; parceiros por convite |
-| Arquivos | Supabase Storage (preparado) | Uploads de mídia ficam atrás de `VideoProvider` |
+| Arquivos | Supabase Storage | Fotos de perfil no bucket público `avatars` (0031: escrita só pelo servidor com service role, 512×512 sem EXIF, cota de 20/dia); fotos de receita no bucket privado `recipe-media` (0028); vídeos atrás de `VideoProvider` (Cloudflare Stream) |
 | Deploy | Vercel (região `gru1`, perto do banco em `sa-east-1`) | Cron diário via `vercel.json` |
 | IA | `RecommendationEngine` (determinístico / OpenAI / Gemini) | Só recomenda itens do catálogo; fallback explícito |
 

@@ -2,6 +2,7 @@
 // headline, bio, avatar_url, cover_url, socials). Compartilhado por formulário e action.
 import { z } from "zod";
 import { SAME_ORIGIN_PATH } from "@/components/editors/content/schema";
+import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 
 const samePath = z
   .string()
@@ -9,10 +10,17 @@ const samePath = z
   .max(300, { error: "tooLong" })
   .refine((v) => v === "" || SAME_ORIGIN_PATH.test(v), { error: "invalidCover" });
 
+// Avatar: caminho local ou a foto enviada (bucket avatars, 0031). Dono e "é a atual" a action confere.
+const samePathOrPhoto = z
+  .string()
+  .trim()
+  .max(300, { error: "tooLong" })
+  .refine((v) => v === "" || SAME_ORIGIN_PATH.test(v) || isStoredAvatarUrl(v, supabaseBaseUrl()), { error: "invalidCover" });
+
 export const creatorProfileSchema = z.object({
   headline: z.string().trim().max(120, { error: "tooLong" }),
   bio: z.string().trim().max(1200, { error: "tooLong" }),
-  avatar_url: samePath,
+  avatar_url: samePathOrPhoto,
   cover_url: samePath,
   socials: z.object({
     instagram: z.string().trim().max(80, { error: "tooLong" }),

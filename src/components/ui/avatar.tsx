@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { cn, initials, stableHash } from "@/lib/utils";
+import { isLocalPath } from "@/lib/avatar/paths";
+import { AvatarImage } from "./avatar-image";
 
 type AvatarProps = {
   src?: string | null;
@@ -38,7 +40,10 @@ export function Avatar({ src, name, size = "md", fallback = "placeholder", class
         className,
       )}
     >
-      {source ? (
+      {source && !isLocalPath(source) ? (
+        // foto enviada: volta para a ilustração se não carregar; URL de outro host nem é carregada
+        <AvatarImage src={source} alt={label} fallbackSrc={placeholder} width={pixels[size]} height={pixels[size]} className="size-full object-cover" />
+      ) : source ? (
         <Image
           src={source}
           alt={label}

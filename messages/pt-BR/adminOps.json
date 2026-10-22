@@ -47,6 +47,7 @@
     "assignee_not_admin": "O responsável precisa ter papel de admin ativo.",
     "note_too_long": "A nota interna passa de 1000 caracteres.",
     "no_service_role": "Chave de serviço não configurada no servidor.",
+    "no_photo": "Este herói não tem foto enviada.",
     "user_exists": "Já existe uma conta com este e-mail.",
     "retention_exception_active": "Há uma exceção de retenção ativa para este escopo.",
     "justification_required": "Informe uma justificativa.",
@@ -316,7 +317,12 @@
       "documentRefHint": "Contrato, termo ou protocolo. Só a administração vê; a gravação é auditada.",
       "privateNotes": "Notas internas",
       "privateNotesHint": "Observações da revisão. Só a administração vê.",
-      "reviewedAt": "Documentação revisada em {date}"
+      "reviewedAt": "Documentação revisada em {date}",
+      "photoKeep": "Foto enviada pelo herói (manter)",
+      "photoRemove": "Remover foto enviada",
+      "photoRemoveTitle": "Remover a foto enviada pelo herói?",
+      "photoRemoveDescription": "A foto sai da página pública e do perfil do usuário ligado e é apagada do Storage. A ação fica na auditoria.",
+      "photoRemoved": "Foto removida"
     },
     "status": {
       "activate": "Reativar",
@@ -603,6 +609,8 @@
       "ai_rate_limit_per_hour_desc": "Máximo de recálculos de recomendação por usuário/hora.",
       "experiment_open": "Cadastro aberto",
       "experiment_open_desc": "Desligar fecha o cadastro público direto no banco. Continuam podendo entrar: e-mails com convite pendente, e-mails da lista de bootstrap e contas demo criadas por esta página.",
+      "avatars_uploads_enabled": "Envio de foto de perfil",
+      "avatars_uploads_enabled_desc": "Desligar pausa o envio de novas fotos de perfil por usuários e heróis. Fotos já enviadas continuam no ar e podem ser removidas.",
       "transport_minutes_per_step": "Minutos por etapa do transporte",
       "transport_minutes_per_step_desc": "Intervalo entre etapas do transporte simulado.",
       "video_provider": "Provedor de vídeo",

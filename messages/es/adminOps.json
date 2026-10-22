@@ -47,6 +47,7 @@
     "assignee_not_admin": "El responsable debe tener rol de admin activo.",
     "note_too_long": "La nota interna supera los 1000 caracteres.",
     "no_service_role": "Clave de servicio no configurada en el servidor.",
+    "no_photo": "Este héroe no tiene foto subida.",
     "user_exists": "Ya existe una cuenta con este correo.",
     "retention_exception_active": "Hay una excepción de retención activa para este alcance.",
     "justification_required": "Indica una justificación.",
@@ -316,7 +317,12 @@
       "documentRefHint": "Contrato, acuerdo o protocolo. Solo la administración lo ve; el guardado queda auditado.",
       "privateNotes": "Notas internas",
       "privateNotesHint": "Observaciones de la revisión. Solo la administración las ve.",
-      "reviewedAt": "Documentación revisada el {date}"
+      "reviewedAt": "Documentación revisada el {date}",
+      "photoKeep": "Foto subida por el héroe (mantener)",
+      "photoRemove": "Quitar foto subida",
+      "photoRemoveTitle": "¿Quitar la foto subida por el héroe?",
+      "photoRemoveDescription": "La foto sale de la página pública y del perfil del usuario vinculado y se elimina del Storage. La acción queda en la auditoría.",
+      "photoRemoved": "Foto quitada"
     },
     "status": {
       "activate": "Reactivar",
@@ -603,6 +609,8 @@
       "ai_rate_limit_per_hour_desc": "Máximo de recálculos de recomendación por usuario/hora.",
       "experiment_open": "Registro abierto",
       "experiment_open_desc": "Desactivarlo cierra el registro público en la propia base de datos. Siguen permitidos: correos con invitación pendiente, correos de la lista de bootstrap y cuentas demo creadas en esta página.",
+      "avatars_uploads_enabled": "Envío de foto de perfil",
+      "avatars_uploads_enabled_desc": "Desactivarlo pausa el envío de nuevas fotos de perfil por usuarios y héroes. Las fotos ya subidas siguen publicadas y se pueden quitar.",
       "transport_minutes_per_step": "Minutos por etapa del transporte",
       "transport_minutes_per_step_desc": "Intervalo entre etapas del transporte simulado.",
       "video_provider": "Proveedor de video",

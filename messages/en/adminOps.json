@@ -47,6 +47,7 @@
     "assignee_not_admin": "The assignee must have an active admin role.",
     "note_too_long": "The internal note exceeds 1000 characters.",
     "no_service_role": "Service key not configured on the server.",
+    "no_photo": "This hero has no uploaded photo.",
     "user_exists": "An account with this e-mail already exists.",
     "retention_exception_active": "There is an active retention exception for this scope.",
     "justification_required": "Please provide a justification.",
@@ -316,7 +317,12 @@
       "documentRefHint": "Contract, agreement or protocol. Admin only; saving is audited.",
       "privateNotes": "Internal notes",
       "privateNotesHint": "Review notes. Admin only.",
-      "reviewedAt": "Documentation reviewed on {date}"
+      "reviewedAt": "Documentation reviewed on {date}",
+      "photoKeep": "Photo uploaded by the hero (keep)",
+      "photoRemove": "Remove uploaded photo",
+      "photoRemoveTitle": "Remove the photo uploaded by the hero?",
+      "photoRemoveDescription": "The photo is removed from the public page and from the linked user's profile and deleted from Storage. The action is audited.",
+      "photoRemoved": "Photo removed"
     },
     "status": {
       "activate": "Reactivate",
@@ -603,6 +609,8 @@
       "ai_rate_limit_per_hour_desc": "Maximum recommendation recalculations per user/hour.",
       "experiment_open": "Open sign-up",
       "experiment_open_desc": "Turning it off closes public sign-up in the database itself. Still allowed: e-mails with a pending invitation, e-mails on the bootstrap list and demo accounts created on this page.",
+      "avatars_uploads_enabled": "Profile photo upload",
+      "avatars_uploads_enabled_desc": "Turning it off pauses new profile photo uploads by users and heroes. Photos already uploaded stay online and can be removed.",
       "transport_minutes_per_step": "Minutes per transport step",
       "transport_minutes_per_step_desc": "Interval between simulated transport steps.",
       "video_provider": "Video provider",

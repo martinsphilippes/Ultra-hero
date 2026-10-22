@@ -1,18 +1,23 @@
 "use client";
 
+import { RotateCcw, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { updateCreatorProfile } from "@/app/creator/profile/actions";
 import { useValidationMessage } from "@/components/editors/content/fields";
+import { AvatarPhotoPicker } from "@/components/me/AvatarPhotoPicker";
 import { Button, FormField, Input, Textarea, useToast } from "@/components/ui";
+import type { AvatarPhotoState } from "@/lib/avatar/availability";
+import { ILLUSTRATIONS } from "@/lib/avatar/constants";
+import { discardsSavedPhoto, isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { cn } from "@/lib/utils";
 import { parseCreatorProfile, type CreatorProfileValues } from "./profile-schema";
 
-type Props = { initial: CreatorProfileValues; pillars: string[]; readOnly?: boolean };
+type Props = { initial: CreatorProfileValues; pillars: string[]; readOnly?: boolean; name: string; photoState: AvatarPhotoState };
 
-const AVATARS = Array.from({ length: 8 }, (_, i) => `/placeholders/avatar-${i + 1}.svg`);
+const AVATARS = ILLUSTRATIONS;
 const ALL_PILLARS = ["routine", "training", "nutrition", "gastronomy"];
 
 type ImageRadiosProps = {
@@ -55,7 +60,7 @@ function ImageRadios({ baseId, name, label, options, value, onChange, round = fa
           );
         })}
       </div>
-      {value === "" && <p className="type-caption text-fg-subtle">{noneLabel}</p>}
+      {!options.includes(value) && <p className="type-caption text-fg-subtle">{noneLabel}</p>}
       {error && (
         <p role="alert" className="type-caption font-medium text-danger">
           {error}
@@ -66,7 +71,7 @@ function ImageRadios({ baseId, name, label, options, value, onChange, round = fa
 }
 
 // Formulário do perfil da personalidade: só as colunas liberadas (headline, bio, avatar, capa, redes).
-export function CreatorProfileForm({ initial, pillars, readOnly = false }: Props) {
+export function CreatorProfileForm({ initial, pillars, readOnly = false, name, photoState }: Props) {
   const t = useTranslations("creator.profile");
   const te = useTranslations("creator.errors");
   const tc = useTranslations("common");
@@ -83,6 +88,11 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false }: Props
   const coverPillars = pillars.length > 0 ? pillars : ALL_PILLARS;
   const covers = coverPillars.flatMap((p) => [1, 2, 3].map((n) => `/placeholders/cover-${p}-${n}.svg`));
   const errorCount = Object.keys(errors).length;
+  const hasPhoto = isStoredAvatarUrl(values.avatar_url, supabaseBaseUrl());
+  // Foto gravada no servidor (não o rascunho): tocar numa ilustração não esconde que salvar a apaga.
+  const [savedPhoto, setSavedPhoto] = useState<string | null>(isStoredAvatarUrl(initial.avatar_url, supabaseBaseUrl()) ? initial.avatar_url : null);
+  const discarding = discardsSavedPhoto(savedPhoto, values.avatar_url);
+  const keepAnchorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (errorCount === 0) return;
@@ -109,6 +119,7 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false }: Props
       const result = await updateCreatorProfile(parsed.data);
       if (result.ok) {
         setServerError(null);
+        setSavedPhoto(isStoredAvatarUrl(parsed.data.avatar_url, supabaseBaseUrl()) ? parsed.data.avatar_url : null);
         toast({ title: tc("states.saved"), description: t("savedDescription"), variant: "success" });
         router.refresh();
       } else {
@@ -138,7 +149,44 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false }: Props
         </div>
 
         <div className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-4 sm:p-5">
-          <ImageRadios baseId={baseId} name="avatar" label={t("avatar")} options={AVATARS} value={values.avatar_url} onChange={(avatar_url) => patch({ avatar_url })} round error={tv(errors.avatar_url)} optionLabel={(n) => t("optionN", { n })} noneLabel={t("noneSelected")} />
+          {/* Foto enviada pelo celular (0031): a mesma do perfil pessoal, gravada pelas actions próprias. */}
+          <AvatarPhotoPicker
+            value={values.avatar_url || null}
+            name={name}
+            state={photoState}
+            onChange={(v) => {
+              patch({ avatar_url: v ?? "" });
+              setSavedPhoto(isStoredAvatarUrl(v, supabaseBaseUrl()) ? v : null);
+            }}
+            disabled={readOnly || pending}
+            hint={t("photoHint")}
+          />
+          <div ref={keepAnchorRef} tabIndex={-1} className="outline-none">
+            <ImageRadios baseId={baseId} name="avatar" label={t("avatar")} options={AVATARS} value={values.avatar_url} onChange={(avatar_url) => patch({ avatar_url })} round error={tv(errors.avatar_url)} optionLabel={(n) => t("optionN", { n })} noneLabel={hasPhoto ? t("photoInUse") : t("noneSelected")} />
+          </div>
+          {/* região viva sempre montada: o aviso é anunciado ao aparecer */}
+          <div role="status" data-testid="avatar-discard-warning">
+            {discarding && savedPhoto && !readOnly && (
+              <div className="flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="flex items-start gap-2 text-sm text-fg">
+                  <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+                  {t("photoWillBeDeleted")}
+                </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  leadingIcon={<RotateCcw />}
+                  onClick={() => {
+                    patch({ avatar_url: savedPhoto });
+                    // o botão some com o aviso: o foco fica no grupo das ilustrações
+                    requestAnimationFrame(() => keepAnchorRef.current?.focus());
+                  }}
+                >
+                  {t("keepPhoto")}
+                </Button>
+              </div>
+            )}
+          </div>
           <ImageRadios baseId={baseId} name="cover" label={t("cover")} options={covers} value={values.cover_url} onChange={(cover_url) => patch({ cover_url })} error={tv(errors.cover_url)} optionLabel={(n) => t("optionN", { n })} noneLabel={t("noneSelected")} />
         </div>
 

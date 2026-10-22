@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Info, ShieldCheck } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { ContentTile } from "@/components/catalog";
@@ -10,6 +9,7 @@ import { InlineError } from "@/components/discover/InlineError";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
 import { Badge } from "@/components/ui";
+import { AvatarImage } from "@/components/ui/avatar-image";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { hubHref, loadCreator, loadCreatorHub } from "@/lib/catalog/creator-hub";
@@ -65,7 +65,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-5">
           <span className="relative inline-flex size-20 shrink-0 overflow-hidden rounded-full border border-border bg-surface-elevated sm:size-24">
-            <Image src={avatar} alt="" fill priority unoptimized={avatar.endsWith(".svg")} sizes="96px" className="object-cover" />
+            {/* foto enviada pelo herói (0031) ou ilustração; foto que não carrega volta para a ilustração */}
+            <AvatarImage src={avatar} alt="" fallbackSrc="/placeholders/avatar-1.svg" fill priority sizes="96px" className="object-cover" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

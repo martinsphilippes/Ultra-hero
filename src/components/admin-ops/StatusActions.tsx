@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
-import { closeRetentionException, revokeInvitation, revokeMembership, setCreatorStatus, setFeedbackStatus, setSellerStatus } from "@/app/admin/ops-actions";
+import { adminRemoveCreatorPhoto, closeRetentionException, revokeInvitation, revokeMembership, setCreatorStatus, setFeedbackStatus, setSellerStatus } from "@/app/admin/ops-actions";
 import { ConfirmActionDialog } from "@/components/admin";
 import { Button, useToast } from "@/components/ui";
 
@@ -37,6 +37,23 @@ export function CreatorStatusButton({ id, status }: { id: string; status: "pendi
       requireJustification
       destructive={suspend}
       action={(justification) => setCreatorStatus({ id, status: suspend ? "suspended" : "active" }, justification)}
+    />
+  );
+}
+
+// Tira do ar a foto enviada pelo herói (0031); só aparece quando o avatar é uma foto do bucket.
+export function CreatorPhotoRemoveButton({ id }: { id: string }) {
+  const t = useTranslations("adminOps.creators.form");
+  return (
+    <ConfirmActionDialog
+      triggerSize="md"
+      triggerLabel={t("photoRemove")}
+      triggerVariant="ghost"
+      title={t("photoRemoveTitle")}
+      description={t("photoRemoveDescription")}
+      requireJustification
+      destructive
+      action={(justification) => adminRemoveCreatorPhoto({ id }, justification)}
     />
   );
 }

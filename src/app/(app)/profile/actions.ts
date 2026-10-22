@@ -6,7 +6,11 @@ import { setLocaleAction } from "@/i18n/actions";
 import { locales } from "@/i18n/config";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
+import { ILLUSTRATION_RE } from "@/lib/avatar/constants";
+import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { recalculateRecommendations } from "@/lib/recommendations/recalculate";
+import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { setThemeAction } from "@/lib/theme/actions";
@@ -58,13 +62,18 @@ export async function syncTimezone(input: { timezone: string }): Promise<Result>
 }
 
 // ---------------------------------------------------------------- dados do perfil
-const AVATAR_RE = /^\/placeholders\/avatar-[1-8]\.svg$/;
-
+// Avatar: ilustração local, nenhum, ou a foto enviada (0031). A foto só entra pelo envio
+// (avatar-actions): aqui ela só é aceita se já é a atual da própria pessoa (salvar sem trocar).
 export async function updateProfile(input: { displayName: string; avatarUrl: string | null; locale: string; theme: string }): Promise<Result> {
+  const base = supabaseBaseUrl();
   const parsed = z
     .object({
       displayName: z.string().trim().min(1).max(60),
-      avatarUrl: z.string().regex(AVATAR_RE).nullable(),
+      avatarUrl: z
+        .string()
+        .max(300)
+        .refine((v) => ILLUSTRATION_RE.test(v) || isStoredAvatarUrl(v, base))
+        .nullable(),
       locale: z.enum(locales),
       theme: z.enum(themes),
     })
@@ -74,11 +83,21 @@ export async function updateProfile(input: { displayName: string; avatarUrl: str
     const user = await getUser();
     if (!user) return { ok: false, error: "unauthenticated" };
     const supabase = await createClient();
+    const { data: current } = await supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle();
+    const previous = current?.avatar_url ?? null;
+    const next = parsed.data.avatarUrl;
+    if (isStoredAvatarUrl(next, base) && (next !== previous || storedAvatarOwner(next, base) !== user.id)) return { ok: false, error: "invalid_input" };
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: parsed.data.displayName, avatar_url: parsed.data.avatarUrl })
+      .update({ display_name: parsed.data.displayName, avatar_url: next })
       .eq("id", user.id);
     if (error) return fail(error.message);
+    // Trocou a foto por ilustração (ou nenhuma): a foto sai do ar também no perfil de herói.
+    if (base && previous !== next && storedAvatarOwner(previous, base) === user.id && hasAdminClient()) {
+      await releaseStoredAvatar(createAdminClient(), { url: previous as string, baseUrl: base });
+      revalidatePath("/creator", "layout");
+      revalidatePath("/personalities", "layout");
+    }
     // Idioma e tema: cookies + perfil (mesmas actions usadas pelos seletores globais).
     await setLocaleAction(parsed.data.locale);
     await setThemeAction(parsed.data.theme);
@@ -225,8 +244,29 @@ export async function deleteAccount(input: { confirmation: string }): Promise<Re
     const supabase = await createClient();
     // Evento antes da exclusão (depois ele é desvinculado pela anonimização).
     await trackEvent("account.delete", { self_service: true });
+    // Fotos de perfil próprias lidas antes (depois o perfil some e o herói fica sem usuário).
+    const base = supabaseBaseUrl();
+    let photos: string[] = [];
+    if (base && hasAdminClient()) {
+      const [{ data: profile }, { data: hero }] = await Promise.all([
+        supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle(),
+        supabase.from("creator_profiles").select("avatar_url").eq("user_id", user.id).maybeSingle(),
+      ]);
+      photos = Array.from(new Set([profile?.avatar_url, hero?.avatar_url].filter((u): u is string => storedAvatarOwner(u, base) === user.id)));
+    }
     const { error } = await supabase.rpc("delete_my_account");
     if (error) return fail(error.message);
+    // Só depois da exclusão confirmada (exclusão bloqueada não perde a foto): a foto sai do Storage e
+    // do perfil público do herói, que fica no ar sem usuário. Melhor esforço: o envio ficou sem dono
+    // (user_id nulo) e a limpeza diária apaga o que falhar aqui.
+    if (base && photos.length > 0) {
+      try {
+        const admin = createAdminClient();
+        for (const url of photos) await releaseStoredAvatar(admin, { url, baseUrl: base });
+      } catch (releaseError) {
+        console.warn("[profile] remoção da foto após a exclusão falhou:", releaseError instanceof Error ? releaseError.message : releaseError);
+      }
+    }
     // A conta já não existe no servidor de auth: limpa só a sessão local (cookies).
     await supabase.auth.signOut({ scope: "local" });
     return { ok: true };

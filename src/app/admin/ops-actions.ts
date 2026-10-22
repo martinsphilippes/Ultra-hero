@@ -10,6 +10,8 @@ import type { FeedbackStatus } from "@/components/feedback/constants";
 import { feedbackTriageSchema, type FeedbackTriageInput } from "@/components/feedback/schema";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { requireRole } from "@/lib/auth/session";
+import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 import { PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
@@ -236,7 +238,9 @@ const creatorSchema = z
     headline: z.string().trim().max(140).optional().or(z.literal("")),
     bio: z.string().trim().max(2000).optional().or(z.literal("")),
     pillars: z.array(z.enum(PILLARS as [string, ...string[]])).min(1).max(4),
-    avatarUrl: z.string().regex(PLACEHOLDER_PATH),
+    // ilustração ou "manter a foto que o herói enviou" (0031): createCreator só aceita ilustração e
+    // updateCreator não regrava foto (creatorUpdateRow); quem põe foto é o envio do próprio herói
+    avatarUrl: z.string().max(300).refine((v) => PLACEHOLDER_PATH.test(v) || isStoredAvatarUrl(v, supabaseBaseUrl())),
     coverUrl: z.string().regex(PLACEHOLDER_PATH),
     isFictional: z.boolean(),
     rightsNote: z.string().trim().max(500).optional().or(z.literal("")),
@@ -274,6 +278,16 @@ function creatorRow(v: CreatorParsed) {
   };
 }
 
+/**
+ * Linha da edição pelo admin. Foto do bucket no formulário quer dizer "manter a foto do herói": a
+ * coluna avatar_url não é tocada. Regravar a URL traria de volta uma foto já apagada (formulário
+ * aberto antes de o herói trocar/remover ou excluir a conta) ou poria a foto de outra pessoa no herói.
+ */
+function creatorUpdateRow(v: CreatorParsed) {
+  const { avatar_url, ...row } = creatorRow(v);
+  return isStoredAvatarUrl(avatar_url, supabaseBaseUrl()) ? row : { ...row, avatar_url };
+}
+
 async function creatorInvalid(parsed: { success: false; error: z.ZodError }): Promise<Failure> {
   const code = parsed.error.issues.find((i) => i.message === "rights_holder_required") ? "rights_holder_required" : "invalid_input";
   return fail(code);
@@ -295,6 +309,8 @@ export async function createCreator(input: CreatorFormValues): Promise<Result<{ 
   const parsed = creatorSchema.safeParse(input);
   if (!parsed.success) return creatorInvalid(parsed);
   const v = parsed.data;
+  // herói novo não tem envio próprio: só ilustração
+  if (!PLACEHOLDER_PATH.test(v.avatarUrl)) return invalid();
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.from("creator_profiles").insert(creatorRow(v)).select("id").single();
@@ -316,7 +332,7 @@ export async function updateCreator(id: string, input: CreatorFormValues): Promi
   const v = parsed.data.values;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("creator_profiles").update(creatorRow(v)).eq("id", parsed.data.id).select("id").maybeSingle();
+    const { data, error } = await supabase.from("creator_profiles").update(creatorUpdateRow(v)).eq("id", parsed.data.id).select("id").maybeSingle();
     if (error) return fail(error);
     if (!data) return fail("not_found");
     const privateError = await savePrivateRights(supabase, parsed.data.id, v);
@@ -326,6 +342,52 @@ export async function updateCreator(id: string, input: CreatorFormValues): Promi
     if (privateError) return privateError;
     const t = await getTranslations("adminOps.creators.form");
     return { ok: true, message: t("updated") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// Tira do ar a foto enviada pelo herói (conta demo pública, foto imprópria). Service role: apaga o
+// objeto e limpa a referência no perfil público e no perfil do usuário; fica na auditoria.
+export async function adminRemoveCreatorPhoto(input: { id: string }, justification: string): Promise<Result> {
+  const actor = await admin();
+  const parsed = z.object({ id: z.uuid(), justification: requiredJustification }).safeParse({ ...input, justification });
+  if (!parsed.success) return invalid();
+  const base = supabaseBaseUrl();
+  if (!hasAdminClient() || !base) return fail("no_service_role");
+  try {
+    const supabase = await createClient();
+    const { data: creator, error } = await supabase.from("creator_profiles").select("id, slug, user_id, avatar_url").eq("id", parsed.data.id).maybeSingle();
+    if (error) return fail(error);
+    if (!creator) return fail("not_found");
+    if (!isStoredAvatarUrl(creator.avatar_url, base)) return fail("no_photo");
+    const client = createAdminClient();
+    // Só apaga o objeto quando a foto é do usuário ligado ao herói. avatar_url é gravável pelo
+    // próprio herói: se ele apontou para a foto de outra pessoa, só a referência dele sai.
+    let released: { unlinked: boolean; deleted: boolean };
+    if (creator.user_id && storedAvatarOwner(creator.avatar_url, base) === creator.user_id) {
+      released = await releaseStoredAvatar(client, { url: creator.avatar_url as string, baseUrl: base });
+    } else {
+      const { error: unlinkError } = await client.from("creator_profiles").update({ avatar_url: null }).eq("id", creator.id).eq("avatar_url", creator.avatar_url as string);
+      released = { unlinked: !unlinkError, deleted: false };
+    }
+    if (!released.unlinked) return fail("generic");
+    await client.rpc("audit_log", {
+      p_action: "creator.photo_remove",
+      p_resource_type: "creator_profile",
+      p_resource_id: creator.id,
+      p_before: { avatar_url: creator.avatar_url },
+      p_after: { avatar_url: null, object_deleted: released.deleted, removed_by: actor.id },
+      p_justification: parsed.data.justification,
+      p_actor_type: "admin",
+    });
+    revalidatePath("/admin/creators");
+    revalidatePath(`/admin/creators/${creator.id}`);
+    revalidatePath("/personalities");
+    revalidatePath(`/personalities/${creator.slug}`);
+    revalidatePath("/", "layout");
+    const t = await getTranslations("adminOps.creators.form");
+    return { ok: true, message: t("photoRemoved") };
   } catch (error) {
     return fail(error);
   }
@@ -535,10 +597,12 @@ const SETTING_SCHEMAS = {
   "recipes.ratings_enabled": z.boolean(),
   "recipes.comments_enabled": z.boolean(),
   "recipes.uploads_enabled": z.boolean(),
+  // foto de perfil (0031): envio pelo celular
+  "avatars.uploads_enabled": z.boolean(),
 } as const;
 
 export type EditableSettingKey = keyof typeof SETTING_SCHEMAS;
-const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open", "recipes.uploads_enabled"];
+const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open", "recipes.uploads_enabled", "avatars.uploads_enabled"];
 
 export async function setSetting(input: { key: EditableSettingKey; value: unknown }, justification: string): Promise<Result> {
   await admin();

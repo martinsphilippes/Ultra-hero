@@ -176,7 +176,8 @@
           "p1": "We only collect what the demo needs to work:",
           "list1": {
             "account": "<strong>Account:</strong> email, password and display name. The password is handled by the authentication service; the app does not store it in its own tables. If you sign in with Google, when that option is available, we receive your name, your email and, if there is one, the address of your profile photo from Google.",
-            "preferences": "<strong>Preferences:</strong> language, theme, avatar chosen from illustrations and your device’s time zone, used to count your day streak.",
+            "preferences": "<strong>Preferences:</strong> language, theme, avatar (an illustration or the photo you upload) and your device’s time zone, used to count your day streak.",
+            "profilePhoto": "<strong>Profile photo (optional):</strong> if you take or pick a photo, it is cropped to a square and resized on your device before upload, with no location data or other camera metadata, and stored in Supabase Storage at a public address that cannot be listed. It shows as your avatar in the app; if you are a hero, it also shows on your public page, which any visitor can see. To limit uploads (up to 20 per day) and delete unused photos, we keep the date, size and type of each upload.",
             "notifications": "<strong>Notification preferences:</strong> what you agree to receive (editorial digest, streak reminders, test orders) and through which channels. Nothing is sent in this version; your choice is stored to be respected by any future sending.",
             "usage": "<strong>Content activity:</strong> interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments and symbolic certificates (the certificate PDF shows your display name).",
             "routine": "<strong>Routine items:</strong> title, time, days and the daily check mark, used to build your Today and count your streak.",
@@ -290,7 +291,7 @@
         "blocks": {
           "p1": "We use technology providers that process data on our behalf, only to run the app:",
           "list1": {
-            "supabase": "<strong>Supabase:</strong> database and authentication, including sending sign-up confirmation and password reset emails.",
+            "supabase": "<strong>Supabase:</strong> database, authentication and profile photo storage, including sending sign-up confirmation and password reset emails.",
             "vercel": "<strong>Vercel:</strong> hosting of the app and execution of server functions, including the automatic daily routines, such as the retention routine.",
             "cloudflare": "<strong>Cloudflare (Stream):</strong> receives, processes, stores and delivers the videos heroes record or upload in the app, and the player for those videos is loaded from Cloudflare. It doesn't receive your name or email; the video is tied to the content, not to your account.",
             "ai": "<strong>OpenAI or Google (Gemini), only if AI recommendations are turned on</strong> by the administrators. In the demo’s initial configuration, recommendations use an in-house engine, without external AI. When AI is turned on, the chosen provider only receives: your interests (tags), your affinity per pillar, your estimated level, how many pieces of content you have completed, the language for the explanations and catalog data (opaque content identifiers, pillar, type, difficulty, tags, required module, whether the content is featured, how many days ago it was published and whether it is unlocked in your plan). It <strong>never</strong> receives your name, your email, your account identifier or any text you wrote. AI can be turned off at any time with a kill switch.",
@@ -327,6 +328,11 @@
                 "data": "Routine items and daily check marks",
                 "period": "As long as the account exists",
                 "details": "Deleted together with the account. Hydration and rest are not included: they stay on your device only."
+              },
+              "profilePhoto": {
+                "data": "Profile photo",
+                "period": "Until you replace or remove the photo, or delete your account",
+                "details": "A replaced or removed photo is deleted right away; cached copies (browser and delivery network) expire within 1 hour. If something fails, the daily routine deletes unused copies and the photos of deleted accounts, including from the hero's public page. The technical record of each upload (date, size and type) is deleted 2 days after the photo is gone."
               },
               "analytics": {
                 "data": "Usage events",

@@ -7,10 +7,12 @@ import { RIGHTS_STATUSES, createCreator, updateCreator, type CreatorFormValues }
 import { Button, Chip, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
+import { ILLUSTRATIONS } from "@/lib/avatar/constants";
+import { isStoredAvatarUrl, safeAvatarSrc, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { slugify } from "./slugify";
 
-const AVATARS = Array.from({ length: 8 }, (_, i) => `/placeholders/avatar-${i + 1}.svg`);
+const AVATARS = ILLUSTRATIONS;
 const COVERS = PILLARS.flatMap((p) => [1, 2, 3].map((n) => `/placeholders/cover-${p}-${n}.svg`));
 
 type Props = {
@@ -47,6 +49,7 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
     privateNotes: initial?.privateNotes ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const uploadedPhoto = initial?.avatarUrl && isStoredAvatarUrl(initial.avatarUrl, supabaseBaseUrl()) ? initial.avatarUrl : null;
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const authorized = values.rightsStatus === "authorized";
@@ -126,6 +129,8 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
       <div className="grid gap-4 md:grid-cols-3">
         <FormField label={t("avatar")}>
           <Select value={values.avatarUrl} disabled={pending} onChange={(e) => set("avatarUrl", e.target.value)}>
+            {/* foto enviada pelo herói (0031): o admin mantém ou troca por ilustração */}
+            {uploadedPhoto && <option value={uploadedPhoto}>{t("photoKeep")}</option>}
             {AVATARS.map((src, i) => (
               <option key={src} value={src}>
                 {t("placeholderOption", { n: i + 1 })}
@@ -150,7 +155,7 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
         {/* Prévia dos placeholders escolhidos (decorativa) */}
         <span className="relative size-14 shrink-0 overflow-hidden rounded-full border border-border">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={values.avatarUrl} alt="" className="size-full object-cover" />
+          <img src={safeAvatarSrc(values.avatarUrl, AVATARS[0], supabaseBaseUrl())} alt="" className="size-full object-cover" />
         </span>
         <span className="relative h-14 flex-1 overflow-hidden rounded-lg border border-border">
           {/* eslint-disable-next-line @next/next/no-img-element */}
