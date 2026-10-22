@@ -186,7 +186,8 @@
             "feedback": "<strong>Feedback opcional:</strong> calificación, comentario de hasta 1.000 caracteres, el contenido o programa desde el que se envió y el idioma.",
             "recommendations": "<strong>Recomendaciones:</strong> la lista de contenidos recomendados para ti y un registro técnico de cada cálculo (motor usado, tiempo, cantidad de elementos, costo estimado y errores).",
             "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría.",
-            "recipeStep": "<strong>Etapa de recetas:</strong> la aceptación del aviso y las restricciones y alergias que marques (de una lista fija, sin texto libre). Las alergias y restricciones son datos sensibles de salud: solo las usamos para recordártelas en la página de cada receta, con tu consentimiento, y puedes cambiarlas o borrarlas cuando quieras."
+            "recipeStep": "<strong>Etapa de recetas:</strong> la aceptación del aviso y las restricciones y alergias que marques (de una lista fija, sin texto libre). Las alergias y restricciones son datos sensibles de salud: solo las usamos para recordártelas en la página de cada receta, con tu consentimiento, y puedes cambiarlas o borrarlas cuando quieras.",
+            "heroVideos": "<strong>Videos de los héroes:</strong> si eres héroe y grabas o envías un video en la app, el archivo va directo de tu dispositivo a Cloudflare Stream. La app solo guarda el identificador del video, el contenido al que pertenece y las fechas de envío y de descarte (para limitar envíos y limpiar videos abandonados)."
           },
           "p2": "Los proveedores de infraestructura también registran datos técnicos de acceso, como la dirección IP, la fecha y la hora y la información del navegador, en sus propios registros operativos."
         }
@@ -291,6 +292,7 @@
           "list1": {
             "supabase": "<strong>Supabase:</strong> base de datos y autenticación, incluido el envío de los correos de confirmación de registro y de restablecimiento de contraseña.",
             "vercel": "<strong>Vercel:</strong> alojamiento de la app y ejecución de las funciones del servidor, incluidas las rutinas automáticas diarias, como la de conservación de datos.",
+            "cloudflare": "<strong>Cloudflare (Stream):</strong> recibe, procesa, almacena y entrega los videos que los héroes graban o envían en la app, y el reproductor de esos videos se carga desde Cloudflare. No recibe tu nombre ni tu correo; el video queda vinculado al contenido, no a tu cuenta.",
             "ai": "<strong>OpenAI o Google (Gemini), solo si las recomendaciones con IA están activadas</strong> por la administración. En la configuración inicial de la demostración, las recomendaciones usan un motor propio, sin IA externa. Cuando la IA está activada, el proveedor elegido solo recibe: tus intereses (etiquetas), tu afinidad por pilar, tu nivel estimado, cuántos contenidos completaste, el idioma de las justificaciones y datos del catálogo (identificadores opacos de contenido, pilar, tipo, dificultad, etiquetas, módulo requerido, si el contenido está destacado, hace cuántos días se publicó y si está disponible en tu plan). <strong>Nunca</strong> recibe tu nombre, tu correo, el identificador de tu cuenta ni textos que hayas escrito. La IA puede desactivarse en cualquier momento con un interruptor de apagado.",
             "google": "<strong>Google (inicio de sesión):</strong> si eliges iniciar sesión con Google, Google te autentica y nos envía los datos básicos de tu perfil, según su propia política de privacidad."
           },
@@ -365,6 +367,11 @@
                 "data": "Etapa de recetas (aviso, restricciones y alergias)",
                 "period": "Mientras exista la cuenta",
                 "details": "Se borran con la cuenta. También puedes cambiarlas o desmarcarlas rehaciendo la etapa desde cualquier receta."
+              },
+              "heroVideos": {
+                "data": "Videos enviados por héroes",
+                "period": "Mientras exista el contenido",
+                "details": "El video de un borrador que descartas, cambias o abandonas (envío vencido que nunca se publicó) se elimina de Cloudflare con la rutina diaria. El video de un contenido que ya estuvo publicado queda como historial de ese contenido."
               }
             }
           },

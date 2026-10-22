@@ -57,3 +57,36 @@ grant execute on all functions in schema public to anon, authenticated, service_
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
+
+-- Storage mínimo (só para o banco local): o bastante para a 0028 criar o bucket e as políticas e
+-- para o S27 testar a RLS de storage.objects. O Supabase real grava owner_id e metadata
+-- (mimetype, size) no insert do objeto; os testes preenchem os mesmos campos.
+create schema if not exists storage;
+create table if not exists storage.buckets (
+  id text primary key,
+  name text not null,
+  public boolean not null default false,
+  file_size_limit bigint,
+  allowed_mime_types text[],
+  created_at timestamptz not null default now()
+);
+create table if not exists storage.objects (
+  id uuid primary key default gen_random_uuid(),
+  bucket_id text references storage.buckets (id),
+  name text,
+  owner_id text,
+  metadata jsonb,
+  created_at timestamptz not null default now(),
+  unique (bucket_id, name)
+);
+alter table storage.objects enable row level security;
+-- pastas do caminho (sem o nome do arquivo), como a função do Supabase
+create or replace function storage.foldername(name text) returns text[] language sql immutable as $$
+  select (string_to_array(name, '/'))[1:greatest(coalesce(array_length(string_to_array(name, '/'), 1), 0) - 1, 0)]
+$$;
+grant usage on schema storage to anon, authenticated, service_role;
+grant select on storage.buckets to anon, authenticated, service_role;
+grant select on storage.objects to anon;
+grant select, insert, delete on storage.objects to authenticated;
+grant all on storage.objects, storage.buckets to service_role;
+grant execute on function storage.foldername(text) to anon, authenticated, service_role;

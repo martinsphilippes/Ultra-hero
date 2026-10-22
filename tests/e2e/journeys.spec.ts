@@ -104,6 +104,17 @@ test.describe("visitante", () => {
     await expect(page.getByRole("rowheader", { name: "Itens de rotina e marcações diárias" })).toBeVisible();
   });
 
+  // Vídeos gravados pelos heróis já passam pelo Cloudflare Stream: a política cita o operador, o dado
+  // guardado e o prazo (atualizada junto com a fase 1 de receitas).
+  test("política de privacidade cita o Cloudflare Stream e o prazo dos vídeos dos heróis", async ({ page }) => {
+    await page.goto("/legal/privacy");
+    const main = page.locator("main");
+    await expect(main.getByText(/Cloudflare \(Stream\):/)).toBeVisible();
+    await expect(main.getByText(/Vídeos dos heróis:/)).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "Vídeos enviados por heróis" })).toBeVisible();
+    await expect(main.locator("time[datetime='2026-10-22']")).toBeVisible();
+  });
+
   test("ambiente de demonstração está sinalizado", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();

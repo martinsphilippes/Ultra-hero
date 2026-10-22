@@ -89,7 +89,8 @@
     "unauthenticated": "Sign in to continue.",
     "creator_unavailable": "Your hero profile is not active.",
     "not_found": "Content not found.",
-    "media_license_mismatch": "License inconsistent with the media: fix the license and save again."
+    "media_license_mismatch": "License inconsistent with the media: fix the license and save again.",
+    "recipe_editor_pending": "Recipe editing comes back with the new editor."
   },
   "list": {
     "empty": "No items yet.",

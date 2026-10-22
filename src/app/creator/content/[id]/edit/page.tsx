@@ -9,6 +9,7 @@ import { CreatorContentForm } from "@/components/creator/CreatorContentForm";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimeline";
 import { PublishButton, UnpublishButton } from "@/components/creator/PublishButtons";
+import { RecipeLegacyNotice } from "@/components/recipes/RecipeLegacyNotice";
 import { contentChecklist } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { Badge, Button, PageHeader, PillarBadge, PlanBadge, Section } from "@/components/ui";
@@ -86,7 +87,9 @@ export default async function EditContentPage({ params }: Params) {
   const reviewRows = (reviews ?? []) as ReviewRow[];
   const latest = reviewRows[0] ?? null;
 
-  const editable = content.status === "draft" && content.review_status !== "in_review";
+  // Receita fica só para leitura aqui até o editor de receitas (fase 2): sem salvar, publicar nem despublicar.
+  const isRecipe = content.type === "recipe";
+  const editable = content.status === "draft" && content.review_status !== "in_review" && !isRecipe;
   const checklist = contentChecklist({
     type: content.type,
     title: content.title,
@@ -153,13 +156,13 @@ export default async function EditContentPage({ params }: Params) {
         {/* Ações abaixo do título: no celular não espremem o cabeçalho. */}
         {content.status !== "archived" && (
           <div className="flex flex-wrap items-center gap-2">
-            {content.status === "draft" && <PublishButton contentId={content.id} checklist={checklist} />}
+            {content.status === "draft" && !isRecipe && <PublishButton contentId={content.id} checklist={checklist} />}
             {content.status === "published" && (
               <Button asChild variant="secondary" trailingIcon={<ExternalLink />}>
                 <Link href={`/content/${content.slug}`}>{t("content.viewPublic")}</Link>
               </Button>
             )}
-            {content.status === "published" && <UnpublishButton contentId={content.id} />}
+            {content.status === "published" && !isRecipe && <UnpublishButton contentId={content.id} />}
           </div>
         )}
         <div className="flex flex-wrap items-center gap-1.5">
@@ -184,6 +187,8 @@ export default async function EditContentPage({ params }: Params) {
           )}
         </div>
       </div>
+
+      {isRecipe && <RecipeLegacyNotice />}
 
       <p className="type-caption text-fg-muted">{t("edit.accessNote")}</p>
 

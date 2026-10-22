@@ -161,7 +161,12 @@
     "not_found": "Registro no encontrado.",
     "publish_at_invalid": "Fecha de publicación inválida.",
     "publish_at_future": "La fecha de publicación debe estar en el futuro.",
-    "media_license_mismatch": "Licencia del medio incoherente con el proveedor. Edita el contenido e inténtalo de nuevo."
+    "media_license_mismatch": "Licencia del medio incoherente con el proveedor. Edita el contenido e inténtalo de nuevo.",
+    "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor.",
+    "recipe_incomplete": "La receta no puede publicarse: falta {fields}.",
+    "type_locked": "El tipo de una receta no cambia (ni otro contenido se convierte en receta).",
+    "recipe_body_managed": "El cuerpo de esta receta solo cambia en el editor de recetas.",
+    "review_required_protected": "La regla de revisión solo cambia con la acción auditada de configuración."
   },
   "content": {
     "title": "Contenidos",

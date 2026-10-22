@@ -24,6 +24,8 @@ vi.mock("@/lib/auth/session", () => ({ getUser: async () => ({ id: ids.USER }), 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     from: (table: string) => ({
+      // tipo atual do conteúdo (o admin não edita receita pelo formulário antigo desde a 0027)
+      select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { type: "video" }, error: null }) }) }),
       update: (payload: Record<string, unknown>) => {
         server.writes.push({ table, op: "update", payload });
         return { eq: async () => ({ error: null }) };

@@ -31,7 +31,7 @@
   },
   "content": {
     "new": "Novo conteúdo",
-    "newDescription": "Crie um rascunho de receita, treino, guia, artigo ou vídeo por link. Salve e publique quando estiver pronto.",
+    "newDescription": "Crie um rascunho de treino, guia, artigo ou vídeo por link. Salve e publique quando estiver pronto.",
     "description": "Seus conteúdos em todos os estados. Rascunhos podem ser editados; para mudar um publicado, despublique antes.",
     "viewPublic": "Ver página pública",
     "columns": {
@@ -45,7 +45,7 @@
     "count": "{count, plural, =0 {Nenhum conteúdo} =1 {1 conteúdo} other {# conteúdos}}",
     "tableCaption": "Lista dos meus conteúdos com status, revisão e ações",
     "emptyTitle": "Você ainda não tem conteúdos",
-    "emptyDescription": "Crie o primeiro rascunho: vídeo, receita, treino, guia ou artigo."
+    "emptyDescription": "Crie o primeiro rascunho: vídeo, treino, guia ou artigo."
   },
   "edit": {
     "noAccessRule": "Sem regra de acesso",
@@ -308,6 +308,7 @@
     "provider_error": "O serviço de vídeo não respondeu. Tente de novo em instantes.",
     "file_too_large": "O vídeo passa de 2 GB.",
     "upload_incomplete": "O vídeo não terminou de subir para o Cloudflare. Envie de novo pelo Novo post.",
-    "stream_media_forbidden": "Este vídeo não foi enviado por esta conta e não pode ser usado aqui."
+    "stream_media_forbidden": "Este vídeo não foi enviado por esta conta e não pode ser usado aqui.",
+    "recipe_editor_pending": "A edição de receitas volta com o novo editor."
   }
 }

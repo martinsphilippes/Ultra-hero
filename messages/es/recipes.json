@@ -90,5 +90,160 @@
     "title": "Revisa los ingredientes",
     "description": "Nos indicaste: {items}. Esta receta no tiene revisión profesional; revisa cada ingrediente antes de cocinar.",
     "edit": "Revisar restricciones y alergias"
+  },
+  "structured": {
+    "legacyEditor": {
+      "title": "Receta solo de lectura",
+      "description": "La edición de recetas vuelve con el nuevo editor. Hasta entonces, esta receta queda como está y sigue publicada como antes."
+    },
+    "createUnavailable": "Las recetas tendrán su propio editor pronto; por eso el tipo receta no aparece aquí.",
+    "informedByChef": "Informado por el chef",
+    "allergensNotInformed": "Alérgenos no informados por el chef",
+    "nutritionInformed": "Información nutricional informada por el chef, aún no validada",
+    "credentialsLabel": "Credenciales informadas por el héroe",
+    "units": {
+      "g": {
+        "one": "g",
+        "other": "g"
+      },
+      "kg": {
+        "one": "kg",
+        "other": "kg"
+      },
+      "mg": {
+        "one": "mg",
+        "other": "mg"
+      },
+      "ml": {
+        "one": "ml",
+        "other": "ml"
+      },
+      "l": {
+        "one": "L",
+        "other": "L"
+      },
+      "tsp": {
+        "one": "cucharadita",
+        "other": "cucharaditas"
+      },
+      "tbsp": {
+        "one": "cucharada",
+        "other": "cucharadas"
+      },
+      "cup": {
+        "one": "taza",
+        "other": "tazas"
+      },
+      "unit": {
+        "one": "unidad",
+        "other": "unidades"
+      },
+      "clove": {
+        "one": "diente",
+        "other": "dientes"
+      },
+      "bunch": {
+        "one": "manojo",
+        "other": "manojos"
+      },
+      "sprig": {
+        "one": "rama",
+        "other": "ramas"
+      },
+      "fillet": {
+        "one": "filete",
+        "other": "filetes"
+      },
+      "slice": {
+        "one": "rebanada",
+        "other": "rebanadas"
+      },
+      "leaf": {
+        "one": "hoja",
+        "other": "hojas"
+      },
+      "pinch": {
+        "one": "pizca",
+        "other": "pizcas"
+      },
+      "can": {
+        "one": "lata",
+        "other": "latas"
+      },
+      "package": {
+        "one": "paquete",
+        "other": "paquetes"
+      }
+    },
+    "categories": {
+      "cafe-da-manha": "Desayuno",
+      "almoco": "Almuerzo",
+      "jantar": "Cena",
+      "lanche": "Merienda",
+      "sobremesa": "Postre",
+      "molhos-e-bases": "Salsas y bases",
+      "marmitas": "Viandas",
+      "sopas": "Sopas",
+      "saladas": "Ensaladas",
+      "bebidas": "Bebidas"
+    },
+    "checklist": {
+      "title": "Título",
+      "summary": "Descripción",
+      "cover": "Foto de portada con texto alternativo",
+      "gallery_alt": "Texto alternativo en todas las fotos de la galería",
+      "servings": "Porciones",
+      "total_minutes": "Tiempo total",
+      "times": "Tiempo total mayor o igual a preparación + cocción + reposo",
+      "ingredients": "Al menos 1 ingrediente",
+      "steps": "Al menos 1 paso",
+      "category": "Al menos 1 categoría",
+      "allergens": "Alérgenos declarados (aunque sea ninguno)",
+      "license": "Licencia coherente con el video",
+      "stream": "Video subido por ti y todavía válido"
+    },
+    "errors": {
+      "unauthenticated": "Inicia sesión para continuar.",
+      "forbidden": "No tienes permiso para esta receta.",
+      "not_recipe": "Este contenido no es una receta.",
+      "content_not_editable": "Esta receta está en revisión o publicada y no se puede editar ahora.",
+      "stale_draft": "La receta cambió en otra pestaña o dispositivo. Recarga o sobrescribe.",
+      "invalid_payload": "Revisa los campos destacados.",
+      "invalid_category": "Elige una categoría de la lista.",
+      "too_many_categories": "Elige hasta 3 categorías.",
+      "too_many_ingredients": "Usa como máximo 60 ingredientes.",
+      "too_many_steps": "Usa como máximo 40 pasos.",
+      "media_not_owned": "Esta foto no pertenece a esta receta.",
+      "recipe_body_managed": "Esta receta solo cambia en el editor de recetas.",
+      "recipe_incomplete": "Faltan algunos elementos antes de publicar.",
+      "review_required": "Las recetas pasan por la revisión de la administración: envíala a revisión.",
+      "invalid_publish_at": "Elige una fecha entre 1 minuto y 365 días a partir de ahora.",
+      "type_locked": "El tipo de una receta no cambia. Duplícala para crear otro contenido.",
+      "cover_not_owned": "La portada debe ser una foto de esta receta.",
+      "nutrition_validation_forbidden": "Solo la administración valida la información nutricional.",
+      "nutrition_validation_incomplete": "Para validar, indica el responsable y la fecha.",
+      "uploads_disabled": "El envío de fotos está pausado en este momento.",
+      "invalid_path": "No pudimos identificar la foto enviada.",
+      "object_not_found": "La foto no llegó al almacenamiento. Envíala de nuevo.",
+      "invalid_mime": "Envía una imagen JPEG, PNG o WebP.",
+      "too_large": "La foto supera los 5 MB.",
+      "rights_required": "Confirma que tienes derecho a usar la imagen.",
+      "too_many_media": "La receta llegó al límite de fotos (30, 12 de ellas en la galería).",
+      "upload_quota_exceeded": "Llegaste al límite diario de envío (50 fotos o 100 MB). Intenta mañana.",
+      "not_in_review": "Esta receta no está en revisión.",
+      "already_archived": "Esta receta ya está archivada.",
+      "not_archived": "Esta receta no está archivada.",
+      "archived_by_admin": "La administración archivó esta receta; solo ella puede restaurarla.",
+      "not_draft": "Solo los borradores se pueden eliminar o publicar.",
+      "already_published": "Esta receta ya estuvo publicada y no se puede eliminar; archívala.",
+      "content_in_use": "Esta receta está en uso (programa o finalizaciones) y no se puede eliminar.",
+      "source_locked": "Esta receta está bloqueada por la administración y no se puede duplicar.",
+      "slug_taken": "Esa dirección ya está en uso.",
+      "invalid_slug": "Dirección inválida.",
+      "version_not_found": "Versión no encontrada.",
+      "version_not_restorable": "Esta versión solo guarda el formato antiguo y no se puede restaurar.",
+      "version_immutable": "Las versiones publicadas no cambian.",
+      "stream_media_forbidden": "Este video no fue enviado por ti."
+    }
   }
 }

@@ -122,8 +122,13 @@ select tests.ok('S3 após o fim do período volta ao gratuito', (public.my_subsc
 select tests.ok('S3 corpo premium bloqueado novamente', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:t7')) = 0);
 -- downgrade agendado: adiciona dois módulos, remove um → só sai no fim do período
 select tests.ok('S3 upgrade imediato com 2 módulos', jsonb_array_length(public.select_modules(array[public.seed_uuid('module:base'), public.seed_uuid('module:chef_full')]) -> 'modules') = 2);
+-- desde a 0027 a etapa demonstrativa vale no banco: g8 é receita, então consumer1 conclui a etapa
+-- antes (a linha sai logo depois, porque o S22 confere que consumer1 não tem etapa)
+insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('10000000-0000-4000-8000-000000000002', now());
 select tests.ok('S3 downgrade fica agendado (módulo segue ativo até o fim)', (select count(*) from jsonb_array_elements(public.select_modules(array[public.seed_uuid('module:base')]) -> 'modules') m where m ->> 'status' = 'scheduled_removal') = 1
   and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g8')) = 1);
+delete from public.recipe_onboarding where user_id = '10000000-0000-4000-8000-000000000002';
+select tests.ok('S3 sem a etapa, o mesmo módulo não abre o corpo da receita g8', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g8')) = 0);
 -- dependência configurável
 select tests.su();
 insert into public.module_dependencies (module_id, requires_module_id) values (public.seed_uuid('module:nutrition_full'), public.seed_uuid('module:base'));
@@ -1566,6 +1571,1119 @@ select tests.su();
 update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael') and user_id = '10000000-0000-4000-8000-000000000023';
 select tests.ok('S24 nada do cenário ficou no ar', not exists (select 1 from public.content where id::text like '24000000-%' and status = 'published'));
 
+-- ================================================================ S25 · Estrutura e backfill das receitas (0027 e 0029)
+-- Os cenários S25–S32 criam os próprios usuários (…0025–…0032): Helena e Marcos (chefs do seed)
+-- ganham usuários de teste, desvinculados no fim do S32; nada do que estes cenários publicam fica no ar.
+-- Ajudantes de payload de recipe_save (formato de src/lib/recipes/codes.ts e da seção 3.6 do desenho).
+create or replace function tests.rp(p_title text, p_ing jsonb, p_steps jsonb, p_cats jsonb default '["almoco"]', p_over jsonb default '{}')
+returns jsonb language sql immutable as $$
+  select jsonb_build_object(
+    'content', jsonb_build_object('title', p_title, 'summary', 'Resumo de teste da receita', 'tags', jsonb_build_array('teste'),
+                                  'difficulty', 'beginner', 'pillar', 'gastronomy', 'disclaimer_kind', 'nutrition'),
+    'details', jsonb_build_object('servings', 2, 'prep_minutes', 10, 'cook_minutes', 15, 'total_minutes', 30,
+                                  'allergens', jsonb_build_array('egg'), 'allergens_declared', true),
+    'extras', jsonb_build_object('chef_note', 'Nota do chef de teste'),
+    'categories', p_cats, 'ingredients', p_ing, 'steps', p_steps) || p_over
+$$;
+create or replace function tests.ing(p_id text, p_name text, p_qty numeric default 1, p_unit text default null)
+returns jsonb language sql immutable as $$ select jsonb_build_object('id', p_id, 'name', p_name, 'quantity', p_qty, 'unit', p_unit) $$;
+create or replace function tests.step(p_id text, p_text text, p_ings jsonb default '[]')
+returns jsonb language sql immutable as $$ select jsonb_build_object('id', p_id, 'instruction', p_text, 'ingredient_ids', p_ings) $$;
+-- updated_at atual do conteúdo, lido com a RLS de quem chama (o herói vê o próprio rascunho)
+create or replace function tests.upd(p_content uuid) returns timestamptz language sql stable as $$ select updated_at from public.content where id = p_content $$;
+grant execute on all functions in schema tests to anon, authenticated;
+
+select tests.su();
+insert into auth.users (id, email) values
+  ('10000000-0000-4000-8000-000000000025', 's25@test.local'),
+  ('10000000-0000-4000-8000-000000000026', 's26helena@test.local'),
+  ('10000000-0000-4000-8000-000000000027', 's27marcos@test.local'),
+  ('10000000-0000-4000-8000-000000000028', 's28prem@test.local'),
+  ('10000000-0000-4000-8000-000000000029', 's29free@test.local'),
+  ('10000000-0000-4000-8000-000000000030', 's30demo@test.local'),
+  ('10000000-0000-4000-8000-000000000031', 's31comm@test.local'),
+  ('10000000-0000-4000-8000-000000000032', 's32admin@test.local');
+-- contas demo (P3: seguem só a cota diária de envio); a avaliação de demo não entra no agregado
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"ultra_hero_demo": true}'::jsonb
+where id in ('10000000-0000-4000-8000-000000000027', '10000000-0000-4000-8000-000000000030');
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000026' where id = public.seed_uuid('creator:helena') and user_id is null;
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000027' where id = public.seed_uuid('creator:marcos') and user_id is null;
+insert into public.recipe_onboarding (user_id, notice_accepted_at) values
+  ('10000000-0000-4000-8000-000000000028', now()), ('10000000-0000-4000-8000-000000000029', now()),
+  ('10000000-0000-4000-8000-000000000030', now()), ('10000000-0000-4000-8000-000000000031', now());
+
+-- 1) as 8 receitas do seed passaram para o modelo estruturado
+select tests.ok('S25 as 8 receitas do seed têm detalhes; 41 ingredientes (34 numéricos, 3 em texto, 4 a gosto) e 28 etapas',
+  (select count(*) from public.recipe_details d join public.content c on c.id = d.content_id where c.type = 'recipe') = 8
+  and (select count(*) from public.recipe_ingredients) = 41
+  and (select count(*) from public.recipe_ingredients where quantity is not null) = 34
+  and (select count(*) from public.recipe_ingredients where quantity_text is not null) = 3
+  and (select count(*) from public.recipe_ingredients where to_taste) = 4
+  and (select count(*) from public.recipe_steps) = 28);
+select tests.ok('S25 ingredientes/etapas por receita: g1 6/3, g2 5/4, g3 6/3, g4 5/4, g5 5/3, g6 5/4, g8 5/4, g9 4/3',
+  (select string_agg(k || ':' || (select count(*) from public.recipe_ingredients i where i.content_id = public.seed_uuid('content:' || k))
+                       || '/' || (select count(*) from public.recipe_steps s where s.content_id = public.seed_uuid('content:' || k)), ',' order by k)
+   from unnest(array['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g8', 'g9']) as k) = 'g1:6/3,g2:5/4,g3:6/3,g4:5/4,g5:5/3,g6:5/4,g8:5/4,g9:4/3');
+select tests.ok('S25 cada receita tem a v1 restore_point com o corpo atual, e o corpo continua v1 (não virou marcador)',
+  (select count(*) from public.recipe_versions v join public.content_bodies b on b.content_id = v.content_id
+    where v.reason = 'restore_point' and v.version_no = 1 and v.snapshot = jsonb_build_object('legacy_body', b.body)
+      and b.body ->> 'kind' = 'recipe' and jsonb_typeof(b.body -> 'ingredients') = 'array' and not (b.body ? 'schema')) = 8
+  and (select count(*) from public.recipe_versions) = 8);
+select tests.ok('S25 cada ingrediente guarda o nome e o texto original do corpo v1 (source_qty), na mesma posição',
+  (select count(*) from public.content c join public.content_bodies b on b.content_id = c.id
+     cross join lateral jsonb_array_elements(b.body -> 'ingredients') with ordinality as t(e, o)
+     join public.recipe_ingredients i on i.content_id = c.id and i.position = t.o
+   where c.type = 'recipe' and i.name = t.e ->> 'item' and i.source_qty = t.e ->> 'qty') = 41);
+select tests.ok('S25 etapas com o texto do corpo v1, na mesma posição',
+  (select count(*) from public.content c join public.content_bodies b on b.content_id = c.id
+     cross join lateral jsonb_array_elements_text(b.body -> 'steps') with ordinality as t(e, o)
+     join public.recipe_steps s on s.content_id = c.id and s.position = t.o
+   where c.type = 'recipe' and s.instruction = t.e) = 28);
+select tests.ok('S25 duration_minutes inalterado e copiado para total_minutes (g1 35, g2 30, g3 5, g4 40, g5 35, g6 45, g8 40, g9 15)',
+  (select string_agg(k || ':' || c.duration_minutes || '/' || d.total_minutes, ',' order by k)
+   from unnest(array['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g8', 'g9']) as k
+   join public.content c on c.id = public.seed_uuid('content:' || k) join public.recipe_details d on d.content_id = c.id)
+  = 'g1:35/35,g2:30/30,g3:5/5,g4:40/40,g5:35/35,g6:45/45,g8:40/40,g9:15/15');
+select tests.ok('S25 tempos copiados sem correção (P5): g4 5+45 contra 40, g2 15+20 contra 30; porções do corpo',
+  (select prep_minutes = 5 and cook_minutes = 45 and total_minutes = 40 and servings = 4 from public.recipe_details where content_id = public.seed_uuid('content:g4'))
+  and (select prep_minutes = 15 and cook_minutes = 20 and total_minutes = 30 and servings = 8 from public.recipe_details where content_id = public.seed_uuid('content:g2'))
+  and (select prep_minutes = 10 and cook_minutes = 25 and servings = 2 and rest_minutes is null from public.recipe_details where content_id = public.seed_uuid('content:g1')));
+select tests.ok('S25 alérgenos declarados só em g2 {egg,milk}, g5 {fish} e g9 {egg} com a nota do seed; as outras 5 "não informados"; dieta nunca inferida',
+  (select string_agg(k || '=' || d.allergens::text || coalesce('|' || d.allergen_notes, ''), ',' order by k)
+   from unnest(array['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g8', 'g9']) as k join public.recipe_details d on d.content_id = public.seed_uuid('content:' || k)
+   where d.allergens_declared) = 'g2={egg,milk},g5={fish},g9={egg}|glúten (aveia pode conter)'
+  and (select count(*) from public.recipe_details where not allergens_declared and allergens = '{}') = 5
+  and (select count(*) from public.recipe_details where diets <> '{}') = 0);
+select tests.ok('S25 literais: g4 água 2,5 xícaras; g1 batata-doce 1 + "média"; g5 batata-doce 2 + "médias"; g6 caldo 1,5 L; g8 "1 e 2 dentes" em texto; g3 sal a gosto',
+  (select quantity = 2.5 and unit = 'cup' and note is null from public.recipe_ingredients where content_id = public.seed_uuid('content:g4') and position = 2)
+  and (select quantity = 1 and unit is null and note = 'média' from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 4)
+  and (select quantity = 2 and unit is null and note = 'médias' from public.recipe_ingredients where content_id = public.seed_uuid('content:g5') and position = 2)
+  and (select quantity = 1.5 and unit = 'l' from public.recipe_ingredients where content_id = public.seed_uuid('content:g6') and position = 4)
+  and (select quantity is null and quantity_text = '1 e 2 dentes' from public.recipe_ingredients where content_id = public.seed_uuid('content:g8') and position = 3)
+  and (select to_taste and quantity is null and quantity_text is null from public.recipe_ingredients where content_id = public.seed_uuid('content:g3') and position = 6));
+select tests.ok('S25 etapas: g1.1 25 min a 200 °C, g4.3 35 min, g2.4 2 min; "de cada lado" (g1.2, g9.3) e "por até 5 dias" sem duração',
+  (select duration_seconds = 1500 and temperature_c = 200 from public.recipe_steps where content_id = public.seed_uuid('content:g1') and position = 1)
+  and (select duration_seconds = 2100 and temperature_c is null from public.recipe_steps where content_id = public.seed_uuid('content:g4') and position = 3)
+  and (select duration_seconds = 120 from public.recipe_steps where content_id = public.seed_uuid('content:g2') and position = 4)
+  and (select duration_seconds is null from public.recipe_steps where content_id = public.seed_uuid('content:g1') and position = 2)
+  and (select duration_seconds is null from public.recipe_steps where content_id = public.seed_uuid('content:g9') and position = 3)
+  and (select duration_seconds is null from public.recipe_steps where content_id = public.seed_uuid('content:g3') and position = 3)
+  and (select count(*) from public.recipe_steps where duration_seconds is not null) = 11);
+select tests.ok('S25 nutrição: g1 e g5 validadas (responsável, data e nota mantidos), g9 com números sem validação, origem chef',
+  (select count(*) from public.recipe_nutrition n where n.content_id in (public.seed_uuid('content:g1'), public.seed_uuid('content:g5'))
+     and n.validated and n.validated_by = 'Equipe de nutrição (demonstração)' and n.validated_at = '2026-10-20' and n.validation_note is not null and n.source = 'chef') = 2
+  and (select kcal = 520 and protein_g = 42 and sodium_mg = 480 from public.recipe_nutrition where content_id = public.seed_uuid('content:g1'))
+  and (select not validated and validated_by is null and kcal = 260 from public.recipe_nutrition where content_id = public.seed_uuid('content:g9'))
+  and (select count(*) from public.recipe_nutrition) = 3);
+select tests.ok('S25 categorias aprovadas (P5); marmitas = as receitas com a etiqueta marmita',
+  (select string_agg(k || '=' || (select string_agg(l.category_code, '+' order by l.category_code) from public.recipe_category_links l
+                                   where l.content_id = public.seed_uuid('content:' || k)), ',' order by k)
+   from unnest(array['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g8', 'g9']) as k)
+  = 'g1=almoco,g2=cafe-da-manha+marmitas,g3=molhos-e-bases,g4=almoco,g5=almoco,g6=sopas,g8=almoco+marmitas,g9=cafe-da-manha'
+  and (select array_agg(l.content_id order by l.content_id) from public.recipe_category_links l where l.category_code = 'marmitas')
+    = (select array_agg(c.id order by c.id) from public.content c where c.type = 'recipe' and 'marmita' = any (c.tags)));
+select tests.ok('S25 nota do chef e termos de busca dos ingredientes (extras); nenhuma mídia nem vínculo ingrediente↔produto semeado',
+  (select count(*) from public.recipe_extras where chef_note = 'Receita demonstrativa. Quantidades ilustrativas.') = 8
+  and (select ingredient_terms @@ plainto_tsquery('simple', public.f_unaccent('cabotiá')) from public.recipe_extras where content_id = public.seed_uuid('content:g8'))
+  and not (select ingredient_terms @@ plainto_tsquery('simple', 'cabotia') from public.recipe_extras where content_id = public.seed_uuid('content:g1'))
+  and (select count(*) from public.recipe_media) = 0 and (select count(*) from public.recipe_ingredient_products) = 0);
+
+-- 2) backfill de uma receita v1 fora da tabela (formato desconhecido) e de uma receita com corpo inválido
+insert into public.content (id, slug, creator_id, pillar, type, title, summary, duration_minutes, status, review_status) values
+  ('25000000-0000-4000-8000-000000000001', 's25-legada', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita legada S25', 'Resumo', 20, 'draft', 'none'),
+  ('25000000-0000-4000-8000-000000000002', 's25-legada-quebrada', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita quebrada S25', null, 20, 'draft', 'none');
+insert into public.content_bodies (content_id, body) values
+  ('25000000-0000-4000-8000-000000000001', '{"kind":"recipe","servings":2,"prep_minutes":"dez","cook_minutes":15,"ingredients":[{"item":"Farinha","qty":"1 punhado"},{"item":"Sal","qty":"a gosto"},{"item":"Leite","qty":"200 ml"}],"steps":["Misture tudo por 3 minutos."],"allergens":["leite","glúten (pode conter)"],"note":"Nota antiga"}'),
+  ('25000000-0000-4000-8000-000000000002', '[]');
+-- mesmo laço do fim da 0029: cada receita no próprio bloco; a quebrada falha sozinha
+do $s25$ declare r record; v_done int := 0; v_fail int := 0;
+begin
+  for r in select c.id from public.content c where c.type = 'recipe' and not exists (select 1 from public.recipe_details d where d.content_id = c.id)
+           order by c.created_at, c.id loop
+    begin
+      perform public.recipe_backfill_legacy(r.id);
+      v_done := v_done + 1;
+    exception when others then
+      v_fail := v_fail + 1;
+    end;
+  end loop;
+  perform tests.ok('S25 laço do backfill: só as 2 receitas novas entram; a de corpo inválido falha sozinha e a outra segue', v_done = 1 and v_fail = 1);
+end $s25$;
+select tests.ok('S25 fora da tabela: "1 punhado" e "200 ml" ficam em texto (não recalcula), "a gosto" vira marca, original em source_qty',
+  (select string_agg(name || '=' || coalesce(quantity::text, '-') || '/' || coalesce(quantity_text, '-') || '/' || to_taste || '/' || coalesce(source_qty, '-'), ',' order by position)
+   from public.recipe_ingredients where content_id = '25000000-0000-4000-8000-000000000001')
+  = 'Farinha=-/1 punhado/false/1 punhado,Sal=-/-/true/a gosto,Leite=-/200 ml/false/200 ml');
+select tests.ok('S25 fora da tabela: etapa sem duração, preparo inválido vira nulo, alérgenos pelo mapa (rótulo com qualificador vai para a nota), nota do chef e restore_point',
+  (select duration_seconds is null and instruction = 'Misture tudo por 3 minutos.' from public.recipe_steps where content_id = '25000000-0000-4000-8000-000000000001')
+  and (select servings = 2 and prep_minutes is null and cook_minutes = 15 and total_minutes = 20 and allergens = '{milk}' and allergens_declared
+              and allergen_notes = 'glúten (pode conter)' from public.recipe_details where content_id = '25000000-0000-4000-8000-000000000001')
+  and (select chef_note = 'Nota antiga' from public.recipe_extras where content_id = '25000000-0000-4000-8000-000000000001')
+  and exists (select 1 from public.recipe_versions where content_id = '25000000-0000-4000-8000-000000000001' and reason = 'restore_point' and version_no = 1)
+  and not exists (select 1 from public.recipe_category_links where content_id = '25000000-0000-4000-8000-000000000001'));
+select tests.ok('S25 corpo inválido: a receita fica só com o corpo antigo (sem detalhes, filhos nem versão)',
+  not exists (select 1 from public.recipe_details where content_id = '25000000-0000-4000-8000-000000000002')
+  and not exists (select 1 from public.recipe_versions where content_id = '25000000-0000-4000-8000-000000000002'));
+create temporary table t_s25_again as select public.recipe_backfill_legacy(public.seed_uuid('content:g1')) as r;
+select tests.ok('S25 reaplicar não duplica: receita com detalhes é pulada e as contagens não mudam',
+  (select r from t_s25_again) = 'skipped' and (select count(*) from public.recipe_ingredients) = 44 and (select count(*) from public.recipe_steps) = 29
+  and (select count(*) from public.recipe_versions) = 9);
+select tests.ok('S25 backfill auditado como sistema (recipe.backfill)',
+  exists (select 1 from public.admin_audit where action = 'recipe.backfill' and resource_id = '25000000-0000-4000-8000-000000000001' and actor_type = 'system'));
+select tests.ok('S25 dry-run: só a receita de corpo inválido segue sem detalhes, fora das 8 do seed',
+  (select count(*) from public.recipe_backfill_dry_run()) = 1
+  and (select outcome from public.recipe_backfill_dry_run()) = 'outside_seed');
+-- apagar o conteúdo leva detalhes, filhos e versões (a guarda das versões aceita a cascata)
+delete from public.content where id in ('25000000-0000-4000-8000-000000000001', '25000000-0000-4000-8000-000000000002');
+select tests.ok('S25 apagar o conteúdo leva tabelas filhas e versões em cascata',
+  not exists (select 1 from public.recipe_versions where content_id = '25000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.recipe_ingredients where content_id = '25000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.recipe_details where content_id = '25000000-0000-4000-8000-000000000001'));
+
+-- 3) segurança do modelo: RLS, grants, funções internas
+select tests.ok('S25 RLS ligada nas 16 tabelas novas e nada para anon além das 4 de leitura pública',
+  (select count(*) from pg_class where relnamespace = 'public'::regnamespace and relkind = 'r' and relrowsecurity
+     and relname in ('recipe_categories', 'recipe_media', 'recipe_details', 'recipe_extras', 'recipe_category_links', 'recipe_ingredients', 'recipe_steps',
+                     'recipe_step_ingredients', 'recipe_nutrition', 'recipe_versions', 'recipe_ratings', 'recipe_comments', 'recipe_ingredient_products',
+                     'shopping_list_items', 'user_recipe_prefs', 'recipe_view_history')) = 16
+  and (select string_agg(relname, ',' order by relname) from pg_class where relnamespace = 'public'::regnamespace and relkind = 'r'
+         and relname like any (array['recipe\_%', 'shopping\_%', 'user\_recipe\_%']) and has_table_privilege('anon', oid, 'select'))
+      = 'recipe_categories,recipe_category_links,recipe_details,recipe_media'
+  and not has_table_privilege('authenticated', 'public.recipe_details', 'insert')
+  and not has_table_privilege('authenticated', 'public.recipe_ingredients', 'update')
+  and not has_table_privilege('authenticated', 'public.recipe_versions', 'delete'));
+select tests.ok('S25 backfill, literais e dry-run só para o service role',
+  (select bool_and(not has_function_privilege('authenticated', p.oid, 'execute') and not has_function_privilege('anon', p.oid, 'execute')
+                   and has_function_privilege('service_role', p.oid, 'execute'))
+   from pg_proc p where p.pronamespace = 'public'::regnamespace
+     and p.proname in ('recipe_backfill_legacy', 'recipe_backfill_dry_run', 'recipe_legacy_ingredient_literals', 'recipe_legacy_step_literals',
+                       'recipe_legacy_category_literals', 'recipe_legacy_allergen_code', 'recipe_legacy_seed_key', 'recipe_snapshot',
+                       'recipe_assert_publishable', 'recipe_publishable_missing', 'recipe_orphan_media')));
+
+-- ================================================================ S26 · Permissões da receita (0027)
+-- Visitante lê o público (detalhes, categorias, galeria) e nunca o protegido (extras, ingredientes,
+-- etapas, nutrição); consumidor só abre com a etapa e o plano; herói escreve só pela RPC.
+select tests.anon();
+select tests.ok('S26 visitante lê detalhes, categorias e vínculos de categoria de receita no ar',
+  (select count(*) from public.recipe_details where content_id = public.seed_uuid('content:g1')) = 1
+  and (select count(*) from public.recipe_categories) = 10
+  and (select count(*) from public.recipe_category_links where content_id = public.seed_uuid('content:g1')) = 1);
+select tests.expect_error('S26 visitante: permission denied em recipe_extras', $q$select count(*) from public.recipe_extras$q$, 'permission denied');
+select tests.expect_error('S26 visitante: permission denied em recipe_ingredients', $q$select count(*) from public.recipe_ingredients$q$, 'permission denied');
+select tests.expect_error('S26 visitante: permission denied em recipe_steps', $q$select count(*) from public.recipe_steps$q$, 'permission denied');
+select tests.expect_error('S26 visitante: permission denied em recipe_nutrition', $q$select count(*) from public.recipe_nutrition$q$, 'permission denied');
+select tests.ok('S26 visitante: can_access_content(g1) falso', not public.can_access_content(public.seed_uuid('content:g1')));
+
+-- consumidor sem a etapa demonstrativa: o banco bloqueia (antes só a interface bloqueava)
+select tests.login('10000000-0000-4000-8000-000000000025', 's25@test.local');
+select tests.ok('S26 consumidor sem a etapa: can_access_content(g1) falso, 0 ingredientes, 0 corpo e 0 extras',
+  not public.can_access_content(public.seed_uuid('content:g1'))
+  and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g1')) = 0
+  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g1')) = 0
+  and (select count(*) from public.recipe_extras where content_id = public.seed_uuid('content:g1')) = 0
+  and (select count(*) from public.recipe_details where content_id = public.seed_uuid('content:g1')) = 1);
+insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('10000000-0000-4000-8000-000000000025', now());
+select tests.ok('S26 com a etapa: 6 ingredientes de g1 (gratuita) e 0 de g5 (premium sem módulo)',
+  public.can_access_content(public.seed_uuid('content:g1'))
+  and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g1')) = 6
+  and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g5')) = 0
+  and (select count(*) from public.recipe_steps where content_id = public.seed_uuid('content:g1')) = 3
+  and (select count(*) from public.recipe_extras where content_id = public.seed_uuid('content:g1')) = 1);
+select tests.ok('S26 receita que não é do consumidor: versões invisíveis', (select count(*) from public.recipe_versions) = 0);
+
+-- herói (Helena): rascunho próprio, escrita só pela RPC
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.ok('S26 Helena vinculada ao usuário de teste', public.my_creator_id() = public.seed_uuid('creator:helena'));
+insert into public.content (id, slug, creator_id, pillar, type, title, summary) values
+  ('26000000-0000-4000-8000-000000000001', 's26-receita', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S26', 'Resumo S26');
+select tests.ok('S26 dono vê as versões só das próprias receitas (8 do seed da Helena e do Marcos: só as 4 dela)',
+  (select count(*) from public.recipe_versions) = 4);
+select tests.expect_error('S26 insert direto em recipe_ingredients: permission denied',
+  $q$insert into public.recipe_ingredients (content_id, position, name) values ('26000000-0000-4000-8000-000000000001', 1, 'X')$q$, 'permission denied');
+select tests.expect_error('S26 insert direto em recipe_details: permission denied',
+  $q$insert into public.recipe_details (content_id, servings) values ('26000000-0000-4000-8000-000000000001', 2)$q$, 'permission denied');
+select tests.expect_error('S26 receita não muda de tipo: type_locked',
+  $q$update public.content set type = 'article' where id = '26000000-0000-4000-8000-000000000001'$q$, 'type_locked');
+select tests.su();
+select tests.expect_error('S26 outro tipo não vira receita, nem como sistema: type_locked',
+  $q$update public.content set type = 'recipe' where id = public.seed_uuid('content:g7')$q$, 'type_locked');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S26 avatar do perfil não aponta para foto de receita (check)',
+  $q$update public.creator_profiles set avatar_url = '/media/recipe/26000000-0000-4000-8000-0000000000aa' where id = public.seed_uuid('creator:helena')$q$, '23514');
+select tests.su();
+insert into public.recipe_media (id, content_id, creator_id, role, position, storage_path, mime, bytes, alt_text, rights_confirmed_at) values
+  ('a2600000-0000-4000-8000-0000000000f1', public.seed_uuid('content:g1'), public.seed_uuid('creator:helena'), 'gallery', 1,
+   public.seed_uuid('creator:helena') || '/' || public.seed_uuid('content:g1') || '/a2600000-0000-4000-8000-0000000000f1.webp', 'image/webp', 1000, 'Foto de g1', now());
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S26 artigo não usa como capa a foto de outra receita: cover_not_owned',
+  $q$insert into public.content (id, slug, creator_id, pillar, type, title, cover_url) values ('26000000-0000-4000-8000-000000000002', 's26-artigo', public.seed_uuid('creator:helena'), 'gastronomy', 'article', 'Artigo S26', '/media/recipe/a2600000-0000-4000-8000-0000000000f1')$q$, 'cover_not_owned');
+
+-- recipe_save do próprio rascunho
+create temporary table t_s26_save1 as select public.recipe_save('26000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S26', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000001', 'Ovo', 2), tests.ing('a2600000-0000-4000-8000-000000000002', 'Farinha', 200, 'g')),
+           jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.', '["a2600000-0000-4000-8000-000000000001"]'),
+                             tests.step('a2600000-0000-4000-8000-000000000012', 'Asse por 20 minutos.'))),
+  tests.upd('26000000-0000-4000-8000-000000000001')) as r;
+select tests.ok('S26 recipe_save grava a receita inteira e devolve updated_at; o corpo vira o marcador',
+  (select (r ->> 'updated_at') is not null from t_s26_save1)
+  and (select string_agg(name || '@' || position, ',' order by position) from public.recipe_ingredients where content_id = '26000000-0000-4000-8000-000000000001') = 'Ovo@1,Farinha@2'
+  and (select count(*) from public.recipe_steps where content_id = '26000000-0000-4000-8000-000000000001') = 2
+  and (select count(*) from public.recipe_step_ingredients where content_id = '26000000-0000-4000-8000-000000000001') = 1
+  and (select servings = 2 and total_minutes = 30 and allergens = '{egg}' and allergens_declared from public.recipe_details where content_id = '26000000-0000-4000-8000-000000000001')
+  and (select duration_minutes = 30 from public.content where id = '26000000-0000-4000-8000-000000000001')
+  and (select body = '{"kind": "recipe", "schema": 2}'::jsonb from public.content_bodies where content_id = '26000000-0000-4000-8000-000000000001')
+  and (select ingredient_terms @@ plainto_tsquery('simple', 'farinha') from public.recipe_extras where content_id = '26000000-0000-4000-8000-000000000001'));
+select public.recipe_save('26000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S26', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000002', 'Farinha', 200, 'g'), tests.ing('a2600000-0000-4000-8000-000000000001', 'Ovo', 2)),
+           jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.'))),
+  tests.upd('26000000-0000-4000-8000-000000000001'));
+select tests.ok('S26 reordenar preserva os ids e apaga a etapa ausente',
+  (select string_agg(id::text || '@' || position, ',' order by position) from public.recipe_ingredients where content_id = '26000000-0000-4000-8000-000000000001')
+    = 'a2600000-0000-4000-8000-000000000002@1,a2600000-0000-4000-8000-000000000001@2'
+  and (select count(*) from public.recipe_steps where content_id = '26000000-0000-4000-8000-000000000001') = 1);
+select public.recipe_save('26000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S26', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000002', 'Farinha', 200, 'g')),
+           jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.'))),
+  tests.upd('26000000-0000-4000-8000-000000000001'));
+select tests.ok('S26 ingrediente ausente do payload é apagado',
+  (select array_agg(id) from public.recipe_ingredients where content_id = '26000000-0000-4000-8000-000000000001') = array['a2600000-0000-4000-8000-000000000002'::uuid]);
+select tests.expect_error('S26 updated_at antigo: stale_draft',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]'), '2000-01-01')$q$, 'stale_draft');
+select tests.expect_error('S26 unidade fora da lista: invalid_payload: ingredients.0.unit',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000002', 'Farinha', 1, 'xicara')), '[]'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'invalid_payload: ingredients.0.unit');
+select tests.expect_error('S26 a gosto com quantidade: invalid_payload: ingredients.0.to_taste',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000002', 'Sal', 1) || '{"to_taste": true}'), '[]'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'invalid_payload: ingredients.0.to_taste');
+select tests.expect_error('S26 61 ingredientes: too_many_ingredients',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', (select jsonb_agg(tests.ing(gen_random_uuid()::text, 'Item ' || g)) from generate_series(1, 61) g), '[]'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'too_many_ingredients');
+select tests.expect_error('S26 4 categorias: too_many_categories',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]', '["almoco","jantar","lanche","sopas"]'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'too_many_categories');
+select tests.expect_error('S26 categoria inexistente: invalid_category',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]', '["churrasco"]'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'invalid_category');
+select tests.expect_error('S26 metadado de foto de outra receita: media_not_owned',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]', '["almoco"]', '{"media":[{"id":"a2600000-0000-4000-8000-0000000000f1","position":1,"alt_text":"x"}]}'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'media_not_owned');
+select tests.expect_error('S26 capa com foto de outra receita viola a FK composta',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]', '["almoco"]', '{"details":{"servings":2,"cover_media_id":"a2600000-0000-4000-8000-0000000000f1"}}'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, '23503');
+select tests.expect_error('S26 foto de etapa de outra receita viola a FK composta',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.') || '{"image_media_id":"a2600000-0000-4000-8000-0000000000f1"}')), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, '23503');
+select tests.expect_error('S26 ingrediente de outra receita na etapa: invalid_payload: steps.0.ingredient_ids',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.', '["a2600000-0000-4000-8000-000000000001"]'))), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'invalid_payload: steps.0.ingredient_ids');
+select tests.expect_error('S26 id de ingrediente de outra receita: forbidden',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', jsonb_build_array(tests.ing((select id::text from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') limit 1), 'Roubado')), '[]'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'forbidden');
+select tests.ok('S26 recusas não mudaram a receita', (select count(*) from public.recipe_ingredients where content_id = '26000000-0000-4000-8000-000000000001') = 1
+  and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g1')) = 6);
+select tests.ok('S26 sinalizador de confiança desligado depois da gravação', not public.is_trusted_call());
+-- corpo: o body estruturado só muda pela RPC; trocar só o vídeo passa pela guarda do Stream (0026)
+select tests.expect_error('S26 gravar body de receita estruturada: recipe_body_managed',
+  $q$update public.content_bodies set body = '{"kind":"recipe","ingredients":[]}' where content_id = '26000000-0000-4000-8000-000000000001'$q$, 'recipe_body_managed');
+select tests.expect_error('S26 vídeo do Stream sem envio do herói: stream_media_forbidden (guarda da 0026)',
+  $q$update public.content_bodies set media_provider = 'cloudflare_stream', media_ref = 'b2600000000000000000000000000001' where content_id = '26000000-0000-4000-8000-000000000001'$q$, 'stream_media_forbidden');
+select tests.su();
+insert into public.stream_uploads (uid, creator_id, expires_at) values ('b2600000000000000000000000000002', public.seed_uuid('creator:helena'), now() + interval '30 minutes');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+update public.content_bodies set media_provider = 'cloudflare_stream', media_ref = 'b2600000000000000000000000000002' where content_id = '26000000-0000-4000-8000-000000000001';
+select tests.ok('S26 trocar só o vídeo (envio próprio) passa, sem tocar no marcador',
+  (select media_provider = 'cloudflare_stream' and body = '{"kind": "recipe", "schema": 2}'::jsonb from public.content_bodies where content_id = '26000000-0000-4000-8000-000000000001'));
+update public.content_bodies set media_provider = 'none', media_ref = null where content_id = '26000000-0000-4000-8000-000000000001';
+-- RPC alheia
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+select tests.expect_error('S26 outro herói: recipe_save alheia dá forbidden',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]'), now())$q$, 'forbidden');
+select tests.expect_error('S26 recipe_save de conteúdo que não é receita: not_recipe (o dono) / forbidden (outro)',
+  $q$select public.recipe_save('20000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]'), now())$q$, 'forbidden');
+select tests.anon();
+select tests.expect_error('S26 visitante não executa recipe_save', $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', '{}', now())$q$, 'permission denied');
+select tests.ok('S26 visitante não vê os detalhes do rascunho', (select count(*) from public.recipe_details where content_id = '26000000-0000-4000-8000-000000000001') = 0);
+select tests.su();
+update public.content set review_status = 'in_review' where id = '26000000-0000-4000-8000-000000000001';
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S26 rascunho em revisão: content_not_editable',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('X', '[]', '[]'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'content_not_editable');
+select tests.su();
+update public.content set review_status = 'none' where id = '26000000-0000-4000-8000-000000000001';
+
+-- nutrição: só o admin valida; número muda → validação cai; nota da receita não derruba
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.recipe_save('26000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S26', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000002', 'Farinha', 200, 'g')),
+           jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.')), '["almoco"]',
+           '{"nutrition":{"kcal":300,"protein_g":10,"source":"chef"}}'),
+  tests.upd('26000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S26 herói não se valida: nutrition_validation_forbidden',
+  $q$select public.recipe_save('26000000-0000-4000-8000-000000000001', tests.rp('Receita S26', '[]', '[]', '["almoco"]', '{"nutrition":{"kcal":300,"validated":true,"validated_by":"Eu"}}'), tests.upd('26000000-0000-4000-8000-000000000001'))$q$, 'nutrition_validation_forbidden');
+select tests.expect_error('S26 herói não executa a validação do admin',
+  $q$select public.admin_validate_recipe_nutrition('26000000-0000-4000-8000-000000000001', true, 'Eu', current_date, null)$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S26 validar sem responsável: nutrition_validation_incomplete',
+  $q$select public.admin_validate_recipe_nutrition('26000000-0000-4000-8000-000000000001', true, ' ', current_date, null)$q$, 'nutrition_validation_incomplete');
+select public.admin_validate_recipe_nutrition('26000000-0000-4000-8000-000000000001', true, 'Nutricionista CRN 0000', current_date, 'Conferido');
+select tests.ok('S26 admin valida a nutrição (responsável, data, usuário) e audita',
+  (select validated and validated_by = 'Nutricionista CRN 0000' and validated_at = current_date and validated_by_user = '10000000-0000-4000-8000-000000000001'
+   from public.recipe_nutrition where content_id = '26000000-0000-4000-8000-000000000001')
+  and exists (select 1 from public.admin_audit where action = 'recipe_nutrition.validate' and resource_id = '26000000-0000-4000-8000-000000000001'));
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.recipe_save('26000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S26', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000002', 'Farinha', 200, 'g')),
+           jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.')), '["almoco"]',
+           '{"nutrition":{"kcal":300,"protein_g":10,"source":"chef"},"extras":{"chef_note":"Outra nota"}}'),
+  tests.upd('26000000-0000-4000-8000-000000000001'));
+select tests.ok('S26 gravar sem mudar números (só a nota da receita) mantém a validação',
+  (select validated from public.recipe_nutrition where content_id = '26000000-0000-4000-8000-000000000001'));
+select public.recipe_save('26000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S26', jsonb_build_array(tests.ing('a2600000-0000-4000-8000-000000000002', 'Farinha', 200, 'g')),
+           jsonb_build_array(tests.step('a2600000-0000-4000-8000-000000000011', 'Misture.')), '["almoco"]',
+           '{"nutrition":{"kcal":350,"protein_g":10,"source":"chef"}}'),
+  tests.upd('26000000-0000-4000-8000-000000000001'));
+select tests.ok('S26 mudar kcal derruba a validação (responsável, data e usuário limpos)',
+  (select not validated and validated_by is null and validated_at is null and validated_by_user is null and kcal = 350
+   from public.recipe_nutrition where content_id = '26000000-0000-4000-8000-000000000001'));
+
+-- tradução publicada: título e resumo públicos; o corpo só pela RPC com acesso
+select tests.su();
+insert into public.content_localizations (content_id, locale, title, summary, body, status) values
+  (public.seed_uuid('content:r1'), 'en', 'Morning ritual (en)', 'Summary (en)', '{"kind":"video","intro":"secret body"}', 'published')
+on conflict (content_id, locale) do update set title = excluded.title, body = excluded.body, status = 'published';
+select tests.anon();
+select tests.ok('S26 visitante lê título e resumo da tradução publicada', (select title from public.content_localizations where content_id = public.seed_uuid('content:r1') and locale = 'en') = 'Morning ritual (en)');
+select tests.expect_error('S26 visitante não lê o corpo da tradução (permission denied)', $q$select body from public.content_localizations$q$, 'permission denied');
+select tests.expect_error('S26 visitante não executa content_localized_body', $q$select public.content_localized_body(public.seed_uuid('content:r1'), 'en')$q$, 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000000025', 's25@test.local');
+select tests.expect_error('S26 consumidor também não seleciona body direto', $q$select body from public.content_localizations$q$, 'permission denied');
+select tests.ok('S26 consumidor com acesso lê o corpo traduzido pela RPC; sem acesso (g5 premium) recebe nulo',
+  (public.content_localized_body(public.seed_uuid('content:r1'), 'en') ->> 'intro') = 'secret body'
+  and public.content_localized_body(public.seed_uuid('content:g5'), 'en') is null);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+-- o upsert (on conflict … do update set body = excluded.body) exigiria select em body: o painel de
+-- traduções passa a gravar com update e, se não houver linha, insert (nenhum dos dois lê body)
+select tests.expect_error('S26 upsert com excluded.body exige ler body: recusado',
+  $q$insert into public.content_localizations (content_id, locale, title, body, status) values (public.seed_uuid('content:r1'), 'en', 'x', '{}', 'draft') on conflict (content_id, locale) do update set body = excluded.body$q$, 'permission denied');
+update public.content_localizations set title = 'Ritual (en, revisado)', body = '{"kind":"video","intro":"en 2"}', updated_by = auth.uid(), updated_at = now()
+where content_id = public.seed_uuid('content:r1') and locale = 'en';
+insert into public.content_localizations (content_id, locale, title, summary, body, status, updated_by, updated_at)
+values (public.seed_uuid('content:r1'), 'es', 'Ritual (es)', null, '{"kind":"video","intro":"es"}', 'draft', auth.uid(), now());
+select tests.ok('S26 admin segue gravando traduções (update e insert) e lê o rascunho pela RPC',
+  (public.content_localized_body(public.seed_uuid('content:r1'), 'es') ->> 'intro') = 'es'
+  and (public.content_localized_body(public.seed_uuid('content:r1'), 'en') ->> 'intro') = 'en 2');
+
+-- especialidades e credenciais (P7)
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+update public.creator_profiles set specialties = '{cozinha de base,molhos}', credentials = 'Formada em gastronomia (informado pela heroína)' where id = public.seed_uuid('creator:helena');
+select tests.ok('S26 herói grava especialidades e credenciais; aprovação começa nula',
+  (select specialties = '{cozinha de base,molhos}' and credentials is not null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
+select tests.expect_error('S26 herói não aprova as próprias credenciais (coluna protegida)',
+  $q$update public.creator_profiles set credentials_approved_at = now() where id = public.seed_uuid('creator:helena')$q$, 'protected_column');
+select tests.expect_error('S26 mais de 6 especialidades: check',
+  $q$update public.creator_profiles set specialties = '{a,b,c,d,e,f,g}' where id = public.seed_uuid('creator:helena')$q$, '23514');
+select tests.expect_error('S26 herói não executa a RPC de credenciais', $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'x')$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'Conferido');
+select tests.ok('S26 admin aprova as credenciais (auditado)',
+  (select credentials_approved_at is not null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
+  and exists (select 1 from public.admin_audit where action = 'creator.credentials' and resource_id = public.seed_uuid('creator:helena')::text));
+select tests.expect_error('S26 aprovar credencial vazia: credentials_empty', $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:marcos'), true, 'x')$q$, 'credentials_empty');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+update public.creator_profiles set credentials = 'Texto novo' where id = public.seed_uuid('creator:helena');
+select tests.ok('S26 herói muda o texto e a aprovação volta a nulo', (select credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
+select tests.su();
+update public.creator_profiles set specialties = '{}', credentials = null where id = public.seed_uuid('creator:helena');
+delete from public.recipe_media where id = 'a2600000-0000-4000-8000-0000000000f1';
+
+-- ================================================================ S27 · Fotos de receita no Storage (0028, shim local)
+-- Bucket privado; envio só na pasta do herói, em rascunho próprio de receita, com uploads ligados e
+-- dentro da cota diária; mime e bytes vêm da metadata do objeto; a visibilidade segue recipe_media.
+select tests.su();
+select tests.ok('S27 bucket recipe-media privado, 5 MB e 3 tipos de imagem',
+  (select not public and file_size_limit = 5242880 and allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'] from storage.buckets where id = 'recipe-media'));
+select tests.ok('S27 políticas do Storage: insert, select e delete (sem update: objeto imutável)',
+  (select string_agg(cmd, ',' order by cmd) from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname like 'recipe\_media\_%') = 'DELETE,INSERT,SELECT');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, summary) values
+  ('27000000-0000-4000-8000-000000000001', 's27-receita', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S27 com fotos', 'Resumo S27');
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000001.webp',
+   '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/webp","size":120000}'),
+  ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000002.jpg',
+   '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/jpeg","size":90000}');
+select tests.ok('S27 herói envia na própria pasta, em rascunho próprio, e vê os próprios objetos',
+  (select count(*) from storage.objects where bucket_id = 'recipe-media' and name like public.seed_uuid('creator:helena') || '/27000000-%') = 2);
+select tests.expect_error('S27 pasta de outro herói é recusada',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:marcos') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000009.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.expect_error('S27 receita publicada (g1) não recebe envio',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/' || public.seed_uuid('content:g1') || '/a2700000-0000-4000-8000-000000000009.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.expect_error('S27 pasta que não é uuid: recusada pela política, sem erro de conversão (22P02)',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', 'fotos/minhas/prato.jpg', auth.uid()::text, '{"mimetype":"image/jpeg","size":1}')$q$, '42501');
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'recipes.uploads_enabled';
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S27 uploads desligados (kill switch) recusam o envio',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000008.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.expect_error('S27 uploads desligados: recipe_register_media dá uploads_disabled',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000001.webp', 'gallery', 'x', true, null, null)$q$, 'uploads_disabled');
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'recipes.uploads_enabled';
+-- cota diária: 50 objetos nas últimas 24 h (de outros envios do mesmo usuário)
+insert into storage.objects (bucket_id, name, owner_id, metadata)
+select 'recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/' || gen_random_uuid() || '.webp',
+       '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/webp","size":1000}'
+from generate_series(1, 48);
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S27 acima da cota diária (50 objetos) o envio é recusado',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000007.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.su();
+delete from storage.objects where owner_id = '10000000-0000-4000-8000-000000000026' and metadata ->> 'size' = '1000';
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-0000000000b0.webp',
+   '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/webp","size":104857600}');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S27 acima de 100 MB no dia o envio é recusado',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000007.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.su();
+delete from storage.objects where name like '%a2700000-0000-4000-8000-0000000000b0.webp';
+-- P3: conta demo do herói segue só a cota (o Marcos de teste é demo)
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, summary) values
+  ('27000000-0000-4000-8000-000000000002', 's27-receita-marcos', public.seed_uuid('creator:marcos'), 'gastronomy', 'recipe', 'Receita S27 do Marcos', 'Resumo');
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('recipe-media', public.seed_uuid('creator:marcos') || '/27000000-0000-4000-8000-000000000002/a2700000-0000-4000-8000-000000000021.png',
+   '10000000-0000-4000-8000-000000000027', '{"mimetype":"image/png","size":5000}');
+select tests.ok('S27 conta demo do herói envia no próprio rascunho (P3: só a cota diária)',
+  (select count(*) from storage.objects where owner_id = '10000000-0000-4000-8000-000000000027') = 1);
+
+-- registrar: mime e tamanho do Storage, direitos de uso, limites
+select tests.su();
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000003.png',
+   '10000000-0000-4000-8000-000000000026', '{"mimetype":"text/html","size":100}'),
+  ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000004.webp',
+   '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/webp","size":6000000}');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S27 registrar objeto que não existe: object_not_found',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000005.webp', 'gallery', 'x', true, null, null)$q$, 'object_not_found');
+select tests.expect_error('S27 registrar sem confirmar o direito de uso: rights_required',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000001.webp', 'gallery', 'x', false, null, null)$q$, 'rights_required');
+select tests.expect_error('S27 metadata text/html com extensão .png: invalid_mime (o cliente não decide o tipo)',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000003.png', 'gallery', 'x', true, null, null)$q$, 'invalid_mime');
+select tests.expect_error('S27 metadata acima de 5 MB: too_large',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000004.webp', 'gallery', 'x', true, null, null)$q$, 'too_large');
+select tests.expect_error('S27 caminho de outra pasta: invalid_path',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:marcos') || '/27000000-0000-4000-8000-000000000002/a2700000-0000-4000-8000-000000000021.png', 'gallery', 'x', true, null, null)$q$, 'invalid_path');
+create temporary table t_s27_m1 as select public.recipe_register_media('27000000-0000-4000-8000-000000000001',
+  public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000001.webp', 'gallery', 'Prato servido', true, 1200, 1500) as id;
+create temporary table t_s27_m2 as select public.recipe_register_media('27000000-0000-4000-8000-000000000001',
+  public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000002.jpg', 'step', 'Etapa 1', true, null, null) as id;
+select tests.ok('S27 registro guarda tipo e tamanho lidos do Storage, direitos e autor',
+  (select mime = 'image/webp' and bytes = 120000 and role = 'gallery' and position = 1 and alt_text = 'Prato servido' and rights_confirmed_at is not null
+          and created_by = '10000000-0000-4000-8000-000000000026' and width = 1200
+   from public.recipe_media where id = (select id from t_s27_m1))
+  and (select mime = 'image/jpeg' and role = 'step' from public.recipe_media where id = (select id from t_s27_m2)));
+select tests.expect_error('S27 registrar o mesmo objeto de novo: already_registered',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000001.webp', 'gallery', 'x', true, null, null)$q$, 'already_registered');
+select tests.su();
+insert into public.recipe_media (content_id, creator_id, role, position, storage_path, mime, bytes, alt_text, rights_confirmed_at)
+select '27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena'), 'gallery', 2,
+       public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/' || gen_random_uuid() || '.webp', 'image/webp', 10, 'x', now()
+from generate_series(1, 11);
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000006.webp',
+   '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/webp","size":100}');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S27 13ª foto de galeria: too_many_media',
+  $q$select public.recipe_register_media('27000000-0000-4000-8000-000000000001', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-000000000006.webp', 'gallery', 'x', true, null, null)$q$, 'too_many_media');
+select tests.su();
+delete from public.recipe_media where content_id = '27000000-0000-4000-8000-000000000001' and bytes = 10;
+
+-- visibilidade: rascunho (só o dono), no ar (galeria pública; etapa só com acesso), agendada, despublicada
+select tests.anon();
+select tests.ok('S27 visitante não vê objeto nem linha de rascunho',
+  (select count(*) from storage.objects where name like '%/27000000-0000-4000-8000-000000000001/%') = 0
+  and (select count(*) from public.recipe_media where content_id = '27000000-0000-4000-8000-000000000001') = 0);
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.recipe_save('27000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S27 com fotos', jsonb_build_array(tests.ing('a2700000-0000-4000-8000-0000000000c1', 'Ovo', 2)),
+           jsonb_build_array(tests.step('a2700000-0000-4000-8000-0000000000d1', 'Misture.') || jsonb_build_object('image_media_id', (select id from t_s27_m2))), '["almoco"]',
+           jsonb_build_object('details', jsonb_build_object('servings', 2, 'total_minutes', 20, 'allergens', jsonb_build_array('egg'), 'allergens_declared', true,
+                                                            'cover_media_id', (select id from t_s27_m1)),
+                              'media', jsonb_build_array(jsonb_build_object('id', (select id from t_s27_m1), 'position', 1, 'alt_text', 'Prato servido no prato fundo', 'caption', null)))),
+  tests.upd('27000000-0000-4000-8000-000000000001'));
+select tests.ok('S27 capa escolhida vira cover_url do proxy e o texto alternativo é gravado',
+  (select cover_url = '/media/recipe/' || (select id from t_s27_m1) from public.content where id = '27000000-0000-4000-8000-000000000001')
+  and (select alt_text = 'Prato servido no prato fundo' from public.recipe_media where id = (select id from t_s27_m1)));
+select public.creator_publish_content('27000000-0000-4000-8000-000000000001');
+select tests.anon();
+select tests.ok('S27 publicada: visitante vê a galeria (linha e objeto) e não a foto de etapa',
+  (select count(*) from public.recipe_media where content_id = '27000000-0000-4000-8000-000000000001') = 1
+  and (select count(*) from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp') = 1
+  and (select count(*) from storage.objects where name like '%a2700000-0000-4000-8000-000000000002.jpg') = 0);
+select tests.login('10000000-0000-4000-8000-000000000025', 's25@test.local');
+select tests.ok('S27 consumidor com a etapa e acesso vê também a foto de etapa',
+  (select count(*) from storage.objects where name like '%a2700000-0000-4000-8000-000000000002.jpg') = 1);
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.creator_unpublish_content('27000000-0000-4000-8000-000000000001');
+select public.creator_publish_content('27000000-0000-4000-8000-000000000001', now() + interval '1 day');
+select tests.anon();
+select tests.ok('S27 agendada: ninguém de fora vê a foto até a data', (select count(*) from storage.objects where name like '%/27000000-0000-4000-8000-000000000001/%') = 0);
+select tests.login('10000000-0000-4000-8000-000000000025', 's25@test.local');
+select tests.ok('S27 agendada: consumidor também não vê', (select count(*) from storage.objects where name like '%/27000000-0000-4000-8000-000000000001/%') = 0);
+select tests.su();
+update public.content set publish_at = now() - interval '1 minute' where id = '27000000-0000-4000-8000-000000000001';
+select tests.anon();
+select tests.ok('S27 a data chegou: a galeria aparece sem nova ação', (select count(*) from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp') = 1);
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.creator_unpublish_content('27000000-0000-4000-8000-000000000001');
+select tests.anon();
+select tests.ok('S27 despublicada: a foto some', (select count(*) from storage.objects where name like '%/27000000-0000-4000-8000-000000000001/%') = 0);
+-- excluir a foto: capa zera; objeto sem linha pode ser apagado pelo dono
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+create temporary table t_s27_del as select public.recipe_delete_media((select id from t_s27_m1)) as r;
+select tests.ok('S27 recipe_delete_media devolve o caminho e zera a capa (detalhes e cover_url)',
+  (select r ->> 'path' like '%a2700000-0000-4000-8000-000000000001.webp' from t_s27_del)
+  and (select cover_media_id is null from public.recipe_details where content_id = '27000000-0000-4000-8000-000000000001')
+  and (select cover_url is null from public.content where id = '27000000-0000-4000-8000-000000000001'));
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+select tests.expect_error('S27 outro herói não apaga a foto alheia', $q$select public.recipe_delete_media((select id from t_s27_m2))$q$, 'forbidden');
+do $s27$ declare n int; begin
+  delete from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp'; get diagnostics n = row_count;
+  perform tests.ok('S27 outro herói não apaga objeto alheio no Storage (0 linhas)', n = 0);
+end $s27$;
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+do $s27b$ declare n int; begin
+  delete from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp'; get diagnostics n = row_count;
+  perform tests.ok('S27 dono apaga o objeto que ficou sem linha', n = 1);
+end $s27b$;
+-- órfãos: só o service role lista
+select tests.su();
+insert into storage.objects (bucket_id, name, owner_id, metadata, created_at) values
+  ('recipe-media', public.seed_uuid('creator:helena') || '/27000000-0000-4000-8000-000000000001/a2700000-0000-4000-8000-0000000000e1.webp',
+   '10000000-0000-4000-8000-000000000026', '{"mimetype":"image/webp","size":10}', now() - interval '2 days');
+select tests.ok('S27 recipe_orphan_media: só o service role; lista o objeto sem linha com mais de 24 h e não o registrado',
+  has_function_privilege('service_role', 'public.recipe_orphan_media(int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.recipe_orphan_media(int)', 'execute')
+  and not has_function_privilege('anon', 'public.recipe_orphan_media(int)', 'execute')
+  and exists (select 1 from public.recipe_orphan_media(100) p where p like '%a2700000-0000-4000-8000-0000000000e1.webp')
+  and not exists (select 1 from public.recipe_orphan_media(100) p where p like '%a2700000-0000-4000-8000-000000000002.jpg'));
+delete from storage.objects where bucket_id = 'recipe-media' and name not like '%a2700000-0000-4000-8000-000000000002.jpg' and name not like '%a2700000-0000-4000-8000-000000000021.png';
+
+-- ================================================================ S28 · Publicação, revisão configurável, agendamento, versões e vídeo
+select tests.su();
+select tests.ok('S28 regra de revisão começa desligada em todos os tipos (P1)', (select bool_and(not review_required) and count(*) = 5 from public.content_type_settings));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S28 nem o admin muda review_required direto', $q$update public.content_type_settings set review_required = true where type = 'recipe'$q$, 'review_required_protected');
+select tests.expect_error('S28 justificativa curta: justification_required', $q$select public.admin_set_review_required('recipe', true, 'abc')$q$, 'justification_required');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S28 herói não executa admin_set_review_required', $q$select public.admin_set_review_required('recipe', true, 'quero ligar')$q$, 'forbidden');
+insert into public.content (id, slug, creator_id, pillar, type, title, summary, cover_url) values
+  ('28000000-0000-4000-8000-000000000001', 's28-completa', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S28 completa', 'Resumo', '/placeholders/cover-gastronomy-1.svg'),
+  ('28000000-0000-4000-8000-000000000002', 's28-incompleta', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S28 incompleta', 'Resumo', null),
+  ('28000000-0000-4000-8000-000000000003', 's28-stream', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S28 com vídeo', 'Resumo', '/placeholders/cover-gastronomy-2.svg'),
+  ('28000000-0000-4000-8000-000000000004', 's28-arquivada', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S28 arquivada', 'Resumo', '/placeholders/cover-gastronomy-3.svg');
+select public.recipe_save('28000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S28 completa', jsonb_build_array(tests.ing('a2800000-0000-4000-8000-000000000001', 'Ovo', 2), tests.ing('a2800000-0000-4000-8000-000000000002', 'Sal', null) || '{"to_taste": true}'),
+           jsonb_build_array(tests.step('a2800000-0000-4000-8000-000000000011', 'Bata os ovos.', '["a2800000-0000-4000-8000-000000000001"]')), '["cafe-da-manha"]',
+           '{"nutrition":{"kcal":400,"protein_g":20}}'),
+  tests.upd('28000000-0000-4000-8000-000000000001'));
+select public.recipe_save('28000000-0000-4000-8000-000000000002',
+  tests.rp('Receita S28 incompleta', '[]', jsonb_build_array(tests.step('a2800000-0000-4000-8000-000000000021', 'Misture.')), '[]',
+           '{"details":{"servings":2,"total_minutes":10}}'),
+  tests.upd('28000000-0000-4000-8000-000000000002'));
+select public.recipe_save('28000000-0000-4000-8000-000000000004',
+  tests.rp('Receita S28 arquivada', jsonb_build_array(tests.ing('a2800000-0000-4000-8000-000000000041', 'Arroz', 1, 'cup')),
+           jsonb_build_array(tests.step('a2800000-0000-4000-8000-000000000042', 'Cozinhe.'))),
+  tests.upd('28000000-0000-4000-8000-000000000004'));
+-- modo desligado: publica, agenda e recusa datas fora da janela e receita incompleta
+create temporary table t_s28_pub as select public.creator_publish_content('28000000-0000-4000-8000-000000000001') as r;
+select tests.ok('S28 revisão desligada: o herói publica a receita completa e vira a versão 1 (publish)',
+  (select r ->> 'status' = 'published' and not (r ? 'publish_at') from t_s28_pub)
+  and (select status = 'published' and publish_at is null and access_level = 'free' from public.content where id = '28000000-0000-4000-8000-000000000001')
+  and (select count(*) = 1 and bool_and(version_no = 1 and reason = 'publish' and created_by = '10000000-0000-4000-8000-000000000026')
+       from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001'));
+select public.creator_unpublish_content('28000000-0000-4000-8000-000000000001');
+select public.creator_publish_content('28000000-0000-4000-8000-000000000001');
+select tests.ok('S28 publicar de novo sem mudanças não duplica a versão (mesmo hash)',
+  (select count(*) from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001') = 1);
+select public.creator_unpublish_content('28000000-0000-4000-8000-000000000001');
+create temporary table t_s28_sched as select public.creator_publish_content('28000000-0000-4000-8000-000000000001', now() + interval '1 day') as r;
+select tests.ok('S28 data futura agenda: a RPC devolve a data', (select (r ->> 'publish_at')::timestamptz = now() + interval '1 day' from t_s28_sched));
+select tests.ok('S28 data futura agenda: publicada com publish_at no futuro e published_at = publish_at',
+  (select status = 'published' and publish_at = now() + interval '1 day' and published_at = publish_at from public.content where id = '28000000-0000-4000-8000-000000000001'));
+select tests.su();
+select tests.ok('S28 data futura agenda: auditoria com a data',
+  exists (select 1 from public.admin_audit where action = 'content.creator_publish' and resource_id = '28000000-0000-4000-8000-000000000001'
+            and (after_data ->> 'publish_at')::timestamptz > now()));
+select tests.anon();
+select tests.ok('S28 agendada fica fora para o visitante', (select count(*) from public.content where id = '28000000-0000-4000-8000-000000000001') = 0
+  and (select count(*) from public.recipe_details where content_id = '28000000-0000-4000-8000-000000000001') = 0);
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.creator_unpublish_content('28000000-0000-4000-8000-000000000001');
+select tests.expect_error('S28 data no passado: invalid_publish_at', $q$select public.creator_publish_content('28000000-0000-4000-8000-000000000001', now() - interval '1 hour')$q$, 'invalid_publish_at');
+select tests.expect_error('S28 data além de 365 dias: invalid_publish_at', $q$select public.creator_publish_content('28000000-0000-4000-8000-000000000001', now() + interval '400 days')$q$, 'invalid_publish_at');
+select tests.expect_error('S28 receita incompleta: recipe_incomplete: cover,ingredients,category,allergens',
+  $q$select public.creator_publish_content('28000000-0000-4000-8000-000000000002')$q$, 'recipe_incomplete: cover,ingredients,category,allergens');
+select tests.ok('S28 sinalizador desligado depois da recusa', not public.is_trusted_call());
+
+-- modo ligado: o próprio cenário liga e depois desliga
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_review_required('recipe', true, 'Teste S28: revisão de receitas ligada');
+select tests.ok('S28 admin liga a revisão de receitas (auditado com a justificativa)',
+  (select review_required from public.content_type_settings where type = 'recipe')
+  and exists (select 1 from public.admin_audit where action = 'content_type.review_required' and resource_id = 'recipe'
+                and after_data ->> 'review_required' = 'true' and justification like 'Teste S28%'));
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S28 revisão ligada: creator_publish_content dá review_required', $q$select public.creator_publish_content('28000000-0000-4000-8000-000000000001')$q$, 'review_required');
+select tests.ok('S28 revisão ligada só para receita: outros tipos seguem a regra (desligada)', not public.content_review_required('video'));
+select public.submit_content_for_review('28000000-0000-4000-8000-000000000001', now() + interval '2 days');
+select tests.ok('S28 envio com data sugerida grava requested_publish_at e version_id da rodada',
+  (select review_status = 'in_review' from public.content where id = '28000000-0000-4000-8000-000000000001')
+  and (select requested_publish_at = now() + interval '2 days' and version_id is not null and decision = 'in_review'
+       from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000001' order by round desc limit 1));
+select tests.su();
+select tests.ok('S28 envio auditado (content.submit, ator herói)',
+  exists (select 1 from public.admin_audit where action = 'content.submit' and resource_id = '28000000-0000-4000-8000-000000000001' and actor_type = 'creator'));
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S28 a versão de 1 parâmetro também roda o checklist',
+  $q$select public.submit_content_for_review('28000000-0000-4000-8000-000000000002')$q$, 'recipe_incomplete');
+select tests.expect_error('S28 data sugerida fora da janela: invalid_publish_at',
+  $q$select public.submit_content_for_review('28000000-0000-4000-8000-000000000004', now() - interval '1 day')$q$, 'invalid_publish_at');
+create temporary table t_s28_wd as select public.creator_withdraw_review('28000000-0000-4000-8000-000000000001') as r;
+select tests.ok('S28 retirar da revisão fecha a rodada como devolvida e volta a rascunho editável',
+  (select review_status = 'none' from public.content where id = '28000000-0000-4000-8000-000000000001')
+  and (select decision = 'returned' and feedback = 'Retirado pelo herói' from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000001' order by round desc limit 1));
+select tests.expect_error('S28 retirar o que não está em revisão: not_in_review', $q$select public.creator_withdraw_review('28000000-0000-4000-8000-000000000001')$q$, 'not_in_review');
+select public.submit_content_for_review('28000000-0000-4000-8000-000000000001');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_review_content('28000000-0000-4000-8000-000000000001', 'approved', 'ok', now() + interval '3 days');
+select tests.ok('S28 admin aprova com data: a receita fica agendada',
+  (select status = 'published' and review_status = 'approved' and publish_at = now() + interval '3 days' from public.content where id = '28000000-0000-4000-8000-000000000001'));
+update public.content set access_level = 'free' where id = '28000000-0000-4000-8000-000000000002';
+select tests.su();
+update public.content set review_status = 'in_review' where id = '28000000-0000-4000-8000-000000000002';
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S28 aprovar receita incompleta é recusado pelo gatilho do checklist',
+  $q$select public.admin_review_content('28000000-0000-4000-8000-000000000002', 'approved', 'ok')$q$, 'recipe_incomplete');
+select tests.expect_error('S28 admin_set_content_status(published) em receita incompleta também é recusado',
+  $q$select public.admin_set_content_status('28000000-0000-4000-8000-000000000002', 'published', 'teste')$q$, 'recipe_incomplete');
+select public.admin_set_content_status('28000000-0000-4000-8000-000000000001', 'draft', 'Fim do teste de revisão');
+select public.admin_set_review_required('recipe', false, 'Teste S28: volta ao padrão desligado');
+select tests.su();
+update public.content set review_status = 'none' where id = '28000000-0000-4000-8000-000000000002';
+select tests.ok('S28 revisão volta a desligada em todos os tipos', (select bool_and(not review_required) from public.content_type_settings));
+
+-- vídeo: guarda do Stream na gravação e conferência do uid na entrada no ar
+insert into public.stream_uploads (uid, creator_id, expires_at) values
+  ('b2800000000000000000000000000001', public.seed_uuid('creator:marcos'), now() + interval '30 minutes'),
+  ('b2800000000000000000000000000002', public.seed_uuid('creator:helena'), now() + interval '30 minutes');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S28 recipe_save com o uid do Stream de outro herói: stream_media_forbidden',
+  $q$select public.recipe_save('28000000-0000-4000-8000-000000000003', tests.rp('Receita S28 com vídeo', '[]', '[]', '[]', '{"video":{"provider":"cloudflare_stream","ref":"b2800000000000000000000000000001"}}'), tests.upd('28000000-0000-4000-8000-000000000003'))$q$, 'stream_media_forbidden');
+select public.recipe_save('28000000-0000-4000-8000-000000000003',
+  tests.rp('Receita S28 com vídeo', jsonb_build_array(tests.ing('a2800000-0000-4000-8000-000000000031', 'Arroz', 1, 'cup')),
+           jsonb_build_array(tests.step('a2800000-0000-4000-8000-000000000032', 'Cozinhe.')), '["almoco"]',
+           '{"video":{"provider":"cloudflare_stream","ref":"b2800000000000000000000000000002"}}'),
+  tests.upd('28000000-0000-4000-8000-000000000003'));
+select tests.ok('S28 recipe_save com o próprio envio grava o vídeo e mantém o marcador',
+  (select media_provider = 'cloudflare_stream' and media_ref = 'b2800000000000000000000000000002' and body = '{"kind": "recipe", "schema": 2}'::jsonb
+   from public.content_bodies where content_id = '28000000-0000-4000-8000-000000000003'));
+select tests.su();
+update public.content_bodies set media_provider = 'cloudflare_stream', media_ref = 'b2800000000000000000000000000001' where content_id = '28000000-0000-4000-8000-000000000001';
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S28 uid alheio gravado como sistema: entrar no ar dá recipe_incomplete: stream',
+  $q$select public.admin_set_content_status('28000000-0000-4000-8000-000000000001', 'published', 'teste')$q$, 'recipe_incomplete: stream');
+select tests.su();
+update public.content_bodies set media_provider = 'none', media_ref = null where content_id = '28000000-0000-4000-8000-000000000001';
+
+-- limpeza diária do Stream: rascunho de receita com envio vencido perde só o vídeo
+update public.stream_uploads set content_id = '28000000-0000-4000-8000-000000000003', created_at = now() - interval '9 hours', expires_at = now() - interval '3 hours'
+where uid = 'b2800000000000000000000000000002';
+create temporary table t_s28_q as select * from public.stream_cleanup_candidates(now() - interval '1 hour', 500) where uid = 'b2800000000000000000000000000002';
+select tests.ok('S28 fila da limpeza: receita com vídeo vencido entra sem draft_id (nunca é apagada) e referenciada',
+  (select count(*) = 1 and bool_and(draft_id is null and referenced) from t_s28_q));
+select tests.ok('S28 descarte com id de receita recusa (a limpeza nunca apaga receita)',
+  public.stream_cleanup_discard('b2800000000000000000000000000002', '28000000-0000-4000-8000-000000000003') = false);
+create temporary table t_s28_disc as select public.stream_cleanup_discard('b2800000000000000000000000000002', null) as r;
+select tests.ok('S28 descarte sem rascunho: a receita continua, fica sem vídeo e o envio sai como descartado',
+  (select r from t_s28_disc)
+  and exists (select 1 from public.content where id = '28000000-0000-4000-8000-000000000003')
+  and (select media_provider = 'none' and media_ref is null and body = '{"kind": "recipe", "schema": 2}'::jsonb from public.content_bodies where content_id = '28000000-0000-4000-8000-000000000003')
+  and (select discarded_at is not null from public.stream_uploads where uid = 'b2800000000000000000000000000002')
+  and exists (select 1 from public.admin_audit where action = 'content.cleanup_media' and resource_id = '28000000-0000-4000-8000-000000000003' and actor_type = 'system'));
+
+-- versões: imutáveis, lidas pelo dono, restauráveis
+select tests.expect_error('S28 versão não muda (update)', $q$update public.recipe_versions set reason = 'admin_edit' where content_id = '28000000-0000-4000-8000-000000000001'$q$, 'version_immutable');
+select tests.expect_error('S28 versão não sai (delete) enquanto o conteúdo existe', $q$delete from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001'$q$, 'version_immutable');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.ok('S28 dono lê as próprias versões', (select count(*) from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001') >= 1);
+select public.recipe_save('28000000-0000-4000-8000-000000000001',
+  tests.rp('Receita S28 completa', jsonb_build_array(tests.ing('a2800000-0000-4000-8000-000000000001', 'Ovo caipira', 3)),
+           jsonb_build_array(tests.step('a2800000-0000-4000-8000-000000000011', 'Bata bem os ovos.')), '["cafe-da-manha"]',
+           '{"nutrition":{"kcal":400,"protein_g":20}}'),
+  tests.upd('28000000-0000-4000-8000-000000000001'));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_validate_recipe_nutrition('28000000-0000-4000-8000-000000000001', true, 'Nutricionista CRN 1111', current_date, null);
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+select tests.ok('S28 outro herói lê 0 versões da receita alheia', (select count(*) from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001') = 0);
+select tests.expect_error('S28 outro herói não restaura versão alheia: version_not_found',
+  $q$select public.creator_restore_recipe_version((select id from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001' limit 1))$q$, 'version_not_found');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+create temporary table t_s28_rest as select public.creator_restore_recipe_version(
+  (select id from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001' and version_no = 1)) as r;
+select tests.ok('S28 restaurar a versão 1 volta ingredientes e etapas; a nutrição volta sem validação',
+  (select string_agg(name || ':' || coalesce(quantity::text, '-') || ':' || to_taste, ',' order by position) from public.recipe_ingredients where content_id = '28000000-0000-4000-8000-000000000001')
+    = 'Ovo:2.000:false,Sal:-:true'
+  and (select instruction from public.recipe_steps where content_id = '28000000-0000-4000-8000-000000000001') = 'Bata os ovos.'
+  and (select count(*) from public.recipe_step_ingredients where content_id = '28000000-0000-4000-8000-000000000001') = 1
+  and (select not validated and validated_by is null and kcal = 400 from public.recipe_nutrition where content_id = '28000000-0000-4000-8000-000000000001'));
+select tests.su();
+select tests.ok('S28 restauração auditada (recipe.version_restore)',
+  exists (select 1 from public.admin_audit where action = 'recipe.version_restore' and resource_id = '28000000-0000-4000-8000-000000000001'));
+insert into public.recipe_versions (content_id, version_no, reason, snapshot, snapshot_hash)
+values ('28000000-0000-4000-8000-000000000002', 1, 'restore_point', '{"legacy_body":{"kind":"recipe"}}', 'x');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S28 restore_point (corpo v1) não é reconstruível: version_not_restorable',
+  $q$select public.creator_restore_recipe_version((select id from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000002' and reason = 'restore_point'))$q$, 'version_not_restorable');
+
+-- ciclo de vida: arquivar, restaurar, excluir rascunho nunca publicado e duplicar
+select public.submit_content_for_review('28000000-0000-4000-8000-000000000004');
+create temporary table t_s28_arch as select public.creator_archive_content('28000000-0000-4000-8000-000000000004', 'Pausa') as r;
+select tests.ok('S28 arquivar receita em revisão fecha a rodada ("Arquivada pelo herói") e grava archived_by=creator',
+  (select status = 'archived' and archived_by = 'creator' and review_status = 'none' and archived_at is not null from public.content where id = '28000000-0000-4000-8000-000000000004')
+  and (select decision = 'returned' and feedback = 'Arquivada pelo herói' from public.content_reviews where content_id = '28000000-0000-4000-8000-000000000004' order by round desc limit 1));
+select tests.expect_error('S28 arquivar de novo: already_archived', $q$select public.creator_archive_content('28000000-0000-4000-8000-000000000004', null)$q$, 'already_archived');
+select public.creator_restore_content('28000000-0000-4000-8000-000000000004');
+select tests.ok('S28 herói restaura o que ele arquivou (volta a rascunho)', (select status = 'draft' and archived_by is null and review_status = 'none' from public.content where id = '28000000-0000-4000-8000-000000000004'));
+select tests.expect_error('S28 restaurar o que não está arquivado: not_archived', $q$select public.creator_restore_content('28000000-0000-4000-8000-000000000004')$q$, 'not_archived');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_content_status('28000000-0000-4000-8000-000000000004', 'archived', 'Teste S28: trava do admin');
+select tests.ok('S28 arquivar pelo admin grava archived_by=admin', (select archived_by = 'admin' from public.content where id = '28000000-0000-4000-8000-000000000004'));
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S28 restaurar o que o admin arquivou: archived_by_admin', $q$select public.creator_restore_content('28000000-0000-4000-8000-000000000004')$q$, 'archived_by_admin');
+select tests.expect_error('S28 excluir receita que já esteve no ar: already_published', $q$select public.creator_delete_recipe_draft('28000000-0000-4000-8000-000000000001')$q$, 'already_published');
+select tests.expect_error('S28 excluir conteúdo que não é receita: forbidden para quem não é dono', $q$select public.creator_delete_recipe_draft('20000000-0000-4000-8000-000000000001')$q$, 'forbidden');
+create temporary table t_s28_drop as select public.creator_delete_recipe_draft('28000000-0000-4000-8000-000000000002') as r;
+select tests.ok('S28 excluir rascunho nunca publicado apaga a receita (e a versão, em cascata) e devolve os caminhos',
+  (select r -> 'paths' = '[]'::jsonb from t_s28_drop)
+  and not exists (select 1 from public.content where id = '28000000-0000-4000-8000-000000000002')
+  and not exists (select 1 from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000002'));
+select tests.expect_error('S28 duplicar origem arquivada pelo admin: source_locked',
+  $q$select public.creator_duplicate_recipe('28000000-0000-4000-8000-000000000004', 'Cópia', 's28-copia-arquivada')$q$, 'source_locked');
+select tests.su();
+update public.content set review_status = 'rejected' where id = '28000000-0000-4000-8000-000000000003';
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select tests.expect_error('S28 duplicar origem rejeitada: source_locked',
+  $q$select public.creator_duplicate_recipe('28000000-0000-4000-8000-000000000003', 'Cópia', 's28-copia-rejeitada')$q$, 'source_locked');
+select tests.su();
+update public.content set review_status = 'none' where id = '28000000-0000-4000-8000-000000000003';
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+create temporary table t_s28_dup as select public.creator_duplicate_recipe('28000000-0000-4000-8000-000000000001', 'Receita S28 (cópia)', 's28-copia') as id;
+select tests.ok('S28 duplicar cria rascunho com ids novos (ingredientes, etapas, ligação etapa↔ingrediente), sem mídia, vídeo nem versões',
+  (select status = 'draft' and review_status = 'none' and type = 'recipe' and published_at is null and title = 'Receita S28 (cópia)' from public.content where id = (select id from t_s28_dup))
+  and (select count(*) from public.recipe_ingredients where content_id = (select id from t_s28_dup)) = 2
+  and not exists (select 1 from public.recipe_ingredients a join public.recipe_ingredients b on a.id = b.id
+                  where a.content_id = (select id from t_s28_dup) and b.content_id = '28000000-0000-4000-8000-000000000001')
+  and (select count(*) from public.recipe_step_ingredients si join public.recipe_ingredients i on i.id = si.ingredient_id and i.content_id = si.content_id
+       where si.content_id = (select id from t_s28_dup)) = 1
+  and (select not validated from public.recipe_nutrition where content_id = (select id from t_s28_dup))
+  and (select count(*) from public.recipe_media where content_id = (select id from t_s28_dup)) = 0
+  and (select count(*) from public.recipe_versions where content_id = (select id from t_s28_dup)) = 0
+  and (select media_provider = 'none' from public.content_bodies where content_id = (select id from t_s28_dup)));
+select tests.expect_error('S28 duplicar com slug em uso: slug_taken', $q$select public.creator_duplicate_recipe('28000000-0000-4000-8000-000000000001', 'Outra cópia', 's28-copia')$q$, 'slug_taken');
+select tests.su();
+select tests.ok('S28 auditoria de cada ação do ciclo de vida',
+  (select count(distinct action) from public.admin_audit where action in ('content.submit', 'content.creator_withdraw', 'content.creator_archive', 'content.creator_restore',
+     'content.creator_delete', 'content.creator_duplicate', 'content_type.review_required', 'recipe.version', 'recipe_nutrition.validate', 'content.creator_publish')) = 10);
+select tests.ok('S28 nada do cenário ficou no ar', not exists (select 1 from public.content where (id::text like '28000000-%' or slug like 's28-%') and status = 'published'));
+
+-- ================================================================ S29 · Avaliações e comentários (0027)
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.expect_error('S29 sem ter concluído a receita a avaliação é recusada',
+  $q$insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g3'), 4)$q$, '42501');
+select public.complete_content(public.seed_uuid('content:g1'), 'America/Sao_Paulo');
+select tests.expect_error('S29 0 estrelas é recusado', $q$insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g1'), 0)$q$, '23514');
+select tests.expect_error('S29 6 estrelas é recusado', $q$insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g1'), 6)$q$, '23514');
+select tests.expect_error('S29 avaliar conteúdo que não é receita: not_recipe', $q$insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:r1'), 4)$q$, 'not_recipe');
+insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g1'), 4);
+select tests.ok('S29 quem concluiu avalia; o agregado público acompanha (1 avaliação, soma 4); is_demo falso',
+  (select rating_count = 1 and rating_sum = 4 from public.recipe_details where content_id = public.seed_uuid('content:g1'))
+  and (select not is_demo and user_id = auth.uid() from public.recipe_ratings where content_id = public.seed_uuid('content:g1')));
+select tests.expect_error('S29 segunda avaliação não é outra linha (é update)', $q$insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g1'), 5)$q$, '23505');
+update public.recipe_ratings set stars = 5 where content_id = public.seed_uuid('content:g1');
+select tests.ok('S29 update das estrelas ajusta o agregado (1, soma 5)', (select rating_count = 1 and rating_sum = 5 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
+select tests.expect_error('S29 mudar content_id da avaliação: permission denied', $q$update public.recipe_ratings set content_id = public.seed_uuid('content:g3')$q$, 'permission denied');
+select tests.expect_error('S29 gravar is_demo pelo cliente: permission denied', $q$update public.recipe_ratings set is_demo = true$q$, 'permission denied');
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'recipes.ratings_enabled';
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select public.complete_content(public.seed_uuid('content:g3'), 'America/Sao_Paulo');
+select tests.expect_error('S29 avaliações desligadas: recusa', $q$insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g3'), 3)$q$, '42501');
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'recipes.ratings_enabled';
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.complete_content(public.seed_uuid('content:g1'), 'America/Sao_Paulo');
+select tests.expect_error('S29 o chef não avalia a própria receita', $q$insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g1'), 5)$q$, '42501');
+select tests.login('10000000-0000-4000-8000-000000000030', 's30demo@test.local');
+select public.complete_content(public.seed_uuid('content:g1'), 'America/Sao_Paulo');
+insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g1'), 1);
+select tests.ok('S29 conta demo avalia, mas fica marcada e fora do agregado (segue 1, soma 5)',
+  (select is_demo from public.recipe_ratings where content_id = public.seed_uuid('content:g1'))
+  and (select rating_count = 1 and rating_sum = 5 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.ok('S29 a pessoa só lê as próprias avaliações', (select count(*) from public.recipe_ratings) = 1);
+delete from public.recipe_ratings where content_id = public.seed_uuid('content:g1');
+select tests.ok('S29 apagar a avaliação desconta do agregado (0, soma 0; a de demo não conta)',
+  (select rating_count = 0 and rating_sum = 0 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
+select tests.anon();
+select tests.expect_error('S29 visitante não lê avaliações (só o agregado)', $q$select count(*) from public.recipe_ratings$q$, 'permission denied');
+-- comentários: modelados e desligados; ligados só entram pendentes; admin modera
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.expect_error('S29 comentários desligados: recusa', $q$insert into public.recipe_comments (content_id, body) values (public.seed_uuid('content:g1'), 'Ótima receita')$q$, '42501');
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'recipes.comments_enabled';
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+insert into public.recipe_comments (content_id, body) values (public.seed_uuid('content:g1'), 'Ótima receita, ficou leve.');
+select tests.expect_error('S29 comentário não nasce aprovado (status fora do grant)', $q$insert into public.recipe_comments (content_id, body, status) values (public.seed_uuid('content:g1'), 'Aprovado por mim', 'approved')$q$, 'permission denied');
+create temporary table t_s29_c as select id from public.recipe_comments where status = 'pending';
+select tests.ok('S29 comentário entra como pendente e o autor o vê', (select count(*) from t_s29_c) = 1);
+select tests.anon();
+select tests.ok('S29 visitante não vê o pendente', (select count(*) from public.recipe_comments) = 0);
+select tests.expect_error('S29 visitante não seleciona o autor (user_id fora do grant)', $q$select user_id from public.recipe_comments$q$, 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S29 rejeitar sem motivo: reason_required', $q$select public.admin_moderate_recipe_comment((select id from t_s29_c), 'rejected', null)$q$, 'reason_required');
+select public.admin_moderate_recipe_comment((select id from t_s29_c), 'approved', null);
+select tests.anon();
+select tests.ok('S29 aprovado pelo admin, o visitante vê (texto e data, sem autor)', (select count(*) from public.recipe_comments where content_id = public.seed_uuid('content:g1')) = 1);
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.expect_error('S29 autor não edita o comentário', $q$update public.recipe_comments set body = 'Editado'$q$, 'permission denied');
+delete from public.recipe_comments where id = (select id from t_s29_c);
+select tests.anon();
+select tests.ok('S29 autor exclui o próprio comentário', (select count(*) from public.recipe_comments) = 0);
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'recipes.comments_enabled';
+select tests.ok('S29 moderação auditada', exists (select 1 from public.admin_audit where action = 'recipe_comment.moderate'));
+
+-- ================================================================ S30 · Ingrediente ↔ produto e lista de compras (0027)
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+create temporary table t_s30_l1 as select public.creator_suggest_ingredient_product(
+  (select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), public.seed_uuid('product:m1'), 'Bowl pronto') as id;
+select tests.ok('S30 herói sugere produto para o ingrediente da própria receita', (select status from public.recipe_ingredient_products where id = (select id from t_s30_l1)) = 'suggested');
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+select tests.expect_error('S30 outro herói não sugere para receita alheia',
+  $q$select public.creator_suggest_ingredient_product((select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), public.seed_uuid('product:m2'), null)$q$, 'forbidden');
+select tests.expect_error('S30 outro herói não retira sugestão alheia', $q$select public.creator_withdraw_ingredient_product((select id from t_s30_l1))$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.ok('S30 consumidor não vê sugestão', (select count(*) from public.recipe_ingredient_products) = 0);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_ingredient_product((select id from t_s30_l1), 'validated', 'Confere');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+create temporary table t_s30_l2 as select public.creator_suggest_ingredient_product(
+  (select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), public.seed_uuid('product:m2'), null) as id;
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_ingredient_product((select id from t_s30_l2), 'validated', null);
+select tests.ok('S30 admin valida (auditado) e só um vínculo fica validado por ingrediente (o anterior é suspenso)',
+  (select status = 'suspended' and suspended_reason = 'replaced' from public.recipe_ingredient_products where id = (select id from t_s30_l1))
+  and (select status = 'validated' and validated_by = auth.uid() and product_version_at_validation is not null from public.recipe_ingredient_products where id = (select id from t_s30_l2))
+  and exists (select 1 from public.admin_audit where action = 'recipe_ingredient_product.set_status'));
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.ok('S30 consumidor com acesso vê só o validado', (select count(*) from public.recipe_ingredient_products) = 1);
+select tests.su();
+update public.products set title = title || ' (versão nova)' where id = public.seed_uuid('product:m2');
+select tests.ok('S30 mudança relevante no produto suspende o vínculo', (select status from public.recipe_ingredient_products where id = (select id from t_s30_l2)) = 'suspended');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_ingredient_product((select id from t_s30_l1), 'validated', 'De volta');
+select tests.su();
+update public.products set price_cents_demo = price_cents_demo + 100 where id = public.seed_uuid('product:m1');
+select tests.ok('S30 mudança de preço não suspende', (select status from public.recipe_ingredient_products where id = (select id from t_s30_l1)) = 'validated');
+-- restaura o seed: o vínculo de conteúdo g8→m2 também foi suspenso pela mudança de título
+update public.products set title = replace(title, ' (versão nova)', '') where id = public.seed_uuid('product:m2');
+update public.content_product_links set status = 'validated', suspended_reason = null where id = public.seed_uuid('link:g8:m2');
+-- lista de compras
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.expect_error('S30 cliente não grava product_id (fora do grant)',
+  $q$insert into public.shopping_list_items (name, product_id) values ('Peito de frango', public.seed_uuid('product:m3'))$q$, 'permission denied');
+insert into public.shopping_list_items (ingredient_id, name, quantity, unit)
+values ((select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), 'Peito de frango', 300, 'g'),
+       ((select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 2), 'Abobrinha', 1, null);
+select tests.ok('S30 o produto vem do vínculo validado (ou nulo) e o item fica preso à receita',
+  (select product_id = public.seed_uuid('product:m1') and content_id = public.seed_uuid('content:g1') from public.shopping_list_items where name = 'Peito de frango')
+  and (select product_id is null from public.shopping_list_items where name = 'Abobrinha'));
+insert into public.shopping_list_items (ingredient_id, name, quantity, unit)
+values ((select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), 'Peito de frango', 600, 'g')
+on conflict (user_id, ingredient_id) do update set quantity = excluded.quantity;
+select tests.ok('S30 adicionar o mesmo ingrediente de novo atualiza a linha', (select count(*) from public.shopping_list_items) = 2
+  and (select quantity = 600 from public.shopping_list_items where name = 'Peito de frango'));
+select tests.expect_error('S30 ingrediente de outra receita: ingredient_mismatch',
+  $q$insert into public.shopping_list_items (content_id, ingredient_id, name) values (public.seed_uuid('content:g3'), (select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 3), 'x')$q$, 'ingredient_mismatch');
+select tests.expect_error('S30 item de receita sem acesso (g5 premium) é recusado',
+  $q$insert into public.shopping_list_items (content_id, name) values (public.seed_uuid('content:g5'), 'Salmão')$q$, '42501');
+insert into public.shopping_list_items (name) select 'Item ' || g from generate_series(1, 298) as g;
+select tests.expect_error('S30 o 301º item: shopping_list_full', $q$insert into public.shopping_list_items (name) values ('Item 301')$q$, 'shopping_list_full');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S30 admin não lê a lista de ninguém (dado pessoal)', (select count(*) from public.shopping_list_items) = 0);
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+delete from public.shopping_list_items where name like 'Item %';
+select tests.su();
+delete from public.recipe_ingredient_products;
+
+-- ================================================================ S31 · Histórico, retenção, estatísticas e catálogo (0027)
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.expect_error('S31 sem a preferência ligada o histórico recusa', $q$insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'))$q$, '42501');
+insert into public.user_recipe_prefs (history_enabled) values (true);
+select tests.ok('S31 ligar o histórico registra a data', (select history_enabled and history_enabled_at is not null from public.user_recipe_prefs));
+insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'));
+insert into public.recipe_view_history (content_id, viewed_at) values (public.seed_uuid('content:g1'), now())
+on conflict (user_id, content_id) do update set viewed_at = excluded.viewed_at;
+select tests.ok('S31 ligado: o upsert só atualiza viewed_at (uma linha por receita)', (select count(*) from public.recipe_view_history) = 1);
+select tests.expect_error('S31 histórico só de receita visível (rascunho alheio não)', $q$insert into public.recipe_view_history (content_id) values ('28000000-0000-4000-8000-000000000001')$q$, '42501');
+update public.user_recipe_prefs set history_enabled = false;
+select tests.ok('S31 desligar apaga o histórico na mesma transação', (select count(*) from public.recipe_view_history) = 0
+  and (select history_enabled_at is null from public.user_recipe_prefs));
+update public.user_recipe_prefs set history_enabled = true;
+insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g3'));
+select tests.su();
+update public.recipe_view_history set viewed_at = now() - interval '91 days' where user_id = '10000000-0000-4000-8000-000000000029';
+create temporary table t_s31_ret as select public.run_retention() as r;
+select tests.ok('S31 run_retention apaga o histórico com mais de 90 dias',
+  ((select r from t_s31_ret) ->> 'recipe_history_deleted')::int >= 1
+  and not exists (select 1 from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000029'));
+-- estatísticas do herói: visitantes distintos por dia, sem o próprio chef nem evento sem pessoa
+insert into public.analytics_events (user_id, anon_id, event_name, properties, created_at) values
+  ('10000000-0000-4000-8000-000000000029', null, 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now()),
+  ('10000000-0000-4000-8000-000000000029', null, 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now()),
+  ('10000000-0000-4000-8000-000000000029', null, 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now() - interval '1 day'),
+  (null, 'anon-s31', 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now()),
+  ('10000000-0000-4000-8000-000000000026', null, 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now()),
+  (null, null, 'content.view', jsonb_build_object('content_id', public.seed_uuid('content:g1')), now());
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+create temporary table t_s31_stats as select * from public.creator_recipe_stats(30);
+select tests.ok('S31 estatísticas: 3 visitantes distintos por dia em g1 (sem o chef e sem evento sem pessoa), só receitas da Helena',
+  (select visitors = 3 and rating_count = 0 and rating_avg is null from t_s31_stats where content_id = public.seed_uuid('content:g1'))
+  and not exists (select 1 from t_s31_stats s join public.content c on c.id = s.content_id where c.creator_id is distinct from public.seed_uuid('creator:helena'))
+  and (select count(*) from t_s31_stats where content_id in (public.seed_uuid('content:g1'), public.seed_uuid('content:g3'), public.seed_uuid('content:g5'), public.seed_uuid('content:g9'))) = 4);
+select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local');
+select tests.expect_error('S31 consumidor não lê estatísticas de herói', $q$select * from public.creator_recipe_stats(30)$q$, 'forbidden');
+select tests.anon();
+select tests.expect_error('S31 visitante não executa creator_recipe_stats', $q$select * from public.creator_recipe_stats(30)$q$, 'permission denied');
+-- catálogo: só o que está no ar, para visitante, herói dono de rascunho e agendada, e admin
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.creator_publish_content('28000000-0000-4000-8000-000000000001', now() + interval '1 day');
+select tests.anon();
+create temporary table t_s31_anon as select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', null, 48);
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+create temporary table t_s31_hero as select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', null, 48);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+create temporary table t_s31_admin as select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', null, 48);
+select tests.su();
+select tests.ok('S31 catálogo: visitante, herói (com rascunhos e agendada) e admin recebem só as 8 receitas no ar',
+  (select count(*) from t_s31_anon) = 8 and (select count(*) from t_s31_hero) = 8 and (select count(*) from t_s31_admin) = 8
+  and not exists (select 1 from (select content_id from t_s31_anon union all select content_id from t_s31_hero union all select content_id from t_s31_admin) x
+                  join public.content c on c.id = x.content_id where not public.content_is_live(c.status, c.publish_at))
+  and not exists (select 1 from t_s31_hero where content_id = '28000000-0000-4000-8000-000000000001'));
+select tests.anon();
+select tests.ok('S31 "cabotiá" como visitante não encontra nada (ingrediente é protegido)',
+  (select count(*) from public.recipe_catalog('cabotiá', null, null, null, null, null, null, 'relevance', null, 24)) = 0);
+select tests.ok('S31 nome do chef encontra as receitas dele (Helena: g1, g3, g5, g9)',
+  (select array_agg(content_id order by content_id) from public.recipe_catalog('Helena', null, null, null, null, null, null, 'relevance', null, 24))
+  = (select array_agg(id order by id) from public.content where id in (public.seed_uuid('content:g1'), public.seed_uuid('content:g3'), public.seed_uuid('content:g5'), public.seed_uuid('content:g9'))));
+select tests.ok('S31 até 15 minutos traz g3 e g9',
+  (select array_agg(content_id order by content_id) from public.recipe_catalog(null, null, 15, null, null, null, null, 'quick', null, 24))
+  = (select array_agg(id order by id) from public.content where id in (public.seed_uuid('content:g3'), public.seed_uuid('content:g9'))));
+select tests.ok('S31 sem ovo traz só as declaradas sem ovo (g5); "não informado" não passa',
+  (select array_agg(content_id) from public.recipe_catalog(null, null, null, null, null, array['egg'], null, 'recent', null, 24)) = array[public.seed_uuid('content:g5')]);
+select tests.ok('S31 filtro de categoria e de dieta (nenhuma dieta declarada no seed)',
+  (select count(*) from public.recipe_catalog(null, array['marmitas'], null, null, null, null, null, 'recent', null, 24)) = 2
+  and (select count(*) from public.recipe_catalog(null, null, null, null, array['vegan'], null, null, 'recent', null, 24)) = 0);
+do $s31$ declare v_sort text; v_cursor text; v_seen uuid[]; v_page int; r record; n int;
+begin
+  foreach v_sort in array array['recent', 'quick', 'relevance'] loop
+    v_cursor := null; v_seen := '{}'; v_page := 0;
+    loop
+      n := 0;
+      for r in select * from public.recipe_catalog(null, null, null, null, null, null, null, v_sort, v_cursor, 3) loop
+        if r.content_id = any (v_seen) then raise exception 'FAIL S31 cursor % repetiu %', v_sort, r.content_id; end if;
+        v_seen := array_append(v_seen, r.content_id); v_cursor := r.cursor; n := n + 1;
+      end loop;
+      v_page := v_page + 1;
+      exit when n < 3 or v_page > 10;
+    end loop;
+    perform tests.ok('S31 cursor (' || v_sort || ') pagina de 3 em 3 sem repetir e cobre as 8', cardinality(v_seen) = 8);
+  end loop;
+end $s31$;
+select tests.login('10000000-0000-4000-8000-000000000028', 's28prem@test.local');
+select public.select_modules(array[public.seed_uuid('module:chef_full')]);
+select tests.ok('S31 premium com a etapa encontra g8 por "cabotiá" (ingrediente)',
+  exists (select 1 from public.recipe_catalog('cabotiá', null, null, null, null, null, null, 'relevance', null, 24) where content_id = public.seed_uuid('content:g8')));
+select tests.expect_error('S31 cursor que não é do formato: invalid_cursor', $q$select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', 'abc', 3)$q$, 'invalid_cursor');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+select public.creator_unpublish_content('28000000-0000-4000-8000-000000000001');
+
+-- ================================================================ S32 · Exclusão de conta com dados de receitas (0027)
+-- Herói com versões e mídia (Marcos), comentarista com avaliação, lista, histórico e comentário, e um
+-- admin que validou nutrição saem por delete_my_account; um herói sai pelo painel do Auth (delete direto).
+select tests.su();
+insert into public.role_assignments (user_id, role, scope_type) values ('10000000-0000-4000-8000-000000000032', 'admin', 'global');
+update public.app_settings set value = 'true'::jsonb where key = 'recipes.comments_enabled';
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+create temporary table t_s32_media as select public.recipe_register_media('27000000-0000-4000-8000-000000000002',
+  public.seed_uuid('creator:marcos') || '/27000000-0000-4000-8000-000000000002/a2700000-0000-4000-8000-000000000021.png', 'gallery', 'Foto do Marcos', true, null, null) as id;
+select public.recipe_save('27000000-0000-4000-8000-000000000002',
+  tests.rp('Receita S27 do Marcos', jsonb_build_array(tests.ing('a3200000-0000-4000-8000-000000000001', 'Arroz', 1, 'cup')),
+           jsonb_build_array(tests.step('a3200000-0000-4000-8000-000000000002', 'Cozinhe.')), '["almoco"]',
+           jsonb_build_object('details', jsonb_build_object('servings', 2, 'total_minutes', 20, 'allergens', '[]'::jsonb, 'allergens_declared', true,
+                                                            'cover_media_id', (select id from t_s32_media)))),
+  tests.upd('27000000-0000-4000-8000-000000000002'));
+select public.creator_publish_content('27000000-0000-4000-8000-000000000002');
+select public.creator_unpublish_content('27000000-0000-4000-8000-000000000002');
+select tests.login('10000000-0000-4000-8000-000000000031', 's31comm@test.local');
+select public.complete_content(public.seed_uuid('content:g1'), 'America/Sao_Paulo');
+insert into public.recipe_ratings (content_id, stars) values (public.seed_uuid('content:g1'), 3);
+insert into public.recipe_comments (content_id, body) values (public.seed_uuid('content:g1'), 'Comentário que sai com a conta');
+insert into public.shopping_list_items (ingredient_id, name) values ((select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 1), 'Peito de frango');
+insert into public.user_recipe_prefs (history_enabled) values (true);
+insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'));
+select tests.login('10000000-0000-4000-8000-000000000032', 's32admin@test.local');
+select public.admin_validate_recipe_nutrition('26000000-0000-4000-8000-000000000001', true, 'Nutricionista CRN 3232', current_date, null);
+select public.admin_moderate_recipe_comment((select c.id from public.recipe_comments c where c.status = 'pending' limit 1), 'approved', null);
+select tests.su();
+select tests.ok('S32 antes: autorias gravadas (versão e mídia do Marcos, validação e moderação do admin) e agregado com a avaliação',
+  exists (select 1 from public.recipe_versions where content_id = '27000000-0000-4000-8000-000000000002' and created_by = '10000000-0000-4000-8000-000000000027')
+  and (select created_by = '10000000-0000-4000-8000-000000000027' from public.recipe_media where id = (select id from t_s32_media))
+  and (select validated_by_user = '10000000-0000-4000-8000-000000000032' from public.recipe_nutrition where content_id = '26000000-0000-4000-8000-000000000001')
+  and exists (select 1 from public.recipe_comments where moderated_by = '10000000-0000-4000-8000-000000000032')
+  and (select rating_count = 1 and rating_sum = 3 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+select public.delete_my_account();
+select tests.login('10000000-0000-4000-8000-000000000032', 's32admin@test.local');
+select public.delete_my_account();
+select tests.login('10000000-0000-4000-8000-000000000031', 's31comm@test.local');
+select public.delete_my_account();
+select tests.su();
+select tests.ok('S32 as três contas somem',
+  not exists (select 1 from auth.users where id in ('10000000-0000-4000-8000-000000000027', '10000000-0000-4000-8000-000000000031', '10000000-0000-4000-8000-000000000032')));
+select tests.ok('S32 versões e mídia continuam, com created_by nulo; validação continua com validated_by_user nulo',
+  exists (select 1 from public.recipe_versions where content_id = '27000000-0000-4000-8000-000000000002')
+  and not exists (select 1 from public.recipe_versions where created_by in ('10000000-0000-4000-8000-000000000027', '10000000-0000-4000-8000-000000000032'))
+  and (select created_by is null from public.recipe_media where id = (select id from t_s32_media))
+  and (select validated and validated_by = 'Nutricionista CRN 3232' and validated_by_user is null from public.recipe_nutrition where content_id = '26000000-0000-4000-8000-000000000001'));
+select tests.ok('S32 dados pessoais do comentarista saem (avaliação, comentário, lista, histórico, preferência) e o agregado desconta',
+  not exists (select 1 from public.recipe_ratings where user_id = '10000000-0000-4000-8000-000000000031')
+  and not exists (select 1 from public.recipe_comments where user_id = '10000000-0000-4000-8000-000000000031')
+  and not exists (select 1 from public.shopping_list_items where user_id = '10000000-0000-4000-8000-000000000031')
+  and not exists (select 1 from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000031')
+  and not exists (select 1 from public.user_recipe_prefs where user_id = '10000000-0000-4000-8000-000000000031')
+  and (select rating_count = 0 and rating_sum = 0 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
+select tests.ok('S32 o perfil do Marcos fica sem usuário (set null)', (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:marcos')));
+-- caminho do painel do Auth: delete direto em auth.users de um herói com versões (Helena de teste)
+select tests.ok('S32 a Helena de teste tem versões antes do delete direto', exists (select 1 from public.recipe_versions where created_by = '10000000-0000-4000-8000-000000000026'));
+delete from auth.users where id = '10000000-0000-4000-8000-000000000026';
+select tests.ok('S32 delete direto em auth.users (painel): os gatilhos aceitam o set null da cascata e as versões ficam',
+  not exists (select 1 from auth.users where id = '10000000-0000-4000-8000-000000000026')
+  and not exists (select 1 from public.recipe_versions where created_by = '10000000-0000-4000-8000-000000000026')
+  and exists (select 1 from public.recipe_versions where content_id = '28000000-0000-4000-8000-000000000001')
+  and (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
+-- limpeza: chaves de volta ao padrão e nada dos cenários S25–S32 no ar
+update public.app_settings set value = 'false'::jsonb where key = 'recipes.comments_enabled';
+update public.recipe_nutrition set validated = false, validated_by = null, validated_at = null, validation_note = null where content_id = '26000000-0000-4000-8000-000000000001';
+select tests.ok('S32 nada dos cenários S25–S32 ficou no ar e as chaves de receita voltaram ao padrão',
+  not exists (select 1 from public.content where (id::text ~ '^2[5-9]000000-' or id::text ~ '^3[0-2]000000-' or slug like 's2_-%') and status = 'published')
+  and (select count(*) from public.content where status = 'published') = 40
+  and (public.public_settings() -> 'recipes.ratings_enabled') = 'true'::jsonb and (public.public_settings() -> 'recipes.comments_enabled') = 'false'::jsonb
+  and (public.public_settings() -> 'recipes.uploads_enabled') = 'true'::jsonb);
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',
@@ -1602,6 +2720,15 @@ select tests.ok('S14 anon só executa a lista pública de security definer',
   (select string_agg(p.proname, ',' order by p.proname) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef
      and has_function_privilege('anon', p.oid, 'execute'))
   = 'can_access_content,has_role,is_admin,is_seller_of,my_creator_id,my_entitled_modules,my_roles,my_seller_org_ids,my_subscription,product_is_purchasable,program_required_items,public_settings,quote_shipping,search_content,submit_feedback,track_event,verify_certificate');
+-- receitas (0027–0029): nenhuma função nova recipe_*, creator_* ou admin_* é executável pelo visitante,
+-- salvo o catálogo público (security invoker; a RLS decide o que aparece)
+select tests.ok('S14 receitas: anon só executa recipe_catalog entre as funções recipe_*, creator_* e admin_*',
+  (select string_agg(distinct p.proname, ',') from pg_proc p where p.pronamespace = 'public'::regnamespace
+     and (p.proname like 'recipe\_%' or p.proname like 'creator\_%' or p.proname like 'admin\_%'
+          or p.proname in ('content_localized_body', 'content_review_required', 'audit_actor', 'content_type_lock', 'content_recipe_publishable',
+                           'content_recipe_version', 'content_recipe_cover', 'content_bodies_recipe_managed', 'shopping_list_items_before',
+                           'user_recipe_prefs_before', 'user_recipe_prefs_after', 'products_recipe_links_suspend', 'content_type_settings_review_guard'))
+     and has_function_privilege('anon', p.oid, 'execute')) = 'recipe_catalog');
 
 -- ================================================================ S15 · Agendamento de publicação (0017)
 -- Publicado com publish_at no futuro = agendado: invisível ao público até a data; admin e a

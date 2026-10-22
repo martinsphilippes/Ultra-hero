@@ -12,6 +12,10 @@
 | Pedidos de teste (itens, destino **fictício**, remessas) | `test_orders*` | demonstração de comércio | execução do serviço |
 | Eventos de uso (sem PII), feedback opcional | `analytics_events`, `feedback` | métricas do experimento | legítimo interesse (a confirmar) |
 | Ações administrativas | `admin_audit` | segurança e responsabilização | legítimo interesse / obrigação |
+| Etapa de receitas (aceite, restrições e alergias de lista fixa) | `recipe_onboarding` | lembrar a pessoa na página de cada receita; desde a 0027 também libera a receita no banco (`can_access_content`) | consentimento (dado sensível de saúde; a confirmar) |
+| Vídeos gravados ou enviados por heróis | arquivo no **Cloudflare Stream**; no banco só o uid, o conteúdo, as datas de envio/descarte (`stream_uploads`) | publicar vídeos curtos dos heróis; limitar envios e limpar vídeos abandonados | execução do serviço (herói) |
+
+Modelado na 0027 e **ainda sem tela** (cada fase do módulo de receitas atualiza esta tabela e `legal.json` quando passar a coletar): fotos de receita (bucket privado `recipe-media` no Supabase Storage), avaliações por estrelas, comentários (desligados), lista de compras, histórico opcional de receitas vistas (90 dias) e indicadores agregados para o herói.
 
 **Não coletamos**: endereço real, geolocalização, dados de pagamento, dados de saúde individuais. Conteúdo é educativo, sem prescrição.
 
@@ -23,19 +27,22 @@
 | Pedidos de teste vinculados ao usuário | 90 dias | `test_orders.retention_expires_at` → anonimização (`user_id` nulo, nome do destino removido) |
 | Logs técnicos / execuções de recomendação | 30 dias | `recommendation_runs` + política dos provedores (Vercel/Supabase) |
 | Auditoria administrativa | 365 dias | `admin_audit` |
+| Vídeos de heróis (Cloudflare Stream) | enquanto o conteúdo existir; rascunho descartado, trocado ou abandonado (envio vencido sem ir ao ar) é apagado | cron diário (`stream_cleanup_candidates`/`stream_cleanup_discard`, API do Stream); receita nunca é apagada pela limpeza, só perde o vídeo |
+| Histórico de receitas vistas (opcional, quando a tela existir) | 90 dias | `recipe_view_history` + `run_retention()`; desligar apaga tudo na hora |
 | Backups | conforme plano Supabase (verificar e documentar antes da abertura) | provedor |
 
 Exceções (evidência legal/incidente): `retention_exceptions` com escopo, justificativa, responsável, data de revisão e encerramento. Enquanto aberta, o registro não é anonimizado nem excluído. Nunca retenção indefinida genérica.
 
 ## Direitos do titular na POC
 
-- **Exclusão self-service** (`/profile/account` → `delete_my_account`): anonimiza perfil, remove interesses/listas/progresso/carrinho, desvincula analytics/feedback/pedidos e apaga a conta. Bloqueada se houver exceção de retenção ativa (informado ao usuário).
+- **Exclusão self-service** (`/profile/account` → `delete_my_account`): anonimiza perfil, remove interesses/listas/progresso/carrinho, desvincula analytics/feedback/pedidos e apaga a conta. Bloqueada se houver exceção de retenção ativa (informado ao usuário). Desde a 0027 também apaga avaliações, comentários, lista de compras, histórico e preferência de receitas, zera as autorias que ficam (versões, fotos, moderação, validação de nutrição e de vínculo) e desvincula o perfil de herói (o conteúdo assinado fica). A exclusão direta pelo painel do Auth também funciona (cenário S32).
 - **Transparência**: página de conta resume dados, prazos e natureza demonstrativa.
 - Portabilidade/correção: edição de perfil; exportação formal fora do escopo da POC.
 
 ## Compartilhamento com terceiros
 
 - Supabase (banco/auth) e Vercel (hospedagem): operadores. 
+- Cloudflare (Stream): operador dos vídeos gravados ou enviados pelos heróis (upload direto do aparelho, processamento, armazenamento e entrega; o player é carregado do Cloudflare). Não recebe nome nem e-mail: o vídeo fica ligado ao conteúdo. Citado em `legal.json` (3 idiomas) desde 22/10/2026.
 - IA (OpenAI/Gemini) **só se ativada**: recebe ids opacos, tags e pilares — nunca e-mail/nome. Desligável por kill switch.
 - Nenhum repasse comercial, parceiro de logística ou pagamento.
 

@@ -163,7 +163,8 @@ export function ContentForm({ mode, initial, canEditAccess, modules = [], readOn
             </FormField>
             <FormField label={t("fields.type")} hint={mode === "edit" ? t("fields.typeHint") : undefined} error={tv(errors.type) ?? tv(errors.body)} required>
               <Select value={values.type} onChange={(e) => setType(e.target.value as ContentTypeValue)}>
-                {CONTENT_TYPE_VALUES.map((ct) => (
+                {/* Receita tem editor próprio (fase 2): este formulário não cria nem converte receita; uma receita existente aparece aqui apenas para leitura. */}
+                {CONTENT_TYPE_VALUES.filter((ct) => ct !== "recipe" || values.type === "recipe").map((ct) => (
                   <option key={ct} value={ct}>
                     {t(`types.${ct}`)}
                   </option>

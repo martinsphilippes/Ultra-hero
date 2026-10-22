@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { AdminContentEditor } from "@/components/admin-content/AdminContentEditor";
 import type { ContentFormValues } from "@/components/editors/types";
+import { RecipeLegacyNotice } from "@/components/recipes/RecipeLegacyNotice";
 import { PageHeader } from "@/components/ui";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
@@ -65,7 +66,17 @@ export default async function AdminContentEditPage({ params }: Params) {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader eyebrow={content.title} title={t("editTitle")} description={t("editDescription")} backHref={`/admin/content/${content.id}`} backLabel={tc("view")} />
-      <AdminContentEditor mode="edit" contentId={content.id} initial={initial} modules={modulesRes.data ?? []} creators={creatorsRes.data ?? []} initialCreatorId={content.creator_id} />
+      {/* Receita estruturada (0027): só leitura aqui até o editor de receitas (fase 2). */}
+      {content.type === "recipe" && <RecipeLegacyNotice />}
+      <AdminContentEditor
+        mode="edit"
+        contentId={content.id}
+        initial={initial}
+        modules={modulesRes.data ?? []}
+        creators={creatorsRes.data ?? []}
+        initialCreatorId={content.creator_id}
+        readOnly={content.type === "recipe"}
+      />
     </div>
   );
 }

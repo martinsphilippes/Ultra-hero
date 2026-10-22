@@ -50,19 +50,26 @@ export async function saveContentLocalizationAction(contentId: string, targetLoc
       return fail("invalid_json");
     }
     const supabase = await createClient();
-    const { error } = await supabase.from("content_localizations").upsert(
-      {
-        content_id: ids.data.contentId,
-        locale: ids.data.targetLocale,
-        title: parsed.data.title,
-        summary: parsed.data.summary || null,
-        body: body as never,
-        status: parsed.data.status,
-        updated_by: userId,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "content_id,locale" },
-    );
+    const row = {
+      title: parsed.data.title,
+      summary: parsed.data.summary || null,
+      body: body as never,
+      status: parsed.data.status,
+      updated_by: userId,
+      updated_at: new Date().toISOString(),
+    };
+    // Upsert (on conflict … set body = excluded.body) exigiria ler a coluna body, que desde a 0027 não
+    // tem grant de select: atualiza a linha existente ou insere uma nova (nenhum dos dois lê body).
+    const { data: current, error: findError } = await supabase
+      .from("content_localizations")
+      .select("locale")
+      .eq("content_id", ids.data.contentId)
+      .eq("locale", ids.data.targetLocale)
+      .maybeSingle();
+    if (findError) return fail(findError);
+    const { error } = current
+      ? await supabase.from("content_localizations").update(row).eq("content_id", ids.data.contentId).eq("locale", ids.data.targetLocale)
+      : await supabase.from("content_localizations").insert({ content_id: ids.data.contentId, locale: ids.data.targetLocale, ...row });
     if (error) return fail(error);
     revalidatePath("/admin/translations");
     const t = await getTranslations("adminContent.translations");

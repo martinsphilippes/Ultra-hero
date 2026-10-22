@@ -186,7 +186,8 @@
             "feedback": "<strong>Optional feedback:</strong> rating, a comment of up to 1,000 characters, the content or program it was sent from and the language.",
             "recommendations": "<strong>Recommendations:</strong> the list of content recommended to you and a technical record of each calculation (engine used, time, number of items, estimated cost and errors).",
             "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log.",
-            "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime."
+            "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime.",
+            "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos)."
           },
           "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
         }
@@ -291,6 +292,7 @@
           "list1": {
             "supabase": "<strong>Supabase:</strong> database and authentication, including sending sign-up confirmation and password reset emails.",
             "vercel": "<strong>Vercel:</strong> hosting of the app and execution of server functions, including the automatic daily routines, such as the retention routine.",
+            "cloudflare": "<strong>Cloudflare (Stream):</strong> receives, processes, stores and delivers the videos heroes record or upload in the app, and the player for those videos is loaded from Cloudflare. It doesn't receive your name or email; the video is tied to the content, not to your account.",
             "ai": "<strong>OpenAI or Google (Gemini), only if AI recommendations are turned on</strong> by the administrators. In the demo’s initial configuration, recommendations use an in-house engine, without external AI. When AI is turned on, the chosen provider only receives: your interests (tags), your affinity per pillar, your estimated level, how many pieces of content you have completed, the language for the explanations and catalog data (opaque content identifiers, pillar, type, difficulty, tags, required module, whether the content is featured, how many days ago it was published and whether it is unlocked in your plan). It <strong>never</strong> receives your name, your email, your account identifier or any text you wrote. AI can be turned off at any time with a kill switch.",
             "google": "<strong>Google (sign-in):</strong> if you choose to sign in with Google, Google authenticates you and sends us your basic profile data, according to its own privacy policy."
           },
@@ -365,6 +367,11 @@
                 "data": "Recipe step (notice, restrictions and allergies)",
                 "period": "While the account exists",
                 "details": "Deleted with the account. You can also change or clear everything by redoing the step from any recipe."
+              },
+              "heroVideos": {
+                "data": "Videos uploaded by heroes",
+                "period": "While the content exists",
+                "details": "A draft video you discard, replace or abandon (an expired upload that never went live) is deleted from Cloudflare by the daily routine. Video from content that has been live stays as that content's history."
               }
             }
           },
