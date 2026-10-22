@@ -17,10 +17,12 @@ type Props = {
   modules: { id: string; name: string; code: string }[];
   creators: CreatorOption[];
   initialCreatorId: string | null;
+  /** Receita estruturada (0027): só leitura até o editor de receitas. */
+  readOnly?: boolean;
 };
 
 // Envolve o ContentForm compartilhado com a escolha da personalidade (campo só do admin).
-export function AdminContentEditor({ mode, contentId, initial, modules, creators, initialCreatorId }: Props) {
+export function AdminContentEditor({ mode, contentId, initial, modules, creators, initialCreatorId, readOnly = false }: Props) {
   const t = useTranslations("adminContent.content.form");
   const tc = useTranslations("adminContent.common");
   const router = useRouter();
@@ -49,7 +51,7 @@ export function AdminContentEditor({ mode, contentId, initial, modules, creators
   return (
     <div className="flex flex-col gap-6">
       <FormField label={t("creatorLabel")} hint={t("creatorHint")} error={creatorError ?? undefined} required={mode === "create"}>
-        <Select value={creatorId} onChange={(e) => setCreatorId(e.target.value)}>
+        <Select value={creatorId} onChange={(e) => setCreatorId(e.target.value)} disabled={readOnly}>
           <option value="">{tc("noCreator")}</option>
           {creators.map((c) => (
             <option key={c.id} value={c.id}>
@@ -59,7 +61,7 @@ export function AdminContentEditor({ mode, contentId, initial, modules, creators
           ))}
         </Select>
       </FormField>
-      <ContentForm mode={mode} initial={initial} canEditAccess modules={modules} action={action} />
+      <ContentForm mode={mode} initial={initial} canEditAccess modules={modules} action={action} readOnly={readOnly} />
     </div>
   );
 }

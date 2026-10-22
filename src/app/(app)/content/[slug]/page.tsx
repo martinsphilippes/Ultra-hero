@@ -35,6 +35,7 @@ import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui"
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
+import { loadLocalizedBody } from "@/lib/catalog/localized-body";
 import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
 import { getRecipeGate } from "@/lib/recipes/gate";
 import { createClient } from "@/lib/supabase/server";
@@ -110,13 +111,15 @@ export default async function ContentPage({ params }: Params) {
   const uiLocale = locale as Locale;
   const wantsLocalization = content.source_locale !== uiLocale;
 
-  const [bodyRes, accessRes, locRes, settingsRes, completionRes, progressRes, favRes, niRes, moreRes, profile] = await Promise.all([
+  const [bodyRes, accessRes, locRes, locBody, settingsRes, completionRes, progressRes, favRes, niRes, moreRes, profile] = await Promise.all([
     user ? supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url").eq("content_id", content.id).maybeSingle() : null,
     // Regra única de acesso (plano simulado, status, regra ausente) avaliada no servidor.
     user ? supabase.rpc("can_access_content", { p_content: content.id }) : null,
     wantsLocalization
-      ? supabase.from("content_localizations").select("title, summary, body").eq("content_id", content.id).eq("locale", uiLocale).eq("status", "published").maybeSingle()
+      ? supabase.from("content_localizations").select("title, summary").eq("content_id", content.id).eq("locale", uiLocale).eq("status", "published").maybeSingle()
       : null,
+    // corpo traduzido só para quem pode consumir (RPC da 0027; o visitante nunca recebe corpo)
+    wantsLocalization && user ? loadLocalizedBody(supabase, content.id, uiLocale) : null,
     supabase.from("content_type_settings").select("default_completion_mode, auto_threshold_pct").eq("type", content.type).maybeSingle(),
     user ? supabase.from("completions").select("completed_at").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
     user ? supabase.from("content_progress").select("position_seconds, progress_pct").eq("user_id", user.id).eq("content_id", content.id).maybeSingle() : null,
@@ -133,7 +136,8 @@ export default async function ContentPage({ params }: Params) {
   const title = localization?.title ?? content.title;
   const summary = localization?.summary ?? content.summary;
   const bodyRow = bodyRes?.data ?? null;
-  const body: unknown = localization?.body ?? bodyRow?.body ?? null;
+  // o corpo traduzido só vale junto da tradução publicada (a RPC também devolve rascunho ao admin)
+  const body: unknown = (localization ? locBody : null) ?? bodyRow?.body ?? null;
   const showLanguageNotice = wantsLocalization && !localization;
 
   const mode: "manual" | "auto" = content.completion_mode ?? settingsRes.data?.default_completion_mode ?? "manual";

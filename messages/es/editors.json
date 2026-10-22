@@ -89,7 +89,8 @@
     "unauthenticated": "Inicia sesión para continuar.",
     "creator_unavailable": "Tu perfil de héroe no está activo.",
     "not_found": "Contenido no encontrado.",
-    "media_license_mismatch": "Licencia incoherente con el medio: ajusta la licencia y guarda de nuevo."
+    "media_license_mismatch": "Licencia incoherente con el medio: ajusta la licencia y guarda de nuevo.",
+    "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor."
   },
   "list": {
     "empty": "Todavía no hay elementos.",

@@ -161,7 +161,12 @@
     "not_found": "Record not found.",
     "publish_at_invalid": "Invalid publication date.",
     "publish_at_future": "The publication date must be in the future.",
-    "media_license_mismatch": "Media license inconsistent with the provider. Edit the content and try again."
+    "media_license_mismatch": "Media license inconsistent with the provider. Edit the content and try again.",
+    "recipe_editor_pending": "Recipe editing comes back with the new editor.",
+    "recipe_incomplete": "The recipe can't go live: missing {fields}.",
+    "type_locked": "A recipe's type doesn't change (and other content doesn't become a recipe).",
+    "recipe_body_managed": "This recipe's body only changes through the recipe editor.",
+    "review_required_protected": "The review rule only changes through the audited settings action."
   },
   "content": {
     "title": "Content",
@@ -265,6 +270,7 @@
       "publishDescription": "Publishes without going through review. Check access rule and body first.",
       "archiveTitle": "Archive content?",
       "archiveDescription": "Leaves the catalog. Programs that depend on it may need a substitution.",
+      "archiveRecipeWarning": "Recipe: safety takedown only. It cannot go back live until the new editor ships, because older recipes do not yet meet the publishing checklist (allergens, times).",
       "draftTitle": "Back to draft?",
       "changed": "Status updated",
       "featureOn": "Feature on Home",

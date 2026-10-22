@@ -174,17 +174,18 @@ describe("actions: personalidade nunca valida; admin só com responsável e data
     server.rpcs.length = 0;
   });
 
-  it("createContent (personalidade) grava a nutrição com validação zerada mesmo recebendo validated=true", async () => {
+  // Desde a 0027 a receita (e a nutrição dela) é estruturada e só o editor novo grava; a regra
+  // "o herói nunca valida" passou para o banco (recipe_nutrition + recipe_save, cenário S26).
+  it("createContent (personalidade) não grava receita pelo formulário antigo: recipe_editor_pending, sem escrita", async () => {
     const result = await createContent(asValues(recipeForm(VALIDATED, { id: undefined })));
-    expect(result).toEqual({ ok: true, id: ids.NEW });
-    expect(bodyWrites()).toHaveLength(1);
-    expect(bodyWrites()[0].nutrition).toEqual({ ...VALIDATED, validated: false, validated_by: null, validated_at: null });
+    expect(result).toEqual({ ok: false, error: "recipe_editor_pending" });
+    expect(server.writes).toEqual([]);
   });
 
-  it("updateContent (personalidade) também zera a validação", async () => {
+  it("updateContent (personalidade) também recusa receita, sem escrita", async () => {
     const result = await updateContent(asValues(recipeForm(VALIDATED)));
-    expect(result).toEqual({ ok: true, id: ids.CONTENT });
-    expect(bodyWrites()[0].nutrition).toMatchObject({ validated: false, validated_by: null, validated_at: null, per_serving: PER_SERVING });
+    expect(result).toEqual({ ok: false, error: "recipe_editor_pending" });
+    expect(server.writes).toEqual([]);
   });
 
   it("saveContentAction (admin) recusa validated=true sem responsável/data, sem tocar no banco", async () => {
@@ -199,10 +200,10 @@ describe("actions: personalidade nunca valida; admin só com responsável e data
     expect(server.writes).toEqual([]);
   });
 
-  it("saveContentAction (admin) grava a validação completa", async () => {
+  it("saveContentAction (admin) também não grava receita pelo formulário antigo (valida pela RPC admin_validate_recipe_nutrition)", async () => {
     const result = await saveContentAction({ id: ids.CONTENT, creatorId: ids.CREATOR }, asValues(recipeForm(VALIDATED)));
-    expect(result).toEqual({ ok: true, id: ids.CONTENT, message: "adminContent.content.form.updated" });
-    expect(bodyWrites()[0].nutrition).toEqual(VALIDATED);
+    expect(result).toEqual({ ok: false, error: "adminContent.errors.recipe_editor_pending" });
+    expect(bodyWrites()).toEqual([]);
   });
 });
 

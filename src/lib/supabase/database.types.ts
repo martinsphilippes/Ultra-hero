@@ -169,14 +169,14 @@ isOneToOne: false
                   ]
                 },"content": {
                   Row: {
-                    "access_level": Database["public"]['Enums']["access_level"] | null,"archived_at": string | null,"completion_mode": Database["public"]['Enums']["completion_mode"] | null,"cover_url": string | null,"created_at": string,"created_by": string | null,"creator_id": string | null,"creator_link_origin": string | null,"difficulty": string | null,"disclaimer_kind": string | null,"duration_minutes": number | null,"featured_rank": number | null,"has_captions": boolean,"id": string,"is_featured": boolean,"media_credit": string | null,"media_license_kind": string,"media_license_ref": string | null,"pillar": Database["public"]['Enums']["pillar"],"publish_at": string | null,"published_at": string | null,"required_module_id": string | null,"review_status": Database["public"]['Enums']["review_status"],"search": unknown,"slug": string,"source_locale": Database["public"]['Enums']["locale_code"],"status": Database["public"]['Enums']["content_status"],"summary": string | null,"tags": (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at": string
+                    "access_level": Database["public"]['Enums']["access_level"] | null,"archived_at": string | null,"archived_by": string | null,"completion_mode": Database["public"]['Enums']["completion_mode"] | null,"cover_url": string | null,"created_at": string,"created_by": string | null,"creator_id": string | null,"creator_link_origin": string | null,"difficulty": string | null,"disclaimer_kind": string | null,"duration_minutes": number | null,"featured_rank": number | null,"has_captions": boolean,"id": string,"is_featured": boolean,"media_credit": string | null,"media_license_kind": string,"media_license_ref": string | null,"pillar": Database["public"]['Enums']["pillar"],"publish_at": string | null,"published_at": string | null,"required_module_id": string | null,"review_status": Database["public"]['Enums']["review_status"],"search": unknown,"slug": string,"source_locale": Database["public"]['Enums']["locale_code"],"status": Database["public"]['Enums']["content_status"],"summary": string | null,"tags": (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"creator_link_origin"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"media_credit"?: string | null,"media_license_kind"?: string,"media_license_ref"?: string | null,"pillar": Database["public"]['Enums']["pillar"],"publish_at"?: string | null,"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug": string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at"?: string
+                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"archived_by"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"creator_link_origin"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"media_credit"?: string | null,"media_license_kind"?: string,"media_license_ref"?: string | null,"pillar": Database["public"]['Enums']["pillar"],"publish_at"?: string | null,"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug": string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title": string,"type": Database["public"]['Enums']["content_type"],"updated_at"?: string
                   }
                   Update: {
-                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"creator_link_origin"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"media_credit"?: string | null,"media_license_kind"?: string,"media_license_ref"?: string | null,"pillar"?: Database["public"]['Enums']["pillar"],"publish_at"?: string | null,"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug"?: string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title"?: string,"type"?: Database["public"]['Enums']["content_type"],"updated_at"?: string
+                    "access_level"?: Database["public"]['Enums']["access_level"] | null,"archived_at"?: string | null,"archived_by"?: string | null,"completion_mode"?: Database["public"]['Enums']["completion_mode"] | null,"cover_url"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"creator_link_origin"?: string | null,"difficulty"?: string | null,"disclaimer_kind"?: string | null,"duration_minutes"?: number | null,"featured_rank"?: number | null,"has_captions"?: boolean,"id"?: string,"is_featured"?: boolean,"media_credit"?: string | null,"media_license_kind"?: string,"media_license_ref"?: string | null,"pillar"?: Database["public"]['Enums']["pillar"],"publish_at"?: string | null,"published_at"?: string | null,"required_module_id"?: string | null,"review_status"?: Database["public"]['Enums']["review_status"],"search"?: never,"slug"?: string,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"tags"?: (string)[],"title"?: string,"type"?: Database["public"]['Enums']["content_type"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -287,14 +287,14 @@ isOneToOne: false
                   ]
                 },"content_reviews": {
                   Row: {
-                    "content_id": string,"decided_at": string | null,"decided_by": string | null,"decision": Database["public"]['Enums']["review_status"],"feedback": string | null,"id": string,"round": number,"submitted_at": string,"submitted_by": string | null
+                    "content_id": string,"decided_at": string | null,"decided_by": string | null,"decision": Database["public"]['Enums']["review_status"],"feedback": string | null,"id": string,"requested_publish_at": string | null,"round": number,"submitted_at": string,"submitted_by": string | null,"version_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "content_id": string,"decided_at"?: string | null,"decided_by"?: string | null,"decision"?: Database["public"]['Enums']["review_status"],"feedback"?: string | null,"id"?: string,"round"?: number,"submitted_at"?: string,"submitted_by"?: string | null
+                    "content_id": string,"decided_at"?: string | null,"decided_by"?: string | null,"decision"?: Database["public"]['Enums']["review_status"],"feedback"?: string | null,"id"?: string,"requested_publish_at"?: string | null,"round"?: number,"submitted_at"?: string,"submitted_by"?: string | null,"version_id"?: string | null
                   }
                   Update: {
-                    "content_id"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"decision"?: Database["public"]['Enums']["review_status"],"feedback"?: string | null,"id"?: string,"round"?: number,"submitted_at"?: string,"submitted_by"?: string | null
+                    "content_id"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"decision"?: Database["public"]['Enums']["review_status"],"feedback"?: string | null,"id"?: string,"requested_publish_at"?: string | null,"round"?: number,"submitted_at"?: string,"submitted_by"?: string | null,"version_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -303,21 +303,47 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "content"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_reviews_version_id_fkey"
+      columns: ["version_id"]
+isOneToOne: false
+      referencedRelation: "recipe_versions"
+      referencedColumns: ["id"]
     }
                   ]
                 },"content_type_settings": {
                   Row: {
-                    "auto_threshold_pct": number,"default_completion_mode": Database["public"]['Enums']["completion_mode"],"type": Database["public"]['Enums']["content_type"]
+                    "auto_threshold_pct": number,"default_completion_mode": Database["public"]['Enums']["completion_mode"],"review_required": boolean,"type": Database["public"]['Enums']["content_type"]
                   }
                   ComputedFields: never
                   Insert: {
-                    "auto_threshold_pct"?: number,"default_completion_mode"?: Database["public"]['Enums']["completion_mode"],"type": Database["public"]['Enums']["content_type"]
+                    "auto_threshold_pct"?: number,"default_completion_mode"?: Database["public"]['Enums']["completion_mode"],"review_required"?: boolean,"type": Database["public"]['Enums']["content_type"]
                   }
                   Update: {
-                    "auto_threshold_pct"?: number,"default_completion_mode"?: Database["public"]['Enums']["completion_mode"],"type"?: Database["public"]['Enums']["content_type"]
+                    "auto_threshold_pct"?: number,"default_completion_mode"?: Database["public"]['Enums']["completion_mode"],"review_required"?: boolean,"type"?: Database["public"]['Enums']["content_type"]
                   }
                   Relationships: [
                     
+                  ]
+                },"creator_credentials_requests": {
+                  Row: {
+                    "creator_id": string,"text": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creator_id": string,"text": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "creator_id"?: string,"text"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_credentials_requests_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: true
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"creator_products": {
                   Row: {
@@ -347,14 +373,14 @@ isOneToOne: false
                   ]
                 },"creator_profiles": {
                   Row: {
-                    "avatar_url": string | null,"bio": string | null,"cover_url": string | null,"created_at": string,"headline": string | null,"id": string,"is_fictional": boolean,"name": string,"pillars": (Database["public"]['Enums']["pillar"])[],"rights_holder": string | null,"rights_note": string | null,"rights_status": string,"rights_valid_until": string | null,"slug": string,"socials": NonNullable<Json>,"sort_order": number,"status": Database["public"]['Enums']["partner_status"],"updated_at": string,"user_id": string | null
+                    "avatar_url": string | null,"bio": string | null,"cover_url": string | null,"created_at": string,"credentials": string | null,"credentials_approved_at": string | null,"headline": string | null,"id": string,"is_fictional": boolean,"name": string,"pillars": (Database["public"]['Enums']["pillar"])[],"rights_holder": string | null,"rights_note": string | null,"rights_status": string,"rights_valid_until": string | null,"slug": string,"socials": NonNullable<Json>,"sort_order": number,"specialties": (string)[],"status": Database["public"]['Enums']["partner_status"],"updated_at": string,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name": string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_holder"?: string | null,"rights_note"?: string | null,"rights_status"?: string,"rights_valid_until"?: string | null,"slug": string,"socials"?: NonNullable<Json>,"sort_order"?: number,"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
+                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"credentials"?: string | null,"credentials_approved_at"?: string | null,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name": string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_holder"?: string | null,"rights_note"?: string | null,"rights_status"?: string,"rights_valid_until"?: string | null,"slug": string,"socials"?: NonNullable<Json>,"sort_order"?: number,"specialties"?: (string)[],"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name"?: string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_holder"?: string | null,"rights_note"?: string | null,"rights_status"?: string,"rights_valid_until"?: string | null,"slug"?: string,"socials"?: NonNullable<Json>,"sort_order"?: number,"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
+                    "avatar_url"?: string | null,"bio"?: string | null,"cover_url"?: string | null,"created_at"?: string,"credentials"?: string | null,"credentials_approved_at"?: string | null,"headline"?: string | null,"id"?: string,"is_fictional"?: boolean,"name"?: string,"pillars"?: (Database["public"]['Enums']["pillar"])[],"rights_holder"?: string | null,"rights_note"?: string | null,"rights_status"?: string,"rights_valid_until"?: string | null,"slug"?: string,"socials"?: NonNullable<Json>,"sort_order"?: number,"specialties"?: (string)[],"status"?: Database["public"]['Enums']["partner_status"],"updated_at"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -945,6 +971,204 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"recipe_categories": {
+                  Row: {
+                    "active": boolean,"code": string,"created_at": string,"name": NonNullable<Json>,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active"?: boolean,"code": string,"created_at"?: string,"name": NonNullable<Json>,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "active"?: boolean,"code"?: string,"created_at"?: string,"name"?: NonNullable<Json>,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"recipe_category_links": {
+                  Row: {
+                    "category_code": string,"content_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_code": string,"content_id": string
+                  }
+                  Update: {
+                    "category_code"?: string,"content_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_category_links_category_code_fkey"
+      columns: ["category_code"]
+isOneToOne: false
+      referencedRelation: "recipe_categories"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "recipe_category_links_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_comments": {
+                  Row: {
+                    "body": string,"content_id": string,"created_at": string,"id": string,"moderated_at": string | null,"moderated_by": string | null,"moderation_reason": string | null,"status": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"content_id": string,"created_at"?: string,"id"?: string,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation_reason"?: string | null,"status"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "body"?: string,"content_id"?: string,"created_at"?: string,"id"?: string,"moderated_at"?: string | null,"moderated_by"?: string | null,"moderation_reason"?: string | null,"status"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_comments_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_details": {
+                  Row: {
+                    "allergen_notes": string | null,"allergens": (string)[],"allergens_declared": boolean,"content_id": string,"cook_minutes": number | null,"cover_media_id": string | null,"created_at": string,"diets": (string)[],"prep_minutes": number | null,"rating_count": number,"rating_sum": number,"rest_minutes": number | null,"schema_version": number,"servings": number | null,"story": string | null,"total_minutes": number | null,"updated_at": string,"yield_text": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "allergen_notes"?: string | null,"allergens"?: (string)[],"allergens_declared"?: boolean,"content_id": string,"cook_minutes"?: number | null,"cover_media_id"?: string | null,"created_at"?: string,"diets"?: (string)[],"prep_minutes"?: number | null,"rating_count"?: number,"rating_sum"?: number,"rest_minutes"?: number | null,"schema_version"?: number,"servings"?: number | null,"story"?: string | null,"total_minutes"?: number | null,"updated_at"?: string,"yield_text"?: string | null
+                  }
+                  Update: {
+                    "allergen_notes"?: string | null,"allergens"?: (string)[],"allergens_declared"?: boolean,"content_id"?: string,"cook_minutes"?: number | null,"cover_media_id"?: string | null,"created_at"?: string,"diets"?: (string)[],"prep_minutes"?: number | null,"rating_count"?: number,"rating_sum"?: number,"rest_minutes"?: number | null,"schema_version"?: number,"servings"?: number | null,"story"?: string | null,"total_minutes"?: number | null,"updated_at"?: string,"yield_text"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_details_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: true
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recipe_details_cover_fk"
+      columns: ["cover_media_id","content_id"]
+isOneToOne: false
+      referencedRelation: "recipe_media"
+      referencedColumns: ["id","content_id"]
+    }
+                  ]
+                },"recipe_extras": {
+                  Row: {
+                    "chef_note": string | null,"content_id": string,"ingredient_terms": unknown,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "chef_note"?: string | null,"content_id": string,"ingredient_terms"?: unknown,"updated_at"?: string
+                  }
+                  Update: {
+                    "chef_note"?: string | null,"content_id"?: string,"ingredient_terms"?: unknown,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_extras_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: true
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_ingredient_products": {
+                  Row: {
+                    "content_id": string,"created_at": string,"id": string,"ingredient_id": string,"note": string | null,"product_id": string,"product_version_at_validation": number | null,"status": Database["public"]['Enums']["link_status"],"suspended_reason": string | null,"updated_at": string,"validated_at": string | null,"validated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"created_at"?: string,"id"?: string,"ingredient_id": string,"note"?: string | null,"product_id": string,"product_version_at_validation"?: number | null,"status"?: Database["public"]['Enums']["link_status"],"suspended_reason"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Update: {
+                    "content_id"?: string,"created_at"?: string,"id"?: string,"ingredient_id"?: string,"note"?: string | null,"product_id"?: string,"product_version_at_validation"?: number | null,"status"?: Database["public"]['Enums']["link_status"],"suspended_reason"?: string | null,"updated_at"?: string,"validated_at"?: string | null,"validated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_ingredient_products_ingredient_fk"
+      columns: ["ingredient_id","content_id"]
+isOneToOne: false
+      referencedRelation: "recipe_ingredients"
+      referencedColumns: ["id","content_id"]
+    },{
+      foreignKeyName: "recipe_ingredient_products_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_ingredients": {
+                  Row: {
+                    "content_id": string,"created_at": string,"id": string,"name": string,"note": string | null,"optional": boolean,"position": number,"quantity": number | null,"quantity_text": string | null,"source_qty": string | null,"substitutions": NonNullable<Json>,"to_taste": boolean,"unit": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"created_at"?: string,"id"?: string,"name": string,"note"?: string | null,"optional"?: boolean,"position": number,"quantity"?: number | null,"quantity_text"?: string | null,"source_qty"?: string | null,"substitutions"?: NonNullable<Json>,"to_taste"?: boolean,"unit"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "content_id"?: string,"created_at"?: string,"id"?: string,"name"?: string,"note"?: string | null,"optional"?: boolean,"position"?: number,"quantity"?: number | null,"quantity_text"?: string | null,"source_qty"?: string | null,"substitutions"?: NonNullable<Json>,"to_taste"?: boolean,"unit"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_ingredients_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_media": {
+                  Row: {
+                    "alt_text": string | null,"bytes": number,"caption": string | null,"content_id": string,"created_at": string,"created_by": string | null,"creator_id": string,"height": number | null,"id": string,"mime": string,"position": number,"rights_confirmed_at": string,"role": string,"storage_path": string,"updated_at": string,"width": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "alt_text"?: string | null,"bytes": number,"caption"?: string | null,"content_id": string,"created_at"?: string,"created_by"?: string | null,"creator_id": string,"height"?: number | null,"id"?: string,"mime": string,"position"?: number,"rights_confirmed_at": string,"role": string,"storage_path": string,"updated_at"?: string,"width"?: number | null
+                  }
+                  Update: {
+                    "alt_text"?: string | null,"bytes"?: number,"caption"?: string | null,"content_id"?: string,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string,"height"?: number | null,"id"?: string,"mime"?: string,"position"?: number,"rights_confirmed_at"?: string,"role"?: string,"storage_path"?: string,"updated_at"?: string,"width"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_media_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recipe_media_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_nutrition": {
+                  Row: {
+                    "carbs_g": number | null,"content_id": string,"fat_g": number | null,"fiber_g": number | null,"kcal": number | null,"protein_g": number | null,"sodium_mg": number | null,"source": string,"source_note": string | null,"updated_at": string,"validated": boolean,"validated_at": string | null,"validated_by": string | null,"validated_by_user": string | null,"validation_note": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "carbs_g"?: number | null,"content_id": string,"fat_g"?: number | null,"fiber_g"?: number | null,"kcal"?: number | null,"protein_g"?: number | null,"sodium_mg"?: number | null,"source"?: string,"source_note"?: string | null,"updated_at"?: string,"validated"?: boolean,"validated_at"?: string | null,"validated_by"?: string | null,"validated_by_user"?: string | null,"validation_note"?: string | null
+                  }
+                  Update: {
+                    "carbs_g"?: number | null,"content_id"?: string,"fat_g"?: number | null,"fiber_g"?: number | null,"kcal"?: number | null,"protein_g"?: number | null,"sodium_mg"?: number | null,"source"?: string,"source_note"?: string | null,"updated_at"?: string,"validated"?: boolean,"validated_at"?: string | null,"validated_by"?: string | null,"validated_by_user"?: string | null,"validation_note"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_nutrition_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: true
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"recipe_onboarding": {
                   Row: {
                     "allergies": (string)[],"completed_at": string,"notice_accepted_at": string,"restrictions": (string)[],"updated_at": string,"user_id": string,"version": number
@@ -958,6 +1182,118 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"recipe_ratings": {
+                  Row: {
+                    "content_id": string,"created_at": string,"is_demo": boolean,"stars": number,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"created_at"?: string,"is_demo"?: boolean,"stars": number,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "content_id"?: string,"created_at"?: string,"is_demo"?: boolean,"stars"?: number,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_ratings_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_step_ingredients": {
+                  Row: {
+                    "content_id": string,"ingredient_id": string,"step_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"ingredient_id": string,"step_id": string
+                  }
+                  Update: {
+                    "content_id"?: string,"ingredient_id"?: string,"step_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_step_ingredients_ingredient_fk"
+      columns: ["ingredient_id","content_id"]
+isOneToOne: false
+      referencedRelation: "recipe_ingredients"
+      referencedColumns: ["id","content_id"]
+    },{
+      foreignKeyName: "recipe_step_ingredients_step_fk"
+      columns: ["step_id","content_id"]
+isOneToOne: false
+      referencedRelation: "recipe_steps"
+      referencedColumns: ["id","content_id"]
+    }
+                  ]
+                },"recipe_steps": {
+                  Row: {
+                    "content_id": string,"created_at": string,"duration_seconds": number | null,"id": string,"image_media_id": string | null,"instruction": string,"position": number,"temperature_c": number | null,"tip": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"created_at"?: string,"duration_seconds"?: number | null,"id"?: string,"image_media_id"?: string | null,"instruction": string,"position": number,"temperature_c"?: number | null,"tip"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "content_id"?: string,"created_at"?: string,"duration_seconds"?: number | null,"id"?: string,"image_media_id"?: string | null,"instruction"?: string,"position"?: number,"temperature_c"?: number | null,"tip"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_steps_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recipe_steps_image_fk"
+      columns: ["image_media_id","content_id"]
+isOneToOne: false
+      referencedRelation: "recipe_media"
+      referencedColumns: ["id","content_id"]
+    }
+                  ]
+                },"recipe_versions": {
+                  Row: {
+                    "changed_sections": (string)[],"content_id": string,"created_at": string,"created_by": string | null,"id": string,"reason": string,"snapshot": NonNullable<Json>,"snapshot_hash": string,"version_no": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "changed_sections"?: (string)[],"content_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"reason": string,"snapshot": NonNullable<Json>,"snapshot_hash": string,"version_no": number
+                  }
+                  Update: {
+                    "changed_sections"?: (string)[],"content_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"reason"?: string,"snapshot"?: NonNullable<Json>,"snapshot_hash"?: string,"version_no"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_versions_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_view_history": {
+                  Row: {
+                    "content_id": string,"user_id": string,"viewed_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"user_id"?: string,"viewed_at"?: string
+                  }
+                  Update: {
+                    "content_id"?: string,"user_id"?: string,"viewed_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_view_history_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"recommendation_runs": {
                   Row: {
@@ -1088,6 +1424,38 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"shopping_list_items": {
+                  Row: {
+                    "checked": boolean,"content_id": string | null,"created_at": string,"id": string,"ingredient_id": string | null,"name": string,"position": number,"product_id": string | null,"quantity": number | null,"quantity_text": string | null,"unit": string | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "checked"?: boolean,"content_id"?: string | null,"created_at"?: string,"id"?: string,"ingredient_id"?: string | null,"name": string,"position"?: number,"product_id"?: string | null,"quantity"?: number | null,"quantity_text"?: string | null,"unit"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "checked"?: boolean,"content_id"?: string | null,"created_at"?: string,"id"?: string,"ingredient_id"?: string | null,"name"?: string,"position"?: number,"product_id"?: string | null,"quantity"?: number | null,"quantity_text"?: string | null,"unit"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shopping_list_items_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shopping_list_items_ingredient_id_fkey"
+      columns: ["ingredient_id"]
+isOneToOne: false
+      referencedRelation: "recipe_ingredients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shopping_list_items_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"simulated_subscriptions": {
                   Row: {
@@ -1307,6 +1675,20 @@ isOneToOne: false
       referencedColumns: ["tag"]
     }
                   ]
+                },"user_recipe_prefs": {
+                  Row: {
+                    "history_enabled": boolean,"history_enabled_at": string | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "history_enabled"?: boolean,"history_enabled_at"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "history_enabled"?: boolean,"history_enabled_at"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"user_recommendations": {
                   Row: {
                     "content_id": string,"engine": string,"generated_at": string,"is_fallback": boolean,"rank": number,"reason": string | null,"score": number | null,"user_id": string
@@ -1371,6 +1753,9 @@ isOneToOne: false
 "admin_moderate_product":
 { Args: { "p_action": string,"p_product": string,"p_reason"?: string }; Returns: undefined
                            },
+"admin_moderate_recipe_comment":
+{ Args: { "p_comment": string,"p_decision": string,"p_reason": string }; Returns: undefined
+                           },
 "admin_publish_program_version":
 { Args: { "p_version": string }; Returns: undefined
                            },
@@ -1393,6 +1778,9 @@ isOneToOne: false
                            } |
 { Args: { "p_content": string,"p_justification": string,"p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
                            },
+"admin_set_creator_credentials":
+{ Args: { "p_approved": boolean,"p_creator": string,"p_reason": string }; Returns: undefined
+                           },
 "admin_set_creator_product":
 { Args: { "p_creator": string,"p_note"?: string,"p_product": string,"p_sort"?: number,"p_status": Database["public"]['Enums']["link_status"] }; Returns: string
                            },
@@ -1408,8 +1796,14 @@ isOneToOne: false
 "admin_set_featured":
 { Args: { "p_featured": boolean,"p_id": string,"p_kind": string,"p_rank"?: number }; Returns: undefined
                            },
+"admin_set_ingredient_product":
+{ Args: { "p_link": string,"p_note": string,"p_status": Database["public"]['Enums']["link_status"] }; Returns: undefined
+                           },
 "admin_set_link_status":
 { Args: { "p_link": string,"p_note"?: string,"p_status": Database["public"]['Enums']["link_status"] }; Returns: undefined
+                           },
+"admin_set_review_required":
+{ Args: { "p_on": boolean,"p_reason": string,"p_type": Database["public"]['Enums']["content_type"] }; Returns: undefined
                            },
 "admin_set_role":
 { Args: { "p_active": boolean,"p_justification"?: string,"p_role": Database["public"]['Enums']["app_role"],"p_user": string }; Returns: undefined
@@ -1426,16 +1820,25 @@ isOneToOne: false
 "admin_triage_feedback":
 { Args: { "p_id": string,"p_justification"?: string,"p_patch": Json }; Returns: Json
                            },
+"admin_upsert_recipe_category":
+{ Args: { "p_active": boolean,"p_code": string,"p_name": Json,"p_sort": number }; Returns: undefined
+                           },
 "admin_user_emails":
 { Args: { "p_ids": (string)[] }; Returns: {
               "display_name": string,"email": string,"id": string
             }[]
+                           },
+"admin_validate_recipe_nutrition":
+{ Args: { "p_at": string,"p_by": string,"p_content": string,"p_note": string,"p_validated": boolean }; Returns: undefined
                            },
 "advance_simulated_transport":
 { Args: { "p_minutes_per_step"?: number }; Returns: number
                            },
 "anonymize_user_data":
 { Args: { "p_user": string }; Returns: undefined
+                           },
+"audit_actor":
+{ Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["actor_type"]
                            },
 "audit_log":
 { Args: { "p_action": string,"p_actor_type"?: Database["public"]['Enums']["actor_type"],"p_after"?: Json,"p_before"?: Json,"p_justification"?: string,"p_resource_id": string,"p_resource_type": string }; Returns: undefined
@@ -1476,16 +1879,53 @@ isOneToOne: false
 "content_is_live":
 { Args: { "p_publish_at": string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: boolean
                            },
+"content_localized_body":
+{ Args: { "p_content": string,"p_locale": Database["public"]['Enums']["locale_code"] }; Returns: Json
+                           },
+"content_review_required":
+{ Args: { "p_type": Database["public"]['Enums']["content_type"] }; Returns: boolean
+                           },
+"creator_archive_content":
+{ Args: { "p_content": string,"p_reason": string }; Returns: Json
+                           },
+"creator_delete_recipe_draft":
+{ Args: { "p_content": string }; Returns: Json
+                           },
 "creator_discard_video_draft":
 { Args: { "p_content": string }; Returns: Json
                            },
+"creator_duplicate_recipe":
+{ Args: { "p_content": string,"p_slug": string,"p_title": string }; Returns: string
+                           },
 "creator_publish_content":
 { Args: { "p_content": string }; Returns: Json
+                           } |
+{ Args: { "p_content": string,"p_publish_at": string }; Returns: Json
+                           },
+"creator_recipe_stats":
+{ Args: { "p_days"?: number }; Returns: {
+              "content_id": string,"favorites": number,"rating_avg": number,"rating_count": number,"visitors": number
+            }[]
+                           },
+"creator_restore_content":
+{ Args: { "p_content": string }; Returns: Json
+                           },
+"creator_restore_recipe_version":
+{ Args: { "p_version": string }; Returns: Json
                            },
 "creator_set_draft_slug":
 { Args: { "p_content": string,"p_slug": string }; Returns: Json
                            },
+"creator_suggest_ingredient_product":
+{ Args: { "p_ingredient": string,"p_note": string,"p_product": string }; Returns: string
+                           },
 "creator_unpublish_content":
+{ Args: { "p_content": string }; Returns: Json
+                           },
+"creator_withdraw_ingredient_product":
+{ Args: { "p_link": string }; Returns: undefined
+                           },
+"creator_withdraw_review":
 { Args: { "p_content": string }; Returns: Json
                            },
 "delete_my_account":
@@ -1501,6 +1941,7 @@ isOneToOne: false
 { Args: { "p_access"?: Database["public"]['Enums']["access_level"],"p_difficulty"?: string,"p_limit"?: number,"p_offset"?: number,"p_pillar"?: Database["public"]['Enums']["pillar"],"p_seed"?: number,"p_type"?: Database["public"]['Enums']["content_type"] }; Returns: {
               "access_level": Database["public"]['Enums']["access_level"] | null,
 "archived_at": string | null,
+"archived_by": string | null,
 "completion_mode": Database["public"]['Enums']["completion_mode"] | null,
 "cover_url": string | null,
 "created_at": string,
@@ -1591,6 +2032,91 @@ isOneToOne: false
 "quote_shipping":
 { Args: { "p_seller_count": number,"p_subtotal": number,"p_zone": string }; Returns: number
                            },
+"recipe_assert_publishable":
+{ Args: { "p_content": string }; Returns: undefined
+                           },
+"recipe_backfill_dry_run":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "content_id": string,"kind": string,"original": string,"outcome": string,"pos": number,"seed_key": string,"slug": string
+            }[]
+                           },
+"recipe_backfill_legacy":
+{ Args: { "p_content": string }; Returns: string
+                           },
+"recipe_catalog":
+{ Args: { "p_categories"?: (string)[],"p_creator"?: string,"p_cursor"?: string,"p_diets"?: (string)[],"p_difficulty"?: string,"p_exclude_allergens"?: (string)[],"p_limit"?: number,"p_max_minutes"?: number,"p_query"?: string,"p_sort"?: string }; Returns: {
+              "content_id": string,"cursor": string,"rank": number
+            }[]
+                           },
+"recipe_delete_media":
+{ Args: { "p_media": string }; Returns: Json
+                           },
+"recipe_legacy_allergen_code":
+{ Args: { "p_label": string }; Returns: string
+                           },
+"recipe_legacy_category_literals":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "category_code": string,"seed_key": string
+            }[]
+                           },
+"recipe_legacy_ingredient_literals":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "item": string,"note": string,"pos": number,"qty": string,"quantity": number,"quantity_text": string,"seed_key": string,"to_taste": boolean,"unit": string
+            }[]
+                           },
+"recipe_legacy_seed_key":
+{ Args: { "p_content": string }; Returns: string
+                           },
+"recipe_legacy_step_literals":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "duration_seconds": number,"instruction": string,"pos": number,"seed_key": string,"temperature_c": number
+            }[]
+                           },
+"recipe_media_path_ok":
+{ Args: { "p_name": string }; Returns: boolean
+                           },
+"recipe_media_quota_ok":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"recipe_media_registered":
+{ Args: { "p_name": string }; Returns: boolean
+                           },
+"recipe_orphan_media":
+{ Args: { "p_limit": number }; Returns: string[]
+                           },
+"recipe_payload_bool":
+{ Args: { "p_default": boolean,"p_key": string,"p_obj": Json,"p_path": string }; Returns: boolean
+                           },
+"recipe_payload_list":
+{ Args: { "p_allowed": (string)[],"p_key": string,"p_max_items": number,"p_max_len": number,"p_obj": Json,"p_path": string }; Returns: (string)[]
+                           },
+"recipe_payload_num":
+{ Args: { "p_integer"?: boolean,"p_key": string,"p_max": number,"p_min": number,"p_obj": Json,"p_path": string,"p_required"?: boolean }; Returns: number
+                           },
+"recipe_payload_text":
+{ Args: { "p_key": string,"p_max": number,"p_obj": Json,"p_path": string,"p_required"?: boolean }; Returns: string
+                           },
+"recipe_payload_uuid":
+{ Args: { "p_key": string,"p_obj": Json,"p_path": string,"p_required"?: boolean }; Returns: string
+                           },
+"recipe_publishable_missing":
+{ Args: { "p_content": string,"p_cover_url": string,"p_creator": string,"p_license": string,"p_summary": string,"p_title": string }; Returns: (string)[]
+                           },
+"recipe_rating_allowed":
+{ Args: { "p_content": string }; Returns: boolean
+                           },
+"recipe_register_media":
+{ Args: { "p_alt": string,"p_content": string,"p_height": number,"p_path": string,"p_rights": boolean,"p_role": string,"p_width": number }; Returns: string
+                           },
+"recipe_save":
+{ Args: { "p_content": string,"p_expected_updated_at": string,"p_payload": Json }; Returns: Json
+                           },
+"recipe_setting_on":
+{ Args: { "p_key": string }; Returns: boolean
+                           },
+"recipe_snapshot":
+{ Args: { "p_content": string,"p_reason": string }; Returns: string
+                           },
 "recompute_order_status":
 { Args: { "p_order": string }; Returns: undefined
                            },
@@ -1604,6 +2130,7 @@ isOneToOne: false
 { Args: { "p_access"?: Database["public"]['Enums']["access_level"],"p_creator"?: string,"p_difficulty"?: string,"p_limit"?: number,"p_offset"?: number,"p_pillar"?: Database["public"]['Enums']["pillar"],"p_query": string,"p_type"?: Database["public"]['Enums']["content_type"] }; Returns: {
               "access_level": Database["public"]['Enums']["access_level"] | null,
 "archived_at": string | null,
+"archived_by": string | null,
 "completion_mode": Database["public"]['Enums']["completion_mode"] | null,
 "cover_url": string | null,
 "created_at": string,
@@ -1663,6 +2190,8 @@ isOneToOne: false
                            },
 "submit_content_for_review":
 { Args: { "p_content": string }; Returns: undefined
+                           } |
+{ Args: { "p_content": string,"p_requested_publish_at": string }; Returns: undefined
                            },
 "submit_feedback":
 { Args: { "p_context": string,"p_locale"?: Database["public"]['Enums']["locale_code"],"p_message": string,"p_rating": number }; Returns: string

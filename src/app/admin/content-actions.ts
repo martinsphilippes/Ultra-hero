@@ -90,6 +90,12 @@ export async function setContentStatusAction(
   try {
     await requireAdmin();
     const supabase = await createClient();
+    // Receita no ar não volta a rascunho na fase 1: as antigas não cumprem a lista de publicação
+    // (recipe_incomplete) e não há editor para corrigir. Arquivar segue como retirada de segurança.
+    if (parsed.data.status === "draft") {
+      const { data: current } = await supabase.from("content").select("type, status").eq("id", parsed.data.contentId).maybeSingle();
+      if (current?.type === "recipe" && current.status === "published") return fail("recipe_editor_pending");
+    }
     // Sem data (ou "publicar agora"): a versão de 3 parâmetros limpa o agendamento.
     const { error } = schedule.value
       ? await supabase.rpc("admin_set_content_status", {
@@ -164,9 +170,17 @@ export async function saveContentAction(context: SaveContext, values: ContentFor
   const accessLevel = v.access_level ?? null;
   const requiredModule = accessLevel === "premium" ? (v.required_module_id ?? null) : null;
 
+  // Receita estruturada (0027) não passa por este formulário (o corpo v1 seria recusado no banco):
+  // nem criar, nem converter, nem editar a existente até o editor novo (fase 2).
+  if (v.type === "recipe") return fail("recipe_editor_pending");
+
   try {
     const userId = await requireAdmin();
     const supabase = await createClient();
+    if (ctx.data.id) {
+      const { data: current } = await supabase.from("content").select("type").eq("id", ctx.data.id).maybeSingle();
+      if (current?.type === "recipe") return fail("recipe_editor_pending");
+    }
     const t = await getTranslations("adminContent.content.form");
     const fields = {
       title: v.title,

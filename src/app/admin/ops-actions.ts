@@ -531,10 +531,14 @@ const SETTING_SCHEMAS = {
   "transport.minutes_per_step": z.coerce.number().int().min(0).max(10080),
   "video.provider": z.enum(["embed", "cloudflare_stream", "mux"]),
   bootstrap_admin_emails: z.array(z.email().max(254)).max(20),
+  // receitas (0027): avaliações, comentários (modelados, desligados) e envio de fotos
+  "recipes.ratings_enabled": z.boolean(),
+  "recipes.comments_enabled": z.boolean(),
+  "recipes.uploads_enabled": z.boolean(),
 } as const;
 
 export type EditableSettingKey = keyof typeof SETTING_SCHEMAS;
-const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open"];
+const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open", "recipes.uploads_enabled"];
 
 export async function setSetting(input: { key: EditableSettingKey; value: unknown }, justification: string): Promise<Result> {
   await admin();

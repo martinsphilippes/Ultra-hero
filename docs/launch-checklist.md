@@ -23,6 +23,7 @@ Marque com evidência (link/commit/print). Itens **bloqueantes** impedem abertur
 - [ ] Documento `docs/privacy-and-retention.md` revisado por jurídico
 
 ## Integridade do produto
+- [ ] **(B)** Receitas fase 1 (0027–0029): deploy deste código ANTES de aplicar a 0027 (o app antigo lê `content_localizations.body`, que a 0027 tira do grant); 0029 só pelo roteiro manual com dry-run (`docs/decisions/recipes-module.md`, "Aplicação no remoto")
 - [ ] **(B)** Conteúdo publicado sempre com regra de acesso e corpo (consulta: `content where status='published' and (access_level is null or id not in (select content_id from content_bodies))` = 0)
 - [ ] **(B)** Rótulos de demonstração em catálogo, carrinho, checkout, pedidos, planos
 - [ ] Personalidades marcadas como fictícias; nenhuma imagem/nome real

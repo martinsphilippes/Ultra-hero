@@ -161,7 +161,12 @@
     "not_found": "Registro não encontrado.",
     "publish_at_invalid": "Data de publicação inválida.",
     "publish_at_future": "A data de publicação precisa estar no futuro.",
-    "media_license_mismatch": "Licença da mídia incoerente com o provedor. Edite o conteúdo e tente de novo."
+    "media_license_mismatch": "Licença da mídia incoerente com o provedor. Edite o conteúdo e tente de novo.",
+    "recipe_editor_pending": "A edição de receitas volta com o novo editor.",
+    "recipe_incomplete": "A receita não pode ir ao ar: falta {fields}.",
+    "type_locked": "O tipo de uma receita não muda (nem outro conteúdo vira receita).",
+    "recipe_body_managed": "O corpo desta receita só muda pelo editor de receitas.",
+    "review_required_protected": "A regra de revisão só muda pela ação auditada de configurações."
   },
   "content": {
     "title": "Conteúdos",
@@ -265,6 +270,7 @@
       "publishDescription": "Publica sem passar pela revisão. Verifique regra de acesso e corpo antes.",
       "archiveTitle": "Arquivar conteúdo?",
       "archiveDescription": "Sai do catálogo. Programas que dependem dele podem precisar de substituição.",
+      "archiveRecipeWarning": "Receita: só para retirada de segurança. Ela não volta ao ar até o editor novo, porque as receitas antigas ainda não cumprem a lista de publicação (alérgenos, tempos).",
       "draftTitle": "Voltar a rascunho?",
       "changed": "Status atualizado",
       "featureOn": "Destacar no Início",

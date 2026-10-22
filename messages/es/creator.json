@@ -31,7 +31,7 @@
   },
   "content": {
     "new": "Nuevo contenido",
-    "newDescription": "Crea un borrador de receta, entrenamiento, guía, artículo o video por enlace. Guarda y publica cuando esté listo.",
+    "newDescription": "Crea un borrador de entrenamiento, guía, artículo o video por enlace. Guarda y publica cuando esté listo.",
     "description": "Tus contenidos en todos los estados. Los borradores se pueden editar; para cambiar uno publicado, despublícalo antes.",
     "viewPublic": "Ver página pública",
     "columns": {
@@ -45,7 +45,7 @@
     "count": "{count, plural, =0 {Ningún contenido} =1 {1 contenido} other {# contenidos}}",
     "tableCaption": "Lista de mis contenidos con estado, revisión y acciones",
     "emptyTitle": "Todavía no tienes contenidos",
-    "emptyDescription": "Crea el primer borrador: video, receta, entrenamiento, guía o artículo."
+    "emptyDescription": "Crea el primer borrador: video, entrenamiento, guía o artículo."
   },
   "edit": {
     "noAccessRule": "Sin regla de acceso",
@@ -308,6 +308,7 @@
     "provider_error": "El servicio de video no respondió. Inténtalo de nuevo en un momento.",
     "file_too_large": "El video supera los 2 GB.",
     "upload_incomplete": "El video no terminó de subir a Cloudflare. Envíalo de nuevo desde Nueva publicación.",
-    "stream_media_forbidden": "Este video no fue enviado por esta cuenta y no se puede usar aquí."
+    "stream_media_forbidden": "Este video no fue enviado por esta cuenta y no se puede usar aquí.",
+    "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor."
   }
 }

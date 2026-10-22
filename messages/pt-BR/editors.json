@@ -89,7 +89,8 @@
     "unauthenticated": "Entre para continuar.",
     "creator_unavailable": "Seu perfil de herói não está ativo.",
     "not_found": "Conteúdo não encontrado.",
-    "media_license_mismatch": "Licença incoerente com a mídia: ajuste a licença e salve de novo."
+    "media_license_mismatch": "Licença incoerente com a mídia: ajuste a licença e salve de novo.",
+    "recipe_editor_pending": "A edição de receitas volta com o novo editor."
   },
   "list": {
     "empty": "Nenhum item ainda.",

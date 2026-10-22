@@ -31,7 +31,7 @@
   },
   "content": {
     "new": "New content",
-    "newDescription": "Create a draft of a recipe, workout, guide, article or linked video. Save and publish when ready.",
+    "newDescription": "Create a draft of a workout, guide, article or linked video. Save and publish when ready.",
     "description": "Your content in every state. Drafts can be edited; to change a published item, unpublish it first.",
     "viewPublic": "View public page",
     "columns": {
@@ -45,7 +45,7 @@
     "count": "{count, plural, =0 {No content} =1 {1 content item} other {# content items}}",
     "tableCaption": "List of my content with status, review and actions",
     "emptyTitle": "You have no content yet",
-    "emptyDescription": "Create the first draft: video, recipe, workout, guide or article."
+    "emptyDescription": "Create the first draft: video, workout, guide or article."
   },
   "edit": {
     "noAccessRule": "No access rule",
@@ -308,6 +308,7 @@
     "provider_error": "The video service did not respond. Try again in a moment.",
     "file_too_large": "The video is larger than 2 GB.",
     "upload_incomplete": "The video did not finish uploading to Cloudflare. Upload it again from New post.",
-    "stream_media_forbidden": "This video was not uploaded by this account and cannot be used here."
+    "stream_media_forbidden": "This video was not uploaded by this account and cannot be used here.",
+    "recipe_editor_pending": "Recipe editing comes back with the new editor."
   }
 }

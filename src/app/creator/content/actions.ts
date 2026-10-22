@@ -53,6 +53,13 @@ async function saveBody(supabase: Supabase, contentId: string, v: ContentFormVal
   return error ? failFrom(error).error : null;
 }
 
+// Receita fica só para leitura no editor antigo até o editor novo (fase 2): sem publicar nem
+// despublicar por aqui, senão uma receita antiga sairia do ar sem como voltar.
+async function isRecipe(supabase: Supabase, id: string): Promise<boolean> {
+  const { data } = await supabase.from("content").select("type").eq("id", id).maybeSingle();
+  return data?.type === "recipe";
+}
+
 function revalidateContent(id?: string) {
   revalidatePath("/creator");
   revalidatePath("/creator/content");
@@ -67,6 +74,8 @@ export async function createContent(values: ContentFormValues): Promise<SaveResu
   const parsed = parseContentForm(stripNutritionValidation(values));
   if (!parsed.ok) return { ok: false, error: "invalid_input" };
   const v = parsed.data;
+  // Receita estruturada (0027) só pelo editor novo: este formulário gravaria o corpo v1, que o banco recusa.
+  if (v.type === "recipe") return { ok: false, error: "recipe_editor_pending" };
 
   // Vídeo do Cloudflare só nasce pelo composer (/creator/post/new), que cria o ticket no servidor.
   if (v.media.provider === "cloudflare_stream") return { ok: false, error: "forbidden" };
@@ -94,8 +103,9 @@ export async function updateContent(values: ContentFormValues): Promise<SaveResu
   const id = v.id as string;
 
   const supabase = await createClient();
-  const { data: existing } = await supabase.from("content").select("id, status, review_status").eq("id", id).maybeSingle();
+  const { data: existing } = await supabase.from("content").select("id, type, status, review_status").eq("id", id).maybeSingle();
   if (!existing) return { ok: false, error: "not_found" };
+  if (existing.type === "recipe" || v.type === "recipe") return { ok: false, error: "recipe_editor_pending" };
   // Mesma regra do guard do banco; evita gravar o corpo de algo em revisão.
   if (existing.status !== "draft" || existing.review_status === "in_review") return { ok: false, error: "content_not_editable" };
   // O uid do Cloudflare fica preso ao rascunho: o formulário pode manter o vídeo enviado, nunca trocar por outro uid.
@@ -121,6 +131,7 @@ export async function publishContent(input: { id: string }): Promise<ActionResul
   if (!ctx.ok) return ctx;
   const { supabase, creatorId } = ctx;
   const id = parsed.data.id;
+  if (await isRecipe(supabase, id)) return { ok: false, error: "recipe_editor_pending" };
 
   // Vídeo enviado pelo celular só vai ao ar pronto no Cloudflare (mesma regra do composer).
   const { data: body } = await supabase.from("content_bodies").select("media_provider, media_ref").eq("content_id", id).maybeSingle();
@@ -151,6 +162,7 @@ export async function unpublishContent(input: { id: string }): Promise<ActionRes
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const ctx = await creatorActionContext();
   if (!ctx.ok) return ctx;
+  if (await isRecipe(ctx.supabase, parsed.data.id)) return { ok: false, error: "recipe_editor_pending" };
   const { error } = await ctx.supabase.rpc("creator_unpublish_content", { p_content: parsed.data.id });
   if (error) return failFrom(error);
   revalidateContent(parsed.data.id);

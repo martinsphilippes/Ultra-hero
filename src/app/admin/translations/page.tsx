@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import { Badge, Button, FormField, Input, PageHeader } from "@/components/ui";
 import { locales, type Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
+import { loadLocalizedBody } from "@/lib/catalog/localized-body";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -71,10 +72,14 @@ export default async function AdminTranslationsPage({ searchParams }: { searchPa
       const [{ data: content }, { data: body }, { data: locs }] = await Promise.all([
         supabase.from("content").select("id, title, summary, source_locale, status").eq("id", id).maybeSingle(),
         supabase.from("content_bodies").select("body").eq("content_id", id).maybeSingle(),
-        supabase.from("content_localizations").select("locale, title, summary, body, status, updated_at").eq("content_id", id),
+        // sem body: desde a 0027 o corpo traduzido sai pela RPC (abaixo), não pelo select
+        supabase.from("content_localizations").select("locale, title, summary, status, updated_at").eq("content_id", id),
       ]);
       if (content) {
         const targets = locales.filter((l) => l !== content.source_locale);
+        const bodies = new Map(
+          await Promise.all(targets.map(async (l) => [l, await loadLocalizedBody(supabase, content.id, l as LocaleCode)] as const)),
+        );
         editor = (
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -93,7 +98,7 @@ export default async function AdminTranslationsPage({ searchParams }: { searchPa
                   localeLabel={tc(`localeName.${target}` as never)}
                   sourceLocaleLabel={tc(`localeName.${content.source_locale}` as never)}
                   source={{ title: content.title, summary: content.summary, body: body?.body ?? null }}
-                  existing={existing ? { title: existing.title, summary: existing.summary, body: existing.body, status: existing.status as "draft" | "published", updated_at: existing.updated_at } : null}
+                  existing={existing ? { title: existing.title, summary: existing.summary, body: bodies.get(target) ?? null, status: existing.status as "draft" | "published", updated_at: existing.updated_at } : null}
                   existingLabel={existing ? t("existing", { date: formatDateTime(existing.updated_at, uiLocale) }) : null}
                 />
               );

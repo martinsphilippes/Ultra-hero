@@ -77,7 +77,8 @@ test.describe("portal do herói: novo post em vídeo", () => {
   test("o editor de um rascunho mostra Publicar e não Enviar para revisão", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/creator/content?status=draft");
-    const editLink = page.locator('a[href^="/creator/content/"][href$="/edit"]').first();
+    // receita fica só para leitura no editor antigo (0027): o teste usa outro tipo
+    const editLink = page.locator('a[href^="/creator/content/"][href$="/edit"][data-content-type]:not([data-content-type="recipe"])').first();
     test.skip((await editLink.count()) === 0, "a conta de demonstração não tem rascunhos");
     // navegação direta pelo href: o clique logo após o carregamento às vezes chega antes da hidratação
     await page.goto((await editLink.getAttribute("href"))!);
@@ -97,7 +98,7 @@ test.describe("portal do herói: novo post em vídeo", () => {
   test("o editor de um publicado mostra Despublicar", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/creator/content?status=published");
-    const editLink = page.locator('a[href^="/creator/content/"][href$="/edit"]').first();
+    const editLink = page.locator('a[href^="/creator/content/"][href$="/edit"][data-content-type]:not([data-content-type="recipe"])').first();
     test.skip((await editLink.count()) === 0, "a conta de demonstração não tem publicados");
     // navegação direta pelo href: o clique logo após o carregamento às vezes chega antes da hidratação
     await page.goto((await editLink.getAttribute("href"))!);

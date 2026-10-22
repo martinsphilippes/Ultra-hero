@@ -90,5 +90,160 @@
     "title": "Check the ingredients",
     "description": "You told us: {items}. This recipe has no professional review; check every ingredient before cooking.",
     "edit": "Review restrictions and allergies"
+  },
+  "structured": {
+    "legacyEditor": {
+      "title": "Read-only recipe",
+      "description": "Recipe editing comes back with the new editor. Until then, this recipe stays as it is and remains live as before."
+    },
+    "createUnavailable": "Recipes are getting their own editor soon, so the recipe type doesn't appear here.",
+    "informedByChef": "Provided by the chef",
+    "allergensNotInformed": "Allergens not provided by the chef",
+    "nutritionInformed": "Nutrition information provided by the chef, not yet validated",
+    "credentialsLabel": "Credentials provided by the hero",
+    "units": {
+      "g": {
+        "one": "g",
+        "other": "g"
+      },
+      "kg": {
+        "one": "kg",
+        "other": "kg"
+      },
+      "mg": {
+        "one": "mg",
+        "other": "mg"
+      },
+      "ml": {
+        "one": "ml",
+        "other": "ml"
+      },
+      "l": {
+        "one": "L",
+        "other": "L"
+      },
+      "tsp": {
+        "one": "teaspoon",
+        "other": "teaspoons"
+      },
+      "tbsp": {
+        "one": "tablespoon",
+        "other": "tablespoons"
+      },
+      "cup": {
+        "one": "cup",
+        "other": "cups"
+      },
+      "unit": {
+        "one": "unit",
+        "other": "units"
+      },
+      "clove": {
+        "one": "clove",
+        "other": "cloves"
+      },
+      "bunch": {
+        "one": "bunch",
+        "other": "bunches"
+      },
+      "sprig": {
+        "one": "sprig",
+        "other": "sprigs"
+      },
+      "fillet": {
+        "one": "fillet",
+        "other": "fillets"
+      },
+      "slice": {
+        "one": "slice",
+        "other": "slices"
+      },
+      "leaf": {
+        "one": "leaf",
+        "other": "leaves"
+      },
+      "pinch": {
+        "one": "pinch",
+        "other": "pinches"
+      },
+      "can": {
+        "one": "can",
+        "other": "cans"
+      },
+      "package": {
+        "one": "package",
+        "other": "packages"
+      }
+    },
+    "categories": {
+      "cafe-da-manha": "Breakfast",
+      "almoco": "Lunch",
+      "jantar": "Dinner",
+      "lanche": "Snack",
+      "sobremesa": "Dessert",
+      "molhos-e-bases": "Sauces and basics",
+      "marmitas": "Meal prep",
+      "sopas": "Soups",
+      "saladas": "Salads",
+      "bebidas": "Drinks"
+    },
+    "checklist": {
+      "title": "Title",
+      "summary": "Description",
+      "cover": "Cover photo with alternative text",
+      "gallery_alt": "Alternative text on every gallery photo",
+      "servings": "Servings",
+      "total_minutes": "Total time",
+      "times": "Total time at least prep + cook + rest",
+      "ingredients": "At least 1 ingredient",
+      "steps": "At least 1 step",
+      "category": "At least 1 category",
+      "allergens": "Allergens declared (even if none)",
+      "license": "License consistent with the video",
+      "stream": "Video uploaded by you and still valid"
+    },
+    "errors": {
+      "unauthenticated": "Sign in to continue.",
+      "forbidden": "You don't have permission for this recipe.",
+      "not_recipe": "This content is not a recipe.",
+      "content_not_editable": "This recipe is in review or live and can't be edited now.",
+      "stale_draft": "The recipe changed in another tab or device. Reload or overwrite.",
+      "invalid_payload": "Check the highlighted fields.",
+      "invalid_category": "Pick a category from the list.",
+      "too_many_categories": "Pick up to 3 categories.",
+      "too_many_ingredients": "Use at most 60 ingredients.",
+      "too_many_steps": "Use at most 40 steps.",
+      "media_not_owned": "This photo doesn't belong to this recipe.",
+      "recipe_body_managed": "This recipe only changes through the recipe editor.",
+      "recipe_incomplete": "Some items are missing before publishing.",
+      "review_required": "Recipes go through the admin review: submit it for review.",
+      "invalid_publish_at": "Pick a date between 1 minute and 365 days from now.",
+      "type_locked": "A recipe's type doesn't change. Duplicate it to create other content.",
+      "cover_not_owned": "The cover must be a photo of this recipe.",
+      "nutrition_validation_forbidden": "Only the admin validates nutrition information.",
+      "nutrition_validation_incomplete": "To validate, provide the reviewer and the date.",
+      "uploads_disabled": "Photo uploads are paused right now.",
+      "invalid_path": "We couldn't identify the uploaded photo.",
+      "object_not_found": "The photo didn't reach storage. Upload it again.",
+      "invalid_mime": "Upload a JPEG, PNG or WebP image.",
+      "too_large": "The photo is larger than 5 MB.",
+      "rights_required": "Confirm you have the right to use this image.",
+      "too_many_media": "The recipe reached the photo limit (30, with 12 in the gallery).",
+      "upload_quota_exceeded": "You reached the daily upload limit (50 photos or 100 MB). Try tomorrow.",
+      "not_in_review": "This recipe is not in review.",
+      "already_archived": "This recipe is already archived.",
+      "not_archived": "This recipe is not archived.",
+      "archived_by_admin": "The admin archived this recipe; only the admin can restore it.",
+      "not_draft": "Only drafts can be deleted or published.",
+      "already_published": "This recipe has been live before and can't be deleted; archive it.",
+      "content_in_use": "This recipe is in use (program or completions) and can't be deleted.",
+      "source_locked": "This recipe is locked by the admin and can't be duplicated.",
+      "slug_taken": "That address is already in use.",
+      "invalid_slug": "Invalid address.",
+      "version_not_found": "Version not found.",
+      "version_not_restorable": "This version only keeps the old format and can't be restored.",
+      "version_immutable": "Published versions don't change.",
+      "stream_media_forbidden": "This video wasn't uploaded by you."
+    }
   }
 }

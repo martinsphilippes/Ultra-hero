@@ -14,6 +14,8 @@ import { isScheduled, isoToLocalInput, localInputToIso, parsePublishAt } from ".
 
 type Props = {
   contentId: string;
+  /** Tipo do conteúdo: receita no ar não volta a rascunho na fase 1 (sem editor para corrigir). */
+  type: string;
   status: "draft" | "published" | "archived";
   reviewStatus: "none" | "in_review" | "returned" | "approved" | "rejected";
   isFeatured: boolean;
@@ -24,7 +26,7 @@ type Props = {
 
 // Painel de ações do detalhe do conteúdo: decisão editorial, agendamento (RF-007), status e destaque.
 // O campo "Publicar em" alimenta tanto a aprovação quanto a publicação direta; vazio = agora.
-export function ContentReviewActions({ contentId, status, reviewStatus, isFeatured, hasOpenRound, publishAt }: Props) {
+export function ContentReviewActions({ contentId, type, status, reviewStatus, isFeatured, hasOpenRound, publishAt }: Props) {
   const t = useTranslations("adminContent.content.review");
   const ts = useTranslations("adminContent.content.statusActions");
   const tsch = useTranslations("adminContent.content.schedule");
@@ -51,6 +53,8 @@ export function ContentReviewActions({ contentId, status, reviewStatus, isFeatur
   const scheduleValue = schedule.ok ? schedule.value : null;
   const scheduleLabel = scheduleValue ? formatDateTime(scheduleValue, locale, tz || undefined) : null;
   const scheduledLabel = scheduled && publishAt ? formatDateTime(publishAt, locale, tz || undefined) : null;
+  // Receita antiga que sai do ar não volta até o editor novo (recipe_incomplete): só arquivar, com aviso.
+  const liveRecipe = type === "recipe" && status === "published";
 
   return (
     <div className="flex flex-col gap-4">
@@ -167,9 +171,11 @@ export function ContentReviewActions({ contentId, status, reviewStatus, isFeatur
               requireJustification
               destructive
               action={(j) => setContentStatusAction(contentId, "archived", j)}
-            />
+            >
+              {liveRecipe && <p className="type-caption text-warning">{ts("archiveRecipeWarning")}</p>}
+            </ConfirmActionDialog>
           )}
-          {status !== "draft" && (
+          {status !== "draft" && !liveRecipe && (
             <ConfirmActionDialog
               triggerLabel={
                 <>

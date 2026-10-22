@@ -80,7 +80,7 @@ export default async function CreatorContentListPage({ searchParams }: Props) {
       header: t("content.columns.title"),
       cell: (row) => (
         <span className="flex min-w-0 flex-col gap-1">
-          <Link href={`/creator/content/${row.id}/edit`} className="line-clamp-2 font-semibold text-fg underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+          <Link href={`/creator/content/${row.id}/edit`} data-content-type={row.type} className="line-clamp-2 font-semibold text-fg underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
             {row.title}
           </Link>
           <span className="flex flex-wrap gap-1">

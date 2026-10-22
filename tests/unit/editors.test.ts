@@ -40,6 +40,7 @@ const YOUTUBE_ID = "dQw4w9WgXcQ";
 // "<namespace>.<chave>" e as escritas no banco ficam registradas em `server.writes`.
 const server = vi.hoisted(() => ({
   NEW_CONTENT_ID: "5d1f3a2e-8c4b-4e6f-9a7d-2b3c4d5e6f70",
+  existingType: "video" as string,
   clientCreated: 0,
   writes: [] as { table: string; op: "insert" | "update" | "upsert"; payload: Record<string, unknown> }[],
 }));
@@ -57,6 +58,11 @@ vi.mock("@/lib/supabase/server", () => ({
     server.clientCreated++;
     return {
       from: (table: string) => ({
+        // leitura do tipo atual (o admin não edita receita pelo formulário antigo desde a 0027)
+        select: () => {
+          const chain = { eq: () => chain, maybeSingle: async () => ({ data: { type: server.existingType }, error: null }) };
+          return chain;
+        },
         update: (payload: Record<string, unknown>) => {
           server.writes.push({ table, op: "update", payload });
           return { eq: async () => ({ error: null }) };
@@ -687,10 +693,28 @@ describe("saveContentAction (admin) valida com o esquema compartilhado", () => {
   });
 
   it("criação: insere rascunho da personalidade escolhida e grava o corpo no id novo", async () => {
-    const result = await save(validVideoForm({ type: "recipe", body: validBodies.recipe, media: NO_MEDIA }), { id: null, creatorId: CREATOR_ID });
+    const result = await save(validVideoForm({ type: "workout", body: validBodies.workout, media: NO_MEDIA }), { id: null, creatorId: CREATOR_ID });
     expect(result).toEqual({ ok: true, id: server.NEW_CONTENT_ID, message: "adminContent.content.form.created" });
-    expect(writesTo("content", "insert")).toEqual([expect.objectContaining({ creator_id: CREATOR_ID, status: "draft", review_status: "none", type: "recipe" })]);
+    expect(writesTo("content", "insert")).toEqual([expect.objectContaining({ creator_id: CREATOR_ID, status: "draft", review_status: "none", type: "workout" })]);
     expect(writesTo("content_bodies", "upsert")).toEqual([expect.objectContaining({ content_id: server.NEW_CONTENT_ID, media_provider: "none", media_ref: null })]);
+  });
+
+  it("receita não é criada nem editada pelo formulário antigo (0027): recipe_editor_pending, sem escrita", async () => {
+    expect(await save(validVideoForm({ type: "recipe", body: validBodies.recipe, media: NO_MEDIA }), { id: null, creatorId: CREATOR_ID })).toEqual({
+      ok: false,
+      error: "adminContent.errors.recipe_editor_pending",
+    });
+    // conteúdo que já é receita no banco também não passa, mesmo que o formulário mande outro tipo
+    server.existingType = "recipe";
+    try {
+      expect(await save(validVideoForm({ type: "guide", body: validBodies.guide, media: NO_MEDIA }), { id: CONTENT_ID, creatorId: null })).toEqual({
+        ok: false,
+        error: "adminContent.errors.recipe_editor_pending",
+      });
+    } finally {
+      server.existingType = "video";
+    }
+    expect(server.writes).toEqual([]);
   });
 
   it("criação sem personalidade é rejeitada", async () => {
@@ -899,7 +923,7 @@ describe("seed: conteúdo existente continua salvável pelo admin", () => {
     });
   });
 
-  it("todas as 40 linhas passam no formulário (cliente) e no saveContentAction (servidor)", async () => {
+  it("as 40 linhas passam no formulário (cliente); no saveContentAction (servidor) as 32 que não são receita salvam e as 8 receitas ficam para o editor novo", async () => {
     const failures: Record<string, unknown> = {};
     for (const { key, creatorId, initial } of seeded) {
       const client = parseContentForm(toFormValues(initial));
@@ -910,10 +934,11 @@ describe("seed: conteúdo existente continua salvável pelo admin", () => {
       const result = await saveContentAction({ id: initial.id ?? null, creatorId }, client.data);
       if (!result.ok) failures[key] = result.error;
     }
-    expect(failures).toEqual({});
+    const recipeKeys = ["g1", "g2", "g3", "g4", "g5", "g6", "g8", "g9"];
+    expect(failures).toEqual(Object.fromEntries(recipeKeys.map((k) => [k, "adminContent.errors.recipe_editor_pending"])));
   });
 
-  it.each(["r1", "r2", "r3", "t1", "g1", "g2", "n6"])("%s: o corpo regravado é o do seed normalizado (sem perder campos do tipo)", async (key) => {
+  it.each(["r1", "r2", "r3", "t1", "n6"])("%s: o corpo regravado é o do seed normalizado (sem perder campos do tipo)", async (key) => {
     server.writes.length = 0;
     const row = seeded.find((s) => s.key === key);
     expect(row).toBeDefined();
