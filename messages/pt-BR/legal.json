@@ -189,7 +189,8 @@
             "partners": "<strong>Parceiros e administração:</strong> se você for convidado como parceiro, o e-mail para o qual o convite foi enviado, os dados do perfil de parceiro e o que você enviar. As principais ações feitas pelo painel de administração, como mudanças de papéis, convites, moderação e configurações, ficam registradas em auditoria.",
             "recipeStep": "<strong>Etapa de receitas:</strong> o aceite do aviso e as restrições e alergias que você marcar (de uma lista fixa, sem texto livre). Alergias e restrições são dados sensíveis de saúde: usamos só para lembrar você na página de cada receita, com o seu consentimento, e você pode mudar ou apagar quando quiser.",
             "heroVideos": "<strong>Vídeos dos heróis:</strong> se você é herói e grava ou envia um vídeo pelo app, o arquivo vai direto do seu aparelho para o Cloudflare Stream. O app guarda só o identificador do vídeo, o conteúdo ao qual ele pertence e as datas de envio e de descarte (para limitar envios e limpar vídeos abandonados).",
-            "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é herói e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos heróis."
+            "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é herói e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos heróis.",
+            "recipeHistory": "<strong>Histórico de receitas vistas (opcional):</strong> desligado por padrão. Se você ligar em <recipes>Minha coleção de receitas</recipes>, guardamos só qual receita você abriu e a data do último acesso a cada uma (nada mais), para mostrar a lista a você. Só você vê. Desligar ou usar “Limpar histórico” apaga tudo na hora, e cada registro é apagado depois de 90 dias."
           },
           "p2": "Os provedores de infraestrutura também registram dados técnicos de acesso, como endereço IP, data e hora e informações do navegador, em seus próprios logs operacionais."
         }
@@ -228,6 +229,7 @@
           "list1": {
             "service": "conta, preferências, progresso, assinatura simulada e pedidos de teste: execução do serviço que você pediu;",
             "interest": "eventos de uso e feedback: legítimo interesse em avaliar e melhorar o experimento;",
+            "consent": "histórico de receitas vistas: consentimento, que você dá ao ligar o histórico e retira ao desligar (o que apaga o histórico);",
             "audit": "auditoria administrativa e segurança: legítimo interesse e, quando aplicável, cumprimento de obrigação legal."
           }
         }
@@ -281,7 +283,7 @@
               }
             }
           },
-          "p2": "<strong>Armazenamento local do navegador:</strong> a chave <code>uh-theme</code> guarda o tema escolhido, para que ele também valha em páginas abertas sem conexão.",
+          "p2": "<strong>Armazenamento local do navegador:</strong> a chave <code>uh-theme</code> guarda o tema escolhido, para que ele também valha em páginas abertas sem conexão. No Modo Cozinha, as chaves <code>uh-cook:…</code> (uma por receita) guardam as etapas marcadas e os cronômetros por 24 horas, e <code>uh-cook-sound</code> lembra se o som do alarme está ligado. Nada disso sai do aparelho.",
           "p3": "<strong>Cache do app:</strong> o service worker guarda no navegador a página offline, o manifesto, os ícones e arquivos estáticos do app, para carregar mais rápido e funcionar sem conexão. Esse cache não contém seus dados pessoais.",
           "p4": "<strong>Vídeos incorporados:</strong> se um conteúdo exibir vídeo do YouTube (pelo domínio youtube-nocookie.com) ou do Vimeo, o player é carregado diretamente desse serviço quando o vídeo aparece na página, e o serviço pode coletar dados técnicos e usar cookies próprios, conforme a política dele. Os conteúdos de exemplo da demonstração usam um player simulado, sem serviço externo.",
           "p5": "Você pode apagar cookies e dados do site nas configurações do navegador. Sem o cookie de sessão, será preciso entrar de novo."
@@ -384,6 +386,11 @@
                 "data": "Fotos de receitas enviadas por heróis",
                 "period": "Enquanto a foto fizer parte da receita",
                 "details": "Foto removida no editor ou de rascunho excluído é apagada na hora; se essa exclusão falhar, ou se um envio não chegar a ser registrado, a rotina diária apaga a foto sem receita depois de 24 horas. Fotos de receita que já esteve no ar ficam com a receita."
+              },
+              "recipeHistory": {
+                "data": "Histórico de receitas vistas (opcional)",
+                "period": "90 dias após o último acesso a cada receita",
+                "details": "Só existe se você ligar o histórico. Desligar ou usar “Limpar histórico” apaga na hora; a rotina diária apaga o que passar de 90 dias; também é apagado junto com a conta."
               }
             }
           },

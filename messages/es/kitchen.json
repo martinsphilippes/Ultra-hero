@@ -1,0 +1,126 @@
+{
+  "entry": {
+    "open": "Modo cocina"
+  },
+  "cook": {
+    "metaTitle": "Modo cocina · {title}",
+    "eyebrow": "Modo cocina",
+    "backToRecipe": "Ver la receta completa",
+    "navLabel": "Navegación entre pasos",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "progress": "Paso {n} de {total}",
+    "doneCount": "{n, plural, =0 {Ningún paso terminado} =1 {1 de {total} pasos terminado} other {# de {total} pasos terminados}}",
+    "stepIngredients": "En este paso",
+    "notScaled": "no se ajusta automáticamente",
+    "markDone": "Marcar paso como terminado",
+    "stepDone": "Paso terminado",
+    "noSteps": "Esta receta todavía no tiene pasos para el modo cocina.",
+    "settings": "Preferencias del modo cocina",
+    "hint": "Consejo: desliza hacia los lados o usa las flechas del teclado para cambiar de paso. Los pasos marcados se guardan en este dispositivo durante 24 horas.",
+    "ingredients": {
+      "open": "Ingredientes",
+      "title": "Ingredientes",
+      "servings": "Para {n, plural, =1 {1 porción} other {# porciones}}",
+      "scaled": "Ajustado a {n, plural, =1 {1 porción} other {# porciones}} (la receta rinde {base})"
+    },
+    "timer": {
+      "start": "Iniciar temporizador ({time})",
+      "remaining": "Faltan",
+      "remainingLabel": "Faltan {time}",
+      "cancel": "Cancelar temporizador",
+      "finished": "¡Se acabó el tiempo!",
+      "finishedShort": "terminó",
+      "finishedAlert": "El temporizador del paso {n} terminó.",
+      "dismiss": "Detener la alarma",
+      "clear": "Cerrar temporizador",
+      "others": "Otros temporizadores",
+      "otherLabel": "Paso {n} · {time}",
+      "background": "El temporizador usa la hora de término: sigue siendo exacto con la pantalla bloqueada o la app en segundo plano. Si el dispositivo pausa la página, la alarma suena cuando vuelvas."
+    },
+    "wake": {
+      "label": "Mantener la pantalla encendida",
+      "active": "La pantalla no se apagará mientras el modo cocina esté abierto.",
+      "off": "La pantalla puede apagarse sola.",
+      "unsupported": "Este navegador no mantiene la pantalla encendida. Toca la pantalla de vez en cuando o aumenta el tiempo de bloqueo del dispositivo.",
+      "denied": "El navegador no permitió mantener la pantalla encendida ahora (por ejemplo, en modo de ahorro de batería). Toca la pantalla de vez en cuando."
+    },
+    "sound": {
+      "on": "Sonido de la alarma activado",
+      "off": "Sonido de la alarma desactivado"
+    },
+    "complete": {
+      "title": "¿Terminaste?",
+      "description": "Marca la receta como completada para registrarla en tu progreso.",
+      "button": "Completar receta",
+      "done": "Receta completada. ¡Buen provecho!",
+      "error": "No fue posible completar la receta ahora. Inténtalo de nuevo.",
+      "completedOn": "Completada el {date}"
+    }
+  },
+  "collection": {
+    "title": "Mi colección de recetas",
+    "description": "Recetas que guardaste, tus listas con recetas y, si quieres, las que viste por último.",
+    "tabs": {
+      "label": "Secciones de la colección",
+      "saved": "Guardadas",
+      "lists": "Listas",
+      "history": "Vistas recientemente"
+    },
+    "saved": {
+      "emptyTitle": "Todavía no hay recetas guardadas",
+      "emptyDescription": "Toca el corazón en la página de una receta para guardarla aquí.",
+      "emptyCta": "Explorar recetas",
+      "categoriesLabel": "Filtrar por categoría",
+      "all": "Todas ({n})",
+      "count": "{n, plural, =0 {Ninguna receta} =1 {1 receta} other {# recetas}}",
+      "emptyCategory": "No hay recetas guardadas en esta categoría.",
+      "remove": "Quitar",
+      "removeLabel": "Quitar {title} de las guardadas",
+      "removed": "Receta quitada de las guardadas."
+    },
+    "lists": {
+      "emptyTitle": "Ninguna lista con recetas",
+      "emptyDescription": "Usa el botón de listas en la página de una receta para organizarla en una de tus listas.",
+      "manage": "Ver todas las listas",
+      "open": "Abrir lista",
+      "count": "{n, plural, =1 {1 receta} other {# recetas}}",
+      "others": "{n, plural, =1 {Tienes 1 lista más sin recetas.} other {Tienes # listas más sin recetas.}}"
+    },
+    "history": {
+      "title": "Historial de recetas vistas",
+      "consent": "Desactivado por defecto. Si lo activas, guardamos solo la fecha del último acceso a cada receta que abras, para mostrarla aquí. Solo tú lo ves. Cada registro se borra después de 90 días, y desactivarlo borra todo al instante.",
+      "switch": "Guardar lo que veo (90 días)",
+      "on": "Activado",
+      "off": "Desactivado: no se guarda nada",
+      "since": "Activado desde el {date}",
+      "clear": "Borrar historial",
+      "clearTitle": "¿Borrar el historial?",
+      "clearDescription": "Esto borra todas las recetas vistas de esta lista. El historial sigue activado para las próximas visitas.",
+      "clearConfirm": "Borrar historial",
+      "disableTitle": "¿Desactivar el historial?",
+      "disableDescription": "Esto borra el historial: todas las recetas vistas desaparecen de esta lista, y las próximas visitas no se guardan hasta que lo actives de nuevo.",
+      "disableConfirm": "Desactivar y borrar",
+      "cancel": "Cancelar",
+      "enabledToast": "Historial activado. Las próximas recetas que abras aparecerán aquí.",
+      "disabledToast": "Historial desactivado y borrado.",
+      "clearedToast": "Historial borrado.",
+      "offTitle": "Historial desactivado",
+      "offDescription": "No se guarda ninguna receta vista. Actívalo arriba si quieres volver a ver las últimas que abriste.",
+      "emptyTitle": "Todavía no hay nada",
+      "emptyDescription": "Abre una receta y aparecerá en esta lista.",
+      "viewed": "Vista {when}",
+      "remove": "Quitar del historial",
+      "removeLabel": "Quitar {title} del historial",
+      "removed": "Receta quitada del historial.",
+      "unavailableTitle": "Historial no disponible",
+      "unavailableDescription": "El historial de recetas todavía no está disponible en este entorno.",
+      "errors": {
+        "generic": "No fue posible terminar ahora. Inténtalo de nuevo.",
+        "confirmation_required": "Confirma para borrar el historial.",
+        "history_unavailable": "El historial de recetas todavía no está disponible.",
+        "unauthenticated": "Inicia sesión para continuar."
+      }
+    }
+  }
+}

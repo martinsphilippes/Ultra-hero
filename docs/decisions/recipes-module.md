@@ -1,6 +1,6 @@
 # Decisão: módulo de receitas estruturadas
 
-Status: **aprovado** (22/10/2026). Fase 1 implementada em `0027_recipes_structured.sql`, `0028_recipe_media_storage.sql` e `0029_recipes_backfill.sql`, cenários S25–S32 em `supabase/tests/rls_scenarios.sql`, códigos e quantidades em `src/lib/recipes/`. Fase 2 (Portal do Chef e `RecipeView`) implementada, com a `0032_recipes_phase2_credentials.sql` (credenciais decididas sobre o texto que o admin viu) e o cenário S34; ver a seção "Fase 2" abaixo.
+Status: **aprovado** (22/10/2026). Fase 1 implementada em `0027_recipes_structured.sql`, `0028_recipe_media_storage.sql` e `0029_recipes_backfill.sql`, cenários S25–S32 em `supabase/tests/rls_scenarios.sql`, códigos e quantidades em `src/lib/recipes/`. Fase 2 (Portal do Chef e `RecipeView`) implementada, com a `0032_recipes_phase2_credentials.sql` (credenciais decididas sobre o texto que o admin viu) e o cenário S34; ver a seção "Fase 2" abaixo. Fase 4 (Modo Cozinha, Minha coleção de receitas e histórico opcional) implementada sem migração, com o cenário S36; ver a seção "Fase 4" abaixo.
 
 Este arquivo é a cópia do documento de desenho (revisão 2) com as respostas do responsável às perguntas da seção 5.4 e o registro de onde a implementação da fase 1 se afastou do texto. Onde o desenho e este cabeçalho divergem, vale o cabeçalho.
 
@@ -79,6 +79,28 @@ Desvios da fase 2 em relação à seção 4.1:
 - O filtro "Devolvida" inclui a rejeitada.
 - O dono e o admin continuam vendo a tela da etapa demonstrativa na página pública quando não a fizeram (P2 segue em aberto); a prévia do chef não passa por ela.
 - O E2E de g1 no `RecipeView` público pula quando a conta `premium` de demonstração não fez a etapa (o caso hoje em produção); a renderização de g1 a partir das tabelas é coberta no Vitest (`recipe-view.test.ts`).
+
+## Fase 4 (Modo Cozinha, coleção e histórico) — implementada
+
+Sem migração: tudo roda sobre `recipe_steps`, `recipe_step_ingredients`, `user_recipe_prefs`, `recipe_view_history`, `favorites`, `custom_lists`/`list_items` e `complete_content`, já em produção (0027). O cenário **S36** confere no banco exatamente as escritas que o app faz.
+
+Entregue:
+
+- **Modo Cozinha** em `/content/[slug]/cozinha` (grupo `(focus)`, sem as barras do app; `noindex`). Sem sessão vai para `/login?next=`; sem a etapa demonstrativa mostra o `RecipeGate` (o banco também bloqueia); sem acesso ou sem `recipe_details` volta à receita. Uma etapa por vez (instrução de 26 px no celular, "Etapa N de M" em `aria-live`), anterior/próxima de 56 px fixos embaixo, setas/Page Up/Page Down/Home/End e deslizar o dedo; ingredientes da etapa (`recipe_step_ingredients`, na ordem da lista) e a lista completa num `Sheet`, com o fator de `?porcoes=` (1–50) e "≈" quando o arredondamento muda o número; texto livre e "a gosto" aparecem como "não ajustado automaticamente". Regras puras em `src/lib/recipes/cook-mode.ts`.
+- **Cronômetro** por etapa com duração: guarda o horário de término (`Date.now() + duração`), então a contagem continua certa com a tela bloqueada ou a aba em segundo plano; um intervalo só redesenha e um `setTimeout` desperta no término; ao terminar, aviso `assertive`, vibração e três bipes (Web Audio, liberado no toque em "Iniciar"; som desligável), sem notificação. Vários cronômetros podem correr ao mesmo tempo (atalhos para as outras etapas). Etapas marcadas, etapa atual e cronômetros ficam em `localStorage` (`uh-cook:<receita>`) por 24 h; ao reabrir, só toca o alarme do que terminou há até 5 min.
+- **Tela acesa**: Screen Wake Lock pedido ao abrir e de novo no `visibilitychange`, com interruptor; sem suporte ou com recusa, aviso no lugar do interruptor (`src/lib/recipes/wake-lock.ts`).
+- "Concluir receita" na última etapa usa `completeContent` (a conclusão existente).
+- **Minha coleção de receitas** em `/profile/receitas` (atalho no Perfil), abas por `?aba=`: **Salvas** (favoritos com `content.type = 'recipe'`, filtro por categoria `?cat=` com contagem, "Remover"), **Listas** (as listas pessoais que têm receitas, com remover da lista e link para a lista) e **Vistas recentemente**.
+- **Histórico (decisão 6)**: desligado por padrão; o interruptor "Guardar o que vejo (90 dias)" traz o texto do que é guardado; desligar e "Limpar histórico" pedem confirmação ("Isto apaga o histórico"), e desligar apaga pelo gatilho da 0027. A página da receita grava pelo servidor, só com o histórico ligado e só quando a pessoa pode abrir a receita (`RecipeKitchenEntry`, uma linha em `content/[slug]/page.tsx`, que também mostra o botão do Modo Cozinha levando `?porcoes=`). A tela esconde o que passou de 90 dias mesmo que a rotina diária atrase.
+- Privacidade: `legal.json` (3 idiomas: item coletado, base legal de consentimento, linha de retenção e as chaves locais do Modo Cozinha) e `docs/privacy-and-retention.md`.
+
+Desvios da fase 4 em relação à seção 4.3:
+
+- A visita é gravada com insert de `content_id` e, se a linha já existe (`23505`), update de `viewed_at`; o upsert do PostgREST não serve porque o `do update` reescreveria `content_id`, fora do grant de update (S36 prova os dois lados).
+- Mensagens num namespace novo (`messages/<loc>/kitchen.json`) para não disputar `recipes.json` com a fase 3.
+- O ajuste de porções do Modo Cozinha tem regra própria de arredondamento (`scaleQuantity`) porque o `ServingsScaler` da fase 3 ainda não existe; ao juntar as fases, os dois devem usar a mesma função.
+- Os eventos `recipe.cook_start` e `recipe.cook_complete` não foram criados (a lista de `trackEvent` é fechada); a conclusão registra `content.complete` como antes.
+- E2E com a conta `free` (o texto pedia `premium`); o teste da coleção e do histórico roda só no projeto mobile, para os dois projetos não disputarem o histórico da mesma conta.
 
 ---
 

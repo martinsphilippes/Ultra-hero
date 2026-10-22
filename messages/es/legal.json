@@ -189,7 +189,8 @@
             "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría.",
             "recipeStep": "<strong>Etapa de recetas:</strong> la aceptación del aviso y las restricciones y alergias que marques (de una lista fija, sin texto libre). Las alergias y restricciones son datos sensibles de salud: solo las usamos para recordártelas en la página de cada receta, con tu consentimiento, y puedes cambiarlas o borrarlas cuando quieras.",
             "heroVideos": "<strong>Videos de los héroes:</strong> si eres héroe y grabas o envías un video en la app, el archivo va directo de tu dispositivo a Cloudflare Stream. La app solo guarda el identificador del video, el contenido al que pertenece y las fechas de envío y de descarte (para limitar envíos y limpiar videos abandonados).",
-            "recipePhotos": "<strong>Fotos y videos de recetas:</strong> si eres héroe y subes fotos a una receta, la foto se reduce en tu dispositivo (pierde la ubicación y los datos de la cámara) y queda en un espacio privado del almacenamiento de Supabase, vinculada a la receta. Quién las ve: las fotos de la galería, todos, mientras la receta está publicada; las fotos de los pasos, solo quien puede abrir la receta; el borrador, solo tú y la administración. El video de una receta sigue la regla de los videos de los héroes."
+            "recipePhotos": "<strong>Fotos y videos de recetas:</strong> si eres héroe y subes fotos a una receta, la foto se reduce en tu dispositivo (pierde la ubicación y los datos de la cámara) y queda en un espacio privado del almacenamiento de Supabase, vinculada a la receta. Quién las ve: las fotos de la galería, todos, mientras la receta está publicada; las fotos de los pasos, solo quien puede abrir la receta; el borrador, solo tú y la administración. El video de una receta sigue la regla de los videos de los héroes.",
+            "recipeHistory": "<strong>Historial de recetas vistas (opcional):</strong> desactivado por defecto. Si lo activas en <recipes>Mi colección de recetas</recipes>, guardamos solo qué receta abriste y la fecha del último acceso a cada una (nada más), para mostrarte la lista. Solo tú lo ves. Desactivarlo o usar “Borrar historial” borra todo al instante, y cada registro se borra después de 90 días."
           },
           "p2": "Los proveedores de infraestructura también registran datos técnicos de acceso, como la dirección IP, la fecha y la hora y la información del navegador, en sus propios registros operativos."
         }
@@ -228,6 +229,7 @@
           "list1": {
             "service": "cuenta, preferencias, progreso, suscripción simulada y pedidos de prueba: ejecución del servicio que solicitaste;",
             "interest": "eventos de uso y feedback: interés legítimo en evaluar y mejorar el experimento;",
+            "consent": "historial de recetas vistas: consentimiento, que das al activar el historial y retiras al desactivarlo (lo que borra el historial);",
             "audit": "auditoría administrativa y seguridad: interés legítimo y, cuando corresponda, cumplimiento de una obligación legal."
           }
         }
@@ -281,7 +283,7 @@
               }
             }
           },
-          "p2": "<strong>Almacenamiento local del navegador:</strong> la clave <code>uh-theme</code> guarda el tema elegido, para que también se aplique en páginas abiertas sin conexión.",
+          "p2": "<strong>Almacenamiento local del navegador:</strong> la clave <code>uh-theme</code> guarda el tema elegido, para que también se aplique en páginas abiertas sin conexión. En el modo cocina, las claves <code>uh-cook:…</code> (una por receta) guardan los pasos marcados y los temporizadores durante 24 horas, y <code>uh-cook-sound</code> recuerda si el sonido de la alarma está activado. Nada de esto sale del dispositivo.",
           "p3": "<strong>Caché de la app:</strong> el service worker guarda en el navegador la página sin conexión, el manifiesto, los íconos y los archivos estáticos de la app, para que cargue más rápido y funcione sin conexión. Esta caché no contiene tus datos personales.",
           "p4": "<strong>Videos incrustados:</strong> si un contenido muestra un video de YouTube (a través del dominio youtube-nocookie.com) o de Vimeo, el reproductor se carga directamente desde ese servicio cuando el video aparece en la página, y el servicio puede recopilar datos técnicos y usar sus propias cookies, según su política. Los contenidos de ejemplo de la demostración usan un reproductor simulado, sin servicios externos.",
           "p5": "Puedes borrar las cookies y los datos del sitio en la configuración del navegador. Sin la cookie de sesión, tendrás que volver a iniciar sesión."
@@ -384,6 +386,11 @@
                 "data": "Fotos de recetas subidas por héroes",
                 "period": "Mientras la foto forme parte de la receta",
                 "details": "Una foto quitada en el editor o de un borrador eliminado se borra de inmediato; si esa eliminación falla, o si una subida no llega a registrarse, la rutina diaria borra la foto sin receta después de 24 horas. Las fotos de una receta que ya estuvo publicada quedan con la receta."
+              },
+              "recipeHistory": {
+                "data": "Historial de recetas vistas (opcional)",
+                "period": "90 días después del último acceso a cada receta",
+                "details": "Solo existe si activas el historial. Desactivarlo o usar “Borrar historial” lo borra al instante; la rutina diaria borra lo que tenga más de 90 días; también se borra junto con la cuenta."
               }
             }
           },

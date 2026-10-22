@@ -182,6 +182,10 @@
         "title": "Favorites",
         "description": "Content you marked."
       },
+      "recipes": {
+        "title": "My recipe collection",
+        "description": "Saved recipes, lists and optional history."
+      },
       "orders": {
         "title": "Test orders",
         "description": "Demo purchases, no real charges."
