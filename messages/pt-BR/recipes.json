@@ -277,6 +277,8 @@
     "description": "Crie, edite e publique suas receitas, com ingredientes, etapas e fotos.",
     "new": "Nova receita",
     "filters": "Filtros das receitas",
+    "filtersButton": "Filtros",
+    "filtersActive": "{count, plural, one {# filtro ativo} other {# filtros ativos}}",
     "search": "Buscar",
     "searchPlaceholder": "Buscar pelo título",
     "category": "Categoria",

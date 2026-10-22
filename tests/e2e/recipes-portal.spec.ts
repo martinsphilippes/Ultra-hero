@@ -60,10 +60,16 @@ test.describe("Portal do Chef: Minhas Receitas", () => {
     await expect(page.getByTestId("new-recipe")).toHaveAttribute("href", "/creator/recipes/new");
     await expect(page.getByTestId("recipes-count")).toBeVisible();
 
+    // filtros recolhidos atrás de "Filtros" (busca sempre à vista); abre ao tocar e já vem aberto com filtro ativo
+    const panel = page.getByTestId("my-recipes-filters-panel");
+    await expect(page.getByRole("combobox", { name: "Situação" })).toBeHidden();
+    await panel.locator("summary").click();
     await page.getByRole("combobox", { name: "Situação" }).selectOption("draft");
     await page.getByRole("button", { name: "Filtrar" }).click();
     await expect(page).toHaveURL(/status=draft/);
     await expect(page.getByRole("link", { name: "Limpar filtros" })).toBeVisible();
+    await expect(panel).toHaveAttribute("open", "");
+    await expect(panel.locator("summary")).toContainText("1 filtro ativo");
     await axeMain(page);
 
     const menuButton = page.getByRole("button", { name: "Abrir menu" });

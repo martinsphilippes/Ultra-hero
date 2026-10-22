@@ -277,6 +277,8 @@
     "description": "Create, edit and publish your recipes, with ingredients, steps and photos.",
     "new": "New recipe",
     "filters": "Recipe filters",
+    "filtersButton": "Filters",
+    "filtersActive": "{count, plural, one {# active filter} other {# active filters}}",
     "search": "Search",
     "searchPlaceholder": "Search by title",
     "category": "Category",

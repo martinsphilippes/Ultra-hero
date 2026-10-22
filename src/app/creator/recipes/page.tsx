@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChefHat, Plus, Search } from "lucide-react";
+import { ChefHat, ChevronDown, Plus, Search, SlidersHorizontal } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
@@ -121,6 +121,7 @@ export default async function MyRecipesPage({ searchParams }: Props) {
   const showStats = hasAnyStats(rows.map((r) => r.stats));
   const uiLocale = locale as Locale;
   const filtered = hasActiveFilters(filters);
+  const panelCount = [filters.cat !== "", filters.status !== "all", filters.diff !== "all", filters.from !== "", filters.to !== ""].filter(Boolean).length;
 
   const columns: Column<ViewRow>[] = [
     {
@@ -183,62 +184,88 @@ export default async function MyRecipesPage({ searchParams }: Props) {
             </Link>
           </Button>
         </div>
-        <form method="get" action="/creator/recipes" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]" aria-label={t("filters")}>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg sm:col-span-2 lg:col-span-1">
-            {t("search")}
-            <Input name="q" defaultValue={filters.q} placeholder={t("searchPlaceholder")} leadingIcon={<Search />} maxLength={80} />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
-            {t("category")}
-            <Select name="cat" defaultValue={filters.cat}>
-              <option value="">{t("allCategories")}</option>
-              {categories.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
-            {t("status")}
-            <Select name="status" defaultValue={filters.status}>
-              <option value="all">{t("allStatuses")}</option>
-              {MY_RECIPE_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {t(`statuses.${s}`)}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
-            {t("difficulty")}
-            <Select name="diff" defaultValue={filters.diff}>
-              <option value="all">{t("allDifficulties")}</option>
-              {RECIPE_DIFFICULTIES.map((d) => (
-                <option key={d} value={d}>
-                  {tcat(`difficulty.${d}`)}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
-            {t("from")}
-            <Input type="date" name="from" defaultValue={filters.from} />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
-            {t("to")}
-            <Input type="date" name="to" defaultValue={filters.to} />
-          </label>
-          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-2">
-            <Button type="submit" variant="secondary">
-              {t("filter")}
+        {/* Busca sempre à vista; os demais filtros ficam num <details> (abre e envia sem JS), aberto
+            quando algum deles está ativo, para não ocupar a primeira tela do celular. */}
+        <form method="get" action="/creator/recipes" className="flex flex-col gap-3" aria-label={t("filters")}>
+          <div className="flex items-end gap-2">
+            <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm font-semibold text-fg">
+              <span className="sr-only">{t("search")}</span>
+              <Input name="q" type="search" enterKeyHint="search" defaultValue={filters.q} placeholder={t("searchPlaceholder")} leadingIcon={<Search />} maxLength={80} />
+            </label>
+            <Button type="submit" variant="secondary" className="min-h-12">
+              {t("search")}
             </Button>
-            {filtered && (
+          </div>
+          <details open={panelCount > 0} className="group rounded-2xl border border-border bg-surface" data-testid="my-recipes-filters-panel">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-2xl px-4 text-sm font-semibold text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus [&::-webkit-details-marker]:hidden">
+              <SlidersHorizontal className="size-4" aria-hidden="true" />
+              {t("filtersButton")}
+              {panelCount > 0 ? (
+                <>
+                  <span className="rounded-full bg-fg px-2 py-0.5 text-xs text-bg" aria-hidden="true">
+                    {panelCount}
+                  </span>
+                  <span className="sr-only">{t("filtersActive", { count: panelCount })}</span>
+                </>
+              ) : null}
+              <ChevronDown className="ms-auto size-4 text-fg-muted transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="grid gap-3 border-t border-border px-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
+                {t("category")}
+                <Select name="cat" defaultValue={filters.cat}>
+                  <option value="">{t("allCategories")}</option>
+                  {categories.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.label}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
+                {t("status")}
+                <Select name="status" defaultValue={filters.status}>
+                  <option value="all">{t("allStatuses")}</option>
+                  {MY_RECIPE_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {t(`statuses.${s}`)}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
+                {t("difficulty")}
+                <Select name="diff" defaultValue={filters.diff}>
+                  <option value="all">{t("allDifficulties")}</option>
+                  {RECIPE_DIFFICULTIES.map((d) => (
+                    <option key={d} value={d}>
+                      {tcat(`difficulty.${d}`)}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
+                {t("from")}
+                <Input type="date" name="from" lang={locale} defaultValue={filters.from} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
+                {t("to")}
+                <Input type="date" name="to" lang={locale} defaultValue={filters.to} />
+              </label>
+              <div className="flex items-end gap-2">
+                <Button type="submit" variant="secondary" className="min-h-12">
+                  {t("filter")}
+                </Button>
+              </div>
+            </div>
+          </details>
+          {filtered && (
+            <div>
               <Button asChild variant="ghost">
                 <Link href="/creator/recipes">{t("clear")}</Link>
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </form>
       </PageHeader>
 
