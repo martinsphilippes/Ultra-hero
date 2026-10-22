@@ -189,7 +189,8 @@
             "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log.",
             "recipeStep": "<strong>Recipe step:</strong> your acceptance of the notice and the restrictions and allergies you mark (from a fixed list, no free text). Allergies and restrictions are sensitive health data: we only use them to remind you on each recipe page, with your consent, and you can change or delete them anytime.",
             "heroVideos": "<strong>Hero videos:</strong> if you are a hero and record or upload a video in the app, the file goes straight from your device to Cloudflare Stream. The app only keeps the video identifier, the content it belongs to and the upload and discard dates (to limit uploads and clean up abandoned videos).",
-            "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos."
+            "recipePhotos": "<strong>Recipe photos and videos:</strong> if you are a hero and upload photos to a recipe, the photo is resized on your device (losing location and camera data) and kept in a private area of Supabase storage, linked to the recipe. Who sees them: gallery photos, everyone, while the recipe is live; step photos, only people who can open the recipe; drafts, only you and the administration. A recipe video follows the rule for hero videos.",
+            "recipeHistory": "<strong>Recently viewed recipes (optional):</strong> off by default. If you turn it on in <recipes>My recipe collection</recipes>, we only keep which recipe you opened and the date you last opened each one (nothing else), to show you the list. Only you can see it. Turning it off or using “Clear history” deletes everything right away, and each entry is deleted after 90 days."
           },
           "p2": "Infrastructure providers also record technical access data, such as IP address, date and time and browser information, in their own operational logs."
         }
@@ -228,6 +229,7 @@
           "list1": {
             "service": "account, preferences, progress, simulated subscription and test orders: performance of the service you requested;",
             "interest": "usage events and feedback: legitimate interest in evaluating and improving the experiment;",
+            "consent": "recently viewed recipes: consent, which you give by turning the history on and withdraw by turning it off (which deletes the history);",
             "audit": "administrative audit and security: legitimate interest and, where applicable, compliance with a legal obligation."
           }
         }
@@ -281,7 +283,7 @@
               }
             }
           },
-          "p2": "<strong>Browser local storage:</strong> the <code>uh-theme</code> key stores the theme you chose, so it also applies to pages opened offline.",
+          "p2": "<strong>Browser local storage:</strong> the <code>uh-theme</code> key stores the theme you chose, so it also applies to pages opened offline. In cook mode, the <code>uh-cook:…</code> keys (one per account and recipe, deleted after 24 hours) keep the steps you marked and the timers for 24 hours, and <code>uh-cook-sound</code> remembers whether the alarm sound is on. None of this leaves your device.",
           "p3": "<strong>App cache:</strong> the service worker stores the offline page, the manifest, the icons and the app’s static files in your browser, so it loads faster and works offline. This cache does not contain your personal data.",
           "p4": "<strong>Embedded videos:</strong> if a piece of content shows a YouTube video (via the youtube-nocookie.com domain) or a Vimeo video, the player is loaded directly from that service when the video appears on the page, and the service may collect technical data and use its own cookies, according to its policy. The demo’s sample content uses a simulated player, with no external service.",
           "p5": "You can delete cookies and site data in your browser settings. Without the session cookie, you will need to sign in again."
@@ -384,6 +386,11 @@
                 "data": "Recipe photos uploaded by heroes",
                 "period": "While the photo is part of the recipe",
                 "details": "A photo removed in the editor or from a deleted draft is deleted right away; if that deletion fails, or if an upload is never registered, the daily routine deletes the photo without a recipe after 24 hours. Photos of a recipe that has been live stay with the recipe."
+              },
+              "recipeHistory": {
+                "data": "Recently viewed recipes (optional)",
+                "period": "90 days after the last time you opened each recipe",
+                "details": "Only exists if you turn the history on. Turning it off or using “Clear history” deletes it right away; the daily routine deletes anything older than 90 days; it is also deleted with your account."
               }
             }
           },

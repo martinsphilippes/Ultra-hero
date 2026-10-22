@@ -30,6 +30,7 @@ import {
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { AllergyReminder } from "@/components/recipes/AllergyReminder";
 import { RecipeGate } from "@/components/recipes/RecipeGate";
+import { RecipeKitchenEntry } from "@/components/recipes/kitchen/RecipeKitchenEntry";
 import { RecipeView } from "@/components/recipes/view/RecipeView";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { AddToListButton, CompleteButton, FavoriteButton, NotInterestedButton } from "@/components/library";
@@ -320,6 +321,7 @@ export default async function ContentPage({ params }: Params) {
               path={path}
             />
           )}
+          {content.type === "recipe" && <RecipeKitchenEntry contentId={content.id} slug={content.slug} />}
           {content.type === "recipe" &&
             (structured ? (
               <RecipeView model={structured.model} video={structured.video} unoptimizedImages={!live} />

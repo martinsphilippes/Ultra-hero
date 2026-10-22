@@ -2955,6 +2955,65 @@ select tests.ok('S34 limpeza: Helena sem usuário, sem pedido e sem credenciais'
   (select user_id is null and credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
   and not exists (select 1 from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
 
+-- ================================================================ S36 · Histórico como o app grava e a coleção (fase 4, sem migração)
+-- A página da receita insere só content_id e, quando a receita já está no histórico, atualiza só
+-- viewed_at: o upsert do PostgREST (do update set content_id = excluded.content_id) fica fora do grant
+-- de update, por isso o app não o usa. Ligar é upsert da preferência por user_id; "Tirar do
+-- histórico" e "Limpar" apagam só linhas da própria pessoa; desligar apaga tudo. Usuários próprios
+-- (…0036 e …0136), apagados no fim.
+select tests.su();
+insert into auth.users (id, email) values
+  ('10000000-0000-4000-8000-000000000036', 's36a@test.local'),
+  ('10000000-0000-4000-8000-000000000136', 's36b@test.local');
+select tests.login('10000000-0000-4000-8000-000000000136', 's36b@test.local');
+insert into public.user_recipe_prefs (user_id, history_enabled) values ('10000000-0000-4000-8000-000000000136', true)
+  on conflict (user_id) do update set user_id = excluded.user_id, history_enabled = excluded.history_enabled;
+insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g3'));
+select tests.login('10000000-0000-4000-8000-000000000036', 's36a@test.local');
+select tests.ok('S36 sem linha de preferência (padrão) a pessoa não vê preferência nem histórico de ninguém',
+  not exists (select 1 from public.user_recipe_prefs) and not exists (select 1 from public.recipe_view_history));
+select tests.expect_error('S36 desligado (padrão): a gravação da página da receita é recusada',
+  $q$insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'))$q$, '42501');
+-- ligar como a action: upsert por user_id (o PostgREST põe todas as colunas do payload no do update)
+insert into public.user_recipe_prefs (user_id, history_enabled) values ('10000000-0000-4000-8000-000000000036', true)
+  on conflict (user_id) do update set user_id = excluded.user_id, history_enabled = excluded.history_enabled;
+select tests.ok('S36 ligar pelo upsert da action grava a data do consentimento pelo banco',
+  (select history_enabled and history_enabled_at = now() from public.user_recipe_prefs));
+insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'));
+select tests.expect_error('S36 segunda visita: o insert dá 23505 (o app então atualiza viewed_at)',
+  $q$insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'))$q$, '23505');
+update public.recipe_view_history set viewed_at = '2000-01-01' where user_id = '10000000-0000-4000-8000-000000000036' and content_id = public.seed_uuid('content:g1');
+select tests.ok('S36 a atualização da visita passa no grant de update e o banco põe now() (só o último acesso)',
+  (select count(*) = 1 and bool_and(viewed_at = now()) from public.recipe_view_history));
+select tests.expect_error('S36 upsert no estilo PostgREST (do update set content_id) fica fora do grant: por isso o app não o usa',
+  $q$insert into public.recipe_view_history (content_id, viewed_at) values (public.seed_uuid('content:g1'), now())
+     on conflict (user_id, content_id) do update set content_id = excluded.content_id, viewed_at = excluded.viewed_at$q$, '42501');
+insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g4'));
+delete from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000036' and content_id = public.seed_uuid('content:g4');
+select tests.ok('S36 "Tirar do histórico" apaga só aquela receita',
+  (select array_agg(content_id) = array[public.seed_uuid('content:g1')] from public.recipe_view_history));
+delete from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000136';
+delete from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000036';
+select tests.ok('S36 "Limpar histórico" apaga tudo da pessoa e a preferência continua ligada',
+  not exists (select 1 from public.recipe_view_history) and (select history_enabled from public.user_recipe_prefs));
+select tests.su();
+select tests.ok('S36 a limpeza de uma pessoa não toca no histórico de outra (a RLS filtra o delete)',
+  exists (select 1 from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000136' and content_id = public.seed_uuid('content:g3')));
+select tests.login('10000000-0000-4000-8000-000000000036', 's36a@test.local');
+insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'));
+update public.user_recipe_prefs set history_enabled = false where user_id = '10000000-0000-4000-8000-000000000036';
+select tests.ok('S36 desligar pela action (update) apaga o histórico e a data do consentimento',
+  not exists (select 1 from public.recipe_view_history) and (select not history_enabled and history_enabled_at is null from public.user_recipe_prefs));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S36 o admin não lê preferência nem histórico de ninguém (dado pessoal)',
+  not exists (select 1 from public.user_recipe_prefs where user_id in ('10000000-0000-4000-8000-000000000036', '10000000-0000-4000-8000-000000000136'))
+  and not exists (select 1 from public.recipe_view_history where user_id = '10000000-0000-4000-8000-000000000136'));
+select tests.su();
+delete from auth.users where id in ('10000000-0000-4000-8000-000000000036', '10000000-0000-4000-8000-000000000136');
+select tests.ok('S36 limpeza: usuários, preferências e histórico do cenário saíram (cascata)',
+  not exists (select 1 from public.user_recipe_prefs where user_id in ('10000000-0000-4000-8000-000000000036', '10000000-0000-4000-8000-000000000136'))
+  and not exists (select 1 from public.recipe_view_history where user_id in ('10000000-0000-4000-8000-000000000036', '10000000-0000-4000-8000-000000000136')));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

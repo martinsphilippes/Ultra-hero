@@ -1,0 +1,130 @@
+{
+  "entry": {
+    "open": "Cook mode"
+  },
+  "cook": {
+    "metaTitle": "Cook mode · {title}",
+    "eyebrow": "Cook mode",
+    "backToRecipe": "See full recipe",
+    "navLabel": "Step navigation",
+    "prev": "Previous",
+    "next": "Next",
+    "progress": "Step {n} of {total}",
+    "doneCount": "{n, plural, =0 {No steps done} =1 {1 of {total} steps done} other {# of {total} steps done}}",
+    "stepIngredients": "In this step",
+    "notScaled": "not adjusted automatically",
+    "stepDone": "Step done",
+    "noSteps": "This recipe has no steps for cook mode yet.",
+    "settings": "Cook mode preferences",
+    "hint": "Tip: swipe sideways or use the arrow keys to change steps. Steps you mark stay saved on this device for 24 hours.",
+    "ingredients": {
+      "open": "Ingredients",
+      "title": "Ingredients",
+      "servings": "For {n, plural, =1 {1 serving} other {# servings}}",
+      "scaled": "Adjusted to {n, plural, =1 {1 serving} other {# servings}} (the recipe makes {base})"
+    },
+    "timer": {
+      "start": "Start timer ({time})",
+      "started": "Timer started: {time}.",
+      "remaining": "Remaining",
+      "remainingLabel": "{time} remaining",
+      "cancel": "Cancel timer",
+      "cancelled": "Timer canceled.",
+      "finished": "Time's up!",
+      "finishedShort": "done",
+      "finishedAlert": "The timer for step {n} is done.",
+      "dismiss": "Stop the alarm",
+      "clear": "Close timer",
+      "others": "Other timers",
+      "otherLabel": "Step {n} · {time}",
+      "background": "The timer uses the end time, so it stays right with the screen locked or the app in the background. When it ends, the alarm rings again every 5 seconds, for up to 2 minutes, until you stop it. If the device pauses the page, the alarm rings when you come back."
+    },
+    "wake": {
+      "label": "Keep the screen on",
+      "active": "The screen won't turn off while cook mode is open.",
+      "off": "The screen may turn off on its own.",
+      "unsupported": "This browser can't keep the screen on. Tap the screen now and then or increase your device's auto-lock time.",
+      "denied": "The browser didn't allow keeping the screen on right now (for example, in battery saver mode). Tap the screen now and then."
+    },
+    "sound": {
+      "label": "Alarm sound"
+    },
+    "complete": {
+      "title": "All done?",
+      "description": "Mark the recipe as completed to record it in your progress.",
+      "button": "Complete recipe",
+      "done": "Recipe completed. Enjoy your meal!",
+      "error": "We couldn't complete the recipe right now. Please try again.",
+      "completedOn": "Completed on {date}"
+    }
+  },
+  "collection": {
+    "title": "My recipe collection",
+    "description": "Recipes you saved, your lists with recipes and, if you want, the ones you viewed last.",
+    "tabs": {
+      "label": "Collection sections",
+      "saved": "Saved",
+      "lists": "Lists",
+      "history": "Recently viewed"
+    },
+    "saved": {
+      "emptyTitle": "No saved recipes yet",
+      "emptyDescription": "Tap the heart on a recipe page to keep it here.",
+      "emptyCta": "Explore recipes",
+      "categoriesLabel": "Filter by category",
+      "all": "All ({n})",
+      "count": "{n, plural, =0 {No recipes} =1 {1 recipe} other {# recipes}}",
+      "emptyCategory": "No saved recipes in this category.",
+      "remove": "Remove",
+      "removeLabel": "Remove {title} from saved",
+      "removed": "Recipe removed from saved.",
+      "confirmTitle": "Remove from saved?",
+      "confirmDescription": "“{title}” leaves your collection. To keep it again, tap the heart on the recipe page.",
+      "confirmButton": "Remove",
+      "cancel": "Cancel"
+    },
+    "lists": {
+      "emptyTitle": "No lists with recipes",
+      "emptyDescription": "Use the lists button on a recipe page to organize it in one of your lists.",
+      "manage": "See all lists",
+      "open": "Open list",
+      "count": "{n, plural, =1 {1 recipe} other {# recipes}}",
+      "others": "{n, plural, =1 {You have 1 more list without recipes.} other {You have # more lists without recipes.}}"
+    },
+    "history": {
+      "title": "Recently viewed recipes",
+      "consent": "Off by default. If you turn it on, we only keep the date you last opened each recipe, to show it here. Only you can see it. Each entry is deleted after 90 days, and turning it off deletes everything right away.",
+      "switch": "Keep what I view (90 days)",
+      "on": "On",
+      "off": "Off: nothing is kept",
+      "since": "On since {date}",
+      "clear": "Clear history",
+      "clearTitle": "Clear the history?",
+      "clearDescription": "This deletes every viewed recipe from this list. The history stays on for your next visits.",
+      "clearConfirm": "Clear history",
+      "disableTitle": "Turn off the history?",
+      "disableDescription": "This deletes the history: every viewed recipe disappears from this list, and new visits aren't kept until you turn it on again.",
+      "disableConfirm": "Turn off and delete",
+      "cancel": "Cancel",
+      "enabledToast": "History on. The next recipes you open will show up here.",
+      "disabledToast": "History turned off and deleted.",
+      "clearedToast": "History deleted.",
+      "offTitle": "History is off",
+      "offDescription": "No viewed recipes are kept. Turn it on above if you want to revisit the last ones you opened.",
+      "emptyTitle": "Nothing here yet",
+      "emptyDescription": "Open a recipe and it shows up in this list.",
+      "viewed": "Viewed {when}",
+      "remove": "Remove from history",
+      "removeLabel": "Remove from history: {title}",
+      "removed": "Recipe removed from history.",
+      "unavailableTitle": "History unavailable",
+      "unavailableDescription": "The recipe history isn't available in this environment yet.",
+      "errors": {
+        "generic": "We couldn't finish that right now. Please try again.",
+        "confirmation_required": "Confirm to delete the history.",
+        "history_unavailable": "The recipe history isn't available yet.",
+        "unauthenticated": "Sign in to continue."
+      }
+    }
+  }
+}

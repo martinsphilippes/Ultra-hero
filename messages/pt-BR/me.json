@@ -182,6 +182,10 @@
         "title": "Favoritos",
         "description": "Conteúdos que você marcou."
       },
+      "recipes": {
+        "title": "Minha coleção de receitas",
+        "description": "Receitas salvas, listas e histórico opcional."
+      },
       "orders": {
         "title": "Pedidos de teste",
         "description": "Compras demonstrativas, sem cobrança real."
