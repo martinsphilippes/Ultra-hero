@@ -10,6 +10,7 @@ import { TodaySection } from "@/components/me/today/TodaySection";
 import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
+import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { itemsForDate, pickProgramSuggestions, shortTime, sortRoutine, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
@@ -53,7 +54,14 @@ const LINKS: Array<{ key: "plan" | "interests" | "favorites" | "orders" | "notif
 
 export default async function ProfilePage() {
   const user = await requireUser("/profile");
-  const [profile, roles, locale, t, tc] = await Promise.all([getProfile(), getRoles(), getLocale(), getTranslations("me.profile"), getTranslations("common")]);
+  const [profile, roles, locale, t, tc, photoState] = await Promise.all([
+    getProfile(),
+    getRoles(),
+    getLocale(),
+    getTranslations("me.profile"),
+    getTranslations("common"),
+    getAvatarPhotoState(),
+  ]);
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
@@ -198,7 +206,7 @@ export default async function ProfilePage() {
             <p className="type-body-sm text-fg-muted">{t("data.description")}</p>
           </div>
         </div>
-        <ProfileDataForm displayName={displayName} avatarUrl={profile?.avatar_url ?? null} locale={uiLocale} theme={theme} />
+        <ProfileDataForm displayName={displayName} avatarUrl={profile?.avatar_url ?? null} locale={uiLocale} theme={theme} photoState={photoState} />
       </section>
 
       {/* Atalhos */}

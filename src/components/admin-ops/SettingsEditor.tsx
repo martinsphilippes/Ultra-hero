@@ -24,6 +24,7 @@ const SPECS: Spec[] = [
   { key: "commerce.enabled", kind: "switch", kill: true },
   { key: "ai.enabled", kind: "switch", kill: true },
   { key: "experiment.open", kind: "switch", kill: true },
+  { key: "avatars.uploads_enabled", kind: "switch", kill: true },
   { key: "ai.provider", kind: "select", options: ["deterministic", "openai", "gemini"] },
   { key: "ai.rate_limit_per_hour", kind: "number", min: 0, max: 1000 },
   { key: "transport.minutes_per_step", kind: "number", min: 0, max: 10080 },

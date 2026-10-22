@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { cn, initials, stableHash } from "@/lib/utils";
+import { AvatarImage } from "./avatar-image";
 
 type AvatarProps = {
   src?: string | null;
@@ -38,7 +39,10 @@ export function Avatar({ src, name, size = "md", fallback = "placeholder", class
         className,
       )}
     >
-      {source ? (
+      {source && /^https?:\/\//.test(source) ? (
+        // foto enviada (ou de outro provedor): volta para a ilustração se não carregar
+        <AvatarImage src={source} alt={label} fallbackSrc={placeholder} width={pixels[size]} height={pixels[size]} className="size-full object-cover" />
+      ) : source ? (
         <Image
           src={source}
           alt={label}

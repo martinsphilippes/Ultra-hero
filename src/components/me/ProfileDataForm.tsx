@@ -8,22 +8,29 @@ import { useState, useTransition, type FormEvent } from "react";
 import { updateProfile } from "@/app/(app)/profile/actions";
 import { Button, FormField, Input, SegmentedControl, Select, useToast } from "@/components/ui";
 import { locales, type Locale } from "@/i18n/config";
+import type { AvatarPhotoState } from "@/lib/avatar/availability";
+import { ILLUSTRATIONS } from "@/lib/avatar/constants";
+import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
 import { cn } from "@/lib/utils";
+import { AvatarPhotoPicker } from "./AvatarPhotoPicker";
 
-type Props = { displayName: string; avatarUrl: string | null; locale: Locale; theme: ResolvedTheme };
+type Props = { displayName: string; avatarUrl: string | null; locale: Locale; theme: ResolvedTheme; photoState: AvatarPhotoState };
 
-const AVATARS = Array.from({ length: 8 }, (_, i) => `/placeholders/avatar-${i + 1}.svg`);
-
-// Formulário de dados do perfil: nome, avatar (ilustrações locais), idioma e tema.
-export function ProfileDataForm({ displayName, avatarUrl, locale, theme }: Props) {
+// Formulário de dados do perfil: nome, avatar (foto enviada pelo celular ou ilustração local), idioma
+// e tema. A foto é gravada pelas actions próprias (envio/remoção); aqui só sincroniza o estado para
+// "Salvar" não regravar um valor velho. Escolher uma ilustração e salvar substitui a foto.
+export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState }: Props) {
   const t = useTranslations("me.profile.data");
   const tl = useTranslations("common.languages");
   const tt = useTranslations("common.theme");
   const { toast } = useToast();
   const router = useRouter();
   const [name, setName] = useState(displayName);
-  const [avatar, setAvatar] = useState<string | null>(avatarUrl && AVATARS.includes(avatarUrl) ? avatarUrl : null);
+  const [avatar, setAvatar] = useState<string | null>(
+    avatarUrl && (ILLUSTRATIONS.includes(avatarUrl) || isStoredAvatarUrl(avatarUrl, supabaseBaseUrl())) ? avatarUrl : null,
+  );
+  const hasPhoto = isStoredAvatarUrl(avatar, supabaseBaseUrl());
   const [lang, setLang] = useState<Locale>(locale);
   const [mode, setMode] = useState<ResolvedTheme>(theme);
   const [error, setError] = useState<string | null>(null);
@@ -69,8 +76,13 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme }: Props
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-semibold text-fg">{t("avatar")}</legend>
         <p className="type-caption text-fg-muted">{t("avatarHint")}</p>
-        <div role="radiogroup" aria-label={t("avatar")} className="grid grid-cols-4 gap-2 sm:grid-cols-8">
-          {AVATARS.map((src, index) => {
+        <AvatarPhotoPicker value={avatar} name={name.trim() || displayName} state={photoState} onChange={setAvatar} disabled={pending} />
+        <p className="mt-2 text-sm font-semibold text-fg" id="avatar-illustrations-label">
+          {t("illustrations")}
+        </p>
+        {hasPhoto && <p className="type-caption text-fg-muted">{t("illustrationsWhenPhoto")}</p>}
+        <div role="radiogroup" aria-labelledby="avatar-illustrations-label" className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+          {ILLUSTRATIONS.map((src, index) => {
             const selected = avatar === src;
             const id = `avatar-${index + 1}`;
             return (

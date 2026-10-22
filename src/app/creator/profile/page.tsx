@@ -7,6 +7,7 @@ import { CreatorProfileForm } from "@/components/creator/CreatorProfileForm";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { socialsFrom } from "@/components/creator/profile-schema";
 import { Avatar, Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
+import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getMyCreator } from "../_lib/creator";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,7 +17,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Perfil da personalidade: colunas liberadas editáveis; rights_note somente leitura.
 export default async function CreatorProfilePage() {
-  const [t, tn, ts, tcat, ctx] = await Promise.all([getTranslations("creator"), getTranslations("nav"), getTranslations("adminCommon.status"), getTranslations("catalog"), getMyCreator()]);
+  const [t, tn, ts, tcat, ctx, photoState] = await Promise.all([
+    getTranslations("creator"),
+    getTranslations("nav"),
+    getTranslations("adminCommon.status"),
+    getTranslations("catalog"),
+    getMyCreator(),
+    getAvatarPhotoState(),
+  ]);
   if (!ctx.profile) return <CreatorUnavailable reason="unlinked" title={t("profile.title")} />;
   const profile = ctx.profile;
   const active = ctx.creatorId !== null;
@@ -68,6 +76,8 @@ export default async function CreatorProfilePage() {
         }}
         pillars={profile.pillars}
         readOnly={!active}
+        name={profile.name}
+        photoState={photoState}
       />
 
       <section aria-labelledby="rights-note" className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-elevated p-4 sm:p-5">

@@ -6,8 +6,9 @@ import { notFound } from "next/navigation";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CreatorForm } from "@/components/admin-ops/CreatorForm";
 import { CreatorProductActions } from "@/components/admin-ops/CreatorProductActions";
-import { CreatorStatusButton } from "@/components/admin-ops/StatusActions";
+import { CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
 import { Badge, Button, PageHeader } from "@/components/ui";
+import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = Promise<{ id: string }>;
@@ -94,6 +95,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
           <>
             <StatusBadge status={creator.status} label={ts(creator.status)} size="md" />
             <CreatorStatusButton id={creator.id} status={creator.status} />
+            {isStoredAvatarUrl(creator.avatar_url, supabaseBaseUrl()) && <CreatorPhotoRemoveButton id={creator.id} />}
           </>
         }
       />

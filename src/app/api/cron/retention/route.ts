@@ -1,9 +1,12 @@
+import { supabaseBaseUrl } from "@/lib/avatar/paths";
+import { cleanupAvatarUploads } from "@/lib/avatar/server";
 import { CloudflareStreamProvider, isCloudflareStreamConfigured } from "@/lib/video/providers/cloudflare-stream";
 import { runCronJob } from "../_lib/cron";
 import { cleanupStreamUploads } from "../_lib/stream-cleanup";
 
 // Retenção diária: analytics 90d, pedidos de teste 90d (anonimiza), auditoria 365d, runs/logs 30d;
-// e limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar).
+// limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar) e das fotos de
+// perfil sem uso ou de conta excluída (0031).
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -22,7 +25,14 @@ async function handler(request: Request) {
         stream = { stream_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
       }
     }
-    return { counts, stream };
+    // Fotos de perfil: mesma regra (falha não derruba a retenção; banco sem a 0031 só pula).
+    let avatars: Record<string, unknown>;
+    try {
+      avatars = await cleanupAvatarUploads(admin, supabaseBaseUrl());
+    } catch (cleanupError) {
+      avatars = { avatars_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
+    }
+    return { counts, stream, avatars };
   });
 }
 

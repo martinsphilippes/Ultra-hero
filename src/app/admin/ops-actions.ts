@@ -10,6 +10,8 @@ import type { FeedbackStatus } from "@/components/feedback/constants";
 import { feedbackTriageSchema, type FeedbackTriageInput } from "@/components/feedback/schema";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { requireRole } from "@/lib/auth/session";
+import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 import { PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
@@ -236,7 +238,8 @@ const creatorSchema = z
     headline: z.string().trim().max(140).optional().or(z.literal("")),
     bio: z.string().trim().max(2000).optional().or(z.literal("")),
     pillars: z.array(z.enum(PILLARS as [string, ...string[]])).min(1).max(4),
-    avatarUrl: z.string().regex(PLACEHOLDER_PATH),
+    // ilustração ou a foto que o próprio herói enviou (0031): o admin só mantém ou troca por ilustração
+    avatarUrl: z.string().max(300).refine((v) => PLACEHOLDER_PATH.test(v) || isStoredAvatarUrl(v, supabaseBaseUrl())),
     coverUrl: z.string().regex(PLACEHOLDER_PATH),
     isFictional: z.boolean(),
     rightsNote: z.string().trim().max(500).optional().or(z.literal("")),
@@ -326,6 +329,44 @@ export async function updateCreator(id: string, input: CreatorFormValues): Promi
     if (privateError) return privateError;
     const t = await getTranslations("adminOps.creators.form");
     return { ok: true, message: t("updated") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// Tira do ar a foto enviada pelo herói (conta demo pública, foto imprópria). Service role: apaga o
+// objeto e limpa a referência no perfil público e no perfil do usuário; fica na auditoria.
+export async function adminRemoveCreatorPhoto(input: { id: string }, justification: string): Promise<Result> {
+  const actor = await admin();
+  const parsed = z.object({ id: z.uuid(), justification: requiredJustification }).safeParse({ ...input, justification });
+  if (!parsed.success) return invalid();
+  const base = supabaseBaseUrl();
+  if (!hasAdminClient() || !base) return fail("no_service_role");
+  try {
+    const supabase = await createClient();
+    const { data: creator, error } = await supabase.from("creator_profiles").select("id, slug, avatar_url").eq("id", parsed.data.id).maybeSingle();
+    if (error) return fail(error);
+    if (!creator) return fail("not_found");
+    if (!isStoredAvatarUrl(creator.avatar_url, base)) return fail("no_photo");
+    const client = createAdminClient();
+    const released = await releaseStoredAvatar(client, { url: creator.avatar_url as string, baseUrl: base });
+    if (!released.unlinked) return fail("generic");
+    await client.rpc("audit_log", {
+      p_action: "creator.photo_remove",
+      p_resource_type: "creator_profile",
+      p_resource_id: creator.id,
+      p_before: { avatar_url: creator.avatar_url },
+      p_after: { avatar_url: null, object_deleted: released.deleted, removed_by: actor.id },
+      p_justification: parsed.data.justification,
+      p_actor_type: "admin",
+    });
+    revalidatePath("/admin/creators");
+    revalidatePath(`/admin/creators/${creator.id}`);
+    revalidatePath("/personalities");
+    revalidatePath(`/personalities/${creator.slug}`);
+    revalidatePath("/", "layout");
+    const t = await getTranslations("adminOps.creators.form");
+    return { ok: true, message: t("photoRemoved") };
   } catch (error) {
     return fail(error);
   }
@@ -535,10 +576,12 @@ const SETTING_SCHEMAS = {
   "recipes.ratings_enabled": z.boolean(),
   "recipes.comments_enabled": z.boolean(),
   "recipes.uploads_enabled": z.boolean(),
+  // foto de perfil (0031): envio pelo celular
+  "avatars.uploads_enabled": z.boolean(),
 } as const;
 
 export type EditableSettingKey = keyof typeof SETTING_SCHEMAS;
-const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open", "recipes.uploads_enabled"];
+const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open", "recipes.uploads_enabled", "avatars.uploads_enabled"];
 
 export async function setSetting(input: { key: EditableSettingKey; value: unknown }, justification: string): Promise<Result> {
   await admin();

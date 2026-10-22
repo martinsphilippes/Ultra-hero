@@ -2767,6 +2767,138 @@ select tests.ok('S32 nada dos cenários S25–S32 ficou no ar e as chaves de rec
   and (public.public_settings() -> 'recipes.ratings_enabled') = 'true'::jsonb and (public.public_settings() -> 'recipes.comments_enabled') = 'false'::jsonb
   and (public.public_settings() -> 'recipes.uploads_enabled') = 'true'::jsonb);
 
+-- ================================================================ S33 · Foto de perfil no Storage (0031, shim local)
+-- Bucket público sem escrita pela API; o envio é reservado pela RPC (kill switch, cota de 20/dia,
+-- nome do objeto) e aplicado nos dois lados (perfil e herói) só para envio próprio já gravado.
+-- Quem grava no bucket é o service role (o "su" aqui faz o papel dele). O Rafael fica ligado ao
+-- usuário de teste só neste cenário e volta sem usuário e com a ilustração do seed.
+select tests.su();
+insert into auth.users (id, email) values
+  ('33000000-0000-4000-8000-000000000001', 's33photo@test.local'),
+  ('33000000-0000-4000-8000-000000000002', 's33other@test.local');
+create temporary table t_s33_seed as select avatar_url from public.creator_profiles where id = public.seed_uuid('creator:rafael');
+grant select on t_s33_seed to authenticated, anon;
+update public.creator_profiles set user_id = '33000000-0000-4000-8000-000000000001' where id = public.seed_uuid('creator:rafael');
+select tests.ok('S33 bucket avatars público, 2 MiB e só WebP/JPEG',
+  (select public and file_size_limit = 2097152 and allowed_mime_types = array['image/webp', 'image/jpeg'] from storage.buckets where id = 'avatars'));
+select tests.ok('S33 nenhuma política do Storage cita o bucket avatars (escrita só pelo service role)',
+  (select count(*) from pg_policies where schemaname = 'storage' and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) like '%avatars%') = 0);
+select tests.ok('S33 public_settings expõe avatars.uploads_enabled (ligado) sem perder as chaves da 0027',
+  (public.public_settings() -> 'avatars.uploads_enabled') = 'true'::jsonb
+  and (select count(*) from jsonb_object_keys(public.public_settings())) = 11);
+select tests.ok('S33 avatar_uploads: RLS ligada, uma política de leitura só para authenticated',
+  (select relrowsecurity from pg_class where oid = 'public.avatar_uploads'::regclass)
+  and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'avatar_uploads') = 'SELECT:authenticated');
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S33 anon não reserva envio', $q$select public.avatar_upload_claim(1000, 'image/webp')$q$, 'permission denied');
+select tests.expect_error('S33 anon não aplica foto', $q$select public.avatar_set_photo('https://x.supabase.co/storage/v1/object/public/avatars/a/b.webp')$q$, 'permission denied');
+select tests.expect_error('S33 anon não lista órfãos', $q$select public.avatar_orphan_uploads(10)$q$, 'permission denied');
+select tests.expect_error('S33 anon não lê avatar_uploads', $q$select count(*) from public.avatar_uploads$q$, 'permission denied');
+
+-- usuário: nada de escrita direta, validações da reserva
+select tests.login('33000000-0000-4000-8000-000000000001', 's33photo@test.local');
+select tests.expect_error('S33 usuário não grava no bucket avatars pela API (sem política)',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('avatars', auth.uid() || '/a3300000-0000-4000-8000-000000000001.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.expect_error('S33 usuário não insere em avatar_uploads',
+  $q$insert into public.avatar_uploads (user_id, path, bytes, mime) values (auth.uid(), auth.uid() || '/a3300000-0000-4000-8000-000000000002.webp', 1, 'image/webp')$q$, '42501');
+select tests.expect_error('S33 tipo fora da lista: not_image', $q$select public.avatar_upload_claim(1000, 'image/png')$q$, 'not_image');
+select tests.expect_error('S33 arquivo vazio: empty_file', $q$select public.avatar_upload_claim(0, 'image/webp')$q$, 'empty_file');
+select tests.expect_error('S33 acima de 2 MiB: file_too_large', $q$select public.avatar_upload_claim(2097153, 'image/jpeg')$q$, 'file_too_large');
+create temporary table t_s33_claim as select public.avatar_upload_claim(120000, 'image/webp') as path;
+select tests.ok('S33 reserva devolve <user_id>/<uuid>.webp e o usuário vê a própria linha',
+  (select path ~ '^33000000-0000-4000-8000-000000000001/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$' from t_s33_claim)
+  and (select count(*) from public.avatar_uploads where path = (select path from t_s33_claim) and bytes = 120000 and mime = 'image/webp') = 1);
+create temporary table t_s33_url as
+  select 'https://proj.supabase.co/storage/v1/object/public/avatars/' || (select path from t_s33_claim) as url;
+select tests.expect_error('S33 foto reservada mas não gravada no bucket: invalid_path',
+  $q$select public.avatar_set_photo((select url from t_s33_url))$q$, 'invalid_path');
+select tests.su();
+insert into storage.objects (bucket_id, name, metadata) values ('avatars', (select path from t_s33_claim), '{"mimetype":"image/webp","size":120000}');
+
+-- outro usuário não vê nem usa o envio alheio
+select tests.login('33000000-0000-4000-8000-000000000002', 's33other@test.local');
+select tests.ok('S33 outro usuário não lê o envio alheio', (select count(*) from public.avatar_uploads) = 0);
+select tests.expect_error('S33 outro usuário não aplica a foto alheia', $q$select public.avatar_set_photo((select url from t_s33_url))$q$, 'invalid_path');
+
+select tests.login('33000000-0000-4000-8000-000000000001', 's33photo@test.local');
+select tests.expect_error('S33 URL de outro bucket: invalid_path',
+  $q$select public.avatar_set_photo(replace((select url from t_s33_url), '/avatars/', '/recipe-media/'))$q$, 'invalid_path');
+select tests.expect_error('S33 URL com consulta: invalid_path', $q$select public.avatar_set_photo((select url from t_s33_url) || '?x=1')$q$, 'invalid_path');
+select tests.expect_error('S33 extensão trocada (.png): invalid_path', $q$select public.avatar_set_photo(replace((select url from t_s33_url), '.webp', '.png'))$q$, 'invalid_path');
+create temporary table t_s33_prev as select public.avatar_set_photo((select url from t_s33_url)) as prev;
+select tests.ok('S33 aplicar devolve o anterior do herói (a ilustração) e o perfil sem foto não entra',
+  (select prev = array[(select avatar_url from t_s33_seed)] from t_s33_prev));
+select tests.ok('S33 a foto vale no perfil e no herói ligado',
+  (select avatar_url from public.profiles where id = auth.uid()) = (select url from t_s33_url)
+  and (select avatar_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) = (select url from t_s33_url));
+select tests.anon();
+select tests.ok('S33 o visitante vê a foto no perfil público do herói',
+  (select avatar_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) like '%/avatars/33000000-0000-4000-8000-000000000001/%');
+
+-- kill switch
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'avatars.uploads_enabled';
+select tests.login('33000000-0000-4000-8000-000000000001', 's33photo@test.local');
+select tests.expect_error('S33 kill switch desligado: uploads_disabled', $q$select public.avatar_upload_claim(1000, 'image/webp')$q$, 'uploads_disabled');
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'avatars.uploads_enabled';
+
+-- cota: 20 por 24 h (1 já feito + 18 + 1 = 20; o 21º é recusado; fora da janela não conta)
+insert into public.avatar_uploads (user_id, path, bytes, mime)
+select '33000000-0000-4000-8000-000000000001', '33000000-0000-4000-8000-000000000001/' || gen_random_uuid() || '.jpg', 1000, 'image/jpeg'
+from generate_series(1, 18);
+select tests.login('33000000-0000-4000-8000-000000000001', 's33photo@test.local');
+create temporary table t_s33_twentieth as select public.avatar_upload_claim(1000, 'image/jpeg') as path;
+select tests.ok('S33 o 20º envio do dia passa (.jpg)', (select path like '%.jpg' from t_s33_twentieth)
+  and (select count(*) from public.avatar_uploads where user_id = auth.uid()) = 20);
+select tests.expect_error('S33 o 21º envio do dia: too_many_uploads', $q$select public.avatar_upload_claim(1000, 'image/jpeg')$q$, 'too_many_uploads');
+select tests.su();
+update public.avatar_uploads set created_at = now() - interval '25 hours'
+where user_id = '33000000-0000-4000-8000-000000000001' and path <> (select path from t_s33_claim);
+select tests.login('33000000-0000-4000-8000-000000000001', 's33photo@test.local');
+create temporary table t_s33_after as select public.avatar_upload_claim(1000, 'image/webp') as path;
+select tests.ok('S33 envios de mais de 24 h não contam na cota', (select path is not null from t_s33_after));
+
+-- limpeza diária: só o service role; lista o não referenciado com mais de 1 h e nunca o que está em uso
+select tests.expect_error('S33 usuário não lista órfãos', $q$select public.avatar_orphan_uploads(10)$q$, 'permission denied');
+select tests.su();
+create temporary table t_s33_orphans as select p from public.avatar_orphan_uploads(1000) p;
+select tests.ok('S33 órfãos: os 19 antigos não referenciados entram; o em uso e o recém-reservado (< 1 h) não',
+  (select count(*) from t_s33_orphans where p like '33000000-0000-4000-8000-000000000001/%') = 19
+  and not exists (select 1 from t_s33_orphans where p = (select path from t_s33_claim))
+  and not exists (select 1 from t_s33_orphans where p = (select path from t_s33_after)));
+select tests.ok('S33 órfãos: o limite é respeitado', (select count(*) from public.avatar_orphan_uploads(5)) = 5);
+
+-- exclusão de conta: a linha fica sem usuário e a foto em uso no herói vira alvo da limpeza diária
+select tests.login('33000000-0000-4000-8000-000000000001', 's33photo@test.local');
+select public.delete_my_account();
+select tests.su();
+create temporary table t_s33_gone as select p from public.avatar_orphan_uploads(1000) p;
+select tests.ok('S33 conta excluída: envios ficam sem usuário e a foto em uso no herói entra na limpeza (inclusive a recente)',
+  not exists (select 1 from public.avatar_uploads where user_id = '33000000-0000-4000-8000-000000000001')
+  and exists (select 1 from t_s33_gone where p = (select path from t_s33_claim))
+  and exists (select 1 from t_s33_gone where p = (select path from t_s33_after))
+  and (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
+
+select tests.ok('S33 funções: search_path fixo; reserva e aplicação definer sem anon; órfãos só service role',
+  (select bool_and(exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')) from pg_proc p
+     where p.pronamespace = 'public'::regnamespace and p.proname in ('avatar_upload_claim', 'avatar_set_photo', 'avatar_orphan_uploads'))
+  and (select bool_and(p.prosecdef) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('avatar_upload_claim', 'avatar_set_photo'))
+  and not has_function_privilege('anon', 'public.avatar_upload_claim(int, text)', 'execute')
+  and not has_function_privilege('anon', 'public.avatar_set_photo(text)', 'execute')
+  and has_function_privilege('authenticated', 'public.avatar_upload_claim(int, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.avatar_orphan_uploads(int)', 'execute')
+  and has_function_privilege('service_role', 'public.avatar_orphan_uploads(int)', 'execute'));
+
+-- limpeza: o Rafael volta com a ilustração do seed (o usuário de teste já saiu)
+update public.creator_profiles set avatar_url = (select avatar_url from t_s33_seed) where id = public.seed_uuid('creator:rafael');
+delete from storage.objects where bucket_id = 'avatars';
+delete from auth.users where id = '33000000-0000-4000-8000-000000000002';
+select tests.ok('S33 o Rafael volta ao seed, sem usuário e com a ilustração',
+  (select user_id is null and avatar_url = (select avatar_url from t_s33_seed) from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

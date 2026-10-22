@@ -75,6 +75,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"avatar_uploads": {
+                  Row: {
+                    "bytes": number,"created_at": string,"deleted_at": string | null,"id": string,"mime": string,"path": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bytes": number,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"mime": string,"path": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "bytes"?: number,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"mime"?: string,"path"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"cart_items": {
                   Row: {
                     "added_at": string,"cart_id": string,"product_id": string,"quantity": number
@@ -1842,6 +1856,15 @@ isOneToOne: false
                            },
 "audit_log":
 { Args: { "p_action": string,"p_actor_type"?: Database["public"]['Enums']["actor_type"],"p_after"?: Json,"p_before"?: Json,"p_justification"?: string,"p_resource_id": string,"p_resource_type": string }; Returns: undefined
+                           },
+"avatar_orphan_uploads":
+{ Args: { "p_limit": number }; Returns: string[]
+                           },
+"avatar_set_photo":
+{ Args: { "p_url": string }; Returns: (string)[]
+                           },
+"avatar_upload_claim":
+{ Args: { "p_bytes": number,"p_mime": string }; Returns: string
                            },
 "can_access_content":
 { Args: { "p_content": string }; Returns: boolean
