@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type MouseEvent } from "react";
 import { trackRecipeEvent } from "@/app/(app)/content/recipe-actions";
 import { IconButton } from "@/components/ui";
-import { ingredientCheckKey, readIngredientChecks, writeIngredientChecks } from "@/lib/recipes/ingredient-check";
+import { ingredientCheckKey, INGREDIENT_CHECK_PREFIX, readIngredientChecks, staleIngredientCheckKeys, writeIngredientChecks } from "@/lib/recipes/ingredient-check";
 import { clampServings, parseServingsParam, SERVINGS_MAX, SERVINGS_MIN, servingsFactor, servingsHref } from "@/lib/recipes/scale";
 import { scaledAmount, type ScaledAmount, type UnitLabels, type ViewIngredient } from "@/lib/recipes/view-model";
 import { RecipeIngredientList, type IngredientListLabels } from "./RecipeIngredientList";
@@ -15,6 +15,8 @@ const STEP_LIMIT = "aria-disabled:cursor-not-allowed aria-disabled:opacity-55";
 
 type Props = {
   contentId: string;
+  /** Conta de quem vê: as marcações ficam por conta e receita. Sem conta, valem só nesta visita. */
+  userId: string | null;
   ingredients: ViewIngredient[];
   labels: IngredientListLabels;
   unitLabels: UnitLabels;
@@ -30,7 +32,7 @@ type Props = {
 // Ingredientes com ajuste de porções (− e +, de 1 a 50, anúncio em aria-live, fator na URL) e
 // checklist de "já separei" guardado só no aparelho por 24 h. O servidor já renderiza com o fator
 // da URL, então a impressão e o primeiro carregamento saem com as quantidades certas.
-export function RecipeIngredientsPanel({ contentId, ingredients, labels, unitLabels, locale, baseServings, initialServings, syncUrl = true }: Props) {
+export function RecipeIngredientsPanel({ contentId, userId, ingredients, labels, unitLabels, locale, baseServings, initialServings, syncUrl = true }: Props) {
   const t = useTranslations("recipes.page");
   const [servings, setServings] = useState<number | null>(initialServings ?? baseServings);
   // Texto do campo enquanto a pessoa digita: o campo pode ficar vazio (apagar o "2" para digitar "6")
@@ -56,26 +58,35 @@ export function RecipeIngredientsPanel({ contentId, ingredients, labels, unitLab
     return out;
   }, [factor, ingredients, unitLabels, locale]);
 
-  // Marcações salvas (24 h). Lidas só depois de montar: o servidor não conhece o aparelho.
+  // Marcações salvas (24 h). Lidas só depois de montar: o servidor não conhece o aparelho. Antes,
+  // apaga as vencidas e as do formato antigo sem conta (nada mais as removeria).
   useEffect(() => {
     try {
-      setChecked(new Set(readIngredientChecks(window.localStorage.getItem(ingredientCheckKey(contentId)), ids)));
+      const store = window.localStorage;
+      const entries: [string, string | null][] = [];
+      for (let i = 0; i < store.length; i++) {
+        const key = store.key(i);
+        if (key?.startsWith(INGREDIENT_CHECK_PREFIX)) entries.push([key, store.getItem(key)]);
+      }
+      for (const key of staleIngredientCheckKeys(entries)) store.removeItem(key);
+      if (userId) setChecked(new Set(readIngredientChecks(store.getItem(ingredientCheckKey(userId, contentId)), ids)));
     } catch {
       // sem storage (modo privado restrito): o checklist funciona só nesta visita
     }
-  }, [contentId, ids]);
+  }, [userId, contentId, ids]);
 
   const persist = useCallback(
     (next: Set<string>) => {
+      if (!userId) return;
       try {
         const value = writeIngredientChecks([...next]);
-        if (value) window.localStorage.setItem(ingredientCheckKey(contentId), value);
-        else window.localStorage.removeItem(ingredientCheckKey(contentId));
+        if (value) window.localStorage.setItem(ingredientCheckKey(userId, contentId), value);
+        else window.localStorage.removeItem(ingredientCheckKey(userId, contentId));
       } catch {
         // idem: só perde a lembrança
       }
     },
-    [contentId],
+    [userId, contentId],
   );
 
   const toggle = useCallback(

@@ -12,7 +12,6 @@
     "progress": "Paso {n} de {total}",
     "doneCount": "{n, plural, =0 {Ningún paso terminado} =1 {1 de {total} pasos terminado} other {# de {total} pasos terminados}}",
     "stepIngredients": "En este paso",
-    "notScaled": "no se ajusta automáticamente",
     "stepDone": "Paso terminado",
     "noSteps": "Esta receta todavía no tiene pasos para el modo cocina.",
     "settings": "Preferencias del modo cocina",

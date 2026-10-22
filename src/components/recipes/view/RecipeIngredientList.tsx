@@ -54,7 +54,9 @@ export function RecipeIngredientList({ ingredients, labels, headingId = "recipe-
                   {ing.optional ? <span className="text-fg-muted"> {labels.optional}</span> : null}
                 </span>
                 {ing.toTaste ? (
-                  <span className="shrink-0 text-fg-muted">{labels.toTaste}</span>
+                  <span className="shrink-0 text-fg-muted" data-testid="recipe-ingredient-to-taste">
+                    {labels.toTaste}
+                  </span>
                 ) : amount.text ? (
                   <span className="type-numeric shrink-0 font-semibold text-fg-muted" data-testid="recipe-ingredient-amount">
                     {amount.approx ? `≈ ${amount.text}` : amount.text}

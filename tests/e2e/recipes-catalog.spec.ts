@@ -177,9 +177,15 @@ test.describe("receita aberta (conta free com a etapa)", () => {
 
     // recarregar mantém as porções (servidor lê ?porcoes=) e a marcação do checklist (24 h no aparelho)
     await page.getByRole("checkbox", { name: "Separei: Azeite" }).check();
+    // chave do formato antigo (sem a conta): a página a apaga ao montar
+    await page.evaluate(() => window.localStorage.setItem("uh-recipe-check:legado", JSON.stringify({ at: Date.now(), ids: [] })));
     await page.reload();
     await expect(page.getByTestId("recipe-ingredient").filter({ hasText: "Peito de frango" })).toContainText("600 g");
     await expect(page.getByRole("checkbox", { name: "Separei: Azeite" })).toBeChecked();
+    // as marcações ficam por conta e receita (uh-recipe-check:<conta>:<receita>)
+    const checkKeys = await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.startsWith("uh-recipe-check:")));
+    expect(checkKeys).toHaveLength(1);
+    expect(checkKeys[0]).toMatch(/^uh-recipe-check:[0-9a-f-]{36}:[0-9a-f-]{36}$/);
     // "Limpar marcações" pelo teclado: o botão some e o foco vai para a primeira caixa (não para o <body>)
     await page.getByTestId("ingredient-checks-clear").focus();
     await page.keyboard.press("Enter");

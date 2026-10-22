@@ -24,9 +24,12 @@ export function parseServingsParam(raw: string | string[] | undefined | null): n
   return n >= SERVINGS_MIN && n <= SERVINGS_MAX ? n : null;
 }
 
-/** Fator de escala; sem porções na receita não há o que ajustar. */
+/**
+ * Fator de escala; sem porções na receita não há o que ajustar. Alvo igual à porção-base devolve 1
+ * antes do limite de 1–50: uma receita de 60 porções (o editor aceita até 100) mostra os números do chef.
+ */
 export function servingsFactor(base: number | null | undefined, target: number | null | undefined): number {
-  if (!base || base < 1 || !target) return 1;
+  if (!base || base < 1 || !target || target === base) return 1;
   return clampServings(target) / base;
 }
 

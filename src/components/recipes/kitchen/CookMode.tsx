@@ -112,6 +112,8 @@ const pickStepHeading = (area: HTMLElement) => area.querySelector<HTMLElement>("
 export function CookMode({ model, userId, recipeHref, completedLabel }: Props) {
   const t = useTranslations("kitchen.cook");
   const tv = useTranslations("recipes.view");
+  // "Não ajustado automaticamente": a mesma chave da página da receita
+  const tp = useTranslations("recipes.page");
   const { toast } = useToast();
   const steps = model.steps;
   const total = steps.length;
@@ -314,6 +316,28 @@ export function CookMode({ model, userId, recipeHref, completedLabel }: Props) {
     return i.approx ? `≈ ${i.amount}` : i.amount;
   };
 
+  // Uma linha de ingrediente igual nas duas listas (etapa e todos) e com o mesmo conteúdo da página:
+  // quantidade (com "≈"), nome, " · observação", "(opcional)" e o aviso de não ajustado.
+  const ingredientLine = (i: CookIngredient) => (
+    <>
+      {amountText(i) ? (
+        <span className="font-semibold type-numeric" data-testid="cook-ingredient-amount">
+          {amountText(i)}
+        </span>
+      ) : null}
+      <span>
+        <span data-testid="cook-ingredient-name">{i.name}</span>
+        {i.note ? <span className="text-fg-muted"> · {i.note}</span> : null}
+      </span>
+      {i.optional ? <span className="type-caption text-fg-muted">{tv("optional")}</span> : null}
+      {i.notScaled ? (
+        <span className="type-caption text-fg-muted" data-testid="cook-ingredient-not-scaled">
+          {tp("notScaled")}
+        </span>
+      ) : null}
+    </>
+  );
+
   const otherRunning = now === null ? [] : timers.filter((tm) => tm.stepId !== step?.id);
   const timerKind = !timer ? "none" : timerDone(timer, now ?? 0) ? "done" : "running";
   const last = index === total - 1;
@@ -335,6 +359,13 @@ export function CookMode({ model, userId, recipeHref, completedLabel }: Props) {
   }
 
   const isDone = done.includes(step.id);
+  // ?porcoes= igual às porções da receita vale como "sem ajuste" (a URL de volta mantém o número)
+  const sheetDescription =
+    model.servings && model.baseServings && model.servings !== model.baseServings
+      ? t("ingredients.scaled", { n: model.servings, base: model.baseServings })
+      : model.baseServings
+        ? t("ingredients.servings", { n: model.baseServings })
+        : undefined;
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col" data-testid="cook-mode">
@@ -418,11 +449,8 @@ export function CookMode({ model, userId, recipeHref, completedLabel }: Props) {
               <h3 className="text-sm font-semibold text-fg">{t("stepIngredients")}</h3>
               <ul className="flex flex-col gap-1.5" data-testid="cook-step-ingredients">
                 {step.ingredients.map((i) => (
-                  <li key={i.id} className="flex flex-wrap items-baseline gap-x-2 text-lg text-fg">
-                    {amountText(i) ? <span className="font-semibold type-numeric">{amountText(i)}</span> : null}
-                    <span>{i.name}</span>
-                    {i.optional ? <span className="type-caption text-fg-muted">{tv("optional")}</span> : null}
-                    {i.notScaled ? <span className="type-caption text-fg-muted">{t("notScaled")}</span> : null}
+                  <li key={i.id} className="flex flex-wrap items-baseline gap-x-2 text-lg text-fg" data-testid="cook-ingredient">
+                    {ingredientLine(i)}
                   </li>
                 ))}
               </ul>
@@ -580,15 +608,11 @@ export function CookMode({ model, userId, recipeHref, completedLabel }: Props) {
         </div>
       </nav>
 
-      <Sheet open={ingredientsOpen} onOpenChange={setIngredientsOpen} title={t("ingredients.title")} description={model.servings ? t("ingredients.scaled", { n: model.servings, base: model.baseServings ?? model.servings }) : model.baseServings ? t("ingredients.servings", { n: model.baseServings }) : undefined}>
+      <Sheet open={ingredientsOpen} onOpenChange={setIngredientsOpen} title={t("ingredients.title")} description={sheetDescription}>
         <ul className="flex flex-col divide-y divide-border py-2" data-testid="cook-all-ingredients">
           {model.ingredients.map((i) => (
-            <li key={i.id} className="flex flex-wrap items-baseline gap-x-2 py-2.5 text-base text-fg">
-              {amountText(i) ? <span className="font-semibold type-numeric">{amountText(i)}</span> : null}
-              <span>{i.name}</span>
-              {i.note ? <span className="type-caption text-fg-muted">{i.note}</span> : null}
-              {i.optional ? <span className="type-caption text-fg-muted">{tv("optional")}</span> : null}
-              {i.notScaled ? <span className="type-caption text-fg-muted">{t("notScaled")}</span> : null}
+            <li key={i.id} className="flex flex-wrap items-baseline gap-x-2 py-2.5 text-base text-fg" data-testid="cook-ingredient">
+              {ingredientLine(i)}
             </li>
           ))}
         </ul>

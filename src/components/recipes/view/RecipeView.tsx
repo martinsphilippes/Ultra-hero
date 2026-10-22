@@ -52,6 +52,8 @@ type Props = {
   unoptimizedImages: boolean;
   categoryLabels?: Record<string, string>;
   contentId: string;
+  /** Conta de quem vê (checklist de ingredientes por conta e receita no aparelho). */
+  viewerId: string | null;
   /**
    * "full": receita aberta. "public": só o que o card já mostra a todos (fotos, história, tempos,
    * porções, alérgenos e dietas declarados) e `gate` no lugar de ingredientes e preparo (P2).
@@ -83,6 +85,7 @@ export async function RecipeView({
   unoptimizedImages,
   categoryLabels,
   contentId,
+  viewerId,
   mode = "full",
   gate,
   showGallery = true,
@@ -236,6 +239,7 @@ export async function RecipeView({
         <div className="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] print:block">
           <RecipeIngredientsPanel
             contentId={contentId}
+            userId={viewerId}
             ingredients={model.ingredients}
             labels={{ title: t("ingredients"), optional: t("optional"), toTaste: t("toTaste"), substitutes: t("substitutes") }}
             unitLabels={unitLabels}
