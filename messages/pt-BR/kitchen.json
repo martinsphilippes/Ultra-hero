@@ -13,7 +13,6 @@
     "doneCount": "{n, plural, =0 {Nenhuma etapa concluída} =1 {1 de {total} etapas concluída} other {# de {total} etapas concluídas}}",
     "stepIngredients": "Nesta etapa",
     "notScaled": "não ajustado automaticamente",
-    "markDone": "Marcar etapa como concluída",
     "stepDone": "Etapa concluída",
     "noSteps": "Esta receita ainda não tem etapas para o Modo Cozinha.",
     "settings": "Preferências do Modo Cozinha",
@@ -26,9 +25,11 @@
     },
     "timer": {
       "start": "Iniciar cronômetro ({time})",
+      "started": "Cronômetro iniciado: {time}.",
       "remaining": "Faltam",
       "remainingLabel": "Faltam {time}",
       "cancel": "Cancelar cronômetro",
+      "cancelled": "Cronômetro cancelado.",
       "finished": "Tempo esgotado!",
       "finishedShort": "terminou",
       "finishedAlert": "O cronômetro da etapa {n} terminou.",
@@ -36,7 +37,7 @@
       "clear": "Fechar cronômetro",
       "others": "Outros cronômetros",
       "otherLabel": "Etapa {n} · {time}",
-      "background": "O cronômetro usa o horário de término: continua certo com a tela bloqueada ou o app em segundo plano. Se o aparelho pausar a página, o alarme toca quando você voltar."
+      "background": "O cronômetro usa o horário de término: continua certo com a tela bloqueada ou o app em segundo plano. Quando termina, o alarme toca de novo a cada 5 segundos, por até 2 minutos, até você parar. Se o aparelho pausar a página, o alarme toca quando você voltar."
     },
     "wake": {
       "label": "Manter a tela acesa",
@@ -46,8 +47,7 @@
       "denied": "O navegador não deixou manter a tela acesa agora (por exemplo, no modo de economia de bateria). Toque na tela de vez em quando."
     },
     "sound": {
-      "on": "Som do alarme ligado",
-      "off": "Som do alarme desligado"
+      "label": "Som do alarme"
     },
     "complete": {
       "title": "Terminou?",
@@ -77,7 +77,11 @@
       "emptyCategory": "Nenhuma receita salva nesta categoria.",
       "remove": "Remover",
       "removeLabel": "Remover {title} das salvas",
-      "removed": "Receita removida das salvas."
+      "removed": "Receita removida das salvas.",
+      "confirmTitle": "Remover das salvas?",
+      "confirmDescription": "“{title}” sai da sua coleção. Para guardar de novo, toque no coração na página da receita.",
+      "confirmButton": "Remover",
+      "cancel": "Cancelar"
     },
     "lists": {
       "emptyTitle": "Nenhuma lista com receitas",
@@ -111,7 +115,7 @@
       "emptyDescription": "Abra uma receita e ela aparece nesta lista.",
       "viewed": "Vista {when}",
       "remove": "Tirar do histórico",
-      "removeLabel": "Tirar {title} do histórico",
+      "removeLabel": "Tirar do histórico: {title}",
       "removed": "Receita tirada do histórico.",
       "unavailableTitle": "Histórico indisponível",
       "unavailableDescription": "O histórico de receitas ainda não está disponível neste ambiente.",

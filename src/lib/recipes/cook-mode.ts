@@ -246,8 +246,31 @@ export function shouldAlarmOnRestore(timer: Pick<CookTimer, "endsAt">, now: numb
 export const COOK_PROGRESS_TTL_MS = 24 * 60 * 60 * 1000;
 export const COOK_SOUND_KEY = "uh-cook-sound";
 
-export function cookStorageKey(contentId: string): string {
-  return `uh-cook:${contentId}`;
+export const COOK_STORAGE_PREFIX = "uh-cook:";
+
+/** Uma chave por conta e receita: quem entra depois no mesmo aparelho não herda o progresso de outra conta. */
+export function cookStorageKey(userId: string, contentId: string): string {
+  return `${COOK_STORAGE_PREFIX}${userId}:${contentId}`;
+}
+
+/**
+ * Chaves do Modo Cozinha que devem sair do aparelho: vencidas (mais de 24 h), ilegíveis e as do formato
+ * antigo, sem a conta (`uh-cook:<receita>`), que qualquer conta no aparelho leria.
+ */
+export function staleCookKeys(entries: readonly (readonly [string, string | null])[], now: number): string[] {
+  return entries
+    .filter(([key, raw]) => {
+      if (!key.startsWith(COOK_STORAGE_PREFIX)) return false;
+      if (key.slice(COOK_STORAGE_PREFIX.length).split(":").length !== 2) return true;
+      let savedAt: unknown;
+      try {
+        savedAt = raw ? (JSON.parse(raw) as { savedAt?: unknown })?.savedAt : undefined;
+      } catch {
+        return true;
+      }
+      return typeof savedAt !== "number" || now - savedAt > COOK_PROGRESS_TTL_MS;
+    })
+    .map(([key]) => key);
 }
 
 export type CookProgress = { step: number; done: string[]; timers: CookTimer[] };

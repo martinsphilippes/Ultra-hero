@@ -78,6 +78,7 @@ export default async function CookModePage({ params, searchParams }: Params) {
   return (
     <CookMode
       model={model}
+      userId={user.id}
       recipeHref={recipeHref(content.slug, servings)}
       completedLabel={completedAt ? t("complete.completedOn", { date: formatDate(completedAt, locale as Locale) }) : null}
     />

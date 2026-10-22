@@ -13,7 +13,6 @@
     "doneCount": "{n, plural, =0 {Ningún paso terminado} =1 {1 de {total} pasos terminado} other {# de {total} pasos terminados}}",
     "stepIngredients": "En este paso",
     "notScaled": "no se ajusta automáticamente",
-    "markDone": "Marcar paso como terminado",
     "stepDone": "Paso terminado",
     "noSteps": "Esta receta todavía no tiene pasos para el modo cocina.",
     "settings": "Preferencias del modo cocina",
@@ -26,9 +25,11 @@
     },
     "timer": {
       "start": "Iniciar temporizador ({time})",
+      "started": "Temporizador iniciado: {time}.",
       "remaining": "Faltan",
       "remainingLabel": "Faltan {time}",
       "cancel": "Cancelar temporizador",
+      "cancelled": "Temporizador cancelado.",
       "finished": "¡Se acabó el tiempo!",
       "finishedShort": "terminó",
       "finishedAlert": "El temporizador del paso {n} terminó.",
@@ -36,7 +37,7 @@
       "clear": "Cerrar temporizador",
       "others": "Otros temporizadores",
       "otherLabel": "Paso {n} · {time}",
-      "background": "El temporizador usa la hora de término: sigue siendo exacto con la pantalla bloqueada o la app en segundo plano. Si el dispositivo pausa la página, la alarma suena cuando vuelvas."
+      "background": "El temporizador usa la hora de término: sigue siendo exacto con la pantalla bloqueada o la app en segundo plano. Cuando termina, la alarma vuelve a sonar cada 5 segundos, durante hasta 2 minutos, hasta que la detengas. Si el dispositivo pausa la página, la alarma suena cuando vuelvas."
     },
     "wake": {
       "label": "Mantener la pantalla encendida",
@@ -46,8 +47,7 @@
       "denied": "El navegador no permitió mantener la pantalla encendida ahora (por ejemplo, en modo de ahorro de batería). Toca la pantalla de vez en cuando."
     },
     "sound": {
-      "on": "Sonido de la alarma activado",
-      "off": "Sonido de la alarma desactivado"
+      "label": "Sonido de la alarma"
     },
     "complete": {
       "title": "¿Terminaste?",
@@ -77,7 +77,11 @@
       "emptyCategory": "No hay recetas guardadas en esta categoría.",
       "remove": "Quitar",
       "removeLabel": "Quitar {title} de las guardadas",
-      "removed": "Receta quitada de las guardadas."
+      "removed": "Receta quitada de las guardadas.",
+      "confirmTitle": "¿Quitar de las guardadas?",
+      "confirmDescription": "“{title}” sale de tu colección. Para guardarla de nuevo, toca el corazón en la página de la receta.",
+      "confirmButton": "Quitar",
+      "cancel": "Cancelar"
     },
     "lists": {
       "emptyTitle": "Ninguna lista con recetas",
@@ -111,7 +115,7 @@
       "emptyDescription": "Abre una receta y aparecerá en esta lista.",
       "viewed": "Vista {when}",
       "remove": "Quitar del historial",
-      "removeLabel": "Quitar {title} del historial",
+      "removeLabel": "Quitar del historial: {title}",
       "removed": "Receta quitada del historial.",
       "unavailableTitle": "Historial no disponible",
       "unavailableDescription": "El historial de recetas todavía no está disponible en este entorno.",

@@ -84,8 +84,22 @@ test.describe("Modo Cozinha (conta free)", () => {
     await expect(progress).toHaveText(`Etapa 1 de ${total}`);
     await page.keyboard.press("ArrowRight");
     await expect(progress).toHaveText(`Etapa 2 de ${total}`);
-    await page.getByTestId("cook-prev").click();
+    // "Anterior" com Enter até a primeira etapa: o botão fica aria-disabled e mantém o foco
+    const prev = page.getByTestId("cook-prev");
+    await prev.focus();
+    await page.keyboard.press("Enter");
     await expect(progress).toHaveText(`Etapa 1 de ${total}`);
+    await expect(prev).toBeFocused();
+    await expect(prev).toHaveAttribute("aria-disabled", "true");
+    await page.keyboard.press("Enter");
+    await expect(progress).toHaveText(`Etapa 1 de ${total}`);
+
+    // progresso guardado por conta: uh-cook:<conta>:<receita>
+    const keys = await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.startsWith("uh-cook:")));
+    expect(keys.length).toBeGreaterThan(0);
+    for (const key of keys) expect(key).toMatch(/^uh-cook:[0-9a-f-]{36}:[0-9a-f-]{36}$/);
+    // som do alarme: interruptor com rótulo fixo
+    await expect(page.getByRole("switch", { name: "Som do alarme" })).toHaveAttribute("aria-checked", /true|false/);
 
     // marcar a etapa como concluída; a marca fica no aparelho depois de recarregar
     const done = page.getByTestId("cook-step-done");
@@ -114,9 +128,13 @@ test.describe("Modo Cozinha (conta free)", () => {
       const start = page.getByTestId("cook-timer-start");
       const [mm, ss] = (await start.textContent())!.match(/(\d+):(\d{2})/)!.slice(1).map(Number);
       const durationMs = (mm * 60 + ss) * 1000;
-      await start.click();
+      // com teclado: iniciar leva o foco a "Cancelar" e o início é anunciado (região educada)
+      await start.focus();
+      await page.keyboard.press("Enter");
       const clock = page.getByTestId("cook-timer-clock");
       await expect(clock).toBeVisible();
+      await expect(page.getByTestId("cook-timer-cancel")).toBeFocused();
+      await expect(page.getByTestId("cook-status")).toHaveText(/^Cronômetro iniciado: \d{2}:\d{2}\.$/);
       await page.clock.fastForward(60_000);
       await expect(clock).toHaveText(/^\d{2}:\d{2}$/);
       const left = (await clock.textContent())!.split(":").map(Number);
@@ -124,17 +142,35 @@ test.describe("Modo Cozinha (conta free)", () => {
       // termina: alarme anunciado em voz alta (assertive) e botão para parar
       await page.clock.fastForward(durationMs);
       await expect(page.getByTestId("cook-alert")).toContainText("terminou");
-      await page.getByTestId("cook-timer-dismiss").click();
+      // o foco estava em "Cancelar", que sumiu: vai para "Parar o alarme"
+      const dismiss = page.getByTestId("cook-timer-dismiss");
+      await expect(dismiss).toHaveText("Parar o alarme");
+      await expect(dismiss).toBeFocused();
+      await page.keyboard.press("Enter");
       await expect(page.getByTestId("cook-timer-start")).toBeVisible();
-      // inicia de novo e cancela
-      await page.getByTestId("cook-timer-start").click();
+      await expect(page.getByTestId("cook-timer-start")).toBeFocused();
+      // inicia de novo e cancela, sempre com o foco no botão que entrou no lugar
+      await page.keyboard.press("Enter");
       await expect(page.getByTestId("cook-timer-clock")).toBeVisible();
-      await page.getByTestId("cook-timer-cancel").click();
+      await expect(page.getByTestId("cook-timer-cancel")).toBeFocused();
+      await page.keyboard.press("Enter");
       await expect(page.getByTestId("cook-timer-start")).toBeVisible();
+      await expect(page.getByTestId("cook-timer-start")).toBeFocused();
       await expect(page.getByTestId("cook-timer-clock")).toHaveCount(0);
+      await expect(page.getByTestId("cook-status")).toHaveText("Cronômetro cancelado.");
     } else {
       test.info().annotations.push({ type: "note", description: "nenhuma etapa com duração nesta receita: cronômetro não exercitado" });
     }
+
+    // penúltima etapa: "Próxima" com Enter vira "Ver receita completa", que recebe o foco
+    await page.keyboard.press("Home");
+    await expect(progress).toHaveText(`Etapa 1 de ${total}`);
+    for (let i = 1; i < total - 1; i += 1) await page.getByTestId("cook-next").click();
+    await expect(progress).toHaveText(`Etapa ${total - 1} de ${total}`);
+    await page.getByTestId("cook-next").focus();
+    await page.keyboard.press("Enter");
+    await expect(progress).toHaveText(`Etapa ${total} de ${total}`);
+    await expect(page.getByTestId("cook-finish-link")).toBeFocused();
 
     const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     const serious = axe.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
@@ -186,6 +222,13 @@ test.describe("Minha coleção de receitas (conta free)", () => {
       await page.goto("/profile/receitas");
       await expect(page.getByRole("heading", { level: 1, name: "Minha coleção de receitas" })).toBeVisible();
       await expect(page.getByTestId("saved-list")).toContainText(RECIPE.title);
+      // remover das salvas pede confirmação; cancelar mantém a receita
+      await page.getByRole("button", { name: `Remover ${RECIPE.title} das salvas` }).click();
+      const confirmRemove = page.getByRole("dialog", { name: "Remover das salvas?" });
+      await expect(confirmRemove).toContainText(RECIPE.title);
+      await confirmRemove.getByRole("button", { name: "Cancelar" }).click();
+      await expect(confirmRemove).toBeHidden();
+      await expect(page.getByTestId("saved-list")).toContainText(RECIPE.title);
 
       // histórico: desligado por padrão (ou sobra de outra execução, que é desligada antes)
       await page.goto("/profile/receitas?aba=vistas");
@@ -205,6 +248,8 @@ test.describe("Minha coleção de receitas (conta free)", () => {
       await expect(page.getByRole("heading", { level: 1, name: RECIPE.title })).toBeVisible();
       await page.goto("/profile/receitas?aba=vistas");
       await expect(page.getByTestId("history-list")).toContainText(RECIPE.title);
+      // o nome acessível começa pelo texto visível (controle por voz)
+      await expect(page.getByRole("button", { name: `Tirar do histórico: ${RECIPE.title}` })).toBeVisible();
 
       // desligar pede confirmação ("isto apaga o histórico"); cancelar mantém
       await historySwitch.click();
@@ -241,6 +286,7 @@ test.describe("Minha coleção de receitas (conta free)", () => {
         const remove = page.getByRole("button", { name: `Remover ${RECIPE.title} das salvas` });
         if ((await remove.count()) > 0) {
           await remove.click();
+          await page.getByTestId("saved-remove-confirm").click();
           await expect(page.getByRole("button", { name: `Remover ${RECIPE.title} das salvas` })).toHaveCount(0);
         }
       }

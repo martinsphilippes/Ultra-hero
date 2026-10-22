@@ -13,7 +13,6 @@
     "doneCount": "{n, plural, =0 {No steps done} =1 {1 of {total} steps done} other {# of {total} steps done}}",
     "stepIngredients": "In this step",
     "notScaled": "not adjusted automatically",
-    "markDone": "Mark step as done",
     "stepDone": "Step done",
     "noSteps": "This recipe has no steps for cook mode yet.",
     "settings": "Cook mode preferences",
@@ -26,9 +25,11 @@
     },
     "timer": {
       "start": "Start timer ({time})",
+      "started": "Timer started: {time}.",
       "remaining": "Remaining",
       "remainingLabel": "{time} remaining",
       "cancel": "Cancel timer",
+      "cancelled": "Timer canceled.",
       "finished": "Time's up!",
       "finishedShort": "done",
       "finishedAlert": "The timer for step {n} is done.",
@@ -36,7 +37,7 @@
       "clear": "Close timer",
       "others": "Other timers",
       "otherLabel": "Step {n} · {time}",
-      "background": "The timer uses the end time, so it stays right with the screen locked or the app in the background. If the device pauses the page, the alarm rings when you come back."
+      "background": "The timer uses the end time, so it stays right with the screen locked or the app in the background. When it ends, the alarm rings again every 5 seconds, for up to 2 minutes, until you stop it. If the device pauses the page, the alarm rings when you come back."
     },
     "wake": {
       "label": "Keep the screen on",
@@ -46,8 +47,7 @@
       "denied": "The browser didn't allow keeping the screen on right now (for example, in battery saver mode). Tap the screen now and then."
     },
     "sound": {
-      "on": "Alarm sound on",
-      "off": "Alarm sound off"
+      "label": "Alarm sound"
     },
     "complete": {
       "title": "All done?",
@@ -77,7 +77,11 @@
       "emptyCategory": "No saved recipes in this category.",
       "remove": "Remove",
       "removeLabel": "Remove {title} from saved",
-      "removed": "Recipe removed from saved."
+      "removed": "Recipe removed from saved.",
+      "confirmTitle": "Remove from saved?",
+      "confirmDescription": "“{title}” leaves your collection. To keep it again, tap the heart on the recipe page.",
+      "confirmButton": "Remove",
+      "cancel": "Cancel"
     },
     "lists": {
       "emptyTitle": "No lists with recipes",
@@ -111,7 +115,7 @@
       "emptyDescription": "Open a recipe and it shows up in this list.",
       "viewed": "Viewed {when}",
       "remove": "Remove from history",
-      "removeLabel": "Remove {title} from history",
+      "removeLabel": "Remove from history: {title}",
       "removed": "Recipe removed from history.",
       "unavailableTitle": "History unavailable",
       "unavailableDescription": "The recipe history isn't available in this environment yet.",

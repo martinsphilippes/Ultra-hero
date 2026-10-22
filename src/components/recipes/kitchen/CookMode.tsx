@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, BellRing, Check, ChefHat, Circle, CircleCheck, Lightbulb, ListChecks, Sun, SunDim, Thermometer, Timer, TimerOff, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, BellRing, Check, ChefHat, Circle, CircleCheck, Lightbulb, ListChecks, Sun, SunDim, Thermometer, Timer, TimerOff, Volume2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type TouchEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type FocusEvent, type TouchEvent } from "react";
 import { completeContent } from "@/app/(app)/content/actions";
 import { Badge, Button, IconButton, ProgressBar, Sheet, Switch, useToast } from "@/components/ui";
 import {
@@ -16,6 +16,7 @@ import {
   parseCookProgress,
   serializeCookProgress,
   shouldAlarmOnRestore,
+  staleCookKeys,
   startTimer,
   swipeToNav,
   timerDone,
@@ -29,10 +30,12 @@ import {
 import { formatStepDuration } from "@/lib/recipes/view-model";
 import { createWakeLock, type WakeLockController, type WakeLockStatus } from "@/lib/recipes/wake-lock";
 import { cn } from "@/lib/utils";
-import { createAlarm, type Alarm } from "./alarm";
+import { createAlarm, repeatAlarm, type Alarm } from "./alarm";
 
 type Props = {
   model: CookModel;
+  /** Conta logada: o progresso no aparelho é separado por conta. */
+  userId: string;
   /** Volta à receita completa (com o mesmo ajuste de porções). */
   recipeHref: string;
   /** Rótulo "Concluída em …" quando a pessoa já concluiu a receita. */
@@ -55,17 +58,65 @@ function writeStorage(key: string, value: string) {
   }
 }
 
+/** Tira do aparelho o progresso vencido (24 h) e as chaves antigas sem a conta, de qualquer receita. */
+function sweepStorage(now: number) {
+  try {
+    const store = window.localStorage;
+    const entries: [string, string | null][] = [];
+    for (let i = 0; i < store.length; i += 1) {
+      const key = store.key(i);
+      if (key) entries.push([key, store.getItem(key)]);
+    }
+    for (const key of staleCookKeys(entries, now)) store.removeItem(key);
+  } catch {
+    // sem acesso ao armazenamento: nada guardado, nada a limpar
+  }
+}
+
+/**
+ * Quando uma troca de estado desmonta ou desativa o controle focado, o navegador joga o foco no
+ * <body> (o próximo Tab volta ao topo e o leitor de tela se perde). Devolve o foco ao controle que
+ * entrou no lugar, mas só se o foco estava dentro da área.
+ */
+function useFocusRescue<T extends HTMLElement>(state: string, pick: (area: T) => HTMLElement | null) {
+  const ref = useRef<T | null>(null);
+  const hadFocus = useRef(false);
+  useLayoutEffect(() => {
+    const area = ref.current;
+    if (!area || !hadFocus.current) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.isConnected) return;
+    pick(area)?.focus();
+  }, [state, pick]);
+  return {
+    ref,
+    onFocus: () => {
+      hadFocus.current = true;
+    },
+    onBlur: (event: FocusEvent<T>) => {
+      // foco que saiu para outro controle fora da área; sem destino (remoção, clique no vazio) fica marcado
+      const next = event.relatedTarget;
+      if (next instanceof Node && !event.currentTarget.contains(next)) hadFocus.current = false;
+    },
+  };
+}
+
+const pickTimerControl = (area: HTMLElement) => area.querySelector<HTMLElement>("button");
+const pickNavForward = (area: HTMLElement) => area.querySelector<HTMLElement>('[data-testid="cook-finish-link"], [data-testid="cook-next"]');
+const pickCompleted = (area: HTMLElement) => area.querySelector<HTMLElement>('[data-testid="cook-completed"]');
+const pickStepHeading = (area: HTMLElement) => area.querySelector<HTMLElement>("#cook-step-title");
+
 // Modo Cozinha: uma etapa por vez, letra grande, navegação por botão, teclado ou deslizar,
 // ingredientes da etapa com as porções da URL, cronômetro por horário de término (continua certo
 // com a tela bloqueada), etapas marcadas no aparelho por 24 h e a tela acesa quando o navegador deixa.
-export function CookMode({ model, recipeHref, completedLabel }: Props) {
+export function CookMode({ model, userId, recipeHref, completedLabel }: Props) {
   const t = useTranslations("kitchen.cook");
   const tv = useTranslations("recipes.view");
   const { toast } = useToast();
   const steps = model.steps;
   const total = steps.length;
   const stepIds = useMemo(() => steps.map((s) => s.id), [steps]);
-  const storageKey = cookStorageKey(model.contentId);
+  const storageKey = cookStorageKey(userId, model.contentId);
 
   const [index, setIndex] = useState(0);
   const [done, setDone] = useState<string[]>([]);
@@ -78,6 +129,8 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
   const [wake, setWake] = useState<WakeLockStatus>("off");
   const [ingredientsOpen, setIngredientsOpen] = useState(false);
   const [alert, setAlert] = useState("");
+  // anúncio educado (início/cancelamento do cronômetro); o fim do tempo vai no aviso assertivo
+  const [status, setStatus] = useState("");
   const [completed, setCompleted] = useState<string | null>(completedLabel);
   const [completing, startCompleting] = useTransition();
 
@@ -98,16 +151,18 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
   // ---------------------------------------------------------------- progresso guardado no aparelho
   useEffect(() => {
     const restoredAt = Date.now();
+    sweepStorage(restoredAt);
     const progress = parseCookProgress(readStorage(storageKey), restoredAt, stepIds);
     setIndex(progress.step);
     setDone(progress.done);
     setTimers(progress.timers);
-    // o que terminou com a página fechada: toca só se foi há pouco; o resto fica "terminou", em silêncio
+    // o que terminou com a página fechada: toca só se foi há pouco (o efeito do alarme marca como
+    // tocando); o resto fica "terminou", em silêncio
     const finished = progress.timers.filter((tm) => timerDone(tm, restoredAt));
     for (const tm of finished) {
       if (!shouldAlarmOnRestore(tm, restoredAt)) firedRef.current.add(`${tm.stepId}:${tm.endsAt}`);
     }
-    setRinging(finished.map((tm) => tm.stepId));
+    setRinging([]);
     setSound(readStorage(COOK_SOUND_KEY) !== "off");
     setNow(restoredAt);
     setHydrated(true);
@@ -146,6 +201,16 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
     setRinging((list) => [...new Set([...list, ...fresh.map((tm) => tm.stepId)])]);
     setAlert(t("timer.finishedAlert", { n: stepNumber(fresh[0].stepId) }));
   }, [now, timers, t, stepNumber]);
+
+  // um toque só passa despercebido longe da tela: repete até "Parar o alarme" (ou 2 min)
+  const ringingKey = ringing.join(",");
+  useEffect(() => {
+    if (!ringingKey) return;
+    return repeatAlarm(() => alarmRef.current?.ring({ sound: soundRef.current }));
+  }, [ringingKey]);
+  useEffect(() => {
+    if (!ringingKey) alarmRef.current?.stop();
+  }, [ringingKey]);
 
   useEffect(() => () => alarmRef.current?.dispose(), []);
 
@@ -206,16 +271,18 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
     setRinging((list) => list.filter((id) => id !== step.id));
     setNow(Date.now());
     setAlert("");
+    setStatus(t("timer.started", { time: formatClock(started.durationMs) }));
   }
 
   function onCancelTimer(stepId: string) {
+    const current = timers.find((tm) => tm.stepId === stepId);
     setTimers((list) => list.filter((tm) => tm.stepId !== stepId));
     setRinging((list) => list.filter((id) => id !== stepId));
     setAlert("");
+    setStatus(current && !timerDone(current, Date.now()) ? t("timer.cancelled") : "");
   }
 
-  function onToggleSound() {
-    const next = !sound;
+  function onSound(next: boolean) {
     setSound(next);
     writeStorage(COOK_SOUND_KEY, next ? "on" : "off");
   }
@@ -248,6 +315,12 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
   };
 
   const otherRunning = now === null ? [] : timers.filter((tm) => tm.stepId !== step?.id);
+  const timerKind = !timer ? "none" : timerDone(timer, now ?? 0) ? "done" : "running";
+  const last = index === total - 1;
+  const timerFocus = useFocusRescue<HTMLDivElement>(`${step?.id}:${timerKind}`, pickTimerControl);
+  const navFocus = useFocusRescue<HTMLDivElement>(last ? "last" : "more", pickNavForward);
+  const finishFocus = useFocusRescue<HTMLElement>(completed ? "done" : "todo", pickCompleted);
+  const mainFocus = useFocusRescue<HTMLElement>(step?.id ?? "", pickStepHeading);
 
   if (!step) {
     return (
@@ -262,7 +335,6 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
   }
 
   const isDone = done.includes(step.id);
-  const last = index === total - 1;
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col" data-testid="cook-mode">
@@ -280,10 +352,13 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
         </Button>
       </header>
 
-      <main id="main" tabIndex={-1} className="flex flex-1 flex-col gap-5 px-gutter pb-40 pt-5 outline-none">
+      <main id="main" tabIndex={-1} ref={mainFocus.ref} onFocus={mainFocus.onFocus} onBlur={mainFocus.onBlur} className="flex flex-1 flex-col gap-5 px-gutter pb-40 pt-5 outline-none">
         {/* avisos ativos: alarme e cronômetros de outras etapas */}
         <p role="alert" aria-live="assertive" className={cn("rounded-xl px-4 py-3 text-base font-semibold", alert ? "bg-warning-soft text-fg" : "sr-only")} data-testid="cook-alert">
           {alert}
+        </p>
+        <p role="status" aria-live="polite" aria-atomic="true" className="sr-only" data-testid="cook-status">
+          {status}
         </p>
         {otherRunning.length > 0 && (
           <ul className="flex flex-wrap gap-2" aria-label={t("timer.others")}>
@@ -316,7 +391,7 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
           onTouchEnd={onTouchEnd}
           data-testid="cook-step"
         >
-          <h2 id="cook-step-title" className="sr-only">
+          <h2 id="cook-step-title" tabIndex={-1} className="sr-only">
             {tv("step", { n: step.number })}
           </h2>
           <p className="text-[1.625rem] font-medium leading-snug text-fg text-pretty whitespace-pre-line sm:text-3xl" data-testid="cook-instruction">
@@ -346,7 +421,7 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
                   <li key={i.id} className="flex flex-wrap items-baseline gap-x-2 text-lg text-fg">
                     {amountText(i) ? <span className="font-semibold type-numeric">{amountText(i)}</span> : null}
                     <span>{i.name}</span>
-                    {i.optional ? <span className="type-caption text-fg-muted">({tv("optional")})</span> : null}
+                    {i.optional ? <span className="type-caption text-fg-muted">{tv("optional")}</span> : null}
                     {i.notScaled ? <span className="type-caption text-fg-muted">{t("notScaled")}</span> : null}
                   </li>
                 ))}
@@ -371,12 +446,12 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
           )}
 
           {step.durationSeconds ? (
-            <div className="flex flex-col gap-3 rounded-xl border border-border p-4" data-testid="cook-timer">
+            <div ref={timerFocus.ref} onFocus={timerFocus.onFocus} onBlur={timerFocus.onBlur} className="flex flex-col gap-3 rounded-xl border border-border p-4" data-testid="cook-timer">
               {!timer ? (
                 <Button variant="secondary" size="lg" leadingIcon={<Timer />} onClick={onStartTimer} disabled={!hydrated} className="min-h-14 text-lg" data-testid="cook-timer-start">
                   {t("timer.start", { time: formatClock(step.durationSeconds * 1000) })}
                 </Button>
-              ) : timerDone(timer, now ?? 0) ? (
+              ) : timerKind === "done" ? (
                 <>
                   <p className="flex items-center gap-2 text-2xl font-semibold text-fg">
                     <BellRing className="size-6 text-warning" aria-hidden="true" />
@@ -402,6 +477,7 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
             </div>
           ) : null}
 
+          {/* alternância com rótulo fixo: o estado vem do aria-pressed (e do ícone e da cor) */}
           <Button
             variant={isDone ? "primary" : "secondary"}
             size="lg"
@@ -411,17 +487,17 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
             className="min-h-14 text-base"
             data-testid="cook-step-done"
           >
-            {isDone ? t("stepDone") : t("markDone")}
+            {t("stepDone")}
           </Button>
         </section>
 
         {last && (
-          <section aria-labelledby="cook-finish-title" className="flex flex-col gap-3 rounded-2xl border border-accent/30 bg-accent-soft/50 p-5">
+          <section ref={finishFocus.ref} onFocus={finishFocus.onFocus} onBlur={finishFocus.onBlur} aria-labelledby="cook-finish-title" className="flex flex-col gap-3 rounded-2xl border border-accent/30 bg-accent-soft/50 p-5">
             <h2 id="cook-finish-title" className="type-h3 text-fg">
               {t("complete.title")}
             </h2>
             {completed ? (
-              <p className="flex items-center gap-2 type-body text-fg" data-testid="cook-completed">
+              <p tabIndex={-1} className="flex items-center gap-2 type-body text-fg outline-none" data-testid="cook-completed">
                 <CircleCheck className="size-5 text-success" aria-hidden="true" />
                 {completed}
               </p>
@@ -457,9 +533,18 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
               description={wake === "active" ? t("wake.active") : t("wake.off")}
             />
           )}
-          <Button variant="ghost" size="lg" aria-pressed={sound} leadingIcon={sound ? <Volume2 /> : <VolumeX />} onClick={onToggleSound} className="justify-start" data-testid="cook-sound">
-            {sound ? t("sound.on") : t("sound.off")}
-          </Button>
+          <Switch
+            id="cook-sound"
+            checked={sound}
+            onCheckedChange={onSound}
+            label={
+              <span className="inline-flex items-center gap-2">
+                <Volume2 className="size-4 text-accent-text" aria-hidden="true" />
+                {t("sound.label")}
+              </span>
+            }
+            data-testid="cook-sound"
+          />
           <p className="type-caption text-fg-muted">{t("timer.background")}</p>
         </section>
 
@@ -468,8 +553,17 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
 
       {/* navegação fixa embaixo, alvo de 56 px */}
       <nav aria-label={t("navLabel")} className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg/95 backdrop-blur" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 px-gutter py-3">
-          <Button variant="secondary" size="lg" leadingIcon={<ArrowLeft />} onClick={() => go("prev")} disabled={index === 0} className="h-14 min-h-14 text-base" data-testid="cook-prev">
+        <div ref={navFocus.ref} onFocus={navFocus.onFocus} onBlur={navFocus.onBlur} className="mx-auto grid max-w-3xl grid-cols-2 gap-3 px-gutter py-3">
+          {/* aria-disabled em vez de disabled: o botão continua focável e o foco não cai no <body> */}
+          <Button
+            variant="secondary"
+            size="lg"
+            leadingIcon={<ArrowLeft />}
+            onClick={() => go("prev")}
+            aria-disabled={index === 0 || undefined}
+            className="h-14 min-h-14 text-base aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
+            data-testid="cook-prev"
+          >
             {t("prev")}
           </Button>
           {last ? (
@@ -493,7 +587,7 @@ export function CookMode({ model, recipeHref, completedLabel }: Props) {
               {amountText(i) ? <span className="font-semibold type-numeric">{amountText(i)}</span> : null}
               <span>{i.name}</span>
               {i.note ? <span className="type-caption text-fg-muted">{i.note}</span> : null}
-              {i.optional ? <span className="type-caption text-fg-muted">({tv("optional")})</span> : null}
+              {i.optional ? <span className="type-caption text-fg-muted">{tv("optional")}</span> : null}
               {i.notScaled ? <span className="type-caption text-fg-muted">{t("notScaled")}</span> : null}
             </li>
           ))}

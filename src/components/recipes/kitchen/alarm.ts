@@ -7,10 +7,33 @@ export type Alarm = {
   /** Chamar dentro do gesto (clique em "Iniciar"): cria/retoma o contexto de áudio. */
   prime: () => void;
   ring: (options: { sound: boolean }) => void;
+  /** Corta a vibração em curso (o som de cada toque já é curto). */
+  stop: () => void;
   dispose: () => void;
 };
 
 export const VIBRATION_PATTERN = [400, 200, 400, 200, 400];
+
+/** Intervalo entre os toques e o limite: quem está longe da tela ouve de novo, sem tocar para sempre. */
+export const ALARM_REPEAT_MS = 5_000;
+export const ALARM_REPEAT_LIMIT_MS = 2 * 60 * 1000;
+
+/**
+ * Repete o toque a cada 5 s até ser dispensado, por no máximo 2 min (o primeiro toque é de quem chama).
+ * Devolve a função que para; "Parar o alarme" chega aqui pela limpeza do efeito.
+ */
+export function repeatAlarm(ring: () => void, every = ALARM_REPEAT_MS, limit = ALARM_REPEAT_LIMIT_MS): () => void {
+  let elapsed = 0;
+  const id = setInterval(() => {
+    elapsed += every;
+    if (elapsed > limit) {
+      clearInterval(id);
+      return;
+    }
+    ring();
+  }, every);
+  return () => clearInterval(id);
+}
 
 export function createAlarm(): Alarm {
   let ctx: AudioContext | null = null;
@@ -56,6 +79,13 @@ export function createAlarm(): Alarm {
         osc.connect(gain).connect(c.destination);
         osc.start(start);
         osc.stop(start + 0.32);
+      }
+    },
+    stop: () => {
+      try {
+        if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") navigator.vibrate(0);
+      } catch {
+        // vibração é um extra
       }
     },
     dispose: () => {

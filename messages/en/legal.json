@@ -283,7 +283,7 @@
               }
             }
           },
-          "p2": "<strong>Browser local storage:</strong> the <code>uh-theme</code> key stores the theme you chose, so it also applies to pages opened offline. In cook mode, the <code>uh-cook:…</code> keys (one per recipe) keep the steps you marked and the timers for 24 hours, and <code>uh-cook-sound</code> remembers whether the alarm sound is on. None of this leaves your device.",
+          "p2": "<strong>Browser local storage:</strong> the <code>uh-theme</code> key stores the theme you chose, so it also applies to pages opened offline. In cook mode, the <code>uh-cook:…</code> keys (one per account and recipe, deleted after 24 hours) keep the steps you marked and the timers for 24 hours, and <code>uh-cook-sound</code> remembers whether the alarm sound is on. None of this leaves your device.",
           "p3": "<strong>App cache:</strong> the service worker stores the offline page, the manifest, the icons and the app’s static files in your browser, so it loads faster and works offline. This cache does not contain your personal data.",
           "p4": "<strong>Embedded videos:</strong> if a piece of content shows a YouTube video (via the youtube-nocookie.com domain) or a Vimeo video, the player is loaded directly from that service when the video appears on the page, and the service may collect technical data and use its own cookies, according to its policy. The demo’s sample content uses a simulated player, with no external service.",
           "p5": "You can delete cookies and site data in your browser settings. Without the session cookie, you will need to sign in again."
