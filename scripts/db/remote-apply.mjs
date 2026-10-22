@@ -2,6 +2,8 @@
 // Aplica migrations no projeto Supabase remoto pela Management API (HTTPS).
 // Uso: SUPABASE_ACCESS_TOKEN=... node scripts/db/remote-apply.mjs [--from 0006] [--only 0008_seed] [--dry]
 // Cada arquivo roda numa única requisição (transação); o registro vai para supabase_migrations.schema_migrations.
+// Arquivo com a linha "-- remote-apply: manual" (ex.: 0029, que exige dry-run no meio) é recusado:
+// segue o roteiro manual do documento indicado no cabeçalho dele.
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -49,6 +51,11 @@ for (const file of files) {
     continue;
   }
   const sql = readFileSync(path.join(dir, file), "utf8");
+  // Para antes de aplicar qualquer coisa depois dela: a ordem das migrações importa.
+  if (/^-- remote-apply: manual$/m.test(sql)) {
+    console.error(`  PARADO: ${name} é de aplicação manual em partes (ver o cabeçalho do arquivo).`);
+    process.exit(3);
+  }
   console.log(`${dry ? "(dry) " : ""}> ${name} (${sql.length} bytes)`);
   if (dry) continue;
   const started = Date.now();

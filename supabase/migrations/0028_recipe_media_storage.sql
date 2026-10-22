@@ -45,6 +45,15 @@ end $$;
 revoke execute on function public.recipe_media_quota_ok() from public, anon;
 grant execute on function public.recipe_media_quota_ok() to authenticated, service_role;
 
+-- Objeto já registrado em recipe_media? Definer de propósito: a política de exclusão não pode
+-- depender da RLS de quem chama (herói suspenso não enxerga a linha e a foto pareceria "solta").
+create or replace function public.recipe_media_registered(p_name text)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.recipe_media where storage_path = p_name)
+$$;
+revoke execute on function public.recipe_media_registered(text) from public, anon;
+grant execute on function public.recipe_media_registered(text) to authenticated, service_role;
+
 -- Órfãos: objetos do bucket sem linha em recipe_media há mais de 24 h. Só o cron (service role)
 -- lê, e apaga pela API do Storage; nunca se apaga storage.objects por SQL.
 create or replace function public.recipe_orphan_media(p_limit int)
@@ -97,7 +106,7 @@ begin
       create policy recipe_media_delete on storage.objects for delete to authenticated
         using (bucket_id = 'recipe-media' and owner_id = (select auth.uid())::text
                and (public.recipe_media_path_ok(name)
-                    or not exists (select 1 from public.recipe_media m where m.storage_path = objects.name)))
+                    or not public.recipe_media_registered(objects.name)))
     $sql$;
   end if;
 end $$;

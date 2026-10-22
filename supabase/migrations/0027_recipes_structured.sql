@@ -93,7 +93,9 @@ create table if not exists public.recipe_details (
 create index if not exists recipe_details_diets_idx on public.recipe_details using gin (diets);
 create index if not exists recipe_details_allergens_idx on public.recipe_details using gin (allergens);
 create index if not exists recipe_details_total_idx on public.recipe_details (total_minutes, content_id);
-create index if not exists recipe_details_cover_idx on public.recipe_details (cover_media_id) where cover_media_id is not null;
+-- FK composta (cover_media_id, content_id): índice com o mesmo prefixo, para o advisor
+-- unindexed_foreign_keys e para o set null quando a mídia sai
+create index if not exists recipe_details_cover_content_idx on public.recipe_details (cover_media_id, content_id) where cover_media_id is not null;
 
 -- ---------------------------------------------------------------- protegido 1:1 (só com acesso): nota do chef e termos de busca
 create table if not exists public.recipe_extras (
@@ -153,7 +155,7 @@ create table if not exists public.recipe_steps (
   constraint recipe_steps_image_fk foreign key (image_media_id, content_id)
     references public.recipe_media (id, content_id) on delete set null (image_media_id)
 );
-create index if not exists recipe_steps_image_idx on public.recipe_steps (image_media_id) where image_media_id is not null;
+create index if not exists recipe_steps_image_content_idx on public.recipe_steps (image_media_id, content_id) where image_media_id is not null;
 
 create table if not exists public.recipe_step_ingredients (   -- Modo Cozinha
   content_id uuid not null,
@@ -791,10 +793,46 @@ create or replace trigger trg_d_content_bodies_recipe_managed before insert or u
   for each row execute function public.content_bodies_recipe_managed();
 
 -- ---------------------------------------------------------------- herói: especialidades e credenciais (P7)
--- O herói edita especialidades e credenciais; a aprovação (credentials_approved_at) é do admin e cai
--- sempre que o texto muda fora da RPC (o perfil público só mostra credenciais aprovadas).
+-- O herói edita especialidades; credenciais ele só PEDE (creator_credentials_requests, fora da linha
+-- pública, como creator_rights_private). creator_profiles.credentials é legível por qualquer visitante,
+-- então só recebe o texto quando o admin aprova (admin_set_creator_credentials, sob app.trusted).
 create or replace trigger trg_a_creator_profiles_guard before update on public.creator_profiles
-  for each row execute function public.guard_protected_columns('{headline,bio,avatar_url,cover_url,socials,specialties,credentials}');
+  for each row execute function public.guard_protected_columns('{headline,bio,avatar_url,cover_url,socials,specialties}');
+create table if not exists public.creator_credentials_requests (
+  creator_id uuid primary key references public.creator_profiles (id) on delete cascade,
+  text text not null check (length(btrim(text)) between 1 and 300),
+  updated_at timestamptz not null default now()
+);
+alter table public.creator_credentials_requests enable row level security;
+revoke all on table public.creator_credentials_requests from anon, authenticated;
+grant select, delete on table public.creator_credentials_requests to authenticated;
+grant insert (creator_id, text) on table public.creator_credentials_requests to authenticated;
+grant update (text) on table public.creator_credentials_requests to authenticated;
+do $$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'creator_credentials_requests' and policyname = 'creator_credentials_requests_owner') then
+    create policy creator_credentials_requests_owner on public.creator_credentials_requests for all to authenticated
+      using (creator_id = (select public.my_creator_id()) or (select public.is_admin()))
+      with check (creator_id = (select public.my_creator_id()) or (select public.is_admin()));
+  end if;
+end $$;
+create or replace trigger trg_creator_credentials_requests_updated before update on public.creator_credentials_requests
+  for each row execute function public.set_updated_at();
+-- Pedido novo, editado ou retirado: o texto aprovado sai do perfil público até nova aprovação.
+create or replace function public.creator_credentials_request_changed()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare v_creator uuid := coalesce(new.creator_id, old.creator_id); v_prev text := current_setting('app.trusted', true);
+begin
+  if tg_op = 'UPDATE' and new.text is not distinct from old.text then return null; end if;
+  perform set_config('app.trusted', 'on', true);
+  update public.creator_profiles set credentials = null, credentials_approved_at = null
+  where id = v_creator and (credentials is not null or credentials_approved_at is not null);
+  perform set_config('app.trusted', coalesce(nullif(v_prev, ''), 'off'), true);
+  return null;
+end $$;
+revoke execute on function public.creator_credentials_request_changed() from public, anon;
+grant execute on function public.creator_credentials_request_changed() to authenticated, service_role;
+create or replace trigger trg_creator_credentials_request_changed after insert or update or delete on public.creator_credentials_requests
+  for each row execute function public.creator_credentials_request_changed();
 create or replace function public.creator_credentials_reset()
 returns trigger language plpgsql set search_path = public as $$
 begin
@@ -988,6 +1026,8 @@ returns trigger language plpgsql set search_path = public as $$
 begin
   if new.history_enabled and (tg_op = 'INSERT' or not old.history_enabled) then new.history_enabled_at := now();
   elsif not new.history_enabled then new.history_enabled_at := null;
+  -- registro do consentimento: só o banco grava a data; o titular não a reescreve
+  elsif new.history_enabled then new.history_enabled_at := old.history_enabled_at;
   end if;
   return new;
 end $$;
@@ -995,6 +1035,19 @@ revoke execute on function public.user_recipe_prefs_before() from public, anon;
 grant execute on function public.user_recipe_prefs_before() to authenticated, service_role;
 create or replace trigger trg_a_user_recipe_prefs_before before insert or update on public.user_recipe_prefs
   for each row execute function public.user_recipe_prefs_before();
+
+-- viewed_at vem sempre do relógio do banco quando o cliente grava: data futura escaparia da
+-- retenção de 90 dias. Sistema (sem auth.uid) e funções confiáveis ficam livres (testes, jobs).
+create or replace function public.recipe_view_history_before()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if auth.uid() is not null and not public.is_trusted_call() then new.viewed_at := now(); end if;
+  return new;
+end $$;
+revoke execute on function public.recipe_view_history_before() from public, anon;
+grant execute on function public.recipe_view_history_before() to authenticated, service_role;
+create or replace trigger trg_a_recipe_view_history_before before insert or update on public.recipe_view_history
+  for each row execute function public.recipe_view_history_before();
 
 -- Desligar o histórico apaga tudo na mesma transação.
 create or replace function public.user_recipe_prefs_after()
@@ -1235,6 +1288,10 @@ begin
   -- herói que exclui a própria conta: o perfil público fica (conteúdo assinado), sem usuário. Sem
   -- isto o set null da cascata batia na guarda de colunas (user_id é protegida) e a exclusão falhava.
   update public.creator_profiles set user_id = null where user_id = p_user;
+  -- Mesma razão: created_by é protegida em content (herói que criou pelo app ou duplicou receita) e
+  -- em products (vendedor que cadastrou). Zerar aqui, ainda sob app.trusted, evita a falha da cascata.
+  update public.content set created_by = null where created_by = p_user;
+  update public.products set created_by = null where created_by = p_user;
   perform set_config('app.trusted', 'off', true);
 end $$;
 
@@ -2233,21 +2290,26 @@ end $$;
 revoke execute on function public.admin_moderate_recipe_comment(uuid, text, text) from public, anon;
 grant execute on function public.admin_moderate_recipe_comment(uuid, text, text) to authenticated, service_role;
 
--- Credenciais do chef (P7): o herói informa; o perfil público só mostra depois desta aprovação.
+-- Credenciais do chef (P7): o herói pede em creator_credentials_requests; aprovar copia o texto
+-- do pedido para o perfil público; reprovar limpa texto e data do perfil (o pedido fica para o herói).
 create or replace function public.admin_set_creator_credentials(p_creator uuid, p_approved boolean, p_reason text)
 returns void language plpgsql security definer set search_path = public as $$
-declare cp public.creator_profiles%rowtype;
+declare cp public.creator_profiles%rowtype; v_text text;
 begin
   if not public.is_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
   select * into cp from public.creator_profiles where id = p_creator for update;
   if not found then raise exception 'creator_not_found'; end if;
-  if coalesce(p_approved, false) and nullif(btrim(coalesce(cp.credentials, '')), '') is null then raise exception 'credentials_empty'; end if;
+  select nullif(btrim(r.text), '') into v_text from public.creator_credentials_requests r where r.creator_id = p_creator;
+  if coalesce(p_approved, false) and v_text is null then raise exception 'credentials_empty'; end if;
   perform set_config('app.trusted', 'on', true);
-  update public.creator_profiles set credentials_approved_at = case when p_approved then now() end where id = p_creator;
+  update public.creator_profiles
+  set credentials = case when p_approved then v_text end, credentials_approved_at = case when p_approved then now() end
+  where id = p_creator;
   perform set_config('app.trusted', 'off', true);
   perform public.audit_log('creator.credentials', 'creator_profile', p_creator::text,
-    jsonb_build_object('credentials_approved_at', cp.credentials_approved_at),
-    jsonb_build_object('approved', coalesce(p_approved, false)), nullif(btrim(coalesce(p_reason, '')), ''));
+    jsonb_build_object('credentials', cp.credentials, 'credentials_approved_at', cp.credentials_approved_at),
+    jsonb_build_object('approved', coalesce(p_approved, false), 'credentials', case when p_approved then v_text end),
+    nullif(btrim(coalesce(p_reason, '')), ''));
 end $$;
 revoke execute on function public.admin_set_creator_credentials(uuid, boolean, text) from public, anon;
 grant execute on function public.admin_set_creator_credentials(uuid, boolean, text) to authenticated, service_role;
@@ -2290,7 +2352,9 @@ begin
   with cand as (
     select c.id, c.published_at, c.is_featured, c.search, c.creator_id, c.difficulty
     from public.content c
-    where c.type = 'recipe' and public.content_is_live(c.status, c.publish_at)
+    -- status = 'published' repetido de propósito: content_is_live não é expandida pelo planejador,
+    -- e só com o predicado explícito o índice parcial content_recipe_live_idx entra no plano
+    where c.type = 'recipe' and c.status = 'published' and public.content_is_live(c.status, c.publish_at)
       and (v_q is null
            or c.search @@ v_tsq
            or public.f_unaccent(c.title) ilike v_like

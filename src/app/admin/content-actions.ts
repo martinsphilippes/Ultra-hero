@@ -90,6 +90,12 @@ export async function setContentStatusAction(
   try {
     await requireAdmin();
     const supabase = await createClient();
+    // Receita no ar não volta a rascunho na fase 1: as antigas não cumprem a lista de publicação
+    // (recipe_incomplete) e não há editor para corrigir. Arquivar segue como retirada de segurança.
+    if (parsed.data.status === "draft") {
+      const { data: current } = await supabase.from("content").select("type, status").eq("id", parsed.data.contentId).maybeSingle();
+      if (current?.type === "recipe" && current.status === "published") return fail("recipe_editor_pending");
+    }
     // Sem data (ou "publicar agora"): a versão de 3 parâmetros limpa o agendamento.
     const { error } = schedule.value
       ? await supabase.rpc("admin_set_content_status", {

@@ -28,14 +28,14 @@ Modelado na 0027 e **ainda sem tela** (cada fase do módulo de receitas atualiza
 | Logs técnicos / execuções de recomendação | 30 dias | `recommendation_runs` + política dos provedores (Vercel/Supabase) |
 | Auditoria administrativa | 365 dias | `admin_audit` |
 | Vídeos de heróis (Cloudflare Stream) | enquanto o conteúdo existir; rascunho descartado, trocado ou abandonado (envio vencido sem ir ao ar) é apagado | cron diário (`stream_cleanup_candidates`/`stream_cleanup_discard`, API do Stream); receita nunca é apagada pela limpeza, só perde o vídeo |
-| Histórico de receitas vistas (opcional, quando a tela existir) | 90 dias | `recipe_view_history` + `run_retention()`; desligar apaga tudo na hora |
+| Histórico de receitas vistas (opcional, quando a tela existir) | 90 dias | `recipe_view_history` + `run_retention()`; desligar apaga tudo na hora; a data do acesso e a do consentimento (`history_enabled_at`) são sempre do relógio do banco, o cliente não as define |
 | Backups | conforme plano Supabase (verificar e documentar antes da abertura) | provedor |
 
 Exceções (evidência legal/incidente): `retention_exceptions` com escopo, justificativa, responsável, data de revisão e encerramento. Enquanto aberta, o registro não é anonimizado nem excluído. Nunca retenção indefinida genérica.
 
 ## Direitos do titular na POC
 
-- **Exclusão self-service** (`/profile/account` → `delete_my_account`): anonimiza perfil, remove interesses/listas/progresso/carrinho, desvincula analytics/feedback/pedidos e apaga a conta. Bloqueada se houver exceção de retenção ativa (informado ao usuário). Desde a 0027 também apaga avaliações, comentários, lista de compras, histórico e preferência de receitas, zera as autorias que ficam (versões, fotos, moderação, validação de nutrição e de vínculo) e desvincula o perfil de herói (o conteúdo assinado fica). A exclusão direta pelo painel do Auth também funciona (cenário S32).
+- **Exclusão self-service** (`/profile/account` → `delete_my_account`): anonimiza perfil, remove interesses/listas/progresso/carrinho, desvincula analytics/feedback/pedidos e apaga a conta. Bloqueada se houver exceção de retenção ativa (informado ao usuário). Desde a 0027 também apaga avaliações, comentários, lista de compras, histórico e preferência de receitas, zera as autorias que ficam (versões, fotos, moderação, validação de nutrição e de vínculo, `created_by` de conteúdo e de produto) e desvincula o perfil de herói (o conteúdo assinado fica). O herói que criou conteúdo pelo app ou duplicou receita também consegue excluir a conta (cenário S32). A exclusão direta pelo painel do Auth também funciona (cenário S32).
 - **Transparência**: página de conta resume dados, prazos e natureza demonstrativa.
 - Portabilidade/correção: edição de perfil; exportação formal fora do escopo da POC.
 

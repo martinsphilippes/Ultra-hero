@@ -14,7 +14,7 @@ Este arquivo é a cópia do documento de desenho (revisão 2) com as respostas d
 | **P4 — Prova de "revisada e publicada" no E2E** | Fica para a fase 6 (sem decisão nesta entrega). |
 | **P5 — Dados do backfill** | **Aprovadas** as 10 categorias e a classificação proposta. Os tempos são **copiados sem correção** (g2 e g4 incoerentes, g5/g6/g8 de template); a correção vem depois pelo editor. |
 | **P6 — Indexação** | **Desligada** (`RECIPES_SEO_INDEX`) enquanto os chefs forem fictícios. Nada de sitemap/JSON-LD de receita na fase 1. |
-| **P7 — Credenciais do chef** | O herói informa (`creator_profiles.credentials`); o texto só aparece depois da aprovação do admin (`admin_set_creator_credentials` grava `credentials_approved_at`; qualquer edição do herói zera a aprovação), com o rótulo **"Credenciais informadas pelo herói"** (`recipes.structured.credentialsLabel`). |
+| **P7 — Credenciais do chef** | O herói informa num pedido fora da linha pública (`creator_credentials_requests`, só dono e admin); o texto só chega a `creator_profiles.credentials` (legível pelo visitante) quando o admin aprova (`admin_set_creator_credentials` copia o texto e grava `credentials_approved_at`; reprovar, ou o herói editar ou retirar o pedido, limpa os dois campos), com o rótulo **"Credenciais informadas pelo herói"** (`recipes.structured.credentialsLabel`). |
 
 ## Desvios da fase 1 em relação ao desenho
 
@@ -339,7 +339,7 @@ create table if not exists public.recipe_details (
 create index if not exists recipe_details_diets_idx on public.recipe_details using gin (diets);
 create index if not exists recipe_details_allergens_idx on public.recipe_details using gin (allergens);
 create index if not exists recipe_details_total_idx on public.recipe_details (total_minutes, content_id);
-create index if not exists recipe_details_cover_idx on public.recipe_details (cover_media_id) where cover_media_id is not null;
+create index if not exists recipe_details_cover_content_idx on public.recipe_details (cover_media_id, content_id) where cover_media_id is not null;   -- prefixo da FK composta
 
 -- ------------------------------------------------ protegido 1:1 (só com acesso): nota do chef e termos de busca
 create table if not exists public.recipe_extras (
@@ -401,7 +401,7 @@ create table if not exists public.recipe_steps (
   constraint recipe_steps_image_fk foreign key (image_media_id, content_id)
     references public.recipe_media (id, content_id) on delete set null (image_media_id)
 );
-create index if not exists recipe_steps_image_idx on public.recipe_steps (image_media_id) where image_media_id is not null;
+create index if not exists recipe_steps_image_content_idx on public.recipe_steps (image_media_id, content_id) where image_media_id is not null;   -- prefixo da FK composta
 
 create table if not exists public.recipe_step_ingredients (     -- Modo Cozinha
   content_id uuid not null,
@@ -573,12 +573,12 @@ alter table public.creator_profiles add column if not exists specialties text[] 
   check (cardinality(specialties) <= 6);
 alter table public.creator_profiles add column if not exists credentials text check (length(credentials) <= 300);
 alter table public.creator_profiles add column if not exists credentials_approved_at timestamptz;   -- protegida (P7)
--- gatilho: o herói muda credentials → credentials_approved_at := null
+-- credentials só é escrita pelo admin (RPC); o herói pede em creator_credentials_requests (dono e admin)
 alter table public.creator_profiles add constraint creator_profiles_media_prefix_ck
   check (coalesce(avatar_url,'') not like '/media/recipe/%' and coalesce(cover_url,'') not like '/media/recipe/%') not valid;
 -- (validate constraint em seguida; dentro de do $$ if not exists)
 create or replace trigger trg_a_creator_profiles_guard before update on public.creator_profiles
-  for each row execute function public.guard_protected_columns('{headline,bio,avatar_url,cover_url,socials,specialties,credentials}');
+  for each row execute function public.guard_protected_columns('{headline,bio,avatar_url,cover_url,socials,specialties}');
 ```
 
 `set_updated_at` vale em todas as tabelas com `updated_at`. `on delete set null (coluna)` exige PG 15 ou mais novo (local 16, remoto 17).
@@ -801,7 +801,7 @@ Formato do payload (espelhado em `src/lib/recipes/payload.ts`, Zod compartilhado
 | `admin_validate_recipe_nutrition(p_content, p_validated, p_by, p_at, p_note)` | `nutrition_validation_incomplete` se faltar responsável ou data. Auditoria |
 | `admin_upsert_recipe_category(p_code, p_name, p_sort, p_active)` | Auditoria |
 | `admin_moderate_recipe_comment(p_comment, p_decision, p_reason)` | Motivo obrigatório fora de `approved`. Auditoria |
-| `admin_set_creator_credentials(p_creator, p_approved, p_reason)` | Grava ou limpa `credentials_approved_at`. Auditoria (P7) |
+| `admin_set_creator_credentials(p_creator, p_approved, p_reason)` | Aprovar copia o texto de `creator_credentials_requests` para `creator_profiles.credentials` e grava `credentials_approved_at`; reprovar limpa os dois. Auditoria (P7) |
 
 **Internas** (sem execute para authenticated):
 - `recipe_assert_publishable(p_content)` lança `recipe_incomplete: a,b,c` com os códigos:
@@ -968,7 +968,7 @@ Os cenários entram antes do S14. Cada um cria os próprios usuários (`…0025`
 - Gravar `body` dá `recipe_body_managed`; mudar só o vídeo passa pela guarda do Stream.
 - Nutrição: validar dá `nutrition_validation_forbidden`; `kcal` derruba a validação; mudar só a nota da receita a mantém; o admin valida (auditado).
 - Tradução: anon não lê `body`, mas lê título e resumo.
-- Herói grava `specialties` e `credentials`; `credentials_approved_at` volta a nulo e só o admin o define.
+- Herói grava `specialties` e pede credenciais em `creator_credentials_requests` (o visitante não lê o pedido); `credentials` e `credentials_approved_at` só o admin define, e editar o pedido tira o texto aprovado do perfil.
 
 **S27 · Mídia e Storage** (shim)
 - O bucket é privado, com 5 MB e 3 tipos.
@@ -1322,10 +1322,28 @@ Os cenários entram antes do S14. Cada um cria os próprios usuários (`…0025`
 
 A privacidade já foi atualizada fase a fase; aqui se faz só uma revisão final.
 
-**Aplicação no remoto** (cada fase vai a produção testada):
-- 0027 e 0028 pelo conector em blocos; 0029 só depois do dry-run;
-- conferir grants, políticas (inclusive em `storage.objects`), funções, `get_advisors` e dados contra o banco local;
-- regenerar `database.types.ts`.
+**Aplicação no remoto** (cada fase vai a produção testada). Roteiro da fase 1, nesta ordem; quem executa é o responsável:
+
+0. **Somente leitura**, antes de tudo:
+   - `select version();`
+   - `select rolbypassrls from pg_roles where rolname = 'postgres';` deve dar `true` (senão `recipe_media_quota_ok` falha aberta e `recipe_register_media` dá `object_not_found`);
+   - `select to_regclass('public.recipe_details');` deve ser nulo;
+   - `select count(*) from public.content_type_settings;` deve dar 5;
+   - inventário: `select c.id, c.slug, c.status, b.content_id is not null as tem_corpo from public.content c left join public.content_bodies b on b.content_id = c.id where c.type = 'recipe';`
+   - `select count(*) from public.content_localizations where status = 'published';`
+   - guardar `select md5(string_agg(b.body::text, '|' order by b.content_id)) from public.content_bodies b join public.content c on c.id = b.content_id where c.type = 'recipe';`
+1. **Deploy do app ANTES de qualquer migração.** Merge e push na master; deploy na Vercel. O app novo funciona com o banco antigo (fallback `PGRST202`, editores de receita só leitura). O contrário não: a 0027 revoga o `select` de tabela em `content_localizations` (fica só `content_id, locale, title, summary, status, updated_at`), e o app antigo, que lê `body` na página de conteúdo e no `/admin/translations`, passaria a receber `permission denied`. Conferir uma receita e o `/admin/translations` em produção.
+2. Confirmar o backup do dia (PITR ou diário).
+3. **0027** numa transação: `node scripts/db/remote-apply.mjs --only 0027`. Conferir as 10 categorias, `review_required` falso em todos os tipos e `get_advisors` (inclusive `unindexed_foreign_keys`).
+4. **0028** numa transação: `node scripts/db/remote-apply.mjs --only 0028`. Conferir o bucket `recipe-media` privado com 5 MB e as 3 políticas em `select policyname, cmd from pg_policies where schemaname = 'storage'`.
+5. **0029 sem o remote-apply** (o arquivo tem `-- remote-apply: manual` e o script o recusa):
+   1. tudo antes de `BLOCO FINAL (execução)` (as funções) numa transação;
+   2. `select * from public.recipe_backfill_dry_run();` deve dar 41 ingredientes e 28 etapas `literal` e 8 linhas `recipe` com `seed`; qualquer `outside_seed`, `no_body`, `text` ou `text_only` para aqui e volta ao responsável;
+   3. o bloco final numa transação; em seguida conferir: nenhuma receita sem `recipe_details`; 41 ingredientes, 28 etapas e 8 `restore_point`; nenhuma linha `recipe.backfill_failed` em `admin_audit` (o `WARNING` não volta pela Management API); md5 dos corpos igual ao do passo 0;
+   4. registrar `0029_recipes_backfill` em `supabase_migrations.schema_migrations`.
+6. Regenerar `database.types.ts` e rodar o E2E contra produção.
+
+Reversão de emergência da 0027 (só o que quebra o app antigo): `grant select on public.content_localizations to anon, authenticated;` e recriar `can_access_content` como na 0017.
 
 ---
 

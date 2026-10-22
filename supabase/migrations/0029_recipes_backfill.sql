@@ -8,8 +8,11 @@
 --   antes para a versão restore_point e a página continua lendo o v1 até a fase 2.
 --   Tempos copiados sem correção (P5): g2 (15 + 20 > 30) e g4 (5 + 45 > 40) ficam como estão e
 --   republicá-las exige corrigir ('recipe_incomplete: times').
--- Aplicação no remoto: 1) criar as funções (tudo antes do bloco final); 2) conferir
---   select * from public.recipe_backfill_dry_run(); 3) só então rodar o bloco final.
+-- Aplicação no remoto: 1) criar as funções (tudo antes de "BLOCO FINAL"); 2) conferir
+--   select * from public.recipe_backfill_dry_run(); 3) só então rodar o bloco final. Roteiro completo
+--   em docs/decisions/recipes-module.md ("Aplicação no remoto"). O marcador abaixo faz o
+--   scripts/db/remote-apply.mjs recusar este arquivo inteiro numa requisição só (pularia o dry-run).
+-- remote-apply: manual
 -- Reaplicável: receita que já tem recipe_details é pulada.
 -- =============================================================================
 
@@ -282,13 +285,15 @@ grant execute on function public.recipe_backfill_legacy(uuid) to service_role;
 
 -- ---------------------------------------------------------------- dry-run (antes de aplicar no remoto)
 -- Para cada receita sem detalhes, cada ingrediente e etapa com o resultado esperado: 'literal' (bate
--- com o seed), 'text' ou 'to_taste' (fora da tabela, não recalcula), e as receitas fora das 8.
+-- com o seed), 'text' ou 'to_taste' (fora da tabela, não recalcula), as receitas fora das 8
+-- ('outside_seed') e as sem corpo ('no_body': o backfill não as converte).
 create or replace function public.recipe_backfill_dry_run()
 returns table (content_id uuid, slug text, seed_key text, kind text, pos int, original text, outcome text)
 language sql stable set search_path = public as $$
   with r as (
-    select c.id, c.slug, public.recipe_legacy_seed_key(c.id) as k, b.body
-    from public.content c join public.content_bodies b on b.content_id = c.id
+    -- left join: receita sem corpo (createContent antigo falhou na 2ª escrita) também aparece
+    select c.id, c.slug, public.recipe_legacy_seed_key(c.id) as k, b.body, b.content_id is not null as has_body
+    from public.content c left join public.content_bodies b on b.content_id = c.id
     where c.type = 'recipe' and not exists (select 1 from public.recipe_details d where d.content_id = c.id)
   )
   select r.id, r.slug, r.k, 'ingredient', t.o::int, coalesce(t.e ->> 'item', '') || ' | ' || coalesce(t.e ->> 'qty', ''),
@@ -305,15 +310,18 @@ language sql stable set search_path = public as $$
               then 'literal' else 'text_only' end
   from r, jsonb_array_elements(case when jsonb_typeof(r.body -> 'steps') = 'array' then r.body -> 'steps' else '[]'::jsonb end) with ordinality as t(e, o)
   union all
-  select r.id, r.slug, r.k, 'recipe', 0, null, case when r.k is null then 'outside_seed' else 'seed' end
+  select r.id, r.slug, r.k, 'recipe', 0, null,
+         case when not r.has_body then 'no_body' when r.k is null then 'outside_seed' else 'seed' end
   from r
   order by 2, 4, 5
 $$;
 revoke execute on function public.recipe_backfill_dry_run() from public, anon, authenticated;
 grant execute on function public.recipe_backfill_dry_run() to service_role;
 
--- ---------------------------------------------------------------- execução
+-- ================================================================ BLOCO FINAL (execução)
 -- Cada receita num bloco próprio: em erro, aviso com o id e segue (a receita fica só com o corpo v1).
+-- Pela Management API/conector o WARNING não volta: a falha também vai para admin_audit
+-- (recipe.backfill_failed), consultável depois da aplicação.
 do $$ declare r record; v text;
 begin
   for r in select c.id from public.content c
@@ -323,6 +331,7 @@ begin
       v := public.recipe_backfill_legacy(r.id);
     exception when others then
       raise warning 'recipe_backfill_legacy %: %', r.id, sqlerrm;
+      perform public.audit_log('recipe.backfill_failed', 'content', r.id::text, null, jsonb_build_object('error', sqlerrm), null, 'system');
     end;
   end loop;
 end $$;

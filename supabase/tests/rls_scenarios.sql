@@ -1732,6 +1732,26 @@ select tests.ok('S25 backfill auditado como sistema (recipe.backfill)',
 select tests.ok('S25 dry-run: só a receita de corpo inválido segue sem detalhes, fora das 8 do seed',
   (select count(*) from public.recipe_backfill_dry_run()) = 1
   and (select outcome from public.recipe_backfill_dry_run()) = 'outside_seed');
+-- receita sem linha em content_bodies (createContent antigo que falhou na 2ª escrita): o dry-run a
+-- mostra como no_body e a falha do bloco final fica em admin_audit (o WARNING não volta pela API)
+insert into public.content (id, slug, creator_id, pillar, type, title, summary, status, review_status) values
+  ('25000000-0000-4000-8000-000000000003', 's25-sem-corpo', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita sem corpo S25', 'Resumo', 'draft', 'none');
+select tests.ok('S25 dry-run: receita sem corpo aparece como no_body',
+  (select outcome from public.recipe_backfill_dry_run() where content_id = '25000000-0000-4000-8000-000000000003' and kind = 'recipe') = 'no_body');
+do $s25b$ declare r record; begin
+  for r in select c.id from public.content c where c.id = '25000000-0000-4000-8000-000000000003' loop
+    begin
+      perform public.recipe_backfill_legacy(r.id);
+    exception when others then
+      perform public.audit_log('recipe.backfill_failed', 'content', r.id::text, null, jsonb_build_object('error', sqlerrm), null, 'system');
+    end;
+  end loop;
+end $s25b$;
+select tests.ok('S25 receita sem corpo: o backfill falha (no_legacy_body) e a falha fica em admin_audit, como no bloco final da 0029',
+  exists (select 1 from public.admin_audit where action = 'recipe.backfill_failed' and resource_id = '25000000-0000-4000-8000-000000000003'
+          and actor_type = 'system' and after_data ->> 'error' like '%no_legacy_body%')
+  and not exists (select 1 from public.recipe_details where content_id = '25000000-0000-4000-8000-000000000003'));
+delete from public.content where id = '25000000-0000-4000-8000-000000000003';
 -- apagar o conteúdo leva detalhes, filhos e versões (a guarda das versões aceita a cascata)
 delete from public.content where id in ('25000000-0000-4000-8000-000000000001', '25000000-0000-4000-8000-000000000002');
 select tests.ok('S25 apagar o conteúdo leva tabelas filhas e versões em cascata',
@@ -1963,26 +1983,50 @@ select tests.ok('S26 admin segue gravando traduções (update e insert) e lê o 
   (public.content_localized_body(public.seed_uuid('content:r1'), 'es') ->> 'intro') = 'es'
   and (public.content_localized_body(public.seed_uuid('content:r1'), 'en') ->> 'intro') = 'en 2');
 
--- especialidades e credenciais (P7)
+-- especialidades e credenciais (P7): o herói pede fora da linha pública; só o texto aprovado aparece
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
-update public.creator_profiles set specialties = '{cozinha de base,molhos}', credentials = 'Formada em gastronomia (informado pela heroína)' where id = public.seed_uuid('creator:helena');
-select tests.ok('S26 herói grava especialidades e credenciais; aprovação começa nula',
-  (select specialties = '{cozinha de base,molhos}' and credentials is not null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
+update public.creator_profiles set specialties = '{cozinha de base,molhos}' where id = public.seed_uuid('creator:helena');
+insert into public.creator_credentials_requests (creator_id, text) values (public.seed_uuid('creator:helena'), 'Formada em gastronomia (informado pela heroína)');
+select tests.ok('S26 herói grava especialidades e pede credenciais; o perfil público segue sem texto e sem aprovação',
+  (select specialties = '{cozinha de base,molhos}' and credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
+  and (select count(*) from public.creator_credentials_requests) = 1);
+select tests.expect_error('S26 herói não grava credentials direto no perfil público (coluna protegida)',
+  $q$update public.creator_profiles set credentials = 'Nutricionista CRN-3 99999 (falso)' where id = public.seed_uuid('creator:helena')$q$, 'protected_column');
 select tests.expect_error('S26 herói não aprova as próprias credenciais (coluna protegida)',
   $q$update public.creator_profiles set credentials_approved_at = now() where id = public.seed_uuid('creator:helena')$q$, 'protected_column');
+select tests.expect_error('S26 herói não pede credenciais em nome de outro herói (RLS)',
+  $q$insert into public.creator_credentials_requests (creator_id, text) values (public.seed_uuid('creator:marcos'), 'falso')$q$, '42501');
 select tests.expect_error('S26 mais de 6 especialidades: check',
   $q$update public.creator_profiles set specialties = '{a,b,c,d,e,f,g}' where id = public.seed_uuid('creator:helena')$q$, '23514');
 select tests.expect_error('S26 herói não executa a RPC de credenciais', $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'x')$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+select tests.ok('S26 outro herói não lê o pedido alheio', (select count(*) from public.creator_credentials_requests) = 0);
+select tests.anon();
+select tests.ok('S26 visitante não lê pedido nem texto pendente (API do perfil volta credentials nulo)',
+  not has_table_privilege('anon', 'public.creator_credentials_requests', 'select')
+  and (select credentials is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'Conferido');
-select tests.ok('S26 admin aprova as credenciais (auditado)',
-  (select credentials_approved_at is not null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
+select tests.ok('S26 admin aprova: o texto do pedido vai para o perfil com a data (auditado)',
+  (select credentials = 'Formada em gastronomia (informado pela heroína)' and credentials_approved_at is not null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
   and exists (select 1 from public.admin_audit where action = 'creator.credentials' and resource_id = public.seed_uuid('creator:helena')::text));
-select tests.expect_error('S26 aprovar credencial vazia: credentials_empty', $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:marcos'), true, 'x')$q$, 'credentials_empty');
+select tests.expect_error('S26 aprovar sem pedido: credentials_empty', $q$select public.admin_set_creator_credentials(public.seed_uuid('creator:marcos'), true, 'x')$q$, 'credentials_empty');
+select tests.anon();
+select tests.ok('S26 visitante vê só o texto aprovado', (select credentials = 'Formada em gastronomia (informado pela heroína)' and credentials_approved_at is not null
+  from public.creator_profiles where id = public.seed_uuid('creator:helena')));
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
-update public.creator_profiles set credentials = 'Texto novo' where id = public.seed_uuid('creator:helena');
-select tests.ok('S26 herói muda o texto e a aprovação volta a nulo', (select credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
+update public.creator_credentials_requests set text = 'Nutricionista CRN-3 99999 (falso)' where creator_id = public.seed_uuid('creator:helena');
+select tests.anon();
+select tests.ok('S26 herói edita o pedido: texto e aprovação saem do perfil público até nova aprovação',
+  (select credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena')));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), true, 'Conferido de novo');
+select public.admin_set_creator_credentials(public.seed_uuid('creator:helena'), false, 'Registro não confere');
+select tests.ok('S26 admin reprova: texto e data limpos no perfil; o pedido fica para o herói corrigir',
+  (select credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
+  and exists (select 1 from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
 select tests.su();
+delete from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena');
 update public.creator_profiles set specialties = '{}', credentials = null where id = public.seed_uuid('creator:helena');
 delete from public.recipe_media where id = 'a2600000-0000-4000-8000-0000000000f1';
 
@@ -2126,6 +2170,19 @@ select tests.su();
 update public.content set publish_at = now() - interval '1 minute' where id = '27000000-0000-4000-8000-000000000001';
 select tests.anon();
 select tests.ok('S27 a data chegou: a galeria aparece sem nova ação', (select count(*) from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp') = 1);
+-- herói suspenso não enxerga a linha da foto de etapa (RLS), mas o registro é conferido sem a RLS
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:helena');
+select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
+do $s27s$ declare n int; begin
+  delete from storage.objects where bucket_id = 'recipe-media'
+    and (name like '%a2700000-0000-4000-8000-000000000001.webp' or name like '%a2700000-0000-4000-8000-000000000002.jpg'); get diagnostics n = row_count;
+  perform tests.ok('S27 herói suspenso não apaga foto registrada (galeria e etapa) de receita no ar', n = 0);
+end $s27s$;
+select tests.su();
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:helena');
+select tests.ok('S27 as duas fotos registradas continuam no Storage',
+  (select count(*) from storage.objects where name like '%a2700000-0000-4000-8000-000000000001.webp' or name like '%a2700000-0000-4000-8000-000000000002.jpg') = 2);
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 select public.creator_unpublish_content('27000000-0000-4000-8000-000000000001');
 select tests.anon();
@@ -2524,7 +2581,15 @@ select tests.login('10000000-0000-4000-8000-000000000029', 's29free@test.local')
 select tests.expect_error('S31 sem a preferência ligada o histórico recusa', $q$insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'))$q$, '42501');
 insert into public.user_recipe_prefs (history_enabled) values (true);
 select tests.ok('S31 ligar o histórico registra a data', (select history_enabled and history_enabled_at is not null from public.user_recipe_prefs));
-insert into public.recipe_view_history (content_id) values (public.seed_uuid('content:g1'));
+-- datas são do banco: o titular não reescreve a do consentimento nem manda acesso no futuro
+update public.user_recipe_prefs set history_enabled_at = '2020-01-01';
+select tests.ok('S31 history_enabled_at não é editável pelo titular (fica a data gravada pelo banco)',
+  (select history_enabled_at = now() from public.user_recipe_prefs));
+insert into public.recipe_view_history (content_id, viewed_at) values (public.seed_uuid('content:g1'), '2999-01-01');
+select tests.ok('S31 viewed_at enviado pelo cliente é trocado por now() (não escapa da retenção de 90 dias)',
+  (select viewed_at = now() from public.recipe_view_history));
+update public.recipe_view_history set viewed_at = '2999-01-01';
+select tests.ok('S31 update de viewed_at pelo cliente também vira now()', (select viewed_at = now() from public.recipe_view_history));
 insert into public.recipe_view_history (content_id, viewed_at) values (public.seed_uuid('content:g1'), now())
 on conflict (user_id, content_id) do update set viewed_at = excluded.viewed_at;
 select tests.ok('S31 ligado: o upsert só atualiza viewed_at (uma linha por receita)', (select count(*) from public.recipe_view_history) = 1);
@@ -2645,10 +2710,28 @@ select tests.ok('S32 antes: autorias gravadas (versão e mídia do Marcos, valid
   and (select validated_by_user = '10000000-0000-4000-8000-000000000032' from public.recipe_nutrition where content_id = '26000000-0000-4000-8000-000000000001')
   and exists (select 1 from public.recipe_comments where moderated_by = '10000000-0000-4000-8000-000000000032')
   and (select rating_count = 1 and rating_sum = 3 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
+-- herói com conteúdo criado por ele (created_by = uid, coluna protegida): duplicar receita grava a autoria
+select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
+create temporary table t_s32_dup as select public.creator_duplicate_recipe('27000000-0000-4000-8000-000000000002', 'Cópia do Marcos S32', 's32-copia-marcos') as id;
+select tests.su();
+select tests.ok('S32 a cópia do Marcos tem created_by = o usuário dele',
+  (select created_by = '10000000-0000-4000-8000-000000000027' from public.content where id = (select id from t_s32_dup)));
+-- vendedor que cadastrou produto (products.created_by também é protegida)
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000033', 's33seller@test.local');
+create temporary table t_s32_prod as select id from public.products order by id limit 1;
+update public.products set created_by = '10000000-0000-4000-8000-000000000033' where id = (select id from t_s32_prod);
 select tests.login('10000000-0000-4000-8000-000000000027', 's27marcos@test.local');
 select public.delete_my_account();
 select tests.login('10000000-0000-4000-8000-000000000032', 's32admin@test.local');
 select public.delete_my_account();
+select tests.login('10000000-0000-4000-8000-000000000033', 's33seller@test.local');
+select public.delete_my_account();
+select tests.su();
+select tests.ok('S32 herói que criou conteúdo e vendedor que cadastrou produto excluem a conta: conteúdo e produto ficam, com created_by nulo',
+  not exists (select 1 from auth.users where id = '10000000-0000-4000-8000-000000000033')
+  and (select created_by is null from public.content where id = (select id from t_s32_dup))
+  and (select created_by is null from public.products where id = (select id from t_s32_prod)));
+delete from public.content where id = (select id from t_s32_dup);
 select tests.login('10000000-0000-4000-8000-000000000031', 's31comm@test.local');
 select public.delete_my_account();
 select tests.su();

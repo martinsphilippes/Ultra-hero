@@ -325,6 +325,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"creator_credentials_requests": {
+                  Row: {
+                    "creator_id": string,"text": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creator_id": string,"text": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "creator_id"?: string,"text"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_credentials_requests_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: true
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"creator_products": {
                   Row: {
                     "created_at": string,"created_by": string | null,"creator_id": string,"id": string,"note": string | null,"product_id": string,"sort_order": number,"status": Database["public"]['Enums']["link_status"],"updated_at": string,"validated_at": string | null,"validated_by": string | null
@@ -2057,6 +2077,9 @@ isOneToOne: false
                            },
 "recipe_media_quota_ok":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"recipe_media_registered":
+{ Args: { "p_name": string }; Returns: boolean
                            },
 "recipe_orphan_media":
 { Args: { "p_limit": number }; Returns: string[]

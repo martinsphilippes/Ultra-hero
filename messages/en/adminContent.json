@@ -270,6 +270,7 @@
       "publishDescription": "Publishes without going through review. Check access rule and body first.",
       "archiveTitle": "Archive content?",
       "archiveDescription": "Leaves the catalog. Programs that depend on it may need a substitution.",
+      "archiveRecipeWarning": "Recipe: safety takedown only. It cannot go back live until the new editor ships, because older recipes do not yet meet the publishing checklist (allergens, times).",
       "draftTitle": "Back to draft?",
       "changed": "Status updated",
       "featureOn": "Feature on Home",

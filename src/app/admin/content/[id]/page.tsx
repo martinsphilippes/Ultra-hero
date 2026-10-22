@@ -238,7 +238,7 @@ export default async function AdminContentDetailPage({ params }: Params) {
 
         <aside className="flex min-w-0 flex-col gap-4">
           <Panel title={tc("actions")}>
-            <ContentReviewActions contentId={content.id} status={content.status} reviewStatus={content.review_status} isFeatured={content.is_featured} hasOpenRound={hasOpenRound} publishAt={content.publish_at} />
+            <ContentReviewActions contentId={content.id} type={content.type} status={content.status} reviewStatus={content.review_status} isFeatured={content.is_featured} hasOpenRound={hasOpenRound} publishAt={content.publish_at} />
           </Panel>
         </aside>
       </div>

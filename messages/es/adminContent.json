@@ -270,6 +270,7 @@
       "publishDescription": "Publica sin pasar por revisión. Verifica antes la regla de acceso y el cuerpo.",
       "archiveTitle": "¿Archivar contenido?",
       "archiveDescription": "Sale del catálogo. Los programas que dependen de él pueden necesitar una sustitución.",
+      "archiveRecipeWarning": "Receta: solo para retirada de seguridad. No vuelve a publicarse hasta el editor nuevo, porque las recetas antiguas aún no cumplen la lista de publicación (alérgenos, tiempos).",
       "draftTitle": "¿Volver a borrador?",
       "changed": "Estado actualizado",
       "featureOn": "Destacar en Inicio",
