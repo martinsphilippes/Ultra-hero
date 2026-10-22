@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ContentTile, ProductActionCard, ProgramCard } from "@/components/catalog";
+import { ContentTile, ProductActionCard } from "@/components/catalog";
 import { CARD_GRID, TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { LIBRARY_ICON } from "@/components/discover/personalities/LibraryList";
+import { ProgramShelf } from "@/components/programs/ProgramShelf";
 import { RecipeGate } from "@/components/recipes/RecipeGate";
 import { RecipeList } from "@/components/recipes/RecipeList";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { hubHref, loadCreator, loadCreatorHub, type HubLibrary } from "@/lib/catalog/creator-hub";
 import { isLibraryKey, type LibraryKey } from "@/lib/catalog/creator-libraries";
 import { maxCartQuantity } from "@/lib/catalog/creator-products";
+import { loadProgramShelves } from "@/lib/catalog/program-shelves";
+import type { LocaleCode } from "@/lib/supabase/helpers";
 import { getRecipeGate } from "@/lib/recipes/gate";
 
 type Props = { params: Promise<{ slug: string; library: string }> };
@@ -24,8 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t("meta.library", { library: t(`personalities.libraries.labels.${library}`), name: creator.name }), description: t(`personalities.libraries.descriptions.${library}`, { name: creator.name }) };
 }
 
-// Uma biblioteca do herói (RF-004): grade de quadrados para conteúdos, cards para programas e
-// cards com ação para produtos. Segmento fora de LIBRARY_KEYS é 404.
+// Uma biblioteca do herói (RF-004): grade de quadrados para conteúdos, prateleiras para programas
+// (uma por programa, etapas com rolagem lateral) e cards com ação para produtos. Segmento fora de
+// LIBRARY_KEYS é 404.
 export default async function LibraryPage({ params }: Props) {
   const { slug, library } = await params;
   if (!isLibraryKey(library)) notFound();
@@ -110,15 +114,18 @@ async function LibraryBody({ library, slug, hub, hero }: BodyProps) {
     );
   }
 
+  // Programas: uma prateleira por programa (estilo playlist), inscrito em andamento primeiro.
   if (library.kind === "programs") {
+    const [locale, ts] = await Promise.all([getLocale(), getTranslations("catalog.programShelf")]);
+    const { shelves, error } = await loadProgramShelves(library.items, locale as LocaleCode);
     return (
-      <ul className={CARD_GRID} data-testid="library-programs">
-        {library.items.map((program, index) => (
-          <li key={program.id}>
-            <ProgramCard program={program} priority={index === 0} />
-          </li>
+      <div className="flex flex-col gap-8" data-testid="library-programs">
+        <p className="sr-only">{ts("count", { count: shelves.length })}</p>
+        {error ? <InlineError /> : null}
+        {shelves.map((shelf, index) => (
+          <ProgramShelf key={shelf.id} shelf={shelf} priority={index === 0} />
         ))}
-      </ul>
+      </div>
     );
   }
 

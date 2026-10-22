@@ -89,6 +89,9 @@ test.describe("hub do herói", () => {
 
     await page.goto("/personalities/helena-vilar?tab=programas");
     await expect(page).toHaveURL(/\/personalities\/helena-vilar\/programas$/);
+    // programas em prateleiras: título por programa e quadrados das etapas (1 antes da 0035, 3 depois)
+    await expect(page.getByTestId("program-shelf").first()).toBeVisible();
+    expect(await page.getByTestId("program-shelf").first().getByTestId("shelf-step").count()).toBeGreaterThanOrEqual(4);
 
     await page.goto("/personalities/helena-vilar?tab=conteudos");
     await expect(page).toHaveURL(/\/personalities\/helena-vilar$/);

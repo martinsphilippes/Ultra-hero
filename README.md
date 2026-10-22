@@ -39,7 +39,7 @@ Na interface, o papel `creator` (quem assina conteúdos e programas) aparece com
 
 ### Banco de dados
 
-Migrations versionadas em `supabase/migrations/0001…0010*.sql` (aplicar **em ordem**). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses).
+Migrations versionadas em `supabase/migrations/0001…0010*.sql` (aplicar **em ordem**). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`).
 
 Aplicar no projeto Supabase remoto:
 

@@ -36,7 +36,7 @@ Princípio central: **o cliente nunca decide permissão, preço ou direito de ac
 - `content` (metadados públicos) + `content_bodies` (corpo/mídia, **gate server-side** por `can_access_content`). Sem regra de acesso (`access_level is null`) → "temporariamente indisponível", nunca inferido.
 - Fluxo editorial: `draft` → `submit_content_for_review` → `in_review` → admin decide `returned | approved (publica) | rejected`. Publicação exige regra de acesso + corpo.
 - `content_localizations` por idioma com status; conteúdo não traduzido fica no idioma original com etiqueta.
-- Programas: `programs` → `program_versions` (participante preso à versão em que entrou) → `program_items` (livre navegação, obrigatório/opcional). `program_item_substitutions` para item obrigatório arquivado (auditável; vale para todos os pendentes daquela versão). Conclusão emite `certificates` (snapshot congelado, código verificável, simbólico).
+- Programas: `programs` → `program_versions` (participante preso à versão em que entrou) → `program_items` (livre navegação, obrigatório/opcional). `program_item_substitutions` para item obrigatório arquivado (auditável; vale para todos os pendentes daquela versão). Conclusão emite `certificates` (snapshot congelado, código verificável, simbólico). Na biblioteca do herói, cada programa vira uma prateleira com as etapas em quadrados e rolagem lateral (`docs/decisions/program-shelves.md`); a seed de demonstração tem 3 programas por herói (0008 + 0035).
 - Progresso: `completions` (única por conteúdo), `content_progress` (continuar), `streak_events` (data local calculada **no servidor** a partir do fuso do dispositivo), `achievements` configuráveis (regras JSON).
 
 ## 5. Planos e direitos (simulados)

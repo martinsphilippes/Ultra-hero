@@ -2955,6 +2955,160 @@ select tests.ok('S34 limpeza: Helena sem usuário, sem pedido e sem credenciais'
   (select user_id is null and credentials is null and credentials_approved_at is null from public.creator_profiles where id = public.seed_uuid('creator:helena'))
   and not exists (select 1 from public.creator_credentials_requests where creator_id = public.seed_uuid('creator:helena')));
 
+-- ================================================================ S38 · Prateleiras: 3 programas publicados por herói (0035)
+-- Os 16 programas novos da seed de demonstração: publicados, sem destaque, 6–10 etapas do mesmo pilar
+-- (pelo menos 3 do próprio herói), en/es publicados, originais intactos e reexecução sem efeito.
+select tests.su();
+create or replace function tests.s38_programs() returns table (key text, creator text, base text) language sql immutable as $$
+  values ('shelf-lia-2', 'lia', 'p1'), ('shelf-lia-3', 'lia', 'p1'), ('shelf-rafael-2', 'rafael', 'p2'), ('shelf-rafael-3', 'rafael', 'p2'),
+         ('shelf-camila-2', 'camila', 'p3'), ('shelf-camila-3', 'camila', 'p3'), ('shelf-tiago-2', 'tiago', 'p4'), ('shelf-tiago-3', 'tiago', 'p4'),
+         ('shelf-bruna-2', 'bruna', 'p5'), ('shelf-bruna-3', 'bruna', 'p5'), ('shelf-davi-2', 'davi', 'p6'), ('shelf-davi-3', 'davi', 'p6'),
+         ('shelf-helena-2', 'helena', 'p7'), ('shelf-helena-3', 'helena', 'p7'), ('shelf-marcos-2', 'marcos', 'p8'), ('shelf-marcos-3', 'marcos', 'p8')
+$$;
+grant execute on function tests.s38_programs() to anon, authenticated;
+-- duas contas comuns próprias (as do topo já saíram em S11 e seguintes); removidas no fim do S39
+insert into auth.users (id, email) values ('38000000-0000-4000-8000-000000000011', 's38a@test.local'), ('38000000-0000-4000-8000-000000000012', 's38b@test.local');
+
+select tests.anon();
+select tests.ok('S38 visitante vê 24 programas publicados, exatamente 3 por herói',
+  (select count(*) from public.programs) = 24
+  and (select count(*) from public.programs where status = 'published') = 24
+  and (select count(*) from public.creator_profiles) = 8
+  and not exists (select 1 from public.creator_profiles cp where (select count(*) from public.programs p where p.creator_id = cp.id) <> 3));
+select tests.ok('S38 os 16 novos: do herói certo, versão 1 publicada como atual, sem destaque e capa de imagem do repositório',
+  (select count(*) from tests.s38_programs() s
+     join public.programs p on p.id = public.seed_uuid('program:' || s.key)
+     join public.program_versions v on v.id = p.current_version_id
+    where p.creator_id = public.seed_uuid('creator:' || s.creator) and p.status = 'published'
+      and v.id = public.seed_uuid('pv:' || s.key || ':1') and v.version_no = 1 and v.status = 'published' and v.source_locale = 'pt-BR'
+      and v.estimated_weeks between 1 and 6 and length(v.summary) > 20 and length(v.description) > 80
+      and not p.is_featured and p.featured_rank is null and p.cover_url ~ '^/content/[a-z0-9-]+\.webp$') = 16);
+select tests.ok('S38 destaques do Início/Explorar inalterados (os 4 do seed, ranks 1–4)',
+  (select array_agg(featured_rank order by featured_rank) from public.programs where is_featured) = array[1, 2, 3, 4]);
+select tests.ok('S38 cada novo tem 6 a 10 etapas, ao menos 4 "Essencial" obrigatórias e o resto "Para ir além" opcional',
+  not exists (select 1 from tests.s38_programs() s
+    where (select count(*) from public.program_items pi where pi.version_id = public.seed_uuid('pv:' || s.key || ':1')) not between 6 and 10
+       or (select count(*) from public.program_items pi where pi.version_id = public.seed_uuid('pv:' || s.key || ':1') and pi.is_required and pi.section = 'Essencial') < 4
+       or exists (select 1 from public.program_items pi where pi.version_id = public.seed_uuid('pv:' || s.key || ':1')
+                   and not ((pi.is_required and pi.section = 'Essencial' and pi.position between 1 and 99)
+                         or (not pi.is_required and pi.section = 'Para ir além' and pi.position > 100)))));
+-- como superusuário: o r7 foi arquivado de propósito no S9 (o visitante não o vê mais); é a única exceção a "publicado"
+select tests.su();
+select tests.ok('S38 etapas usam conteúdos publicados do mesmo pilar, com pelo menos 3 do próprio herói (105 etapas; só o r7 do S9 fora do ar)',
+  not exists (select 1 from tests.s38_programs() s join public.programs p on p.id = public.seed_uuid('program:' || s.key)
+    where exists (select 1 from public.program_items pi left join public.content c on c.id = pi.content_id
+                   where pi.version_id = public.seed_uuid('pv:' || s.key || ':1')
+                     and (c.id is null or c.pillar <> p.pillar or (c.status <> 'published' and c.id <> public.seed_uuid('content:r7'))))
+       or (select count(*) from public.program_items pi join public.content c on c.id = pi.content_id
+            where pi.version_id = public.seed_uuid('pv:' || s.key || ':1') and c.creator_id = p.creator_id) < 3)
+  and (select count(*) from public.program_items pi join tests.s38_programs() s on pi.version_id = public.seed_uuid('pv:' || s.key || ':1')) = 105);
+select tests.anon();
+select tests.ok('S38 en e es publicados para os 16 (32 linhas, títulos diferentes do português); nenhuma linha pt-BR',
+  (select count(*) from public.program_localizations l join tests.s38_programs() s on l.version_id = public.seed_uuid('pv:' || s.key || ':1')
+    where l.status = 'published' and l.locale in ('en', 'es') and length(l.summary) > 20 and length(l.description) > 80) = 32
+  and not exists (select 1 from public.program_localizations l join tests.s38_programs() s on l.version_id = public.seed_uuid('pv:' || s.key || ':1')
+    join public.program_versions v on v.id = l.version_id where l.locale = 'pt-BR' or l.title = v.title));
+select tests.ok('S38 os 8 originais intactos: 40 etapas na versão 1 e nenhuma tradução nova',
+  (select count(*) from public.program_items pi where pi.version_id in (select public.seed_uuid('pv:p' || n || ':1') from generate_series(1, 8) n)) = 40
+  and not exists (select 1 from public.program_localizations l where l.version_id in (select public.seed_uuid('pv:p' || n || ':1') from generate_series(1, 8) n))
+  and (select count(*) from public.programs where id in (select public.seed_uuid('program:p' || n) from generate_series(1, 8) n)) = 8);
+select tests.ok('S38 os novos ficam atrás do original do herói na ordem "mais recentes" (created_at 1–2 dias antes)',
+  not exists (select 1 from tests.s38_programs() s
+    join public.programs p on p.id = public.seed_uuid('program:' || s.key)
+    join public.programs o on o.id = public.seed_uuid('program:' || s.base)
+    where p.created_at >= o.created_at or p.created_at < o.created_at - interval '3 days'));
+select tests.ok('S38 program_required_items devolve as etapas na ordem de position',
+  (select array_agg(content_id order by item_position) from public.program_required_items(public.seed_uuid('pv:shelf-lia-2:1')))
+  = array[public.seed_uuid('content:r9'), public.seed_uuid('content:r2'), public.seed_uuid('content:r6'), public.seed_uuid('content:r4'),
+          public.seed_uuid('content:r10'), public.seed_uuid('content:r5'), public.seed_uuid('content:r1'), public.seed_uuid('content:r7')]);
+
+-- reexecutar a migração não muda nada (ids fixos + on conflict do nothing)
+select tests.su();
+create temporary table t_s38_before as
+  select (select count(*) from public.programs) as programs, (select count(*) from public.program_versions) as versions,
+         (select count(*) from public.program_items) as items, (select count(*) from public.program_localizations) as locs,
+         (select md5(string_agg(p.id::text || p.slug || coalesce(p.current_version_id::text, '') || p.created_at::text, ',' order by p.id)) from public.programs p) as sig;
+\ir ../migrations/0035_program_shelves_seed.sql
+select tests.ok('S38 reexecução idempotente: mesmas contagens, mesmas versões atuais e datas',
+  (select (b.programs, b.versions, b.items, b.locs, b.sig) = ((select count(*) from public.programs), (select count(*) from public.program_versions),
+          (select count(*) from public.program_items), (select count(*) from public.program_localizations),
+          (select md5(string_agg(p.id::text || p.slug || coalesce(p.current_version_id::text, '') || p.created_at::text, ',' order by p.id)) from public.programs p))
+     from t_s38_before b));
+
+-- RLS de leitura: rascunho do admin (programa, versão, etapa e tradução) não aparece para visitante nem consumidor
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into public.programs (id, slug, creator_id, pillar, status) values ('38000000-0000-4000-8000-000000000001', 's38-rascunho', public.seed_uuid('creator:lia'), 'routine', 'draft');
+insert into public.program_versions (id, program_id, version_no, title, status) values ('38000000-0000-4000-8000-000000000002', '38000000-0000-4000-8000-000000000001', 1, 'S38 rascunho', 'draft');
+insert into public.program_items (version_id, content_id, position, section) values ('38000000-0000-4000-8000-000000000002', public.seed_uuid('content:r1'), 1, 'Essencial');
+insert into public.program_localizations (version_id, locale, title, status) values ('38000000-0000-4000-8000-000000000002', 'en', 'S38 draft', 'draft');
+-- versão publicada de programa ainda em rascunho também não vaza
+insert into public.program_versions (id, program_id, version_no, title, status, published_at) values ('38000000-0000-4000-8000-000000000003', '38000000-0000-4000-8000-000000000001', 2, 'S38 v2', 'published', now());
+select tests.ok('S38 admin vê o rascunho', (select count(*) from public.programs where id = '38000000-0000-4000-8000-000000000001') = 1);
+select tests.anon();
+select tests.ok('S38 visitante não vê programa, versões, etapa nem tradução em rascunho',
+  (select count(*) from public.programs) = 24
+  and (select count(*) from public.program_versions where program_id = '38000000-0000-4000-8000-000000000001') = 0
+  and (select count(*) from public.program_items where version_id = '38000000-0000-4000-8000-000000000002') = 0
+  and (select count(*) from public.program_localizations where version_id = '38000000-0000-4000-8000-000000000002') = 0);
+select tests.login('38000000-0000-4000-8000-000000000011', 's38a@test.local');
+select tests.ok('S38 consumidor também não vê o rascunho', (select count(*) from public.programs) = 24
+  and (select count(*) from public.program_versions where program_id = '38000000-0000-4000-8000-000000000001') = 0
+  and (select count(*) from public.program_localizations where version_id = '38000000-0000-4000-8000-000000000002') = 0);
+select tests.expect_error('S38 consumidor não cria programa', $q$insert into public.programs (slug, pillar, status) values ('s38-intruso', 'routine', 'published')$q$, 'row-level security');
+select tests.expect_error('S38 consumidor não acrescenta etapa a programa publicado',
+  $q$insert into public.program_items (version_id, content_id, position) values (public.seed_uuid('pv:shelf-lia-2:1'), public.seed_uuid('content:r3'), 50)$q$, 'row-level security');
+select tests.su();
+delete from public.programs where id = '38000000-0000-4000-8000-000000000001';
+select tests.ok('S38 limpeza: rascunho removido', not exists (select 1 from public.programs where slug = 's38-rascunho'));
+
+-- ================================================================ S39 · Prateleira: leitura em lote igual à RPC e progresso só do inscrito
+-- A prateleira lê program_items + program_item_substitutions em lote (uma consulta para todos os programas)
+-- e aplica as substituições no app; o resultado precisa ser o mesmo da RPC usada na página do programa.
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_substitute_program_item(public.seed_uuid('pv:shelf-rafael-2:1'), public.seed_uuid('content:r7'), public.seed_uuid('content:r4'), 'S39 substituição de teste');
+select tests.anon();
+select tests.ok('S39 visitante lê a substituição da versão publicada', (select count(*) from public.program_item_substitutions where version_id = public.seed_uuid('pv:shelf-rafael-2:1')) = 1);
+select tests.ok('S39 itens + substituições (leitura em lote) = program_required_items nas 24 versões atuais',
+  not exists (
+    (select pi.version_id, coalesce(s.replacement_content_id, pi.content_id), pi.content_id, pi.position, pi.section, pi.is_required, s.id is not null
+       from public.program_items pi
+       left join public.program_item_substitutions s on s.version_id = pi.version_id and s.original_content_id = pi.content_id
+      where pi.version_id in (select current_version_id from public.programs)
+     except
+     select p.current_version_id, r.content_id, r.original_content_id, r.item_position, r.section, r.is_required, r.substituted
+       from public.programs p cross join lateral public.program_required_items(p.current_version_id) r)
+    union all
+    (select p.current_version_id, r.content_id, r.original_content_id, r.item_position, r.section, r.is_required, r.substituted
+       from public.programs p cross join lateral public.program_required_items(p.current_version_id) r
+     except
+     select pi.version_id, coalesce(s.replacement_content_id, pi.content_id), pi.content_id, pi.position, pi.section, pi.is_required, s.id is not null
+       from public.program_items pi
+       left join public.program_item_substitutions s on s.version_id = pi.version_id and s.original_content_id = pi.content_id
+      where pi.version_id in (select current_version_id from public.programs)))
+  and (select count(*) from public.programs p cross join lateral public.program_required_items(p.current_version_id) r) > 140);
+
+select tests.login('38000000-0000-4000-8000-000000000011', 's38a@test.local');
+create temporary table t_s39_enr as select public.enroll_program(public.seed_uuid('program:shelf-lia-2'), 'America/Sao_Paulo') as id;
+create temporary table t_s39_done as select public.complete_content(public.seed_uuid('content:r9'), 'America/Sao_Paulo') as r;
+select tests.ok('S39 inscrição em programa novo fica na versão 1 e o progresso conta só obrigatórias (1 de 4)',
+  (select version_id = public.seed_uuid('pv:shelf-lia-2:1') and status = 'active' from public.enrollments where id = (select id from t_s39_enr))
+  and (select count(*) from public.program_required_items(public.seed_uuid('pv:shelf-lia-2:1')) r
+        where r.is_required and exists (select 1 from public.completions c where c.user_id = auth.uid() and c.content_id in (r.content_id, r.original_content_id))) = 1
+  and (select count(*) from public.program_required_items(public.seed_uuid('pv:shelf-lia-2:1')) r where r.is_required) = 4);
+select tests.login('38000000-0000-4000-8000-000000000012', 's38b@test.local');
+select tests.ok('S39 outro consumidor não vê a inscrição nem as conclusões', not exists (select 1 from public.enrollments where id = (select id from t_s39_enr))
+  and not exists (select 1 from public.completions where user_id = '38000000-0000-4000-8000-000000000011' and content_id = public.seed_uuid('content:r9')));
+select tests.anon();
+select tests.ok('S39 visitante não vê inscrições', (select count(*) from public.enrollments) = 0);
+select tests.su();
+delete from public.program_item_substitutions where version_id = public.seed_uuid('pv:shelf-rafael-2:1');
+delete from auth.users where id in ('38000000-0000-4000-8000-000000000011', '38000000-0000-4000-8000-000000000012');
+select tests.ok('S39 limpeza: contas, inscrição, conclusão e substituição de teste removidas',
+  not exists (select 1 from public.enrollments where program_id = public.seed_uuid('program:shelf-lia-2'))
+  and not exists (select 1 from public.completions where user_id = '38000000-0000-4000-8000-000000000011')
+  and not exists (select 1 from public.profiles where id in ('38000000-0000-4000-8000-000000000011', '38000000-0000-4000-8000-000000000012'))
+  and not exists (select 1 from public.program_item_substitutions where version_id = public.seed_uuid('pv:shelf-rafael-2:1')));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

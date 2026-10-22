@@ -25,5 +25,32 @@
   "tile": {
     "premium": "Requires the {plan} plan",
     "unavailable": "Unavailable"
+  },
+  "programShelf": {
+    "eyebrow": "{pillar} · Program",
+    "steps": "{n, plural, =1 {1 step} other {# steps}}",
+    "progress": "{done} of {total} done",
+    "completed": "Program completed",
+    "view": "View program",
+    "continue": "Continue",
+    "listLabel": "Steps of {title}",
+    "previous": "Previous steps of {title}",
+    "next": "Next steps of {title}",
+    "step": "Step {n}",
+    "stepOfSr": "of {total}:",
+    "stepOf": "Step {n} of {total}: {title}",
+    "state": {
+      "done": "completed",
+      "locked": "requires the {plan} plan",
+      "unavailable": "unavailable"
+    },
+    "doneBadge": "Done",
+    "unavailableTitle": "Content unavailable",
+    "sections": {
+      "essential": "Essentials",
+      "beyond": "Go further"
+    },
+    "noSteps": "This program has no steps available yet.",
+    "count": "{count, plural, =1 {1 program} other {# programs}}"
   }
 }
