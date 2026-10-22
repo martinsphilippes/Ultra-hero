@@ -12,11 +12,18 @@ type Admin = SupabaseClient<Database>;
 /** Teto de fotos apagadas por execução do cron (a função da Vercel tem tempo limitado). */
 export const AVATAR_CLEANUP_LIMIT = 100;
 
+/**
+ * Cache das cópias (navegador, CDN, otimizador do Next, que usa o max-age da origem): 1 h. Cada
+ * envio tem caminho novo, então cache longo não ajuda a troca e manteria no ar por meses a foto
+ * removida (moderação, exclusão de conta). O texto de privacidade promete "em até 1 h".
+ */
+export const AVATAR_CACHE_SECONDS = 3600;
+
 /** Grava o objeto no caminho reservado por avatar_upload_claim (imutável: sem upsert). */
 export async function storeAvatar(admin: Admin, input: { path: string; bytes: Uint8Array; mime: string }): Promise<void> {
   const { error } = await admin.storage.from(AVATAR_BUCKET).upload(input.path, input.bytes, {
     contentType: input.mime,
-    cacheControl: "31536000",
+    cacheControl: String(AVATAR_CACHE_SECONDS),
     upsert: false,
   });
   if (error) throw new Error(error.message);

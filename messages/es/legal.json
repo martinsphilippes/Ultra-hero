@@ -332,7 +332,7 @@
               "profilePhoto": {
                 "data": "Foto de perfil",
                 "period": "Hasta que cambies o quites la foto, o elimines la cuenta",
-                "details": "La foto cambiada o quitada se elimina en el momento. Si algo falla, la rutina diaria elimina las copias sin uso y las fotos de cuentas eliminadas, incluso de la página pública del héroe. El registro técnico de cada envío (fecha, tamaño y tipo) se elimina 2 días después de que la foto sale."
+                "details": "La foto cambiada o quitada se elimina en el momento; las copias guardadas en caché (navegador y red de entrega) dejan de valer en 1 hora como máximo. Si algo falla, la rutina diaria elimina las copias sin uso y las fotos de cuentas eliminadas, incluso de la página pública del héroe. El registro técnico de cada envío (fecha, tamaño y tipo) se elimina 2 días después de que la foto sale."
               },
               "analytics": {
                 "data": "Eventos de uso",

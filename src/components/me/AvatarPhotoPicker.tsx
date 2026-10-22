@@ -3,7 +3,7 @@
 import { Camera, Images, Trash2, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type ChangeEvent, type MouseEvent } from "react";
 import { removeAvatar, uploadAvatar } from "@/app/(app)/profile/avatar-actions";
 import { Avatar, Button, Dialog, useToast } from "@/components/ui";
 import type { AvatarPhotoState } from "@/lib/avatar/availability";
@@ -35,6 +35,12 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
   const router = useRouter();
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const takeRef = useRef<HTMLButtonElement>(null);
+  // Botão que abriu o fluxo: durante o preparo ele fica desabilitado e o foco cai no body; ao fim
+  // (prévia fechada, erro, foto enviada ou removida) o foco volta para cá, não para o topo da página.
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const [focusBack, setFocusBack] = useState<"trigger" | "take" | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [preparing, setPreparing] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -45,6 +51,23 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
   const isPhoto = isStoredAvatarUrl(value, supabaseBaseUrl());
   const ready = state.upload === "ready";
   const busy = disabled || preparing || pending;
+
+  // Devolve o foco quando nada mais o segura (sem preparo/envio e sem diálogo aberto). Roda depois
+  // do Dialog, que ao fechar devolve o foco ao que estava ativo ao abrir (o body, no preparo).
+  useEffect(() => {
+    if (!focusBack || busy || preview || confirmRemove) return;
+    const wanted = focusBack === "take" ? takeRef.current : triggerRef.current;
+    setFocusBack(null);
+    requestAnimationFrame(() => {
+      const target = wanted && !wanted.disabled && wanted.isConnected ? wanted : rootRef.current;
+      target?.focus();
+    });
+  }, [focusBack, busy, preview, confirmRemove]);
+
+  function openPicker(event: MouseEvent<HTMLButtonElement>, input: HTMLInputElement | null) {
+    triggerRef.current = event.currentTarget;
+    input?.click();
+  }
 
   // a URL da prévia (blob) é liberada quando a prévia some ou o componente sai da tela
   useEffect(() => {
@@ -62,6 +85,7 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
     event.target.value = "";
     if (!file) return;
     setError(null);
+    setFocusBack("trigger");
     const problem = validateSourceFile(file);
     if (problem) {
       setError(problem);
@@ -117,11 +141,19 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
   function confirmRemoval() {
     setError(null);
     startTransition(async () => {
-      const result = await removeAvatar();
+      // falha de rede rejeita a promessa da action: sem o catch, o erro derrubaria a página inteira
+      let result: Awaited<ReturnType<typeof removeAvatar>>;
+      try {
+        result = await removeAvatar();
+      } catch {
+        result = { ok: false, error: "generic" };
+      }
       if (!result.ok) {
         setError(toAvatarError(result.error));
         return;
       }
+      // "Remover foto" some junto com a foto: o foco vai para "Tirar foto"
+      setFocusBack("take");
       setConfirmRemove(false);
       onChange(result.avatarUrl);
       setAnnouncement(t("removed"));
@@ -133,7 +165,7 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
   const inlineError = error && !preview && !confirmRemove;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-elevated p-4" data-testid="avatar-photo">
+    <div ref={rootRef} tabIndex={-1} className="flex flex-col gap-3 rounded-xl border border-border bg-surface-elevated p-4 outline-none" data-testid="avatar-photo">
       <div className="flex items-center gap-4">
         <Avatar src={value} name={name} size="xl" alt="" />
         <div className="flex min-w-0 flex-col gap-0.5">
@@ -150,10 +182,10 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
       )}
 
       <div className="grid gap-2 sm:grid-cols-2">
-        <Button type="button" variant="secondary" size="lg" leadingIcon={<Camera />} disabled={!ready || busy} loading={preparing} onClick={() => cameraRef.current?.click()}>
+        <Button type="button" variant="secondary" size="lg" leadingIcon={<Camera />} disabled={!ready || busy} loading={preparing} ref={takeRef} onClick={(e) => openPicker(e, cameraRef.current)}>
           {t("take")}
         </Button>
-        <Button type="button" variant="secondary" size="lg" leadingIcon={<Images />} disabled={!ready || busy} onClick={() => galleryRef.current?.click()}>
+        <Button type="button" variant="secondary" size="lg" leadingIcon={<Images />} disabled={!ready || busy} onClick={(e) => openPicker(e, galleryRef.current)}>
           {t("gallery")}
         </Button>
       </div>

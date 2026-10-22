@@ -122,6 +122,8 @@
       "avatarOption": "Avatar {n}",
       "illustrations": "Illustrations",
       "illustrationsWhenPhoto": "Your photo is in use. Choosing an illustration and saving replaces the photo (it is deleted).",
+      "photoWillBeDeleted": "When you save, your photo will be deleted and the chosen illustration will take its place.",
+      "keepPhoto": "Keep my photo",
       "language": "Language",
       "theme": "Theme",
       "save": "Save changes",

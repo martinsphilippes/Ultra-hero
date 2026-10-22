@@ -271,6 +271,8 @@
     "optionN": "Opción {n}",
     "noneSelected": "Ninguna opción elegida.",
     "photoInUse": "Tu foto subida está en uso. Elegir una ilustración y guardar reemplaza la foto (se elimina).",
+    "photoWillBeDeleted": "Al guardar, tu foto se eliminará y la ilustración elegida ocupará su lugar.",
+    "keepPhoto": "Mantener mi foto",
     "socials": "Redes (texto simple)",
     "socialsHint": "Se muestran como texto, sin enlaces automáticos. Perfiles ficticios: usa identificadores ilustrativos.",
     "site": "Sitio web",

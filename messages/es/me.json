@@ -122,6 +122,8 @@
       "avatarOption": "Avatar {n}",
       "illustrations": "Ilustraciones",
       "illustrationsWhenPhoto": "Tu foto está en uso. Elegir una ilustración y guardar reemplaza la foto (se elimina).",
+      "photoWillBeDeleted": "Al guardar, tu foto se eliminará y la ilustración elegida ocupará su lugar.",
+      "keepPhoto": "Mantener mi foto",
       "language": "Idioma",
       "theme": "Tema",
       "save": "Guardar cambios",

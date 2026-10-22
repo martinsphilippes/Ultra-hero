@@ -8,7 +8,7 @@ import { Button, Chip, FormField, Input, Select, Switch, Textarea, useToast } fr
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { ILLUSTRATIONS } from "@/lib/avatar/constants";
-import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { isStoredAvatarUrl, safeAvatarSrc, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { slugify } from "./slugify";
 
@@ -155,7 +155,7 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
         {/* Prévia dos placeholders escolhidos (decorativa) */}
         <span className="relative size-14 shrink-0 overflow-hidden rounded-full border border-border">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={values.avatarUrl} alt="" className="size-full object-cover" />
+          <img src={safeAvatarSrc(values.avatarUrl, AVATARS[0], supabaseBaseUrl())} alt="" className="size-full object-cover" />
         </span>
         <span className="relative h-14 flex-1 overflow-hidden rounded-lg border border-border">
           {/* eslint-disable-next-line @next/next/no-img-element */}

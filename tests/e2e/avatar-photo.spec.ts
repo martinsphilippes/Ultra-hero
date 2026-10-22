@@ -76,6 +76,8 @@ test.describe("foto de perfil: telas", () => {
     await dialog.getByRole("button", { name: "Cancelar" }).click();
     await expect(dialog).toBeHidden();
     await expect(page.getByText("Foto atualizada.")).toHaveCount(0);
+    // o foco volta para a seção da foto, não para o topo da página (WCAG 2.4.3)
+    await expect.poll(() => page.evaluate(() => Boolean(document.activeElement?.closest('[data-testid="avatar-photo"]')))).toBe(true);
 
     await page.getByTestId("avatar-gallery-input").setInputFiles({ name: "nota.txt", mimeType: "text/plain", buffer: Buffer.from("não é foto") });
     await expect(page.getByTestId("avatar-photo").getByRole("alert")).toHaveText("Esse arquivo não é uma imagem. Escolha uma foto JPG, PNG ou WebP.");
@@ -169,8 +171,22 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     await expect(dialog).toBeHidden();
 
     await page.reload();
-    expect(await avatarSrc(page, 'header a[href="/profile"] img')).toContain("/storage/v1/object/public/avatars/");
+    const headerSrc = await avatarSrc(page, 'header a[href="/profile"] img');
+    expect(headerSrc).toContain("/storage/v1/object/public/avatars/");
     await expect(page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" })).toBeVisible();
+    // cache curto na origem: a foto removida não fica servida por meses
+    const photoUrl = headerSrc.match(/url=([^&]+)/)?.[1] ?? headerSrc;
+    expect((await page.request.get(photoUrl)).headers()["cache-control"]).toContain("max-age=3600");
+
+    // tocar numa ilustração com a foto salva: aviso de que salvar apaga a foto e volta com "Manter minha foto"
+    await page.waitForLoadState("networkidle");
+    await page.locator('label[for="avatar-2"]').click();
+    const warning = page.getByTestId("avatar-discard-warning");
+    await expect(warning).toContainText("Ao salvar, sua foto será apagada");
+    await warning.getByRole("button", { name: "Manter minha foto" }).click();
+    await expect(warning).toBeEmpty();
+    await expect(page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeDisabled();
 
     await page.goto(publicHref!);
     expect(await avatarSrc(page, "main header img")).toContain("/storage/v1/object/public/avatars/");

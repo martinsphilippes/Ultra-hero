@@ -73,16 +73,18 @@ export async function uploadAvatar(formData: FormData): Promise<AvatarResult> {
       await storeAvatar(admin, { path, bytes, mime: check.image.mime });
     } catch (error) {
       console.warn("[avatar] envio ao Storage falhou:", error instanceof Error ? error.message : error);
-      await markAvatarDeleted(admin, path);
+      // Não marca como apagado: o objeto pode ter chegado (resposta perdida). Pendente e sem
+      // referência, a limpeza diária o apaga depois de 1 h (remover objeto inexistente não dá erro).
       return { ok: false, error: "upload_failed" };
     }
 
     const url = publicAvatarUrl(base, path);
     const { data: previous, error: setError } = await supabase.rpc("avatar_set_photo", { p_url: url });
     if (setError) {
-      // a foto nova não entrou no perfil: sai do bucket agora (a limpeza diária cobre se falhar)
-      await admin.storage.from(AVATAR_BUCKET).remove([path]);
-      await markAvatarDeleted(admin, path);
+      // a foto nova não entrou no perfil: sai do bucket agora. Só marca se saiu de fato; senão o
+      // envio fica pendente e a limpeza diária tenta de novo (envio marcado nunca volta à lista).
+      const { error: removeError } = await admin.storage.from(AVATAR_BUCKET).remove([path]);
+      if (!removeError) await markAvatarDeleted(admin, path);
       return { ok: false, error: rpcFailure(setError) };
     }
 

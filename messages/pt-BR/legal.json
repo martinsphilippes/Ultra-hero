@@ -332,7 +332,7 @@
               "profilePhoto": {
                 "data": "Foto de perfil",
                 "period": "Até você trocar ou remover a foto, ou excluir a conta",
-                "details": "A foto trocada ou removida é apagada na hora. Se algo falhar, a rotina diária apaga cópias sem uso e as fotos de contas excluídas, inclusive da página pública do herói. O registro técnico de cada envio (data, tamanho e tipo) é apagado 2 dias depois de a foto sair."
+                "details": "A foto trocada ou removida é apagada na hora; cópias guardadas em cache (navegador e rede de entrega) deixam de valer em até 1 hora. Se algo falhar, a rotina diária apaga cópias sem uso e as fotos de contas excluídas, inclusive da página pública do herói. O registro técnico de cada envio (data, tamanho e tipo) é apagado 2 dias depois de a foto sair."
               },
               "analytics": {
                 "data": "Eventos de uso",

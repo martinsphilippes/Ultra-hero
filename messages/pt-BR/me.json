@@ -122,6 +122,8 @@
       "avatarOption": "Avatar {n}",
       "illustrations": "Ilustrações",
       "illustrationsWhenPhoto": "Sua foto está em uso. Escolher uma ilustração e salvar substitui a foto (ela é apagada).",
+      "photoWillBeDeleted": "Ao salvar, sua foto será apagada e a ilustração escolhida entra no lugar.",
+      "keepPhoto": "Manter minha foto",
       "language": "Idioma",
       "theme": "Tema",
       "save": "Salvar alterações",

@@ -46,3 +46,26 @@ export function storedAvatarOwner(url: string | null | undefined, baseUrl: strin
 export function isStoredAvatarUrl(url: string | null | undefined, baseUrl: string | null | undefined): boolean {
   return storedAvatarPath(url, baseUrl) !== null;
 }
+
+/** Caminho servido pelo próprio app ("/x"); "//host" e barra invertida apontam para fora. */
+export function isLocalPath(src: string | null | undefined): src is string {
+  return typeof src === "string" && src.startsWith("/") && !src.startsWith("//") && !src.includes("\\");
+}
+
+/**
+ * O que o navegador pode carregar como avatar: caminho local ou foto do bucket deste projeto.
+ * avatar_url é gravável pela própria pessoa (API REST): URL de outro host viraria um <img> de
+ * terceiro para todo visitante (rastreio, imagem sem checagem), então cai na ilustração.
+ */
+export function safeAvatarSrc(src: string | null | undefined, fallbackSrc: string, baseUrl: string | null | undefined): string {
+  if (isLocalPath(src) || storedAvatarPath(src, baseUrl)) return src as string;
+  return fallbackSrc;
+}
+
+/**
+ * O rascunho do formulário tira a foto salva (ilustração ou nenhuma no lugar): ao salvar, a foto é
+ * apagada. A tela avisa e oferece voltar à foto; "salva" é o valor no servidor, não o rascunho.
+ */
+export function discardsSavedPhoto(savedPhoto: string | null, draft: string | null | undefined): boolean {
+  return savedPhoto !== null && (draft || null) !== savedPhoto;
+}

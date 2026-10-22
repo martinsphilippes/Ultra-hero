@@ -332,7 +332,7 @@
               "profilePhoto": {
                 "data": "Profile photo",
                 "period": "Until you replace or remove the photo, or delete your account",
-                "details": "A replaced or removed photo is deleted right away. If something fails, the daily routine deletes unused copies and the photos of deleted accounts, including from the hero's public page. The technical record of each upload (date, size and type) is deleted 2 days after the photo is gone."
+                "details": "A replaced or removed photo is deleted right away; cached copies (browser and delivery network) expire within 1 hour. If something fails, the daily routine deletes unused copies and the photos of deleted accounts, including from the hero's public page. The technical record of each upload (date, size and type) is deleted 2 days after the photo is gone."
               },
               "analytics": {
                 "data": "Usage events",

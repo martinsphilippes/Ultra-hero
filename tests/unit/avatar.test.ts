@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { removeAvatar, uploadAvatar } from "@/app/(app)/profile/avatar-actions";
 import { deleteAccount, updateProfile } from "@/app/(app)/profile/actions";
+import { adminRemoveCreatorPhoto, createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
 import { DELETE_CONFIRM_WORD } from "@/components/me/subscription";
 import { AVATAR_ERRORS, MAX_SOURCE_BYTES, MAX_UPLOAD_BYTES, toAvatarError } from "@/lib/avatar/constants";
-import { isStoredAvatarUrl, publicAvatarUrl, storedAvatarOwner, storedAvatarPath } from "@/lib/avatar/paths";
+import { discardsSavedPhoto, isLocalPath, isStoredAvatarUrl, publicAvatarUrl, safeAvatarSrc, storedAvatarOwner, storedAvatarPath } from "@/lib/avatar/paths";
 import { coverCrop } from "@/lib/avatar/resize";
-import { AVATAR_CLEANUP_LIMIT, cleanupAvatarUploads } from "@/lib/avatar/server";
+import { AVATAR_CACHE_SECONDS, AVATAR_CLEANUP_LIMIT, cleanupAvatarUploads } from "@/lib/avatar/server";
 import { sniffImage } from "@/lib/avatar/sniff";
 import { validateSourceFile, validateUploadBytes } from "@/lib/avatar/validation";
 
@@ -31,7 +32,7 @@ const state = vi.hoisted(() => ({
   user: null as { id: string } | null,
   hasAdmin: true,
   profile: { avatar_url: null as string | null },
-  hero: null as { slug: string; avatar_url: string | null } | null,
+  hero: null as { id?: string; slug: string; user_id?: string | null; avatar_url: string | null } | null,
   claim: { data: null, error: null } as Result,
   setPhoto: { data: [], error: null } as Result,
   orphans: { data: [], error: null } as Result,
@@ -95,8 +96,8 @@ function client(kind: "user" | "admin") {
     auth: { signOut: async () => ({ error: null }) },
     storage: {
       from: (bucket: string) => ({
-        upload: async (path: string, _bytes: Uint8Array, opts: { contentType: string; upsert: boolean }) => {
-          state.log.push(`${kind}:storage:upload:${bucket}/${path}:${opts.contentType}:upsert=${opts.upsert}`);
+        upload: async (path: string, _bytes: Uint8Array, opts: { contentType: string; upsert: boolean; cacheControl: string }) => {
+          state.log.push(`${kind}:storage:upload:${bucket}/${path}:${opts.contentType}:upsert=${opts.upsert}:cache=${opts.cacheControl}`);
           return { data: null, error: state.uploadError };
         },
         remove: async (paths: string[]) => {
@@ -110,7 +111,10 @@ function client(kind: "user" | "admin") {
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: (path: string) => void state.revalidated.push(path) }));
-vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user }));
+vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, requireRole: async () => ({ user: { id: "ad000000-0000-4000-8000-000000000001" } }) }));
+// dependências de ops-actions.ts (admin) que não importam aqui: mensagens viram a própria chave
+vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
+vi.mock("next-intl/server", () => ({ getTranslations: async () => Object.assign((key: string) => key, { has: () => true }) }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => client("user") }));
 vi.mock("@/lib/supabase/admin", () => ({
   hasAdminClient: () => state.hasAdmin,
@@ -197,6 +201,42 @@ describe("paths: URLs do bucket público avatars", () => {
     expect(isStoredAvatarUrl(url(ids.USER, `${ids.NEW}.webp`), null)).toBe(false);
     expect(isStoredAvatarUrl(null, BASE)).toBe(false);
   });
+
+  it("o navegador só carrega caminho local ou foto do bucket deste projeto; o resto vira a ilustração", () => {
+    const fallback = "/placeholders/avatar-3.svg";
+    const own = url(ids.USER, `${ids.NEW}.webp`);
+    expect(AVATAR_CACHE_SECONDS).toBe(3600);
+    expect(safeAvatarSrc(own, fallback, BASE)).toBe(own);
+    expect(safeAvatarSrc("/heroes/rafael-duarte-avatar.webp", fallback, BASE)).toBe("/heroes/rafael-duarte-avatar.webp");
+    // avatar_url gravado pela API com o JWT do herói: nada de <img> de terceiro para o visitante
+    for (const hostile of [
+      "https://attacker.example/p.gif",
+      `https://attacker.example/storage/v1/object/public/avatars/${NEW_PATH}`,
+      `//attacker.example/storage/v1/object/public/avatars/${NEW_PATH}`,
+      "/\\attacker.example/p.gif",
+      "data:image/svg+xml,<svg/>",
+      "javascript:alert(1)",
+      "https://lh3.googleusercontent.com/a/foto",
+      `${BASE}/storage/v1/object/public/recipe-media/${NEW_PATH}`,
+      "",
+      null,
+    ]) {
+      expect(safeAvatarSrc(hostile, fallback, BASE)).toBe(fallback);
+    }
+    // sem a base configurada só o caminho local passa
+    expect(safeAvatarSrc(own, fallback, null)).toBe(fallback);
+    expect(isLocalPath("/placeholders/avatar-1.svg")).toBe(true);
+    expect(isLocalPath("//x.example/a.png")).toBe(false);
+  });
+
+  it("aviso de foto descartada: vale o valor salvo, não o rascunho", () => {
+    const saved = url(ids.USER, `${ids.NEW}.webp`);
+    expect(discardsSavedPhoto(saved, "/placeholders/avatar-2.svg")).toBe(true);
+    expect(discardsSavedPhoto(saved, null)).toBe(true);
+    expect(discardsSavedPhoto(saved, "")).toBe(true);
+    expect(discardsSavedPhoto(saved, saved)).toBe(false);
+    expect(discardsSavedPhoto(null, "/placeholders/avatar-2.svg")).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------- magic bytes
@@ -264,7 +304,8 @@ describe("uploadAvatar", () => {
     expect(result).toEqual({ ok: true, avatarUrl: url(ids.USER, `${ids.NEW}.webp`) });
     expect(state.log).toEqual([
       "user:rpc:avatar_upload_claim",
-      `admin:storage:upload:avatars/${NEW_PATH}:image/webp:upsert=false`,
+      // cache curto (1 h): a foto removida não fica servida por meses em cache
+      `admin:storage:upload:avatars/${NEW_PATH}:image/webp:upsert=false:cache=3600`,
       "user:rpc:avatar_set_photo",
       `  url=${url(ids.USER, `${ids.NEW}.webp`)}`,
       // anterior própria: referências antes do objeto; a ilustração e a foto alheia não são tocadas
@@ -307,17 +348,26 @@ describe("uploadAvatar", () => {
     expect(state.log).toEqual(["user:rpc:avatar_upload_claim"]);
   });
 
-  it("falha no Storage marca o envio como apagado e não aplica", async () => {
+  it("falha no Storage não aplica nem marca o envio (o objeto pode ter chegado: a limpeza diária apaga)", async () => {
     state.uploadError = { message: "network" };
     expect(await uploadAvatar(form(webpVp8(512, 512)))).toEqual({ ok: false, error: "upload_failed" });
-    expect(state.log.at(-1)).toBe("admin:update:avatar_uploads");
+    expect(state.log.at(-1)).toMatch(/^admin:storage:upload:/);
     expect(state.log).not.toContain("user:rpc:avatar_set_photo");
+    expect(state.log).not.toContain("admin:update:avatar_uploads");
   });
 
-  it("falha ao aplicar tira a foto nova do bucket", async () => {
+  it("falha ao aplicar tira a foto nova do bucket e só então marca o envio", async () => {
     state.setPhoto = { data: null, error: { message: "invalid_path" } };
     expect(await uploadAvatar(form(webpVp8(512, 512)))).toEqual({ ok: false, error: "generic" });
     expect(state.log.slice(-2)).toEqual([`admin:storage:remove:avatars/${NEW_PATH}`, "admin:update:avatar_uploads"]);
+  });
+
+  it("falha ao aplicar com o Storage recusando a remoção: o envio fica pendente para a limpeza diária", async () => {
+    state.setPhoto = { data: null, error: { message: "invalid_path" } };
+    state.removeError = { message: "503" };
+    expect(await uploadAvatar(form(webpVp8(512, 512)))).toEqual({ ok: false, error: "generic" });
+    expect(state.log.at(-1)).toBe(`admin:storage:remove:avatars/${NEW_PATH}`);
+    expect(state.log).not.toContain("admin:update:avatar_uploads");
   });
 });
 
@@ -455,5 +505,78 @@ describe("cleanupAvatarUploads", () => {
     await expect(cleanupAvatarUploads(client("admin") as never, null)).rejects.toThrow();
     state.orphans = { data: null, error: { message: "Could not find the function public.avatar_orphan_uploads" } };
     await expect(cleanupAvatarUploads(client("admin") as never, BASE)).rejects.toThrow(/avatar_orphan_uploads/);
+  });
+});
+
+// ---------------------------------------------------------------- admin (ops-actions)
+describe("admin: foto do herói", () => {
+  const CREATOR = "c0000000-0000-4000-8000-000000000001";
+  const values = (avatarUrl: string): CreatorFormValues => ({
+    name: "Rafael Duarte",
+    slug: "rafael-duarte",
+    headline: "",
+    bio: "Nova bio",
+    pillars: ["training"],
+    avatarUrl,
+    coverUrl: "/placeholders/cover-training-1.svg",
+    isFictional: true,
+    rightsNote: "",
+    sortOrder: 100,
+    rightsStatus: "fictional",
+    rightsHolder: "",
+    rightsValidUntil: "",
+    documentRef: "",
+    privateNotes: "",
+  });
+  const creatorUpdates = () => state.writes.filter((w) => w.table === "creator_profiles" && w.op === "update");
+
+  it("remover a foto do próprio usuário ligado: referências, objeto e envio", async () => {
+    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: ids.USER, avatar_url: OLD_URL };
+    expect(await adminRemoveCreatorPhoto({ id: CREATOR }, "foto imprópria")).toMatchObject({ ok: true });
+    expect(state.log).toEqual([
+      "admin:update:profiles",
+      "admin:update:creator_profiles",
+      `admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`,
+      "admin:update:avatar_uploads",
+      "admin:rpc:audit_log",
+    ]);
+  });
+
+  it("herói apontando para a foto de outra pessoa: só a referência dele sai; o objeto e o perfil do dono ficam", async () => {
+    const othersPhoto = url(ids.OTHER, `${ids.OLD}.webp`);
+    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: ids.USER, avatar_url: othersPhoto };
+    expect(await adminRemoveCreatorPhoto({ id: CREATOR }, "foto de terceiro")).toMatchObject({ ok: true });
+    expect(state.log).toEqual(["admin:update:creator_profiles", "admin:rpc:audit_log"]);
+    expect(creatorUpdates()[0].payload).toEqual({ avatar_url: null });
+    expect(creatorUpdates()[0].filters).toEqual([
+      ["eq", "id", CREATOR],
+      ["eq", "avatar_url", othersPhoto],
+    ]);
+    // herói sem usuário (conta excluída): também só a referência; a limpeza diária apaga o objeto
+    state.log = [];
+    state.writes = [];
+    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: null, avatar_url: OLD_URL };
+    expect(await adminRemoveCreatorPhoto({ id: CREATOR }, "conta excluída")).toMatchObject({ ok: true });
+    expect(state.log.some((l) => l.includes("storage"))).toBe(false);
+  });
+
+  it("editar o herói com a foto no formulário não regrava avatar_url (formulário velho não traz foto apagada de volta)", async () => {
+    await updateCreator(CREATOR, values(OLD_URL));
+    expect(creatorUpdates()).toHaveLength(1);
+    expect(creatorUpdates()[0].payload).not.toHaveProperty("avatar_url");
+    expect(creatorUpdates()[0].payload).toMatchObject({ bio: "Nova bio" });
+    // trocar por ilustração continua gravando
+    state.writes = [];
+    await updateCreator(CREATOR, values("/placeholders/avatar-4.svg"));
+    expect(creatorUpdates()[0].payload).toMatchObject({ avatar_url: "/placeholders/avatar-4.svg" });
+    // URL de outro host nem passa na validação
+    state.writes = [];
+    expect(await updateCreator(CREATOR, values("https://attacker.example/p.gif"))).toMatchObject({ ok: false });
+    expect(creatorUpdates()).toHaveLength(0);
+  });
+
+  it("criar herói só com ilustração: foto do bucket (alheia ou apagada) é recusada", async () => {
+    expect(await createCreator(values(url(ids.OTHER, `${ids.OLD}.webp`)))).toEqual({ ok: false, error: "invalid_input" });
+    expect(state.writes).toEqual([]);
   });
 });
