@@ -17,10 +17,12 @@ const samePathOrPhoto = z
   .max(300, { error: "tooLong" })
   .refine((v) => v === "" || SAME_ORIGIN_PATH.test(v) || isStoredAvatarUrl(v, supabaseBaseUrl()), { error: "invalidCover" });
 
+// avatar_url ausente = "avatar inalterado": a action mantém o valor do banco. Assim um formulário com
+// estado velho (a foto mudou em Dados, na mesma página) não regrava nem apaga a foto.
 export const creatorProfileSchema = z.object({
   headline: z.string().trim().max(120, { error: "tooLong" }),
   bio: z.string().trim().max(1200, { error: "tooLong" }),
-  avatar_url: samePathOrPhoto,
+  avatar_url: samePathOrPhoto.optional(),
   cover_url: samePath,
   socials: z.object({
     instagram: z.string().trim().max(80, { error: "tooLong" }),
@@ -29,9 +31,21 @@ export const creatorProfileSchema = z.object({
   }),
 });
 
-export type CreatorProfileValues = z.infer<typeof creatorProfileSchema>;
+/** O que a action recebe: avatar_url só quando a pessoa mexeu no avatar. */
+export type CreatorProfileInput = z.infer<typeof creatorProfileSchema>;
 
-export type ProfileParse = { ok: true; data: CreatorProfileValues } | { ok: false; errors: Record<string, string> };
+/** Estado do formulário: sempre com o avatar à vista. */
+export type CreatorProfileValues = Omit<CreatorProfileInput, "avatar_url"> & { avatar_url: string };
+
+/** O que o formulário envia: o avatar só quando a pessoa mexeu nele (sem ele, a action mantém o do banco). */
+export function creatorProfilePayload(values: CreatorProfileValues, avatarTouched: boolean): CreatorProfileInput {
+  if (avatarTouched) return values;
+  const rest: CreatorProfileInput = { ...values };
+  delete rest.avatar_url;
+  return rest;
+}
+
+export type ProfileParse = { ok: true; data: CreatorProfileInput } | { ok: false; errors: Record<string, string> };
 
 export function parseCreatorProfile(values: unknown): ProfileParse {
   const result = creatorProfileSchema.safeParse(values);

@@ -4,7 +4,7 @@ import { RotateCcw, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { updateCreatorProfile } from "@/app/creator/profile/actions";
 import { useValidationMessage } from "@/components/editors/content/fields";
 import { AvatarPhotoPicker } from "@/components/me/AvatarPhotoPicker";
@@ -13,9 +13,19 @@ import type { AvatarPhotoState } from "@/lib/avatar/availability";
 import { ILLUSTRATIONS } from "@/lib/avatar/constants";
 import { discardsSavedPhoto, isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { cn } from "@/lib/utils";
-import { parseCreatorProfile, type CreatorProfileValues } from "./profile-schema";
+import { creatorProfilePayload, parseCreatorProfile, type CreatorProfileValues } from "./profile-schema";
 
-type Props = { initial: CreatorProfileValues; pillars: string[]; readOnly?: boolean; name: string; photoState: AvatarPhotoState };
+type Props = {
+  initial: CreatorProfileValues;
+  pillars: string[];
+  readOnly?: boolean;
+  name: string;
+  /** Mostra o envio de foto. No /profile fica false: a foto é enviada em "Dados" (uma só na página). */
+  showPhotoPicker?: boolean;
+  photoState?: AvatarPhotoState;
+  /** Sem o envio de foto: nota no lugar dele (onde enviar a foto), ligada ao grupo do avatar. */
+  photoNote?: ReactNode;
+};
 
 const AVATARS = ILLUSTRATIONS;
 const ALL_PILLARS = ["routine", "training", "nutrition", "gastronomy"];
@@ -31,12 +41,13 @@ type ImageRadiosProps = {
   error?: string;
   optionLabel: (n: number) => string;
   noneLabel: string;
+  describedBy?: string;
 };
 
 // Grupo de rádios com miniatura (avatar redondo ou capa 16:9). Fora do formulário para não remontar a cada render.
-function ImageRadios({ baseId, name, label, options, value, onChange, round = false, error, optionLabel, noneLabel }: ImageRadiosProps) {
+function ImageRadios({ baseId, name, label, options, value, onChange, round = false, error, optionLabel, noneLabel, describedBy }: ImageRadiosProps) {
   return (
-    <div role="radiogroup" aria-labelledby={`${baseId}-${name}`} className="flex flex-col gap-2">
+    <div role="radiogroup" aria-labelledby={`${baseId}-${name}`} aria-describedby={describedBy} className="flex flex-col gap-2">
       <span id={`${baseId}-${name}`} className="text-sm font-semibold text-fg">
         {label}
       </span>
@@ -71,7 +82,7 @@ function ImageRadios({ baseId, name, label, options, value, onChange, round = fa
 }
 
 // Formulário do perfil da personalidade: só as colunas liberadas (headline, bio, avatar, capa, redes).
-export function CreatorProfileForm({ initial, pillars, readOnly = false, name, photoState }: Props) {
+export function CreatorProfileForm({ initial, pillars, readOnly = false, name, showPhotoPicker = true, photoState, photoNote }: Props) {
   const t = useTranslations("creator.profile");
   const te = useTranslations("creator.errors");
   const tc = useTranslations("common");
@@ -81,6 +92,9 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, p
   const baseId = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState<CreatorProfileValues>(initial);
+  // A pessoa mexeu no avatar neste formulário? Sem mexer, salvar não reenvia o avatar (a action mantém
+  // o do banco): na mesma página a foto pode ter mudado em "Dados" e este estado estaria velho.
+  const [avatarTouched, setAvatarTouched] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -93,6 +107,16 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, p
   const [savedPhoto, setSavedPhoto] = useState<string | null>(isStoredAvatarUrl(initial.avatar_url, supabaseBaseUrl()) ? initial.avatar_url : null);
   const discarding = discardsSavedPhoto(savedPhoto, values.avatar_url);
   const keepAnchorRef = useRef<HTMLDivElement>(null);
+
+  // Avatar novo do servidor (router.refresh depois de enviar/remover a foto em "Dados"): ajusta o estado
+  // durante a renderização, sem efeito. A foto salva sempre acompanha o servidor; o avatar escolhido só
+  // quando a pessoa não mexeu nele (o que ela escolheu continua escolhido, com o aviso se apaga a foto).
+  const [serverAvatar, setServerAvatar] = useState(initial.avatar_url);
+  if (initial.avatar_url !== serverAvatar) {
+    setServerAvatar(initial.avatar_url);
+    setSavedPhoto(isStoredAvatarUrl(initial.avatar_url, supabaseBaseUrl()) ? initial.avatar_url : null);
+    if (!avatarTouched) setValues((v) => ({ ...v, avatar_url: initial.avatar_url }));
+  }
 
   useEffect(() => {
     if (errorCount === 0) return;
@@ -109,7 +133,9 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, p
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (readOnly || pending) return;
-    const parsed = parseCreatorProfile(values);
+    // avatar só vai junto se a pessoa mexeu nele; sem ele a action mantém o valor do banco
+    const avatar_url = values.avatar_url;
+    const parsed = parseCreatorProfile(creatorProfilePayload(values, avatarTouched));
     if (!parsed.ok) {
       setErrors(parsed.errors);
       return;
@@ -119,7 +145,8 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, p
       const result = await updateCreatorProfile(parsed.data);
       if (result.ok) {
         setServerError(null);
-        setSavedPhoto(isStoredAvatarUrl(parsed.data.avatar_url, supabaseBaseUrl()) ? parsed.data.avatar_url : null);
+        if (avatarTouched) setSavedPhoto(isStoredAvatarUrl(avatar_url, supabaseBaseUrl()) ? avatar_url : null);
+        setAvatarTouched(false);
         toast({ title: tc("states.saved"), description: t("savedDescription"), variant: "success" });
         router.refresh();
       } else {
@@ -149,23 +176,48 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, p
         </div>
 
         <div className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-4 sm:p-5">
-          {/* Foto enviada pelo celular (0031): a mesma do perfil pessoal, gravada pelas actions próprias. */}
-          <AvatarPhotoPicker
-            value={values.avatar_url || null}
-            name={name}
-            state={photoState}
-            onChange={(v) => {
-              patch({ avatar_url: v ?? "" });
-              setSavedPhoto(isStoredAvatarUrl(v, supabaseBaseUrl()) ? v : null);
-            }}
-            disabled={readOnly || pending}
-            hint={t("photoHint")}
-          />
+          {/* Foto enviada pelo celular (0031): a mesma do perfil pessoal, gravada pelas actions próprias
+              (já aplicada no servidor: o avatar volta a estar em dia, sem mudança pendente). */}
+          {showPhotoPicker && photoState && (
+            <AvatarPhotoPicker
+              value={values.avatar_url || null}
+              name={name}
+              state={photoState}
+              onChange={(v) => {
+                patch({ avatar_url: v ?? "" });
+                setSavedPhoto(isStoredAvatarUrl(v, supabaseBaseUrl()) ? v : null);
+                setAvatarTouched(false);
+              }}
+              disabled={readOnly || pending}
+              hint={t("photoHint")}
+            />
+          )}
+          {/* no /profile a foto é enviada em "Dados": a nota fica no lugar do envio, colada no grupo do avatar */}
+          {!showPhotoPicker && photoNote && (
+            <p id={`${baseId}-photo-note`} className="type-body-sm text-fg-muted" data-testid="profile-hero-photo-note">
+              {photoNote}
+            </p>
+          )}
           <div ref={keepAnchorRef} tabIndex={-1} className="outline-none">
-            <ImageRadios baseId={baseId} name="avatar" label={t("avatar")} options={AVATARS} value={values.avatar_url} onChange={(avatar_url) => patch({ avatar_url })} round error={tv(errors.avatar_url)} optionLabel={(n) => t("optionN", { n })} noneLabel={hasPhoto ? t("photoInUse") : t("noneSelected")} />
+            <ImageRadios
+              baseId={baseId}
+              name="avatar"
+              label={t("avatar")}
+              options={AVATARS}
+              value={values.avatar_url}
+              onChange={(avatar_url) => {
+                patch({ avatar_url });
+                setAvatarTouched(true);
+              }}
+              round
+              error={tv(errors.avatar_url)}
+              optionLabel={(n) => t("optionN", { n })}
+              noneLabel={hasPhoto ? t("photoInUse") : t("noneSelected")}
+              describedBy={!showPhotoPicker && photoNote ? `${baseId}-photo-note` : undefined}
+            />
           </div>
           {/* região viva sempre montada: o aviso é anunciado ao aparecer */}
-          <div role="status" data-testid="avatar-discard-warning">
+          <div role="status" data-testid="hero-avatar-discard-warning">
             {discarding && savedPhoto && !readOnly && (
               <div className="flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                 <p className="flex items-start gap-2 text-sm text-fg">
@@ -177,7 +229,9 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, p
                   variant="secondary"
                   leadingIcon={<RotateCcw />}
                   onClick={() => {
+                    // volta à foto do servidor: nada pendente no avatar
                     patch({ avatar_url: savedPhoto });
+                    setAvatarTouched(false);
                     // o botão some com o aviso: o foco fica no grupo das ilustrações
                     requestAnimationFrame(() => keepAnchorRef.current?.focus());
                   }}

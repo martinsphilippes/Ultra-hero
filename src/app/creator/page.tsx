@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, FilePen, Link2, Plus, UserRound } from "lucide-react";
+import { ArrowRight, FilePen, Link2, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
@@ -122,19 +122,8 @@ export default async function CreatorHomePage() {
         <ReviewTimeline reviews={(reviews ?? []) as unknown as ReviewRow[]} showContent compact />
       </Section>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Card interactive asChild>
-          <Link href="/creator/profile" className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-            <CardBody className="flex-row items-center gap-3">
-              <UserRound className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-sm font-semibold text-fg">{t("profile.title")}</span>
-                <span className="type-caption text-fg-muted">{t("dashboard.profileHint")}</span>
-              </span>
-              <ArrowRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
-            </CardBody>
-          </Link>
-        </Card>
+      {/* O perfil do herói mora na tela Perfil (/profile): aqui fica só o atalho dos vínculos. */}
+      <div className="grid gap-3">
         <Card interactive asChild>
           <Link href="/creator/links" className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
             <CardBody className="flex-row items-center gap-3">

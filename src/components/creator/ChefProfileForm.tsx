@@ -51,9 +51,10 @@ export function ChefProfileForm({ specialties: initialSpecialties, request, stat
   return (
     <section aria-labelledby="chef-profile" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5" data-testid="chef-profile">
       <div className="flex flex-col gap-1">
-        <h2 id="chef-profile" className="text-base font-semibold text-fg">
+        {/* h3: a parte de chef fica dentro da seção "Seu perfil de herói" (h2) do /profile */}
+        <h3 id="chef-profile" className="text-base font-semibold text-fg">
           {t("title")}
-        </h2>
+        </h3>
         <p className="type-body-sm text-fg-muted">{t("description")}</p>
       </div>
       <fieldset disabled={readOnly || pending} className="flex flex-col gap-3">

@@ -102,10 +102,15 @@ test.describe("foto de perfil: telas", () => {
     expect(alertAfterClose).toBe("Esse arquivo não é uma imagem. Escolha uma foto JPG, PNG ou WebP.");
   });
 
-  test("/creator/profile também oferece a foto, com o texto do perfil de herói", async ({ page }) => {
+  test("/profile do herói: uma foto só na página (em Dados), com o texto do perfil de herói", async ({ page }) => {
     await loginAsHero(page);
-    await page.goto("/creator/profile");
-    const picker = page.getByTestId("avatar-photo");
+    await page.goto("/profile");
+    await expect(page.getByTestId("profile-hero")).toBeVisible();
+    // o perfil do herói está na mesma página e não tem seletor de foto próprio
+    await expect(page.getByTestId("avatar-photo")).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Tirar foto" })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Escolher da galeria" })).toHaveCount(1);
+    const picker = page.locator("#dados").getByTestId("avatar-photo");
     await expect(picker).toBeVisible();
     await expect(picker.getByText(/aparece no seu avatar e na sua página pública de herói/)).toBeVisible();
     await expect(picker.getByRole("button", { name: "Tirar foto" })).toBeVisible();
@@ -116,29 +121,33 @@ test.describe("foto de perfil: telas", () => {
 type Illustrations = { profile: string | null; creator: string | null };
 
 // Ilustrações marcadas antes do teste: a foto substitui as duas e, removida, deixa o avatar vazio;
-// o fim do teste devolve à conta demo as ilustrações que ela tinha.
+// o fim do teste devolve à conta demo as ilustrações que ela tinha. As duas estão no /profile: o
+// formulário do herói (rádios name$="-avatar", botão "Salvar") e o de Dados (name="avatar", "Salvar alterações").
+const HERO_RADIO = '[data-testid="profile-hero"] input[type="radio"][name$="-avatar"]';
+const DATA_RADIO = '#dados input[type="radio"][name="avatar"]';
+
 async function readIllustrations(page: Page): Promise<Illustrations> {
-  await page.goto("/creator/profile");
-  const creatorRadio = page.locator('input[type="radio"][name$="-avatar"]:checked');
-  const creator = (await creatorRadio.count()) > 0 ? await creatorRadio.getAttribute("value") : null;
   await page.goto("/profile");
-  const profileRadio = page.locator('input[type="radio"][name="avatar"]:checked');
+  const creatorRadio = page.locator(`${HERO_RADIO}:checked`);
+  const creator = (await creatorRadio.count()) > 0 ? await creatorRadio.getAttribute("value") : null;
+  const profileRadio = page.locator(`${DATA_RADIO}:checked`);
   const profile = (await profileRadio.count()) > 0 ? await profileRadio.getAttribute("value") : null;
   return { profile, creator };
 }
 
 async function restoreIllustrations(page: Page, original: Illustrations) {
   if (original.creator) {
-    await page.goto("/creator/profile");
+    await page.goto("/profile");
     await page.waitForLoadState("networkidle");
-    await page.locator(`input[type="radio"][name$="-avatar"][value="${original.creator}"]`).check({ force: true });
-    await page.getByRole("button", { name: "Salvar", exact: true }).click();
+    const hero = page.getByTestId("profile-hero");
+    await page.locator(`${HERO_RADIO}[value="${original.creator}"]`).check({ force: true });
+    await hero.getByRole("button", { name: "Salvar", exact: true }).click();
     await expect(page.getByText("Salvo").first()).toBeVisible({ timeout: 20_000 });
   }
   if (original.profile) {
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
-    await page.locator(`input[type="radio"][name="avatar"][value="${original.profile}"]`).check({ force: true });
+    await page.locator(`${DATA_RADIO}[value="${original.profile}"]`).check({ force: true });
     await page.getByRole("button", { name: "Salvar alterações" }).click();
     await expect(page.getByText("Perfil atualizado.").first()).toBeVisible({ timeout: 20_000 });
   }
@@ -168,8 +177,8 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     test.setTimeout(180_000);
     await loginAsHero(page);
     original = await readIllustrations(page);
-    await page.goto("/creator/profile");
-    const publicHref = await page.getByRole("link", { name: "Ver página pública" }).getAttribute("href");
+    await page.goto("/profile");
+    const publicHref = await page.getByTestId("profile-hero").getByRole("link", { name: "Ver página pública" }).getAttribute("href");
     expect(publicHref).toMatch(/^\/personalities\//);
     // Herói demo com a foto oficial do perfil (/heroes/*.webp, 0030): a tela só devolve ilustrações,
     // então enviar e remover deixaria o herói sem a foto oficial. Só roda com E2E_AVATAR_REAL_HERO=1

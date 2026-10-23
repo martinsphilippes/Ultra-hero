@@ -64,7 +64,9 @@ export async function syncTimezone(input: { timezone: string }): Promise<Result>
 // ---------------------------------------------------------------- dados do perfil
 // Avatar: ilustração local, nenhum, ou a foto enviada (0031). A foto só entra pelo envio
 // (avatar-actions): aqui ela só é aceita se já é a atual da própria pessoa (salvar sem trocar).
-export async function updateProfile(input: { displayName: string; avatarUrl: string | null; locale: string; theme: string }): Promise<Result> {
+// avatarUrl ausente = a pessoa não mexeu no avatar: o do banco fica (o formulário pode estar com um
+// valor velho, ex.: o herói trocou a ilustração pública na mesma página e a foto saiu do ar).
+export async function updateProfile(input: { displayName: string; avatarUrl?: string | null; locale: string; theme: string }): Promise<Result> {
   const base = supabaseBaseUrl();
   const parsed = z
     .object({
@@ -73,7 +75,8 @@ export async function updateProfile(input: { displayName: string; avatarUrl: str
         .string()
         .max(300)
         .refine((v) => ILLUSTRATION_RE.test(v) || isStoredAvatarUrl(v, base))
-        .nullable(),
+        .nullable()
+        .optional(),
       locale: z.enum(locales),
       theme: z.enum(themes),
     })
@@ -83,17 +86,22 @@ export async function updateProfile(input: { displayName: string; avatarUrl: str
     const user = await getUser();
     if (!user) return { ok: false, error: "unauthenticated" };
     const supabase = await createClient();
-    const { data: current } = await supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle();
-    const previous = current?.avatar_url ?? null;
-    const next = parsed.data.avatarUrl;
-    if (isStoredAvatarUrl(next, base) && (next !== previous || storedAvatarOwner(next, base) !== user.id)) return { ok: false, error: "invalid_input" };
+    const avatarChanged = parsed.data.avatarUrl !== undefined;
+    let previous: string | null = null;
+    let next: string | null = null;
+    if (avatarChanged) {
+      const { data: current } = await supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle();
+      previous = current?.avatar_url ?? null;
+      next = parsed.data.avatarUrl ?? null;
+      if (isStoredAvatarUrl(next, base) && (next !== previous || storedAvatarOwner(next, base) !== user.id)) return { ok: false, error: "invalid_input" };
+    }
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: parsed.data.displayName, avatar_url: next })
+      .update(avatarChanged ? { display_name: parsed.data.displayName, avatar_url: next } : { display_name: parsed.data.displayName })
       .eq("id", user.id);
     if (error) return fail(error.message);
     // Trocou a foto por ilustração (ou nenhuma): a foto sai do ar também no perfil de herói.
-    if (base && previous !== next && storedAvatarOwner(previous, base) === user.id && hasAdminClient()) {
+    if (avatarChanged && base && previous !== next && storedAvatarOwner(previous, base) === user.id && hasAdminClient()) {
       await releaseStoredAvatar(createAdminClient(), { url: previous as string, baseUrl: base });
       revalidatePath("/creator", "layout");
       revalidatePath("/personalities", "layout");

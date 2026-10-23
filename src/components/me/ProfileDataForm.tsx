@@ -15,33 +15,55 @@ import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
 import { cn } from "@/lib/utils";
 import { AvatarPhotoPicker } from "./AvatarPhotoPicker";
 
-type Props = { displayName: string; avatarUrl: string | null; locale: Locale; theme: ResolvedTheme; photoState: AvatarPhotoState };
+type Props = {
+  displayName: string;
+  avatarUrl: string | null;
+  locale: Locale;
+  theme: ResolvedTheme;
+  photoState: AvatarPhotoState;
+  /** Texto de apoio da foto (heróis: a mesma foto vale na página pública). */
+  photoHint?: string;
+  /** Legenda das ilustrações (heróis: a ilustração daqui vale só no app; a pública fica no perfil de herói). */
+  illustrationsHint?: string;
+};
+
+const knownAvatar = (url: string | null) => (url && (ILLUSTRATIONS.includes(url) || isStoredAvatarUrl(url, supabaseBaseUrl())) ? url : null);
 
 // Formulário de dados do perfil: nome, avatar (foto enviada pelo celular ou ilustração local), idioma
 // e tema. A foto é gravada pelas actions próprias (envio/remoção); aqui só sincroniza o estado para
-// "Salvar" não regravar um valor velho. Escolher uma ilustração e salvar substitui a foto.
-export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState }: Props) {
+// "Salvar" não regravar um valor velho. Escolher uma ilustração e salvar substitui a foto. O avatar só
+// vai para a action se a pessoa mexeu nele aqui (o perfil do herói, na mesma página, também mexe nele).
+export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState, photoHint, illustrationsHint }: Props) {
   const t = useTranslations("me.profile.data");
   const tl = useTranslations("common.languages");
   const tt = useTranslations("common.theme");
   const { toast } = useToast();
   const router = useRouter();
   const [name, setName] = useState(displayName);
-  const [avatar, setAvatar] = useState<string | null>(
-    avatarUrl && (ILLUSTRATIONS.includes(avatarUrl) || isStoredAvatarUrl(avatarUrl, supabaseBaseUrl())) ? avatarUrl : null,
-  );
+  const [avatar, setAvatar] = useState<string | null>(knownAvatar(avatarUrl));
+  const [avatarTouched, setAvatarTouched] = useState(false);
   const hasPhoto = isStoredAvatarUrl(avatar, supabaseBaseUrl());
   // Foto gravada no servidor (não o rascunho): só muda pelo envio/remoção do picker ou ao salvar.
   // Com ela, tocar numa ilustração não pode esconder que salvar apaga a foto.
   const [savedPhoto, setSavedPhoto] = useState<string | null>(isStoredAvatarUrl(avatarUrl, supabaseBaseUrl()) ? avatarUrl : null);
   const discarding = discardsSavedPhoto(savedPhoto, avatar);
   const illustrationsRef = useRef<HTMLParagraphElement>(null);
+
+  // Avatar novo do servidor (ex.: o herói trocou a ilustração pública e a foto saiu do ar): ajusta o
+  // estado durante a renderização, sem efeito. A foto salva acompanha o servidor; o avatar escolhido
+  // só quando a pessoa não mexeu nele.
+  const [serverAvatar, setServerAvatar] = useState(avatarUrl);
+  if (avatarUrl !== serverAvatar) {
+    setServerAvatar(avatarUrl);
+    setSavedPhoto(isStoredAvatarUrl(avatarUrl, supabaseBaseUrl()) ? avatarUrl : null);
+    if (!avatarTouched) setAvatar(knownAvatar(avatarUrl));
+  }
   const [lang, setLang] = useState<Locale>(locale);
   const [mode, setMode] = useState<ResolvedTheme>(theme);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const dirty = name.trim() !== displayName || avatar !== avatarUrl || lang !== locale || mode !== theme;
+  const dirty = name.trim() !== displayName || (avatarTouched && avatar !== avatarUrl) || lang !== locale || mode !== theme;
 
   function applyTheme(value: ResolvedTheme) {
     const root = document.documentElement;
@@ -61,13 +83,15 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
     }
     setError(null);
     startTransition(async () => {
-      const result = await updateProfile({ displayName: name.trim(), avatarUrl: avatar, locale: lang, theme: mode });
+      // sem mexer no avatar ele não vai: a action mantém o do banco
+      const result = await updateProfile({ displayName: name.trim(), ...(avatarTouched ? { avatarUrl: avatar } : {}), locale: lang, theme: mode });
       if (!result.ok) {
         setError(t.has(`errors.${result.error}`) ? t(`errors.${result.error}`) : t("errors.generic"));
         return;
       }
       applyTheme(mode);
-      setSavedPhoto(isStoredAvatarUrl(avatar, supabaseBaseUrl()) ? avatar : null);
+      if (avatarTouched) setSavedPhoto(isStoredAvatarUrl(avatar, supabaseBaseUrl()) ? avatar : null);
+      setAvatarTouched(false);
       toast({ title: t("saved"), variant: "success" });
       router.refresh();
     });
@@ -87,16 +111,30 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
           name={name.trim() || displayName}
           state={photoState}
           onChange={(next) => {
+            // envio/remoção já aplicados no servidor: o avatar volta a estar em dia
             setAvatar(next);
             setSavedPhoto(isStoredAvatarUrl(next, supabaseBaseUrl()) ? next : null);
+            setAvatarTouched(false);
           }}
           disabled={pending}
+          hint={photoHint}
         />
         <p ref={illustrationsRef} tabIndex={-1} className="mt-2 text-sm font-semibold text-fg outline-none" id="avatar-illustrations-label">
           {t("illustrations")}
         </p>
+        {/* heróis: a foto é uma só, mas a ilustração do app e a da página pública são separadas */}
+        {illustrationsHint && (
+          <p id="avatar-illustrations-app-only" className="type-caption text-fg-muted" data-testid="avatar-illustrations-app-only">
+            {illustrationsHint}
+          </p>
+        )}
         {hasPhoto && <p className="type-caption text-fg-muted">{t("illustrationsWhenPhoto")}</p>}
-        <div role="radiogroup" aria-labelledby="avatar-illustrations-label" className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+        <div
+          role="radiogroup"
+          aria-labelledby="avatar-illustrations-label"
+          aria-describedby={illustrationsHint ? "avatar-illustrations-app-only" : undefined}
+          className="grid grid-cols-4 gap-2 sm:grid-cols-8"
+        >
           {ILLUSTRATIONS.map((src, index) => {
             const selected = avatar === src;
             const id = `avatar-${index + 1}`;
@@ -108,7 +146,10 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
                   name="avatar"
                   value={src}
                   checked={selected}
-                  onChange={() => setAvatar(src)}
+                  onChange={() => {
+                    setAvatar(src);
+                    setAvatarTouched(true);
+                  }}
                   disabled={pending}
                   className="peer sr-only"
                 />
@@ -141,6 +182,7 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
                 disabled={pending}
                 onClick={() => {
                   setAvatar(savedPhoto);
+                  setAvatarTouched(false);
                   // o botão some com o aviso: o foco fica no título das ilustrações
                   requestAnimationFrame(() => illustrationsRef.current?.focus());
                 }}

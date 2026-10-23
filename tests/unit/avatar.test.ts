@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { removeAvatar, uploadAvatar } from "@/app/(app)/profile/avatar-actions";
 import { deleteAccount, updateProfile } from "@/app/(app)/profile/actions";
 import { adminRemoveCreatorPhoto, createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
+import { updateCreatorProfile } from "@/app/creator/profile/actions";
+import { creatorProfilePayload, parseCreatorProfile, type CreatorProfileInput } from "@/components/creator/profile-schema";
 import { DELETE_CONFIRM_WORD } from "@/components/me/subscription";
 import { AVATAR_ERRORS, MAX_SOURCE_BYTES, MAX_UPLOAD_BYTES, toAvatarError } from "@/lib/avatar/constants";
 import { discardsSavedPhoto, isLocalPath, isStoredAvatarUrl, publicAvatarUrl, safeAvatarSrc, storedAvatarOwner, storedAvatarPath } from "@/lib/avatar/paths";
@@ -32,7 +34,7 @@ const state = vi.hoisted(() => ({
   user: null as { id: string } | null,
   hasAdmin: true,
   profile: { avatar_url: null as string | null },
-  hero: null as { id?: string; slug: string; user_id?: string | null; avatar_url: string | null } | null,
+  hero: null as { id?: string; slug: string; status?: string; user_id?: string | null; avatar_url: string | null } | null,
   claim: { data: null, error: null } as Result,
   setPhoto: { data: [], error: null } as Result,
   orphans: { data: [], error: null } as Result,
@@ -314,7 +316,9 @@ describe("uploadAvatar", () => {
       `admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`,
       "admin:update:avatar_uploads",
     ]);
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/creator/profile", "/personalities/helena-vilar"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/creator", "/personalities/helena-vilar"]));
+    // o perfil do herói mora no /profile: o endereço antigo só redireciona
+    expect(state.revalidated).not.toContain("/creator/profile");
   });
 
   it("o tipo vem dos bytes: PNG disfarçado de WebP não chega ao banco", async () => {
@@ -432,6 +436,115 @@ describe("updateProfile com foto", () => {
       `admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`,
       "admin:update:avatar_uploads",
     ]);
+  });
+});
+
+// Os dois formulários (Dados e "Seu perfil de herói") ficam na mesma página do /profile: um deles
+// pode estar com o avatar velho. Sem a pessoa mexer no avatar, ele não vai para a action e o do banco
+// fica — salvar o outro formulário não troca nem apaga a foto.
+describe("updateProfile sem mexer no avatar", () => {
+  const base = { displayName: "Ana", locale: "pt-BR", theme: "dark" };
+
+  it("cenário B: avatar ausente mantém a foto do banco (nem lê, nem regrava, nem libera)", async () => {
+    state.profile = { avatar_url: OLD_URL };
+    state.hero = { slug: "helena-vilar", avatar_url: OLD_URL };
+    expect(await updateProfile(base)).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:profiles"]);
+    expect(state.writes[0].payload).toEqual({ display_name: "Ana" });
+    expect(state.writes[0].payload).not.toHaveProperty("avatar_url");
+  });
+
+  it("mexer no avatar continua gravando e trocar a foto por ilustração continua liberando a foto", async () => {
+    state.profile = { avatar_url: "/placeholders/avatar-1.svg" };
+    expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-2.svg" })).toEqual({ ok: true });
+    expect(state.writes[0].payload).toEqual({ display_name: "Ana", avatar_url: "/placeholders/avatar-2.svg" });
+    state.log = [];
+    state.writes = [];
+    state.profile = { avatar_url: OLD_URL };
+    expect(await updateProfile({ ...base, avatarUrl: null })).toEqual({ ok: true });
+    expect(state.log).toContain(`admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`);
+  });
+
+  it("validações seguem: ilustração só da lista, foto só a atual e da própria pessoa", async () => {
+    state.profile = { avatar_url: OLD_URL };
+    expect(await updateProfile({ ...base, avatarUrl: "/placeholders/cover-training-1.svg" })).toEqual({ ok: false, error: "invalid_input" });
+    expect(await updateProfile({ ...base, avatarUrl: "/heroes/rafael-duarte-avatar.webp" })).toEqual({ ok: false, error: "invalid_input" });
+    expect(await updateProfile({ ...base, avatarUrl: url(ids.OTHER, `${ids.OLD}.jpg`) })).toEqual({ ok: false, error: "invalid_input" });
+    expect(await updateProfile({ ...base, avatarUrl: url(ids.USER, `${ids.NEW}.webp`) })).toEqual({ ok: false, error: "invalid_input" });
+    expect(await updateProfile({ ...base, displayName: " " })).toEqual({ ok: false, error: "invalid_input" });
+    expect(state.writes).toEqual([]);
+  });
+});
+
+describe("updateCreatorProfile (perfil do herói no /profile)", () => {
+  const values = (avatar?: string): CreatorProfileInput => ({
+    headline: "Treino curto",
+    bio: "Bio nova",
+    ...(avatar === undefined ? {} : { avatar_url: avatar }),
+    cover_url: "/placeholders/cover-training-1.svg",
+    socials: { instagram: "@helena", youtube: "", site: "" },
+  });
+  const heroUpdates = () => state.writes.filter((w) => w.table === "creator_profiles" && w.op === "update");
+
+  beforeEach(() => {
+    state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "helena-vilar", status: "active", avatar_url: OLD_URL };
+    state.profile = { avatar_url: OLD_URL };
+  });
+
+  it("cenário A: foto enviada em Dados e o formulário do herói salvo sem mexer no avatar — a foto fica nos dois lados", async () => {
+    expect(await updateCreatorProfile(values())).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:creator_profiles"]);
+    expect(heroUpdates()[0].payload).not.toHaveProperty("avatar_url");
+    expect(heroUpdates()[0].payload).toMatchObject({ headline: "Treino curto", bio: "Bio nova" });
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities/helena-vilar"]));
+    expect(state.revalidated).not.toContain("/creator/profile");
+  });
+
+  it("mexer no avatar continua funcionando: ilustração no lugar da foto tira a foto do ar nos dois lados", async () => {
+    expect(await updateCreatorProfile(values("/placeholders/avatar-4.svg"))).toEqual({ ok: true });
+    expect(heroUpdates()[0].payload).toMatchObject({ avatar_url: "/placeholders/avatar-4.svg" });
+    expect(state.log).toEqual([
+      "user:update:creator_profiles",
+      "admin:update:profiles",
+      "admin:update:creator_profiles",
+      `admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`,
+      "admin:update:avatar_uploads",
+    ]);
+  });
+
+  it("manter a foto atual (mexeu e voltou) regrava o mesmo valor e não apaga nada", async () => {
+    expect(await updateCreatorProfile(values(OLD_URL))).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:creator_profiles"]);
+    expect(heroUpdates()[0].payload).toMatchObject({ avatar_url: OLD_URL });
+  });
+
+  it("validações seguem: foto diferente da atual ou alheia, URL de outro host e perfil inativo são recusados", async () => {
+    expect(await updateCreatorProfile(values(url(ids.USER, `${ids.NEW}.webp`)))).toEqual({ ok: false, error: "invalid_input" });
+    state.hero = { ...state.hero!, avatar_url: url(ids.OTHER, `${ids.OLD}.jpg`) };
+    expect(await updateCreatorProfile(values(url(ids.OTHER, `${ids.OLD}.jpg`)))).toEqual({ ok: false, error: "invalid_input" });
+    expect(await updateCreatorProfile(values("https://attacker.example/p.gif"))).toEqual({ ok: false, error: "invalid_input" });
+    state.hero = { ...state.hero!, status: "suspended" };
+    expect(await updateCreatorProfile(values())).toEqual({ ok: false, error: "creator_unavailable" });
+    state.user = null;
+    expect(await updateCreatorProfile(values())).toEqual({ ok: false, error: "unauthenticated" });
+    expect(state.writes).toEqual([]);
+  });
+
+  it("formulário: sem mexer no avatar ele sai do envio; mexendo, vai junto", () => {
+    const form = { ...values(), avatar_url: "/placeholders/avatar-1.svg" };
+    expect(creatorProfilePayload(form, false)).not.toHaveProperty("avatar_url");
+    expect(creatorProfilePayload(form, false)).toMatchObject({ bio: "Bio nova", cover_url: "/placeholders/cover-training-1.svg" });
+    expect(creatorProfilePayload(form, true)).toMatchObject({ avatar_url: "/placeholders/avatar-1.svg" });
+  });
+
+  it("esquema: avatar ausente = inalterado; presente continua validado; o resto também", () => {
+    const untouched = parseCreatorProfile(values());
+    expect(untouched.ok).toBe(true);
+    expect(untouched.ok && "avatar_url" in untouched.data).toBe(false);
+    expect(parseCreatorProfile(values(""))).toMatchObject({ ok: true, data: { avatar_url: "" } });
+    expect(parseCreatorProfile(values("//evil.example/a.png"))).toEqual({ ok: false, errors: { avatar_url: "invalidCover" } });
+    expect(parseCreatorProfile({ ...values(), cover_url: "https://evil.example/c.png" })).toEqual({ ok: false, errors: { cover_url: "invalidCover" } });
+    expect(parseCreatorProfile({ ...values(), headline: "x".repeat(121) })).toEqual({ ok: false, errors: { headline: "tooLong" } });
   });
 });
 

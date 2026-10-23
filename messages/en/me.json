@@ -126,6 +126,7 @@
       "avatarHint": "Upload your photo from your phone or choose an illustration.",
       "avatarOption": "Avatar {n}",
       "illustrations": "Illustrations",
+      "illustrationsAppOnly": "Applies only to your app avatar. Your public page illustration is in Your hero profile.",
       "illustrationsWhenPhoto": "Your photo is in use. Choosing an illustration and saving replaces the photo (it is deleted).",
       "photoWillBeDeleted": "When you save, your photo will be deleted and the chosen illustration will take its place.",
       "keepPhoto": "Keep my photo",

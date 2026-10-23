@@ -26,7 +26,6 @@
     "returnedDescription": "A equipe editorial deixou feedback. Ajuste e publique quando estiver pronto.",
     "latestReviews": "Últimas revisões",
     "seeContent": "Meus conteúdos",
-    "profileHint": "Headline, bio, avatar, capa e redes.",
     "linksHint": "Sugira produtos relacionados aos seus conteúdos."
   },
   "content": {
@@ -256,7 +255,7 @@
     "deleted": "Sugestão excluída"
   },
   "profile": {
-    "title": "Meu perfil",
+    "title": "Seu perfil de herói",
     "description": "O que o público vê na sua página de herói.",
     "viewPublic": "Ver página pública",
     "inactiveNotice": "Perfil suspenso ou pendente: a edição está bloqueada até a administração reativar.",
@@ -265,8 +264,9 @@
     "headlineHint": "Uma frase curta sobre você (até 120 caracteres).",
     "bio": "Bio",
     "bioHint": "Apresentação em primeira pessoa. Lembre-se: personagem fictício, conteúdo educativo.",
-    "avatar": "Avatar",
-    "photoHint": "A mesma foto do seu perfil pessoal: aparece no seu avatar e na sua página pública de herói, no lugar da ilustração.",
+    "avatar": "Avatar da página pública (ilustração)",
+    "photoHint": "Uma foto só para tudo: aparece no seu avatar e na sua página pública de herói, no lugar da ilustração.",
+    "photoInData": "A foto da sua página pública é a mesma do app: envie ou troque em <link>Dados</link>.",
     "cover": "Capa",
     "optionN": "Opção {n}",
     "noneSelected": "Nenhuma opção escolhida.",

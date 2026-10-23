@@ -33,7 +33,6 @@ async function revalidateAvatar(supabase: Supabase, userId: string) {
   const { data: hero } = await supabase.from("creator_profiles").select("slug").eq("user_id", userId).maybeSingle();
   if (hero?.slug) {
     revalidatePath("/creator");
-    revalidatePath("/creator/profile");
     revalidatePath("/personalities");
     revalidatePath(`/personalities/${hero.slug}`);
   }

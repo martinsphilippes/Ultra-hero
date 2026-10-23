@@ -30,7 +30,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "content", href: "/creator/content" },
     { key: "recipes", href: "/creator/recipes" },
     { key: "links", href: "/creator/links" },
-    { key: "profile", href: "/creator/profile" },
+    // sem "Meu perfil": o perfil do herói fica na tela Perfil (/profile)
   ],
   seller: [
     { key: "dashboard", href: "/seller" },

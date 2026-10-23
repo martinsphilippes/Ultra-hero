@@ -26,7 +26,6 @@
     "returnedDescription": "The editorial team left feedback. Adjust and publish when ready.",
     "latestReviews": "Latest reviews",
     "seeContent": "My content",
-    "profileHint": "Headline, bio, avatar, cover and socials.",
     "linksHint": "Suggest products related to your content."
   },
   "content": {
@@ -256,7 +255,7 @@
     "deleted": "Suggestion deleted"
   },
   "profile": {
-    "title": "My profile",
+    "title": "Your hero profile",
     "description": "What the public sees on your hero page.",
     "viewPublic": "View public page",
     "inactiveNotice": "Profile suspended or pending: editing is locked until the administration reactivates it.",
@@ -265,8 +264,9 @@
     "headlineHint": "A short sentence about you (up to 120 characters).",
     "bio": "Bio",
     "bioHint": "First-person introduction. Remember: fictional character, educational content.",
-    "avatar": "Avatar",
-    "photoHint": "The same photo as your personal profile: it shows as your avatar and on your public hero page, in place of the illustration.",
+    "avatar": "Public page avatar (illustration)",
+    "photoHint": "One photo for everything: it shows as your avatar and on your public hero page, in place of the illustration.",
+    "photoInData": "Your public page photo is the same as in the app: upload or change it in <link>Details</link>.",
     "cover": "Cover",
     "optionN": "Option {n}",
     "noneSelected": "No option chosen.",
