@@ -17,11 +17,15 @@ const linkClass = "font-semibold text-accent-text underline-offset-2 hover:under
 export default async function TodayAboutPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const search = await searchParams;
   const example = wantsExample(search.exemplo);
-  // Conta real sem exemplo também vê a lista do modelo do exemplo (rotulado "Exemplo").
-  const view = await loadWatchView(example ? "/profile/today/about?exemplo=1" : "/profile/today/about", true);
+  const path = example ? "/profile/today/about?exemplo=1" : "/profile/today/about";
+  // Relógio conectado (chave ligada): o modelo real. Sem relógio (ou ainda sincronizando), a lista
+  // do modelo do exemplo, rotulada "Exemplo".
+  let view = await loadWatchView(path, example);
+  if (view.kind === "connect" || view.kind === "syncing") view = await loadWatchView(path, true);
   const [t, tt, tw] = await Promise.all([getTranslations("me.today.about"), getTranslations("me.today"), getTranslations("wearables")]);
-  if (view.kind === "connect") return null;
+  if (view.kind === "connect" || view.kind === "syncing") return null;
   const snapshot = view.snapshot;
+  const real = view.kind === "real";
   const measured = metricsForModel(snapshot.model);
   const backHref = view.kind === "example" && example ? "/profile/today?exemplo=1" : "/profile";
 
@@ -29,7 +33,7 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
     <div className="flex flex-col gap-6" data-testid="today-about">
       <PageHeader title={t("title")} eyebrow={tt("title")} backHref={backHref} backLabel={tt("detail.back")} />
       <section className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5">
-        <p className="type-body max-w-prose text-fg">{t("intro")}</p>
+        <p className="type-body max-w-prose text-fg">{real ? tt("real.aboutIntro", { device: snapshot.deviceName }) : t("intro")}</p>
         <p className="type-body-sm max-w-prose text-fg-muted">{t("rule")}</p>
       </section>
 
@@ -38,9 +42,11 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
           <h2 id="about-model" className="type-h3 text-fg">
             {t("modelTitle", { device: snapshot.deviceName })}
           </h2>
-          <Badge variant="demo" size="sm">
-            {view.kind === "demo" ? tt("demo.tag") : tt("example.tag")}
-          </Badge>
+          {real ? null : (
+            <Badge variant="demo" size="sm">
+              {view.kind === "demo" ? tt("demo.tag") : tt("example.tag")}
+            </Badge>
+          )}
         </div>
         <p className="type-caption text-fg-muted">{t("modelHidden")}</p>
         <dl className="grid gap-3 sm:grid-cols-2">
@@ -102,6 +108,18 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
           ))}
         </ul>
       </section>
+
+      {real ? (
+        <section aria-labelledby="about-manage" className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5" data-testid="about-manage">
+          <h2 id="about-manage" className="type-h3 text-fg">
+            {tt("real.manageTitle")}
+          </h2>
+          <p className="type-body-sm max-w-prose text-fg">{tt("real.manageBody")}</p>
+          <Link href="/profile/devices" className={linkClass}>
+            {tt("real.devicesLink")}
+          </Link>
+        </section>
+      ) : null}
 
       <section aria-labelledby="about-privacy" className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5">
         <h2 id="about-privacy" className="type-h3 text-fg">

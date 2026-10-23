@@ -7,7 +7,9 @@ import { isMetricCode, MODEL_INFO, modelMeasures, NIGHT_VITALS_COMPONENTS, type 
 import { baseline, disposition, edwardsTrimp, nightVitals, sleepEfficiency, sleepRegularity, trainingLoad, type Baseline, type DispositionResult, type NightVitalsResult } from "./derived";
 
 export type DemoPersonaKey = "admin" | "creator" | "seller" | "premium" | "free" | "example";
-export type Sport = "run" | "trail_run" | "walk" | "cycle" | "strength";
+/** Esportes com nome na interface (o gerador usa os 5 primeiros; a ingestão real usa todos). */
+export type Sport = "run" | "trail_run" | "walk" | "cycle" | "strength" | "swim" | "hike" | "yoga" | "row" | "other";
+type GenSport = "run" | "trail_run" | "walk" | "cycle" | "strength";
 
 type Persona = {
   key: DemoPersonaKey;
@@ -23,7 +25,7 @@ type Persona = {
   wakeMin: number;
   /** Dias de treino (0 = domingo). */
   trainingDays: readonly number[];
-  sports: readonly Sport[];
+  sports: readonly GenSport[];
   workoutStartMin: number;
   episodeOffset: number;
   moveGoalKcal: number;
@@ -176,7 +178,7 @@ function workoutFor(persona: Persona, dayIndex: number): DemoWorkout | null {
   const sport = persona.sports[rng.int(0, persona.sports.length - 1)];
   const durationMin = sport === "strength" ? rng.int(35, 55) : sport === "walk" ? rng.int(35, 70) : rng.int(30, 75);
   const startMin = persona.workoutStartMin + rng.int(-20, 25);
-  const speeds: Record<Sport, number> = { run: 1000 / (rng.int(300, 380) / 60), trail_run: 1000 / (rng.int(390, 480) / 60), walk: 1000 / (rng.int(560, 690) / 60), cycle: rng.int(320, 450), strength: 0 };
+  const speeds: Record<GenSport, number> = { run: 1000 / (rng.int(300, 380) / 60), trail_run: 1000 / (rng.int(390, 480) / 60), walk: 1000 / (rng.int(560, 690) / 60), cycle: rng.int(320, 450), strength: 0 };
   const distanceM = sport === "strength" ? null : Math.round(speeds[sport] * durationMin);
   const intensity = { run: 0.75, trail_run: 0.8, walk: 0.35, cycle: 0.6, strength: 0.45 }[sport];
   const z5 = Math.round(durationMin * intensity * 0.06);
@@ -425,12 +427,16 @@ export type MetricPoint = {
   at: number;
   sampleCount?: number;
   method?: "sdnn" | "rmssd";
+  /** Índice da marca (dado real): escala e rótulo originais, nunca normalizados (RN-08). */
+  scale?: string;
+  label?: string;
 };
 
 export type HistoryDay = { date: string; partial: boolean; values: DayValues };
 
 export type WatchSnapshot = {
-  persona: DemoPersonaKey;
+  /** "real" = montado a partir do schema health (src/lib/health/snapshot.ts). */
+  persona: DemoPersonaKey | "real";
   model: WatchModelId;
   deviceName: string;
   date: string;

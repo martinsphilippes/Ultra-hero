@@ -7,7 +7,8 @@ import { cleanupStreamUploads } from "../_lib/stream-cleanup";
 
 // Retenção diária: analytics 90d, pedidos de teste 90d (anonimiza), auditoria 365d, runs/logs 30d;
 // limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar) e das fotos de
-// perfil sem uso ou de conta excluída (0031) e das fotos de receita órfãs no bucket recipe-media.
+// perfil sem uso ou de conta excluída (0031), das fotos de receita órfãs no bucket recipe-media e
+// dos dados de relógio (health_run_retention, 0038).
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -40,7 +41,17 @@ async function handler(request: Request) {
     } catch (orphanError) {
       recipeMedia = { recipe_orphans_error: orphanError instanceof Error ? orphanError.message : String(orphanError) };
     }
-    return { counts, stream, avatars, recipe_media: recipeMedia };
+    // Dados de relógio (0038, §8.10): 13 meses, payload bruto 7/30 dias, revogação pela marca e
+    // mudança material em 30 dias. Banco sem a 0038 (o remoto de hoje): pula sem erro.
+    let health: Record<string, unknown>;
+    try {
+      const { data: purged, error: healthError } = await admin.rpc("health_run_retention");
+      if (healthError) health = healthError.code === "PGRST202" ? { health_skipped: "not_migrated" } : { health_failed: healthError.message };
+      else health = (purged && typeof purged === "object" ? purged : {}) as Record<string, unknown>;
+    } catch (healthError) {
+      health = { health_failed: healthError instanceof Error ? healthError.message : String(healthError) };
+    }
+    return { counts, stream, avatars, recipe_media: recipeMedia, health };
   });
 }
 

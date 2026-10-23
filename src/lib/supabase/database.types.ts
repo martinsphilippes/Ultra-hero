@@ -2011,6 +2011,21 @@ isOneToOne: false
 "has_role":
 { Args: { "p_role": Database["public"]['Enums']["app_role"] }; Returns: boolean
                            },
+"health_consent_grant":
+{ Args: { "p_age_confirmed": boolean,"p_categories": (string)[],"p_locale": string,"p_version": string }; Returns: Json
+                           },
+"health_consent_reduce":
+{ Args: { "p_categories": (string)[] }; Returns: Json
+                           },
+"health_consent_revoke":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"health_consent_text":
+{ Args: { "p_locale": string }; Returns: Json
+                           },
+"health_run_retention":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
@@ -2032,6 +2047,12 @@ isOneToOne: false
 "my_entitled_modules":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
+"my_health_consent":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"my_health_today":
+{ Args: { "p_days"?: number,"p_until": string }; Returns: Json
+                           },
 "my_roles":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -2039,6 +2060,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
 "my_subscription":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"my_wearable_connections":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "product_is_purchasable":
@@ -2238,6 +2262,9 @@ isOneToOne: false
                            },
 "verify_certificate":
 { Args: { "p_code": string }; Returns: Json
+                           },
+"wearable_disconnect":
+{ Args: { "p_connection": string }; Returns: Json
                            }
           }
           Enums: {

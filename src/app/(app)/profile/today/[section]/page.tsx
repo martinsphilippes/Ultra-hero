@@ -35,7 +35,7 @@ export default async function TodayDetailPage({ params, searchParams }: { params
   const example = wantsExample(search.exemplo);
   const suffix = example ? "?exemplo=1" : "";
   const view = await loadWatchView(`/profile/today/${section}${suffix}`, example);
-  if (view.kind === "connect") redirect("/profile/today");
+  if (view.kind === "connect" || view.kind === "syncing") redirect("/profile/today");
   const snapshot = view.snapshot;
   if (!sectionAvailable(snapshot, section)) notFound();
 
@@ -43,6 +43,7 @@ export default async function TodayDetailPage({ params, searchParams }: { params
   const [t, tw, locale] = await Promise.all([getTranslations("me.today"), getTranslations("wearables"), getLocale()]);
   const device = snapshot.deviceName;
   const backHref = view.kind === "example" ? "/profile/today?exemplo=1" : "/profile";
+  const real = view.kind === "real";
   const shortDate = new Intl.DateTimeFormat(locale, { day: "2-digit", month: "2-digit", timeZone: "UTC" });
   const longDate = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
   const when = (p: MetricPoint) => (p.date === snapshot.date ? t("detail.at", { time: formatClock(p.at, locale) }) : t("detail.onDate", { date: longDate.format(ymdToDate(p.date)), time: formatClock(p.at, locale) }));
@@ -54,8 +55,8 @@ export default async function TodayDetailPage({ params, searchParams }: { params
 
   return (
     <div className="flex flex-col gap-6" data-testid="today-detail" data-section={section}>
-      <PageHeader title={tw(`sections.${section}`)} eyebrow={t("title")} backHref={backHref} backLabel={t("detail.back")} actions={<DemoBadge />} />
-      <WatchDemoLabel mode={view.kind} device={device} />
+      <PageHeader title={tw(`sections.${section}`)} eyebrow={t("title")} backHref={backHref} backLabel={t("detail.back")} actions={real ? null : <DemoBadge />} />
+      {view.kind === "real" ? null : <WatchDemoLabel mode={view.kind} device={device} />}
 
       {section === "readiness" ? <ReadinessSummary snapshot={snapshot} /> : null}
 
@@ -152,7 +153,7 @@ export default async function TodayDetailPage({ params, searchParams }: { params
       <footer className="flex flex-col gap-2 rounded-xl bg-surface-elevated p-4">
         <p className="type-caption text-fg-muted">
           <span className="font-semibold text-fg">{t("detail.sourceTitle")}: </span>
-          {t("detail.source", { device, time: formatClock(snapshot.syncedAt, locale) })}
+          {t(real ? "real.detailSource" : "detail.source", { device, time: formatClock(snapshot.syncedAt, locale) })}
         </p>
         <p className="flex items-start gap-2 type-caption text-fg-muted">
           <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -172,6 +173,12 @@ async function ReadinessSummary({ snapshot }: { snapshot: WatchSnapshot }) {
   const [t, locale] = await Promise.all([getTranslations("me.today"), getLocale()]);
   const kind = indexCardKind(snapshot);
   const disp = snapshot.disposition;
+  const brand = MODEL_INFO[snapshot.model].brand;
+  const vendor = snapshot.values.readiness_vendor ?? null;
+  const vendorTitle = brand === "oura" || brand === "whoop" || brand === "polar" ? t(`cards.vendorReadiness.names.${brand}`) : t("cards.vendorReadiness.title");
+  const vendorScale = vendor?.scale === "oura_readiness" || vendor?.scale === "whoop_recovery_pct" || vendor?.scale === "polar_nightly_recharge_status" ? vendor.scale : null;
+  const vendorLabel = vendor?.label && ["very_poor", "poor", "compromised", "ok", "good", "very_good"].includes(vendor.label) ? vendor.label : null;
+  const vendorValue = vendor ? (vendorLabel ? t(`cards.vendorReadiness.polar.${vendorLabel}`) : `${vendor.value}${vendorScale === "whoop_recovery_pct" ? "%" : ""}`) : "";
   const body = disp ? (
     <div className="flex flex-col gap-2">
       <p className="type-body font-semibold text-fg">{t("cards.disposition.score", { score: disp.score, band: t(`cards.disposition.${disp.band}`) })}</p>
@@ -194,9 +201,21 @@ async function ReadinessSummary({ snapshot }: { snapshot: WatchSnapshot }) {
   return (
     <section aria-labelledby="readiness-summary-title" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5" data-testid="detail-readiness">
       <h2 id="readiness-summary-title" className="type-h3 text-fg">
-        {kind === "body_battery" ? t("cards.bodyBattery.title") : t("cards.disposition.title")}
+        {kind === "body_battery" ? t("cards.bodyBattery.title") : kind === "readiness_vendor" ? vendorTitle : t("cards.disposition.title")}
       </h2>
-      {kind === "body_battery" && snapshot.values.body_battery_now ? (
+      {kind === "readiness_vendor" && vendor ? (
+        <>
+          {/* índice da marca com escala e rótulo originais (RN-08); o nosso cálculo fica recolhido */}
+          <p className="type-h2 type-numeric text-fg">{vendorValue}</p>
+          {vendorScale ? <p className="type-caption text-fg-muted">{t(`cards.vendorReadiness.scale.${vendorScale}`, { value: vendor.value })}</p> : null}
+          {body ? (
+            <details className="rounded-lg border border-border">
+              <summary className="flex min-h-11 cursor-pointer items-center px-3 text-sm font-semibold text-accent-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">{t("cards.disposition.ours")}</summary>
+              <div className="px-3 pb-3">{body}</div>
+            </details>
+          ) : null}
+        </>
+      ) : kind === "body_battery" && snapshot.values.body_battery_now ? (
         <>
           <p className="type-h2 type-numeric text-fg">{t("cards.bodyBattery.value", { value: snapshot.values.body_battery_now.value, time: formatClock(snapshot.values.body_battery_now.at, locale) })}</p>
           <p className="type-caption text-fg-muted">{t("cards.bodyBattery.scale")}</p>

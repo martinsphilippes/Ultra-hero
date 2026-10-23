@@ -27,6 +27,27 @@ const eslintConfig = [
       "public/**",
     ],
   },
+  {
+    // Barreira de finalidade (docs/decisions/hoje-relogio.md §15.1): a credencial do papel
+    // health_ingest (escrita no schema health) só pode ser usada pelas rotas de ingestão, OAuth,
+    // cron de wearables e pelas ações de "Relógios e anéis".
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/health/**", "src/app/api/wearables/**", "src/app/api/cron/wearables/**", "src/app/(app)/profile/devices/actions.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [{ name: "postgres", message: "Conexão direta ao Postgres só em src/lib/health/db.ts (papel health_ingest)." }],
+          patterns: [
+            {
+              group: ["@/lib/health/db", "@/lib/health/store", "@/lib/health/pipeline", "@/lib/health/provider-api"],
+              message: "Ingestão de saúde só nas rotas /api/wearables, no cron de wearables e nas ações de Relógios e anéis.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

@@ -261,7 +261,25 @@
         "scale": "Garmin's scale, from 5 to 100."
       },
       "vendorReadiness": {
-        "title": "Brand readiness score"
+        "title": "Brand readiness score",
+        "names": {
+          "oura": "Readiness · Oura",
+          "whoop": "Recovery · WHOOP",
+          "polar": "Nightly Recharge · Polar"
+        },
+        "scale": {
+          "oura_readiness": "Oura's scale, 0 to 100",
+          "whoop_recovery_pct": "WHOOP's scale, 0% to 100%",
+          "polar_nightly_recharge_status": "Status {value} on Polar's scale, 1 to 6"
+        },
+        "polar": {
+          "very_poor": "Very poor",
+          "poor": "Poor",
+          "compromised": "Compromised",
+          "ok": "OK",
+          "good": "Good",
+          "very_good": "Very good"
+        }
       },
       "garminNote": "Garmin does not share Training Readiness and Training Status with other apps.",
       "appleNote": "Your Apple Watch has its own Readiness, but Apple does not share it with other apps.",
@@ -339,8 +357,14 @@
           "trail_run": "Trail run",
           "walk": "Walk",
           "cycle": "Ride",
-          "strength": "Strength"
-        }
+          "strength": "Strength",
+          "swim": "Swim",
+          "hike": "Hike",
+          "yoga": "Yoga",
+          "row": "Row",
+          "other": "Workout"
+        },
+        "loadNoComparison": "Day load {value} · calculated by Ultra Hero"
       },
       "stress": {
         "title": "Stress",
@@ -373,7 +397,11 @@
       "soon": "Soon",
       "privacy": "There is no connection to any brand yet, and Ultra Hero does not collect data from watches, rings or bands.",
       "exampleCta": "See an example",
-      "exampleHint": "Opens a simulated watch, kept apart from your profile."
+      "exampleHint": "Opens a simulated watch, kept apart from your profile.",
+      "connectCta": "Connect",
+      "bodyAvailable": "Connect your watch and Today shows what it measures on its own: sleep, heart, activity and workouts. Nothing to type.",
+      "privacyAvailable": "Only what you authorize comes in, per category. Disconnect and delete whenever you want.",
+      "devicesLink": "Watches and rings"
     },
     "programs": {
       "title": "Continue your programs",
@@ -428,6 +456,23 @@
       "manualTitle": "What never comes in, because it is typed, not measured",
       "privacyTitle": "Privacy",
       "privacyBody": "The old hydration and rest logs stayed only on this device; the new Today erased them from the browser without sending anything. Read the <privacy>Privacy Policy</privacy>."
+    },
+    "real": {
+      "source": "{device} · synced at {time}",
+      "sourceAt": "{device} · {time}",
+      "sourceOn": "{device} · {date}, {time}",
+      "syncHint": "To update, sync the watch in the {app} app. There is no refresh button.",
+      "stale": "Last sync: {date}, {time}. Sync in the {app} app to see new data.",
+      "detailSource": "{device}. Last sync at {time}.",
+      "devicesLink": "Watches and rings",
+      "aboutIntro": "Ultra Hero reads your {device} through the account you connected, only for the categories you authorized. The data is stored with its own protection, only you see it, and you can disconnect and delete it whenever you want.",
+      "manageTitle": "Connection and consent",
+      "manageBody": "Disconnect, remove categories or your consent and delete the data in Watches and rings."
+    },
+    "syncing": {
+      "title": "Syncing…",
+      "body": "Your {device} is connected. The first data arrives when the watch syncs with the {app} app.",
+      "devicesLink": "Watches and rings"
     }
   },
   "favorites": {

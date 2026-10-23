@@ -14,7 +14,7 @@ import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
-import { resolveWatchView } from "@/lib/wearables/context";
+import { resolveTodayView } from "@/lib/health/view";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("me.meta");
@@ -98,8 +98,9 @@ export default async function ProfilePage() {
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
   const roleSet = Array.from(new Set(roles.map((r) => r.role)));
-  // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio".
-  const watchView = resolveWatchView({ user, roles: roleSet, timeZone: tz, example: false });
+  // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio"
+  // ou, com WEARABLES_REAL_ENABLED=1, o relógio que conectaram.
+  const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
   const portals = PORTALS.filter((p) => roleSet.includes(p.role));
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
@@ -109,7 +110,7 @@ export default async function ProfilePage() {
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
 
-      {/* Hoje: só o que o relógio mede (nada digitado); nada de saúde vai ao banco */}
+      {/* Hoje: só o que o relógio mede (nada digitado); dado real só com a chave ligada e consentimento */}
       <TodaySection localDate={today} view={watchView} />
 
       {/* Evolução: resumo; a página completa virou subpágina do Perfil */}

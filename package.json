@@ -27,6 +27,7 @@
     "next": "15.5.28",
     "next-intl": "^4.14.9",
     "pdf-lib": "^1.17.1",
+    "postgres": "^3.4.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "server-only": "^0.0.1",
