@@ -36,10 +36,11 @@ test.beforeEach(async ({ context, baseURL }) => {
 
 /**
  * Página de 404 do app. O status HTTP fica 200 quando a rota tem loading.tsx (o streaming já começou
- * quando o notFound() roda); o que vale é a tela "Página não encontrada" (com noindex), sem o conteúdo.
+ * quando o notFound() roda); o que vale é a tela de 404 (com noindex), sem o conteúdo. A rota do
+ * conteúdo tem o próprio aviso ("Conteúdo não encontrado"); as outras usam o geral ("Página não encontrada").
  */
 async function expectNotFound(page: Page) {
-  await expect(page.getByRole("heading", { name: "Página não encontrada" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^(Página|Conteúdo) não encontrad[ao]$/ })).toBeVisible();
   await expect(page.locator('meta[name="robots"][content*="noindex"]').first()).toBeAttached();
 }
 
@@ -182,7 +183,8 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     await expect(page).toHaveURL(/\/creator\/recipes$/, { timeout: 30_000 });
     await page.goto(`/creator/recipes?q=${encodeURIComponent(title)}`);
     await expect(page.getByTestId("recipes-count")).toHaveText("1 receita");
-    await expect(page.getByText("Publicada", { exact: true }).first()).toBeVisible();
+    // só o selo da linha: a opção "Publicada" do filtro de situação também existe, recolhida no painel "Filtros"
+    await expect(page.getByText("Publicada", { exact: true }).locator("visible=true").first()).toBeVisible();
 
     // ---- conta free (outra pessoa): catálogo, assinatura → perfil do chef, página e Modo Cozinha
     const consumer = await newPersonContext(browser, info);
