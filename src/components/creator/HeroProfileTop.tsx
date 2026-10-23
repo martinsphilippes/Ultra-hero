@@ -5,6 +5,7 @@ import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { Avatar, Badge } from "@/components/ui";
 import type { CreatorProfile } from "@/app/creator/_lib/creator";
 import type { AvatarPhotoState } from "@/lib/avatar/availability";
+import { heroAvatarSrc } from "@/lib/avatar/constants";
 import { credentialsState, type CredentialsRequest } from "@/lib/recipes/credentials";
 import { createClient } from "@/lib/supabase/server";
 import { ChefProfileForm } from "./ChefProfileForm";
@@ -21,8 +22,8 @@ export async function HeroProfileHeader({ profile }: { profile: CreatorProfile }
   return (
     <section id={HERO_ANCHOR} aria-labelledby="hero-profile-name" data-testid="profile-hero" className="flex scroll-mt-20 flex-col gap-3">
       <div className="flex items-center gap-4">
-        {/* o avatar único do herói: o mesmo do app e da página pública */}
-        <Avatar src={profile.avatar_url} name={profile.name} size="xl" alt="" />
+        {/* o avatar único do herói: sem avatar, a ilustração da página pública (não a sorteada pelo nome) */}
+        <Avatar src={heroAvatarSrc(profile.avatar_url)} name={profile.name} size="xl" alt="" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <h2 id="hero-profile-name" className="type-h3 break-words text-fg">
             {profile.name}

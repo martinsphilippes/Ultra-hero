@@ -138,7 +138,7 @@
       "errors": {
         "invalid_input": "Revisa los campos.",
         "unauthenticated": "Inicia sesión para continuar.",
-        "avatar_not_saved": "El nombre, el idioma y el tema se guardaron, pero el avatar no cambió. Inténtalo de nuevo.",
+        "avatar_not_saved": "Tu nombre se guardó, pero el avatar, el idioma y el tema no cambiaron. Inténtalo de nuevo.",
         "generic": "No se pudo guardar. Inténtalo de nuevo."
       }
     },

@@ -138,7 +138,7 @@
       "errors": {
         "invalid_input": "Check the fields.",
         "unauthenticated": "Sign in to continue.",
-        "avatar_not_saved": "Your name, language and theme were saved, but the avatar did not change. Please try again.",
+        "avatar_not_saved": "Your name was saved, but your avatar, language and theme did not change. Please try again.",
         "generic": "Could not save. Please try again."
       }
     },

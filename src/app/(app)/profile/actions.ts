@@ -118,6 +118,7 @@ export async function updateProfile(input: { displayName: string; avatarUrl?: st
         const { error: undoError } = await supabase.from("profiles").update({ avatar_url: previous }).eq("id", user.id);
         if (undoError) console.warn("[profile] avatar do app não voltou ao anterior:", undoError.message);
         revalidatePath("/profile");
+        // sai antes do idioma e do tema: o aviso (avatar_not_saved) diz que só o nome foi salvo
         return { ok: false, error: "avatar_not_saved" };
       }
     }

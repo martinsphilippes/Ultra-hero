@@ -14,6 +14,7 @@ import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
+import { heroAvatarSrc } from "@/lib/avatar/constants";
 import { appliesOn } from "@/lib/routine/reminders";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
@@ -218,7 +219,8 @@ export default async function ProfilePage() {
 
       {/* Visão geral */}
       <section aria-label={t("title")} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start">
-        <Avatar src={profile?.avatar_url} name={displayName} size="xl" alt="" />
+        {/* herói ativo: um avatar só, o mesmo do cabeçalho e da página pública */}
+        <Avatar src={heroActive ? heroAvatarSrc(profile?.avatar_url) : profile?.avatar_url} name={displayName} size="xl" alt="" />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <h2 className="type-h2 truncate text-fg">{displayName}</h2>
           <p className="type-body-sm truncate text-fg-muted">

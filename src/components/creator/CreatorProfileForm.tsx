@@ -10,7 +10,7 @@ import { useValidationMessage } from "@/components/editors/content/fields";
 import { AvatarPhotoPicker } from "@/components/me/AvatarPhotoPicker";
 import { Button, FormField, Input, Textarea, useToast } from "@/components/ui";
 import type { AvatarPhotoState } from "@/lib/avatar/availability";
-import { ILLUSTRATIONS } from "@/lib/avatar/constants";
+import { HERO_DEFAULT_AVATAR, ILLUSTRATIONS } from "@/lib/avatar/constants";
 import { discardsSavedPhoto, isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { cn } from "@/lib/utils";
 import { useRevealHeroEditor } from "./HeroEditorDisclosure";
@@ -198,6 +198,7 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, s
                 }}
                 disabled={readOnly || pending}
                 hint={t("photoHint")}
+                fallbackSrc={HERO_DEFAULT_AVATAR}
               />
             )}
             <div ref={keepAnchorRef} tabIndex={-1} className="outline-none">

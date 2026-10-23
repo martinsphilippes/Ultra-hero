@@ -2,6 +2,7 @@ import "server-only";
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { HERO_DEFAULT_AVATAR } from "@/lib/avatar/constants";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "./safe-next";
 
@@ -102,12 +103,24 @@ export async function getSessionSummary(): Promise<SessionSummary | null> {
     (typeof meta?.name === "string" ? meta.name : null) ||
     user.email?.split("@")[0] ||
     "";
-  const avatarUrl = profile?.avatar_url || (typeof meta?.avatar_url === "string" ? meta.avatar_url : null);
+  const roleNames = roles.map((r) => r.role);
+  // herói ativo sem avatar: a ilustração da página pública, não a sorteada pelo nome (um avatar só)
+  const heroDefault = !profile?.avatar_url && (await isActiveHero(user.id, roleNames)) ? HERO_DEFAULT_AVATAR : null;
+  const avatarUrl = profile?.avatar_url || heroDefault || (typeof meta?.avatar_url === "string" ? meta.avatar_url : null);
   return {
     id: user.id,
     email: user.email ?? null,
     displayName,
     avatarUrl,
-    roles: Array.from(new Set(roles.map((r) => r.role))),
+    roles: Array.from(new Set(roleNames)),
   };
+}
+
+// Mesma regra do /profile (heroProfileFor + my_creator_id): papel de herói (ou admin) e perfil
+// vinculado ativo. Só consulta quando o papel existe; erro de leitura conta como "não".
+async function isActiveHero(userId: string, roles: AppRole[]): Promise<boolean> {
+  if (!roles.includes("creator") && !roles.includes("admin")) return false;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("creator_profiles").select("id").eq("user_id", userId).eq("status", "active").limit(1).maybeSingle();
+  return !error && data !== null;
 }

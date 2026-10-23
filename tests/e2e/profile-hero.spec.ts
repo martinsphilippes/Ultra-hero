@@ -138,6 +138,31 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(editorTitle).toBeInViewport();
   });
 
+  // Um avatar só: sem avatar salvo, o herói via três ilustrações diferentes (cabeçalho pelo nome do
+  // herói, app pelo nome exibido, página pública fixa). Compara a imagem de cada lugar, sem o otimizador.
+  test("herói: a mesma imagem no cabeçalho, na Visão geral, no menu, na prévia do editor e na página pública", async ({ page }) => {
+    await loginAs(page, "creator");
+    await page.goto("/profile");
+    await page.waitForLoadState("networkidle");
+    // endereço da imagem sem o otimizador (/_next/image?url=) e sem a origem do próprio app
+    const source = async (img: Locator) => {
+      const here = new URL(page.url());
+      const raw = new URL((await img.getAttribute("src")) ?? "", here);
+      const url = raw.pathname === "/_next/image" ? new URL(raw.searchParams.get("url") ?? "", here) : raw;
+      return url.origin === here.origin ? url.pathname : url.href;
+    };
+    const main = page.locator("main");
+    const header = await source(page.getByTestId("profile-hero").locator("img").first());
+    expect(header).not.toBe("");
+    expect(await source(main.locator('section[aria-label="Perfil"] img').first())).toBe(header);
+    expect(await source(page.locator('a[href="/profile"][title] img').first())).toBe(header);
+    await page.getByRole("button", { name: "Editar perfil", exact: true }).click();
+    expect(await source(page.locator("#editar-perfil").getByTestId("avatar-photo").locator("img").first())).toBe(header);
+    const href = await page.getByRole("link", { name: "Ver página pública" }).getAttribute("href");
+    await page.goto(href!);
+    expect(await source(page.locator("main header img").first())).toBe(header);
+  });
+
   test("abre sozinho em /profile#perfil-publico", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/profile#perfil-publico");

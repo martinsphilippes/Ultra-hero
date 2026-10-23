@@ -9,6 +9,7 @@ import { HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure"
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { profileDataInput } from "@/components/me/profile-data";
+import { HERO_DEFAULT_AVATAR, heroAvatarSrc } from "@/lib/avatar/constants";
 import commonMessages from "../../messages/pt-BR/common.json";
 import creatorMessages from "../../messages/pt-BR/creator.json";
 import editorsMessages from "../../messages/pt-BR/editors.json";
@@ -85,6 +86,33 @@ describe("um avatar só no editor do herói", () => {
     expect(html).not.toContain('data-testid="avatar-photo"');
     expect(html).toContain(creatorMessages.profile.avatarReadOnly);
     expect(html).not.toContain(creatorMessages.profile.avatarShared);
+  });
+});
+
+// Herói sem avatar: a mesma ilustração em todo lugar (a da página pública), não a sorteada pelo nome.
+describe("herói sem avatar: uma ilustração só", () => {
+  const read = (rel: string) => readFileSync(path.resolve(__dirname, "../..", rel), "utf8");
+
+  it("heroAvatarSrc: o avatar salvo ou a ilustração da página pública", () => {
+    expect(HERO_DEFAULT_AVATAR).toBe("/placeholders/avatar-1.svg");
+    expect(heroAvatarSrc(null)).toBe(HERO_DEFAULT_AVATAR);
+    expect(heroAvatarSrc(undefined)).toBe(HERO_DEFAULT_AVATAR);
+    expect(heroAvatarSrc("")).toBe(HERO_DEFAULT_AVATAR);
+    expect(heroAvatarSrc("/placeholders/avatar-6.svg")).toBe("/placeholders/avatar-6.svg");
+  });
+
+  it("prévia de 'Sua foto' no editor sem avatar: a da página pública, mesmo com um nome que sortearia outra", () => {
+    // "Helena Vilar" sorteia a avatar-4 pelo nome
+    const html = render(createElement(CreatorProfileForm, { ...formProps, name: "Helena Vilar", initial: { ...formProps.initial, avatar_url: "" }, showPhotoPicker: true, photoState }));
+    const preview = html.slice(html.indexOf('data-testid="avatar-photo"'));
+    expect(preview.match(/<img[^>]*src="([^"]+)"/)?.[1]).toBe(HERO_DEFAULT_AVATAR);
+  });
+
+  it("cabeçalho, Visão geral (herói ativo), página pública e card usam a mesma regra", () => {
+    expect(read("src/components/creator/HeroProfileTop.tsx")).toContain("<Avatar src={heroAvatarSrc(profile.avatar_url)}");
+    expect(read("src/app/(app)/profile/page.tsx")).toContain("<Avatar src={heroActive ? heroAvatarSrc(profile?.avatar_url) : profile?.avatar_url}");
+    expect(read("src/app/(app)/personalities/[slug]/page.tsx")).toContain("const avatar = heroAvatarSrc(creator.avatar_url);");
+    expect(read("src/components/catalog/CreatorCard.tsx")).toContain("src={heroAvatarSrc(creator.avatar_url)}");
   });
 });
 

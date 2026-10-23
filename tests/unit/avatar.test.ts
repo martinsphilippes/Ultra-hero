@@ -11,6 +11,9 @@ import { coverCrop } from "@/lib/avatar/resize";
 import { AVATAR_CACHE_SECONDS, AVATAR_CLEANUP_LIMIT, cleanupAvatarUploads } from "@/lib/avatar/server";
 import { sniffImage } from "@/lib/avatar/sniff";
 import { validateSourceFile, validateUploadBytes } from "@/lib/avatar/validation";
+import enMe from "../../messages/en/me.json";
+import esMe from "../../messages/es/me.json";
+import ptMe from "../../messages/pt-BR/me.json";
 
 // Foto de perfil (0031) sem Next, Supabase nem Storage de verdade: caminhos e URLs do bucket, tipo
 // pelos magic bytes, validações, a ordem das etapas das actions (reservar → gravar → aplicar →
@@ -50,6 +53,8 @@ const state = vi.hoisted(() => ({
   log: [] as string[],
   writes: [] as { client: string; table: string; op: string; payload?: unknown; filters: [string, string, unknown][] }[],
   revalidated: [] as string[],
+  // idioma e tema gravados por updateProfile (cookies + perfil)
+  prefs: [] as string[],
 }));
 
 // Construtor encadeável que imita o PostgREST: registra a operação e responde conforme o estado.
@@ -135,8 +140,8 @@ vi.mock("@/lib/supabase/admin", () => ({
   },
 }));
 // dependências de profile/actions.ts que não importam aqui
-vi.mock("@/i18n/actions", () => ({ setLocaleAction: async () => undefined }));
-vi.mock("@/lib/theme/actions", () => ({ setThemeAction: async () => undefined }));
+vi.mock("@/i18n/actions", () => ({ setLocaleAction: async (v: string) => void state.prefs.push(`locale:${v}`) }));
+vi.mock("@/lib/theme/actions", () => ({ setThemeAction: async (v: string) => void state.prefs.push(`theme:${v}`) }));
 vi.mock("@/lib/analytics/track", () => ({ trackEvent: async () => undefined }));
 vi.mock("@/lib/recommendations/recalculate", () => ({ recalculateRecommendations: async () => ({ persisted: false }) }));
 
@@ -185,6 +190,7 @@ beforeEach(() => {
   state.log = [];
   state.writes = [];
   state.revalidated = [];
+  state.prefs = [];
 });
 
 // ---------------------------------------------------------------- caminhos
@@ -527,6 +533,17 @@ describe("updateProfile com herói ativo (um avatar só)", () => {
     expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-5.svg" })).toEqual({ ok: false, error: "avatar_not_saved" });
     expect(state.log).toEqual(["user:update:profiles", "user:update:creator_profiles", "user:update:profiles"]);
     expect(state.writes[2].payload).toEqual({ avatar_url: "/placeholders/avatar-1.svg" });
+    // só o nome foi salvo: idioma e tema não mudam, e o aviso diz exatamente isso nos 3 idiomas
+    expect(state.prefs).toEqual([]);
+    expect(state.writes[0].payload).toMatchObject({ display_name: "Helena" });
+    expect(ptMe.profile.data.errors.avatar_not_saved).toBe("Seu nome foi salvo, mas o avatar, o idioma e o tema não mudaram. Tente de novo.");
+    expect(enMe.profile.data.errors.avatar_not_saved).toBe("Your name was saved, but your avatar, language and theme did not change. Please try again.");
+    expect(esMe.profile.data.errors.avatar_not_saved).toBe("Tu nombre se guardó, pero el avatar, el idioma y el tema no cambiaron. Inténtalo de nuevo.");
+  });
+
+  it("sucesso grava idioma e tema depois do avatar", async () => {
+    expect(await updateProfile({ ...base, locale: "en", theme: "light", avatarUrl: "/placeholders/avatar-5.svg" })).toEqual({ ok: true });
+    expect(state.prefs).toEqual(["locale:en", "theme:light"]);
   });
 
   it("trocar a foto (nos dois lados) por ilustração: grava os dois e libera a foto uma vez", async () => {
