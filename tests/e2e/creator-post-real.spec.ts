@@ -1,5 +1,6 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 // Envio REAL para o Cloudflare Stream com a conta de demonstração "Herói / Chef". Só roda com
 // E2E_STREAM_REAL=1 num ambiente com Stream + service role (ex.: produção). Sobe um vídeo de 3 s,
@@ -9,11 +10,7 @@ const FIXTURE = path.join(__dirname, "..", "fixtures", "video-3s.mp4");
 const EDIT_LINKS = 'a[href^="/creator/content/"][href$="/edit"]';
 
 async function loginAsHero(page: Page) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator('[data-demo-kind="creator"]').click();
-  await expect(page).toHaveURL(/\/creator$/, { timeout: 20_000 });
+  await loginAs(page, "creator");
 }
 
 // Rascunhos do herói (links de edição). O id do rascunho novo não aparece na tela do composer,

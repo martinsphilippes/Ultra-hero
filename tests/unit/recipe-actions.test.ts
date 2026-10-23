@@ -281,15 +281,43 @@ describe("registerRecipeMedia: bytes mágicos e limpeza do Storage", () => {
 
 describe("excluir e duplicar", () => {
   it("excluir rascunho apaga as fotos devolvidas pela RPC e tenta apagar o vídeo do Stream", async () => {
-    state.rpc.creator_delete_recipe_draft = { data: { id: ids.CONTENT, paths: ["a/b/c.webp", "a/b/d.jpg"], uid: "0123456789abcdef0123456789abcdef" }, error: null };
+    state.rpc.creator_delete_recipe = { data: { id: ids.CONTENT, paths: ["a/b/c.webp", "a/b/d.jpg"], uid: "0123456789abcdef0123456789abcdef" }, error: null };
     expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: true });
+    expect(calls("creator_delete_recipe")[0].args).toEqual({ p_content: ids.CONTENT });
+    expect(calls("creator_delete_recipe_draft")).toHaveLength(0);
     expect(state.removed).toEqual([["a/b/c.webp", "a/b/d.jpg"]]);
     expect(state.streamDeleted).toEqual(["0123456789abcdef0123456789abcdef"]);
+    // nunca foi ao ar: nada público a revalidar
+    expect(state.revalidated).not.toContain("/content/bowl-abc");
   });
-  it("excluir algo que já esteve no ar: already_published, nada apagado no Storage", async () => {
-    state.rpc.creator_delete_recipe_draft = { data: null, error: { message: "already_published" } };
+  it("rascunho que já esteve no ar: already_published; publicada: not_deletable; nada apagado no Storage", async () => {
+    state.rpc.creator_delete_recipe = { data: null, error: { message: "already_published" } };
     expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: false, error: "already_published" });
+    state.rpc.creator_delete_recipe = { data: null, error: { message: "not_deletable" } };
+    expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: false, error: "not_deletable" });
     expect(state.removed).toEqual([]);
+  });
+  it("arquivada que esteve no ar (0036): exclui, apaga as fotos e revalida a página pública e o catálogo", async () => {
+    state.content = ownDraftRow({ status: "archived", published_at: "2026-10-20T10:00:00Z" });
+    state.rpc.creator_delete_recipe = { data: { id: ids.CONTENT, slug: "bowl-abc", paths: ["a/b/c.webp"], uid: null }, error: null };
+    expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: true });
+    expect(state.removed).toEqual([["a/b/c.webp"]]);
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/creator/recipes", "/explore", "/content/bowl-abc"]));
+  });
+  it("banco sem a 0036 (PGRST202): rascunho cai na função antiga; arquivada recebe delete_unavailable sem outra chamada", async () => {
+    state.rpc.creator_delete_recipe = { data: null, error: { message: "Could not find the function", code: "PGRST202" } };
+    state.rpc.creator_delete_recipe_draft = { data: { id: ids.CONTENT, paths: [], uid: null }, error: null };
+    expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: true });
+    expect(calls("creator_delete_recipe_draft")[0].args).toEqual({ p_content: ids.CONTENT });
+    state.rpcs = [];
+    state.content = ownDraftRow({ status: "archived", published_at: "2026-10-20T10:00:00Z" });
+    expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: false, error: "delete_unavailable" });
+    expect(calls("creator_delete_recipe_draft")).toHaveLength(0);
+  });
+  it("receita de outro herói: forbidden sem chamar a RPC", async () => {
+    state.content = ownDraftRow({ creator_id: ids.OTHER });
+    expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: false, error: "forbidden" });
+    expect(calls("creator_delete_recipe")).toHaveLength(0);
   });
   it("duplicar tenta outro sufixo quando o slug já existe (até 3 vezes)", async () => {
     state.rpc.creator_duplicate_recipe = [

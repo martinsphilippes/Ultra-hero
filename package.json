@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "postinstall": "node scripts/patch-next-image-optimizer.mjs",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "messages:check": "tsx scripts/check-messages.ts",

@@ -1911,6 +1911,9 @@ isOneToOne: false
 "creator_archive_content":
 { Args: { "p_content": string,"p_reason": string }; Returns: Json
                            },
+"creator_delete_recipe":
+{ Args: { "p_content": string }; Returns: Json
+                           },
 "creator_delete_recipe_draft":
 { Args: { "p_content": string }; Returns: Json
                            },

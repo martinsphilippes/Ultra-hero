@@ -92,7 +92,8 @@ export function recipeActions(status: MyRecipeStatus, row: { published_at: strin
     withdraw: status === "in_review",
     archive: status !== "archived",
     restore: status === "archived" && row.archived_by === "creator",
-    remove: (status === "draft" || status === "returned") && row.published_at === null,
+    // rascunho que nunca foi ao ar, ou arquivada pelo próprio herói (0036: excluir de vez)
+    remove: ((status === "draft" || status === "returned") && row.published_at === null) || (status === "archived" && row.archived_by === "creator"),
     duplicate: true,
   };
 }

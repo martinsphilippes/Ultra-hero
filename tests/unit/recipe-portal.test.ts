@@ -56,6 +56,10 @@ describe("ações por situação", () => {
     expect(recipeActions("draft", { published_at: "2026-01-01", archived_by: null }).remove).toBe(false);
     expect(recipeActions("published", { published_at: "2026-01-01", archived_by: null })).toMatchObject({ edit: false, unpublish: true, archive: true });
     expect(recipeActions("in_review", { published_at: null, archived_by: null })).toMatchObject({ withdraw: true, edit: false, remove: false });
+    // 0036: a arquivada pelo próprio herói pode ser excluída de vez; a arquivada pelo admin, não
+    expect(recipeActions("archived", { published_at: "2026-01-01", archived_by: "creator" })).toMatchObject({ remove: true, restore: true });
+    expect(recipeActions("archived", { published_at: "2026-01-01", archived_by: "admin" })).toMatchObject({ remove: false, restore: false });
+    expect(recipeActions("published", { published_at: "2026-01-01", archived_by: null }).remove).toBe(false);
     expect(recipeActions("archived", { published_at: null, archived_by: "admin" })).toMatchObject({ restore: false, archive: false });
     expect(recipeActions("archived", { published_at: null, archived_by: "creator" }).restore).toBe(true);
   });

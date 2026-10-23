@@ -1,6 +1,6 @@
 # Relatório final — POC Ultra Hero
 
-Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`) · Produção: https://ultra-hero.vercel.app
+Data: 20/10/2026 (atualizado em 23/10/2026: receitas fases 1–6, prateleiras de programas, Hoje com relógio simulado) · Repositório `martinsphilippes/Ultra-hero` (branch `master`) · Produção: https://ultra-hero.vercel.app
 
 > Regra deste relatório: só aparece como **implementado** o que existe no código **e** foi exercitado por teste ou verificação registrada abaixo. O resto está marcado como parcial ou bloqueado, com o motivo.
 
@@ -10,8 +10,8 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 |---|---|
 | Código do app, banco e testes | Completo e publicado na `master` |
 | Site na Vercel | No ar, com deploy automático a cada push e sem erros de runtime nas últimas 24 horas |
-| Banco remoto no Supabase | As 29 migrações aplicadas. 0027–0029 (receitas, fase 1) aplicadas em 22/10/2026 a partir do arquivo exato do commit (conferido por md5), com dry-run do backfill antes; contagens idênticas ao banco local (169 funções, 139 políticas, 84 tabelas) e corpos das receitas publicadas inalterados (md5 igual antes e depois) |
-| Testes | 543 cenários de banco, 849 unitários e 134 E2E com axe (mais 2 do envio real ao Cloudflare, ligados só com `E2E_STREAM_REAL=1`). Todos passam |
+| Banco remoto no Supabase | 0001–0033 e 0035 aplicadas (35 registros em `supabase_migrations.schema_migrations`); 0027–0033 e 0035 pelo método `http_get` + md5 a partir do arquivo do commit no GitHub (seção "Receitas, prateleiras e Hoje"). Na conferência registrada para esta fase: 174 funções em `public` e 17 funções `security definer` executáveis pelo visitante (a lista fixa do S14), iguais ao banco local com as mesmas migrações. **Pendente: a 0036** (exclusão da receita arquivada pelo herói), com roteiro em `docs/decisions/recipes-module.md` |
+| Testes (23/10/2026) | 897 asserções de banco (S0–S40), 1.232 unitários em 47 arquivos e 252 (de 270; 18 pulados por desenho) E2E com axe no Pixel 7 e no Desktop Chrome contra o banco remoto. Todos passam |
 
 
 ## Fase 1 — Conteúdo, consumo e administração
@@ -117,6 +117,35 @@ Data: 20/10/2026 · Repositório `martinsphilippes/Ultra-hero` (branch `master`)
 - **Fluxos autenticados no navegador**: não há E2E com login real, porque isso depende de contas de teste num ambiente de staging.
 - **WCAG 2.2 AA**: o axe cobre parte. O restante do `docs/launch-checklist.md` precisa de verificação manual.
 - **Lighthouse**: ainda não foi medido.
+
+## Receitas, prateleiras e Hoje (21–23/10/2026)
+
+### Implementado
+- **Módulo de receitas, fases 1 a 6** (`docs/decisions/recipes-module.md`): modelo estruturado com backfill das 8 receitas (0027–0029), mídia no Storage (0028), Portal do Chef com editor em 6 etapas, versões e credenciais decididas sobre o texto visto pelo admin (0032), catálogo em Explorar › Receitas, página da receita, perfil do chef, Modo Cozinha, Minha coleção e histórico opcional, lista de compras ligada ao comércio de teste com o vínculo ingrediente↔produto (0033) e, na fase 6, as jornadas completas em E2E e a exclusão da receita arquivada pelo herói (0036, ainda não aplicada no remoto). Regra de revisão por tipo desligada nos 5 tipos (P1), auditada quando o admin muda.
+- **Prateleiras de programas** (`docs/decisions/program-shelves.md`, 0035): 3 programas por herói, 24 no total, cada um como prateleira de quadrados com rolagem lateral.
+- **Hoje com relógio** (`docs/decisions/hoje-relogio.md`): F1 (sem nada digitado) e F2 (relógio simulado nas contas demo, gerado na hora e nunca gravado). F3 em diante aguarda o responsável.
+
+### Como o remoto foi aplicado (0027–0033 e 0035)
+- O banco baixa o arquivo da migração direto do commit no GitHub pela extensão `http` (`http_get`, schema `extensions`, que a API não expõe) e só executa se o md5 bater com o do arquivo no repositório. A 0029 (backfill) foi em duas partes, com o dry-run no meio (41 ingredientes e 28 etapas literais, 8 receitas) e o md5 dos corpos das receitas igual antes e depois.
+- Antes de cada migração o app que funciona com o banco antigo já estava no ar (fallback para função ausente, PGRST202); depois, grants, políticas, RLS e contagens foram conferidos contra o banco local com as mesmas migrações. Conferência registrada para esta fase: 35 registros em `schema_migrations`, 174 funções em `public`, 17 `security definer` executáveis por anon (lista do S14, que nunca cresce).
+- A 0036 segue o mesmo método, depois do deploy do app (o app desta fase funciona antes e depois dela).
+
+### Evidência de testes (23/10/2026, banco local com 0001–0036)
+
+| Camada | Resultado | Comando |
+|---|---|---|
+| Banco: RLS e regras de negócio | 897 de 897 (S0–S40; 14 novas no S40) | `LOCAL_DB_NAME=… npm run test:rls` |
+| Unitários | 1.232 de 1.232 em 47 arquivos | `npx vitest run` |
+| E2E com axe, Pixel 7 e Desktop Chrome, contra o banco remoto | 252 aprovados e 18 pulados de 270 (135 por projeto; pulados por desenho: envios reais atrás de `E2E_*_REAL=1` e testes de um projeto só); a publicação efêmera da P4 fica anotada como pulada até a 0036 ir ao remoto | `npx playwright test` |
+| Tipos, lint e mensagens | Limpos; 21 namespaces e 4.675 chaves por idioma | `npm run typecheck`, `npm run lint`, `npm run messages:check` |
+| Build de produção | OK | `npm run build` |
+
+### Defeitos encontrados pela fase 6 e corrigidos
+- **Teclado nas prateleiras** (instável no celular contra produção, 5 falhas em 12): o teste focava o quadrado ainda dentro do contêiner escondido do streaming; agora espera a prateleira visível (40/40 depois).
+- **Aviso da foto de perfil que sumia**: o `<dialog>` avisava o fechamento de novo numa tarefa posterior e a tela limpava o erro do arquivo escolhido logo depois de "Cancelar" (`useDialog` corrigido; 10/10).
+- **Tema que voltava ao anterior**: o cookie só era gravado pela action, interrompida por uma recarga ou sobrescrita pela resposta atrasada de um clique anterior; o botão grava o cookie no navegador e a action dele não manda mais Set-Cookie (90/90).
+- **"Visualizar" parado no editor de receitas**: o `router.push` para a prévia logo depois da gravação (server action que ainda enviava a página revalidada) às vezes era descartado; a prévia abre por navegação de documento (no teste do editor do portal com `--repeat-each=10`, um projeto por vez, 10/10 no desktop e 10/10 no celular).
+- **Imagens presas no `next start`**: o otimizador do Next 15.5.28 repassava o socket do navegador à requisição interna e prendia para sempre a chave cujo pedido o navegador abortava (70 de 96 chaves presas na reprodução; 96/96 depois do `postinstall`). Na Vercel a otimização roda no serviço dela.
 
 ## Ambiente e deploy
 - **Vercel**: projeto `ultra-hero`, região gru1 (São Paulo). O deploy é automático a cada push na `master`.

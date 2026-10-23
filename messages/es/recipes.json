@@ -231,7 +231,9 @@
       "not_archived": "Esta receta no está archivada.",
       "archived_by_admin": "La administración archivó esta receta; solo ella puede restaurarla.",
       "not_draft": "Solo los borradores se pueden eliminar o publicar.",
-      "already_published": "Esta receta ya estuvo publicada y no se puede eliminar; archívala.",
+      "already_published": "Esta receta ya estuvo publicada: archívala antes de eliminarla.",
+      "not_deletable": "Una receta publicada o programada no se elimina directamente: archívala antes.",
+      "delete_unavailable": "Eliminar recetas archivadas todavía no está disponible. Inténtalo más tarde.",
       "content_in_use": "Esta receta está en uso (programa o finalizaciones) y no se puede eliminar.",
       "source_locked": "Esta receta está bloqueada por la administración y no se puede duplicar.",
       "slug_taken": "Esa dirección ya está en uso.",
@@ -331,6 +333,8 @@
     "confirm": {
       "deleteTitle": "¿Eliminar el borrador «{title}»?",
       "deleteDescription": "Se eliminan el borrador y las fotos y el video subidos para él. No se puede deshacer.",
+      "deleteArchivedTitle": "¿Eliminar definitivamente «{title}»?",
+      "deleteArchivedDescription": "Se eliminan la receta, sus fotos, el video y las versiones, y desaparece de los favoritos y listas de quien la guardó. Una receta en un programa o ya completada por alguien no se puede eliminar. No se puede deshacer.",
       "archiveTitle": "¿Archivar «{title}»?",
       "archiveDescription": "La receta sale del aire y de tu lista principal. Puedes restaurarla después; vuelve como borrador.",
       "archiveReason": "Motivo (opcional)",
@@ -345,6 +349,7 @@
       "archived": "Receta archivada.",
       "restored": "Receta restaurada como borrador.",
       "deleted": "Borrador eliminado.",
+      "deletedArchived": "Receta eliminada.",
       "unpublished": "Receta despublicada. Ahora es un borrador.",
       "withdrawn": "Receta retirada de la revisión."
     },

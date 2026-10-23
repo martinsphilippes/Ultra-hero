@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 // Receitas fase 3 contra o banco remoto (0027–0032 já aplicadas), só leitura, salvo a etapa
 // demonstrativa da conta demo "free" (que é a própria configuração da conta: a tarefa pede que ela a
@@ -24,14 +25,6 @@ async function expectNoSeriousAxe(page: Page) {
 
 async function cardSlugs(page: Page): Promise<string[]> {
   return page.getByTestId("recipe-card").evaluateAll((cards) => cards.map((c) => c.getAttribute("data-slug") ?? ""));
-}
-
-async function loginAs(page: Page, kind: "free", home: RegExp) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator(`[data-demo-kind="${kind}"]`).click();
-  await expect(page).toHaveURL(home, { timeout: 20_000 });
 }
 
 test.describe("catálogo de receitas (visitante)", () => {
@@ -128,7 +121,7 @@ test.describe("receita aberta (conta free com a etapa)", () => {
   test.describe.configure({ mode: "serial" });
 
   test("faz a etapa se faltar, abre g1, ajusta porções, marca ingredientes, imprime e compartilha", async ({ page, context }) => {
-    await loginAs(page, "free", /\/explore$/);
+    await loginAs(page, "free", { home: /\/explore$/ });
     await page.goto(`/content/${G1.slug}`);
     if ((await page.getByTestId("recipe-gate").count()) > 0) {
       // etapa demonstrativa: aceitar o aviso e seguir até concluir (sem marcar alergia)
@@ -233,7 +226,7 @@ test.describe("receita aberta (conta free com a etapa)", () => {
   });
 
   test("com a etapa feita, a busca por ingrediente encontra receita que a conta pode abrir", async ({ page }) => {
-    await loginAs(page, "free", /\/explore$/);
+    await loginAs(page, "free", { home: /\/explore$/ });
     await page.goto("/explore?tab=receitas&q=espinafre");
     test.skip((await page.getByTestId("recipe-invite").count()) > 0, "a conta free ainda não fez a etapa demonstrativa");
     await expect(page.getByTestId("recipe-invite")).toHaveCount(0);

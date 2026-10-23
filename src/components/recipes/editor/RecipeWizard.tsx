@@ -372,7 +372,10 @@ export function RecipeWizard(props: Props) {
       const outcome = await save();
       if (outcome !== "ok") return;
     }
-    router.push(`/creator/recipes/${contentId}/preview`);
+    // Navegação de documento, não router.push: a gravação (server action com revalidatePath) devolve o
+    // resultado antes de terminar de enviar a página revalidada, e um router.push nesse intervalo às
+    // vezes era descartado pelo roteador do Next — "Visualizar" ficava parado na etapa de revisão.
+    window.location.assign(`/creator/recipes/${contentId}/preview`);
   }
 
   // ---------------------------------------------------------------- recuperação e conflito

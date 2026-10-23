@@ -3216,6 +3216,116 @@ select tests.ok('S39 limpeza: contas, inscrição, conclusão e substituição d
   and not exists (select 1 from public.profiles where id in ('38000000-0000-4000-8000-000000000011', '38000000-0000-4000-8000-000000000012'))
   and not exists (select 1 from public.program_item_substitutions where version_id = public.seed_uuid('pv:shelf-rafael-2:1')));
 
+-- ================================================================ S40 · Herói exclui de vez a receita que arquivou (0036)
+-- creator_delete_recipe: rascunho nunca publicado (como antes) ou arquivada pelo próprio herói; publicada,
+-- rascunho que já esteve no ar e arquivada pelo admin são recusados; em uso (conclusão) também. Cascata em
+-- favoritos e versões; a auditoria fica. É a limpeza da publicação efêmera do E2E (P4) em produção.
+select tests.su();
+insert into auth.users (id, email) values
+  ('40000000-0000-4000-8000-000000000001', 's40helena@test.local'),
+  ('40000000-0000-4000-8000-000000000002', 's40marcos@test.local'),
+  ('40000000-0000-4000-8000-000000000003', 's40free@test.local');
+create temporary table t_s40_owners as
+  select id, user_id from public.creator_profiles where id in (public.seed_uuid('creator:helena'), public.seed_uuid('creator:marcos'));
+update public.creator_profiles set user_id = '40000000-0000-4000-8000-000000000001' where id = public.seed_uuid('creator:helena');
+update public.creator_profiles set user_id = '40000000-0000-4000-8000-000000000002' where id = public.seed_uuid('creator:marcos');
+insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('40000000-0000-4000-8000-000000000003', now());
+
+select tests.login('40000000-0000-4000-8000-000000000001', 's40helena@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, summary, cover_url) values
+  ('40000000-0000-4000-8000-000000000010', 's40-publicada', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', '[E2E] Receita S40', 'Resumo', '/placeholders/cover-gastronomy-1.svg'),
+  ('40000000-0000-4000-8000-000000000011', 's40-rascunho', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S40 rascunho', 'Resumo', null),
+  ('40000000-0000-4000-8000-000000000012', 's40-admin', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S40 arquivada pelo admin', 'Resumo', '/placeholders/cover-gastronomy-2.svg'),
+  ('40000000-0000-4000-8000-000000000013', 's40-concluida', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S40 com conclusão', 'Resumo', '/placeholders/cover-gastronomy-3.svg');
+select public.recipe_save('40000000-0000-4000-8000-000000000010',
+  tests.rp('[E2E] Receita S40', jsonb_build_array(tests.ing('a4000000-0000-4000-8000-000000000001', 'Ovo', 2)),
+           jsonb_build_array(tests.step('a4000000-0000-4000-8000-000000000002', 'Bata os ovos.'))),
+  tests.upd('40000000-0000-4000-8000-000000000010'));
+select public.recipe_save('40000000-0000-4000-8000-000000000012',
+  tests.rp('Receita S40 arquivada pelo admin', jsonb_build_array(tests.ing('a4000000-0000-4000-8000-000000000011', 'Arroz', 1, 'cup')),
+           jsonb_build_array(tests.step('a4000000-0000-4000-8000-000000000012', 'Cozinhe.'))),
+  tests.upd('40000000-0000-4000-8000-000000000012'));
+select public.recipe_save('40000000-0000-4000-8000-000000000013',
+  tests.rp('Receita S40 com conclusão', jsonb_build_array(tests.ing('a4000000-0000-4000-8000-000000000021', 'Aveia', 1, 'cup')),
+           jsonb_build_array(tests.step('a4000000-0000-4000-8000-000000000022', 'Misture.'))),
+  tests.upd('40000000-0000-4000-8000-000000000013'));
+select public.creator_publish_content('40000000-0000-4000-8000-000000000010');
+select public.creator_publish_content('40000000-0000-4000-8000-000000000012');
+select public.creator_publish_content('40000000-0000-4000-8000-000000000013');
+select tests.expect_error('S40 receita no ar não é excluída direto: not_deletable (arquive antes)',
+  $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010')$q$, 'not_deletable');
+select public.creator_unpublish_content('40000000-0000-4000-8000-000000000010');
+select tests.expect_error('S40 rascunho que já esteve no ar segue recusado: already_published',
+  $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010')$q$, 'already_published');
+select public.creator_publish_content('40000000-0000-4000-8000-000000000010');
+
+-- consumidor favorita a receita no ar
+select tests.su();
+insert into public.favorites (user_id, content_id) values ('40000000-0000-4000-8000-000000000003', '40000000-0000-4000-8000-000000000010');
+insert into public.completions (user_id, content_id, timezone, local_date) values
+  ('40000000-0000-4000-8000-000000000003', '40000000-0000-4000-8000-000000000013', 'America/Sao_Paulo', current_date);
+select tests.login('40000000-0000-4000-8000-000000000001', 's40helena@test.local');
+select public.creator_archive_content('40000000-0000-4000-8000-000000000010', 'Fim do teste');
+select public.creator_archive_content('40000000-0000-4000-8000-000000000013', 'Fim do teste');
+
+select tests.login('40000000-0000-4000-8000-000000000002', 's40marcos@test.local');
+select tests.expect_error('S40 outro herói não exclui a receita da Helena: forbidden',
+  $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010')$q$, 'forbidden');
+select tests.login('40000000-0000-4000-8000-000000000003', 's40free@test.local');
+select tests.expect_error('S40 consumidor (sem perfil de herói): forbidden',
+  $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010')$q$, 'forbidden');
+select tests.anon();
+select tests.expect_error('S40 visitante não executa creator_delete_recipe',
+  $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010')$q$, '42501');
+
+select tests.login('40000000-0000-4000-8000-000000000001', 's40helena@test.local');
+create temporary table t_s40_del as select public.creator_delete_recipe('40000000-0000-4000-8000-000000000010') as r;
+select tests.ok('S40 a arquivada pelo herói é excluída de vez e a RPC devolve id, slug e caminhos',
+  (select r ->> 'id' = '40000000-0000-4000-8000-000000000010' and r ->> 'slug' = 's40-publicada' and r -> 'paths' = '[]'::jsonb from t_s40_del));
+select tests.su();
+select tests.ok('S40 a exclusão leva conteúdo, detalhes, ingredientes, versões e o favorito do consumidor; a auditoria fica',
+  not exists (select 1 from public.content where id = '40000000-0000-4000-8000-000000000010')
+  and not exists (select 1 from public.recipe_details where content_id = '40000000-0000-4000-8000-000000000010')
+  and not exists (select 1 from public.recipe_ingredients where content_id = '40000000-0000-4000-8000-000000000010')
+  and not exists (select 1 from public.recipe_versions where content_id = '40000000-0000-4000-8000-000000000010')
+  and not exists (select 1 from public.favorites where content_id = '40000000-0000-4000-8000-000000000010')
+  and exists (select 1 from public.admin_audit where action = 'content.creator_delete' and resource_id = '40000000-0000-4000-8000-000000000010'
+                and actor_type = 'creator' and before_data ->> 'status' = 'archived' and before_data ->> 'published_at' is not null));
+select tests.ok('S40 nenhum título com o prefixo [E2E] sobra no banco depois da exclusão',
+  not exists (select 1 from public.content where title like '[E2E]%')
+  and not exists (select 1 from public.recipe_versions v where v.snapshot::text like '%[E2E]%'));
+
+select tests.login('40000000-0000-4000-8000-000000000001', 's40helena@test.local');
+select tests.expect_error('S40 com conclusão de consumidor: content_in_use (nada é apagado)',
+  $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000013')$q$, 'content_in_use');
+create temporary table t_s40_draft as select public.creator_delete_recipe('40000000-0000-4000-8000-000000000011') as r;
+select tests.ok('S40 rascunho que nunca foi ao ar continua excluível (mesma regra da função antiga)',
+  (select r ->> 'id' = '40000000-0000-4000-8000-000000000011' from t_s40_draft));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_content_status('40000000-0000-4000-8000-000000000012', 'archived', 'S40 arquivada pelo admin');
+select tests.login('40000000-0000-4000-8000-000000000001', 's40helena@test.local');
+select tests.expect_error('S40 arquivada pelo admin é trava dele: archived_by_admin',
+  $q$select public.creator_delete_recipe('40000000-0000-4000-8000-000000000012')$q$, 'archived_by_admin');
+select tests.su();
+select tests.ok('S40 recusas não apagam nada: com conclusão e arquivada pelo admin seguem no banco; o rascunho saiu',
+  (select count(*) from public.content where id in ('40000000-0000-4000-8000-000000000012', '40000000-0000-4000-8000-000000000013')) = 2
+  and not exists (select 1 from public.content where id = '40000000-0000-4000-8000-000000000011'));
+select tests.ok('S40 creator_delete_recipe: security definer com search_path fixo, só authenticated/service_role (lista do S14 inalterada)',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.creator_delete_recipe(uuid)'::regprocedure)
+  and not has_function_privilege('anon', 'public.creator_delete_recipe(uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.creator_delete_recipe(uuid)', 'execute')
+  and has_function_privilege('service_role', 'public.creator_delete_recipe(uuid)', 'execute'));
+
+-- limpeza: conclusão, receitas e contas de teste; os heróis voltam a quem eram
+delete from public.completions where user_id = '40000000-0000-4000-8000-000000000003';
+delete from public.content where id in ('40000000-0000-4000-8000-000000000012', '40000000-0000-4000-8000-000000000013');
+update public.creator_profiles p set user_id = o.user_id from t_s40_owners o where p.id = o.id;
+delete from auth.users where id in ('40000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000002', '40000000-0000-4000-8000-000000000003');
+select tests.ok('S40 limpeza: receitas S40 fora do banco, heróis com o dono de antes e contas removidas',
+  not exists (select 1 from public.content where id::text like '40000000-0000-4000-8000-0000000000%')
+  and (select bool_and(p.user_id is not distinct from o.user_id) from public.creator_profiles p join t_s40_owners o on o.id = p.id)
+  and not exists (select 1 from public.profiles where id::text like '40000000-0000-4000-8000-00000000000%'));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

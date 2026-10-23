@@ -5,7 +5,7 @@ PWA mobile-first de conteúdo, hábitos, treino, nutrição e gastronomia com **
 Stack aprovada: **Next.js 15 + TypeScript** · **Supabase** (Postgres/RLS/Auth/Storage) · **Vercel**. Idiomas: pt-BR (padrão), en, es.
 
 - Arquitetura, estados e permissões: [`docs/architecture.md`](docs/architecture.md)
-- Decisões técnicas: [`docs/decisions/`](docs/decisions/) (vídeo, IA)
+- Decisões técnicas: [`docs/decisions/`](docs/decisions/) (vídeo, IA, módulo de receitas, prateleiras de programas, Hoje com relógio)
 - Privacidade/retenção: [`docs/privacy-and-retention.md`](docs/privacy-and-retention.md)
 - Checklist de lançamento: [`docs/launch-checklist.md`](docs/launch-checklist.md)
 
@@ -23,10 +23,10 @@ npm run dev                        # http://localhost:3000
 |---|---|
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run typecheck` · `npm run lint` | TypeScript estrito · ESLint |
-| `npm run messages:check` | Garante árvores de tradução idênticas (pt-BR/en/es) |
-| `npm run test` | Vitest (lógica pura) |
-| `npm run test:rls` | 543 cenários de RLS/regras de negócio num Postgres local isolado |
-| `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado) | Playwright (mobile + desktop) + axe |
+| `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 21 namespaces, 4.675 chaves por idioma |
+| `npm run test` | Vitest: 1.231 testes em 46 arquivos (23/10/2026) |
+| `npm run test:rls` | 897 asserções de RLS/regras de negócio (S0–S40) num Postgres local isolado (`LOCAL_DB_NAME` escolhe o banco) |
+| `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado e `E2E_BASE_URL` para um servidor já ativo) | Playwright (Pixel 7 + Desktop Chrome) + axe, com as contas demo; contagem atual em `docs/testing.md` |
 | `npm run db:local:reset` | Sobe Postgres 16 local com shim Supabase + todas as migrations + seed |
 | `npm run db:types` | Regenera `src/lib/supabase/database.types.ts` a partir do banco local |
 | `npm run eval:recommendations` | Compara motores de recomendação (determinístico vs provedores com chave) |
@@ -39,7 +39,7 @@ Na interface, o papel `creator` (quem assina conteúdos e programas) aparece com
 
 ### Banco de dados
 
-Migrations versionadas em `supabase/migrations/0001…0010*.sql` (aplicar **em ordem**). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`).
+Migrations versionadas em `supabase/migrations/0001…0036*.sql` (35 arquivos; não há 0034; aplicar **em ordem**). Em produção: 0001–0033 e 0035; a `0036_recipe_delete_archived.sql` (exclusão da receita arquivada pelo herói) aguarda aplicação, com o roteiro em `docs/decisions/recipes-module.md` (seção "Fase 6"). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`).
 
 Aplicar no projeto Supabase remoto:
 
@@ -81,6 +81,7 @@ Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**
 ## Módulos
 
 - **Consumidor**: Início (curadoria → recomendações), Explorar (busca, filtros, programas, produtos, listas), Heróis (hub de bibliotecas por herói), Conteúdo (gate server-side, player abstrato, conclusão, favoritos), Programas (versionados, substituições, certificado simbólico em PDF), Perfil ("Hoje — Seu dia, em foco" só com o que o relógio mede, sem nada digitado: relógio simulado nas contas demo, "Conectar relógio — em breve" e "Ver um exemplo" nas contas reais, detalhe por categoria em `/profile/today/[categoria]`; "Continue seus programas" depois da Evolução; Evolução com streak e conquistas em `/profile/evolution`; planos simulados, interesses, conta/exclusão). A barra inferior tem 4 abas: Início, Explorar, Heróis e Perfil, Loja/carrinho/checkout/pedidos **de teste**.
+- **Receitas**: catálogo em Explorar › Receitas, página da receita com porções, checklist e Modo Cozinha, Minha coleção, lista de compras ligada ao comércio de teste e, no portal do herói, Minhas Receitas com editor em 6 etapas, versões, publicação direta (revisão por tipo desligada) e exclusão da receita arquivada (`docs/decisions/recipes-module.md`).
 - **Portais**: Personalidade (`/creator`), Fornecedor (`/seller`), Administração (`/admin`).
 - **Sistema**: cron diário (transporte simulado, retenção, renovações), certificados, recomendações.
 

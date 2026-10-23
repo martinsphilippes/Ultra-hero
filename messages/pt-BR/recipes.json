@@ -231,7 +231,9 @@
       "not_archived": "Esta receita não está arquivada.",
       "archived_by_admin": "A administração arquivou esta receita; só ela pode restaurar.",
       "not_draft": "Só rascunhos podem ser excluídos ou publicados.",
-      "already_published": "Esta receita já esteve no ar e não pode ser excluída; arquive.",
+      "already_published": "Esta receita já esteve no ar: arquive antes de excluir.",
+      "not_deletable": "Receita no ar ou agendada não é excluída direto: arquive antes.",
+      "delete_unavailable": "A exclusão de receita arquivada ainda não está disponível. Tente mais tarde.",
       "content_in_use": "Esta receita está em uso (programa ou conclusões) e não pode ser excluída.",
       "source_locked": "Esta receita está travada pela administração e não pode ser duplicada.",
       "slug_taken": "Esse endereço já está em uso.",
@@ -331,6 +333,8 @@
     "confirm": {
       "deleteTitle": "Excluir o rascunho “{title}”?",
       "deleteDescription": "O rascunho, as fotos e o vídeo enviados para ele são apagados. Não dá para desfazer.",
+      "deleteArchivedTitle": "Excluir de vez “{title}”?",
+      "deleteArchivedDescription": "A receita, as fotos, o vídeo e as versões são apagados, e ela some dos favoritos e das listas de quem salvou. Receita em programa ou já concluída por alguém não pode ser excluída. Não dá para desfazer.",
       "archiveTitle": "Arquivar “{title}”?",
       "archiveDescription": "A receita sai do ar e da sua lista principal. Você pode restaurar depois; ela volta como rascunho.",
       "archiveReason": "Motivo (opcional)",
@@ -345,6 +349,7 @@
       "archived": "Receita arquivada.",
       "restored": "Receita restaurada como rascunho.",
       "deleted": "Rascunho excluído.",
+      "deletedArchived": "Receita excluída.",
       "unpublished": "Receita despublicada. Agora ela é um rascunho.",
       "withdrawn": "Receita retirada da revisão."
     },
