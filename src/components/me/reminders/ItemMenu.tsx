@@ -45,7 +45,10 @@ export function ItemMenu({ label, editLabel, deleteLabel, onEdit, onDelete }: Pr
     }
   }
 
+  // O foco volta ao gatilho ANTES de abrir o diálogo: o menuitem some no mesmo commit e o diálogo
+  // guardaria o <body> como lugar para devolver o foco ao fechar.
   function pick(action: () => void) {
+    root.current?.querySelector<HTMLElement>("[aria-haspopup]")?.focus();
     setOpen(false);
     action();
   }

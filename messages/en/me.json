@@ -623,7 +623,7 @@
     "store": {
       "title": "What we store",
       "item1": "Email, display name, avatar (illustration or a photo you uploaded), language, theme and time zone.",
-      "item2": "Interests, favorites, lists, progress, completions and streak.",
+      "item2": "Interests, favorites, lists, progress, completions, streak, reminders and check marks.",
       "item3": "Simulated subscription (modules and periods) and test orders with a fictional destination.",
       "item4": "Usage events without personal data and optional feedback.",
       "not": "We do not collect real addresses, geolocation, payment data or individual health data."

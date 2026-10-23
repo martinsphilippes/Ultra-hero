@@ -108,6 +108,31 @@ test.describe("Lembretes fora do Hoje — conta gratuita", () => {
     await expect(item).toBeVisible({ timeout: 15_000 });
     await expect(item).toContainText("06:40 · Todos os dias");
 
+    // alvo de toque: o "Adicionar lembrete" da lista com itens tem 44px como os demais alvos
+    expect((await add.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+
+    // teclado: menu → Editar → Esc e menu → Excluir → Cancelar devolvem o foco ao gatilho (nunca ao <body>)
+    const trigger = item.getByRole("button", { name: `Opções de ${title}` });
+    await trigger.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("menuitem", { name: "Editar" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    const kbEdit = page.getByRole("dialog", { name: "Editar lembrete" });
+    await expect(kbEdit.getByLabel("Título")).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(kbEdit).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("menuitem", { name: "Editar" })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(page.getByRole("menuitem", { name: "Excluir" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    const kbConfirm = page.getByRole("dialog", { name: "Excluir lembrete?" });
+    await expect(kbConfirm).toBeVisible();
+    await kbConfirm.getByRole("button", { name: "Cancelar" }).click();
+    await expect(kbConfirm).toBeHidden();
+    await expect(trigger).toBeFocused();
+
     // não aparece no Hoje (nem no Perfil fora do atalho)
     await page.goto("/profile");
     await expect(page.getByTestId("today-section")).not.toContainText(title);
@@ -151,6 +176,8 @@ test.describe("Lembretes fora do Hoje — conta gratuita", () => {
     await page.getByRole("menuitem", { name: "Excluir" }).click();
     await page.getByRole("dialog", { name: "Excluir lembrete?" }).getByRole("button", { name: "Excluir" }).click();
     await expect(page.getByText("Lembrete excluído.")).toBeVisible({ timeout: 15_000 });
+    // a linha some: o foco vai para "Adicionar lembrete" em vez de cair no <body>
+    await expect(page.getByTestId("reminder-add").first()).toBeFocused({ timeout: 15_000 });
     await page.reload();
     await expect(page.locator(`[data-reminder-title^="${title}"]`)).toHaveCount(0);
   });

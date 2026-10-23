@@ -623,7 +623,7 @@
     "store": {
       "title": "Qué guardamos",
       "item1": "Correo, nombre visible, avatar (ilustración o una foto que subiste), idioma, tema y zona horaria.",
-      "item2": "Intereses, favoritos, listas, progreso, contenidos completados y racha.",
+      "item2": "Intereses, favoritos, listas, progreso, contenidos completados, racha, recordatorios y sus marcas.",
       "item3": "Suscripción simulada (módulos y períodos) y pedidos de prueba con destino ficticio.",
       "item4": "Eventos de uso sin datos personales y feedback opcional.",
       "not": "No recopilamos dirección real, geolocalización, datos de pago ni datos de salud individuales."

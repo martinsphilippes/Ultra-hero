@@ -2,7 +2,7 @@
 
 import { BellRing, Check, Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { deleteReminder, toggleReminder } from "@/app/(app)/profile/lembretes/actions";
 import { Button, Dialog, EmptyState, useToast } from "@/components/ui";
 import { rhythmCounter } from "@/lib/routine/today";
@@ -35,6 +35,9 @@ export function RemindersList({ today, other, max }: Props) {
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<ReminderView | null>(null);
   const [pendingDelete, startDelete] = useTransition();
+  const rootRef = useRef<HTMLDivElement>(null);
+  // id excluído cujo foco ainda precisa ir para "Adicionar lembrete" (a linha e o gatilho somem).
+  const refocusAfterDelete = useRef<string | null>(null);
 
   const total = today.length + other.length;
   const atLimit = total >= max;
@@ -66,13 +69,23 @@ export function RemindersList({ today, other, max }: Props) {
         toast({ title: t(`errors.${result.error}`), variant: "error" });
         return;
       }
+      refocusAfterDelete.current = target.id;
       setDeleting(null);
       toast({ title: t("toasts.deleted"), variant: "success" });
     });
   }
 
+  // Só depois que o diálogo fechou e a linha saiu da lista; antes disso o botão está inerte (modal)
+  // ou o diálogo ainda devolveria o foco ao gatilho que vai sumir.
+  useEffect(() => {
+    const id = refocusAfterDelete.current;
+    if (!id || deleting !== null || today.some((i) => i.id === id) || other.some((i) => i.id === id)) return;
+    refocusAfterDelete.current = null;
+    rootRef.current?.querySelector<HTMLElement>('[data-testid="reminder-add"]')?.focus();
+  }, [deleting, today, other]);
+
   const addButton = (
-    <Button variant="primary" size="sm" leadingIcon={<Plus />} onClick={() => setCreating(true)} disabled={atLimit} data-testid="reminder-add">
+    <Button variant="primary" leadingIcon={<Plus />} onClick={() => setCreating(true)} disabled={atLimit} data-testid="reminder-add">
       {t("add")}
     </Button>
   );
@@ -121,7 +134,7 @@ export function RemindersList({ today, other, max }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6" data-testid="reminders">
+    <div ref={rootRef} className="flex flex-col gap-6" data-testid="reminders">
       {total === 0 ? (
         <div className="rounded-2xl border border-dashed border-border-strong bg-surface/60" data-testid="reminders-empty">
           <EmptyState
