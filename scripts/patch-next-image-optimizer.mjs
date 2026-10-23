@@ -29,7 +29,14 @@ try {
 }
 const { version } = JSON.parse(readFileSync(pkgPath, "utf8"));
 const file = path.join(path.dirname(pkgPath), "dist", "server", "image-optimizer.js");
-const source = readFileSync(file, "utf8");
+let source;
+try {
+  source = readFileSync(file, "utf8");
+} catch {
+  // roda no postinstall (inclusive no build da Vercel): nunca pode derrubar a instalação
+  console.warn(`[patch-next-image] next ${version}: ${path.relative(process.cwd(), file)} não encontrado; nada alterado`);
+  process.exit(0);
+}
 
 if (source.includes(PATCHED)) {
   console.log(`[patch-next-image] next ${version}: já corrigido`);
