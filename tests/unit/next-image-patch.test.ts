@@ -14,6 +14,9 @@ describe("otimizador de imagens do next start", () => {
     expect(start).toBeGreaterThan(-1);
     const body = source.slice(start, source.indexOf("\n}\n", start));
     expect(body).toContain("createRequestResponseMocks");
-    expect(body).not.toMatch(/^\s*socket: _req\.socket,/m);
+    // o globalSetup do Vitest (tests/setup/patch-next.ts) já roda o script antes dos testes
+    expect(body, "node_modules sem a correção: rode `node scripts/patch-next-image-optimizer.mjs` (ou npm install)").not.toMatch(
+      /^\s*socket: _req\.socket,/m,
+    );
   });
 });

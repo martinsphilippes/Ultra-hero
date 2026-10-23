@@ -227,7 +227,16 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
           size="sm"
           footer={
             <>
-              <Button type="button" variant="ghost" onClick={() => setConfirm(null)} disabled={busy}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  // mesmo efeito do onOpenChange(false): o erro do diálogo não vai parar na linha
+                  setConfirm(null);
+                  setError(null);
+                }}
+                disabled={busy}
+              >
                 {t("confirm.cancel")}
               </Button>
               <Button type="button" variant={active.destructive ? "danger" : "primary"} loading={busy} onClick={active.onConfirm} data-testid="recipe-confirm">

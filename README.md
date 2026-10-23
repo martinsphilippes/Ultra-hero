@@ -24,7 +24,7 @@ npm run dev                        # http://localhost:3000
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run typecheck` · `npm run lint` | TypeScript estrito · ESLint |
 | `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 21 namespaces, 4.675 chaves por idioma |
-| `npm run test` | Vitest: 1.231 testes em 46 arquivos (23/10/2026) |
+| `npm run test` | Vitest: 1.232 testes em 47 arquivos (23/10/2026) |
 | `npm run test:rls` | 897 asserções de RLS/regras de negócio (S0–S40) num Postgres local isolado (`LOCAL_DB_NAME` escolhe o banco) |
 | `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado e `E2E_BASE_URL` para um servidor já ativo) | Playwright (Pixel 7 + Desktop Chrome) + axe, com as contas demo; contagem atual em `docs/testing.md` |
 | `npm run db:local:reset` | Sobe Postgres 16 local com shim Supabase + todas as migrations + seed |
@@ -62,7 +62,7 @@ Veja [`.env.example`](.env.example). Resumo:
 | `CRON_SECRET` | para `/api/cron/*` | Vercel |
 | `NEXT_PUBLIC_SITE_URL` | recomendada | URL pública |
 | `OPENAI_API_KEY` / `GEMINI_API_KEY` | opcional | sem elas: fallback determinístico, identificado |
-| Cloudflare Stream / Mux | opcional | POC usa embeds + player demo |
+| `CLOUDFLARE_*`, `VIDEO_PROVIDER` (Cloudflare Stream) | para o herói enviar vídeo (posts e receitas) | servidor; ligadas na Vercel (produção). Sem elas, o novo post mostra "Vídeo ainda não configurado". Mux só como interface |
 
 Google OAuth: configurar em Supabase → Authentication → Providers → Google (callback `https://<ref>.supabase.co/auth/v1/callback`).
 
@@ -88,7 +88,7 @@ Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**
 ## Limitações da simulação
 
 - Preços, planos, frete, destinos e entregas são fictícios e rotulados.
-- Vídeo: embeds (YouTube/Vimeo) e player de demonstração; Cloudflare Stream/Mux são adaptadores não configurados (ADR-001).
+- Vídeo: o herói envia vídeos curtos pelo Cloudflare Stream (posts e receitas; ligado em produção); os conteúdos do seed seguem com embeds (YouTube/Vimeo) e player de demonstração; URL assinada para premium e legendas ainda não existem; Mux existe só como interface (ADR-001).
 - IA: só com chave; fallback determinístico sempre identificado (ADR-002).
 - Sem notificações push, pagamentos, logística, comunidade ou aconselhamento clínico.
 

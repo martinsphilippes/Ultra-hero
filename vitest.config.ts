@@ -7,6 +7,8 @@ export default defineConfig({
     include: ["tests/unit/**/*.test.ts", "src/**/*.test.ts"],
     environment: "node",
     reporters: ["default"],
+    // aplica no node_modules a correção do otimizador de imagens do Next (idempotente; ver o arquivo)
+    globalSetup: ["tests/setup/patch-next.ts"],
   },
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
   // o tsconfig do Next usa jsx "preserve"; nos testes os componentes síncronos são renderizados

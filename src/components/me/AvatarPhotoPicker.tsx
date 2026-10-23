@@ -253,7 +253,16 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
         dismissible={!pending}
         footer={
           <>
-            <Button type="button" variant="ghost" onClick={() => setConfirmRemove(false)} disabled={pending}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                // o Dialog não avisa onOpenChange quando o fechamento vem do estado: limpa o erro aqui
+                setConfirmRemove(false);
+                setError(null);
+              }}
+              disabled={pending}
+            >
               {t("cancel")}
             </Button>
             <Button type="button" variant="danger" onClick={confirmRemoval} loading={pending}>
