@@ -8,7 +8,8 @@
     "favorites": "Favorites",
     "notifications": "Notifications",
     "onboarding": "Welcome",
-    "verify": "Verify certificate"
+    "verify": "Verify certificate",
+    "reminders": "Reminders"
   },
   "evolution": {
     "title": "Your progress",
@@ -17,7 +18,7 @@
       "current": "Current streak",
       "best": "Best streak",
       "days": "{n, plural, =0 {0 days} =1 {1 day} other {# days}}",
-      "hint": "One activity per day counts: completing content, advancing in a video or joining a program.",
+      "hint": "One activity per day counts: completing content, advancing in a video or joining a program. Reminders don't count.",
       "timezone": "Time zone: {tz}"
     },
     "activity": {
@@ -212,6 +213,12 @@
       "streakDays": "{n, plural, =0 {0 days} =1 {1 day} other {# days}}",
       "completions": "{n, plural, =0 {No content completed yet} =1 {1 piece of content completed} other {# pieces of content completed}}",
       "open": "See progress"
+    },
+    "reminders": {
+      "title": "Reminders",
+      "description": "Your routine list, outside Today.",
+      "today": "{n, plural, =0 {Nothing for today} other {# for today}}",
+      "total": "{n, plural, =0 {No reminders} =1 {# reminder} other {# reminders}}"
     }
   },
   "today": {
@@ -428,6 +435,81 @@
       "manualTitle": "What never comes in, because it is typed, not measured",
       "privacyTitle": "Privacy",
       "privacyBody": "The old hydration and rest logs stayed only on this device; the new Today erased them from the browser without sending anything. Read the <privacy>Privacy Policy</privacy>."
+    }
+  },
+  "reminders": {
+    "title": "Reminders",
+    "description": "Your routine list, outside Today. Check off what you did each day.",
+    "info": "Reminders stay here for you to check: Ultra Hero doesn't send alerts for them, and checking one off doesn't count toward your streak (the streak counts completed content).",
+    "todayTitle": "For today",
+    "otherTitle": "Other days",
+    "otherDescription": "They show up in “For today” on the days you picked.",
+    "counter": "{done} of {total, plural, =1 {# reminder done} other {# reminders done}}",
+    "noneToday": "No reminders for today.",
+    "allDays": "Every day",
+    "count": "{n} of {max} reminders",
+    "limitReached": "You've reached {max} reminders. Delete one to add another.",
+    "add": "Add reminder",
+    "addTitle": "New reminder",
+    "editTitle": "Edit reminder",
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "E.g. Stretch for 10 minutes",
+      "note": "Note",
+      "notePlaceholder": "Optional, up to 120 characters",
+      "time": "Time",
+      "timeHint": "Without a time, the reminder goes to the end of the list.",
+      "weekdays": "Days of the week",
+      "allDays": "Every day",
+      "save": "Save",
+      "cancel": "Cancel",
+      "dayShort": {
+        "0": "S",
+        "1": "M",
+        "2": "T",
+        "3": "W",
+        "4": "T",
+        "5": "F",
+        "6": "S"
+      },
+      "dayLong": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      }
+    },
+    "empty": {
+      "title": "No reminders yet",
+      "description": "Create reminders for your routine, like stretching when you wake up or reading before bed. They live here, outside Today, and you check off what you did each day.",
+      "cta": "Create your first reminder"
+    },
+    "markDone": "Mark as done today",
+    "markUndone": "Unmark",
+    "doneToday": "Done today",
+    "itemMenu": "Options for {title}",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete reminder?",
+    "deleteDescription": "“{title}” leaves your list and its check marks are erased. This cannot be undone.",
+    "deleteConfirm": "Delete",
+    "toasts": {
+      "created": "Reminder created.",
+      "updated": "Reminder updated.",
+      "deleted": "Reminder deleted.",
+      "checked": "Done today!",
+      "unchecked": "Today's check mark removed."
+    },
+    "errors": {
+      "routine_limit": "You already have 20 reminders. Delete one to add another.",
+      "routine_item_not_found": "This reminder no longer exists. Reload the page.",
+      "invalid_timezone": "Invalid time zone.",
+      "unauthenticated": "Sign in to continue.",
+      "invalid": "Check the fields: the title is required and pick at least one day.",
+      "failed": "Could not save. Try again."
     }
   },
   "favorites": {

@@ -8,7 +8,8 @@
     "favorites": "Favoritos",
     "notifications": "Notificações",
     "onboarding": "Boas-vindas",
-    "verify": "Verificar certificado"
+    "verify": "Verificar certificado",
+    "reminders": "Lembretes"
   },
   "evolution": {
     "title": "Sua evolução",
@@ -17,7 +18,7 @@
       "current": "Sequência atual",
       "best": "Melhor sequência",
       "days": "{n, plural, =0 {0 dias} =1 {1 dia} other {# dias}}",
-      "hint": "Vale uma atividade por dia: concluir um conteúdo, avançar em um vídeo ou entrar em um programa.",
+      "hint": "Vale uma atividade por dia: concluir um conteúdo, avançar em um vídeo ou entrar em um programa. Lembretes não contam.",
       "timezone": "Fuso: {tz}"
     },
     "activity": {
@@ -212,6 +213,12 @@
       "streakDays": "{n, plural, =0 {0 dias} =1 {1 dia} other {# dias}}",
       "completions": "{n, plural, =0 {Nenhum conteúdo concluído ainda} =1 {1 conteúdo concluído} other {# conteúdos concluídos}}",
       "open": "Ver evolução"
+    },
+    "reminders": {
+      "title": "Lembretes",
+      "description": "Sua lista de rotina, fora do Hoje.",
+      "today": "{n, plural, =0 {Nada para hoje} other {# para hoje}}",
+      "total": "{n, plural, =0 {Nenhum lembrete} =1 {# lembrete} other {# lembretes}}"
     }
   },
   "today": {
@@ -428,6 +435,81 @@
       "manualTitle": "O que nunca entra, porque é digitado e não medido",
       "privacyTitle": "Privacidade",
       "privacyBody": "Os antigos registros de hidratação e descanso ficavam só neste aparelho; o novo Hoje os apagou do navegador sem enviar nada. Leia a <privacy>Política de Privacidade</privacy>."
+    }
+  },
+  "reminders": {
+    "title": "Lembretes",
+    "description": "Sua lista de rotina, fora do Hoje. Marque o que fez no dia.",
+    "info": "Os lembretes ficam só aqui para você conferir: o Ultra Hero não envia avisos deles, e marcar um lembrete não conta na sequência (ela conta conteúdos concluídos).",
+    "todayTitle": "Para hoje",
+    "otherTitle": "Outros dias",
+    "otherDescription": "Aparecem em “Para hoje” nos dias escolhidos.",
+    "counter": "{done} de {total, plural, =1 {# lembrete feito} other {# lembretes feitos}}",
+    "noneToday": "Nenhum lembrete para hoje.",
+    "allDays": "Todos os dias",
+    "count": "{n} de {max} lembretes",
+    "limitReached": "Você chegou a {max} lembretes. Exclua um para adicionar outro.",
+    "add": "Adicionar lembrete",
+    "addTitle": "Novo lembrete",
+    "editTitle": "Editar lembrete",
+    "form": {
+      "title": "Título",
+      "titlePlaceholder": "Ex.: Alongar 10 minutos",
+      "note": "Nota",
+      "notePlaceholder": "Opcional, até 120 caracteres",
+      "time": "Horário",
+      "timeHint": "Sem horário, o lembrete fica no fim da lista.",
+      "weekdays": "Dias da semana",
+      "allDays": "Todos os dias",
+      "save": "Salvar",
+      "cancel": "Cancelar",
+      "dayShort": {
+        "0": "D",
+        "1": "S",
+        "2": "T",
+        "3": "Q",
+        "4": "Q",
+        "5": "S",
+        "6": "S"
+      },
+      "dayLong": {
+        "0": "Domingo",
+        "1": "Segunda",
+        "2": "Terça",
+        "3": "Quarta",
+        "4": "Quinta",
+        "5": "Sexta",
+        "6": "Sábado"
+      }
+    },
+    "empty": {
+      "title": "Nenhum lembrete ainda",
+      "description": "Crie lembretes para a sua rotina, como alongar ao acordar ou ler antes de dormir. Eles ficam aqui, fora do Hoje, e você marca o que fez no dia.",
+      "cta": "Criar o primeiro lembrete"
+    },
+    "markDone": "Marcar como feito hoje",
+    "markUndone": "Desmarcar",
+    "doneToday": "Feito hoje",
+    "itemMenu": "Opções de {title}",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "deleteTitle": "Excluir lembrete?",
+    "deleteDescription": "“{title}” sai da sua lista e as marcações dele são apagadas. Não dá para desfazer.",
+    "deleteConfirm": "Excluir",
+    "toasts": {
+      "created": "Lembrete criado.",
+      "updated": "Lembrete atualizado.",
+      "deleted": "Lembrete excluído.",
+      "checked": "Feito hoje!",
+      "unchecked": "Marcação de hoje removida."
+    },
+    "errors": {
+      "routine_limit": "Você já tem 20 lembretes. Exclua um para adicionar outro.",
+      "routine_item_not_found": "Este lembrete não existe mais. Recarregue a página.",
+      "invalid_timezone": "Fuso horário inválido.",
+      "unauthenticated": "Entre para continuar.",
+      "invalid": "Verifique os campos: o título é obrigatório e escolha ao menos um dia.",
+      "failed": "Não foi possível salvar. Tente novamente."
     }
   },
   "favorites": {

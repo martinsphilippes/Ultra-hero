@@ -8,7 +8,8 @@
     "favorites": "Favoritos",
     "notifications": "Notificaciones",
     "onboarding": "Bienvenida",
-    "verify": "Verificar certificado"
+    "verify": "Verificar certificado",
+    "reminders": "Recordatorios"
   },
   "evolution": {
     "title": "Tu evolución",
@@ -17,7 +18,7 @@
       "current": "Racha actual",
       "best": "Mejor racha",
       "days": "{n, plural, =0 {0 días} =1 {1 día} other {# días}}",
-      "hint": "Cuenta una actividad por día: completar un contenido, avanzar en un video o entrar en un programa.",
+      "hint": "Cuenta una actividad por día: completar un contenido, avanzar en un video o entrar en un programa. Los recordatorios no cuentan.",
       "timezone": "Zona horaria: {tz}"
     },
     "activity": {
@@ -212,6 +213,12 @@
       "streakDays": "{n, plural, =0 {0 días} =1 {1 día} other {# días}}",
       "completions": "{n, plural, =0 {Aún no completaste contenidos} =1 {1 contenido completado} other {# contenidos completados}}",
       "open": "Ver evolución"
+    },
+    "reminders": {
+      "title": "Recordatorios",
+      "description": "Tu lista de rutina, fuera de Hoy.",
+      "today": "{n, plural, =0 {Nada para hoy} other {# para hoy}}",
+      "total": "{n, plural, =0 {Ningún recordatorio} =1 {# recordatorio} other {# recordatorios}}"
     }
   },
   "today": {
@@ -428,6 +435,81 @@
       "manualTitle": "Lo que nunca entra, porque se escribe y no se mide",
       "privacyTitle": "Privacidad",
       "privacyBody": "Los antiguos registros de hidratación y descanso quedaban solo en este dispositivo; el nuevo Hoy los borró del navegador sin enviar nada. Lee la <privacy>Política de Privacidad</privacy>."
+    }
+  },
+  "reminders": {
+    "title": "Recordatorios",
+    "description": "Tu lista de rutina, fuera de Hoy. Marca lo que hiciste en el día.",
+    "info": "Los recordatorios quedan aquí para que los consultes: Ultra Hero no envía avisos de ellos, y marcar uno no cuenta en la racha (la racha cuenta contenidos completados).",
+    "todayTitle": "Para hoy",
+    "otherTitle": "Otros días",
+    "otherDescription": "Aparecen en “Para hoy” los días que elegiste.",
+    "counter": "{done} de {total, plural, =1 {# recordatorio hecho} other {# recordatorios hechos}}",
+    "noneToday": "Ningún recordatorio para hoy.",
+    "allDays": "Todos los días",
+    "count": "{n} de {max} recordatorios",
+    "limitReached": "Llegaste a {max} recordatorios. Elimina uno para añadir otro.",
+    "add": "Añadir recordatorio",
+    "addTitle": "Nuevo recordatorio",
+    "editTitle": "Editar recordatorio",
+    "form": {
+      "title": "Título",
+      "titlePlaceholder": "Ej.: Estirar 10 minutos",
+      "note": "Nota",
+      "notePlaceholder": "Opcional, hasta 120 caracteres",
+      "time": "Hora",
+      "timeHint": "Sin hora, el recordatorio queda al final de la lista.",
+      "weekdays": "Días de la semana",
+      "allDays": "Todos los días",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "dayShort": {
+        "0": "D",
+        "1": "L",
+        "2": "M",
+        "3": "X",
+        "4": "J",
+        "5": "V",
+        "6": "S"
+      },
+      "dayLong": {
+        "0": "Domingo",
+        "1": "Lunes",
+        "2": "Martes",
+        "3": "Miércoles",
+        "4": "Jueves",
+        "5": "Viernes",
+        "6": "Sábado"
+      }
+    },
+    "empty": {
+      "title": "Aún no hay recordatorios",
+      "description": "Crea recordatorios para tu rutina, como estirar al despertar o leer antes de dormir. Quedan aquí, fuera de Hoy, y marcas lo que hiciste en el día.",
+      "cta": "Crear el primer recordatorio"
+    },
+    "markDone": "Marcar como hecho hoy",
+    "markUndone": "Desmarcar",
+    "doneToday": "Hecho hoy",
+    "itemMenu": "Opciones de {title}",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteTitle": "¿Eliminar recordatorio?",
+    "deleteDescription": "“{title}” sale de tu lista y sus marcas se borran. No se puede deshacer.",
+    "deleteConfirm": "Eliminar",
+    "toasts": {
+      "created": "Recordatorio creado.",
+      "updated": "Recordatorio actualizado.",
+      "deleted": "Recordatorio eliminado.",
+      "checked": "¡Hecho hoy!",
+      "unchecked": "Marca de hoy eliminada."
+    },
+    "errors": {
+      "routine_limit": "Ya tienes 20 recordatorios. Elimina uno para añadir otro.",
+      "routine_item_not_found": "Este recordatorio ya no existe. Recarga la página.",
+      "invalid_timezone": "Zona horaria inválida.",
+      "unauthenticated": "Inicia sesión para continuar.",
+      "invalid": "Revisa los campos: el título es obligatorio y elige al menos un día.",
+      "failed": "No se pudo guardar. Inténtalo de nuevo."
     }
   },
   "favorites": {

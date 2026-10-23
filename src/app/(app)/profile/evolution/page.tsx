@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Award, BookOpen, CheckCircle2, ChefHat, Compass, Download, Dumbbell, FileText, Flame, Heart, Layers, PlayCircle, Trophy } from "lucide-react";
 import { AchievementsGrid, type AchievementRow } from "@/components/me/AchievementsGrid";
 import { ActivityStrip } from "@/components/me/ActivityStrip";
-import { isValidTimeZone, localDateIn, longestRun, shiftDate } from "@/components/me/dates";
+import { isValidTimeZone, localDateIn, longestRun } from "@/components/me/dates";
 import { Badge, Button, EmptyState, PageHeader, PillarBadge, ProgressBar } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate, formatRelativeTime } from "@/i18n/format";
@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Evolução: sequência (compute_streak), faixa de 14 dias, estatísticas, programas, conquistas e atividade recente.
-// A faixa e os dias ativos unem streak_events (conteúdo) com routine_checks marcados (itens do "Hoje").
+// A faixa e os dias ativos vêm só de streak_events, a mesma regra da sequência (Q10, 0037): lembretes não contam.
 
 const STRIP_DAYS = 14;
 
@@ -51,14 +51,10 @@ export default async function EvolutionPage() {
   const today = localDateIn(tz);
   const supabase = await createClient();
 
-  const stripStart = shiftDate(today, -(STRIP_DAYS - 1));
-
-  const [streakRes, eventsRes, routineRes, completionsCountRes, completionsRes, enrollmentsRes, favoritesRes, achievementsRes, earnedRes, certificatesRes, recentCompletionsRes, recentProgressRes] =
+  const [streakRes, eventsRes, completionsCountRes, completionsRes, enrollmentsRes, favoritesRes, achievementsRes, earnedRes, certificatesRes, recentCompletionsRes, recentProgressRes] =
     await Promise.all([
       supabase.rpc("compute_streak", { p_user: user.id, p_timezone: tz }),
       supabase.from("streak_events").select("local_date").eq("user_id", user.id).order("local_date", { ascending: false }).limit(2000),
-      // Marcações de rotina do período da faixa (RLS: só do próprio usuário).
-      supabase.from("routine_checks").select("local_date").eq("user_id", user.id).eq("done", true).gte("local_date", stripStart).lte("local_date", today),
       supabase.from("completions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       supabase.from("completions").select("content_id").eq("user_id", user.id).limit(2000),
       supabase
@@ -74,13 +70,12 @@ export default async function EvolutionPage() {
       supabase.from("content_progress").select("content_id, progress_pct, updated_at, content:content(slug, title, type, pillar)").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(10),
     ]);
 
-  const firstError = [streakRes, eventsRes, routineRes, completionsCountRes, completionsRes, enrollmentsRes, favoritesRes, achievementsRes, earnedRes, certificatesRes, recentCompletionsRes, recentProgressRes].find((r) => r.error)?.error;
+  const firstError = [streakRes, eventsRes, completionsCountRes, completionsRes, enrollmentsRes, favoritesRes, achievementsRes, earnedRes, certificatesRes, recentCompletionsRes, recentProgressRes].find((r) => r.error)?.error;
   if (firstError) throw new Error(firstError.message);
 
   // Sequência atual (servidor) e melhor sequência (maior corrida de datas locais consecutivas).
   const currentStreak = Number(streakRes.data ?? 0);
-  const routineDates = (routineRes.data ?? []).map((r) => r.local_date);
-  const eventDates = [...(eventsRes.data ?? []).map((e) => e.local_date), ...routineDates];
+  const eventDates = (eventsRes.data ?? []).map((e) => e.local_date);
   const bestStreak = Math.max(currentStreak, longestRun(eventDates));
   const countsByDate = new Map<string, number>();
   for (const date of eventDates) countsByDate.set(date, (countsByDate.get(date) ?? 0) + 1);

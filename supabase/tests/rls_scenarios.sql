@@ -880,9 +880,9 @@ select tests.ok('S20 excluir o produto ou o herói leva a alocação junto (on d
 -- ================================================================ S21 · rotina do dia: routine_items, routine_checks, routine_check, compute_streak (0022)
 -- "Hoje" dentro do Perfil: itens de rotina só do dono (política única routine_items_own; até 20 ativos pelo
 -- gatilho) e marcação diária lida pelo dono e escrita só pela RPC routine_check (security definer: exige item
--- próprio e ativo e calcula a data local pelo fuso). compute_streak conta um dia com conclusão de conteúdo OU
--- item de rotina marcado. consumer2 foi excluído no S11: a segunda pessoa aqui é s21 (…0021), criada neste
--- cenário sem nenhuma conclusão (isola a contagem da sequência) e apagada no fim (cascade, padrão do S17).
+-- próprio e ativo e calcula a data local pelo fuso). Desde a 0037 (Q10) os itens são "Lembretes" e a marcação
+-- não conta na sequência nem a devolve: a regra da sequência é provada no S41. consumer2 foi excluído no S11:
+-- a segunda pessoa aqui é s21 (…0021), criada neste cenário e apagada no fim (cascade, padrão do S17).
 select tests.su();
 insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000021', 's21@test.local');
 
@@ -979,9 +979,9 @@ select tests.expect_error('S21 item inativo não é marcado (routine_item_not_fo
 select tests.expect_error('S21 item inexistente (routine_item_not_found)', $q$select public.routine_check(gen_random_uuid(), 'America/Sao_Paulo')$q$, 'routine_item_not_found');
 select tests.expect_error('S21 fuso inválido é recusado (invalid_timezone)', $q$select public.routine_check('60000000-0000-4000-8000-000000000001', 'Marte/Olympus')$q$, 'invalid_timezone');
 create temporary table t_s21_c1 as select public.routine_check('60000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') as r;
-select tests.ok('S21 consumer1 marca o item: done, local_date = local_date_for(fuso), fuso gravado e sequência igual a compute_streak',
+select tests.ok('S21 consumer1 marca o item: done, local_date = local_date_for(fuso), fuso gravado e sem sequência na resposta (0037)',
   (select (r ->> 'done')::boolean and (r ->> 'local_date')::date = public.local_date_for('America/Sao_Paulo')
-          and (r ->> 'streak')::int = public.compute_streak('10000000-0000-4000-8000-000000000002', 'America/Sao_Paulo') from t_s21_c1)
+          and not (r ? 'streak') from t_s21_c1)
   and (select count(*) from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000001') = 1
   and (select done and local_date = public.local_date_for('America/Sao_Paulo') and timezone = 'America/Sao_Paulo' and user_id = '10000000-0000-4000-8000-000000000002' and checked_at = now()
        from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000001'));
@@ -998,14 +998,12 @@ create temporary table t_s21_nul as select public.routine_check('60000000-0000-4
 select tests.ok('S21 fuso nulo também cai em UTC', (select (r ->> 'local_date')::date = public.local_date_for('UTC') from t_s21_nul)
   and (select timezone = 'UTC' from public.routine_checks where item_id = '60000000-0000-4000-8000-000000000004'));
 
--- 5) compute_streak: a segunda pessoa não tem conclusões, então a sequência vem só da rotina
+-- 5) marcações isoladas por pessoa (a sequência, desde a 0037, está no S41)
 select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
 insert into public.routine_items (id, user_id, title) values ('60000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000021', 'Ler dez páginas');
-select tests.ok('S21 segunda pessoa vê só o próprio item e começa com sequência 0', (select count(*) from public.routine_items) = 1
-  and public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 0);
+select tests.ok('S21 segunda pessoa vê só o próprio item', (select count(*) from public.routine_items) = 1);
 create temporary table t_s21_m1 as select public.routine_check('60000000-0000-4000-8000-000000000011', 'America/Sao_Paulo') as r;
-select tests.ok('S21 item marcado hoje → sequência 1 (na RPC e em compute_streak)', (select (r ->> 'streak')::int from t_s21_m1) = 1
-  and public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 1);
+select tests.ok('S21 segunda pessoa marca o próprio item', (select (r ->> 'done')::boolean from t_s21_m1));
 select tests.ok('S21 segunda pessoa lê só as próprias marcações', (select count(*) from public.routine_checks) = 1
   and not exists (select 1 from public.routine_checks where user_id <> '10000000-0000-4000-8000-000000000021'));
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
@@ -1013,21 +1011,11 @@ select tests.ok('S21 consumer1 lê só as próprias marcações (3) e não vê a
   and not exists (select 1 from public.routine_checks where user_id <> '10000000-0000-4000-8000-000000000002'));
 select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
 create temporary table t_s21_m0 as select public.routine_check('60000000-0000-4000-8000-000000000011', 'America/Sao_Paulo', false) as r;
-select tests.ok('S21 desmarcado → sequência 0', (select (r ->> 'streak')::int from t_s21_m0) = 0
-  and public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 0);
-select tests.su();
-insert into public.routine_checks (user_id, item_id, local_date, done, timezone) values
-  ('10000000-0000-4000-8000-000000000021', '60000000-0000-4000-8000-000000000011', public.local_date_for('America/Sao_Paulo') - 1, true, 'America/Sao_Paulo');
-select tests.ok('S21 hoje ainda sem marcação não zera: conta a partir de ontem → 1', public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 1);
-select tests.login('10000000-0000-4000-8000-000000000021', 's21@test.local');
-create temporary table t_s21_m2 as select public.routine_check('60000000-0000-4000-8000-000000000011', 'America/Sao_Paulo') as r;
-select tests.ok('S21 ontem (rotina) + hoje (rotina) → 2', (select (r ->> 'streak')::int from t_s21_m2) = 2);
+select tests.ok('S21 desmarcar devolve done=false e mantém a linha', not (select (r ->> 'done')::boolean from t_s21_m0)
+  and (select count(*) = 1 and bool_and(not done) from public.routine_checks));
 select tests.su();
 insert into public.streak_events (user_id, kind, ref_id, timezone, local_date) values
   ('10000000-0000-4000-8000-000000000021', 'completion', public.seed_uuid('content:r1'), 'America/Sao_Paulo', public.local_date_for('America/Sao_Paulo') - 2);
-select tests.ok('S21 anteontem (conclusão de conteúdo) + ontem (rotina) + hoje (rotina) → 3', public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 3);
-update public.routine_checks set done = false where user_id = '10000000-0000-4000-8000-000000000021' and local_date = public.local_date_for('America/Sao_Paulo') - 1;
-select tests.ok('S21 dia sem nada no meio quebra a contagem (ontem desmarcado → só hoje = 1)', public.compute_streak('10000000-0000-4000-8000-000000000021', 'America/Sao_Paulo') = 1);
 
 -- 6) cascata: apagar o item leva as marcações; apagar a conta leva itens, marcações e eventos (padrão do S17)
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
@@ -3215,6 +3203,78 @@ select tests.ok('S39 limpeza: contas, inscrição, conclusão e substituição d
   and not exists (select 1 from public.completions where user_id = '38000000-0000-4000-8000-000000000011')
   and not exists (select 1 from public.profiles where id in ('38000000-0000-4000-8000-000000000011', '38000000-0000-4000-8000-000000000012'))
   and not exists (select 1 from public.program_item_substitutions where version_id = public.seed_uuid('pv:shelf-rafael-2:1')));
+
+-- ================================================================ S41 · Sequência só com conteúdos; lembretes não contam (0037, Q10)
+-- compute_streak volta à regra da 0003: só streak_events (concluir conteúdo e afins). Lembretes (routine_items/
+-- routine_checks, Q5) são agenda pessoal: marcar não conta, não emenda dias e a RPC não devolve sequência.
+-- Pessoa nova (…0041) sem nenhuma conclusão, apagada no fim. Chamadas voláteis em um comando, conferência em outro.
+select tests.su();
+insert into auth.users (id, email) values ('41000000-0000-4000-8000-000000000001', 's41@test.local');
+select tests.login('41000000-0000-4000-8000-000000000001', 's41@test.local');
+insert into public.routine_items (id, user_id, title, time_of_day) values ('61000000-0000-4000-8000-000000000001', '41000000-0000-4000-8000-000000000001', 'Beber água ao acordar', '07:00');
+create temporary table t_s41_check as select public.routine_check('61000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') as r;
+select tests.ok('S41 marcar lembrete hoje grava a marcação, não devolve sequência e não conta (sequência 0)',
+  (select (r ->> 'done')::boolean and not (r ? 'streak') and (select count(*) from jsonb_object_keys(r)) = 2 from t_s41_check)
+  and exists (select 1 from public.routine_checks where item_id = '61000000-0000-4000-8000-000000000001' and done and local_date = public.local_date_for('America/Sao_Paulo'))
+  and public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 0);
+select tests.su();
+insert into public.routine_checks (user_id, item_id, local_date, done, timezone)
+select '41000000-0000-4000-8000-000000000001', '61000000-0000-4000-8000-000000000001', public.local_date_for('America/Sao_Paulo') - d, true, 'America/Sao_Paulo' from generate_series(1, 4) d;
+select tests.ok('S41 cinco dias seguidos de lembrete marcado continuam valendo 0 na sequência', public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 0
+  and (select count(*) from public.routine_checks where user_id = '41000000-0000-4000-8000-000000000001' and done) = 5);
+create temporary table t_s41_ach as select array(select public.evaluate_achievements('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo')) as codes;
+select tests.ok('S41 lembretes não dão conquista de sequência (streak_3 não é concedida)', not exists (select 1 from t_s41_ach where 'streak_3' = any (codes))
+  and not exists (select 1 from public.user_achievements ua join public.achievements a on a.id = ua.achievement_id
+                  where ua.user_id = '41000000-0000-4000-8000-000000000001' and a.rule ->> 'kind' = 'streak'));
+select tests.login('41000000-0000-4000-8000-000000000001', 's41@test.local');
+create temporary table t_s41_done as select public.complete_content(public.seed_uuid('content:r1'), 'America/Sao_Paulo') as r;
+select tests.ok('S41 concluir um conteúdo hoje conta: sequência 1 na RPC e em compute_streak, com evento de hoje',
+  (select (r ->> 'new')::boolean and (r ->> 'streak')::int = 1 from t_s41_done)
+  and public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 1
+  and exists (select 1 from public.streak_events where user_id = auth.uid() and kind = 'completion' and local_date = public.local_date_for('America/Sao_Paulo')));
+select tests.su();
+insert into public.streak_events (user_id, kind, ref_id, timezone, local_date) values
+  ('41000000-0000-4000-8000-000000000001', 'completion', public.seed_uuid('content:r2'), 'America/Sao_Paulo', public.local_date_for('America/Sao_Paulo') - 1),
+  ('41000000-0000-4000-8000-000000000001', 'completion', public.seed_uuid('content:r3'), 'America/Sao_Paulo', public.local_date_for('America/Sao_Paulo') - 3);
+select tests.ok('S41 hoje + ontem com conteúdo = 2; anteontem só com lembrete não emenda o dia −3', public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 2);
+insert into public.streak_events (user_id, kind, ref_id, timezone, local_date) values
+  ('41000000-0000-4000-8000-000000000001', 'completion', public.seed_uuid('content:r4'), 'America/Sao_Paulo', public.local_date_for('America/Sao_Paulo') - 2);
+select tests.ok('S41 com conteúdo em hoje, −1, −2 e −3 a sequência é 4', public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 4);
+delete from public.streak_events where user_id = '41000000-0000-4000-8000-000000000001' and local_date = public.local_date_for('America/Sao_Paulo');
+select tests.ok('S41 hoje só com lembrete (sem conteúdo) não soma nem quebra: conta a partir de ontem = 3', public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 3);
+delete from public.streak_events where user_id = '41000000-0000-4000-8000-000000000001' and local_date = public.local_date_for('America/Sao_Paulo') - 1;
+select tests.ok('S41 ontem sem conteúdo quebra a sequência (0), mesmo com lembrete marcado ontem e hoje', public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 0
+  and exists (select 1 from public.routine_checks where user_id = '41000000-0000-4000-8000-000000000001' and done and local_date = public.local_date_for('America/Sao_Paulo') - 1));
+select tests.login('41000000-0000-4000-8000-000000000001', 's41@test.local');
+create temporary table t_s41_undo as select public.routine_check('61000000-0000-4000-8000-000000000001', 'America/Sao_Paulo', false) as r;
+select tests.ok('S41 desmarcar o lembrete também não devolve sequência nem muda a contagem', (select not (r ->> 'done')::boolean and not (r ? 'streak') from t_s41_undo)
+  and public.compute_streak('41000000-0000-4000-8000-000000000001', 'America/Sao_Paulo') = 0);
+select tests.su();
+delete from auth.users where id = '41000000-0000-4000-8000-000000000001';
+select tests.ok('S41 limpeza: conta, lembrete, marcações, conclusão e eventos removidos (cascade)',
+  not exists (select 1 from public.routine_items where user_id = '41000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.routine_checks where user_id = '41000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.streak_events where user_id = '41000000-0000-4000-8000-000000000001')
+  and not exists (select 1 from public.completions where user_id = '41000000-0000-4000-8000-000000000001'));
+
+-- ================================================================ S42 · 0037 sem ampliar permissões
+-- compute_streak e routine_check continuam com uma assinatura cada, security definer, search_path fixo e
+-- os mesmos grants (authenticated e service_role; nunca anon nem PUBLIC). A lista do S14 não muda.
+select tests.ok('S42 compute_streak: uma assinatura, security definer, stable, search_path=public, sem routine_checks no corpo',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'compute_streak') = 1
+  and (select p.prosecdef and p.provolatile = 's' and p.proconfig = array['search_path=public'] and p.prosrc not like '%routine_checks%' and p.prosrc like '%streak_events%'
+       from pg_proc p where p.oid = 'public.compute_streak(uuid, text)'::regprocedure));
+select tests.ok('S42 routine_check: uma assinatura, security definer, search_path=public, não chama compute_streak',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'routine_check') = 1
+  and (select p.prosecdef and p.provolatile = 'v' and p.proconfig = array['search_path=public'] and p.prosrc not like '%compute_streak%'
+       from pg_proc p where p.oid = 'public.routine_check(uuid, text, boolean)'::regprocedure));
+select tests.ok('S42 grants iguais: authenticated e service_role executam; anon e PUBLIC não',
+  (select bool_and(has_function_privilege('authenticated', f, 'execute') and has_function_privilege('service_role', f, 'execute') and not has_function_privilege('anon', f, 'execute')
+     and not exists (select 1 from pg_proc p cross join lateral aclexplode(p.proacl) a where p.oid = f and a.grantee = 0 and a.privilege_type = 'EXECUTE'))
+   from unnest(array['public.compute_streak(uuid, text)'::regprocedure, 'public.routine_check(uuid, text, boolean)'::regprocedure]) f));
+select tests.anon();
+select tests.expect_error('S42 visitante não executa compute_streak', $q$select public.compute_streak('10000000-0000-4000-8000-000000000002', 'UTC')$q$, 'permission denied');
+select tests.su();
 
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
