@@ -23,9 +23,9 @@ npm run dev                        # http://localhost:3000
 |---|---|
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run typecheck` · `npm run lint` | TypeScript estrito · ESLint |
-| `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 21 namespaces, 4.675 chaves por idioma |
-| `npm run test` | Vitest: 1.232 testes em 47 arquivos (23/10/2026) |
-| `npm run test:rls` | 897 asserções de RLS/regras de negócio (S0–S40) num Postgres local isolado (`LOCAL_DB_NAME` escolhe o banco) |
+| `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 22 namespaces, 4.877 chaves por idioma |
+| `npm run test` | Vitest: 1.377 aprovados + 1 pulado em 55 arquivos (23/10/2026) |
+| `npm run test:rls` | 991 asserções de RLS/regras de negócio (S0–S51) num Postgres local isolado (`LOCAL_DB_NAME` escolhe o banco) |
 | `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado e `E2E_BASE_URL` para um servidor já ativo) | Playwright (Pixel 7 + Desktop Chrome) + axe, com as contas demo; contagem atual em `docs/testing.md` |
 | `npm run db:local:reset` | Sobe Postgres 16 local com shim Supabase + todas as migrations + seed |
 | `npm run db:types` | Regenera `src/lib/supabase/database.types.ts` a partir do banco local |
@@ -39,7 +39,7 @@ Na interface, o papel `creator` (quem assina conteúdos e programas) aparece com
 
 ### Banco de dados
 
-Migrations versionadas em `supabase/migrations/0001…0036*.sql` (35 arquivos; não há 0034; aplicar **em ordem**). Em produção: 0001–0033 e 0035; a `0036_recipe_delete_archived.sql` (exclusão da receita arquivada pelo herói) aguarda aplicação, com o roteiro em `docs/decisions/recipes-module.md` (seção "Fase 6"). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`).
+Migrations versionadas em `supabase/migrations/0001…0039*.sql` (38 arquivos; não há 0034; aplicar **em ordem**). Em produção (23/10/2026): todas, nada pendente — 39 registros em `supabase_migrations.schema_migrations` (o remoto sempre teve 1 registro a mais que os arquivos). As últimas: `0036_recipe_delete_archived.sql` (o herói exclui de vez a receita que ele arquivou; `docs/decisions/recipes-module.md`, seção "Fase 6"), `0037_streak_contents_only.sql` (a sequência conta só conteúdos concluídos e entradas em programas; Lembretes não contam) e `0038_health_foundation.sql` + `0039_health_ingest.sql` (schema `health` do relógio real, fora da API, aplicadas vazias; ver `WEARABLES_REAL_ENABLED` abaixo). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`).
 
 Aplicar no projeto Supabase remoto:
 
@@ -63,6 +63,7 @@ Veja [`.env.example`](.env.example). Resumo:
 | `NEXT_PUBLIC_SITE_URL` | recomendada | URL pública |
 | `OPENAI_API_KEY` / `GEMINI_API_KEY` | opcional | sem elas: fallback determinístico, identificado |
 | `CLOUDFLARE_*`, `VIDEO_PROVIDER` (Cloudflare Stream) | para o herói enviar vídeo (posts e receitas) | servidor; ligadas na Vercel (produção). Sem elas, o novo post mostra "Vídeo ainda não configurado". Mux só como interface |
+| `WEARABLES_REAL_ENABLED` (e as variáveis das marcas no `.env.example`) | não: relógio real (Garmin, Oura, WHOOP, Polar) pronto e oculto | desligada na Vercel; no banco, trava `connect_open = 'false'` em `health.config`. Para ligar: `docs/decisions/hoje-relogio.md`, seção "Roteiro de ligar" |
 
 Google OAuth: configurar em Supabase → Authentication → Providers → Google (callback `https://<ref>.supabase.co/auth/v1/callback`).
 
@@ -80,7 +81,7 @@ Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**
 
 ## Módulos
 
-- **Consumidor**: Início (curadoria → recomendações), Explorar (busca, filtros, programas, produtos, listas), Heróis (hub de bibliotecas por herói), Conteúdo (gate server-side, player abstrato, conclusão, favoritos), Programas (versionados, substituições, certificado simbólico em PDF), Perfil ("Hoje — Seu dia, em foco" só com o que o relógio mede, sem nada digitado: relógio simulado nas contas demo, "Conectar relógio — em breve" e "Ver um exemplo" nas contas reais, detalhe por categoria em `/profile/today/[categoria]`; "Continue seus programas" depois da Evolução; Evolução com streak e conquistas em `/profile/evolution`; planos simulados, interesses, conta/exclusão). A barra inferior tem 4 abas: Início, Explorar, Heróis e Perfil, Loja/carrinho/checkout/pedidos **de teste**.
+- **Consumidor**: Início (curadoria → recomendações), Explorar (busca, filtros, programas, produtos, listas), Heróis (hub de bibliotecas por herói), Conteúdo (gate server-side, player abstrato, conclusão, favoritos), Programas (versionados, substituições, certificado simbólico em PDF), Perfil ("Hoje — Seu dia, em foco" só com o que o relógio mede, sem nada digitado: relógio simulado nas contas demo, "Conectar relógio — em breve" e "Ver um exemplo" nas contas reais, detalhe por categoria em `/profile/today/[categoria]`; "Continue seus programas" depois da Evolução; Evolução com streak (só conteúdos concluídos e entradas em programas; Lembretes não contam, 0037) e conquistas em `/profile/evolution`; Lembretes em Perfil › Lembretes, fora do Hoje; planos simulados, interesses, conta/exclusão). A barra inferior tem 4 abas: Início, Explorar, Heróis e Perfil, Loja/carrinho/checkout/pedidos **de teste**.
 - **Receitas**: catálogo em Explorar › Receitas, página da receita com porções, checklist e Modo Cozinha, Minha coleção, lista de compras ligada ao comércio de teste e, no portal do herói, Minhas Receitas com editor em 6 etapas, versões, publicação direta (revisão por tipo desligada) e exclusão da receita arquivada (`docs/decisions/recipes-module.md`).
 - **Portais**: Personalidade (`/creator`), Fornecedor (`/seller`), Administração (`/admin`).
 - **Sistema**: cron diário (transporte simulado, retenção, renovações), certificados, recomendações.

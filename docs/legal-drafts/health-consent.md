@@ -27,12 +27,12 @@
 | Q13 Sob demanda | Fora; treino iniciado no relógio conta | adaptadores e catálogo |
 | Q14 Passos | Só do relógio | adaptadores (não há fonte de celular nas 4 marcas) |
 | Q15 Payload bruto Garmin | 30 dias | `health_run_retention()` (demais marcas: 7 dias) |
-| Q16 Contas demo | Desligadas no projeto com dado real; no código, demo nunca conecta | servidor + banco (`demo_account_cannot_connect`) |
-| Q17 Projetos | Produção nova + um de testes | roteiro de ligar |
-| Q18 Custos | **Ainda não aprovado** | bloqueia ligar |
+| Q16 Contas demo | Adaptada à Q17 revista (um só projeto, 23/10/2026): as contas demo continuam; no dia de ligar, tirar o papel admin da conta demo compartilhada; no código e no banco, demo nunca conecta | servidor + banco (`demo_account_cannot_connect`) |
+| Q17 Projetos | Um só projeto (revisto em 23/10/2026: sem ambiente novo); relógio real oculto atrás de `WEARABLES_REAL_ENABLED` e de `connect_open='false'` | roteiro de ligar |
+| Q18 Custos | O Supabase já é Pro; falta a Vercel Pro | bloqueia ligar |
 | Q19 Encarregado | Pessoa da empresa (nome a confirmar) | placeholder no texto |
 | Q20 Mudança material | 30 dias sem novo aceite → apaga | `health.set_consent_version()` + retenção |
-| Q7 Idade | **Outra regra — A DEFINIR** | `health.config.min_age` (padrão 18) e `min_age_rule_pending = true` |
+| Q7 Idade | 18 anos com autodeclaração (revisto em 23/10/2026); o jurídico confirma se o ECA Digital exige mais | `health.config.min_age` = 18 (`min_age_rule_pending` segue `true` até ligar; roteiro, passo 3) |
 
 ## 2. Texto do consentimento (rascunho `2026-10-draft-1`)
 
@@ -63,8 +63,8 @@ marca), a autodeclaração de idade e o botão "Concordo e quero conectar". O ac
 
 **Pontos para o jurídico decidir:**
 1. **Exportar** ("exportar seus dados"): a exportação self-service (RF-10) ainda não foi construída nesta entrega; até lá, o direito é atendido pelo encarregado. Ajustar o texto ou construir antes de ligar.
-2. **Idade (Q7):** a regra está pendente; o texto fala em "idade mínima indicada nesta tela" e o banco guarda, em cada aceite, a idade mínima vigente. ECA Digital (Lei 15.211/2025): confirmar se autodeclaração basta.
-3. **Backups em 7 dias:** só vale com Supabase **Pro** (backups diários de 7 dias). No Free não há backup automático.
+2. **Idade (Q7):** decidida em 23/10/2026: 18 anos com autodeclaração; o texto fala em "idade mínima indicada nesta tela" e o banco guarda, em cada aceite, a idade mínima vigente. ECA Digital (Lei 15.211/2025): confirmar se a autodeclaração basta.
+3. **Backups em 7 dias:** o Supabase já é **Pro** (Q18), com backups diários guardados por 7 dias; confirmar o prazo no texto.
 4. **Prova após exclusão:** guardamos a prova do consentimento por **5 anos após a revogação**, sem o id da pessoa (só `subject_ref` = HMAC do id com segredo do servidor). Confirmar o prazo.
 5. **Transferência internacional (art. 33):** Vercel e Supabase como operadores estrangeiros; verificar se os DPAs adotam as cláusulas-padrão da ANPD (Res. CD/ANPD 19/2024).
 
