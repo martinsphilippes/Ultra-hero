@@ -125,8 +125,9 @@
       "avatar": "Avatar",
       "avatarHint": "Sube tu foto desde el celular o elige una ilustración.",
       "avatarOption": "Avatar {n}",
+      "avatarInHeroEditor": "Tu foto y tu ilustración están en Editar perfil, arriba en esta página. Valen en la app y en tu página pública.",
+      "openHeroEditor": "Abrir Editar perfil",
       "illustrations": "Ilustraciones",
-      "illustrationsAppOnly": "Vale solo para el avatar de la app. La ilustración de la página pública está en Tu perfil de héroe.",
       "illustrationsWhenPhoto": "Tu foto está en uso. Elegir una ilustración y guardar reemplaza la foto (se elimina).",
       "photoWillBeDeleted": "Al guardar, tu foto se eliminará y la ilustración elegida ocupará su lugar.",
       "keepPhoto": "Mantener mi foto",
@@ -137,6 +138,7 @@
       "errors": {
         "invalid_input": "Revisa los campos.",
         "unauthenticated": "Inicia sesión para continuar.",
+        "avatar_not_saved": "Tu nombre se guardó, pero el avatar, el idioma y el tema no cambiaron. Inténtalo de nuevo.",
         "generic": "No se pudo guardar. Inténtalo de nuevo."
       }
     },

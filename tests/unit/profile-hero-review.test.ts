@@ -5,18 +5,22 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { CreatorProfileForm } from "@/components/creator/CreatorProfileForm";
+import { HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
+import { profileDataInput } from "@/components/me/profile-data";
+import { HERO_DEFAULT_AVATAR, heroAvatarSrc } from "@/lib/avatar/constants";
 import commonMessages from "../../messages/pt-BR/common.json";
 import creatorMessages from "../../messages/pt-BR/creator.json";
 import editorsMessages from "../../messages/pt-BR/editors.json";
 import meMessages from "../../messages/pt-BR/me.json";
+import enCreator from "../../messages/en/creator.json";
 import enMe from "../../messages/en/me.json";
+import esCreator from "../../messages/es/creator.json";
 import esMe from "../../messages/es/me.json";
 
-// Correções da revisão do perfil do herói no /profile: a seção exige o papel (como o portal), a nota
-// "a foto é enviada em Dados" fica no lugar do envio de foto e descreve o grupo do avatar, e em Dados
-// o herói lê que a ilustração dali vale só no app.
+// Perfil do herói no /profile: o topo exige o papel (como o portal); o editor "Editar perfil" fica
+// recolhido; um avatar só para o herói ativo (foto + ilustrações no editor, nada de avatar em Dados).
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined, push: () => undefined }) }));
 vi.mock("@/app/creator/profile/actions", () => ({ updateCreatorProfile: async () => ({ ok: true }) }));
@@ -60,53 +64,126 @@ const formProps = {
   pillars: ["training"],
   name: "Helena",
 };
+const photoState = { upload: "not_configured" as const, canRemove: false };
+const count = (html: string, needle: string) => html.split(needle).length - 1;
 
-describe("nota da foto no formulário do herói", () => {
-  it("fica no cartão do avatar, logo antes das ilustrações, e descreve o grupo", () => {
-    const html = render(createElement(CreatorProfileForm, { ...formProps, showPhotoPicker: false, photoNote: createElement("a", { href: "#dados" }, "Dados") }));
-    const note = html.match(/<p id="([^"]+)"[^>]*data-testid="profile-hero-photo-note"[^>]*>/);
-    expect(note).not.toBeNull();
-    const noteId = note![1];
-    const group = html.match(/<div role="radiogroup" aria-labelledby="([^"]+-avatar)" aria-describedby="([^"]+)"/);
-    expect(group).not.toBeNull();
-    expect(group![2]).toBe(noteId);
-    // ordem: Headline/Bio → nota → grupo do avatar (no mesmo cartão: nada de cartão entre eles)
-    const headlineAt = html.indexOf("Headline");
-    const noteAt = html.indexOf('data-testid="profile-hero-photo-note"');
-    const groupAt = html.indexOf(group![0]);
-    expect(headlineAt).toBeLessThan(noteAt);
-    expect(noteAt).toBeLessThan(groupAt);
-    expect(html.slice(noteAt, groupAt)).not.toContain("rounded-2xl border");
-    // a capa não ganha a descrição
-    expect(html).toMatch(/<div role="radiogroup" aria-labelledby="[^"]+-cover" class=/);
+describe("um avatar só no editor do herói", () => {
+  it("perfil ativo: foto e ilustrações no mesmo grupo 'Sua foto ou ilustração', que vale no app e na página pública", () => {
+    const html = render(createElement(CreatorProfileForm, { ...formProps, showPhotoPicker: true, photoState }));
+    expect(count(html, 'data-testid="avatar-photo"')).toBe(1);
+    const group = html.slice(html.indexOf('data-testid="hero-avatar"'), html.indexOf("</fieldset>", html.indexOf('data-testid="hero-avatar"')));
+    expect(group).toContain(`<legend class="text-base font-semibold text-fg">${creatorMessages.profile.avatarTitle}</legend>`);
+    expect(group).toContain(creatorMessages.profile.avatarShared);
+    // a foto vem antes das ilustrações, no mesmo grupo
+    expect(group.indexOf('data-testid="avatar-photo"')).toBeLessThan(group.indexOf('role="radiogroup"'));
+    expect(group).toMatch(new RegExp(`<span id="[^"]+-avatar" class="text-sm font-semibold text-fg">${creatorMessages.profile.illustrations}</span>`));
+    // nada da nota antiga ("a foto é enviada em Dados")
+    expect(html).not.toContain("profile-hero-photo-note");
   });
 
-  it("sem nota (ou com o envio de foto) nada muda no grupo do avatar", () => {
-    const html = render(createElement(CreatorProfileForm, { ...formProps, showPhotoPicker: false }));
-    expect(html).not.toContain("profile-hero-photo-note");
-    expect(html).toMatch(/<div role="radiogroup" aria-labelledby="[^"]+-avatar" class=/);
+  it("perfil inativo (somente leitura): sem seletor de foto, com o aviso de que a foto do app fica em Dados", () => {
+    const html = render(createElement(CreatorProfileForm, { ...formProps, readOnly: true, showPhotoPicker: false, photoState }));
+    expect(html).not.toContain('data-testid="avatar-photo"');
+    expect(html).toContain(creatorMessages.profile.avatarReadOnly);
+    expect(html).not.toContain(creatorMessages.profile.avatarShared);
   });
 });
 
-describe("ilustrações em Dados para o herói", () => {
-  const dataProps = { displayName: "Helena", avatarUrl: "/placeholders/avatar-3.svg", locale: "pt-BR" as const, theme: "dark" as const, photoState: { upload: "not_configured" as const, canRemove: false } };
+// Herói sem avatar: a mesma ilustração em todo lugar (a da página pública), não a sorteada pelo nome.
+describe("herói sem avatar: uma ilustração só", () => {
+  const read = (rel: string) => readFileSync(path.resolve(__dirname, "../..", rel), "utf8");
 
-  it("herói: legenda 'vale só no app' ligada ao grupo das ilustrações", () => {
-    const hint = meMessages.profile.data.illustrationsAppOnly;
-    const html = render(createElement(ProfileDataForm, { ...dataProps, photoHint: "foto", illustrationsHint: hint }));
-    expect(html).toContain(`<p id="avatar-illustrations-app-only" class="type-caption text-fg-muted" data-testid="avatar-illustrations-app-only">${hint}</p>`);
-    expect(html).toContain('<div role="radiogroup" aria-labelledby="avatar-illustrations-label" aria-describedby="avatar-illustrations-app-only"');
+  it("heroAvatarSrc: o avatar salvo ou a ilustração da página pública", () => {
+    expect(HERO_DEFAULT_AVATAR).toBe("/placeholders/avatar-1.svg");
+    expect(heroAvatarSrc(null)).toBe(HERO_DEFAULT_AVATAR);
+    expect(heroAvatarSrc(undefined)).toBe(HERO_DEFAULT_AVATAR);
+    expect(heroAvatarSrc("")).toBe(HERO_DEFAULT_AVATAR);
+    expect(heroAvatarSrc("/placeholders/avatar-6.svg")).toBe("/placeholders/avatar-6.svg");
   });
 
-  it("quem não é herói: nada muda", () => {
+  it("prévia de 'Sua foto' no editor sem avatar: a da página pública, mesmo com um nome que sortearia outra", () => {
+    // "Helena Vilar" sorteia a avatar-4 pelo nome
+    const html = render(createElement(CreatorProfileForm, { ...formProps, name: "Helena Vilar", initial: { ...formProps.initial, avatar_url: "" }, showPhotoPicker: true, photoState }));
+    const preview = html.slice(html.indexOf('data-testid="avatar-photo"'));
+    expect(preview.match(/<img[^>]*src="([^"]+)"/)?.[1]).toBe(HERO_DEFAULT_AVATAR);
+  });
+
+  it("cabeçalho, Visão geral (herói ativo), página pública e card usam a mesma regra", () => {
+    expect(read("src/components/creator/HeroProfileTop.tsx")).toContain("<Avatar src={heroAvatarSrc(profile.avatar_url)}");
+    expect(read("src/app/(app)/profile/page.tsx")).toContain("<Avatar src={heroActive ? heroAvatarSrc(profile?.avatar_url) : profile?.avatar_url}");
+    expect(read("src/app/(app)/personalities/[slug]/page.tsx")).toContain("const avatar = heroAvatarSrc(creator.avatar_url);");
+    expect(read("src/components/catalog/CreatorCard.tsx")).toContain("src={heroAvatarSrc(creator.avatar_url)}");
+  });
+});
+
+describe("Dados do herói ativo: sem avatar", () => {
+  const dataProps = { displayName: "Helena", avatarUrl: "/placeholders/avatar-3.svg", locale: "pt-BR" as const, theme: "dark" as const, photoState };
+
+  it("no lugar do avatar, o aviso e o botão que abre 'Editar perfil'", () => {
+    const html = render(createElement(ProfileDataForm, { ...dataProps, avatarInHeroEditor: true }));
+    expect(html).toContain('data-testid="avatar-in-hero-editor"');
+    expect(html).toContain(meMessages.profile.data.avatarInHeroEditor);
+    expect(html).toMatch(new RegExp(`<button[^>]*type="button"[^>]*>.*${meMessages.profile.data.openHeroEditor}</span></button>`));
+    expect(html).not.toContain('data-testid="avatar-photo"');
+    expect(html).not.toContain("avatar-illustrations-label");
+    expect(html).not.toContain('name="avatar"');
+  });
+
+  it("quem não é herói (ou herói inativo): o avatar continua em Dados, como antes", () => {
     const html = render(createElement(ProfileDataForm, dataProps));
-    expect(html).not.toContain("avatar-illustrations-app-only");
+    expect(html).not.toContain("avatar-in-hero-editor");
+    expect(html).toContain('data-testid="avatar-photo"');
     expect(html).toContain('<div role="radiogroup" aria-labelledby="avatar-illustrations-label" class=');
   });
 
-  it("o texto existe nos 3 idiomas e aponta para 'Seu perfil de herói'", () => {
-    expect(meMessages.profile.data.illustrationsAppOnly).toContain(creatorMessages.profile.title);
-    expect(enMe.profile.data.illustrationsAppOnly).toContain("Your hero profile");
-    expect(esMe.profile.data.illustrationsAppOnly).toContain("Tu perfil de héroe");
+  it("salvar Dados do herói nunca envia o avatar, mesmo que o estado diga que mexeu", () => {
+    const draft = { name: " Helena ", avatar: "/placeholders/avatar-2.svg", avatarTouched: true, locale: "pt-BR", theme: "dark" };
+    expect(profileDataInput({ ...draft, avatarHere: false })).toEqual({ displayName: "Helena", locale: "pt-BR", theme: "dark" });
+    expect(profileDataInput({ ...draft, avatarHere: false })).not.toHaveProperty("avatarUrl");
+    // fora do herói ativo: só quando a pessoa mexeu
+    expect(profileDataInput({ ...draft, avatarHere: true })).toEqual({ displayName: "Helena", avatarUrl: "/placeholders/avatar-2.svg", locale: "pt-BR", theme: "dark" });
+    expect(profileDataInput({ ...draft, avatarHere: true, avatarTouched: false })).not.toHaveProperty("avatarUrl");
+  });
+});
+
+describe("Editar perfil recolhido", () => {
+  it("fechado por padrão: botão com aria-expanded/aria-controls, região escondida com título h2 focável e dois Fechar", () => {
+    // arquivo .ts (sem JSX): o tipo das props exige children
+    // eslint-disable-next-line react/no-children-prop
+    const html = render(createElement(HeroEditorDisclosure, { publicHref: "/personalities/helena-vilar", children: createElement("p", null, "conteúdo") }));
+    expect(html).toMatch(/<button[^>]*aria-expanded="false"[^>]*aria-controls="editar-perfil"[^>]*>.*Editar perfil<\/span><\/button>/);
+    expect(html).toMatch(/<section id="editar-perfil" aria-labelledby="hero-editor-title" hidden=""/);
+    expect(html).toContain('<h2 id="hero-editor-title" tabindex="-1"');
+    expect(count(html, ">Fechar</span></button>")).toBe(2);
+    // o link da página pública vem depois do botão (o Portal do herói continua o primeiro link da página)
+    expect(html).toContain('href="/personalities/helena-vilar"');
+    expect(html.indexOf("Editar perfil")).toBeLessThan(html.indexOf('href="/personalities/helena-vilar"'));
+  });
+
+  it("perfil inativo: sem o link da página pública", () => {
+    // arquivo .ts (sem JSX): o tipo das props exige children
+    // eslint-disable-next-line react/no-children-prop
+    const html = render(createElement(HeroEditorDisclosure, { publicHref: null, children: null }));
+    expect(html).not.toContain("/personalities/");
+    expect(html).toContain('aria-controls="editar-perfil"');
+  });
+});
+
+describe("mensagens novas nos 3 idiomas e as antigas fora", () => {
+  it("existem e são texto simples", () => {
+    for (const creator of [creatorMessages, enCreator, esCreator]) {
+      for (const key of ["editProfile", "editorTitle", "editorDescription", "close", "avatarTitle", "avatarShared", "avatarReadOnly", "illustrations"] as const) {
+        expect(creator.profile[key].length).toBeGreaterThan(2);
+      }
+      expect(creator.errors.avatar_not_saved.length).toBeGreaterThan(10);
+      expect(creator.profile).not.toHaveProperty("photoInData");
+      expect(creator.profile).not.toHaveProperty("avatar");
+    }
+    for (const me of [meMessages, enMe, esMe]) {
+      expect(me.profile.data.avatarInHeroEditor).toContain(me === meMessages ? "Editar perfil" : me === enMe ? "Edit profile" : "Editar perfil");
+      expect(me.profile.data.openHeroEditor.length).toBeGreaterThan(2);
+      expect(me.profile.data.errors.avatar_not_saved.length).toBeGreaterThan(10);
+      expect(me.profile.data).not.toHaveProperty("illustrationsAppOnly");
+    }
   });
 });

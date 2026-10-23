@@ -11,7 +11,7 @@ import { creatorActionContext } from "../_lib/creator-action";
 // (P7). O pedido fica em creator_credentials_requests (só dono e admin leem); o texto só chega ao
 // perfil público quando o admin aprova, e editar ou retirar o pedido tira o aprovado do perfil.
 
-// O perfil do herói mora na seção "Seu perfil de herói" do /profile.
+// O perfil do herói mora no /profile (topo, editor "Editar perfil").
 function revalidateProfile() {
   revalidatePath("/profile");
   revalidatePath("/admin/creators");

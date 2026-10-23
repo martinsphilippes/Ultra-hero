@@ -22,6 +22,8 @@ type Props = {
   disabled?: boolean;
   /** Texto de apoio próprio da tela (ex.: perfil de herói). */
   hint?: string;
+  /** Imagem da prévia quando não há avatar (herói: a da página pública); sem ela, a sorteada pelo nome. */
+  fallbackSrc?: string;
 };
 
 type Preview = PreparedAvatar & { url: string };
@@ -29,7 +31,7 @@ type Preview = PreparedAvatar & { url: string };
 // Foto de perfil pelo celular: "Tirar foto" (câmera frontal) ou "Escolher da galeria", recorte e
 // redução no aparelho, prévia em círculo e confirmação. Uma foto só por pessoa: vale no avatar do
 // app e, se a pessoa é herói, no perfil público. Usado só em /profile → Dados (uma foto por página).
-export function AvatarPhotoPicker({ value, name, state, onChange, disabled = false, hint }: Props) {
+export function AvatarPhotoPicker({ value, name, state, onChange, disabled = false, hint, fallbackSrc }: Props) {
   const t = useTranslations("me.profile.photo");
   const { toast } = useToast();
   const router = useRouter();
@@ -167,7 +169,7 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
   return (
     <div ref={rootRef} tabIndex={-1} className="flex flex-col gap-3 rounded-xl border border-border bg-surface-elevated p-4 outline-none" data-testid="avatar-photo">
       <div className="flex items-center gap-4">
-        <Avatar src={value} name={name} size="xl" alt="" />
+        <Avatar src={value || fallbackSrc} name={name} size="xl" alt="" />
         <div className="flex min-w-0 flex-col gap-0.5">
           <p className="text-sm font-semibold text-fg">{t("title")}</p>
           <p className="type-caption text-fg-muted">{hint ?? t("hint")}</p>

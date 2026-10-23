@@ -1,11 +1,12 @@
 "use client";
 
-import { Moon, RotateCcw, Sun, TriangleAlert } from "lucide-react";
+import { Moon, Pencil, RotateCcw, Sun, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { updateProfile } from "@/app/(app)/profile/actions";
+import { openHeroEditor } from "@/components/creator/HeroEditorDisclosure";
 import { Button, FormField, Input, SegmentedControl, Select, useToast } from "@/components/ui";
 import { locales, type Locale } from "@/i18n/config";
 import type { AvatarPhotoState } from "@/lib/avatar/availability";
@@ -14,6 +15,7 @@ import { discardsSavedPhoto, isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/av
 import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
 import { cn } from "@/lib/utils";
 import { AvatarPhotoPicker } from "./AvatarPhotoPicker";
+import { profileDataInput } from "./profile-data";
 
 type Props = {
   displayName: string;
@@ -23,8 +25,11 @@ type Props = {
   photoState: AvatarPhotoState;
   /** Texto de apoio da foto (heróis: a mesma foto vale na página pública). */
   photoHint?: string;
-  /** Legenda das ilustrações (heróis: a ilustração daqui vale só no app; a pública fica no perfil de herói). */
-  illustrationsHint?: string;
+  /**
+   * Herói com o perfil ativo: um avatar só, editado em "Editar perfil" (topo da página). Aqui fica só
+   * um aviso com o atalho para lá, e salvar nunca envia o avatar.
+   */
+  avatarInHeroEditor?: boolean;
 };
 
 const knownAvatar = (url: string | null) => (url && (ILLUSTRATIONS.includes(url) || isStoredAvatarUrl(url, supabaseBaseUrl())) ? url : null);
@@ -32,8 +37,8 @@ const knownAvatar = (url: string | null) => (url && (ILLUSTRATIONS.includes(url)
 // Formulário de dados do perfil: nome, avatar (foto enviada pelo celular ou ilustração local), idioma
 // e tema. A foto é gravada pelas actions próprias (envio/remoção); aqui só sincroniza o estado para
 // "Salvar" não regravar um valor velho. Escolher uma ilustração e salvar substitui a foto. O avatar só
-// vai para a action se a pessoa mexeu nele aqui (o perfil do herói, na mesma página, também mexe nele).
-export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState, photoHint, illustrationsHint }: Props) {
+// vai para a action se a pessoa mexeu nele aqui. Herói ativo: o avatar fica em "Editar perfil".
+export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState, photoHint, avatarInHeroEditor = false }: Props) {
   const t = useTranslations("me.profile.data");
   const tl = useTranslations("common.languages");
   const tt = useTranslations("common.theme");
@@ -84,7 +89,7 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
     setError(null);
     startTransition(async () => {
       // sem mexer no avatar ele não vai: a action mantém o do banco
-      const result = await updateProfile({ displayName: name.trim(), ...(avatarTouched ? { avatarUrl: avatar } : {}), locale: lang, theme: mode });
+      const result = await updateProfile(profileDataInput({ name, avatar, avatarTouched, avatarHere: !avatarInHeroEditor, locale: lang, theme: mode }));
       if (!result.ok) {
         setError(t.has(`errors.${result.error}`) ? t(`errors.${result.error}`) : t("errors.generic"));
         return;
@@ -103,96 +108,95 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
         <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="nickname" disabled={pending} />
       </FormField>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-semibold text-fg">{t("avatar")}</legend>
-        <p className="type-caption text-fg-muted">{t("avatarHint")}</p>
-        <AvatarPhotoPicker
-          value={avatar}
-          name={name.trim() || displayName}
-          state={photoState}
-          onChange={(next) => {
-            // envio/remoção já aplicados no servidor: o avatar volta a estar em dia
-            setAvatar(next);
-            setSavedPhoto(isStoredAvatarUrl(next, supabaseBaseUrl()) ? next : null);
-            setAvatarTouched(false);
-          }}
-          disabled={pending}
-          hint={photoHint}
-        />
-        <p ref={illustrationsRef} tabIndex={-1} className="mt-2 text-sm font-semibold text-fg outline-none" id="avatar-illustrations-label">
-          {t("illustrations")}
-        </p>
-        {/* heróis: a foto é uma só, mas a ilustração do app e a da página pública são separadas */}
-        {illustrationsHint && (
-          <p id="avatar-illustrations-app-only" className="type-caption text-fg-muted" data-testid="avatar-illustrations-app-only">
-            {illustrationsHint}
+      {avatarInHeroEditor ? (
+        // um avatar só para o herói: foto e ilustração ficam em "Editar perfil", no topo da página
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-elevated p-4 sm:flex-row sm:items-center sm:justify-between" data-testid="avatar-in-hero-editor">
+          <p className="type-body-sm text-fg">{t("avatarInHeroEditor")}</p>
+          <Button type="button" variant="secondary" leadingIcon={<Pencil />} onClick={openHeroEditor} className="h-auto min-h-11 shrink-0 whitespace-normal py-2">
+            {t("openHeroEditor")}
+          </Button>
+        </div>
+      ) : (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="text-sm font-semibold text-fg">{t("avatar")}</legend>
+          <p className="type-caption text-fg-muted">{t("avatarHint")}</p>
+          <AvatarPhotoPicker
+            value={avatar}
+            name={name.trim() || displayName}
+            state={photoState}
+            onChange={(next) => {
+              // envio/remoção já aplicados no servidor: o avatar volta a estar em dia
+              setAvatar(next);
+              setSavedPhoto(isStoredAvatarUrl(next, supabaseBaseUrl()) ? next : null);
+              setAvatarTouched(false);
+            }}
+            disabled={pending}
+            hint={photoHint}
+          />
+          <p ref={illustrationsRef} tabIndex={-1} className="mt-2 text-sm font-semibold text-fg outline-none" id="avatar-illustrations-label">
+            {t("illustrations")}
           </p>
-        )}
-        {hasPhoto && <p className="type-caption text-fg-muted">{t("illustrationsWhenPhoto")}</p>}
-        <div
-          role="radiogroup"
-          aria-labelledby="avatar-illustrations-label"
-          aria-describedby={illustrationsHint ? "avatar-illustrations-app-only" : undefined}
-          className="grid grid-cols-4 gap-2 sm:grid-cols-8"
-        >
-          {ILLUSTRATIONS.map((src, index) => {
-            const selected = avatar === src;
-            const id = `avatar-${index + 1}`;
-            return (
-              <div key={src} className="relative">
-                <input
-                  id={id}
-                  type="radio"
-                  name="avatar"
-                  value={src}
-                  checked={selected}
-                  onChange={() => {
-                    setAvatar(src);
-                    setAvatarTouched(true);
-                  }}
+          {hasPhoto && <p className="type-caption text-fg-muted">{t("illustrationsWhenPhoto")}</p>}
+          <div role="radiogroup" aria-labelledby="avatar-illustrations-label" className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+            {ILLUSTRATIONS.map((src, index) => {
+              const selected = avatar === src;
+              const id = `avatar-${index + 1}`;
+              return (
+                <div key={src} className="relative">
+                  <input
+                    id={id}
+                    type="radio"
+                    name="avatar"
+                    value={src}
+                    checked={selected}
+                    onChange={() => {
+                      setAvatar(src);
+                      setAvatarTouched(true);
+                    }}
+                    disabled={pending}
+                    className="peer sr-only"
+                  />
+                  <label
+                    htmlFor={id}
+                    className={cn(
+                      "flex min-h-11 cursor-pointer items-center justify-center rounded-xl border-2 p-1 transition-colors",
+                      "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus",
+                      selected ? "border-accent bg-accent-soft" : "border-border hover:border-fg-subtle",
+                    )}
+                  >
+                    <Image src={src} alt={t("avatarOption", { n: index + 1 })} width={48} height={48} unoptimized className="size-12 rounded-full" />
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+          {/* região viva sempre montada: o aviso é anunciado ao aparecer */}
+          <div role="status" data-testid="avatar-discard-warning">
+            {discarding && savedPhoto && (
+              <div className="flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="flex items-start gap-2 text-sm text-fg">
+                  <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+                  {t("photoWillBeDeleted")}
+                </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  leadingIcon={<RotateCcw />}
                   disabled={pending}
-                  className="peer sr-only"
-                />
-                <label
-                  htmlFor={id}
-                  className={cn(
-                    "flex min-h-11 cursor-pointer items-center justify-center rounded-xl border-2 p-1 transition-colors",
-                    "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus",
-                    selected ? "border-accent bg-accent-soft" : "border-border hover:border-fg-subtle",
-                  )}
+                  onClick={() => {
+                    setAvatar(savedPhoto);
+                    setAvatarTouched(false);
+                    // o botão some com o aviso: o foco fica no título das ilustrações
+                    requestAnimationFrame(() => illustrationsRef.current?.focus());
+                  }}
                 >
-                  <Image src={src} alt={t("avatarOption", { n: index + 1 })} width={48} height={48} unoptimized className="size-12 rounded-full" />
-                </label>
+                  {t("keepPhoto")}
+                </Button>
               </div>
-            );
-          })}
-        </div>
-        {/* região viva sempre montada: o aviso é anunciado ao aparecer */}
-        <div role="status" data-testid="avatar-discard-warning">
-          {discarding && savedPhoto && (
-            <div className="flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="flex items-start gap-2 text-sm text-fg">
-                <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
-                {t("photoWillBeDeleted")}
-              </p>
-              <Button
-                type="button"
-                variant="secondary"
-                leadingIcon={<RotateCcw />}
-                disabled={pending}
-                onClick={() => {
-                  setAvatar(savedPhoto);
-                  setAvatarTouched(false);
-                  // o botão some com o aviso: o foco fica no título das ilustrações
-                  requestAnimationFrame(() => illustrationsRef.current?.focus());
-                }}
-              >
-                {t("keepPhoto")}
-              </Button>
-            </div>
-          )}
-        </div>
-      </fieldset>
+            )}
+          </div>
+        </fieldset>
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <FormField label={t("language")}>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Badge, Card, CardImage, PillarBadge } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
+import { HERO_DEFAULT_AVATAR, heroAvatarSrc } from "@/lib/avatar/constants";
 import type { CreatorCardData } from "@/lib/catalog/queries";
 import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ export async function CreatorCard({ creator, priority, className }: Props) {
         {/* Foto grande, como num perfil de rede social: ocupa boa parte da largura do card no celular. */}
         <div className="relative -mt-16 flex flex-1 flex-col gap-2 px-4 pb-4 sm:-mt-12">
           <span className="relative inline-flex size-32 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated shadow-sm sm:size-24">
-            <AvatarImage src={creator.avatar_url ?? "/placeholders/avatar-1.svg"} alt="" fallbackSrc="/placeholders/avatar-1.svg" fill sizes="128px" className="object-cover" />
+            <AvatarImage src={heroAvatarSrc(creator.avatar_url)} alt="" fallbackSrc={HERO_DEFAULT_AVATAR} fill sizes="128px" className="object-cover" />
           </span>
           <div>
             <h3 className="type-h3 text-fg">{creator.name}</h3>

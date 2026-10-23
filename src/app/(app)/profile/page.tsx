@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
-import { HeroProfileSection } from "@/components/creator/HeroProfileSection";
+import { HeroProfileEditor, HeroProfileHeader } from "@/components/creator/HeroProfileTop";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
@@ -14,6 +14,7 @@ import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
+import { heroAvatarSrc } from "@/lib/avatar/constants";
 import { appliesOn } from "@/lib/routine/reminders";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
@@ -25,13 +26,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("profile") };
 }
 
-// Perfil: portais no topo (quem tem papel de herói, fornecedor ou admin entra na área de trabalho com
-// o primeiro toque), "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado), "Continue seus
-// programas" depois da Evolução, atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar, nome,
-// e-mail, papéis, plano simulado), o perfil público do herói (papel creator/admin e linha em
-// creator_profiles; antes em /creator/profile), dados editáveis e atalhos.
+// Perfil: para o herói (papel creator/admin e linha em creator_profiles), o topo segue o Instagram:
+// cabeçalho público (foto, nome, selo, bio recolhida), Portais logo abaixo, "Editar perfil" e "Ver
+// página pública" com o editor recolhido (antes em /creator/profile). Depois, para todos: portais no
+// topo (quem não é herói), "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado),
+// Evolução, "Continue seus programas", atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar,
+// nome, e-mail, papéis, plano simulado), dados editáveis e atalhos.
 
-// Âncora da seção Dados: o perfil do herói aponta para cá (a foto é enviada só em Dados).
+// Âncora da seção Dados.
 const DATA_ANCHOR = "dados";
 
 // Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
@@ -127,36 +129,49 @@ export default async function ProfilePage() {
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
   const planKey = subscription.status === "anonymous" ? "unknown" : subscription.status;
+  // perfil ativo e vinculado (my_creator_id): só aí o editor do herói grava, e o avatar é um só
+  const heroActive = heroProfile !== null && creator.creatorId !== null;
+
+  const portalsNav = portals.length > 0 ? (
+    <nav aria-label={t("portals.title")} data-testid="profile-portals">
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {portals.map(({ role, href, icon: Icon }) => (
+          <li key={role}>
+            <Link
+              href={href}
+              data-testid={`profile-portal-${role}`}
+              className="flex min-h-16 items-center gap-3 rounded-2xl border border-accent/30 bg-surface px-4 py-3 shadow-sm transition-[border-color,box-shadow] hover:border-accent/60 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
+            >
+              <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-fg">
+                <Icon className="size-5" />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-sm font-semibold text-fg">{t(`portals.${role}`)}</span>
+                <span className="type-caption text-fg-muted">{t(`portals.hints.${role}`)}</span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  ) : null;
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
 
-      {/* Portais: primeira opção de toque da página, logo abaixo do título (só para quem tem o papel) */}
-      {portals.length > 0 ? (
-        <nav aria-label={t("portals.title")} data-testid="profile-portals">
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {portals.map(({ role, href, icon: Icon }) => (
-              <li key={role}>
-                <Link
-                  href={href}
-                  data-testid={`profile-portal-${role}`}
-                  className="flex min-h-16 items-center gap-3 rounded-2xl border border-accent/30 bg-surface px-4 py-3 shadow-sm transition-[border-color,box-shadow] hover:border-accent/60 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
-                >
-                  <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-fg">
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-sm font-semibold text-fg">{t(`portals.${role}`)}</span>
-                    <span className="type-caption text-fg-muted">{t(`portals.hints.${role}`)}</span>
-                  </span>
-                  <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ) : null}
+      {heroProfile ? (
+        // topo do herói: cabeçalho público → Portais (o Portal do herói segue o primeiro link) → Editar perfil
+        <div className="flex flex-col gap-4">
+          <HeroProfileHeader profile={heroProfile} />
+          {portalsNav}
+          <HeroProfileEditor profile={heroProfile} active={heroActive} photoState={photoState} />
+        </div>
+      ) : (
+        // Portais: primeira opção de toque da página, logo abaixo do título (só para quem tem o papel)
+        portalsNav
+      )}
 
       {/* Hoje: só o que o relógio mede (nada digitado); dado real só com a chave ligada e consentimento */}
       <TodaySection localDate={today} view={watchView} />
@@ -204,7 +219,8 @@ export default async function ProfilePage() {
 
       {/* Visão geral */}
       <section aria-label={t("title")} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start">
-        <Avatar src={profile?.avatar_url} name={displayName} size="xl" alt="" />
+        {/* herói ativo: um avatar só, o mesmo do cabeçalho e da página pública */}
+        <Avatar src={heroActive ? heroAvatarSrc(profile?.avatar_url) : profile?.avatar_url} name={displayName} size="xl" alt="" />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <h2 className="type-h2 truncate text-fg">{displayName}</h2>
           <p className="type-body-sm truncate text-fg-muted">
@@ -234,9 +250,6 @@ export default async function ProfilePage() {
         </form>
       </section>
 
-      {/* Seu perfil de herói: papel de herói (ou admin) e linha em creator_profiles (somente leitura se inativo) */}
-      {heroProfile ? <HeroProfileSection profile={heroProfile} active={creator.creatorId !== null} dataAnchor={DATA_ANCHOR} /> : null}
-
       {/* Dados */}
       <section id={DATA_ANCHOR} aria-labelledby="data-title" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
         <div className="flex items-start gap-3">
@@ -257,7 +270,8 @@ export default async function ProfilePage() {
           theme={theme}
           photoState={photoState}
           photoHint={heroProfile ? tcp("photoHint") : undefined}
-          illustrationsHint={heroProfile ? t("data.illustrationsAppOnly") : undefined}
+          // herói ativo: um avatar só, em "Editar perfil"; inativo ou não herói: o avatar fica aqui
+          avatarInHeroEditor={heroActive}
         />
       </section>
 

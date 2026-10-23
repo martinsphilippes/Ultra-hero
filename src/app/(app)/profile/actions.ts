@@ -5,9 +5,10 @@ import { z } from "zod";
 import { setLocaleAction } from "@/i18n/actions";
 import { locales } from "@/i18n/config";
 import { trackEvent } from "@/lib/analytics/track";
-import { getUser } from "@/lib/auth/session";
+import { getRoles, getUser } from "@/lib/auth/session";
+import { heroProfileFor } from "@/components/creator/hero-access";
 import { ILLUSTRATION_RE } from "@/lib/avatar/constants";
-import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { acceptsAvatarChoice, isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { recalculateRecommendations } from "@/lib/recommendations/recalculate";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
@@ -64,8 +65,11 @@ export async function syncTimezone(input: { timezone: string }): Promise<Result>
 // ---------------------------------------------------------------- dados do perfil
 // Avatar: ilustração local, nenhum, ou a foto enviada (0031). A foto só entra pelo envio
 // (avatar-actions): aqui ela só é aceita se já é a atual da própria pessoa (salvar sem trocar).
-// avatarUrl ausente = a pessoa não mexeu no avatar: o do banco fica (o formulário pode estar com um
-// valor velho, ex.: o herói trocou a ilustração pública na mesma página e a foto saiu do ar).
+// avatarUrl ausente = a pessoa não mexeu no avatar: o do banco fica (a tela Dados do herói ativo
+// nunca o envia: o avatar dele fica em "Editar perfil").
+// Herói ativo (papel e perfil ativo vinculado): um avatar só, então um avatar que chegue aqui (POST
+// direto, aba antiga) vale também no perfil público. Ordem: app primeiro, depois o perfil público; se
+// a segunda falhar, o avatar do app volta ao anterior e a tela avisa (os dois nunca ficam diferentes).
 export async function updateProfile(input: { displayName: string; avatarUrl?: string | null; locale: string; theme: string }): Promise<Result> {
   const base = supabaseBaseUrl();
   const parsed = z
@@ -89,20 +93,43 @@ export async function updateProfile(input: { displayName: string; avatarUrl?: st
     const avatarChanged = parsed.data.avatarUrl !== undefined;
     let previous: string | null = null;
     let next: string | null = null;
+    let hero: { id: string; avatar_url: string | null } | null = null;
     if (avatarChanged) {
-      const { data: current } = await supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle();
+      const [{ data: current }, { data: linked }, roles] = await Promise.all([
+        supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle(),
+        supabase.from("creator_profiles").select("id, status, avatar_url").eq("user_id", user.id).maybeSingle(),
+        getRoles(),
+      ]);
       previous = current?.avatar_url ?? null;
       next = parsed.data.avatarUrl ?? null;
-      if (isStoredAvatarUrl(next, base) && (next !== previous || storedAvatarOwner(next, base) !== user.id)) return { ok: false, error: "invalid_input" };
+      if (!acceptsAvatarChoice(next, previous, user.id, base)) return { ok: false, error: "invalid_input" };
+      // mesma regra da tela: herói (ou admin) com o perfil ativo tem um avatar só
+      if (linked && linked.status === "active" && heroProfileFor(roles.map((r) => r.role), linked)) hero = { id: linked.id, avatar_url: linked.avatar_url };
     }
     const { error } = await supabase
       .from("profiles")
       .update(avatarChanged ? { display_name: parsed.data.displayName, avatar_url: next } : { display_name: parsed.data.displayName })
       .eq("id", user.id);
     if (error) return fail(error.message);
+    if (hero && hero.avatar_url !== next) {
+      const { error: heroError } = await supabase.from("creator_profiles").update({ avatar_url: next }).eq("id", hero.id);
+      if (heroError) {
+        // desfaz só o avatar do app: o nome já foi salvo, o avatar fica como estava nos dois lados
+        const { error: undoError } = await supabase.from("profiles").update({ avatar_url: previous }).eq("id", user.id);
+        if (undoError) console.warn("[profile] avatar do app não voltou ao anterior:", undoError.message);
+        revalidatePath("/profile");
+        // sai antes do idioma e do tema: o aviso (avatar_not_saved) diz que só o nome foi salvo
+        return { ok: false, error: "avatar_not_saved" };
+      }
+    }
     // Trocou a foto por ilustração (ou nenhuma): a foto sai do ar também no perfil de herói.
-    if (avatarChanged && base && previous !== next && storedAvatarOwner(previous, base) === user.id && hasAdminClient()) {
-      await releaseStoredAvatar(createAdminClient(), { url: previous as string, baseUrl: base });
+    const released = avatarChanged ? Array.from(new Set([previous, hero?.avatar_url ?? null])).filter((url): url is string => url !== next && storedAvatarOwner(url, base) === user.id) : [];
+    if (base && released.length > 0 && hasAdminClient()) {
+      const admin = createAdminClient();
+      for (const url of released) await releaseStoredAvatar(admin, { url, baseUrl: base });
+      revalidatePath("/creator", "layout");
+      revalidatePath("/personalities", "layout");
+    } else if (hero) {
       revalidatePath("/creator", "layout");
       revalidatePath("/personalities", "layout");
     }
