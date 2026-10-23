@@ -32,6 +32,7 @@ type Result = { data: unknown; error: { message: string; code?: string } | null 
 
 const state = vi.hoisted(() => ({
   user: null as { id: string } | null,
+  roles: ["consumer", "creator"] as string[],
   hasAdmin: true,
   profile: { avatar_url: null as string | null },
   hero: null as { id?: string; slug: string; status?: string; user_id?: string | null; avatar_url: string | null } | null,
@@ -113,7 +114,7 @@ function client(kind: "user" | "admin") {
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: (path: string) => void state.revalidated.push(path) }));
-vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, requireRole: async () => ({ user: { id: "ad000000-0000-4000-8000-000000000001" } }) }));
+vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, getRoles: async () => state.roles.map((role) => ({ role })), requireRole: async () => ({ user: { id: "ad000000-0000-4000-8000-000000000001" } }) }));
 // dependências de ops-actions.ts (admin) que não importam aqui: mensagens viram a própria chave
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => Object.assign((key: string) => key, { has: () => true }) }));
@@ -159,6 +160,7 @@ function form(data: Uint8Array, type = "image/webp") {
 beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = BASE;
   state.user = { id: ids.USER };
+  state.roles = ["consumer", "creator"];
   state.hasAdmin = true;
   state.profile = { avatar_url: null };
   state.hero = null;
@@ -528,6 +530,14 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     state.user = null;
     expect(await updateCreatorProfile(values())).toEqual({ ok: false, error: "unauthenticated" });
     expect(state.writes).toEqual([]);
+  });
+
+  it("sem o papel de herói (ou admin) recusa antes de ler ou gravar, mesmo com o perfil vinculado e ativo", async () => {
+    state.roles = ["consumer"];
+    expect(await updateCreatorProfile(values())).toEqual({ ok: false, error: "forbidden" });
+    expect(state.writes).toEqual([]);
+    state.roles = ["consumer", "admin"];
+    expect(await updateCreatorProfile(values())).toEqual({ ok: true });
   });
 
   it("formulário: sem mexer no avatar ele sai do envio; mexendo, vai junto", () => {
