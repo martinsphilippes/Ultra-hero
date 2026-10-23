@@ -4,7 +4,7 @@ import { RotateCcw, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { updateCreatorProfile } from "@/app/creator/profile/actions";
 import { useValidationMessage } from "@/components/editors/content/fields";
 import { AvatarPhotoPicker } from "@/components/me/AvatarPhotoPicker";
@@ -23,6 +23,8 @@ type Props = {
   /** Mostra o envio de foto. No /profile fica false: a foto é enviada em "Dados" (uma só na página). */
   showPhotoPicker?: boolean;
   photoState?: AvatarPhotoState;
+  /** Sem o envio de foto: nota no lugar dele (onde enviar a foto), ligada ao grupo do avatar. */
+  photoNote?: ReactNode;
 };
 
 const AVATARS = ILLUSTRATIONS;
@@ -39,12 +41,13 @@ type ImageRadiosProps = {
   error?: string;
   optionLabel: (n: number) => string;
   noneLabel: string;
+  describedBy?: string;
 };
 
 // Grupo de rádios com miniatura (avatar redondo ou capa 16:9). Fora do formulário para não remontar a cada render.
-function ImageRadios({ baseId, name, label, options, value, onChange, round = false, error, optionLabel, noneLabel }: ImageRadiosProps) {
+function ImageRadios({ baseId, name, label, options, value, onChange, round = false, error, optionLabel, noneLabel, describedBy }: ImageRadiosProps) {
   return (
-    <div role="radiogroup" aria-labelledby={`${baseId}-${name}`} className="flex flex-col gap-2">
+    <div role="radiogroup" aria-labelledby={`${baseId}-${name}`} aria-describedby={describedBy} className="flex flex-col gap-2">
       <span id={`${baseId}-${name}`} className="text-sm font-semibold text-fg">
         {label}
       </span>
@@ -79,7 +82,7 @@ function ImageRadios({ baseId, name, label, options, value, onChange, round = fa
 }
 
 // Formulário do perfil da personalidade: só as colunas liberadas (headline, bio, avatar, capa, redes).
-export function CreatorProfileForm({ initial, pillars, readOnly = false, name, showPhotoPicker = true, photoState }: Props) {
+export function CreatorProfileForm({ initial, pillars, readOnly = false, name, showPhotoPicker = true, photoState, photoNote }: Props) {
   const t = useTranslations("creator.profile");
   const te = useTranslations("creator.errors");
   const tc = useTranslations("common");
@@ -189,6 +192,12 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, s
               hint={t("photoHint")}
             />
           )}
+          {/* no /profile a foto é enviada em "Dados": a nota fica no lugar do envio, colada no grupo do avatar */}
+          {!showPhotoPicker && photoNote && (
+            <p id={`${baseId}-photo-note`} className="type-body-sm text-fg-muted" data-testid="profile-hero-photo-note">
+              {photoNote}
+            </p>
+          )}
           <div ref={keepAnchorRef} tabIndex={-1} className="outline-none">
             <ImageRadios
               baseId={baseId}
@@ -204,6 +213,7 @@ export function CreatorProfileForm({ initial, pillars, readOnly = false, name, s
               error={tv(errors.avatar_url)}
               optionLabel={(n) => t("optionN", { n })}
               noneLabel={hasPhoto ? t("photoInUse") : t("noneSelected")}
+              describedBy={!showPhotoPicker && photoNote ? `${baseId}-photo-note` : undefined}
             />
           </div>
           {/* região viva sempre montada: o aviso é anunciado ao aparecer */}

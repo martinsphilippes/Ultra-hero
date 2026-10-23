@@ -81,19 +81,6 @@ export async function HeroProfileSection({ profile, active, dataAnchor }: Props)
       )}
 
       <p className="type-caption text-fg-muted">{t("lockedFields")}</p>
-      {/* uma foto só na página: ela é enviada em "Dados" e já vale no avatar público */}
-      <p className="type-body-sm text-fg-muted" data-testid="profile-hero-photo-note">
-        {t.rich("photoInData", {
-          link: (chunks) => (
-            <a
-              href={`#${dataAnchor}`}
-              className="inline-flex min-h-11 items-center font-semibold text-accent-text underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            >
-              {chunks}
-            </a>
-          ),
-        })}
-      </p>
 
       <CreatorProfileForm
         initial={{
@@ -107,6 +94,17 @@ export async function HeroProfileSection({ profile, active, dataAnchor }: Props)
         readOnly={!active}
         name={profile.name}
         showPhotoPicker={false}
+        // uma foto só na página: ela é enviada em "Dados" e já vale no avatar público
+        photoNote={t.rich("photoInData", {
+          link: (chunks) => (
+            <a
+              href={`#${dataAnchor}`}
+              className="inline-flex min-h-11 items-center font-semibold text-accent-text underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              {chunks}
+            </a>
+          ),
+        })}
       />
 
       {chef && (

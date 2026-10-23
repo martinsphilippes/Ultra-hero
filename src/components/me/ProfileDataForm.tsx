@@ -23,6 +23,8 @@ type Props = {
   photoState: AvatarPhotoState;
   /** Texto de apoio da foto (heróis: a mesma foto vale na página pública). */
   photoHint?: string;
+  /** Legenda das ilustrações (heróis: a ilustração daqui vale só no app; a pública fica no perfil de herói). */
+  illustrationsHint?: string;
 };
 
 const knownAvatar = (url: string | null) => (url && (ILLUSTRATIONS.includes(url) || isStoredAvatarUrl(url, supabaseBaseUrl())) ? url : null);
@@ -31,7 +33,7 @@ const knownAvatar = (url: string | null) => (url && (ILLUSTRATIONS.includes(url)
 // e tema. A foto é gravada pelas actions próprias (envio/remoção); aqui só sincroniza o estado para
 // "Salvar" não regravar um valor velho. Escolher uma ilustração e salvar substitui a foto. O avatar só
 // vai para a action se a pessoa mexeu nele aqui (o perfil do herói, na mesma página, também mexe nele).
-export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState, photoHint }: Props) {
+export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoState, photoHint, illustrationsHint }: Props) {
   const t = useTranslations("me.profile.data");
   const tl = useTranslations("common.languages");
   const tt = useTranslations("common.theme");
@@ -120,8 +122,19 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
         <p ref={illustrationsRef} tabIndex={-1} className="mt-2 text-sm font-semibold text-fg outline-none" id="avatar-illustrations-label">
           {t("illustrations")}
         </p>
+        {/* heróis: a foto é uma só, mas a ilustração do app e a da página pública são separadas */}
+        {illustrationsHint && (
+          <p id="avatar-illustrations-app-only" className="type-caption text-fg-muted" data-testid="avatar-illustrations-app-only">
+            {illustrationsHint}
+          </p>
+        )}
         {hasPhoto && <p className="type-caption text-fg-muted">{t("illustrationsWhenPhoto")}</p>}
-        <div role="radiogroup" aria-labelledby="avatar-illustrations-label" className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+        <div
+          role="radiogroup"
+          aria-labelledby="avatar-illustrations-label"
+          aria-describedby={illustrationsHint ? "avatar-illustrations-app-only" : undefined}
+          className="grid grid-cols-4 gap-2 sm:grid-cols-8"
+        >
           {ILLUSTRATIONS.map((src, index) => {
             const selected = avatar === src;
             const id = `avatar-${index + 1}`;

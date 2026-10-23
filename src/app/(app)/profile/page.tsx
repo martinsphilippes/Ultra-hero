@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
 import { getMyCreator } from "@/app/creator/_lib/creator";
+import { heroProfileFor } from "@/components/creator/hero-access";
 import { HeroProfileSection } from "@/components/creator/HeroProfileSection";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
@@ -27,8 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // Perfil: portais no topo (quem tem papel de herói, fornecedor ou admin entra na área de trabalho com
 // o primeiro toque), "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado), "Continue seus
 // programas" depois da Evolução, atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar, nome,
-// e-mail, papéis, plano simulado), o perfil público do herói (quem tem linha em creator_profiles; antes
-// em /creator/profile), dados editáveis e atalhos.
+// e-mail, papéis, plano simulado), o perfil público do herói (papel creator/admin e linha em
+// creator_profiles; antes em /creator/profile), dados editáveis e atalhos.
 
 // Âncora da seção Dados: o perfil do herói aponta para cá (a foto é enviada só em Dados).
 const DATA_ANCHOR = "dados";
@@ -77,7 +78,11 @@ export default async function ProfilePage() {
     getAvatarPhotoState(),
     getMyCreator(),
   ]);
-  const heroProfile = creator.profile;
+  // só com o papel de herói (ou admin), como no portal: a linha em creator_profiles sozinha não basta
+  const heroProfile = heroProfileFor(
+    roles.map((r) => r.role),
+    creator.profile,
+  );
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
@@ -229,7 +234,7 @@ export default async function ProfilePage() {
         </form>
       </section>
 
-      {/* Seu perfil de herói: só para quem tem linha em creator_profiles (somente leitura se inativo) */}
+      {/* Seu perfil de herói: papel de herói (ou admin) e linha em creator_profiles (somente leitura se inativo) */}
       {heroProfile ? <HeroProfileSection profile={heroProfile} active={creator.creatorId !== null} dataAnchor={DATA_ANCHOR} /> : null}
 
       {/* Dados */}
@@ -252,6 +257,7 @@ export default async function ProfilePage() {
           theme={theme}
           photoState={photoState}
           photoHint={heroProfile ? tcp("photoHint") : undefined}
+          illustrationsHint={heroProfile ? t("data.illustrationsAppOnly") : undefined}
         />
       </section>
 

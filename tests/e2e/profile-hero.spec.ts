@@ -46,6 +46,20 @@ test.describe("perfil do herói no /profile", () => {
     await expect(page.locator("#dados").getByTestId("avatar-photo")).toContainText("aparece no seu avatar e na sua página pública de herói");
     const toData = hero.getByTestId("profile-hero-photo-note").getByRole("link", { name: "Dados" });
     await expect(toData).toHaveAttribute("href", "#dados");
+    // a nota fica no lugar do envio de foto e descreve o grupo do avatar público (leitor de tela ouve)
+    const heroAvatars = hero.getByRole("radiogroup", { name: "Avatar da página pública (ilustração)" });
+    await expect(heroAvatars).toHaveAccessibleDescription(/A foto da sua página pública é a mesma do app/);
+    const gap = await page.evaluate(() => {
+      const note = document.querySelector("[data-testid='profile-hero-photo-note']")!.getBoundingClientRect();
+      const group = document.querySelector("#perfil-publico [role='radiogroup']")!.getBoundingClientRect();
+      return group.top - note.bottom;
+    });
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThan(80);
+    // em Dados, a ilustração vale só no app (a pública fica no perfil de herói)
+    await expect(page.locator("#dados").getByRole("radiogroup", { name: "Ilustrações" })).toHaveAccessibleDescription(
+      "Vale só para o avatar do app. A ilustração da página pública fica em Seu perfil de herói.",
+    );
 
     // ids únicos com os dois formulários juntos (avatar-1, theme-label, avatar-illustrations-label…)
     const duplicates = await page.evaluate(() => {
@@ -104,5 +118,6 @@ test.describe("perfil do herói no /profile", () => {
     await expect(page.getByTestId("profile-hero")).toHaveCount(0);
     await expect(page.locator("#perfil-publico")).toHaveCount(0);
     await expect(page.locator("#dados").getByTestId("avatar-photo")).not.toContainText("página pública de herói");
+    await expect(page.getByTestId("avatar-illustrations-app-only")).toHaveCount(0);
   });
 });
