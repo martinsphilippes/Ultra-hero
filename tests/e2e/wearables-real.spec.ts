@@ -69,6 +69,7 @@ test.describe("conta demo: relógio simulado intacto e sem o fluxo de conectar",
     const devices = page.getByTestId("devices-page");
     await expect(devices).toHaveAttribute("data-state", "demo");
     await expect(devices).toContainText("Contas de demonstração usam o relógio simulado");
+    await expect(devices).not.toContainText("Conecte um relógio");
     await expect(page.locator('a[href^="/profile/devices/connect/"]')).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Desconectar|Retirar consentimento/ })).toHaveCount(0);
 

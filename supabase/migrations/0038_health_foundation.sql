@@ -27,6 +27,8 @@ do $$ begin
     create role health_ingest nologin noinherit nobypassrls;
   end if;
 end $$;
+-- se o papel já existia (papéis são do cluster), volta a ficar sem login e sem herança (o S43 confere)
+alter role health_ingest nologin noinherit;
 grant usage on schema health to health_ingest;
 
 -- Tabelas novas no schema health não herdam grants. Funções: o EXECUTE de PUBLIC é padrão global
@@ -43,14 +45,17 @@ create type health.conn_status as enum ('pending', 'active', 'token_expired', 'c
 -- ---------------------------------------------------------------- configuração (só o dono lê)
 -- min_age: regra de idade A DEFINIR (Q7) — padrão 18 com autodeclaração, configurável aqui.
 -- subject_secret: liga a prova de consentimento à pessoa sem guardar o id depois da exclusão.
+-- connect_open: trava do banco para conceder consentimento enquanto WEARABLES_REAL_ENABLED estiver
+-- desligada (a RPC é executável por authenticated e a chave anon é pública). Liga no roteiro de ligar.
 create table health.config (
-  key text primary key check (key in ('consent_version', 'min_age', 'min_age_rule_pending', 'subject_secret')),
+  key text primary key check (key in ('consent_version', 'min_age', 'min_age_rule_pending', 'subject_secret', 'connect_open')),
   value text not null
 );
 insert into health.config (key, value) values
   ('consent_version', '2026-10-draft-1'),
   ('min_age', '18'),
   ('min_age_rule_pending', 'true'),
+  ('connect_open', 'false'),
   ('subject_secret', encode(extensions.gen_random_bytes(32), 'hex'));
 
 -- ---------------------------------------------------------------- catálogo (espelho de src/lib/wearables/catalog.ts)
@@ -726,6 +731,8 @@ declare
 begin
   if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   if health.is_demo_user(v_uid) then raise exception 'demo_account_cannot_connect' using errcode = '42501'; end if;
+  -- chave desligada no banco: ninguém aceita o texto em rascunho pela API direta (reduzir/retirar seguem livres)
+  if health.cfg('connect_open') is distinct from 'true' then raise exception 'health_disabled' using errcode = '42501'; end if;
   if not health.recent_login(300) then raise exception 'reauth_required' using errcode = '42501'; end if;
   if not coalesce(p_age_confirmed, false) then raise exception 'health_age_not_confirmed' using errcode = '22023'; end if;
   if p_version is distinct from health.cfg('consent_version') then

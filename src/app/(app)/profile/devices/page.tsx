@@ -32,9 +32,10 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
   const header = <PageHeader title={t("title")} description={t("description")} backHref="/profile" backLabel={t("back")} />;
   const dateFmt = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
+  // sem "Conecte um relógio…": aqui não há o que conectar (demo ou chave desligada)
   const off = (state: "demo" | "off") => (
     <div className="flex flex-col gap-6" data-testid="devices-page" data-state={state}>
-      {header}
+      <PageHeader title={t("title")} backHref="/profile" backLabel={t("back")} />
       <p role="note" className="flex items-start gap-2 rounded-2xl border border-border bg-surface p-5 type-body-sm text-fg">
         <Info className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
         {state === "demo" ? t("demo") : t("off")}

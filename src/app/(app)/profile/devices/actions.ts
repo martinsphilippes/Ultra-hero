@@ -23,6 +23,7 @@ export type Result<T extends object = Record<never, never>> = ({ ok: true } & T)
 
 const ERRORS: Record<string, string> = {
   demo_account_cannot_connect: "demo",
+  health_disabled: "unavailable",
   reauth_required: "reauth",
   health_age_not_confirmed: "age",
   health_consent_version_outdated: "version",

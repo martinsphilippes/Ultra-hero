@@ -44,6 +44,7 @@ const applied = new Set(
   ((await query("select name from supabase_migrations.schema_migrations")) ?? []).map((r) => r.name),
 );
 
+let appliedNow = 0;
 for (const file of files) {
   const name = file.replace(/\.sql$/, "");
   if (applied.has(name)) {
@@ -58,6 +59,8 @@ for (const file of files) {
   }
   console.log(`${dry ? "(dry) " : ""}> ${name} (${sql.length} bytes)`);
   if (dry) continue;
+  // version = segundo UTC (chave primária): duas migrações no mesmo segundo colidiriam (ex.: 0038 → 0039)
+  if (appliedNow++ > 0) await new Promise((r) => setTimeout(r, 1100));
   const started = Date.now();
   // transação única: migration + registro
   const wrapped = `begin;\n${sql}\ninsert into supabase_migrations.schema_migrations (version, name, statements) values (to_char(clock_timestamp() at time zone 'utc', 'YYYYMMDDHH24MISS'), '${name}', array['applied via scripts/db/remote-apply.mjs']);\ncommit;`;

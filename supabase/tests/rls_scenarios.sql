@@ -3326,8 +3326,8 @@ select tests.ok('S43 RLS ligada em todas as tabelas do schema health (12)',
 select tests.ok('S43 políticas do schema health só para health_ingest',
   (select count(*) from pg_policies where schemaname = 'health' and roles <> '{health_ingest}') = 0
   and (select count(*) from pg_policies where schemaname = 'health') = 11);
-select tests.ok('S43 health_ingest sem BYPASSRLS, sem superusuário, sem herança; config e credenciais da marca fora do alcance de quem não é ele',
-  (select not rolbypassrls and not rolsuper and not rolinherit and not rolcreaterole from pg_roles where rolname = 'health_ingest')
+select tests.ok('S43 health_ingest sem LOGIN, sem BYPASSRLS, sem superusuário, sem herança; config e credenciais da marca fora do alcance de quem não é ele',
+  (select not rolbypassrls and not rolsuper and not rolinherit and not rolcreaterole and not rolcanlogin from pg_roles where rolname = 'health_ingest')
   and not has_table_privilege('health_ingest', 'health.config', 'select')
   and has_table_privilege('health_ingest', 'health.credentials', 'select') and not has_table_privilege('health_ingest', 'health.audit', 'select')
   and not has_table_privilege('health_ingest', 'health.ingest_events', 'delete'));
@@ -3369,6 +3369,16 @@ select tests.ok('S44 sem consentimento: my_health_consent nulo; texto vigente em
   public.my_health_consent() is null
   and (public.health_consent_text('en') ->> 'version') = '2026-10-draft-1' and (public.health_consent_text('en') ->> 'body') like 'Consent for your watch data%'
   and (public.health_consent_text('en') ->> 'min_age')::int = 18 and (public.health_consent_text('en') ->> 'min_age_rule_pending')::boolean);
+-- chave desligada no banco (estado de produção até a virada): nem com login recente se concede
+select tests.su();
+select tests.ok('S44 connect_open nasce false', (select value = 'false' from health.config where key = 'connect_open'));
+select tests.login_recent('10000000-0000-4000-8000-000000000043', 's43a@test.local');
+select tests.expect_error('S44 com connect_open = false o banco recusa conceder pela RPC direta (texto em rascunho)', $q$select public.health_consent_grant('2026-10-draft-1', 'pt-BR', array['sleep', 'heart'], true)$q$, 'health_disabled');
+select tests.su();
+select tests.ok('S44 nada gravado com a chave desligada (consents e audit vazios)',
+  not exists (select 1 from health.consents) and not exists (select 1 from health.audit));
+-- daqui em diante, cenário "ligado" (roteiro de ligar)
+update health.config set value = 'true' where key = 'connect_open';
 select tests.login('10000000-0000-4000-8000-000000000043', 's43a@test.local');
 select tests.expect_error('S44 sem login recente (amr ≤ 5 min) o banco recusa conceder, mesmo chamando a RPC direto', $q$select public.health_consent_grant('2026-10-draft-1', 'pt-BR', array['sleep'], true)$q$, 'reauth_required');
 select tests.su();
@@ -3495,10 +3505,13 @@ select tests.expect_error_as('S46 service_role não executa my_health_today (bar
 select tests.expect_error_as('S46 service_role não lê sono (42501)', 'service_role', $q$select count(*) from health.sleep_sessions$q$, '42501');
 
 -- ================================================================ S47 · Reduzir categorias apaga só o que saiu
+-- reduzir nunca é bloqueado, nem com a chave desligada no banco
+update health.config set value = 'false' where key = 'connect_open';
 select tests.login_recent('10000000-0000-4000-8000-000000000043', 's43a@test.local');
 select tests.expect_error('S47 reduzir não amplia (ampliar exige novo aceite)', $q$select public.health_consent_reduce(array['sleep', 'workout'])$q$, 'health_consent_expand_requires_grant');
 create temporary table s47_red as select public.health_consent_reduce(array['sleep']) as r;
 select tests.su();
+update health.config set value = 'true' where key = 'connect_open';
 select tests.ok('S47 retirar "coração" apaga a FC de repouso e mantém o sono; prova da versão anterior preservada',
   (select r -> 'categories' = '["sleep"]'::jsonb from s47_red)
   and not exists (select 1 from health.daily_metrics where user_id = '10000000-0000-4000-8000-000000000043' and metric_code = 'hr_resting')
@@ -3547,9 +3560,12 @@ select health.credentials_store((select id from s49_conn), '\x0a0b'::bytea, '\x0
 select health.apply_batch((select id from s49_conn), '{"daily": [{"date": "2026-10-20", "code": "readiness_vendor", "value": 81, "scale": "oura_readiness", "vendor": true}],
   "workouts": [{"ext": "wk-1", "date": "2026-10-20", "sport": "run", "origin": "auto_detected", "start": "2026-10-20T10:00:00Z", "end": "2026-10-20T10:40:00Z", "dur": 2400}]}'::jsonb, 1::smallint);
 select tests.su();
+-- retirar nunca é bloqueado, nem com a chave desligada no banco
+update health.config set value = 'false' where key = 'connect_open';
 select tests.login_recent('10000000-0000-4000-8000-000000000044', 's43b@test.local');
 create temporary table s49_rev as select public.health_consent_revoke() as r;
 select tests.su();
+update health.config set value = 'true' where key = 'connect_open';
 select tests.ok('S49 retirar o consentimento desconecta, apaga tudo, enfileira a revogação e fecha a prova',
   (select (r ->> 'revoked')::boolean and jsonb_array_length(r -> 'connection_refs') = 1 from s49_rev)
   and not exists (select 1 from health.connections where user_id = '10000000-0000-4000-8000-000000000044')

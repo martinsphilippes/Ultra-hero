@@ -23,6 +23,8 @@ describe.skipIf(!ADMIN_URL)("store.ts contra o banco local (health_ingest)", () 
     await admin`insert into auth.users (id, email) values (${UID}, 'store-it@test.local')`;
     // login recente (amr com o horário do login): o banco exige ≤ 5 min para conceder
     const claims = { sub: UID, role: "authenticated", amr: [{ method: "password", timestamp: Math.floor(Date.now() / 1000) - 30 }] };
+    // cenário "ligado" (roteiro de ligar): com connect_open = 'false' o banco recusa conceder (health_disabled)
+    await admin`update health.config set value = 'true' where key = 'connect_open'`;
     await admin.begin(async (tx) => {
       await tx`select set_config('request.jwt.claims', ${JSON.stringify(claims)}, true)`;
       await tx`set local role authenticated`;
@@ -35,6 +37,7 @@ describe.skipIf(!ADMIN_URL)("store.ts contra o banco local (health_ingest)", () 
     await admin`delete from auth.users where id = ${UID}`;
     await admin`delete from health.consents where user_id is null and subject_ref = health.subject_ref_of(${UID}::uuid)`;
     await admin`delete from health.pending_revocations where provider_user_id = 'garmin-user-1'`;
+    await admin`update health.config set value = 'false' where key = 'connect_open'`;
     await admin.end();
     const { healthDb } = await import("@/lib/health/db");
     await healthDb().end();
