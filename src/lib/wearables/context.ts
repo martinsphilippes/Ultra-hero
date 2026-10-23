@@ -2,12 +2,17 @@
 // "Conectar relógio" (nenhuma marca ligada ainda) e, só quando pede, o "Exemplo" simulado, que
 // nunca se mistura ao perfil da pessoa. Puro: a página passa usuário, papéis, fuso e o "agora".
 
+import type { HealthProvider } from "@/lib/health/types";
 import { demoPersonaFor, generateWatchDay, type DemoPersonaKey, type WatchSnapshot } from "./demo";
 
 export type WatchView =
   | { kind: "demo"; persona: DemoPersonaKey; snapshot: WatchSnapshot }
   | { kind: "example"; persona: "example"; snapshot: WatchSnapshot }
-  | { kind: "connect" };
+  // relógio real (schema health), só com WEARABLES_REAL_ENABLED=1 e conta real conectada
+  | { kind: "real"; provider: HealthProvider; snapshot: WatchSnapshot; lastSync: { date: string; at: number } | null; stale: boolean }
+  | { kind: "syncing"; provider: HealthProvider; deviceName: string }
+  // `providers`: marcas ligadas neste ambiente (vazio = todas "Em breve", como hoje)
+  | { kind: "connect"; providers?: readonly HealthProvider[] };
 
 type UserLike = { email?: string | null; app_metadata?: Record<string, unknown> | null };
 

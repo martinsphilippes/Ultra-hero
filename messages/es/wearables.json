@@ -131,7 +131,8 @@
     "samsung": "Samsung: Energy Score, Vascular Load y Bedtime Guidance; por Health Connect tampoco llegan VFC, FC en reposo, temperatura, respiración y pisos.",
     "google": "Google: Daily Readiness, Cardio Load, Target Load y Health Guardian.",
     "whoop": "WHOOP: Healthspan, Stress Monitor y BP Insights.",
-    "oura": "Oura: Symptom Radar."
+    "oura": "Oura: Symptom Radar.",
+    "polar": "Polar: Recovery Pro y las orientaciones de entrenamiento del día quedan en la app Polar Flow."
   },
   "regulated": {
     "ecg": "Electrocardiograma (ECG)",

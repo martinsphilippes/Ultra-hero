@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Badge, PageHeader } from "@/components/ui";
+import { wearablesRealEnabled } from "@/lib/health/config";
+import { providerMeasures } from "@/lib/health/providers";
 import { DETAIL_SECTIONS, EXCLUDED_MANUAL, EXCLUDED_ON_DEMAND, EXCLUDED_REGULATED, metricsForModel, VENDOR_ONLY_BRANDS } from "@/lib/wearables/catalog";
 import { loadWatchView, wantsExample } from "../view";
 
@@ -17,19 +19,34 @@ const linkClass = "font-semibold text-accent-text underline-offset-2 hover:under
 export default async function TodayAboutPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const search = await searchParams;
   const example = wantsExample(search.exemplo);
-  // Conta real sem exemplo também vê a lista do modelo do exemplo (rotulado "Exemplo").
-  const view = await loadWatchView(example ? "/profile/today/about?exemplo=1" : "/profile/today/about", true);
+  const path = example ? "/profile/today/about?exemplo=1" : "/profile/today/about";
+  // Relógio conectado (chave ligada): o modelo real. Sem relógio (ou ainda sincronizando), a lista
+  // do modelo do exemplo, rotulada "Exemplo" — mas a introdução e a gestão seguem a situação da pessoa.
+  const own = await loadWatchView(path, example);
+  const view = own.kind === "connect" || own.kind === "syncing" ? await loadWatchView(path, true) : own;
   const [t, tt, tw] = await Promise.all([getTranslations("me.today.about"), getTranslations("me.today"), getTranslations("wearables")]);
-  if (view.kind === "connect") return null;
+  if (view.kind === "connect" || view.kind === "syncing") return null;
   const snapshot = view.snapshot;
-  const measured = metricsForModel(snapshot.model);
+  const real = view.kind === "real";
+  // conectado (com dado ou ainda sincronizando): consentimento gravado, a gestão aparece
+  const connected = real || own.kind === "syncing";
+  // "não lê nenhum relógio" só vale para conta demo ou com a chave desligada
+  const intro = real
+    ? tt("real.aboutIntro", { device: snapshot.deviceName })
+    : own.kind === "syncing"
+      ? tt("real.aboutIntro", { device: own.deviceName })
+      : view.kind !== "demo" && wearablesRealEnabled()
+        ? t("introAvailable")
+        : t("intro");
+  // relógio real: só o que o adaptador da marca grava (e os índices calculados a partir disso)
+  const measured = view.kind === "real" ? metricsForModel(snapshot.model).filter((d) => d.mode === "C" || providerMeasures(view.provider).has(d.code)) : metricsForModel(snapshot.model);
   const backHref = view.kind === "example" && example ? "/profile/today?exemplo=1" : "/profile";
 
   return (
     <div className="flex flex-col gap-6" data-testid="today-about">
       <PageHeader title={t("title")} eyebrow={tt("title")} backHref={backHref} backLabel={tt("detail.back")} />
       <section className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5">
-        <p className="type-body max-w-prose text-fg">{t("intro")}</p>
+        <p className="type-body max-w-prose text-fg">{intro}</p>
         <p className="type-body-sm max-w-prose text-fg-muted">{t("rule")}</p>
       </section>
 
@@ -38,9 +55,11 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
           <h2 id="about-model" className="type-h3 text-fg">
             {t("modelTitle", { device: snapshot.deviceName })}
           </h2>
-          <Badge variant="demo" size="sm">
-            {view.kind === "demo" ? tt("demo.tag") : tt("example.tag")}
-          </Badge>
+          {real ? null : (
+            <Badge variant="demo" size="sm">
+              {view.kind === "demo" ? tt("demo.tag") : tt("example.tag")}
+            </Badge>
+          )}
         </div>
         <p className="type-caption text-fg-muted">{t("modelHidden")}</p>
         <dl className="grid gap-3 sm:grid-cols-2">
@@ -102,6 +121,18 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
           ))}
         </ul>
       </section>
+
+      {connected ? (
+        <section aria-labelledby="about-manage" className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5" data-testid="about-manage">
+          <h2 id="about-manage" className="type-h3 text-fg">
+            {tt("real.manageTitle")}
+          </h2>
+          <p className="type-body-sm max-w-prose text-fg">{tt("real.manageBody")}</p>
+          <Link href="/profile/devices" className={linkClass}>
+            {tt("real.devicesLink")}
+          </Link>
+        </section>
+      ) : null}
 
       <section aria-labelledby="about-privacy" className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5">
         <h2 id="about-privacy" className="type-h3 text-fg">

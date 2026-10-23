@@ -226,6 +226,7 @@
     "title": "Hoy — Tu día, en foco",
     "description": "Medido por tu reloj: tu noche y tu día hasta ahora. Nada que escribir.",
     "descriptionConnect": "Pronto: tu día medido por el reloj. Nada que escribir.",
+    "descriptionConnectAvailable": "Tu día medido por el reloj que conectes. Nada para escribir.",
     "demo": {
       "title": "Datos de demostración",
       "body": "Simulan un {device}. Nada aquí es de una persona real y nada se guarda: los números se generan al momento.",
@@ -268,7 +269,25 @@
         "scale": "Escala de Garmin, de 5 a 100."
       },
       "vendorReadiness": {
-        "title": "Índice de preparación de la marca"
+        "title": "Índice de preparación de la marca",
+        "names": {
+          "oura": "Readiness · Oura",
+          "whoop": "Recovery · WHOOP",
+          "polar": "Nightly Recharge · Polar"
+        },
+        "scale": {
+          "oura_readiness": "Escala de Oura, de 0 a 100",
+          "whoop_recovery_pct": "Escala de WHOOP, de 0 % a 100 %",
+          "polar_nightly_recharge_status": "Estado {value} en la escala de Polar, de 1 a 6"
+        },
+        "polar": {
+          "very_poor": "Muy bajo",
+          "poor": "Bajo",
+          "compromised": "Comprometido",
+          "ok": "OK",
+          "good": "Bueno",
+          "very_good": "Muy bueno"
+        }
       },
       "garminNote": "Garmin no comparte Training Readiness ni Training Status con otras apps.",
       "appleNote": "Tu Apple Watch tiene su propia Preparación, pero Apple no la comparte con otras apps.",
@@ -340,14 +359,21 @@
         "hr": "FC media {avg} · máx. {max}",
         "speed": "{value} km/h",
         "load": "Carga del día {value} · {comparison}",
+        "loadEstimated": "Zonas estimadas por la FC media del entrenamiento (el reloj no envía zonas) · calculado por Ultra Hero",
         "origin": "Entrenamiento iniciado en el reloj",
         "sports": {
           "run": "Carrera",
           "trail_run": "Trail",
           "walk": "Caminata",
           "cycle": "Ciclismo",
-          "strength": "Fuerza"
-        }
+          "strength": "Fuerza",
+          "swim": "Natación",
+          "hike": "Senderismo",
+          "yoga": "Yoga",
+          "row": "Remo",
+          "other": "Entrenamiento"
+        },
+        "loadNoComparison": "Carga del día {value} · calculado por Ultra Hero"
       },
       "stress": {
         "title": "Estrés",
@@ -380,7 +406,11 @@
       "soon": "Pronto",
       "privacy": "Aún no hay conexión con ninguna marca, y Ultra Hero no recopila datos de relojes, anillos ni pulseras.",
       "exampleCta": "Ver un ejemplo",
-      "exampleHint": "Abre un reloj simulado, separado de tu perfil."
+      "exampleHint": "Abre un reloj simulado, separado de tu perfil.",
+      "connectCta": "Conectar",
+      "bodyAvailable": "Conecta tu reloj y el Hoy muestra lo que mide por sí solo: sueño, corazón, actividad y entrenamientos. Nada que escribir.",
+      "privacyAvailable": "Solo entra lo que autorices, por categoría. Desconecta y borra cuando quieras.",
+      "devicesLink": "Relojes y anillos"
     },
     "programs": {
       "title": "Continúa tus programas",
@@ -424,6 +454,7 @@
       "metaTitle": "Sobre tus datos",
       "title": "Sobre tus datos",
       "intro": "En esta fase Ultra Hero no lee ningún reloj real y no recopila datos de tu reloj. El reloj simulado se genera al momento, a partir de la cuenta y la fecha, y no se guarda ni se envía a nadie.",
+      "introAvailable": "Ultra Hero solo lee un reloj o anillo después de que lo conectas y autorizas las categorías, en Relojes y anillos. Abajo, un ejemplo de lo que mide un reloj: nada de él es tuyo.",
       "rule": "Regla de Hoy: solo entra lo que el reloj mide solo, con el uso — automáticamente o en un entrenamiento iniciado en él. Nada se escribe.",
       "modelTitle": "Lo que mide el {device}",
       "modelHidden": "Lo que este modelo no mide queda oculto en Hoy — nunca aparece como cero.",
@@ -435,6 +466,24 @@
       "manualTitle": "Lo que nunca entra, porque se escribe y no se mide",
       "privacyTitle": "Privacidad",
       "privacyBody": "Los antiguos registros de hidratación y descanso quedaban solo en este dispositivo; el nuevo Hoy los borró del navegador sin enviar nada. Lee la <privacy>Política de Privacidad</privacy>."
+    },
+    "real": {
+      "source": "{device} · sincronizado a las {time}",
+      "sourceAt": "{device} · {time}",
+      "sourceOn": "{device} · {date}, {time}",
+      "syncHint": "Para actualizar, sincroniza el reloj en la app {app}. No hay botón de actualizar.",
+      "stale": "Última sincronización: {date}, {time}. Sincroniza en la app {app} para ver datos nuevos.",
+      "detailSource": "{device}. Última sincronización a las {time}.",
+      "devicesLink": "Relojes y anillos",
+      "aboutIntro": "Ultra Hero lee tu {device} mediante la cuenta que conectaste, solo en las categorías que autorizaste. Los datos se guardan con protección propia, solo tú los ves y puedes desconectar y borrar cuando quieras.",
+      "manageTitle": "Conexión y consentimiento",
+      "manageBody": "Desconecta, quita categorías o el consentimiento y borra los datos en Relojes y anillos."
+    },
+    "syncing": {
+      "title": "Sincronizando…",
+      "body": "Tu {device} está conectado. Estamos trayendo los datos de hoy; los siguientes llegan cuando el reloj se sincronice con la app {app}.",
+      "bodyNoHistory": "Tu {device} está conectado. Los primeros datos llegan cuando el reloj se sincronice con la app {app}; la marca no comparte lo medido antes de la conexión.",
+      "devicesLink": "Relojes y anillos"
     }
   },
   "reminders": {

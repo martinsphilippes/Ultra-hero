@@ -12,8 +12,11 @@ import { comparisonOf, indexCardKind, point, sectionAvailable, stressLevel, valu
 
 type Props = {
   snapshot: WatchSnapshot;
-  /** demo = conta de demonstração; example = prévia "Ver um exemplo" de conta real. */
-  mode: "demo" | "example";
+  /** demo = conta de demonstração; example = prévia "Ver um exemplo"; real = relógio conectado (schema health). */
+  mode: "demo" | "example" | "real";
+  /** Só no modo real: última sincronização (no fuso do perfil) e se passou de 6 h (RN-11). */
+  lastSync?: { date: string; at: number } | null;
+  stale?: boolean;
   /** Nível dos títulos dos blocos ("Sua noite" / "Seu dia"); os cards ficam um nível abaixo. */
   blockHeading?: "h2" | "h3";
 };
@@ -23,26 +26,29 @@ type Heading = "h3" | "h4";
 // Hoje com relógio: dois blocos de ordem fixa ("Sua noite" e "Seu dia até agora · até HH:MM"),
 // cerca de 5 cards em 1 coluna no celular. Cada valor leva o horário e a fonte; o que o modelo
 // não mede fica escondido (nunca zero). Só leitura: nenhum campo de entrada, nenhum botão de adicionar.
-export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props) {
+export async function WatchToday({ snapshot, mode, blockHeading = "h3", lastSync = null, stale = false }: Props) {
   const [t, tw, locale] = await Promise.all([getTranslations("me.today"), getTranslations("wearables"), getLocale()]);
   const BlockHeading = blockHeading;
   const cardHeading: Heading = blockHeading === "h2" ? "h3" : "h4";
   const suffix = mode === "example" ? "?exemplo=1" : "";
   const href = (section: string) => `/profile/today/${section}${suffix}`;
   const info = MODEL_INFO[snapshot.model];
-  const tag = mode === "demo" ? t("demo.tag") : t("example.tag");
+  // dado real não leva selo "Demo"/"Exemplo"; os textos de fonte não dizem "(simulado)"
+  const real = mode === "real";
+  const tag = real ? null : mode === "demo" ? t("demo.tag") : t("example.tag");
+  const tx = (key: "source" | "sourceAt" | "sourceOn") => (real ? `real.${key}` : key);
   const device = snapshot.deviceName;
   const clock = (min: number) => formatClock(min, locale);
-  const sourceAt = (min: number) => t("sourceAt", { device, time: clock(min) });
+  const sourceAt = (min: number) => t(tx("sourceAt"), { device, time: clock(min) });
   const syncTime = clock(snapshot.syncedAt);
   const nightToday = snapshot.night?.isToday ?? false;
   const nightDateLabel = snapshot.night ? new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(ymdToDate(snapshot.night.date)) : "";
   const nightAt = snapshot.night ? snapshot.night.endClock : snapshot.syncedAt;
-  const nightSource = snapshot.night && !nightToday ? t("sourceOn", { device, date: nightDateLabel, time: clock(nightAt) }) : sourceAt(nightAt);
+  const nightSource = snapshot.night && !nightToday ? t(tx("sourceOn"), { device, date: nightDateLabel, time: clock(nightAt) }) : sourceAt(nightAt);
   const comparisonText = (code: Parameters<typeof comparisonOf>[1]) => t(`comparison.${comparisonOf(snapshot, code)}`);
   const shortDate = (ymd: string) => new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(ymdToDate(ymd));
   // valor de outro dia (ex.: Body Battery de ontem antes da sincronização da manhã) leva a data dele
-  const pointSource = (p: { date: string; at: number }) => (p.date === snapshot.date ? sourceAt(p.at) : t("sourceOn", { device, date: shortDate(p.date), time: clock(p.at) }));
+  const pointSource = (p: { date: string; at: number }) => (p.date === snapshot.date ? sourceAt(p.at) : t(tx("sourceOn"), { device, date: shortDate(p.date), time: clock(p.at) }));
 
   // ---------------------------------------------------------------- Sua noite
   const nightCards: ReactNode[] = [];
@@ -62,9 +68,14 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
     );
   } else if (indexKind === "readiness_vendor") {
     const p = point(snapshot, "readiness_vendor")!;
+    // nome, escala e rótulo ORIGINAIS da marca (Readiness, Recovery, Nightly Recharge), nunca 0–100 nosso
+    const brandName = info.brand === "oura" || info.brand === "whoop" || info.brand === "polar" ? t(`cards.vendorReadiness.names.${info.brand}`) : t("cards.vendorReadiness.title");
+    const scaleKey = p.scale === "oura_readiness" || p.scale === "whoop_recovery_pct" || p.scale === "polar_nightly_recharge_status" ? p.scale : null;
+    const labelKey = p.label && ["very_poor", "poor", "compromised", "ok", "good", "very_good"].includes(p.label) ? p.label : null;
     nightCards.push(
-      <TodayCard key="index" href={href("readiness")} title={t("cards.vendorReadiness.title")} tag={tag} heading={cardHeading} source={sourceAt(p.at)} testId="today-card-readiness" detailLabel={t("openDetail")}>
-        <p className="type-h2 type-numeric text-fg">{formatInteger(p.value, locale)}</p>
+      <TodayCard key="index" href={href("readiness")} title={brandName} tag={tag} heading={cardHeading} source={sourceAt(p.at)} testId="today-card-readiness" detailLabel={t("openDetail")}>
+        <p className="type-h2 type-numeric text-fg">{labelKey ? t(`cards.vendorReadiness.polar.${labelKey}`) : `${formatInteger(p.value, locale)}${scaleKey === "whoop_recovery_pct" ? "%" : ""}`}</p>
+        {scaleKey ? <p className="type-caption text-fg-muted">{t(`cards.vendorReadiness.scale.${scaleKey}`, { value: formatInteger(p.value, locale) })}</p> : null}
       </TodayCard>,
     );
   } else if (indexKind === "disposition" && snapshot.disposition) {
@@ -133,7 +144,14 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
   const dayCards: ReactNode[] = [];
   const workouts = snapshot.workouts;
   const load = point(snapshot, "cardio_load_day_uh");
-  const loadLine = load ? t("cards.workouts.load", { value: formatInteger(load.value, locale), comparison: comparisonText("cardio_load_day_uh") }) : null;
+  // dia real parcial sem curva intradiária: sem comparação (não dá para cortar os dias anteriores no mesmo horário)
+  const loadLine = load
+    ? real && !snapshot.baselines.cardio_load_day_uh
+      ? t("cards.workouts.loadNoComparison", { value: formatInteger(load.value, locale) })
+      : t("cards.workouts.load", { value: formatInteger(load.value, locale), comparison: comparisonText("cardio_load_day_uh") })
+    : null;
+  // relógio real sem zonas da marca: a carga sai das zonas estimadas pela FC média (§13.4), e diz isso
+  const loadNote = load && real && snapshot.estimatedZones ? t("cards.workouts.loadEstimated") : null;
   const steps = value(snapshot, "steps");
 
   if (nightToday) {
@@ -195,6 +213,7 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
           <p className="type-body-sm text-fg">{t("cards.workouts.none")}</p>
           {vo2 ? <p className="type-caption type-numeric text-fg">{t("cards.workouts.vo2", { value: formatMetric("vo2max", vo2.value, locale), date: shortDate(vo2.date) })}</p> : null}
           {loadLine ? <p className="type-caption text-fg-muted">{loadLine}</p> : null}
+          {loadNote ? <p className="type-caption text-fg-muted">{loadNote}</p> : null}
         </TodayCard>,
       );
     } else if (workouts.length > 0) {
@@ -209,10 +228,12 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
                   {w.sport === "cycle" ? t("cards.workouts.speed", { value: formatDecimal(w.distanceM / 1000 / (w.durationMin / 60), locale) }) : formatPace((w.durationMin * 60) / (w.distanceM / 1000))}
                 </p>
               ) : null}
-              <p className="type-caption type-numeric text-fg-muted">{t("cards.workouts.hr", { avg: w.avgHr, max: w.maxHr })}</p>
+              {/* treino sem FC (fonte não mandou): a linha não aparece, nada vira zero */}
+              {w.avgHr > 0 && w.maxHr > 0 ? <p className="type-caption type-numeric text-fg-muted">{t("cards.workouts.hr", { avg: w.avgHr, max: w.maxHr })}</p> : null}
             </div>
           ))}
           {loadLine ? <p className="type-caption text-fg-muted">{loadLine}</p> : null}
+          {loadNote ? <p className="type-caption text-fg-muted">{loadNote}</p> : null}
         </TodayCard>,
       );
     }
@@ -247,15 +268,23 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
       : null;
 
   return (
-    <div className="flex flex-col gap-4" data-testid="watch-today" data-model={snapshot.model}>
-      <WatchDemoLabel mode={mode} device={device} />
+    <div className="flex flex-col gap-4" data-testid="watch-today" data-model={snapshot.model} data-mode={mode}>
+      {real ? null : <WatchDemoLabel mode={mode} device={device} />}
 
       <div className="flex flex-col gap-1">
         <p className="flex items-center gap-1.5 type-body-sm font-semibold text-fg" data-testid="watch-source">
           <Watch className="size-4 shrink-0 text-accent-text" aria-hidden="true" />
-          {t("source", { device, time: syncTime })}
+          {real && lastSync && lastSync.date !== snapshot.date
+            ? t("real.sourceOn", { device, date: shortDate(lastSync.date), time: clock(lastSync.at) })
+            : t(tx("source"), { device, time: syncTime })}
         </p>
-        <p className="type-caption text-fg-muted">{t("syncHint", { app: tw(`syncApps.${info.syncApp}`) })}</p>
+        <p className="type-caption text-fg-muted">{t(real ? "real.syncHint" : "syncHint", { app: tw(`syncApps.${info.syncApp}`) })}</p>
+        {/* > 6 h sem sincronizar: selo com o horário e a dica da fonte (RN-11) */}
+        {real && stale && lastSync ? (
+          <p role="status" className="rounded-xl border border-warning/40 bg-warning-soft px-3 py-2 type-caption text-fg" data-testid="watch-stale">
+            {t("real.stale", { date: shortDate(lastSync.date), time: clock(lastSync.at), app: tw(`syncApps.${info.syncApp}`) })}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -285,7 +314,7 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
             >
               <span>
                 <span className="font-semibold">{t("cards.environment.title")}:</span> {environment}
-                <span className="sr-only"> · {tag}</span>
+                {tag ? <span className="sr-only"> · {tag}</span> : null}
               </span>
               <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
             </Link>
@@ -298,10 +327,18 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3" }: Props)
           <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {t("wellness")}
         </p>
-        <Link href={`/profile/today/about${suffix}`} prefetch={false} className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-          {t("aboutLink")}
-          <ChevronRight className="size-4" aria-hidden="true" />
-        </Link>
+        <span className="flex flex-wrap gap-x-4">
+          <Link href={`/profile/today/about${suffix}`} prefetch={false} className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+            {t("aboutLink")}
+            <ChevronRight className="size-4" aria-hidden="true" />
+          </Link>
+          {real ? (
+            <Link href="/profile/devices" prefetch={false} className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+              {t("real.devicesLink")}
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Link>
+          ) : null}
+        </span>
       </footer>
     </div>
   );
@@ -319,7 +356,7 @@ function TodayCard({
 }: {
   href: string;
   title: string;
-  tag: string;
+  tag: string | null;
   heading: Heading;
   source: string;
   testId: string;
@@ -339,9 +376,11 @@ function TodayCard({
     >
       <span className="flex items-start justify-between gap-2">
         <Heading className="type-body font-semibold text-fg">{title}</Heading>
-        <Badge variant="demo" size="sm">
-          {tag}
-        </Badge>
+        {tag ? (
+          <Badge variant="demo" size="sm">
+            {tag}
+          </Badge>
+        ) : null}
       </span>
       {children}
       <span className="flex items-center justify-between gap-2 pt-1">

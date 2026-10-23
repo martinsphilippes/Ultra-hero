@@ -234,7 +234,7 @@ export const MODEL_INFO: Record<WatchModelId, WatchModelInfo> = {
   polar: { id: "polar", brand: "polar", vendorIndex: "readiness_vendor", hiddenIndexNote: null, hrvMethod: "rmssd", path: "oauth", syncApp: "polarFlow" },
 };
 
-/** Marcas do card "Conectar relógio" (todas "em breve": nenhuma conexão real existe ainda). */
+/** Marcas do card "Conectar relógio" (Garmin, Oura, WHOOP e Polar conectam com WEARABLES_REAL_ENABLED=1; as outras exigem app nativo). */
 export const CONNECT_BRANDS = ["garmin", "apple", "samsung", "google", "oura", "whoop", "polar"] as const satisfies readonly WatchBrand[];
 
 /** Seções na ordem fixa do Hoje: "Sua noite" e "Seu dia até agora" (§6.2). */
@@ -256,4 +256,4 @@ export const NIGHT_VITALS_COMPONENTS = ["hr_resting", "hrv_night", "resp_rate_sl
 export const EXCLUDED_REGULATED = ["ecg", "irregularRhythm", "afib", "hypertension", "apnea", "highLowHr", "estimatedBp"] as const;
 export const EXCLUDED_ON_DEMAND = ["spo2Spot", "healthSnapshot", "bodyComposition"] as const;
 export const EXCLUDED_MANUAL = ["water", "food", "weight", "mood", "cycle", "effort", "caffeine", "glucose"] as const;
-export const VENDOR_ONLY_BRANDS = ["apple", "garmin", "samsung", "google", "whoop", "oura"] as const satisfies readonly WatchBrand[];
+export const VENDOR_ONLY_BRANDS = ["apple", "garmin", "samsung", "google", "whoop", "oura", "polar"] as const satisfies readonly WatchBrand[];

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { ConnectWatchCard } from "@/components/me/today/ConnectWatchCard";
 import { LegacyTodayCleanup } from "@/components/me/today/LegacyTodayCleanup";
+import { SyncingCard } from "@/components/me/today/SyncingCard";
 import { WatchToday } from "@/components/me/today/WatchToday";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { loadWatchView, wantsExample } from "./view";
@@ -23,12 +24,20 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
       <LegacyTodayCleanup />
       <PageHeader
         title={view.kind === "example" ? t("example.pageTitle") : t("title")}
-        description={view.kind === "connect" ? t("descriptionConnect") : t("description")}
+        description={view.kind === "connect" ? ((view.providers?.length ?? 0) > 0 ? t("descriptionConnectAvailable") : t("descriptionConnect")) : t("description")}
         backHref="/profile"
         backLabel={t("example.back")}
-        actions={view.kind === "connect" ? null : <DemoBadge />}
+        actions={view.kind === "demo" || view.kind === "example" ? <DemoBadge /> : null}
       />
-      {view.kind === "connect" ? <ConnectWatchCard headingLevel="h2" /> : <WatchToday snapshot={view.snapshot} mode={view.kind} blockHeading="h2" />}
+      {view.kind === "connect" ? (
+        <ConnectWatchCard headingLevel="h2" providers={view.providers} />
+      ) : view.kind === "syncing" ? (
+        <SyncingCard provider={view.provider} deviceName={view.deviceName} />
+      ) : view.kind === "real" ? (
+        <WatchToday snapshot={view.snapshot} mode="real" lastSync={view.lastSync} stale={view.stale} blockHeading="h2" />
+      ) : (
+        <WatchToday snapshot={view.snapshot} mode={view.kind} blockHeading="h2" />
+      )}
     </div>
   );
 }
