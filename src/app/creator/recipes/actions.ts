@@ -421,8 +421,10 @@ export async function duplicateRecipe(input: { id: string }): Promise<Ok<{ id: s
 }
 
 /**
- * Exclui rascunho que nunca foi ao ar. A RPC devolve os caminhos das fotos (apagados aqui com a
- * sessão do herói: sem linha em recipe_media a política de exclusão libera) e o uid do Stream.
+ * Exclui rascunho que nunca foi ao ar ou receita arquivada pelo próprio herói (0036). A RPC devolve
+ * os caminhos das fotos (apagados aqui com a sessão do herói: sem linha em recipe_media a política de
+ * exclusão libera) e o uid do Stream. Banco sem a 0036 (PGRST202): cai na função antiga, que só
+ * exclui rascunho nunca publicado; a arquivada recebe "ainda não disponível".
  */
 export async function deleteRecipeDraft(input: { id: string }): Promise<Ok | RecipeFailure> {
   if (!idSchema.safeParse(input?.id).success) return { ok: false, error: "invalid_input" };
@@ -430,7 +432,11 @@ export async function deleteRecipeDraft(input: { id: string }): Promise<Ok | Rec
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, input.id);
   if ("ok" in own) return own;
-  const { data, error } = await ctx.supabase.rpc("creator_delete_recipe_draft", { p_content: own.id });
+  let { data, error } = await ctx.supabase.rpc("creator_delete_recipe", { p_content: own.id });
+  if (error?.code === "PGRST202") {
+    if (own.status === "archived") return { ok: false, error: "delete_unavailable" };
+    ({ data, error } = await ctx.supabase.rpc("creator_delete_recipe_draft", { p_content: own.id }));
+  }
   if (error) return recipeFail(error);
   const result = (data ?? {}) as { paths?: string[]; uid?: string | null };
   const paths = (result.paths ?? []).filter((p) => typeof p === "string");
@@ -448,6 +454,8 @@ export async function deleteRecipeDraft(input: { id: string }): Promise<Ok | Rec
     }
   }
   revalidateRecipe();
+  // a que esteve no ar some do catálogo e a página pública passa a dar 404
+  if (own.published_at) revalidatePublic(own.slug);
   return { ok: true };
 }
 

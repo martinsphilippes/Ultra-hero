@@ -21,6 +21,15 @@ export function DeleteAccountDialog() {
 
   const confirmed = value.trim().toUpperCase() === DELETE_CONFIRM_WORD;
 
+  // A palavra digitada nunca sobrevive a um fechamento: o Dialog não avisa onOpenChange quando o
+  // fechamento vem do próprio estado, então Cancelar limpa aqui, e abrir também começa do zero
+  // (senão, ao reabrir, "Excluir definitivamente" já viria habilitado).
+  function show(next: boolean) {
+    setOpen(next);
+    setValue("");
+    setError(null);
+  }
+
   function onConfirm() {
     if (!confirmed) return;
     setError(null);
@@ -39,25 +48,20 @@ export function DeleteAccountDialog() {
 
   return (
     <>
-      <Button variant="danger" leadingIcon={<Trash2 />} onClick={() => setOpen(true)}>
+      <Button variant="danger" leadingIcon={<Trash2 />} onClick={() => show(true)}>
         {t("button")}
       </Button>
       <Dialog
         open={open}
         onOpenChange={(next) => {
-          if (pending) return;
-          setOpen(next);
-          if (!next) {
-            setValue("");
-            setError(null);
-          }
+          if (!pending) show(next);
         }}
         title={t("dialogTitle")}
         description={t("dialogDescription", { word: DELETE_CONFIRM_WORD })}
         size="sm"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+            <Button variant="ghost" onClick={() => show(false)} disabled={pending} data-testid="delete-account-cancel">
               {tc("cancel")}
             </Button>
             <Button variant="danger" onClick={onConfirm} disabled={!confirmed} loading={pending}>

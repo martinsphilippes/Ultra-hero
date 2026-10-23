@@ -3,7 +3,7 @@
 import { Archive, ChevronDown, Copy, ExternalLink, Eye, History, Pencil, RotateCcw, Trash2, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 import { archiveRecipe, deleteRecipeDraft, duplicateRecipe, restoreRecipe, unpublishRecipe, withdrawRecipe } from "@/app/creator/recipes/actions";
 import { Button, Dialog, FormField, Textarea, useToast } from "@/components/ui";
@@ -26,6 +26,7 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
   const errorText = useRecipeErrorText();
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
   const menuId = useId();
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState<Pending>(null);
@@ -86,8 +87,20 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
     });
   }
 
+  // arquivada (pode ter estado no ar): o aviso diz que sai também dos favoritos e listas de quem salvou
+  const archived = situation === "archived";
   const dialogs: Record<Exclude<Pending, null>, { title: string; description: string; label: string; destructive: boolean; onConfirm: () => void; extra?: ReactNode }> = {
-    delete: { title: t("confirm.deleteTitle", { title }), description: t("confirm.deleteDescription"), label: t("actions.delete"), destructive: true, onConfirm: () => run(() => deleteRecipeDraft({ id }), t("done.deleted")) },
+    delete: {
+      title: archived ? t("confirm.deleteArchivedTitle", { title }) : t("confirm.deleteTitle", { title }),
+      description: archived ? t("confirm.deleteArchivedDescription") : t("confirm.deleteDescription"),
+      label: t("actions.delete"),
+      destructive: true,
+      // excluída a partir da tela da própria receita: volta para a lista em vez de recarregar uma página que não existe mais
+      onConfirm: () =>
+        run(() => deleteRecipeDraft({ id }), archived ? t("done.deletedArchived") : t("done.deleted"), () => {
+          if (pathname !== "/creator/recipes") router.push("/creator/recipes");
+        }),
+    },
     archive: {
       title: t("confirm.archiveTitle", { title }),
       description: t("confirm.archiveDescription"),
@@ -214,7 +227,16 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
           size="sm"
           footer={
             <>
-              <Button type="button" variant="ghost" onClick={() => setConfirm(null)} disabled={busy}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  // mesmo efeito do onOpenChange(false): o erro do diálogo não vai parar na linha
+                  setConfirm(null);
+                  setError(null);
+                }}
+                disabled={busy}
+              >
                 {t("confirm.cancel")}
               </Button>
               <Button type="button" variant={active.destructive ? "danger" : "primary"} loading={busy} onClick={active.onConfirm} data-testid="recipe-confirm">

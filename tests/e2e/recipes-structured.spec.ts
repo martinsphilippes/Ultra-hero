@@ -1,5 +1,6 @@
-import { createHash } from "node:crypto";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { loginAs } from "./helpers/login";
+import { seedUuid } from "./helpers/seed";
 
 // Fumaça da fase 1 do módulo de receitas (0027–0029): só leitura, nada é gravado no banco remoto.
 // (Fase 2: o editor antigo segue só para leitura, mas "Editar" leva ao editor de receitas.)
@@ -7,22 +8,6 @@ import { expect, test, type Page } from "@playwright/test";
 //  - as páginas públicas das receitas antigas seguem iguais (título, resumo, tempo e o bloqueio);
 //  - /creator/content/new não oferece mais o tipo receita;
 //  - o editor antigo (herói e admin) mostra a receita só para leitura, com o aviso, sem Publicar nem Despublicar.
-
-/** Réplica de public.seed_uuid (0008): ids determinísticos do seed. */
-function seedUuid(key: string): string {
-  const h = createHash("md5").update(`ultra-hero:${key}`).digest("hex");
-  const variant = "89ab"[parseInt(h[16], 16) % 4];
-  const x = `${h.slice(0, 12)}4${h.slice(13, 16)}${variant}${h.slice(17)}`;
-  return `${x.slice(0, 8)}-${x.slice(8, 12)}-${x.slice(12, 16)}-${x.slice(16, 20)}-${x.slice(20)}`;
-}
-
-async function loginAs(page: Page, kind: "creator" | "admin", home: RegExp) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator(`[data-demo-kind="${kind}"]`).click();
-  await expect(page).toHaveURL(home, { timeout: 20_000 });
-}
 
 const OLD_RECIPES = [
   { slug: "bowl-de-frango-grelhado-com-legumes-assados-g1", title: "Bowl de frango grelhado com legumes assados", summary: "O bowl clássico da cozinha de base", minutes: 35 },
@@ -42,7 +27,7 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
   }
 
   test("o novo conteúdo do herói não oferece o tipo receita", async ({ page }) => {
-    await loginAs(page, "creator", /\/creator$/);
+    await loginAs(page, "creator", { home: /\/creator$/ });
     await page.goto("/creator/content/new");
     const typeSelect = page.getByRole("combobox", { name: "Tipo", exact: true });
     await expect(typeSelect).toBeVisible();
@@ -50,7 +35,7 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
   });
 
   test("o editor antigo do herói mostra a receita só para leitura, com o aviso, sem Publicar/Despublicar e com Editar levando ao editor novo", async ({ page }) => {
-    await loginAs(page, "creator", /\/creator$/);
+    await loginAs(page, "creator", { home: /\/creator$/ });
     await page.goto("/creator/content");
     // desde a fase 2 a lista leva a receita direto ao editor novo
     const recipeLink = page.locator('a[data-content-type="recipe"]').first();
@@ -70,7 +55,7 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
   });
 
   test("o editor do admin mostra a receita g1 só para leitura, com o aviso", async ({ page }) => {
-    await loginAs(page, "admin", /\/admin$/);
+    await loginAs(page, "admin", { home: /\/admin$/ });
     await page.goto(`/admin/content/${seedUuid("content:g1")}/edit`);
     const notice = page.getByTestId("recipe-legacy-notice");
     await expect(notice).toBeVisible();

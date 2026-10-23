@@ -1,16 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 // Composer de post do herói com a conta de demonstração "Herói / Chef". Só telas e estados:
 // nada é publicado nem enviado (o banco dos E2E é o remoto, visível para todos). O envio real
 // para o Cloudflare fica em creator-post-real.spec.ts, ligado só com E2E_STREAM_REAL=1.
 
 async function loginAsHero(page: Page) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator('[data-demo-kind="creator"]').click();
-  await expect(page).toHaveURL(/\/creator$/, { timeout: 20_000 });
+  await loginAs(page, "creator");
 }
 
 test.describe("portal do herói: novo post em vídeo", () => {

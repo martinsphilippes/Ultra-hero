@@ -82,6 +82,7 @@ export const RECIPE_ERROR_CODES = [
   "archived_by_admin",
   "not_draft",
   "already_published",
+  "not_deletable",
   "content_in_use",
   "source_locked",
   "slug_taken",

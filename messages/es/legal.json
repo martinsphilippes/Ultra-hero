@@ -382,12 +382,12 @@
               "heroVideos": {
                 "data": "Videos enviados por héroes",
                 "period": "Mientras exista el contenido",
-                "details": "El video de un borrador que descartas, cambias o abandonas (envío vencido que nunca se publicó) se elimina de Cloudflare con la rutina diaria. El video de un contenido que ya estuvo publicado queda como historial de ese contenido."
+                "details": "El video de un borrador que descartas, cambias o abandonas (envío vencido que nunca se publicó) se elimina de Cloudflare con la rutina diaria. El video de un contenido que ya estuvo publicado queda como historial de ese contenido; si el héroe archiva y luego elimina definitivamente una receta, su video también se elimina."
               },
               "recipePhotos": {
                 "data": "Fotos de recetas subidas por héroes",
                 "period": "Mientras la foto forme parte de la receta",
-                "details": "Una foto quitada en el editor o de un borrador eliminado se borra de inmediato; si esa eliminación falla, o si una subida no llega a registrarse, la rutina diaria borra la foto sin receta después de 24 horas. Las fotos de una receta que ya estuvo publicada quedan con la receta."
+                "details": "Una foto quitada en el editor o de un borrador eliminado se borra de inmediato; si esa eliminación falla, o si una subida no llega a registrarse, la rutina diaria borra la foto sin receta después de 24 horas. Las fotos de una receta que ya estuvo publicada quedan con la receta mientras exista; si el héroe archiva y luego elimina la receta, las fotos se borran de inmediato."
               },
               "recipeHistory": {
                 "data": "Historial de recetas vistas (opcional)",
@@ -397,7 +397,7 @@
               "recipeRatings": {
                 "data": "Valoraciones de recetas (estrellas)",
                 "period": "Mientras exista la cuenta",
-                "details": "Se borran junto con la cuenta; el promedio de la receta se recalcula en el momento."
+                "details": "Se borran junto con la cuenta; el promedio de la receta se recalcula en el momento. Si el héroe elimina definitivamente una receta archivada, sus valoraciones, favoritos e historial se van con ella (los ítems de tu lista de compras se quedan, sin la receta de origen)."
               },
               "shoppingList": {
                 "data": "Lista de compras",

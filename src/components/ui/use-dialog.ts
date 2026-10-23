@@ -17,8 +17,11 @@ type Options = {
 export function useDialog({ open, onOpenChange, dismissible = true }: Options) {
   const ref: RefObject<HTMLDialogElement | null> = useRef<HTMLDialogElement>(null);
   const lastFocused = useRef<Element | null>(null);
+  // Estado controlado mais recente, lido pelo "close" (que chega numa tarefa depois do dialog.close()).
+  const openRef = useRef(open);
 
   useEffect(() => {
+    openRef.current = open;
     const dialog = ref.current;
     if (!dialog) return;
     if (open && !dialog.open) {
@@ -44,7 +47,10 @@ export function useDialog({ open, onOpenChange, dismissible = true }: Options) {
   );
 
   const onClose = useCallback(() => {
-    onOpenChange(false);
+    // Só avisa quando o <dialog> fechou sozinho (ex.: form method="dialog") com o estado ainda aberto. Se
+    // o fechamento veio do próprio estado, o aviso repetido chegava depois e desfazia o que a tela fez no
+    // intervalo (a foto de perfil perdia o erro do arquivo escolhido logo após "Cancelar").
+    if (openRef.current) onOpenChange(false);
     const previous = lastFocused.current;
     if (previous instanceof HTMLElement) previous.focus({ preventScroll: true });
   }, [onOpenChange]);

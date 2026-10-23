@@ -231,7 +231,9 @@
       "not_archived": "This recipe is not archived.",
       "archived_by_admin": "The admin archived this recipe; only the admin can restore it.",
       "not_draft": "Only drafts can be deleted or published.",
-      "already_published": "This recipe has been live before and can't be deleted; archive it.",
+      "already_published": "This recipe has been live before: archive it before deleting.",
+      "not_deletable": "A live or scheduled recipe can't be deleted directly: archive it first.",
+      "delete_unavailable": "Deleting archived recipes isn't available yet. Try again later.",
       "content_in_use": "This recipe is in use (program or completions) and can't be deleted.",
       "source_locked": "This recipe is locked by the admin and can't be duplicated.",
       "slug_taken": "That address is already in use.",
@@ -331,6 +333,8 @@
     "confirm": {
       "deleteTitle": "Delete the draft “{title}”?",
       "deleteDescription": "The draft and the photos and video uploaded to it are deleted. This can't be undone.",
+      "deleteArchivedTitle": "Permanently delete “{title}”?",
+      "deleteArchivedDescription": "The recipe, its photos, video and versions are deleted, and it disappears from the favorites and lists of anyone who saved it. A recipe in a program or already completed by someone can't be deleted. This can't be undone.",
       "archiveTitle": "Archive “{title}”?",
       "archiveDescription": "The recipe goes offline and leaves your main list. You can restore it later; it comes back as a draft.",
       "archiveReason": "Reason (optional)",
@@ -345,6 +349,7 @@
       "archived": "Recipe archived.",
       "restored": "Recipe restored as a draft.",
       "deleted": "Draft deleted.",
+      "deletedArchived": "Recipe deleted.",
       "unpublished": "Recipe unpublished. It is now a draft.",
       "withdrawn": "Recipe withdrawn from review."
     },

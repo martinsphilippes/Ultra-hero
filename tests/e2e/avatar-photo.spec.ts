@@ -1,6 +1,7 @@
 import path from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 // Foto de perfil pelo celular (0031) com a conta de demonstração "Herói / Chef".
 // Sem flag: só telas e estados (botões grandes, câmera frontal, aviso quando o envio não está
@@ -10,16 +11,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 const FIXTURE = path.join(__dirname, "..", "fixtures", "avatar-640x480.jpg");
 
-async function loginAs(page: Page, kind: "creator" | "premium", home: RegExp) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator(`[data-demo-kind="${kind}"]`).click();
-  await expect(page).toHaveURL(home, { timeout: 20_000 });
-}
-
 async function loginAsHero(page: Page) {
-  await loginAs(page, "creator", /\/creator$/);
+  await loginAs(page, "creator");
 }
 
 // src de next/image vem como /_next/image?url=<codificada>: decodifica para achar o bucket
@@ -85,6 +78,28 @@ test.describe("foto de perfil: telas", () => {
 
     await page.getByTestId("avatar-gallery-input").setInputFiles({ name: "nota.txt", mimeType: "text/plain", buffer: Buffer.from("não é foto") });
     await expect(page.getByTestId("avatar-photo").getByRole("alert")).toHaveText("Esse arquivo não é uma imagem. Escolha uma foto JPG, PNG ou WebP.");
+
+    // "Cancelar" e escolher outro arquivo em seguida: o evento "close" do <dialog> chega numa tarefa depois
+    // e não pode apagar o aviso do arquivo novo (o Dialog avisava o fechamento de novo e a tela limpava o
+    // erro — a causa do aviso que às vezes não aparecia). Aqui os dois passos vão na mesma tarefa.
+    await page.getByTestId("avatar-gallery-input").setInputFiles(FIXTURE);
+    await expect(dialog).toBeVisible({ timeout: 20_000 });
+    const alertAfterClose = await page.evaluate(async () => {
+      const open = document.querySelector("dialog[open]") as HTMLDialogElement;
+      const closed = new Promise((resolve) => open.addEventListener("close", resolve, { once: true }));
+      Array.from(open.querySelectorAll("button"))
+        .find((b) => b.textContent?.trim() === "Cancelar")!
+        .click();
+      const input = document.querySelector('[data-testid="avatar-gallery-input"]') as HTMLInputElement;
+      const files = new DataTransfer();
+      files.items.add(new File(["não é foto"], "nota.txt", { type: "text/plain" }));
+      input.files = files.files;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      await closed;
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      return document.querySelector('[data-testid="avatar-photo"] [role="alert"]')?.textContent ?? null;
+    });
+    expect(alertAfterClose).toBe("Esse arquivo não é uma imagem. Escolha uma foto JPG, PNG ou WebP.");
   });
 
   test("/creator/profile também oferece a foto, com o texto do perfil de herói", async ({ page }) => {
@@ -214,7 +229,7 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
   test("conta comum: envia pela galeria, aparece no cabeçalho e remove", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
     test.setTimeout(180_000);
-    await loginAs(page, "premium", /\/profile$/);
+    await loginAs(page, "premium");
     await page.goto("/profile");
     const profileRadio = page.locator('input[type="radio"][name="avatar"]:checked');
     original = { profile: (await profileRadio.count()) > 0 ? await profileRadio.getAttribute("value") : null, creator: null };

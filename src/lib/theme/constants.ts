@@ -1,5 +1,7 @@
 // Constantes de tema compartilhadas entre servidor, cliente e middleware.
 export const THEME_COOKIE = "uh-theme";
+/** Validade do cookie do tema (1 ano), a mesma no botão (cliente) e na action (servidor). */
+export const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 export const DEMO_BANNER_COOKIE = "uh-demo-dismissed";
 
 export const themes = ["dark", "light", "system"] as const;

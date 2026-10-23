@@ -382,12 +382,12 @@
               "heroVideos": {
                 "data": "Videos uploaded by heroes",
                 "period": "While the content exists",
-                "details": "A draft video you discard, replace or abandon (an expired upload that never went live) is deleted from Cloudflare by the daily routine. Video from content that has been live stays as that content's history."
+                "details": "A draft video you discard, replace or abandon (an expired upload that never went live) is deleted from Cloudflare by the daily routine. Video from content that has been live stays as that content's history; if the hero archives and then permanently deletes a recipe, its video is deleted too."
               },
               "recipePhotos": {
                 "data": "Recipe photos uploaded by heroes",
                 "period": "While the photo is part of the recipe",
-                "details": "A photo removed in the editor or from a deleted draft is deleted right away; if that deletion fails, or if an upload is never registered, the daily routine deletes the photo without a recipe after 24 hours. Photos of a recipe that has been live stay with the recipe."
+                "details": "A photo removed in the editor or from a deleted draft is deleted right away; if that deletion fails, or if an upload is never registered, the daily routine deletes the photo without a recipe after 24 hours. Photos of a recipe that has been live stay with the recipe while it exists; if the hero archives and then deletes the recipe, the photos are deleted right away."
               },
               "recipeHistory": {
                 "data": "Recently viewed recipes (optional)",
@@ -397,7 +397,7 @@
               "recipeRatings": {
                 "data": "Recipe ratings (stars)",
                 "period": "While the account exists",
-                "details": "They are deleted with the account; the recipe average is recalculated right away."
+                "details": "They are deleted with the account; the recipe average is recalculated right away. If the hero permanently deletes an archived recipe, its ratings, favorites and history go with it (the items on your shopping list stay, without the source recipe)."
               },
               "shoppingList": {
                 "data": "Shopping list",

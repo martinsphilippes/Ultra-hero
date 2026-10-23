@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 // Receitas fase 4: Modo Cozinha, Minha coleção de receitas e o histórico opcional, com a conta demo
 // "free" contra o banco remoto. Faz a etapa demonstrativa se a conta ainda não fez (a única coisa
@@ -12,11 +13,7 @@ const RECIPE = { slug: "bowl-de-frango-grelhado-com-legumes-assados-g1", title: 
 const RECIPE_PATH = `/content/${RECIPE.slug}`;
 
 async function loginFree(page: Page) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator('[data-demo-kind="free"]').click();
-  await expect(page).toHaveURL(/\/explore/, { timeout: 20_000 });
+  await loginAs(page, "free");
 }
 
 /** Abre a receita; se a conta ainda não fez a etapa demonstrativa, faz os 4 passos e volta. */

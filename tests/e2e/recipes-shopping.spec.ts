@@ -1,5 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect as baseExpect, test, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
+import { expectNoTestRecipe, purgeTestRecipes } from "./helpers/recipes";
 
 // Receitas fase 5: lista de compras ligada ao comércio, contra o banco remoto (shopping_list_items e
 // os vínculos já estão em produção desde a 0027). Conta demo "premium": faz a etapa demonstrativa se
@@ -27,11 +29,7 @@ async function expectNoSeriousAxe(page: Page) {
 }
 
 async function loginPremium(page: Page) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator('[data-demo-kind="premium"]').click();
-  await expect(page).not.toHaveURL(/\/login/, { timeout: 20_000 });
+  await loginAs(page, "premium", { home: null });
 }
 
 /** Abre g3; se a conta ainda não fez a etapa demonstrativa, faz os 4 passos (sem marcar nada) e volta. */
@@ -117,11 +115,7 @@ test.describe("lista de compras (só leitura)", () => {
   });
 
   test("admin: /admin/links tem a aba Ingredientes com a fila", async ({ page }) => {
-    await page.goto("/login");
-    const panel = page.getByTestId("demo-access");
-    test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-    await panel.locator('[data-demo-kind="admin"]').click();
-    await expect(page).not.toHaveURL(/\/login/, { timeout: 20_000 });
+    await loginAs(page, "admin", { home: null });
     await page.goto("/admin/links");
     const tabs = page.getByRole("navigation", { name: "Tipo de vínculo" });
     await expect(tabs.getByRole("link", { name: "Conteúdos" })).toHaveAttribute("aria-current", "page");
@@ -146,34 +140,18 @@ test.describe("lista de compras (só leitura)", () => {
 });
 
 test.describe("produto correspondente no editor (conta do herói)", () => {
-  /** Apaga rascunhos deste teste (sobras de execuções interrompidas); os vínculos saem em cascata. */
-  async function deleteDrafts(page: Page, titlePrefix: string) {
-    for (let i = 0; i < 5; i++) {
-      await page.goto(`/creator/recipes?status=draft&q=${encodeURIComponent(titlePrefix)}`);
-      const menus = page.getByTestId("recipe-row-menu");
-      if ((await menus.count()) === 0) return;
-      await menus.first().click();
-      const del = page.getByTestId("recipe-delete");
-      if (!(await del.isVisible())) return;
-      await del.click();
-      await page.getByTestId("recipe-confirm").click();
-      await expect(page.getByTestId("recipe-confirm")).toHaveCount(0);
-    }
-  }
-
   test("ingrediente gravado recebe a sugestão de produto (pendente de validação), retirada em seguida; o rascunho é excluído", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "mobile", "grava um rascunho no remoto: roda só no mobile");
     test.setTimeout(180_000);
-    await page.goto("/login");
-    const panel = page.getByTestId("demo-access");
-    test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-    await panel.locator('[data-demo-kind="creator"]').click();
-    await expect(page).toHaveURL(/\/creator$/, { timeout: 20_000 });
+    await loginAs(page, "creator");
     const titlePrefix = "[E2E] Lista de compras";
-    await deleteDrafts(page, titlePrefix);
+    // sobras antigas de execuções interrompidas (os vínculos saem em cascata); a conta é compartilhada,
+    // então o rascunho de outra execução em andamento fica
+    await purgeTestRecipes(page, titlePrefix);
+    const title = `${titlePrefix} ${Date.now()}`;
     try {
       await page.goto("/creator/recipes/new");
-      await page.getByTestId("recipe-title").fill(`${titlePrefix} ${Date.now()}`);
+      await page.getByTestId("recipe-title").fill(title);
       await page.getByTestId("recipe-summary").fill("Rascunho do teste automático da lista de compras; é excluído no fim.");
       await page.getByTestId("recipe-category-cafe-da-manha").click();
       await page.getByTestId("recipe-servings").fill("2");
@@ -208,7 +186,8 @@ test.describe("produto correspondente no editor (conta do herói)", () => {
       await expect(field.getByTestId("ingredient-product-link")).toHaveCount(0);
       await expect(field.getByTestId("ingredient-product-choose")).toHaveText("Escolher produto");
     } finally {
-      await deleteDrafts(page, titlePrefix);
+      await purgeTestRecipes(page, titlePrefix, { title });
+      await expectNoTestRecipe(page, title);
     }
   });
 });

@@ -382,12 +382,12 @@
               "heroVideos": {
                 "data": "Vídeos enviados por heróis",
                 "period": "Enquanto o conteúdo existir",
-                "details": "Vídeo de rascunho que você descarta, troca ou abandona (envio vencido sem ir ao ar) é apagado do Cloudflare pela rotina diária. Vídeo de conteúdo que já esteve no ar fica como histórico desse conteúdo."
+                "details": "Vídeo de rascunho que você descarta, troca ou abandona (envio vencido sem ir ao ar) é apagado do Cloudflare pela rotina diária. Vídeo de conteúdo que já esteve no ar fica como histórico desse conteúdo; se o herói arquivar e depois excluir de vez uma receita, o vídeo dela também é apagado."
               },
               "recipePhotos": {
                 "data": "Fotos de receitas enviadas por heróis",
                 "period": "Enquanto a foto fizer parte da receita",
-                "details": "Foto removida no editor ou de rascunho excluído é apagada na hora; se essa exclusão falhar, ou se um envio não chegar a ser registrado, a rotina diária apaga a foto sem receita depois de 24 horas. Fotos de receita que já esteve no ar ficam com a receita."
+                "details": "Foto removida no editor ou de rascunho excluído é apagada na hora; se essa exclusão falhar, ou se um envio não chegar a ser registrado, a rotina diária apaga a foto sem receita depois de 24 horas. Fotos de receita que já esteve no ar ficam com a receita enquanto ela existir; se o herói arquivar e depois excluir a receita, as fotos são apagadas na hora."
               },
               "recipeHistory": {
                 "data": "Histórico de receitas vistas (opcional)",
@@ -397,7 +397,7 @@
               "recipeRatings": {
                 "data": "Avaliações de receitas (estrelas)",
                 "period": "Enquanto a conta existir",
-                "details": "São apagadas junto com a conta; a média da receita é recalculada na hora."
+                "details": "São apagadas junto com a conta; a média da receita é recalculada na hora. Se o herói excluir de vez uma receita arquivada, as avaliações, os favoritos e o histórico dela saem junto (os itens da sua lista de compras ficam, sem a receita de origem)."
               },
               "shoppingList": {
                 "data": "Lista de compras",

@@ -54,21 +54,22 @@ describe("gerador do relógio simulado", () => {
   });
 
   it("só emite o que o modelo simulado mede (catálogo ∩ matriz) e nada fora da faixa plausível", () => {
+    // Um ano por persona dá centenas de milhares de valores: junta as violações e confere uma vez só
+    // (um expect por valor levava ~2 s e passava dos 5 s do Vitest com a máquina ocupada).
+    const problems: string[] = [];
     for (const persona of PERSONAS) {
       const model = DEMO_PERSONAS[persona].model;
       const snap = generateWatchDay(persona, "2026-10-22", 18 * 60);
-      for (const code of Object.keys(snap.values)) expect(modelMeasures(model, code), `${persona}:${code}`).toBe(true);
+      for (const code of Object.keys(snap.values)) if (!modelMeasures(model, code)) problems.push(`${persona}:${code} (hoje)`);
       for (const day of [...YEARS[persona], ...snap.history]) {
         for (const [code, value] of Object.entries(day.values)) {
-          expect(modelMeasures(model, code), `${persona}:${code}`).toBe(true);
+          if (!modelMeasures(model, code)) problems.push(`${persona}:${day.date}:${code} (o modelo não mede)`);
           const plaus = metricDef(code)?.plaus;
-          if (plaus) {
-            expect(value, `${persona}:${day.date}:${code}`).toBeGreaterThanOrEqual(plaus[0]);
-            expect(value, `${persona}:${day.date}:${code}`).toBeLessThanOrEqual(plaus[1]);
-          }
+          if (plaus && (typeof value !== "number" || value < plaus[0] || value > plaus[1])) problems.push(`${persona}:${day.date}:${code}=${value} fora de ${plaus[0]}–${plaus[1]}`);
         }
       }
     }
+    expect(problems).toEqual([]);
   });
 
   it("Galaxy (Health Connect) nunca emite VFC, FC de repouso, temperatura, respiração, andares, Disposição nem estresse", () => {

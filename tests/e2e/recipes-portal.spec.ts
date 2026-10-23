@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import path from "node:path";
+import { loginAs } from "./helpers/login";
+import { expectNoTestRecipe, purgeTestRecipes } from "./helpers/recipes";
 
 // Receitas fase 2 (Portal do Chef) com a conta de demonstração do herói, contra o banco remoto:
 // Minhas Receitas com filtros e axe; criar um rascunho e passar pelas 6 etapas (2 ingredientes,
@@ -13,31 +15,8 @@ import path from "node:path";
 
 const REAL_MEDIA = process.env.E2E_RECIPE_MEDIA_REAL === "1";
 
-async function loginAs(page: Page, kind: "creator" | "admin" | "premium", home: RegExp) {
-  await page.goto("/login");
-  const panel = page.getByTestId("demo-access");
-  test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-  await panel.locator(`[data-demo-kind="${kind}"]`).click();
-  await expect(page).toHaveURL(home, { timeout: 20_000 });
-}
-
 function prefix(info: TestInfo) {
   return `[E2E] Receita ${info.project.name}`;
-}
-
-/** Apaga os rascunhos deste projeto que começam com o prefixo (sobras de execuções interrompidas). */
-async function deleteDrafts(page: Page, titlePrefix: string) {
-  for (let i = 0; i < 8; i++) {
-    await page.goto(`/creator/recipes?status=draft&q=${encodeURIComponent(titlePrefix)}`);
-    const menus = page.getByTestId("recipe-row-menu");
-    if ((await menus.count()) === 0) return;
-    await menus.first().click();
-    const del = page.getByTestId("recipe-delete");
-    if (!(await del.isVisible())) return;
-    await del.click();
-    await page.getByTestId("recipe-confirm").click();
-    await expect(page.getByTestId("recipe-confirm")).toHaveCount(0, { timeout: 15_000 });
-  }
 }
 
 async function axeMain(page: Page) {
@@ -54,7 +33,7 @@ async function clickNext(page: Page, step: string) {
 
 test.describe("Portal do Chef: Minhas Receitas", () => {
   test("lista com filtros por GET, Nova receita e axe; o menu do portal tem Minhas Receitas depois de Novo post", async ({ page }) => {
-    await loginAs(page, "creator", /\/creator$/);
+    await loginAs(page, "creator", { home: /\/creator$/ });
     await page.goto("/creator/recipes");
     await expect(page.getByRole("heading", { level: 1, name: "Minhas Receitas" })).toBeVisible();
     await expect(page.getByTestId("new-recipe")).toHaveAttribute("href", "/creator/recipes/new");
@@ -80,7 +59,7 @@ test.describe("Portal do Chef: Minhas Receitas", () => {
   });
 
   test("perfil do herói mostra especialidades e o pedido de credenciais com o aviso de aprovação", async ({ page }) => {
-    await loginAs(page, "creator", /\/creator$/);
+    await loginAs(page, "creator", { home: /\/creator$/ });
     await page.goto("/creator/profile");
     const chef = page.getByTestId("chef-profile");
     await expect(chef).toBeVisible();
@@ -94,9 +73,10 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
 
   test("cria, passa pelas 6 etapas, pré-visualiza, recarrega, recupera a cópia local e exclui o rascunho", async ({ page, context }, info) => {
     test.setTimeout(240_000);
-    await loginAs(page, "creator", /\/creator$/);
+    await loginAs(page, "creator", { home: /\/creator$/ });
     const titlePrefix = prefix(info);
-    await deleteDrafts(page, titlePrefix);
+    // sobras antigas deste projeto; o rascunho de outra execução em andamento (conta compartilhada) fica
+    await purgeTestRecipes(page, titlePrefix);
     const title = `${titlePrefix} ${Date.now()}`;
 
     try {
@@ -223,16 +203,15 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
     } finally {
       // ---- excluir o rascunho (e as fotos, se houve envio real): nada fica no remoto
       await context.setOffline(false);
-      await deleteDrafts(page, titlePrefix);
-      await page.goto(`/creator/recipes?q=${encodeURIComponent(titlePrefix)}`);
-      await expect(page.getByTestId("recipes-count")).toHaveText("Nenhuma receita");
+      await purgeTestRecipes(page, titlePrefix, { title });
+      await expectNoTestRecipe(page, title);
     }
   });
 });
 
 test.describe("renderizador estruturado na página pública", () => {
   test("g1 aparece pelo RecipeView com 'Batata-doce · 1 · média' quando a conta já fez a etapa", async ({ page }) => {
-    await loginAs(page, "premium", /\/profile$/);
+    await loginAs(page, "premium", { home: /\/profile$/ });
     await page.goto("/content/bowl-de-frango-grelhado-com-legumes-assados-g1");
     await expect(page.getByRole("heading", { level: 1, name: "Bowl de frango grelhado com legumes assados" })).toBeVisible();
     test.skip((await page.getByTestId("recipe-gate").count()) > 0, "a conta premium de demonstração ainda não fez a etapa demonstrativa de receitas");
@@ -246,7 +225,7 @@ test.describe("renderizador estruturado na página pública", () => {
 
 test.describe("admin: revisão por tipo e fila de credenciais", () => {
   test("configurações mostram a regra de revisão por tipo (só leitura aqui) e /admin/creators a fila de credenciais", async ({ page }) => {
-    await loginAs(page, "admin", /\/admin$/);
+    await loginAs(page, "admin", { home: /\/admin$/ });
     await page.goto("/admin/content/settings");
     const review = page.getByTestId("review-required-settings");
     await expect(review).toBeVisible();
@@ -263,7 +242,7 @@ test.describe("admin: revisão por tipo e fila de credenciais", () => {
   });
 
   test("detalhe de receita estruturada resume pelas tabelas e abre a prévia com o RecipeView", async ({ page }) => {
-    await loginAs(page, "admin", /\/admin$/);
+    await loginAs(page, "admin", { home: /\/admin$/ });
     await page.goto(`/admin/content?q=${encodeURIComponent("Bowl de frango grelhado")}`);
     await page.getByRole("link", { name: "Bowl de frango grelhado com legumes assados" }).first().click();
     await expect(page).toHaveURL(/\/admin\/content\/[0-9a-f-]+$/, { timeout: 20_000 });

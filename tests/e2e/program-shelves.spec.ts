@@ -106,7 +106,12 @@ test.describe("prateleiras de programas", () => {
     await page.goto(LIBRARY);
     const shelf = shelves(page).first();
     const tiles = steps(shelf);
+    // focus() não espera o elemento aparecer: com o streaming, logo após o "load" o React ainda pode
+    // estar com a prateleira no <div hidden> (Suspense ainda não revelado), onde nada recebe foco e o
+    // Tab saía do <body> para o "Pular para o conteúdo". Espera a prateleira de verdade, à vista.
+    await expect(tiles.first()).toBeVisible();
     await tiles.first().focus();
+    await expect(tiles.first()).toBeFocused();
     const total = await tiles.count();
     for (let i = 1; i < total; i++) {
       await page.keyboard.press("Tab");
@@ -118,6 +123,8 @@ test.describe("prateleiras de programas", () => {
   test("teclado: o contorno de foco do título da prateleira não é cortado", async ({ page }) => {
     await page.goto(LIBRARY);
     const link = shelves(page).first().getByRole("heading", { level: 2 }).getByRole("link");
+    // mesmo motivo do teste anterior: só foca depois que a prateleira saiu do contêiner escondido do streaming
+    await expect(link).toBeVisible();
     await link.focus();
     await expect(link).toBeFocused();
     // o contorno fica fora da caixa do link (2px + offset 2px); nenhum ancestro com overflow pode cortá-lo
