@@ -6,7 +6,7 @@ import type { HealthProvider } from "@/lib/health/types";
 import { MODEL_INFO } from "@/lib/wearables/catalog";
 
 // Conexão feita, nenhum dado ainda (§6.3): "Sincronizando…". Nada de número inventado nem botão de
-// atualizar — os dados chegam quando o relógio sincroniza com o app da marca.
+// atualizar — os dados chegam pela carga inicial (Oura/WHOOP) e quando o relógio sincroniza.
 export async function SyncingCard({ provider, deviceName }: { provider: HealthProvider; deviceName: string }) {
   const [t, tw] = await Promise.all([getTranslations("me.today.syncing"), getTranslations("wearables")]);
   const app = tw(`syncApps.${MODEL_INFO[PROVIDERS[provider].model].syncApp}`);
@@ -20,7 +20,8 @@ export async function SyncingCard({ provider, deviceName }: { provider: HealthPr
           <h3 id="today-syncing-title" className="type-h3 text-fg">
             {t("title")}
           </h3>
-          <p className="type-body-sm max-w-prose text-fg-muted">{t("body", { device: deviceName, app })}</p>
+          {/* Oura/WHOOP: a carga inicial traz o dia de hoje; Garmin e Polar não liberam o anterior à conexão */}
+          <p className="type-body-sm max-w-prose text-fg-muted">{t(provider === "oura" || provider === "whoop" ? "body" : "bodyNoHistory", { device: deviceName, app })}</p>
         </div>
       </div>
       <Link href="/profile/devices" prefetch={false} className="inline-flex min-h-11 w-fit items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">

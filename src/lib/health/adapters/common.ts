@@ -112,7 +112,8 @@ export type CanonicalSport = (typeof CANONICAL_SPORTS)[number];
 
 const SPORT_PATTERNS: [RegExp, CanonicalSport][] = [
   [/trail/, "trail_run"],
-  [/run|jog|treadmill|track/, "run"],
+  // "track" sozinho não: TRACK_CYCLING é ciclismo (TRACK_RUNNING já casa com "run")
+  [/run|jog|treadmill/, "run"],
   [/walk/, "walk"],
   [/hik/, "hike"],
   [/cycl|bik|spin|ride/, "cycle"],

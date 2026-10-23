@@ -37,6 +37,8 @@ export type DailyInput = {
   device?: string;
   /** Quando a marca atualizou o dado (RN-10: o mais novo vence). */
   updated?: string;
+  /** Documento da marca de onde o valor saiu ("sleep:<id>", "recovery:<id>"…): a exclusão na marca o apaga junto (§5.17). */
+  ref?: string;
 };
 
 export type SleepInput = {
@@ -96,7 +98,8 @@ export type NormalizedBatch = {
   daily: DailyInput[];
   sleep: SleepInput[];
   workouts: WorkoutInput[];
-  deletions: { kind: "sleep" | "workout"; ext: string }[];
+  /** sleep/workout: id da sessão (as métricas da noite saem junto); metrics: o `ref` de um documento diário. */
+  deletions: { kind: "sleep" | "workout" | "metrics"; ext: string }[];
 };
 
 export function emptyBatch(provider: HealthProvider, normalizerVersion: number): NormalizedBatch {

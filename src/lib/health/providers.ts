@@ -4,7 +4,11 @@
 // Endpoints conferidos na documentação pública de cada marca; os marcados [NC] devem ser
 // reconferidos no portal de desenvolvedor no cadastro (roteiro de ligar).
 
-import { metricsForModel, type WatchBrand, type WatchModelId } from "@/lib/wearables/catalog";
+import { metricDef, type MetricCode, type WatchBrand, type WatchModelId } from "@/lib/wearables/catalog";
+import { GARMIN_INGESTED_CODES } from "./adapters/garmin";
+import { OURA_INGESTED_CODES } from "./adapters/oura";
+import { POLAR_INGESTED_CODES } from "./adapters/polar";
+import { WHOOP_INGESTED_CODES } from "./adapters/whoop";
 import type { HealthCategory, HealthProvider } from "./types";
 
 export type ProviderDef = {
@@ -88,14 +92,36 @@ export const PROVIDERS: Record<HealthProvider, ProviderDef> = {
   },
 };
 
+/** O que cada adaptador grava de fato (as quatro marcas também gravam treinos). */
+export const PROVIDER_INGESTED_CODES: Record<HealthProvider, readonly MetricCode[]> = {
+  garmin: GARMIN_INGESTED_CODES,
+  oura: OURA_INGESTED_CODES,
+  whoop: WHOOP_INGESTED_CODES,
+  polar: POLAR_INGESTED_CODES,
+};
+
 /**
- * Categorias que a marca pode entregar (catálogo ∩ coluna da matriz), na ordem do enum. A tela de
- * consentimento só oferece estas; índices calculados por nós não contam (vêm das outras).
+ * Códigos que aparecem desta marca: o gravado pelo adaptador e o que o Hoje real monta a partir disso
+ * (agregados e zonas dos treinos, semana de intensidade, desvio da temperatura absoluta).
+ */
+export function providerMeasures(provider: HealthProvider): Set<string> {
+  const codes = new Set<string>(PROVIDER_INGESTED_CODES[provider]);
+  for (const c of ["workout_count", "workout_min", "workout_kcal", "workout_distance_m", "workout_pace_s_per_km", "hr_zone1_min", "hr_zone2_min", "hr_zone3_min", "hr_zone4_min", "hr_zone5_min"]) codes.add(c);
+  if (codes.has("intensity_min_moderate")) codes.add("intensity_min_week");
+  if (codes.has("skin_temp_c")) codes.add("skin_temp_delta_c");
+  return codes;
+}
+
+/**
+ * Categorias que a marca entrega DE FATO (códigos que o adaptador grava + treinos), na ordem do
+ * enum. A tela de consentimento só oferece estas: nada de autorizar dado que nunca vem (ex.: WHOOP
+ * não manda passos; Polar não manda temperatura). Índices calculados por nós não contam.
  */
 export function providerCategories(provider: HealthProvider): HealthCategory[] {
-  const set = new Set<HealthCategory>();
-  for (const def of metricsForModel(PROVIDERS[provider].model)) {
-    if (def.mode !== "C") set.add(def.category);
+  const set = new Set<HealthCategory>(["workout"]);
+  for (const code of PROVIDER_INGESTED_CODES[provider]) {
+    const def = metricDef(code);
+    if (def) set.add(def.category as HealthCategory);
   }
   const order: HealthCategory[] = ["readiness", "sleep", "heart", "activity", "workout", "breathing", "temperature", "stress", "environment", "safety"];
   return order.filter((c) => set.has(c));

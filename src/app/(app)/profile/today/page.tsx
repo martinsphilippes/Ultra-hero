@@ -24,7 +24,7 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
       <LegacyTodayCleanup />
       <PageHeader
         title={view.kind === "example" ? t("example.pageTitle") : t("title")}
-        description={view.kind === "connect" ? t("descriptionConnect") : t("description")}
+        description={view.kind === "connect" ? ((view.providers?.length ?? 0) > 0 ? t("descriptionConnectAvailable") : t("descriptionConnect")) : t("description")}
         backHref="/profile"
         backLabel={t("example.back")}
         actions={view.kind === "demo" || view.kind === "example" ? <DemoBadge /> : null}

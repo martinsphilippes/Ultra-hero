@@ -4,10 +4,19 @@
 // Lista permitida (RN-02b): medidas corporais (peso, altura, FC máx. configurada — escopo
 // read:body_measurement nunca é pedido), nome/e-mail do perfil e textos livres NUNCA entram.
 
+import type { MetricCode } from "@/lib/wearables/catalog";
 import { emptyBatch, type DailyInput, type NormalizeContext, type NormalizedBatch } from "../types";
 import { canonicalSport, get, localDateAt, localDateInZone, num, parseOffset, pickAllowed, round, str } from "./common";
 
 export const WHOOP_NORMALIZER_VERSION = 1;
+
+/** Códigos que este adaptador grava (tests/unit/health-adapters.test.ts confere com as fixtures). Define
+ * as categorias oferecidas no consentimento e o que "Sobre seus dados" diz que a marca mede. */
+export const WHOOP_INGESTED_CODES = [
+  "readiness_vendor", "hr_resting", "hrv_night", "spo2_night_avg", "skin_temp_c", "day_strain", "hr_avg", "hr_max",
+  "sleep_asleep_min", "sleep_deep_min", "sleep_light_min", "sleep_rem_min", "sleep_awake_min", "sleep_in_bed_min", "sleep_efficiency_pct",
+  "sleep_score_vendor", "resp_rate_sleep", "sleep_start_local", "sleep_end_local",
+] as const satisfies readonly MetricCode[];
 
 export const WHOOP_KINDS = ["recovery", "sleep", "workout"] as const;
 export type WhoopKind = (typeof WHOOP_KINDS)[number];
@@ -15,7 +24,7 @@ export type WhoopKind = (typeof WHOOP_KINDS)[number];
 const TIMING = ["id", "start", "end", "timezone_offset", "updated_at", "score_state"] as const;
 
 export const WHOOP_ALLOWED = {
-  recovery: ["cycle_id", "sleep_id", "updated_at", "score_state", "score.recovery_score", "score.resting_heart_rate", "score.hrv_rmssd_milli", "score.spo2_percentage", "score.skin_temp_celsius"],
+  recovery: ["cycle_id", "sleep_id", "created_at", "updated_at", "score_state", "score.recovery_score", "score.resting_heart_rate", "score.hrv_rmssd_milli", "score.spo2_percentage", "score.skin_temp_celsius"],
   cycle: [...TIMING, "score.strain", "score.average_heart_rate", "score.max_heart_rate"],
   sleep: [
     ...TIMING,
@@ -69,6 +78,45 @@ function localEndDate(p: Record<string, unknown>, tzFallback: string): string | 
   return offset === null ? localDateInZone(t, tzFallback) : localDateAt(t, offset);
 }
 
+/**
+ * Dia de um ciclo WHOOP: o ciclo começa quando a pessoa adormece, então ele pertence ao dia em que
+ * ela ACORDA desse sono. Sem o sono em mãos, início + 12 h cai nesse dia para quem dorme à noite
+ * [CP: quem dorme de dia pode cair no dia seguinte]. Nunca pelo `end` (início do sono seguinte).
+ */
+export function whoopCycleDate(c: Record<string, unknown>, tzFallback: string): string | undefined {
+  const start = str(c.start, 40);
+  const t = start ? Date.parse(start) : Number.NaN;
+  if (Number.isNaN(t)) return undefined;
+  const shifted = t + 12 * 3600_000;
+  const offset = parseOffset(c.timezone_offset);
+  return offset === null ? localDateInZone(shifted, tzFallback) : localDateAt(shifted, offset);
+}
+
+/**
+ * Strain do dia e FC média/máxima do ciclo. Ciclo em andamento (sem `end`): o valor até agora, com o
+ * horário da atualização da WHOOP; o tique e os treinos o atualizam e o valor final do dia anterior
+ * entra na manhã seguinte (pipeline). Puro.
+ */
+export function normalizeWhoopCycle(input: unknown, ctx: NormalizeContext): NormalizedBatch {
+  const batch = emptyBatch("whoop", WHOOP_NORMALIZER_VERSION);
+  const c = pickAllowed(input, WHOOP_ALLOWED.cycle);
+  const id = str(c.id, 200) ?? (num(c.id) !== undefined ? String(num(c.id)) : undefined);
+  const date = whoopCycleDate(c, ctx.tzFallback);
+  if (!id || !date || c.score_state !== "SCORED") return batch;
+  const updated = str(c.updated_at, 40);
+  const open = !str(c.end, 40);
+  const at = open && updated && !Number.isNaN(Date.parse(updated)) ? new Date(Date.parse(updated)).toISOString() : undefined;
+  const ref = `cycle:${id}`;
+  const push = (code: DailyInput["code"], value: number | undefined, extra: Partial<DailyInput> = {}) => {
+    if (value !== undefined) batch.daily.push({ date, code, value, at, updated, ref, ...extra });
+  };
+  const strain = num(get(c, "score.strain"));
+  push("day_strain", strain !== undefined ? round(strain, 1) : undefined, { vendor: true, scale: "whoop_strain" });
+  push("hr_avg", num(get(c, "score.average_heart_rate")));
+  push("hr_max", num(get(c, "score.max_heart_rate")));
+  return batch;
+}
+
 const ms2min = (v: unknown) => {
   const n = num(v);
   return n === undefined ? undefined : round(n / 60000);
@@ -81,6 +129,8 @@ export function normalizeWhoop(kind: WhoopKind, input: unknown, ctx: NormalizeCo
   if (deleted) {
     if (objectId && kind === "sleep") batch.deletions.push({ kind: "sleep", ext: objectId });
     if (objectId && kind === "workout") batch.deletions.push({ kind: "workout", ext: objectId });
+    // recovery apagado: o id é o do sono a que ele pertence; saem readiness, FC de repouso, VFC…
+    if (objectId && kind === "recovery") batch.deletions.push({ kind: "metrics", ext: `recovery:${objectId}` });
     return batch;
   }
 
@@ -89,12 +139,19 @@ export function normalizeWhoop(kind: WhoopKind, input: unknown, ctx: NormalizeCo
     const r = pickAllowed(bundle.recovery, WHOOP_ALLOWED.recovery);
     const s = pickAllowed(bundle.sleep, WHOOP_ALLOWED.sleep);
     const c = pickAllowed(bundle.cycle, WHOOP_ALLOWED.cycle);
-    // recovery ainda sendo calculado (ou pessoa calibrando) não vira número
-    const date = localEndDate(s, ctx.tzFallback);
+    // recovery ainda sendo calculado (ou pessoa calibrando) não vira número. Dia: o do acordar (sono,
+    // quando há read:sleep); senão o do ciclo; senão o dia em que a WHOOP criou o recovery (no acordar).
+    const created = str(r.created_at, 40);
+    const date =
+      localEndDate(s, ctx.tzFallback) ??
+      (Object.keys(c).length > 0 ? whoopCycleDate(c, ctx.tzFallback) : undefined) ??
+      (created && !Number.isNaN(Date.parse(created)) ? localDateInZone(Date.parse(created), ctx.tzFallback) : undefined);
     const updated = str(r.updated_at, 40);
     const at = str(s.end, 40) ? new Date(Date.parse(String(s.end))).toISOString() : undefined;
+    const sleepId = str(r.sleep_id, 200) ?? str(s.id, 200);
+    const ref = sleepId ? `recovery:${sleepId}` : undefined;
     const daily = (code: DailyInput["code"], value: number | undefined, extra: Partial<DailyInput> = {}) => {
-      if (date && value !== undefined) batch.daily.push({ date, code, value, at, updated, ...extra });
+      if (date && value !== undefined) batch.daily.push({ date, code, value, at, updated, ref, ...extra });
     };
     if (r.score_state === "SCORED") {
       daily("readiness_vendor", num(get(r, "score.recovery_score")), { vendor: true, scale: "whoop_recovery_pct" });
@@ -104,16 +161,7 @@ export function normalizeWhoop(kind: WhoopKind, input: unknown, ctx: NormalizeCo
       // WHOOP manda temperatura ABSOLUTA da pele: o desvio sai da linha de base (§5.8)
       daily("skin_temp_c", num(get(r, "score.skin_temp_celsius")) !== undefined ? round(num(get(r, "score.skin_temp_celsius"))!, 2) : undefined);
     }
-    if (c.score_state === "SCORED") {
-      const cycleDate = localEndDate(c, ctx.tzFallback) ?? date;
-      const cycleUpdated = str(c.updated_at, 40);
-      const strain = num(get(c, "score.strain"));
-      if (cycleDate && strain !== undefined) batch.daily.push({ date: cycleDate, code: "day_strain", value: round(strain, 1), vendor: true, scale: "whoop_strain", updated: cycleUpdated });
-      const avg = num(get(c, "score.average_heart_rate"));
-      if (cycleDate && avg !== undefined) batch.daily.push({ date: cycleDate, code: "hr_avg", value: avg, updated: cycleUpdated });
-      const max = num(get(c, "score.max_heart_rate"));
-      if (cycleDate && max !== undefined) batch.daily.push({ date: cycleDate, code: "hr_max", value: max, updated: cycleUpdated });
-    }
+    if (bundle.cycle) batch.daily.push(...normalizeWhoopCycle(bundle.cycle, ctx).daily);
     return batch;
   }
 
@@ -155,7 +203,7 @@ export function normalizeWhoop(kind: WhoopKind, input: unknown, ctx: NormalizeCo
     });
     if (nap) return batch;
     const nightly = (code: DailyInput["code"], value: number | undefined, extra: Partial<DailyInput> = {}) => {
-      if (value !== undefined) batch.daily.push({ date, code, value, at: wake, updated, ...extra });
+      if (value !== undefined) batch.daily.push({ date, code, value, at: wake, updated, ref: `sleep:${id}`, ...extra });
     };
     nightly("sleep_asleep_min", asleep);
     nightly("sleep_deep_min", deep);

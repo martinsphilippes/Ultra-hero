@@ -219,6 +219,7 @@
     "title": "Today — Your day, in focus",
     "description": "Measured by your watch: your night and your day so far. Nothing to type.",
     "descriptionConnect": "Coming soon: your day measured by your watch. Nothing to type.",
+    "descriptionConnectAvailable": "Your day measured by the watch you connect. Nothing to type.",
     "demo": {
       "title": "Demo data",
       "body": "They simulate a {device}. Nothing here belongs to a real person, and nothing is stored: the numbers are generated on the spot.",
@@ -351,6 +352,7 @@
         "hr": "Avg HR {avg} · max {max}",
         "speed": "{value} km/h",
         "load": "Day load {value} · {comparison}",
+        "loadEstimated": "Zones estimated from the workout's average HR (the watch does not send zones) · calculated by Ultra Hero",
         "origin": "Workout started on the watch",
         "sports": {
           "run": "Run",
@@ -445,6 +447,7 @@
       "metaTitle": "About your data",
       "title": "About your data",
       "intro": "At this stage Ultra Hero does not read any real watch and does not collect data from your watch. The simulated watch is generated on the spot from the account and the date, and it is neither stored nor sent to anyone.",
+      "introAvailable": "Ultra Hero only reads a watch or ring after you connect it and authorize the categories, in Watches and rings. Below is an example of what a watch measures: none of it is yours.",
       "rule": "Today's rule: only what the watch measures on its own, through use — automatically or in a workout started on it. Nothing is typed.",
       "modelTitle": "What the {device} measures",
       "modelHidden": "What this model does not measure stays hidden in Today — it never shows as zero.",
@@ -471,7 +474,8 @@
     },
     "syncing": {
       "title": "Syncing…",
-      "body": "Your {device} is connected. The first data arrives when the watch syncs with the {app} app.",
+      "body": "Your {device} is connected. We are bringing in today's data; the next updates arrive when the watch syncs with the {app} app.",
+      "bodyNoHistory": "Your {device} is connected. The first data arrives when the watch syncs with the {app} app; the brand does not share what was measured before the connection.",
       "devicesLink": "Watches and rings"
     }
   },

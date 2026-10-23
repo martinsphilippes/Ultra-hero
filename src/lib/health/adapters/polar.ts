@@ -5,10 +5,18 @@
 // esforço percebido (RPE/perceived load), percentuais de macronutrientes, nome/clube e treinos
 // sem aparelho (lançados à mão no Flow) NUNCA entram.
 
+import type { MetricCode } from "@/lib/wearables/catalog";
 import { emptyBatch, type DailyInput, type NormalizedBatch } from "../types";
 import { canonicalSport, get, isYmd, isoDurationSeconds, isoOffset, localDateAt, num, pickAllowed, round, str } from "./common";
 
 export const POLAR_NORMALIZER_VERSION = 1;
+
+/** Códigos que este adaptador grava (tests/unit/health-adapters.test.ts confere com as fixtures). Define
+ * as categorias oferecidas no consentimento e o que "Sobre seus dados" diz que a marca mede. */
+export const POLAR_INGESTED_CODES = [
+  "readiness_vendor", "hr_resting", "hrv_night", "resp_rate_sleep", "sleep_asleep_min", "sleep_deep_min", "sleep_light_min", "sleep_rem_min",
+  "sleep_awake_min", "sleep_score_vendor", "sleep_start_local", "sleep_end_local", "steps", "active_kcal", "distance_m",
+] as const satisfies readonly MetricCode[];
 
 export const POLAR_KINDS = ["exercise", "sleep", "nightly_recharge", "activity"] as const;
 export type PolarKind = (typeof POLAR_KINDS)[number];

@@ -219,6 +219,7 @@
     "title": "Hoje — Seu dia, em foco",
     "description": "Medido pelo seu relógio: sua noite e seu dia até agora. Nada para digitar.",
     "descriptionConnect": "Em breve: seu dia medido pelo relógio. Nada para digitar.",
+    "descriptionConnectAvailable": "Seu dia medido pelo relógio que você conectar. Nada para digitar.",
     "demo": {
       "title": "Dados de demonstração",
       "body": "Simulam um {device}. Nada aqui é de uma pessoa real, e nada fica guardado: os números são gerados na hora.",
@@ -351,6 +352,7 @@
         "hr": "FC média {avg} · máx. {max}",
         "speed": "{value} km/h",
         "load": "Carga do dia {value} · {comparison}",
+        "loadEstimated": "Zonas estimadas pela FC média do treino (o relógio não envia zonas) · calculado pelo Ultra Hero",
         "origin": "Treino iniciado no relógio",
         "sports": {
           "run": "Corrida",
@@ -445,6 +447,7 @@
       "metaTitle": "Sobre seus dados",
       "title": "Sobre seus dados",
       "intro": "Nesta fase o Ultra Hero não lê nenhum relógio de verdade e não coleta dados do seu relógio. O relógio simulado é gerado na hora, a partir da conta e da data, e não é guardado nem enviado a ninguém.",
+      "introAvailable": "O Ultra Hero só lê um relógio ou anel depois que você o conecta e autoriza as categorias, em Relógios e anéis. Abaixo, um exemplo do que um relógio mede: nada dele é seu.",
       "rule": "Regra do Hoje: só entra o que o relógio mede sozinho, pelo uso — de forma automática ou num treino iniciado nele. Nada é digitado.",
       "modelTitle": "O que o {device} mede",
       "modelHidden": "O que este modelo não mede fica escondido no Hoje — nunca aparece como zero.",
@@ -471,7 +474,8 @@
     },
     "syncing": {
       "title": "Sincronizando…",
-      "body": "Seu {device} está conectado. Os primeiros dados chegam quando o relógio sincronizar com o app {app}.",
+      "body": "Seu {device} está conectado. Estamos trazendo os dados de hoje; os próximos chegam quando o relógio sincronizar com o app {app}.",
+      "bodyNoHistory": "Seu {device} está conectado. Os primeiros dados chegam quando o relógio sincronizar com o app {app}; a marca não libera o que foi medido antes da conexão.",
       "devicesLink": "Relógios e anéis"
     }
   },

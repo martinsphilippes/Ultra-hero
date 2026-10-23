@@ -6,10 +6,23 @@
 // leituras sob demanda (onDemandReadings / pulseox) e atividades manuais ou enviadas pela web
 // (manual / isWebUpload) NUNCA entram — tests/unit/health-adapters.test.ts falha se entrarem.
 
+import type { MetricCode } from "@/lib/wearables/catalog";
 import { emptyBatch, type DailyInput, type NormalizedBatch, type SleepInput, type WorkoutInput } from "../types";
 import { canonicalSport, get, isoAt, isYmd, localDateAt, mean, num, pickAllowed, round, str } from "./common";
 
 export const GARMIN_NORMALIZER_VERSION = 1;
+
+/** Códigos que este adaptador grava (tests/unit/health-adapters.test.ts confere com as fixtures). Define
+ * as categorias oferecidas no consentimento e o que "Sobre seus dados" diz que a marca mede. */
+export const GARMIN_INGESTED_CODES = [
+  "steps", "wheelchair_pushes", "wheelchair_distance_m", "distance_m", "active_kcal", "basal_kcal", "intensity_min_moderate", "intensity_min_vigorous",
+  "intensity_goal_week_min", "floors_climbed", "floors_descended", "floors_goal", "steps_goal", "hr_min", "hr_avg", "hr_max", "hr_resting",
+  "stress_avg", "stress_max", "stress_rest_min", "stress_low_min", "stress_medium_min", "stress_high_min",
+  "body_battery_charged", "body_battery_drained", "body_battery_high", "body_battery_low", "body_battery_now",
+  "sleep_asleep_min", "sleep_deep_min", "sleep_light_min", "sleep_rem_min", "sleep_awake_min", "sleep_in_bed_min", "sleep_efficiency_pct",
+  "sleep_score_vendor", "sleep_start_local", "sleep_end_local", "resp_rate_sleep", "spo2_night_avg", "spo2_night_min",
+  "hrv_night", "resp_rate_day_avg", "skin_temp_delta_c", "vo2max", "fitness_age",
+] as const satisfies readonly MetricCode[];
 
 /** Tipos de resumo que registramos no portal. Os demais (bodyComps, mct, bloodPressures, pulseox, epochs, activityDetails, manuallyUpdatedActivities, moveiq, healthSnapshot) não são lidos. */
 export const GARMIN_KINDS = ["dailies", "sleeps", "activities", "hrv", "respiration", "skinTemp", "stressDetails", "userMetrics", "deregistrations", "userPermissionsChange"] as const;
@@ -90,6 +103,16 @@ export function isGarminKind(value: string): value is GarminKind {
   return (GARMIN_KINDS as readonly string[]).includes(value);
 }
 
+/** Treino lançado à mão/enviado pela web ou sono digitado/ajustado à mão (RN-20). */
+export function isManualGarminItem(kind: GarminKind, r: Record<string, unknown>): boolean {
+  if (kind === "activities") return r.manual === true || r.isWebUpload === true;
+  if (kind === "sleeps") {
+    const validation = typeof r.validation === "string" ? r.validation.toUpperCase() : "";
+    return validation === "MANUAL" || validation === "AUTO_MANUAL";
+  }
+  return false;
+}
+
 export type GarminItem = { providerUserId: string; kind: GarminKind; eventId: string | null; payload: Record<string, unknown>; callbackURL: string | null };
 
 /**
@@ -107,6 +130,8 @@ export function splitGarminBody(body: unknown): GarminItem[] {
       const userId = str(r.userId, 128);
       if (!userId) continue;
       const callbackURL = str(r.callbackURL, 2000) ?? null;
+      // digitado à mão ou enviado pela web nunca entra, nem no inbox bruto (RN-20; mesmos critérios do normalizador)
+      if (!callbackURL && isManualGarminItem(kind, r)) continue;
       const summaryId = str(r.summaryId, 200) ?? null;
       items.push({ providerUserId: userId, kind, eventId: summaryId ? `${kind}:${summaryId}` : null, payload: callbackURL ? {} : pickAllowed(r, GARMIN_ALLOWED[kind]), callbackURL });
     }
@@ -209,8 +234,7 @@ export function normalizeGarmin(kind: GarminKind, input: unknown): NormalizedBat
     }
     case "sleeps": {
       // sono digitado ou ajustado à mão não entra (RN-20)
-      const validation = typeof p.validation === "string" ? p.validation.toUpperCase() : "";
-      if (validation === "MANUAL" || validation === "AUTO_MANUAL") return batch;
+      if (isManualGarminItem("sleeps", p)) return batch;
       const start = num(p.startTimeInSeconds);
       const duration = num(p.durationInSeconds);
       if (start === undefined || duration === undefined || duration <= 0) return batch;
@@ -270,7 +294,7 @@ export function normalizeGarmin(kind: GarminKind, input: unknown): NormalizedBat
     }
     case "activities": {
       // treino digitado ou enviado pela web (GPX de outro app) não entra (RN-20)
-      if (p.manual === true || p.isWebUpload === true) return batch;
+      if (isManualGarminItem("activities", p)) return batch;
       const start = num(p.startTimeInSeconds);
       const duration = num(p.durationInSeconds);
       if (start === undefined || duration === undefined || duration <= 0) return batch;

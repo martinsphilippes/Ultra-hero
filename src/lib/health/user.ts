@@ -37,7 +37,7 @@ export async function myConnections(supabase: Client): Promise<RpcConnection[] |
 }
 
 export async function loadRealView(supabase: Client, input: { today: string; nowMin: number; timeZone: string }): Promise<RealWatchView> {
-  const { data, error } = await supabase.rpc("my_health_today", { p_until: input.today, p_days: 63 });
+  const { data, error } = await supabase.rpc("my_health_today", { p_until: input.today, p_days: 93 });
   if (error || !data || typeof data !== "object") return { kind: "none" };
   return buildRealView({ data: data as unknown as RpcToday, today: input.today, nowMin: input.nowMin, timeZone: input.timeZone });
 }

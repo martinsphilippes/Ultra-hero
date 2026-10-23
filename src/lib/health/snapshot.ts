@@ -29,14 +29,20 @@ export type RealWatchView =
   | { kind: "syncing"; provider: HealthProvider; deviceName: string; connectedAt: string }
   | { kind: "real"; provider: HealthProvider; snapshot: WatchSnapshot; lastSync: { date: string; at: number } | null; stale: boolean };
 
-/** Conexões cujos dados aparecem (pausada ou desautorizada na marca: os dados antigos continuam visíveis). */
-const VISIBLE = new Set(["active", "token_expired", "consent_outdated", "revoked_by_provider", "pending"]);
+/**
+ * Conexões cujos dados aparecem (pausada, desautorizada na marca ou com reconexão que falhou: os dados
+ * antigos continuam visíveis). "pending" não: só existe durante o OAuth e, se ele falhar, vira "error".
+ */
+const VISIBLE = new Set(["active", "token_expired", "consent_outdated", "revoked_by_provider", "error"]);
 
 export const BRAND_NAMES: Record<HealthProvider, string> = { garmin: "Garmin", oura: "Oura", whoop: "WHOOP", polar: "Polar" };
 
 const HISTORY = 30;
 const NIGHT_EXTRA: readonly string[] = ["readiness_vendor", "disposition_uh", "night_vitals_uh", "sleep_regularity"];
 const STALE_MS = 6 * 3600_000;
+/** Reserva das zonas (§13.4): % da maior FC observada em 90 dias, com ≥ 30 dias de dados. */
+const ZONE_REF_DAYS = 90;
+const ZONE_REF_MIN_DAYS = 30;
 
 function isNightCode(code: string): boolean {
   const def = metricDef(code);
@@ -87,7 +93,9 @@ export function buildRealView(input: { data: RpcToday; today: string; nowMin: nu
   const primary = [...conns].sort((a, b) => (b.last_data_at ?? "").localeCompare(a.last_data_at ?? "") || a.connected_at.localeCompare(b.connected_at))[0];
   const deviceName = primary.device_name || BRAND_NAMES[primary.provider];
   if (daily.length === 0 && workoutsAll.length === 0) {
-    return { kind: "syncing", provider: primary.provider, deviceName, connectedAt: primary.connected_at };
+    // "Sincronizando…" só com conexão ativa; sem nenhuma, volta o card de conectar (e Relógios e anéis pede reconexão)
+    const active = conns.find((c) => c.status === "active");
+    return active ? { kind: "syncing", provider: active.provider, deviceName: active.device_name || BRAND_NAMES[active.provider], connectedAt: active.connected_at } : { kind: "none" };
   }
 
   const model: WatchModelId = PROVIDERS[primary.provider].model;
@@ -95,8 +103,14 @@ export function buildRealView(input: { data: RpcToday; today: string; nowMin: nu
   const todayIndex = dayIndexOf(input.today);
   const firstIndex = todayIndex - (HISTORY + 29);
 
-  // workouts por dia, sem duplicar a mesma sessão vinda de duas fontes
-  const workouts = dedupWorkouts(workoutsAll);
+  // workouts por dia, sem duplicar a mesma sessão vinda de duas fontes. Treino sem zonas da marca
+  // (resumo da Garmin, Oura) e com FC média: zona estimada pela FC média ÷ maior FC dos 90 dias (§13.4)
+  const zoneRef = referenceMaxHr(daily, workoutsAll, input.today);
+  const workouts = dedupWorkouts(workoutsAll).map((w): EstimatedWorkout => {
+    if (hasZones(w) || !zoneRef) return w;
+    const zones = estimatedZones(w, zoneRef);
+    return zones ? { ...w, zones, estimated: true } : w;
+  });
   const workoutsByDay = new Map<string, RpcWorkout[]>();
   for (const w of workouts) workoutsByDay.set(w.d, [...(workoutsByDay.get(w.d) ?? []), w]);
 
@@ -350,6 +364,40 @@ export function buildRealView(input: { data: RpcToday; today: string; nowMin: nu
     fullDayBaselines,
     disposition: disp,
     nightVitals: vitals,
+    ...((workoutsByDay.get(input.today) ?? []).some((w) => (w as EstimatedWorkout).estimated) ? { estimatedZones: true } : {}),
   };
   return { kind: "real", provider: primary.provider, snapshot, lastSync, stale };
+}
+
+type EstimatedWorkout = RpcWorkout & { estimated?: boolean };
+
+function hasZones(w: RpcWorkout): boolean {
+  return Array.isArray(w.zones) && w.zones.length === 5;
+}
+
+/** Maior FC (dia ou treino) nos 90 dias até hoje; null com menos de 30 dias com FC máxima. */
+export function referenceMaxHr(daily: readonly RpcDaily[], workouts: readonly RpcWorkout[], today: string): number | null {
+  const from = ymdOf(dayIndexOf(today) - ZONE_REF_DAYS);
+  const days = new Set<string>();
+  let max = 0;
+  for (const r of daily) {
+    if (r.c !== "hr_max" || r.d < from || r.d > today || !(r.v > 0)) continue;
+    days.add(r.d);
+    max = Math.max(max, r.v);
+  }
+  for (const w of workouts) {
+    if (w.d < from || w.d > today || !w.max_hr) continue;
+    days.add(w.d);
+    max = Math.max(max, w.max_hr);
+  }
+  return days.size >= ZONE_REF_MIN_DAYS && max > 0 ? max : null;
+}
+
+/** Duração inteira na zona da FC média (50–60% = zona 1 … ≥ 90% = zona 5; abaixo de 50%, nenhuma). */
+export function estimatedZones(w: RpcWorkout, refMax: number): number[] | null {
+  if (!w.avg_hr || !(w.dur > 0)) return null;
+  const pct = w.avg_hr / refMax;
+  if (pct < 0.5) return null;
+  const zone = Math.min(5, Math.floor(pct * 10) - 4);
+  return [1, 2, 3, 4, 5].map((k) => (k === zone ? w.dur : 0));
 }

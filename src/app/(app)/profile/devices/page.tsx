@@ -19,12 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const ERROR_KEYS = new Set(["generic", "demo", "unavailable", "denied", "state", "provider", "inUse", "noConsent"]);
-const NATIVE_ONLY = new Set(["apple", "samsung", "google"]);
 const linkClass = "inline-flex min-h-11 w-fit items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 // Relógios e anéis (RF-07): conectar (só contas reais, só marcas ligadas no ambiente), ver o estado,
 // desconectar e apagar, retirar categorias ou o consentimento inteiro. Contas demo continuam com o
-// relógio simulado e não veem o fluxo. Com a chave desligada, tudo segue "Em breve".
+// relógio simulado e não veem o fluxo. Com a chave desligada, tudo segue "Em breve" — mas quem já
+// consentiu ou conectou continua podendo desconectar e retirar (a retirada nunca é bloqueada, art. 8º §5º).
 export default async function DevicesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser("/profile/devices");
   const [t, tw, locale, search] = await Promise.all([getTranslations("devices"), getTranslations("wearables"), getLocale(), searchParams]);
@@ -32,24 +32,26 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
   const header = <PageHeader title={t("title")} description={t("description")} backHref="/profile" backLabel={t("back")} />;
   const dateFmt = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
-  if (isDemoUser(user) || !wearablesRealEnabled()) {
-    return (
-      <div className="flex flex-col gap-6" data-testid="devices-page" data-state={isDemoUser(user) ? "demo" : "off"}>
-        {header}
-        <p role="note" className="flex items-start gap-2 rounded-2xl border border-border bg-surface p-5 type-body-sm text-fg">
-          <Info className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
-          {isDemoUser(user) ? t("demo") : t("off")}
-        </p>
-        <Link href="/profile" className={linkClass}>
-          {t("back")}
-          <ChevronRight className="size-4" aria-hidden="true" />
-        </Link>
-      </div>
-    );
-  }
+  const off = (state: "demo" | "off") => (
+    <div className="flex flex-col gap-6" data-testid="devices-page" data-state={state}>
+      {header}
+      <p role="note" className="flex items-start gap-2 rounded-2xl border border-border bg-surface p-5 type-body-sm text-fg">
+        <Info className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
+        {state === "demo" ? t("demo") : t("off")}
+      </p>
+      <Link href="/profile" className={linkClass}>
+        {t("back")}
+        <ChevronRight className="size-4" aria-hidden="true" />
+      </Link>
+    </div>
+  );
+  if (isDemoUser(user)) return off("demo");
 
+  const enabled = wearablesRealEnabled();
   const supabase = await createClient();
   const [consent, connections] = await Promise.all([myConsent(supabase), myConnections(supabase)]);
+  // chave desligada: só a tela "em breve", salvo se houver consentimento ou conexão a gerenciar
+  if (!enabled && (consent === "unavailable" || connections === "unavailable" || (!consent && connections.length === 0))) return off("off");
   if (consent === "unavailable" || connections === "unavailable") {
     return (
       <div className="flex flex-col gap-6" data-testid="devices-page" data-state="unavailable">
@@ -61,11 +63,18 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
     );
   }
   const available = new Set<string>(availableProviders());
-  const connectedProviders = new Set(connections.filter((c) => c.status !== "revoked_by_provider").map((c) => c.provider));
+  // pendente/erro: a abertura falhou; a marca volta a oferecer "Conectar" (e a linha, "Reconectar")
+  const connectedProviders = new Set(connections.filter((c) => !["revoked_by_provider", "pending", "error"].includes(c.status)).map((c) => c.provider));
 
   return (
-    <div className="flex flex-col gap-6" data-testid="devices-page" data-state="on">
+    <div className="flex flex-col gap-6" data-testid="devices-page" data-state={enabled ? "on" : "paused"}>
       {header}
+      {enabled ? null : (
+        <p role="note" className="flex items-start gap-2 rounded-2xl border border-border bg-surface p-5 type-body-sm text-fg">
+          <Info className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
+          {t("paused")}
+        </p>
+      )}
       {errorKey ? (
         <p role="alert" className="rounded-xl border border-danger/40 bg-danger-soft px-4 py-3 type-body-sm text-fg">
           {t(`errors.${errorKey}`)}
@@ -96,7 +105,7 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
                 </p>
                 {c.status === "revoked_by_provider" ? <p className="type-caption text-fg">{t("revokedHint")}</p> : null}
                 <div className="flex flex-wrap items-center gap-3">
-                  {(c.status === "token_expired" || c.status === "revoked_by_provider" || c.status === "consent_outdated") && available.has(c.provider) ? (
+                  {["token_expired", "revoked_by_provider", "consent_outdated", "pending", "error"].includes(c.status) && available.has(c.provider) ? (
                     <Link href={`/profile/devices/connect/${c.provider}`} prefetch={false} className={linkClass}>
                       {t("reconnect")}
                     </Link>
@@ -134,7 +143,7 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
                     <span className="text-sm font-semibold text-fg">{tw(`brands.${brand}`)}</span>
                     {connectedProviders.has(brand as never) ? null : (
                       <Badge variant="neutral" size="sm">
-                        {NATIVE_ONLY.has(brand) ? t("nativeOnly") : t("soon")}
+                        {t("soon")}
                       </Badge>
                     )}
                   </span>

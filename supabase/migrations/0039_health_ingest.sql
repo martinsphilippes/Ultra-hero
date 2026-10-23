@@ -138,16 +138,17 @@ begin
   if v.status <> 'active' then return jsonb_build_object('status', 'inactive'); end if;
 
   insert into health.daily_metrics as d (user_id, connection_id, local_date, metric_code, value, scale, value_label, method,
-    sample_count, sampled_at, coverage_pct, is_vendor_score, source_device, source_updated_at, normalizer_version)
+    sample_count, sampled_at, coverage_pct, is_vendor_score, source_device, source_updated_at, source_ref, normalizer_version)
   select v.user_id, v.id, (x ->> 'date')::date, x ->> 'code', (x ->> 'value')::numeric, x ->> 'scale', x ->> 'label', x ->> 'method',
     (x ->> 'n')::smallint, (x ->> 'at')::timestamptz, (x ->> 'cov')::smallint, coalesce((x ->> 'vendor')::boolean, false),
-    x ->> 'device', (x ->> 'updated')::timestamptz, p_normalizer_version
+    x ->> 'device', (x ->> 'updated')::timestamptz, x ->> 'ref', p_normalizer_version
   from jsonb_array_elements(coalesce(p_batch -> 'daily', '[]'::jsonb)) x
   on conflict (user_id, local_date, metric_code, connection_id) do update set
     value = excluded.value, scale = excluded.scale, value_label = excluded.value_label, method = excluded.method,
     sample_count = excluded.sample_count, sampled_at = excluded.sampled_at, coverage_pct = excluded.coverage_pct,
     is_vendor_score = excluded.is_vendor_score, source_device = excluded.source_device,
-    source_updated_at = excluded.source_updated_at, normalizer_version = excluded.normalizer_version, ingested_at = now()
+    source_updated_at = excluded.source_updated_at, source_ref = excluded.source_ref,
+    normalizer_version = excluded.normalizer_version, ingested_at = now()
   where coalesce(excluded.source_updated_at, now()) >= coalesce(d.source_updated_at, d.ingested_at);
   get diagnostics n_daily = row_count;
 
@@ -190,7 +191,14 @@ begin
   where coalesce(excluded.source_updated_at, now()) >= coalesce(w.source_updated_at, w.ingested_at);
   get diagnostics n_workouts = row_count;
 
-  -- valor corrigido ou apagado na marca: nunca mantemos o que a fonte retirou (§5.17)
+  -- valor corrigido ou apagado na marca: nunca mantemos o que a fonte retirou (§5.17). As métricas
+  -- da noite saem com o sono (inclusive o recovery da WHOOP, que pertence ao sono); "metrics" apaga
+  -- o que veio de um documento diário (ex.: daily_readiness da Oura, recovery da WHOOP).
+  delete from health.daily_metrics d using jsonb_array_elements(coalesce(p_batch -> 'deletions', '[]'::jsonb)) x
+  where d.connection_id = v.id and d.source_ref is not null
+    and ((x ->> 'kind' = 'sleep' and d.source_ref in ('sleep:' || (x ->> 'ext'), 'recovery:' || (x ->> 'ext')))
+         or (x ->> 'kind' = 'metrics' and d.source_ref = x ->> 'ext'));
+  get diagnostics n = row_count; n_deleted := n_deleted + n;
   delete from health.sleep_sessions s using jsonb_array_elements(coalesce(p_batch -> 'deletions', '[]'::jsonb)) x
   where s.connection_id = v.id and x ->> 'kind' = 'sleep' and s.external_id = x ->> 'ext';
   get diagnostics n = row_count; n_deleted := n_deleted + n;

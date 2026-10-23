@@ -3369,6 +3369,12 @@ select tests.ok('S45 inbox idempotente: mesmo corpo ou mesmo id de evento não e
   and (select r ->> 'status' from s45_ev4) = 'no_connection'
   and (select count(*) from health.ingest_events where connection_id = (select id from s45_conn)) = 1
   and (select count(*) from health.ingest_events) = 1);
+-- o hash é da IDENTIDADE da notificação (store.ts/inboxHash): nova notificação do mesmo recurso entra
+set local role health_ingest;
+create temporary table s45_ev5 as select health.event_receive('garmin', 'G-USER-1', 'dailies', 'dailies:s1:v2', repeat('d', 64), '{"steps": 1}'::jsonb) as r;
+select tests.su();
+select tests.ok('S45 nova notificação do mesmo recurso (outro id de evento) entra como received, não como duplicate',
+  (select r ->> 'status' from s45_ev5) = 'received');
 set local role health_ingest;
 create temporary table s45_claim as select health.event_claim((select (r ->> 'event_id')::uuid from s45_ev1)) as r;
 create temporary table s45_fail as select health.event_finish((select (r ->> 'event_id')::uuid from s45_ev1), false, 'provider_http_500') as r;
@@ -3440,6 +3446,12 @@ select tests.ok('S47 retirar "coração" apaga a FC de repouso e mantém o sono;
   and (select count(*) from health.consents where user_id = '10000000-0000-4000-8000-000000000043') = 2
   and (select count(*) from health.consents where user_id = '10000000-0000-4000-8000-000000000043' and revoke_reason = 'superseded') = 1
   and exists (select 1 from health.audit where action = 'consent.reduced' and detail ->> 'daily_deleted' = '1'));
+select tests.ok('S47 reduzir anula o bruto do inbox da pessoa na hora (resumos misturam categorias); o pendente não é mais processado',
+  not exists (select 1 from health.ingest_events where connection_id = (select id from s45_conn) and payload is not null)
+  and (select status from health.ingest_events where id = (select (r ->> 'event_id')::uuid from s45_ev1)) = 'ignored'
+  and (select status from health.ingest_events where id = (select (r ->> 'event_id')::uuid from s45_ev5)) = 'ignored');
+select tests.ok('S47 reduzir trava as conexões da pessoa (for update) contra o lote em andamento (for share)',
+  pg_get_functiondef('health.purge_categories(uuid, health.category[])'::regprocedure) ~ 'from health\.connections c where c\.user_id = p_user for update');
 set local role health_ingest;
 select tests.expect_error('S47 depois de retirada, a categoria não grava mais', $q$select health.apply_batch((select id from s45_conn), '{"daily": [{"date": "2026-10-21", "code": "hrv_night", "value": 48, "method": "rmssd"}]}'::jsonb, 1::smallint)$q$, 'health_category_not_consented');
 select tests.su();
@@ -3532,7 +3544,15 @@ select health.credentials_store((select id from s50_g), '\x55'::bytea, null, nul
 select health.event_receive('garmin', 'G-B', 'sleeps', 'sleeps:g1', repeat('3', 64), '{"summaryId": "g1"}'::jsonb);
 create temporary table s50_w as select health.connection_open('10000000-0000-4000-8000-000000000044', 'whoop', 'W-B', '{}', null) as id;
 select health.credentials_store((select id from s50_w), '\x56'::bytea, null, null, 1::smallint, true);
+-- Oura desautorizada no app da marca (chega como token_expired) e Polar cuja abertura falhou (error)
+create temporary table s50_o as select health.connection_open('10000000-0000-4000-8000-000000000044', 'oura', 'O-B', '{daily}', null) as id;
+select health.credentials_store((select id from s50_o), '\x57'::bytea, '\x58'::bytea, null, 1::smallint, true);
+select health.apply_batch((select id from s50_o), '{"daily": [{"date": "2026-10-20", "code": "sleep_asleep_min", "value": 410}]}'::jsonb, 1::smallint);
+select health.connection_set_status((select id from s50_o), 'token_expired', 'provider_unauthorized');
+create temporary table s50_e as select health.connection_open('10000000-0000-4000-8000-000000000044', 'polar', 'P-B', '{}', null) as id;
+select health.connection_set_status((select id from s50_e), 'error', 'provider_http_500');
 select tests.su();
+update health.connections set status_changed_at = now() - interval '45 days', last_data_at = now() - interval '45 days' where id in ((select id from s50_o), (select id from s50_e));
 update health.ingest_events set received_at = now() - interval '8 days' where provider_event_id in ('SLEEP:old', 'sleeps:g1');
 update health.ingest_events set received_at = now() - interval '31 days' where provider_event_id = 'SLEEP:older';
 insert into health.pending_revocations (connection_ref, provider, reason, expires_at) values (gen_random_uuid(), 'whoop', 'user_disconnect', now() - interval '1 minute');
@@ -3558,7 +3578,11 @@ select tests.ok('S50 desautorizado na marca há 30+ dias: conexão e dados apaga
   not exists (select 1 from health.connections where id = (select id from s50_w))
   and exists (select 1 from health.connections where id = (select id from s50_g))
   and exists (select 1 from health.pending_revocations where connection_ref = (select id from s50_w) and reason = 'retention')
-  and ((select r from s50_ret) ->> 'health_revoked_purged')::int = 1);
+  and ((select r from s50_ret) ->> 'health_revoked_purged')::int = 3);
+select tests.ok('S50 desautorizado no app da Oura/WHOOP/Polar (token_expired) há 30+ dias também apaga; abertura que falhou (error) idem',
+  not exists (select 1 from health.connections where id in ((select id from s50_o), (select id from s50_e)))
+  and not exists (select 1 from health.daily_metrics where connection_id = (select id from s50_o))
+  and exists (select 1 from health.pending_revocations where connection_ref = (select id from s50_o) and reason = 'retention' and refresh_token_enc = '\x58'::bytea));
 -- mudança material: nova versão pausa a ingestão até o novo aceite (Q20)
 insert into health.consent_texts (version, locale, material, body)
   select '2026-11-test', locale, true, body || ' (versão de teste)' from health.consent_texts where version = '2026-10-draft-1';
@@ -3588,6 +3612,36 @@ select tests.ok('S50 mudança material sem novo aceite em 30 dias: conexão e da
   and ((select r from s50_ret2) ->> 'health_outdated_purged')::int = 1);
 update health.config set value = '2026-10-draft-1' where key = 'consent_version';
 select tests.expect_error('S50 versão nova incompleta (sem os 3 idiomas) não é publicada', $q$select health.set_consent_version('2026-10-nao-existe')$q$, 'consent_version_unknown');
+
+-- ================================================================ S51 · Exclusão na marca leva junto as métricas derivadas (§5.17)
+select tests.login_recent('10000000-0000-4000-8000-000000000044', 's43b@test.local');
+select public.health_consent_grant('2026-10-draft-1', 'pt-BR', array['sleep', 'heart', 'readiness'], true);
+select tests.su();
+set local role health_ingest;
+create temporary table s51_conn as select health.connection_open('10000000-0000-4000-8000-000000000044', 'whoop', 'W-S51', '{read:sleep,read:recovery}', null) as id;
+select health.credentials_store((select id from s51_conn), '\x51'::bytea, null, null, 1::smallint, true);
+select health.apply_batch((select id from s51_conn), $j${
+  "daily": [{"date": "2026-10-20", "code": "sleep_asleep_min", "value": 420, "ref": "sleep:ws1"},
+            {"date": "2026-10-20", "code": "sleep_score_vendor", "value": 90, "ref": "sleep:ws1"},
+            {"date": "2026-10-20", "code": "readiness_vendor", "value": 60, "ref": "recovery:ws1"},
+            {"date": "2026-10-20", "code": "hr_resting", "value": 50, "ref": "recovery:ws1"},
+            {"date": "2026-10-21", "code": "sleep_asleep_min", "value": 400, "ref": "sleep:ws2"},
+            {"date": "2026-10-21", "code": "readiness_vendor", "value": 70, "ref": "recovery:ws2"},
+            {"date": "2026-10-21", "code": "day_strain", "value": 10.2, "ref": "cycle:9"}],
+  "sleep": [{"ext": "ws1", "date": "2026-10-20", "start": "2026-10-20T02:00:00Z", "end": "2026-10-20T09:00:00Z", "main": true, "nap": false},
+            {"ext": "ws2", "date": "2026-10-21", "start": "2026-10-21T02:00:00Z", "end": "2026-10-21T09:00:00Z", "main": true, "nap": false}]}$j$::jsonb, 1::smallint);
+create temporary table s51_del1 as select health.apply_batch((select id from s51_conn), '{"deletions": [{"kind": "sleep", "ext": "ws1"}]}'::jsonb, 1::smallint) as r;
+create temporary table s51_del2 as select health.apply_batch((select id from s51_conn), '{"deletions": [{"kind": "metrics", "ext": "recovery:ws2"}]}'::jsonb, 1::smallint) as r;
+select tests.su();
+select tests.ok('S51 sono apagado na marca leva a sessão e as métricas da noite, inclusive o recovery que pertence a ele',
+  (select (r ->> 'deleted')::int = 5 from s51_del1)
+  and not exists (select 1 from health.daily_metrics where connection_id = (select id from s51_conn) and local_date = '2026-10-20')
+  and not exists (select 1 from health.sleep_sessions where connection_id = (select id from s51_conn) and external_id = 'ws1'));
+select tests.ok('S51 recovery apagado leva só as métricas dele; o sono da noite e o Strain do dia ficam',
+  (select (r ->> 'deleted')::int = 1 from s51_del2)
+  and not exists (select 1 from health.daily_metrics where connection_id = (select id from s51_conn) and metric_code = 'readiness_vendor')
+  and (select count(*) from health.daily_metrics where connection_id = (select id from s51_conn) and local_date = '2026-10-21') = 2
+  and exists (select 1 from health.sleep_sessions where connection_id = (select id from s51_conn) and external_id = 'ws2'));
 revoke usage on schema tests from health_ingest;
 drop function tests.expect_error_as(text, text, text, text);
 drop function tests.login_recent(uuid, text);

@@ -2,16 +2,17 @@ import { describe, expect, it } from "vitest";
 import { GARMIN_ALLOWED, GARMIN_KINDS, normalizeGarmin, splitGarminBody } from "@/lib/health/adapters/garmin";
 import { normalizeOura, OURA_ALLOWED, OURA_KINDS, parseOuraNotification } from "@/lib/health/adapters/oura";
 import { normalizePolar, parsePolarNotification, POLAR_ALLOWED } from "@/lib/health/adapters/polar";
-import { normalizeWhoop, parseWhoopNotification, WHOOP_ALLOWED } from "@/lib/health/adapters/whoop";
+import { normalizeWhoop, normalizeWhoopCycle, parseWhoopNotification, WHOOP_ALLOWED } from "@/lib/health/adapters/whoop";
+import { PROVIDER_INGESTED_CODES, providerCategories } from "@/lib/health/providers";
 import { canonicalSport, isoDurationSeconds, parseOffset, pickAllowed } from "@/lib/health/adapters/common";
 import { isStoredMetric, validateBatch } from "@/lib/health/normalize";
 import { HEALTH_CATEGORIES, type NormalizedBatch } from "@/lib/health/types";
-import { parseWebhook } from "@/lib/health/webhook-parse";
+import { inboxHash, parseWebhook } from "@/lib/health/webhook-parse";
 import { metricDef } from "@/lib/wearables/catalog";
 import { garminDeregistration, garminManualSleep, garminPing, garminPush, SENTINELS } from "../fixtures/wearables/garmin";
 import { ouraActivity, ouraNap, ouraNotification, ouraReadiness, ouraSleep, ouraSpo2, ouraStress, ouraTagNotification, ouraWorkoutAuto, ouraWorkoutManual } from "../fixtures/wearables/oura";
 import { polarActivity, polarExercise, polarManualExercise, polarNotificationExercise, polarNotificationSleep, polarPing, polarRecharge, polarSleep } from "../fixtures/wearables/polar";
-import { whoopBody, whoopCycle, whoopNotification, whoopProfile, whoopRecovery, whoopSleep, whoopWorkout } from "../fixtures/wearables/whoop";
+import { whoopBody, whoopCycle, whoopNotification, whoopPrevCycle, whoopProfile, whoopRecovery, whoopSleep, whoopWorkout } from "../fixtures/wearables/whoop";
 
 // Adaptadores das marcas (docs/decisions/hoje-relogio.md §9.2, §13.2, RN-02/02b/20): payload bruto
 // → lote no catálogo canônico. Estes testes FALHAM se água, calorias ingeridas, peso/composição,
@@ -78,7 +79,8 @@ describe("Garmin (push e ping)", () => {
 
   it("divide o POST por pessoa e resumo, ignorando tipos não registrados sem ler o conteúdo", () => {
     const kinds = items.map((i) => i.kind);
-    expect(kinds).toEqual(["dailies", "sleeps", "activities", "activities", "activities", "hrv", "skinTemp", "stressDetails", "userMetrics"]);
+    // o treino manual e o enviado pela web nem chegam ao inbox
+    expect(kinds).toEqual(["dailies", "sleeps", "activities", "hrv", "skinTemp", "stressDetails", "userMetrics"]);
     expect(items.every((i) => i.providerUserId === "garmin-user-1")).toBe(true);
     // o payload guardado no inbox já é a lista permitida
     const stored = JSON.stringify(items.map((i) => i.payload));
@@ -131,6 +133,27 @@ describe("Garmin (push e ping)", () => {
     expect(normalizeGarmin("sleeps", { ...garminManualSleep, validation: "AUTO_MANUAL" })).toMatchObject({ sleep: [], daily: [] });
   });
 
+  it("treino manual, upload pela web e sono digitado nunca entram no inbox bruto (nem no payload guardado)", () => {
+    const inbox = parseWebhook("garmin", { ...garminPush, sleeps: [...garminPush.sleeps, { ...garminManualSleep, userId: "garmin-user-1" }] });
+    const stored = JSON.stringify(inbox.map((i) => i.payload));
+    expect(stored).not.toMatch(/"manual":true|"isWebUpload":true|MANUAL/);
+    expect(inbox.filter((i) => i.kind === "activities")).toHaveLength(1);
+    expect(inbox.filter((i) => i.kind === "sleeps")).toHaveLength(1);
+    // o normalizador continua recusando por conta própria (defesa em profundidade)
+    for (const raw of garminPush.activities.filter((a) => (a as { manual?: boolean }).manual || (a as { isWebUpload?: boolean }).isWebUpload)) {
+      expect(normalizeGarmin("activities", raw).workouts).toHaveLength(0);
+    }
+  });
+
+  it("resumo atualizado com o mesmo summaryId entra de novo; o mesmo resumo repetido continua com o mesmo id", () => {
+    const first = parseWebhook("garmin", { dailies: [garminPush.dailies[0]] })[0];
+    const same = parseWebhook("garmin", { dailies: [garminPush.dailies[0]] })[0];
+    const updated = parseWebhook("garmin", { dailies: [{ ...garminPush.dailies[0], steps: 9001 }] })[0];
+    expect(same.eventId).toBe(first.eventId);
+    expect(updated.eventId).not.toBe(first.eventId);
+    expect(first.eventId).toMatch(/^dailies:/);
+  });
+
   it("treinos: o do relógio entra (sem nome digitado); manual e upload pela web nunca", () => {
     const acts = items.filter((i) => i.kind === "activities").map((i) => normalizeGarmin("activities", i.payload));
     const all: NormalizedBatch = { provider: "garmin", normalizerVersion: 1, daily: [], sleep: [], deletions: [], workouts: acts.flatMap((a) => a.workouts) };
@@ -142,14 +165,15 @@ describe("Garmin (push e ping)", () => {
   });
 
   it("VFC noturna (RMSSD), desvio de temperatura, Body Battery com horário, VO₂máx e idade fitness", () => {
-    expect(daily(normalizeGarmin("hrv", items[5].payload)).hrv_night).toMatchObject({ value: 47, method: "rmssd" });
-    expect(daily(normalizeGarmin("skinTemp", items[6].payload)).skin_temp_delta_c.value).toBe(0.12);
-    const bb = daily(normalizeGarmin("stressDetails", items[7].payload));
+    const of = (kind: string) => items.find((i) => i.kind === kind)!.payload;
+    expect(daily(normalizeGarmin("hrv", of("hrv"))).hrv_night).toMatchObject({ value: 47, method: "rmssd" });
+    expect(daily(normalizeGarmin("skinTemp", of("skinTemp"))).skin_temp_delta_c.value).toBe(0.12);
+    const bb = daily(normalizeGarmin("stressDetails", of("stressDetails")));
     expect(bb.body_battery_now.value).toBe(58);
     expect(bb.body_battery_now.at).toBe("2026-10-22T14:27:00.000Z");
     expect(bb.body_battery_high.value).toBe(91);
     expect(bb.body_battery_low.value).toBe(30);
-    const um = daily(normalizeGarmin("userMetrics", items[8].payload));
+    const um = daily(normalizeGarmin("userMetrics", of("userMetrics")));
     expect(um.vo2max.value).toBe(52);
     expect(um.fitness_age.value).toBe(31);
   });
@@ -218,9 +242,23 @@ describe("Oura v2", () => {
     expectNoSentinels(manual);
   });
 
-  it("exclusão na marca vira exclusão aqui (§5.17)", () => {
+  it("exclusão na marca vira exclusão aqui (§5.17), inclusive de resumo diário", () => {
     expect(normalizeOura("sleep", { id: "x1" }, ctx, true).deletions).toEqual([{ kind: "sleep", ext: "x1" }]);
     expect(normalizeOura("sleep", { ...ouraSleep, type: "deleted" }, ctx).deletions).toEqual([{ kind: "sleep", ext: ouraSleep.id }]);
+    expect(normalizeOura("daily_readiness", { id: "r9" }, ctx, true).deletions).toEqual([{ kind: "metrics", ext: "daily_readiness:r9" }]);
+    expect(normalizeOura("daily_activity", { id: "a9" }, ctx, true).deletions).toEqual([{ kind: "metrics", ext: "daily_activity:a9" }]);
+  });
+
+  it("cada métrica leva a referência do documento de onde saiu (para a exclusão levar junto)", () => {
+    for (const d of normalizeOura("sleep", ouraSleep, ctx).daily) expect(d.ref).toBe(`sleep:${ouraSleep.id}`);
+    for (const d of normalizeOura("daily_readiness", ouraReadiness, ctx).daily) expect(d.ref).toBe(`daily_readiness:${ouraReadiness.id}`);
+  });
+
+  it("o `timestamp` dos resumos diários (início do dia Oura) nunca vira o horário da medida", () => {
+    expect(ouraReadiness.timestamp).toMatch(/T00:00/);
+    for (const b of [normalizeOura("daily_readiness", ouraReadiness, ctx), normalizeOura("daily_activity", ouraActivity, ctx)]) {
+      for (const d of b.daily) expect(d.at, d.code).toBeUndefined();
+    }
   });
 });
 
@@ -241,7 +279,30 @@ describe("WHOOP v2", () => {
     expect(d.spo2_night_avg.value).toBe(95.7);
     expect(d.skin_temp_c.value).toBe(33.7);
     expect(d.skin_temp_delta_c).toBeUndefined();
-    expect(d.day_strain).toMatchObject({ value: 5.3, scale: "whoop_strain" });
+    // ciclo em andamento: Strain até agora, no dia em que acordou, com o horário da atualização da WHOOP
+    expect(d.day_strain).toMatchObject({ value: 5.3, scale: "whoop_strain", date: "2026-10-22", at: "2026-10-22T10:35:44.774Z", ref: "cycle:93845" });
+    expect(d.readiness_vendor.ref).toBe(`recovery:${whoopSleep.id}`);
+  });
+
+  it("ciclo fechado do dia anterior: Strain final no dia em que a pessoa acordou, nunca pelo `end` (início do sono seguinte)", () => {
+    const d = daily(normalizeWhoopCycle(whoopPrevCycle, ctx));
+    expect(d.day_strain).toMatchObject({ value: 12.4, date: "2026-10-21", ref: "cycle:93844" });
+    expect(d.day_strain.at).toBeUndefined();
+    expect(d.hr_max).toMatchObject({ value: 172, date: "2026-10-21" });
+    // quem dorme depois da meia-noite: o ciclo começa 00:40 de 22/10 e continua sendo de 22/10
+    const late = daily(normalizeWhoopCycle({ ...whoopPrevCycle, start: "2026-10-22T03:40:00.000Z", end: "2026-10-23T03:10:00.000Z" }, ctx));
+    expect(late.day_strain.date).toBe("2026-10-22");
+  });
+
+  it("recovery sem o sono (sem read:sleep): o dia sai do ciclo ou, sem ele, de quando a WHOOP criou o recovery", () => {
+    expect(daily(normalizeWhoop("recovery", { recovery: whoopRecovery, cycle: whoopCycle }, ctx)).readiness_vendor.date).toBe("2026-10-22");
+    expect(daily(normalizeWhoop("recovery", { recovery: whoopRecovery }, ctx)).readiness_vendor.date).toBe("2026-10-22");
+  });
+
+  it("exclusão: sono e treino pelo id; recovery apagado leva as métricas dele", () => {
+    expect(normalizeWhoop("sleep", null, ctx, true, "s1").deletions).toEqual([{ kind: "sleep", ext: "s1" }]);
+    expect(normalizeWhoop("recovery", null, ctx, true, "s1").deletions).toEqual([{ kind: "metrics", ext: "recovery:s1" }]);
+    for (const d of normalizeWhoop("sleep", whoopSleep, ctx).daily) expect(d.ref).toBe(`sleep:${whoopSleep.id}`);
   });
 
   it("recovery ainda sem nota (calibrando/pendente) não vira número", () => {
@@ -340,5 +401,51 @@ describe("ajudantes de data e esporte", () => {
     expect(canonicalSport("STRENGTH_TRAINING")).toBe("strength");
     expect(canonicalSport("open_water_swimming")).toBe("swim");
     expect(canonicalSport("PADEL")).toBe("other");
+    // ciclismo de pista não é corrida (nem ritmo por km, nem dedup errado)
+    expect(canonicalSport("TRACK_CYCLING")).toBe("cycle");
+    expect(canonicalSport("TRACK_RUNNING")).toBe("run");
+  });
+});
+
+describe("inbox: idempotência pela identidade da notificação", () => {
+  const notif = (eventTime: string) => parseWebhook("oura", { event_type: "update", data_type: "daily_activity", object_id: "d1", user_id: "u", event_time: eventTime })[0];
+
+  it("nova notificação do mesmo objeto (outro event_time) tem outro hash; a mesma repetida, o mesmo", () => {
+    const a = notif("2026-10-22T10:00:00Z");
+    const b = notif("2026-10-22T14:00:00Z");
+    expect(JSON.stringify(a.payload)).toBe(JSON.stringify(b.payload));
+    expect(inboxHash(a)).not.toBe(inboxHash(b));
+    expect(inboxHash(notif("2026-10-22T10:00:00Z"))).toBe(inboxHash(a));
+  });
+
+  it("WHOOP (trace_id) e Polar (timestamp) também: o dado volta a atualizar", () => {
+    const w = (trace: string) => parseWebhook("whoop", { ...whoopNotification, type: "sleep.updated", trace_id: trace })[0];
+    expect(inboxHash(w("t-1"))).not.toBe(inboxHash(w("t-2")));
+    const p = (ts: string) => parseWebhook("polar", { ...polarNotificationSleep, timestamp: ts })[0];
+    expect(inboxHash(p("2026-10-22T10:18:00Z"))).not.toBe(inboxHash(p("2026-10-22T18:02:00Z")));
+  });
+});
+
+describe("o que cada marca grava define o consentimento oferecido", () => {
+  const byProvider: [keyof typeof PROVIDER_INGESTED_CODES, NormalizedBatch[]][] = [
+    ["garmin", splitGarminBody(garminPush).map((i) => normalizeGarmin(i.kind, i.payload))],
+    ["oura", [normalizeOura("daily_readiness", ouraReadiness, ctx), normalizeOura("sleep", ouraSleep, ctx), normalizeOura("daily_activity", ouraActivity, ctx), normalizeOura("daily_spo2", ouraSpo2, ctx), normalizeOura("daily_stress", ouraStress, ctx), normalizeOura("daily_sleep", { id: "ds", day: "2026-10-22", score: 80 }, ctx)]],
+    ["whoop", [normalizeWhoop("recovery", { recovery: whoopRecovery, sleep: whoopSleep, cycle: whoopCycle }, ctx), normalizeWhoop("sleep", whoopSleep, ctx), normalizeWhoopCycle(whoopPrevCycle, ctx)]],
+    ["polar", [normalizePolar("sleep", polarSleep), normalizePolar("nightly_recharge", polarRecharge), normalizePolar("activity", polarActivity)]],
+  ];
+
+  it.each(byProvider)("%s: todo código emitido está na lista declarada, e a lista só tem métricas gravadas do catálogo", (provider, batches) => {
+    const declared = new Set<string>(PROVIDER_INGESTED_CODES[provider]);
+    for (const b of batches) for (const d of b.daily) expect(declared.has(d.code), `${provider}:${d.code}`).toBe(true);
+    for (const code of declared) expect(isStoredMetric(code), code).toBe(true);
+  });
+
+  it("categoria oferecida sempre tem código gravado pela marca (WHOOP sem atividade; Polar sem temperatura)", () => {
+    for (const [provider] of byProvider) {
+      const cats = new Set(PROVIDER_INGESTED_CODES[provider].map((c) => metricDef(c)!.category));
+      for (const c of providerCategories(provider)) expect(c === "workout" || cats.has(c), `${provider}:${c}`).toBe(true);
+    }
+    expect(providerCategories("whoop")).not.toContain("activity");
+    expect(providerCategories("polar")).not.toContain("temperature");
   });
 });

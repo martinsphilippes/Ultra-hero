@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getUser } from "@/lib/auth/session";
 import { safeNext } from "@/lib/auth/safe-next";
-import { providerReady, wearablesRealEnabled } from "@/lib/health/config";
+import { providerReady } from "@/lib/health/config";
 import { hasHealthDb } from "@/lib/health/db";
 import { recentlyAuthenticated } from "@/lib/health/oauth";
 import { attemptRevocations } from "@/lib/health/pipeline";
@@ -82,7 +82,7 @@ const reduceSchema = z.object({ categories: z.array(z.enum(HEALTH_CATEGORIES)).m
 export async function reduceHealthConsent(input: unknown): Promise<Result> {
   const parsed = reduceSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "categories" };
-  if (!wearablesRealEnabled()) return { ok: false, error: "unavailable" };
+  // sem checar a chave: retirar categorias nunca é bloqueado (banco sem a RPC → erro genérico)
   const user = await getUser();
   if (!user) return { ok: false, error: "reauth" };
   const supabase = await createClient();

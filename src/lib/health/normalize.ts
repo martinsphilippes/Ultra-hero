@@ -47,7 +47,7 @@ export function validateBatch(input: NormalizedBatch, consented: readonly Health
       dropped.push(`plaus_out_of_range:${d.code}`);
       continue;
     }
-    if ((d.at && !validIso(d.at)) || (d.updated && !validIso(d.updated))) {
+    if ((d.at && !validIso(d.at)) || (d.updated && !validIso(d.updated)) || (d.ref !== undefined && (d.ref.length < 1 || d.ref.length > 220))) {
       dropped.push(`invalid:${d.code}`);
       continue;
     }

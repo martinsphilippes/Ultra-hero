@@ -155,3 +155,49 @@ describe("buildRealView", () => {
     expect(v.lastSync).toEqual({ date: "2026-10-21", at: 1020 });
   });
 });
+
+describe("buildRealView — revisão (conexão que falhou, Oura sem horário de início do dia, zonas estimadas)", () => {
+  const empty = { daily: [], sleep: [], workouts: [] };
+
+  it("'pending' (OAuth em curso) e 'error' (abertura falhou) sem dado não viram 'Sincronizando…'", () => {
+    for (const status of ["pending", "error", "token_expired"]) {
+      expect(buildRealView({ data: { connections: [conn("polar", { status, last_data_at: null })], ...empty }, today: TODAY, nowMin: 660, timeZone: TZ, now: NOW })).toEqual({ kind: "none" });
+    }
+  });
+
+  it("Oura: resumo diário sem `at` mostra o acordar (noite) e a sincronização (dia), nunca 00:00/04:00", () => {
+    const t = dayIndexOf(TODAY);
+    const rows: RpcDaily[] = [];
+    for (let i = t - 10; i <= t; i++) rows.push(row("oura", ymdOf(i), "sleep_end_local", 1126), row("oura", ymdOf(i), "sleep_asleep_min", 420));
+    rows.push(row("oura", TODAY, "readiness_vendor", 78, { s: "oura_readiness" }), row("oura", TODAY, "steps", 10234));
+    const v = buildRealView({ data: { connections: [conn("oura")], daily: rows, sleep: [], workouts: [] }, today: TODAY, nowMin: 660, timeZone: TZ, now: NOW });
+    if (v.kind !== "real") throw new Error(v.kind);
+    // acordou 06:46 (1126 − 720 = 406 min); sincronizou 10:50 (13:50Z)
+    expect(v.snapshot.values.readiness_vendor!.at).toBe(406);
+    expect(v.snapshot.values.steps!.at).toBe(650);
+  });
+
+  it("Garmin sem zonas: Carga do dia e zonas estimadas pela FC média ÷ maior FC de 90 dias (≥ 30 dias), rotuladas", () => {
+    const t = dayIndexOf(TODAY);
+    const hrMax: RpcDaily[] = [];
+    for (let i = t - 40; i < t; i++) hrMax.push(row("garmin", ymdOf(i), "hr_max", i === t - 20 ? 185 : 160));
+    const noZones = { ...run, zones: null };
+    const v = buildRealView({ data: data({ daily: [...garminDays(), ...hrMax], workouts: [noZones] }), today: TODAY, nowMin: 660, timeZone: TZ, now: NOW });
+    if (v.kind !== "real") throw new Error(v.kind);
+    // 148 ÷ 185 = 80% → zona 4, os 42 minutos inteiros; TRIMP = 42 × 4
+    expect(v.snapshot.values.hr_zone4_min?.value).toBe(42);
+    expect(v.snapshot.values.cardio_load_day_uh?.value).toBe(168);
+    expect(v.snapshot.estimatedZones).toBe(true);
+    expect(v.snapshot.workouts[0].zonesMin).toEqual([0, 0, 0, 42, 0]);
+  });
+
+  it("sem 30 dias de FC máxima não estima (nada inventado)", () => {
+    const t = dayIndexOf(TODAY);
+    const few: RpcDaily[] = [];
+    for (let i = t - 10; i < t; i++) few.push(row("garmin", ymdOf(i), "hr_max", 180));
+    const v = buildRealView({ data: data({ daily: [...garminDays(), ...few], workouts: [{ ...run, zones: null }] }), today: TODAY, nowMin: 660, timeZone: TZ, now: NOW });
+    if (v.kind !== "real") throw new Error(v.kind);
+    expect(v.snapshot.values.cardio_load_day_uh).toBeUndefined();
+    expect(v.snapshot.estimatedZones).toBeUndefined();
+  });
+});

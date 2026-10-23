@@ -3,18 +3,29 @@
 // Lista permitida por tipo (RN-02b): tags e anotações (enhanced_tag, tag), rótulos digitados
 // (label), dados pessoais (peso, altura, idade) e treinos com source = "manual" NUNCA entram.
 
+import type { MetricCode } from "@/lib/wearables/catalog";
 import { emptyBatch, type DailyInput, type NormalizeContext, type NormalizedBatch } from "../types";
 import { canonicalSport, get, isoOffset, isYmd, num, pickAllowed, round, str } from "./common";
 
 export const OURA_NORMALIZER_VERSION = 1;
+
+/** Códigos que este adaptador grava (tests/unit/health-adapters.test.ts confere com as fixtures). Define
+ * as categorias oferecidas no consentimento e o que "Sobre seus dados" diz que a marca mede. */
+export const OURA_INGESTED_CODES = [
+  "readiness_vendor", "skin_temp_delta_c", "sleep_score_vendor", "sleep_asleep_min", "sleep_deep_min", "sleep_light_min", "sleep_rem_min",
+  "sleep_awake_min", "sleep_in_bed_min", "sleep_efficiency_pct", "sleep_hr_lowest", "hr_resting", "hrv_night", "resp_rate_sleep",
+  "sleep_start_local", "sleep_end_local", "steps", "active_kcal", "distance_m", "intensity_min_moderate", "intensity_min_vigorous",
+  "sedentary_min", "spo2_night_avg", "stress_high_min", "recovery_high_min",
+] as const satisfies readonly MetricCode[];
 
 /** Tipos inscritos no webhook (data_type). heartrate/session/tag/enhanced_tag/rest_mode_period não. */
 export const OURA_KINDS = ["daily_readiness", "daily_sleep", "sleep", "daily_activity", "daily_spo2", "daily_stress", "workout"] as const;
 export type OuraKind = (typeof OURA_KINDS)[number];
 
 export const OURA_ALLOWED: Record<OuraKind, readonly string[]> = {
-  daily_readiness: ["id", "day", "score", "temperature_deviation", "timestamp"],
-  daily_sleep: ["id", "day", "score", "timestamp"],
+  // `timestamp` dos resumos diários é o INÍCIO do dia Oura (00:00/04:00), não a hora da medida: não entra
+  daily_readiness: ["id", "day", "score", "temperature_deviation"],
+  daily_sleep: ["id", "day", "score"],
   sleep: [
     "id",
     "day",
@@ -33,7 +44,7 @@ export const OURA_ALLOWED: Record<OuraKind, readonly string[]> = {
     "average_hrv",
     "average_breath",
   ],
-  daily_activity: ["id", "day", "steps", "active_calories", "equivalent_walking_distance", "medium_activity_time", "high_activity_time", "sedentary_time", "timestamp"],
+  daily_activity: ["id", "day", "steps", "active_calories", "equivalent_walking_distance", "medium_activity_time", "high_activity_time", "sedentary_time"],
   daily_spo2: ["id", "day", "spo2_percentage.average"],
   daily_stress: ["id", "day", "stress_high", "recovery_high"],
   workout: ["id", "day", "activity", "calories", "distance", "start_datetime", "end_datetime", "source"],
@@ -68,13 +79,16 @@ export function normalizeOura(kind: OuraKind, input: unknown, _ctx: NormalizeCon
   const id = str(p.id);
   if (deleted && id) {
     if (kind === "sleep") batch.deletions.push({ kind: "sleep", ext: id });
-    if (kind === "workout") batch.deletions.push({ kind: "workout", ext: id });
+    else if (kind === "workout") batch.deletions.push({ kind: "workout", ext: id });
+    // resumo diário apagado na marca: saem as métricas que vieram dele (§5.17)
+    else batch.deletions.push({ kind: "metrics", ext: `${kind}:${id}` });
     return batch;
   }
   if (!day) return batch;
-  const at = str(p.timestamp, 40);
+  // sem `at`: o Hoje mostra a hora do acordar (noite) ou da sincronização (dia), nunca o início do dia Oura
+  const ref = id ? `${kind}:${id}` : undefined;
   const daily = (code: DailyInput["code"], value: number | undefined, extra: Partial<DailyInput> = {}) => {
-    if (value !== undefined) batch.daily.push({ date: day, code, value, at, ...extra });
+    if (value !== undefined) batch.daily.push({ date: day, code, value, ref, ...extra });
   };
 
   switch (kind) {
@@ -122,7 +136,7 @@ export function normalizeOura(kind: OuraKind, input: unknown, _ctx: NormalizeCon
         return batch;
       }
       const nightly = (code: DailyInput["code"], value: number | undefined, extra: Partial<DailyInput> = {}) => {
-        if (value !== undefined) batch.daily.push({ date: day, code, value, at: wake, ...extra });
+        if (value !== undefined) batch.daily.push({ date: day, code, value, at: wake, ref: `sleep:${id}`, ...extra });
       };
       nightly("sleep_asleep_min", asleep);
       nightly("sleep_deep_min", minutes(p.deep_sleep_duration));

@@ -458,6 +458,8 @@ export type WatchSnapshot = {
   fullDayBaselines: Partial<Record<MetricCode, Baseline | null>>;
   disposition: DispositionResult | null;
   nightVitals: NightVitalsResult | null;
+  /** Relógio real: zonas de algum treino de hoje estimadas pela FC média (a marca não manda zonas, §13.4). */
+  estimatedZones?: boolean;
 };
 
 export const HISTORY_DAYS = 30;

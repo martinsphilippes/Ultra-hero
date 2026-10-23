@@ -150,6 +150,8 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3", lastSync
       ? t("cards.workouts.loadNoComparison", { value: formatInteger(load.value, locale) })
       : t("cards.workouts.load", { value: formatInteger(load.value, locale), comparison: comparisonText("cardio_load_day_uh") })
     : null;
+  // relógio real sem zonas da marca: a carga sai das zonas estimadas pela FC média (§13.4), e diz isso
+  const loadNote = load && real && snapshot.estimatedZones ? t("cards.workouts.loadEstimated") : null;
   const steps = value(snapshot, "steps");
 
   if (nightToday) {
@@ -211,6 +213,7 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3", lastSync
           <p className="type-body-sm text-fg">{t("cards.workouts.none")}</p>
           {vo2 ? <p className="type-caption type-numeric text-fg">{t("cards.workouts.vo2", { value: formatMetric("vo2max", vo2.value, locale), date: shortDate(vo2.date) })}</p> : null}
           {loadLine ? <p className="type-caption text-fg-muted">{loadLine}</p> : null}
+          {loadNote ? <p className="type-caption text-fg-muted">{loadNote}</p> : null}
         </TodayCard>,
       );
     } else if (workouts.length > 0) {
@@ -230,6 +233,7 @@ export async function WatchToday({ snapshot, mode, blockHeading = "h3", lastSync
             </div>
           ))}
           {loadLine ? <p className="type-caption text-fg-muted">{loadLine}</p> : null}
+          {loadNote ? <p className="type-caption text-fg-muted">{loadNote}</p> : null}
         </TodayCard>,
       );
     }

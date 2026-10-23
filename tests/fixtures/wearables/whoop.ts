@@ -36,16 +36,30 @@ export const whoopSleep = {
   },
 };
 
+/** Ciclo ATUAL quando o recovery sai de manhã: começou ao adormecer e ainda não terminou (sem `end`). */
 export const whoopCycle = {
   id: 93845,
   user_id: 10129,
-  created_at: "2026-10-21T10:25:44.774Z",
-  updated_at: "2026-10-22T14:25:44.774Z",
+  created_at: "2026-10-22T02:25:44.774Z",
+  updated_at: "2026-10-22T10:35:44.774Z",
   start: "2026-10-22T02:25:44.774Z",
-  end: "2026-10-22T14:25:44.774Z",
+  end: null,
   timezone_offset: "-03:00",
   score_state: "SCORED",
   score: { strain: 5.2951527, kilojoule: 8288.297, average_heart_rate: 68, max_heart_rate: 141 },
+};
+
+/** Ciclo ANTERIOR, já fechado (terminou quando o sono desta noite começou): o Strain final de 21/10. */
+export const whoopPrevCycle = {
+  id: 93844,
+  user_id: 10129,
+  created_at: "2026-10-21T02:40:00.000Z",
+  updated_at: "2026-10-22T02:30:00.000Z",
+  start: "2026-10-21T02:40:00.000Z",
+  end: "2026-10-22T02:25:44.774Z",
+  timezone_offset: "-03:00",
+  score_state: "SCORED",
+  score: { strain: 12.43, kilojoule: 11288.297, average_heart_rate: 74, max_heart_rate: 172 },
 };
 
 export const whoopRecovery = {

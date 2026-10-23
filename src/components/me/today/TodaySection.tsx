@@ -30,7 +30,7 @@ export async function TodaySection({ localDate, view }: Props) {
           {t("title")}
         </h2>
         {/* sem relógio, não prometer "medido pelo seu relógio" */}
-        <p className="type-body-sm max-w-prose text-fg-muted">{view.kind === "connect" ? t("descriptionConnect") : t("description")}</p>
+        <p className="type-body-sm max-w-prose text-fg-muted">{view.kind === "connect" ? ((view.providers?.length ?? 0) > 0 ? t("descriptionConnectAvailable") : t("descriptionConnect")) : t("description")}</p>
       </div>
       {view.kind === "connect" ? (
         <ConnectWatchCard providers={view.providers} />

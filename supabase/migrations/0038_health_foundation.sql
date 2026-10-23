@@ -332,12 +332,16 @@ create table health.daily_metrics (
   is_vendor_score boolean not null default false,
   source_device text check (length(source_device) <= 80),
   source_updated_at timestamptz,
+  -- documento da marca que gerou o valor ("sleep:<id>", "recovery:<id>", "daily_sleep:<id>"): quando a
+  -- marca apaga o documento, as métricas derivadas dele saem junto (§5.17)
+  source_ref text check (length(source_ref) between 1 and 220),
   normalizer_version smallint not null,
   ingested_at timestamptz not null default now(),
   primary key (user_id, local_date, metric_code, connection_id)
 );
 create index dm_user_metric_date on health.daily_metrics (user_id, metric_code, local_date desc);
 create index dm_connection on health.daily_metrics (connection_id);
+create index dm_source_ref on health.daily_metrics (connection_id, source_ref) where source_ref is not null;
 
 create table health.sleep_sessions (
   id uuid primary key default gen_random_uuid(),
@@ -558,6 +562,15 @@ create or replace function health.purge_categories(p_user uuid, p_removed health
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare n_daily int := 0; n_sleep int := 0; n_workouts int := 0;
 begin
+  -- trava as conexões da pessoa contra o for share do apply_batch: um lote em andamento termina
+  -- antes (e o que gravou é apagado aqui); um lote posterior já lê o consentimento novo e é recusado
+  perform 1 from health.connections c where c.user_id = p_user for update;
+  -- o bruto do inbox mistura categorias (os resumos da Garmin trazem atividade, coração e estresse
+  -- juntos): anula todo o bruto da pessoa; o que ainda não foi processado não é mais processado
+  update health.ingest_events e set payload = null,
+    status = case when e.status in ('received', 'failed') then 'ignored' else e.status end,
+    next_attempt_at = case when e.status in ('received', 'failed') then null else e.next_attempt_at end
+  from health.connections c where c.id = e.connection_id and c.user_id = p_user and e.payload is not null;
   delete from health.daily_metrics d using health.metric_catalog m
   where d.user_id = p_user and m.code = d.metric_code and m.category = any (p_removed);
   get diagnostics n_daily = row_count;
@@ -810,7 +823,8 @@ declare v_uid uuid := auth.uid(); v_from date;
 begin
   if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   if p_until is null then raise exception 'date_required' using errcode = '22023'; end if;
-  v_from := p_until - greatest(1, least(coalesce(p_days, 63), 70));
+  -- até 100 dias: a reserva das zonas (§13.4) usa a maior FC dos últimos 90 dias
+  v_from := p_until - greatest(1, least(coalesce(p_days, 63), 100));
   return jsonb_build_object(
     'connections', public.my_wearable_connections(),
     'daily', (select coalesce(jsonb_agg(jsonb_build_object(
@@ -858,11 +872,13 @@ begin
   delete from health.audit where created_at < now() - interval '365 days'; get diagnostics n_audit = row_count;
   -- prova de consentimento: 5 anos após a revogação (prazo a confirmar com o jurídico)
   delete from health.consents where revoked_at < now() - interval '5 years'; get diagnostics n_consents = row_count;
-  -- desautorizado na marca (Q11) ou mudança material sem novo aceite (Q20): 30 dias para decidir
+  -- desautorizado na marca (Q11), mudança material sem novo aceite (Q20) ou conexão que falhou ao
+  -- abrir: 30 dias para decidir. token_expired só é posto quando a marca recusa o token ou a renovação
+  -- (desautorizar o app na Oura/WHOOP/Polar chega assim); a tela já pede para reconectar.
   for r in select c.id, c.status from health.connections c
-           where c.status in ('revoked_by_provider', 'consent_outdated') and c.status_changed_at < now() - interval '30 days' loop
+           where c.status in ('revoked_by_provider', 'token_expired', 'consent_outdated', 'error') and c.status_changed_at < now() - interval '30 days' loop
     perform health.purge_connection(r.id, 'retention', 'system');
-    if r.status = 'revoked_by_provider' then n_revoked := n_revoked + 1; else n_outdated := n_outdated + 1; end if;
+    if r.status = 'consent_outdated' then n_outdated := n_outdated + 1; else n_revoked := n_revoked + 1; end if;
   end loop;
   -- conexão sem dado há 12 meses: desconecta e apaga
   for r in select c.id from health.connections c where coalesce(c.last_data_at, c.connected_at) < now() - interval '12 months' loop
