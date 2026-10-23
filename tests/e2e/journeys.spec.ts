@@ -95,15 +95,15 @@ test.describe("visitante", () => {
   });
 
   // "Hoje" com relógio (F1 + F2): a Política (pt-BR) diz que hidratação e descanso deixaram de existir
-  // (apagados do aparelho), que nenhum dado de relógio é coletado e que os itens de rotina antigos
-  // continuam guardados. Os fluxos logados do Hoje estão em today-watch.spec.ts (contas demo).
+  // (apagados do aparelho), que nenhum dado de relógio é coletado e que os itens de rotina viraram
+  // Lembretes (Q5). Os fluxos logados estão em today-watch.spec.ts e reminders.spec.ts (contas demo).
   test("política de privacidade explica o fim do registro local de hidratação e os itens de rotina", async ({ page }) => {
     await page.goto("/legal/privacy");
     const main = page.locator("main");
     await expect(main.getByText(/registros de hidratação e descanso: o Hoje deixou de aceitá-los/)).toBeVisible();
     await expect(main.getByText(/nem dados de relógios, anéis ou pulseiras/)).toBeVisible();
-    await expect(main.getByText(/Itens de rotina \(antigos\):/)).toBeVisible();
-    await expect(page.getByRole("rowheader", { name: "Itens de rotina e marcações diárias" })).toBeVisible();
+    await expect(main.getByText(/Lembretes \(itens de rotina\):/)).toBeVisible();
+    await expect(page.getByRole("rowheader", { name: "Lembretes: itens de rotina e marcações diárias" })).toBeVisible();
   });
 
   // Vídeos gravados pelos heróis já passam pelo Cloudflare Stream: a política cita o operador, o dado

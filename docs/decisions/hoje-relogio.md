@@ -1,7 +1,7 @@
 # Documento de desenho — "Hoje — Seu dia, em foco" baseado em relógio
 
 > Ultra Hero · PWA Next.js 15 + Supabase (sa-east-1) + Vercel (gru1) · pt-BR/en/es
-> Data: 22/10/2026 · **Revisão 2** (incorpora as críticas das lentes 1 — fidelidade ao pedido/produto — e 2 — arquitetura, segurança e LGPD) · Status: **F1 e F2 implementadas (22/10/2026); F3 em diante aguardam o responsável** (Q1–Q20) · Autor: arquitetura/produto
+> Data: 22/10/2026 · **Revisão 2** (incorpora as críticas das lentes 1 — fidelidade ao pedido/produto — e 2 — arquitetura, segurança e LGPD) · Status: **F1 e F2 implementadas (22/10/2026); respostas do responsável Q1–Q20 registradas e Q5/Q10 implementadas (23/10/2026, migração 0037); F3 em diante seguem bloqueadas** pelo jurídico, pelo encarregado e pela Q18 (custos fixos ainda não aprovados) — ver "Respostas do responsável" no fim · Autor: arquitetura/produto
 > Base: pesquisas 1–4 (Apple, Garmin, outras marcas, integração/LGPD), as duas críticas, e leitura do código atual (`src/app/(app)/profile/page.tsx`, `profile/actions.ts`, `today-actions.ts`, `src/components/me/today/*`, `src/lib/routine/*`, `src/lib/demo/accounts.ts`, `src/lib/recommendations/recalculate.ts`, `supabase/migrations/0006_ops.sql`, `0016_hardening.sql`, `0022_routine_today.sql`, `messages/pt-BR/me.json`, `vercel.json`, `docs/privacy-and-retention.md`, `docs/architecture.md`) e do esquema do Open Wearables (código de terceiros, **não** é documentação oficial da Garmin/Oura).
 > Convenções: **[NC]** = não confirmado em fonte oficial; **[CP]** = conhecimento prévio, não reverificado nesta pesquisa; **[EST]** = estimativa minha; **[OW]** = nome de campo visto no esquema do Open Wearables, não na especificação oficial (fechada).
 > Fontes novas desta revisão: [Samsung — dados do Samsung Health no Health Connect (18/02/2025)](https://developer.samsung.com/health/blog/en/accessing-samsung-health-data-through-health-connect) · [Vercel Hobby](https://vercel.com/docs/plans/hobby) · [Vercel fair use](https://vercel.com/docs/limits/fair-use-guidelines) · [Supabase Backups](https://supabase.com/docs/guides/platform/backups) · [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security) · [Supabase Roles](https://supabase.com/docs/guides/database/postgres/roles) · [Next.js static exports](https://nextjs.org/docs/app/guides/static-exports) · [fórum Apple sobre `inBed`](https://developer.apple.com/forums/thread/726278).
@@ -20,9 +20,11 @@ Este documento é a referência do time. As fases **F1** (Hoje sem digitação) 
 | Gerador determinístico (§9.9) | `src/lib/wearables/demo.ts` (+ `context.ts`: quem vê qual Hoje, data/hora no fuso do perfil) | Persona por conta demo: **premium** = Apple Watch Series 12, **gratuito** = Garmin vívoactive 6, **herói** = Garmin fēnix 9, **fornecedor** = Galaxy Watch9 (Health Connect), **admin** = Apple Watch Series 11 (coluna SE 3/S9–S11), **"Ver um exemplo"** = Apple Watch Series 12 (semente própria). Difere da tabela do §9.9 (premium com Garmin + Oura): uma fonte por persona na F2; duas fontes ficam para quando houver a resolução do §9.6 |
 | Hoje (§6.2/6.3) | `src/components/me/today/*` (`TodaySection`, `WatchToday`, `ConnectWatchCard`, `TrendChart`, `ContinuePrograms`, `LegacyTodayCleanup`) | Conta real: card "Conectar relógio" (marcas "Em breve", sem botão que finja conectar) + "Ver um exemplo" (`/profile/today?exemplo=1`, rótulo "Exemplo"). RF-02 previa só uma linha; o pedido da F2 pediu o card |
 | Detalhe por categoria e "Sobre seus dados" | `/profile/today/[section]` (`readiness`, `sleep`, `vitals`, `activity`, `workouts`, `stress`, `environment`), `/profile/today/about` | Categoria que o modelo não mede responde 404. "Sinais da noite" (`vitals`) só tem leituras do sono; FC média/mín./máx./caminhando, VFC e respiração do dia ficam em Atividade (§6.4). Em dia sem treino, o card Treinos aparece compacto ("Nenhum treino hoje", último VO₂máx com a data, Carga do dia) e leva ao detalhe. O nome do app de sincronização vem de `wearables.syncApps` (Saúde/Health/Salud) e o texto fala no futuro, porque nenhuma conexão real existe |
-| F1 | Hidratação, Descanso e "Adicionar item" removidos (componentes, `local-log.ts`, `today-actions.ts`); `uh:today:*` apagado do aparelho uma vez (marcador `uh:today:migrated`); sugestões de programa em "Continue seus programas", depois do card Evolução | **Sem migração**: `routine_items`/`routine_checks` ficam como estão (Q5 em aberto) e `compute_streak` continua contando as marcações antigas (Q10 em aberto). O aviso único e a exportação CSV dos itens (§5.10) ficam para quando Q5/Q10 forem respondidas |
+| F1 | Hidratação, Descanso e "Adicionar item" removidos do Hoje (componentes, `local-log.ts`, `today-actions.ts`); `uh:today:*` apagado do aparelho uma vez (marcador `uh:today:migrated`); sugestões de programa em "Continue seus programas", depois do card Evolução | Sem migração na F1; Q5 e Q10 foram resolvidas depois (linha abaixo) |
+| **Q5 — Lembretes** (23/10/2026) | `/profile/lembretes` (`src/app/(app)/profile/lembretes/{page,actions}.ts(x)`, `src/components/me/reminders/*`, validação em `src/lib/routine/reminders.ts`); atalho "Lembretes" no Perfil **depois** de "Continue seus programas" | Resposta: "Mover para Lembretes, fora do Hoje". Os itens de `routine_items` que a pessoa já tinha voltam a aparecer ali, com adicionar, editar (título, nota, horário, dias), excluir com confirmação e "feito hoje" (`routine_check`). Mesma validação de servidor de antes (título 1–80, nota ≤ 120, `HH:MM`, dias 0–6, 7 dias = todos; até 20 pelo gatilho da 0022). O Hoje continua sem campo e sem link para lembretes. Não há aviso por push/e-mail: a página diz isso. **Sem migração de tabela**: a 0022 já tinha tudo; nada é apagado; o "aviso único + CSV" do §5.10 deixou de ser necessário (nada sumiu) |
+| **Q10 — Sequência só com conteúdos** (23/10/2026) | `supabase/migrations/0037_streak_contents_only.sql`; cenários S41–S42 (e S21 ajustado); Evolução (`/profile/evolution`) | Resposta: "Conteúdos concluídos agora; atividade do relógio quando houver relógio real". `compute_streak` volta ao corpo da 0003 (só `streak_events`: concluir conteúdo e entrar em programa, como antes da 0022); `routine_check` não calcula nem devolve mais a sequência. A faixa de 14 dias e a "melhor sequência" da Evolução deixaram de somar `routine_checks`. Mesmos `security definer`/`search_path`/grants; nada novo para `anon` (lista do S14 inalterada). "Dias com atividade medida pelo relógio" fica para quando houver relógio real (F4+), em migração própria. **Ordem de publicação:** aplicar a 0037 no remoto antes (ou junto) da publicação deste código na Vercel, porque `legal.json` e `me.json` já dizem que lembrete não conta e, sem a 0037, o `compute_streak` da 0022 ainda os contaria |
 
-**Pendências que dependem do responsável:** Q5 e Q10 (destino dos itens manuais e regra da sequência), Q1 e as demais antes da F3.
+**Pendências que dependem do responsável:** Q7 (qual regra de idade), Q18 (custos fixos — **bloqueia** a entrada no ar com dado real), nome do encarregado (Q19) e o parecer jurídico (Q1). Ver "Respostas do responsável".
 
 ---
 
@@ -59,7 +61,7 @@ Este documento é a referência do time. As fases **F1** (Hoje sem digitação) 
    - Funções de **dispositivo médico regulado** (Anvisa): ECG, ritmo irregular, apneia, hipertensão.
    - Contas demo **compartilhadas** (senha única), inclusive uma com papel **admin** (`admin@demo.ultrahero.app`, `src/lib/demo/accounts.ts`).
    - A `service_role` é usada fora da ingestão (motor de recomendação, actions de admin e de herói) e ignora RLS.
-   - A sequência (`compute_streak`, 0022) conta `streak_events` **ou** `routine_checks`: desligar a rotina manual afeta a sequência.
+   - A sequência (`compute_streak`, 0022) conta `streak_events` **ou** `routine_checks`: desligar a rotina manual afeta a sequência. *(Resolvido pela Q10: a 0037 voltou a contar só `streak_events`.)*
 
 ## 2. Objetivo
 
@@ -158,7 +160,7 @@ Este documento é a referência do time. As fases **F1** (Hoje sem digitação) 
 - **5.8 Primeira conexão e histórico.** Garmin Starter sem histórico ("Seu histórico começa hoje"); outras marcas: 30 dias; iOS 27 pode limitar a 30 dias [NC]; Health Connect > 30 dias exige `READ_HEALTH_DATA_HISTORY`. WHOOP manda temperatura **absoluta**: o desvio aparece só após 7 noites ("Aprendendo seu normal").
 - **5.9 Permissão negada no HealthKit.** Indistinguível de "sem dados"; dica "Ajustes › Saúde › Acesso a Dados › Ultra Hero". Health Connect informa a negação ("sem permissão").
 - **5.10 Dados existentes do Hoje antigo.**
-  - **`routine_items`/`routine_checks`:**
+  - **`routine_items`/`routine_checks`:** *(decidido em 23/10/2026 — Q5 = "Mover para Lembretes, fora do Hoje" e Q10 = "conteúdos concluídos agora": os itens continuam ativos e editáveis em `/profile/lembretes`, nada é apagado nem desativado, e a 0037 tirou as marcações da sequência. Os subitens abaixo eram a proposta para o caso "apagar" e ficam como registro.)*
     - A migração marca os itens como `active = false`, revoga `insert/update` de `authenticated` e `routine_check` passa a recusar com `routine_disabled`. O `select` do dono continua.
     - **Sequência:** `compute_streak` conta `streak_events` **ou** `routine_checks` (0022, l. 91–110). As marcações antigas continuam contando os dias passados, mas **quem mantinha a sequência só pela rotina a perde no dia seguinte à F1**. Por isso a **Q10 precisa ser respondida antes de publicar a F1**. Enquanto isso, o aviso único diz: "A sequência agora conta conteúdos concluídos. Os itens que você criou à mão saíram do Hoje — baixe sua lista se quiser guardar." (CSV em `/profile/account`).
     - **Medir antes** no remoto: quantas pessoas reais têm sequência atual > 0 que cairia sem `routine_checks` (comparar `compute_streak` com uma versão só com `streak_events`), e quantas têm itens ativos.
@@ -647,7 +649,7 @@ create table health.audit (                   -- nunca guarda valores de saúde
 | Desconexão, redução de categoria ou revogação | **imediato** | RPC na mesma transação |
 | Exclusão de conta | **imediato** (revogação na marca pela fila) | `anonymize_user_data` |
 | Mudança material sem novo aceite | N dias (Q20), depois apaga | cron |
-| `routine_items`/`routine_checks` antigos | 90 dias após a F1 (se Q5 = apagar) | `run_retention()` |
+| `routine_items`/`routine_checks` (Lembretes) | Enquanto a conta existir (Q5 = mover, não apagar); excluir um lembrete apaga as marcações dele na hora | FK `on delete cascade`; exclusão de conta |
 | Backups | Supabase **Pro**: backups diários guardados por 7 dias → a política diz "dados apagados somem dos backups em até 7 dias". PITR é complemento pago (exige compute Small) e não é necessário | — |
 
 ---
@@ -1199,7 +1201,7 @@ Eventos em `analytics_events` **sem valores de saúde** (`today.view`, `today.de
 3. Modo turno e detecção de jet lag.
 4. Disposição UH v2 calibrada com dados reais.
 5. Dicas do herói pelo estado do dia (consentimento específico adicional, texto editorial, sem produto, sem IA externa com valores).
-6. Sequência contando dias com atividade medida (se Q10 escolher isso).
+6. Sequência contando dias com atividade medida pelo relógio — Q10 escolheu isso **para quando houver relógio real** (F4+), em migração própria; até lá só conteúdos (0037).
 7. Agregados anônimos para heróis (k ≥ 20, opt-in separado).
 8. Métricas v2: necessidade/débito de sono, resiliência, idade cardiovascular, dinâmica de corrida e natação, perda de suor estimada, latência do sono para fontes que a medem.
 9. Galaxy: FC de repouso calculada a partir de `HeartRateRecord` no sono (rotulada como nossa), se a Samsung continuar sem enviá-la; rever a coluna a cada versão do Samsung Health.
@@ -1230,7 +1232,7 @@ Eventos em `analytics_events` **sem valores de saúde** (`today.view`, `today.de
 3. **Galaxy pelo Health Connect entrega pouco.** Mitigação: comunicar; matriz e `capabilities`; demo honesta.
 4. **Índices famosos ficam no app da marca.** Mitigação: índices UH com nomes próprios e notas por marca/modelo.
 5. **Jurídico e custos fixos** (encarregado, RIPD, Vercel Pro, Supabase Pro) são o caminho crítico para ligar a F3 em produção.
-6. **Sequência quebrando na F1.** Mitigação: Q10 antes; medir; aviso claro.
+6. **Sequência quebrando na F1.** Q10 respondida: só conteúdos (0037). Quem mantinha a sequência só com itens marcados a perde na aplicação da 0037 — medir antes no remoto (notas de aplicação) e o texto da Evolução diz "Lembretes não contam".
 7. **Atraso de sincronização visto como bug.** Mitigação: horário em todo valor; dica fixa; sem botão Atualizar.
 8. **Fitbit Web API desligada em 30/10/2026.** Não construir sobre ela.
 
@@ -1245,7 +1247,36 @@ Eventos em `analytics_events` **sem valores de saúde** (`today.view`, `today.de
 
 ---
 
+## Respostas do responsável (23/10/2026)
+
+Respostas dadas pelo responsável, com as palavras dele; a coluna "Leitura" é a nossa interpretação e o que muda no plano. Onde a leitura vai além do que foi dito, está marcado **(a confirmar)**.
+
+| Q | Resposta (palavras do responsável) | Leitura e efeito |
+|---|---|---|
+| Q1 | "Sim, depois do jurídico e do encarregado" | Autoriza tratar dado de saúde **só depois** do parecer jurídico (política, RIPD, DPAs) e do encarregado nomeado e publicado. Até lá nenhum dado real é gravado |
+| Q2 | "Tenho os três" | Existem CNPJ, domínio de e-mail próprio e site público com política: pré-requisitos do pedido Garmin e das contas de organização atendidos |
+| Q3 | "Por enquanto só Garmin, Oura, WHOOP e Polar" | Só as marcas de nuvem, pelo servidor. **Sem app nativo por enquanto** → sem Apple Watch, Galaxy e Pixel na fase real (F5a/F5b ficam fora do plano atual). A demo continua mostrando as personas Apple/Galaxy como simulação |
+| Q19 | "Pessoa da empresa" | Encarregado interno; **nome a confirmar** antes de publicar |
+| Q5 | "Mover para Lembretes, fora do Hoje" | **Feito** em 23/10/2026: `/profile/lembretes` (ver "Estado da implementação") |
+| Q6 | "Todos" | O Hoje com relógio é para todos os planos, não só premium |
+| Q8 | "Sim, em Sobre seus dados" | A lista do que fica "só no app da marca" vai em "Sobre seus dados" (já existe na F2) |
+| Q9 | "Aprovo, sempre rotulados como nossos" | Disposição Ultra Hero, Sinais da noite e Carga do dia aprovados, sempre com o selo "calculado pelo Ultra Hero" |
+| Q10 | "Conteúdos concluídos agora; atividade do relógio quando houver relógio real" | **Feito** em 23/10/2026: 0037 (sequência só com `streak_events`). Dias com atividade medida entram quando houver relógio real (F4+) |
+| Q12 | "Sim, só para quem ligar" | Dicas de heróis pelo estado do dia só com opt-in específico (melhoria futura 5); o dado continua fora de heróis por padrão |
+| Q13 | "Fora na primeira versão; treino iniciado no relógio conta" | Medidas sob demanda ficam fora na v1 (`excluded_action`); treino iniciado/detectado no relógio (T) conta como medido pelo uso (RN-01) |
+| Q14 | "Só do relógio" | Passos e distância só do relógio (RN-20, sem a exceção do app Saúde) |
+| Q4 | "Não agora: Garmin direto e app próprio" | Sem agregador agora; integração direta com a Garmin (e app próprio quando houver, ver Q3) |
+| Q16 | "Desligar as contas demo no projeto com dado real" | As contas demo não existem no projeto que receber dado real (resolve o admin demo compartilhado) |
+| Q17 | "Sim, produção nova e um de testes" | Criar um projeto Supabase de produção novo para dado real e um de testes/staging; o projeto atual segue como experimento com contas demo |
+| Q18 | "Ainda não" | Custos fixos (Vercel Pro, Supabase Pro, jurídico, Garmin Enterprise se preciso) **não aprovados** → **bloqueia a entrada no ar com dado real** (F3 em produção e F4). Pode-se seguir construindo em ramo/staging sem dado real |
+| Q7 | "Outra regra" | A idade mínima não será 18 anos com autodeclaração; **a regra fica a definir** com o jurídico (inclusive ECA Digital). RN-17 em aberto |
+| Q11 | "Aprovo os prazos" | 13 meses para dados diários, 30 dias para intradiário, 30 dias para decidir após revogação na marca |
+| Q15 | "Sim, 30 dias" | Reter o payload bruto da Garmin Starter por 30 dias (declarado no RIPD) |
+| Q20 | "30 dias" | Em mudança material da política, os dados ficam 30 dias aguardando novo aceite; depois são apagados |
+
 ## Perguntas que só o responsável pode responder
+
+*(Respondidas em 23/10/2026 — ver a seção acima. O texto original das perguntas fica como registro.)*
 
 **Produto e regra**
 - **Q1.** Autoriza o Ultra Hero a tratar **dado de saúde** (muda a promessa "não coletamos dados de saúde"), com consentimento por categoria, RIPD e encarregado?

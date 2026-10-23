@@ -180,7 +180,7 @@
             "profilePhoto": "<strong>Profile photo (optional):</strong> if you take or pick a photo, it is cropped to a square and resized on your device before upload, with no location data or other camera metadata, and stored in Supabase Storage at a public address that cannot be listed. It shows as your avatar in the app; if you are a hero, it also shows on your public page, which any visitor can see. To limit uploads (up to 20 per day) and delete unused photos, we keep the date, size and type of each upload.",
             "notifications": "<strong>Notification preferences:</strong> what you agree to receive (editorial digest, streak reminders, test orders) and through which channels. Nothing is sent in this version; your choice is stored to be respected by any future sending.",
             "usage": "<strong>Content activity:</strong> interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments and symbolic certificates (the certificate PDF shows your display name).",
-            "routine": "<strong>Routine items (old):</strong> title, time, days and the check marks you made when Today accepted hand-made items. Since 22 Oct 2026 they no longer show and cannot be edited in Today, but they remain stored in your account (and old check marks still count toward your streak) until a decision is made about them; you will be told before any deletion.",
+            "routine": "<strong>Reminders (routine items):</strong> title, note, time, days of the week and your “done today” check marks. Since 23 Oct 2026 they live in Profile › Reminders, outside Today, where you create, edit, delete and check them off — the items you already had show up there again. Ultra Hero doesn't send alerts for them. Checking off a reminder doesn't count toward your streak, which counts completed content and program enrollments; old check marks remain stored but no longer count either.",
             "subscription": "<strong>Simulated subscription:</strong> chosen modules, periods and change history.",
             "commerce": "<strong>Simulated commerce:</strong> cart, test orders (items, illustrative amounts and the fictional destination chosen from a list) and records of interest in products.",
             "events": "<strong>Usage events:</strong> actions in the app, such as opening content, completing a program or starting a test order, with date, language and technical properties such as the content identifier. When you are signed in, events are linked to your account; for visitors without an account, they are recorded without an identifier. The database rejects properties whose names indicate personal data, such as email, phone, CPF (Brazilian taxpayer ID), name, address or password.",
@@ -330,9 +330,9 @@
                 "details": "Deleted together with the account. Nothing is sent in this version: the preferences only store your consent for future sending."
               },
               "routine": {
-                "data": "Routine items and daily check marks",
+                "data": "Reminders: routine items and daily check marks",
                 "period": "As long as the account exists",
-                "details": "Deleted together with the account. They no longer show in Today but remain stored until a decision is made about them. Hydration and rest no longer exist: the old logs stayed only on the device and are erased from it."
+                "details": "Deleted together with the account; deleting a reminder immediately erases its check marks. They live in Profile › Reminders, outside Today. Hydration and rest no longer exist: the old logs stayed only on the device and are erased from it."
               },
               "profilePhoto": {
                 "data": "Profile photo",
@@ -422,7 +422,7 @@
           "p2": "When you delete your account:",
           "list2": {
             "profile": "your profile is anonymized and deleted along with the account;",
-            "removed": "interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments, certificates, recommendations, shopping list, cart, simulated subscription and records of interest in products are deleted;",
+            "removed": "interests, items marked as “not interested”, favorites, lists, progress, completions, day streak, achievements, program enrollments, certificates, recommendations, reminders and check marks, shopping list, cart, simulated subscription and records of interest in products are deleted;",
             "unlinked": "usage events, feedback, test orders and recommendation runs are no longer linked to you, and test orders also lose the name of the fictional destination. Usage events and recommendation runs are still deleted within the periods in the table above; feedback and anonymized test orders are not deleted automatically;",
             "audit": "a record of the deletion, with the account’s internal identifier and without email or name, stays in the audit log for up to 365 days;",
             "partner": "if you acted as a partner, the partner profile and what was published under it are unlinked from your account but not deleted automatically. The invitation record, which keeps the invited email address, also remains. Request removal through the contact channel;",

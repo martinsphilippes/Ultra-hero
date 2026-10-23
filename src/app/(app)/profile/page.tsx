@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
+import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
@@ -11,6 +11,7 @@ import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
+import { appliesOn } from "@/lib/routine/reminders";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
@@ -22,8 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Perfil: "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado), "Continue seus
-// programas" depois da Evolução, visão geral (avatar, nome, e-mail, papéis,
-// plano simulado, portais), dados editáveis e atalhos.
+// programas" depois da Evolução, atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar,
+// nome, e-mail, papéis, plano simulado, portais), dados editáveis e atalhos.
 
 // Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
 type EnrollmentWithItems = {
@@ -69,19 +70,24 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
-  const [{ data: subscriptionRaw }, enrollmentsRes, completionsRes, streakRes] = await Promise.all([
+  const [{ data: subscriptionRaw }, enrollmentsRes, completionsRes, streakRes, remindersRes] = await Promise.all([
     supabase.rpc("my_subscription"),
     supabase.from("enrollments").select(ENROLLMENT_SELECT).eq("user_id", user.id).eq("status", "active").order("enrolled_at", { ascending: false }),
     supabase.from("completions").select("content_id").eq("user_id", user.id).limit(2000),
     supabase.rpc("compute_streak", { p_user: user.id, p_timezone: tz }),
+    // Só para o resumo do atalho de Lembretes; a lista mora em /profile/lembretes.
+    supabase.from("routine_items").select("weekdays, active").eq("user_id", user.id).eq("active", true),
   ]);
   // Resumo da Evolução (a página completa fica em /profile/evolution).
   const currentStreak = Number(streakRes.data ?? 0);
   const completionsCount = (completionsRes.data ?? []).length;
   const subscription = parseSubscription(subscriptionRaw);
 
-  // Itens de rotina criados à mão saíram do Hoje (F1): os dados ficam no banco (decisão reversível,
-  // Q5) e a sequência continua contando as marcações antigas (Q10). Programas: próximos passos.
+  // Itens de rotina criados à mão viraram Lembretes (Q5), fora do Hoje; a sequência conta só
+  // conteúdos (Q10, 0037). Se a leitura falhar, o atalho aparece sem a contagem.
+  const reminders = remindersRes.error ? null : (remindersRes.data ?? []);
+  const remindersToday = reminders ? reminders.filter((r) => appliesOn(r, today)).length : null;
+  // Programas: próximos passos.
   const enrollments: EnrollmentLike[] = ((enrollmentsRes.data ?? []) as unknown as EnrollmentWithItems[]).map((e) => ({
     id: e.id,
     status: e.status,
@@ -134,6 +140,24 @@ export default async function ProfilePage() {
 
       {/* Continue seus programas: as sugestões dos programas que antes ficavam no Hoje */}
       <ContinuePrograms suggestions={suggestions} />
+
+      {/* Lembretes: itens de rotina da pessoa, fora do Hoje (Q5); o Hoje não tem link para criá-los */}
+      <Link
+        href="/profile/lembretes"
+        data-testid="profile-reminders"
+        className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
+      >
+        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
+          <BellRing className="size-5" />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-sm font-semibold text-fg">{t("reminders.title")}</span>
+          <span className="type-caption text-fg-muted">
+            {reminders && reminders.length > 0 ? `${t("reminders.today", { n: remindersToday ?? 0 })} · ${t("reminders.total", { n: reminders.length })}` : t("reminders.description")}
+          </span>
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+      </Link>
 
       {/* Visão geral */}
       <section aria-label={t("title")} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start">
