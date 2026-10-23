@@ -5,17 +5,23 @@ import { parseCreatorProfile, type CreatorProfileInput } from "@/components/crea
 import type { ActionResult } from "@/components/editors/types";
 import { getRoles, getUser } from "@/lib/auth/session";
 import { heroProfileFor } from "@/components/creator/hero-access";
-import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { acceptsAvatarChoice, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { failFrom } from "../_lib/action-utils";
 
 // Atualiza só as colunas liberadas do perfil da personalidade (guard no banco bloqueia o resto).
-// A foto enviada (0031) só entra pelo envio do perfil (avatar-actions): aqui ela só é aceita se já é
-// a atual e é da própria pessoa; trocar a foto por ilustração tira a foto do ar nos dois lados.
-// Sem avatar_url (a pessoa não mexeu no avatar) o avatar do banco fica como está: o formulário pode
-// estar com um valor velho (foto enviada em Dados, na mesma página) e não pode trocá-la nem apagá-la.
+// Um avatar só para o herói: o avatar escolhido aqui vale também no app (profiles.avatar_url), com a
+// mesma regra do updateProfile (nenhum, ilustração da lista ou a foto atual e própria; foto nova só
+// entra pelo envio, que já grava os dois lados). Trocar a foto por ilustração tira a foto do ar.
+// Sem avatar_url (a pessoa não mexeu no avatar) nenhum dos dois avatares é tocado: o formulário pode
+// estar com um valor velho (foto enviada na mesma página) e não pode trocá-la nem apagá-la.
+//
+// Ordem das duas gravações: primeiro o perfil público (é a que o guard, o status e a RLS podem
+// recusar, e leva o resto do formulário); depois o avatar do app. Se a segunda falhar, o avatar do
+// perfil público volta ao valor anterior (os dois seguem iguais) e a tela avisa que o avatar não
+// mudou. Só com as duas gravadas a foto antiga é apagada: assim nenhuma imagem fica quebrada.
 export async function updateCreatorProfile(values: CreatorProfileInput): Promise<ActionResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
@@ -31,8 +37,14 @@ export async function updateCreatorProfile(values: CreatorProfileInput): Promise
   if (!me || me.status !== "active") return { ok: false, error: "creator_unavailable" };
   const avatarChanged = v.avatar_url !== undefined;
   const nextAvatar = avatarChanged ? v.avatar_url || null : me.avatar_url;
-  if (avatarChanged && isStoredAvatarUrl(nextAvatar, base) && (nextAvatar !== me.avatar_url || storedAvatarOwner(nextAvatar, base) !== user.id)) {
-    return { ok: false, error: "invalid_input" };
+  // o mesmo valor vai para o app: só o que o updateProfile aceitaria (nada de caminho solto nem foto alheia)
+  if (avatarChanged && !acceptsAvatarChoice(nextAvatar, me.avatar_url, user.id, base)) return { ok: false, error: "invalid_input" };
+
+  // avatar atual do app: entra na lista de fotos próprias a apagar depois da troca
+  let appAvatar: string | null = null;
+  if (avatarChanged) {
+    const { data: app } = await supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle();
+    appAvatar = app?.avatar_url ?? null;
   }
 
   const { error } = await supabase
@@ -47,15 +59,33 @@ export async function updateCreatorProfile(values: CreatorProfileInput): Promise
     .eq("id", me.id);
   if (error) return failFrom(error);
 
-  if (avatarChanged && base && me.avatar_url !== nextAvatar && storedAvatarOwner(me.avatar_url, base) === user.id && hasAdminClient()) {
-    await releaseStoredAvatar(createAdminClient(), { url: me.avatar_url as string, baseUrl: base });
+  if (avatarChanged) {
+    const { error: appError } = await supabase.from("profiles").update({ avatar_url: nextAvatar }).eq("id", user.id);
+    if (appError) {
+      // desfaz só o avatar do perfil público: os dois continuam com o valor de antes
+      const { error: undoError } = await supabase.from("creator_profiles").update({ avatar_url: me.avatar_url }).eq("id", me.id);
+      if (undoError) console.warn("[creator] avatar do perfil público não voltou ao anterior:", undoError.message);
+      revalidateHero(me.slug);
+      return { ok: false, error: "avatar_not_saved" };
+    }
+    // fotos próprias que saíram dos dois lados (uma vez só, mesmo se estavam nos dois)
+    const released = Array.from(new Set([me.avatar_url, appAvatar])).filter((url): url is string => url !== nextAvatar && storedAvatarOwner(url, base) === user.id);
+    if (base && released.length > 0 && hasAdminClient()) {
+      const admin = createAdminClient();
+      for (const url of released) await releaseStoredAvatar(admin, { url, baseUrl: base });
+    }
+    // o avatar do app aparece no cabeçalho de todas as telas
     revalidatePath("/", "layout");
   }
 
-  // o formulário do herói mora no /profile (seção "Seu perfil de herói")
+  revalidateHero(me.slug);
+  return { ok: true };
+}
+
+// o formulário do herói mora no /profile (topo, "Editar perfil")
+function revalidateHero(slug: string) {
   revalidatePath("/profile");
   revalidatePath("/creator");
   revalidatePath("/personalities");
-  revalidatePath(`/personalities/${me.slug}`);
-  return { ok: true };
+  revalidatePath(`/personalities/${slug}`);
 }

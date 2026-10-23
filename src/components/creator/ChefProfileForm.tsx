@@ -2,10 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { requestCredentials, saveSpecialties, withdrawCredentials } from "@/app/creator/profile/chef-actions";
 import { ChipInput } from "@/components/editors/content/fields";
 import { Button, FormField, Textarea, useToast } from "@/components/ui";
+import { useRevealHeroEditor } from "./HeroEditorDisclosure";
 import { CREDENTIALS_MAX_LENGTH, SPECIALTIES_MAX, SPECIALTY_MAX_LENGTH, type CredentialsState } from "@/lib/recipes/credentials";
 
 type Props = {
@@ -30,6 +31,11 @@ export function ChefProfileForm({ specialties: initialSpecialties, request, stat
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const errorText = (code: string) => (te.has(code) ? te(code) : te("generic"));
+  // erro com o editor recolhido (fechado durante o envio): abre para a pessoa ver
+  const revealEditor = useRevealHeroEditor();
+  useEffect(() => {
+    if (error) revealEditor();
+  }, [error, revealEditor]);
 
   function run(action: () => Promise<{ ok: boolean; error?: string }>, done: string) {
     setError(null);
@@ -51,7 +57,7 @@ export function ChefProfileForm({ specialties: initialSpecialties, request, stat
   return (
     <section aria-labelledby="chef-profile" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5" data-testid="chef-profile">
       <div className="flex flex-col gap-1">
-        {/* h3: a parte de chef fica dentro da seção "Seu perfil de herói" (h2) do /profile */}
+        {/* h3: a parte de chef fica dentro do editor "Editar perfil" (h2) do /profile */}
         <h3 id="chef-profile" className="text-base font-semibold text-fg">
           {t("title")}
         </h3>

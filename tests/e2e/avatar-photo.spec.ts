@@ -2,17 +2,32 @@ import path from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
+import { readOwnAvatars, restoreOwnAvatars, type OwnAvatars } from "./helpers/supabase";
 
 // Foto de perfil pelo celular (0031) com a conta de demonstração "Herói / Chef".
+// Herói ativo: um avatar só, no editor "Editar perfil" do /profile (foto + ilustrações valem no app e
+// na página pública); conta comum: o avatar fica em Dados.
 // Sem flag: só telas e estados (botões grandes, câmera frontal, aviso quando o envio não está
 // disponível, axe). Com E2E_AVATAR_REAL=1 (produção, com a 0031 e o service role): envia a foto de
-// verdade, confere o cabeçalho e o perfil público do herói, remove e confere que voltou à ilustração.
-// O banco dos E2E é o remoto: o teste real remove a foto no fim, mesmo quando falha no meio.
+// verdade, confere o cabeçalho e o perfil público do herói, troca por ilustração (os dois lados) e
+// remove. O banco dos E2E é o remoto: o fim do teste devolve os DOIS avatares ao que eram, mesmo
+// quando o teste falha no meio.
 
 const FIXTURE = path.join(__dirname, "..", "fixtures", "avatar-640x480.jpg");
+const BUCKET = "/storage/v1/object/public/avatars/";
 
 async function loginAsHero(page: Page) {
   await loginAs(page, "creator");
+}
+
+/** Abre o editor do herói (o seletor de foto mora nele). */
+async function openHeroEditor(page: Page) {
+  await page.goto("/profile");
+  await page.waitForLoadState("networkidle");
+  const toggle = page.getByRole("button", { name: "Editar perfil", exact: true });
+  if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
+  await expect(page.locator("#editar-perfil")).toBeVisible();
+  return page.locator("#editar-perfil");
 }
 
 // src de next/image vem como /_next/image?url=<codificada>: decodifica para achar o bucket
@@ -22,10 +37,10 @@ async function avatarSrc(page: Page, scope: string): Promise<string> {
 }
 
 test.describe("foto de perfil: telas", () => {
-  test("/profile → Dados: Tirar foto (câmera frontal) e Escolher da galeria, alvos grandes e sem violações sérias", async ({ page }) => {
+  test("/profile do herói → Editar perfil: Tirar foto (câmera frontal) e Escolher da galeria, alvos grandes e sem violações sérias", async ({ page }) => {
     await loginAsHero(page);
-    await page.goto("/profile");
-    const picker = page.getByTestId("avatar-photo");
+    const editor = await openHeroEditor(page);
+    const picker = editor.getByTestId("avatar-photo");
     await expect(picker).toBeVisible();
     await expect(picker.getByText("Sua foto", { exact: true })).toBeVisible();
 
@@ -49,10 +64,9 @@ test.describe("foto de perfil: telas", () => {
       await expect(take).toBeDisabled();
       await expect(gallery).toBeDisabled();
     }
-    // as ilustrações continuam como alternativa
-    await expect(page.getByRole("radiogroup", { name: "Ilustrações" })).toBeVisible();
+    // as ilustrações continuam como alternativa, no mesmo grupo da foto
+    await expect(editor.getByRole("group", { name: "Sua foto ou ilustração" }).getByRole("radiogroup", { name: "Ilustrações" })).toBeVisible();
 
-    await page.waitForLoadState("networkidle");
     const results = await new AxeBuilder({ page }).include("main").withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(serious, JSON.stringify(serious.map((v) => v.id))).toEqual([]);
@@ -60,8 +74,7 @@ test.describe("foto de perfil: telas", () => {
 
   test("prévia em círculo gerada no aparelho (512 px); Cancelar fecha sem enviar; arquivo que não é imagem é recusado", async ({ page }) => {
     await loginAsHero(page);
-    await page.goto("/profile");
-    await page.waitForLoadState("networkidle");
+    await openHeroEditor(page);
     // direto no input (os botões podem estar desabilitados sem service role): nada vai ao servidor
     await page.getByTestId("avatar-gallery-input").setInputFiles(FIXTURE);
     const dialog = page.getByRole("dialog", { name: "Prévia da foto" });
@@ -102,99 +115,59 @@ test.describe("foto de perfil: telas", () => {
     expect(alertAfterClose).toBe("Esse arquivo não é uma imagem. Escolha uma foto JPG, PNG ou WebP.");
   });
 
-  test("/profile do herói: uma foto só na página (em Dados), com o texto do perfil de herói", async ({ page }) => {
+  test("/profile do herói: um avatar só na página (no editor), Dados sem avatar", async ({ page }) => {
     await loginAsHero(page);
-    await page.goto("/profile");
-    await expect(page.getByTestId("profile-hero")).toBeVisible();
-    // o perfil do herói está na mesma página e não tem seletor de foto próprio
+    const editor = await openHeroEditor(page);
     await expect(page.getByTestId("avatar-photo")).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Tirar foto" })).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Escolher da galeria" })).toHaveCount(1);
-    const picker = page.locator("#dados").getByTestId("avatar-photo");
+    const picker = editor.getByTestId("avatar-photo");
     await expect(picker).toBeVisible();
     await expect(picker.getByText(/aparece no seu avatar e na sua página pública de herói/)).toBeVisible();
-    await expect(picker.getByRole("button", { name: "Tirar foto" })).toBeVisible();
-    await expect(picker.getByRole("button", { name: "Escolher da galeria" })).toBeVisible();
+    await expect(page.locator("#dados").getByTestId("avatar-photo")).toHaveCount(0);
+    await expect(page.locator("#dados").getByTestId("avatar-in-hero-editor")).toBeVisible();
   });
 });
-
-type Illustrations = { profile: string | null; creator: string | null };
-
-// Ilustrações marcadas antes do teste: a foto substitui as duas e, removida, deixa o avatar vazio;
-// o fim do teste devolve à conta demo as ilustrações que ela tinha. As duas estão no /profile: o
-// formulário do herói (rádios name$="-avatar", botão "Salvar") e o de Dados (name="avatar", "Salvar alterações").
-const HERO_RADIO = '[data-testid="profile-hero"] input[type="radio"][name$="-avatar"]';
-const DATA_RADIO = '#dados input[type="radio"][name="avatar"]';
-
-async function readIllustrations(page: Page): Promise<Illustrations> {
-  await page.goto("/profile");
-  const creatorRadio = page.locator(`${HERO_RADIO}:checked`);
-  const creator = (await creatorRadio.count()) > 0 ? await creatorRadio.getAttribute("value") : null;
-  const profileRadio = page.locator(`${DATA_RADIO}:checked`);
-  const profile = (await profileRadio.count()) > 0 ? await profileRadio.getAttribute("value") : null;
-  return { profile, creator };
-}
-
-async function restoreIllustrations(page: Page, original: Illustrations) {
-  if (original.creator) {
-    await page.goto("/profile");
-    await page.waitForLoadState("networkidle");
-    const hero = page.getByTestId("profile-hero");
-    await page.locator(`${HERO_RADIO}[value="${original.creator}"]`).check({ force: true });
-    await hero.getByRole("button", { name: "Salvar", exact: true }).click();
-    await expect(page.getByText("Salvo").first()).toBeVisible({ timeout: 20_000 });
-  }
-  if (original.profile) {
-    await page.goto("/profile");
-    await page.waitForLoadState("networkidle");
-    await page.locator(`${DATA_RADIO}[value="${original.profile}"]`).check({ force: true });
-    await page.getByRole("button", { name: "Salvar alterações" }).click();
-    await expect(page.getByText("Perfil atualizado.").first()).toBeVisible({ timeout: 20_000 });
-  }
-}
 
 test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
   test.skip(process.env.E2E_AVATAR_REAL !== "1", "envio real desligado: defina E2E_AVATAR_REAL=1 num ambiente com a 0031 e o service role");
 
-  let original: Illustrations | null = null;
+  // os dois avatares (app e página pública) lidos antes do teste, pela sessão do próprio navegador
+  let original: OwnAvatars | null = null;
 
-  // garante que a conta demo não fica com a foto de teste e volta às ilustrações que tinha
+  // garante que a conta demo não fica com a foto de teste e volta aos DOIS avatares que tinha
   test.afterEach(async ({ page }) => {
-    await page.goto("/profile");
+    if (!original) return;
+    const hero = original.creatorId !== null;
+    if (hero) await openHeroEditor(page);
+    else await page.goto("/profile");
     const remove = page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" });
     if ((await remove.count()) > 0) {
       await remove.click();
       await page.getByRole("dialog").getByRole("button", { name: "Remover", exact: true }).click();
       await expect(page.getByText("Foto removida.").first()).toBeVisible({ timeout: 20_000 });
     }
-    if (original) await restoreIllustrations(page, original);
+    await restoreOwnAvatars(page, original);
+    const now = await readOwnAvatars(page);
+    expect({ profile: now.profile, creator: now.creator }).toEqual({ profile: original.profile, creator: original.creator });
     original = null;
   });
 
-  test("envia pela galeria, aparece no cabeçalho e no perfil público, e remove", async ({ page }, testInfo) => {
+  test("herói: envia pela galeria (app e página pública), troca por ilustração nos dois lados e remove", async ({ page }, testInfo) => {
     // um projeto basta: cada execução consome envios da cota diária da conta demo
     test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
     test.setTimeout(180_000);
     await loginAsHero(page);
-    original = await readIllustrations(page);
-    await page.goto("/profile");
-    const publicHref = await page.getByTestId("profile-hero").getByRole("link", { name: "Ver página pública" }).getAttribute("href");
-    expect(publicHref).toMatch(/^\/personalities\//);
-    // Herói demo com a foto oficial do perfil (/heroes/*.webp, 0030): a tela só devolve ilustrações,
-    // então enviar e remover deixaria o herói sem a foto oficial. Só roda com E2E_AVATAR_REAL_HERO=1
-    // (e aí é preciso restaurar avatar_url do herói pelo banco depois).
-    await page.goto(publicHref!);
-    const officialPhoto = (await avatarSrc(page, "main header img")).includes("/heroes/");
-    test.skip(officialPhoto && process.env.E2E_AVATAR_REAL_HERO !== "1", "herói demo usa a foto oficial; defina E2E_AVATAR_REAL_HERO=1 para trocar e restaurar pelo banco");
+    const before = await readOwnAvatars(page);
+    // foto enviada antes do teste seria apagada pela troca e não teria como voltar
+    test.skip([before.profile, before.creator].some((u) => u?.includes(BUCKET)), "a conta demo já tem uma foto enviada; o teste não a apagaria");
+    original = before;
 
-    await page.goto("/profile");
+    let editor = await openHeroEditor(page);
+    const publicHref = await page.getByRole("link", { name: "Ver página pública" }).getAttribute("href");
+    expect(publicHref).toMatch(/^\/personalities\//);
     await expect(page.getByTestId("avatar-photo-unavailable"), "0031 ou service role ausentes neste ambiente").toHaveCount(0);
-    // esperar a hidratação: arquivo escolhido antes de o React ligar o onChange se perde
-    await page.waitForLoadState("networkidle");
-    const [chooser] = await Promise.all([
-      page.waitForEvent("filechooser"),
-      page.getByTestId("avatar-photo").getByRole("button", { name: "Escolher da galeria" }).click(),
-    ]);
+    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), editor.getByTestId("avatar-photo").getByRole("button", { name: "Escolher da galeria" }).click()]);
     await chooser.setFiles(FIXTURE);
 
     const dialog = page.getByRole("dialog", { name: "Prévia da foto" });
@@ -204,57 +177,78 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     await expect(page.getByText("Foto atualizada.").first()).toBeVisible({ timeout: 30_000 });
     await expect(dialog).toBeHidden();
 
+    // a mesma foto nos dois lados
+    const withPhoto = await readOwnAvatars(page);
+    expect(withPhoto.profile).toContain(BUCKET);
+    expect(withPhoto.creator).toBe(withPhoto.profile);
     await page.reload();
     const headerSrc = await avatarSrc(page, 'header a[href="/profile"] img');
-    expect(headerSrc).toContain("/storage/v1/object/public/avatars/");
-    await expect(page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" })).toBeVisible();
+    expect(headerSrc).toContain(BUCKET);
     // cache curto na origem: a foto removida não fica servida por meses
     const photoUrl = headerSrc.match(/url=([^&]+)/)?.[1] ?? headerSrc;
     expect((await page.request.get(photoUrl)).headers()["cache-control"]).toContain("max-age=3600");
+    await page.goto(publicHref!);
+    expect(await avatarSrc(page, "main header img")).toContain(BUCKET);
 
-    // tocar numa ilustração com a foto salva: aviso de que salvar apaga a foto e volta com "Manter minha foto"
-    await page.waitForLoadState("networkidle");
-    await page.locator('label[for="avatar-2"]').click();
-    const warning = page.getByTestId("avatar-discard-warning");
+    // tocar numa ilustração com a foto salva: aviso de que salvar apaga a foto; "Manter minha foto" volta
+    editor = await openHeroEditor(page);
+    const illustrations = editor.getByRole("radiogroup", { name: "Ilustrações" });
+    await illustrations.locator("label").nth(1).click();
+    const warning = page.getByTestId("hero-avatar-discard-warning");
     await expect(warning).toContainText("Ao salvar, sua foto será apagada");
     await warning.getByRole("button", { name: "Manter minha foto" }).click();
     await expect(warning).toBeEmpty();
-    await expect(page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeDisabled();
+    await expect(editor.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" })).toBeVisible();
 
+    // escolher a ilustração e salvar: a mesma ilustração no app e na página pública, foto fora do ar
+    await illustrations.locator("label").nth(1).click();
+    await editor.getByRole("button", { name: "Salvar", exact: true }).click();
+    await expect(page.getByText("Salvo").first()).toBeVisible({ timeout: 20_000 });
+    const withIllustration = await readOwnAvatars(page);
+    expect(withIllustration).toMatchObject({ profile: "/placeholders/avatar-2.svg", creator: "/placeholders/avatar-2.svg" });
+    await page.reload();
+    expect(await avatarSrc(page, 'header a[href="/profile"] img')).toContain("/placeholders/avatar-2.svg");
     await page.goto(publicHref!);
-    expect(await avatarSrc(page, "main header img")).toContain("/storage/v1/object/public/avatars/");
+    expect(await avatarSrc(page, "main header img")).toContain("/placeholders/avatar-2.svg");
 
-    await page.goto("/profile");
-    await page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" }).click();
+    // envia de novo e remove: os dois lados ficam sem foto
+    editor = await openHeroEditor(page);
+    const [chooser2] = await Promise.all([page.waitForEvent("filechooser"), editor.getByTestId("avatar-photo").getByRole("button", { name: "Escolher da galeria" }).click()]);
+    await chooser2.setFiles(FIXTURE);
+    await expect(dialog).toBeVisible({ timeout: 20_000 });
+    await dialog.getByRole("button", { name: "Usar esta foto" }).click();
+    await expect(page.getByText("Foto atualizada.").first()).toBeVisible({ timeout: 30_000 });
+    await editor.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Remover", exact: true }).click();
     await expect(page.getByText("Foto removida.").first()).toBeVisible({ timeout: 20_000 });
+    const removed = await readOwnAvatars(page);
+    expect(removed.profile ?? "").not.toContain(BUCKET);
+    expect(removed.creator ?? "").not.toContain(BUCKET);
     await page.reload();
     expect(await avatarSrc(page, 'header a[href="/profile"] img')).not.toContain("/avatars/");
     await page.goto(publicHref!);
     expect(await avatarSrc(page, "main header img")).not.toContain("/avatars/");
   });
 
-  test("conta comum: envia pela galeria, aparece no cabeçalho e remove", async ({ page }, testInfo) => {
+  test("conta comum: envia pela galeria em Dados, aparece no cabeçalho e remove", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
     test.setTimeout(180_000);
     await loginAs(page, "premium");
+    const before = await readOwnAvatars(page);
+    test.skip(before.profile?.includes(BUCKET) ?? false, "a conta demo já tem uma foto enviada; o teste não a apagaria");
+    original = before;
     await page.goto("/profile");
-    const profileRadio = page.locator('input[type="radio"][name="avatar"]:checked');
-    original = { profile: (await profileRadio.count()) > 0 ? await profileRadio.getAttribute("value") : null, creator: null };
     await expect(page.getByTestId("avatar-photo-unavailable"), "0031 ou service role ausentes neste ambiente").toHaveCount(0);
     await page.waitForLoadState("networkidle");
-    const [chooser] = await Promise.all([
-      page.waitForEvent("filechooser"),
-      page.getByTestId("avatar-photo").getByRole("button", { name: "Escolher da galeria" }).click(),
-    ]);
+    const picker = page.locator("#dados").getByTestId("avatar-photo");
+    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), picker.getByRole("button", { name: "Escolher da galeria" }).click()]);
     await chooser.setFiles(FIXTURE);
     const dialog = page.getByRole("dialog", { name: "Prévia da foto" });
     await expect(dialog).toBeVisible({ timeout: 20_000 });
     await dialog.getByRole("button", { name: "Usar esta foto" }).click();
     await expect(page.getByText("Foto atualizada.").first()).toBeVisible({ timeout: 30_000 });
     await page.reload();
-    expect(await avatarSrc(page, 'header a[href="/profile"] img')).toContain("/storage/v1/object/public/avatars/");
+    expect(await avatarSrc(page, 'header a[href="/profile"] img')).toContain(BUCKET);
     await page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Remover", exact: true }).click();
     await expect(page.getByText("Foto removida.").first()).toBeVisible({ timeout: 20_000 });

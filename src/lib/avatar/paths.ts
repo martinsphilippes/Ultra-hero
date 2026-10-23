@@ -1,4 +1,4 @@
-import { AVATAR_BUCKET } from "./constants";
+import { AVATAR_BUCKET, ILLUSTRATION_RE } from "./constants";
 
 // URLs das fotos de perfil no bucket público: <base>/storage/v1/object/public/avatars/<user>/<uuid>.(webp|jpg).
 // Funções puras (cliente e servidor). A regex do caminho é a mesma do CHECK de avatar_uploads (0031).
@@ -68,4 +68,15 @@ export function safeAvatarSrc(src: string | null | undefined, fallbackSrc: strin
  */
 export function discardsSavedPhoto(savedPhoto: string | null, draft: string | null | undefined): boolean {
   return savedPhoto !== null && (draft || null) !== savedPhoto;
+}
+
+/**
+ * Avatar que a própria pessoa pode gravar por um formulário de perfil: nenhum, uma ilustração da
+ * lista ou a foto atual dela mesma (foto nova só entra pelo envio, avatar_set_photo). A mesma regra
+ * vale no app (profiles) e no perfil público do herói, que recebem o mesmo valor.
+ */
+export function acceptsAvatarChoice(next: string | null, current: string | null | undefined, userId: string, baseUrl: string | null | undefined): boolean {
+  if (next === null) return true;
+  if (ILLUSTRATION_RE.test(next)) return true;
+  return isStoredAvatarUrl(next, baseUrl) && next === current && storedAvatarOwner(next, baseUrl) === userId;
 }

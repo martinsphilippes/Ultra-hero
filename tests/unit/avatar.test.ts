@@ -42,6 +42,9 @@ const state = vi.hoisted(() => ({
   uploadError: null as { message: string } | null,
   removeError: null as { message: string } | null,
   updateError: null as { message: string } | null,
+  // falhas só em algumas gravações: "<cliente>:<tabela>" → números das chamadas (1, 2…) que falham
+  updateFailures: {} as Record<string, number[]>,
+  updateCalls: {} as Record<string, number>,
   deleteAccountError: null as { message: string } | null,
   purged: 0,
   log: [] as string[],
@@ -74,6 +77,11 @@ function client(kind: "user" | "admin") {
         const resolve = (): Result => {
           if (op === "select") return { data: table === "profiles" ? state.profile : table === "creator_profiles" ? state.hero : null, error: null };
           if (op === "delete") return { data: Array.from({ length: state.purged }, (_, i) => ({ id: String(i) })), error: null };
+          if (op === "update") {
+            const key = `${kind}:${table}`;
+            const n = (state.updateCalls[key] = (state.updateCalls[key] ?? 0) + 1);
+            if (state.updateFailures[key]?.includes(n)) return { data: null, error: { message: "boom" } };
+          }
           return { data: null, error: state.updateError };
         };
         const chain: Record<string, unknown> = {};
@@ -170,6 +178,8 @@ beforeEach(() => {
   state.uploadError = null;
   state.removeError = null;
   state.updateError = null;
+  state.updateFailures = {};
+  state.updateCalls = {};
   state.deleteAccountError = null;
   state.purged = 0;
   state.log = [];
@@ -478,6 +488,56 @@ describe("updateProfile sem mexer no avatar", () => {
   });
 });
 
+// Herói ativo: um avatar só. A tela Dados dele nunca envia o avatar; se um chegar (POST direto, aba
+// antiga), vale também no perfil público, para os dois nunca ficarem diferentes.
+describe("updateProfile com herói ativo (um avatar só)", () => {
+  const base = { displayName: "Helena", locale: "pt-BR", theme: "dark" };
+  const HERO_ID = "c0000000-0000-4000-8000-000000000002";
+  beforeEach(() => {
+    state.hero = { id: HERO_ID, slug: "helena-vilar", status: "active", avatar_url: "/placeholders/avatar-1.svg" };
+    state.profile = { avatar_url: "/placeholders/avatar-1.svg" };
+  });
+
+  it("avatar que chega aqui vale também no perfil público (app primeiro, depois a página pública)", async () => {
+    expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-5.svg" })).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:profiles", "user:update:creator_profiles"]);
+    expect(state.writes[1].payload).toEqual({ avatar_url: "/placeholders/avatar-5.svg" });
+    expect(state.writes[1].filters).toEqual([["eq", "id", HERO_ID]]);
+  });
+
+  it("sem o avatar (o que a tela Dados do herói envia) nenhum dos dois é tocado", async () => {
+    expect(await updateProfile(base)).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:profiles"]);
+    expect(state.writes[0].payload).toEqual({ display_name: "Helena" });
+  });
+
+  it("perfil inativo ou sem o papel: só o app muda (como antes)", async () => {
+    state.hero = { ...state.hero!, status: "suspended" };
+    expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-5.svg" })).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:profiles"]);
+    state.log = [];
+    state.hero = { ...state.hero!, status: "active" };
+    state.roles = ["consumer"];
+    expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-5.svg" })).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:profiles"]);
+  });
+
+  it("falha no perfil público: o avatar do app volta ao anterior e a tela é avisada", async () => {
+    state.updateFailures = { "user:creator_profiles": [1] };
+    expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-5.svg" })).toEqual({ ok: false, error: "avatar_not_saved" });
+    expect(state.log).toEqual(["user:update:profiles", "user:update:creator_profiles", "user:update:profiles"]);
+    expect(state.writes[2].payload).toEqual({ avatar_url: "/placeholders/avatar-1.svg" });
+  });
+
+  it("trocar a foto (nos dois lados) por ilustração: grava os dois e libera a foto uma vez", async () => {
+    state.hero = { ...state.hero!, avatar_url: OLD_URL };
+    state.profile = { avatar_url: OLD_URL };
+    expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-6.svg" })).toEqual({ ok: true });
+    expect(state.log.filter((l) => l.startsWith("admin:storage:remove"))).toEqual([`admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`]);
+    expect(state.log.slice(0, 2)).toEqual(["user:update:profiles", "user:update:creator_profiles"]);
+  });
+});
+
 describe("updateCreatorProfile (perfil do herói no /profile)", () => {
   const values = (avatar?: string): CreatorProfileInput => ({
     headline: "Treino curto",
@@ -486,7 +546,8 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     cover_url: "/placeholders/cover-training-1.svg",
     socials: { instagram: "@helena", youtube: "", site: "" },
   });
-  const heroUpdates = () => state.writes.filter((w) => w.table === "creator_profiles" && w.op === "update");
+  const heroUpdates = () => state.writes.filter((w) => w.client === "user" && w.table === "creator_profiles" && w.op === "update");
+  const appUpdates = () => state.writes.filter((w) => w.client === "user" && w.table === "profiles" && w.op === "update");
 
   beforeEach(() => {
     state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "helena-vilar", status: "active", avatar_url: OLD_URL };
@@ -497,16 +558,23 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     expect(await updateCreatorProfile(values())).toEqual({ ok: true });
     expect(state.log).toEqual(["user:update:creator_profiles"]);
     expect(heroUpdates()[0].payload).not.toHaveProperty("avatar_url");
+    // nenhum dos dois avatares é tocado
+    expect(appUpdates()).toEqual([]);
     expect(heroUpdates()[0].payload).toMatchObject({ headline: "Treino curto", bio: "Bio nova" });
     expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities/helena-vilar"]));
     expect(state.revalidated).not.toContain("/creator/profile");
   });
 
-  it("mexer no avatar continua funcionando: ilustração no lugar da foto tira a foto do ar nos dois lados", async () => {
+  it("um avatar só: a ilustração vai para o perfil público e para o app, e a foto antiga sai do ar uma vez só", async () => {
     expect(await updateCreatorProfile(values("/placeholders/avatar-4.svg"))).toEqual({ ok: true });
     expect(heroUpdates()[0].payload).toMatchObject({ avatar_url: "/placeholders/avatar-4.svg" });
+    expect(appUpdates()).toHaveLength(1);
+    expect(appUpdates()[0].payload).toEqual({ avatar_url: "/placeholders/avatar-4.svg" });
+    expect(appUpdates()[0].filters).toEqual([["eq", "id", ids.USER]]);
+    // perfil público primeiro, depois o app; a foto (que estava nos dois) é liberada uma vez
     expect(state.log).toEqual([
       "user:update:creator_profiles",
+      "user:update:profiles",
       "admin:update:profiles",
       "admin:update:creator_profiles",
       `admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`,
@@ -514,10 +582,68 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     ]);
   });
 
-  it("manter a foto atual (mexeu e voltou) regrava o mesmo valor e não apaga nada", async () => {
+  it("ilustração com o app e a página pública já iguais: grava os dois e não toca o Storage", async () => {
+    state.hero = { ...state.hero!, avatar_url: "/placeholders/avatar-1.svg" };
+    state.profile = { avatar_url: "/placeholders/avatar-1.svg" };
+    expect(await updateCreatorProfile(values("/placeholders/avatar-2.svg"))).toEqual({ ok: true });
+    expect(state.log).toEqual(["user:update:creator_profiles", "user:update:profiles"]);
+    expect(heroUpdates()[0].payload).toMatchObject({ avatar_url: "/placeholders/avatar-2.svg" });
+    expect(appUpdates()[0].payload).toEqual({ avatar_url: "/placeholders/avatar-2.svg" });
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/personalities/helena-vilar"]));
+  });
+
+  it("app com outra foto própria (dados antigos): as duas fotos saem do ar e os dois lados ficam com a ilustração", async () => {
+    const appPhoto = url(ids.USER, `${ids.NEW}.webp`);
+    state.profile = { avatar_url: appPhoto };
+    expect(await updateCreatorProfile(values("/placeholders/avatar-3.svg"))).toEqual({ ok: true });
+    expect(appUpdates()[0].payload).toEqual({ avatar_url: "/placeholders/avatar-3.svg" });
+    expect(state.log.filter((l) => l.startsWith("admin:storage:remove"))).toEqual([`admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`, `admin:storage:remove:avatars/${NEW_PATH}`]);
+  });
+
+  it("manter a foto atual (mexeu e voltou) regrava o mesmo valor nos dois lados e não apaga nada", async () => {
     expect(await updateCreatorProfile(values(OLD_URL))).toEqual({ ok: true });
-    expect(state.log).toEqual(["user:update:creator_profiles"]);
+    expect(state.log).toEqual(["user:update:creator_profiles", "user:update:profiles"]);
     expect(heroUpdates()[0].payload).toMatchObject({ avatar_url: OLD_URL });
+    expect(appUpdates()[0].payload).toEqual({ avatar_url: OLD_URL });
+  });
+
+  it("ilustração fora da lista (capa, foto oficial, caminho solto) é recusada sem gravar nada", async () => {
+    for (const bad of ["/placeholders/cover-training-1.svg", "/heroes/rafael-duarte-avatar.webp", "/placeholders/avatar-9.svg", "/qualquer.png"]) {
+      expect(await updateCreatorProfile(values(bad))).toEqual({ ok: false, error: "invalid_input" });
+    }
+    expect(state.writes).toEqual([]);
+  });
+
+  it("foto alheia é recusada sem gravar nada, mesmo sendo a atual do perfil público", async () => {
+    const other = url(ids.OTHER, `${ids.OLD}.jpg`);
+    state.hero = { ...state.hero!, avatar_url: other };
+    expect(await updateCreatorProfile(values(other))).toEqual({ ok: false, error: "invalid_input" });
+    expect(state.writes).toEqual([]);
+  });
+
+  it("falha ao gravar no app: o avatar do perfil público volta ao anterior, a foto fica e a tela é avisada", async () => {
+    state.updateFailures = { "user:profiles": [1] };
+    expect(await updateCreatorProfile(values("/placeholders/avatar-4.svg"))).toEqual({ ok: false, error: "avatar_not_saved" });
+    expect(heroUpdates().map((w) => (w.payload as { avatar_url?: string | null }).avatar_url)).toEqual(["/placeholders/avatar-4.svg", OLD_URL]);
+    expect(heroUpdates()[1].payload).toEqual({ avatar_url: OLD_URL });
+    // nada é apagado: a foto segue nos dois lados
+    expect(state.log.some((l) => l.startsWith("admin:"))).toBe(false);
+  });
+
+  it("falha ao gravar no app e ao desfazer: continua avisando (nunca diz que salvou) e não apaga a foto", async () => {
+    state.updateFailures = { "user:profiles": [1], "user:creator_profiles": [2] };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    expect(await updateCreatorProfile(values("/placeholders/avatar-4.svg"))).toEqual({ ok: false, error: "avatar_not_saved" });
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+    expect(state.log.some((l) => l.startsWith("admin:"))).toBe(false);
+  });
+
+  it("falha no perfil público (a primeira gravação): o app não é tocado", async () => {
+    state.updateFailures = { "user:creator_profiles": [1] };
+    expect(await updateCreatorProfile(values("/placeholders/avatar-4.svg"))).toMatchObject({ ok: false });
+    expect(appUpdates()).toEqual([]);
+    expect(state.log).toEqual(["user:update:creator_profiles"]);
   });
 
   it("validações seguem: foto diferente da atual ou alheia, URL de outro host e perfil inativo são recusados", async () => {

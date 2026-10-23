@@ -125,8 +125,9 @@
       "avatar": "Avatar",
       "avatarHint": "Upload your photo from your phone or choose an illustration.",
       "avatarOption": "Avatar {n}",
+      "avatarInHeroEditor": "Your photo and illustration are in Edit profile, at the top of this page. They are used in the app and on your public page.",
+      "openHeroEditor": "Open Edit profile",
       "illustrations": "Illustrations",
-      "illustrationsAppOnly": "Applies only to your app avatar. Your public page illustration is in Your hero profile.",
       "illustrationsWhenPhoto": "Your photo is in use. Choosing an illustration and saving replaces the photo (it is deleted).",
       "photoWillBeDeleted": "When you save, your photo will be deleted and the chosen illustration will take its place.",
       "keepPhoto": "Keep my photo",
@@ -137,6 +138,7 @@
       "errors": {
         "invalid_input": "Check the fields.",
         "unauthenticated": "Sign in to continue.",
+        "avatar_not_saved": "Your name, language and theme were saved, but the avatar did not change. Please try again.",
         "generic": "Could not save. Please try again."
       }
     },
