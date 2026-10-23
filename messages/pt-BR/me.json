@@ -108,10 +108,14 @@
     },
     "portals": {
       "title": "Seus portais",
-      "description": "Áreas de operação vinculadas aos seus papéis.",
       "admin": "Administração",
       "creator": "Portal do herói",
-      "seller": "Portal do fornecedor"
+      "seller": "Portal do fornecedor",
+      "hints": {
+        "creator": "Posts, receitas e vínculos de produtos",
+        "seller": "Produtos, entregas e perfil da operação",
+        "admin": "Usuários, conteúdos, pedidos e configurações"
+      }
     },
     "data": {
       "title": "Dados",

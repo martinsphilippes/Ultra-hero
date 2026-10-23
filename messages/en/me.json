@@ -108,10 +108,14 @@
     },
     "portals": {
       "title": "Your portals",
-      "description": "Operation areas linked to your roles.",
       "admin": "Administration",
       "creator": "Hero portal",
-      "seller": "Seller portal"
+      "seller": "Seller portal",
+      "hints": {
+        "creator": "Posts, recipes and product links",
+        "seller": "Products, deliveries and store profile",
+        "admin": "Users, content, orders and settings"
+      }
     },
     "data": {
       "title": "Details",

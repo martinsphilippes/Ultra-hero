@@ -22,9 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("profile") };
 }
 
-// Perfil: "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado), "Continue seus
-// programas" depois da Evolução, atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar,
-// nome, e-mail, papéis, plano simulado, portais), dados editáveis e atalhos.
+// Perfil: portais no topo (quem tem papel de herói, fornecedor ou admin entra na área de trabalho com
+// o primeiro toque), "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado), "Continue seus
+// programas" depois da Evolução, atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar, nome,
+// e-mail, papéis, plano simulado), dados editáveis e atalhos.
 
 // Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
 type EnrollmentWithItems = {
@@ -40,10 +41,11 @@ type EnrollmentWithItems = {
 const ENROLLMENT_SELECT =
   "id, status, program:programs(slug), version:program_versions(title, items:program_items(position, is_required, content:content(id, slug, title, cover_url, creator:creator_profiles(name))))";
 
+// Ordem de exibição: o portal do herói primeiro (é a área de trabalho principal de quem publica).
 const PORTALS: Array<{ role: Exclude<AppRole, "consumer">; href: string; icon: LucideIcon }> = [
-  { role: "admin", href: "/admin", icon: ShieldCheck },
   { role: "creator", href: "/creator", icon: Sparkles },
   { role: "seller", href: "/seller", icon: Store },
+  { role: "admin", href: "/admin", icon: ShieldCheck },
 ];
 
 const LINKS: Array<{ key: "plan" | "interests" | "favorites" | "recipes" | "shoppingList" | "orders" | "notifications" | "account"; href: string; icon: LucideIcon }> = [
@@ -115,6 +117,32 @@ export default async function ProfilePage() {
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
+
+      {/* Portais: primeira opção de toque da página, logo abaixo do título (só para quem tem o papel) */}
+      {portals.length > 0 ? (
+        <nav aria-label={t("portals.title")} data-testid="profile-portals">
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {portals.map(({ role, href, icon: Icon }) => (
+              <li key={role}>
+                <Link
+                  href={href}
+                  data-testid={`profile-portal-${role}`}
+                  className="flex min-h-16 items-center gap-3 rounded-2xl border border-accent/30 bg-surface px-4 py-3 shadow-sm transition-[border-color,box-shadow] hover:border-accent/60 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
+                >
+                  <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-fg">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-sm font-semibold text-fg">{t(`portals.${role}`)}</span>
+                    <span className="type-caption text-fg-muted">{t(`portals.hints.${role}`)}</span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
 
       {/* Hoje: só o que o relógio mede (nada digitado); dado real só com a chave ligada e consentimento */}
       <TodaySection localDate={today} view={watchView} />
@@ -191,31 +219,6 @@ export default async function ProfilePage() {
           </Button>
         </form>
       </section>
-
-      {portals.length > 0 ? (
-        <section aria-labelledby="portals-title" className="flex flex-col gap-3">
-          <div className="flex flex-col gap-0.5">
-            <h2 id="portals-title" className="type-h2 text-fg">
-              {t("portals.title")}
-            </h2>
-            <p className="type-body-sm text-fg-muted">{t("portals.description")}</p>
-          </div>
-          <ul className="grid gap-3 sm:grid-cols-3">
-            {portals.map(({ role, href, icon: Icon }) => (
-              <li key={role}>
-                <Link
-                  href={href}
-                  className="flex min-h-14 items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                >
-                  <Icon className="size-5 text-accent-text" aria-hidden="true" />
-                  <span className="flex-1 text-sm font-semibold text-fg">{t(`portals.${role}`)}</span>
-                  <ChevronRight className="size-4 text-fg-muted" aria-hidden="true" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
 
       {/* Dados */}
       <section aria-labelledby="data-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
