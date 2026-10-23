@@ -60,8 +60,9 @@ test.describe("Portal do Chef: Minhas Receitas", () => {
 
   test("perfil do herói mostra especialidades e o pedido de credenciais com o aviso de aprovação", async ({ page }) => {
     await loginAs(page, "creator", { home: /\/creator$/ });
-    await page.goto("/creator/profile");
-    const chef = page.getByTestId("chef-profile");
+    // o perfil do herói (com a parte de chef) mora no /profile, seção "Seu perfil de herói"
+    await page.goto("/profile");
+    const chef = page.getByTestId("profile-hero").getByTestId("chef-profile");
     await expect(chef).toBeVisible();
     await expect(chef).toContainText("Especialidades e credenciais");
     await expect(chef).toContainText("só depois da aprovação da administração");

@@ -35,7 +35,7 @@ export async function decideCreatorCredentials(input: { creatorId: string; appro
   }
   if (error) return failWith(error);
   revalidatePath("/admin/creators");
-  revalidatePath("/creator/profile");
+  revalidatePath("/profile");
   revalidatePath("/personalities");
   const t = await getTranslations("recipes.admin.credentials");
   return { ok: true, message: approved ? t("approvedDone") : t("rejectedDone") };

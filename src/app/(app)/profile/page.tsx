@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
+import { getMyCreator } from "@/app/creator/_lib/creator";
+import { HeroProfileSection } from "@/components/creator/HeroProfileSection";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
@@ -25,7 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
 // Perfil: portais no topo (quem tem papel de herói, fornecedor ou admin entra na área de trabalho com
 // o primeiro toque), "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado), "Continue seus
 // programas" depois da Evolução, atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar, nome,
-// e-mail, papéis, plano simulado), dados editáveis e atalhos.
+// e-mail, papéis, plano simulado), o perfil público do herói (quem tem linha em creator_profiles; antes
+// em /creator/profile), dados editáveis e atalhos.
+
+// Âncora da seção Dados: o perfil do herói aponta para cá (a foto é enviada só em Dados).
+const DATA_ANCHOR = "dados";
 
 // Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
 type EnrollmentWithItems = {
@@ -61,14 +67,17 @@ const LINKS: Array<{ key: "plan" | "interests" | "favorites" | "recipes" | "shop
 
 export default async function ProfilePage() {
   const user = await requireUser("/profile");
-  const [profile, roles, locale, t, tc, photoState] = await Promise.all([
+  const [profile, roles, locale, t, tc, tcp, photoState, creator] = await Promise.all([
     getProfile(),
     getRoles(),
     getLocale(),
     getTranslations("me.profile"),
     getTranslations("common"),
+    getTranslations("creator.profile"),
     getAvatarPhotoState(),
+    getMyCreator(),
   ]);
+  const heroProfile = creator.profile;
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
@@ -220,8 +229,11 @@ export default async function ProfilePage() {
         </form>
       </section>
 
+      {/* Seu perfil de herói: só para quem tem linha em creator_profiles (somente leitura se inativo) */}
+      {heroProfile ? <HeroProfileSection profile={heroProfile} active={creator.creatorId !== null} dataAnchor={DATA_ANCHOR} /> : null}
+
       {/* Dados */}
-      <section aria-labelledby="data-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+      <section id={DATA_ANCHOR} aria-labelledby="data-title" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
         <div className="flex items-start gap-3">
           <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
             <UserCog className="size-5" />
@@ -233,7 +245,14 @@ export default async function ProfilePage() {
             <p className="type-body-sm text-fg-muted">{t("data.description")}</p>
           </div>
         </div>
-        <ProfileDataForm displayName={displayName} avatarUrl={profile?.avatar_url ?? null} locale={uiLocale} theme={theme} photoState={photoState} />
+        <ProfileDataForm
+          displayName={displayName}
+          avatarUrl={profile?.avatar_url ?? null}
+          locale={uiLocale}
+          theme={theme}
+          photoState={photoState}
+          photoHint={heroProfile ? tcp("photoHint") : undefined}
+        />
       </section>
 
       {/* Atalhos */}

@@ -25,6 +25,9 @@ test.describe("portal do herói: novo post em vídeo", () => {
     const nav = page.getByRole("navigation", { name: "Portal" }).filter({ visible: true }).first();
     await expect(nav.getByRole("link").first()).toHaveAttribute("href", "/creator/post/new");
     await expect(nav.getByRole("link").first()).toHaveText(/Novo post/);
+    // o perfil do herói saiu do menu: fica na tela Perfil (/profile)
+    await expect(nav.getByRole("link", { name: "Meu perfil" })).toHaveCount(0);
+    await expect(nav.locator('a[href="/creator/profile"]')).toHaveCount(0);
   });
 
   test("a lista de conteúdos também leva ao novo post", async ({ page }) => {

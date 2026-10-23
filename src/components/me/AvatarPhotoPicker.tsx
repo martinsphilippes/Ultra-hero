@@ -28,7 +28,7 @@ type Preview = PreparedAvatar & { url: string };
 
 // Foto de perfil pelo celular: "Tirar foto" (câmera frontal) ou "Escolher da galeria", recorte e
 // redução no aparelho, prévia em círculo e confirmação. Uma foto só por pessoa: vale no avatar do
-// app e, se a pessoa é herói, no perfil público. Usado em /profile e /creator/profile.
+// app e, se a pessoa é herói, no perfil público. Usado só em /profile → Dados (uma foto por página).
 export function AvatarPhotoPicker({ value, name, state, onChange, disabled = false, hint }: Props) {
   const t = useTranslations("me.profile.photo");
   const { toast } = useToast();
