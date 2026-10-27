@@ -118,9 +118,6 @@
       }
     },
     "data": {
-      "title": "Dados",
-      "description": "Nome, avatar, idioma e tema.",
-      "descriptionHero": "Nome, idioma e tema.",
       "displayName": "Nome exibido",
       "displayNameHint": "Até 60 caracteres. Aparece no certificado simbólico.",
       "avatar": "Avatar",
@@ -225,6 +222,13 @@
       "description": "Sua lista de rotina, fora do Hoje.",
       "today": "{n, plural, =0 {Nada para hoje} other {# para hoje}}",
       "total": "{n, plural, =0 {Nenhum lembrete} =1 {# lembrete} other {# lembretes}}"
+    },
+    "editor": {
+      "description": "Seu nome, sua foto, o idioma e o tema do app."
+    },
+    "account": {
+      "title": "Sua conta",
+      "description": "Nome exibido, idioma e tema do app."
     }
   },
   "today": {

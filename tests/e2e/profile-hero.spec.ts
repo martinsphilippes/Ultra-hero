@@ -50,8 +50,12 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(header.locator("a")).toHaveCount(0);
     await expect(main.locator("a").first()).toHaveAttribute("data-testid", "profile-portal-creator");
 
-    // ordem: cabeçalho → Portais → Editar perfil / Ver página pública → editor → Hoje → Dados
-    await expectInOrder([main.locator("h1"), header, page.getByTestId("profile-portals"), toggle, publicLink, editor, page.getByTestId("today-section"), page.locator("#dados")]);
+    // ordem: cabeçalho → Portais → Editar perfil / Ver página pública → editor (com "Sua conta" dentro) → Hoje
+    await expectInOrder([main.locator("h1"), header, page.getByTestId("profile-portals"), toggle, publicLink, editor, page.getByTestId("today-section")]);
+    await expect(editor.locator("#dados")).toHaveCount(1);
+    // sem as seções antigas de baixo: "Dados" e a visão geral repetiam nome e foto
+    await expect(page.getByRole("heading", { name: "Dados", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Editar perfil/ })).toHaveCount(1);
     // a seção antiga "Seu perfil de herói" saiu do meio da página
     await expect(page.getByRole("heading", { name: "Seu perfil de herói" })).toHaveCount(0);
 
@@ -68,12 +72,11 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(toggle).toHaveAttribute("aria-controls", "editar-perfil");
     await expect(editor).toBeHidden();
 
-    // Dados do herói: só nome, idioma e tema (sem avatar e sem repetir "Editar perfil")
+    // "Sua conta" do herói, dentro do editor: nome, idioma e tema (o avatar é o do perfil público)
     const data = page.locator("#dados");
     await expect(data.getByTestId("avatar-photo")).toHaveCount(0);
     await expect(data.locator('input[type="radio"][name="avatar"]')).toHaveCount(0);
-    await expect(data).toContainText("Nome, idioma e tema.");
-    await expect(data.getByLabel("Nome exibido")).toBeVisible();
+    await expect(data).toContainText("Nome exibido, idioma e tema do app.");
 
     // abre pelo teclado: foco visível no botão e, aberto, no título do editor
     await toggle.focus();
@@ -138,7 +141,7 @@ test.describe("perfil do herói no topo do /profile", () => {
 
   // Um avatar só: sem avatar salvo, o herói via três ilustrações diferentes (cabeçalho pelo nome do
   // herói, app pelo nome exibido, página pública fixa). Compara a imagem de cada lugar, sem o otimizador.
-  test("herói: a mesma imagem no cabeçalho, na Visão geral, no menu, na prévia do editor e na página pública", async ({ page }) => {
+  test("herói: a mesma imagem no cabeçalho, no menu, na prévia do editor e na página pública", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
@@ -149,10 +152,8 @@ test.describe("perfil do herói no topo do /profile", () => {
       const url = raw.pathname === "/_next/image" ? new URL(raw.searchParams.get("url") ?? "", here) : raw;
       return url.origin === here.origin ? url.pathname : url.href;
     };
-    const main = page.locator("main");
     const header = await source(page.getByTestId("profile-hero").locator("img").first());
     expect(header).not.toBe("");
-    expect(await source(main.locator('section[aria-label="Perfil"] img').first())).toBe(header);
     expect(await source(page.locator('a[href="/profile"][title] img').first())).toBe(header);
     await page.getByRole("button", { name: "Editar perfil", exact: true }).click();
     expect(await source(page.locator("#editar-perfil").getByTestId("avatar-photo").locator("img").first())).toBe(header);
@@ -192,15 +193,23 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(nav.getByRole("link", { name: "Meu perfil" })).toHaveCount(0);
   });
 
-  test("conta comum: nada do herói, e o avatar continua em Dados", async ({ page }) => {
+  test("conta comum: topo com foto e nome, um só Editar perfil com nome, foto, idioma e tema; nada do herói", async ({ page }) => {
     await loginAs(page, "free");
     await page.goto("/profile");
-    const data = page.locator("#dados");
-    await expect(data).toBeVisible();
+    const main = page.locator("main");
+    const top = page.getByTestId("profile-account");
+    await expect(top.getByRole("heading", { level: 2 })).toBeVisible();
     await expect(page.getByTestId("profile-hero")).toHaveCount(0);
     await expect(page.locator("#perfil-publico")).toHaveCount(0);
-    await expect(page.locator("#editar-perfil")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Editar perfil", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Dados", exact: true })).toHaveCount(0);
+    const toggle = page.getByRole("button", { name: "Editar perfil", exact: true });
+    await expect(toggle).toHaveCount(1);
+    await expectInOrder([main.locator("h1"), top, toggle, page.getByTestId("today-section")]);
+    const data = page.locator("#dados");
+    await expect(data).toBeHidden();
+    await toggle.click();
+    await expect(data).toBeVisible();
+    await expect(data.getByLabel("Nome exibido")).toBeVisible();
     await expect(page.getByTestId("avatar-in-hero-editor")).toHaveCount(0);
     await expect(data.getByTestId("avatar-photo")).toBeVisible();
     await expect(data.getByTestId("avatar-photo")).not.toContainText("página pública de herói");

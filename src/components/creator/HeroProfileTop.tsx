@@ -1,4 +1,5 @@
 import { Scale } from "lucide-react";
+import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { StatusBadge } from "@/components/admin";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
@@ -49,10 +50,12 @@ type EditorProps = {
   /** Perfil ativo e vinculado (my_creator_id): fora disso o editor fica somente leitura. */
   active: boolean;
   photoState: AvatarPhotoState;
+  /** "Sua conta" (nome exibido, idioma, tema): no fim do mesmo editor, sem um segundo "Editar perfil". */
+  account?: ReactNode;
 };
 
 /** "Editar perfil" e "Ver página pública" + o editor completo, recolhido por padrão. */
-export async function HeroProfileEditor({ profile, active, photoState }: EditorProps) {
+export async function HeroProfileEditor({ profile, active, photoState, account }: EditorProps) {
   const t = await getTranslations("creator.profile");
   // perfil de chef (0027): especialidades públicas e pedido de credenciais; sem as colunas, sem a parte
   const supabase = await createClient();
@@ -110,6 +113,8 @@ export async function HeroProfileEditor({ profile, active, photoState }: EditorP
         <p className="type-body-sm text-fg-muted">{t("rightsDescription")}</p>
         <p className="rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-fg">{profile.rights_note || t("rightsEmpty")}</p>
       </section>
+
+      {account}
     </HeroEditorDisclosure>
   );
 }

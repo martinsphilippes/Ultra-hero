@@ -108,9 +108,9 @@ describe("herói sem avatar: uma ilustração só", () => {
     expect(preview.match(/<img[^>]*src="([^"]+)"/)?.[1]).toBe(HERO_DEFAULT_AVATAR);
   });
 
-  it("cabeçalho, Visão geral (herói ativo), página pública e card usam a mesma regra", () => {
+  it("cabeçalho, página pública e card usam a mesma regra (a Visão geral saiu do /profile)", () => {
     expect(read("src/components/creator/HeroProfileTop.tsx")).toContain("<Avatar src={heroAvatarSrc(profile.avatar_url)}");
-    expect(read("src/app/(app)/profile/page.tsx")).toContain("<Avatar src={heroActive ? heroAvatarSrc(profile?.avatar_url) : profile?.avatar_url}");
+    expect(read("src/app/(app)/profile/page.tsx")).not.toContain("{/* Visão geral */}");
     expect(read("src/app/(app)/personalities/[slug]/page.tsx")).toContain("const avatar = heroAvatarSrc(creator.avatar_url);");
     expect(read("src/components/catalog/CreatorCard.tsx")).toContain("src={heroAvatarSrc(creator.avatar_url)}");
   });
@@ -181,7 +181,8 @@ describe("mensagens novas nos 3 idiomas e as antigas fora", () => {
     for (const me of [meMessages, enMe, esMe]) {
       expect(me.profile.data).not.toHaveProperty("avatarInHeroEditor");
       expect(me.profile.data).not.toHaveProperty("openHeroEditor");
-      expect(me.profile.data.descriptionHero.length).toBeGreaterThan(5);
+      expect(me.profile.account.title.length).toBeGreaterThan(3);
+      expect(me.profile.data).not.toHaveProperty("title");
       expect(me.profile.data.errors.avatar_not_saved.length).toBeGreaterThan(10);
       expect(me.profile.data).not.toHaveProperty("illustrationsAppOnly");
     }

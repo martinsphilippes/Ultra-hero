@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, UserCog, type LucideIcon } from "lucide-react";
+import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, type LucideIcon } from "lucide-react";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
+import { ACCOUNT_ANCHOR, HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure";
 import { HeroProfileEditor, HeroProfileHeader } from "@/components/creator/HeroProfileTop";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
@@ -14,7 +15,6 @@ import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
-import { heroAvatarSrc } from "@/lib/avatar/constants";
 import { appliesOn } from "@/lib/routine/reminders";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
@@ -26,15 +26,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("profile") };
 }
 
-// Perfil: para o herói (papel creator/admin e linha em creator_profiles), o topo segue o Instagram:
-// cabeçalho público (foto, nome, selo, bio recolhida), Portais logo abaixo, "Editar perfil" e "Ver
-// página pública" com o editor recolhido (antes em /creator/profile). Depois, para todos: portais no
-// topo (quem não é herói), "Hoje" (só o que o relógio mede; conta demo vê o relógio simulado),
-// Evolução, "Continue seus programas", atalho para Lembretes (fora do Hoje, Q5), visão geral (avatar,
-// nome, e-mail, papéis, plano simulado), dados editáveis e atalhos.
-
-// Âncora da seção Dados.
-const DATA_ANCHOR = "dados";
+// Perfil: o topo segue o Instagram para todas as contas. Cabeçalho (foto e nome; o herói mostra o
+// perfil público com selo e bio recolhida; as outras contas, e-mail, papéis e plano), Portais logo
+// abaixo e um só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes
+// em /creator/profile) e "Sua conta" (nome exibido, foto, idioma e tema; antes a seção Dados). Depois:
+// "Hoje" (só o que o relógio mede), Evolução, "Continue seus programas", Lembretes (fora do Hoje, Q5),
+// atalhos e, no fim, "Sair da conta".
 
 // Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
 type EnrollmentWithItems = {
@@ -157,6 +154,41 @@ export default async function ProfilePage() {
     </nav>
   ) : null;
 
+  const dataForm = (
+    <ProfileDataForm
+      displayName={displayName}
+      avatarUrl={profile?.avatar_url ?? null}
+      locale={uiLocale}
+      theme={theme}
+      photoState={photoState}
+      photoHint={heroProfile ? tcp("photoHint") : undefined}
+      // herói ativo: um avatar só, no perfil público do mesmo editor; inativo ou não herói: o avatar fica aqui
+      avatarInHeroEditor={heroActive}
+    />
+  );
+  // e-mail, papéis e plano: no cabeçalho de quem não é herói; dentro de "Sua conta" para o herói
+  const accountSummary = (
+    <div className="flex min-w-0 flex-col gap-2" data-testid="profile-account-summary">
+      <p className="type-body-sm truncate text-fg-muted">
+        <span className="sr-only">{t("emailLabel")}: </span>
+        {user.email}
+      </p>
+      <ul className="flex flex-wrap items-center gap-1.5" aria-label={t("roles.label")}>
+        {roleSet.map((role) => (
+          <li key={role}>
+            <Badge variant={role === "admin" ? "accent" : "neutral"}>{t(`roles.${role}`)}</Badge>
+          </li>
+        ))}
+        <li>
+          <Badge variant={subscription.status === "active" ? "premium" : subscription.status === "cancelled" ? "warning" : "free"}>
+            <span className="sr-only">{t("plan.label")}: </span>
+            {t(`plan.${planKey}`)}
+          </Badge>
+        </li>
+      </ul>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
@@ -166,11 +198,43 @@ export default async function ProfilePage() {
         <div className="flex flex-col gap-4">
           <HeroProfileHeader profile={heroProfile} />
           {portalsNav}
-          <HeroProfileEditor profile={heroProfile} active={heroActive} photoState={photoState} />
+          <HeroProfileEditor
+            profile={heroProfile}
+            active={heroActive}
+            photoState={photoState}
+            account={
+              <section id={ACCOUNT_ANCHOR} aria-labelledby="account-title" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5">
+                <div className="flex flex-col gap-0.5">
+                  <h3 id="account-title" className="text-base font-semibold text-fg">
+                    {t("account.title")}
+                  </h3>
+                  <p className="type-body-sm text-fg-muted">{t("account.description")}</p>
+                </div>
+                {accountSummary}
+                {dataForm}
+              </section>
+            }
+          />
         </div>
       ) : (
-        // Portais: primeira opção de toque da página, logo abaixo do título (só para quem tem o papel)
-        portalsNav
+        // topo das outras contas: foto, nome, e-mail, papéis e plano → Portais (se houver) → Editar perfil
+        <div className="flex flex-col gap-4">
+          <section aria-labelledby="account-name" data-testid="profile-account" className="flex items-center gap-4">
+            <Avatar src={profile?.avatar_url} name={displayName} size="xl" alt="" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <h2 id="account-name" className="type-h3 break-words text-fg">
+                {displayName}
+              </h2>
+              {accountSummary}
+            </div>
+          </section>
+          {portalsNav}
+          <HeroEditorDisclosure publicHref={null} description={t("editor.description")}>
+            <div id={ACCOUNT_ANCHOR} className="scroll-mt-20">
+              {dataForm}
+            </div>
+          </HeroEditorDisclosure>
+        </div>
       )}
 
       {/* Hoje: só o que o relógio mede (nada digitado); dado real só com a chave ligada e consentimento */}
@@ -217,64 +281,6 @@ export default async function ProfilePage() {
         <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
       </Link>
 
-      {/* Visão geral */}
-      <section aria-label={t("title")} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start">
-        {/* herói ativo: um avatar só, o mesmo do cabeçalho e da página pública */}
-        <Avatar src={heroActive ? heroAvatarSrc(profile?.avatar_url) : profile?.avatar_url} name={displayName} size="xl" alt="" />
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <h2 className="type-h2 truncate text-fg">{displayName}</h2>
-          <p className="type-body-sm truncate text-fg-muted">
-            <span className="sr-only">{t("emailLabel")}: </span>
-            {user.email}
-          </p>
-          <ul className="flex flex-wrap gap-1.5" aria-label={t("roles.label")}>
-            {roleSet.map((role) => (
-              <li key={role}>
-                <Badge variant={role === "admin" ? "accent" : "neutral"}>{t(`roles.${role}`)}</Badge>
-              </li>
-            ))}
-          </ul>
-          <p className="flex flex-wrap items-center gap-2 text-sm text-fg">
-            <span className="font-semibold">{t("plan.label")}:</span>
-            <Badge variant={subscription.status === "active" ? "premium" : subscription.status === "cancelled" ? "warning" : "free"}>{t(`plan.${planKey}`)}</Badge>
-            <Link href="/profile/plan" className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-              {t("plan.manage")}
-            </Link>
-          </p>
-          <p className="type-caption text-fg-muted">{t("demoNote")}</p>
-        </div>
-        <form action="/auth/signout" method="post" className="sm:self-start">
-          <Button type="submit" variant="secondary" size="sm" leadingIcon={<LogOut />}>
-            {t("signOut")}
-          </Button>
-        </form>
-      </section>
-
-      {/* Dados */}
-      <section id={DATA_ANCHOR} aria-labelledby="data-title" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
-        <div className="flex items-start gap-3">
-          <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
-            <UserCog className="size-5" />
-          </span>
-          <div className="flex flex-col gap-0.5">
-            <h2 id="data-title" className="type-h3 text-fg">
-              {t("data.title")}
-            </h2>
-            <p className="type-body-sm text-fg-muted">{t(heroActive ? "data.descriptionHero" : "data.description")}</p>
-          </div>
-        </div>
-        <ProfileDataForm
-          displayName={displayName}
-          avatarUrl={profile?.avatar_url ?? null}
-          locale={uiLocale}
-          theme={theme}
-          photoState={photoState}
-          photoHint={heroProfile ? tcp("photoHint") : undefined}
-          // herói ativo: um avatar só, em "Editar perfil"; inativo ou não herói: o avatar fica aqui
-          avatarInHeroEditor={heroActive}
-        />
-      </section>
-
       {/* Atalhos */}
       <nav aria-label={t("title")}>
         <ul className="grid gap-3 sm:grid-cols-2">
@@ -297,6 +303,16 @@ export default async function ProfilePage() {
           ))}
         </ul>
       </nav>
+
+      {/* Sair da conta: no fim, como no Instagram */}
+      <div className="flex flex-col items-start gap-2">
+        <form action="/auth/signout" method="post">
+          <Button type="submit" variant="secondary" leadingIcon={<LogOut />}>
+            {t("signOut")}
+          </Button>
+        </form>
+        <p className="type-caption text-fg-muted">{t("demoNote")}</p>
+      </div>
     </div>
   );
 }

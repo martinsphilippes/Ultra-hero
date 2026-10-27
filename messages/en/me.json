@@ -118,9 +118,6 @@
       }
     },
     "data": {
-      "title": "Details",
-      "description": "Name, avatar, language and theme.",
-      "descriptionHero": "Name, language and theme.",
       "displayName": "Display name",
       "displayNameHint": "Up to 60 characters. Shown on the symbolic certificate.",
       "avatar": "Avatar",
@@ -225,6 +222,13 @@
       "description": "Your routine list, outside Today.",
       "today": "{n, plural, =0 {Nothing for today} other {# for today}}",
       "total": "{n, plural, =0 {No reminders} =1 {# reminder} other {# reminders}}"
+    },
+    "editor": {
+      "description": "Your name, your photo, the app language and theme."
+    },
+    "account": {
+      "title": "Your account",
+      "description": "Display name, app language and theme."
     }
   },
   "today": {

@@ -13,6 +13,7 @@ import { ILLUSTRATIONS } from "@/lib/avatar/constants";
 import { discardsSavedPhoto, isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { THEME_COOKIE, type ResolvedTheme } from "@/lib/theme/constants";
 import { cn } from "@/lib/utils";
+import { useRevealHeroEditor } from "@/components/creator/HeroEditorDisclosure";
 import { AvatarPhotoPicker } from "./AvatarPhotoPicker";
 import { profileDataInput } from "./profile-data";
 
@@ -65,6 +66,8 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
   const [lang, setLang] = useState<Locale>(locale);
   const [mode, setMode] = useState<ResolvedTheme>(theme);
   const [error, setError] = useState<string | null>(null);
+  // dentro de "Editar perfil" recolhido: erro escondido ninguém corrige
+  const revealEditor = useRevealHeroEditor();
   const [pending, startTransition] = useTransition();
 
   const dirty = name.trim() !== displayName || (avatarTouched && avatar !== avatarUrl) || lang !== locale || mode !== theme;
@@ -83,6 +86,7 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
     event.preventDefault();
     if (name.trim().length === 0) {
       setError(t("errors.invalid_input"));
+      revealEditor();
       return;
     }
     setError(null);
@@ -91,6 +95,7 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
       const result = await updateProfile(profileDataInput({ name, avatar, avatarTouched, avatarHere: !avatarInHeroEditor, locale: lang, theme: mode }));
       if (!result.ok) {
         setError(t.has(`errors.${result.error}`) ? t(`errors.${result.error}`) : t("errors.generic"));
+        revealEditor();
         return;
       }
       applyTheme(mode);

@@ -6,8 +6,8 @@ import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui";
 
-// "Editar perfil" do herói no /profile, como no Instagram: o editor completo fica recolhido logo
-// abaixo dos botões, na mesma tela. Abre pelo botão, pelo endereço /profile#perfil-publico (o
+// "Editar perfil" no topo do /profile, como no Instagram (todas as contas; o herói tem também o perfil
+// público): o editor completo fica recolhido logo abaixo do botão, na mesma tela. Abre pelo botão, pelo endereço /profile#perfil-publico (o
 // antigo /creator/profile redireciona para lá), pelo atalho em Dados e sozinho quando um formulário
 // de dentro mostra erro (erro escondido ninguém corrige).
 
@@ -15,6 +15,8 @@ import { Button } from "@/components/ui";
 export const HERO_ANCHOR = "perfil-publico";
 /** Região recolhível do editor (aria-controls do botão). */
 export const HERO_EDITOR_ID = "editar-perfil";
+/** Parte "Sua conta" dentro do editor (antes a seção Dados); o endereço com ela também abre o editor. */
+export const ACCOUNT_ANCHOR = "dados";
 const OPEN_EVENT = "hero-editor:open";
 
 type EditorApi = { reveal: () => void };
@@ -35,10 +37,12 @@ export function openHeroEditor() {
 type Props = {
   /** Página pública: só com o perfil ativo. */
   publicHref: string | null;
+  /** Texto abaixo do título do editor (o padrão fala da página pública do herói). */
+  description?: string;
   children: ReactNode;
 };
 
-export function HeroEditorDisclosure({ publicHref, children }: Props) {
+export function HeroEditorDisclosure({ publicHref, description, children }: Props) {
   const t = useTranslations("creator.profile");
   const [open, setOpen] = useState(false);
   // para onde o foco vai depois de abrir/fechar (efeito roda com a região já visível ou escondida)
@@ -68,7 +72,7 @@ export function HeroEditorDisclosure({ publicHref, children }: Props) {
   useEffect(() => {
     const fromHash = () => {
       const hash = window.location.hash.slice(1);
-      if (hash === HERO_ANCHOR || hash === HERO_EDITOR_ID) openWithFocus(true);
+      if (hash === HERO_ANCHOR || hash === HERO_EDITOR_ID || hash === ACCOUNT_ANCHOR) openWithFocus(true);
     };
     const fromShortcut = () => openWithFocus(true);
     fromHash();
@@ -123,7 +127,7 @@ export function HeroEditorDisclosure({ publicHref, children }: Props) {
             <h2 id="hero-editor-title" ref={titleRef} tabIndex={-1} className="type-h3 text-fg outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
               {t("editorTitle")}
             </h2>
-            <p className="type-body-sm text-fg-muted">{t("editorDescription")}</p>
+            <p className="type-body-sm text-fg-muted">{description ?? t("editorDescription")}</p>
           </div>
           <Button type="button" variant="ghost" leadingIcon={<X />} onClick={close} className="shrink-0">
             {t("close")}
