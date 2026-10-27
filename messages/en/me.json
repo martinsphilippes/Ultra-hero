@@ -184,7 +184,7 @@
       },
       "favorites": {
         "title": "Favorites",
-        "description": "Content you marked."
+        "description": "Content, products and programs you marked."
       },
       "recipes": {
         "title": "My recipe collection",
@@ -573,13 +573,13 @@
   },
   "favorites": {
     "title": "Favorites",
-    "description": "Content you marked with the heart.",
+    "description": "Content, products and programs you marked with the heart.",
     "count": "{n, plural, =1 {# favorite} other {# favorites}}",
     "remove": "Remove {title} from favorites",
     "removed": "Removed from favorites.",
     "empty": {
       "title": "No favorites yet",
-      "description": "Tap the heart on any content to keep it here.",
+      "description": "Tap the heart on a content, product or program to keep it here.",
       "cta": "Explore content"
     },
     "errors": {

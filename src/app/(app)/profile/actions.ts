@@ -8,6 +8,8 @@ import { trackEvent } from "@/lib/analytics/track";
 import { getRoles, getUser } from "@/lib/auth/session";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { ILLUSTRATION_RE } from "@/lib/avatar/constants";
+import { favoriteEventProps } from "@/lib/library/favorites";
+import { listTargetSchema, targetColumn, type ListTarget } from "@/lib/library/list-items";
 import { acceptsAvatarChoice, isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { recalculateRecommendations } from "@/lib/recommendations/recalculate";
@@ -233,16 +235,18 @@ export async function restoreNotInterested(input: { contentId: string }): Promis
 }
 
 // ---------------------------------------------------------------- favoritos
-export async function removeFavorite(input: { contentId: string }): Promise<Result> {
-  const parsed = z.object({ contentId: z.uuid() }).safeParse(input);
+// O favorito pode ser conteúdo, produto ou programa (0041); sem a 0041 no banco só existe conteúdo.
+export async function removeFavorite(input: { target: ListTarget }): Promise<Result> {
+  const parsed = z.object({ target: listTargetSchema }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { target } = parsed.data;
   try {
     const user = await getUser();
     if (!user) return { ok: false, error: "unauthenticated" };
     const supabase = await createClient();
-    const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq("content_id", parsed.data.contentId);
+    const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq(targetColumn(target.kind), target.id);
     if (error) return fail(error.message);
-    await trackEvent("favorite.remove", { content_id: parsed.data.contentId, source: "profile" });
+    await trackEvent("favorite.remove", favoriteEventProps(target, "profile"));
     revalidatePath("/profile/favorites");
     return { ok: true };
   } catch (error) {

@@ -1,12 +1,12 @@
 import { Heart, ListChecks, LogIn } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ContentCard } from "@/components/catalog";
+import { EntryCard } from "@/components/catalog";
 import { Badge, Button, Card, EmptyState } from "@/components/ui";
 import { formatRelativeTime } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { getUser } from "@/lib/auth/session";
-import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
+import { FAVORITE_SELECT, FAVORITE_SELECT_LEGACY, isMissingMixedFavoritesError, toFavoriteEntries, type FavoriteRow } from "@/lib/library/favorites";
 import { isMissingMixedListsError, LIST_COUNT_ITEMS, LIST_COUNT_ITEMS_LEGACY, visibleItemCount } from "@/lib/library/list-items";
 import { createClient } from "@/lib/supabase/server";
 import { SCROLL_CARD } from "../grid";
@@ -14,7 +14,6 @@ import { InlineError } from "../InlineError";
 import { CreateListButton } from "./CreateListButton";
 import { ListActions } from "./ListActions";
 
-type FavoriteRow = { created_at: string; content: ContentCardData | null };
 type ListRow = { id: string; name: string; updated_at: string; items: { content?: unknown; product?: unknown; program?: unknown }[] | null };
 
 const FAVORITES_PREVIEW = 8;
@@ -43,19 +42,16 @@ export async function ListsTab() {
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
   const listsQuery = (items: string) =>
     supabase.from("custom_lists").select(`id, name, updated_at, ${items}`).eq("user_id", user.id).order("updated_at", { ascending: false });
-  const [favRes, mixedRes] = await Promise.all([
-    supabase
-      .from("favorites")
-      .select(`created_at, content:content(${CONTENT_CARD_SELECT})`)
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(FAVORITES_PREVIEW + 1),
-    listsQuery(LIST_COUNT_ITEMS),
-  ]);
+  const favoritesQuery = (select: string) =>
+    supabase.from("favorites").select(select).eq("user_id", user.id).order("created_at", { ascending: false }).limit(FAVORITES_PREVIEW + 1);
+  const [mixedFavRes, mixedRes] = await Promise.all([favoritesQuery(FAVORITE_SELECT), listsQuery(LIST_COUNT_ITEMS)]);
+  // Sem a 0041 no banco, os favoritos são só conteúdos (leitura antiga).
+  const favRes = mixedFavRes.error && isMissingMixedFavoritesError(mixedFavRes.error) ? await favoritesQuery(FAVORITE_SELECT_LEGACY) : mixedFavRes;
   // Sem a 0040 no banco, conta só os conteúdos (a lista só pode ter conteúdos).
   const listsRes = mixedRes.error && isMissingMixedListsError(mixedRes.error) ? await listsQuery(LIST_COUNT_ITEMS_LEGACY) : mixedRes;
 
-  const favorites = ((favRes.data ?? []) as unknown as FavoriteRow[]).map((row) => row.content).filter((c): c is ContentCardData => Boolean(c));
+  // Conteúdos, produtos e programas, cada um com o seu card; alvo escondido pela RLS some.
+  const favorites = toFavoriteEntries((favRes.data ?? []) as unknown as FavoriteRow[]);
   const favoritesPreview = favorites.slice(0, FAVORITES_PREVIEW);
   const lists = (listsRes.data ?? []) as unknown as ListRow[];
 
@@ -85,8 +81,10 @@ export async function ListsTab() {
           </div>
         ) : (
           <div className="-mx-gutter flex gap-3 overflow-x-auto px-gutter pb-1 scrollbar-none snap-x snap-mandatory">
-            {favoritesPreview.map((content) => (
-              <ContentCard key={content.id} content={content} className={`${SCROLL_CARD} shrink-0 snap-start`} />
+            {favoritesPreview.map((item) => (
+              <div key={item.key} className={`${SCROLL_CARD} shrink-0 snap-start`} data-testid="favorite-entry" data-kind={item.kind}>
+                <EntryCard item={item} />
+              </div>
             ))}
           </div>
         )}

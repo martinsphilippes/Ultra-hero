@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { ContentCard, ProductCard, ProgramCard } from "@/components/catalog";
+import { EntryCard } from "@/components/catalog";
 import { ListActions } from "@/components/discover/explore/ListActions";
 import { RemoveFromListButton } from "@/components/discover/explore/RemoveFromListButton";
 import { CARD_GRID } from "@/components/discover/grid";
@@ -13,7 +13,7 @@ import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { formatRelativeTime } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { requireUser } from "@/lib/auth/session";
-import { isMissingMixedListsError, LIST_ITEM_SELECT, LIST_ITEM_SELECT_LEGACY, toListEntries, type ListEntry, type ListItemRow } from "@/lib/library/list-items";
+import { isMissingMixedListsError, LIST_ITEM_SELECT, LIST_ITEM_SELECT_LEGACY, toListEntries, type ListItemRow } from "@/lib/library/list-items";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -31,13 +31,6 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const [list, t] = await Promise.all([loadList(id), getTranslations("discover.meta")]);
   return { title: list ? t("list", { name: list.name }) : t("lists") };
-}
-
-// Cada tipo com o card que o app já usa no catálogo, na loja e nas prateleiras.
-function ItemCard({ item, priority }: { item: ListEntry; priority: boolean }) {
-  if (item.kind === "product") return <ProductCard product={item.product} priority={priority} />;
-  if (item.kind === "program") return <ProgramCard program={item.program} priority={priority} />;
-  return <ContentCard content={item.content} priority={priority} />;
 }
 
 // Página de uma lista pessoal: cards com ação de remover; renomear/excluir no cabeçalho.
@@ -85,7 +78,7 @@ export default async function ListPage({ params }: Params) {
         <ul className={CARD_GRID}>
           {items.map((item, index) => (
             <li key={item.key} className="flex flex-col gap-1" data-testid="list-item" data-kind={item.kind}>
-              <ItemCard item={item} priority={index === 0} />
+              <EntryCard item={item} priority={index === 0} />
               <RemoveFromListButton listId={list.id} kind={item.kind} id={item.id} title={item.title} />
             </li>
           ))}

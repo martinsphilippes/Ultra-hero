@@ -6,13 +6,13 @@ import { notFound } from "next/navigation";
 import { Award, BookOpen, Check, ChefHat, CircleSlash, Download, Dumbbell, FileText, Layers, LockKeyhole, LogIn, Play, Repeat } from "lucide-react";
 import { displayTimeZone, ViewTracker } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
-import { AddToListButton } from "@/components/library";
+import { AddToListButton, FavoriteButton } from "@/components/library";
 import { Avatar, Badge, Button, PillarBadge, ProgressBar, ProgressRing } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
 import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
-import { mixedListsSupported } from "@/lib/library/lists-support";
+import { favoriteStatus, mixedListsSupported } from "@/lib/library/lists-support";
 import type { Enums, FnReturns, Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -93,8 +93,9 @@ export default async function ProgramPage({ params }: Params) {
   const versionId = enrolledVersion ?? program.current_version_id;
   if (!versionId) notFound();
 
-  // Guardar em lista: só programa publicado (a política da 0040 recusa o resto) e só com a 0040 no banco.
-  const [versionRes, locRes, itemsRes, currentRes, profile, canSaveToList] = await Promise.all([
+  // Guardar em lista e favoritar: só programa publicado (as políticas da 0040/0041 recusam o resto) e só
+  // com a migração no banco; favorite nulo = sem a 0041, coração escondido.
+  const [versionRes, locRes, itemsRes, currentRes, profile, canSaveToList, favorite] = await Promise.all([
     supabase.from("program_versions").select("id, version_no, title, summary, description, source_locale, estimated_weeks, status").eq("id", versionId).maybeSingle(),
     supabase.from("program_localizations").select("title, summary, description").eq("version_id", versionId).eq("locale", uiLocale).eq("status", "published").maybeSingle(),
     supabase.rpc("program_required_items", { p_version: versionId }),
@@ -103,6 +104,7 @@ export default async function ProgramPage({ params }: Params) {
       : null,
     user ? getProfile() : null,
     user && program.status === "published" ? mixedListsSupported() : false,
+    user && program.status === "published" ? favoriteStatus(user.id, { kind: "program", id: program.id }) : null,
   ]);
   const version = (versionRes.data as Version | null) ?? null;
   if (!version) notFound();
@@ -223,6 +225,7 @@ export default async function ProgramPage({ params }: Params) {
             <div className="flex flex-col items-start gap-2 pt-1">
               <div className="flex flex-wrap items-center gap-2">
                 <EnrollButton programId={program.id} path={path} reenroll={enrollment?.status === "abandoned"} />
+                {favorite ? <FavoriteButton kind="program" id={program.id} initial={favorite.favorite} path={path} /> : null}
                 {canSaveToList ? <AddToListButton kind="program" id={program.id} withLabel /> : null}
               </div>
               <span className="type-caption text-fg-muted">{t("freeOrder")}</span>
@@ -238,8 +241,9 @@ export default async function ProgramPage({ params }: Params) {
                   {enrollment.completed_at ? ` · ${t("completedOn", { date: formatDate(enrollment.completed_at, uiLocale, undefined, tz) })}` : null}
                 </p>
               </div>
-              {canSaveToList || enrollment.status === "active" ? (
+              {favorite || canSaveToList || enrollment.status === "active" ? (
                 <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+                  {favorite ? <FavoriteButton kind="program" id={program.id} initial={favorite.favorite} path={path} /> : null}
                   {canSaveToList ? <AddToListButton kind="program" id={program.id} withLabel /> : null}
                   {enrollment.status === "active" && <AbandonButton enrollmentId={enrollment.id} path={path} />}
                 </div>

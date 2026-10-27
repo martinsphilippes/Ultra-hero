@@ -515,14 +515,14 @@ isOneToOne: false
                   ]
                 },"favorites": {
                   Row: {
-                    "content_id": string,"created_at": string,"user_id": string
+                    "content_id": string | null,"created_at": string,"id": string,"item_type": string | null,"product_id": string | null,"program_id": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "content_id": string,"created_at"?: string,"user_id": string
+                    "content_id"?: string | null,"created_at"?: string,"id"?: string,"item_type"?: never,"product_id"?: string | null,"program_id"?: string | null,"user_id": string
                   }
                   Update: {
-                    "content_id"?: string,"created_at"?: string,"user_id"?: string
+                    "content_id"?: string | null,"created_at"?: string,"id"?: string,"item_type"?: never,"product_id"?: string | null,"program_id"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -530,6 +530,18 @@ isOneToOne: false
       columns: ["content_id"]
 isOneToOne: false
       referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "favorites_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "favorites_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
       referencedColumns: ["id"]
     }
                   ]

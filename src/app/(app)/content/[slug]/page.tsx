@@ -353,7 +353,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
             <div className="flex flex-wrap items-center gap-2 pt-1 print:hidden" role="group" aria-label={t("actionsLabel")}>
               {user ? (
                 <>
-                  <FavoriteButton contentId={content.id} initial={isFavorite} path={path} />
+                  <FavoriteButton kind="content" id={content.id} initial={isFavorite} path={path} />
                   <AddToListButton kind="content" id={content.id} />
                   <NotInterestedButton contentId={content.id} initial={notInterested} />
                 </>
