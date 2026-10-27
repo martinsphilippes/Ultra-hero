@@ -17,6 +17,8 @@ export function NotInterestedButton({ contentId, initial, className }: Props) {
   const { toast } = useToast();
   const errorMessage = useActionError();
   const [open, setOpen] = useState(false);
+  // lado do menu: alinhado à direita do botão, a não ser que assim ele saia da tela pela esquerda
+  const [align, setAlign] = useState<"left" | "right">("right");
   const [value, setValue] = useState(initial);
   const [pending, startTransition] = useTransition();
   const menuId = useId();
@@ -74,14 +76,17 @@ export function NotInterestedButton({ contentId, initial, className }: Props) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (!open) setAlign(menuSide(triggerRef.current));
+          setOpen((v) => !v);
+        }}
       />
       {open && (
         <div
           id={menuId}
           role="menu"
           aria-label={t("more")}
-          className="absolute right-0 top-full z-30 mt-1 min-w-56 overflow-hidden rounded-xl border border-border bg-surface-elevated p-1 shadow-lg animate-slide-up"
+          className={cn("absolute top-full z-30 mt-1 w-max min-w-56 max-w-[calc(100vw-2rem)]", align === "right" ? "right-0" : "left-0", " overflow-hidden rounded-xl border border-border bg-surface-elevated p-1 shadow-lg animate-slide-up")}
         >
           <button
             ref={firstItemRef}
@@ -98,4 +103,14 @@ export function NotInterestedButton({ contentId, initial, className }: Props) {
       )}
     </div>
   );
+}
+
+// Largura mínima do menu (min-w-56) + margem: se, alinhado à direita do botão, ele passaria da borda
+// esquerda da tela, abre alinhado à esquerda do botão.
+const MENU_MIN_WIDTH = 224;
+const EDGE = 8;
+export function menuSide(trigger: HTMLElement | null): "left" | "right" {
+  if (!trigger) return "right";
+  const rect = trigger.getBoundingClientRect();
+  return rect.right - MENU_MIN_WIDTH < EDGE ? "left" : "right";
 }
