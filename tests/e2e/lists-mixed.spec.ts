@@ -41,7 +41,7 @@ test.describe("listas com produto e programa", () => {
     const dialog = page.getByRole("dialog", { name: "Criar lista" });
     await expect(dialog).toContainText(MIX_HINT);
     await dialog.getByLabel("Nome da lista").fill(LIST_NAME);
-    await dialog.getByRole("button", { name: "Criar" }).click();
+    await dialog.getByRole("button", { name: "Nova lista" }).click();
     await expect(page).toHaveURL(/\/explore\/lists\/[0-9a-f-]{36}$/, { timeout: 20_000 });
     const listUrl = page.url();
     await expect(page.getByRole("heading", { level: 1, name: LIST_NAME })).toBeVisible();
@@ -55,7 +55,7 @@ test.describe("listas com produto e programa", () => {
       const sheet = page.getByRole("dialog", { name: "Minhas listas" });
       const box = sheet.getByRole("checkbox", { name: `Salvar em ${LIST_NAME}` });
       await expect(box).not.toBeChecked();
-      await box.check();
+      await box.click();
       await expect(page.getByText(`Salvo em ${LIST_NAME}`).first()).toBeVisible();
       await expect(box).toBeChecked();
       await page.keyboard.press("Escape");
