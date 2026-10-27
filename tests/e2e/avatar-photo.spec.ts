@@ -125,7 +125,7 @@ test.describe("foto de perfil: telas", () => {
     await expect(picker).toBeVisible();
     await expect(picker.getByText(/aparece no seu avatar e na sua página pública de herói/)).toBeVisible();
     await expect(page.locator("#dados").getByTestId("avatar-photo")).toHaveCount(0);
-    await expect(page.locator("#dados").getByTestId("avatar-in-hero-editor")).toBeVisible();
+    await expect(page.locator("#dados").getByRole("button", { name: /Editar perfil/ })).toHaveCount(0);
   });
 });
 

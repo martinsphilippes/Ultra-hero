@@ -68,11 +68,11 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(toggle).toHaveAttribute("aria-controls", "editar-perfil");
     await expect(editor).toBeHidden();
 
-    // Dados do herói: sem avatar, com o atalho para "Editar perfil"
+    // Dados do herói: só nome, idioma e tema (sem avatar e sem repetir "Editar perfil")
     const data = page.locator("#dados");
     await expect(data.getByTestId("avatar-photo")).toHaveCount(0);
     await expect(data.locator('input[type="radio"][name="avatar"]')).toHaveCount(0);
-    await expect(data.getByTestId("avatar-in-hero-editor")).toContainText("Editar perfil");
+    await expect(data).toContainText("Nome, idioma e tema.");
     await expect(data.getByLabel("Nome exibido")).toBeVisible();
 
     // abre pelo teclado: foco visível no botão e, aberto, no título do editor
@@ -131,11 +131,9 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(editor).toBeHidden();
     await expect(toggle).toBeFocused();
 
-    // o atalho de Dados abre o editor e leva o foco até ele
-    await data.getByRole("button", { name: "Abrir Editar perfil" }).click();
-    await expect(editor).toBeVisible();
-    await expect(editorTitle).toBeFocused();
-    await expect(editorTitle).toBeInViewport();
+    // "Editar perfil" existe só no topo: Dados não repete o atalho nem o avatar
+    await expect(data.getByRole("button", { name: /Editar perfil/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Editar perfil/ })).toHaveCount(1);
   });
 
   // Um avatar só: sem avatar salvo, o herói via três ilustrações diferentes (cabeçalho pelo nome do

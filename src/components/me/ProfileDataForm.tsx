@@ -1,12 +1,11 @@
 "use client";
 
-import { Moon, Pencil, RotateCcw, Sun, TriangleAlert } from "lucide-react";
+import { Moon, RotateCcw, Sun, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { updateProfile } from "@/app/(app)/profile/actions";
-import { openHeroEditor } from "@/components/creator/HeroEditorDisclosure";
 import { Button, FormField, Input, SegmentedControl, Select, useToast } from "@/components/ui";
 import { locales, type Locale } from "@/i18n/config";
 import type { AvatarPhotoState } from "@/lib/avatar/availability";
@@ -108,15 +107,8 @@ export function ProfileDataForm({ displayName, avatarUrl, locale, theme, photoSt
         <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="nickname" disabled={pending} />
       </FormField>
 
-      {avatarInHeroEditor ? (
-        // um avatar só para o herói: foto e ilustração ficam em "Editar perfil", no topo da página
-        <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-elevated p-4 sm:flex-row sm:items-center sm:justify-between" data-testid="avatar-in-hero-editor">
-          <p className="type-body-sm text-fg">{t("avatarInHeroEditor")}</p>
-          <Button type="button" variant="secondary" leadingIcon={<Pencil />} onClick={openHeroEditor} className="h-auto min-h-11 shrink-0 whitespace-normal py-2">
-            {t("openHeroEditor")}
-          </Button>
-        </div>
-      ) : (
+      {/* herói ativo: foto e ilustração ficam só em "Editar perfil", no topo da página */}
+      {avatarInHeroEditor ? null : (
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-semibold text-fg">{t("avatar")}</legend>
           <p className="type-caption text-fg-muted">{t("avatarHint")}</p>

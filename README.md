@@ -23,7 +23,7 @@ npm run dev                        # http://localhost:3000
 |---|---|
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run typecheck` · `npm run lint` | TypeScript estrito · ESLint |
-| `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 22 namespaces, 4.884 chaves por idioma |
+| `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 22 namespaces, 4.883 chaves por idioma |
 | `npm run test` | Vitest: 1.416 aprovados + 1 pulado em 57 arquivos (23/10/2026) |
 | `npm run test:rls` | 991 asserções de RLS/regras de negócio (S0–S51) num Postgres local isolado (`LOCAL_DB_NAME` escolhe o banco) |
 | `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado e `E2E_BASE_URL` para um servidor já ativo) | Playwright (Pixel 7 + Desktop Chrome) + axe, com as contas demo; contagem atual em `docs/testing.md` |

@@ -260,7 +260,7 @@ export default async function ProfilePage() {
             <h2 id="data-title" className="type-h3 text-fg">
               {t("data.title")}
             </h2>
-            <p className="type-body-sm text-fg-muted">{t("data.description")}</p>
+            <p className="type-body-sm text-fg-muted">{t(heroActive ? "data.descriptionHero" : "data.description")}</p>
           </div>
         </div>
         <ProfileDataForm

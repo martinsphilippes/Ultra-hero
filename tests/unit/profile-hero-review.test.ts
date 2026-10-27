@@ -119,11 +119,10 @@ describe("herói sem avatar: uma ilustração só", () => {
 describe("Dados do herói ativo: sem avatar", () => {
   const dataProps = { displayName: "Helena", avatarUrl: "/placeholders/avatar-3.svg", locale: "pt-BR" as const, theme: "dark" as const, photoState };
 
-  it("no lugar do avatar, o aviso e o botão que abre 'Editar perfil'", () => {
+  it("sem avatar nem atalho repetido: 'Editar perfil' fica só no topo da página", () => {
     const html = render(createElement(ProfileDataForm, { ...dataProps, avatarInHeroEditor: true }));
-    expect(html).toContain('data-testid="avatar-in-hero-editor"');
-    expect(html).toContain(meMessages.profile.data.avatarInHeroEditor);
-    expect(html).toMatch(new RegExp(`<button[^>]*type="button"[^>]*>.*${meMessages.profile.data.openHeroEditor}</span></button>`));
+    expect(html).not.toContain('data-testid="avatar-in-hero-editor"');
+    expect(html).not.toContain("Editar perfil");
     expect(html).not.toContain('data-testid="avatar-photo"');
     expect(html).not.toContain("avatar-illustrations-label");
     expect(html).not.toContain('name="avatar"');
@@ -180,8 +179,9 @@ describe("mensagens novas nos 3 idiomas e as antigas fora", () => {
       expect(creator.profile).not.toHaveProperty("avatar");
     }
     for (const me of [meMessages, enMe, esMe]) {
-      expect(me.profile.data.avatarInHeroEditor).toContain(me === meMessages ? "Editar perfil" : me === enMe ? "Edit profile" : "Editar perfil");
-      expect(me.profile.data.openHeroEditor.length).toBeGreaterThan(2);
+      expect(me.profile.data).not.toHaveProperty("avatarInHeroEditor");
+      expect(me.profile.data).not.toHaveProperty("openHeroEditor");
+      expect(me.profile.data.descriptionHero.length).toBeGreaterThan(5);
       expect(me.profile.data.errors.avatar_not_saved.length).toBeGreaterThan(10);
       expect(me.profile.data).not.toHaveProperty("illustrationsAppOnly");
     }
