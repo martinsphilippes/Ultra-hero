@@ -200,7 +200,7 @@ export default async function RecipeCollectionPage({ searchParams }: SearchParam
                     <div className="flex-1">
                       <RecipeCard recipe={content} />
                     </div>
-                    <RemoveFromListButton listId={list.id} contentId={content.id} title={content.title} />
+                    <RemoveFromListButton listId={list.id} id={content.id} title={content.title} />
                   </li>
                 ))}
               </ul>

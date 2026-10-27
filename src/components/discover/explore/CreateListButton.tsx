@@ -56,7 +56,7 @@ export function CreateListButton({ className }: { className?: string }) {
         open={open}
         onOpenChange={onOpenChange}
         title={t("createTitle")}
-        description={t("createDescription")}
+        description={`${t("createDescription")} ${t("mixHint")}`}
         size="sm"
         footer={
           <>

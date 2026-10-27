@@ -354,7 +354,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
               {user ? (
                 <>
                   <FavoriteButton contentId={content.id} initial={isFavorite} path={path} />
-                  <AddToListButton contentId={content.id} />
+                  <AddToListButton kind="content" id={content.id} />
                   <NotInterestedButton contentId={content.id} initial={notInterested} />
                 </>
               ) : null}

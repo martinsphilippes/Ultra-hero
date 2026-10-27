@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
+import { isMissingMixedListsError, listContains, listTargetSchema, targetColumn, type ListTarget, type ListTargetIds } from "@/lib/library/list-items";
 import { createClient } from "@/lib/supabase/server";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
 
@@ -180,77 +181,107 @@ export async function toggleFavorite(input: { contentId: string; favorite: boole
 }
 
 // ---------------------------------------------------------------- listas pessoais
+// Um item é conteúdo, produto ou programa (0040). Sem a 0040 no banco, conteúdo segue como antes e
+// produto/programa respondem "list_unsupported" (a página nem mostra o botão nesse caso).
 export type MyList = { id: string; name: string; count: number; contains: boolean };
 
-export async function getMyLists(input: { contentId: string }): Promise<Result<{ lists: MyList[] }>> {
-  const parsed = z.object({ contentId: uuid }).safeParse(input);
+const targetInput = listTargetSchema;
+
+// Só a coluna do alvo vai no insert: o banco antigo (sem product_id/program_id) aceita o de conteúdo.
+function targetRow(target: ListTarget): { content_id?: string; product_id?: string; program_id?: string } {
+  return { [targetColumn(target.kind)]: target.id };
+}
+
+// Erro do banco → código da interface. 42501 aqui é a política list_items_target_public:
+// produto fora do ar ou programa não publicado.
+function listFail(error: { code?: string | null; message?: string | null } | null | undefined): ActionError {
+  if (isMissingMixedListsError(error)) return { ok: false, error: "list_unsupported" };
+  if (error?.code === "42501") return { ok: false, error: "list_item_unavailable" };
+  return fail(error?.message ?? "generic");
+}
+
+function trackProps(target: ListTarget, listId: string, created?: boolean) {
+  // content_id mantém a série antiga do painel; item_type/item_id cobrem os tipos novos
+  return {
+    ...(target.kind === "content" ? { content_id: target.id } : {}),
+    item_type: target.kind,
+    item_id: target.id,
+    list_id: listId,
+    ...(created ? { created: true } : {}),
+  };
+}
+
+export async function getMyLists(input: { target: ListTarget }): Promise<Result<{ lists: MyList[] }>> {
+  const parsed = z.object({ target: targetInput }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { target } = parsed.data;
   try {
     const user = await requireSession();
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("custom_lists")
-      .select("id, name, items:list_items(content_id)")
-      .eq("user_id", user.id)
-      .order("updated_at", { ascending: false });
-    if (error) return fail(error.message);
-    const lists: MyList[] = (data ?? []).map((l) => {
-      const items = (l.items ?? []) as { content_id: string }[];
-      return { id: l.id, name: l.name, count: items.length, contains: items.some((i) => i.content_id === parsed.data.contentId) };
-    });
+    const query = (items: string) => supabase.from("custom_lists").select(`id, name, ${items}`).eq("user_id", user.id).order("updated_at", { ascending: false });
+    let res = await query("items:list_items(content_id, product_id, program_id)");
+    // banco sem a 0040: para conteúdo, a leitura antiga basta
+    if (res.error && isMissingMixedListsError(res.error) && target.kind === "content") res = await query("items:list_items(content_id)");
+    if (res.error) return listFail(res.error);
+    const rows = (res.data ?? []) as unknown as { id: string; name: string; items: ListTargetIds[] | null }[];
+    const lists: MyList[] = rows.map((l) => ({ id: l.id, name: l.name, count: (l.items ?? []).length, contains: listContains(l.items, target) }));
     return { ok: true, lists };
   } catch (error) {
     return fail(error);
   }
 }
 
-export async function addToList(input: { listId: string; contentId: string }): Promise<Result> {
-  const parsed = z.object({ listId: uuid, contentId: uuid }).safeParse(input);
+export async function addToList(input: { listId: string; target: ListTarget }): Promise<Result> {
+  const parsed = z.object({ listId: uuid, target: targetInput }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { listId, target } = parsed.data;
   try {
     await requireSession();
     const supabase = await createClient();
+    // ignorar repetido: o único por (lista, alvo) da 0040 (ou a chave antiga, para conteúdo) segura
     const { error } = await supabase
       .from("list_items")
-      .upsert({ list_id: parsed.data.listId, content_id: parsed.data.contentId }, { onConflict: "list_id,content_id" });
-    if (error) return fail(error.message);
-    await supabase.from("custom_lists").update({ updated_at: new Date().toISOString() }).eq("id", parsed.data.listId);
-    await trackEvent("list.add", { content_id: parsed.data.contentId, list_id: parsed.data.listId });
+      .upsert({ list_id: listId, ...targetRow(target) }, { onConflict: `list_id,${targetColumn(target.kind)}`, ignoreDuplicates: true });
+    if (error) return listFail(error);
+    await supabase.from("custom_lists").update({ updated_at: new Date().toISOString() }).eq("id", listId);
+    await trackEvent("list.add", trackProps(target, listId));
     return { ok: true };
   } catch (error) {
     return fail(error);
   }
 }
 
-export async function removeFromList(input: { listId: string; contentId: string }): Promise<Result> {
-  const parsed = z.object({ listId: uuid, contentId: uuid }).safeParse(input);
+export async function removeFromList(input: { listId: string; target: ListTarget }): Promise<Result> {
+  const parsed = z.object({ listId: uuid, target: targetInput }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { listId, target } = parsed.data;
   try {
     await requireSession();
     const supabase = await createClient();
-    const { error } = await supabase.from("list_items").delete().eq("list_id", parsed.data.listId).eq("content_id", parsed.data.contentId);
-    if (error) return fail(error.message);
+    const { error } = await supabase.from("list_items").delete().eq("list_id", listId).eq(targetColumn(target.kind), target.id);
+    if (error) return listFail(error);
     return { ok: true };
   } catch (error) {
     return fail(error);
   }
 }
 
-export async function createListAndAdd(input: { name: string; contentId: string }): Promise<Result<{ list: MyList }>> {
-  const parsed = z.object({ name: z.string().trim().min(1).max(60), contentId: uuid }).safeParse(input);
+export async function createListAndAdd(input: { name: string; target: ListTarget }): Promise<Result<{ list: MyList }>> {
+  const parsed = z.object({ name: z.string().trim().min(1).max(60), target: targetInput }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { name, target } = parsed.data;
   try {
     const user = await requireSession();
     const supabase = await createClient();
-    const { data: list, error } = await supabase
-      .from("custom_lists")
-      .insert({ user_id: user.id, name: parsed.data.name })
-      .select("id, name")
-      .single();
+    const { data: list, error } = await supabase.from("custom_lists").insert({ user_id: user.id, name }).select("id, name").single();
     if (error || !list) return fail(error?.message ?? "generic");
-    const { error: itemError } = await supabase.from("list_items").insert({ list_id: list.id, content_id: parsed.data.contentId });
-    if (itemError) return fail(itemError.message);
-    await trackEvent("list.add", { content_id: parsed.data.contentId, list_id: list.id, created: true });
+    const { error: itemError } = await supabase.from("list_items").insert({ list_id: list.id, ...targetRow(target) });
+    if (itemError) {
+      // não deixa lista vazia criada por engano quando o item é recusado
+      await supabase.from("custom_lists").delete().eq("id", list.id);
+      return listFail(itemError);
+    }
+    await trackEvent("list.add", trackProps(target, list.id, true));
     return { ok: true, list: { id: list.id, name: list.name, count: 1, contains: true } };
   } catch (error) {
     return fail(error);

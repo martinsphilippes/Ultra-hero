@@ -127,7 +127,7 @@
     "favoriteRemoved": "Quitado de favoritos",
     "addToList": "Guardar en lista",
     "listsTitle": "Mis listas",
-    "listsDescription": "Elige dónde guardar este contenido.",
+    "listsDescription": "Elige dónde guardar {kind, select, product {este producto} program {este programa} other {este contenido}}.",
     "listsEmpty": "Todavía no tienes listas",
     "listsEmptyDescription": "Crea la primera abajo.",
     "newListLabel": "Nueva lista",
@@ -242,6 +242,8 @@
     "invalid_input": "Datos inválidos.",
     "not_found": "No encontrado.",
     "list_not_found": "Lista no encontrada.",
-    "generic": "No pudimos completar la acción. Inténtalo de nuevo."
+    "generic": "No pudimos completar la acción. Inténtalo de nuevo.",
+    "list_unsupported": "Todavía no se puede guardar este elemento en listas. Inténtalo más tarde.",
+    "list_item_unavailable": "Este elemento no está disponible para listas en este momento."
   }
 }

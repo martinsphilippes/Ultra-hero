@@ -10,11 +10,13 @@ import { CommerceEventTracker } from "@/components/commerce/CommerceEventTracker
 import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { FoodInfoBlock, parseFoodInfo } from "@/components/commerce/FoodInfoBlock";
 import { OfficialStoreLink } from "@/components/commerce/OfficialStoreLink";
+import { AddToListButton } from "@/components/library";
 import { Badge, DemoBadge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import { getUser } from "@/lib/auth/session";
 import { CONTENT_CARD_SELECT, localizedLabel, type ContentCardData } from "@/lib/catalog/queries";
+import { mixedListsSupported } from "@/lib/library/lists-support";
 import { createClient } from "@/lib/supabase/server";
 
 // Página do produto de demonstração. Visibilidade vem da RLS; "comprável" vem da função SQL
@@ -79,10 +81,13 @@ export default async function ProductPage({ params }: Params) {
   if (!product) notFound();
 
   const supabase = await createClient();
-  const [{ data: purchasableRaw }, cartRes, { data: linksRaw }] = await Promise.all([
+  // Guardar em lista: só produto visível ao público (a política da 0040 recusa o resto) e só com a 0040 no banco.
+  const publiclyVisible = product.status === "published" && product.moderation_status === "clear" && product.seller?.status === "active";
+  const [{ data: purchasableRaw }, cartRes, { data: linksRaw }, canSaveToList] = await Promise.all([
     supabase.rpc("product_is_purchasable", { p_product: product.id }),
     user ? supabase.from("cart_items").select("quantity").eq("product_id", product.id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("content_product_links").select(`id, content:content(${CONTENT_CARD_SELECT})`).eq("product_id", product.id).eq("status", "validated").limit(6),
+    user && publiclyVisible ? mixedListsSupported() : false,
   ]);
   const purchasable = Boolean(purchasableRaw);
   const inCart = cartRes.data?.quantity ?? 0;
@@ -169,7 +174,10 @@ export default async function ProductPage({ params }: Params) {
           <AddToCartForm productId={product.id} priceCents={product.price_cents_demo} maxQuantity={maxQuantity} purchasable={purchasable} isLoggedIn={Boolean(user)} inCart={inCart} nextPath={path} />
 
           {/* A compra aqui segue simulada; a loja oficial da marca fica num link externo. */}
-          <OfficialStoreLink attributes={product.attributes} className="w-fit" />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {canSaveToList ? <AddToListButton kind="product" id={product.id} withLabel /> : null}
+            <OfficialStoreLink attributes={product.attributes} className="w-fit" />
+          </div>
 
           <DemoNotice>{td("notice")}</DemoNotice>
 

@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { removeListItem } from "@/app/(app)/explore/actions";
 import { Button, useToast } from "@/components/ui";
+import type { ListItemKind } from "@/lib/library/list-items";
 import { useListError } from "./useListError";
 
-type Props = { listId: string; contentId: string; title: string };
+type Props = { listId: string; kind?: ListItemKind; id: string; title: string };
 
-// Remove um conteúdo da lista (fica abaixo do card porque o card inteiro é um link).
-export function RemoveFromListButton({ listId, contentId, title }: Props) {
+// Remove um item (conteúdo, produto ou programa) da lista; fica abaixo do card porque o card inteiro é um link.
+export function RemoveFromListButton({ listId, kind = "content", id, title }: Props) {
   const t = useTranslations("discover.explore.lists");
   const { toast } = useToast();
   const errorMessage = useListError();
@@ -20,7 +21,7 @@ export function RemoveFromListButton({ listId, contentId, title }: Props) {
 
   function remove() {
     startTransition(async () => {
-      const result = await removeListItem({ listId, contentId });
+      const result = await removeListItem({ listId, target: { kind, id } });
       if (!result.ok) {
         toast({ title: errorMessage(result.error), variant: "error" });
         return;

@@ -12,10 +12,12 @@ import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
 import { CONTENT_TYPES, PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import { listTargetSchema, targetColumn, type ListTarget } from "@/lib/library/list-items";
 import { fetchRecipeCatalog } from "@/lib/recipes/catalog";
 import { catalogFilterNames, recipeCatalogParamsSchema } from "@/lib/recipes/catalog-params";
 
-// Ações do Explorar: paginação da grade, evento de busca e listas pessoais (criar/renomear/excluir/remover item).
+// Ações do Explorar: paginação da grade, evento de busca e listas pessoais (criar/renomear/excluir/remover item;
+// o item pode ser conteúdo, produto ou programa).
 // Tudo validado com Zod; a posse das listas é garantida pela RLS (custom_lists / list_items).
 
 export type ActionError = { ok: false; error: string };
@@ -162,16 +164,18 @@ export async function deleteList(input: { listId: string }): Promise<Result> {
   }
 }
 
-export async function removeListItem(input: { listId: string; contentId: string }): Promise<Result> {
-  const parsed = z.object({ listId: uuid, contentId: uuid }).safeParse(input);
+// Remove um item (conteúdo, produto ou programa) da lista. Sem a 0040 no banco só existe conteúdo.
+export async function removeListItem(input: { listId: string; target: ListTarget }): Promise<Result> {
+  const parsed = z.object({ listId: uuid, target: listTargetSchema }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
+  const { listId, target } = parsed.data;
   try {
     await requireSession();
     const supabase = await createClient();
-    const { error } = await supabase.from("list_items").delete().eq("list_id", parsed.data.listId).eq("content_id", parsed.data.contentId);
+    const { error } = await supabase.from("list_items").delete().eq("list_id", listId).eq(targetColumn(target.kind), target.id);
     if (error) return fail(error.message);
-    await supabase.from("custom_lists").update({ updated_at: new Date().toISOString() }).eq("id", parsed.data.listId);
-    revalidateLists(parsed.data.listId);
+    await supabase.from("custom_lists").update({ updated_at: new Date().toISOString() }).eq("id", listId);
+    revalidateLists(listId);
     return { ok: true };
   } catch (error) {
     return fail(error);

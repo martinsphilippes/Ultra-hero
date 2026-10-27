@@ -6,11 +6,13 @@ import { notFound } from "next/navigation";
 import { Award, BookOpen, Check, ChefHat, CircleSlash, Download, Dumbbell, FileText, Layers, LockKeyhole, LogIn, Play, Repeat } from "lucide-react";
 import { displayTimeZone, ViewTracker } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
+import { AddToListButton } from "@/components/library";
 import { Avatar, Badge, Button, PillarBadge, ProgressBar, ProgressRing } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
 import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
+import { mixedListsSupported } from "@/lib/library/lists-support";
 import type { Enums, FnReturns, Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -91,7 +93,8 @@ export default async function ProgramPage({ params }: Params) {
   const versionId = enrolledVersion ?? program.current_version_id;
   if (!versionId) notFound();
 
-  const [versionRes, locRes, itemsRes, currentRes, profile] = await Promise.all([
+  // Guardar em lista: só programa publicado (a política da 0040 recusa o resto) e só com a 0040 no banco.
+  const [versionRes, locRes, itemsRes, currentRes, profile, canSaveToList] = await Promise.all([
     supabase.from("program_versions").select("id, version_no, title, summary, description, source_locale, estimated_weeks, status").eq("id", versionId).maybeSingle(),
     supabase.from("program_localizations").select("title, summary, description").eq("version_id", versionId).eq("locale", uiLocale).eq("status", "published").maybeSingle(),
     supabase.rpc("program_required_items", { p_version: versionId }),
@@ -99,6 +102,7 @@ export default async function ProgramPage({ params }: Params) {
       ? supabase.from("program_versions").select("version_no").eq("id", program.current_version_id).maybeSingle()
       : null,
     user ? getProfile() : null,
+    user && program.status === "published" ? mixedListsSupported() : false,
   ]);
   const version = (versionRes.data as Version | null) ?? null;
   if (!version) notFound();
@@ -217,7 +221,10 @@ export default async function ProgramPage({ params }: Params) {
             </div>
           ) : !enrollment || enrollment.status === "abandoned" ? (
             <div className="flex flex-col items-start gap-2 pt-1">
-              <EnrollButton programId={program.id} path={path} reenroll={enrollment?.status === "abandoned"} />
+              <div className="flex flex-wrap items-center gap-2">
+                <EnrollButton programId={program.id} path={path} reenroll={enrollment?.status === "abandoned"} />
+                {canSaveToList ? <AddToListButton kind="program" id={program.id} withLabel /> : null}
+              </div>
               <span className="type-caption text-fg-muted">{t("freeOrder")}</span>
             </div>
           ) : (
@@ -231,7 +238,12 @@ export default async function ProgramPage({ params }: Params) {
                   {enrollment.completed_at ? ` · ${t("completedOn", { date: formatDate(enrollment.completed_at, uiLocale, undefined, tz) })}` : null}
                 </p>
               </div>
-              {enrollment.status === "active" && <AbandonButton enrollmentId={enrollment.id} path={path} className="self-start sm:self-center" />}
+              {canSaveToList || enrollment.status === "active" ? (
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+                  {canSaveToList ? <AddToListButton kind="program" id={program.id} withLabel /> : null}
+                  {enrollment.status === "active" && <AbandonButton enrollmentId={enrollment.id} path={path} />}
+                </div>
+              ) : null}
             </div>
           )}
         </div>
