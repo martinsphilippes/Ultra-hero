@@ -98,9 +98,9 @@
       "open": "Abrir lista",
       "actionsLabel": "Acciones de la lista {name}",
       "emptyTitle": "Aún no creaste listas",
-      "emptyDescription": "Crea una lista para agrupar contenidos por objetivo, semana o ánimo.",
+      "emptyDescription": "Crea una lista para agrupar lo que quieras por objetivo, semana o ánimo.",
       "listEmptyTitle": "Esta lista está vacía",
-      "listEmptyDescription": "Agrega contenidos desde la página de cada contenido.",
+      "listEmptyDescription": "Usa el botón “Guardar en lista” en la página de un contenido, producto o programa.",
       "removeItem": "Quitar",
       "removeItemOf": "Quitar “{title}” de la lista",
       "removed": "Quitado de la lista",
@@ -122,7 +122,8 @@
       "favoritesMore": "Mostrando tus {count} favoritos más recientes",
       "openNamed": "Abrir lista {name}",
       "browseContent": "Explorar contenidos",
-      "notFoundDescription": "Puede haber sido eliminada o pertenecer a otra cuenta."
+      "notFoundDescription": "Puede haber sido eliminada o pertenecer a otra cuenta.",
+      "mixHint": "Guarda contenidos, recetas, productos y programas."
     },
     "eyebrow": "Descubrir"
   },

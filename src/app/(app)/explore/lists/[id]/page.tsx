@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { ContentCard } from "@/components/catalog";
+import { ContentCard, ProductCard, ProgramCard } from "@/components/catalog";
 import { ListActions } from "@/components/discover/explore/ListActions";
 import { RemoveFromListButton } from "@/components/discover/explore/RemoveFromListButton";
 import { CARD_GRID } from "@/components/discover/grid";
@@ -13,12 +13,10 @@ import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { formatRelativeTime } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { requireUser } from "@/lib/auth/session";
-import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
+import { isMissingMixedListsError, LIST_ITEM_SELECT, LIST_ITEM_SELECT_LEGACY, toListEntries, type ListEntry, type ListItemRow } from "@/lib/library/list-items";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = { params: Promise<{ id: string }> };
-type ItemRow = { added_at: string; content: ContentCardData | null };
-
 const LISTS_HREF = "/explore?tab=listas";
 
 // A RLS garante que só o dono enxerga a lista; qualquer outra coisa é 404.
@@ -35,6 +33,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return { title: list ? t("list", { name: list.name }) : t("lists") };
 }
 
+// Cada tipo com o card que o app já usa no catálogo, na loja e nas prateleiras.
+function ItemCard({ item, priority }: { item: ListEntry; priority: boolean }) {
+  if (item.kind === "product") return <ProductCard product={item.product} priority={priority} />;
+  if (item.kind === "program") return <ProgramCard program={item.program} priority={priority} />;
+  return <ContentCard content={item.content} priority={priority} />;
+}
+
 // Página de uma lista pessoal: cards com ação de remover; renomear/excluir no cabeçalho.
 export default async function ListPage({ params }: Params) {
   const { id } = await params;
@@ -43,13 +48,13 @@ export default async function ListPage({ params }: Params) {
   if (!list) notFound();
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("list_items")
-    .select(`added_at, content:content(${CONTENT_CARD_SELECT})`)
-    .eq("list_id", list.id)
-    .order("added_at", { ascending: false });
-  // Conteúdo despublicado some pela RLS: não aparece na lista.
-  const items = ((data ?? []) as unknown as ItemRow[]).filter((row): row is ItemRow & { content: ContentCardData } => Boolean(row.content));
+  const query = (select: string) => supabase.from("list_items").select(select).eq("list_id", list.id);
+  // Conteúdo, produto e programa misturados (0040); sem a migração no banco, só os conteúdos.
+  let res = await query(LIST_ITEM_SELECT);
+  if (res.error && isMissingMixedListsError(res.error)) res = await query(LIST_ITEM_SELECT_LEGACY);
+  const { error } = res;
+  // Ordem por posição (empate: o mais recente primeiro); alvo despublicado some pela RLS.
+  const items = toListEntries((res.data ?? []) as unknown as ListItemRow[]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,7 +73,7 @@ export default async function ListPage({ params }: Params) {
           <EmptyState
             icon={<ListChecks />}
             title={t("listEmptyTitle")}
-            description={t("listEmptyDescription")}
+            description={`${t("mixHint")} ${t("listEmptyDescription")}`}
             action={
               <Button asChild variant="secondary">
                 <Link href="/explore">{t("browseContent")}</Link>
@@ -79,9 +84,9 @@ export default async function ListPage({ params }: Params) {
       ) : (
         <ul className={CARD_GRID}>
           {items.map((item, index) => (
-            <li key={item.content.id} className="flex flex-col gap-1">
-              <ContentCard content={item.content} priority={index === 0} />
-              <RemoveFromListButton listId={list.id} contentId={item.content.id} title={item.content.title} />
+            <li key={item.key} className="flex flex-col gap-1" data-testid="list-item" data-kind={item.kind}>
+              <ItemCard item={item} priority={index === 0} />
+              <RemoveFromListButton listId={list.id} kind={item.kind} id={item.id} title={item.title} />
             </li>
           ))}
         </ul>

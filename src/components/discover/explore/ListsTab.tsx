@@ -7,6 +7,7 @@ import { formatRelativeTime } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { getUser } from "@/lib/auth/session";
 import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
+import { isMissingMixedListsError, LIST_COUNT_ITEMS, LIST_COUNT_ITEMS_LEGACY, visibleItemCount } from "@/lib/library/list-items";
 import { createClient } from "@/lib/supabase/server";
 import { SCROLL_CARD } from "../grid";
 import { InlineError } from "../InlineError";
@@ -14,7 +15,7 @@ import { CreateListButton } from "./CreateListButton";
 import { ListActions } from "./ListActions";
 
 type FavoriteRow = { created_at: string; content: ContentCardData | null };
-type ListRow = { id: string; name: string; updated_at: string; items: { content_id: string }[] };
+type ListRow = { id: string; name: string; updated_at: string; items: { content?: unknown; product?: unknown; program?: unknown }[] | null };
 
 const FAVORITES_PREVIEW = 8;
 
@@ -40,15 +41,19 @@ export async function ListsTab() {
   }
 
   const [supabase, locale] = await Promise.all([createClient(), getLocale()]);
-  const [favRes, listsRes] = await Promise.all([
+  const listsQuery = (items: string) =>
+    supabase.from("custom_lists").select(`id, name, updated_at, ${items}`).eq("user_id", user.id).order("updated_at", { ascending: false });
+  const [favRes, mixedRes] = await Promise.all([
     supabase
       .from("favorites")
       .select(`created_at, content:content(${CONTENT_CARD_SELECT})`)
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(FAVORITES_PREVIEW + 1),
-    supabase.from("custom_lists").select("id, name, updated_at, items:list_items(content_id)").eq("user_id", user.id).order("updated_at", { ascending: false }),
+    listsQuery(LIST_COUNT_ITEMS),
   ]);
+  // Sem a 0040 no banco, conta só os conteúdos (a lista só pode ter conteúdos).
+  const listsRes = mixedRes.error && isMissingMixedListsError(mixedRes.error) ? await listsQuery(LIST_COUNT_ITEMS_LEGACY) : mixedRes;
 
   const favorites = ((favRes.data ?? []) as unknown as FavoriteRow[]).map((row) => row.content).filter((c): c is ContentCardData => Boolean(c));
   const favoritesPreview = favorites.slice(0, FAVORITES_PREVIEW);
@@ -122,7 +127,7 @@ export async function ListsTab() {
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
                     <p className="type-caption text-fg-muted">
-                      {t("items", { count: list.items.length })} · {t("updated", { when: formatRelativeTime(list.updated_at, locale) })}
+                      {t("items", { count: visibleItemCount(list.items) })} · {t("updated", { when: formatRelativeTime(list.updated_at, locale) })}
                     </p>
                     <Button asChild variant="link" size="sm">
                       <Link href={`/explore/lists/${list.id}`} tabIndex={-1} aria-hidden="true">

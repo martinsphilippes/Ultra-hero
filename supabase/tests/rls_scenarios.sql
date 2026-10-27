@@ -3833,6 +3833,141 @@ drop function tests.expect_error_as(text, text, text, text);
 drop function tests.login_recent(uuid, text);
 revoke execute on all functions in schema tests from health_ingest;
 
+-- ================================================================ S52 · Listas com conteúdos, produtos e programas (0040)
+-- list_items aponta para exatamente UM alvo (conteúdo, produto ou programa); item_type é derivado.
+-- A posse continua com list_items_own; a política restritiva só aceita produto visível ao público
+-- e programa publicado. O app antigo (insert/upsert só com content_id) continua funcionando.
+select tests.su();
+insert into public.products (id, seller_org_id, category_id, slug, title, description, image_url, price_cents_demo, product_type, status)
+values ('52000000-0000-4000-8000-000000000001', public.seed_uuid('seller:vertice'), public.seed_uuid('cat:accessory'), 's52-rascunho', 'Produto rascunho S52',
+        'Descrição demonstrativa', '/placeholders/product-1.svg', 1000, 'physical', 'draft');
+insert into public.programs (id, slug, creator_id, pillar, status) values
+  ('52000000-0000-4000-8000-000000000002', 's52-rascunho', public.seed_uuid('creator:lia'), 'routine', 'draft'),
+  ('52000000-0000-4000-8000-000000000003', 's52-temporario', public.seed_uuid('creator:lia'), 'routine', 'published');
+insert into public.custom_lists (id, user_id, name) values
+  ('52000000-0000-4000-8000-000000000010', '10000000-0000-4000-8000-000000000002', 'Suplementos'),
+  ('52000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000001', 'Lista do admin'),
+  ('52000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000005', 'Lista do fornecedor');
+select tests.ok('S52 estrutura: chave primária própria (id), únicos por alvo e CHECK de um alvo só',
+  (select string_agg(a.attname, ',') from pg_constraint c join pg_attribute a on a.attrelid = c.conrelid and a.attnum = any (c.conkey)
+     where c.conrelid = 'public.list_items'::regclass and c.contype = 'p') = 'id'
+  and (select count(*) from pg_constraint where conrelid = 'public.list_items'::regclass and contype = 'u'
+         and conname in ('list_items_list_content_key', 'list_items_list_product_key', 'list_items_list_program_key')) = 3
+  and exists (select 1 from pg_constraint where conrelid = 'public.list_items'::regclass and conname = 'list_items_one_target' and contype = 'c'));
+select tests.ok('S52 item_type é coluna gerada (não dá para gravar tipo e alvo divergentes)',
+  (select attgenerated = 's' from pg_attribute where attrelid = 'public.list_items'::regclass and attname = 'item_type'));
+
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+-- forma do app antigo: só content_id, e o upsert por (list_id, content_id)
+insert into public.list_items (list_id, content_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('content:r1'));
+insert into public.list_items (list_id, content_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('content:r1'))
+  on conflict (list_id, content_id) do update set content_id = excluded.content_id;
+select tests.ok('S52 dono adiciona conteúdo como antes (insert e upsert só com content_id); tipo vira content',
+  (select count(*) = 1 and bool_and(item_type = 'content') from public.list_items where list_id = '52000000-0000-4000-8000-000000000010'));
+insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:ue-creatina-po'));
+select tests.ok('S52 dono adiciona produto publicado (Ultra.e Life); tipo vira product',
+  (select item_type = 'product' from public.list_items where list_id = '52000000-0000-4000-8000-000000000010' and product_id = public.seed_uuid('product:ue-creatina-po')));
+insert into public.list_items (list_id, program_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('program:p1'));
+select tests.ok('S52 dono adiciona programa publicado; tipo vira program',
+  (select item_type = 'program' from public.list_items where list_id = '52000000-0000-4000-8000-000000000010' and program_id = public.seed_uuid('program:p1')));
+insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:a6'));
+select tests.ok('S52 produto publicado mas indisponível pode ser guardado (lista não é carrinho)',
+  exists (select 1 from public.list_items where product_id = public.seed_uuid('product:a6')));
+select tests.ok('S52 a lista mistura os três tipos (4 itens: 1 conteúdo, 2 produtos, 1 programa)',
+  (select count(*) filter (where item_type = 'content') = 1 and count(*) filter (where item_type = 'product') = 2
+          and count(*) filter (where item_type = 'program') = 1
+     from public.list_items where list_id = '52000000-0000-4000-8000-000000000010'));
+select tests.expect_error('S52 produto repetido na mesma lista é recusado',
+  $q$insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:ue-creatina-po'))$q$, '23505');
+select tests.expect_error('S52 programa repetido na mesma lista é recusado',
+  $q$insert into public.list_items (list_id, program_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('program:p1'))$q$, '23505');
+select tests.expect_error('S52 conteúdo repetido na mesma lista é recusado',
+  $q$insert into public.list_items (list_id, content_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('content:r1'))$q$, '23505');
+insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:ue-creatina-po'))
+  on conflict (list_id, product_id) do nothing;
+select tests.ok('S52 upsert "ignorar repetido" por (list_id, product_id) não duplica',
+  (select count(*) from public.list_items where list_id = '52000000-0000-4000-8000-000000000010' and product_id = public.seed_uuid('product:ue-creatina-po')) = 1);
+select tests.expect_error('S52 produto em rascunho é recusado',
+  $q$insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000010', '52000000-0000-4000-8000-000000000001')$q$, 'row-level security');
+select tests.expect_error('S52 programa não publicado é recusado',
+  $q$insert into public.list_items (list_id, program_id) values ('52000000-0000-4000-8000-000000000010', '52000000-0000-4000-8000-000000000002')$q$, 'row-level security');
+select tests.expect_error('S52 trocar o alvo de um item para programa não publicado é recusado (update)',
+  $q$update public.list_items set content_id = null, program_id = '52000000-0000-4000-8000-000000000002' where list_id = '52000000-0000-4000-8000-000000000010' and content_id = public.seed_uuid('content:r1')$q$, 'row-level security');
+select tests.expect_error('S52 CHECK: item com dois alvos é recusado',
+  $q$insert into public.list_items (list_id, content_id, product_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('content:r2'), public.seed_uuid('product:ue-focus'))$q$, '23514');
+select tests.expect_error('S52 item sem alvo é recusado já pela RLS',
+  $q$insert into public.list_items (list_id) values ('52000000-0000-4000-8000-000000000010')$q$, 'row-level security');
+select tests.su(); -- sem RLS (sistema), quem barra é o CHECK
+select tests.expect_error('S52 CHECK: item sem alvo é recusado mesmo pelo sistema',
+  $q$insert into public.list_items (list_id) values ('52000000-0000-4000-8000-000000000010')$q$, '23514');
+select tests.expect_error('S52 CHECK: produto e programa no mesmo item são recusados mesmo pelo sistema',
+  $q$insert into public.list_items (list_id, product_id, program_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:ue-focus'), public.seed_uuid('program:p2'))$q$, '23514');
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S52 tipo não é gravável à mão (coluna gerada)',
+  $q$insert into public.list_items (list_id, product_id, item_type) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:ue-focus'), 'program')$q$, '428C9');
+
+-- outro usuário: não vê, não grava, não apaga
+select tests.login('10000000-0000-4000-8000-000000000003', 'consumer2@test.local');
+select tests.ok('S52 outro usuário não vê os itens da lista alheia',
+  (select count(*) from public.list_items where list_id = '52000000-0000-4000-8000-000000000010') = 0);
+select tests.expect_error('S52 outro usuário não adiciona produto na lista alheia',
+  $q$insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:ue-focus'))$q$, 'row-level security');
+select tests.expect_error('S52 outro usuário não adiciona programa na lista alheia',
+  $q$insert into public.list_items (list_id, program_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('program:p2'))$q$, 'row-level security');
+create temporary table s52_del as select 0 as n;
+grant all on s52_del to authenticated;
+with d as (delete from public.list_items where list_id = '52000000-0000-4000-8000-000000000010' returning 1)
+update s52_del set n = (select count(*) from d);
+select tests.ok('S52 outro usuário não apaga itens da lista alheia', (select n from s52_del) = 0);
+
+-- visitante
+select tests.anon();
+select tests.ok('S52 visitante não vê itens de lista', (select count(*) from public.list_items) = 0);
+select tests.expect_error('S52 visitante não adiciona produto',
+  $q$insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('product:ue-focus'))$q$, 'row-level security');
+select tests.expect_error('S52 visitante não adiciona programa',
+  $q$insert into public.list_items (list_id, program_id) values ('52000000-0000-4000-8000-000000000010', public.seed_uuid('program:p2'))$q$, 'row-level security');
+
+-- quem enxerga o rascunho pela RLS (fornecedor dono, admin) também não guarda: a regra é "visível ao público"
+select tests.login('10000000-0000-4000-8000-000000000005', 'sellera@test.local');
+select tests.ok('S52 fornecedor enxerga o próprio rascunho', exists (select 1 from public.products where id = '52000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S52 fornecedor não guarda o próprio produto em rascunho na lista dele',
+  $q$insert into public.list_items (list_id, product_id) values ('52000000-0000-4000-8000-000000000012', '52000000-0000-4000-8000-000000000001')$q$, 'row-level security');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S52 admin enxerga o programa em rascunho', exists (select 1 from public.programs where id = '52000000-0000-4000-8000-000000000002'));
+select tests.expect_error('S52 admin não guarda programa em rascunho na lista dele',
+  $q$insert into public.list_items (list_id, program_id) values ('52000000-0000-4000-8000-000000000011', '52000000-0000-4000-8000-000000000002')$q$, 'row-level security');
+select tests.ok('S52 admin não vê itens da lista de outra pessoa (list_items_own vale para todos)',
+  (select count(*) from public.list_items where list_id = '52000000-0000-4000-8000-000000000010') = 0);
+
+-- remoção pelo dono, por tipo; despublicar não apaga o que já estava guardado
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+insert into public.list_items (list_id, program_id) values ('52000000-0000-4000-8000-000000000010', '52000000-0000-4000-8000-000000000003');
+with d as (delete from public.list_items where list_id = '52000000-0000-4000-8000-000000000010' and product_id = public.seed_uuid('product:a6') returning 1)
+update s52_del set n = (select count(*) from d);
+select tests.ok('S52 dono remove um produto da lista (só ele)', (select n from s52_del) = 1);
+with d as (delete from public.list_items where list_id = '52000000-0000-4000-8000-000000000010' and program_id = public.seed_uuid('program:p1') returning 1)
+update s52_del set n = (select count(*) from d);
+select tests.ok('S52 dono remove um programa da lista', (select n from s52_del) = 1);
+select tests.ok('S52 restam conteúdo, produto e o programa temporário',
+  (select count(*) from public.list_items where list_id = '52000000-0000-4000-8000-000000000010') = 3);
+select tests.su();
+update public.programs set status = 'draft' where id = '52000000-0000-4000-8000-000000000003';
+select tests.ok('S52 programa despublicado depois continua guardado (o dono decide remover)',
+  exists (select 1 from public.list_items where program_id = '52000000-0000-4000-8000-000000000003'));
+delete from public.programs where id = '52000000-0000-4000-8000-000000000003';
+select tests.ok('S52 programa apagado leva o item junto (cascade)',
+  not exists (select 1 from public.list_items where program_id = '52000000-0000-4000-8000-000000000003'));
+select tests.ok('S52 todo item tem exatamente um alvo e o tipo bate com ele (itens antigos inclusive)',
+  not exists (select 1 from public.list_items where num_nonnulls(content_id, product_id, program_id) <> 1
+     or item_type is distinct from case when content_id is not null then 'content' when product_id is not null then 'product' else 'program' end));
+select tests.ok('S52 nenhuma função nova: a lista do S14 segue com 17 security definer para o visitante',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+delete from public.custom_lists where id in ('52000000-0000-4000-8000-000000000010', '52000000-0000-4000-8000-000000000011', '52000000-0000-4000-8000-000000000012');
+delete from public.programs where id = '52000000-0000-4000-8000-000000000002';
+delete from public.products where id = '52000000-0000-4000-8000-000000000001';
+drop table s52_del;
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

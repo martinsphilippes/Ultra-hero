@@ -127,7 +127,7 @@
     "favoriteRemoved": "Removed from favorites",
     "addToList": "Save to list",
     "listsTitle": "My lists",
-    "listsDescription": "Choose where to keep this content.",
+    "listsDescription": "Choose where to keep {kind, select, product {this product} program {this program} other {this content}}.",
     "listsEmpty": "You have no lists yet",
     "listsEmptyDescription": "Create the first one below.",
     "newListLabel": "New list",
@@ -242,6 +242,8 @@
     "invalid_input": "Invalid data.",
     "not_found": "Not found.",
     "list_not_found": "List not found.",
-    "generic": "We could not complete the action. Please try again."
+    "generic": "We could not complete the action. Please try again.",
+    "list_unsupported": "This item cannot be saved to lists yet. Please try again later.",
+    "list_item_unavailable": "This item is not available for lists right now."
   }
 }

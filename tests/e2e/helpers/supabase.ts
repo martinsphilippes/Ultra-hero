@@ -51,6 +51,21 @@ export async function rpcExists(fn: string, args: Record<string, unknown>): Prom
   return r.status === 401 || r.status === 403 || code === "42501";
 }
 
+/**
+ * O banco já tem a 0040 (listas com produto e programa)? Pergunta pela própria resposta do PostgREST:
+ * a coluna list_items.item_type existe = 200 (o visitante não vê linhas, a RLS devolve vazio); não
+ * existe = 400 com 42703. null quando não há como perguntar.
+ */
+export async function listsAcceptProductsAndPrograms(): Promise<boolean | null> {
+  const env = supabaseEnv();
+  if (!env) return null;
+  const res = await fetch(`${env.url}/rest/v1/list_items?select=item_type&limit=0`, { headers: { apikey: env.key } }).catch(() => null);
+  if (!res) return null;
+  if (res.ok) return true;
+  const code = ((await res.json().catch(() => null)) as { code?: string } | null)?.code;
+  return code === "42703" || code === "PGRST204" ? false : null;
+}
+
 /** Valor de public_settings (lido pelo visitante), ou undefined se não deu para ler. */
 export async function publicSetting(key: string): Promise<unknown> {
   const r = await rpc("public_settings", {}).catch(() => null);
@@ -83,7 +98,7 @@ export async function browserSession(page: Page): Promise<BrowserSession | null>
   }
 }
 
-async function rest(page: Page, method: "GET" | "PATCH", pathAndQuery: string, body?: unknown): Promise<unknown> {
+async function rest(page: Page, method: "GET" | "PATCH" | "DELETE", pathAndQuery: string, body?: unknown): Promise<unknown> {
   const env = supabaseEnv();
   const session = await browserSession(page);
   if (!env || !session) throw new Error("sem Supabase ou sem sessão no navegador");
@@ -116,4 +131,13 @@ export async function restoreOwnAvatars(page: Page, original: OwnAvatars) {
   const now = await readOwnAvatars(page);
   if (now.profile !== original.profile) await rest(page, "PATCH", `profiles?id=eq.${session.userId}`, { avatar_url: original.profile });
   if (original.creatorId && now.creator !== original.creator) await rest(page, "PATCH", `creator_profiles?id=eq.${original.creatorId}`, { avatar_url: original.creator });
+}
+
+// ---------------------------------------------------------------- listas pessoais (testes de lista)
+/** Apaga as listas da própria conta com este nome exato (os itens vão junto, on delete cascade). */
+export async function deleteOwnListsNamed(page: Page, name: string): Promise<number> {
+  const session = await browserSession(page);
+  if (!session) return 0;
+  const deleted = (await rest(page, "DELETE", `custom_lists?user_id=eq.${session.userId}&name=eq.${encodeURIComponent(name)}`)) as unknown[];
+  return deleted.length;
 }

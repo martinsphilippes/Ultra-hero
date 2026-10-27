@@ -4,14 +4,21 @@ import { ListPlus, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition, type FormEvent } from "react";
 import { addToList, createListAndAdd, getMyLists, removeFromList, type MyList } from "@/app/(app)/content/actions";
+import type { ListItemKind } from "@/lib/library/list-items";
 import { Button, Checkbox, EmptyState, FormField, IconButton, Input, Sheet, Skeleton, useToast } from "@/components/ui";
 import { useActionError } from "./useCompletionFeedback";
 
-type Props = { contentId: string; className?: string };
+type Props = {
+  kind?: ListItemKind;
+  id: string;
+  className?: string;
+  /** Botão com texto (página de produto e de programa); sem ele, só o ícone (barra de ações do conteúdo). */
+  withLabel?: boolean;
+};
 
-// Salvar em listas pessoais: abre um painel com as listas (marcando onde o conteúdo já está)
-// e um formulário para criar uma lista nova já com o item.
-export function AddToListButton({ contentId, className }: Props) {
+// Salvar em listas pessoais: abre um painel com as listas (marcando onde o item já está)
+// e um formulário para criar uma lista nova já com o item. Serve a conteúdo, produto e programa.
+export function AddToListButton({ kind = "content", id, className, withLabel = false }: Props) {
   const t = useTranslations("consume.library");
   const tc = useTranslations("common");
   const { toast } = useToast();
@@ -30,7 +37,7 @@ export function AddToListButton({ contentId, className }: Props) {
     let cancelled = false;
     setLists(null);
     setLoadError(null);
-    getMyLists({ contentId }).then((result) => {
+    getMyLists({ target: { kind, id } }).then((result) => {
       if (cancelled) return;
       if (result.ok) setLists(result.lists);
       else setLoadError(errorMessage(result.error));
@@ -38,13 +45,14 @@ export function AddToListButton({ contentId, className }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [open, contentId, errorMessage]);
+  }, [open, kind, id, errorMessage]);
 
   function toggle(list: MyList) {
     const next = !list.contains;
     setBusyId(list.id);
     startTransition(async () => {
-      const result = next ? await addToList({ listId: list.id, contentId }) : await removeFromList({ listId: list.id, contentId });
+      const target = { kind, id };
+      const result = next ? await addToList({ listId: list.id, target }) : await removeFromList({ listId: list.id, target });
       setBusyId(null);
       if (!result.ok) {
         toast({ title: errorMessage(result.error), variant: "error" });
@@ -64,7 +72,7 @@ export function AddToListButton({ contentId, className }: Props) {
     }
     setNameError(null);
     startTransition(async () => {
-      const result = await createListAndAdd({ name: trimmed, contentId });
+      const result = await createListAndAdd({ name: trimmed, target: { kind, id } });
       if (!result.ok) {
         toast({ title: errorMessage(result.error), variant: "error" });
         return;
@@ -77,8 +85,14 @@ export function AddToListButton({ contentId, className }: Props) {
 
   return (
     <>
-      <IconButton label={t("addToList")} icon={<ListPlus />} variant="secondary" onClick={() => setOpen(true)} className={className} />
-      <Sheet open={open} onOpenChange={setOpen} title={t("listsTitle")} description={t("listsDescription")}>
+      {withLabel ? (
+        <Button variant="secondary" leadingIcon={<ListPlus />} onClick={() => setOpen(true)} className={className} data-testid="add-to-list">
+          {t("addToList")}
+        </Button>
+      ) : (
+        <IconButton label={t("addToList")} icon={<ListPlus />} variant="secondary" onClick={() => setOpen(true)} className={className} data-testid="add-to-list" />
+      )}
+      <Sheet open={open} onOpenChange={setOpen} title={t("listsTitle")} description={t("listsDescription", { kind })}>
         <div className="flex flex-col gap-4 py-2">
           {loadError ? (
             <p role="alert" className="type-body-sm text-danger">

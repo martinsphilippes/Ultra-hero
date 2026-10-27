@@ -98,9 +98,9 @@
       "open": "Open list",
       "actionsLabel": "Actions for list {name}",
       "emptyTitle": "You haven't created any lists yet",
-      "emptyDescription": "Create a list to group content by goal, week or mood.",
+      "emptyDescription": "Create a list to group anything by goal, week or mood.",
       "listEmptyTitle": "This list is empty",
-      "listEmptyDescription": "Add content from each content page.",
+      "listEmptyDescription": "Use the “Save to list” button on a content, product or program page.",
       "removeItem": "Remove",
       "removeItemOf": "Remove “{title}” from the list",
       "removed": "Removed from the list",
@@ -122,7 +122,8 @@
       "favoritesMore": "Showing your {count} most recent favorites",
       "openNamed": "Open list {name}",
       "browseContent": "Explore content",
-      "notFoundDescription": "It may have been deleted or belong to another account."
+      "notFoundDescription": "It may have been deleted or belong to another account.",
+      "mixHint": "Keep content, recipes, products and programs."
     },
     "eyebrow": "Discover"
   },

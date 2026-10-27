@@ -609,14 +609,14 @@ isOneToOne: false
                   ]
                 },"list_items": {
                   Row: {
-                    "added_at": string,"content_id": string,"list_id": string,"position": number
+                    "added_at": string,"content_id": string | null,"id": string,"item_type": string | null,"list_id": string,"position": number,"product_id": string | null,"program_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "added_at"?: string,"content_id": string,"list_id": string,"position"?: number
+                    "added_at"?: string,"content_id"?: string | null,"id"?: string,"item_type"?: never,"list_id": string,"position"?: number,"product_id"?: string | null,"program_id"?: string | null
                   }
                   Update: {
-                    "added_at"?: string,"content_id"?: string,"list_id"?: string,"position"?: number
+                    "added_at"?: string,"content_id"?: string | null,"id"?: string,"item_type"?: never,"list_id"?: string,"position"?: number,"product_id"?: string | null,"program_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -630,6 +630,18 @@ isOneToOne: false
       columns: ["list_id"]
 isOneToOne: false
       referencedRelation: "custom_lists"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "list_items_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "list_items_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
       referencedColumns: ["id"]
     }
                   ]
