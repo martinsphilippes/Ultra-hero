@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
+import { favoriteEventProps, favoriteRow, isMissingMixedFavoritesError } from "@/lib/library/favorites";
 import { isMissingMixedListsError, listContains, listTargetSchema, targetColumn, type ListTarget, type ListTargetIds } from "@/lib/library/list-items";
 import { createClient } from "@/lib/supabase/server";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
@@ -26,7 +27,7 @@ export type CompletionFeedback = {
 const uuid = z.uuid();
 const timezone = z.string().trim().min(1).max(64);
 // Caminhos que podem ser revalidados por estas ações (evita revalidação arbitrária).
-const pathSchema = z.string().regex(/^\/(content|programs)\/[a-z0-9-]+$/);
+const pathSchema = z.string().regex(/^\/(content|programs|shop)\/[a-z0-9-]+$/);
 
 function fail(error: unknown): ActionError {
   const message = error instanceof Error ? error.message : typeof error === "string" ? error : undefined;
@@ -158,23 +159,35 @@ export async function trackProgress(input: {
 }
 
 // ---------------------------------------------------------------- favoritos
-export async function toggleFavorite(input: { contentId: string; favorite: boolean; path?: string }): Promise<Result<{ favorite: boolean }>> {
-  const parsed = z.object({ contentId: uuid, favorite: z.boolean(), path: pathSchema.optional() }).safeParse(input);
+// O coração vale para conteúdo, produto e programa (0041). Sem a 0041 no banco, conteúdo segue como
+// antes e produto/programa respondem "favorite_unsupported" (a página nem mostra o coração nesse caso).
+function favoriteFail(error: { code?: string | null; message?: string | null } | null | undefined): ActionError {
+  if (isMissingMixedFavoritesError(error)) return { ok: false, error: "favorite_unsupported" };
+  // 42501 aqui é a política favorites_target_public: produto fora do ar ou programa não publicado
+  if (error?.code === "42501") return { ok: false, error: "favorite_item_unavailable" };
+  return fail(error?.message ?? "generic");
+}
+
+export async function toggleFavorite(input: { target: ListTarget; favorite: boolean; path?: string }): Promise<Result<{ favorite: boolean }>> {
+  const parsed = z.object({ target: listTargetSchema, favorite: z.boolean(), path: pathSchema.optional() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { target, favorite, path } = parsed.data;
   try {
     const user = await requireSession();
     const supabase = await createClient();
-    if (parsed.data.favorite) {
-      const { error } = await supabase.from("favorites").upsert({ user_id: user.id, content_id: parsed.data.contentId }, { onConflict: "user_id,content_id" });
-      if (error) return fail(error.message);
-      await trackEvent("favorite.add", { content_id: parsed.data.contentId });
+    const column = targetColumn(target.kind);
+    if (favorite) {
+      // ignorar repetido: o único por (pessoa, alvo) da 0041 (ou a chave antiga, para conteúdo) segura
+      const { error } = await supabase.from("favorites").upsert(favoriteRow(user.id, target), { onConflict: `user_id,${column}`, ignoreDuplicates: true });
+      if (error) return favoriteFail(error);
+      await trackEvent("favorite.add", favoriteEventProps(target));
     } else {
-      const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq("content_id", parsed.data.contentId);
-      if (error) return fail(error.message);
-      await trackEvent("favorite.remove", { content_id: parsed.data.contentId });
+      const { error } = await supabase.from("favorites").delete().eq("user_id", user.id).eq(column, target.id);
+      if (error) return favoriteFail(error);
+      await trackEvent("favorite.remove", favoriteEventProps(target));
     }
-    if (parsed.data.path) revalidatePath(parsed.data.path);
-    return { ok: true, favorite: parsed.data.favorite };
+    if (path) revalidatePath(path);
+    return { ok: true, favorite };
   } catch (error) {
     return fail(error);
   }

@@ -3968,6 +3968,180 @@ delete from public.programs where id = '52000000-0000-4000-8000-000000000002';
 delete from public.products where id = '52000000-0000-4000-8000-000000000001';
 drop table s52_del;
 
+-- ================================================================ S53 · Favoritos com conteúdos, produtos e programas (0041)
+-- favorites aponta para exatamente UM alvo (conteúdo, produto ou programa); item_type é derivado.
+-- A posse continua com favorites_own; a política restritiva só aceita produto visível ao público
+-- e programa publicado. O app antigo (upsert só com content_id) continua funcionando, e as funções
+-- que leem favoritos (contagem da receita, exclusão de conta, métricas) seguem certas.
+select tests.su();
+insert into auth.users (id, email) values
+  ('10000000-0000-4000-8000-000000000053', 's53chef@test.local'), ('10000000-0000-4000-8000-000000000055', 's53outro@test.local');
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000053' where id = public.seed_uuid('creator:helena');
+insert into public.products (id, seller_org_id, category_id, slug, title, description, image_url, price_cents_demo, product_type, status)
+values ('53000000-0000-4000-8000-000000000001', public.seed_uuid('seller:vertice'), public.seed_uuid('cat:accessory'), 's53-rascunho', 'Produto rascunho S53',
+        'Descrição demonstrativa', '/placeholders/product-1.svg', 1000, 'physical', 'draft');
+insert into public.programs (id, slug, creator_id, pillar, status) values
+  ('53000000-0000-4000-8000-000000000002', 's53-rascunho', public.seed_uuid('creator:lia'), 'routine', 'draft'),
+  ('53000000-0000-4000-8000-000000000003', 's53-temporario', public.seed_uuid('creator:lia'), 'routine', 'published');
+create temporary table s53_n (k text primary key, n int);
+grant all on s53_n to authenticated;
+select tests.ok('S53 estrutura: chave primária própria (id), únicos por alvo e CHECK de um alvo só',
+  (select string_agg(a.attname, ',') from pg_constraint c join pg_attribute a on a.attrelid = c.conrelid and a.attnum = any (c.conkey)
+     where c.conrelid = 'public.favorites'::regclass and c.contype = 'p') = 'id'
+  and (select count(*) from pg_constraint where conrelid = 'public.favorites'::regclass and contype = 'u'
+         and conname in ('favorites_user_content_key', 'favorites_user_product_key', 'favorites_user_program_key')) = 3
+  and exists (select 1 from pg_constraint where conrelid = 'public.favorites'::regclass and conname = 'favorites_one_target' and contype = 'c'));
+select tests.ok('S53 item_type é coluna gerada e os FKs dos alvos apagam junto (cascade), com índice',
+  (select attgenerated = 's' from pg_attribute where attrelid = 'public.favorites'::regclass and attname = 'item_type')
+  and (select count(*) from pg_constraint where conrelid = 'public.favorites'::regclass and contype = 'f' and confdeltype = 'c'
+         and conname in ('favorites_product_id_fkey', 'favorites_program_id_fkey', 'favorites_content_id_fkey')) = 3
+  and (select count(*) from pg_indexes where schemaname = 'public' and tablename = 'favorites'
+         and indexname in ('favorites_content_idx', 'favorites_product_idx', 'favorites_program_idx')) = 3);
+select tests.ok('S53 favoritos antigos seguem como conteúdo (todo favorito tem um alvo e o tipo bate com ele)',
+  not exists (select 1 from public.favorites where num_nonnulls(content_id, product_id, program_id) <> 1
+     or item_type is distinct from case when content_id is not null then 'content' when product_id is not null then 'product' else 'program' end));
+create temporary table s53_metrics as select 0 as n;
+grant all on s53_metrics to authenticated;
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+update s53_metrics set n = (public.admin_metrics(14) ->> 'favorites')::int;
+
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+-- forma do app antigo: só content_id, e o upsert por (user_id, content_id)
+insert into public.favorites (user_id, content_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('content:g1'));
+insert into public.favorites (user_id, content_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('content:g1'))
+  on conflict (user_id, content_id) do update set content_id = excluded.content_id;
+select tests.ok('S53 dono favorita conteúdo como antes (insert e upsert só com content_id); tipo vira content',
+  (select count(*) = 1 and bool_and(item_type = 'content') from public.favorites
+     where user_id = '10000000-0000-4000-8000-000000000002' and content_id = public.seed_uuid('content:g1')));
+insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('product:ue-creatina-po'));
+select tests.ok('S53 dono favorita produto publicado (Ultra.e Life); tipo vira product',
+  (select item_type = 'product' from public.favorites where user_id = '10000000-0000-4000-8000-000000000002' and product_id = public.seed_uuid('product:ue-creatina-po')));
+insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('program:p1'));
+select tests.ok('S53 dono favorita programa publicado; tipo vira program',
+  (select item_type = 'program' from public.favorites where user_id = '10000000-0000-4000-8000-000000000002' and program_id = public.seed_uuid('program:p1')));
+select tests.ok('S53 o dono lê os três tipos nos próprios favoritos',
+  (select count(*) filter (where item_type = 'content') = 1 and count(*) filter (where item_type = 'product') = 1
+          and count(*) filter (where item_type = 'program') = 1
+     from public.favorites where user_id = '10000000-0000-4000-8000-000000000002'));
+select tests.expect_error('S53 produto favoritado duas vezes é recusado',
+  $q$insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('product:ue-creatina-po'))$q$, '23505');
+select tests.expect_error('S53 programa favoritado duas vezes é recusado',
+  $q$insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('program:p1'))$q$, '23505');
+select tests.expect_error('S53 conteúdo favoritado duas vezes é recusado',
+  $q$insert into public.favorites (user_id, content_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('content:g1'))$q$, '23505');
+insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('product:ue-creatina-po'))
+  on conflict (user_id, product_id) do nothing;
+insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('program:p1'))
+  on conflict (user_id, program_id) do nothing;
+select tests.ok('S53 upsert "ignorar repetido" por (user_id, product_id) e (user_id, program_id) não duplica',
+  (select count(*) from public.favorites where user_id = '10000000-0000-4000-8000-000000000002'
+     and (product_id = public.seed_uuid('product:ue-creatina-po') or program_id = public.seed_uuid('program:p1'))) = 2);
+select tests.expect_error('S53 produto em rascunho é recusado',
+  $q$insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000002', '53000000-0000-4000-8000-000000000001')$q$, 'row-level security');
+select tests.expect_error('S53 produto suspenso pela moderação é recusado',
+  $q$insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('product:m1'))$q$, 'row-level security');
+select tests.expect_error('S53 programa em rascunho é recusado',
+  $q$insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000002', '53000000-0000-4000-8000-000000000002')$q$, 'row-level security');
+select tests.expect_error('S53 trocar o alvo de um favorito para programa em rascunho é recusado (update)',
+  $q$update public.favorites set content_id = null, program_id = '53000000-0000-4000-8000-000000000002' where user_id = '10000000-0000-4000-8000-000000000002' and content_id = public.seed_uuid('content:g1')$q$, 'row-level security');
+select tests.expect_error('S53 CHECK: favorito com dois alvos é recusado',
+  $q$insert into public.favorites (user_id, content_id, product_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('content:g3'), public.seed_uuid('product:ue-focus'))$q$, '23514');
+select tests.expect_error('S53 favorito sem alvo é recusado já pela RLS',
+  $q$insert into public.favorites (user_id) values ('10000000-0000-4000-8000-000000000002')$q$, 'row-level security');
+select tests.expect_error('S53 tipo não é gravável à mão (coluna gerada)',
+  $q$insert into public.favorites (user_id, product_id, item_type) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('product:ue-focus'), 'program')$q$, '428C9');
+select tests.expect_error('S53 ninguém favorita em nome de outra pessoa (produto)',
+  $q$insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000055', public.seed_uuid('product:ue-focus'))$q$, 'row-level security');
+select tests.su(); -- sem RLS (sistema), quem barra é o CHECK
+select tests.expect_error('S53 CHECK: favorito sem alvo é recusado mesmo pelo sistema',
+  $q$insert into public.favorites (user_id) values ('10000000-0000-4000-8000-000000000002')$q$, '23514');
+select tests.expect_error('S53 CHECK: produto e programa no mesmo favorito são recusados mesmo pelo sistema',
+  $q$insert into public.favorites (user_id, product_id, program_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('product:ue-focus'), public.seed_uuid('program:p2'))$q$, '23514');
+
+-- outro usuário: não vê, não apaga; e favorita o mesmo produto por conta própria (o único é por pessoa)
+create temporary table s53_del as select 0 as n;
+grant all on s53_del to authenticated;
+select tests.login('10000000-0000-4000-8000-000000000055', 's53outro@test.local');
+select tests.ok('S53 outro usuário não vê os favoritos alheios',
+  (select count(*) from public.favorites where user_id = '10000000-0000-4000-8000-000000000002') = 0);
+with d as (delete from public.favorites where user_id = '10000000-0000-4000-8000-000000000002' returning 1)
+update s53_del set n = (select count(*) from d);
+select tests.ok('S53 outro usuário não apaga favoritos alheios', (select n from s53_del) = 0);
+insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000055', public.seed_uuid('product:ue-creatina-po'));
+select tests.ok('S53 o mesmo produto pode ser favorito de duas pessoas (cada uma vê só o seu)',
+  (select count(*) from public.favorites where product_id = public.seed_uuid('product:ue-creatina-po')) = 1);
+
+-- visitante
+select tests.anon();
+select tests.ok('S53 visitante não vê favoritos', (select count(*) from public.favorites) = 0);
+select tests.expect_error('S53 visitante não favorita produto',
+  $q$insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('product:ue-focus'))$q$, 'row-level security');
+select tests.expect_error('S53 visitante não favorita programa',
+  $q$insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000002', public.seed_uuid('program:p2'))$q$, 'row-level security');
+
+-- quem enxerga o rascunho pela RLS (fornecedor dono, admin) também não favorita: a regra é "visível ao público"
+select tests.login('10000000-0000-4000-8000-000000000005', 'sellera@test.local');
+select tests.ok('S53 fornecedor enxerga o próprio rascunho', exists (select 1 from public.products where id = '53000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S53 fornecedor não favorita o próprio produto em rascunho',
+  $q$insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000005', '53000000-0000-4000-8000-000000000001')$q$, 'row-level security');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S53 admin não favorita programa em rascunho',
+  $q$insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000001', '53000000-0000-4000-8000-000000000002')$q$, 'row-level security');
+select tests.ok('S53 admin não vê favoritos de outra pessoa (favorites_own vale para todos)',
+  (select count(*) from public.favorites where user_id = '10000000-0000-4000-8000-000000000002') = 0);
+-- métricas: favoritos da janela somam os três tipos (consumer1: conteúdo, produto, programa; consumer2: produto)
+select tests.ok('S53 admin_metrics conta os favoritos novos dos três tipos (+4)',
+  (public.admin_metrics(14) ->> 'favorites')::int = (select n from s53_metrics) + 4);
+
+-- contagem da receita (creator_recipe_stats) só conta favoritos de conteúdo daquela receita
+select tests.login('10000000-0000-4000-8000-000000000053', 's53chef@test.local');
+select tests.ok('S53 creator_recipe_stats conta 1 favorito em g1 (produto e programa favoritados não entram)',
+  (select favorites from public.creator_recipe_stats(30) where content_id = public.seed_uuid('content:g1')) = 1
+  and (select sum(favorites) from public.creator_recipe_stats(30)) = 1);
+
+-- remoção pelo dono, por tipo; despublicar não apaga o que já estava favoritado; apagar leva junto
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000002', '53000000-0000-4000-8000-000000000003');
+with d as (delete from public.favorites where user_id = '10000000-0000-4000-8000-000000000002' and product_id = public.seed_uuid('product:ue-creatina-po') returning 1)
+update s53_del set n = (select count(*) from d);
+select tests.ok('S53 dono desfavorita o produto', (select n from s53_del) = 1
+  and not exists (select 1 from public.favorites where user_id = '10000000-0000-4000-8000-000000000002' and product_id is not null));
+with d as (delete from public.favorites where user_id = '10000000-0000-4000-8000-000000000002' and program_id = public.seed_uuid('program:p1') returning 1)
+update s53_del set n = (select count(*) from d);
+select tests.ok('S53 dono desfavorita o programa', (select n from s53_del) = 1);
+select tests.ok('S53 restam o conteúdo e o programa temporário',
+  (select count(*) from public.favorites where user_id = '10000000-0000-4000-8000-000000000002') = 2
+  and exists (select 1 from public.favorites where content_id = public.seed_uuid('content:g1'))
+  and exists (select 1 from public.favorites where program_id = '53000000-0000-4000-8000-000000000003'));
+select tests.su();
+select tests.ok('S53 o favorito de produto da outra pessoa ficou intacto',
+  exists (select 1 from public.favorites where user_id = '10000000-0000-4000-8000-000000000055' and product_id = public.seed_uuid('product:ue-creatina-po')));
+update public.programs set status = 'draft' where id = '53000000-0000-4000-8000-000000000003';
+select tests.ok('S53 programa despublicado depois continua favoritado (o dono decide remover)',
+  exists (select 1 from public.favorites where program_id = '53000000-0000-4000-8000-000000000003'));
+delete from public.programs where id = '53000000-0000-4000-8000-000000000003';
+select tests.ok('S53 programa apagado leva o favorito junto (cascade)',
+  not exists (select 1 from public.favorites where program_id = '53000000-0000-4000-8000-000000000003'));
+
+-- exclusão de conta (anonymize_user_data): apaga os favoritos dos três tipos
+insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000054', 's53bye@test.local');
+select tests.login('10000000-0000-4000-8000-000000000054', 's53bye@test.local');
+insert into public.favorites (user_id, content_id) values ('10000000-0000-4000-8000-000000000054', public.seed_uuid('content:g3'));
+insert into public.favorites (user_id, product_id) values ('10000000-0000-4000-8000-000000000054', public.seed_uuid('product:ue-focus'));
+insert into public.favorites (user_id, program_id) values ('10000000-0000-4000-8000-000000000054', public.seed_uuid('program:p2'));
+select tests.su();
+select public.anonymize_user_data('10000000-0000-4000-8000-000000000054');
+select tests.ok('S53 anonymize_user_data apaga favoritos de conteúdo, produto e programa',
+  not exists (select 1 from public.favorites where user_id = '10000000-0000-4000-8000-000000000054'));
+select tests.ok('S53 nenhuma função nova: a lista do S14 segue com 17 security definer para o visitante',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+delete from public.favorites where user_id in ('10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000055');
+delete from auth.users where id in ('10000000-0000-4000-8000-000000000053', '10000000-0000-4000-8000-000000000054', '10000000-0000-4000-8000-000000000055');
+delete from public.programs where id = '53000000-0000-4000-8000-000000000002';
+delete from public.products where id = '53000000-0000-4000-8000-000000000001';
+drop table s53_del;
+drop table s53_metrics;
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

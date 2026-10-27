@@ -66,6 +66,20 @@ export async function listsAcceptProductsAndPrograms(): Promise<boolean | null> 
   return code === "42703" || code === "PGRST204" ? false : null;
 }
 
+/**
+ * O banco já tem a 0041 (favoritos com produto e programa)? Mesma pergunta das listas, na coluna
+ * favorites.item_type. null quando não há como perguntar.
+ */
+export async function favoritesAcceptProductsAndPrograms(): Promise<boolean | null> {
+  const env = supabaseEnv();
+  if (!env) return null;
+  const res = await fetch(`${env.url}/rest/v1/favorites?select=item_type&limit=0`, { headers: { apikey: env.key } }).catch(() => null);
+  if (!res) return null;
+  if (res.ok) return true;
+  const code = ((await res.json().catch(() => null)) as { code?: string } | null)?.code;
+  return code === "42703" || code === "PGRST204" ? false : null;
+}
+
 /** Valor de public_settings (lido pelo visitante), ou undefined se não deu para ler. */
 export async function publicSetting(key: string): Promise<unknown> {
   const r = await rpc("public_settings", {}).catch(() => null);
@@ -98,7 +112,7 @@ export async function browserSession(page: Page): Promise<BrowserSession | null>
   }
 }
 
-async function rest(page: Page, method: "GET" | "PATCH" | "DELETE", pathAndQuery: string, body?: unknown): Promise<unknown> {
+async function rest(page: Page, method: "GET" | "POST" | "PATCH" | "DELETE", pathAndQuery: string, body?: unknown): Promise<unknown> {
   const env = supabaseEnv();
   const session = await browserSession(page);
   if (!env || !session) throw new Error("sem Supabase ou sem sessão no navegador");
@@ -140,4 +154,33 @@ export async function deleteOwnListsNamed(page: Page, name: string): Promise<num
   if (!session) return 0;
   const deleted = (await rest(page, "DELETE", `custom_lists?user_id=eq.${session.userId}&name=eq.${encodeURIComponent(name)}`)) as unknown[];
   return deleted.length;
+}
+
+// ---------------------------------------------------------------- favoritos (testes de favoritos)
+export type FavoriteColumn = "content_id" | "product_id" | "program_id";
+
+/** Ids dos alvos favoritados pela própria conta nesta coluna (ex.: os conteúdos favoritos). */
+export async function ownFavoriteTargets(page: Page, column: FavoriteColumn): Promise<string[]> {
+  const session = await browserSession(page);
+  if (!session) throw new Error("sem sessão no navegador");
+  const rows = (await rest(page, "GET", `favorites?select=${column}&user_id=eq.${session.userId}&${column}=not.is.null`)) as Record<string, string>[];
+  return rows.map((r) => r[column]).sort();
+}
+
+/** Deixa o favorito da própria conta neste alvo como pedido (true = existe, false = não existe). */
+export async function setOwnFavorite(page: Page, column: FavoriteColumn, id: string, favorite: boolean): Promise<void> {
+  const session = await browserSession(page);
+  if (!session) throw new Error("sem sessão no navegador");
+  const has = (await ownFavoriteTargets(page, column)).includes(id);
+  if (favorite && !has) await rest(page, "POST", "favorites", { user_id: session.userId, [column]: id });
+  if (!favorite && has) await rest(page, "DELETE", `favorites?user_id=eq.${session.userId}&${column}=eq.${id}`);
+}
+
+/** Id de um produto ou programa publicado pelo slug (leitura pública). */
+export async function publicIdBySlug(table: "products" | "programs", slug: string): Promise<string | null> {
+  const env = supabaseEnv();
+  if (!env) return null;
+  const res = await fetch(`${env.url}/rest/v1/${table}?select=id&slug=eq.${encodeURIComponent(slug)}`, { headers: { apikey: env.key } }).catch(() => null);
+  const rows = res?.ok ? ((await res.json()) as { id: string }[]) : [];
+  return rows[0]?.id ?? null;
 }

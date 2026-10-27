@@ -244,6 +244,8 @@
     "list_not_found": "Lista no encontrada.",
     "generic": "No pudimos completar la acción. Inténtalo de nuevo.",
     "list_unsupported": "Todavía no se puede guardar este elemento en listas. Inténtalo más tarde.",
-    "list_item_unavailable": "Este elemento no está disponible para listas en este momento."
+    "list_item_unavailable": "Este elemento no está disponible para listas en este momento.",
+    "favorite_unsupported": "Todavía no se puede marcar este elemento como favorito. Inténtalo más tarde.",
+    "favorite_item_unavailable": "Este elemento no está disponible para favoritos en este momento."
   }
 }

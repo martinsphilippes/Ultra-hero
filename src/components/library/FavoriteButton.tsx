@@ -5,13 +5,21 @@ import { useTranslations } from "next-intl";
 import { useOptimistic, useTransition } from "react";
 import { toggleFavorite } from "@/app/(app)/content/actions";
 import { IconButton, useToast } from "@/components/ui";
+import type { ListItemKind } from "@/lib/library/list-items";
 import { cn } from "@/lib/utils";
 import { useActionError } from "./useCompletionFeedback";
 
-type Props = { contentId: string; initial: boolean; path?: string; className?: string };
+type Props = {
+  /** Conteúdo (padrão), produto ou programa: cada um grava na sua coluna de favorites. */
+  kind?: ListItemKind;
+  id: string;
+  initial: boolean;
+  path?: string;
+  className?: string;
+};
 
 // Favoritar com atualização otimista; reverte e avisa se a ação falhar.
-export function FavoriteButton({ contentId, initial, path, className }: Props) {
+export function FavoriteButton({ kind = "content", id, initial, path, className }: Props) {
   const t = useTranslations("consume.library");
   const { toast } = useToast();
   const errorMessage = useActionError();
@@ -22,7 +30,7 @@ export function FavoriteButton({ contentId, initial, path, className }: Props) {
     const next = !favorite;
     startTransition(async () => {
       setOptimistic(next);
-      const result = await toggleFavorite({ contentId, favorite: next, path });
+      const result = await toggleFavorite({ target: { kind, id }, favorite: next, path });
       if (!result.ok) {
         toast({ title: errorMessage(result.error), variant: "error" });
         return;
@@ -40,6 +48,7 @@ export function FavoriteButton({ contentId, initial, path, className }: Props) {
       onClick={onToggle}
       disabled={pending}
       className={cn(favorite && "text-accent-text border-accent/40", className)}
+      data-testid="favorite-button"
     />
   );
 }

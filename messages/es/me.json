@@ -184,7 +184,7 @@
       },
       "favorites": {
         "title": "Favoritos",
-        "description": "Contenidos que marcaste."
+        "description": "Contenidos, productos y programas que marcaste."
       },
       "recipes": {
         "title": "Mi colección de recetas",
@@ -573,13 +573,13 @@
   },
   "favorites": {
     "title": "Favoritos",
-    "description": "Contenidos que marcaste con el corazón.",
+    "description": "Contenidos, productos y programas que marcaste con el corazón.",
     "count": "{n, plural, =1 {# favorito} other {# favoritos}}",
     "remove": "Quitar {title} de favoritos",
     "removed": "Quitado de favoritos.",
     "empty": {
       "title": "Todavía no hay favoritos",
-      "description": "Toca el corazón en cualquier contenido para guardarlo aquí.",
+      "description": "Toca el corazón de un contenido, producto o programa para guardarlo aquí.",
       "cta": "Explorar contenidos"
     },
     "errors": {

@@ -5,3 +5,4 @@ export { CreatorCard } from "./CreatorCard";
 export { ProductCard } from "./ProductCard";
 export { ProductActionCard } from "./ProductActionCard";
 export { ContentTile } from "./ContentTile";
+export { EntryCard } from "./EntryCard";

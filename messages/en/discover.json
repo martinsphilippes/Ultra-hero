@@ -79,7 +79,7 @@
       "description": "Organize content your way.",
       "favorites": "Favorites",
       "favoritesCount": "{count, plural, =1 {1 favorite} other {# favorites}}",
-      "favoritesEmpty": "Favorite a piece of content to find it here.",
+      "favoritesEmpty": "Tap the heart on a content, product or program to find it here.",
       "favoritesAuto": "Automatic list",
       "mine": "My lists",
       "create": "New list",
