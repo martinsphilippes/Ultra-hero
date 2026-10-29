@@ -56,5 +56,6 @@
     "admin": "Ultra Hero administration",
     "creator": "Hero area",
     "seller": "Supplier area"
-  }
+  },
+  "backToProfile": "Profile"
 }

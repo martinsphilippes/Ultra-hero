@@ -56,5 +56,6 @@
     "admin": "Administración de Ultra Hero",
     "creator": "Área del héroe",
     "seller": "Área del proveedor"
-  }
+  },
+  "backToProfile": "Perfil"
 }

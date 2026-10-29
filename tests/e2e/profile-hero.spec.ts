@@ -186,11 +186,8 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(main.getByRole("link", { name: /Vínculos de produtos/ }).first()).toBeVisible();
     await expect(main.getByText("Meu perfil")).toHaveCount(0);
     await expect(page.locator('a[href="/creator/profile"]')).toHaveCount(0);
-    const menuButton = page.getByRole("button", { name: "Abrir menu" });
-    if (await menuButton.isVisible()) await menuButton.click();
-    const nav = page.getByRole("navigation", { name: "Portal" }).filter({ visible: true }).first();
-    await expect(nav.getByRole("link", { name: "Vínculos de produtos" })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Meu perfil" })).toHaveCount(0);
+    // o portal do herói não tem mais menu: os atalhos ficam no Perfil
+    await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
   });
 
   test("conta comum: topo com foto e nome, um só Editar perfil com nome, foto, idioma e tema; nada do herói", async ({ page }) => {

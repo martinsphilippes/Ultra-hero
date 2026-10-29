@@ -11,23 +11,18 @@ async function loginAsHero(page: Page) {
 }
 
 test.describe("portal do herói: novo post em vídeo", () => {
-  test("o painel mostra + Novo post no topo e o menu do portal começa por ele", async ({ page }) => {
+  test("portal do herói sem menu: só “← Perfil” no topo; Novo post fica nos atalhos do Perfil", async ({ page }) => {
     await loginAsHero(page);
-    const cta = page.getByTestId("new-post");
-    await expect(cta).toBeVisible();
-    await expect(cta).toHaveText(/Novo post/);
-    await expect(cta).toHaveAttribute("href", "/creator/post/new");
-    expect((await cta.boundingBox())!.height).toBeGreaterThanOrEqual(48);
-
-    // menu do portal: no celular abre pelo botão de menu; no desktop fica na lateral
-    const menuButton = page.getByRole("button", { name: "Abrir menu" });
-    if (await menuButton.isVisible()) await menuButton.click();
-    const nav = page.getByRole("navigation", { name: "Portal" }).filter({ visible: true }).first();
-    await expect(nav.getByRole("link").first()).toHaveAttribute("href", "/creator/post/new");
-    await expect(nav.getByRole("link").first()).toHaveText(/Novo post/);
-    // o perfil do herói saiu do menu: fica na tela Perfil (/profile)
-    await expect(nav.getByRole("link", { name: "Meu perfil" })).toHaveCount(0);
-    await expect(nav.locator('a[href="/creator/profile"]')).toHaveCount(0);
+    // sem botão de três linhas, sem menu lateral e sem os botões repetidos no painel
+    await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveCount(0);
+    await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
+    await expect(page.locator("main").getByTestId("new-post")).toHaveCount(0);
+    const back = page.getByTestId("portal-back-profile");
+    await expect(back).toHaveAttribute("href", "/profile");
+    expect((await back.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await back.click();
+    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page.getByTestId("hero-action-post")).toHaveAttribute("href", "/creator/post/new");
   });
 
   test("a lista de conteúdos também leva ao novo post", async ({ page }) => {

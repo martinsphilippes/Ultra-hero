@@ -51,11 +51,8 @@ test.describe("Portal do Chef: Minhas Receitas", () => {
     await expect(panel.locator("summary")).toContainText("1 filtro ativo");
     await axeMain(page);
 
-    const menuButton = page.getByRole("button", { name: "Abrir menu" });
-    if (await menuButton.isVisible()) await menuButton.click();
-    const nav = page.getByRole("navigation", { name: "Portal" }).filter({ visible: true }).first();
-    await expect(nav.getByRole("link").first()).toHaveAttribute("href", "/creator/post/new");
-    await expect(nav.getByRole("link", { name: "Minhas Receitas" })).toHaveAttribute("href", "/creator/recipes");
+    // sem menu no portal do herói: volta ao Perfil, onde ficam os atalhos (Minhas receitas incluso)
+    await expect(page.getByTestId("portal-back-profile")).toHaveAttribute("href", "/profile");
   });
 
   test("perfil do herói mostra especialidades e o pedido de credenciais com o aviso de aprovação", async ({ page }) => {

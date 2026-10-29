@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { ArrowRight, FilePen, Link2, Plus } from "lucide-react";
+import { ArrowRight, FilePen, Link2 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimeline";
-import { Avatar, Badge, Button, Card, CardBody, PageHeader, Section } from "@/components/ui";
+import { Avatar, Badge, Card, CardBody, PageHeader, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatRelativeTime } from "@/i18n/format";
 import { createClient } from "@/lib/supabase/server";
@@ -53,17 +53,7 @@ export default async function CreatorHomePage() {
         description={t("dashboard.description")}
         eyebrow={tn("portals.creator")}
       >
-        {/* Postar vídeo é o caminho principal: botão grande no topo, largura total no celular. */}
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button asChild size="lg" leadingIcon={<Plus />} className="min-h-14 text-base sm:min-w-56">
-            <Link href="/creator/post/new" data-testid="new-post">
-              {t("post.cta")}
-            </Link>
-          </Button>
-          <Button asChild variant="secondary" size="lg" className="min-h-12">
-            <Link href="/creator/content/new">{t("content.new")}</Link>
-          </Button>
-        </div>
+        {/* Novo post e Novo conteúdo ficam nos atalhos do Perfil (perto de "Editar perfil"). */}
         <div className="flex items-center gap-3">
           <Avatar src={ctx.profile.avatar_url} name={ctx.profile.name} size="md" alt="" />
           <div className="flex min-w-0 flex-col">
