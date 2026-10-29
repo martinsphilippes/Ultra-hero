@@ -97,10 +97,17 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await expect(page.getByTestId("recipe-yield-amount")).toHaveAttribute("inputmode", "numeric");
       await expect(page.getByTestId("recipe-yield-amount")).toHaveValue("2");
       await expect(page.getByTestId("recipe-yield")).toContainText("Na receita: Rende 2 formas");
-      await page.getByTestId("recipe-servings").fill("2");
+      // porções pelos botões − e + (caixa vazia: + vai a 1, depois 2; − não passa de 1)
+      await page.getByTestId("recipe-servings-more").click();
+      await page.getByTestId("recipe-servings-more").click();
+      await expect(page.getByTestId("recipe-servings")).toHaveValue("2");
+      await expect(page.getByText("Para quantas pessoas a receita serve.", { exact: false })).toBeVisible();
+      await expect(page.getByText("Calculado sozinho quando você preencher os tempos acima.")).toBeVisible();
       await page.getByTestId("recipe-prep").fill("5");
-      await page.getByTestId("recipe-cook").fill("10");
+      await page.getByTestId("recipe-cook").fill("1a0");
+      await expect(page.getByTestId("recipe-cook")).toHaveValue("10");
       await expect(page.getByTestId("recipe-total")).toHaveValue("15");
+      await expect(page.getByText(/preparo \+ cozimento \+ descanso = 15\smin/)).toBeVisible();
       await page.getByTestId("recipe-next").click();
       await expect(page).toHaveURL(/\/creator\/recipes\/[0-9a-f-]+\/edit\?step=ingredientes$/, { timeout: 30_000 });
       const id = page.url().split("/")[5];
