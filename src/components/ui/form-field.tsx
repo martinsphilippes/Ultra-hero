@@ -22,7 +22,9 @@ export function FormField({ label, error, hint, required, optionalLabel, childre
   const id = idProp ?? `field-${generated}`;
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
-  const describedBy = [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
+  // mantém uma descrição que o próprio controle já traga (ex.: dica mostrada fora do campo)
+  const own = isValidElement(children) ? (children.props["aria-describedby"] as string | undefined) : undefined;
+  const describedBy = [own ?? null, hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
 
   const control = isValidElement(children)
     ? cloneElement(children, {

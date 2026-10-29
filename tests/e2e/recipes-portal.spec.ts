@@ -125,8 +125,21 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await page.getByTestId("ingredient-item").nth(0).getByTestId("move-down").click();
       await expect(page.getByTestId("ingredient-name").nth(0)).toHaveValue("Farinha de aveia");
       await expect(page.getByText("agora é o item 2 de 2", { exact: false })).toBeAttached();
-      // quantidade com teclado de texto ("1/2" no celular), não o decimal
-      await expect(page.getByTestId("ingredient-amount").nth(0)).not.toHaveAttribute("inputmode", "decimal");
+      // a quantidade segue a unidade: xícara → teclado numérico + atalhos de fração; sem unidade → texto
+      const flourAmount = page.getByTestId("ingredient-amount").nth(0);
+      await expect(flourAmount).toHaveAttribute("inputmode", "decimal");
+      await expect(page.getByTestId("ingredient-amount").nth(1)).toHaveAttribute("inputmode", "text");
+      await flourAmount.fill("1 xícara");
+      await expect(flourAmount).toHaveValue("1 ");
+      await page.getByTestId("ingredient-item").nth(0).getByTestId("ingredient-fraction-1-2").click();
+      await expect(flourAmount).toHaveValue("1 1/2");
+      await flourAmount.fill("1/2");
+      // trocar para kg converte o número (1/2 → 0,5) e volta à fração na xícara
+      await page.getByTestId("ingredient-unit").nth(0).selectOption("kg");
+      await expect(flourAmount).toHaveValue("0,5");
+      await expect(page.getByTestId("ingredient-item").nth(0).getByTestId("ingredient-fraction-1-2")).toHaveCount(0);
+      await page.getByTestId("ingredient-unit").nth(0).selectOption("cup");
+      await expect(flourAmount).toHaveValue("1/2");
       // remover o último: o foco vai ao item anterior e a remoção é anunciada
       await page.getByTestId("add-ingredient").click();
       await page.getByTestId("ingredient-name").nth(2).fill("Sal");
