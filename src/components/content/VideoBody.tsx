@@ -16,14 +16,23 @@ type Props = {
   alreadyCompleted: boolean;
   threshold: number;
   path: string;
+  /** "player": só o player (vai no topo da página, no lugar da capa); "details": só introdução e pontos-chave. */
+  part?: "all" | "player" | "details";
 };
 
+/** Fontes que tocam de verdade (player simulado ou embed): só essas tomam o lugar da capa. */
+export function isPlayableVideo(source: ResolvedVideo): boolean {
+  return source.type === "demo" || source.type === "iframe";
+}
+
 // Vídeo: escolhe entre player simulado (sem mídia), iframe de embed ou estado indisponível.
-export async function VideoBody({ contentId, title, source, meta, hasCaptions, poster, initialPositionSec, alreadyCompleted, threshold, path }: Props) {
+export async function VideoBody({ contentId, title, source, meta, hasCaptions, poster, initialPositionSec, alreadyCompleted, threshold, path, part = "all" }: Props) {
   const t = await getTranslations("consume.body.video");
+  const showPlayer = part !== "details";
+  const showDetails = part !== "player";
   return (
     <div className="flex flex-col gap-8">
-      {source.type === "demo" ? (
+      {!showPlayer ? null : source.type === "demo" ? (
         <DemoPlayer
           contentId={contentId}
           title={title}
@@ -56,13 +65,13 @@ export async function VideoBody({ contentId, title, source, meta, hasCaptions, p
         </div>
       )}
 
-      {meta.intro && (
+      {showDetails && meta.intro && (
         <section className="flex flex-col gap-2">
           <h2 className="type-h3 text-fg">{t("intro")}</h2>
           <p className="type-body max-w-prose text-fg-muted">{meta.intro}</p>
         </section>
       )}
-      {meta.keyPoints.length > 0 && (
+      {showDetails && meta.keyPoints.length > 0 && (
         <section aria-labelledby="video-key-points" className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-5">
           <h2 id="video-key-points" className="mb-3 flex items-center gap-2 type-h3 text-fg">
             <Sparkles className="size-5 text-accent-text" aria-hidden="true" />

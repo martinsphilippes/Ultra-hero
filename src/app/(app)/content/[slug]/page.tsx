@@ -18,6 +18,7 @@ import {
   TeaserCard,
   UnavailableCard,
   VideoBody,
+  isPlayableVideo,
   ViewTracker,
   WorkoutBody,
   parseGuideBody,
@@ -265,6 +266,22 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
   );
 
   const TypeIcon = TYPE_ICON[content.type];
+  // vídeo que toca: o player ocupa o topo no lugar da capa (a capa vira o pôster dele)
+  const playerOnTop = !isRecipe && state === "accessible" && content.type === "video" && video !== null && isPlayableVideo(video);
+  const videoProps = video
+    ? {
+        contentId: content.id,
+        title,
+        source: video,
+        meta: parseVideoBody(body),
+        hasCaptions: content.has_captions,
+        poster: content.cover_url,
+        initialPositionSec: positionSec,
+        alreadyCompleted: Boolean(completedAt),
+        threshold,
+        path,
+      }
+    : null;
   const cover = content.cover_url ?? `/placeholders/cover-${content.pillar}-1.svg`;
 
   return (
@@ -279,7 +296,11 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
         >
           ← {t("backToExplore")}
         </Link>
-        {structured && structured.model.photos.length > 0 ? (
+        {playerOnTop && videoProps ? (
+          <div className="print:hidden" data-testid="content-top-player">
+            <VideoBody {...videoProps} part="player" />
+          </div>
+        ) : structured && structured.model.photos.length > 0 ? (
           <div className="print:hidden">
             <RecipeGallery photos={structured.model.photos} unoptimized={!live} />
           </div>
@@ -424,20 +445,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
       {!isRecipe && state === "accessible" && (
         <div className="flex flex-col gap-6">
           {readingAuto && !completedAt && <ReadingTracker contentId={content.id} targetId="content-body" threshold={threshold} path={path} />}
-          {content.type === "video" && video && (
-            <VideoBody
-              contentId={content.id}
-              title={title}
-              source={video}
-              meta={parseVideoBody(body)}
-              hasCaptions={content.has_captions}
-              poster={content.cover_url}
-              initialPositionSec={positionSec}
-              alreadyCompleted={Boolean(completedAt)}
-              threshold={threshold}
-              path={path}
-            />
-          )}
+          {content.type === "video" && videoProps && <VideoBody {...videoProps} part={playerOnTop ? "details" : "all"} />}
           {content.type === "workout" && <WorkoutBody workout={parseWorkoutBody(body)} />}
           {(content.type === "guide" || content.type === "article") && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
         </div>

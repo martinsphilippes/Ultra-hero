@@ -6,7 +6,7 @@ export { ViewTracker } from "./ViewTracker";
 export { ProductInterestTracker } from "./ProductInterestTracker";
 export { WorkoutBody } from "./WorkoutBody";
 export { GuideBody } from "./GuideBody";
-export { VideoBody } from "./VideoBody";
+export { VideoBody, isPlayableVideo } from "./VideoBody";
 export { ReadingTracker } from "./ReadingTracker";
 export { RelatedProducts } from "./RelatedProducts";
 export { displayTimeZone } from "./display-timezone";
