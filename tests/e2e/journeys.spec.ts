@@ -114,7 +114,7 @@ test.describe("visitante", () => {
     await expect(main.getByText(/Cloudflare \(Stream\):/)).toBeVisible();
     await expect(main.getByText(/Vídeos dos heróis:/)).toBeVisible();
     await expect(page.getByRole("rowheader", { name: "Vídeos enviados por heróis" })).toBeVisible();
-    await expect(main.locator("time[datetime='2026-10-22']")).toBeVisible();
+    await expect(main.locator("time[datetime='2026-10-29']")).toBeVisible();
   });
 
   // Receitas fase 2: fotos enviadas pelo chef (bucket privado no Supabase Storage), quem vê e o prazo.

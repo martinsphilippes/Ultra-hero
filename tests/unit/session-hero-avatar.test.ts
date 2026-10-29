@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { HERO_DEFAULT_AVATAR } from "@/lib/avatar/constants";
 
-// Menu do app (UserMenu) do herói ativo sem avatar: a ilustração da página pública, a mesma do
-// cabeçalho do /profile. Fora disso (sem o papel, perfil inativo, avatar salvo) nada muda.
+// Menu do app (UserMenu): só foto real. Herói ou não, sem foto o avatar vem vazio e o menu mostra as
+// iniciais (nada de ilustração de reserva); o resumo nem consulta mais o perfil de herói.
 
 const state = vi.hoisted(() => ({
   roles: ["consumer"] as string[],
@@ -47,31 +46,27 @@ beforeEach(() => {
   state.queries = [];
 });
 
-describe("getSessionSummary: avatar do herói ativo", () => {
-  it("herói ativo sem avatar: a ilustração da página pública", async () => {
+describe("getSessionSummary: avatar só com foto real", () => {
+  it("herói ativo sem foto: sem avatar (o menu mostra as iniciais), sem consultar o perfil de herói", async () => {
     state.roles = ["consumer", "creator"];
     state.hero = { id: "c1" };
-    expect((await getSessionSummary())?.avatarUrl).toBe(HERO_DEFAULT_AVATAR);
-    expect(state.queries).toContain("creator_profiles?user_id=u1&status=active");
+    expect((await getSessionSummary())?.avatarUrl).toBeNull();
+    expect(state.queries.some((q) => q.startsWith("creator_profiles"))).toBe(false);
   });
 
-  it("avatar salvo vence e nem consulta o perfil de herói", async () => {
+  it("avatar salvo vai como está (o Avatar decide: foto real aparece, ilustração antiga vira as iniciais)", async () => {
     state.roles = ["creator"];
-    state.hero = { id: "c1" };
+    state.avatar = "/heroes/helena-vilar-avatar.webp";
+    expect((await getSessionSummary())?.avatarUrl).toBe("/heroes/helena-vilar-avatar.webp");
     state.avatar = "/placeholders/avatar-6.svg";
     expect((await getSessionSummary())?.avatarUrl).toBe("/placeholders/avatar-6.svg");
-    expect(state.queries.some((q) => q.startsWith("creator_profiles"))).toBe(false);
   });
 
-  it("sem o papel, perfil inativo ou erro na leitura: sem avatar (o menu sorteia pelo nome, como antes)", async () => {
+  it("sem o papel ou perfil inativo: sem avatar, como o herói", async () => {
     state.hero = { id: "c1" };
     expect((await getSessionSummary())?.avatarUrl).toBeNull();
-    expect(state.queries.some((q) => q.startsWith("creator_profiles"))).toBe(false);
     state.roles = ["creator"];
     state.hero = null;
-    expect((await getSessionSummary())?.avatarUrl).toBeNull();
-    state.hero = { id: "c1" };
-    state.heroError = { message: "boom" };
     expect((await getSessionSummary())?.avatarUrl).toBeNull();
   });
 });

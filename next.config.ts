@@ -5,12 +5,17 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   images: {
-    // Só as fotos de perfil do bucket público (0031): o otimizador não serve outros objetos do projeto.
-    remotePatterns: [{ protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/avatars/**" }],
+    // Só as fotos de perfil (0031) e as capas de herói (0042) dos buckets públicos: o otimizador não
+    // serve outros objetos do projeto.
+    remotePatterns: [
+      { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/avatars/**" },
+      { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/hero-covers/**" },
+    ],
   },
   experimental: {
-    // Foto de perfil passa pela server action (até 2 MiB + multipart); o padrão do Next é 1 MB.
-    serverActions: { bodySizeLimit: "3mb" },
+    // Foto de perfil (até 2 MiB) e capa do herói (até 3 MiB) passam pela server action, + multipart;
+    // o padrão do Next é 1 MB.
+    serverActions: { bodySizeLimit: "4mb" },
   },
   // As mensagens são lidas com fs em tempo de request: garante que vão para o bundle serverless.
   // "/*" cobre a rota raiz "/", "/**/*" as demais (o matcher usa `contains`).

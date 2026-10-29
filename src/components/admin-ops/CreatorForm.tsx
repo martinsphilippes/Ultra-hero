@@ -7,13 +7,8 @@ import { RIGHTS_STATUSES, createCreator, updateCreator, type CreatorFormValues }
 import { Button, Chip, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
-import { ILLUSTRATIONS } from "@/lib/avatar/constants";
-import { isStoredAvatarUrl, safeAvatarSrc, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { slugify } from "./slugify";
-
-const AVATARS = ILLUSTRATIONS;
-const COVERS = PILLARS.flatMap((p) => [1, 2, 3].map((n) => `/placeholders/cover-${p}-${n}.svg`));
 
 type Props = {
   id?: string;
@@ -37,8 +32,6 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
     headline: initial?.headline ?? "",
     bio: initial?.bio ?? "",
     pillars: initial?.pillars ?? [],
-    avatarUrl: initial?.avatarUrl ?? AVATARS[0],
-    coverUrl: initial?.coverUrl ?? COVERS[0],
     isFictional: initial?.isFictional ?? true,
     rightsNote: initial?.rightsNote ?? "",
     sortOrder: initial?.sortOrder ?? 100,
@@ -49,7 +42,6 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
     privateNotes: initial?.privateNotes ?? "",
   });
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const uploadedPhoto = initial?.avatarUrl && isStoredAvatarUrl(initial.avatarUrl, supabaseBaseUrl()) ? initial.avatarUrl : null;
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const authorized = values.rightsStatus === "authorized";
@@ -127,41 +119,12 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
         </div>
       </fieldset>
       <div className="grid gap-4 md:grid-cols-3">
-        <FormField label={t("avatar")}>
-          <Select value={values.avatarUrl} disabled={pending} onChange={(e) => set("avatarUrl", e.target.value)}>
-            {/* foto enviada pelo herói (0031): o admin mantém ou troca por ilustração */}
-            {uploadedPhoto && <option value={uploadedPhoto}>{t("photoKeep")}</option>}
-            {AVATARS.map((src, i) => (
-              <option key={src} value={src}>
-                {t("placeholderOption", { n: i + 1 })}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-        <FormField label={t("cover")}>
-          <Select value={values.coverUrl} disabled={pending} onChange={(e) => set("coverUrl", e.target.value)}>
-            {COVERS.map((src) => (
-              <option key={src} value={src}>
-                {src.replace("/placeholders/cover-", "").replace(".svg", "")}
-              </option>
-            ))}
-          </Select>
-        </FormField>
         <FormField label={t("sortOrder")}>
           <Input type="number" min={0} max={10000} inputMode="numeric" value={String(values.sortOrder)} disabled={pending} onChange={(e) => set("sortOrder", Number(e.target.value))} />
         </FormField>
       </div>
-      <div className="flex items-center gap-3 overflow-hidden rounded-xl border border-border bg-surface-elevated p-3">
-        {/* Prévia dos placeholders escolhidos (decorativa) */}
-        <span className="relative size-14 shrink-0 overflow-hidden rounded-full border border-border">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={safeAvatarSrc(values.avatarUrl, AVATARS[0], supabaseBaseUrl())} alt="" className="size-full object-cover" />
-        </span>
-        <span className="relative h-14 flex-1 overflow-hidden rounded-lg border border-border">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={values.coverUrl} alt="" className="size-full object-cover" />
-        </span>
-      </div>
+      {/* foto e capa são fotos reais enviadas pelo próprio herói; aqui só a remoção (moderação) */}
+      <p className="type-caption text-fg-muted">{t("mediaNote")}</p>
       <Switch id="creator-fictional" checked={values.isFictional} onCheckedChange={(c) => set("isFictional", c)} label={t("isFictional")} description={t("isFictionalHint")} disabled={pending} />
       <FormField label={t("rightsNote")} hint={t("rightsNoteHint")}>
         <Textarea value={values.rightsNote ?? ""} maxLength={500} rows={2} disabled={pending} onChange={(e) => set("rightsNote", e.target.value)} />

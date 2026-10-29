@@ -147,6 +147,23 @@ export async function restoreOwnAvatars(page: Page, original: OwnAvatars) {
   if (original.creatorId && now.creator !== original.creator) await rest(page, "PATCH", `creator_profiles?id=eq.${original.creatorId}`, { avatar_url: original.creator });
 }
 
+/** Capa do perfil de herói da própria conta (creator_profiles.cover_url), ou null sem perfil. */
+export type OwnCover = { creatorId: string | null; cover: string | null };
+
+export async function readOwnCover(page: Page): Promise<OwnCover> {
+  const session = await browserSession(page);
+  if (!session) throw new Error("sem sessão no navegador");
+  const rows = (await rest(page, "GET", `creator_profiles?select=id,cover_url&user_id=eq.${session.userId}`)) as { id: string; cover_url: string | null }[];
+  return { creatorId: rows[0]?.id ?? null, cover: rows[0]?.cover_url ?? null };
+}
+
+/** Devolve a capa ao valor lido antes do teste (só se mudou; a coluna é gravável pelo próprio herói). */
+export async function restoreOwnCover(page: Page, original: OwnCover) {
+  if (!original.creatorId) return;
+  const now = await readOwnCover(page);
+  if (now.cover !== original.cover) await rest(page, "PATCH", `creator_profiles?id=eq.${original.creatorId}`, { cover_url: original.cover });
+}
+
 // ---------------------------------------------------------------- listas pessoais (testes de lista)
 /** Apaga as listas da própria conta com este nome exato (os itens vão junto, on delete cascade). */
 export async function deleteOwnListsNamed(page: Page, name: string): Promise<number> {

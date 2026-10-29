@@ -1,29 +1,23 @@
-// Esquema do perfil editável da personalidade (colunas liberadas pelo guard do banco:
-// headline, bio, avatar_url, cover_url, socials). Compartilhado por formulário e action.
+// Esquema do perfil editável da personalidade (headline, bio, avatar_url, socials). Compartilhado por
+// formulário e action. A capa (cover_url) não passa por aqui: só entra e sai pelo envio de foto real
+// (cover-actions, 0042); um cover_url que chegue (aba antiga) é descartado pelo zod e não é gravado.
 import { z } from "zod";
-import { SAME_ORIGIN_PATH } from "@/components/editors/content/schema";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 
-const samePath = z
+// Avatar: nenhum ("") ou a foto enviada (bucket avatars, 0031); ilustração não é mais aceita. Dono
+// e "é a atual" a action confere.
+const noneOrPhoto = z
   .string()
   .trim()
   .max(300, { error: "tooLong" })
-  .refine((v) => v === "" || SAME_ORIGIN_PATH.test(v), { error: "invalidCover" });
-
-// Avatar: caminho local ou a foto enviada (bucket avatars, 0031). Dono e "é a atual" a action confere.
-const samePathOrPhoto = z
-  .string()
-  .trim()
-  .max(300, { error: "tooLong" })
-  .refine((v) => v === "" || SAME_ORIGIN_PATH.test(v) || isStoredAvatarUrl(v, supabaseBaseUrl()), { error: "invalidCover" });
+  .refine((v) => v === "" || isStoredAvatarUrl(v, supabaseBaseUrl()), { error: "invalidCover" });
 
 // avatar_url ausente = "avatar inalterado": a action mantém o valor do banco. Assim um formulário com
-// estado velho (a foto mudou em Dados, na mesma página) não regrava nem apaga a foto.
+// estado velho (a foto mudou na mesma página) não regrava nem apaga a foto.
 export const creatorProfileSchema = z.object({
   headline: z.string().trim().max(120, { error: "tooLong" }),
   bio: z.string().trim().max(1200, { error: "tooLong" }),
-  avatar_url: samePathOrPhoto.optional(),
-  cover_url: samePath,
+  avatar_url: noneOrPhoto.optional(),
   socials: z.object({
     instagram: z.string().trim().max(80, { error: "tooLong" }),
     youtube: z.string().trim().max(120, { error: "tooLong" }),
@@ -31,18 +25,15 @@ export const creatorProfileSchema = z.object({
   }),
 });
 
-/** O que a action recebe: avatar_url só quando a pessoa mexeu no avatar. */
+/** O que a action recebe: avatar_url só se alguém o mandar (o formulário nunca manda). */
 export type CreatorProfileInput = z.infer<typeof creatorProfileSchema>;
 
-/** Estado do formulário: sempre com o avatar à vista. */
-export type CreatorProfileValues = Omit<CreatorProfileInput, "avatar_url"> & { avatar_url: string };
+/** Estado do formulário: texto e redes (foto e capa têm envio próprio, já aplicado no servidor). */
+export type CreatorProfileValues = Omit<CreatorProfileInput, "avatar_url">;
 
-/** O que o formulário envia: o avatar só quando a pessoa mexeu nele (sem ele, a action mantém o do banco). */
-export function creatorProfilePayload(values: CreatorProfileValues, avatarTouched: boolean): CreatorProfileInput {
-  if (avatarTouched) return values;
-  const rest: CreatorProfileInput = { ...values };
-  delete rest.avatar_url;
-  return rest;
+/** O que o formulário envia: nunca o avatar nem a capa (a action mantém os do banco). */
+export function creatorProfilePayload(values: CreatorProfileValues): CreatorProfileInput {
+  return { headline: values.headline, bio: values.bio, socials: values.socials };
 }
 
 export type ProfileParse = { ok: true; data: CreatorProfileInput } | { ok: false; errors: Record<string, string> };

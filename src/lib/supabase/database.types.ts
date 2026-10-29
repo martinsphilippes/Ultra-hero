@@ -579,6 +579,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"hero_cover_uploads": {
+                  Row: {
+                    "bytes": number,"created_at": string,"deleted_at": string | null,"id": string,"mime": string,"path": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bytes": number,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"mime": string,"path": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "bytes"?: number,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"mime"?: string,"path"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"interest_tags": {
                   Row: {
                     "label": NonNullable<Json>,"pillar": Database["public"]['Enums']["pillar"] | null,"sort_order": number,"tag": string
@@ -2052,6 +2066,21 @@ isOneToOne: false
                            },
 "health_run_retention":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"hero_cover_active_creator":
+{ Args: { "p_uid": string }; Returns: string
+                           },
+"hero_cover_clear":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"hero_cover_orphan_uploads":
+{ Args: { "p_limit": number }; Returns: string[]
+                           },
+"hero_cover_set":
+{ Args: { "p_url": string }; Returns: string
+                           },
+"hero_cover_upload_claim":
+{ Args: { "p_bytes": number,"p_mime": string }; Returns: string
                            },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean

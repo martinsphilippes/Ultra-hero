@@ -1,15 +1,11 @@
-import Image from "next/image";
-import { cn, initials, stableHash } from "@/lib/utils";
-import { isLocalPath } from "@/lib/avatar/paths";
+import { cn, initials } from "@/lib/utils";
 import { AvatarImage } from "./avatar-image";
 
 type AvatarProps = {
   src?: string | null;
-  /** Nome usado no alt e para escolher um placeholder estável. */
+  /** Nome usado no alt e nas iniciais quando não há foto. */
   name?: string | null;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
-  /** Mostra iniciais em vez do placeholder abstrato quando não há imagem. */
-  fallback?: "placeholder" | "initials";
   className?: string;
   /** Alt explícito; vazio quando o avatar é decorativo ao lado do nome. */
   alt?: string;
@@ -25,13 +21,19 @@ const sizes = {
 
 const pixels = { xs: 24, sm: 32, md: 40, lg: 56, xl: 80 };
 
-// Avatar com imagem (Supabase ou local) ou placeholder abstrato determinístico.
-export function Avatar({ src, name, size = "md", fallback = "placeholder", className, alt }: AvatarProps) {
-  const label = alt ?? name ?? "";
-  const placeholder = `/placeholders/avatar-${(stableHash(name ?? "uh") % 8) + 1}.svg`;
-  const source = src || (fallback === "placeholder" ? placeholder : null);
-  const isSvg = source?.endsWith(".svg") ?? false;
+/** Iniciais do nome sobre a cor sólida do avatar (sem foto). */
+export function AvatarInitials({ name, label }: { name?: string | null; label?: string }) {
+  return (
+    <span aria-label={label || undefined} role={label ? "img" : undefined} data-avatar-initials="">
+      {initials(name)}
+    </span>
+  );
+}
 
+// Avatar só com foto real (enviada ou oficial). Sem foto, ilustração antiga ou foto que não carrega:
+// as iniciais do nome sobre uma cor sólida neutra do tema.
+export function Avatar({ src, name, size = "md", className, alt }: AvatarProps) {
+  const label = alt ?? name ?? "";
   return (
     <span
       className={cn(
@@ -40,23 +42,7 @@ export function Avatar({ src, name, size = "md", fallback = "placeholder", class
         className,
       )}
     >
-      {source && !isLocalPath(source) ? (
-        // foto enviada: volta para a ilustração se não carregar; URL de outro host nem é carregada
-        <AvatarImage src={source} alt={label} fallbackSrc={placeholder} width={pixels[size]} height={pixels[size]} className="size-full object-cover" />
-      ) : source ? (
-        <Image
-          src={source}
-          alt={label}
-          width={pixels[size]}
-          height={pixels[size]}
-          unoptimized={isSvg}
-          className="size-full object-cover"
-        />
-      ) : (
-        <span aria-label={label || undefined} role={label ? "img" : undefined}>
-          {initials(name)}
-        </span>
-      )}
+      <AvatarImage src={src} alt={label} fallback={<AvatarInitials name={name} label={label} />} width={pixels[size]} height={pixels[size]} className="size-full object-cover" />
     </span>
   );
 }

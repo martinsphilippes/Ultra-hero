@@ -1,5 +1,6 @@
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { cleanupAvatarUploads } from "@/lib/avatar/server";
+import { cleanupHeroCoverUploads } from "@/lib/hero-cover/server";
 import { CloudflareStreamProvider, isCloudflareStreamConfigured } from "@/lib/video/providers/cloudflare-stream";
 import { runCronJob } from "../_lib/cron";
 import { cleanupRecipeOrphans } from "../_lib/recipe-orphans";
@@ -7,8 +8,8 @@ import { cleanupStreamUploads } from "../_lib/stream-cleanup";
 
 // Retenção diária: analytics 90d, pedidos de teste 90d (anonimiza), auditoria 365d, runs/logs 30d;
 // limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar) e das fotos de
-// perfil sem uso ou de conta excluída (0031), das fotos de receita órfãs no bucket recipe-media e
-// dos dados de relógio (health_run_retention, 0038).
+// perfil e das capas de herói sem uso ou de conta excluída (0031, 0042), das fotos de receita
+// órfãs no bucket recipe-media e dos dados de relógio (health_run_retention, 0038).
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -34,6 +35,13 @@ async function handler(request: Request) {
     } catch (cleanupError) {
       avatars = { avatars_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
     }
+    // Capas de herói (0042): mesma regra; banco sem a 0042 lança e o relatório registra.
+    let covers: Record<string, unknown>;
+    try {
+      covers = await cleanupHeroCoverUploads(admin, supabaseBaseUrl());
+    } catch (cleanupError) {
+      covers = { covers_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
+    }
     // fotos de receita órfãs no Storage: falha aqui também não derruba o resto
     let recipeMedia: Record<string, unknown>;
     try {
@@ -51,7 +59,7 @@ async function handler(request: Request) {
     } catch (healthError) {
       health = { health_failed: healthError instanceof Error ? healthError.message : String(healthError) };
     }
-    return { counts, stream, avatars, recipe_media: recipeMedia, health };
+    return { counts, stream, avatars, covers, recipe_media: recipeMedia, health };
   });
 }
 

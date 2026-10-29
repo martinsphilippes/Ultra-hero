@@ -12,11 +12,12 @@ import { createClient } from "@/lib/supabase/server";
 import { failFrom } from "../_lib/action-utils";
 
 // Atualiza só as colunas liberadas do perfil da personalidade (guard no banco bloqueia o resto).
-// Um avatar só para o herói: o avatar escolhido aqui vale também no app (profiles.avatar_url), com a
-// mesma regra do updateProfile (nenhum, ilustração da lista ou a foto atual e própria; foto nova só
-// entra pelo envio, que já grava os dois lados). Trocar a foto por ilustração tira a foto do ar.
-// Sem avatar_url (a pessoa não mexeu no avatar) nenhum dos dois avatares é tocado: o formulário pode
-// estar com um valor velho (foto enviada na mesma página) e não pode trocá-la nem apagá-la.
+// Capa não passa por aqui (só pelo envio de foto real, cover-actions). Um avatar só para o herói: um
+// avatar que chegue aqui vale também no app (profiles.avatar_url), com a mesma regra do updateProfile
+// (nenhum ou a foto atual e própria; foto nova só entra pelo envio, que já grava os dois lados;
+// ilustração não é mais aceita). Tirar a foto (avatar vazio) a apaga do ar.
+// Sem avatar_url (o que o formulário sempre manda) nenhum dos dois avatares é tocado: o formulário
+// pode estar com um valor velho (foto enviada na mesma página) e não pode trocá-la nem apagá-la.
 //
 // Ordem das duas gravações: primeiro o perfil público (é a que o guard, o status e a RLS podem
 // recusar, e leva o resto do formulário); depois o avatar do app. Se a segunda falhar, o avatar do
@@ -53,7 +54,6 @@ export async function updateCreatorProfile(values: CreatorProfileInput): Promise
       headline: v.headline || null,
       bio: v.bio || null,
       ...(avatarChanged ? { avatar_url: nextAvatar } : {}),
-      cover_url: v.cover_url || null,
       socials: v.socials,
     })
     .eq("id", me.id);

@@ -9,10 +9,9 @@ import { InlineError } from "@/components/discover/InlineError";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
 import { ChefHighlights } from "@/components/recipes/catalog/ChefHighlights";
-import { Badge } from "@/components/ui";
+import { AvatarInitials, Badge } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import type { Locale } from "@/i18n/config";
-import { HERO_DEFAULT_AVATAR, heroAvatarSrc } from "@/lib/avatar/constants";
 import { formatPlainDate } from "@/i18n/format";
 import { hubHref, loadCreator, loadCreatorHub } from "@/lib/catalog/creator-hub";
 import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
@@ -47,7 +46,6 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   const hub = await loadCreatorHub(creator);
   const hasError = hub.errors.contents || hub.errors.programs || hub.errors.products;
 
-  const avatar = heroAvatarSrc(creator.avatar_url);
   // Grade de posts: só o que o herói publicou (as receitas que ele indica ficam na biblioteca Receitas).
   const posts = hub.contents.filter((c) => c.creator?.slug === creator.slug);
   const statLabel = (key: "posts" | "programs" | "products", n: number) => t(`statLabels.${key}${n === 1 ? "One" : "Other"}`);
@@ -66,9 +64,9 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
       {/* Cabeçalho no formato do Instagram: foto pequena, nome e números lado a lado; o que importa são os posts. */}
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-5">
-          <span className="relative inline-flex size-20 shrink-0 overflow-hidden rounded-full border border-border bg-surface-elevated sm:size-24">
-            {/* foto enviada pelo herói (0031) ou ilustração; foto que não carrega volta para a ilustração */}
-            <AvatarImage src={avatar} alt="" fallbackSrc={HERO_DEFAULT_AVATAR} fill priority sizes="96px" className="object-cover" />
+          <span data-testid="hero-page-avatar" className="relative inline-flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-elevated text-2xl font-bold uppercase text-fg-muted sm:size-24 sm:text-3xl">
+            {/* só foto real (enviada pelo herói, 0031, ou a oficial); sem foto ou se não carrega: as iniciais */}
+            <AvatarImage src={creator.avatar_url} alt="" fallback={<AvatarInitials name={creator.name} />} fill priority sizes="96px" className="object-cover" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

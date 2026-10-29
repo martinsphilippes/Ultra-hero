@@ -6,9 +6,10 @@ import { notFound } from "next/navigation";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CreatorForm } from "@/components/admin-ops/CreatorForm";
 import { CreatorProductActions } from "@/components/admin-ops/CreatorProductActions";
-import { CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
+import { CreatorCoverRemoveButton, CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
 import { Badge, Button, PageHeader } from "@/components/ui";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { isStoredCoverUrl } from "@/lib/hero-cover/paths";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = Promise<{ id: string }>;
@@ -96,6 +97,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
             <StatusBadge status={creator.status} label={ts(creator.status)} size="md" />
             <CreatorStatusButton id={creator.id} status={creator.status} />
             {isStoredAvatarUrl(creator.avatar_url, supabaseBaseUrl()) && <CreatorPhotoRemoveButton id={creator.id} />}
+            {isStoredCoverUrl(creator.cover_url, supabaseBaseUrl()) && <CreatorCoverRemoveButton id={creator.id} />}
           </>
         }
       />
@@ -125,8 +127,6 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
             headline: creator.headline ?? "",
             bio: creator.bio ?? "",
             pillars: creator.pillars,
-            avatarUrl: creator.avatar_url ?? "/placeholders/avatar-1.svg",
-            coverUrl: creator.cover_url ?? "/placeholders/cover-routine-1.svg",
             isFictional: creator.is_fictional,
             rightsNote: creator.rights_note ?? "",
             sortOrder: creator.sort_order,

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
-import { adminRemoveCreatorPhoto, closeRetentionException, revokeInvitation, revokeMembership, setCreatorStatus, setFeedbackStatus, setSellerStatus } from "@/app/admin/ops-actions";
+import { adminRemoveCreatorCover, adminRemoveCreatorPhoto, closeRetentionException, revokeInvitation, revokeMembership, setCreatorStatus, setFeedbackStatus, setSellerStatus } from "@/app/admin/ops-actions";
 import { ConfirmActionDialog } from "@/components/admin";
 import { Button, useToast } from "@/components/ui";
 
@@ -54,6 +54,23 @@ export function CreatorPhotoRemoveButton({ id }: { id: string }) {
       requireJustification
       destructive
       action={(justification) => adminRemoveCreatorPhoto({ id }, justification)}
+    />
+  );
+}
+
+// Tira do ar a capa enviada pelo herói (0042); só aparece quando a capa é uma foto do bucket.
+export function CreatorCoverRemoveButton({ id }: { id: string }) {
+  const t = useTranslations("adminOps.creators.form");
+  return (
+    <ConfirmActionDialog
+      triggerSize="md"
+      triggerLabel={t("coverRemove")}
+      triggerVariant="ghost"
+      title={t("coverRemoveTitle")}
+      description={t("coverRemoveDescription")}
+      requireJustification
+      destructive
+      action={(justification) => adminRemoveCreatorCover({ id }, justification)}
     />
   );
 }

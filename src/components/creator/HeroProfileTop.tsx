@@ -6,7 +6,7 @@ import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { Avatar, Badge } from "@/components/ui";
 import type { CreatorProfile } from "@/app/creator/_lib/creator";
 import type { AvatarPhotoState } from "@/lib/avatar/availability";
-import { heroAvatarSrc } from "@/lib/avatar/constants";
+import type { HeroCoverState } from "@/lib/hero-cover/availability";
 import { credentialsState, type CredentialsRequest } from "@/lib/recipes/credentials";
 import { createClient } from "@/lib/supabase/server";
 import { ChefProfileForm } from "./ChefProfileForm";
@@ -23,8 +23,8 @@ export async function HeroProfileHeader({ profile }: { profile: CreatorProfile }
   return (
     <section id={HERO_ANCHOR} aria-labelledby="hero-profile-name" data-testid="profile-hero" className="flex scroll-mt-20 flex-col gap-3">
       <div className="flex items-center gap-4">
-        {/* o avatar único do herói: sem avatar, a ilustração da página pública (não a sorteada pelo nome) */}
-        <Avatar src={heroAvatarSrc(profile.avatar_url)} name={profile.name} size="xl" alt="" />
+        {/* o avatar único do herói: só foto real; sem foto, as iniciais (como na página pública) */}
+        <Avatar src={profile.avatar_url} name={profile.name} size="xl" alt="" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <h2 id="hero-profile-name" className="type-h3 break-words text-fg">
             {profile.name}
@@ -50,12 +50,13 @@ type EditorProps = {
   /** Perfil ativo e vinculado (my_creator_id): fora disso o editor fica somente leitura. */
   active: boolean;
   photoState: AvatarPhotoState;
+  coverState: HeroCoverState;
   /** "Sua conta" (nome exibido, idioma, tema): no fim do mesmo editor, sem um segundo "Editar perfil". */
   account?: ReactNode;
 };
 
 /** "Editar perfil" e "Ver página pública" + o editor completo, recolhido por padrão. */
-export async function HeroProfileEditor({ profile, active, photoState, account }: EditorProps) {
+export async function HeroProfileEditor({ profile, active, photoState, coverState, account }: EditorProps) {
   const t = await getTranslations("creator.profile");
   // perfil de chef (0027): especialidades públicas e pedido de credenciais; sem as colunas, sem a parte
   const supabase = await createClient();
@@ -83,17 +84,17 @@ export async function HeroProfileEditor({ profile, active, photoState, account }
         initial={{
           headline: profile.headline ?? "",
           bio: profile.bio ?? "",
-          avatar_url: profile.avatar_url ?? "",
-          cover_url: profile.cover_url ?? "",
           socials: socialsFrom(profile.socials),
         }}
-        pillars={profile.pillars}
+        avatarUrl={profile.avatar_url}
+        coverUrl={profile.cover_url}
         readOnly={!active}
         name={profile.name}
-        // um avatar só: foto e ilustração aqui valem no app e na página pública. Perfil inativo não
-        // edita aqui; a foto do app continua em Dados (um seletor de foto por página)
+        // um avatar só: a foto daqui vale no app e na página pública. Perfil inativo não edita aqui;
+        // a foto do app continua em Dados (um seletor de foto por página)
         showPhotoPicker={active}
         photoState={photoState}
+        coverState={coverState}
       />
 
       {chef && (

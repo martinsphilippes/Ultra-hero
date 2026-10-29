@@ -176,8 +176,9 @@
           "p1": "Coletamos apenas o necessário para a demonstração funcionar:",
           "list1": {
             "account": "<strong>Conta:</strong> e-mail, senha e nome exibido. A senha é tratada pelo serviço de autenticação; o app não a guarda nas próprias tabelas. Se você entrar com Google, quando essa opção estiver disponível, recebemos do Google seu nome, seu e-mail e, se houver, o endereço da sua foto de perfil.",
-            "preferences": "<strong>Preferências:</strong> idioma, tema, avatar (uma ilustração ou a foto que você enviar) e fuso horário do dispositivo, usado para contar sua sequência de dias.",
+            "preferences": "<strong>Preferências:</strong> idioma, tema, avatar (a foto que você enviar; sem foto, aparecem as suas iniciais) e fuso horário do dispositivo, usado para contar sua sequência de dias.",
             "profilePhoto": "<strong>Foto de perfil (opcional):</strong> se você tirar ou escolher uma foto, ela é recortada em quadrado e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu avatar no app; se você é herói, aparece também na sua página pública, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar fotos sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
+            "heroCover": "<strong>Capa do herói (opcional, só heróis):</strong> se você é herói e tira ou escolhe uma foto de capa, ela é recortada em 16:9 e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu card na lista de heróis, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar capas sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
             "notifications": "<strong>Preferências de notificação:</strong> o que você aceita receber (resumo editorial, lembretes de sequência, pedidos de teste) e por quais canais. Nesta versão nada é enviado; a escolha fica guardada para ser respeitada em qualquer envio futuro.",
             "usage": "<strong>Uso do conteúdo:</strong> interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas e certificados simbólicos (o PDF do certificado traz seu nome exibido).",
             "routine": "<strong>Lembretes (itens de rotina):</strong> título, nota, horário, dias da semana e as marcações de “feito hoje”. Desde 23/10/2026 eles ficam em Perfil › Lembretes, fora do Hoje, onde você cria, edita, exclui e marca — os itens que você já tinha voltaram a aparecer ali. O Ultra Hero não envia avisos deles. Marcar um lembrete não conta na sequência, que conta conteúdos concluídos e entradas em programas; as marcações antigas continuam guardadas, mas também deixaram de contar.",
@@ -296,7 +297,7 @@
         "blocks": {
           "p1": "Usamos fornecedores de tecnologia que tratam dados por nossa conta, apenas para operar o app:",
           "list1": {
-            "supabase": "<strong>Supabase:</strong> banco de dados, autenticação e armazenamento das fotos de perfil, incluindo o envio dos e-mails de confirmação de cadastro e de redefinição de senha.",
+            "supabase": "<strong>Supabase:</strong> banco de dados, autenticação e armazenamento das fotos de perfil e das capas de herói, incluindo o envio dos e-mails de confirmação de cadastro e de redefinição de senha.",
             "vercel": "<strong>Vercel:</strong> hospedagem do app e execução das funções do servidor, incluindo as rotinas automáticas diárias, como a de retenção.",
             "cloudflare": "<strong>Cloudflare (Stream):</strong> recebe, processa, armazena e entrega os vídeos que os heróis gravam ou enviam pelo app, e o player desses vídeos é carregado a partir do Cloudflare. Ele não recebe seu nome nem seu e-mail; o vídeo fica ligado ao conteúdo, não à sua conta.",
             "ai": "<strong>OpenAI ou Google (Gemini), somente se as recomendações por IA estiverem ativadas</strong> pela administração. Na configuração inicial da demonstração, as recomendações usam um motor próprio, sem IA externa. Quando a IA está ativada, o provedor escolhido recebe apenas: seus interesses (tags), sua afinidade por pilar, seu nível estimado, quantos conteúdos você concluiu, o idioma das justificativas e dados do catálogo (identificadores opacos de conteúdo, pilar, tipo, dificuldade, tags, módulo exigido, se o conteúdo está em destaque, há quantos dias foi publicado e se está liberado no seu plano). <strong>Nunca</strong> recebe seu nome, seu e-mail, o identificador da sua conta ou textos que você escreveu. A IA pode ser desligada a qualquer momento por uma chave de desligamento.",
@@ -338,6 +339,11 @@
                 "data": "Foto de perfil",
                 "period": "Até você trocar ou remover a foto, ou excluir a conta",
                 "details": "A foto trocada ou removida é apagada na hora; cópias guardadas em cache (navegador e rede de entrega) deixam de valer em até 1 hora. Se algo falhar, a rotina diária apaga cópias sem uso e as fotos de contas excluídas, inclusive da página pública do herói. O registro técnico de cada envio (data, tamanho e tipo) é apagado 2 dias depois de a foto sair."
+              },
+              "heroCover": {
+                "data": "Capa do herói",
+                "period": "Até você trocar ou remover a capa, ou excluir a conta",
+                "details": "A capa trocada ou removida é apagada na hora; cópias guardadas em cache (navegador e rede de entrega) deixam de valer em até 1 hora. Se algo falhar, a rotina diária apaga capas sem uso e as de contas excluídas. O registro técnico de cada envio (data, tamanho e tipo) é apagado 2 dias depois de a capa sair."
               },
               "analytics": {
                 "data": "Eventos de uso",

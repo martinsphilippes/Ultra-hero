@@ -107,11 +107,14 @@ test.describe("hub do herói", () => {
   });
   test("perfil no formato do Instagram: foto pequena, bio em uma linha com mais e posts 3 por linha", async ({ page }) => {
     await page.goto("/personalities/lia-monteiro");
-    const avatar = page.locator("header img").first();
+    // foto real (oficial ou enviada) ou, sem foto, as iniciais: nunca ilustração
+    const avatar = page.getByTestId("hero-page-avatar");
     // a página chega por streaming: até o React trocar o esqueleto, o conteúdo fica num bloco oculto (sem caixa)
     await expect(avatar).toBeVisible();
     const box = (await avatar.boundingBox())!;
     expect(box.width).toBeLessThanOrEqual(100);
+    await expect(avatar.locator("img, [data-avatar-initials]")).toHaveCount(1);
+    expect(await avatar.locator("img").evaluateAll((imgs) => imgs.map((i) => decodeURIComponent(i.getAttribute("src") ?? "")))).not.toContainEqual(expect.stringContaining("/placeholders/"));
 
     const bio = page.getByTestId("hero-bio");
     const line = bio.locator("p");

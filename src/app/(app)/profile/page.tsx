@@ -15,6 +15,7 @@ import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
+import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { appliesOn } from "@/lib/routine/reminders";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
 import { createClient } from "@/lib/supabase/server";
@@ -82,6 +83,8 @@ export default async function ProfilePage() {
     roles.map((r) => r.role),
     creator.profile,
   );
+  // envio de capa (0042): só o herói vê; sem a 0042 ou sem service role fica "indisponível"
+  const coverState = heroProfile ? await getHeroCoverState() : null;
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
@@ -202,6 +205,7 @@ export default async function ProfilePage() {
             profile={heroProfile}
             active={heroActive}
             photoState={photoState}
+            coverState={coverState ?? { upload: "not_configured", canRemove: false }}
             account={
               <section id={ACCOUNT_ANCHOR} aria-labelledby="account-title" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5">
                 <div className="flex flex-col gap-0.5">
