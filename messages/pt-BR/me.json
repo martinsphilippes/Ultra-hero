@@ -229,6 +229,15 @@
     "account": {
       "title": "Sua conta",
       "description": "Nome exibido, idioma e tema do app."
+    },
+    "heroActions": {
+      "label": "Atalhos do herói",
+      "post": "Novo post",
+      "newContent": "Novo conteúdo",
+      "content": "Meus conteúdos",
+      "recipes": "Minhas receitas",
+      "links": "Vínculos de produtos",
+      "dashboard": "Painel"
     }
   },
   "today": {

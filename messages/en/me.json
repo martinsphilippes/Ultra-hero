@@ -229,6 +229,15 @@
     "account": {
       "title": "Your account",
       "description": "Display name, app language and theme."
+    },
+    "heroActions": {
+      "label": "Hero shortcuts",
+      "post": "New post",
+      "newContent": "New content",
+      "content": "My content",
+      "recipes": "My recipes",
+      "links": "Product links",
+      "dashboard": "Dashboard"
     }
   },
   "today": {

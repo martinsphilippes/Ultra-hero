@@ -6,6 +6,7 @@ import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { ACCOUNT_ANCHOR, HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure";
 import { HeroProfileEditor, HeroProfileHeader } from "@/components/creator/HeroProfileTop";
+import { HeroQuickActions } from "@/components/creator/HeroQuickActions";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
@@ -198,6 +199,8 @@ export default async function ProfilePage() {
         <div className="flex flex-col gap-4">
           <HeroProfileHeader profile={heroProfile} />
           {portalsNav}
+          {/* atalhos do portal (novo post, conteúdos, receitas, vínculos) perto de "Editar perfil" */}
+          {heroActive ? <HeroQuickActions /> : null}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroActive}
