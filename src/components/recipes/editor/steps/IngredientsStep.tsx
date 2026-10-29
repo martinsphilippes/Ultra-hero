@@ -63,13 +63,6 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce,
     setFocusId(fieldIdForPath(`ingredients.${index}.name`));
   }
 
-  const kindHint = (unit: RecipeUnit | "", isText: boolean) => {
-    const kind = amountKind(unit);
-    if (kind === "decimal") return t("amountHintDecimal");
-    if (kind === "fraction") return t("amountHintFraction");
-    return isText ? t("textHint") : t("amountHint");
-  };
-
   const unitOptions = (
     <>
       <option value="">{t("unitNone")}</option>
@@ -99,61 +92,21 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce,
                     <ItemControls index={index} total={draft.ingredients.length} label={label(index)} onMove={(to) => move(index, to)} onRemove={() => remove(index)} disabled={disabled} />
                   </div>
                 </div>
-                <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3">
-                  <FormField
-                    id={fieldIdForPath(`${base}.amount`)}
-                    label={t("amount")}
-                    error={errorFor(`${base}.amount`) ?? errorFor(`${base}.quantity`) ?? errorFor(`${base}.quantity_text`)}
-                  >
-                    <Input
-                      value={ing.amount}
-                      maxLength={60}
-                      {...amountInputProps(ing.unit)}
-                      aria-describedby={`${fieldIdForPath(`${base}.amount`)}-kind`}
-                      onChange={(e) => update(index, { amount: sanitizeAmount(e.target.value, ing.unit) })}
-                      disabled={disabled || ing.toTaste}
-                      data-testid="ingredient-amount"
-                    />
-                  </FormField>
-                  <FormField id={fieldIdForPath(`${base}.unit`)} label={t("unit")} error={errorFor(`${base}.unit`)}>
-                    <Select
-                      value={ing.unit}
-                      onChange={(e) => {
-                        const unit = e.target.value as RecipeUnit | "";
-                        // "1 média" com unidade: o número fica, o tamanho vai para a observação
-                        const keepNote = unit && parsed.kind === "numeric" && parsed.note && !ing.note.trim() ? { note: parsed.note } : {};
-                        update(index, { unit, amount: convertAmount(ing.amount, unit), ...keepNote });
-                      }}
-                      disabled={disabled || ing.toTaste}
-                      data-testid="ingredient-unit"
-                    >
-                      {unitOptions}
-                    </Select>
-                  </FormField>
-                </div>
-                {!ing.toTaste ? (
-                  <div className="-mt-2 flex flex-col gap-2">
-                    <p id={`${fieldIdForPath(`${base}.amount`)}-kind`} className="type-caption text-fg-muted">
-                      {kindHint(ing.unit, parsed.kind === "text")}
-                    </p>
-                    {amountKind(ing.unit) === "fraction" ? (
-                      <div role="group" aria-label={t("fractions")} className="flex flex-wrap gap-2">
-                        {FRACTION_SHORTCUTS.map((f) => (
-                          <Chip
-                            key={f.value}
-                            className="min-h-11 min-w-11 justify-center text-base"
-                            selected={ing.amount === f.value || ing.amount.endsWith(` ${f.value}`)}
-                            onClick={() => update(index, { amount: applyFraction(ing.amount, f.value) })}
-                            disabled={disabled}
-                            data-testid={`ingredient-fraction-${f.value.replace("/", "-")}`}
-                          >
-                            {f.glyph}
-                          </Chip>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
+                <AmountUnitRow
+                  basePath={base}
+                  amount={ing.amount}
+                  unit={ing.unit}
+                  disabled={disabled}
+                  locked={ing.toTaste}
+                  errorFor={errorFor}
+                  unitOptions={unitOptions}
+                  testIdPrefix="ingredient"
+                  onChange={(patch) => {
+                    // "1 média" com unidade: o número fica, o tamanho vai para a observação
+                    const keepNote = patch.unit && parsed.kind === "numeric" && parsed.note && !ing.note.trim() ? { note: parsed.note } : {};
+                    update(index, { ...patch, ...keepNote });
+                  }}
+                />
                 <div className="flex flex-wrap gap-x-4">
                   <Checkbox id={`${fieldIdForPath(`${base}.to_taste`)}`} checked={ing.toTaste} onChange={(e) => update(index, { toTaste: e.target.checked })} label={t("toTaste")} disabled={disabled} />
                   <Checkbox id={`${fieldIdForPath(`${base}.optional`)}`} checked={ing.optional} onChange={(e) => update(index, { optional: e.target.checked })} label={t("optional")} disabled={disabled} />
@@ -171,30 +124,28 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce,
                     const sBase = `${base}.substitutions.${sIndex}`;
                     const subLabel = `${t("substitution", { n: sIndex + 1 })} · ${label(index)}`;
                     return (
-                      <div key={sIndex} className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
+                      <div key={sIndex} className="flex flex-col gap-3 rounded-xl border border-border p-3" data-testid="substitution-item">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-fg">{t("substitution", { n: sIndex + 1 })}</span>
+                          <IconButton
+                            label={t("remove", { label: subLabel })}
+                            icon={<X />}
+                            onClick={() => update(index, { substitutions: ing.substitutions.filter((_, i) => i !== sIndex) })}
+                            disabled={disabled}
+                          />
+                        </div>
                         <FormField id={fieldIdForPath(`${sBase}.name`)} label={t("name")} error={errorFor(`${sBase}.name`)}>
                           <Input value={sub.name} maxLength={120} aria-label={`${t("name")} · ${subLabel}`} onChange={(e) => updateSub(index, sIndex, { name: e.target.value })} disabled={disabled} />
                         </FormField>
-                        <FormField id={fieldIdForPath(`${sBase}.amount`)} label={t("amount")} error={errorFor(`${sBase}.amount`)}>
-                          <Input value={sub.amount} maxLength={60} {...amountInputProps(sub.unit)} onChange={(e) => updateSub(index, sIndex, { amount: sanitizeAmount(e.target.value, sub.unit) })} disabled={disabled} />
-                        </FormField>
-                        <FormField id={fieldIdForPath(`${sBase}.unit`)} label={t("unit")} error={errorFor(`${sBase}.unit`)}>
-                          <Select
-                            value={sub.unit}
-                            onChange={(e) => {
-                              const unit = e.target.value as RecipeUnit | "";
-                              updateSub(index, sIndex, { unit, amount: convertAmount(sub.amount, unit) });
-                            }}
-                            disabled={disabled}
-                          >
-                            {unitOptions}
-                          </Select>
-                        </FormField>
-                        <IconButton
-                          label={t("remove", { label: subLabel })}
-                          icon={<X />}
-                          onClick={() => update(index, { substitutions: ing.substitutions.filter((_, i) => i !== sIndex) })}
+                        <AmountUnitRow
+                          basePath={sBase}
+                          amount={sub.amount}
+                          unit={sub.unit}
                           disabled={disabled}
+                          errorFor={errorFor}
+                          unitOptions={unitOptions}
+                          testIdPrefix="substitution"
+                          onChange={(patch) => updateSub(index, sIndex, patch)}
                         />
                       </div>
                     );
@@ -221,6 +172,81 @@ export function IngredientsStep({ draft, setDraft, errorFor, disabled, announce,
           {t("add")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+type AmountUnitRowProps = {
+  basePath: string;
+  amount: string;
+  unit: RecipeUnit | "";
+  disabled?: boolean;
+  /** "A gosto": sem quantidade nem unidade */
+  locked?: boolean;
+  errorFor: (path: string) => string | undefined;
+  unitOptions: ReactNode;
+  testIdPrefix: "ingredient" | "substitution";
+  onChange: (patch: { amount: string; unit?: RecipeUnit | "" }) => void;
+};
+
+// Quantidade + unidade lado a lado; a caixa, o teclado, a dica e os atalhos de fração seguem a unidade.
+function AmountUnitRow({ basePath, amount, unit, disabled, locked, errorFor, unitOptions, testIdPrefix, onChange }: AmountUnitRowProps) {
+  const t = useTranslations("recipes.editor.ingredients");
+  const amountId = fieldIdForPath(`${basePath}.amount`);
+  const kind = amountKind(unit);
+  const isText = parseQuantity(amount).kind === "text";
+  const hint = kind === "decimal" ? t("amountHintDecimal") : kind === "fraction" ? t("amountHintFraction") : isText ? t("textHint") : t("amountHint");
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3">
+        <FormField id={amountId} label={t("amount")} error={errorFor(`${basePath}.amount`) ?? errorFor(`${basePath}.quantity`) ?? errorFor(`${basePath}.quantity_text`)}>
+          <Input
+            value={amount}
+            maxLength={60}
+            {...amountInputProps(unit)}
+            aria-describedby={locked ? undefined : `${amountId}-kind`}
+            onChange={(e) => onChange({ amount: sanitizeAmount(e.target.value, unit) })}
+            disabled={disabled || locked}
+            data-testid={`${testIdPrefix}-amount`}
+          />
+        </FormField>
+        <FormField id={fieldIdForPath(`${basePath}.unit`)} label={t("unit")} error={errorFor(`${basePath}.unit`)}>
+          <Select
+            value={unit}
+            onChange={(e) => {
+              const next = e.target.value as RecipeUnit | "";
+              onChange({ unit: next, amount: convertAmount(amount, next) });
+            }}
+            disabled={disabled || locked}
+            data-testid={`${testIdPrefix}-unit`}
+          >
+            {unitOptions}
+          </Select>
+        </FormField>
+      </div>
+      {locked ? null : (
+        <>
+          <p id={`${amountId}-kind`} className="type-caption text-fg-muted">
+            {hint}
+          </p>
+          {kind === "fraction" ? (
+            <div role="group" aria-label={t("fractions")} className="flex flex-wrap gap-2">
+              {FRACTION_SHORTCUTS.map((f) => (
+                <Chip
+                  key={f.value}
+                  className="min-h-11 min-w-11 justify-center text-base"
+                  selected={amount === f.value || amount.endsWith(` ${f.value}`)}
+                  onClick={() => onChange({ amount: applyFraction(amount, f.value) })}
+                  disabled={disabled}
+                  data-testid={`${testIdPrefix}-fraction-${f.value.replace("/", "-")}`}
+                >
+                  {f.glyph}
+                </Chip>
+              ))}
+            </div>
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

@@ -140,6 +140,17 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await expect(page.getByTestId("ingredient-item").nth(0).getByTestId("ingredient-fraction-1-2")).toHaveCount(0);
       await page.getByTestId("ingredient-unit").nth(0).selectOption("cup");
       await expect(flourAmount).toHaveValue("1/2");
+      // substituição: mesma regra (ml → teclado numérico, só número) e remover pelo X do cabeçalho
+      const flourItem = page.getByTestId("ingredient-item").nth(0);
+      await flourItem.getByRole("button", { name: "Adicionar substituição" }).click();
+      const sub = flourItem.getByTestId("substitution-item");
+      await sub.getByTestId("substitution-unit").selectOption("ml");
+      await expect(sub.getByTestId("substitution-amount")).toHaveAttribute("inputmode", "decimal");
+      await sub.getByTestId("substitution-amount").fill("100 ml");
+      await expect(sub.getByTestId("substitution-amount")).toHaveValue("100");
+      await expect(sub.getByText("Peso ou volume: só número", { exact: false })).toBeVisible();
+      await sub.getByRole("button", { name: /^Remover Substituição 1/ }).click();
+      await expect(flourItem.getByTestId("substitution-item")).toHaveCount(0);
       // remover o último: o foco vai ao item anterior e a remoção é anunciada
       await page.getByTestId("add-ingredient").click();
       await page.getByTestId("ingredient-name").nth(2).fill("Sal");
