@@ -22,7 +22,7 @@ test("documentos legais: públicos, um h1, aviso de demonstração, data e tabel
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("main h3, main h4, main h5, main h6")).toHaveCount(0);
     await expect(page.getByRole("note")).toContainText(/revisão jurídica antes da abertura pública/);
-    await expect(page.getByText("Última atualização: 22/10/2026")).toBeVisible();
+    await expect(page.getByText("Última atualização: 29/10/2026")).toBeVisible();
   }
   const tables = page.locator("main table");
   await expect(tables).toHaveCount(2);

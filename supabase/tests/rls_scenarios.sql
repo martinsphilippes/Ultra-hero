@@ -2771,9 +2771,9 @@ select tests.ok('S33 bucket avatars público, 2 MiB e só WebP/JPEG',
   (select public and file_size_limit = 2097152 and allowed_mime_types = array['image/webp', 'image/jpeg'] from storage.buckets where id = 'avatars'));
 select tests.ok('S33 nenhuma política do Storage cita o bucket avatars (escrita só pelo service role)',
   (select count(*) from pg_policies where schemaname = 'storage' and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) like '%avatars%') = 0);
-select tests.ok('S33 public_settings expõe avatars.uploads_enabled (ligado) sem perder as chaves da 0027',
+select tests.ok('S33 public_settings expõe avatars.uploads_enabled (ligado) sem perder as chaves da 0027 (12 com a capa da 0042)',
   (public.public_settings() -> 'avatars.uploads_enabled') = 'true'::jsonb
-  and (select count(*) from jsonb_object_keys(public.public_settings())) = 11);
+  and (select count(*) from jsonb_object_keys(public.public_settings())) = 12);
 select tests.ok('S33 avatar_uploads: RLS ligada, uma política de leitura só para authenticated',
   (select relrowsecurity from pg_class where oid = 'public.avatar_uploads'::regclass)
   and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'avatar_uploads') = 'SELECT:authenticated');
@@ -4141,6 +4141,204 @@ delete from public.programs where id = '53000000-0000-4000-8000-000000000002';
 delete from public.products where id = '53000000-0000-4000-8000-000000000001';
 drop table s53_del;
 drop table s53_metrics;
+
+-- ================================================================ S54 · Capa do herói com foto real (0042, shim local)
+-- Bucket público hero-covers sem escrita pela API; o envio é reservado pela RPC (kill switch, herói
+-- ativo, tipo, tamanho, cota de 20/dia, nome do objeto) e aplicado só no perfil ativo do próprio
+-- herói, para envio próprio já gravado. Quem grava no bucket é o service role (o "su" aqui faz o
+-- papel dele). Rafael (…0541) e Tiago (…0542) ficam ligados a usuários de teste só neste cenário
+-- e voltam sem usuário e com a capa do seed; …0543 é uma conta comum (sem o papel de herói).
+select tests.su();
+insert into auth.users (id, email) values
+  ('54000000-0000-4000-8000-000000000541', 's54hero@test.local'),
+  ('54000000-0000-4000-8000-000000000542', 's54other@test.local'),
+  ('54000000-0000-4000-8000-000000000543', 's54plain@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values
+  ('54000000-0000-4000-8000-000000000541', 'creator', 'global'),
+  ('54000000-0000-4000-8000-000000000542', 'creator', 'global');
+create temporary table t_s54_seed as
+  select id, cover_url from public.creator_profiles where id in (public.seed_uuid('creator:rafael'), public.seed_uuid('creator:tiago'));
+grant select on t_s54_seed to authenticated, anon;
+update public.creator_profiles set user_id = '54000000-0000-4000-8000-000000000541' where id = public.seed_uuid('creator:rafael');
+update public.creator_profiles set user_id = '54000000-0000-4000-8000-000000000542' where id = public.seed_uuid('creator:tiago');
+select tests.ok('S54 bucket hero-covers público, 3 MiB e só WebP/JPEG',
+  (select public and file_size_limit = 3145728 and allowed_mime_types = array['image/webp', 'image/jpeg'] from storage.buckets where id = 'hero-covers'));
+select tests.ok('S54 nenhuma política do Storage cita o bucket hero-covers (escrita só pelo service role)',
+  (select count(*) from pg_policies where schemaname = 'storage' and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) like '%hero-covers%') = 0);
+select tests.ok('S54 public_settings expõe hero_covers.uploads_enabled (ligado) sem perder as chaves da 0031',
+  (public.public_settings() -> 'hero_covers.uploads_enabled') = 'true'::jsonb
+  and (public.public_settings() -> 'avatars.uploads_enabled') = 'true'::jsonb
+  and (select count(*) from jsonb_object_keys(public.public_settings())) = 12);
+select tests.ok('S54 hero_cover_uploads: RLS ligada, uma política de leitura só para authenticated',
+  (select relrowsecurity from pg_class where oid = 'public.hero_cover_uploads'::regclass)
+  and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'hero_cover_uploads') = 'SELECT:authenticated');
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S54 anon não reserva envio', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'permission denied');
+select tests.expect_error('S54 anon não aplica capa', $q$select public.hero_cover_set('https://x.supabase.co/storage/v1/object/public/hero-covers/a/b.webp')$q$, 'permission denied');
+select tests.expect_error('S54 anon não remove capa', $q$select public.hero_cover_clear()$q$, 'permission denied');
+select tests.expect_error('S54 anon não lista órfãos', $q$select public.hero_cover_orphan_uploads(10)$q$, 'permission denied');
+select tests.expect_error('S54 anon não consulta o herói ativo de ninguém', $q$select public.hero_cover_active_creator('54000000-0000-4000-8000-000000000541')$q$, 'permission denied');
+select tests.expect_error('S54 anon não lê hero_cover_uploads', $q$select count(*) from public.hero_cover_uploads$q$, 'permission denied');
+
+-- conta comum (sem papel de herói nem perfil): nada de capa
+select tests.login('54000000-0000-4000-8000-000000000543', 's54plain@test.local');
+select tests.expect_error('S54 conta comum não reserva envio de capa: not_a_hero', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+select tests.expect_error('S54 conta comum não remove capa: not_a_hero', $q$select public.hero_cover_clear()$q$, 'not_a_hero');
+select tests.expect_error('S54 conta comum não consulta o herói ativo (função interna)', $q$select public.hero_cover_active_creator(auth.uid())$q$, 'permission denied');
+
+-- herói: nada de escrita direta, validações da reserva
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+select tests.expect_error('S54 herói não grava no bucket hero-covers pela API (sem política)',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('hero-covers', auth.uid() || '/a5400000-0000-4000-8000-000000000001.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.expect_error('S54 herói não insere em hero_cover_uploads',
+  $q$insert into public.hero_cover_uploads (user_id, path, bytes, mime) values (auth.uid(), auth.uid() || '/a5400000-0000-4000-8000-000000000002.webp', 1, 'image/webp')$q$, '42501');
+select tests.expect_error('S54 tipo fora da lista: not_image', $q$select public.hero_cover_upload_claim(1000, 'image/png')$q$, 'not_image');
+select tests.expect_error('S54 arquivo vazio: empty_file', $q$select public.hero_cover_upload_claim(0, 'image/webp')$q$, 'empty_file');
+select tests.expect_error('S54 acima de 3 MiB: file_too_large', $q$select public.hero_cover_upload_claim(3145729, 'image/jpeg')$q$, 'file_too_large');
+create temporary table t_s54_claim as select public.hero_cover_upload_claim(240000, 'image/webp') as path;
+select tests.ok('S54 reserva devolve <user_id>/<uuid>.webp e o herói vê a própria linha',
+  (select path ~ '^54000000-0000-4000-8000-000000000541/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$' from t_s54_claim)
+  and (select count(*) from public.hero_cover_uploads where path = (select path from t_s54_claim) and bytes = 240000 and mime = 'image/webp') = 1);
+create temporary table t_s54_url as
+  select 'https://proj.supabase.co/storage/v1/object/public/hero-covers/' || (select path from t_s54_claim) as url;
+select tests.expect_error('S54 capa reservada mas não gravada no bucket: invalid_path',
+  $q$select public.hero_cover_set((select url from t_s54_url))$q$, 'invalid_path');
+select tests.su();
+grant select on t_s54_claim, t_s54_url to authenticated, anon;
+insert into storage.objects (bucket_id, name, metadata) values ('hero-covers', (select path from t_s54_claim), '{"mimetype":"image/webp","size":240000}');
+
+-- outro herói não vê nem usa o envio alheio; a capa dele não muda
+select tests.login('54000000-0000-4000-8000-000000000542', 's54other@test.local');
+select tests.ok('S54 outro herói não lê o envio alheio', (select count(*) from public.hero_cover_uploads) = 0);
+select tests.expect_error('S54 outro herói não aplica a capa alheia', $q$select public.hero_cover_set((select url from t_s54_url))$q$, 'invalid_path');
+select tests.ok('S54 a capa do outro herói segue a do seed',
+  (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:tiago')) = (select cover_url from t_s54_seed where id = public.seed_uuid('creator:tiago')));
+select tests.login('54000000-0000-4000-8000-000000000543', 's54plain@test.local');
+select tests.expect_error('S54 conta comum não aplica a capa alheia', $q$select public.hero_cover_set((select url from t_s54_url))$q$, 'not_a_hero');
+
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+select tests.expect_error('S54 URL do bucket de avatar: invalid_path',
+  $q$select public.hero_cover_set(replace((select url from t_s54_url), '/hero-covers/', '/avatars/'))$q$, 'invalid_path');
+select tests.expect_error('S54 URL com consulta: invalid_path', $q$select public.hero_cover_set((select url from t_s54_url) || '?x=1')$q$, 'invalid_path');
+select tests.expect_error('S54 extensão trocada (.png): invalid_path', $q$select public.hero_cover_set(replace((select url from t_s54_url), '.webp', '.png'))$q$, 'invalid_path');
+select tests.expect_error('S54 caminho solto (desenho antigo): invalid_path', $q$select public.hero_cover_set('/placeholders/cover-training-1.svg')$q$, 'invalid_path');
+create temporary table t_s54_prev as select public.hero_cover_set((select url from t_s54_url)) as prev;
+select tests.ok('S54 aplicar devolve a capa anterior do herói (a oficial do seed)',
+  (select prev = (select cover_url from t_s54_seed where id = public.seed_uuid('creator:rafael')) from t_s54_prev));
+select tests.ok('S54 a capa vale no perfil do herói ligado e o avatar não muda',
+  (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) = (select url from t_s54_url)
+  and (select avatar_url not like '%hero-covers%' from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
+select tests.ok('S54 aplicar a mesma capa de novo não devolve anterior (nada a apagar)',
+  public.hero_cover_set((select url from t_s54_url)) is null);
+select tests.anon();
+select tests.ok('S54 o visitante vê a capa no perfil público do herói',
+  (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:rafael')) like '%/hero-covers/54000000-0000-4000-8000-000000000541/%');
+
+-- só o herói ATIVO e com o papel: perfil suspenso ou papel revogado não reservam, não aplicam nem removem
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:rafael');
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+select tests.expect_error('S54 perfil suspenso não reserva envio: not_a_hero', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+select tests.expect_error('S54 perfil suspenso não aplica capa: not_a_hero', $q$select public.hero_cover_set((select url from t_s54_url))$q$, 'not_a_hero');
+select tests.expect_error('S54 perfil suspenso não remove capa: not_a_hero', $q$select public.hero_cover_clear()$q$, 'not_a_hero');
+select tests.su();
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:rafael');
+update public.role_assignments set revoked_at = now() where user_id = '54000000-0000-4000-8000-000000000541' and role = 'creator';
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+select tests.expect_error('S54 papel de herói revogado não reserva envio: not_a_hero', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+select tests.expect_error('S54 papel de herói revogado não remove capa: not_a_hero', $q$select public.hero_cover_clear()$q$, 'not_a_hero');
+select tests.su();
+update public.role_assignments set revoked_at = null where user_id = '54000000-0000-4000-8000-000000000541' and role = 'creator';
+
+-- kill switch
+update public.app_settings set value = 'false'::jsonb where key = 'hero_covers.uploads_enabled';
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+select tests.expect_error('S54 kill switch desligado: uploads_disabled', $q$select public.hero_cover_upload_claim(1000, 'image/webp')$q$, 'uploads_disabled');
+select tests.ok('S54 kill switch da capa não desliga a foto de perfil', (public.public_settings() -> 'avatars.uploads_enabled') = 'true'::jsonb);
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'hero_covers.uploads_enabled';
+
+-- cota: 20 por 24 h (1 já feito + 18 + 1 = 20; o 21º é recusado; fora da janela não conta)
+insert into public.hero_cover_uploads (user_id, path, bytes, mime)
+select '54000000-0000-4000-8000-000000000541', '54000000-0000-4000-8000-000000000541/' || gen_random_uuid() || '.jpg', 1000, 'image/jpeg'
+from generate_series(1, 18);
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+create temporary table t_s54_twentieth as select public.hero_cover_upload_claim(1000, 'image/jpeg') as path;
+select tests.ok('S54 o 20º envio do dia passa (.jpg)', (select path like '%.jpg' from t_s54_twentieth)
+  and (select count(*) from public.hero_cover_uploads where user_id = auth.uid()) = 20);
+select tests.expect_error('S54 o 21º envio do dia: too_many_uploads', $q$select public.hero_cover_upload_claim(1000, 'image/jpeg')$q$, 'too_many_uploads');
+select tests.su();
+update public.hero_cover_uploads set created_at = now() - interval '25 hours'
+where user_id = '54000000-0000-4000-8000-000000000541' and path <> (select path from t_s54_claim);
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+create temporary table t_s54_after as select public.hero_cover_upload_claim(1000, 'image/webp') as path;
+select tests.ok('S54 envios de mais de 24 h não contam na cota', (select path is not null from t_s54_after));
+select tests.ok('S54 a cota da capa é separada da foto de perfil (avatar_uploads intacta)',
+  (select count(*) from public.avatar_uploads where user_id = auth.uid()) = 0);
+
+-- limpeza diária: só o service role; lista o não referenciado com mais de 1 h e nunca o que está em uso
+select tests.expect_error('S54 herói não lista órfãos', $q$select public.hero_cover_orphan_uploads(10)$q$, 'permission denied');
+select tests.su();
+grant select on t_s54_after to authenticated, anon;
+create temporary table t_s54_orphans as select p from public.hero_cover_orphan_uploads(1000) p;
+select tests.ok('S54 órfãos: os 19 antigos não referenciados entram; o em uso e o recém-reservado (< 1 h) não',
+  (select count(*) from t_s54_orphans where p like '54000000-0000-4000-8000-000000000541/%') = 19
+  and not exists (select 1 from t_s54_orphans where p = (select path from t_s54_claim))
+  and not exists (select 1 from t_s54_orphans where p = (select path from t_s54_after)));
+select tests.ok('S54 órfãos: o limite é respeitado', (select count(*) from public.hero_cover_orphan_uploads(5)) = 5);
+
+-- remover: só a capa do próprio herói; devolve a anterior (o servidor apaga o objeto) e o avatar fica
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+create temporary table t_s54_cleared as select public.hero_cover_clear() as prev;
+select tests.ok('S54 remover devolve a capa que estava e deixa o herói sem capa (o avatar e o outro herói ficam)',
+  (select prev from t_s54_cleared) = (select url from t_s54_url)
+  and (select cover_url is null and avatar_url is not null from public.creator_profiles where id = public.seed_uuid('creator:rafael'))
+  and (select cover_url from public.creator_profiles where id = public.seed_uuid('creator:tiago')) = (select cover_url from t_s54_seed where id = public.seed_uuid('creator:tiago')));
+select tests.ok('S54 remover sem capa devolve nulo e não erra', public.hero_cover_clear() is null);
+select tests.su();
+update public.hero_cover_uploads set created_at = now() - interval '2 hours' where path = (select path from t_s54_claim);
+select tests.ok('S54 capa removida (sem referência há mais de 1 h) entra na limpeza diária',
+  exists (select 1 from public.hero_cover_orphan_uploads(1000) p where p = (select path from t_s54_claim)));
+
+-- exclusão de conta: a linha fica sem usuário e a capa em uso no herói vira alvo da limpeza diária
+insert into storage.objects (bucket_id, name, metadata) values ('hero-covers', (select path from t_s54_after), '{"mimetype":"image/webp","size":1000}');
+create temporary table t_s54_url2 as
+  select 'https://proj.supabase.co/storage/v1/object/public/hero-covers/' || (select path from t_s54_after) as url;
+grant select on t_s54_url2 to authenticated, anon;
+select tests.login('54000000-0000-4000-8000-000000000541', 's54hero@test.local');
+select public.hero_cover_set((select url from t_s54_url2));
+select public.delete_my_account();
+select tests.su();
+create temporary table t_s54_gone as select p from public.hero_cover_orphan_uploads(1000) p;
+select tests.ok('S54 conta excluída: envios ficam sem usuário e a capa em uso no herói entra na limpeza (inclusive a recente)',
+  not exists (select 1 from public.hero_cover_uploads where user_id = '54000000-0000-4000-8000-000000000541')
+  and exists (select 1 from t_s54_gone where p = (select path from t_s54_after))
+  and (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
+
+select tests.ok('S54 funções: search_path fixo; reserva, aplicação e remoção definer sem anon; órfãos e herói ativo só service role',
+  (select bool_and(exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')) from pg_proc p
+     where p.pronamespace = 'public'::regnamespace and p.proname in ('hero_cover_upload_claim', 'hero_cover_set', 'hero_cover_clear', 'hero_cover_orphan_uploads', 'hero_cover_active_creator'))
+  and (select bool_and(p.prosecdef) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('hero_cover_upload_claim', 'hero_cover_set', 'hero_cover_clear'))
+  and (select not bool_or(p.prosecdef) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('hero_cover_orphan_uploads', 'hero_cover_active_creator'))
+  and not has_function_privilege('anon', 'public.hero_cover_upload_claim(int, text)', 'execute')
+  and not has_function_privilege('anon', 'public.hero_cover_set(text)', 'execute')
+  and not has_function_privilege('anon', 'public.hero_cover_clear()', 'execute')
+  and has_function_privilege('authenticated', 'public.hero_cover_upload_claim(int, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.hero_cover_clear()', 'execute')
+  and not has_function_privilege('authenticated', 'public.hero_cover_orphan_uploads(int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.hero_cover_active_creator(uuid)', 'execute')
+  and has_function_privilege('service_role', 'public.hero_cover_orphan_uploads(int)', 'execute'));
+select tests.ok('S54 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- limpeza: Rafael e Tiago voltam com a capa do seed e sem usuário (o usuário do Rafael já saiu)
+update public.creator_profiles c set cover_url = s.cover_url, user_id = null from t_s54_seed s where c.id = s.id;
+delete from storage.objects where bucket_id = 'hero-covers';
+delete from auth.users where id in ('54000000-0000-4000-8000-000000000542', '54000000-0000-4000-8000-000000000543');
+select tests.ok('S54 Rafael e Tiago voltam ao seed, sem usuário e com a capa oficial',
+  (select count(*) from public.creator_profiles c join t_s54_seed s on s.id = c.id where c.user_id is null and c.cover_url is not distinct from s.cover_url) = 2);
 
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();

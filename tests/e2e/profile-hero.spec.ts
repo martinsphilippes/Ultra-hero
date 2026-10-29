@@ -4,8 +4,8 @@ import { loginAs } from "./helpers/login";
 
 // Perfil do herói no topo da tela Perfil (/profile), no formato do Instagram: cabeçalho público (foto,
 // nome, selo, bio recolhida), Portais logo abaixo, "Editar perfil" / "Ver página pública" e o editor
-// recolhido na mesma tela. Um avatar só para o herói: foto e ilustrações ficam no editor; Dados só
-// aponta para lá. SÓ LEITURA: o banco dos E2E é o remoto; nada é salvo aqui.
+// recolhido na mesma tela. Um avatar só para o herói, só com foto real (sem foto, as iniciais), e a
+// capa só com foto real; nenhuma ilustração. SÓ LEITURA: o banco dos E2E é o remoto; nada é salvo aqui.
 
 async function seriousViolations(page: Page, scope: string) {
   const results = await new AxeBuilder({ page }).include(scope).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -92,20 +92,23 @@ test.describe("perfil do herói no topo do /profile", () => {
     // o editor completo, logo abaixo dos botões
     await expect(editor.getByLabel("Headline")).toBeVisible();
     await expect(editor.getByLabel("Bio")).toBeVisible();
-    await expect(editor.getByRole("group", { name: "Sua foto ou ilustração" })).toContainText("Vale no app e na sua página pública.");
-    await expect(editor.getByRole("radiogroup", { name: "Capa" })).toBeVisible();
+    await expect(editor.getByRole("group", { name: "Foto de perfil", exact: true })).toContainText("Vale no app e na sua página pública.");
+    await expect(editor.getByRole("region", { name: "Capa", exact: true })).toBeVisible();
     await expect(editor.getByRole("group", { name: "Redes (texto simples)" })).toBeVisible();
     await expect(editor.getByTestId("chef-profile")).toBeVisible();
     await expect(editor.getByRole("heading", { level: 3, name: "Especialidades e credenciais" })).toBeVisible();
     await expect(editor.getByRole("heading", { level: 3, name: "Nota de direitos e licenças" })).toBeVisible();
     await expect(editor.getByRole("button", { name: "Salvar", exact: true })).toBeVisible();
 
-    // um avatar só na página: um seletor de foto e um grupo de ilustrações, os dois no editor
+    // um avatar só na página: um seletor de foto (no editor) e nenhuma ilustração; a capa tem o próprio envio
     await expect(page.getByTestId("avatar-photo")).toHaveCount(1);
     await expect(editor.getByTestId("avatar-photo")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Tirar foto" })).toHaveCount(1);
-    await expect(page.getByRole("radiogroup", { name: "Ilustrações" })).toHaveCount(1);
-    await expect(editor.getByRole("radiogroup", { name: "Ilustrações" })).toBeVisible();
+    await expect(editor.getByTestId("avatar-photo").getByRole("button", { name: "Tirar foto" })).toHaveCount(1);
+    await expect(editor.getByTestId("hero-cover").getByRole("button", { name: "Tirar foto" })).toHaveCount(1);
+    await expect(page.getByRole("radiogroup", { name: "Ilustrações" })).toHaveCount(0);
+    await expect(editor.getByText("Nenhuma opção escolhida")).toHaveCount(0);
+    const editorImages = await editor.locator("img").evaluateAll((imgs) => imgs.map((i) => decodeURIComponent(i.getAttribute("src") ?? "")));
+    expect(editorImages.filter((src) => src.includes("/placeholders/"))).toEqual([]);
 
     // ids únicos, sem rolagem horizontal, axe sem violações sérias com o editor aberto
     const duplicates = await page.evaluate(() => {
@@ -139,27 +142,32 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(page.getByRole("button", { name: /Editar perfil/ })).toHaveCount(1);
   });
 
-  // Um avatar só: sem avatar salvo, o herói via três ilustrações diferentes (cabeçalho pelo nome do
-  // herói, app pelo nome exibido, página pública fixa). Compara a imagem de cada lugar, sem o otimizador.
-  test("herói: a mesma imagem no cabeçalho, no menu, na prévia do editor e na página pública", async ({ page }) => {
+  // Um avatar só e só foto real: o mesmo rosto (a foto ou, sem foto, as iniciais) no cabeçalho, no
+  // menu, na prévia do editor e na página pública. Compara a imagem de cada lugar, sem o otimizador.
+  test("herói: o mesmo avatar (foto real ou iniciais) no cabeçalho, no menu, na prévia do editor e na página pública", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
-    // endereço da imagem sem o otimizador (/_next/image?url=) e sem a origem do próprio app
-    const source = async (img: Locator) => {
+    // "img:<endereço sem o otimizador e sem a origem do app>" ou "initials:<letras>"
+    const face = async (scope: Locator) => {
+      const img = scope.locator("img").first();
+      if ((await img.count()) === 0) return `initials:${(await scope.locator("[data-avatar-initials]").first().textContent())?.trim()}`;
       const here = new URL(page.url());
       const raw = new URL((await img.getAttribute("src")) ?? "", here);
       const url = raw.pathname === "/_next/image" ? new URL(raw.searchParams.get("url") ?? "", here) : raw;
-      return url.origin === here.origin ? url.pathname : url.href;
+      return `img:${url.origin === here.origin ? url.pathname : url.href}`;
     };
-    const header = await source(page.getByTestId("profile-hero").locator("img").first());
-    expect(header).not.toBe("");
-    expect(await source(page.locator('a[href="/profile"][title] img').first())).toBe(header);
+    const header = await face(page.getByTestId("profile-hero"));
+    expect(header).not.toMatch(/placeholders|^initials:$/);
+    // o menu usa o nome exibido da conta: sem foto, as iniciais podem ser outras (mas nunca imagem)
+    const menu = await face(page.locator('a[href="/profile"][title]').first());
+    if (header.startsWith("img:")) expect(menu).toBe(header);
+    else expect(menu).toMatch(/^initials:\S+/);
     await page.getByRole("button", { name: "Editar perfil", exact: true }).click();
-    expect(await source(page.locator("#editar-perfil").getByTestId("avatar-photo").locator("img").first())).toBe(header);
+    expect(await face(page.locator("#editar-perfil").getByTestId("avatar-photo"))).toBe(header);
     const href = await page.getByRole("link", { name: "Ver página pública" }).getAttribute("href");
     await page.goto(href!);
-    expect(await source(page.locator("main header img").first())).toBe(header);
+    expect(await face(page.getByTestId("hero-page-avatar"))).toBe(header);
   });
 
   test("abre sozinho em /profile#perfil-publico", async ({ page }) => {
@@ -210,7 +218,8 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(page.getByTestId("avatar-in-hero-editor")).toHaveCount(0);
     await expect(data.getByTestId("avatar-photo")).toBeVisible();
     await expect(data.getByTestId("avatar-photo")).not.toContainText("página pública de herói");
-    await expect(data.getByRole("radiogroup", { name: "Ilustrações" })).toBeVisible();
+    await expect(data.getByRole("radiogroup", { name: "Ilustrações" })).toHaveCount(0);
+    await expect(data.locator('input[name="avatar"]')).toHaveCount(0);
     await page.waitForLoadState("networkidle");
     const serious = await seriousViolations(page, "#dados");
     expect(serious, JSON.stringify(serious.map((v) => v.id))).toEqual([]);

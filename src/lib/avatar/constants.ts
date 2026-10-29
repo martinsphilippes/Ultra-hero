@@ -16,19 +16,6 @@ export type AvatarMime = (typeof AVATAR_MIMES)[number];
 /** Kill switch em app_settings (exposto por public_settings). */
 export const AVATAR_SETTING = "avatars.uploads_enabled";
 
-/** Ilustrações locais oferecidas nos formulários de perfil. */
-export const ILLUSTRATIONS = Array.from({ length: 8 }, (_, i) => `/placeholders/avatar-${i + 1}.svg`);
-export const ILLUSTRATION_RE = /^\/placeholders\/avatar-[1-8]\.svg$/;
-
-/**
- * Herói sem avatar: a ilustração da página pública e do card. O herói ativo tem um avatar só, então
- * o app (cabeçalho, Visão geral, menu, prévia do editor) usa a mesma, e não a sorteada pelo nome.
- */
-export const HERO_DEFAULT_AVATAR = "/placeholders/avatar-1.svg";
-export function heroAvatarSrc(url: string | null | undefined): string {
-  return url || HERO_DEFAULT_AVATAR;
-}
-
 /** Códigos de erro que a interface traduz em me.profile.photo.errors. */
 export const AVATAR_ERRORS = [
   "not_image",

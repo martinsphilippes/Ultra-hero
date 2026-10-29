@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Badge, Card, CardImage, PillarBadge } from "@/components/ui";
+import { HeroCoverImage } from "@/components/creator/HeroCoverImage";
+import { AvatarInitials, Badge, Card, PillarBadge } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
-import { HERO_DEFAULT_AVATAR, heroAvatarSrc } from "@/lib/avatar/constants";
 import type { CreatorCardData } from "@/lib/catalog/queries";
 import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
 import { cn } from "@/lib/utils";
@@ -10,17 +10,18 @@ import { cn } from "@/lib/utils";
 type Props = { creator: CreatorCardData; priority?: boolean; className?: string };
 
 // Card de personalidade. O selo de fictício só sai com uso de nome e imagem autorizado e válido (RB-05).
+// Só fotos reais: sem capa, uma superfície lisa do tema; sem foto, as iniciais do nome.
 export async function CreatorCard({ creator, priority, className }: Props) {
   const t = await getTranslations("catalog");
   const fictional = showsFictionalBadge(effectiveRightsStatus(creator.rights_status, creator.rights_valid_until));
   return (
     <Card interactive asChild className={cn("h-full", className)}>
       <Link href={`/personalities/${creator.slug}`}>
-        <CardImage src={creator.cover_url ?? "/placeholders/cover-routine-2.svg"} alt="" ratio="wide" priority={priority} />
+        <HeroCoverImage src={creator.cover_url} ratio="wide" priority={priority} card />
         {/* Foto grande, como num perfil de rede social: ocupa boa parte da largura do card no celular. */}
         <div className="relative -mt-16 flex flex-1 flex-col gap-2 px-4 pb-4 sm:-mt-12">
-          <span className="relative inline-flex size-32 overflow-hidden rounded-full border-4 border-surface bg-surface-elevated shadow-sm sm:size-24">
-            <AvatarImage src={heroAvatarSrc(creator.avatar_url)} alt="" fallbackSrc={HERO_DEFAULT_AVATAR} fill sizes="128px" className="object-cover" />
+          <span className="relative inline-flex size-32 items-center justify-center overflow-hidden rounded-full border-4 border-surface bg-surface-elevated text-4xl font-bold uppercase text-fg-muted shadow-sm sm:size-24 sm:text-3xl">
+            <AvatarImage src={creator.avatar_url} alt="" fallback={<AvatarInitials name={creator.name} />} fill sizes="128px" className="object-cover" />
           </span>
           <div>
             <h3 className="type-h3 text-fg">{creator.name}</h3>
