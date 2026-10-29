@@ -20,13 +20,13 @@ export async function RecipeGate({ nextPath }: Props) {
 
       <p className="type-body-sm text-fg-muted">{t("description")}</p>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-obsidian p-5 text-white shadow-sm">
+      <div className="uh-inverse flex flex-col gap-4 rounded-2xl bg-obsidian p-5 text-white shadow-sm">
         <div className="flex items-start gap-3">
-          <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-white">
+          <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center uh-on-accent rounded-xl bg-accent text-white">
             <BookOpen className="size-5" />
           </span>
           <div className="flex flex-col gap-1">
-            <span className="w-fit rounded-full bg-accent px-3 py-1 font-mono text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-obsidian">
+            <span className="w-fit rounded-full bg-accent px-3 py-1 font-mono text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-accent-fg">
               {t("badge", { total: RECIPE_STEPS.length })}
             </span>
             <span className="font-mono text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-white/60">{t("eyebrow")}</span>
@@ -50,7 +50,7 @@ export async function RecipeGate({ nextPath }: Props) {
       <div className="flex flex-col gap-2">
         <Link
           href={recipeStepHref(nextPath)}
-          className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-obsidian px-4 text-sm font-semibold text-white hover:bg-obsidian/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className="uh-inverse flex min-h-12 items-center justify-center gap-2 rounded-xl bg-obsidian px-4 text-sm font-semibold text-white hover:bg-obsidian/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           data-testid="recipe-gate-start"
         >
           <Clock className="size-4 text-accent" aria-hidden="true" />

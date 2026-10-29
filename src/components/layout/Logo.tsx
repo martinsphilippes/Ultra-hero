@@ -39,7 +39,7 @@ export function Logo({ className, size = "md", withWordmark = true }: LogoProps)
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <LogoMark className={markSizes[size]} />
-      {withWordmark && <span className={cn("font-extrabold uppercase leading-none tracking-[0.16em] text-fg", textSizes[size])}>Ultra Hero</span>}
+      {withWordmark && <span className={cn("font-[family-name:var(--font-manrope)] font-[800] [font-stretch:normal] uppercase leading-none tracking-[0.16em] text-fg", textSizes[size])}>Ultra Hero</span>}
     </span>
   );
 }

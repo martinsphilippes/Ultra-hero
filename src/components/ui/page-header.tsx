@@ -22,7 +22,7 @@ type PageHeaderProps = {
 // Cabeçalho de página com marca em degraus, título, descrição e ações.
 export function PageHeader({ title, description, eyebrow, backHref, backLabel, actions, children, as: Heading = "h1", className }: PageHeaderProps) {
   return (
-    <header className={cn("flex flex-col gap-4 pb-2", className)}>
+    <header className={cn("uh-page-header flex flex-col gap-4 pb-2", className)}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1.5">
           {backHref && (
@@ -40,7 +40,7 @@ export function PageHeader({ title, description, eyebrow, backHref, backLabel, a
               <span className="type-overline text-accent-text">{eyebrow}</span>
             </div>
           )}
-          <Heading className={cn(Heading === "h1" ? "type-h1" : "type-h2", "text-balance text-fg")}>{title}</Heading>
+          <Heading className={cn(Heading === "h1" ? "type-h1 uh-page-title" : "type-h2", "text-balance text-fg")}>{title}</Heading>
           {description && <p className="type-body max-w-prose text-fg-muted">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

@@ -4,12 +4,15 @@ import { getLocale, getTranslations } from "next-intl/server";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
+import { AppearanceSync } from "@/components/layout/AppearanceSync";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { SkipLink } from "@/components/ui/skip-link";
 import { ToastProvider } from "@/components/ui/toast";
 import { getOrigin } from "@/lib/auth/origin";
 import { resolveTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
+import { resolveTemplate, TEMPLATE_COOKIE, TEMPLATE_INIT_SCRIPT } from "@/lib/theme/template";
 import "./globals.css";
+import "./templates.css";
 
 // Tipografia da marca, servida pelo próprio app (sem chamada ao Google Fonts no cliente):
 // Manrope variável para texto e títulos; DM Mono para etiquetas e legendas.
@@ -22,6 +25,24 @@ const dmMono = localFont({
   variable: "--font-dm-mono",
   display: "swap",
 });
+
+// Fontes dos templates de Aparência (todas OFL, ver fonts/OFL.txt). Sem preload: o navegador só baixa
+// uma fonte quando algum texto a usa, ou seja, quando o template dela está ativo (ou na prévia do painel).
+// display "swap" nunca bloqueia a renderização; a reserva ajustada (adjustFontFallback) evita saltos.
+const archivo = localFont({
+  src: "./fonts/archivo-wdth-latin.woff2",
+  weight: "100 900",
+  variable: "--font-archivo",
+  display: "swap",
+  preload: false,
+  declarations: [{ prop: "font-stretch", value: "62% 125%" }],
+});
+const fraunces = localFont({ src: "./fonts/fraunces-latin.woff2", weight: "100 900", variable: "--font-fraunces", display: "swap", preload: false });
+const figtree = localFont({ src: "./fonts/figtree-latin.woff2", weight: "300 900", variable: "--font-figtree", display: "swap", preload: false });
+const inter = localFont({ src: "./fonts/inter-latin.woff2", weight: "100 900", variable: "--font-inter", display: "swap", preload: false });
+const unbounded = localFont({ src: "./fonts/unbounded-latin.woff2", weight: "200 900", variable: "--font-unbounded", display: "swap", preload: false });
+const spaceGrotesk = localFont({ src: "./fonts/space-grotesk-latin.woff2", weight: "300 700", variable: "--font-space-grotesk", display: "swap", preload: false });
+const fontVariables = [manrope, dmMono, archivo, fraunces, figtree, inter, unbounded, spaceGrotesk].map((f) => f.variable).join(" ");
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, origin] = await Promise.all([getTranslations("common.app"), getOrigin()]);
@@ -53,11 +74,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const [locale, cookieStore] = await Promise.all([getLocale(), cookies()]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
+  // Template visual (Aparência): o servidor já manda o do cookie; o script corrige pelo localStorage.
+  const template = resolveTemplate(cookieStore.get(TEMPLATE_COOKIE)?.value);
 
   return (
-    <html lang={locale} data-theme={theme} suppressHydrationWarning className={`${manrope.variable} ${dmMono.variable}`}>
+    <html lang={locale} data-theme={theme} data-template={template} suppressHydrationWarning className={fontVariables}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + TEMPLATE_INIT_SCRIPT }} />
       </head>
       <body className="min-h-dvh bg-bg font-sans text-fg antialiased">
         <NextIntlClientProvider>
@@ -67,6 +90,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           </ToastProvider>
         </NextIntlClientProvider>
         <ServiceWorkerRegister />
+        <AppearanceSync />
       </body>
     </html>
   );

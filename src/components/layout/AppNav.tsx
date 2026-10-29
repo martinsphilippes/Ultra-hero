@@ -17,7 +17,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={ta("mainNavigation")}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/90 backdrop-blur-md safe-bottom md:hidden"
+      className="uh-bottomnav uh-chrome fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/90 backdrop-blur-md safe-bottom md:hidden"
     >
       <ul className="mx-auto grid h-bottomnav max-w-content grid-cols-4">
         {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
@@ -33,7 +33,7 @@ export function BottomNav() {
                   active ? "text-accent-text" : "text-fg-muted hover:text-fg",
                 )}
               >
-                {active && <span aria-hidden="true" className="absolute top-0 h-0.5 w-8 rounded-b-full bg-accent" />}
+                {active && <span aria-hidden="true" className="uh-nav-indicator absolute top-0 h-0.5 w-8 rounded-b-full bg-accent" />}
                 <Icon className="size-[22px]" aria-hidden="true" strokeWidth={active ? 2.4 : 2} />
                 <span className="truncate">{t(`tabs.${key}`)}</span>
               </Link>

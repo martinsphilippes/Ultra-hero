@@ -2,7 +2,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export const fieldBase =
-  "w-full rounded-lg border border-border-strong bg-surface text-fg placeholder:text-fg-subtle transition-[border-color,box-shadow] duration-150 hover:border-fg-subtle focus:border-accent focus:outline-none focus:ring-2 focus:ring-focus/40 disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-danger aria-invalid:focus:ring-danger/30";
+  "uh-field w-full rounded-(--uh-field-radius) border border-border-strong bg-surface text-fg placeholder:text-fg-subtle transition-[border-color,box-shadow] duration-150 hover:border-fg-subtle focus:border-accent focus:outline-none focus:ring-2 focus:ring-focus/40 disabled:cursor-not-allowed disabled:opacity-55 aria-invalid:border-danger aria-invalid:focus:ring-danger/30";
 
 type InputProps = ComponentProps<"input"> & {
   invalid?: boolean;

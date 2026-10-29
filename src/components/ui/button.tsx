@@ -16,13 +16,14 @@ export const buttonVariants: Record<ButtonVariant, string> = {
 };
 
 export const buttonSizes: Record<ButtonSize, string> = {
-  sm: "h-9 min-h-9 px-3 text-sm gap-1.5 rounded-md",
-  md: "h-11 min-h-11 px-4 text-sm gap-2 rounded-lg",
-  lg: "h-12 min-h-12 px-6 text-base gap-2 rounded-xl",
+  sm: "h-9 min-h-9 px-3 text-sm gap-1.5 rounded-(--uh-btn-radius-sm)",
+  md: "h-11 min-h-11 px-4 text-sm gap-2 rounded-(--uh-btn-radius-md)",
+  lg: "h-12 min-h-12 px-6 text-base gap-2 rounded-(--uh-btn-radius-lg)",
 };
 
+// uh-btn: gancho dos templates de Aparência (caixa, espaçamento de letras e raio vêm de tokens)
 export const buttonBase =
-  "inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-[background-color,border-color,transform,box-shadow,color] duration-150 disabled:opacity-55 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+  "uh-btn inline-flex items-center justify-center font-semibold [text-transform:var(--uh-btn-case)] tracking-(--uh-btn-tracking) whitespace-nowrap select-none transition-[background-color,border-color,transform,box-shadow,color] duration-150 disabled:opacity-55 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 type ButtonProps = ComponentProps<"button"> & {
   variant?: ButtonVariant;
@@ -54,6 +55,7 @@ export function Button({
   const classes = cn(
     buttonBase,
     buttonVariants[variant],
+    `uh-btn--${variant}`,
     variant === "link" ? "h-auto" : buttonSizes[size],
     block && "w-full",
     loading && "relative",

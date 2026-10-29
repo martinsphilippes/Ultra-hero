@@ -11,9 +11,9 @@ type Props = { nextPath: string; loggedIn: boolean };
 export async function RecipeInviteBand({ nextPath, loggedIn }: Props) {
   const t = await getTranslations("recipes.catalog.invite");
   return (
-    <aside aria-labelledby="recipe-invite-title" className="flex flex-col gap-3 rounded-2xl bg-obsidian p-4 text-white sm:flex-row sm:items-center sm:justify-between" data-testid="recipe-invite">
+    <aside aria-labelledby="recipe-invite-title" className="uh-inverse flex flex-col gap-3 rounded-2xl bg-obsidian p-4 text-white sm:flex-row sm:items-center sm:justify-between" data-testid="recipe-invite">
       <div className="flex items-start gap-3">
-        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-obsidian">
+        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-fg">
           <BookOpen className="size-5" />
         </span>
         <div className="flex flex-col gap-1">
@@ -25,7 +25,7 @@ export async function RecipeInviteBand({ nextPath, loggedIn }: Props) {
       </div>
       <Link
         href={recipeStepHref(nextPath)}
-        className="flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-accent px-4 text-sm font-semibold text-obsidian hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-fg hover:bg-accent/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         data-testid="recipe-invite-start"
       >
         {loggedIn ? t("action") : t("visitorAction")}

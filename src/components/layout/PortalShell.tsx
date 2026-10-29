@@ -44,7 +44,7 @@ export async function PortalShell({ portal, children }: PortalShellProps) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top">
+        <header className="uh-header uh-chrome sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top">
           <div className="flex h-topbar items-center justify-between gap-3 px-gutter">
             <div className="flex min-w-0 items-center gap-2">
               <PortalMobileMenu portal={portal} />
