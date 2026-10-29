@@ -706,6 +706,28 @@
       "archivedByAdmin": "Archived by the administration: only it can restore.",
       "returned": "Returned by the administration. Adjust and submit again.",
       "feedback": "Administration comment"
+    },
+    "fix": {
+      "title": "Still needed in this step to publish:",
+      "doneTitle": "All set in this step. Go back to Review to publish.",
+      "show": "Show me where",
+      "back": "Back to Review",
+      "resolved": "(done)",
+      "items": {
+        "title": "Title: write the recipe name.",
+        "summary": "Description: write one or two sentences about the recipe.",
+        "cover": "Cover photo: upload a photo to the Gallery, mark it as cover and write its alt text (what the photo shows).",
+        "gallery_alt": "Alt text: every Gallery photo needs to say what it shows.",
+        "servings": "Servings: say how many people the recipe serves.",
+        "total_minutes": "Times: fill in at least one (prep, cooking or resting).",
+        "times": "Total time: it's less than the sum of the times. Increase it or tap “Back to the calculation”.",
+        "ingredients": "Ingredients: add at least one, with a name.",
+        "steps": "Method: add at least one step saying what to do.",
+        "category": "Categories: pick at least one.",
+        "allergens": "Allergens: choose “No allergens” or “Contains allergens” and pick which.",
+        "license": "License: pick a license that matches the video you added.",
+        "stream": "Video: the previous upload is no longer valid. Upload it again or remove it."
+      }
     }
   },
   "preview": {

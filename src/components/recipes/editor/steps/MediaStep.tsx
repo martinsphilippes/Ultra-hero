@@ -8,7 +8,7 @@ import { checkRecipeVideo, type RegisteredMedia } from "@/app/creator/recipes/ac
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
 import { Button, Dialog, FormField, IconButton, Input } from "@/components/ui";
 import { RECIPE_LIMITS } from "@/lib/recipes/codes";
-import { fieldIdForPath } from "@/lib/recipes/editor-steps";
+import { fieldIdForPath, MEDIA_GALLERY_SECTION_ID, MEDIA_VIDEO_SECTION_ID } from "@/lib/recipes/editor-steps";
 import { recipeMediaUrl } from "@/lib/recipes/media";
 import { coerceRecipeLicense, type RecipeVideoProvider } from "@/lib/recipes/payload";
 import { parseRecipeVideoLink, recipeVideoLinkText, streamPanel, type StreamUploadPhase } from "@/lib/recipes/video";
@@ -110,7 +110,7 @@ export function MediaStep({ draft, setDraft, errorFor, disabled, announce, conte
 
   return (
     <div className="flex flex-col gap-5">
-      <StepSection title={t("galleryTitle")}>
+      <StepSection id={MEDIA_GALLERY_SECTION_ID} title={t("galleryTitle")}>
         <p className="-mt-2 type-body-sm text-fg-muted">{t("galleryHint")}</p>
         {galleryIdx.length === 0 && <p className="type-body-sm text-fg-muted">{t("noPhotos")}</p>}
         <ol className="flex flex-col gap-3" data-testid="gallery-list">
@@ -170,7 +170,7 @@ export function MediaStep({ draft, setDraft, errorFor, disabled, announce, conte
         )}
       </StepSection>
 
-      <StepSection title={t("videoTitle")}>
+      <StepSection id={MEDIA_VIDEO_SECTION_ID} title={t("videoTitle")}>
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-semibold text-fg">{t("videoKind")}</legend>
           <div className="flex flex-wrap gap-2" role="radiogroup">

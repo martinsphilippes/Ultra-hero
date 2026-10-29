@@ -182,12 +182,26 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       }
       await clickNext(page, "complementos");
 
-      // ---- etapa 5: "Contém" sem nada marcado fica pendente; "Nenhum alérgeno" é declaração explícita
+      // ---- etapa 5 sem declarar alérgenos: a Revisão aponta e "Ir para Complementos" mostra o que falta
+      await clickNext(page, "revisao");
+      await expect(page.getByTestId("recipe-checklist").locator('li[data-ok="false"]')).toHaveCount(1);
+      await page.getByTestId("recipe-fix-allergens").click();
+      await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-step", "complementos", { timeout: 20_000 });
+      const fixPanel = page.getByTestId("recipe-fix-panel");
+      await expect(fixPanel).toContainText("Falta completar nesta etapa para publicar:");
+      await expect(page.getByTestId("recipe-fix-item-allergens")).toHaveAttribute("data-ok", "false");
+      await expect(fixPanel).toContainText("Alérgenos: marque “Nenhum alérgeno” ou “Contém alérgenos” e escolha quais.");
+      await expect(page.locator("#recipe-details-allergens_declared")).toBeFocused();
+      // "Contém" sem nada marcado fica pendente; "Nenhum alérgeno" é declaração explícita
       await page.getByTestId("allergens-some").check();
       await expect(page.getByTestId("allergens-pick-one")).toBeVisible();
+      await expect(page.getByTestId("recipe-fix-item-allergens")).toHaveAttribute("data-ok", "false");
       await page.getByTestId("allergens-none").check();
       await expect(page.getByTestId("allergens-pick-one")).toHaveCount(0);
-      await clickNext(page, "revisao");
+      await expect(page.getByTestId("recipe-fix-item-allergens")).toHaveAttribute("data-ok", "true");
+      await expect(fixPanel).toContainText("Tudo certo nesta etapa.");
+      await page.getByTestId("recipe-fix-back").click();
+      await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-step", "revisao", { timeout: 20_000 });
 
       // ---- etapa 6: checklist verde e o botão do modo atual (sem publicar: P4, fase 6)
       await expect(page.getByTestId("recipe-checklist").locator('li[data-ok="false"]')).toHaveCount(0);

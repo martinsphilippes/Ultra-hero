@@ -706,6 +706,28 @@
       "archivedByAdmin": "Archivada por la administración: solo ella puede restaurarla.",
       "returned": "Devuelta por la administración. Ajusta y envía de nuevo.",
       "feedback": "Comentario de la administración"
+    },
+    "fix": {
+      "title": "Falta completar en este paso para publicar:",
+      "doneTitle": "Todo listo en este paso. Vuelve a Revisión para publicar.",
+      "show": "Mostrar dónde",
+      "back": "Volver a Revisión",
+      "resolved": "(resuelto)",
+      "items": {
+        "title": "Título: escribe el nombre de la receta.",
+        "summary": "Descripción: escribe una o dos frases sobre la receta.",
+        "cover": "Foto de portada: sube una foto a la Galería, márcala como portada y escribe su texto alternativo (lo que muestra la foto).",
+        "gallery_alt": "Texto alternativo: cada foto de la Galería debe decir lo que muestra.",
+        "servings": "Porciones: indica para cuántas personas sirve la receta.",
+        "total_minutes": "Tiempos: completa al menos uno (preparación, cocción o reposo).",
+        "times": "Tiempo total: es menor que la suma de los tiempos. Auméntalo o toca “Volver al cálculo”.",
+        "ingredients": "Ingredientes: agrega al menos uno, con nombre.",
+        "steps": "Preparación: agrega al menos un paso con lo que hay que hacer.",
+        "category": "Categorías: elige al menos una.",
+        "allergens": "Alérgenos: marca “Ningún alérgeno” o “Contiene alérgenos” y elige cuáles.",
+        "license": "Licencia: elige una licencia compatible con el video que agregaste.",
+        "stream": "Video: el envío anterior ya no es válido. Súbelo de nuevo o quítalo."
+      }
     }
   },
   "preview": {

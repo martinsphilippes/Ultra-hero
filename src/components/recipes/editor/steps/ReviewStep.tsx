@@ -8,25 +8,8 @@ import { Badge, Button, FormField, Input } from "@/components/ui";
 import type { ChecklistEntry } from "@/lib/recipes/checklist";
 import type { RecipeChecklistCode } from "@/lib/recipes/codes";
 import { effectiveTotal, isBlankIngredient, isBlankStep, type RecipeDraft } from "@/lib/recipes/draft";
-import type { RecipeEditorStep } from "@/lib/recipes/editor-steps";
+import { CHECKLIST_STEP } from "@/lib/recipes/editor-steps";
 import { StepSection } from "../shared";
-
-/** Em qual etapa se corrige cada item do checklist. */
-const CHECKLIST_STEP: Record<RecipeChecklistCode, RecipeEditorStep> = {
-  title: "basicos",
-  summary: "basicos",
-  cover: "midia",
-  gallery_alt: "midia",
-  servings: "basicos",
-  total_minutes: "basicos",
-  times: "basicos",
-  ingredients: "ingredientes",
-  steps: "preparo",
-  category: "basicos",
-  allergens: "complementos",
-  license: "complementos",
-  stream: "midia",
-};
 
 type Props = {
   draft: RecipeDraft;
@@ -35,7 +18,8 @@ type Props = {
   busy: boolean;
   /** Itens que o banco recusou na última tentativa (recipe_incomplete), enquanto o rascunho não muda. */
   serverMissing: RecipeChecklistCode[];
-  goTo: (step: RecipeEditorStep) => void;
+  /** Leva à etapa do item e mostra lá o que falta. */
+  fix: (code: RecipeChecklistCode) => void;
   onPreview: () => void;
   onPublish: (publishAt: string | null) => void;
   onSubmit: (requestedPublishAt: string | null) => void;
@@ -43,7 +27,7 @@ type Props = {
 
 // Etapa 6: prévia compacta, checklist (mesmos códigos de recipe_assert_publishable) e o botão
 // conforme a regra do tipo: "Publicar agora"/"Agendar" ou "Enviar para revisão" com data sugerida.
-export function ReviewStep({ draft, checklist, reviewRequired, busy, serverMissing, goTo, onPreview, onPublish, onSubmit }: Props) {
+export function ReviewStep({ draft, checklist, reviewRequired, busy, serverMissing, fix, onPreview, onPublish, onSubmit }: Props) {
   const t = useTranslations("recipes.editor.review");
   const ts = useTranslations("recipes.editor.steps");
   const tc = useTranslations("recipes.structured.checklist");
@@ -105,7 +89,8 @@ export function ReviewStep({ draft, checklist, reviewRequired, busy, serverMissi
                 <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
                   <span className={ok ? "text-fg" : "text-fg-muted"}>{tc(item.code)}</span>
                   {!ok && (
-                    <Button type="button" variant="link" className="min-h-11 px-1" onClick={() => goTo(CHECKLIST_STEP[item.code])}>
+                    <Button type="button" variant="link" className="min-h-11 px-1" onClick={() => fix(item.code)}
+                      data-testid={`recipe-fix-${item.code}`}>
                       {t("goTo", { step: ts(CHECKLIST_STEP[item.code]) })}
                     </Button>
                   )}

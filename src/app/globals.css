@@ -464,3 +464,13 @@
   40% { transform: scale(1); filter: saturate(1); }
   100% { transform: scale(1); filter: saturate(1); }
 }
+
+/* Editor de receita: campo destacado ao chegar por "Ir para…" da Revisão */
+@keyframes uh-fix-flash {
+  0%, 60% { box-shadow: 0 0 0 3px var(--color-warning, #b45309); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.uh-fix-flash { animation: uh-fix-flash 2.4s ease-out; border-radius: inherit; }
+@media (prefers-reduced-motion: reduce) {
+  .uh-fix-flash { animation: none; box-shadow: 0 0 0 3px var(--color-warning, #b45309); }
+}

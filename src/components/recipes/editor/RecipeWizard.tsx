@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, History, RotateCcw, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, CircleCheck, CircleX, History, RotateCcw, Save } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ import { coverUrlAfterDelete, coverUrlAfterSave, recipeChecklist, serverMissingF
 import { parseRecipeIncomplete, type RecipeChecklistCode } from "@/lib/recipes/codes";
 import { buildPayload, draftIssue, sameDraft, type DraftIssue, type RecipeDraft } from "@/lib/recipes/draft";
 import { draftStorageKey, parseStoredDraft, serializeDraft, shouldOfferRecovery, type StoredDraft } from "@/lib/recipes/draft-recovery";
-import { RECIPE_EDITOR_STEPS, fieldIdForPath, stepForPath, stepIndex, type RecipeEditorStep } from "@/lib/recipes/editor-steps";
+import { CHECKLIST_STEP, RECIPE_EDITOR_STEPS, checklistTarget, fieldIdForPath, stepForPath, stepIndex, type RecipeEditorStep } from "@/lib/recipes/editor-steps";
 import { canSuggestProduct, summarizeIngredientLinks, type IngredientLink } from "@/lib/recipes/ingredient-products";
 import { cn } from "@/lib/utils";
 import { IngredientProductField } from "./IngredientProductField";
@@ -108,6 +108,8 @@ export function RecipeWizard(props: Props) {
   const updatedRef = useRef(updatedAt);
   const inflight = useRef<Promise<SaveOutcome> | null>(null);
   const pendingFocus = useRef<string | null>(null);
+  // vindo da Revisão por um item do checklist: a etapa mostra o que falta e leva ao campo
+  const [fix, setFix] = useState<{ step: RecipeEditorStep; codes: RecipeChecklistCode[] } | null>(null);
   draftRef.current = draft;
   updatedRef.current = updatedAt;
 
@@ -143,7 +145,7 @@ export function RecipeWizard(props: Props) {
       const el = document.getElementById(pendingFocus.current);
       pendingFocus.current = null;
       if (el) {
-        el.focus();
+        revealField(el);
         return;
       }
     }
@@ -173,10 +175,14 @@ export function RecipeWizard(props: Props) {
   }
 
   function changeStep(next: RecipeEditorStep, focusId?: string) {
+    setFix((f) => (f && f.step === next ? f : null));
     pendingFocus.current = focusId ?? null;
     setStep(next);
     if (contentId) window.history.replaceState(null, "", `/creator/recipes/${contentId}/edit?step=${next}`);
-    if (focusId && next === step) document.getElementById(focusId)?.focus();
+    if (focusId && next === step) {
+      const el = document.getElementById(focusId);
+      if (el) revealField(el);
+    }
   }
 
   function showIssues(list: DraftIssue[]) {
@@ -275,14 +281,27 @@ export function RecipeWizard(props: Props) {
     return () => window.clearInterval(timer);
   }, [mode, recovery, save, saved]);
 
-  async function goTo(next: RecipeEditorStep) {
+  async function goTo(next: RecipeEditorStep, focusId?: string) {
     if (next === step) return;
     if (mode === "edit" && dirty) {
       const outcome = await save();
       if (outcome === "invalid" || outcome === "stale") return;
     }
     setIssues([]);
-    changeStep(next);
+    changeStep(next, focusId);
+  }
+
+  function fixTarget(code: RecipeChecklistCode): string {
+    const i = draftRef.current.media.findIndex((m) => m.role === "gallery" && !m.alt.trim());
+    return checklistTarget(code, { firstGalleryWithoutAlt: i >= 0 ? i : null });
+  }
+
+  /** Revisão → etapa do item: guarda o que falta naquela etapa e leva direto ao campo. */
+  async function startFix(code: RecipeChecklistCode) {
+    const target = CHECKLIST_STEP[code];
+    const codes = checklist.filter((c) => (!c.ok || serverMissing.includes(c.code)) && CHECKLIST_STEP[c.code] === target).map((c) => c.code);
+    setFix({ step: target, codes });
+    await goTo(target, fixTarget(code));
   }
 
   async function next() {
@@ -467,6 +486,18 @@ export function RecipeWizard(props: Props) {
           <p className="type-body-sm text-fg-muted">{t(`stepDescriptions.${step}`)}</p>
         </div>
 
+        {fix && fix.step === step && step !== "revisao" ? (
+          <FixPanel
+            codes={fix.codes}
+            pending={(code) => checklist.some((c) => c.code === code && (!c.ok || serverMissing.includes(c.code)))}
+            onShow={(code) => {
+              const el = document.getElementById(fixTarget(code));
+              if (el) revealField(el);
+            }}
+            onBack={() => void goTo("revisao")}
+          />
+        ) : null}
+
         {step === "basicos" && <BasicsStep {...stepProps} categories={categories} />}
         {step === "ingredientes" && (
           <IngredientsStep
@@ -513,7 +544,7 @@ export function RecipeWizard(props: Props) {
             reviewRequired={reviewRequired}
             busy={publishing || saving || Boolean(recovery)}
             serverMissing={serverMissing}
-            goTo={(s) => void goTo(s)}
+            fix={(code) => void startFix(code)}
             onPreview={() => void openPreview()}
             onPublish={(at) => void publish("publish", at)}
             onSubmit={(at) => void publish("submit", at)}
@@ -592,6 +623,54 @@ export function RecipeWizard(props: Props) {
           </>
         }
       />
+    </div>
+  );
+}
+
+/** Leva ao campo e o destaca por um instante (quem chega por "Ir para…" vê onde está o problema). */
+function revealField(el: HTMLElement) {
+  el.focus({ preventScroll: true });
+  el.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  el.classList.remove("uh-fix-flash");
+  void el.offsetWidth;
+  el.classList.add("uh-fix-flash");
+  window.setTimeout(() => el.classList.remove("uh-fix-flash"), 2600);
+}
+
+function FixPanel({ codes, pending, onShow, onBack }: { codes: RecipeChecklistCode[]; pending: (code: RecipeChecklistCode) => boolean; onShow: (code: RecipeChecklistCode) => void; onBack: () => void }) {
+  const t = useTranslations("recipes.editor.fix");
+  const done = codes.every((c) => !pending(c));
+  return (
+    <div
+      role="status"
+      className={cn("flex flex-col gap-3 rounded-2xl border p-4", done ? "border-success/40 bg-success-soft" : "border-warning/40 bg-warning-soft")}
+      data-testid="recipe-fix-panel"
+    >
+      <p className="font-semibold text-fg">{done ? t("doneTitle") : t("title")}</p>
+      <ul className="flex flex-col gap-3">
+        {codes.map((code) => {
+          const open = pending(code);
+          return (
+            <li key={code} className="flex items-start gap-2" data-testid={`recipe-fix-item-${code}`} data-ok={open ? "false" : "true"}>
+              {open ? <CircleX className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden="true" /> : <CircleCheck className="mt-0.5 size-5 shrink-0 text-success" aria-hidden="true" />}
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <p className={cn("type-body-sm", open ? "text-fg" : "text-fg-muted line-through")}>
+                  {t(`items.${code}`)}
+                  {open ? null : <span className="sr-only"> {t("resolved")}</span>}
+                </p>
+                {open ? (
+                  <Button type="button" variant="link" className="min-h-11 self-start px-0" onClick={() => onShow(code)} data-testid={`recipe-fix-show-${code}`}>
+                    {t("show")}
+                  </Button>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <Button type="button" variant={done ? "primary" : "secondary"} leadingIcon={<ArrowLeft />} className="self-start" onClick={onBack} data-testid="recipe-fix-back">
+        {t("back")}
+      </Button>
     </div>
   );
 }

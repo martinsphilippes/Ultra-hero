@@ -41,9 +41,9 @@ export function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
-export function StepSection({ title, children, className }: { title?: ReactNode; children: ReactNode; className?: string }) {
+export function StepSection({ title, children, className, id }: { title?: ReactNode; children: ReactNode; className?: string; id?: string }) {
   return (
-    <fieldset className={cn("flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5", className)}>
+    <fieldset id={id} tabIndex={id ? -1 : undefined} className={cn("flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-surface p-4 outline-none sm:p-5", className)}>
       {title ? <legend className="px-1 text-base font-semibold text-fg">{title}</legend> : null}
       {children}
     </fieldset>
