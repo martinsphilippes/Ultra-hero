@@ -450,7 +450,68 @@
       "difficulty": "Difficulty",
       "difficultyNone": "Not specified",
       "yield": "Yield",
-      "yieldHint": "Optional. E.g. 1 tray, 12 pieces.",
+      "yieldAmount": "Yield amount",
+      "yieldUnit": "Yield type",
+      "yieldOther": "Describe the yield",
+      "yieldHintInteger": "Optional. Whole number, e.g. 12.",
+      "yieldHintDecimal": "Optional. Decimals allowed, e.g. 1.5.",
+      "yieldHintOther": "Optional. A few words, e.g. 1 medium dish.",
+      "yieldPreview": "On the recipe: Makes {text}",
+      "yieldUnits": {
+        "unit": {
+          "one": "unit",
+          "other": "units"
+        },
+        "kg": {
+          "one": "kg",
+          "other": "kg"
+        },
+        "g": {
+          "one": "g",
+          "other": "g"
+        },
+        "l": {
+          "one": "L",
+          "other": "L"
+        },
+        "ml": {
+          "one": "ml",
+          "other": "ml"
+        },
+        "pan": {
+          "one": "pan",
+          "other": "pans"
+        },
+        "tray": {
+          "one": "tray",
+          "other": "trays"
+        },
+        "slice": {
+          "one": "slice",
+          "other": "slices"
+        },
+        "piece": {
+          "one": "piece",
+          "other": "pieces"
+        },
+        "jar": {
+          "one": "jar",
+          "other": "jars"
+        }
+      },
+      "yieldOptions": {
+        "unit": "Units (pcs)",
+        "kg": "Kilograms (kg)",
+        "g": "Grams (g)",
+        "l": "Liters (L)",
+        "ml": "Milliliters (ml)",
+        "pan": "Pans",
+        "tray": "Trays",
+        "slice": "Slices",
+        "piece": "Pieces",
+        "jar": "Jars",
+        "other": "Other (type it)"
+      },
       "servings": "Servings",
       "prep": "Prep (min)",
       "cook": "Cooking (min)",

@@ -87,6 +87,16 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await page.getByTestId("recipe-title").fill(title);
       await page.getByTestId("recipe-summary").fill("Rascunho criado pelo teste automático; é excluído no fim.");
       await page.getByTestId("recipe-category-cafe-da-manha").click();
+      // rendimento: o teclado e o que a caixa aceita seguem o tipo (kg decimal, forma inteiro)
+      await page.getByTestId("recipe-yield-unit").selectOption("kg");
+      await expect(page.getByTestId("recipe-yield-amount")).toHaveAttribute("inputmode", "decimal");
+      await page.getByTestId("recipe-yield-amount").fill("1.5");
+      await expect(page.getByTestId("recipe-yield-amount")).toHaveValue("1,5");
+      await expect(page.getByTestId("recipe-yield")).toContainText("Na receita: Rende 1,5 kg");
+      await page.getByTestId("recipe-yield-unit").selectOption("pan");
+      await expect(page.getByTestId("recipe-yield-amount")).toHaveAttribute("inputmode", "numeric");
+      await expect(page.getByTestId("recipe-yield-amount")).toHaveValue("2");
+      await expect(page.getByTestId("recipe-yield")).toContainText("Na receita: Rende 2 formas");
       await page.getByTestId("recipe-servings").fill("2");
       await page.getByTestId("recipe-prep").fill("5");
       await page.getByTestId("recipe-cook").fill("10");
@@ -167,6 +177,7 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await expect(page.getByTestId("recipe-steps")).toContainText("Misture a aveia com os ovos.");
       await expect(page.getByTestId("recipe-steps")).toContainText("2 min");
       await expect(page.getByTestId("recipe-allergens")).toContainText("Nenhum alérgeno declarado pelo chef.");
+      await expect(page.getByText("Rende 2 formas")).toBeVisible();
       if (REAL_MEDIA) await expect(page.getByTestId("recipe-gallery")).toBeVisible();
 
       // ---- recarregar: tudo veio do banco
@@ -179,6 +190,8 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       // ---- sem rede: o erro não perde nada e "Recuperar" traz a alteração de volta
       await page.getByTestId("recipe-step-basicos").click();
       await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-step", "basicos");
+      await expect(page.getByTestId("recipe-yield-unit")).toHaveValue("pan");
+      await expect(page.getByTestId("recipe-yield-amount")).toHaveValue("2");
       const offlineTitle = `${title} (offline)`;
       await page.getByTestId("recipe-title").fill(offlineTitle);
       await page.waitForTimeout(1_500); // cópia local com debounce de 1 s

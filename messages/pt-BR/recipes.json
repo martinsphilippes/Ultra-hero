@@ -450,7 +450,68 @@
       "difficulty": "Dificuldade",
       "difficultyNone": "Não informar",
       "yield": "Rendimento",
-      "yieldHint": "Opcional. Ex.: 1 forma, 12 unidades.",
+      "yieldAmount": "Quantidade do rendimento",
+      "yieldUnit": "Tipo do rendimento",
+      "yieldOther": "Descreva o rendimento",
+      "yieldHintInteger": "Opcional. Número inteiro, ex.: 12.",
+      "yieldHintDecimal": "Opcional. Aceita decimal, ex.: 1,5.",
+      "yieldHintOther": "Opcional. Em poucas palavras, ex.: 1 travessa média.",
+      "yieldPreview": "Na receita: Rende {text}",
+      "yieldUnits": {
+        "unit": {
+          "one": "unidade",
+          "other": "unidades"
+        },
+        "kg": {
+          "one": "kg",
+          "other": "kg"
+        },
+        "g": {
+          "one": "g",
+          "other": "g"
+        },
+        "l": {
+          "one": "L",
+          "other": "L"
+        },
+        "ml": {
+          "one": "ml",
+          "other": "ml"
+        },
+        "pan": {
+          "one": "forma",
+          "other": "formas"
+        },
+        "tray": {
+          "one": "assadeira",
+          "other": "assadeiras"
+        },
+        "slice": {
+          "one": "fatia",
+          "other": "fatias"
+        },
+        "piece": {
+          "one": "pedaço",
+          "other": "pedaços"
+        },
+        "jar": {
+          "one": "pote",
+          "other": "potes"
+        }
+      },
+      "yieldOptions": {
+        "unit": "Unidades (un)",
+        "kg": "Quilos (kg)",
+        "g": "Gramas (g)",
+        "l": "Litros (L)",
+        "ml": "Mililitros (ml)",
+        "pan": "Formas",
+        "tray": "Assadeiras",
+        "slice": "Fatias",
+        "piece": "Pedaços",
+        "jar": "Potes",
+        "other": "Outro (escrever)"
+      },
       "servings": "Porções",
       "prep": "Preparo (min)",
       "cook": "Cozimento (min)",

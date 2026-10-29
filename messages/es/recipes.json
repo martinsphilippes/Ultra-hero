@@ -450,7 +450,68 @@
       "difficulty": "Dificultad",
       "difficultyNone": "No indicar",
       "yield": "Rendimiento",
-      "yieldHint": "Opcional. Ej.: 1 molde, 12 unidades.",
+      "yieldAmount": "Cantidad del rendimiento",
+      "yieldUnit": "Tipo de rendimiento",
+      "yieldOther": "Describe el rendimiento",
+      "yieldHintInteger": "Opcional. Número entero, ej.: 12.",
+      "yieldHintDecimal": "Opcional. Acepta decimales, ej.: 1,5.",
+      "yieldHintOther": "Opcional. En pocas palabras, ej.: 1 fuente mediana.",
+      "yieldPreview": "En la receta: Rinde {text}",
+      "yieldUnits": {
+        "unit": {
+          "one": "unidad",
+          "other": "unidades"
+        },
+        "kg": {
+          "one": "kg",
+          "other": "kg"
+        },
+        "g": {
+          "one": "g",
+          "other": "g"
+        },
+        "l": {
+          "one": "L",
+          "other": "L"
+        },
+        "ml": {
+          "one": "ml",
+          "other": "ml"
+        },
+        "pan": {
+          "one": "molde",
+          "other": "moldes"
+        },
+        "tray": {
+          "one": "bandeja",
+          "other": "bandejas"
+        },
+        "slice": {
+          "one": "rebanada",
+          "other": "rebanadas"
+        },
+        "piece": {
+          "one": "porción",
+          "other": "porciones"
+        },
+        "jar": {
+          "one": "frasco",
+          "other": "frascos"
+        }
+      },
+      "yieldOptions": {
+        "unit": "Unidades (u)",
+        "kg": "Kilos (kg)",
+        "g": "Gramos (g)",
+        "l": "Litros (L)",
+        "ml": "Mililitros (ml)",
+        "pan": "Moldes",
+        "tray": "Bandejas",
+        "slice": "Rebanadas",
+        "piece": "Porciones",
+        "jar": "Frascos",
+        "other": "Otro (escribir)"
+      },
       "servings": "Porciones",
       "prep": "Preparación (min)",
       "cook": "Cocción (min)",

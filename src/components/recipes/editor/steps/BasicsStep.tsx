@@ -8,6 +8,7 @@ import { effectiveTotal, timesSum } from "@/lib/recipes/draft";
 import { fieldIdForPath } from "@/lib/recipes/editor-steps";
 import { RECIPE_DIFFICULTIES } from "@/lib/recipes/payload";
 import { FieldError, StepSection, type StepProps } from "../shared";
+import { YieldField } from "../YieldField";
 
 type Props = StepProps & { categories: { code: string; label: string }[] };
 
@@ -82,9 +83,7 @@ export function BasicsStep({ draft, setDraft, errorFor, disabled, categories }: 
               ))}
             </Select>
           </FormField>
-          <FormField id={fieldIdForPath("details.yield_text")} label={t("yield")} hint={t("yieldHint")} error={errorFor("details.yield_text")}>
-            <Input value={draft.yieldText} maxLength={60} onChange={(e) => set({ yieldText: e.target.value })} disabled={disabled} />
-          </FormField>
+          <YieldField id={fieldIdForPath("details.yield_text")} value={draft.yieldText} onChange={(yieldText) => set({ yieldText })} error={errorFor("details.yield_text")} disabled={disabled} />
         </div>
       </StepSection>
 
