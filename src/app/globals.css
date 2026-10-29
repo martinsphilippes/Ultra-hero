@@ -426,3 +426,50 @@
     box-shadow: none !important;
   }
 }
+
+
+/* Transição entre posts do Início (estilo app de luxo): cada post entra escuro e levemente ampliado,
+   clareia e se assenta conforme sobe na tela; ao sair por cima, escurece de leve. Animação ligada à
+   rolagem (sem JS e sem biblioteca). Navegador sem suporte ou "reduzir movimento": posts normais. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* a capa corta o que passa da borda (overflow hidden = contêiner de rolagem): a linha do tempo é a
+       da própria capa na página, com nome, e o véu e a imagem de dentro seguem essa linha */
+    .uh-post-media {
+      view-timeline: --uh-post block;
+    }
+    .uh-post-media .uh-post-veil {
+      animation: uh-feed-veil linear both;
+      animation-timeline: --uh-post;
+      animation-range: cover 0% cover 100%;
+    }
+    .uh-post-media .uh-post-image {
+      animation: uh-feed-settle linear both;
+      animation-timeline: --uh-post;
+      animation-range: cover 0% cover 100%;
+    }
+    .uh-post-caption {
+      animation: uh-feed-caption linear both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+  }
+}
+/* 0% = capa começando a entrar por baixo; ~35% = capa inteira na tela; ~70% = saindo por cima */
+@keyframes uh-feed-veil {
+  0% { opacity: 0.94; }
+  18% { opacity: 0.78; }
+  30% { opacity: 0.35; }
+  40% { opacity: 0; }
+  70% { opacity: 0; }
+  100% { opacity: 0.6; }
+}
+@keyframes uh-feed-settle {
+  0% { transform: scale(1.1); filter: saturate(0.5); }
+  40% { transform: scale(1); filter: saturate(1); }
+  100% { transform: scale(1); filter: saturate(1); }
+}
+@keyframes uh-feed-caption {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: none; }
+}

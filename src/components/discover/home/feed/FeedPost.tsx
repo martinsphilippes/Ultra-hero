@@ -44,7 +44,9 @@ export async function FeedPost({ post, priority }: Props) {
         className="uh-post-media group relative block aspect-[4/5] overflow-hidden bg-surface-elevated md:rounded-lg"
         data-testid="feed-post-cover"
       >
-        <Image src={src} alt="" fill priority={priority} unoptimized={src.endsWith(".svg")} sizes="(min-width: 768px) 470px, 100vw" className="object-cover" />
+        <Image src={src} alt="" fill priority={priority} unoptimized={src.endsWith(".svg")} sizes="(min-width: 768px) 470px, 100vw" className="uh-post-image object-cover" />
+        {/* véu da transição de entrada (feed-reveal em globals.css): escuro → imagem, ligado à rolagem */}
+        <span aria-hidden="true" className="uh-post-veil pointer-events-none absolute inset-0 bg-black opacity-0" />
         {/* Ícones brancos com sombra: legíveis sobre qualquer capa sem escurecer a imagem. */}
         <Icon className="absolute right-3 top-3 size-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
         {unavailable ? (
@@ -54,7 +56,7 @@ export async function FeedPost({ post, priority }: Props) {
         ) : null}
       </Link>
 
-      <div className="flex flex-col gap-1 px-gutter pt-3 md:px-0">
+      <div className="uh-post-caption flex flex-col gap-1 px-gutter pt-3 md:px-0">
         <p className="uh-post-type type-caption text-fg-muted">{[t(`types.${post.type}`), restriction].filter(Boolean).join(" · ")}</p>
         <h2 id={titleId} className="uh-post-title text-base font-semibold leading-snug text-fg">
           {/* O link do título é o alvo de teclado e leitor de tela; a capa repete o destino só para o toque. */}
