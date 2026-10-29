@@ -128,5 +128,9 @@
     "progress": "Progresso",
     "required": "obrigatório",
     "optional": "opcional"
+  },
+  "intro": {
+    "skip": "Pular",
+    "skipLabel": "Pular a abertura"
   }
 }
