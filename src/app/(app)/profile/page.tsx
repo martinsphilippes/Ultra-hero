@@ -132,11 +132,13 @@ export default async function ProfilePage() {
   const planKey = subscription.status === "anonymous" ? "unknown" : subscription.status;
   // perfil ativo e vinculado (my_creator_id): só aí o editor do herói grava, e o avatar é um só
   const heroActive = heroProfile !== null && creator.creatorId !== null;
+  // herói ativo já tem o portal inteiro nos atalhos (Painel, Novo post…): o cartão "Portal do herói" sai
+  const visiblePortals = heroActive ? portals.filter((p) => p.role !== "creator") : portals;
 
-  const portalsNav = portals.length > 0 ? (
+  const portalsNav = visiblePortals.length > 0 ? (
     <nav aria-label={t("portals.title")} data-testid="profile-portals">
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {portals.map(({ role, href, icon: Icon }) => (
+        {visiblePortals.map(({ role, href, icon: Icon }) => (
           <li key={role}>
             <Link
               href={href}
@@ -198,12 +200,12 @@ export default async function ProfilePage() {
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
 
       {heroProfile ? (
-        // topo do herói: cabeçalho público → Portais (o Portal do herói segue o primeiro link) → Editar perfil
+        // topo do herói: cabeçalho público → atalhos do portal → outros portais (fornecedor/admin) → Editar perfil
         <div className="flex flex-col gap-4">
           <HeroProfileHeader profile={heroProfile} />
-          {portalsNav}
-          {/* atalhos do portal (novo post, conteúdos, receitas, vínculos) perto de "Editar perfil" */}
+          {/* atalhos do portal (novo post, conteúdos, receitas, vínculos, painel) perto de "Editar perfil" */}
           {heroActive ? <HeroQuickActions /> : null}
+          {portalsNav}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroActive}

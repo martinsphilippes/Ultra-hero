@@ -46,12 +46,13 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(header.getByText("Personagem fictício", { exact: true })).toBeVisible();
     await expect(header.getByTestId("hero-bio")).toBeVisible();
     await expect(main.getByRole("heading", { level: 1, name: "Perfil" })).toBeVisible();
-    // nenhum link antes do Portal do herói (ele segue o primeiro toque da página)
+    // nenhum link antes dos atalhos do portal (o cartão "Portal do herói" saiu: o Painel está nos atalhos)
     await expect(header.locator("a")).toHaveCount(0);
-    await expect(main.locator("a").first()).toHaveAttribute("data-testid", "profile-portal-creator");
+    await expect(main.locator("a").first()).toHaveAttribute("data-testid", "hero-action-post");
+    await expect(page.getByTestId("profile-portal-creator")).toHaveCount(0);
 
-    // ordem: cabeçalho → Portais → Editar perfil / Ver página pública → editor (com "Sua conta" dentro) → Hoje
-    await expectInOrder([main.locator("h1"), header, page.getByTestId("profile-portals"), toggle, publicLink, editor, page.getByTestId("today-section")]);
+    // ordem: cabeçalho → atalhos do portal → Editar perfil / Ver página pública → editor (com "Sua conta" dentro) → Hoje
+    await expectInOrder([main.locator("h1"), header, page.getByTestId("hero-quick-actions"), toggle, publicLink, editor, page.getByTestId("today-section")]);
     await expect(editor.locator("#dados")).toHaveCount(1);
     // sem as seções antigas de baixo: "Dados" e a visão geral repetiam nome e foto
     await expect(page.getByRole("heading", { name: "Dados", exact: true })).toHaveCount(0);

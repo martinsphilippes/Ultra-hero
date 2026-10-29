@@ -7,24 +7,30 @@ import { loginAs } from "./helpers/login";
 // Só leitura: nenhum dado é gravado.
 
 test.describe("portais no topo do Perfil", () => {
-  test("herói: o Portal do herói é o primeiro link da página, acima do Hoje, e abre o portal", async ({ page }) => {
+  test("herói ativo: sem o cartão Portal do herói (o portal está nos atalhos, com o Painel)", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/profile");
+    await expect(page.getByTestId("hero-quick-actions")).toBeVisible();
+    await expect(page.getByTestId("profile-portal-creator")).toHaveCount(0);
+    await expect(page.getByText("Portal do herói", { exact: true })).toHaveCount(0);
+    // primeira opção de toque: os atalhos do portal
+    await expect(page.locator("main a").first()).toHaveAttribute("data-testid", "hero-action-post");
+    await page.getByTestId("hero-action-dashboard").click();
+    await expect(page).toHaveURL(/\/creator$/);
+  });
 
+  test("admin: o portal continua como primeiro link da página, acima do Hoje, e abre o portal", async ({ page }) => {
+    await loginAs(page, "admin");
+    await page.goto("/profile");
     const portals = page.getByTestId("profile-portals");
     await expect(portals).toBeVisible();
-    const hero = page.getByTestId("profile-portal-creator");
-    await expect(hero).toContainText("Portal do herói");
-    await expect(hero).toContainText("Posts, receitas e vínculos de produtos");
-
-    // primeira opção de toque: nenhum link antes dele no conteúdo da página
-    await expect(page.locator("main a").first()).toHaveAttribute("data-testid", "profile-portal-creator");
-    const heroBox = (await hero.boundingBox())!;
-    expect(heroBox.height).toBeGreaterThanOrEqual(44);
+    const admin = page.getByTestId("profile-portal-admin");
+    await expect(page.locator("main a").first()).toHaveAttribute("data-testid", "profile-portal-admin");
+    const box = (await admin.boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(44);
     const today = page.getByTestId("today-section");
     await expect(today).toBeVisible();
-    expect(heroBox.y).toBeLessThan((await today.boundingBox())!.y);
-    // o bloco antigo "Seus portais", no meio da página, saiu
+    expect(box.y).toBeLessThan((await today.boundingBox())!.y);
     await expect(page.getByRole("heading", { name: "Seus portais" })).toHaveCount(0);
 
     await page.waitForLoadState("networkidle");
@@ -32,8 +38,8 @@ test.describe("portais no topo do Perfil", () => {
     const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(serious, JSON.stringify(serious.map((v) => v.id))).toEqual([]);
 
-    await hero.click();
-    await expect(page).toHaveURL(/\/creator$/);
+    await admin.click();
+    await expect(page).toHaveURL(/\/admin/);
   });
 
   test("consumidor não vê portais", async ({ page }) => {

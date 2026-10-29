@@ -11,7 +11,7 @@ const ACTIONS: Array<[string, string]> = [
   ["dashboard", "/creator"],
 ];
 
-test("herói: 6 atalhos do portal entre o Portal do herói e Editar perfil, alvos de 44 px", async ({ page }) => {
+test("herói: 6 atalhos do portal entre o cabeçalho e Editar perfil, alvos de 44 px", async ({ page }) => {
   await loginAs(page, "creator");
   await page.goto("/profile");
   const nav = page.getByTestId("hero-quick-actions");
@@ -21,7 +21,7 @@ test("herói: 6 atalhos do portal entre o Portal do herói e Editar perfil, alvo
     await expect(link).toHaveAttribute("href", href);
     expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   }
-  const portal = (await page.getByTestId("profile-portal-creator").boundingBox())!;
+  const portal = (await page.getByTestId("profile-hero").boundingBox())!;
   const toggle = (await page.getByRole("button", { name: "Editar perfil", exact: true }).boundingBox())!;
   const box = (await nav.boundingBox())!;
   expect(box.y).toBeGreaterThan(portal.y);
