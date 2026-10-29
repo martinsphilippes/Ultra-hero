@@ -4,15 +4,18 @@ import { getLocale, getTranslations } from "next-intl/server";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
+import { AppIntro } from "@/components/layout/AppIntro";
 import { AppearanceSync } from "@/components/layout/AppearanceSync";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { SkipLink } from "@/components/ui/skip-link";
 import { ToastProvider } from "@/components/ui/toast";
 import { getOrigin } from "@/lib/auth/origin";
+import { INTRO_INIT_SCRIPT } from "@/lib/intro/script";
 import { resolveTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
 import { resolveTemplate, TEMPLATE_COOKIE, TEMPLATE_INIT_SCRIPT } from "@/lib/theme/template";
 import "./globals.css";
 import "./templates.css";
+import "./intro.css";
 
 // Tipografia da marca, servida pelo próprio app (sem chamada ao Google Fonts no cliente):
 // Manrope variável para texto e títulos; DM Mono para etiquetas e legendas.
@@ -80,9 +83,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={locale} data-theme={theme} data-template={template} suppressHydrationWarning className={fontVariables}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + TEMPLATE_INIT_SCRIPT }} />
+        {/* tema, template e (se for a hora) a abertura: tudo decidido antes da primeira pintura */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + TEMPLATE_INIT_SCRIPT + INTRO_INIT_SCRIPT }} />
       </head>
       <body className="min-h-dvh bg-bg font-sans text-fg antialiased">
+        <AppIntro />
         <NextIntlClientProvider>
           <ToastProvider>
             <SkipLink />

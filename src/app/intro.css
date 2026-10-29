@@ -1,0 +1,160 @@
+/* =============================================================================
+   Abertura animada (AppIntro + src/lib/intro). Só aparece com data-intro no <html>,
+   marcado pelo script inicial antes da pintura. Cores fixas da marca, iguais nos
+   5 templates e nos dois temas: fundo obsidiana, losango laranja, wordmark areia.
+   Linha do tempo (2,6 s): marca 0–0,8 s · atleta 0,8–2,03 s · marca de novo até 2,24 s · saída 2,24–2,6 s.
+   Percentuais abaixo = segundos ÷ 2,6.
+   ============================================================================= */
+
+.uh-intro {
+  display: none;
+}
+
+html[data-intro] .uh-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: block;
+  touch-action: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /* rede de segurança sem JS: some sozinha mesmo se o script de encerramento falhar */
+  animation: uh-intro-gone 1ms linear 2.75s both;
+}
+
+html[data-intro="out"] .uh-intro {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.24s ease-out;
+}
+
+.uh-intro-scene {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(120% 80% at 50% 38%, #17110e 0%, #0b0b0b 62%);
+  animation: uh-intro-exit 2.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.uh-intro-stage {
+  width: min(92vw, 56dvh, 440px);
+  height: auto;
+  overflow: visible;
+}
+
+/* ---- marca ---------------------------------------------------------------- */
+.uh-intro-mark {
+  animation: uh-intro-mark 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.uh-intro-glow {
+  animation: uh-intro-glow 2.6s ease-out both;
+}
+.uh-intro-word {
+  fill: #f2efea;
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  animation: uh-intro-word 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.uh-intro-ground {
+  transform-origin: 180px 432px;
+  animation: uh-intro-ground 2.6s ease-out both;
+}
+
+/* ---- atleta ---------------------------------------------------------------- */
+.uh-fig-body {
+  animation: uh-fig-body 2.6s linear var(--lag, 0s) both;
+}
+.uh-fig-shadow {
+  animation: uh-fig-shadow 2.6s linear both;
+}
+.uh-fig [class^="uh-j-"] {
+  animation-duration: 2.6s;
+  animation-delay: var(--lag, 0s);
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+/* ---- pular ----------------------------------------------------------------- */
+.uh-intro-skip {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  min-width: 64px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(242, 239, 234, 0.22);
+  border-radius: 999px;
+  background: rgba(242, 239, 234, 0.06);
+  color: #f2efea;
+  font: 600 14px/1 var(--font-manrope), system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  animation: uh-intro-skip 2.6s ease-out both;
+}
+.uh-intro-skip:focus-visible {
+  outline: 2px solid #ffb070;
+  outline-offset: 3px;
+}
+
+@keyframes uh-intro-mark {
+  0% { transform: translate(180px, 206px) scale(0) rotate(-135deg); }
+  16% { transform: translate(180px, 206px) scale(1.08) rotate(0deg); }
+  24% { transform: translate(180px, 206px) scale(1) rotate(0deg); }
+  30.77% { transform: translate(180px, 206px) scale(1); }
+  40.81% { transform: translate(180px, 128px) scale(0.82); }
+  75.08% { transform: translate(180px, 128px) scale(0.82); }
+  80.62% { transform: translate(180px, 128px) scale(1.2); }
+  86.85%,
+  100% { transform: translate(180px, 128px) scale(1); }
+}
+@keyframes uh-intro-glow {
+  0% { opacity: 0; transform: scale(0.4); }
+  20% { opacity: 1; transform: scale(1); }
+  40.81% { opacity: 0.55; transform: scale(0.8); }
+  75.08% { opacity: 0.55; transform: scale(0.8); }
+  80.62% { opacity: 1; transform: scale(1.5); }
+  100% { opacity: 0.8; transform: scale(1.2); }
+}
+@keyframes uh-intro-word {
+  0%,
+  8% { opacity: 0; transform: translateY(278px); letter-spacing: 0.5em; }
+  26% { opacity: 1; transform: translateY(278px); letter-spacing: 0.2em; }
+  30.77% { opacity: 1; transform: translateY(278px); }
+  36.31% { opacity: 0; transform: translateY(292px); }
+  75.08% { opacity: 0; transform: translateY(196px); letter-spacing: 0.32em; }
+  82.69%,
+  100% { opacity: 1; transform: translateY(190px); letter-spacing: 0.2em; }
+}
+@keyframes uh-intro-ground {
+  0%,
+  28.85% { opacity: 0; transform: scaleX(0); }
+  39.07% { opacity: 1; transform: scaleX(1); }
+  67.81% { opacity: 1; transform: scaleX(1); }
+  76.81%,
+  100% { opacity: 0; transform: scaleX(1.2); }
+}
+@keyframes uh-intro-skip {
+  0%,
+  10% { opacity: 0; }
+  20%,
+  100% { opacity: 1; }
+}
+@keyframes uh-intro-exit {
+  0%,
+  86.15% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.08); }
+}
+@keyframes uh-intro-gone {
+  to { visibility: hidden; }
+}
+
+/* Movimento reduzido: o script já não marca o atributo; isto garante que nada anime. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-intro] .uh-intro {
+    display: none;
+  }
+}

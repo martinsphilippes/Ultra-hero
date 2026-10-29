@@ -128,5 +128,9 @@
     "progress": "Progreso",
     "required": "obligatorio",
     "optional": "opcional"
+  },
+  "intro": {
+    "skip": "Saltar",
+    "skipLabel": "Saltar la introducción"
   }
 }
