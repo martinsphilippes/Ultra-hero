@@ -1,10 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import path from "node:path";
+import { loginAsAdminActing } from "./helpers/acting";
 import { loginAs } from "./helpers/login";
 import { expectNoTestRecipe, purgeTestRecipes } from "./helpers/recipes";
 
-// Receitas fase 2 (Portal do Chef) com a conta de demonstração do herói, contra o banco remoto:
+// Receitas fase 2 (Portal do Chef) contra o banco remoto. Desde a 0045 quem gerencia as receitas do herói
+// é o admin, pelo herói escolhido em "Publicar como hero" (o da conta demo do herói); sem a 0045, pulados:
 // Minhas Receitas com filtros e axe; criar um rascunho e passar pelas 6 etapas (2 ingredientes,
 // reordenar, 2 etapas, "Nenhum alérgeno"), checklist verde com o botão do modo atual, prévia com o
 // RecipeView, recarregar e conferir, perder a rede e "Recuperar", e EXCLUIR o rascunho no fim
@@ -32,9 +34,8 @@ async function clickNext(page: Page, step: string) {
 }
 
 test.describe("Portal do Chef: Minhas Receitas", () => {
-  test("lista com filtros por GET, Nova receita e axe; o menu do portal tem Minhas Receitas depois de Novo post", async ({ page }) => {
-    await loginAs(page, "creator", { home: /\/creator$/ });
-    await page.goto("/creator/recipes");
+  test("lista com filtros por GET, Nova receita e axe; a faixa mostra o herói escolhido pelo admin", async ({ page }) => {
+    await loginAsAdminActing(page, "recipes");
     await expect(page.getByRole("heading", { level: 1, name: "Minhas Receitas" })).toBeVisible();
     await expect(page.getByTestId("new-recipe")).toHaveAttribute("href", "/creator/recipes/new");
     await expect(page.getByTestId("recipes-count")).toBeVisible();
@@ -51,12 +52,12 @@ test.describe("Portal do Chef: Minhas Receitas", () => {
     await expect(panel.locator("summary")).toContainText("1 filtro ativo");
     await axeMain(page);
 
-    // sem menu no portal do herói: volta ao Perfil, onde ficam os atalhos (Minhas receitas incluso)
-    await expect(page.getByTestId("portal-back-profile")).toHaveAttribute("href", "/profile");
+    // modo do admin: a faixa "Publicando como" com "Trocar hero" (o herói não tem mais esta tela)
+    await expect(page.getByTestId("acting-hero-switch")).toHaveAttribute("href", "/admin?heroi=recipes#publicar-como-hero");
   });
 
   test("perfil do herói mostra especialidades e o pedido de credenciais com o aviso de aprovação", async ({ page }) => {
-    await loginAs(page, "creator", { home: /\/creator$/ });
+    await loginAs(page, "creator");
     // o perfil do herói (com a parte de chef) mora no /profile, no editor recolhido "Editar perfil"
     await page.goto("/profile");
     await page.waitForLoadState("networkidle");
@@ -73,7 +74,7 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
 
   test("cria, passa pelas 6 etapas, pré-visualiza, recarrega, recupera a cópia local e exclui o rascunho", async ({ page, context }, info) => {
     test.setTimeout(240_000);
-    await loginAs(page, "creator", { home: /\/creator$/ });
+    await loginAsAdminActing(page, "recipes");
     const titlePrefix = prefix(info);
     // sobras antigas deste projeto; o rascunho de outra execução em andamento (conta compartilhada) fica
     await purgeTestRecipes(page, titlePrefix);

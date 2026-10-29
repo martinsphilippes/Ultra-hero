@@ -1,26 +1,21 @@
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { loginAs } from "./helpers/login";
+import { DEMO_HERO_ID, loginAsAdminActing } from "./helpers/acting";
 
-// Envio REAL para o Cloudflare Stream com a conta de demonstração "Herói / Chef". Só roda com
-// E2E_STREAM_REAL=1 num ambiente com Stream + service role (ex.: produção). Sobe um vídeo de 3 s,
-// confere progresso e o botão Publicar, NÃO publica, descarta e confere que o rascunho sumiu.
+// Envio REAL para o Cloudflare Stream: o admin posta pelo herói da conta demo ("Publicar como hero",
+// 0045; o herói usa o mesmo composer). Só roda com E2E_STREAM_REAL=1 num ambiente com Stream + service
+// role e a 0045. Sobe um vídeo de 3 s, confere progresso e o botão Publicar, NÃO publica, descarta e
+// confere que o rascunho sumiu.
 
 const FIXTURE = path.join(__dirname, "..", "fixtures", "video-3s.mp4");
-const EDIT_LINKS = 'a[href^="/creator/content/"][href$="/edit"]';
 
-async function loginAsHero(page: Page) {
-  await loginAs(page, "creator");
-}
-
-// Rascunhos do herói (links de edição). O id do rascunho novo não aparece na tela do composer,
-// então o descarte é conferido pela lista: o rascunho criado pelo envio some de "Meus conteúdos".
+// Rascunhos do herói na lista do admin (filtrada pelo herói). O id do rascunho novo não aparece na tela
+// do composer, então o descarte é conferido pela lista: o rascunho criado pelo envio some.
 async function draftLinks(page: Page): Promise<string[]> {
-  await page.goto("/creator/content?status=draft");
+  await page.goto(`/admin/content?creator=${DEMO_HERO_ID}&status=draft`);
   await page.waitForLoadState("networkidle");
-  // cada rascunho tem mais de um link de edição (título e botão): conta cada um uma vez
-  const hrefs = await page.locator(EDIT_LINKS).evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
-  return [...new Set(hrefs)];
+  const hrefs = await page.locator('a[href^="/admin/content/"]').evaluateAll((links) => links.map((a) => a.getAttribute("href") ?? ""));
+  return [...new Set(hrefs.filter((href) => /^\/admin\/content\/[0-9a-f-]{36}$/.test(href)))];
 }
 
 test.describe("composer: envio real para o Cloudflare (E2E_STREAM_REAL=1)", () => {
@@ -30,7 +25,7 @@ test.describe("composer: envio real para o Cloudflare (E2E_STREAM_REAL=1)", () =
     // Um projeto basta: cada execução consome um dos 10 envios por hora do herói.
     test.skip(testInfo.project.name !== "mobile", "envio real roda só no projeto mobile");
     test.setTimeout(180_000);
-    await loginAsHero(page);
+    await loginAsAdminActing(page, "post");
     // A lista é conferida numa segunda aba: sair do composer perderia o envio (e dispara o aviso).
     const lister = await page.context().newPage();
     const before = await draftLinks(lister);
@@ -67,6 +62,6 @@ test.describe("composer: envio real para o Cloudflare (E2E_STREAM_REAL=1)", () =
     expect(await draftLinks(lister)).not.toContain(created[0]);
     // A página fica dentro de loading.tsx (streaming): notFound() chega com status 200 e a tela de não encontrado.
     await lister.goto(created[0]);
-    await expect(lister.getByText("Conteúdo não encontrado")).toBeVisible();
+    await expect(lister.getByText("Registro não encontrado")).toBeVisible();
   });
 });

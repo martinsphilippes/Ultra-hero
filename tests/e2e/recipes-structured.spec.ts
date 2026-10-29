@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { loginAsAdminActing } from "./helpers/acting";
 import { loginAs } from "./helpers/login";
 import { seedUuid } from "./helpers/seed";
 
@@ -6,8 +7,9 @@ import { seedUuid } from "./helpers/seed";
 // (Fase 2: o editor antigo segue só para leitura, mas "Editar" leva ao editor de receitas.)
 // Funciona com o remoto antes e depois da migração: nenhuma tela usa as tabelas novas na fase 1.
 //  - as páginas públicas das receitas antigas seguem iguais (título, resumo, tempo e o bloqueio);
-//  - /creator/content/new não oferece mais o tipo receita;
-//  - o editor antigo (herói e admin) mostra a receita só para leitura, com o aviso, sem Publicar nem Despublicar.
+//  - o herói não cria mais conteúdo pelo portal (0045: só o admin, pelo herói escolhido);
+//  - o endereço antigo do editor leva a receita ao editor de receitas; o editor do admin mostra a receita só
+//    para leitura, com o aviso, sem Publicar nem Despublicar.
 
 const OLD_RECIPES = [
   { slug: "bowl-de-frango-grelhado-com-legumes-assados-g1", title: "Bowl de frango grelhado com legumes assados", summary: "O bowl clássico da cozinha de base", minutes: 35 },
@@ -26,32 +28,21 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
     });
   }
 
-  test("o novo conteúdo do herói não oferece o tipo receita", async ({ page }) => {
-    await loginAs(page, "creator", { home: /\/creator$/ });
+  test("o herói não cria mais conteúdo pelo portal: o endereço antigo volta ao Perfil", async ({ page }) => {
+    await loginAs(page, "creator");
     await page.goto("/creator/content/new");
-    const typeSelect = page.getByRole("combobox", { name: "Tipo", exact: true });
-    await expect(typeSelect).toBeVisible();
-    await expect(typeSelect.locator("option")).toHaveText(["Vídeo", "Treino", "Guia", "Artigo"]);
+    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page.getByRole("combobox", { name: "Tipo", exact: true })).toHaveCount(0);
   });
 
-  test("o editor antigo do herói mostra a receita só para leitura, com o aviso, sem Publicar/Despublicar e com Editar levando ao editor novo", async ({ page }) => {
-    await loginAs(page, "creator", { home: /\/creator$/ });
-    await page.goto("/creator/content");
-    // desde a fase 2 a lista leva a receita direto ao editor novo
-    const recipeLink = page.locator('a[data-content-type="recipe"]').first();
-    test.skip((await recipeLink.count()) === 0, "a conta de demonstração do herói não assina receitas");
-    const href = (await recipeLink.getAttribute("href"))!;
-    expect(href).toMatch(/^\/creator\/recipes\/[0-9a-f-]+\/edit$/);
-    const id = href.split("/")[3];
+  test("admin pelo herói: o endereço antigo do editor leva a receita ao editor de receitas", async ({ page }) => {
+    await loginAsAdminActing(page, "content");
+    const id = seedUuid("content:g1"); // receita do herói da conta demo
     await page.goto(`/creator/content/${id}/edit`);
-    const notice = page.getByTestId("recipe-legacy-notice");
-    await expect(notice).toBeVisible();
-    await expect(notice).toContainText("Receitas agora têm editor próprio");
-    await expect(page.getByTestId("recipe-open-editor")).toHaveAttribute("href", `/creator/recipes/${id}/edit`);
-    await expect(page.getByText("Somente leitura", { exact: false }).first()).toBeVisible();
-    await expect(page.getByTestId("publish-content")).toHaveCount(0);
-    await expect(page.getByTestId("unpublish-content")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /^Salvar$/ })).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`/creator/recipes/${id}/edit$`));
+    // receita no ar: o editor mostra o estado e as ações possíveis, sem o assistente
+    await expect(page.getByTestId("recipe-status-panel")).toBeVisible();
+    await expect(page.getByTestId("recipe-wizard")).toHaveCount(0);
   });
 
   test("o editor do admin mostra a receita g1 só para leitura, com o aviso", async ({ page }) => {

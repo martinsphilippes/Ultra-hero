@@ -1,4 +1,5 @@
 import { expect, test, type Browser, type BrowserContext, type Page, type TestInfo } from "@playwright/test";
+import { loginAsAdminActing } from "./helpers/acting";
 import { endSession, loginAs } from "./helpers/login";
 import { expectNoTestRecipe, purgeTestRecipes } from "./helpers/recipes";
 import { seedUuid } from "./helpers/seed";
@@ -6,7 +7,8 @@ import { publicSetting, rpcExists } from "./helpers/supabase";
 
 // Receitas fase 6 (seção 4.5 de docs/decisions/recipes-module.md): jornadas completas contra o banco
 // remoto, com as contas de demonstração. O cookie uh-e2e=1 desliga eventos e registro de interesse.
-//  - chef (Helena): cria a receita "[E2E] …" com ingredientes e etapas, salva, recarrega e confere;
+//  - chef (o herói da conta demo; desde a 0045 quem cria é o admin pelo herói escolhido em "Publicar como
+//    hero"): cria a receita "[E2E] …" com ingredientes e etapas, salva, recarrega e confere;
 //  - publicação efêmera (P4, opção a): com a revisão desligada (estado atual) a receita vai ao ar, a conta
 //    free (que já fez a etapa) a encontra no catálogo, a assinatura leva ao perfil do chef e o Modo Cozinha
 //    abre no celular; NO FIM a receita é arquivada e excluída (no afterEach, que roda mesmo quando o tempo
@@ -141,9 +143,9 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     }
   });
 
-  /** Entra como a Helena, leva sobras antigas e cria a receita desta execução (registrada para o afterEach). */
+  /** Entra como admin pelo herói da conta demo, leva sobras antigas e cria a receita desta execução. */
   async function startRun(page: Page): Promise<{ id: string; title: string }> {
-    await loginAs(page, "creator");
+    await loginAsAdminActing(page, "recipes");
     await purgeTestRecipes(page, PREFIX); // sobras antigas de execuções interrompidas
     const title = `${PREFIX} ${Date.now()}`;
     run = { title, consumer: null, publicPath: null };
@@ -293,8 +295,8 @@ test.describe("permissões", () => {
     await expect(page).toHaveURL(/\/login\?next=/);
   });
 
-  test("chef: editar a receita de outro chef dá 404", async ({ page }) => {
-    await loginAs(page, "creator");
+  test("admin pelo herói: editar a receita de outro chef dá 404", async ({ page }) => {
+    await loginAsAdminActing(page, "recipes");
     await page.goto(`/creator/recipes/${G2_ID}/edit`);
     await expectNotFound(page);
     await expect(page.getByTestId("recipe-wizard")).toHaveCount(0);

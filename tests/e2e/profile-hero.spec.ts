@@ -46,13 +46,13 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(header.getByText("Personagem fictício", { exact: true })).toBeVisible();
     await expect(header.getByTestId("hero-bio")).toBeVisible();
     await expect(main.getByRole("heading", { level: 1, name: "Perfil" })).toBeVisible();
-    // nenhum link antes dos atalhos do portal (o cartão "Portal do herói" saiu: o Painel está nos atalhos)
+    // nenhum link antes do Novo post (o herói só posta; o resto do portal é da administração, 0045)
     await expect(header.locator("a")).toHaveCount(0);
-    await expect(main.locator("a").first()).toHaveAttribute("data-testid", "hero-action-post");
+    await expect(main.locator("a").first()).toHaveAttribute("data-testid", "hero-new-post");
     await expect(page.getByTestId("profile-portal-creator")).toHaveCount(0);
 
-    // ordem: cabeçalho → atalhos do portal → Editar perfil / Ver página pública → editor (com "Sua conta" dentro) → Hoje
-    await expectInOrder([main.locator("h1"), header, page.getByTestId("hero-quick-actions"), toggle, publicLink, editor, page.getByTestId("today-section")]);
+    // ordem: cabeçalho → Novo post → Editar perfil / Ver página pública → editor (com "Sua conta" dentro) → Hoje
+    await expectInOrder([main.locator("h1"), header, page.getByTestId("hero-new-post"), toggle, publicLink, editor, page.getByTestId("today-section")]);
     await expect(editor.locator("#dados")).toHaveCount(1);
     // sem as seções antigas de baixo: "Dados" e a visão geral repetiam nome e foto
     await expect(page.getByRole("heading", { name: "Dados", exact: true })).toHaveCount(0);
@@ -189,13 +189,14 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(page.locator("#editar-perfil").getByTestId("chef-profile")).toBeVisible();
   });
 
-  test("o painel do herói não tem mais o cartão nem o item de menu Meu perfil", async ({ page }) => {
+  test("o herói não tem mais painel: /creator volta ao Perfil; o Novo post não tem menu nem Meu perfil", async ({ page }) => {
     await loginAs(page, "creator");
-    const main = page.locator("main");
-    await expect(main.getByRole("link", { name: /Vínculos de produtos/ }).first()).toBeVisible();
-    await expect(main.getByText("Meu perfil")).toHaveCount(0);
+    await page.goto("/creator");
+    await expect(page).toHaveURL(/\/profile$/);
+    await page.goto("/creator/post/new");
+    await expect(page.locator("main").getByText("Meu perfil")).toHaveCount(0);
     await expect(page.locator('a[href="/creator/profile"]')).toHaveCount(0);
-    // o portal do herói não tem mais menu: os atalhos ficam no Perfil
+    // o portal do herói não tem menu: o Novo post mora no Perfil
     await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
   });
 
