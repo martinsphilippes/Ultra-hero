@@ -81,7 +81,7 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
   // O cliente já barra; aqui é a defesa para quem chama a action direto.
   if (durationSec !== null && durationSec > SERVER_MAX_POST_SECONDS) return { ok: false, error: "too_long" };
 
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
   if (!(await readVideoUploadConfigured(supabase))) return { ok: false, error: "video_not_configured" };
@@ -175,7 +175,7 @@ export async function publishVideoPost(input: { contentId: string; title: string
   if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.path[0] === "title") ? "missing_title" : "invalid_input" };
   const { contentId, title, caption, pillar } = parsed.data;
 
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId } = ctx;
 
@@ -217,7 +217,7 @@ export async function publishVideoPost(input: { contentId: string; title: string
 export async function discardVideoPost(input: { contentId: string }): Promise<DiscardResult> {
   const parsed = idSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
 
   // A RPC confere dono, rascunho nunca publicado e vídeo do Stream; apaga o conteúdo e marca o

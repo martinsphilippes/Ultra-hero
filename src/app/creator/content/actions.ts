@@ -4,20 +4,18 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { parseContentForm, stripNutritionValidation } from "@/components/editors/content/schema";
 import type { ActionResult, ContentFormValues } from "@/components/editors/types";
-import { getUser } from "@/lib/auth/session";
 import type { Json } from "@/lib/supabase/database.types";
-import { createClient } from "@/lib/supabase/server";
 import { failFrom } from "../_lib/action-utils";
-import { insertCreatorContent } from "../_lib/content-insert";
+import { insertCreatorContent, type CreatorSupabase } from "../_lib/content-insert";
 import { creatorActionContext } from "../_lib/creator-action";
 import { setDraftSlug } from "../_lib/draft-slug";
 import { checkStreamVideo, readVideoUploadConfigured } from "../_lib/video-post";
 
-// Ações do herói sobre conteúdo. O herói grava rascunhos próprios e publica/despublica direto
-// (RPCs da 0025); regra de acesso e arquivamento continuam com o admin (RLS + guards de coluna).
+// Ações sobre conteúdo do herói. Desde a 0045 só o admin, pelo herói escolhido (creatorActionContext
+// "manage"); o herói comum fica só com o Novo post. Rascunhos e publicar/despublicar pelas RPCs da 0025.
 
 type SaveResult = ActionResult & { id?: string };
-type Supabase = Awaited<ReturnType<typeof createClient>>;
+type Supabase = CreatorSupabase;
 
 // Colunas que a personalidade pode escrever (espelha trg_a_content_guard).
 function creatorColumns(v: ContentFormValues) {
@@ -68,8 +66,8 @@ function revalidateContent(id?: string) {
 }
 
 export async function createContent(values: ContentFormValues): Promise<SaveResult> {
-  const user = await getUser();
-  if (!user) return { ok: false, error: "unauthenticated" };
+  const ctx = await creatorActionContext();
+  if (!ctx.ok) return ctx;
   // A personalidade nunca valida nutrição (RB-08): a marcação é zerada antes de validar e gravar.
   const parsed = parseContentForm(stripNutritionValidation(values));
   if (!parsed.ok) return { ok: false, error: "invalid_input" };
@@ -81,11 +79,8 @@ export async function createContent(values: ContentFormValues): Promise<SaveResu
   // ticket/envio no servidor.
   if (v.media.provider === "cloudflare_stream" || v.media.provider === "upload") return { ok: false, error: "forbidden" };
 
-  const supabase = await createClient();
-  const { data: creatorId } = await supabase.rpc("my_creator_id");
-  if (!creatorId) return { ok: false, error: "creator_unavailable" };
-
-  const inserted = await insertCreatorContent(supabase, { creator_id: creatorId, created_by: user.id, ...creatorColumns(v) });
+  const { supabase, creatorId, userId } = ctx;
+  const inserted = await insertCreatorContent(supabase, { creator_id: creatorId, created_by: userId, ...creatorColumns(v) });
   if (!inserted.ok) return inserted;
   const contentId = inserted.id;
 
@@ -96,16 +91,16 @@ export async function createContent(values: ContentFormValues): Promise<SaveResu
 }
 
 export async function updateContent(values: ContentFormValues): Promise<SaveResult> {
-  const user = await getUser();
-  if (!user) return { ok: false, error: "unauthenticated" };
+  const ctx = await creatorActionContext();
+  if (!ctx.ok) return ctx;
   const parsed = parseContentForm(stripNutritionValidation(values));
   if (!parsed.ok || !parsed.data.id) return { ok: false, error: "invalid_input" };
   const v = parsed.data;
   const id = v.id as string;
 
-  const supabase = await createClient();
-  const { data: existing } = await supabase.from("content").select("id, type, status, review_status").eq("id", id).maybeSingle();
-  if (!existing) return { ok: false, error: "not_found" };
+  const { supabase } = ctx;
+  const { data: existing } = await supabase.from("content").select("id, type, status, review_status, creator_id").eq("id", id).maybeSingle();
+  if (!existing || existing.creator_id !== ctx.creatorId) return { ok: false, error: "not_found" };
   if (existing.type === "recipe" || v.type === "recipe") return { ok: false, error: "recipe_editor_pending" };
   // Mesma regra do guard do banco; evita gravar o corpo de algo em revisão.
   if (existing.status !== "draft" || existing.review_status === "in_review") return { ok: false, error: "content_not_editable" };

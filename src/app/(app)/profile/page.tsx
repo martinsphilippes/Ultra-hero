@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, type LucideIcon } from "lucide-react";
+import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { ACCOUNT_ANCHOR, HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure";
 import { HeroProfileEditor, HeroProfileHeader } from "@/components/creator/HeroProfileTop";
-import { HeroQuickActions } from "@/components/creator/HeroQuickActions";
+import { HeroNewPost } from "@/components/creator/HeroNewPost";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
@@ -49,9 +50,9 @@ type EnrollmentWithItems = {
 const ENROLLMENT_SELECT =
   "id, status, program:programs(slug), version:program_versions(title, items:program_items(position, is_required, content:content(id, slug, title, cover_url, creator:creator_profiles(name))))";
 
-// Ordem de exibição: o portal do herói primeiro (é a área de trabalho principal de quem publica).
+// Sem "Portal do herói": o herói só posta (botão Novo post no topo); conteúdos, receitas, vínculos e
+// painel ficam com o admin ("Publicar como hero" no início do admin, 0045).
 const PORTALS: Array<{ role: Exclude<AppRole, "consumer">; href: string; icon: LucideIcon }> = [
-  { role: "creator", href: "/creator", icon: Sparkles },
   { role: "seller", href: "/seller", icon: Store },
   { role: "admin", href: "/admin", icon: ShieldCheck },
 ];
@@ -132,13 +133,13 @@ export default async function ProfilePage() {
   const planKey = subscription.status === "anonymous" ? "unknown" : subscription.status;
   // perfil ativo e vinculado (my_creator_id): só aí o editor do herói grava, e o avatar é um só
   const heroActive = heroProfile !== null && creator.creatorId !== null;
-  // herói ativo já tem o portal inteiro nos atalhos (Painel, Novo post…): o cartão "Portal do herói" sai
-  const visiblePortals = heroActive ? portals.filter((p) => p.role !== "creator") : portals;
+  // admin com perfil de herói posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros heróis)
+  const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/creator/post/new";
 
-  const portalsNav = visiblePortals.length > 0 ? (
+  const portalsNav = portals.length > 0 ? (
     <nav aria-label={t("portals.title")} data-testid="profile-portals">
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {visiblePortals.map(({ role, href, icon: Icon }) => (
+        {portals.map(({ role, href, icon: Icon }) => (
           <li key={role}>
             <Link
               href={href}
@@ -200,11 +201,11 @@ export default async function ProfilePage() {
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
 
       {heroProfile ? (
-        // topo do herói: cabeçalho público → atalhos do portal → outros portais (fornecedor/admin) → Editar perfil
+        // topo do herói: cabeçalho público → Novo post → outros portais (fornecedor/admin) → Editar perfil
         <div className="flex flex-col gap-4">
           <HeroProfileHeader profile={heroProfile} />
-          {/* atalhos do portal (novo post, conteúdos, receitas, vínculos, painel) perto de "Editar perfil" */}
-          {heroActive ? <HeroQuickActions /> : null}
+          {/* o herói só posta no dia a dia (foto ou vídeo); o resto é da administração */}
+          {heroActive ? <HeroNewPost href={newPostHref} /> : null}
           {portalsNav}
           <HeroProfileEditor
             profile={heroProfile}

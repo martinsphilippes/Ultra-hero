@@ -9,6 +9,10 @@
       "title": "Account without a hero profile",
       "description": "Your account has the hero role but is not linked to an active profile. Accept the invitation you received by email or contact the administration."
     },
+    "acting_unavailable": {
+      "title": "Publish as hero unavailable",
+      "description": "The database in this environment does not have the update that lets the admin team publish for heroes yet (0045)."
+    },
     "help": "Questions? Contact the Groscove Ultra editorial team. Remember: heroes on this platform are fictional and this is a demo environment."
   },
   "dashboard": {
@@ -173,6 +177,8 @@
       "unauthenticated": "Your session expired. Sign in again to continue.",
       "forbidden": "This account cannot post this video.",
       "creator_unavailable": "Your hero profile is not active.",
+      "acting_hero_required": "Choose the hero in \"Publish as hero\" on the admin home and try again.",
+      "acting_unavailable": "Publish as hero is not available in this environment yet.",
       "invalid_input": "Check the fields and try again.",
       "video_not_configured": "Video is not set up yet: ask the administrator to turn on Cloudflare Stream.",
       "not_video": "This file is not a video. Record a new one or pick another from your gallery.",
@@ -374,6 +380,8 @@
     "unauthenticated": "Sign in to continue.",
     "invalid_input": "Invalid data.",
     "creator_unavailable": "Your hero profile is not active.",
+    "acting_hero_required": "Choose the hero in \"Publish as hero\" on the admin home and try again.",
+    "acting_unavailable": "Publish as hero is not available in this environment yet.",
     "avatar_not_saved": "The other fields were saved, but your photo did not change. Please try saving again.",
     "not_found": "Not found.",
     "content_not_found": "Content not found.",

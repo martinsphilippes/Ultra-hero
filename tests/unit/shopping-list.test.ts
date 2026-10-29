@@ -260,6 +260,11 @@ vi.mock("next/cache", () => ({ revalidatePath: (p: string) => void state.revalid
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (k: string) => k }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: (k: string) => (k in state.cookies ? { value: state.cookies[k] } : undefined) }) }));
 vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async () => true }));
+// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+vi.mock("@/lib/acting-hero/server", () => ({
+  getActingHero: async () => ({ status: "ok", hero: { id: "c0000000-0000-4000-8000-000000000001", slug: "heroi", name: "Herói", avatar_url: null } }),
+  actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
+}));
 vi.mock("@/lib/analytics/track", () => ({ trackEvent: async (e: string) => void state.events.push(e) }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => fakeClient() }));
 vi.mock("@/components/commerce/server/cookies", () => ({ readExpectedPrices: async () => ({}), writeExpectedPrices: async () => undefined }));

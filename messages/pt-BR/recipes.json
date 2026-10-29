@@ -263,6 +263,8 @@
       "missing_title": "Falta o título.",
       "missing_body": "Salve o rascunho antes de publicar.",
       "creator_unavailable": "Seu perfil de herói está inativo ou sem vínculo.",
+      "acting_hero_required": "Escolha o hero em \"Publicar como hero\", no início do admin, e tente de novo.",
+      "acting_unavailable": "Publicar como hero ainda não está disponível neste ambiente.",
       "duplicate": "Já existe um registro igual.",
       "network": "Sem conexão. Tente de novo.",
       "generic": "Algo deu errado. Tente de novo."

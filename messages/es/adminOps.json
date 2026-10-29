@@ -119,6 +119,42 @@
       "open": "Abrir"
     }
   },
+  "heroPublishing": {
+    "title": "Publicar como héroe",
+    "description": "Solo la administración crea y gestiona contenido para los héroes. Toca un atajo y elige el héroe.",
+    "cardsLabel": "Atajos de publicación",
+    "cards": {
+      "post": "Nuevo post",
+      "newContent": "Nuevo contenido",
+      "content": "Contenidos",
+      "recipes": "Recetas",
+      "links": "Vínculos de productos",
+      "dashboard": "Panel"
+    },
+    "current": "Último héroe elegido: {name}",
+    "unavailable": "No disponible en este entorno: la base de datos aún no tiene la actualización que permite publicar para los héroes (0045).",
+    "picker": {
+      "title": "Elige el héroe",
+      "description": "Atajo: {card}. Vas a actuar en nombre del héroe elegido.",
+      "listLabel": "Héroes activos",
+      "empty": "No hay héroes activos en este momento.",
+      "current": "Actual",
+      "choosing": "Abriendo…"
+    },
+    "errors": {
+      "generic": "No se pudo elegir este héroe. Inténtalo de nuevo.",
+      "hero_unavailable": "Este héroe ya no está activo. Elige otro.",
+      "acting_unavailable": "No disponible en este entorno: la base de datos aún no tiene la actualización 0045.",
+      "forbidden": "Solo la administración publica para los héroes.",
+      "unauthenticated": "Tu sesión expiró. Vuelve a entrar para continuar.",
+      "invalid_input": "Elige un héroe de la lista."
+    },
+    "banner": {
+      "region": "Héroe elegido",
+      "label": "Publicando como",
+      "switch": "Cambiar héroe"
+    }
+  },
   "users": {
     "title": "Usuarios",
     "description": "Cuentas del experimento. Los correos solo se muestran aquí, para administración.",
@@ -258,9 +294,9 @@
     "accept": "Aceptar invitación",
     "accepting": "Aceptando…",
     "successTitle": "Invitación aceptada",
-    "successCreator": "Tu acceso al portal del héroe está listo.",
+    "successCreator": "Tu acceso de héroe está listo.",
     "successSeller": "Tu acceso al portal del proveedor está listo.",
-    "goCreator": "Ir al portal del héroe",
+    "goCreator": "Ir al Perfil",
     "goSeller": "Ir al portal del proveedor",
     "goHome": "Volver a la app",
     "errorTitle": "No se pudo aceptar"

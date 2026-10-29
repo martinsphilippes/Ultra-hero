@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Plus, Settings2 } from "lucide-react";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
+import { ActingHeroForCreator } from "@/components/admin-ops/ActingHeroForCreator";
 import { FilterBar, type FilterField } from "@/components/admin-content";
 import { isScheduled } from "@/components/admin-content/lib/publish-at";
 import { escapeLike, hasAnyFilter, pickEnum, pickSearch, pickUuid, type SearchParams } from "@/components/admin-content/lib/search-params";
@@ -152,6 +153,8 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
 
   return (
     <div className="flex flex-col gap-6">
+      {/* atalho "Conteúdos" de Publicar como hero: a faixa do herói escolhido */}
+      <ActingHeroForCreator creatorId={creator} />
       <PageHeader
         title={t("title")}
         description={t("description")}
@@ -161,7 +164,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
               <Link href="/admin/content/settings">{t("settings")}</Link>
             </Button>
             <Button asChild size="sm" leadingIcon={<Plus />}>
-              <Link href="/admin/content/new">{t("new")}</Link>
+              <Link href={creator ? `/admin/content/new?creator=${creator}` : "/admin/content/new"}>{t("new")}</Link>
             </Button>
           </>
         }

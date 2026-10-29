@@ -55,7 +55,7 @@ function revalidatePost() {
 }
 
 export async function startPhotoPost(formData: FormData): Promise<StartResult> {
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
   const base = supabaseBaseUrl();
@@ -134,7 +134,7 @@ export async function publishPhotoPost(input: { contentId: string; title: string
   if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.path[0] === "title") ? "missing_title" : "invalid_input" };
   const { contentId, title, caption, pillar } = parsed.data;
 
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId } = ctx;
 
@@ -170,7 +170,7 @@ export async function publishPhotoPost(input: { contentId: string; title: string
 export async function discardPhotoPost(input: { contentId: string }): Promise<DiscardResult> {
   const parsed = idSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
 
   // A RPC confere dono, rascunho nunca publicado e corpo com foto; apaga o conteúdo e devolve o

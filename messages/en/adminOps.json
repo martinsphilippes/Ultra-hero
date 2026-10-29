@@ -119,6 +119,42 @@
       "open": "Open"
     }
   },
+  "heroPublishing": {
+    "title": "Publish as hero",
+    "description": "Only the admin team creates and manages content for heroes. Tap a shortcut and choose the hero.",
+    "cardsLabel": "Publishing shortcuts",
+    "cards": {
+      "post": "New post",
+      "newContent": "New content",
+      "content": "Content",
+      "recipes": "Recipes",
+      "links": "Product links",
+      "dashboard": "Dashboard"
+    },
+    "current": "Last hero chosen: {name}",
+    "unavailable": "Unavailable in this environment: the database does not have the update that allows publishing for heroes yet (0045).",
+    "picker": {
+      "title": "Choose the hero",
+      "description": "Shortcut: {card}. You will act on behalf of the chosen hero.",
+      "listLabel": "Active heroes",
+      "empty": "No active heroes right now.",
+      "current": "Current",
+      "choosing": "Opening…"
+    },
+    "errors": {
+      "generic": "Could not choose this hero. Try again.",
+      "hero_unavailable": "This hero is no longer active. Choose another one.",
+      "acting_unavailable": "Unavailable in this environment: the database does not have update 0045 yet.",
+      "forbidden": "Only the admin team publishes for heroes.",
+      "unauthenticated": "Your session expired. Sign in again to continue.",
+      "invalid_input": "Choose a hero from the list."
+    },
+    "banner": {
+      "region": "Chosen hero",
+      "label": "Publishing as",
+      "switch": "Switch hero"
+    }
+  },
   "users": {
     "title": "Users",
     "description": "Experiment accounts. E-mails are shown only here, for administration.",
@@ -258,9 +294,9 @@
     "accept": "Accept invitation",
     "accepting": "Accepting…",
     "successTitle": "Invitation accepted",
-    "successCreator": "Your access to the hero portal is ready.",
+    "successCreator": "Your hero access is ready.",
     "successSeller": "Your access to the supplier portal is ready.",
-    "goCreator": "Go to the hero portal",
+    "goCreator": "Go to Profile",
     "goSeller": "Go to the supplier portal",
     "goHome": "Back to the app",
     "errorTitle": "Could not accept"

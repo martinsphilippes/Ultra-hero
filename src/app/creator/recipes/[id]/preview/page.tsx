@@ -9,8 +9,7 @@ import { RecipeView } from "@/components/recipes/view/RecipeView";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { Button } from "@/components/ui";
 import { isLive } from "@/lib/recipes/media";
-import { createClient } from "@/lib/supabase/server";
-import { getMyCreator } from "../../../_lib/creator";
+import { getManagedCreator } from "../../../_lib/creator";
 import { loadOwnRecipeContent, loadRecipeCategories } from "../../_lib/load";
 
 type Params = { params: Promise<{ id: string }> };
@@ -25,9 +24,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RecipePreviewPage({ params }: Params) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
-  const [t, locale, ctx] = await Promise.all([getTranslations("recipes.preview"), getLocale(), getMyCreator()]);
+  const [t, locale, ctx] = await Promise.all([getTranslations("recipes.preview"), getLocale(), getManagedCreator("recipes")]);
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("metaTitle")} />;
-  const supabase = await createClient();
+  const supabase = ctx.supabase;
   const content = await loadOwnRecipeContent(supabase, id, ctx.creatorId);
   if (!content) notFound();
 
