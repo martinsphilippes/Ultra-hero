@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { isActivePath, NAV_ITEMS } from "@/components/layout/nav-items";
 
 describe("navegação principal", () => {
-  it("tem exatamente 4 abas na ordem Início, Explorar, Heróis, Perfil", () => {
-    expect(NAV_ITEMS.map((i) => i.key)).toEqual(["home", "explore", "personalities", "profile"]);
-    expect(NAV_ITEMS.map((i) => i.href)).toEqual(["/", "/explore", "/personalities", "/profile"]);
+  it("tem exatamente 4 abas na ordem Hero, Início, Explorar, Perfil", () => {
+    expect(NAV_ITEMS.map((i) => i.key)).toEqual(["personalities", "home", "explore", "profile"]);
+    expect(NAV_ITEMS.map((i) => i.href)).toEqual(["/personalities", "/", "/explore", "/profile"]);
   });
 
   it("Evolução não é mais aba e fica ativa sob o Perfil", () => {

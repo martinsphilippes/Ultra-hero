@@ -151,6 +151,8 @@ test.describe("produto correspondente no editor (conta do herói)", () => {
     const title = `${titlePrefix} ${Date.now()}`;
     try {
       await page.goto("/creator/recipes/new");
+      // só preenche depois da hidratação (antes disso o React refaz os campos e o clique se perde)
+      await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-ready", "true", { timeout: 20_000 });
       await page.getByTestId("recipe-title").fill(title);
       await page.getByTestId("recipe-summary").fill("Rascunho do teste automático da lista de compras; é excluído no fim.");
       await page.getByTestId("recipe-category-cafe-da-manha").click();

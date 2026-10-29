@@ -1,7 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { getOriginFromRequest } from "@/lib/auth/origin";
-import { safeNext } from "@/lib/auth/safe-next";
+import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
 const OTP_TYPES: readonly EmailOtpType[] = ["signup", "invite", "magiclink", "recovery", "email_change", "email"];
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   const rawNext = searchParams.get("next");
   // Recuperação de senha sem `next` explícito vai direto para a troca de senha.
-  const next = safeNext(rawNext, type === "recovery" ? "/reset-password" : "/");
+  const next = safeNext(rawNext, type === "recovery" ? "/reset-password" : LOGIN_HOME);
 
   if (!tokenHash || !type || !OTP_TYPES.includes(type)) {
     return NextResponse.redirect(`${origin}/login?error=invalidLink`);

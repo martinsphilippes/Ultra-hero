@@ -12,9 +12,10 @@ export type NavItem = {
 
 // Exatamente 4 abas: a Evolução virou uma seção do Perfil (/profile/evolution).
 export const NAV_ITEMS: readonly NavItem[] = [
+  // Hero vem primeiro (pedido do responsável): é onde todo login chega.
+  { key: "personalities", href: "/personalities", icon: Users },
   { key: "home", href: "/", icon: Home },
   { key: "explore", href: "/explore", icon: Compass },
-  { key: "personalities", href: "/personalities", icon: Users },
   { key: "profile", href: "/profile", icon: User },
 ];
 

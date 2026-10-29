@@ -1,6 +1,9 @@
 // Caminhos para onde não faz sentido voltar após autenticar (/reset-password é destino legítimo da recuperação).
 const BLOCKED_PREFIXES = ["/auth/", "/login", "/signup", "/forgot-password"];
 
+/** Para onde todo login vai quando não há um destino pedido: a aba Hero. */
+export const LOGIN_HOME = "/personalities";
+
 // Garante que `next` é um caminho relativo da mesma origem (evita open redirect).
 export function safeNext(next: unknown, fallback = "/"): string {
   if (typeof next !== "string" || next.length === 0 || next.length > 2048) return fallback;

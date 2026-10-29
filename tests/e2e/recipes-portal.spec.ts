@@ -82,6 +82,8 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
     try {
       // ---- etapa 1 (rascunho ainda não existe)
       await page.goto("/creator/recipes/new");
+      // só preenche depois da hidratação (antes disso o React refaz os campos e o clique se perde)
+      await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-ready", "true", { timeout: 20_000 });
       await expect(page.getByRole("heading", { level: 2, name: "Informações básicas" })).toBeVisible();
       await axeMain(page);
       await page.getByTestId("recipe-title").fill(title);

@@ -5,7 +5,7 @@ import { AuthAlert } from "@/components/auth/AuthAlert";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { readExperimentOpen } from "@/lib/auth/experiment";
-import { safeNext } from "@/lib/auth/safe-next";
+import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import { getUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // o banco só aceita convidados (ou bootstrap); o formulário continua disponível para eles.
 export default async function SignupPage({ searchParams }: { searchParams: SearchParams }) {
   const { next: rawNext } = await searchParams;
-  const next = safeNext(rawNext);
+  const next = safeNext(rawNext, LOGIN_HOME);
 
   const user = await getUser();
   if (user) redirect(next);

@@ -3,12 +3,13 @@
 // Pedido do responsável: acesso direto, sem código, na tela de login e no Início enquanto o app é um
 // experimento. Apagar DEMO_ACCOUNTS_PASSWORD na Vercel desliga os botões; remover antes de abrir ao público.
 
+// Todas entram direto na aba Hero (pedido do responsável); os portais ficam a um toque no Perfil.
 export const DEMO_ACCOUNTS = [
-  { kind: "admin", email: "admin@demo.ultrahero.app", home: "/admin" },
-  { kind: "creator", email: "heroi@demo.ultrahero.app", home: "/creator" },
-  { kind: "seller", email: "fornecedor@demo.ultrahero.app", home: "/seller" },
-  { kind: "premium", email: "premium@demo.ultrahero.app", home: "/profile" },
-  { kind: "free", email: "gratuito@demo.ultrahero.app", home: "/explore" },
+  { kind: "admin", email: "admin@demo.ultrahero.app", home: "/personalities" },
+  { kind: "creator", email: "heroi@demo.ultrahero.app", home: "/personalities" },
+  { kind: "seller", email: "fornecedor@demo.ultrahero.app", home: "/personalities" },
+  { kind: "premium", email: "premium@demo.ultrahero.app", home: "/personalities" },
+  { kind: "free", email: "gratuito@demo.ultrahero.app", home: "/personalities" },
 ] as const;
 
 export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];

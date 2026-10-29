@@ -13,7 +13,8 @@ export async function signInAsDemo(formData: FormData): Promise<void> {
   const password = demoPassword();
   if (!account || !password) redirect(origin);
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  // só este aparelho: o escopo padrão (global) derrubaria quem mais estiver usando a mesma conta demo
+  await supabase.auth.signOut({ scope: "local" });
   const { error } = await supabase.auth.signInWithPassword({ email: account.email, password });
   if (error) redirect(`${origin}?demo=error`);
   redirect(account.home);

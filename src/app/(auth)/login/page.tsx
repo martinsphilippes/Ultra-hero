@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { DemoAccess } from "@/components/demo/DemoAccess";
-import { safeNext } from "@/lib/auth/safe-next";
+import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import { getUser } from "@/lib/auth/session";
 import { isAuthQueryError } from "@/lib/auth/types";
 
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
   const { next: rawNext, error, demo } = await searchParams;
-  const next = safeNext(rawNext);
+  const next = safeNext(rawNext, LOGIN_HOME);
 
   // Já autenticado: não faz sentido ver o login.
   const user = await getUser();

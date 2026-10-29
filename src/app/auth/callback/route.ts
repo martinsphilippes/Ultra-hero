@@ -1,14 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isOAuthSignupRefused, isOAuthUserBanned, readExperimentOpen } from "@/lib/auth/experiment";
 import { getOriginFromRequest } from "@/lib/auth/origin";
-import { safeNext } from "@/lib/auth/safe-next";
+import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
 // Troca o código PKCE (OAuth, confirmação, recuperação) por sessão e segue para `next`.
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const origin = getOriginFromRequest(request);
-  const next = safeNext(searchParams.get("next"));
+  const next = safeNext(searchParams.get("next"), LOGIN_HOME);
   const code = searchParams.get("code");
 
   if (searchParams.get("error") || searchParams.get("error_code")) {

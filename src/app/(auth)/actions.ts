@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { getOrigin } from "@/lib/auth/origin";
-import { safeNext } from "@/lib/auth/safe-next";
+import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import type { AuthActionState, AuthField, AuthFieldErrors } from "@/lib/auth/types";
 import { createClient } from "@/lib/supabase/server";
 
@@ -78,7 +78,7 @@ export async function loginAction(_prev: AuthActionState, formData: FormData): P
   const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
 
-  const next = safeNext(formData.get("next"));
+  const next = safeNext(formData.get("next"), LOGIN_HOME);
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { status: "error", error: mapAuthError(error) };
@@ -96,7 +96,7 @@ export async function signupAction(_prev: AuthActionState, formData: FormData): 
   });
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
 
-  const next = safeNext(formData.get("next"));
+  const next = safeNext(formData.get("next"), LOGIN_HOME);
   const origin = await getOrigin();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({

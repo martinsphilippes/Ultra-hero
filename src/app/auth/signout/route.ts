@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    await supabase.auth.signOut();
+    // "Sair" encerra a sessão deste aparelho; os outros aparelhos da pessoa continuam conectados
+    await supabase.auth.signOut({ scope: "local" });
   }
   revalidatePath("/", "layout");
   return NextResponse.redirect(`${getOriginFromRequest(request)}/login`, { status: 303 });

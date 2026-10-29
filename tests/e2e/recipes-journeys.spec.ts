@@ -76,6 +76,8 @@ async function clickNext(page: Page, step: string) {
 /** Cria pelo editor de 6 etapas: básicos, 2 ingredientes, 2 etapas e "Nenhum alérgeno". Devolve o id. */
 async function createRecipe(page: Page, title: string): Promise<string> {
   await page.goto("/creator/recipes/new");
+  // só preenche depois da hidratação (antes disso o React refaz os campos e o clique se perde)
+  await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-ready", "true", { timeout: 20_000 });
   await page.getByTestId("recipe-title").fill(title);
   await page.getByTestId("recipe-summary").fill("Receita do teste automático das jornadas; sai do ar e é excluída no fim.");
   await page.getByTestId("recipe-category-cafe-da-manha").click();

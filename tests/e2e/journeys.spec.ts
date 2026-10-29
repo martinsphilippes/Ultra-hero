@@ -41,7 +41,7 @@ test.describe("visitante", () => {
     const nav = page.getByRole("navigation", { name: "Navegação principal" }).filter({ visible: true }).first();
     const links = nav.getByRole("link");
     await expect(links).toHaveCount(4);
-    await expect(links).toHaveText(["Início", "Explorar", "Heróis", "Perfil"]);
+    await expect(links).toHaveText(["Hero", "Início", "Explorar", "Perfil"]);
   });
 
   // helena-vilar: personalidade do seed (0008) com vínculos validados (g1→m1, g3→k1, g5→m4, g9→k3).

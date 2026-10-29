@@ -108,6 +108,10 @@ export function RecipeWizard(props: Props) {
   const updatedRef = useRef(updatedAt);
   const inflight = useRef<Promise<SaveOutcome> | null>(null);
   const pendingFocus = useRef<string | null>(null);
+  const createdRef = useRef<string | null>(null);
+  // marca de "pronto para digitar" (hidratação concluída): os testes esperam por ela antes de preencher
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   // vindo da Revisão por um item do checklist: a etapa mostra o que falta e leva ao campo
   const [fix, setFix] = useState<{ step: RecipeEditorStep; codes: RecipeChecklistCode[] } | null>(null);
   draftRef.current = draft;
@@ -194,6 +198,11 @@ export function RecipeWizard(props: Props) {
   // ---------------------------------------------------------------- gravação
   const saveOnce = useCallback(
     async (opts: { overwrite?: boolean; quiet?: boolean } = {}): Promise<SaveOutcome> => {
+      // rascunho já criado nesta tela: só termina de abrir o editor dele, nunca cria outro
+      if (createdRef.current) {
+        window.location.assign(`/creator/recipes/${createdRef.current}/edit?step=ingredientes`);
+        return "ok";
+      }
       const current = draftRef.current;
       const built = buildPayload(current);
       if (!built.ok) {
@@ -211,7 +220,11 @@ export function RecipeWizard(props: Props) {
             return "failed";
           }
           removeLocal(storageKey);
-          router.replace(`/creator/recipes/${result.id}/edit?step=ingredientes`);
+          // Navegação completa (não router.replace): a atualização que a própria ação dispara para
+          // /new às vezes chegava depois e cancelava a troca, deixando a pessoa na tela de criar com o
+          // rascunho já gravado (e um segundo toque criaria outro). Guardado em createdRef para isso.
+          createdRef.current = result.id;
+          window.location.assign(`/creator/recipes/${result.id}/edit?step=ingredientes`);
           return "ok";
         }
         const result = await saveRecipe({ id: contentId, payload: built.payload, expectedUpdatedAt: updatedRef.current ?? "", overwrite: opts.overwrite });
@@ -419,7 +432,7 @@ export function RecipeWizard(props: Props) {
   const timeFormat = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="flex flex-col gap-6" data-testid="recipe-wizard" data-step={step}>
+    <div className="flex flex-col gap-6" data-testid="recipe-wizard" data-step={step} data-ready={ready ? "true" : undefined}>
       {recovery && (
         <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-info/40 bg-info-soft p-4" data-testid="recipe-recovery">
           <p className="font-semibold text-fg">{t("recovery.title")}</p>
