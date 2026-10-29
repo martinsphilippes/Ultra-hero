@@ -18,9 +18,9 @@ type IconButtonProps = Omit<ComponentProps<"button">, "children"> & {
 };
 
 const sizes = {
-  sm: "size-9 min-h-9 min-w-9 rounded-md [&_svg]:size-4",
-  md: "size-11 min-h-11 min-w-11 rounded-lg [&_svg]:size-5",
-  lg: "size-12 min-h-12 min-w-12 rounded-xl [&_svg]:size-6",
+  sm: "size-9 min-h-9 min-w-9 rounded-(--uh-btn-radius-sm) [&_svg]:size-4",
+  md: "size-11 min-h-11 min-w-11 rounded-(--uh-btn-radius-md) [&_svg]:size-5",
+  lg: "size-12 min-h-12 min-w-12 rounded-(--uh-btn-radius-lg) [&_svg]:size-6",
 };
 
 // Botão só com ícone; área de toque mínima de 44px no tamanho md.
@@ -38,7 +38,7 @@ export function IconButton({
   children,
   ...props
 }: IconButtonProps) {
-  const classes = cn(buttonBase, buttonVariants[variant], sizes[size], "relative p-0", className);
+  const classes = cn(buttonBase, buttonVariants[variant], `uh-btn--${variant}`, "uh-icon-btn", sizes[size], "relative p-0", className);
   const content = (
     <>
       {loading ? <Spinner size="sm" label={label} /> : <span aria-hidden="true">{icon}</span>}

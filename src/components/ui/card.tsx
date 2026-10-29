@@ -17,7 +17,7 @@ const paddings = { none: "", sm: "p-3", md: "p-4", lg: "p-6" };
 // Superfície base. Combine com CardImage / CardBody / CardTitle / CardFooter.
 export function Card({ className, interactive = false, stepped = false, padding = "none", asChild = false, ...props }: CardProps) {
   const classes = cn(
-    "group/card relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface text-fg shadow-sm",
+    "uh-card group/card relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface text-fg shadow-sm",
     "transition-[transform,box-shadow,border-color] duration-200 ease-out-expo",
     interactive &&
       "cursor-pointer hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:translate-y-0",

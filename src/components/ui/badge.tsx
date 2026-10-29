@@ -48,7 +48,8 @@ export function Badge({ variant = "neutral", size = "md", icon, className, child
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center rounded-md border font-mono font-medium uppercase leading-none tracking-wider whitespace-nowrap",
+        `uh-badge uh-badge--${variant}`,
+        "inline-flex shrink-0 items-center rounded-(--uh-badge-radius) border font-mono font-medium uppercase leading-none tracking-wider whitespace-nowrap",
         badgeVariants[variant],
         sizes[size],
         className,
@@ -107,7 +108,7 @@ export function Chip({ selected = false, variant = "neutral", icon, className, c
       type={type ?? "button"}
       aria-pressed={selected}
       className={cn(
-        "inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors",
+        "uh-chip inline-flex min-h-9 items-center gap-1.5 rounded-(--uh-chip-radius) border px-3.5 text-sm font-medium transition-colors",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         selected
           ? variant === "neutral"

@@ -9,6 +9,9 @@
    ============================================================================= */
 
 /* ---------------------------------------------------------------- tokens ---- */
+/* O seletor [data-template="original"][data-theme] deixa a prévia do Original (painel Aparência) correta
+   mesmo com outro template ativo; os demais templates ficam em templates.css. */
+[data-template="original"][data-theme="dark"],
 :root {
   color-scheme: dark;
 
@@ -51,6 +54,7 @@
 }
 
 /* Tema claro: forçado pelo atributo ou pelo sistema (quando não forçado escuro). */
+[data-template="original"][data-theme="light"],
 :root[data-theme="light"] {
   color-scheme: light;
   --uh-bg: #f7f4ef;
@@ -253,6 +257,7 @@
     background-color: var(--uh-bg);
     color: var(--uh-fg);
     font-family: var(--font-sans);
+    font-variant-numeric: var(--uh-numeric);
     min-height: 100dvh;
     overscroll-behavior-y: none;
   }
@@ -261,6 +266,11 @@
   :focus-visible {
     outline: 2px solid var(--uh-focus);
     outline-offset: 2px;
+  }
+
+  /* Traço dos ícones (lucide) por template; só nos que usam o traço padrão */
+  svg.lucide[stroke-width="2"] {
+    stroke-width: var(--uh-icon-stroke);
   }
 
   ::selection {
@@ -291,52 +301,64 @@
 }
 
 /* ------------------------------------------------------- tipografia ---------- */
+/* Escala tipográfica por tokens (--uh-*), definidos por template em templates.css */
 @utility type-display {
-  font-size: clamp(2.25rem, 1.5rem + 3.5vw, 3.75rem);
-  line-height: 1.02;
-  font-weight: 800;
-  letter-spacing: -0.035em;
+  font-family: var(--uh-font-heading);
+  font-stretch: var(--uh-heading-stretch);
+  font-size: var(--uh-display-size);
+  line-height: var(--uh-display-leading);
+  font-weight: var(--uh-display-weight);
+  letter-spacing: var(--uh-display-tracking);
+  text-transform: var(--uh-display-case);
 }
 @utility type-h1 {
-  font-size: clamp(1.75rem, 1.35rem + 1.8vw, 2.5rem);
-  line-height: 1.1;
-  font-weight: 750;
-  letter-spacing: -0.025em;
+  font-family: var(--uh-font-heading);
+  font-stretch: var(--uh-heading-stretch);
+  font-size: var(--uh-h1-size);
+  line-height: var(--uh-h1-leading);
+  font-weight: var(--uh-h1-weight);
+  letter-spacing: var(--uh-h1-tracking);
+  text-transform: var(--uh-h1-case);
 }
 @utility type-h2 {
-  font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--uh-font-heading);
+  font-stretch: var(--uh-heading-stretch);
+  font-size: var(--uh-h2-size);
+  line-height: var(--uh-h2-leading);
+  font-weight: var(--uh-h2-weight);
+  letter-spacing: var(--uh-h2-tracking);
+  text-transform: var(--uh-h2-case);
 }
 @utility type-h3 {
-  font-size: 1.125rem;
-  line-height: 1.35;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-family: var(--uh-font-h3);
+  font-stretch: var(--uh-h3-stretch);
+  font-size: var(--uh-h3-size);
+  line-height: var(--uh-h3-leading);
+  font-weight: var(--uh-h3-weight);
+  letter-spacing: var(--uh-h3-tracking);
 }
 @utility type-body {
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: var(--uh-body-leading);
   font-weight: 400;
 }
 @utility type-body-sm {
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: var(--uh-body-sm-leading);
   font-weight: 400;
 }
 @utility type-caption {
   font-size: 0.75rem;
   line-height: 1.4;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: var(--uh-caption-tracking);
 }
 @utility type-overline {
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-family: var(--uh-font-label);
+  font-size: var(--uh-overline-size);
   line-height: 1.2;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  font-weight: var(--uh-overline-weight);
+  letter-spacing: var(--uh-overline-tracking);
   text-transform: uppercase;
 }
 @utility type-numeric {

@@ -75,6 +75,36 @@
     "current": "Tema actual: {theme}",
     "switchTo": "Cambiar a {theme}"
   },
+  "appearance": {
+    "button": "Apariencia",
+    "title": "Apariencia",
+    "description": "Elige el aspecto de la app. Solo cambia la apariencia: pantallas, botones e información siguen iguales.",
+    "hint": "Sirve para el modo claro y el oscuro y queda guardado en este dispositivo.",
+    "close": "Cerrar",
+    "active": "En uso",
+    "options": {
+      "original": {
+        "name": "Ultra Original",
+        "description": "El aspecto de siempre de Ultra Hero, con el naranja de la marca."
+      },
+      "impact": {
+        "name": "Ultra Impact",
+        "description": "Atlético y audaz: títulos fuertes, blanco y negro y botones marcados."
+      },
+      "essential": {
+        "name": "Ultra Essential",
+        "description": "Tranquilo y acogedor: tonos claros y cálidos, letras suaves y más espacio."
+      },
+      "performance": {
+        "name": "Ultra Performance",
+        "description": "Tecnológico y preciso: tonos neutros, un toque de azul y números alineados."
+      },
+      "urban": {
+        "name": "Ultra Urban",
+        "description": "Deportivo y urbano: bloques rectos, alto contraste y detalles en verde lima."
+      }
+    }
+  },
   "pillars": {
     "routine": "Rutina",
     "training": "Entrenamiento",

@@ -128,7 +128,7 @@ export function Tab({ value, icon, className, children, onClick, ...props }: Tab
         ctx.setValue(value);
       }}
       className={cn(
-        "relative inline-flex min-h-11 min-w-0 items-center gap-2 whitespace-nowrap font-semibold transition-colors",
+        "uh-tab relative inline-flex min-h-11 min-w-0 items-center gap-2 whitespace-nowrap font-semibold transition-colors",
         "flex-1 justify-center px-1.5 text-[13px] sm:flex-none sm:justify-start sm:px-3 sm:text-sm",
         "focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus",
         underline

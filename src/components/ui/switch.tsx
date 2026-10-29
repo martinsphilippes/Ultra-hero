@@ -47,7 +47,7 @@ export function Switch({
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform",
+          "uh-switch-thumb pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform",
           thumb,
         )}
       />

@@ -75,6 +75,36 @@
     "current": "Current theme: {theme}",
     "switchTo": "Switch to {theme}"
   },
+  "appearance": {
+    "button": "Appearance",
+    "title": "Appearance",
+    "description": "Choose how the app looks. Only the look changes: screens, buttons and information stay the same.",
+    "hint": "Works in both light and dark mode and is saved on this device.",
+    "close": "Close",
+    "active": "In use",
+    "options": {
+      "original": {
+        "name": "Ultra Original",
+        "description": "The classic Ultra Hero look, with the brand orange."
+      },
+      "impact": {
+        "name": "Ultra Impact",
+        "description": "Athletic and bold: strong headlines, black and white, striking buttons."
+      },
+      "essential": {
+        "name": "Ultra Essential",
+        "description": "Calm and welcoming: warm light tones, soft type and more space."
+      },
+      "performance": {
+        "name": "Ultra Performance",
+        "description": "Technical and precise: neutral tones, a touch of blue and aligned numbers."
+      },
+      "urban": {
+        "name": "Ultra Urban",
+        "description": "Sporty and urban: straight blocks, high contrast and lime details."
+      }
+    }
+  },
   "pillars": {
     "routine": "Routine",
     "training": "Training",

@@ -8,6 +8,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
 import { DEMO_BANNER_COOKIE, resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import { BottomNav, TopNavLinks } from "./AppNav";
+import { AppearanceMenu } from "./AppearanceMenu";
 import { DemoBanner } from "./DemoBanner";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
@@ -33,7 +34,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
         <DemoBanner initiallyDismissed={demoDismissed} />
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
+      <header className="uh-header uh-chrome sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-4 px-gutter">
           <Link
             href="/"
@@ -52,6 +53,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
             <IconButton asChild label={t("actions.search")} icon={<Search />} className="hidden md:inline-flex">
               <Link href="/explore" />
             </IconButton>
+            <AppearanceMenu />
             <ThemeToggle initialTheme={theme} />
             <LocaleSwitcher />
             <UserMenu session={session} />
