@@ -4556,6 +4556,142 @@ select tests.ok('S55 nada do cenário fica no ar e os heróis voltam sem usuári
   (select count(*) from public.content where slug like 's55-%') = 0
   and (select count(*) from public.creator_profiles where id in (public.seed_uuid('creator:rafael'), public.seed_uuid('creator:tiago')) and user_id is null) = 2);
 
+-- ================================================================ S56 · Admin publica pelo herói (0045)
+-- O servidor manda `x-acting-hero` só no fluxo "Publicar como hero" do admin; o banco honra o
+-- cabeçalho só para admin com herói ativo. Herói, consumidor e visitante com o mesmo cabeçalho não
+-- mudam de herói. Rafael (…0561) fica ligado a um herói de teste só aqui; Tiago é o herói em nome de
+-- quem o admin age. Tudo que este cenário cria sai no fim (o S14 conta 40 no ar).
+create or replace function tests.acting(p_creator text) returns void language plpgsql as $$
+begin
+  perform set_config('request.headers', case when p_creator is null then '' else json_build_object('x-acting-hero', p_creator)::text end, true);
+end $$;
+grant execute on function tests.acting(text) to anon, authenticated;
+select tests.su();
+insert into auth.users (id, email) values ('56000000-0000-4000-8000-000000000561', 's56hero@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('56000000-0000-4000-8000-000000000561', 'creator', 'global');
+update public.creator_profiles set user_id = '56000000-0000-4000-8000-000000000561' where id = public.seed_uuid('creator:rafael');
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind) values
+  ('56000000-0000-4000-8000-000000005601', 's56-rascunho-tiago', public.seed_uuid('creator:tiago'), 'training', 'article', 'Rascunho do Tiago S56', 'own');
+insert into public.content_bodies (content_id, body) values ('56000000-0000-4000-8000-000000005601', '{"kind":"article"}');
+create temporary table t_s56_tiago as select public.seed_uuid('creator:tiago')::text as id;
+grant select on t_s56_tiago to authenticated, anon;
+
+-- visitante: sem execute nas funções novas; o cabeçalho não dá herói
+select tests.anon();
+select tests.acting((select id from t_s56_tiago));
+select tests.ok('S56 visitante com o cabeçalho: my_creator_id() segue nulo', public.my_creator_id() is null);
+select tests.expect_error('S56 visitante não executa acting_hero_id', $q$select public.acting_hero_id()$q$, 'permission denied');
+select tests.expect_error('S56 visitante não executa admin_act_as_hero', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'permission denied');
+select tests.expect_error('S56 visitante não reserva foto nem com o cabeçalho', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'permission denied');
+
+-- consumidor com o cabeçalho: nada muda
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.acting((select id from t_s56_tiago));
+select tests.ok('S56 consumidor com o cabeçalho: my_creator_id() e acting_hero_id() nulos', public.my_creator_id() is null and public.acting_hero_id() is null);
+select tests.expect_error('S56 consumidor não age pelo herói: admin_act_as_hero forbidden', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'forbidden');
+select tests.expect_error('S56 consumidor com o cabeçalho não reserva foto: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+select tests.expect_error('S56 consumidor com o cabeçalho não publica o rascunho do herói', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
+select tests.ok('S56 consumidor com o cabeçalho não vê o rascunho do herói', (select count(*) from public.content where id = '56000000-0000-4000-8000-000000005601') = 0);
+
+-- herói (Rafael) com o cabeçalho do Tiago: continua sendo o Rafael
+select tests.login('56000000-0000-4000-8000-000000000561', 's56hero@test.local');
+select tests.acting((select id from t_s56_tiago));
+select tests.ok('S56 herói com o cabeçalho de outro herói: my_creator_id() é o próprio', public.my_creator_id() = public.seed_uuid('creator:rafael') and public.acting_hero_id() is null);
+select tests.expect_error('S56 herói não escolhe outro herói: admin_act_as_hero forbidden', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'forbidden');
+select tests.ok('S56 herói com o cabeçalho não vê o rascunho do outro herói', (select count(*) from public.content where id = '56000000-0000-4000-8000-000000005601') = 0);
+select tests.expect_error('S56 herói com o cabeçalho não publica o rascunho do outro herói', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
+select tests.expect_error('S56 herói com o cabeçalho não cria conteúdo em nome do outro herói',
+  $q$insert into public.content (slug, creator_id, pillar, type, title) values ('s56-intruso', public.seed_uuid('creator:tiago'), 'training', 'article', 'Intruso')$q$, 'row-level security');
+select tests.expect_error('S56 herói não envia foto de receita para a pasta de outro herói (política nova é só do admin)',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:tiago') || '/56000000-0000-4000-8000-000000005602/a5600000-0000-4000-8000-000000000001.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.acting(null);
+select tests.ok('S56 herói sem o cabeçalho: nada mudou (my_creator_id() é o próprio)', public.my_creator_id() = public.seed_uuid('creator:rafael'));
+
+-- admin sem o cabeçalho: moderação de sempre, sem herói
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.acting(null);
+select tests.ok('S56 admin sem o cabeçalho: sem herói', public.my_creator_id() is null and public.acting_hero_id() is null);
+select tests.expect_error('S56 admin sem o cabeçalho não usa a publicação do herói', $q$select public.creator_publish_content('56000000-0000-4000-8000-000000005601')$q$, 'forbidden');
+select tests.expect_error('S56 admin sem o cabeçalho não reserva foto de post: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+-- valores inválidos são ignorados
+select set_config('request.headers', '{"x-acting-hero":"nao-e-uuid"}', true);
+select tests.ok('S56 cabeçalho que não é uuid é ignorado', public.acting_hero_id() is null and public.my_creator_id() is null);
+select set_config('request.headers', '{x-acting-hero: quebrado', true);
+select tests.ok('S56 request.headers malformado é ignorado sem erro', public.acting_hero_id() is null);
+select tests.acting(gen_random_uuid()::text);
+select tests.ok('S56 herói inexistente é ignorado', public.acting_hero_id() is null);
+select tests.expect_error('S56 admin_act_as_hero de herói inexistente: hero_unavailable', $q$select public.admin_act_as_hero(gen_random_uuid())$q$, 'hero_unavailable');
+
+-- admin com o cabeçalho do Tiago: age pelo Tiago
+select tests.acting((select id from t_s56_tiago));
+select tests.ok('S56 admin com o cabeçalho: acting_hero_id() e my_creator_id() são o Tiago; auditoria como admin',
+  public.acting_hero_id() = public.seed_uuid('creator:tiago') and public.my_creator_id() = public.seed_uuid('creator:tiago') and public.audit_actor() = 'admin');
+select tests.ok('S56 admin escolhe o herói (admin_act_as_hero devolve nome e slug)',
+  (public.admin_act_as_hero(public.seed_uuid('creator:tiago')) ->> 'slug') = 'tiago-albuquerque');
+insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind, created_by) values
+  ('56000000-0000-4000-8000-000000005603', 's56-post-admin', public.seed_uuid('creator:tiago'), 'training', 'article', 'Post do admin pelo Tiago', 'own', auth.uid());
+insert into public.content_bodies (content_id, body) values ('56000000-0000-4000-8000-000000005603', '{"kind":"article"}');
+select tests.ok('S56 admin agindo publica pelo Tiago com a RPC do herói', (public.creator_publish_content('56000000-0000-4000-8000-000000005603') ->> 'status') = 'published');
+create temporary table t_s56_claim as select public.post_photo_upload_claim(1000, 'image/webp') as path;
+select tests.ok('S56 admin agindo reserva foto do post (pasta do próprio admin)',
+  (select path like '10000000-0000-4000-8000-000000000001/%' from t_s56_claim));
+-- foto de receita: rascunho do Tiago aceita envio do admin; receita no ar não
+insert into public.content (id, slug, creator_id, pillar, type, title, summary) values
+  ('56000000-0000-4000-8000-000000005602', 's56-receita-tiago', public.seed_uuid('creator:tiago'), 'gastronomy', 'recipe', 'Receita S56', 'Resumo');
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('recipe-media', public.seed_uuid('creator:tiago') || '/56000000-0000-4000-8000-000000005602/a5600000-0000-4000-8000-000000000002.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1000}');
+select tests.ok('S56 admin envia foto para o rascunho de receita do herói', exists (select 1 from storage.objects where name like '%a5600000-0000-4000-8000-000000000002.webp'));
+select tests.expect_error('S56 admin não envia foto para receita no ar',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('recipe-media', public.seed_uuid('creator:helena') || '/' || public.seed_uuid('content:g1') || '/a5600000-0000-4000-8000-000000000003.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.ok('S56 admin registra a foto da receita do herói (recipe_register_media)',
+  public.recipe_register_media('56000000-0000-4000-8000-000000005602', public.seed_uuid('creator:tiago') || '/56000000-0000-4000-8000-000000005602/a5600000-0000-4000-8000-000000000002.webp', 'gallery', 'Foto', true, 10, 10) is not null);
+delete from public.content where id = '56000000-0000-4000-8000-000000005602';
+-- herói suspenso: o cabeçalho deixa de valer
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:tiago');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.acting((select id from t_s56_tiago));
+select tests.ok('S56 herói suspenso: o admin não age mais por ele', public.acting_hero_id() is null and public.my_creator_id() is null);
+select tests.expect_error('S56 admin_act_as_hero de herói suspenso: hero_unavailable', $q$select public.admin_act_as_hero(public.seed_uuid('creator:tiago'))$q$, 'hero_unavailable');
+select tests.acting(null);
+select tests.su();
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:tiago');
+
+select tests.ok('S56 auditoria: escolha do herói, criação, publicação e exclusão em nome do Tiago (actor admin)',
+  exists (select 1 from public.admin_audit where action = 'hero_act.select' and actor_type = 'admin' and after_data ->> 'acting_creator' = (select id from t_s56_tiago))
+  and exists (select 1 from public.admin_audit where action = 'hero_act.content.insert' and resource_id = '56000000-0000-4000-8000-000000005603'
+                and actor_id = '10000000-0000-4000-8000-000000000001' and after_data ->> 'acting_creator' = (select id from t_s56_tiago))
+  and exists (select 1 from public.admin_audit where action = 'hero_act.content.update' and resource_id = '56000000-0000-4000-8000-000000005603' and after_data ->> 'status' = 'published')
+  and exists (select 1 from public.admin_audit where action = 'hero_act.content.delete' and resource_id = '56000000-0000-4000-8000-000000005602'));
+select tests.ok('S56 sem cabeçalho não há auditoria hero_act (rascunho criado pelo sistema)',
+  not exists (select 1 from public.admin_audit where action like 'hero_act.%' and resource_id = '56000000-0000-4000-8000-000000005601'));
+select tests.ok('S56 funções: search_path fixo; definer sem anon; a do Storage é invoker',
+  (select bool_and(exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')) from pg_proc p
+     where p.pronamespace = 'public'::regnamespace and p.proname in ('acting_hero_id', 'admin_act_as_hero', 'acting_hero_audit', 'recipe_media_admin_path_ok', 'my_creator_id', 'post_photo_upload_claim'))
+  and (select bool_and(p.prosecdef) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('acting_hero_id', 'admin_act_as_hero', 'acting_hero_audit', 'my_creator_id'))
+  and (select not p.prosecdef from pg_proc p where p.oid = 'public.recipe_media_admin_path_ok(text)'::regprocedure)
+  and not has_function_privilege('anon', 'public.acting_hero_id()', 'execute')
+  and not has_function_privilege('anon', 'public.admin_act_as_hero(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.acting_hero_audit()', 'execute')
+  and not has_function_privilege('anon', 'public.recipe_media_admin_path_ok(text)', 'execute')
+  and not has_function_privilege('anon', 'public.post_photo_upload_claim(int, text)', 'execute')
+  and has_function_privilege('anon', 'public.my_creator_id()', 'execute')
+  and has_function_privilege('authenticated', 'public.admin_act_as_hero(uuid)', 'execute'));
+select tests.ok('S56 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S56 nenhuma tabela pública sem RLS',
+  (select count(*) from pg_class c where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and not c.relrowsecurity) = 0);
+
+-- limpeza
+delete from public.content where id in ('56000000-0000-4000-8000-000000005601', '56000000-0000-4000-8000-000000005603');
+delete from storage.objects where name like '%/a5600000-0000-4000-8000-%';
+delete from public.post_photo_uploads where user_id = '10000000-0000-4000-8000-000000000001';
+update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael');
+delete from auth.users where id = '56000000-0000-4000-8000-000000000561';
+select tests.ok('S56 nada do cenário fica no ar e o Rafael volta sem usuário',
+  (select count(*) from public.content where slug like 's56-%') = 0
+  and (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',
