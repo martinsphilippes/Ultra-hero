@@ -785,6 +785,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"post_photo_uploads": {
+                  Row: {
+                    "bytes": number,"created_at": string,"deleted_at": string | null,"id": string,"mime": string,"path": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bytes": number,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"mime": string,"path": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "bytes"?: number,"created_at"?: string,"deleted_at"?: string | null,"id"?: string,"mime"?: string,"path"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"product_categories": {
                   Row: {
                     "code": string,"id": string,"is_food": boolean,"kind": string,"name": NonNullable<Json>,"sort_order": number
@@ -1955,6 +1969,9 @@ isOneToOne: false
 "creator_delete_recipe_draft":
 { Args: { "p_content": string }; Returns: Json
                            },
+"creator_discard_photo_draft":
+{ Args: { "p_content": string }; Returns: Json
+                           },
 "creator_discard_video_draft":
 { Args: { "p_content": string }; Returns: Json
                            },
@@ -2120,6 +2137,18 @@ isOneToOne: false
                            },
 "my_wearable_connections":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"post_photo_orphan_uploads":
+{ Args: { "p_limit": number }; Returns: string[]
+                           },
+"post_photo_path":
+{ Args: { "p_url": string }; Returns: string
+                           },
+"post_photo_upload_claim":
+{ Args: { "p_bytes": number,"p_mime": string }; Returns: string
+                           },
+"post_photo_usable":
+{ Args: { "p_path": string,"p_uid": string }; Returns: boolean
                            },
 "product_is_purchasable":
 { Args: { "p_product": string }; Returns: boolean

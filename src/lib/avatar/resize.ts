@@ -95,6 +95,46 @@ export async function prepareImage(file: Blob, target: { width: number; height: 
   }
 }
 
+export type PreparedFitted = PreparedAvatar & { width: number; height: number };
+
+/**
+ * Sem recorte: reduz para caber no lado maior (nunca amplia) e codifica em WebP (JPEG quando o
+ * navegador não codifica WebP). Se passar de maxBytes, baixa a qualidade e depois o tamanho.
+ * Usado pela foto do post (0043).
+ */
+export async function prepareFittedImage(file: Blob, target: { maxEdge: number; maxBytes: number }): Promise<PreparedFitted> {
+  const source = await decode(file);
+  try {
+    if (!source.width || !source.height) throw new AvatarPrepareError("decode_failed");
+    for (const edge of [target.maxEdge, Math.round(target.maxEdge * 0.75)]) {
+      const scale = Math.min(1, edge / Math.max(source.width, source.height));
+      const width = Math.max(1, Math.round(source.width * scale));
+      const height = Math.max(1, Math.round(source.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new AvatarPrepareError("decode_failed");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(source.image, 0, 0, width, height);
+      for (const quality of [0.85, 0.7]) {
+        let blob = await toBlob(canvas, "image/webp", quality);
+        let mime: AvatarMime = "image/webp";
+        if (!blob || blob.type !== "image/webp") {
+          blob = await toBlob(canvas, "image/jpeg", quality);
+          mime = "image/jpeg";
+        }
+        if (!blob || blob.type !== mime) throw new AvatarPrepareError("decode_failed");
+        if (blob.size <= target.maxBytes) return { blob, mime, width, height };
+      }
+    }
+    throw new AvatarPrepareError("file_too_large");
+  } finally {
+    source.close();
+  }
+}
+
 export function prepareAvatar(file: Blob): Promise<PreparedAvatar> {
   return prepareImage(file, { width: AVATAR_SIZE, height: AVATAR_SIZE, maxBytes: MAX_UPLOAD_BYTES });
 }

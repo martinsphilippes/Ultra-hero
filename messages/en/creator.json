@@ -107,7 +107,7 @@
   "post": {
     "cta": "New post",
     "title": "New post",
-    "description": "Record or choose a video up to 3 minutes long, add a title and publish.",
+    "description": "Take or choose a photo, or record a video up to 3 minutes long. Add a title and publish.",
     "draftTitle": "Video post",
     "steps": {
       "label": "Post steps",
@@ -116,10 +116,10 @@
       "done": "Published"
     },
     "record": "Record video",
-    "recordHint": "Opens your phone camera",
+    "recordHint": "Opens the camera to record up to 3 minutes",
     "gallery": "Choose from gallery",
-    "galleryHint": "Use a video already on your device",
-    "limits": "Up to 3 minutes · up to 2 GB",
+    "galleryHint": "A photo or video already on your device",
+    "limits": "Photo up to 30 MB · video up to 3 minutes and 2 GB",
     "checking": "Reading the video…",
     "notConfigured": "Video is not set up yet: ask the administrator to turn on Cloudflare Stream.",
     "preview": "Video preview",
@@ -200,7 +200,58 @@
       "already_published": "This post has been live before; open it in My content to edit.",
       "not_stream": "This draft has no video uploaded from the phone.",
       "content_in_use": "This draft is linked to a program and cannot be deleted. Contact the administration.",
-      "publish_network": "The connection dropped. When it's back, tap Try publishing again."
+      "publish_network": "The connection dropped. When it's back, tap Try publishing again.",
+      "not_media": "This file is neither a photo nor a video. Choose another one from your gallery.",
+      "not_image": "This file is not a photo. Take another one or pick one from your gallery.",
+      "photo_not_configured": "Photo upload is not available in this environment.",
+      "photo_disabled": "Photo upload is paused by the administration.",
+      "review_required": "This kind of post needs a review before going live. Open the draft in My content."
+    },
+    "photo": {
+      "draftTitle": "Photo post",
+      "take": "Take photo",
+      "takeHint": "Opens your phone's back camera",
+      "unavailable": "Photo upload is not available in this environment.",
+      "disabled": "Photo upload is paused by the administration.",
+      "checking": "Preparing the photo…",
+      "preview": "Photo preview",
+      "uploadLabel": "Photo upload",
+      "starting": "Uploading the photo…",
+      "uploaded": "Photo uploaded",
+      "uploadInBackground": "You can write while the photo uploads.",
+      "captionPlaceholder": "Say in a few lines what the photo is about",
+      "publishHintUpload": "The button unlocks when the photo finishes uploading.",
+      "discard": "Discard photo",
+      "discardTitle": "Discard this photo?",
+      "discardDescription": "The draft and the photo are deleted and you go back to choose another photo or video.",
+      "discarded": "Photo discarded",
+      "discardedDeleted": "The draft and the photo were deleted.",
+      "leaveWarning": "The photo is still uploading. If you leave now, the upload is cancelled.",
+      "leaveWarningProcessing": "The post is being published. If you leave now, it may stay as a draft in My content.",
+      "leaveWarningText": "The photo stays as a draft in My content, but the title and caption you wrote will be lost.",
+      "sr": {
+        "starting": "Uploading the photo.",
+        "uploaded": "Photo uploaded. You can publish now.",
+        "error": "The photo upload stopped."
+      },
+      "errors": {
+        "not_image": "This file is not a photo. Take another one or pick one from your gallery.",
+        "empty_file": "The file is empty. Choose another photo.",
+        "file_too_large": "The photo is too large. Choose another one (up to 30 MB).",
+        "decode_failed": "This photo could not be opened (some formats, like HEIC, don't open in the browser). Take another one or choose a JPG.",
+        "invalid_dimensions": "This photo size is not accepted. Choose another one.",
+        "too_many_uploads": "You uploaded too many photos in the last hour. Wait a little and try again.",
+        "uploads_disabled": "Photo upload is paused by the administration.",
+        "photo_not_configured": "Photo upload is not available in this environment.",
+        "not_a_hero": "Your hero profile is not active.",
+        "upload_failed": "The photo was not uploaded. Tap Try again.",
+        "network": "The connection dropped. When it's back, tap Try again.",
+        "forbidden": "This account cannot post this photo.",
+        "photo_media_forbidden": "This photo was not uploaded by this account and cannot be used here.",
+        "missing_media": "The photo is not attached to this post. Discard it and upload again.",
+        "missing_body": "The photo is not attached to this post. Discard it and upload again.",
+        "not_photo": "This draft has no photo uploaded from the phone."
+      }
     }
   },
   "reviews": {

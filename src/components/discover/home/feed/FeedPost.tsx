@@ -1,9 +1,11 @@
-import { Ban, BookOpen, ChefHat, Dumbbell, FileText, Lock, PlayCircle } from "lucide-react";
+import { Ban, BookOpen, ChefHat, Dumbbell, FileText, ImageIcon, Lock, PlayCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { tileCover } from "@/components/discover/explore/tiles";
 import { Avatar } from "@/components/ui";
+import { supabaseBaseUrl } from "@/lib/avatar/paths";
+import { isPhotoPost } from "@/lib/post-photo/paths";
 import type { FeedPostData } from "./posts";
 
 const TYPE_ICON = { video: PlayCircle, recipe: ChefHat, workout: Dumbbell, guide: BookOpen, article: FileText } as const;
@@ -14,7 +16,9 @@ type Props = { post: FeedPostData; priority?: boolean };
 // 4:5 (de borda a borda no celular) e legenda com tipo, título e resumo. Capa e título abrem o post.
 export async function FeedPost({ post, priority }: Props) {
   const t = await getTranslations("catalog");
-  const Icon = TYPE_ICON[post.type];
+  // post com foto do composer (0043): artigo cuja capa é a foto; aparece como "Foto"
+  const photo = isPhotoPost(post, supabaseBaseUrl());
+  const Icon = photo ? ImageIcon : TYPE_ICON[post.type];
   const unavailable = post.access_level === null;
   const premium = post.access_level === "premium";
   const src = tileCover(post.cover_url, post.pillar);
@@ -57,7 +61,7 @@ export async function FeedPost({ post, priority }: Props) {
       </Link>
 
       <div className="uh-post-caption flex flex-col gap-1 px-gutter pt-3 md:px-0">
-        <p className="uh-post-type type-caption text-fg-muted">{[t(`types.${post.type}`), restriction].filter(Boolean).join(" · ")}</p>
+        <p className="uh-post-type type-caption text-fg-muted">{[photo ? t("photoPost") : t(`types.${post.type}`), restriction].filter(Boolean).join(" · ")}</p>
         <h2 id={titleId} className="uh-post-title text-base font-semibold leading-snug text-fg">
           {/* O link do título é o alvo de teclado e leitor de tela; a capa repete o destino só para o toque. */}
           <Link href={href} className="hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">

@@ -77,8 +77,9 @@ export async function createContent(values: ContentFormValues): Promise<SaveResu
   // Receita estruturada (0027) só pelo editor novo: este formulário gravaria o corpo v1, que o banco recusa.
   if (v.type === "recipe") return { ok: false, error: "recipe_editor_pending" };
 
-  // Vídeo do Cloudflare só nasce pelo composer (/creator/post/new), que cria o ticket no servidor.
-  if (v.media.provider === "cloudflare_stream") return { ok: false, error: "forbidden" };
+  // Vídeo do Cloudflare e foto do post só nascem pelo composer (/creator/post/new), que cria o
+  // ticket/envio no servidor.
+  if (v.media.provider === "cloudflare_stream" || v.media.provider === "upload") return { ok: false, error: "forbidden" };
 
   const supabase = await createClient();
   const { data: creatorId } = await supabase.rpc("my_creator_id");
@@ -109,9 +110,10 @@ export async function updateContent(values: ContentFormValues): Promise<SaveResu
   // Mesma regra do guard do banco; evita gravar o corpo de algo em revisão.
   if (existing.status !== "draft" || existing.review_status === "in_review") return { ok: false, error: "content_not_editable" };
   // O uid do Cloudflare fica preso ao rascunho: o formulário pode manter o vídeo enviado, nunca trocar por outro uid.
-  if (v.media.provider === "cloudflare_stream") {
+  // Mesma regra para a foto do composer (0043): mantém a do rascunho, nunca troca por outra.
+  if (v.media.provider === "cloudflare_stream" || v.media.provider === "upload") {
     const { data: current } = await supabase.from("content_bodies").select("media_provider, media_ref").eq("content_id", id).maybeSingle();
-    if (current?.media_provider !== "cloudflare_stream" || current.media_ref !== v.media.ref) return { ok: false, error: "forbidden" };
+    if (current?.media_provider !== v.media.provider || current.media_ref !== v.media.ref) return { ok: false, error: "forbidden" };
   }
 
   const { error } = await supabase.from("content").update(creatorColumns(v)).eq("id", id);

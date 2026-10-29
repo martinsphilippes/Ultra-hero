@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useId } from "react";
 import { FormField, Input } from "@/components/ui";
+import { supabaseBaseUrl } from "@/lib/avatar/paths";
+import { storedPostPhotoPath } from "@/lib/post-photo/paths";
 import { cn } from "@/lib/utils";
 import { SAME_ORIGIN_PATH } from "./schema";
 
@@ -25,7 +27,8 @@ export function CoverPicker({ pillar, value, onChange, error }: Props) {
   const baseId = useId();
   const options = coverOptionsFor(pillar);
   const isCustom = value !== "" && !options.includes(value);
-  const previewOk = value !== "" && SAME_ORIGIN_PATH.test(value);
+  // foto do post com foto (0043) também aparece na prévia
+  const previewOk = value !== "" && (SAME_ORIGIN_PATH.test(value) || storedPostPhotoPath(value, supabaseBaseUrl()) !== null);
 
   return (
     <div className="flex flex-col gap-4">

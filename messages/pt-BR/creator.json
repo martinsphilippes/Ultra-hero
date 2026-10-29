@@ -107,7 +107,7 @@
   "post": {
     "cta": "Novo post",
     "title": "Novo post",
-    "description": "Grave ou escolha um vídeo de até 3 minutos, dê um título e publique.",
+    "description": "Tire ou escolha uma foto, ou grave um vídeo de até 3 minutos. Dê um título e publique.",
     "draftTitle": "Post em vídeo",
     "steps": {
       "label": "Etapas do post",
@@ -116,10 +116,10 @@
       "done": "Publicado"
     },
     "record": "Gravar vídeo",
-    "recordHint": "Abre a câmera do celular",
+    "recordHint": "Abre a câmera para gravar até 3 minutos",
     "gallery": "Escolher da galeria",
-    "galleryHint": "Use um vídeo que já está no aparelho",
-    "limits": "Até 3 minutos · até 2 GB",
+    "galleryHint": "Foto ou vídeo que já está no aparelho",
+    "limits": "Foto até 30 MB · vídeo até 3 minutos e 2 GB",
     "checking": "Lendo o vídeo…",
     "notConfigured": "Vídeo ainda não configurado: peça ao administrador para ligar o Cloudflare Stream.",
     "preview": "Prévia do vídeo",
@@ -200,7 +200,58 @@
       "already_published": "Este post já esteve no ar; abra em Meus conteúdos para editar.",
       "not_stream": "Este rascunho não tem vídeo enviado pelo celular.",
       "content_in_use": "Este rascunho está ligado a um programa e não pode ser apagado. Fale com a administração.",
-      "publish_network": "A conexão caiu. Quando ela voltar, toque em Tentar publicar de novo."
+      "publish_network": "A conexão caiu. Quando ela voltar, toque em Tentar publicar de novo.",
+      "not_media": "Esse arquivo não é foto nem vídeo. Escolha outro da galeria.",
+      "not_image": "Esse arquivo não é uma foto. Tire outra ou escolha uma da galeria.",
+      "photo_not_configured": "O envio de foto não está disponível neste ambiente.",
+      "photo_disabled": "O envio de foto está pausado pela administração.",
+      "review_required": "Este tipo de post precisa de revisão antes de ir ao ar. Abra o rascunho em Meus conteúdos."
+    },
+    "photo": {
+      "draftTitle": "Post com foto",
+      "take": "Tirar foto",
+      "takeHint": "Abre a câmera traseira do celular",
+      "unavailable": "O envio de foto não está disponível neste ambiente.",
+      "disabled": "O envio de foto está pausado pela administração.",
+      "checking": "Preparando a foto…",
+      "preview": "Prévia da foto",
+      "uploadLabel": "Envio da foto",
+      "starting": "Enviando a foto…",
+      "uploaded": "Foto enviada",
+      "uploadInBackground": "Pode escrever enquanto a foto sobe.",
+      "captionPlaceholder": "Conte em poucas linhas o que tem na foto",
+      "publishHintUpload": "O botão libera quando a foto terminar de subir.",
+      "discard": "Descartar foto",
+      "discardTitle": "Descartar esta foto?",
+      "discardDescription": "O rascunho e a foto são apagados e você volta para escolher outra foto ou vídeo.",
+      "discarded": "Foto descartada",
+      "discardedDeleted": "O rascunho e a foto foram apagados.",
+      "leaveWarning": "A foto ainda está sendo enviada. Se sair agora, o envio é cancelado.",
+      "leaveWarningProcessing": "O post está sendo publicado. Se sair agora, ele pode ficar como rascunho em Meus conteúdos.",
+      "leaveWarningText": "A foto fica como rascunho em Meus conteúdos, mas o título e a legenda que você escreveu se perdem.",
+      "sr": {
+        "starting": "Enviando a foto.",
+        "uploaded": "Foto enviada. Já dá para publicar.",
+        "error": "O envio da foto parou."
+      },
+      "errors": {
+        "not_image": "Esse arquivo não é uma foto. Tire outra ou escolha uma da galeria.",
+        "empty_file": "O arquivo está vazio. Escolha outra foto.",
+        "file_too_large": "A foto é grande demais. Escolha outra (até 30 MB).",
+        "decode_failed": "Não foi possível abrir esta foto (alguns formatos, como HEIC, não abrem no navegador). Tire outra ou escolha uma JPG.",
+        "invalid_dimensions": "O tamanho desta foto não é aceito. Escolha outra.",
+        "too_many_uploads": "Você enviou muitas fotos na última hora. Espere um pouco e tente de novo.",
+        "uploads_disabled": "O envio de foto está pausado pela administração.",
+        "photo_not_configured": "O envio de foto não está disponível neste ambiente.",
+        "not_a_hero": "Seu perfil de herói não está ativo.",
+        "upload_failed": "A foto não foi enviada. Toque em Tentar de novo.",
+        "network": "A conexão caiu. Quando ela voltar, toque em Tentar de novo.",
+        "forbidden": "Esta conta não pode postar esta foto.",
+        "photo_media_forbidden": "Esta foto não foi enviada por esta conta e não pode ser usada aqui.",
+        "missing_media": "A foto não ficou ligada a este post. Descarte e envie de novo.",
+        "missing_body": "A foto não ficou ligada a este post. Descarte e envie de novo.",
+        "not_photo": "Este rascunho não tem foto enviada pelo celular."
+      }
     }
   },
   "reviews": {

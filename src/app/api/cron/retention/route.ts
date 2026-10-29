@@ -1,15 +1,16 @@
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { cleanupAvatarUploads } from "@/lib/avatar/server";
 import { cleanupHeroCoverUploads } from "@/lib/hero-cover/server";
+import { cleanupPostPhotoUploads } from "@/lib/post-photo/server";
 import { CloudflareStreamProvider, isCloudflareStreamConfigured } from "@/lib/video/providers/cloudflare-stream";
 import { runCronJob } from "../_lib/cron";
 import { cleanupRecipeOrphans } from "../_lib/recipe-orphans";
 import { cleanupStreamUploads } from "../_lib/stream-cleanup";
 
 // Retenção diária: analytics 90d, pedidos de teste 90d (anonimiza), auditoria 365d, runs/logs 30d;
-// limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar) e das fotos de
-// perfil e das capas de herói sem uso ou de conta excluída (0031, 0042), das fotos de receita
-// órfãs no bucket recipe-media e dos dados de relógio (health_run_retention, 0038).
+// limpeza dos envios de vídeo do composer (descartados e vencidos sem publicar), das fotos de
+// perfil, das capas de herói e das fotos de post sem uso ou de conta excluída (0031, 0042, 0043),
+// das fotos de receita órfãs no bucket recipe-media e dos dados de relógio (health_run_retention, 0038).
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -42,6 +43,13 @@ async function handler(request: Request) {
     } catch (cleanupError) {
       covers = { covers_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
     }
+    // Fotos de post (0043): mesma regra; banco sem a 0043 lança e o relatório registra.
+    let postPhotos: Record<string, unknown>;
+    try {
+      postPhotos = await cleanupPostPhotoUploads(admin, supabaseBaseUrl());
+    } catch (cleanupError) {
+      postPhotos = { post_photos_failed: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) };
+    }
     // fotos de receita órfãs no Storage: falha aqui também não derruba o resto
     let recipeMedia: Record<string, unknown>;
     try {
@@ -59,7 +67,7 @@ async function handler(request: Request) {
     } catch (healthError) {
       health = { health_failed: healthError instanceof Error ? healthError.message : String(healthError) };
     }
-    return { counts, stream, avatars, covers, recipe_media: recipeMedia, health };
+    return { counts, stream, avatars, covers, post_photos: postPhotos, recipe_media: recipeMedia, health };
   });
 }
 

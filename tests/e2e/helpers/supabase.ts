@@ -201,3 +201,29 @@ export async function publicIdBySlug(table: "products" | "programs", slug: strin
   const rows = res?.ok ? ((await res.json()) as { id: string }[]) : [];
   return rows[0]?.id ?? null;
 }
+
+// ---------------------------------------------------------------- post com foto (teste real, E2E_POST_PHOTO_REAL=1)
+// O herói não apaga conteúdo que já foi ao ar (nem pela RLS nem pelas RPCs). O teste real de
+// publicação limpa o que criou com o service role do .env.local (só no processo do teste, nunca no
+// navegador): apaga o conteúdo, o objeto do bucket post-photos e marca o envio.
+
+export function serviceRoleKey(): string | null {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY ?? fromDotEnv().SUPABASE_SERVICE_ROLE_KEY ?? null;
+}
+
+export async function deletePhotoPostAsService(slug: string): Promise<{ content: number; photo: string | null }> {
+  const env = supabaseEnv();
+  const key = serviceRoleKey();
+  if (!env || !key) throw new Error("sem Supabase ou sem SUPABASE_SERVICE_ROLE_KEY");
+  const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=representation" };
+  const found = await fetch(`${env.url}/rest/v1/content?select=id,cover_url&slug=eq.${encodeURIComponent(slug)}`, { headers });
+  const row = ((await found.json()) as { id: string; cover_url: string | null }[])[0];
+  if (!row) return { content: 0, photo: null };
+  const path = row.cover_url?.split("/storage/v1/object/public/post-photos/")[1] ?? null;
+  const deleted = (await (await fetch(`${env.url}/rest/v1/content?id=eq.${row.id}`, { method: "DELETE", headers })).json()) as unknown[];
+  if (path) {
+    await fetch(`${env.url}/storage/v1/object/post-photos/${path}`, { method: "DELETE", headers: { apikey: key, Authorization: `Bearer ${key}` } });
+    await fetch(`${env.url}/rest/v1/post_photo_uploads?path=eq.${encodeURIComponent(path)}`, { method: "PATCH", headers, body: JSON.stringify({ deleted_at: new Date().toISOString() }) });
+  }
+  return { content: deleted.length, photo: path };
+}

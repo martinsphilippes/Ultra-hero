@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { PostComposer } from "@/components/creator/post/PostComposer";
 import { PageHeader } from "@/components/ui";
+import { getPostPhotoState } from "@/lib/post-photo/availability";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { getMyCreator } from "../../_lib/creator";
@@ -13,21 +14,21 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title") };
 }
 
-// Novo post em vídeo: a tela abre mesmo sem o Cloudflare configurado, com os botões de vídeo
-// desabilitados e o aviso para o administrador ligar o Stream.
+// Novo post com foto ou vídeo: a tela abre mesmo sem o Cloudflare configurado (botões de vídeo
+// desabilitados e o aviso para ligar o Stream) e a foto segue independente (0043; sem ela, aviso).
 export default async function NewPostPage() {
   const [t, tn, ctx] = await Promise.all([getTranslations("creator.post"), getTranslations("nav"), getMyCreator()]);
   if (!ctx.creatorId || !ctx.profile) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("title")} />;
 
   const supabase = await createClient();
-  const configured = await readVideoUploadConfigured(supabase);
+  const [configured, photoState] = await Promise.all([readVideoUploadConfigured(supabase), getPostPhotoState()]);
   const first = ctx.profile.pillars?.[0];
   const defaultPillar: Pillar = first && PILLARS.includes(first) ? first : "routine";
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tn("portals.creator")} backHref="/creator" backLabel={tn("creator.dashboard")} />
-      <PostComposer configured={configured} defaultPillar={defaultPillar} />
+      <PostComposer configured={configured} photoState={photoState} defaultPillar={defaultPillar} />
     </div>
   );
 }
