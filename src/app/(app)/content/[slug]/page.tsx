@@ -27,6 +27,7 @@ import {
   type DisclaimerKind,
 } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
+import { BackLink } from "@/components/ui/back-link";
 import { recipeCategoryOptions } from "@/components/recipes/catalog/RecipeCatalog";
 import { RecipeGate } from "@/components/recipes/RecipeGate";
 import { RecipeKitchenEntry } from "@/components/recipes/kitchen/RecipeKitchenEntry";
@@ -294,12 +295,9 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
 
       {/* Cabeçalho com capa */}
       <header className="flex flex-col gap-5">
-        <Link
-          href={isRecipe ? "/explore?tab=receitas" : "/explore"}
-          className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus print:hidden"
-        >
-          ← {t("backToExplore")}
-        </Link>
+        <BackLink href={isRecipe ? "/explore?tab=receitas" : "/explore"} className="print:hidden">
+          {t("backToExplore")}
+        </BackLink>
         {playerOnTop && videoProps ? (
           <div className="print:hidden" data-testid="content-top-player">
             <VideoBody {...videoProps} part="player" />

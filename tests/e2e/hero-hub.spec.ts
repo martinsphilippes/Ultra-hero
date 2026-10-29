@@ -55,8 +55,9 @@ test.describe("hub do herói", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Receitas");
     // os cards também levam o nome da chef: o primeiro é o sobretítulo do cabeçalho
     await expect(page.getByText("Helena Vilar", { exact: true }).first()).toBeVisible();
-    const back = page.getByRole("link", { name: "Voltar para Helena Vilar" });
-    await expect(back).toBeVisible();
+    // veio da página do herói: o voltar volta para ela (rótulo "Voltar"); o link de reserva continua o do herói
+    const back = page.getByTestId("back-link");
+    await expect(back).toHaveText("Voltar");
     await expect(back).toHaveAttribute("href", "/personalities/helena-vilar");
     await expect(page).toHaveTitle(/Receitas · Helena Vilar/);
     // P2 (fase 3): os cards ficam abertos a todos; a faixa convida para a etapa que abre a receita.

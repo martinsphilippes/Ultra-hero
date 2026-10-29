@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
-import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, PackageX, Store } from "lucide-react";
+import { PackageX, Store } from "lucide-react";
 import { ContentCard } from "@/components/catalog";
 import { AddToCartForm } from "@/components/commerce/AddToCartForm";
 import { CommerceEventTracker } from "@/components/commerce/CommerceEventTracker";
@@ -111,10 +111,7 @@ export default async function ProductPage({ params }: Params) {
     <div className="flex flex-col gap-8">
       <CommerceEventTracker event="product.view" properties={{ product_id: product.id, category: product.category?.code ?? null, purchasable }} />
 
-      <Link href="/shop" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        {t("backToShop")}
-      </Link>
+      <BackLink href="/shop">{t("backToShop")}</BackLink>
 
       <div className="grid gap-6 md:grid-cols-2 md:gap-10">
         <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated">

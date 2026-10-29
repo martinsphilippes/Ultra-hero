@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { AppIntro } from "@/components/layout/AppIntro";
 import { AppearanceSync } from "@/components/layout/AppearanceSync";
+import { NavHistory } from "@/components/layout/NavHistory";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import { SkipLink } from "@/components/ui/skip-link";
 import { ToastProvider } from "@/components/ui/toast";
@@ -96,6 +97,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </NextIntlClientProvider>
         <ServiceWorkerRegister />
         <AppearanceSync />
+        <NavHistory />
       </body>
     </html>
   );

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { RecipeGate } from "@/components/recipes/RecipeGate";
 import { CookMode } from "@/components/recipes/kitchen/CookMode";
 import { loadUnitLabels } from "@/components/recipes/view/RecipeView";
@@ -60,10 +59,7 @@ export default async function CookModePage({ params, searchParams }: Params) {
     const t = await getTranslations("kitchen.cook");
     return (
       <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-gutter py-6 outline-none">
-        <Link href={`/content/${content.slug}`} className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          {t("backToRecipe")}
-        </Link>
+        <BackLink href={`/content/${content.slug}`}>{t("backToRecipe")}</BackLink>
         <h1 className="type-h1 text-balance text-fg">{content.title}</h1>
         <RecipeGate nextPath={path} />
       </main>

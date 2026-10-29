@@ -1,8 +1,7 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { BRAND_ORANGE, LOGO_A_PATH, MARK_VIEWBOX } from "@/components/layout/brand-paths";
 import { cn } from "@/lib/utils";
+import { BackLink } from "./back-link";
 
 type PageHeaderProps = {
   title: ReactNode;
@@ -27,13 +26,9 @@ export function PageHeader({ title, description, eyebrow, backHref, backLabel, a
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1.5">
           {backHref && (
-            <Link
-              href={backHref}
-              className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-md pr-2 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            >
-              <ArrowLeft className="size-4" aria-hidden="true" />
+            <BackLink href={backHref} className="pr-2">
               {backLabel}
-            </Link>
+            </BackLink>
           )}
           {eyebrow && (
             <div className="flex items-center gap-2">
