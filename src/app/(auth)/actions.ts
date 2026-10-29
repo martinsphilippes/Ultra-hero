@@ -1,12 +1,17 @@
 "use server";
 
 import type { AuthError } from "@supabase/supabase-js";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
+import { generatePassword } from "@/lib/auth/generated-password";
 import { getOrigin } from "@/lib/auth/origin";
+import { HONEYPOT_FIELD, QUICK_SIGNUP_PENDING_COOKIE, quickSignupSchema } from "@/lib/auth/quick-signup";
+import { clientIp, forgetGeneratedPassword, hashForRateLimit, isMissingSchema, recordQuickSignupAttempt, storeGeneratedPassword } from "@/lib/auth/quick-signup-server";
 import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
-import type { AuthActionState, AuthField, AuthFieldErrors } from "@/lib/auth/types";
+import type { AuthActionState, AuthField, AuthFieldErrors, QuickSignupState } from "@/lib/auth/types";
+import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 // Mensagens dos schemas são CHAVES de auth.errors.*, traduzidas no cliente.
@@ -19,22 +24,13 @@ const loginSchema = z.object({
   password: z.string({ error: "required" }).min(1, { error: "required" }).max(72, { error: "passwordTooLong" }),
 });
 
-const signupSchema = z
-  .object({
-    displayName: z.string({ error: "required" }).trim().min(2, { error: "nameTooShort" }).max(80, { error: "nameTooShort" }),
-    email: emailSchema,
-    password: passwordSchema,
-    confirmPassword: z.string({ error: "required" }),
-  })
-  .refine((data) => data.password === data.confirmPassword, { error: "passwordsDontMatch", path: ["confirmPassword"] });
-
 const forgotSchema = z.object({ email: emailSchema });
 
 const resetSchema = z
   .object({ password: passwordSchema, confirmPassword: z.string({ error: "required" }) })
   .refine((data) => data.password === data.confirmPassword, { error: "passwordsDontMatch", path: ["confirmPassword"] });
 
-const FIELDS: readonly AuthField[] = ["email", "password", "confirmPassword", "displayName"];
+const FIELDS: readonly AuthField[] = ["email", "password", "confirmPassword", "fullName", "phone"];
 
 function toFieldErrors(error: z.ZodError): AuthFieldErrors {
   const errors: AuthFieldErrors = {};
@@ -86,43 +82,71 @@ export async function loginAction(_prev: AuthActionState, formData: FormData): P
   redirect(next);
 }
 
-// Cadastro público: cria SOMENTE consumidores (papéis vêm do trigger no banco).
-export async function signupAction(_prev: AuthActionState, formData: FormData): Promise<AuthActionState> {
-  const parsed = signupSchema.safeParse({
-    displayName: formData.get("displayName"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
-  });
+// Cadastro rápido (tela inicial): nome completo, e-mail e celular. O servidor gera a senha, cria a conta
+// já confirmada (service role), entra neste aparelho e devolve a senha UMA vez para a tela "Sua senha".
+// Cria SOMENTE consumidores (papéis vêm do gatilho no banco, que também aplica o kill switch).
+// E-mail já cadastrado: nunca entra sem a senha (seria tomar a conta de alguém digitando o e-mail dela).
+export async function quickSignupAction(_prev: QuickSignupState, formData: FormData): Promise<QuickSignupState> {
+  // campo-isca preenchido: robô. Resposta genérica, sem pista do motivo.
+  const honeypot = formData.get(HONEYPOT_FIELD);
+  if (typeof honeypot === "string" && honeypot.trim() !== "") return { status: "error", error: "unknown" };
+
+  const parsed = quickSignupSchema.safeParse({ fullName: formData.get("fullName"), email: formData.get("email"), phone: formData.get("phone") });
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
+  const { fullName, email, phone } = parsed.data;
 
-  const next = safeNext(formData.get("next"), LOGIN_HOME);
-  const origin = await getOrigin();
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      // Só nome de exibição; nunca papéis ou flags vindos do cliente.
-      data: { full_name: parsed.data.displayName },
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
-    },
+  if (!hasAdminClient()) return { status: "error", error: "signupUnavailable" };
+  const admin = createAdminClient();
+
+  // limite por IP e por e-mail (HMAC, nunca o valor puro)
+  const ip = clientIp(await headers());
+  const attempt = await recordQuickSignupAttempt(admin, hashForRateLimit("ip", ip), hashForRateLimit("email", email));
+  if (attempt === "schema_missing" || attempt === "error") return { status: "error", error: "signupUnavailable" };
+  if (attempt === "limited") return { status: "error", error: "tooManyRequests" };
+
+  const password = generatePassword();
+  const { data: created, error: createError } = await admin.auth.admin.createUser({
+    email,
+    password,
+    // sem e-mail de confirmação nem etapa bloqueante (pedido do responsável); o e-mail fica marcado
+    // como "não verificado pelo app" até a pessoa provar que é dona dele (Google ou recuperação)
+    email_confirm: true,
+    user_metadata: { full_name: fullName, phone },
+    app_metadata: { quick_signup: true, quick_signup_unverified: true },
   });
-
-  if (error) {
-    // E-mail já cadastrado: resposta idêntica ao sucesso para não revelar existência.
-    if (error.code === "user_already_exists" || error.code === "email_exists") return { status: "success" };
-    // Banco recusou a conta nova: com o cadastro fechado (kill switch), avisa com educação.
-    if (isSignupRefusedByDatabase(error) && !(await readExperimentOpen(supabase))) {
-      return { status: "error", error: "experimentClosed" };
+  if (createError || !created.user) {
+    const msg = createError?.message ?? "";
+    if (createError?.code === "email_exists" || createError?.code === "user_already_exists" || /already (been )?registered|already exists/i.test(msg)) {
+      return { status: "error", error: "emailExists" };
     }
-    return { status: "error", error: mapAuthError(error) };
+    if (isSignupRefusedByDatabase(createError) && !(await readExperimentOpen(await createClient()))) return { status: "error", error: "experimentClosed" };
+    if (createError?.status === 429) return { status: "error", error: "tooManyRequests" };
+    return { status: "error", error: "unknown" };
   }
+  const userId = created.user.id;
 
-  // Confirmação de e-mail desativada no projeto: já há sessão.
-  if (data.session) redirect(next);
+  // nome completo e celular no perfil (o gatilho já criou a linha com o nome de exibição)
+  const { error: profileError } = await admin.from("profiles").update({ full_name: fullName, phone_e164: phone }).eq("id", userId);
+  if (profileError && !isMissingSchema(profileError)) console.warn("[quick-signup] perfil sem celular:", profileError.code ?? "erro");
 
-  return { status: "success" };
+  const stored = await storeGeneratedPassword(admin, userId, password);
+
+  // entra neste aparelho (cookies de sessão) com a senha recém-gerada
+  const supabase = await createClient();
+  await supabase.auth.signOut({ scope: "local" });
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  const signedIn = !signInError;
+  if (signedIn) {
+    // segura a tela "Sua senha": sem isto, o /login (que agora vê a sessão) mandaria direto para o app
+    (await cookies()).set(QUICK_SIGNUP_PENDING_COOKIE, "1", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 15 * 60 });
+  }
+  return { status: "created", password, stored, signedIn };
+}
+
+// "Já anotei": libera a tela e segue para o app.
+export async function finishQuickSignup(formData: FormData): Promise<void> {
+  (await cookies()).delete(QUICK_SIGNUP_PENDING_COOKIE);
+  redirect(safeNext(formData.get("next"), LOGIN_HOME));
 }
 
 export async function forgotPasswordAction(_prev: AuthActionState, formData: FormData): Promise<AuthActionState> {
@@ -155,6 +179,21 @@ export async function resetPasswordAction(_prev: AuthActionState, formData: Form
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) return { status: "error", error: mapAuthError(error) };
+
+  // A pessoa provou que é dona do e-mail e escolheu a própria senha: a gerada (se havia) deixa de
+  // valer e sai do cofre; as outras sessões caem (quem cadastrou o e-mail alheio perde o acesso).
+  if (hasAdminClient()) {
+    try {
+      const admin = createAdminClient();
+      await forgetGeneratedPassword(admin, user.id);
+      if (user.app_metadata?.quick_signup_unverified === true) {
+        await admin.auth.admin.updateUserById(user.id, { app_metadata: { quick_signup_unverified: false } });
+      }
+    } catch {
+      // melhor esforço: a senha nova já vale
+    }
+  }
+  await supabase.auth.signOut({ scope: "others" });
 
   return { status: "success" };
 }

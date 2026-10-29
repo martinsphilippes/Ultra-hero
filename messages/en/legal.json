@@ -175,7 +175,7 @@
         "blocks": {
           "p1": "We only collect what the demo needs to work:",
           "list1": {
-            "account": "<strong>Account:</strong> email, password and display name. The password is handled by the authentication service; the app does not store it in its own tables. If you sign in with Google, when that option is available, we receive your name, your email and, if there is one, the address of your profile photo from Google.",
+            "account": "<strong>Account:</strong> full name, email, mobile number and display name. With quick sign-up, the app generates your password and keeps an encrypted copy (AES-256, with a key that lives only on the server, outside the database) so you can look it up and change it in Profile › Account and privacy; nobody else, not even the administrators, can read it through the app. If you choose your own password through email recovery, it is handled only by the authentication service and the generated copy is deleted. If you sign in with Google, we receive your name, your email and, if there is one, the address of your profile photo from Google; the mobile number is optional.",
             "preferences": "<strong>Preferences:</strong> language, theme, avatar (the photo you upload; without a photo, your initials are shown) and your device’s time zone, used to count your day streak.",
             "profilePhoto": "<strong>Profile photo (optional):</strong> if you take or pick a photo, it is cropped to a square and resized on your device before upload, with no location data or other camera metadata, and stored in Supabase Storage at a public address that cannot be listed. It shows as your avatar in the app; if you are a hero, it also shows on your public page, which any visitor can see. To limit uploads (up to 20 per day) and delete unused photos, we keep the date, size and type of each upload.",
             "heroCover": "<strong>Hero cover (optional, heroes only):</strong> if you are a hero and take or choose a cover photo, it is cropped to 16:9 and reduced on your device before upload, without location data or other camera metadata, and stored in Supabase Storage at a public address that cannot be listed. It shows on your card in the heroes list, which any visitor can see. To limit uploads (up to 20 per day) and delete unused covers, we keep the date, size and type of each upload.",
@@ -207,7 +207,7 @@
             "payment": "payment data, such as card or bank account details: nothing is charged;",
             "health": "individual health data, such as weight, body measurements, test results, diagnoses or medical conditions, nor data from watches, rings or bands: Today does not connect to any brand yet, and the demo watch (in demo accounts and behind the “See an example” button) is generated on the spot on the server, uses none of your data, is not stored and does not go into usage events;",
             "hydration": "hydration and rest logs: Today no longer accepts them. The old ones stayed only on your device; the new Today erases them from the browser's local storage once, without reading or sending anything to the app;",
-            "documents": "identity documents, phone number and date of birth: you declare that you meet the minimum age of 18 when you create your account."
+            "documents": "identity documents and date of birth: you declare that you meet the minimum age of 18 when you create your account."
           },
           "p1": "We do not sell data, we do not pass it on for commercial or advertising purposes and we do not use third-party advertising or analytics tools."
         }
@@ -325,6 +325,11 @@
                 "period": "While the account exists",
                 "details": "Deleted when you delete your account."
               },
+              "quickSignup": {
+                "data": "Quick sign-up attempts (IP and email as an irreversible code, never the plain value)",
+                "period": "1 day",
+                "details": "Used only to limit abuse (at most 10 per hour per network and 3 per hour per email) and deleted after 1 day."
+              },
               "notifications": {
                 "data": "Notification preferences",
                 "period": "As long as the account exists",
@@ -421,7 +426,7 @@
           "p1": "You have rights over your personal data. In this demo, most of them can be exercised directly in the app:",
           "list1": {
             "access": "<strong>Access:</strong> see your data in <profile>Profile</profile>, <evolution>Progress</evolution>, <plan>Plan & modules</plan> and <orders>My test orders</orders>. A summary of what we keep and for how long is in <account>Account & privacy</account>.",
-            "correct": "<strong>Correct:</strong> change your display name, avatar, language and theme in <profile>Profile</profile> and your interests in <interests>Interests</interests>. To change your password, use <forgot>Forgot my password</forgot>.",
+            "correct": "<strong>Correct:</strong> change your display name, avatar, language and theme in <profile>Profile</profile>, your mobile number in Profile › Account and privacy and your interests in <interests>Interests</interests>. To change your password, generate a new one in Profile › Account and privacy or use <forgot>Forgot my password</forgot>.",
             "cancel": "<strong>Cancel the simulated subscription:</strong> in <plan>Plan & modules</plan>, whenever you want.",
             "delete": "<strong>Delete your account:</strong> in <account>Account & privacy</account>, choose “Delete my account” and type the confirmation word shown."
           },
@@ -444,7 +449,7 @@
           "list1": {
             "rls": "<strong>Access rules in the database itself</strong> (Row Level Security): each person can only read and change their own data, partners can only access what belongs to them and sensitive operations go through server-side functions that check permissions.",
             "keys": "<strong>Protected keys:</strong> high-privilege credentials and AI provider keys stay on the server only, never in the browser.",
-            "passwords": "<strong>Passwords</strong> are handled by the authentication service, and the app does not store them in its own tables.",
+            "passwords": "<strong>Passwords</strong> are verified by the authentication service. The password generated at quick sign-up is stored encrypted (AES-256-GCM, key only on the server) in a table with no API access at all; it is only opened for the account owner, when they ask in Profile › Account and privacy.",
             "minimization": "<strong>Minimization:</strong> usage events reject properties whose names indicate personal data, AI (when turned on) does not receive your name, your email or your account identifier, and delivery destinations are fictional.",
             "audit": "<strong>Audit and limits:</strong> the main administrative actions are recorded, each account can send up to 20 feedback messages per day and the use of AI in recommendations has an hourly limit.",
             "https": "<strong>Encrypted connection</strong> (HTTPS) between your browser and the app, provided by the hosting service."

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { AuthAlert } from "./AuthAlert";
 
-type GoogleButtonProps = { next: string };
+type GoogleButtonProps = { next: string; size?: "md" | "lg" };
 
 function GoogleIcon() {
   // Glifo "G" monocromático genérico (sem logotipo de terceiros embutido).
@@ -19,7 +19,7 @@ function GoogleIcon() {
 }
 
 // Login com Google via OAuth (PKCE). Se o provedor não estiver habilitado, avisa sem redirecionar.
-export function GoogleButton({ next }: GoogleButtonProps) {
+export function GoogleButton({ next, size = "md" }: GoogleButtonProps) {
   const t = useTranslations("auth");
   const [status, setStatus] = useState<"idle" | "loading" | "unavailable" | "error">("idle");
 
@@ -53,7 +53,7 @@ export function GoogleButton({ next }: GoogleButtonProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <Button type="button" variant="secondary" block leadingIcon={<GoogleIcon />} loading={status === "loading"} onClick={signIn}>
+      <Button type="button" variant="secondary" size={size} block leadingIcon={<GoogleIcon />} loading={status === "loading"} onClick={signIn}>
         {t("google.button")}
       </Button>
       {status === "unavailable" && <AuthAlert tone="info">{t("google.unavailable")}</AuthAlert>}

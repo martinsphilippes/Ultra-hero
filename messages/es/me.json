@@ -685,7 +685,7 @@
     },
     "store": {
       "title": "Qué guardamos",
-      "item1": "Correo, nombre visible, avatar (una foto que subiste, si la hay), idioma, tema y zona horaria.",
+      "item1": "Nombre completo, celular, correo, nombre visible, avatar (foto que subiste, si la hay), idioma, tema y zona horaria. La contraseña generada en el registro rápido se guarda cifrada; solo tú la ves, aquí.",
       "item2": "Intereses, favoritos, listas, progreso, contenidos completados, racha, recordatorios y sus marcas.",
       "item3": "Suscripción simulada (módulos y períodos) y pedidos de prueba con destino ficticio.",
       "item4": "Eventos de uso sin datos personales y feedback opcional.",
@@ -702,6 +702,48 @@
     "ai": {
       "title": "Recomendaciones por IA",
       "body": "Solo si la administración las activa. Reciben únicamente ids opacos, etiquetas y pilares — nunca nombre ni correo."
+    },
+    "password": {
+      "title": "Tu contraseña",
+      "storedDescription": "Creada automáticamente cuando entraste. Solo tú la ves: se guarda cifrada y solo se abre cuando tocas Mostrar.",
+      "googleDescription": "Entras con Google. Si también quieres entrar con correo y contraseña, crea una contraseña aquí.",
+      "ownDescription": "Usas una contraseña elegida por ti, que no guardamos. Si quieres, genera una nueva contraseña (quedará guardada aquí).",
+      "demoDescription": "Cuenta de demostración: la contraseña es compartida y no se puede ver ni cambiar aquí.",
+      "unavailableDescription": "La consulta de contraseña no está disponible en este momento. Si olvidaste la contraseña, usa “Olvidé mi contraseña” en la pantalla de entrada o entra con Google.",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "copy": "Copiar",
+      "copied": "Contraseña copiada",
+      "copyFailed": "No se pudo copiar.",
+      "generate": "Generar nueva contraseña",
+      "create": "Crear una contraseña",
+      "generated": "Nueva contraseña lista. Anótala o cópiala.",
+      "notStoredNote": "Anótala ahora: esta contraseña no se pudo guardar para consultarla después.",
+      "confirmTitle": "¿Generar una nueva contraseña?",
+      "confirmCreateTitle": "¿Crear una contraseña?",
+      "confirmDescription": "La contraseña actual deja de funcionar y los demás dispositivos conectados salen de la cuenta.",
+      "confirmBody": "Este dispositivo sigue conectado. La nueva contraseña aparece aquí al instante y queda guardada para que la consultes.",
+      "errors": {
+        "unauthenticated": "Inicia sesión para continuar.",
+        "unavailable": "La consulta de contraseña no está disponible en este momento.",
+        "demo": "Las cuentas de demostración no cambian la contraseña.",
+        "none": "No hay contraseña generada guardada para esta cuenta.",
+        "generic": "No se pudo completar. Inténtalo de nuevo."
+      }
+    },
+    "phone": {
+      "title": "Celular",
+      "label": "Tu celular",
+      "hint": "Con código de área. Solo tú y la administración lo ven. Déjalo en blanco para quitarlo.",
+      "optional": "opcional",
+      "save": "Guardar celular",
+      "saved": "Celular guardado.",
+      "errors": {
+        "invalidPhone": "Ingresa un celular de Brasil con código de área, por ejemplo (11) 91234-5678.",
+        "unavailable": "No es posible guardar el celular en este momento.",
+        "unauthenticated": "Inicia sesión para continuar.",
+        "generic": "No se pudo guardar. Inténtalo de nuevo."
+      }
     },
     "delete": {
       "title": "Eliminar cuenta",

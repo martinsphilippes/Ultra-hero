@@ -1,5 +1,5 @@
 // Estado devolvido pelas server actions de autenticação (chaves de tradução, nunca texto).
-export type AuthField = "email" | "password" | "confirmPassword" | "displayName";
+export type AuthField = "email" | "password" | "confirmPassword" | "fullName" | "phone";
 
 export type AuthFieldErrors = Partial<Record<AuthField, string>>;
 
@@ -9,6 +9,14 @@ export type AuthActionState =
   | { status: "success" };
 
 export const initialAuthState: AuthActionState = { status: "idle" };
+
+// Cadastro rápido: "created" leva a senha gerada para a tela "Sua senha" (uma vez; nunca em URL ou log).
+export type QuickSignupState =
+  | { status: "idle" }
+  | { status: "error"; error?: string; fieldErrors?: AuthFieldErrors }
+  | { status: "created"; password: string; stored: boolean; signedIn: boolean };
+
+export const initialQuickSignupState: QuickSignupState = { status: "idle" };
 
 // Chaves de erro aceitas via query string (?error=) na tela de login.
 // experimentClosed: conta nova recusada pelo banco com o cadastro fechado (kill switch experiment.open).

@@ -685,7 +685,7 @@
     },
     "store": {
       "title": "O que guardamos",
-      "item1": "E-mail, nome exibido, avatar (foto enviada por você, se houver), idioma, tema e fuso horário.",
+      "item1": "Nome completo, celular, e-mail, nome exibido, avatar (foto enviada por você, se houver), idioma, tema e fuso horário. A senha gerada no cadastro rápido fica cifrada; só você a vê, aqui.",
       "item2": "Interesses, favoritos, listas, progresso, conclusões, sequência, lembretes e marcações.",
       "item3": "Assinatura simulada (módulos e períodos) e pedidos de teste com destino fictício.",
       "item4": "Eventos de uso sem dados pessoais e feedback opcional.",
@@ -702,6 +702,48 @@
     "ai": {
       "title": "Recomendações por IA",
       "body": "Só se ativadas pela administração. Recebem apenas ids opacos, tags e pilares — nunca nome ou e-mail."
+    },
+    "password": {
+      "title": "Sua senha",
+      "storedDescription": "Criada automaticamente quando você entrou. Só você vê: ela fica cifrada e só é aberta quando você toca em Mostrar.",
+      "googleDescription": "Você entra com o Google. Se quiser também entrar com e-mail e senha, crie uma senha aqui.",
+      "ownDescription": "Você usa uma senha escolhida por você, que não guardamos. Se quiser, gere uma nova senha (ela fica guardada aqui).",
+      "demoDescription": "Conta de demonstração: a senha é compartilhada e não pode ser vista nem trocada aqui.",
+      "unavailableDescription": "A consulta de senha está indisponível no momento. Se esqueceu a senha, use “Esqueci minha senha” na tela de entrada ou entre pelo Google.",
+      "show": "Mostrar",
+      "hide": "Ocultar",
+      "copy": "Copiar",
+      "copied": "Senha copiada",
+      "copyFailed": "Não foi possível copiar.",
+      "generate": "Gerar nova senha",
+      "create": "Criar uma senha",
+      "generated": "Nova senha pronta. Anote ou copie.",
+      "notStoredNote": "Anote agora: esta senha não pôde ser guardada para consulta depois.",
+      "confirmTitle": "Gerar uma nova senha?",
+      "confirmCreateTitle": "Criar uma senha?",
+      "confirmDescription": "A senha atual deixa de funcionar e os outros aparelhos conectados saem da conta.",
+      "confirmBody": "Este aparelho continua conectado. A nova senha aparece aqui na hora e fica guardada para você consultar.",
+      "errors": {
+        "unauthenticated": "Entre para continuar.",
+        "unavailable": "Consulta de senha indisponível no momento.",
+        "demo": "Contas de demonstração não trocam a senha.",
+        "none": "Não há senha gerada guardada para esta conta.",
+        "generic": "Não foi possível concluir. Tente novamente."
+      }
+    },
+    "phone": {
+      "title": "Celular",
+      "label": "Seu celular",
+      "hint": "Com DDD. Só você e a administração veem. Deixe em branco para remover.",
+      "optional": "opcional",
+      "save": "Salvar celular",
+      "saved": "Celular salvo.",
+      "errors": {
+        "invalidPhone": "Informe um celular com DDD, por exemplo (11) 91234-5678.",
+        "unavailable": "Não é possível salvar o celular no momento.",
+        "unauthenticated": "Entre para continuar.",
+        "generic": "Não foi possível salvar. Tente novamente."
+      }
     },
     "delete": {
       "title": "Excluir conta",

@@ -175,7 +175,7 @@
         "blocks": {
           "p1": "Coletamos apenas o necessário para a demonstração funcionar:",
           "list1": {
-            "account": "<strong>Conta:</strong> e-mail, senha e nome exibido. A senha é tratada pelo serviço de autenticação; o app não a guarda nas próprias tabelas. Se você entrar com Google, quando essa opção estiver disponível, recebemos do Google seu nome, seu e-mail e, se houver, o endereço da sua foto de perfil.",
+            "account": "<strong>Conta:</strong> nome completo, e-mail, celular e nome exibido. No cadastro rápido, o app gera sua senha e guarda uma cópia cifrada (AES-256, com chave que fica só no servidor, fora do banco de dados) para você consultar e trocar em Perfil › Conta e privacidade; ninguém mais, nem a administração, consegue lê-la pelo app. Se você escolher a própria senha pela recuperação por e-mail, ela é tratada só pelo serviço de autenticação e a cópia gerada é apagada. Se você entrar com Google, recebemos do Google seu nome, seu e-mail e, se houver, o endereço da sua foto de perfil; o celular fica opcional.",
             "preferences": "<strong>Preferências:</strong> idioma, tema, avatar (a foto que você enviar; sem foto, aparecem as suas iniciais) e fuso horário do dispositivo, usado para contar sua sequência de dias.",
             "profilePhoto": "<strong>Foto de perfil (opcional):</strong> se você tirar ou escolher uma foto, ela é recortada em quadrado e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu avatar no app; se você é herói, aparece também na sua página pública, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar fotos sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
             "heroCover": "<strong>Capa do herói (opcional, só heróis):</strong> se você é herói e tira ou escolhe uma foto de capa, ela é recortada em 16:9 e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu card na lista de heróis, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar capas sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
@@ -207,7 +207,7 @@
             "payment": "dados de pagamento, como cartão, conta bancária ou Pix: nada é cobrado;",
             "health": "dados de saúde individuais, como peso, medidas, exames, diagnósticos ou condições médicas, nem dados de relógios, anéis ou pulseiras: o Hoje ainda não se conecta a nenhuma marca, e o relógio de demonstração (das contas demo e do botão “Ver um exemplo”) é gerado na hora no servidor, não usa dados seus, não é guardado e não vai para os eventos de uso;",
             "hydration": "registros de hidratação e descanso: o Hoje deixou de aceitá-los. Os antigos ficavam só no seu aparelho; o novo Hoje os apaga do armazenamento local do navegador uma única vez, sem ler nem enviar nada ao app;",
-            "documents": "documentos (como CPF), telefone e data de nascimento: a idade mínima de 18 anos é declarada por você ao criar a conta."
+            "documents": "documentos (como CPF) e data de nascimento: a idade mínima de 18 anos é declarada por você ao criar a conta."
           },
           "p1": "Não vendemos dados, não os repassamos para fins comerciais ou de publicidade e não usamos ferramentas de publicidade ou de análise de terceiros."
         }
@@ -325,6 +325,11 @@
                 "period": "Enquanto a conta existir",
                 "details": "São apagados quando você exclui a conta."
               },
+              "quickSignup": {
+                "data": "Tentativas de cadastro rápido (IP e e-mail em forma de código irreversível, nunca o valor puro)",
+                "period": "1 dia",
+                "details": "Servem só para limitar abusos (no máximo 10 por hora por rede e 3 por hora por e-mail) e são apagadas depois de 1 dia."
+              },
               "notifications": {
                 "data": "Preferências de notificação",
                 "period": "Enquanto a conta existir",
@@ -421,7 +426,7 @@
           "p1": "Você tem direitos sobre seus dados pessoais. Nesta demonstração, a maior parte deles pode ser exercida diretamente no app:",
           "list1": {
             "access": "<strong>Acessar:</strong> veja seus dados em <profile>Perfil</profile>, <evolution>Evolução</evolution>, <plan>Plano e módulos</plan> e <orders>Meus pedidos de teste</orders>. O resumo do que guardamos e dos prazos está em <account>Conta e privacidade</account>.",
-            "correct": "<strong>Corrigir:</strong> altere nome exibido, avatar, idioma e tema em <profile>Perfil</profile> e seus interesses em <interests>Interesses</interests>. Para trocar a senha, use <forgot>Esqueci minha senha</forgot>.",
+            "correct": "<strong>Corrigir:</strong> altere nome exibido, avatar, idioma e tema em <profile>Perfil</profile>, o celular em Perfil › Conta e privacidade e seus interesses em <interests>Interesses</interests>. Para trocar a senha, gere uma nova em Perfil › Conta e privacidade ou use <forgot>Esqueci minha senha</forgot>.",
             "cancel": "<strong>Cancelar a assinatura simulada:</strong> em <plan>Plano e módulos</plan>, quando quiser.",
             "delete": "<strong>Excluir a conta:</strong> em <account>Conta e privacidade</account>, escolha “Excluir minha conta” e digite a palavra de confirmação indicada."
           },
@@ -444,7 +449,7 @@
           "list1": {
             "rls": "<strong>Regras de acesso no próprio banco de dados</strong> (Row Level Security): cada pessoa só lê e altera os próprios dados, parceiros só acessam o que é deles e operações sensíveis passam por funções no servidor que conferem as permissões.",
             "keys": "<strong>Chaves protegidas:</strong> credenciais com privilégios elevados e chaves de provedores de IA ficam apenas no servidor, nunca no navegador.",
-            "passwords": "<strong>Senhas</strong> são tratadas pelo serviço de autenticação, e o app não as guarda nas próprias tabelas.",
+            "passwords": "<strong>Senhas</strong> são verificadas pelo serviço de autenticação. A senha gerada no cadastro rápido fica guardada cifrada (AES-256-GCM, chave só no servidor) numa tabela sem nenhum acesso pela API; só é aberta para a própria pessoa, quando ela pede em Perfil › Conta e privacidade.",
             "minimization": "<strong>Minimização:</strong> eventos de uso recusam propriedades cujos nomes indiquem dados pessoais, a IA (quando ativada) não recebe seu nome, seu e-mail nem o identificador da sua conta e os destinos de entrega são fictícios.",
             "audit": "<strong>Auditoria e limites:</strong> as principais ações administrativas ficam registradas, cada conta pode enviar até 20 feedbacks por dia e o uso de IA nas recomendações tem limite por hora.",
             "https": "<strong>Conexão criptografada</strong> (HTTPS) entre o seu navegador e o app, fornecida pela hospedagem."
