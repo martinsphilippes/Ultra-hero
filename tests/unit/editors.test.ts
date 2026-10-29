@@ -981,11 +981,18 @@ describe("mediaSchema e provedores habilitados", () => {
     expect(parsed.ok && parsed.data.media_license_kind).toBe("own");
   });
 
-  it.each(["mux", "upload"])("o formulário rejeita o provedor não configurado %s", (provider) => {
+  it("o formulário rejeita o provedor não configurado mux", () => {
     // a forma (mediaSchema) conhece o provedor; a restrição aos habilitados fica no contentFormSchema
-    expect(mediaSchema.safeParse({ provider, ref: "abc123", captions_url: null }).success).toBe(true);
-    expect(contentErrors(validVideoForm({ media: { provider, ref: "abc123", captions_url: null } }))).toEqual({
+    expect(mediaSchema.safeParse({ provider: "mux", ref: "abc123", captions_url: null }).success).toBe(true);
+    expect(contentErrors(validVideoForm({ media: { provider: "mux", ref: "abc123", captions_url: null } }))).toEqual({
       "media.provider": "providerNotConfigured",
+    });
+  });
+
+  it("upload só com o caminho da foto do composer (0043); referência solta é recusada", () => {
+    expect(mediaSchema.safeParse({ provider: "upload", ref: "abc123", captions_url: null }).success).toBe(true);
+    expect(contentErrors(validVideoForm({ media: { provider: "upload", ref: "abc123", captions_url: null } }))).toEqual({
+      "media.ref": "invalidMediaRef",
     });
   });
 

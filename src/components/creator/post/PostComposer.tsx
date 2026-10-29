@@ -1,17 +1,22 @@
 "use client";
 
-import { Camera, CircleCheck, ExternalLink, Images, LoaderCircle, Plus, RotateCcw, Send, Trash2, TriangleAlert } from "lucide-react";
+import { Camera, CircleCheck, ExternalLink, Images, LoaderCircle, Plus, RotateCcw, Send, Trash2, TriangleAlert, Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState, type ChangeEvent, type ReactNode, type Ref } from "react";
 import type { Upload } from "tus-js-client";
 import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/creator/post/actions";
+import { discardPhotoPost, publishPhotoPost, startPhotoPost } from "@/app/creator/post/photo-actions";
 import { Button, Chip, Dialog, FormField, Input, ProgressBar, Textarea, useToast } from "@/components/ui";
+import { AvatarPrepareError, prepareFittedImage } from "@/lib/avatar/resize";
+import { POST_PHOTO_MAX_EDGE, POST_PHOTO_MAX_UPLOAD_BYTES, type PostPhotoState } from "@/lib/post-photo/constants";
+import { mediaKindOf, pickOptions, validatePhotoSource, type MediaKind } from "@/lib/post-photo/validation";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { cn } from "@/lib/utils";
 import { CAPTION_MAX, TITLE_MAX, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "./validation";
 
-type Props = { configured: boolean; defaultPillar: Pillar };
+type Props = { configured: boolean; photoState: PostPhotoState; defaultPillar: Pillar };
+type PickSource = "photoCamera" | "videoCamera" | "gallery";
 
 type Step = "pick" | "compose" | "done";
 type UploadState =
@@ -76,19 +81,25 @@ function leavingLink(event: MouseEvent): boolean {
   return url.pathname !== window.location.pathname || url.search !== window.location.search;
 }
 
-// Composer de post em vídeo, pensado para o celular: escolher → enviar e escrever → publicado.
-// O envio (tus, direto para o Cloudflare) roda em segundo plano enquanto a pessoa escreve.
-export function PostComposer({ configured, defaultPillar }: Props) {
+// Composer de post do herói, pensado para o celular: escolher → enviar e escrever → publicado.
+// Vídeo: o envio (tus, direto para o Cloudflare) roda em segundo plano enquanto a pessoa escreve.
+// Foto (0043): reduzida no aparelho e enviada pelo servidor ao bucket post-photos; não depende do Stream.
+export function PostComposer({ configured, photoState, defaultPillar }: Props) {
   const t = useTranslations("creator.post");
   const te = useTranslations("creator.post.errors");
+  const tpe = useTranslations("creator.post.photo.errors");
   const tp = useTranslations("common.pillars");
   const tc = useTranslations("common.actions");
   const tsteps = useTranslations("creator.post.steps");
   const { toast } = useToast();
   const titleId = useId();
 
+  const photoCameraRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  // Tipo do post em andamento: os callbacks leem o ref (atual no mesmo tique); a tela, o estado.
+  const kindRef = useRef<MediaKind>("video");
+  const photoRef = useRef<{ blob: Blob; mime: string } | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const uploadRef = useRef<Upload | null>(null);
   const sessionRef = useRef<{ contentId: string; uploadUrl: string } | null>(null);
@@ -107,6 +118,7 @@ export function PostComposer({ configured, defaultPillar }: Props) {
   const generationRef = useRef(0);
 
   const [step, setStep] = useState<Step>("pick");
+  const [kind, setKind] = useState<MediaKind>("video");
   const [checking, setChecking] = useState(false);
   const [pickError, setPickError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -122,7 +134,19 @@ export function PostComposer({ configured, defaultPillar }: Props) {
   // Leitor de tela ouve só mudanças de estado (e o envio a cada 25%), não cada ponto percentual.
   const [announcement, setAnnouncement] = useState("");
 
-  const message = useCallback((code: string) => (te.has(code) ? te(code) : te("generic")), [te]);
+  // Texto do tipo: a variante "photo.<chave>" quando existe, senão a do vídeo.
+  const text = useCallback(
+    (k: MediaKind, key: string, values?: Record<string, string | number>) => (k === "photo" && t.has(`photo.${key}`) ? t(`photo.${key}`, values) : t(key, values)),
+    [t],
+  );
+  const errorText = useCallback((k: MediaKind, code: string) => (k === "photo" && tpe.has(code) ? tpe(code) : te.has(code) ? te(code) : te("generic")), [te, tpe]);
+  const message = useCallback((code: string) => errorText(kind, code), [errorText, kind]);
+  const options = pickOptions({ videoConfigured: configured, photo: photoState });
+
+  function chooseKind(next: MediaKind) {
+    kindRef.current = next;
+    setKind(next);
+  }
 
   const stopPolling = useCallback(() => {
     if (pollRef.current !== null) window.clearTimeout(pollRef.current);
@@ -132,9 +156,10 @@ export function PostComposer({ configured, defaultPillar }: Props) {
   const updateUpload = useCallback(
     (next: UploadState) => {
       setUpload(next);
+      const k = kindRef.current;
       if (next.state === "starting") {
         lastQuarterRef.current = 0;
-        setAnnouncement(t("sr.starting"));
+        setAnnouncement(text(k, "sr.starting"));
       } else if (next.state === "uploading") {
         const quarter = Math.floor(next.pct / 25) * 25;
         if (quarter > lastQuarterRef.current && quarter < 100) {
@@ -142,12 +167,12 @@ export function PostComposer({ configured, defaultPillar }: Props) {
           setAnnouncement(t("sr.progress", { pct: quarter }));
         }
       } else if (next.state === "done") {
-        setAnnouncement(t("sr.uploaded"));
+        setAnnouncement(text(k, "sr.uploaded"));
       } else if (next.state === "error") {
-        setAnnouncement(`${t("sr.error")} ${te.has(next.error) ? te(next.error) : te("generic")}`);
+        setAnnouncement(`${text(k, "sr.error")} ${errorText(k, next.error)}`);
       }
     },
-    [t, te],
+    [t, text, errorText],
   );
 
   // Ao sair da tela: invalida respostas pendentes, para o envio (fica retomável no Cloudflare até
@@ -182,7 +207,7 @@ export function PostComposer({ configured, defaultPillar }: Props) {
   // Vídeo enviado e texto digitado mas ainda não publicado: título e legenda só são salvos ao
   // publicar, então sair também perde algo (o rascunho fica com o título provisório).
   const unsavedText = step === "compose" && upload.state === "done" && publish.state === "idle" && (title.trim() !== "" || caption.trim() !== "");
-  const leaveMessage = uploadBusy ? t("leaveWarning") : publishBusy ? t("leaveWarningProcessing") : unsavedText ? t("leaveWarningText") : null;
+  const leaveMessage = uploadBusy ? text(kind, "leaveWarning") : publishBusy ? text(kind, "leaveWarningProcessing") : unsavedText ? text(kind, "leaveWarningText") : null;
   const guarding = leaveMessage !== null;
 
   useEffect(() => {
@@ -278,7 +303,39 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     [updateUpload],
   );
 
+  // Foto: uma server action só (reserva, grava no bucket e cria o rascunho). Resposta de uma foto
+  // já descartada (ou de uma tela que saiu) apaga o rascunho criado, para não sobrar nada.
+  const beginPhotoUpload = useCallback(async () => {
+    const picked = photoRef.current;
+    if (!picked) return;
+    const generation = generationRef.current;
+    if (sessionRef.current) {
+      updateUpload({ state: "done" });
+      return;
+    }
+    updateUpload({ state: "starting" });
+    try {
+      const form = new FormData();
+      form.append("file", new File([picked.blob], picked.mime === "image/webp" ? "foto.webp" : "foto.jpg", { type: picked.mime }));
+      const result = await startPhotoPost(form);
+      if (generation !== generationRef.current) {
+        if (result.ok) void discardPhotoPost({ contentId: result.contentId }).catch(() => undefined);
+        return;
+      }
+      if (!result.ok) {
+        updateUpload({ state: "error", error: result.error });
+        return;
+      }
+      sessionRef.current = { contentId: result.contentId, uploadUrl: "" };
+      setContentId(result.contentId);
+      updateUpload({ state: "done" });
+    } catch {
+      if (generation === generationRef.current) updateUpload({ state: "error", error: "network" });
+    }
+  }, [updateUpload]);
+
   const beginUpload = useCallback(async () => {
+    if (kindRef.current === "photo") return beginPhotoUpload();
     const picked = fileRef.current;
     if (!picked) return;
     const generation = generationRef.current;
@@ -301,7 +358,7 @@ export function PostComposer({ configured, defaultPillar }: Props) {
       }
     }
     await runTus(picked.file, session.uploadUrl, generation);
-  }, [runTus, updateUpload]);
+  }, [runTus, updateUpload, beginPhotoUpload]);
 
   // Envio parado por rede retoma sozinho: no evento "online" (estava offline), ao voltar para a aba
   // e, com o navegador dizendo que está online (sinal fraco, timeout), por tempo.
@@ -355,11 +412,67 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     void beginUpload();
   }
 
-  async function onFile(event: ChangeEvent<HTMLInputElement>) {
+  // Cada botão abre um input; o arquivo escolhido vai para a foto ou para o vídeo pelo MIME
+  // (a galeria aceita os dois). No servidor o tipo da foto vem dos bytes, nunca do navegador.
+  async function onFile(event: ChangeEvent<HTMLInputElement>, source: PickSource) {
     const file = event.target.files?.[0];
     event.target.value = ""; // permite escolher o mesmo arquivo de novo
     if (!file) return;
     setPickError(null);
+    const picked = mediaKindOf(file);
+    if (!picked) {
+      setPickError(source === "photoCamera" ? "not_image" : source === "videoCamera" ? "not_video" : "not_media");
+      return;
+    }
+    if (picked === "photo") {
+      if (!options.takePhoto) {
+        setPickError(photoState === "disabled" ? "photo_disabled" : "photo_not_configured");
+        return;
+      }
+      await onPhoto(file);
+      return;
+    }
+    if (!configured) {
+      setPickError("video_not_configured");
+      return;
+    }
+    await onVideo(file);
+  }
+
+  async function onPhoto(file: File) {
+    chooseKind("photo");
+    const problem = validatePhotoSource(file);
+    if (problem) {
+      setPickError(problem);
+      return;
+    }
+    const generation = generationRef.current;
+    setChecking(true);
+    let prepared: Awaited<ReturnType<typeof prepareFittedImage>>;
+    try {
+      prepared = await prepareFittedImage(file, { maxEdge: POST_PHOTO_MAX_EDGE, maxBytes: POST_PHOTO_MAX_UPLOAD_BYTES });
+    } catch (error) {
+      if (generation === generationRef.current) {
+        setChecking(false);
+        setPickError(error instanceof AvatarPrepareError ? error.code : "decode_failed");
+      }
+      return;
+    }
+    if (generation !== generationRef.current) return; // a tela saiu enquanto preparava
+    setChecking(false);
+    generationRef.current += 1;
+    photoRef.current = { blob: prepared.blob, mime: prepared.mime };
+    fileRef.current = null;
+    sessionRef.current = null;
+    setContentId(null);
+    setPreviewUrl(URL.createObjectURL(prepared.blob));
+    setPublish({ state: "idle" });
+    setStep("compose");
+    void beginUpload();
+  }
+
+  async function onVideo(file: File) {
+    chooseKind("video");
     const problem = validateVideoFile(file);
     if (problem) {
       setPickError(problem);
@@ -381,6 +494,7 @@ export function PostComposer({ configured, defaultPillar }: Props) {
       return;
     }
     generationRef.current += 1;
+    photoRef.current = null;
     fileRef.current = { file, durationSec: normalizeDuration(rawSeconds) };
     sessionRef.current = null;
     setContentId(null);
@@ -397,6 +511,7 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     uploadRef.current = null;
     sessionRef.current = null;
     fileRef.current = null;
+    photoRef.current = null;
     lastQuarterRef.current = 0;
     setPreviewUrl(null);
     setUpload({ state: "idle" });
@@ -408,6 +523,7 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     setContentId(null);
     setPickError(null);
     setAnnouncement("");
+    chooseKind("video");
     setStep("pick");
   }
 
@@ -420,10 +536,11 @@ export function PostComposer({ configured, defaultPillar }: Props) {
       // o descarte apaga o vídeo de qualquer jeito
     }
     const id = contentId;
+    const discardedKind = kindRef.current;
     let failure: string | null = null;
     if (id) {
       try {
-        const result = await discardVideoPost({ contentId: id });
+        const result = discardedKind === "photo" ? await discardPhotoPost({ contentId: id }) : await discardVideoPost({ contentId: id });
         if (!result.ok) failure = result.error;
       } catch {
         failure = "network";
@@ -435,11 +552,12 @@ export function PostComposer({ configured, defaultPillar }: Props) {
       // Nada foi apagado: a tela fica como estava (o rascunho segue em Meus conteúdos) e o envio
       // interrompido acima volta a andar.
       toast({ title: t("discardFailed"), description: t("discardFailedDescription"), variant: "error" });
-      if (upload.state === "starting" || upload.state === "uploading") void beginUpload();
+      if (discardedKind === "video" && (upload.state === "starting" || upload.state === "uploading")) void beginUpload();
       return;
     }
+    // foto ainda subindo (sem contentId): o reset invalida a resposta, que apaga o rascunho ao chegar
     reset();
-    if (id) toast({ title: t("discarded"), description: t("discardedDeleted"), variant: "success" });
+    if (id) toast({ title: text(discardedKind, "discarded"), description: text(discardedKind, "discardedDeleted"), variant: "success" });
   }
 
   const trimmedTitle = title.trim();
@@ -459,9 +577,10 @@ export function PostComposer({ configured, defaultPillar }: Props) {
     const generation = generationRef.current;
     let incompleteTries = 0;
     let announcedProcessing = false;
+    const photo = kindRef.current === "photo";
     const attempt = async () => {
       try {
-        const result = await publishVideoPost(payload);
+        const result = photo ? await publishPhotoPost(payload) : await publishVideoPost(payload);
         if (generation !== generationRef.current) return;
         if (result.ok) {
           setSlug(result.slug);
@@ -527,35 +646,50 @@ export function PostComposer({ configured, defaultPillar }: Props) {
         <StepHeading ref={headingRef} className="sr-only">
           {tsteps("pick")}
         </StepHeading>
+        {/* Avisos independentes: sem o Stream a foto continua funcionando, e vice-versa. */}
         {!configured && (
           <div role="status" data-testid="video-not-configured" className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-fg">
             <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
             <p>{t("notConfigured")}</p>
           </div>
         )}
+        {photoState !== "ready" && (
+          <div role="status" data-testid="photo-unavailable" className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-fg">
+            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+            <p>{photoState === "disabled" ? t("photo.disabled") : t("photo.unavailable")}</p>
+          </div>
+        )}
         <div className="flex flex-col gap-3">
           <BigChoice
             icon={<Camera />}
+            label={t("photo.take")}
+            hint={t("photo.takeHint")}
+            disabled={!options.takePhoto || checking}
+            onClick={() => photoCameraRef.current?.click()}
+          />
+          <BigChoice
+            icon={<Video />}
             label={t("record")}
             hint={t("recordHint")}
-            disabled={!configured || checking}
+            disabled={!options.recordVideo || checking}
             onClick={() => cameraRef.current?.click()}
           />
           <BigChoice
             icon={<Images />}
             label={t("gallery")}
             hint={t("galleryHint")}
-            disabled={!configured || checking}
+            disabled={!options.gallery || checking}
             onClick={() => galleryRef.current?.click()}
           />
           {/* Inputs escondidos: o botão grande é o alvo de toque; capture abre a câmera traseira no celular. */}
-          <input ref={cameraRef} type="file" accept="video/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onFile} data-testid="post-camera-input" />
-          <input ref={galleryRef} type="file" accept="video/*" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onFile} data-testid="post-gallery-input" />
+          <input ref={photoCameraRef} type="file" accept="image/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onFile(e, "photoCamera")} data-testid="post-photo-camera-input" />
+          <input ref={cameraRef} type="file" accept="video/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onFile(e, "videoCamera")} data-testid="post-camera-input" />
+          <input ref={galleryRef} type="file" accept="image/*,video/*" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onFile(e, "gallery")} data-testid="post-gallery-input" />
         </div>
         <p className="type-caption text-center text-fg-muted">{t("limits")}</p>
         {checking && (
           <p role="status" className="flex items-center justify-center gap-2 text-sm text-fg-muted">
-            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> {t("checking")}
+            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> {text(kind, "checking")}
           </p>
         )}
         {pickError && (
@@ -571,15 +705,15 @@ export function PostComposer({ configured, defaultPillar }: Props) {
   const pct = upload.state === "uploading" ? upload.pct : upload.state === "done" ? 100 : 0;
   const uploadText =
     upload.state === "starting"
-      ? t("starting")
+      ? text(kind, "starting")
       : upload.state === "uploading"
         ? t("uploading", { pct: upload.pct })
         : upload.state === "done"
-          ? t("uploaded")
+          ? text(kind, "uploaded")
           : upload.state === "error"
             ? message(upload.error)
             : "";
-  const publishHint = !uploadDone ? t("publishHintUpload") : !trimmedTitle ? t("publishHintTitle") : null;
+  const publishHint = !uploadDone ? text(kind, "publishHintUpload") : !trimmedTitle ? t("publishHintTitle") : null;
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
@@ -592,7 +726,12 @@ export function PostComposer({ configured, defaultPillar }: Props) {
       </p>
 
       <div className="flex flex-col gap-3">
-        {previewUrl && (
+        {previewUrl && kind === "photo" && (
+          // prévia local (blob, já reduzida no aparelho): o otimizador de imagens não se aplica
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewUrl} alt={t("photo.preview")} className="max-h-[60vh] w-full rounded-2xl border border-border bg-surface-elevated object-contain" data-testid="post-photo-preview" />
+        )}
+        {previewUrl && kind === "video" && (
           <video
             src={previewUrl}
             muted
@@ -605,13 +744,13 @@ export function PostComposer({ configured, defaultPillar }: Props) {
           />
         )}
         <div className="flex flex-col gap-2">
-          <ProgressBar value={pct} label={t("uploadLabel")} tone={upload.state === "error" ? "danger" : upload.state === "done" ? "success" : "accent"} />
+          <ProgressBar value={pct} label={text(kind, "uploadLabel")} tone={upload.state === "error" ? "danger" : upload.state === "done" ? "success" : "accent"} />
           <p className={cn("flex items-center gap-2 text-sm", upload.state === "error" ? "text-danger" : "text-fg-muted")} data-testid="upload-status">
             {(upload.state === "starting" || upload.state === "uploading") && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
             {upload.state === "done" && <CircleCheck className="size-4 text-success" aria-hidden="true" />}
             {uploadText}
           </p>
-          {(upload.state === "starting" || upload.state === "uploading") && <p className="type-caption text-fg-muted">{t("uploadInBackground")}</p>}
+          {(upload.state === "starting" || upload.state === "uploading") && <p className="type-caption text-fg-muted">{text(kind, "uploadInBackground")}</p>}
           {upload.state === "error" && (
             <Button type="button" variant="secondary" size="lg" block leadingIcon={<RotateCcw />} onClick={() => void retryUpload()}>
               {t("retry")}
@@ -637,7 +776,7 @@ export function PostComposer({ configured, defaultPillar }: Props) {
             <Input value={title} maxLength={TITLE_MAX} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} className="h-12 text-base" />
           </FormField>
           <FormField label={t("captionLabel")} optionalLabel={t("optional")} hint={t("counter", { count: caption.length, max: CAPTION_MAX })}>
-            <Textarea value={caption} maxLength={CAPTION_MAX} rows={3} placeholder={t("captionPlaceholder")} onChange={(e) => setCaption(e.target.value)} />
+            <Textarea value={caption} maxLength={CAPTION_MAX} rows={3} placeholder={text(kind, "captionPlaceholder")} onChange={(e) => setCaption(e.target.value)} />
           </FormField>
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 text-sm font-semibold text-fg">{t("pillarLabel")}</legend>
@@ -667,15 +806,15 @@ export function PostComposer({ configured, defaultPillar }: Props) {
       </form>
 
       <Button type="button" variant="ghost" size="lg" block leadingIcon={<Trash2 />} onClick={() => setDiscardOpen(true)} disabled={publishing}>
-        {t("discard")}
+        {text(kind, "discard")}
       </Button>
       <Dialog
         open={discardOpen}
         onOpenChange={(next) => {
           if (!discarding) setDiscardOpen(next);
         }}
-        title={t("discardTitle")}
-        description={t("discardDescription")}
+        title={text(kind, "discardTitle")}
+        description={text(kind, "discardDescription")}
         size="sm"
         footer={
           <div className="flex w-full justify-end gap-2">

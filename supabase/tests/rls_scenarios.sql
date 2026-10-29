@@ -2771,9 +2771,9 @@ select tests.ok('S33 bucket avatars público, 2 MiB e só WebP/JPEG',
   (select public and file_size_limit = 2097152 and allowed_mime_types = array['image/webp', 'image/jpeg'] from storage.buckets where id = 'avatars'));
 select tests.ok('S33 nenhuma política do Storage cita o bucket avatars (escrita só pelo service role)',
   (select count(*) from pg_policies where schemaname = 'storage' and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) like '%avatars%') = 0);
-select tests.ok('S33 public_settings expõe avatars.uploads_enabled (ligado) sem perder as chaves da 0027 (12 com a capa da 0042)',
+select tests.ok('S33 public_settings expõe avatars.uploads_enabled (ligado) sem perder as chaves da 0027 (13 com a capa da 0042 e a foto do post da 0043)',
   (public.public_settings() -> 'avatars.uploads_enabled') = 'true'::jsonb
-  and (select count(*) from jsonb_object_keys(public.public_settings())) = 12);
+  and (select count(*) from jsonb_object_keys(public.public_settings())) = 13);
 select tests.ok('S33 avatar_uploads: RLS ligada, uma política de leitura só para authenticated',
   (select relrowsecurity from pg_class where oid = 'public.avatar_uploads'::regclass)
   and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'avatar_uploads') = 'SELECT:authenticated');
@@ -4168,7 +4168,7 @@ select tests.ok('S54 nenhuma política do Storage cita o bucket hero-covers (esc
 select tests.ok('S54 public_settings expõe hero_covers.uploads_enabled (ligado) sem perder as chaves da 0031',
   (public.public_settings() -> 'hero_covers.uploads_enabled') = 'true'::jsonb
   and (public.public_settings() -> 'avatars.uploads_enabled') = 'true'::jsonb
-  and (select count(*) from jsonb_object_keys(public.public_settings())) = 12);
+  and (select count(*) from jsonb_object_keys(public.public_settings())) = 13);
 select tests.ok('S54 hero_cover_uploads: RLS ligada, uma política de leitura só para authenticated',
   (select relrowsecurity from pg_class where oid = 'public.hero_cover_uploads'::regclass)
   and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'hero_cover_uploads') = 'SELECT:authenticated');
@@ -4339,6 +4339,222 @@ delete from storage.objects where bucket_id = 'hero-covers';
 delete from auth.users where id in ('54000000-0000-4000-8000-000000000542', '54000000-0000-4000-8000-000000000543');
 select tests.ok('S54 Rafael e Tiago voltam ao seed, sem usuário e com a capa oficial',
   (select count(*) from public.creator_profiles c join t_s54_seed s on s.id = c.id where c.user_id is null and c.cover_url is not distinct from s.cover_url) = 2);
+
+-- ================================================================ S55 · Post com foto no composer (0043, shim local)
+-- Bucket público post-photos sem escrita pela API; o envio é reservado pela RPC (kill switch, herói
+-- ativo, tipo, tamanho, cota de 30/hora, nome do objeto). O herói só usa no corpo ('upload') e na
+-- capa do conteúdo uma foto que ele reservou e que já está no bucket; uma foto serve a um corpo só;
+-- a publicação confere de novo; o descarte só apaga rascunho de foto do próprio herói. Rafael
+-- (…0551) e Tiago (…0552) ficam ligados a usuários de teste só aqui e voltam sem usuário; …0553 é
+-- uma conta comum. Tudo que este cenário cria sai no fim (o S14 conta 40 no ar).
+select tests.su();
+insert into auth.users (id, email) values
+  ('55000000-0000-4000-8000-000000000551', 's55hero@test.local'),
+  ('55000000-0000-4000-8000-000000000552', 's55other@test.local'),
+  ('55000000-0000-4000-8000-000000000553', 's55plain@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values
+  ('55000000-0000-4000-8000-000000000551', 'creator', 'global'),
+  ('55000000-0000-4000-8000-000000000552', 'creator', 'global');
+update public.creator_profiles set user_id = '55000000-0000-4000-8000-000000000551' where id = public.seed_uuid('creator:rafael');
+update public.creator_profiles set user_id = '55000000-0000-4000-8000-000000000552' where id = public.seed_uuid('creator:tiago');
+select tests.ok('S55 bucket post-photos público, 3,5 MiB e só WebP/JPEG',
+  (select public and file_size_limit = 3670016 and allowed_mime_types = array['image/webp', 'image/jpeg'] from storage.buckets where id = 'post-photos'));
+select tests.ok('S55 nenhuma política do Storage cita o bucket post-photos (escrita só pelo service role)',
+  (select count(*) from pg_policies where schemaname = 'storage' and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) like '%post-photos%') = 0);
+select tests.ok('S55 public_settings expõe post_photos.uploads_enabled (ligado): 13 chaves, sem perder a da capa',
+  (public.public_settings() -> 'post_photos.uploads_enabled') = 'true'::jsonb
+  and (public.public_settings() -> 'hero_covers.uploads_enabled') = 'true'::jsonb
+  and (select count(*) from jsonb_object_keys(public.public_settings())) = 13);
+select tests.ok('S55 post_photo_uploads: RLS ligada, uma política de leitura só para authenticated',
+  (select relrowsecurity from pg_class where oid = 'public.post_photo_uploads'::regclass)
+  and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'post_photo_uploads') = 'SELECT:authenticated');
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S55 anon não reserva envio', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'permission denied');
+select tests.expect_error('S55 anon não descarta rascunho', $q$select public.creator_discard_photo_draft(gen_random_uuid())$q$, 'permission denied');
+select tests.expect_error('S55 anon não lista órfãos', $q$select public.post_photo_orphan_uploads(10)$q$, 'permission denied');
+select tests.expect_error('S55 anon não usa as funções internas (caminho)', $q$select public.post_photo_path('https://x.supabase.co/storage/v1/object/public/post-photos/a/b.webp')$q$, 'permission denied');
+select tests.expect_error('S55 anon não usa as funções internas (foto utilizável)', $q$select public.post_photo_usable('a/b.webp', gen_random_uuid())$q$, 'permission denied');
+select tests.expect_error('S55 anon não lê post_photo_uploads', $q$select count(*) from public.post_photo_uploads$q$, 'permission denied');
+
+-- conta comum (sem papel de herói nem perfil)
+select tests.login('55000000-0000-4000-8000-000000000553', 's55plain@test.local');
+select tests.expect_error('S55 conta comum não reserva envio: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+select tests.expect_error('S55 conta comum não descarta: forbidden', $q$select public.creator_discard_photo_draft(gen_random_uuid())$q$, 'forbidden');
+select tests.expect_error('S55 conta comum não usa as funções internas', $q$select public.post_photo_usable('a/b.webp', auth.uid())$q$, 'permission denied');
+
+-- herói: nada de escrita direta, validações da reserva
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+select tests.expect_error('S55 herói não grava no bucket post-photos pela API (sem política)',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('post-photos', auth.uid() || '/a5500000-0000-4000-8000-000000000001.webp', auth.uid()::text, '{"mimetype":"image/webp","size":1}')$q$, '42501');
+select tests.expect_error('S55 herói não insere em post_photo_uploads',
+  $q$insert into public.post_photo_uploads (user_id, path, bytes, mime) values (auth.uid(), auth.uid() || '/a5500000-0000-4000-8000-000000000002.webp', 1, 'image/webp')$q$, '42501');
+select tests.expect_error('S55 tipo fora da lista: not_image', $q$select public.post_photo_upload_claim(1000, 'image/png')$q$, 'not_image');
+select tests.expect_error('S55 arquivo vazio: empty_file', $q$select public.post_photo_upload_claim(0, 'image/webp')$q$, 'empty_file');
+select tests.expect_error('S55 acima de 3,5 MiB: file_too_large', $q$select public.post_photo_upload_claim(3670017, 'image/jpeg')$q$, 'file_too_large');
+create temporary table t_s55_claim as select public.post_photo_upload_claim(900000, 'image/webp') as path;
+select tests.ok('S55 reserva devolve <user_id>/<uuid>.webp e o herói vê a própria linha',
+  (select path ~ '^55000000-0000-4000-8000-000000000551/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$' from t_s55_claim)
+  and (select count(*) from public.post_photo_uploads where path = (select path from t_s55_claim) and bytes = 900000 and mime = 'image/webp') = 1);
+create temporary table t_s55_url as
+  select 'https://proj.supabase.co/storage/v1/object/public/post-photos/' || (select path from t_s55_claim) as url;
+select tests.expect_error('S55 capa com foto reservada mas não gravada no bucket: photo_media_forbidden',
+  $q$insert into public.content (id, slug, creator_id, pillar, type, title, cover_url) values ('55000000-0000-4000-8000-000000005501', 's55-foto-1', public.seed_uuid('creator:rafael'), 'routine', 'article', 'Foto S55', (select url from t_s55_url))$q$,
+  'photo_media_forbidden');
+select tests.su();
+grant select on t_s55_claim, t_s55_url to authenticated, anon;
+insert into storage.objects (bucket_id, name, metadata) values ('post-photos', (select path from t_s55_claim), '{"mimetype":"image/webp","size":900000}');
+
+-- foto gravada: rascunho com a foto na capa e no corpo
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, summary, cover_url, media_license_kind) values
+  ('55000000-0000-4000-8000-000000005501', 's55-foto-1', public.seed_uuid('creator:rafael'), 'routine', 'article', 'Foto S55', 'Legenda S55', (select url from t_s55_url), 'own');
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values
+  ('55000000-0000-4000-8000-000000005501', '{"kind":"article","format":"photo","intro":"","sections":[],"key_points":[]}', 'upload', (select path from t_s55_claim));
+select tests.ok('S55 herói cria o rascunho com a própria foto na capa e no corpo',
+  (select cover_url = (select url from t_s55_url) from public.content where id = '55000000-0000-4000-8000-000000005501')
+  and (select media_provider = 'upload' and media_ref = (select path from t_s55_claim) from public.content_bodies where content_id = '55000000-0000-4000-8000-000000005501'));
+insert into public.content (id, slug, creator_id, pillar, type, title) values
+  ('55000000-0000-4000-8000-000000005502', 's55-foto-2', public.seed_uuid('creator:rafael'), 'routine', 'article', 'Foto S55 (2)');
+select tests.expect_error('S55 a mesma foto não vai para um segundo corpo', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('55000000-0000-4000-8000-000000005502', '{"kind":"article"}', 'upload', (select path from t_s55_claim))$q$, 'photo_media_forbidden');
+select tests.expect_error('S55 provedor upload com referência solta é recusado', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('55000000-0000-4000-8000-000000005502', '{"kind":"article"}', 'upload', 'qualquer/coisa.webp')$q$, 'photo_media_forbidden');
+select tests.expect_error('S55 capa com URL do bucket fora do formato é recusada', $q$update public.content set cover_url = (select url from t_s55_url) || '?x=1' where id = '55000000-0000-4000-8000-000000005502'$q$, 'photo_media_forbidden');
+update public.content set title = 'Foto S55 (editada)' where id = '55000000-0000-4000-8000-000000005501';
+select tests.ok('S55 editar o texto sem mexer na capa não revalida a foto', (select title from public.content where id = '55000000-0000-4000-8000-000000005501') = 'Foto S55 (editada)');
+
+-- outro herói não vê, não usa nem descarta a foto alheia
+select tests.login('55000000-0000-4000-8000-000000000552', 's55other@test.local');
+select tests.ok('S55 outro herói não lê o envio alheio', (select count(*) from public.post_photo_uploads) = 0);
+select tests.expect_error('S55 outro herói não usa a foto alheia como capa (insert)',
+  $q$insert into public.content (id, slug, creator_id, pillar, type, title, cover_url) values ('55000000-0000-4000-8000-000000005503', 's55-foto-3', public.seed_uuid('creator:tiago'), 'routine', 'article', 'Cópia', (select url from t_s55_url))$q$,
+  'photo_media_forbidden');
+insert into public.content (id, slug, creator_id, pillar, type, title) values
+  ('55000000-0000-4000-8000-000000005503', 's55-foto-3', public.seed_uuid('creator:tiago'), 'routine', 'article', 'Cópia');
+select tests.expect_error('S55 outro herói não usa a foto alheia como capa (update)', $q$update public.content set cover_url = (select url from t_s55_url) where id = '55000000-0000-4000-8000-000000005503'$q$, 'photo_media_forbidden');
+select tests.expect_error('S55 outro herói não grava a foto alheia no corpo', $q$insert into public.content_bodies (content_id, body, media_provider, media_ref) values ('55000000-0000-4000-8000-000000005503', '{"kind":"article"}', 'upload', (select path from t_s55_claim))$q$, 'photo_media_forbidden');
+select tests.expect_error('S55 outro herói não descarta o rascunho alheio', $q$select public.creator_discard_photo_draft('55000000-0000-4000-8000-000000005501')$q$, 'forbidden');
+select tests.expect_error('S55 outro herói não publica o rascunho alheio', $q$select public.creator_publish_content('55000000-0000-4000-8000-000000005501')$q$, 'forbidden');
+
+-- publicar: o dono publica; o visitante vê a foto na capa; publicado não se descarta
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+select tests.ok('S55 o dono publica o post com foto', (public.creator_publish_content('55000000-0000-4000-8000-000000005501') ->> 'status') = 'published');
+select tests.expect_error('S55 publicado não é descartável: not_draft', $q$select public.creator_discard_photo_draft('55000000-0000-4000-8000-000000005501')$q$, 'not_draft');
+select tests.anon();
+select tests.ok('S55 o visitante vê o post com a foto na capa',
+  (select cover_url like '%/post-photos/55000000-0000-4000-8000-000000000551/%' and type = 'article' from public.content where id = '55000000-0000-4000-8000-000000005501'));
+
+-- publicação confere a foto mesmo com corpo gravado por caminho confiável (aqui, o sistema)
+select tests.su();
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values
+  ('55000000-0000-4000-8000-000000005502', '{"kind":"article"}', 'upload', '55000000-0000-4000-8000-000000000551/a5500000-0000-4000-8000-0000000000aa.webp')
+  on conflict (content_id) do update set media_provider = excluded.media_provider, media_ref = excluded.media_ref;
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+select tests.expect_error('S55 publicar com foto não reservada pelo herói: forbidden', $q$select public.creator_publish_content('55000000-0000-4000-8000-000000005502')$q$, 'forbidden');
+
+-- descartar: só rascunho de foto; devolve o caminho (o servidor apaga o objeto)
+create temporary table t_s55_claim2 as select public.post_photo_upload_claim(500000, 'image/jpeg') as path;
+select tests.su();
+grant select on t_s55_claim2 to authenticated, anon;
+insert into storage.objects (bucket_id, name, metadata) values ('post-photos', (select path from t_s55_claim2), '{"mimetype":"image/jpeg","size":500000}');
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+insert into public.content (id, slug, creator_id, pillar, type, title, cover_url) values
+  ('55000000-0000-4000-8000-000000005504', 's55-foto-4', public.seed_uuid('creator:rafael'), 'routine', 'article', 'Foto S55 (4)',
+   'https://proj.supabase.co/storage/v1/object/public/post-photos/' || (select path from t_s55_claim2));
+insert into public.content_bodies (content_id, body, media_provider, media_ref) values
+  ('55000000-0000-4000-8000-000000005504', '{"kind":"article"}', 'upload', (select path from t_s55_claim2));
+insert into public.content (id, slug, creator_id, pillar, type, title) values
+  ('55000000-0000-4000-8000-000000005505', 's55-foto-5', public.seed_uuid('creator:rafael'), 'routine', 'article', 'Sem foto');
+insert into public.content_bodies (content_id, body) values ('55000000-0000-4000-8000-000000005505', '{"kind":"article"}');
+select tests.expect_error('S55 rascunho sem foto não é descartado por aqui: not_photo', $q$select public.creator_discard_photo_draft('55000000-0000-4000-8000-000000005505')$q$, 'not_photo');
+create temporary table t_s55_disc as select public.creator_discard_photo_draft('55000000-0000-4000-8000-000000005504') as r;
+select tests.ok('S55 descartar apaga o rascunho e devolve o caminho da foto',
+  (select r ->> 'path' from t_s55_disc) = (select path from t_s55_claim2)
+  and not exists (select 1 from public.content where id = '55000000-0000-4000-8000-000000005504'));
+
+-- kill switch
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'post_photos.uploads_enabled';
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+select tests.expect_error('S55 kill switch desligado: uploads_disabled', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'uploads_disabled');
+select tests.ok('S55 kill switch da foto do post não desliga a capa', (public.public_settings() -> 'hero_covers.uploads_enabled') = 'true'::jsonb);
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'post_photos.uploads_enabled';
+
+-- cota: 30 por hora (completa até 29, o 30º passa, o 31º não; fora da janela não conta)
+insert into public.post_photo_uploads (user_id, path, bytes, mime)
+select '55000000-0000-4000-8000-000000000551', '55000000-0000-4000-8000-000000000551/' || gen_random_uuid() || '.jpg', 1000, 'image/jpeg'
+from generate_series(1, 29 - (select count(*)::int from public.post_photo_uploads where user_id = '55000000-0000-4000-8000-000000000551'));
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+create temporary table t_s55_thirtieth as select public.post_photo_upload_claim(1000, 'image/jpeg') as path;
+select tests.ok('S55 o 30º envio da hora passa (.jpg)', (select path like '%.jpg' from t_s55_thirtieth)
+  and (select count(*) from public.post_photo_uploads where user_id = auth.uid()) = 30);
+select tests.expect_error('S55 o 31º envio da hora: too_many_uploads', $q$select public.post_photo_upload_claim(1000, 'image/jpeg')$q$, 'too_many_uploads');
+select tests.su();
+update public.post_photo_uploads set created_at = now() - interval '2 hours'
+where user_id = '55000000-0000-4000-8000-000000000551' and path <> (select path from t_s55_claim);
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+create temporary table t_s55_after as select public.post_photo_upload_claim(1000, 'image/webp') as path;
+select tests.ok('S55 envios de mais de 1 h não contam na cota; a cota é separada da capa',
+  (select path is not null from t_s55_after) and (select count(*) from public.hero_cover_uploads where user_id = auth.uid()) = 0);
+
+-- limpeza diária: só o service role; o não usado com mais de 1 h entra, o em uso e o recente não
+select tests.expect_error('S55 herói não lista órfãos', $q$select public.post_photo_orphan_uploads(10)$q$, 'permission denied');
+select tests.su();
+grant select on t_s55_after to authenticated, anon;
+update public.post_photo_uploads set created_at = now() - interval '2 hours' where path = (select path from t_s55_claim);
+create temporary table t_s55_orphans as select p from public.post_photo_orphan_uploads(1000) p;
+select tests.ok('S55 órfãos: a foto descartada entra; a do post publicado (em uso) e a recém-reservada (< 1 h) não',
+  exists (select 1 from t_s55_orphans where p = (select path from t_s55_claim2))
+  and not exists (select 1 from t_s55_orphans where p = (select path from t_s55_claim))
+  and not exists (select 1 from t_s55_orphans where p = (select path from t_s55_after)));
+select tests.ok('S55 órfãos: o limite é respeitado', (select count(*) from public.post_photo_orphan_uploads(5)) = 5);
+
+-- só o herói ATIVO: perfil suspenso não reserva
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:rafael');
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+select tests.expect_error('S55 perfil suspenso não reserva envio: not_a_hero', $q$select public.post_photo_upload_claim(1000, 'image/webp')$q$, 'not_a_hero');
+select tests.su();
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:rafael');
+
+-- exclusão de conta: os envios ficam sem usuário e a foto em uso entra na limpeza (inclusive recente)
+select tests.login('55000000-0000-4000-8000-000000000551', 's55hero@test.local');
+select public.delete_my_account();
+select tests.su();
+select tests.ok('S55 conta excluída: envios sem usuário e a foto do post publicado entra na limpeza',
+  not exists (select 1 from public.post_photo_uploads where user_id = '55000000-0000-4000-8000-000000000551')
+  and exists (select 1 from public.post_photo_orphan_uploads(1000) p where p = (select path from t_s55_claim)));
+
+select tests.ok('S55 funções: search_path fixo; reserva, descarte e gatilhos definer sem anon; internas e órfãos só service role',
+  (select bool_and(exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')) from pg_proc p
+     where p.pronamespace = 'public'::regnamespace and p.proname in ('post_photo_upload_claim', 'creator_discard_photo_draft', 'post_photo_orphan_uploads',
+       'post_photo_path', 'post_photo_usable', 'content_bodies_post_photo_guard', 'content_post_photo_cover_guard'))
+  and (select bool_and(p.prosecdef) from pg_proc p where p.pronamespace = 'public'::regnamespace
+         and p.proname in ('post_photo_upload_claim', 'creator_discard_photo_draft', 'content_bodies_post_photo_guard', 'content_post_photo_cover_guard'))
+  and (select not bool_or(p.prosecdef) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('post_photo_orphan_uploads', 'post_photo_path', 'post_photo_usable'))
+  and not has_function_privilege('anon', 'public.post_photo_upload_claim(int, text)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_discard_photo_draft(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.content_bodies_post_photo_guard()', 'execute')
+  and not has_function_privilege('anon', 'public.content_post_photo_cover_guard()', 'execute')
+  and has_function_privilege('authenticated', 'public.post_photo_upload_claim(int, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.creator_discard_photo_draft(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.post_photo_orphan_uploads(int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.post_photo_path(text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.post_photo_usable(text, uuid)', 'execute')
+  and has_function_privilege('service_role', 'public.post_photo_orphan_uploads(int)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_publish_content(uuid, timestamptz)', 'execute'));
+select tests.ok('S55 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- limpeza: conteúdos do cenário saem; Rafael e Tiago voltam sem usuário
+delete from public.content where id in ('55000000-0000-4000-8000-000000005501', '55000000-0000-4000-8000-000000005502',
+  '55000000-0000-4000-8000-000000005503', '55000000-0000-4000-8000-000000005505');
+update public.creator_profiles set user_id = null where id in (public.seed_uuid('creator:rafael'), public.seed_uuid('creator:tiago'));
+delete from storage.objects where bucket_id = 'post-photos';
+delete from auth.users where id in ('55000000-0000-4000-8000-000000000552', '55000000-0000-4000-8000-000000000553');
+select tests.ok('S55 nada do cenário fica no ar e os heróis voltam sem usuário',
+  (select count(*) from public.content where slug like 's55-%') = 0
+  and (select count(*) from public.creator_profiles where id in (public.seed_uuid('creator:rafael'), public.seed_uuid('creator:tiago')) and user_id is null) = 2);
 
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();

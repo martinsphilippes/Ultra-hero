@@ -2,6 +2,8 @@
 // server actions (portal da personalidade e admin). As mensagens são CHAVES de tradução
 // do namespace "editors.validation" — a UI traduz; o servidor só precisa do ok/erro.
 import { z } from "zod";
+import { supabaseBaseUrl } from "@/lib/avatar/paths";
+import { isPostPhotoPath, storedPostPhotoPath } from "@/lib/post-photo/paths";
 import type { ContentFormValues } from "../types";
 import { parseMediaRef } from "./media";
 
@@ -203,7 +205,8 @@ export const contentFormSchema = z
       .string()
       .trim()
       .max(300, { error: "tooLong" })
-      .refine((v) => v === "" || SAME_ORIGIN_PATH.test(v), { error: "invalidCover" }),
+      // caminho da própria origem ou a foto do post com foto (0043); o banco confere o dono da foto
+      .refine((v) => v === "" || SAME_ORIGIN_PATH.test(v) || storedPostPhotoPath(v, supabaseBaseUrl()) !== null, { error: "invalidCover" }),
     duration_minutes: intOrNull(1, 600),
     difficulty: z.enum(DIFFICULTY_VALUES).nullable(),
     tags: z.array(z.string().trim().min(1, { error: "required" }).max(30, { error: "tooLong" })).max(12, { error: "tooMany" }),
@@ -239,6 +242,9 @@ export const contentFormSchema = z
       else if (!parseMediaRef(m.provider, m.ref)) ctx.addIssue({ code: "custom", message: "invalidMediaRef", path: ["media", "ref"] });
     } else if (m.provider === "cloudflare_stream") {
       if (!m.ref || !STREAM_UID.test(m.ref)) ctx.addIssue({ code: "custom", message: "invalidMediaRef", path: ["media", "ref"] });
+    } else if (m.provider === "upload") {
+      // foto do composer (0043): só mantém a que já está no rascunho (o servidor e o banco conferem)
+      if (!isPostPhotoPath(m.ref)) ctx.addIssue({ code: "custom", message: "invalidMediaRef", path: ["media", "ref"] });
     } else if (m.provider !== "none") {
       ctx.addIssue({ code: "custom", message: "providerNotConfigured", path: ["media", "provider"] });
     }
@@ -256,7 +262,7 @@ export function finalizeContentValues(parsed: ContentFormParsed): ContentFormVal
   const ref =
     provider === "embed_youtube" || provider === "embed_vimeo"
       ? parseMediaRef(provider, parsed.media.ref ?? "")
-      : provider === "cloudflare_stream" && STREAM_UID.test(parsed.media.ref ?? "")
+      : (provider === "cloudflare_stream" && STREAM_UID.test(parsed.media.ref ?? "")) || (provider === "upload" && isPostPhotoPath(parsed.media.ref))
         ? parsed.media.ref
         : null;
   const finalProvider = ref ? provider : "none";

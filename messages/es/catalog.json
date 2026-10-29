@@ -52,5 +52,6 @@
     },
     "noSteps": "Este programa aún no tiene pasos disponibles.",
     "count": "{count, plural, =1 {1 programa} other {# programas}}"
-  }
+  },
+  "photoPost": "Foto"
 }

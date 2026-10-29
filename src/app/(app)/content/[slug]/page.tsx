@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
-import { BookOpen, ChefHat, Clock, Copyright, Dumbbell, FileText, Play } from "lucide-react";
+import { BookOpen, ChefHat, Clock, Copyright, Dumbbell, FileText, ImageIcon, Play } from "lucide-react";
 import { isScheduled } from "@/components/admin-content/lib/publish-at";
 import { ContentCard } from "@/components/catalog";
 import {
@@ -44,10 +44,12 @@ import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui"
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
+import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { loadLocalizedBody } from "@/lib/catalog/localized-body";
 import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
 import { cookModeHref } from "@/lib/recipes/cook-mode";
 import { getRecipeGate } from "@/lib/recipes/gate";
+import { isPhotoPost } from "@/lib/post-photo/paths";
 import { isLive, isRecipeMediaUrl } from "@/lib/recipes/media";
 import { recipesSeoIndexEnabled } from "@/lib/recipes/jsonld";
 import { hasRecipeDetails } from "@/lib/recipes/rows";
@@ -265,7 +267,9 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
     <UnavailableCard />
   );
 
-  const TypeIcon = TYPE_ICON[content.type];
+  // post com foto (0043): artigo cuja capa é a foto enviada pelo herói; a foto vai grande no topo
+  const photoPost = isPhotoPost(content, supabaseBaseUrl());
+  const TypeIcon = photoPost ? ImageIcon : TYPE_ICON[content.type];
   // vídeo que toca: o player ocupa o topo no lugar da capa (a capa vira o pôster dele)
   const playerOnTop = !isRecipe && state === "accessible" && content.type === "video" && video !== null && isPlayableVideo(video);
   const videoProps = video
@@ -300,6 +304,14 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           <div className="print:hidden" data-testid="content-top-player">
             <VideoBody {...videoProps} part="player" />
           </div>
+        ) : photoPost && content.cover_url ? (
+          <figure
+            id={state === "accessible" ? "content-body" : undefined}
+            className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[4/3] print:hidden"
+            data-testid="content-top-photo"
+          >
+            <Image src={content.cover_url} alt={title} fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-contain" />
+          </figure>
         ) : structured && structured.model.photos.length > 0 ? (
           <div className="print:hidden">
             <RecipeGallery photos={structured.model.photos} unoptimized={!live} />
@@ -326,7 +338,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 type-caption text-fg-muted" aria-label={t("summaryLabel")}>
             <li className="inline-flex items-center gap-1.5">
               <TypeIcon className="size-4" aria-hidden="true" />
-              {tcat(`types.${content.type}`)}
+              {photoPost ? tcat("photoPost") : tcat(`types.${content.type}`)}
             </li>
             {content.duration_minutes ? (
               <li className="inline-flex items-center gap-1.5">
@@ -447,7 +459,8 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           {readingAuto && !completedAt && <ReadingTracker contentId={content.id} targetId="content-body" threshold={threshold} path={path} />}
           {content.type === "video" && videoProps && <VideoBody {...videoProps} part={playerOnTop ? "details" : "all"} />}
           {content.type === "workout" && <WorkoutBody workout={parseWorkoutBody(body)} />}
-          {(content.type === "guide" || content.type === "article") && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
+          {/* post com foto: a foto do topo é o corpo (e o alvo da leitura); a legenda é o resumo */}
+          {(content.type === "guide" || content.type === "article") && !photoPost && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
         </div>
       )}
 
