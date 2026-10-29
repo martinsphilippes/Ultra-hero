@@ -23,12 +23,12 @@
     "revoked_by_provider": "Deauthorized in the brand's app",
     "error": "With an error"
   },
-  "revokedHint": "You deauthorized Ultra Hero in the brand's app. Reconnect or delete the data; without an answer, we delete it in 30 days.",
+  "revokedHint": "You deauthorized Groscove Ultra in the brand's app. Reconnect or delete the data; without an answer, we delete it in 30 days.",
   "reconnect": "Reconnect",
   "disconnect": {
     "cta": "Disconnect and delete data",
     "title": "Disconnect {brand}?",
-    "body": "We delete right now all data that came from {brand} and ask the brand to remove Ultra Hero's access. This cannot be undone.",
+    "body": "We delete right now all data that came from {brand} and ask the brand to remove Groscove Ultra's access. This cannot be undone.",
     "confirm": "Disconnect and delete",
     "cancel": "Cancel",
     "done": "Disconnected. The data was deleted."
@@ -51,7 +51,7 @@
   "consent": {
     "metaTitle": "Connect {brand}",
     "title": "Connect {brand}",
-    "intro": "Before connecting, choose what Ultra Hero may read from your {brand}. This is health data (sensitive data, LGPD art. 11): it only comes in with your consent, per category, and you can withdraw it whenever you want.",
+    "intro": "Before connecting, choose what Groscove Ultra may read from your {brand}. This is health data (sensitive data, LGPD art. 11): it only comes in with your consent, per category, and you can withdraw it whenever you want.",
     "categoriesTitle": "What you authorize",
     "categoriesHint": "Tick at least one. Only what the device measures on its own; nothing typed in.",
     "textTitle": "Consent text",
@@ -90,7 +90,7 @@
     "denied": "The connection was cancelled on the brand's screen. No watch data was read; your authorization is still saved below and can be withdrawn.",
     "state": "The connection expired or came from another session. Start again.",
     "provider": "The brand did not answer as expected. Try again later.",
-    "inUse": "This brand account is already connected to another Ultra Hero profile.",
+    "inUse": "This brand account is already connected to another Groscove Ultra profile.",
     "noConsent": "Authorize the categories before connecting."
   },
   "aboutLink": "About your data",

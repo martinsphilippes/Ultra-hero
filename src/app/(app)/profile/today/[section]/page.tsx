@@ -168,7 +168,7 @@ export default async function TodayDetailPage({ params, searchParams }: { params
 }
 
 // Índice do dia: o da marca em destaque quando existe (Body Battery), e o nosso cálculo
-// (Disposição Ultra Hero) recolhido em "Ver nosso cálculo"; sem índice da marca, o nosso aberto.
+// (Disposição Groscove Ultra) recolhido em "Ver nosso cálculo"; sem índice da marca, o nosso aberto.
 async function ReadinessSummary({ snapshot }: { snapshot: WatchSnapshot }) {
   const [t, locale] = await Promise.all([getTranslations("me.today"), getLocale()]);
   const kind = indexCardKind(snapshot);

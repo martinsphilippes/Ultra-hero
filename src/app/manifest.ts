@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 // Manifesto PWA (servido em /manifest.webmanifest).
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Ultra Hero",
-    short_name: "Ultra Hero",
+    name: "Groscove Ultra",
+    short_name: "Groscove Ultra",
     description: "Rotina, treino, nutrição e gastronomia em um só lugar. Ambiente de demonstração.",
     lang: "pt-BR",
     dir: "ltr",

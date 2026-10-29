@@ -1,4 +1,10 @@
 import { cn } from "@/lib/utils";
+import { BRAND_ORANGE, LOGO_A_PATH, LOGO_GROSCOVE_PATH, LOGO_ULTR_PATH, LOGO_VIEWBOX, MARK_VIEWBOX } from "./brand-paths";
+
+export { BRAND_ORANGE };
+
+/** Nome da marca, para textos alternativos e rótulos. */
+export const BRAND_NAME = "Groscove Ultra";
 
 type LogoMarkProps = {
   className?: string;
@@ -7,39 +13,37 @@ type LogoMarkProps = {
   title?: string;
 };
 
-/** Laranja da marca, igual ao do material oficial (losango). */
-export const BRAND_ORANGE = "#FF5A1F";
-
-// Marca: losango laranja (quadrado a 45°), como no material oficial do Ultra Hero.
+// Símbolo: o "A" em triângulo laranja da logomarca Groscove Ultra.
 export function LogoMark({ className, monochrome = false, title }: LogoMarkProps) {
   return (
-    <svg
-      viewBox="0 0 64 64"
-      role={title ? "img" : undefined}
-      aria-hidden={title ? undefined : "true"}
-      className={cn("size-8 shrink-0", className)}
-    >
+    <svg viewBox={MARK_VIEWBOX} role={title ? "img" : undefined} aria-hidden={title ? undefined : "true"} className={cn("h-6 w-auto shrink-0", className)}>
       {title && <title>{title}</title>}
-      <path d="M32 6 58 32 32 58 6 32z" fill={monochrome ? "currentColor" : BRAND_ORANGE} />
+      <path d={LOGO_A_PATH} fill={monochrome ? "currentColor" : BRAND_ORANGE} />
     </svg>
   );
 }
 
 type LogoProps = {
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
+  /** false: só o símbolo (triângulo). */
   withWordmark?: boolean;
+  /** "brand": texto na cor do tema + triângulo laranja; "mono": tudo em currentColor (versões branca/preta). */
+  variant?: "brand" | "mono";
 };
 
-const markSizes = { sm: "size-5", md: "size-6", lg: "size-9" };
-const textSizes = { sm: "text-sm", md: "text-base", lg: "text-2xl" };
+const heights = { sm: "h-7", md: "h-9", lg: "h-14", xl: "h-20" };
+const markHeights = { sm: "h-5", md: "h-6", lg: "h-9", xl: "h-12" };
 
-// Marca + wordmark "ULTRA HERO": caixa alta, peso extra e espaçamento largo, como no material oficial.
-export function Logo({ className, size = "md", withWordmark = true }: LogoProps) {
+// Logomarca completa: GROSCOVE em cima, ULTRA com o A em triângulo. O texto segue a cor do tema
+// (preto no claro, branco no escuro) e o triângulo fica no laranja da marca.
+export function Logo({ className, size = "md", withWordmark = true, variant = "brand" }: LogoProps) {
+  if (!withWordmark) return <LogoMark className={cn(markHeights[size], className)} monochrome={variant === "mono"} />;
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <LogoMark className={markSizes[size]} />
-      {withWordmark && <span className={cn("font-[family-name:var(--font-manrope)] font-[800] [font-stretch:normal] uppercase leading-none tracking-[0.16em] text-fg", textSizes[size])}>Ultra Hero</span>}
-    </span>
+    <svg viewBox={LOGO_VIEWBOX} role="img" aria-label={BRAND_NAME} className={cn("w-auto shrink-0 text-fg", heights[size], className)} data-testid="brand-logo">
+      <path d={LOGO_GROSCOVE_PATH} fill="currentColor" />
+      <path d={LOGO_ULTR_PATH} fill="currentColor" />
+      <path d={LOGO_A_PATH} fill={variant === "mono" ? "currentColor" : BRAND_ORANGE} />
+    </svg>
   );
 }

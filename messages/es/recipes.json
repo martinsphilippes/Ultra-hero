@@ -1,6 +1,6 @@
 {
   "gate": {
-    "brand": "Ultra Hero",
+    "brand": "Groscove Ultra",
     "eyebrow": "Recetas",
     "description": "El acceso actual no permite abrir recetas.",
     "badge": "Etapa 0 de {total} · pendiente",
@@ -28,7 +28,7 @@
     "finish": "Terminar y abrir recetas",
     "notice": {
       "title": "Acepta el aviso",
-      "description": "Las recetas de Ultra Hero son contenido de demostración.",
+      "description": "Las recetas de Groscove Ultra son contenido de demostración.",
       "item1": "No hay revisión de nutricionista ni de otro profesional de la salud.",
       "item2": "Las recetas no sustituyen la orientación profesional ni tratan condiciones de salud.",
       "item3": "Revisa siempre los ingredientes, sobre todo si tienes alergia o restricción.",

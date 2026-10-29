@@ -69,7 +69,7 @@ for (const kind of ["premium", "free"] as const) {
       const model = await today.getByTestId("watch-today").getAttribute("data-model");
       if (kind === "premium") {
         expect(model).toBe("apple_s12");
-        await expect(today.getByTestId("today-card-readiness")).toContainText("Disposição Ultra Hero");
+        await expect(today.getByTestId("today-card-readiness")).toContainText("Disposição Groscove Ultra");
         await expect(today.getByTestId("today-card-readiness")).toContainText("pode diferir do número do seu relógio");
         // Apple não mede estresse: escondido, nunca zero
         await expect(today.getByTestId("today-card-stress")).toHaveCount(0);

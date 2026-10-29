@@ -1,6 +1,6 @@
 // Atleta da abertura: boneco articulado ORIGINAL (cabeça, tronco e membros afunilados) animado só com
 // rotações CSS nas articulações. Cada pose-chave abaixo vira um passo de @keyframes; o navegador
-// interpola entre elas (corrida → passada de impulsão → salto com os braços ao alto → funde no losango).
+// interpola entre elas (corrida → passada de impulsão → salto com os braços ao alto → funde no triângulo da marca).
 
 import { INTRO_DURATION_MS } from "./script";
 
@@ -26,7 +26,7 @@ const strideB = { torso: 18, hipN: 40, kneeN: 22, ankleN: 36, hipF: -68, kneeF: 
 // Apoio (pernas se cruzando): uma perna sob o corpo, o calcanhar da outra sobe atrás.
 const passA = { torso: 16, hipN: 8, kneeN: 24, ankleN: 6, hipF: -28, kneeF: 124, ankleF: 34, shN: 6, elN: -92, shF: -4, elF: -92 };
 const passB = { torso: 16, hipN: -28, kneeN: 124, ankleN: 34, hipF: 8, kneeF: 24, ankleF: 6, shN: -4, elN: -92, shF: 6, elF: -92 };
-// Voo de herói: corpo na diagonal rumo ao losango, braços estendidos à frente, pernas unidas atrás.
+// Voo de herói: corpo na diagonal rumo ao triângulo da marca, braços estendidos à frente, pernas unidas atrás.
 const flight = { torso: 30, hipN: 34, kneeN: 10, ankleN: 40, hipF: 44, kneeF: 22, ankleF: 44, shN: -176, elN: 0, shF: -162, elF: -6 };
 
 export const POSES: Pose[] = [
@@ -42,9 +42,9 @@ export const POSES: Pose[] = [
   // impulsão na perna de longe; o joelho de perto sobe e os braços varrem para cima
   { t: 1.43, x: 98, y: 322, torso: 12, hipN: -96, kneeN: 92, ankleN: 8, hipF: 32, kneeF: 4, ankleF: 42, shN: -132, elN: -30, shF: -110, elF: -40 },
   { t: 1.574, x: 106, y: 268, torso: 24, hipN: -30, kneeN: 40, ankleN: 24, hipF: 36, kneeF: 30, ankleF: 40, shN: -168, elN: -8, shF: -150, elF: -14 },
-  // as mãos alcançam o losango
+  // as mãos alcançam o triângulo
   { t: 1.736, x: 112, y: 246, ...flight },
-  // mergulha no losango: encolhe e some enquanto a marca acende
+  // mergulha no triângulo: encolhe e some enquanto a marca acende
   { t: 1.88, x: 156, y: 176, s: 0.55, o: 1, ...flight },
   { t: 2.006, x: 180, y: 128, s: 0.06, o: 0, ...flight },
   { t: INTRO_DURATION_MS / 1000, x: 180, y: 128, s: 0.06, o: 0, ...flight },

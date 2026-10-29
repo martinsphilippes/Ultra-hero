@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { baseline, compare, disposition, dispositionBand, DISPOSITION_WEIGHTS, edwardsTrimp, mad, median, nightVitals, sleepEfficiency, sleepRegularity, trainingLoad } from "@/lib/wearables/derived";
 
-// Índices calculados pelo Ultra Hero (§13.4) e linha de base pessoal (RN-07).
+// Índices calculados pelo Groscove Ultra (§13.4) e linha de base pessoal (RN-07).
 
 const steady = (v: number, n = 20) => Array.from({ length: n }, (_, i) => v + ((i % 5) - 2));
 
@@ -29,7 +29,7 @@ describe("linha de base pessoal", () => {
   });
 });
 
-describe("Disposição Ultra Hero", () => {
+describe("Disposição Groscove Ultra", () => {
   const base = { asleepHistory: steady(450), hrvHistory: steady(50), restingHrHistory: steady(56), efficiencyHistory: steady(93) };
 
   it("faixas: abaixo (< 40), no (40–69), acima (≥ 70) do seu habitual", () => {

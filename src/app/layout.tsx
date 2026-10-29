@@ -52,11 +52,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     // base dos endereços absolutos (canonical, Open Graph): NEXT_PUBLIC_SITE_URL ou a origem da request
     metadataBase: new URL(origin),
-    title: { default: "Ultra Hero", template: "%s · Ultra Hero" },
+    title: { default: "Groscove Ultra", template: "%s · Groscove Ultra" },
     description: t("description"),
-    applicationName: "Ultra Hero",
+    applicationName: "Groscove Ultra",
     manifest: "/manifest.webmanifest",
-    appleWebApp: { capable: true, title: "Ultra Hero", statusBarStyle: "black-translucent" },
+    appleWebApp: { capable: true, title: "Groscove Ultra", statusBarStyle: "black-translucent" },
     // Ícones: arquivos em src/app (favicon.ico, icon.svg, apple-icon.png) são detectados pelo Next.
     formatDetection: { telephone: false },
   };

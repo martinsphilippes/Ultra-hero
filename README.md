@@ -1,4 +1,4 @@
-# Ultra Hero — POC
+# Groscove Ultra (antes Ultra Hero) — POC
 
 PWA mobile-first de conteúdo, hábitos, treino, nutrição e gastronomia com **personalidades fictícias**, programas, evolução, **assinaturas simuladas** e **comércio demonstrativo**. Nenhum pagamento, entrega ou parceria real.
 

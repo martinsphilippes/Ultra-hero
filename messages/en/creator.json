@@ -9,7 +9,7 @@
       "title": "Account without a hero profile",
       "description": "Your account has the hero role but is not linked to an active profile. Accept the invitation you received by email or contact the administration."
     },
-    "help": "Questions? Contact the Ultra Hero editorial team. Remember: heroes on this platform are fictional and this is a demo environment."
+    "help": "Questions? Contact the Groscove Ultra editorial team. Remember: heroes on this platform are fictional and this is a demo environment."
   },
   "dashboard": {
     "title": "Hello, {name}",

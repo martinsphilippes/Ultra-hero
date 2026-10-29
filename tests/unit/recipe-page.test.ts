@@ -222,9 +222,9 @@ describe("JSON-LD schema.org/Recipe (P6)", () => {
     expect(isoDuration(null)).toBeUndefined();
   });
 
-  it("herói fictício: autor é a Organization Ultra Hero; sem acesso, sem ingredientes nem preparo", () => {
+  it("herói fictício: autor é a Organization Groscove Ultra; sem acesso, sem ingredientes nem preparo", () => {
     const ld = buildRecipeJsonLd(base);
-    expect(ld.author).toEqual({ "@type": "Organization", name: "Ultra Hero" });
+    expect(ld.author).toEqual({ "@type": "Organization", name: "Groscove Ultra" });
     expect(ld).toMatchObject({ "@type": "Recipe", prepTime: "PT15M", cookTime: "PT25M", totalTime: "PT1H5M", recipeYield: "2", suitableForDiet: ["https://schema.org/VeganDiet"] });
     expect(ld).not.toHaveProperty("recipeIngredient");
     expect(ld).not.toHaveProperty("recipeInstructions");

@@ -79,7 +79,7 @@ export async function GET(_request: Request, context: { params: Promise<{ code: 
 
   const pdf = await PDFDocument.create();
   pdf.setTitle(`${t("title")} - ${cert.code}`);
-  pdf.setAuthor("Ultra Hero (demo)");
+  pdf.setAuthor("Groscove Ultra (demo)");
   pdf.setSubject(t("disclaimer"));
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
@@ -94,7 +94,7 @@ export async function GET(_request: Request, context: { params: Promise<{ code: 
   page.drawRectangle({ x: 48, y: 40, width: width - 96, height: height - 80, borderColor: OBSIDIAN, borderWidth: 1.2, opacity: 0 });
   drawStepMark(page, width - 120, height - 110, 14);
 
-  centered(page, bold, s("ULTRA HERO"), 14, height - 78, OBSIDIAN);
+  centered(page, bold, s("GROSCOVE ULTRA"), 14, height - 78, OBSIDIAN);
   centered(page, regular, s(t("subtitle")), 10, height - 94, MUTED);
   centered(page, bold, s(t("title")), 30, height - 150, OBSIDIAN);
 

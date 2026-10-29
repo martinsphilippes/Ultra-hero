@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   return new NextResponse(body, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="ultra-hero-events-${days}d.csv"`,
+      "Content-Disposition": `attachment; filename="groscove-ultra-events-${days}d.csv"`,
       "Cache-Control": "no-store",
     },
   });

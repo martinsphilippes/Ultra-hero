@@ -185,7 +185,7 @@ describe("gerador do relógio simulado", () => {
     expect(rest.values.training_load_chronic_28d).toBeDefined();
   });
 
-  it("índices: Garmin tem Body Battery principal; Apple tem Disposição Ultra Hero principal", () => {
+  it("índices: Garmin tem Body Battery principal; Apple tem Disposição Groscove Ultra principal", () => {
     expect(indexCardKind(generateWatchDay("free", "2026-10-22", 600))).toBe("body_battery");
     expect(indexCardKind(generateWatchDay("creator", "2026-10-22", 600))).toBe("body_battery");
     expect(indexCardKind(generateWatchDay("premium", "2026-10-22", 600))).toBe("disposition");

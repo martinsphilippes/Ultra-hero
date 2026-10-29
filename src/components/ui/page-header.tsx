@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BRAND_ORANGE, LOGO_A_PATH, MARK_VIEWBOX } from "@/components/layout/brand-paths";
 import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
@@ -53,8 +54,8 @@ export function PageHeader({ title, description, eyebrow, backHref, backLabel, a
 // Marca em degraus miniatura (decorativa).
 export function StepMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 16 16" aria-hidden="true" className={cn("size-3.5 shrink-0 text-accent", className)}>
-      <path d="M8 1.5 14.5 8 8 14.5 1.5 8z" fill="currentColor" />
+    <svg viewBox={MARK_VIEWBOX} aria-hidden="true" className={cn("h-3 w-auto shrink-0", className)}>
+      <path d={LOGO_A_PATH} fill={BRAND_ORANGE} />
     </svg>
   );
 }

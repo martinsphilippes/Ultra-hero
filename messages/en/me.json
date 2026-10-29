@@ -272,7 +272,7 @@
       "above": "above your usual range",
       "learning": "learning your usual"
     },
-    "computedByUs": "Calculated by Ultra Hero · may differ from your watch's number.",
+    "computedByUs": "Calculated by Groscove Ultra · may differ from your watch's number.",
     "openDetail": "See details",
     "cards": {
       "bodyBattery": {
@@ -306,13 +306,13 @@
       "garminNote": "Garmin does not share Training Readiness and Training Status with other apps.",
       "appleNote": "Your Apple Watch has its own Readiness, but Apple does not share it with other apps.",
       "disposition": {
-        "title": "Ultra Hero Daily Balance",
+        "title": "Groscove Ultra Daily Balance",
         "below": "Below your usual",
         "within": "Within your usual",
         "above": "Above your usual",
         "basis": "Based on your HRV, resting heart rate, sleep, load and overnight temperature.",
         "ours": "See our calculation",
-        "score": "Ultra Hero Daily Balance: {score} of 100 ({band})",
+        "score": "Groscove Ultra Daily Balance: {score} of 100 ({band})",
         "notBrand": "It is not Apple's Readiness nor Garmin's Training Readiness.",
         "component": "{name}: weight {weight} · {direction}",
         "components": {
@@ -363,7 +363,7 @@
         "intensityWeek": "Intensity this week: {value} of {goal} min",
         "floors": "{n, plural, =1 {# floor climbed} other {# floors climbed}}",
         "distanceKcal": "{distance} · {kcal} active",
-        "intensityCalc": "Intensity: {value} min (calculated by Ultra Hero)"
+        "intensityCalc": "Intensity: {value} min (calculated by Groscove Ultra)"
       },
       "workouts": {
         "title": "Workouts",
@@ -373,7 +373,7 @@
         "hr": "Avg HR {avg} · max {max}",
         "speed": "{value} km/h",
         "load": "Day load {value} · {comparison}",
-        "loadEstimated": "Zones estimated from the workout's average HR (the watch does not send zones) · calculated by Ultra Hero",
+        "loadEstimated": "Zones estimated from the workout's average HR (the watch does not send zones) · calculated by Groscove Ultra",
         "origin": "Workout started on the watch",
         "sports": {
           "run": "Run",
@@ -387,7 +387,7 @@
           "row": "Row",
           "other": "Workout"
         },
-        "loadNoComparison": "Day load {value} · calculated by Ultra Hero"
+        "loadNoComparison": "Day load {value} · calculated by Groscove Ultra"
       },
       "stress": {
         "title": "Stress",
@@ -418,7 +418,7 @@
       "body": "Soon, Today will show what your watch measures on its own: sleep, heart, activity and workouts. Nothing to type.",
       "brandsLabel": "Planned brands",
       "soon": "Soon",
-      "privacy": "There is no connection to any brand yet, and Ultra Hero does not collect data from watches, rings or bands.",
+      "privacy": "There is no connection to any brand yet, and Groscove Ultra does not collect data from watches, rings or bands.",
       "exampleCta": "See an example",
       "exampleHint": "Opens a simulated watch, kept apart from your profile.",
       "connectCta": "Connect",
@@ -467,15 +467,15 @@
     "about": {
       "metaTitle": "About your data",
       "title": "About your data",
-      "intro": "At this stage Ultra Hero does not read any real watch and does not collect data from your watch. The simulated watch is generated on the spot from the account and the date, and it is neither stored nor sent to anyone.",
-      "introAvailable": "Ultra Hero only reads a watch or ring after you connect it and authorize the categories, in Watches and rings. Below is an example of what a watch measures: none of it is yours.",
+      "intro": "At this stage Groscove Ultra does not read any real watch and does not collect data from your watch. The simulated watch is generated on the spot from the account and the date, and it is neither stored nor sent to anyone.",
+      "introAvailable": "Groscove Ultra only reads a watch or ring after you connect it and authorize the categories, in Watches and rings. Below is an example of what a watch measures: none of it is yours.",
       "rule": "Today's rule: only what the watch measures on its own, through use — automatically or in a workout started on it. Nothing is typed.",
       "modelTitle": "What the {device} measures",
       "modelHidden": "What this model does not measure stays hidden in Today — it never shows as zero.",
       "vendorTitle": "What each brand does not share with other apps",
       "vendorIntro": "These numbers exist in the brand's app but are not shared with other apps. When it makes sense, we show our own calculation, always labelled.",
       "regulatedTitle": "Medical features the app does not read",
-      "regulatedIntro": "These are regulated medical-device features. Ultra Hero is for wellbeing and neither reads nor requests them.",
+      "regulatedIntro": "These are regulated medical-device features. Groscove Ultra is for wellbeing and neither reads nor requests them.",
       "onDemandTitle": "Measurements that need an action from you (left out for now)",
       "manualTitle": "What never comes in, because it is typed, not measured",
       "privacyTitle": "Privacy",
@@ -489,7 +489,7 @@
       "stale": "Last sync: {date}, {time}. Sync in the {app} app to see new data.",
       "detailSource": "{device}. Last sync at {time}.",
       "devicesLink": "Watches and rings",
-      "aboutIntro": "Ultra Hero reads your {device} through the account you connected, only for the categories you authorized. The data is stored with its own protection, only you see it, and you can disconnect and delete it whenever you want.",
+      "aboutIntro": "Groscove Ultra reads your {device} through the account you connected, only for the categories you authorized. The data is stored with its own protection, only you see it, and you can disconnect and delete it whenever you want.",
       "manageTitle": "Connection and consent",
       "manageBody": "Disconnect, remove categories or your consent and delete the data in Watches and rings."
     },
@@ -503,7 +503,7 @@
   "reminders": {
     "title": "Reminders",
     "description": "Your routine list, outside Today. Check off what you did each day.",
-    "info": "Reminders stay here for you to check: Ultra Hero doesn't send alerts for them, and checking one off doesn't count toward your streak (the streak counts completed content).",
+    "info": "Reminders stay here for you to check: Groscove Ultra doesn't send alerts for them, and checking one off doesn't count toward your streak (the streak counts completed content).",
     "todayTitle": "For today",
     "otherTitle": "Other days",
     "otherDescription": "They show up in “For today” on the days you picked.",
@@ -681,7 +681,7 @@
     "description": "Transparency about what the POC stores and how to delete your account.",
     "demo": {
       "title": "Demo nature",
-      "body": "Ultra Hero is a public proof of concept. Heroes are fictional, subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
+      "body": "Groscove Ultra is a public proof of concept. Heroes are fictional, subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
     },
     "store": {
       "title": "What we store",
@@ -775,7 +775,7 @@
     }
   },
   "onboarding": {
-    "title": "Welcome to Ultra Hero",
+    "title": "Welcome to Groscove Ultra",
     "description": "Two quick steps to personalize your experience. Optional.",
     "step": "Step {n} of {total}",
     "steps": {
@@ -868,7 +868,7 @@
   },
   "verify": {
     "title": "Verify certificate",
-    "description": "Public lookup of Ultra Hero symbolic certificates.",
+    "description": "Public lookup of Groscove Ultra symbolic certificates.",
     "valid": "Valid certificate",
     "invalid": "Certificate not found",
     "invalidDescription": "Check the code you entered.",
@@ -878,6 +878,6 @@
     "issued": "Issued on {date}",
     "code": "Code {code}",
     "symbolic": "Symbolic certificate: it recognizes the completion of educational content in a demo environment. No professional, academic or legal validity.",
-    "home": "Go to Ultra Hero"
+    "home": "Go to Groscove Ultra"
   }
 }

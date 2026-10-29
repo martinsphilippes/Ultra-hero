@@ -12,7 +12,7 @@ export type WatchModelId = (typeof WATCH_MODELS)[number];
 export type WatchBrand = "apple" | "garmin" | "samsung" | "google" | "oura" | "whoop" | "polar";
 
 export type MetricCategory = "readiness" | "sleep" | "heart" | "activity" | "workout" | "breathing" | "temperature" | "stress" | "environment" | "safety";
-/** A = automático; T = treino iniciado/detectado no relógio; C = calculado pelo Ultra Hero. */
+/** A = automático; T = treino iniciado/detectado no relógio; C = calculado pelo Groscove Ultra. */
 export type MetricMode = "A" | "T" | "C";
 /** v1 = no card do Hoje; v1d = só no detalhe. */
 export type MetricStatus = "v1" | "v1d";

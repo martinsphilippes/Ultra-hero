@@ -1,4 +1,4 @@
-# Estratégia de testes — POC Ultra Hero
+# Estratégia de testes — POC Groscove Ultra
 
 | Camada | Ferramenta | Comando | O que cobre |
 |---|---|---|---|

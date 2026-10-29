@@ -18,7 +18,7 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
   return (
     <div className="relative flex min-h-dvh flex-col bg-grid">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-accent/15 to-transparent" />
-      <header className="relative flex items-center justify-between px-gutter py-4 safe-top">
+      <header className="relative flex items-center justify-between px-gutter pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
         <Link href="/" className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
           <Logo size="md" />
         </Link>

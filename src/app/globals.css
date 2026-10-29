@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* =============================================================================
-   Ultra Hero · Design system (paleta PROVISÓRIA, não é a marca final)
+   Groscove Ultra · Design system (paleta PROVISÓRIA, não é a marca final)
    obsidian #0B0B0B · vital orange #FF5A1F · sand #E8E3DB
    O app sempre abre no claro: o layout raiz e o script inicial gravam data-theme
    ("light", ou "dark" quando a pessoa escolheu). Os tokens de :root (escuro) e o

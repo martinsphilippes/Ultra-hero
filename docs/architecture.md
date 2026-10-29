@@ -1,4 +1,4 @@
-# Ultra Hero — Arquitetura da POC
+# Groscove Ultra — Arquitetura da POC
 
 > Status: POC/experimento público. Tudo que envolve dinheiro, entrega e parcerias é **simulado**. Personalidades são **fictícias**.
 

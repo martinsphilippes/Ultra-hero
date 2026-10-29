@@ -272,7 +272,7 @@
       "above": "acima da sua faixa habitual",
       "learning": "aprendendo seu normal"
     },
-    "computedByUs": "Calculado pelo Ultra Hero · pode diferir do número do seu relógio.",
+    "computedByUs": "Calculado pelo Groscove Ultra · pode diferir do número do seu relógio.",
     "openDetail": "Ver detalhes",
     "cards": {
       "bodyBattery": {
@@ -306,13 +306,13 @@
       "garminNote": "A Garmin não compartilha Training Readiness e Training Status com outros apps.",
       "appleNote": "Seu Apple Watch tem Prontidão própria, mas a Apple não a compartilha com outros apps.",
       "disposition": {
-        "title": "Disposição Ultra Hero",
+        "title": "Disposição Groscove Ultra",
         "below": "Abaixo do seu habitual",
         "within": "No seu habitual",
         "above": "Acima do seu habitual",
         "basis": "Com base na sua VFC, FC de repouso, sono, carga e temperatura da noite.",
         "ours": "Ver nosso cálculo",
-        "score": "Disposição Ultra Hero: {score} de 100 ({band})",
+        "score": "Disposição Groscove Ultra: {score} de 100 ({band})",
         "notBrand": "Não é a Prontidão da Apple nem o Training Readiness da Garmin.",
         "component": "{name}: peso {weight} · {direction}",
         "components": {
@@ -363,7 +363,7 @@
         "intensityWeek": "Intensidade na semana: {value} de {goal} min",
         "floors": "{n, plural, =1 {# andar subido} other {# andares subidos}}",
         "distanceKcal": "{distance} · {kcal} ativas",
-        "intensityCalc": "Intensidade: {value} min (calculado pelo Ultra Hero)"
+        "intensityCalc": "Intensidade: {value} min (calculado pelo Groscove Ultra)"
       },
       "workouts": {
         "title": "Treinos",
@@ -373,7 +373,7 @@
         "hr": "FC média {avg} · máx. {max}",
         "speed": "{value} km/h",
         "load": "Carga do dia {value} · {comparison}",
-        "loadEstimated": "Zonas estimadas pela FC média do treino (o relógio não envia zonas) · calculado pelo Ultra Hero",
+        "loadEstimated": "Zonas estimadas pela FC média do treino (o relógio não envia zonas) · calculado pelo Groscove Ultra",
         "origin": "Treino iniciado no relógio",
         "sports": {
           "run": "Corrida",
@@ -387,7 +387,7 @@
           "row": "Remo",
           "other": "Treino"
         },
-        "loadNoComparison": "Carga do dia {value} · calculado pelo Ultra Hero"
+        "loadNoComparison": "Carga do dia {value} · calculado pelo Groscove Ultra"
       },
       "stress": {
         "title": "Estresse",
@@ -418,7 +418,7 @@
       "body": "Em breve o Hoje vai mostrar o que o seu relógio mede sozinho: sono, coração, atividade e treinos. Nada para digitar.",
       "brandsLabel": "Marcas previstas",
       "soon": "Em breve",
-      "privacy": "Ainda não existe conexão com nenhuma marca, e o Ultra Hero não coleta dados de relógios, anéis ou pulseiras.",
+      "privacy": "Ainda não existe conexão com nenhuma marca, e o Groscove Ultra não coleta dados de relógios, anéis ou pulseiras.",
       "exampleCta": "Ver um exemplo",
       "exampleHint": "Abre um relógio simulado, separado do seu perfil.",
       "connectCta": "Conectar",
@@ -467,15 +467,15 @@
     "about": {
       "metaTitle": "Sobre seus dados",
       "title": "Sobre seus dados",
-      "intro": "Nesta fase o Ultra Hero não lê nenhum relógio de verdade e não coleta dados do seu relógio. O relógio simulado é gerado na hora, a partir da conta e da data, e não é guardado nem enviado a ninguém.",
-      "introAvailable": "O Ultra Hero só lê um relógio ou anel depois que você o conecta e autoriza as categorias, em Relógios e anéis. Abaixo, um exemplo do que um relógio mede: nada dele é seu.",
+      "intro": "Nesta fase o Groscove Ultra não lê nenhum relógio de verdade e não coleta dados do seu relógio. O relógio simulado é gerado na hora, a partir da conta e da data, e não é guardado nem enviado a ninguém.",
+      "introAvailable": "O Groscove Ultra só lê um relógio ou anel depois que você o conecta e autoriza as categorias, em Relógios e anéis. Abaixo, um exemplo do que um relógio mede: nada dele é seu.",
       "rule": "Regra do Hoje: só entra o que o relógio mede sozinho, pelo uso — de forma automática ou num treino iniciado nele. Nada é digitado.",
       "modelTitle": "O que o {device} mede",
       "modelHidden": "O que este modelo não mede fica escondido no Hoje — nunca aparece como zero.",
       "vendorTitle": "O que cada marca não compartilha com outros apps",
       "vendorIntro": "Estes números existem no app da marca, mas não saem para outros apps. Quando faz sentido, mostramos um cálculo nosso, sempre rotulado.",
       "regulatedTitle": "Funções médicas que o app não lê",
-      "regulatedIntro": "São funções de dispositivo médico regulado. O Ultra Hero é de bem-estar e não as lê nem as pede.",
+      "regulatedIntro": "São funções de dispositivo médico regulado. O Groscove Ultra é de bem-estar e não as lê nem as pede.",
       "onDemandTitle": "Medidas que exigem um gesto seu (fora por enquanto)",
       "manualTitle": "O que nunca entra, porque é digitado e não medido",
       "privacyTitle": "Privacidade",
@@ -489,7 +489,7 @@
       "stale": "Última sincronização: {date}, {time}. Sincronize no app {app} para ver dados novos.",
       "detailSource": "{device}. Última sincronização às {time}.",
       "devicesLink": "Relógios e anéis",
-      "aboutIntro": "O Ultra Hero lê o seu {device} pela conta que você conectou, só nas categorias que você autorizou. Os dados ficam guardados com proteção própria, só você os vê, e você pode desconectar e apagar quando quiser.",
+      "aboutIntro": "O Groscove Ultra lê o seu {device} pela conta que você conectou, só nas categorias que você autorizou. Os dados ficam guardados com proteção própria, só você os vê, e você pode desconectar e apagar quando quiser.",
       "manageTitle": "Conexão e consentimento",
       "manageBody": "Desconecte, retire categorias ou o consentimento e apague os dados em Relógios e anéis."
     },
@@ -503,7 +503,7 @@
   "reminders": {
     "title": "Lembretes",
     "description": "Sua lista de rotina, fora do Hoje. Marque o que fez no dia.",
-    "info": "Os lembretes ficam só aqui para você conferir: o Ultra Hero não envia avisos deles, e marcar um lembrete não conta na sequência (ela conta conteúdos concluídos).",
+    "info": "Os lembretes ficam só aqui para você conferir: o Groscove Ultra não envia avisos deles, e marcar um lembrete não conta na sequência (ela conta conteúdos concluídos).",
     "todayTitle": "Para hoje",
     "otherTitle": "Outros dias",
     "otherDescription": "Aparecem em “Para hoje” nos dias escolhidos.",
@@ -681,7 +681,7 @@
     "description": "Transparência sobre o que a POC guarda e como excluir sua conta.",
     "demo": {
       "title": "Natureza demonstrativa",
-      "body": "O Ultra Hero é uma prova de conceito pública. Heróis são fictícios, assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
+      "body": "O Groscove Ultra é uma prova de conceito pública. Heróis são fictícios, assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
     },
     "store": {
       "title": "O que guardamos",
@@ -775,7 +775,7 @@
     }
   },
   "onboarding": {
-    "title": "Boas-vindas ao Ultra Hero",
+    "title": "Boas-vindas ao Groscove Ultra",
     "description": "Dois passos rápidos para personalizar sua experiência. Opcional.",
     "step": "Passo {n} de {total}",
     "steps": {
@@ -868,7 +868,7 @@
   },
   "verify": {
     "title": "Verificar certificado",
-    "description": "Consulta pública de certificados simbólicos do Ultra Hero.",
+    "description": "Consulta pública de certificados simbólicos do Groscove Ultra.",
     "valid": "Certificado válido",
     "invalid": "Certificado não encontrado",
     "invalidDescription": "Verifique o código informado.",
@@ -878,6 +878,6 @@
     "issued": "Emitido em {date}",
     "code": "Código {code}",
     "symbolic": "Certificado simbólico: reconhece a conclusão de conteúdos educativos em um ambiente de demonstração. Sem validade profissional, acadêmica ou legal.",
-    "home": "Ir para o Ultra Hero"
+    "home": "Ir para o Groscove Ultra"
   }
 }

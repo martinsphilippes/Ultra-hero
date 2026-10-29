@@ -1,4 +1,4 @@
-# Privacidade, retenção e LGPD — POC Ultra Hero
+# Privacidade, retenção e LGPD — POC Groscove Ultra
 
 > Documento operacional da POC. **Não é parecer jurídico** nem certificação de conformidade. Antes da abertura pública, revisar com responsável jurídico/DPO.
 

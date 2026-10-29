@@ -1,4 +1,4 @@
-# Relatório final — POC Ultra Hero
+# Relatório final — POC Groscove Ultra
 
 Data: 20/10/2026 (atualizado em 23/10/2026: receitas fases 1–6, prateleiras de programas, Hoje com relógio simulado, Lembretes e relógio real oculto) · Repositório `martinsphilippes/Ultra-hero` (branch `master`) · Produção: https://ultra-hero.vercel.app
 

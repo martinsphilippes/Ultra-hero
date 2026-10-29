@@ -38,7 +38,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-4 px-gutter">
           <Link
             href="/"
-            aria-label={`Ultra Hero · ${t("tabs.home")}`}
+            aria-label={`Groscove Ultra · ${t("tabs.home")}`}
             className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             <Logo size="md" />

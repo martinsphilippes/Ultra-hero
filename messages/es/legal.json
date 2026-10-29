@@ -1,9 +1,9 @@
 {
   "meta": {
     "terms": "Términos de uso",
-    "termsDescription": "Reglas de uso de Ultra Hero, una versión de demostración con contenido educativo, planes simulados y pedidos de prueba.",
+    "termsDescription": "Reglas de uso de Groscove Ultra, una versión de demostración con contenido educativo, planes simulados y pedidos de prueba.",
     "privacy": "Política de privacidad",
-    "privacyDescription": "Qué datos trata Ultra Hero, por cuánto tiempo, con quién los comparte y cómo ejerces tus derechos."
+    "privacyDescription": "Qué datos trata Groscove Ultra, por cuánto tiempo, con quién los comparte y cómo ejerces tus derechos."
   },
   "links": {
     "nav": "Documentos legales",
@@ -25,19 +25,19 @@
   },
   "terms": {
     "title": "Términos de uso",
-    "intro": "Estos Términos explican las reglas para usar Ultra Hero. Al crear una cuenta o usar la app, los aceptas. Lee también la <privacy>Política de privacidad</privacy>, que explica cómo tratamos tus datos.",
+    "intro": "Estos Términos explican las reglas para usar Groscove Ultra. Al crear una cuenta o usar la app, los aceptas. Lee también la <privacy>Política de privacidad</privacy>, que explica cómo tratamos tus datos.",
     "sections": {
       "about": {
-        "title": "Qué es Ultra Hero",
+        "title": "Qué es Groscove Ultra",
         "blocks": {
-          "p1": "Ultra Hero es una prueba de concepto: una app experimental, en fase de demostración, con contenido educativo sobre rutina, entrenamiento, nutrición y gastronomía, programas guiados, héroes ficticios, planes simulados y una tienda simulada.",
+          "p1": "Groscove Ultra es una prueba de concepto: una app experimental, en fase de demostración, con contenido educativo sobre rutina, entrenamiento, nutrición y gastronomía, programas guiados, héroes ficticios, planes simulados y una tienda simulada.",
           "p2": "El objetivo es probar la experiencia y aprender del uso. No es un servicio comercial: <strong>no hay cobros, pagos, ventas ni entregas reales</strong>."
         }
       },
       "eligibility": {
         "title": "Quién puede usarla",
         "blocks": {
-          "p1": "Ultra Hero está dirigida <strong>exclusivamente a mayores de 18 años</strong>. Al crear una cuenta, declaras tener 18 años o más. Si tienes menos de 18 años, no crees una cuenta ni uses la app.",
+          "p1": "Groscove Ultra está dirigida <strong>exclusivamente a mayores de 18 años</strong>. Al crear una cuenta, declaras tener 18 años o más. Si tienes menos de 18 años, no crees una cuenta ni uses la app.",
           "p2": "Las cuentas que parezcan pertenecer a menores de edad pueden ser suspendidas o eliminadas."
         }
       },
@@ -91,7 +91,7 @@
         "title": "Cuenta y uso aceptable",
         "blocks": {
           "p1": "Para guardar progreso, favoritos, planes y pedidos de prueba, necesitas una cuenta, creada con correo y contraseña o, cuando esté disponible, con el inicio de sesión de Google. Mantén tu contraseña en secreto y cámbiala si sospechas de un uso indebido.",
-          "p2": "Al usar Ultra Hero, te comprometes a no:",
+          "p2": "Al usar Groscove Ultra, te comprometes a no:",
           "list1": {
             "i1": "ingresar en la app datos personales de otras personas, direcciones reales, datos de pago o datos de salud (por ejemplo, en tu nombre visible o en el feedback);",
             "i2": "intentar acceder a cuentas, datos o áreas que no son tuyas, ni eludir límites y reglas de acceso;",
@@ -117,7 +117,7 @@
       "ip": {
         "title": "Propiedad intelectual",
         "blocks": {
-          "p1": "La marca, el diseño, los textos, las imágenes y los contenidos de Ultra Hero pertenecen a sus respectivos titulares y están disponibles solo para uso personal y no comercial, dentro de la app, durante la demostración. No está permitido copiar, redistribuir, revender ni explotar comercialmente estos materiales sin autorización.",
+          "p1": "La marca, el diseño, los textos, las imágenes y los contenidos de Groscove Ultra pertenecen a sus respectivos titulares y están disponibles solo para uso personal y no comercial, dentro de la app, durante la demostración. No está permitido copiar, redistribuir, revender ni explotar comercialmente estos materiales sin autorización.",
           "p2": "Al enviar contenidos o productos, los socios declaran tener los derechos necesarios y autorizan su exhibición en la app durante la demostración.",
           "p3": "Los certificados emitidos al completar programas son simbólicos y no tienen valor académico, profesional ni de certificación."
         }
@@ -125,7 +125,7 @@
       "availability": {
         "title": "Disponibilidad, cambios e interruptores de apagado",
         "blocks": {
-          "p1": "Por ser una demostración, Ultra Hero se ofrece tal como está, sin garantía de funcionamiento continuo, de ausencia de errores ni de conservación permanente de los contenidos.",
+          "p1": "Por ser una demostración, Groscove Ultra se ofrece tal como está, sin garantía de funcionamiento continuo, de ausencia de errores ni de conservación permanente de los contenidos.",
           "p2": "El equipo puede modificar, pausar o desactivar funciones en cualquier momento, incluso sin aviso previo. La tienda simulada y las recomendaciones con inteligencia artificial, por ejemplo, tienen interruptores de apagado (kill switches), que se usan para proteger a las personas y al propio servicio.",
           "p3": "La demostración puede finalizar. En ese caso, los datos se tratarán según lo indicado en la <privacy>Política de privacidad</privacy>."
         }
@@ -140,7 +140,7 @@
       "limitation": {
         "title": "Limitaciones de la demostración",
         "blocks": {
-          "p1": "Ultra Hero es un experimento. En la medida en que lo permita la ley aplicable, el equipo responsable no responde por decisiones tomadas únicamente con base en los contenidos educativos, por interrupciones del servicio, por la pérdida de datos de demostración ni por expectativas de compra, entrega o suscripción, que aquí siempre son simuladas.",
+          "p1": "Groscove Ultra es un experimento. En la medida en que lo permita la ley aplicable, el equipo responsable no responde por decisiones tomadas únicamente con base en los contenidos educativos, por interrupciones del servicio, por la pérdida de datos de demostración ni por expectativas de compra, entrega o suscripción, que aquí siempre son simuladas.",
           "p2": "Nada en estos Términos limita los derechos que la ley te otorga y que no pueden excluirse por contrato."
         }
       },
@@ -161,12 +161,12 @@
   },
   "privacy": {
     "title": "Política de privacidad",
-    "intro": "Esta Política explica, de forma directa, qué datos trata Ultra Hero, para qué, con quién los comparte, cuánto tiempo los conserva y cómo ejerces tus derechos. Describe el funcionamiento actual de esta versión de demostración. Las reglas de uso están en los <terms>Términos de uso</terms>.",
+    "intro": "Esta Política explica, de forma directa, qué datos trata Groscove Ultra, para qué, con quién los comparte, cuánto tiempo los conserva y cómo ejerces tus derechos. Describe el funcionamiento actual de esta versión de demostración. Las reglas de uso están en los <terms>Términos de uso</terms>.",
     "sections": {
       "who": {
         "title": "Quiénes somos y qué cubre esta Política",
         "blocks": {
-          "p1": "Ultra Hero es una prueba de concepto con contenido educativo, héroes ficticios, suscripciones simuladas y comercio simulado. Esta Política se aplica a la app (web e instalable) y a los portales de socios y de administración.",
+          "p1": "Groscove Ultra es una prueba de concepto con contenido educativo, héroes ficticios, suscripciones simuladas y comercio simulado. Esta Política se aplica a la app (web e instalable) y a los portales de socios y de administración.",
           "p2": "La identificación del responsable del tratamiento y del delegado de protección de datos (DPO) se publicará antes de la apertura pública. Hasta entonces, usa el canal de contacto indicado al final de esta página."
         }
       },
@@ -181,7 +181,7 @@
             "heroCover": "<strong>Portada del héroe (opcional, solo héroes):</strong> si eres héroe y tomas o eliges una foto de portada, se recorta en 16:9 y se reduce en tu dispositivo antes del envío, sin datos de ubicación ni otros metadatos de la cámara, y se guarda en Supabase Storage en una dirección pública que no se puede listar. Aparece en tu tarjeta en la lista de héroes, que cualquier visitante ve. Para limitar envíos (hasta 20 por día) y borrar portadas sin uso, guardamos la fecha, el tamaño y el tipo de cada envío.",
             "notifications": "<strong>Preferencias de notificación:</strong> qué aceptas recibir (resumen editorial, recordatorios de racha, pedidos de prueba) y por qué canales. En esta versión nada se envía; tu elección se guarda para respetarse en cualquier envío futuro.",
             "usage": "<strong>Uso del contenido:</strong> intereses, elementos marcados como “no me interesa”, favoritos, listas, progreso, contenidos completados, racha de días, logros, inscripciones en programas y certificados simbólicos (el PDF del certificado incluye tu nombre visible).",
-            "routine": "<strong>Recordatorios (ítems de rutina):</strong> título, nota, hora, días de la semana y las marcas de “hecho hoy”. Desde el 23/10/2026 están en Perfil › Recordatorios, fuera de Hoy, donde los creas, editas, eliminas y marcas — los ítems que ya tenías vuelven a aparecer allí. Ultra Hero no envía avisos de ellos. Marcar un recordatorio no cuenta en la racha, que cuenta contenidos completados e inscripciones en programas; las marcas antiguas siguen guardadas, pero también dejaron de contar.",
+            "routine": "<strong>Recordatorios (ítems de rutina):</strong> título, nota, hora, días de la semana y las marcas de “hecho hoy”. Desde el 23/10/2026 están en Perfil › Recordatorios, fuera de Hoy, donde los creas, editas, eliminas y marcas — los ítems que ya tenías vuelven a aparecer allí. Groscove Ultra no envía avisos de ellos. Marcar un recordatorio no cuenta en la racha, que cuenta contenidos completados e inscripciones en programas; las marcas antiguas siguen guardadas, pero también dejaron de contar.",
             "subscription": "<strong>Suscripción simulada:</strong> módulos elegidos, períodos e historial de cambios.",
             "commerce": "<strong>Comercio simulado:</strong> carrito, pedidos de prueba (artículos, importes ilustrativos y el destino ficticio elegido de una lista) y registros de interés en productos.",
             "events": "<strong>Eventos de uso:</strong> acciones en la app, como abrir un contenido, completar un programa o iniciar un pedido de prueba, con fecha, idioma y propiedades técnicas, como el identificador del contenido. Cuando tienes la sesión iniciada, los eventos quedan vinculados a tu cuenta; para visitantes sin cuenta, se registran sin identificador. La base de datos rechaza propiedades cuyos nombres indiquen datos personales, como correo, teléfono, CPF (número fiscal brasileño), nombre, dirección o contraseña.",
@@ -242,7 +242,7 @@
         "blocks": {
           "p1": "Solo usamos las cookies y el almacenamiento necesarios para que la app funcione y recuerde tus elecciones. No usamos cookies de publicidad ni de analítica de terceros.",
           "table": {
-            "caption": "Cookies que usa Ultra Hero",
+            "caption": "Cookies que usa Groscove Ultra",
             "headers": {
               "name": "Cookie",
               "purpose": "Para qué sirve",

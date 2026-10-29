@@ -120,7 +120,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       url: path,
       title: content.title,
       description,
-      siteName: "Ultra Hero",
+      siteName: "Groscove Ultra",
       ...(image ? { images: [{ url: image, alt: content.title }] } : {}),
     },
     twitter: { card: image ? "summary_large_image" : "summary", title: content.title, description, ...(image ? { images: [image] } : {}) },

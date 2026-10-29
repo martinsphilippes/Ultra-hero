@@ -1,4 +1,4 @@
-// Linha de base pessoal e índices calculados pelo Ultra Hero (§13.4, RN-07, RN-08).
+// Linha de base pessoal e índices calculados pelo Groscove Ultra (§13.4, RN-07, RN-08).
 // Funções puras: as mesmas servem ao gerador de demonstração hoje e à ingestão real no futuro.
 // Comparação sempre com a própria pessoa ("dentro/acima/abaixo da sua faixa habitual"),
 // nunca com normas populacionais — e nada de "normal/anormal", "risco" ou "alvo" (RN-18).
@@ -62,7 +62,7 @@ export function robustZ(value: number, base: Baseline): number {
   return Math.max(-2.5, Math.min(2.5, (value - base.median) / base.spread));
 }
 
-// ---------------------------------------------------------------- Disposição Ultra Hero
+// ---------------------------------------------------------------- Disposição Groscove Ultra
 export type DispositionComponent = "hrv" | "sleep" | "rhr" | "load" | "temp";
 export const DISPOSITION_WEIGHTS: Record<DispositionComponent, number> = { hrv: 0.35, sleep: 0.3, rhr: 0.2, load: 0.1, temp: 0.05 };
 

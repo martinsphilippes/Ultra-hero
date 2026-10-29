@@ -1,5 +1,5 @@
 /* =============================================================================
-   Ultra Hero · Templates de Aparência
+   Groscove Ultra · Templates de Aparência
    Um único conjunto de componentes; cada template só redefine tokens (--uh-* e os do Tailwind:
    fontes, pesos, raios, espaçamento) e alguns modificadores visuais por atributo/classe-gancho (uh-*).
    O template vem de data-template no <html> (ou num contêiner de prévia) e combina com data-theme.

@@ -8,7 +8,7 @@
     "body_battery_drained": "Body Battery gasto",
     "day_strain": "Strain do dia (WHOOP)",
     "cardio_load_vendor": "Carga cardio da marca",
-    "disposition_uh": "Disposição Ultra Hero",
+    "disposition_uh": "Disposição Groscove Ultra",
     "night_vitals_uh": "Sinais da noite na faixa",
     "cardio_load_day_uh": "Carga do dia",
     "training_load_acute_7d": "Carga média de 7 dias",
@@ -117,10 +117,10 @@
     "polarFlow": "Polar Flow"
   },
   "howMeasured": {
-    "readiness": "O índice principal vem da marca quando ela o compartilha (Body Battery da Garmin, com a escala original de 5 a 100). Quando não compartilha, mostramos a Disposição Ultra Hero: compara a sua VFC noturna, FC de repouso, sono, carga e temperatura com os seus últimos 28 dias.",
+    "readiness": "O índice principal vem da marca quando ela o compartilha (Body Battery da Garmin, com a escala original de 5 a 100). Quando não compartilha, mostramos a Disposição Groscove Ultra: compara a sua VFC noturna, FC de repouso, sono, carga e temperatura com os seus últimos 28 dias.",
     "sleep": "O relógio detecta o sono pelo movimento e pela frequência cardíaca. A noite pertence ao dia em que você acorda. Com Apple Watch, o tempo na cama não aparece: esse dado vem do iPhone, não do relógio.",
     "vitals": "Sinais da noite compara a FC de repouso, a VFC, a respiração, a SpO₂ e a temperatura da noite com a sua faixa habitual (mediana ± desvio dos últimos 28 dias). Só leituras feitas durante o sono contam; com menos de 2 leituras de VFC na noite, o valor não aparece.",
-    "activity": "Passos, distância e calorias vêm só do relógio (não somamos o celular). As metas são as que o próprio relógio usa; o Ultra Hero não sugere metas. A frequência cardíaca do dia (média, mínima, máxima e caminhando) e a VFC e a respiração durante o dia também ficam aqui; os sinais do sono ficam em Sinais da noite.",
+    "activity": "Passos, distância e calorias vêm só do relógio (não somamos o celular). As metas são as que o próprio relógio usa; o Groscove Ultra não sugere metas. A frequência cardíaca do dia (média, mínima, máxima e caminhando) e a VFC e a respiração durante o dia também ficam aqui; os sinais do sono ficam em Sinais da noite.",
     "workouts": "Só entram treinos iniciados ou detectados no relógio; treino digitado ou enviado pela web fica de fora. A carga do dia soma os minutos em cada zona de frequência cardíaca × o número da zona (TRIMP de Edwards).",
     "stress": "O estresse é medido pela Garmin a partir da variabilidade da frequência cardíaca, de 0 a 100, enquanto você está parado. Mostramos a escala e as faixas da própria Garmin.",
     "environment": "Ruído ambiente e tempo à luz do dia são medidos pelo Apple Watch quando esses recursos estão ativados nos ajustes do relógio."

@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "Ultra Hero",
+    "name": "Groscove Ultra",
     "tagline": "Routine, training, nutrition and gastronomy in one place.",
-    "description": "Ultra Hero: content, habits, workouts, nutrition and gastronomy with fictional heroes, programs and progress. Demo environment."
+    "description": "Groscove Ultra: content, habits, workouts, nutrition and gastronomy with fictional heroes, programs and progress. Demo environment."
   },
   "actions": {
     "save": "Save",
@@ -85,7 +85,7 @@
     "options": {
       "original": {
         "name": "Ultra Original",
-        "description": "The classic Ultra Hero look, with the brand orange."
+        "description": "The classic Groscove Ultra look, with the brand orange."
       },
       "impact": {
         "name": "Ultra Impact",

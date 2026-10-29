@@ -7,7 +7,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { Button, buttonBase, buttonVariants } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
-import { BRAND_ORANGE } from "@/components/layout/Logo";
+import { BRAND_ORANGE, LOGO_A_PATH, MARK_VIEWBOX } from "@/components/layout/brand-paths";
 import { applyTemplate, currentTemplate, templates, type Template } from "@/lib/theme/template";
 import { cn } from "@/lib/utils";
 
@@ -114,7 +114,7 @@ export function AppearanceMenu() {
 }
 
 // Miniatura desenhada com os próprios tokens do template (data-template local), sem imagem:
-// barra superior com o losango, título "Aa" na fonte de títulos, linhas de texto, botão e cartão.
+// barra superior com o triângulo da marca, título "Aa" na fonte de títulos, linhas de texto, botão e cartão.
 function TemplatePreview({ template, mode }: { template: Template; mode: "light" | "dark" }) {
   return (
     <span
@@ -124,8 +124,8 @@ function TemplatePreview({ template, mode }: { template: Template; mode: "light"
       className="flex h-[5.5rem] w-24 shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-bg font-sans text-fg shadow-sm"
     >
       <span className="flex h-4 shrink-0 items-center gap-1 bg-(--uh-chrome-bg) px-1.5">
-        <svg viewBox="0 0 64 64" className="size-2 shrink-0">
-          <path d="M32 6 58 32 32 58 6 32z" fill={BRAND_ORANGE} />
+        <svg viewBox={MARK_VIEWBOX} className="h-2 w-auto shrink-0">
+          <path d={LOGO_A_PATH} fill={BRAND_ORANGE} />
         </svg>
         <span className="h-[3px] w-7 rounded-full bg-(--uh-chrome-fg) opacity-80" />
       </span>

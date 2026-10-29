@@ -23,12 +23,12 @@
     "revoked_by_provider": "Desautorizado en la app de la marca",
     "error": "Con error"
   },
-  "revokedHint": "Desautorizaste a Ultra Hero en la app de la marca. Vuelve a conectar o borra los datos; sin respuesta, los borramos en 30 días.",
+  "revokedHint": "Desautorizaste a Groscove Ultra en la app de la marca. Vuelve a conectar o borra los datos; sin respuesta, los borramos en 30 días.",
   "reconnect": "Volver a conectar",
   "disconnect": {
     "cta": "Desconectar y borrar datos",
     "title": "¿Desconectar {brand}?",
-    "body": "Borramos ahora todos los datos que vinieron de {brand} y pedimos a la marca que retire el acceso de Ultra Hero. No se puede deshacer.",
+    "body": "Borramos ahora todos los datos que vinieron de {brand} y pedimos a la marca que retire el acceso de Groscove Ultra. No se puede deshacer.",
     "confirm": "Desconectar y borrar",
     "cancel": "Cancelar",
     "done": "Desconectado. Los datos se borraron."
@@ -51,7 +51,7 @@
   "consent": {
     "metaTitle": "Conectar {brand}",
     "title": "Conectar {brand}",
-    "intro": "Antes de conectar, elige qué puede leer Ultra Hero de tu {brand}. Son datos de salud (datos sensibles, LGPD art. 11): solo entran con tu consentimiento, por categoría, y puedes retirarlo cuando quieras.",
+    "intro": "Antes de conectar, elige qué puede leer Groscove Ultra de tu {brand}. Son datos de salud (datos sensibles, LGPD art. 11): solo entran con tu consentimiento, por categoría, y puedes retirarlo cuando quieras.",
     "categoriesTitle": "Qué autorizas",
     "categoriesHint": "Marca al menos una. Solo lo que el dispositivo mide por sí solo; nada escrito a mano.",
     "textTitle": "Texto del consentimiento",
@@ -90,7 +90,7 @@
     "denied": "La conexión se canceló en la pantalla de la marca. No se leyó ningún dato del reloj; tu autorización sigue guardada abajo y puedes retirarla.",
     "state": "La conexión expiró o vino de otra sesión. Empieza de nuevo.",
     "provider": "La marca no respondió como se esperaba. Inténtalo más tarde.",
-    "inUse": "Esta cuenta de la marca ya está conectada a otro perfil de Ultra Hero.",
+    "inUse": "Esta cuenta de la marca ya está conectada a otro perfil de Groscove Ultra.",
     "noConsent": "Autoriza las categorías antes de conectar."
   },
   "aboutLink": "Sobre tus datos",

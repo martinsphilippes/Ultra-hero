@@ -1,7 +1,7 @@
 /* =============================================================================
    Abertura animada (AppIntro + src/lib/intro). Só aparece com data-intro no <html>,
    marcado pelo script inicial antes da pintura. Cores fixas da marca, iguais nos
-   5 templates e nos dois temas: fundo obsidiana, losango laranja, wordmark areia.
+   5 templates e nos dois temas: fundo obsidiana, triângulo laranja da marca, logomarca Groscove Ultra em areia.
    Linha do tempo (2,6 s): marca 0–0,8 s · atleta 0,8–2,03 s · marca de novo até 2,24 s · saída 2,24–2,6 s.
    Percentuais abaixo = segundos ÷ 2,6.
    ============================================================================= */
@@ -52,11 +52,6 @@ html[data-intro="out"] .uh-intro {
   animation: uh-intro-glow 2.6s ease-out both;
 }
 .uh-intro-word {
-  fill: #f2efea;
-  font-family: var(--font-manrope), system-ui, sans-serif;
-  font-size: 25px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
   animation: uh-intro-word 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .uh-intro-ground {
@@ -101,15 +96,15 @@ html[data-intro="out"] .uh-intro {
 }
 
 @keyframes uh-intro-mark {
-  0% { transform: translate(180px, 206px) scale(0) rotate(-135deg); }
-  16% { transform: translate(180px, 206px) scale(1.08) rotate(0deg); }
-  24% { transform: translate(180px, 206px) scale(1) rotate(0deg); }
-  30.77% { transform: translate(180px, 206px) scale(1); }
-  40.81% { transform: translate(180px, 128px) scale(0.82); }
-  75.08% { transform: translate(180px, 128px) scale(0.82); }
-  80.62% { transform: translate(180px, 128px) scale(1.2); }
-  86.85%,
-  100% { transform: translate(180px, 128px) scale(1); }
+  /* abre só com a logomarca completa (que já tem o triângulo): o símbolo sozinho entra depois */
+  0%,
+  30.77% { opacity: 0; transform: translate(180px, 150px) scale(0.6); }
+  40.81% { opacity: 1; transform: translate(180px, 128px) scale(0.82); }
+  75.08% { opacity: 1; transform: translate(180px, 128px) scale(0.82); }
+  80.62% { opacity: 1; transform: translate(180px, 128px) scale(1.2); }
+  /* o símbolo vira a logomarca: some enquanto ela entra */
+  84%,
+  100% { opacity: 0; transform: translate(180px, 150px) scale(1.4); }
 }
 @keyframes uh-intro-glow {
   0% { opacity: 0; transform: scale(0.4); }
@@ -121,13 +116,13 @@ html[data-intro="out"] .uh-intro {
 }
 @keyframes uh-intro-word {
   0%,
-  8% { opacity: 0; transform: translateY(278px); letter-spacing: 0.5em; }
-  26% { opacity: 1; transform: translateY(278px); letter-spacing: 0.2em; }
-  30.77% { opacity: 1; transform: translateY(278px); }
-  36.31% { opacity: 0; transform: translateY(292px); }
-  75.08% { opacity: 0; transform: translateY(196px); letter-spacing: 0.32em; }
-  82.69%,
-  100% { opacity: 1; transform: translateY(190px); letter-spacing: 0.2em; }
+  8% { opacity: 0; transform: translateY(252px) scale(0.96); }
+  26% { opacity: 1; transform: translateY(240px); }
+  30.77% { opacity: 1; transform: translateY(240px); }
+  36.31% { opacity: 0; transform: translateY(254px); }
+  80.62% { opacity: 0; transform: translateY(238px); }
+  87%,
+  100% { opacity: 1; transform: translateY(230px); }
 }
 @keyframes uh-intro-ground {
   0%,

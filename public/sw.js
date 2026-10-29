@@ -1,10 +1,10 @@
-/* Ultra Hero · service worker mínimo
+/* Groscove Ultra · service worker mínimo
  * - precache: /offline, manifesto e ícones
  * - navegações: network-first com fallback para /offline
  * - /_next/static, /placeholders, /icons: stale-while-revalidate
  * Nunca intercepta POST, /auth/* ou requisições cross-origin (Supabase).
  */
-const VERSION = "uh-v1";
+const VERSION = "uh-v2";
 const PRECACHE = `${VERSION}-precache`;
 const RUNTIME = `${VERSION}-runtime`;
 const OFFLINE_URL = "/offline";

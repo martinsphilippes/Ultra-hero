@@ -1,10 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { buildIntroKeyframes, limbPath } from "@/lib/intro/poses";
-import { BRAND_ORANGE } from "./Logo";
+import { BRAND_ORANGE, LOGO_A_PATH, LOGO_GROSCOVE_PATH, LOGO_ULTR_PATH } from "./brand-paths";
 
 // Abertura animada (componente de servidor, sem JS no cliente). Fica no HTML de toda página, mas
 // escondida (display:none) até o script inicial marcar data-intro no <html>; ver src/lib/intro/script.ts.
-// Arte original: losango da marca + atleta genérico em silhueta, articulado e animado só com CSS.
+// Arte original: símbolo da logomarca Groscove Ultra (o "A" em triângulo) + atleta genérico em silhueta,
+// articulado e animado só com CSS; no fim entra a logomarca completa.
 
 const FAR = "#C2461B"; // membros de longe, um tom abaixo do laranja (profundidade)
 const KEYFRAMES = buildIntroKeyframes();
@@ -93,16 +94,24 @@ export async function AppIntro() {
           </defs>
           <g className="uh-intro-mark">
             <circle className="uh-intro-glow" r="130" fill="url(#uh-intro-glow)" />
-            <path className="uh-intro-diamond" d="M0 -28L28 0L0 28L-28 0Z" fill={BRAND_ORANGE} />
+            {/* símbolo da marca: o "A" em triângulo, centrado no ponto (0, 0) */}
+            <g transform="scale(0.17) translate(-1158.5 -215.5)">
+              <path className="uh-intro-diamond" d={LOGO_A_PATH} fill={BRAND_ORANGE} />
+            </g>
           </g>
           <rect className="uh-intro-ground" x="0" y="431.5" width="360" height="1" fill="url(#uh-intro-ground)" />
           <ellipse className="uh-fig-shadow" rx="34" ry="4.5" fill={BRAND_ORANGE} />
           <Athlete lag={0.1} opacity={0.12} />
           <Athlete lag={0.05} opacity={0.26} />
           <Athlete lag={0} opacity={1} />
-          <text className="uh-intro-word" x="180" textAnchor="middle">
-            ULTRA HERO
-          </text>
+          {/* logomarca Groscove Ultra (versão branca com o triângulo laranja), 230 px de largura */}
+          <g className="uh-intro-word">
+            <g transform="translate(65 -48) scale(0.17)">
+              <path d={LOGO_GROSCOVE_PATH} fill="#F2EFEA" />
+              <path d={LOGO_ULTR_PATH} fill="#F2EFEA" />
+              <path d={LOGO_A_PATH} fill={BRAND_ORANGE} />
+            </g>
+          </g>
         </svg>
       </div>
       <button type="button" className="uh-intro-skip" aria-label={t("skipLabel")}>

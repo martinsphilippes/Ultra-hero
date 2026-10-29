@@ -46,7 +46,7 @@ export type IndexCardKind = "body_battery" | "readiness_vendor" | "disposition" 
 
 /**
  * Precedência do card do índice (RN-08b): índice da marca quando sai por API; senão a
- * Disposição Ultra Hero, se houver VFC ou FC de repouso; senão o card não aparece.
+ * Disposição Groscove Ultra, se houver VFC ou FC de repouso; senão o card não aparece.
  */
 export function indexCardKind(snapshot: WatchSnapshot): IndexCardKind {
   const info = MODEL_INFO[snapshot.model];

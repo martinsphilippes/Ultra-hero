@@ -1,6 +1,6 @@
 {
   "gate": {
-    "brand": "Ultra Hero",
+    "brand": "Groscove Ultra",
     "eyebrow": "Recipes",
     "description": "Your current access does not allow opening recipes.",
     "badge": "Step 0 of {total} · pending",
@@ -28,7 +28,7 @@
     "finish": "Finish and open recipes",
     "notice": {
       "title": "Accept the notice",
-      "description": "Ultra Hero recipes are demo content.",
+      "description": "Groscove Ultra recipes are demo content.",
       "item1": "There is no review by a dietitian or any other health professional.",
       "item2": "Recipes don't replace professional advice or treat health conditions.",
       "item3": "Always check the ingredients, especially if you have an allergy or restriction.",
