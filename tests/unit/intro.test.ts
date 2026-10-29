@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildIntroKeyframes, JOINTS, POSES } from "@/lib/intro/poses";
-import { INTRO_COOLDOWN_MS, INTRO_DURATION_MS, INTRO_INIT_SCRIPT, INTRO_STORAGE_KEY } from "@/lib/intro/script";
+import { INTRO_DURATION_MS, INTRO_INIT_SCRIPT, INTRO_STORAGE_KEY } from "@/lib/intro/script";
 
 type Listener = (e: Record<string, unknown>) => void;
 
@@ -55,12 +55,11 @@ function run({
 describe("abertura animada: quando mostrar", () => {
   afterEach(() => vi.useRealTimers());
 
-  it("mostra na primeira entrada e grava sessão + carimbo do aparelho", () => {
-    vi.useFakeTimers({ now: 1_000_000_000_000 });
+  it("mostra na primeira entrada e grava só a sessão (nada fica no aparelho)", () => {
     const env = run();
     expect(env.intro()).toBe("play");
     expect(env.session.get(INTRO_STORAGE_KEY)).toBe("1");
-    expect(env.local.get(INTRO_STORAGE_KEY)).toBe("1000000000000");
+    expect(env.local.get(INTRO_STORAGE_KEY)).toBeUndefined();
   });
 
   it("não repete na mesma sessão do navegador", () => {
@@ -68,16 +67,9 @@ describe("abertura animada: quando mostrar", () => {
     expect(env.intro()).toBeNull();
   });
 
-  it("no máximo uma vez a cada 12 h por aparelho (mesmo em outra sessão)", () => {
-    const now = 1_000_000_000_000;
-    vi.useFakeTimers({ now });
-    expect(run({ local: new Map([[INTRO_STORAGE_KEY, String(now - 60_000)]]) }).intro()).toBeNull();
-    expect(run({ local: new Map([[INTRO_STORAGE_KEY, String(now - INTRO_COOLDOWN_MS + 1)]]) }).intro()).toBeNull();
-    expect(run({ local: new Map([[INTRO_STORAGE_KEY, String(now - INTRO_COOLDOWN_MS)]]) }).intro()).toBe("play");
-    // carimbo no futuro (relógio do aparelho voltou) não bloqueia para sempre
-    expect(run({ local: new Map([[INTRO_STORAGE_KEY, String(now + 60_000)]]) }).intro()).toBe("play");
+  it("toca de novo a cada abertura do app (nova sessão), mesmo com registro antigo no aparelho", () => {
+    expect(run({ local: new Map([[INTRO_STORAGE_KEY, String(Date.now())]]) }).intro()).toBe("play");
   });
-
   it("movimento reduzido: não mostra e não gasta a vez", () => {
     const env = run({ reducedMotion: true });
     expect(env.intro()).toBeNull();
