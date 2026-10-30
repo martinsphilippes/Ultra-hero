@@ -27,10 +27,10 @@ npm run dev                        # http://localhost:3000
 |---|---|
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run typecheck` · `npm run lint` | TypeScript estrito · ESLint |
-| `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 22 namespaces, 4.883 chaves por idioma |
-| `npm run test` | Vitest: 1.416 aprovados + 1 pulado em 57 arquivos (23/10/2026) |
-| `npm run test:rls` | 991 asserções de RLS/regras de negócio (S0–S51) num Postgres local isolado (`LOCAL_DB_NAME` escolhe o banco) |
-| `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado e `E2E_BASE_URL` para um servidor já ativo) | Playwright (Pixel 7 + Desktop Chrome) + axe, com as contas demo; contagem atual em `docs/testing.md` |
+| `npm run messages:check` | Garante árvores de tradução e placeholders idênticos (pt-BR/en/es): 25 namespaces, 5.798 chaves por idioma |
+| `npm run test` | Vitest: 1.836 aprovados + 1 pulado em 86 arquivos (85 aprovados + 1 pulado; 30/10/2026) |
+| `npm run test:rls` | 1.523 asserções de RLS/regras de negócio (S0–S67; 30/10/2026, migrações até a 0057) num Postgres local isolado (`LOCAL_DB_NAME` escolhe o banco) |
+| `npm run test:e2e` (use `PLAYWRIGHT_CHROMIUM_PATH` para reutilizar um Chromium já instalado e `E2E_BASE_URL` para um servidor já ativo) | Playwright (Pixel 7 + Desktop Chrome) + axe, com as contas demo: 522 testes em 44 specs (30/10/2026); detalhes em `docs/testing.md` |
 | `npm run db:local:reset` | Sobe Postgres 16 local com shim Supabase + todas as migrations + seed |
 | `npm run db:types` | Regenera `src/lib/supabase/database.types.ts` a partir do banco local |
 | `npm run eval:recommendations` | Compara motores de recomendação (determinístico vs provedores com chave) |
@@ -43,7 +43,7 @@ Na interface, o papel `creator` (quem assina conteúdos e programas) aparece com
 
 ### Banco de dados
 
-Migrations versionadas em `supabase/migrations/0001…0039*.sql` (38 arquivos; não há 0034; aplicar **em ordem**). Em produção (23/10/2026): todas, nada pendente — 39 registros em `supabase_migrations.schema_migrations` (o remoto sempre teve 1 registro a mais que os arquivos). As últimas: `0036_recipe_delete_archived.sql` (o herói exclui de vez a receita que ele arquivou; `docs/decisions/recipes-module.md`, seção "Fase 6"), `0037_streak_contents_only.sql` (a sequência conta só conteúdos concluídos e entradas em programas; Lembretes não contam) e `0038_health_foundation.sql` + `0039_health_ingest.sql` (schema `health` do relógio real, fora da API, aplicadas vazias; ver `WEARABLES_REAL_ENABLED` abaixo). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`). A `0044_real_heroes.sql` troca os personagens pelas seis pessoas reais (mesmas linhas, slugs novos) e tira do app, de forma reversível, os dois personagens restantes (perfil suspenso, conteúdo arquivado ou passado ao dono do programa que o usava; auditoria `hero.removed`): no fim ficam 6 heróis, 38 conteúdos no ar e 18 programas publicados. Fotos e licenças em `docs/photo-credits.md`. A `0054_push_notifications.sql` cria herói favorito, tokens de push, a fila de envio e os gatilhos dos avisos (`docs/decisions/push-notifications.md`); aplicar depois do merge.
+Migrations versionadas em `supabase/migrations/0001…0057*.sql` (57 arquivos: não há 0034 e existe a 0044b; aplicar **em ordem**). Da 0040 em diante: `0040_list_items_products_programs`, `0041_favorites_products_programs`, `0042_hero_cover_photos`, `0043_post_photos`, `0044_real_heroes` + `0044b_profile_avatars_real_heroes`, `0045_admin_hero_publishing`, `0046_quick_signup`, `0047_shop_filters`, `0048_program_concept`, `0049_hero_categories`, `0050_hero_library_tabs`, `0051_alimentacao`, `0052_hero_scoped_showcase`, `0053_admin_seller_ops`, `0054_push_notifications`, `0055_fix_counters_embed`, `0056_hero_follows_compare` e `0057_collectibles_auctions`. Situação registrada em 23/10/2026 (até a 0039): todas aplicadas em produção, 39 registros em `supabase_migrations.schema_migrations` (o remoto sempre teve 1 registro a mais que os arquivos); confira as posteriores com `remote-apply.mjs --dry`. Mais antigas, em destaque: `0036_recipe_delete_archived.sql` (o herói exclui de vez a receita que ele arquivou; `docs/decisions/recipes-module.md`, seção "Fase 6"), `0037_streak_contents_only.sql` (a sequência conta só conteúdos concluídos e entradas em programas; Lembretes não contam) e `0038_health_foundation.sql` + `0039_health_ingest.sql` (schema `health` do relógio real, fora da API, aplicadas vazias; ver `WEARABLES_REAL_ENABLED` abaixo). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`). A `0044_real_heroes.sql` troca os personagens pelas seis pessoas reais (mesmas linhas, slugs novos) e tira do app, de forma reversível, os dois personagens restantes (perfil suspenso, conteúdo arquivado ou passado ao dono do programa que o usava; auditoria `hero.removed`): no fim ficam 6 heróis, 38 conteúdos no ar e 18 programas publicados. Fotos e licenças em `docs/photo-credits.md`. A `0054_push_notifications.sql` cria herói favorito, tokens de push, a fila de envio e os gatilhos dos avisos (`docs/decisions/push-notifications.md`); aplicar depois do merge.
 
 Aplicar no projeto Supabase remoto:
 
@@ -83,6 +83,16 @@ Google OAuth: configurar em Supabase → Authentication → Providers → Google
 | Admin | bootstrap/concessão auditada | tudo, com confirmação e trilha de auditoria (inclui a operação dos fornecedores: escritas em produtos e transições de remessa vão para `admin_audit`, 0053) |
 
 Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**; a interface só reflete.
+
+## O que há no app agora (30/10/2026)
+
+- **Heróis com categorias e atalhos** (0049/0050/0052): a página do herói segue o Instagram (foto, números, Seguir, bio, atalhos redondos e a grade de posts 3 por linha); os atalhos (Dia a dia, Alimentação, Treinos, Gastronomia, Programas, Produtos) são configurados pelo admin por categoria e por herói, com rótulo nos 3 idiomas, e cada um abre a biblioteca do herói só com o que é dele. Capa de vídeo que não carrega vira o placeholder da marca com play.
+- **Alimentação** (0051): receitas do chef que assina e as que ele indica, "Comprar pronto", lista de compras ligada ao comércio de teste e indicadores.
+- **Colecionáveis** (0057): lances ao vivo em itens assinados, sem pagamento online (quem arremata vê "Você arrematou!" e a equipe faz o contato), dentro de Comprar, com **Minhas compras** (`/shop/compras`: pedidos de teste e "Lances e arremates"; `/orders` leva para lá).
+- **Seguir e comparação** (0054/0056): seguir heróis (contagem pública de seguidores, push no app), Início com "Seguindo | Todos", Heróis que sigo e o "Você vs Hero" com referências definidas pelo admin.
+- **Fornecedor no admin** (0053): o portal `/seller` está desligado; produtos, remessas e organização dos fornecedores são operados pelo admin em `/admin/sellers/[id]` e `/admin/shipments`, com auditoria.
+- **Hoje em cards**: Seu dia, Sua noite e Evolução em 3 cards com telas deslizantes.
+- **Programa em cards** (0048): Conceito, Prepare-se, Conteúdo e Nutricional em 4 cards com telas em sequência.
 
 ## Módulos
 
