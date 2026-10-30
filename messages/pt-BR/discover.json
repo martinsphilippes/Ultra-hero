@@ -169,17 +169,6 @@
         "programsOther": "programas",
         "productsOne": "produto",
         "productsOther": "produtos"
-      },
-      "favorite": {
-        "add": "Favoritar",
-        "remove": "Favorito",
-        "added": "{name} está nos seus favoritos.",
-        "removed": "{name} saiu dos seus favoritos.",
-        "willNotify": "Avisamos você quando houver post novo.",
-        "pushDenied": "As notificações estão desligadas no celular. Para receber os posts novos, ative-as nos Ajustes do aparelho.",
-        "unavailable": "Este herói não está disponível agora.",
-        "error": "Não foi possível salvar. Tente novamente.",
-        "pushError": "Não conseguimos ativar os avisos agora. Tente de novo em Perfil › Notificações."
       }
     },
     "libraries": {

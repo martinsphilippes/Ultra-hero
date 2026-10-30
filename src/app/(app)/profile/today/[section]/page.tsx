@@ -6,6 +6,8 @@ import { Info } from "lucide-react";
 import { ymdToDate } from "@/components/me/dates";
 import { TrendChart, type TrendPoint } from "@/components/me/today/TrendChart";
 import { WatchDemoLabel } from "@/components/me/today/WatchToday";
+import { HeroComparison } from "@/components/heroes/HeroComparison";
+import { metricsForTodaySection } from "@/lib/heroes/compare";
 import { indexCardKind, sectionAvailable, sectionPoints, trendCodes, usualRange } from "@/components/me/today/watch-helpers";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { isDetailSection, metricDef, MODEL_INFO, type MetricCode } from "@/lib/wearables/catalog";
@@ -142,6 +144,9 @@ export default async function TodayDetailPage({ params, searchParams }: { params
           })}
         </section>
       ) : null}
+
+      {/* Você vs Hero (0056) dos indicadores desta seção; o "Exemplo" não entra na comparação */}
+      {view.kind !== "example" && metricsForTodaySection(section).length > 0 ? <HeroComparison watch={snapshot} only={metricsForTodaySection(section)} invite={false} /> : null}
 
       <section aria-labelledby="how-title" className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-5">
         <h2 id="how-title" className="type-h3 text-fg">

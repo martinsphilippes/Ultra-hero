@@ -9,7 +9,7 @@ import { TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
-import { HeroFavoriteButton } from "@/components/push/HeroFavoriteButton";
+import { FollowButton } from "@/components/heroes/FollowButton";
 import { ChefHighlights } from "@/components/recipes/catalog/ChefHighlights";
 import { AvatarInitials, Badge } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
@@ -17,8 +17,8 @@ import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { hubHref, loadCreator, loadCreatorHub } from "@/lib/catalog/creator-hub";
 import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
-import { getUser } from "@/lib/auth/session";
-import { getNativeApp } from "@/lib/native-app/server";
+import { getFollowContext } from "@/lib/heroes/follow-context";
+import { loadFollowerCount } from "@/lib/heroes/follow-queries";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -48,7 +48,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
 
   // RB-05: só "autorizado" com titular documentado e dentro da validade tira o selo de fictício.
   const rights = effectiveRightsStatus(creator.rights_status, creator.rights_valid_until);
-  const [hub, favoriteState] = await Promise.all([loadCreatorHub(creator), loadHeroFavorite(creator.id)]);
+  const [hub, follow, followers] = await Promise.all([loadCreatorHub(creator), getFollowContext(), createClient().then((supabase) => loadFollowerCount(supabase, creator.id))]);
   const hasError = hub.errors.contents || hub.errors.programs || hub.errors.products;
 
   // Grade de posts: só o que o herói publicou (as receitas que ele indica ficam em Alimentação).
@@ -58,7 +58,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
     { key: "posts", value: posts.length, label: statLabel("posts", posts.length) },
     { key: "programs", value: hub.programs.length, label: statLabel("programs", hub.programs.length) },
     // no app das lojas não há comércio: a contagem de produtos também sai
-    ...(hub.commerceEnabled && !favoriteState.nativeApp ? [{ key: "products", value: hub.products.length, label: statLabel("products", hub.products.length) }] : []),
+    ...(hub.commerceEnabled && !follow.nativeApp ? [{ key: "products", value: hub.products.length, label: statLabel("products", hub.products.length) }] : []),
   ];
 
   return (
@@ -90,16 +90,20 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
             </ul>
           </div>
         </div>
-        <div>
-          <HeroFavoriteButton
-            creatorId={creator.id}
-            heroName={creator.name}
-            initial={favoriteState.favorite}
-            loggedIn={favoriteState.loggedIn}
-            path={`/personalities/${creator.slug}`}
-            pushReady={favoriteState.pushReady}
-          />
-        </div>
+        {/* Seguir (hero_favorites, 0054) com a contagem pública de seguidores (0056) */}
+        {follow.available ? (
+          <div data-testid="hero-follow">
+            <FollowButton
+              creatorId={creator.id}
+              heroName={creator.name}
+              initialFollowing={follow.following.has(creator.id)}
+              signedIn={follow.signedIn}
+              path={`/personalities/${creator.slug}`}
+              followers={followers}
+              pushReady={follow.pushReady}
+            />
+          </div>
+        ) : null}
         <HeroBio headline={creator.headline} bio={creator.bio} />
         {/* perfil do chef: especialidades e credenciais aprovadas pelo admin (P7) */}
         <ChefHighlights creatorId={creator.id} />
@@ -163,18 +167,3 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   );
 }
 
-// Herói favorito (0054) e, no app, se o push de posts de heróis já está ligado com aparelho registrado.
-// Falha de leitura degrada para "não favoritado": o botão segue funcionando.
-async function loadHeroFavorite(creatorId: string): Promise<{ loggedIn: boolean; favorite: boolean; pushReady: boolean; nativeApp: boolean }> {
-  const [user, nativeApp] = await Promise.all([getUser(), getNativeApp()]);
-  if (!user) return { loggedIn: false, favorite: false, pushReady: false, nativeApp: Boolean(nativeApp) };
-  const supabase = await createClient();
-  const [fav, prefs, tokens] = await Promise.all([
-    supabase.from("hero_favorites").select("creator_id").eq("user_id", user.id).eq("creator_id", creatorId).maybeSingle(),
-    nativeApp ? supabase.from("notification_preferences").select("channel_push, hero_posts").eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
-    nativeApp ? supabase.from("push_tokens").select("token", { count: "exact", head: true }).eq("user_id", user.id) : Promise.resolve({ count: 0 }),
-  ]);
-  if ("error" in fav && fav.error) console.warn("[hero-favorite] leitura falhou", fav.error.message);
-  const pushReady = Boolean(prefs.data?.channel_push && prefs.data?.hero_posts && (tokens.count ?? 0) > 0);
-  return { loggedIn: true, favorite: Boolean(fav.data), pushReady, nativeApp: Boolean(nativeApp) };
-}

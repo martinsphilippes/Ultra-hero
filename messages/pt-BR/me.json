@@ -177,6 +177,10 @@
         "title": "Interesses",
         "description": "Temas que guiam as recomendações."
       },
+      "heroes": {
+        "title": "Heróis que sigo",
+        "description": "Quem você segue e o seu Hero de comparação."
+      },
       "favorites": {
         "title": "Favoritos",
         "description": "Conteúdos, produtos e programas que você marcou."

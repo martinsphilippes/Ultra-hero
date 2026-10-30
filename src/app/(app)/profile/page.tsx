@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, type LucideIcon } from "lucide-react";
+import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, Users, type LucideIcon } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -60,9 +60,11 @@ const PORTALS: Array<{ role: Exclude<AppRole, "consumer">; href: string; icon: L
   { role: "admin", href: "/admin", icon: ShieldCheck },
 ];
 
-const LINKS: Array<{ key: "plan" | "interests" | "favorites" | "recipes" | "shoppingList" | "orders" | "notifications" | "account"; href: string; icon: LucideIcon }> = [
+const LINKS: Array<{ key: "plan" | "interests" | "heroes" | "favorites" | "recipes" | "shoppingList" | "orders" | "notifications" | "account"; href: string; icon: LucideIcon }> = [
   { key: "plan", href: "/profile/plan", icon: CreditCard },
   { key: "interests", href: "/profile/interests", icon: Sparkles },
+  // heróis seguidos e o Hero de comparação (0056)
+  { key: "heroes", href: "/profile/herois", icon: Users },
   { key: "favorites", href: "/profile/favorites", icon: Heart },
   { key: "recipes", href: "/profile/receitas", icon: ChefHat },
   { key: "shoppingList", href: "/profile/lista-de-compras", icon: ShoppingBasket },

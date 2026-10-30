@@ -1,0 +1,125 @@
+{
+  "button": {
+    "follow": "Seguir",
+    "following": "Seguindo",
+    "followed": "Você está seguindo {name}.",
+    "unfollowed": "Você deixou de seguir {name}.",
+    "willNotify": "Avisamos você quando houver post novo.",
+    "pushDenied": "As notificações estão desligadas no celular. Para receber os posts novos, ative-as nos Ajustes do aparelho.",
+    "pushError": "Não conseguimos ativar os avisos agora. Tente de novo em Perfil › Notificações.",
+    "unavailable": "Este herói não está disponível agora.",
+    "error": "Não foi possível salvar. Tente novamente.",
+    "followersOne": "1 seguidor",
+    "followersOther": "{n} seguidores"
+  },
+  "feed": {
+    "tabsLabel": "Qual feed mostrar",
+    "tabs": {
+      "seguindo": "Seguindo",
+      "todos": "Todos"
+    },
+    "emptyNoneTitle": "Você ainda não segue nenhum herói",
+    "emptyNoneDescription": "Siga os heróis que inspiram você para ver os posts deles aqui primeiro.",
+    "emptyNoPostsTitle": "Nada novo de quem você segue",
+    "emptyNoPostsDescription": "Os heróis que você segue ainda não publicaram. Veja o que há em Todos ou descubra outros heróis.",
+    "discoverHeroes": "Descobrir heróis",
+    "seeAll": "Ver todos os posts"
+  },
+  "manage": {
+    "metaTitle": "Heróis que sigo",
+    "title": "Heróis que sigo",
+    "description": "Gerencie quem você segue e escolha um herói para comparar seus indicadores.",
+    "countOne": "Você segue 1 herói.",
+    "countOther": "Você segue {n} heróis.",
+    "emptyTitle": "Você ainda não segue nenhum herói",
+    "emptyDescription": "Na aba Hero, toque em Seguir nos heróis que inspiram você.",
+    "emptyCta": "Ver heróis",
+    "listLabel": "Heróis que você segue",
+    "openHero": "Ver perfil de {name}",
+    "compareTitle": "Hero de comparação",
+    "compareDescription": "Escolha um herói que você segue para comparar seu sono, seus passos, treinos e uso do app com a referência dele, no Hoje e na Evolução.",
+    "compareNone": "Nenhum (não comparar)",
+    "compareWith": "Comparar com {name}",
+    "compareSaved": "Hero de comparação atualizado.",
+    "compareCleared": "Comparação desligada.",
+    "compareError": "Não foi possível salvar a escolha. Tente novamente.",
+    "notFollowing": "Siga o herói antes de escolher para comparar.",
+    "compareUnavailable": "A comparação ainda não está disponível neste ambiente.",
+    "unavailable": "Seguir heróis ainda não está disponível neste ambiente."
+  },
+  "compare": {
+    "title": "Você vs {name}",
+    "description": "Seus últimos 7 dias comparados com a referência de {name}.",
+    "referenceNote": "As referências são metas definidas pela equipe Groscove Ultra para inspirar você. Não são dados medidos de {name}.",
+    "you": "Você",
+    "reference": "Referência de {name}",
+    "noWatch": "Conecte um relógio para comparar este indicador.",
+    "noReferences": "A equipe ainda não definiu referências para {name}.",
+    "change": "Trocar herói",
+    "chooseTitle": "Compare-se com um herói",
+    "chooseDescription": "Escolha um herói que você segue para ver como seus treinos, seu sono e seus passos se comparam com a referência dele.",
+    "chooseCta": "Escolher herói",
+    "status": {
+      "below": "Abaixo da referência",
+      "near": "Na referência",
+      "above": "Acima da referência"
+    },
+    "metrics": {
+      "sleep_hours": {
+        "label": "Sono (média por noite)",
+        "value": "{value} h",
+        "phrase": "Seu sono está em {pct}% da referência de {name}."
+      },
+      "steps_day": {
+        "label": "Passos (média por dia)",
+        "value": "{value} passos",
+        "phrase": "Seus passos estão em {pct}% da referência de {name}."
+      },
+      "workouts_week": {
+        "label": "Treinos no relógio (7 dias)",
+        "value": "{value} na semana",
+        "phrase": "Seus treinos estão em {pct}% da referência de {name}."
+      },
+      "cardio_load_day": {
+        "label": "Carga do dia (média)",
+        "value": "{value} pontos",
+        "phrase": "Sua carga do dia está em {pct}% da referência de {name}."
+      },
+      "active_days_week": {
+        "label": "Dias ativos no app (7 dias)",
+        "value": "{value} de 7",
+        "phrase": "Seus dias ativos estão em {pct}% da referência de {name}."
+      },
+      "contents_week": {
+        "label": "Conteúdos concluídos (7 dias)",
+        "value": "{value} na semana",
+        "phrase": "Seus conteúdos concluídos estão em {pct}% da referência de {name}."
+      },
+      "recipes_week": {
+        "label": "Alimentação: receitas concluídas (7 dias)",
+        "value": "{value} na semana",
+        "phrase": "Suas receitas concluídas estão em {pct}% da referência de {name}."
+      }
+    }
+  },
+  "admin": {
+    "title": "Referências para comparação",
+    "description": "Metas que aparecem como \"Referência do herói\" no \"Você vs Hero\" do consumidor. São definidas pela equipe, não são dados medidos do herói. Deixe em branco para não comparar o indicador.",
+    "unit": "Unidade: {unit}",
+    "units": {
+      "h": "horas por noite",
+      "steps": "passos por dia",
+      "workouts": "treinos por semana",
+      "points": "pontos de carga por dia",
+      "days": "dias ativos por semana (até 7)",
+      "contents": "conteúdos por semana",
+      "recipes": "receitas por semana"
+    },
+    "save": "Salvar referências",
+    "saved": "Referências salvas.",
+    "invalid": "Valor inválido em {metric}: use um número maior que zero e até {max}.",
+    "error": "Não foi possível salvar as referências.",
+    "unavailable": "As referências precisam da migração 0056 no banco.",
+    "followers": "Seguidores: {n}"
+  }
+}

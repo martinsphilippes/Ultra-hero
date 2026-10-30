@@ -3,6 +3,7 @@ import { Users } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { CreatorCard } from "@/components/catalog";
+import { FollowButton } from "@/components/heroes/FollowButton";
 import { ChipLink, ChipRow } from "@/components/discover/ChipLink";
 import { CARD_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
@@ -18,6 +19,7 @@ import {
   visibleCategories,
 } from "@/lib/heroes/categories";
 import { fetchHeroCategories } from "@/lib/heroes/category-queries";
+import { getFollowContext } from "@/lib/heroes/follow-context";
 import { createClient } from "@/lib/supabase/server";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -32,13 +34,14 @@ export async function generateMetadata(): Promise<Metadata> {
 // documento: no roteador do Next, trocar só a query na mesma rota abortava o payload (tela parada).
 export default async function PersonalitiesPage({ searchParams }: Props) {
   const supabase = await createClient();
-  const [raw, locale, t, tcat, { data, error }, categoryData] = await Promise.all([
+  const [raw, locale, t, tcat, { data, error }, categoryData, follow] = await Promise.all([
     searchParams,
     getLocale(),
     getTranslations("discover.personalities"),
     getTranslations("catalog"),
     supabase.from("creator_profiles").select(CREATOR_CARD_SELECT).eq("status", "active").order("sort_order").order("name"),
     fetchHeroCategories(supabase),
+    getFollowContext(),
   ]);
   const allCreators = (data ?? []) as unknown as CreatorCardData[];
   const chips = visibleCategories(
@@ -100,12 +103,27 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
           </p>
           <ul className={CARD_GRID}>
             {creators.map((creator, index) => (
-              <li key={creator.id}>
+              // botão Seguir fora do link do card (botão dentro de link não é válido), sobre a capa
+              <li key={creator.id} className="relative">
                 <CreatorCard
                   creator={creator}
                   categories={(badges.get(creator.id) ?? []).map((c) => ({ id: c.id, label: localizedLabel(c.name, locale) }))}
                   priority={index < 2}
                 />
+                {follow.available ? (
+                  <div className="absolute right-3 top-3">
+                    <FollowButton
+                      creatorId={creator.id}
+                      heroName={creator.name}
+                      initialFollowing={follow.following.has(creator.id)}
+                      signedIn={follow.signedIn}
+                      path="/personalities"
+                      pushReady={follow.pushReady}
+                      size="compact"
+                      className="shadow-md"
+                    />
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>

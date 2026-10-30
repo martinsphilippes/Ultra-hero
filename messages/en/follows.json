@@ -1,0 +1,125 @@
+{
+  "button": {
+    "follow": "Follow",
+    "following": "Following",
+    "followed": "You are following {name}.",
+    "unfollowed": "You unfollowed {name}.",
+    "willNotify": "We'll let you know when there's a new post.",
+    "pushDenied": "Notifications are turned off on your phone. To get new posts, turn them on in your device Settings.",
+    "pushError": "We couldn't turn on alerts right now. Try again in Profile › Notifications.",
+    "unavailable": "This hero isn't available right now.",
+    "error": "Couldn't save. Please try again.",
+    "followersOne": "1 follower",
+    "followersOther": "{n} followers"
+  },
+  "feed": {
+    "tabsLabel": "Which feed to show",
+    "tabs": {
+      "seguindo": "Following",
+      "todos": "All"
+    },
+    "emptyNoneTitle": "You don't follow any heroes yet",
+    "emptyNoneDescription": "Follow the heroes who inspire you to see their posts here first.",
+    "emptyNoPostsTitle": "Nothing new from the heroes you follow",
+    "emptyNoPostsDescription": "The heroes you follow haven't posted yet. See what's in All or discover other heroes.",
+    "discoverHeroes": "Discover heroes",
+    "seeAll": "See all posts"
+  },
+  "manage": {
+    "metaTitle": "Heroes I follow",
+    "title": "Heroes I follow",
+    "description": "Manage who you follow and pick one hero to compare your indicators with.",
+    "countOne": "You follow 1 hero.",
+    "countOther": "You follow {n} heroes.",
+    "emptyTitle": "You don't follow any heroes yet",
+    "emptyDescription": "On the Hero tab, tap Follow on the heroes who inspire you.",
+    "emptyCta": "See heroes",
+    "listLabel": "Heroes you follow",
+    "openHero": "See {name}'s profile",
+    "compareTitle": "Comparison Hero",
+    "compareDescription": "Pick a hero you follow to compare your sleep, steps, workouts and app use with their reference, in Today and Progress.",
+    "compareNone": "None (don't compare)",
+    "compareWith": "Compare with {name}",
+    "compareSaved": "Comparison Hero updated.",
+    "compareCleared": "Comparison turned off.",
+    "compareError": "Couldn't save your choice. Please try again.",
+    "notFollowing": "Follow the hero before choosing them for comparison.",
+    "compareUnavailable": "Comparison isn't available in this environment yet.",
+    "unavailable": "Following heroes isn't available in this environment yet."
+  },
+  "compare": {
+    "title": "You vs {name}",
+    "description": "Your last 7 days compared with {name}'s reference.",
+    "referenceNote": "References are goals set by the Groscove Ultra team to inspire you. They are not data measured from {name}.",
+    "you": "You",
+    "reference": "{name}'s reference",
+    "noWatch": "Connect a watch to compare this indicator.",
+    "noReferences": "The team hasn't set references for {name} yet.",
+    "change": "Change hero",
+    "chooseTitle": "Compare yourself with a hero",
+    "chooseDescription": "Pick a hero you follow to see how your workouts, sleep and steps compare with their reference.",
+    "chooseCta": "Choose a hero",
+    "status": {
+      "below": "Below the reference",
+      "near": "On the reference",
+      "above": "Above the reference"
+    },
+    "metrics": {
+      "sleep_hours": {
+        "label": "Sleep (nightly average)",
+        "value": "{value} h",
+        "phrase": "Your sleep is at {pct}% of {name}'s reference."
+      },
+      "steps_day": {
+        "label": "Steps (daily average)",
+        "value": "{value} steps",
+        "phrase": "Your steps are at {pct}% of {name}'s reference."
+      },
+      "workouts_week": {
+        "label": "Watch workouts (7 days)",
+        "value": "{value} this week",
+        "phrase": "Your workouts are at {pct}% of {name}'s reference."
+      },
+      "cardio_load_day": {
+        "label": "Daily load (average)",
+        "value": "{value} points",
+        "phrase": "Your daily load is at {pct}% of {name}'s reference."
+      },
+      "active_days_week": {
+        "label": "Active days in the app (7 days)",
+        "value": "{value} of 7",
+        "phrase": "Your active days are at {pct}% of {name}'s reference."
+      },
+      "contents_week": {
+        "label": "Content completed (7 days)",
+        "value": "{value} this week",
+        "phrase": "Your completed content is at {pct}% of {name}'s reference."
+      },
+      "recipes_week": {
+        "label": "Food: recipes completed (7 days)",
+        "value": "{value} this week",
+        "phrase": "Your completed recipes are at {pct}% of {name}'s reference."
+      }
+    }
+  },
+  "admin": {
+    "title": "Comparison references",
+    "description": "Goals shown as the \"Hero's reference\" in the consumer's \"You vs Hero\". They are set by the team, not measured from the hero. Leave blank to skip the indicator.",
+    "unit": "Unit: {unit}",
+    "units": {
+      "h": "hours per night",
+      "steps": "steps per day",
+      "workouts": "workouts per week",
+      "points": "load points per day",
+      "days": "active days per week (up to 7)",
+      "contents": "content per week",
+      "recipes": "recipes per week"
+    },
+    "save": "Save references",
+    "saved": "References saved.",
+    "invalid": "Invalid value in {metric}: use a number above zero and up to {max}.",
+    "error": "Couldn't save the references.",
+    "unavailable": "References need migration 0056 in the database.",
+    "followers": "Followers: {n}"
+  }
+}

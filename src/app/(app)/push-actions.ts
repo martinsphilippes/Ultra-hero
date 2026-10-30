@@ -9,7 +9,7 @@ import { getNativeApp } from "@/lib/native-app/server";
 import { EXPO_PUSH_TOKEN, PUSH_TOKEN_COOKIE } from "@/lib/push/constants";
 import { createClient } from "@/lib/supabase/server";
 
-// Herói favorito e push do app das lojas (0054; docs/decisions/push-notifications.md). Regras de
+// Seguir herói (hero_favorites) e push do app das lojas (0054; docs/decisions/push-notifications.md). Regras de
 // acesso no banco: RLS de hero_favorites, RPC register_push_token, RLS de notification_preferences.
 
 type Result<T extends object = Record<never, never>> = ({ ok: true } & T) | { ok: false; error: string };
@@ -21,7 +21,8 @@ const fail = (error: unknown): { ok: false; error: string } => {
 
 export async function toggleHeroFavorite(input: { creatorId: string; favorite: boolean; path?: string }): Promise<Result<{ favorite: boolean }>> {
   const parsed = z
-    .object({ creatorId: z.uuid(), favorite: z.boolean(), path: z.string().regex(/^\/personalities\/[a-z0-9-]+$/).optional() })
+    // caminhos onde o botão Seguir aparece (página do herói, aba Hero, Início e Heróis que sigo)
+    .object({ creatorId: z.uuid(), favorite: z.boolean(), path: z.string().regex(/^\/(personalities(\/[a-z0-9-]+)?|inicio|profile\/herois)$/).optional() })
     .safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   try {
@@ -40,6 +41,10 @@ export async function toggleHeroFavorite(input: { creatorId: string; favorite: b
       await trackEvent("favorite.remove", { item_type: "hero", item_id: creatorId });
     }
     if (path) revalidatePath(path);
+    // seguir alimenta o feed "Seguindo", a gestão no Perfil e a comparação (0056)
+    revalidatePath("/profile/herois");
+    revalidatePath("/profile/today");
+    revalidatePath("/profile/evolution");
     return { ok: true, favorite };
   } catch (error) {
     return fail(error);

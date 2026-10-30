@@ -483,6 +483,26 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"creator_follower_counts": {
+                  Row: {
+                    "creator_id": string,"followers": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creator_id": string,"followers"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "creator_id"?: string,"followers"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_follower_counts_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: true
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"creator_library_overrides": {
                   Row: {
                     "created_at": string,"creator_id": string,"icon": string | null,"is_visible": boolean | null,"label": Json | null,"sort_order": number | null,"source_key": string,"updated_at": string
@@ -563,6 +583,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     },{
       foreignKeyName: "creator_recipe_links_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"creator_reference_metrics": {
+                  Row: {
+                    "created_at": string,"creator_id": string,"metric_key": string,"source": string,"unit": string,"updated_at": string,"updated_by": string | null,"value": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"creator_id": string,"metric_key": string,"source"?: string,"unit": string,"updated_at"?: string,"updated_by"?: string | null,"value": number
+                  }
+                  Update: {
+                    "created_at"?: string,"creator_id"?: string,"metric_key"?: string,"source"?: string,"unit"?: string,"updated_at"?: string,"updated_by"?: string | null,"value"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_reference_metrics_creator_id_fkey"
       columns: ["creator_id"]
 isOneToOne: false
       referencedRelation: "creator_profiles"
@@ -1155,16 +1195,23 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "anonymized_at": string | null,"avatar_url": string | null,"created_at": string,"display_name": string | null,"full_name": string | null,"id": string,"locale": Database["public"]['Enums']["locale_code"] | null,"onboarding_completed": boolean,"phone_e164": string | null,"theme": string,"timezone": string | null,"updated_at": string
+                    "anonymized_at": string | null,"avatar_url": string | null,"compare_creator_id": string | null,"created_at": string,"display_name": string | null,"full_name": string | null,"id": string,"locale": Database["public"]['Enums']["locale_code"] | null,"onboarding_completed": boolean,"phone_e164": string | null,"theme": string,"timezone": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"full_name"?: string | null,"id": string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"phone_e164"?: string | null,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"compare_creator_id"?: string | null,"created_at"?: string,"display_name"?: string | null,"full_name"?: string | null,"id": string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"phone_e164"?: string | null,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"full_name"?: string | null,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"phone_e164"?: string | null,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
+                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"compare_creator_id"?: string | null,"created_at"?: string,"display_name"?: string | null,"full_name"?: string | null,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"phone_e164"?: string | null,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
+                    {
+      foreignKeyName: "profiles_compare_creator_id_fkey"
+      columns: ["compare_creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
                     
                   ]
                 },"program_item_substitutions": {
