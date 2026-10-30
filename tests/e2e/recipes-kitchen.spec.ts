@@ -256,7 +256,7 @@ test.describe("Minha coleção de receitas (conta free)", () => {
     test.setTimeout(120_000);
     await loginFree(page);
 
-    await page.goto("/profile");
+    await page.goto("/configuracoes");
     await expect(page.locator('a[href="/profile/receitas"]')).toBeVisible();
 
     await openRecipeWithStep(page);

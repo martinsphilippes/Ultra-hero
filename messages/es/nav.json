@@ -63,7 +63,9 @@
     "backToApp": "Volver a la app",
     "menu": "Menú",
     "openMenu": "Abrir menú",
-    "closeMenu": "Cerrar menú"
+    "closeMenu": "Cerrar menú",
+    "settings": "Configuración",
+    "settingsOf": "Configuración de la cuenta de {name}"
   },
   "portalLabel": "Portal",
   "portalDescription": {

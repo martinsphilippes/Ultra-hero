@@ -186,7 +186,7 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     expect(withPhoto.profile).toContain(BUCKET);
     expect(withPhoto.creator).toBe(withPhoto.profile);
     await page.reload();
-    const headerSrc = await avatarSrc(page, 'header a[href="/profile"] img');
+    const headerSrc = await avatarSrc(page, 'header a[href="/configuracoes"] img');
     expect(headerSrc).toContain(BUCKET);
     // cache curto na origem: a foto removida não fica servida por meses
     const photoUrl = headerSrc.match(/url=([^&]+)/)?.[1] ?? headerSrc;
@@ -203,7 +203,7 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     expect(removed.profile ?? "").not.toContain(BUCKET);
     expect(removed.creator ?? "").not.toContain(BUCKET);
     await page.reload();
-    const headerLink = page.locator('header a[href="/profile"]').first();
+    const headerLink = page.locator('header a[href="/configuracoes"]').first();
     expect(await headerLink.locator("img").evaluateAll((imgs) => imgs.map((i) => i.getAttribute("src") ?? ""))).not.toContainEqual(expect.stringContaining("avatars"));
     await page.goto(publicHref!);
     await expect(page.getByTestId("hero-page-avatar").locator("[data-avatar-initials], img")).toHaveCount(1);
@@ -227,11 +227,11 @@ test.describe("foto de perfil: envio real (E2E_AVATAR_REAL=1)", () => {
     await dialog.getByRole("button", { name: "Usar esta foto" }).click();
     await expect(page.getByText("Foto atualizada.").first()).toBeVisible({ timeout: 30_000 });
     await openHeroEditor(page);
-    expect(await avatarSrc(page, 'header a[href="/profile"] img')).toContain(BUCKET);
+    expect(await avatarSrc(page, 'header a[href="/configuracoes"] img')).toContain(BUCKET);
     await page.getByTestId("avatar-photo").getByRole("button", { name: "Remover foto" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Remover", exact: true }).click();
     await expect(page.getByText("Foto removida.").first()).toBeVisible({ timeout: 20_000 });
     await page.reload();
-    expect(await avatarSrc(page, 'header a[href="/profile"] img')).not.toContain("/avatars/");
+    expect(await avatarSrc(page, 'header a[href="/configuracoes"] img')).not.toContain("/avatars/");
   });
 });

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Stethoscope, Store, Users, type LucideIcon } from "lucide-react";
+import { ChevronRight, Settings } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -12,17 +12,14 @@ import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
 import { TodaySection } from "@/components/me/today/TodaySection";
-import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
+import { Avatar, Badge, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
-import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/session";
+import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
-import { appliesOn } from "@/lib/routine/reminders";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
-import { isBlockedInNativeApp } from "@/lib/native-app/surface";
-import { portalRolesShown } from "@/lib/seller-ops/portal";
+import { SETTINGS_PATH } from "@/lib/settings/sections";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
 
@@ -32,43 +29,22 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Perfil: o topo segue o Instagram para todas as contas. Cabeçalho (foto e nome; o herói mostra o
-// perfil público com selo e bio recolhida; as outras contas, e-mail, papéis e plano), Portais logo
-// abaixo e um só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes
-// em /creator/profile) e "Sua conta" (nome exibido, foto, idioma e tema; antes a seção Dados). Depois:
-// "Hoje" em 3 cards (Seu dia, Sua noite e Evolução, que traz "Continue seus programas"), Lembretes
-// (fora do Hoje, Q5), atalhos e, no fim, "Sair da conta".
-
-// Sem "Portal do herói": o herói só posta (botão Novo post no topo); conteúdos, receitas, vínculos e
-// painel ficam com o admin ("Publicar como hero" no início do admin, 0045).
-const PORTALS: Array<{ role: Exclude<AppRole, "consumer">; href: string; icon: LucideIcon }> = [
-  { role: "seller", href: "/seller", icon: Store },
-  // profissional (0058): pedidos, serviços e perfil público
-  { role: "professional", href: "/profissional", icon: Stethoscope },
-  { role: "admin", href: "/admin", icon: ShieldCheck },
-];
-
-const LINKS: Array<{ key: "plan" | "interests" | "heroes" | "favorites" | "recipes" | "shoppingList" | "orders" | "notifications" | "account"; href: string; icon: LucideIcon }> = [
-  { key: "plan", href: "/profile/plan", icon: CreditCard },
-  { key: "interests", href: "/profile/interests", icon: Sparkles },
-  // heróis seguidos e o Hero de comparação (0056)
-  { key: "heroes", href: "/profile/herois", icon: Users },
-  { key: "favorites", href: "/profile/favorites", icon: Heart },
-  { key: "recipes", href: "/profile/receitas", icon: ChefHat },
-  { key: "shoppingList", href: "/profile/lista-de-compras", icon: ShoppingBasket },
-  { key: "orders", href: "/orders", icon: Package },
-  { key: "notifications", href: "/profile/notifications", icon: Bell },
-  { key: "account", href: "/profile/account", icon: Shield },
-];
+// perfil público com selo e bio recolhida e o Novo post; as outras contas, e-mail, papéis e plano) e um
+// só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes em
+// /creator/profile) e "Sua conta" (nome exibido, foto, idioma e tema). Depois, "Hoje" em 3 cards (Seu
+// dia, Sua noite e Evolução) e, no fim, uma linha "Configurações". Lembretes, coleções, compras, conta,
+// portais e Sair moram em /configuracoes (pedido do responsável), que também abre pelo avatar do topo.
 
 export default async function ProfilePage() {
   const user = await requireUser("/profile");
-  const [profile, roles, locale, t, tc, tcp, photoState, creator] = await Promise.all([
+  const [profile, roles, locale, t, tc, tcp, ts, photoState, creator] = await Promise.all([
     getProfile(),
     getRoles(),
     getLocale(),
     getTranslations("me.profile"),
     getTranslations("common"),
     getTranslations("creator.profile"),
+    getTranslations("me.settings"),
     getAvatarPhotoState(),
     getMyCreator(),
   ]);
@@ -82,19 +58,12 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
-  const [{ data: subscriptionRaw }, evolution, remindersRes] = await Promise.all([
+  const [{ data: subscriptionRaw }, evolution] = await Promise.all([
     supabase.rpc("my_subscription"),
     // Evolução (sequência, conteúdos concluídos e próximos passos dos programas): card do Hoje
     loadEvolutionSummary(user.id, tz),
-    // Só para o resumo do atalho de Lembretes; a lista mora em /profile/lembretes.
-    supabase.from("routine_items").select("weekdays, active").eq("user_id", user.id).eq("active", true),
   ]);
   const subscription = parseSubscription(subscriptionRaw);
-
-  // Itens de rotina criados à mão viraram Lembretes (Q5), fora do Hoje; a sequência conta só
-  // conteúdos (Q10, 0037). Se a leitura falhar, o atalho aparece sem a contagem.
-  const reminders = remindersRes.error ? null : (remindersRes.data ?? []);
-  const remindersToday = reminders ? reminders.filter((r) => appliesOn(r, today)).length : null;
 
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
@@ -102,9 +71,6 @@ export default async function ProfilePage() {
   // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio"
   // ou, com WEARABLES_REAL_ENABLED=1, o relógio que conectaram.
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
-  // sem portal do fornecedor por enquanto (a operação é do admin, 0053)
-  const shownRoles = portalRolesShown(roleSet);
-  const portals = PORTALS.filter((p) => shownRoles.includes(p.role));
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
   const planKey = subscription.status === "anonymous" ? "unknown" : subscription.status;
@@ -112,31 +78,6 @@ export default async function ProfilePage() {
   const heroActive = heroProfile !== null && creator.creatorId !== null;
   // admin com perfil de herói posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros heróis)
   const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/creator/post/new";
-
-  const portalsNav = portals.length > 0 ? (
-    <nav aria-label={t("portals.title")} data-testid="profile-portals">
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {portals.map(({ role, href, icon: Icon }) => (
-          <li key={role} className={cn(isBlockedInNativeApp(href) && "native:hidden")}>
-            <Link
-              href={href}
-              data-testid={`profile-portal-${role}`}
-              className="flex min-h-16 items-center gap-3 rounded-2xl border border-accent/30 bg-surface px-4 py-3 shadow-sm transition-[border-color,box-shadow] hover:border-accent/60 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
-            >
-              <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-fg">
-                <Icon className="size-5" />
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-sm font-semibold text-fg">{t(`portals.${role}`)}</span>
-                <span className="type-caption text-fg-muted">{t(`portals.hints.${role}`)}</span>
-              </span>
-              <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  ) : null;
 
   const dataForm = (
     <ProfileDataForm
@@ -178,12 +119,11 @@ export default async function ProfilePage() {
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
 
       {heroProfile ? (
-        // topo do herói: cabeçalho público → Novo post → outros portais (fornecedor/admin) → Editar perfil
+        // topo do herói: cabeçalho público → Novo post → Editar perfil
         <div className="flex flex-col gap-4">
           <HeroProfileHeader profile={heroProfile} />
           {/* o herói só posta no dia a dia (foto ou vídeo); o resto é da administração */}
           {heroActive ? <HeroNewPost href={newPostHref} /> : null}
-          {portalsNav}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroActive}
@@ -204,7 +144,7 @@ export default async function ProfilePage() {
           />
         </div>
       ) : (
-        // topo das outras contas: foto, nome, e-mail, papéis e plano → Portais (se houver) → Editar perfil
+        // topo das outras contas: foto, nome, e-mail, papéis e plano → Editar perfil
         <div className="flex flex-col gap-4">
           <section aria-labelledby="account-name" data-testid="profile-account" className="flex items-center gap-4">
             <Avatar src={profile?.avatar_url} name={displayName} size="xl" alt="" />
@@ -215,7 +155,6 @@ export default async function ProfilePage() {
               {accountSummary}
             </div>
           </section>
-          {portalsNav}
           <HeroEditorDisclosure publicHref={null} description={t("editor.description")}>
             <div id={ACCOUNT_ANCHOR} className="scroll-mt-20">
               {dataForm}
@@ -227,56 +166,21 @@ export default async function ProfilePage() {
       {/* Hoje: só o que o relógio mede (nada digitado); dado real só com a chave ligada e consentimento */}
       <TodaySection localDate={today} view={watchView} evolution={evolution} />
 
-      {/* Lembretes: itens de rotina da pessoa, fora do Hoje (Q5); o Hoje não tem link para criá-los */}
+      {/* Configurações: o resto do Perfil (lembretes, coleções, compras, conta, portais, sair) */}
       <Link
-        href="/profile/lembretes"
-        data-testid="profile-reminders"
+        href={SETTINGS_PATH}
+        data-testid="profile-settings"
         className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
       >
         <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
-          <BellRing className="size-5" />
+          <Settings className="size-5" />
         </span>
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-sm font-semibold text-fg">{t("reminders.title")}</span>
-          <span className="type-caption text-fg-muted">
-            {reminders && reminders.length > 0 ? `${t("reminders.today", { n: remindersToday ?? 0 })} · ${t("reminders.total", { n: reminders.length })}` : t("reminders.description")}
-          </span>
+          <span className="text-sm font-semibold text-fg">{ts("profileRow.title")}</span>
+          <span className="type-caption text-fg-muted">{ts("profileRow.description")}</span>
         </span>
         <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
       </Link>
-
-      {/* Atalhos */}
-      <nav aria-label={t("title")}>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {LINKS.map(({ key, href, icon: Icon }) => (
-            <li key={key} className={cn(isBlockedInNativeApp(href) && "native:hidden")}>
-              <Link
-                href={href}
-                className="flex min-h-16 items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-              >
-                <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
-                  <Icon className="size-5" />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-sm font-semibold text-fg">{t(`links.${key}.title`)}</span>
-                  <span className="type-caption text-fg-muted">{t(`links.${key}.description`)}</span>
-                </span>
-                <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      {/* Sair da conta: no fim, como no Instagram */}
-      <div className="flex flex-col items-start gap-2">
-        <form action="/auth/signout" method="post">
-          <Button type="submit" variant="secondary" leadingIcon={<LogOut />}>
-            {t("signOut")}
-          </Button>
-        </form>
-        <p className="type-caption text-fg-muted native:hidden">{t("demoNote")}</p>
-      </div>
     </div>
   );
 }

@@ -120,7 +120,7 @@ test.describe("portal do fornecedor desligado", () => {
     await expect(page).toHaveURL(/\/admin\/sellers$/);
   });
 
-  test("outra conta vê o aviso, sem o portal; o Perfil não tem atalho de fornecedor", async ({ page }) => {
+  test("outra conta vê o aviso, sem o portal; as Configurações não têm atalho de fornecedor", async ({ page }) => {
     await loginAs(page, "free");
     for (const route of ["/seller", "/seller/fulfillments"]) {
       await page.goto(route);
@@ -130,7 +130,8 @@ test.describe("portal do fornecedor desligado", () => {
       await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
     }
     expect(await axeSerious(page)).toEqual([]);
-    await page.goto("/profile");
-    await expect(page.getByTestId("profile-portal-seller")).toHaveCount(0);
+    await page.goto("/configuracoes");
+    await expect(page.getByTestId("settings-page")).toBeVisible();
+    await expect(page.getByTestId("settings-portal-seller")).toHaveCount(0);
   });
 });

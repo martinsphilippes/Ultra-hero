@@ -161,7 +161,7 @@ test.describe("perfil do herói no topo do /profile", () => {
     const header = await face(page.getByTestId("profile-hero"));
     expect(header).not.toMatch(/placeholders|^initials:$/);
     // o menu usa o nome exibido da conta: sem foto, as iniciais podem ser outras (mas nunca imagem)
-    const menu = await face(page.locator('a[href="/profile"][title]').first());
+    const menu = await face(page.locator('a[href="/configuracoes"][title]').first());
     if (header.startsWith("img:")) expect(menu).toBe(header);
     else expect(menu).toMatch(/^initials:\S+/);
     await page.getByRole("button", { name: "Editar perfil", exact: true }).click();
