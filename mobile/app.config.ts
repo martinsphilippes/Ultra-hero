@@ -7,7 +7,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 // Decisões e lições do Quantso: ../docs/decisions/app-nas-lojas.md. Publicação: ../docs/lojas.md.
 
 // Irreversível depois do primeiro envio a qualquer loja (Apple e Google não deixam trocar).
-const APP_ID = "com.gchero.com";
+const APP_ID = "com.groscove.ultra";
 // Endereço da web que a casca abre; muda com o domínio da marca GC Hero (EAS env por perfil).
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "https://ultra-hero.vercel.app";
 // Preenchidos depois do `eas init` na conta Expo do Quantso (não são segredo; ficam no código porque o

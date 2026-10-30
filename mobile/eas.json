@@ -43,7 +43,7 @@
         "releaseStatus": "draft"
       },
       "ios": {
-        "bundleIdentifier": "com.gchero.com"
+        "bundleIdentifier": "com.groscove.ultra"
       }
     }
   }
