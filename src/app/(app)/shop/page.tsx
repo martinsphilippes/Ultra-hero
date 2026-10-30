@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { PackageSearch, ReceiptText, ShoppingBag } from "lucide-react";
+import { ShopSegment } from "@/components/collectibles/ShopSegment";
 import { ShopGrid } from "@/components/commerce/shop/ShopGrid";
 import { ShopTile } from "@/components/commerce/shop/ShopTile";
 import { ChipLink } from "@/components/discover/ChipLink";
@@ -26,7 +27,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function ShopPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const [t, locale, user, supabase] = await Promise.all([getTranslations("commerce.shop"), getLocale(), getUser(), createClient()]);
+  const [t, tc, locale, user, supabase] = await Promise.all([getTranslations("commerce.shop"), getTranslations("collectibles.segment"), getLocale(), getUser(), createClient()]);
   const view = await loadShopView(supabase, params[SHOP_FILTER_PARAM], 0);
   const selectedSlug = view.selected?.slug ?? null;
   const selectedName = view.selected ? localizedLabel(view.selected.name, locale) : t("all");
@@ -40,8 +41,9 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
         actions={
           user ? (
             <>
-              <Button asChild variant="ghost" size="sm" leadingIcon={<ReceiptText />} className="hidden sm:inline-flex">
-                <Link href="/orders">{t("ordersLink")}</Link>
+              {/* Minhas compras (pedidos + lances e arremates, 0054) */}
+              <Button asChild variant="secondary" size="sm" leadingIcon={<ReceiptText />} data-testid="my-purchases-link">
+                <Link href="/shop/compras">{tc("purchases")}</Link>
               </Button>
               <Button asChild variant="secondary" size="sm" leadingIcon={<ShoppingBag />}>
                 <Link href="/cart">{t("cartLink")}</Link>
@@ -50,6 +52,9 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
           ) : undefined
         }
       />
+
+      {/* Loja | Colecionáveis (some sem a 0054) */}
+      <ShopSegment current="shop" />
 
       {/* Cabeçalho de filtros fixo sob a barra superior; rola na horizontal no celular */}
       <div

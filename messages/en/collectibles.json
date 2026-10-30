@@ -1,0 +1,297 @@
+{
+  "demo": "Demo",
+  "segment": {
+    "label": "Shop tab sections",
+    "shop": "Shop",
+    "collectibles": "Collectibles",
+    "live": "Live",
+    "purchases": "My purchases"
+  },
+  "card": {
+    "finalPrice": "Final price",
+    "currentBid": "Current bid",
+    "startPrice": "Starting bid",
+    "endsIn": "Ends in",
+    "startsIn": "Starts in",
+    "ended": "Ended",
+    "bids": "{n, plural, =0 {no bids} =1 {1 bid} other {# bids}}"
+  },
+  "list": {
+    "title": "Collectibles",
+    "description": "Rare items signed by the heroes, with live bidding. Simulated payment.",
+    "empty": "No collectibles right now",
+    "unavailable": "Collectibles are coming soon",
+    "emptyDescription": "When a signed item goes live, it shows up here with its countdown.",
+    "live": "Live now",
+    "upcoming": "Coming soon",
+    "ended": "Ended",
+    "legal": "Demo environment: bids and payment are simulated, with no real charge. Third-party brands and images are not used."
+  },
+  "highlight": {
+    "many": "{n} collectibles live"
+  },
+  "detail": {
+    "back": "Collectibles",
+    "demoItem": "Demo item",
+    "signedBy": "Signed by {name}",
+    "about": "About the item",
+    "authenticity": "Authenticity",
+    "rulesTitle": "How bidding works",
+    "rules": {
+      "increments": "Each bid adds one of the button amounts to the current bid. The first bid starts from the starting bid.",
+      "antiSnipe": "A bid in the last 2 minutes extends the end to 2 minutes after that bid.",
+      "selfOutbid": "If you are already winning you can't outbid yourself. One bid every 2 seconds per person.",
+      "payment": "The winner completes the simulated payment and the order shows up in My purchases."
+    }
+  },
+  "gallery": {
+    "label": "Photos of {title}",
+    "photo": "Photo {n} of {total}",
+    "thumbs": "Choose photo"
+  },
+  "room": {
+    "statusLabel": "Bidding status",
+    "live": "Live",
+    "phase": {
+      "scheduled": "Coming soon",
+      "ended": "Ended",
+      "cancelled": "Cancelled"
+    },
+    "price": {
+      "final": "Won for",
+      "noBids": "Starting bid (no bids)",
+      "current": "Current bid",
+      "start": "Starting bid"
+    },
+    "bidsCount": "{n, plural, =0 {No bids yet} =1 {1 bid} other {# bids}}",
+    "extendedCount": "{n, plural, =1 {extended 1 time} other {extended # times}}",
+    "endsIn": "Ends in",
+    "startsIn": "Starts in",
+    "lastMinute": "Last minute!",
+    "quickBidLabel": "Quick bid",
+    "quickBidAria": "Bid {increment} more, total {total}",
+    "winningHint": "You're winning. The buttons come back if someone outbids you.",
+    "quickBidHint": "Tap an amount to see the total and confirm.",
+    "loginToBid": "Sign in to bid. You can watch without signing in.",
+    "loginCta": "Sign in to bid",
+    "adminCannotBid": "Admin accounts can watch but not bid.",
+    "feedTitle": "Bids",
+    "feedScheduled": "Bids show up here as soon as the item goes live.",
+    "feedEmpty": "No bids yet. Be the first!",
+    "you": "You",
+    "anonymousBidder": "Bidder",
+    "winningBid": "Winner",
+    "topBid": "Top",
+    "announce": {
+      "newPrice": "New bid: {price}"
+    },
+    "toast": {
+      "placed": "Bid of {price} placed",
+      "extended": "It was close: the end was extended by 2 minutes."
+    },
+    "errors": {
+      "unauthenticated": "Sign in to bid.",
+      "admin_cannot_bid": "Admin accounts can't bid.",
+      "account_suspended": "Your account is suspended and can't bid.",
+      "creator_cannot_bid": "Heroes can't bid on their own item.",
+      "not_found": "Item not found.",
+      "auction_ended": "Time is up. That bid didn't go through.",
+      "auction_not_live": "This item isn't taking bids yet.",
+      "invalid_increment": "Invalid bid amount. Use one of the buttons.",
+      "already_winning": "You're already winning.",
+      "rate_limited": "Easy! Wait 2 seconds between bids.",
+      "generic": "We couldn't place the bid. Try again."
+    },
+    "confirm": {
+      "title": "Confirm bid",
+      "description": "The amount may go up if someone bids before you confirm.",
+      "cancel": "Cancel",
+      "submit": "Bid {price}",
+      "yourBid": "Your bid",
+      "breakdown": "Current bid {current} + {increment}",
+      "antiSnipe": "Less than 2 minutes left: your bid extends the end by 2 minutes.",
+      "simulated": "Demo: no real charge. If you win, payment is simulated."
+    },
+    "connection": {
+      "connecting": "Connecting…",
+      "realtime": "Live",
+      "polling": "Updates every 3 s"
+    },
+    "standing": {
+      "winning": "You're winning",
+      "winningHint": "Your bid is the highest so far.",
+      "outbid": "You've been outbid",
+      "outbidHint": "Place a new bid to get back in front.",
+      "won": "You won!",
+      "wonHint": "Your bid of {price} won. Complete the simulated payment to create the order.",
+      "viewOrder": "View order",
+      "payCta": "Complete payment (simulated)",
+      "ended": "Ended",
+      "endedNoBids": "Ended with no bids",
+      "endedBy": "Won by {name} for {price}.",
+      "endedPrice": "Final price: {price}.",
+      "cancelled": "Cancelled",
+      "cancelledHint": "The admin cancelled this item. No bid counts.",
+      "scheduled": "This item isn't live yet. Bidding opens when the countdown reaches zero.",
+      "scheduledAnon": "This item isn't live yet. Sign in to bid when it opens."
+    }
+  },
+  "pay": {
+    "title": "Pay for your win",
+    "description": "Pick a fictional destination and confirm. Nothing is charged.",
+    "banner": "Simulated payment: no real charge and no real address. The order shows up in My purchases.",
+    "back": "Back to item",
+    "wonFor": "You won it for",
+    "destination": "Destination (fictional)",
+    "fictional": "Fictional",
+    "submit": "Confirm simulated payment · {total}",
+    "simulated": "Demo: this is a test order and follows the simulated shipping.",
+    "errors": {
+      "forbidden": "Only the winner can complete this payment.",
+      "invalid_destination": "Choose a destination.",
+      "commerce_disabled": "Demo purchases are paused.",
+      "generic": "We couldn't complete it. Try again."
+    }
+  },
+  "purchases": {
+    "title": "My purchases",
+    "description": "Your test orders and your collectible bids.",
+    "back": "Shop",
+    "tabsLabel": "Purchase type",
+    "tabs": {
+      "orders": "Orders",
+      "bids": "Bids and wins"
+    }
+  },
+  "myBids": {
+    "empty": "You haven't bid yet",
+    "emptyDescription": "Items you bid on show up here, each with its status.",
+    "goToCollectibles": "See collectibles",
+    "listLabel": "Bids and wins",
+    "standing": {
+      "winning": "Winning",
+      "outbid": "Outbid",
+      "won": "Won",
+      "lost": "Ended",
+      "cancelled": "Cancelled",
+      "watching": "Watching"
+    },
+    "myTop": "Your top bid {price}",
+    "final": "final {price}",
+    "current": "current {price}",
+    "viewOrder": "View order",
+    "payCta": "Complete payment (simulated)"
+  },
+  "admin": {
+    "title": "Collectibles",
+    "description": "Signed items with live bidding. Create a draft, review it and launch now or schedule.",
+    "unavailable": "Collectibles unavailable: apply migration 0054 to the database.",
+    "new": "New collectible",
+    "newDescription": "The item starts as a draft. Launching or scheduling is on the detail page.",
+    "empty": "No collectibles yet.",
+    "demo": "Demo",
+    "phase": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "ended": "Ended",
+      "cancelled": "Cancelled"
+    },
+    "bids": "{n, plural, =1 {1 bid} other {# bids}}",
+    "views": "{n, plural, =1 {1 view} other {# views}}",
+    "endsAt": "ends {date}",
+    "viewPublic": "View in shop",
+    "statusPanel": "Status",
+    "livePanel": "Live bids",
+    "livePanelHint": "Updates by itself. Names are masked, as for the public.",
+    "auditPanel": "Action history",
+    "auditEmpty": "No actions recorded.",
+    "audit": {
+      "collectible": {
+        "create": "Created",
+        "update": "Edited",
+        "launch": "Launched or scheduled",
+        "cancel": "Cancelled"
+      }
+    },
+    "fields": {
+      "startsAt": "Start",
+      "endsAt": "End",
+      "views": "Views",
+      "bids": "Bids",
+      "extensions": "Extensions (last 2 min)",
+      "winner": "Winner (masked)"
+    },
+    "form": {
+      "panel": "Item details",
+      "title": "Title",
+      "hero": "Hero",
+      "heroHint": "Optional. The item also shows on the hero's page while live or scheduled.",
+      "noHero": "No hero",
+      "description": "Description",
+      "photos": "Photos",
+      "photosHint": "One address per line (up to 8): app path (/collectibles/…) or https://. Don't use logos or brand images.",
+      "authenticity": "Authenticity",
+      "authenticityHint": "Certificate, serial number, how the signature was recorded.",
+      "rulesTitle": "Bidding",
+      "lockedHint": "The item has started: price, buttons and duration are locked.",
+      "startPrice": "Starting bid",
+      "moneyHint": "In reais, e.g. 1500 or 1.500,00.",
+      "increments": "Bid buttons",
+      "incrementN": "Button {n}",
+      "removeIncrement": "Remove button",
+      "incrementsHint": "1 to 4 different amounts, in reais. E.g. 10, 50, 100.",
+      "addIncrement": "Add button",
+      "duration": "Duration",
+      "durationUnit": "Duration unit",
+      "units": {
+        "minutes": "minutes",
+        "hours": "hours",
+        "days": "days"
+      },
+      "save": "Save",
+      "create": "Create draft",
+      "created": "Draft created",
+      "updated": "Changes saved",
+      "errors": {
+        "title": "Use 3 to 120 characters.",
+        "price": "Enter an amount of at least R$ 1.00.",
+        "increments": "Use 1 to 4 positive, different amounts.",
+        "duration": "Duration goes from 5 minutes to 30 days.",
+        "photos": "Up to 8 addresses, each starting with / or https://."
+      }
+    },
+    "launch": {
+      "whenLabel": "When to start",
+      "now": "Now",
+      "later": "Schedule",
+      "startsAt": "Start",
+      "endsPreview": "Ends {date}.",
+      "endsNow": "Starts now and ends {minutes} minutes later.",
+      "launchNow": "Launch now",
+      "schedule": "Schedule",
+      "pickDate": "Pick the start date and time.",
+      "scheduledDone": "Item scheduled",
+      "liveDone": "Item is live"
+    },
+    "cancel": {
+      "trigger": "Cancel item",
+      "title": "Cancel this collectible?",
+      "description": "Bids stop counting and bidders see the item as cancelled. This can't be undone.",
+      "confirm": "Cancel item",
+      "done": "Item cancelled"
+    },
+    "errors": {
+      "forbidden": "Only the admin can do this.",
+      "not_found": "Item not found.",
+      "collectible_locked": "The item has started: price, buttons and duration can't change anymore.",
+      "invalid_increment": "Invalid bid buttons: 1 to 4 positive, different amounts.",
+      "invalid_photo": "Invalid photo address: use / or https://.",
+      "invalid_creator": "Hero not found.",
+      "invalid_start": "The start can't be in the past.",
+      "reason_required": "Write the reason (at least 5 characters).",
+      "invalid_input": "Check the highlighted fields.",
+      "generic": "We couldn't save. Try again."
+    }
+  }
+}
