@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
+import { CreatorBrandsSection } from "@/components/admin-brands/AdminBrandSections";
 import { CreatorForm } from "@/components/admin-ops/CreatorForm";
 import { CreatorProductActions } from "@/components/admin-ops/CreatorProductActions";
 import { ReferenceMetricsEditor } from "@/components/admin-ops/ReferenceMetricsEditor";
@@ -263,6 +264,9 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
           />
         )}
       </section>
+
+      {/* Marcas do herói (0062): aparecem ao lado do nome com o tipo de relação (RPC auditada). */}
+      <CreatorBrandsSection creatorId={creator.id} />
 
       {/* Produtos do herói: alocação direta, validada pelo admin (RPC auditada). */}
       <section id="hero-products" aria-labelledby="hero-products-title" className="scroll-mt-20 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">

@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  BadgeCheck,
   BarChart3,
   ChefHat,
   ClipboardList,
@@ -56,6 +57,7 @@ const ICONS: Record<string, LucideIcon> = {
   featured: Star,
   translations: Languages,
   products: Package,
+  brands: BadgeCheck,
   shopFilters: SlidersHorizontal,
   collectibles: Gem,
   heroCategories: Tags,

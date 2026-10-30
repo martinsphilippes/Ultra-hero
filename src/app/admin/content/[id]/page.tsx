@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink, Eye, Pencil } from "lucide-react";
 import { StatusBadge } from "@/components/admin";
+import { ContentBrandsSection } from "@/components/admin-brands/AdminBrandSections";
 import { JsonView, KeyValue, Panel } from "@/components/admin-content";
 import { ContentReviewActions } from "@/components/admin-content/ContentReviewActions";
 import { RecipeShowcaseAdmin } from "@/components/admin-content/RecipeShowcaseAdmin";
@@ -314,6 +315,9 @@ export default async function AdminContentDetailPage({ params }: Params) {
           ) : null}
         </aside>
       </div>
+
+      {/* Marcas e produtos da publicação (0062): marcas citadas, recomendados e Smart Tags na foto */}
+      <ContentBrandsSection contentId={content.id} coverUrl={content.cover_url} />
     </div>
   );
 }
