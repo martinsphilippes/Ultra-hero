@@ -147,8 +147,8 @@ test.describe("visitante", () => {
     await expect(notice).toContainText(/autorizado por Anitta|authorized by Anitta/i);
     await expect(page.getByText(/personagem fictício|fictional character/i)).toHaveCount(0);
 
-    // Receitas ficam atrás da etapa demonstrativa: o crédito/licença é conferido num conteúdo de rotina.
-    await page.goto("/personalities/anitta/rotina");
+    // Receitas ficam atrás da etapa demonstrativa: o crédito/licença é conferido num conteúdo do Dia a dia.
+    await page.goto("/personalities/anitta/dia-a-dia");
     const firstCard = page.getByTestId("library-grid").locator("> a").first();
     await firstCard.click();
     await expect(page).toHaveURL(/\/content\//);

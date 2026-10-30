@@ -174,7 +174,8 @@
     "request_changed": "El héroe editó la solicitud después de abrir la cola. Recarga la página y lee el texto nuevo antes de decidir.",
     "review_flow_unavailable": "Este tipo no tiene “Enviar a revisión” en el portal del héroe. La revisión solo se puede activar para recetas.",
     "hero_categories_max_2": "Cada héroe puede tener como máximo 2 categorías.",
-    "hero_categories_duplicate": "Elige categorías diferentes."
+    "hero_categories_duplicate": "Elige categorías diferentes.",
+    "library_tab_label_pt_required": "Para traducir el nombre, completa también el nombre en pt-BR."
   },
   "content": {
     "title": "Contenidos",
@@ -842,6 +843,56 @@
       "inactive": "inactiva",
       "save": "Guardar categorías",
       "saved": "Categorías del héroe guardadas"
+    },
+    "tabs": {
+      "title": "Accesos de la página del héroe",
+      "description": "Por categoría: nombre, ícono, orden y si aparece. Lo que alimenta cada acceso es fijo; la categoría principal del héroe define lo que vale, y cada héroe puede tener excepciones en su pantalla.",
+      "unavailable": "Los accesos configurables aún no están disponibles en esta base (aplica la migración 0050). Las páginas de los héroes usan los accesos predeterminados.",
+      "noCategories": "Crea una categoría para configurar los accesos.",
+      "categoryPick": "Categoría",
+      "inactiveCategory": "inactiva",
+      "listLabel": "Accesos en el orden de la página del héroe",
+      "rules": "Un acceso sin elementos no aparece (Alimentación aparece siempre). La dirección del acceso no cambia cuando cambia el nombre.",
+      "source": "Contenido: {source}",
+      "hidden": "Oculto",
+      "labelPt": "Nombre (pt-BR)",
+      "labelEn": "Nombre (inglés)",
+      "labelEs": "Nombre (español)",
+      "labelHintDefault": "Vacío: “{label}”.",
+      "labelHintInherit": "Vacío: hereda “{label}”.",
+      "labelFallback": "Vacío: usa el nombre en portugués.",
+      "icon": "Ícono",
+      "visible": "Visible",
+      "duplicate": "Atención: accesos visibles con el mismo nombre ({labels}).",
+      "save": "Guardar accesos",
+      "saved": "Accesos guardados",
+      "heroTitle": "Accesos de este héroe",
+      "heroDescription": "Lo que muestra este héroe viene de la categoría principal. Cambia aquí solo lo que sea excepción.",
+      "inheritedFrom": "Heredado de la categoría {category}.",
+      "noCategory": "Sin categoría: valen los accesos predeterminados de la app.",
+      "inherited": "Heredado",
+      "overridden": "Excepción",
+      "reset": "Volver al predeterminado de la categoría",
+      "resetAll": "Volver todo al predeterminado de la categoría",
+      "resetDone": "Excepción eliminada",
+      "icons": {
+        "sunrise": "Amanecer",
+        "camera": "Cámara",
+        "apple": "Manzana",
+        "salad": "Ensalada",
+        "chef-hat": "Gorro de chef",
+        "utensils": "Cubiertos",
+        "dumbbell": "Mancuerna",
+        "trophy": "Trofeo",
+        "layers": "Capas",
+        "shopping-bag": "Bolsa",
+        "music": "Música",
+        "mic": "Micrófono",
+        "palette": "Paleta",
+        "star": "Estrella",
+        "heart": "Corazón",
+        "book-open": "Libro"
+      }
     }
   }
 }

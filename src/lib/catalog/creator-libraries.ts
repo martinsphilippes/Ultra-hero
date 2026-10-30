@@ -2,12 +2,16 @@
 // publicados por tipo e pilar e junta programas e produtos numa lista em ordem fixa.
 import type { ContentType, Pillar } from "@/lib/supabase/helpers";
 
-/** Chaves das bibliotecas: também são o segmento da URL (/personalities/[slug]/<chave>). */
-export const LIBRARY_KEYS = ["rotina", "nutricao", "receitas", "treinos", "gastronomia", "programas", "produtos"] as const;
+/**
+ * Chaves das bibliotecas (fontes fixas dos atalhos): também são o segmento da URL
+ * (/personalities/[slug]/<chave>) e a source_key da configuração do admin (0050). O admin muda só
+ * rótulo/ícone/ordem/visibilidade; a URL fica sempre a mesma.
+ */
+export const LIBRARY_KEYS = ["dia-a-dia", "nutricao", "alimentacao", "treinos", "gastronomia", "programas", "produtos"] as const;
 export type LibraryKey = (typeof LIBRARY_KEYS)[number];
 
 /** Bibliotecas que agrupam conteúdos (as outras duas vêm de programas e produtos). */
-export const CONTENT_LIBRARY_KEYS = ["rotina", "nutricao", "receitas", "treinos", "gastronomia"] as const;
+export const CONTENT_LIBRARY_KEYS = ["dia-a-dia", "nutricao", "alimentacao", "treinos", "gastronomia"] as const;
 export type ContentLibraryKey = (typeof CONTENT_LIBRARY_KEYS)[number];
 
 /** O mínimo que a classificação precisa de um conteúdo. */
@@ -22,12 +26,20 @@ export function isLibraryKey(value: string | null | undefined): value is Library
   return (LIBRARY_KEYS as readonly string[]).includes(value ?? "");
 }
 
+/** Segmentos antigos da URL (antes da 0050): "Rotina" virou Dia a dia e "Receitas" virou Alimentação. */
+export const LEGACY_LIBRARY_SEGMENTS: Readonly<Record<string, LibraryKey>> = { rotina: "dia-a-dia", receitas: "alimentacao" };
+
+/** Segmento novo para um segmento antigo (redirecionamento 308 no middleware); null se não for antigo. */
+export function legacyLibraryTarget(segment: string | null | undefined): LibraryKey | null {
+  return Object.hasOwn(LEGACY_LIBRARY_SEGMENTS, segment ?? "") ? LEGACY_LIBRARY_SEGMENTS[segment!] : null;
+}
+
 export function isContentLibraryKey(value: string | null | undefined): value is ContentLibraryKey {
   return (CONTENT_LIBRARY_KEYS as readonly string[]).includes(value ?? "");
 }
 
 const PILLAR_LIBRARY: Record<Pillar, ContentLibraryKey> = {
-  routine: "rotina",
+  routine: "dia-a-dia",
   nutrition: "nutricao",
   training: "treinos",
   gastronomy: "gastronomia",
@@ -35,20 +47,20 @@ const PILLAR_LIBRARY: Record<Pillar, ContentLibraryKey> = {
 
 /**
  * Cada conteúdo entra numa única biblioteca. Prioridade: receita (qualquer pilar) > treino
- * (tipo workout ou pilar training) > pilar. Assim uma receita de nutrição fica só em Receitas
+ * (tipo workout ou pilar training) > pilar. Assim uma receita de nutrição fica só em Alimentação
  * e um vídeo de treino fica só em Treinos.
  */
 export function contentLibraryKey(content: LibraryContent): ContentLibraryKey {
-  if (content.type === "recipe") return "receitas";
+  if (content.type === "recipe") return "alimentacao";
   if (content.type === "workout" || content.pillar === "training") return "treinos";
-  return PILLAR_LIBRARY[content.pillar] ?? "rotina";
+  return PILLAR_LIBRARY[content.pillar] ?? "dia-a-dia";
 }
 
 type Input<C extends LibraryContent, P, R> = {
   contents?: readonly C[] | null;
   programs?: readonly P[] | null;
   products?: readonly R[] | null;
-  /** Bibliotecas que aparecem mesmo vazias (Receitas existe em todo herói). */
+  /** Bibliotecas que aparecem mesmo vazias (Alimentação existe em todo herói). */
   always?: readonly LibraryKey[];
 };
 

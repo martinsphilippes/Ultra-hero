@@ -236,22 +236,22 @@ test.describe("receita aberta (conta free com a etapa)", () => {
 
 test.describe("perfil público do chef", () => {
   test("Érick Jacquin: busca dentro das receitas assinadas; as indicadas saem com aviso enquanto há busca", async ({ page }) => {
-    await page.goto("/personalities/erick-jacquin/receitas");
+    await page.goto("/personalities/erick-jacquin/alimentacao");
     const search = page.getByTestId("recipe-search");
     await expect(search).toBeVisible();
     await search.getByRole("searchbox").fill("panqueca");
     await search.getByRole("button", { name: "Buscar" }).click();
-    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/receitas\?q=panqueca/);
+    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/alimentacao\?q=panqueca/);
     await expect.poll(() => cardSlugs(page)).toEqual(["panqueca-de-aveia-e-banana-g9"]);
     await expect(page.getByTestId("chef-endorsed")).toHaveCount(0);
     await expectNoSeriousAxe(page);
   });
 
   test("Érick Jacquin: o atalho 'Até 15 min' filtra a partir da biblioteca sem parâmetros", async ({ page }) => {
-    await page.goto("/personalities/erick-jacquin/receitas");
+    await page.goto("/personalities/erick-jacquin/alimentacao");
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     await page.getByTestId("recipe-filters").getByRole("link", { name: "Até 15 min" }).click();
-    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/receitas\?tempo=15$/);
+    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/alimentacao\?tempo=15$/);
     await expect(page.getByTestId("recipe-active-filters")).toContainText("Até 15 min");
     await expect(page.getByTestId("recipe-filters").getByRole("link", { name: "Até 15 min", exact: true })).toHaveAttribute("aria-current", "true");
     const times = await page.getByTestId("recipe-card-time").allTextContents();
@@ -265,7 +265,7 @@ test.describe("perfil público do chef", () => {
   });
 
   test("herói sem receitas próprias: só as indicadas, sem busca nem filtros", async ({ page }) => {
-    await page.goto("/personalities/anitta/receitas");
+    await page.goto("/personalities/anitta/alimentacao");
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     await expect(page.getByTestId("recipe-search")).toHaveCount(0);
     await expect(page.getByTestId("recipe-filters")).toHaveCount(0);

@@ -1,13 +1,16 @@
 import "server-only";
+import { getLocale } from "next-intl/server";
 import { cache } from "react";
 import { isCommerceEnabled } from "@/components/commerce/lib/settings";
 import type { ContentTileData } from "@/components/discover/explore/tiles";
 import { CONTENT_TILE_SELECT } from "@/components/discover/explore/tiles";
 import { getUser } from "@/lib/auth/session";
-import { buildCreatorLibraries, type CreatorLibrary } from "@/lib/catalog/creator-libraries";
+import { LIBRARY_KEYS, buildCreatorLibraries, type CreatorLibrary, type LibraryKey } from "@/lib/catalog/creator-libraries";
 import { groupCreatorProducts, mergeCreatorProducts, type CreatorProduct, type CreatorProductDirectRow, type CreatorProductLinkRow } from "@/lib/catalog/creator-products";
 import type { ProgramShelfSource } from "@/lib/catalog/program-shelves";
 import { PRODUCT_CARD_SELECT, PROGRAM_CARD_SELECT, liveContentFilter, type ProductCardData } from "@/lib/catalog/queries";
+import { fetchCreatorLibraryConfig } from "@/lib/heroes/library-tab-queries";
+import { labelForLocale, primaryCategoryId, resolveLibraryConfig, resolveLibraryTiles, type LibraryTile, type ResolvedTab } from "@/lib/heroes/library-tabs";
 import type { Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -41,7 +44,12 @@ export type CreatorHub = {
   contents: ContentTileData[];
   programs: ProgramShelfSource[];
   products: CreatorProduct<HubProduct>[];
+  /** As 7 bibliotecas, mesmo vazias (a página de cada uma acha a sua pela chave). */
   libraries: HubLibrary[];
+  /** Atalhos da página do herói: configuração do admin (0050), só visíveis e com itens (ou Alimentação). */
+  tiles: LibraryTile[];
+  /** Apresentação efetiva de cada fonte (inclusive as ocultas): título e ícone da página da biblioteca. */
+  tabs: Record<LibraryKey, ResolvedTab & { text: string | null }>;
   /** Kill switch do comércio: desligado, produtos somem e nada é contado. */
   commerceEnabled: boolean;
   /** Quantidade já no carrinho de teste, por produto (vazio para visitante). */
@@ -74,8 +82,8 @@ export const loadCreator = cache(async (slug: string): Promise<Creator | null> =
 // Uma query por coleção (sem N+1); as bibliotecas e as contagens derivam do mesmo resultado,
 // então o hub e cada página de biblioteca mostram sempre os mesmos números.
 export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub> => {
-  const [supabase, user] = await Promise.all([createClient(), getUser()]);
-  const [contentRes, programRes, linksRes, directRes, settingsRes, recipeLinksRes] = await Promise.all([
+  const [supabase, user, locale] = await Promise.all([createClient(), getUser(), getLocale()]);
+  const [contentRes, programRes, linksRes, directRes, settingsRes, recipeLinksRes, libraryConfig] = await Promise.all([
     supabase.from("content").select(CONTENT_TILE_SELECT).eq("creator_id", creator.id).eq("status", "published").or(liveContentFilter()).order("published_at", { ascending: false }).limit(100),
     supabase.from("programs").select(`${PROGRAM_CARD_SELECT}, current_version_id`).eq("creator_id", creator.id).eq("status", "published").order("is_featured", { ascending: false }).order("created_at", { ascending: false }).limit(50),
     supabase
@@ -98,8 +106,10 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
       .or(liveContentFilter(), { referencedTable: "content" })
       .order("sort_order")
       .limit(100),
+    // atalhos configurados pelo admin (0050); sem a 0050: padrões do código
+    fetchCreatorLibraryConfig(supabase, creator.id),
   ]);
-  // Conteúdos do herói + receitas que ele indica (sem repetir): as indicadas entram em Receitas
+  // Conteúdos do herói + receitas que ele indica (sem repetir): as indicadas entram em Alimentação
   // com a assinatura do chef que as fez.
   const own = (contentRes.data ?? []) as unknown as ContentTileData[];
   const ownIds = new Set(own.map((c) => c.id));
@@ -127,11 +137,19 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
     inCartByProduct = new Map((cartRes.data ?? []).map((row) => [row.product_id, row.quantity]));
   }
 
+  const libraries = buildCreatorLibraries({ contents, programs, products, always: LIBRARY_KEYS });
+  const counts = Object.fromEntries(libraries.map((library) => [library.key, library.count])) as Record<LibraryKey, number>;
+  const resolved = resolveLibraryConfig({ categoryId: primaryCategoryId(libraryConfig.links), ...libraryConfig });
+  const tabs = Object.fromEntries(resolved.map((tab) => [tab.key, { ...tab, text: labelForLocale(tab.label, locale) }])) as CreatorHub["tabs"];
+
   return {
     contents,
     programs,
     products,
-    libraries: buildCreatorLibraries({ contents, programs, products, always: ["receitas"] }),
+    libraries,
+    // Alimentação aparece mesmo vazia (como Receitas antes), salvo se o admin ocultar
+    tiles: resolveLibraryTiles({ ...libraryConfig, counts, always: ["alimentacao"], locale }),
+    tabs,
     commerceEnabled,
     inCartByProduct,
     isLoggedIn: Boolean(user),
