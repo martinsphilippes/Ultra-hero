@@ -160,5 +160,17 @@ contratações por profissional.
    não grava). Antes da 0060 não havia contagem de atalhos: a seção mostra "contadas desde <data>".
    Limites conhecidos: cart.add não diz de onde veio, então "Comprar pronto → carrinho" conta o
    produto pronto no carrinho vindo de qualquer lugar; views de herói (página do herói) não são
-   eventos hoje, então "Visualizações" do herói = views de conteúdos, programas e colecionáveis dele.
+   eventos hoje, então "Visualizações" do herói = views de conteúdos, programas e colecionáveis dele
+   (as visitas à página do herói vêm à parte, abaixo).
    Sem a 0060 no banco: "Sem dados ainda" e sem botão de CSV.
+   Visitas à página do herói (0061, sugestão 3 aprovada pelo responsável): hero_page_view_counters
+   (dia em Brasília e herói; sem pessoa, sem IP, chave própria, sem FK; nenhum grant para
+   anon/authenticated), somado só pelo service role (POST /api/hero-page-views → hero_page_view_bump,
+   herói ativo; resposta sempre 204; o navegador do E2E não grava), disparado ao abrir
+   /personalities/<slug> (uma vez por herói a cada carregamento do site ou do app; navegar de volta
+   sem recarregar não conta de novo). No painel: Por herói ganha o cartão "Visitas à página do herói",
+   a coluna por herói e o gráfico por dia ("contadas desde <data>"); Ranking ganha "Heróis por visitas
+   à página" (sai da mesma leitura de admin_indicators_heroes, que devolve page_views por herói,
+   daily_page_views e page_views_since); o CSV leva page_views por herói, daily_page_views e
+   top_heroes_page_views. As visitas não entram nas "ações" do Top heróis (que seguem iguais).
+   Cenário S71.

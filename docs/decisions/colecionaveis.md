@@ -79,6 +79,8 @@ Indicadores (sem dado pessoal): visualizações = eventos `collectible.view` no 
 - **Supabase Realtime** (`postgres_changes`): INSERT em `collectible_bids` e UPDATE em `collectibles`, filtrados
   pelo item. Só essas duas tabelas entram na publicação `supabase_realtime` (a migração as adiciona se a
   publicação existir). A RLS vale também para o Realtime; como as duas não têm id de usuário, não há o que vazar.
+  A 0061 acrescenta `user_alerts` (avisos de lance superado), que tem id de usuário mas só é entregue a quem a
+  política de leitura deixa: a própria pessoa.
 - **Reserva**: sem `SUBSCRIBED` em 5 s (ou erro), a tela consulta `/api/collectibles/[id]/state` a cada 3 s;
   com Realtime, confere a cada 20 s. Pausa com a aba escondida.
 - **Relógio**: a contagem usa a hora do servidor; a diferença para o aparelho é medida em cada consulta
@@ -86,6 +88,39 @@ Indicadores (sem dado pessoal): visualizações = eventos `collectible.view` no 
   (o anti-sniping pode ter estendido) e o encerramento é gravado.
 - Movimento: preço "pisca" a cada lance, lance novo desliza na lista, selo pulsando; tudo some com
   `prefers-reduced-motion`. Novo preço anunciado numa região `aria-live="polite"`, no máximo a cada 4 s.
+
+## Aviso de lance superado (0061)
+
+Pedido do responsável: quem é coberto num item recebe um aviso, por push (app das lojas) e por pop-up
+dentro do site. Migração `0061_outbid_and_hero_views.sql`, cenário S71, regras puras em
+`src/lib/collectibles/outbid.ts` (testes em `tests/unit/outbid-alerts.test.ts`).
+
+- **Quem recebe**: só quem vencia o item antes do lance (nunca quem deu o lance). O gatilho
+  `trg_collectible_outbid` em `collectibles` (troca de `leading_bid_id`) roda dentro da transação do
+  `place_bid`, que já trava a linha do item: lances do mesmo item são serializados.
+- **Push** (`auction_outbid` na fila `push_outbox` da 0054): opt-in como os outros tipos
+  (`notification_preferences.auction_outbid`, nasce desligado; chave "Lance superado nos Colecionáveis" em
+  `/profile/notifications`), exige `channel_push` e aparelho registrado. **No máximo um por pessoa e item a
+  cada 2 minutos** (guerra de lances não vira spam); a chave de dedupe é o lance que cobriu. Texto: "Seu lance
+  foi superado · <item>: o lance agora é R$ X. Toque para dar um novo lance."; link `/shop/colecionaveis/<id>`.
+  O envio confere de novo o consentimento e descarta o aviso se o item acabou/foi cancelado ou se a pessoa já
+  voltou à frente. Sai **logo depois do lance** (`schedulePushDispatch` no `placeBidAction`, via `after()`), sem
+  esperar o cron diário, que só recolhe sobras (falha da Expo).
+- **Pop-up** (`OutbidAlerts`, montado na casca do grupo `(app)` para quem está logado, na web):
+  "Seu lance em <item> foi superado · Lance atual: R$ X · **Dar novo lance**". Fonte: `user_alerts` (uma linha
+  pendente por pessoa e item; RLS: cada um lê e marca como visto só as suas; grant de update só em
+  `seen_at`; sem insert/delete para a API; some com a conta e com o item). Chega pelo **Realtime** (a tabela
+  entra na publicação; a RLS filtra no servidor) com consulta de reserva **a cada 20 s só com a aba visível**
+  (60 s com Realtime ligado). Cada aviso aparece **uma vez**: ao aparecer vira visto (outra aba não repete).
+  Na **página do próprio item** não aparece (o aviso "Seu lance foi superado" de lá continua) e é dado como
+  visto; item encerrado ou aviso com mais de 6 h também somem sem aparecer. Voltar à frente marca o aviso
+  pendente do item como visto. `role="status"`, não rouba o foco, fecha no X (44 px) ou com Esc, sem animação
+  com `prefers-reduced-motion`. Sem a 0061 no banco a consulta falha e o componente para.
+- **App das lojas**: `/shop` é bloqueado no app (Apple 2.2/3.1.1, `src/lib/native-app/surface.ts`), então o
+  pop-up não é montado lá e o toque no push cai na rota de reserva (aba Hero). O aviso por push continua
+  útil para quem dá lance pelo site com o app instalado. **Decisão pendente do responsável**: liberar só
+  `/shop/colecionaveis` no app (não há pagamento) ou abrir esse link no navegador do sistema.
+- Limpeza: `push_outbox_cleanup()` (cron diário) apaga também os avisos com mais de 30 dias.
 
 ## Seed
 
