@@ -1,8 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
-// Lembretes (decisão Q5): os itens de rotina criados à mão moram em /profile/lembretes, com atalho no
-// Perfil depois de "Continue seus programas" — nunca dentro do Hoje, que segue sem campo de digitação.
+// Lembretes (decisão Q5): os itens de rotina criados à mão moram em /profile/lembretes, com atalho em
+// Configurações → Sua rotina (saiu do Perfil) — nunca dentro do Hoje, que segue sem campo de digitação.
 // Conta demo gratuita, login UMA vez por projeto (padrão do today-watch.spec.ts). O fluxo que grava
 // (criar → marcar → editar → excluir) roda só no projeto mobile e apaga no fim tudo o que criou
 // (títulos "E2E lembrete …"), mesmo se um passo falhar. Não depende de migração nova: as tabelas são
@@ -60,20 +60,19 @@ test.describe("Lembretes fora do Hoje — conta gratuita", () => {
     test.skip(!enabled, "contas de demonstração desligadas neste ambiente");
   });
 
-  test("atalho no Perfil depois do Hoje (que traz Continue seus programas na Evolução); o Hoje não tem campo nem link de lembrete", async () => {
+  test("atalho em Configurações → Sua rotina; o Perfil e o Hoje (que traz Continue seus programas na Evolução) não têm campo nem link de lembrete", async () => {
     await page.goto("/profile");
     const today = page.getByTestId("today-section");
-    const shortcut = page.getByTestId("profile-reminders");
+    await expect(today.getByTestId("today-hub-card-evolucao")).toBeVisible();
+    await expect(today.locator("input, textarea, select, [contenteditable='true']")).toHaveCount(0);
+    await expect(page.locator('main a[href*="lembretes"]')).toHaveCount(0);
+    await expect(today.getByText(/lembrete/i)).toHaveCount(0);
+
+    await page.goto("/configuracoes");
+    const shortcut = page.getByTestId("settings-section-routine").getByTestId("settings-link-reminders");
     await expect(shortcut).toBeVisible();
     await expect(shortcut).toContainText("Lembretes");
     await expect(shortcut).toHaveAttribute("href", "/profile/lembretes");
-    const [yToday, yShortcut] = await Promise.all([today, shortcut].map(async (l) => (await l.boundingBox())!.y));
-    expect(yToday).toBeLessThan(yShortcut);
-    await expect(today.getByTestId("today-hub-card-evolucao")).toBeVisible();
-
-    await expect(today.locator("input, textarea, select, [contenteditable='true']")).toHaveCount(0);
-    await expect(today.locator('a[href*="lembretes"]')).toHaveCount(0);
-    await expect(today.getByText(/lembrete/i)).toHaveCount(0);
 
     await shortcut.click();
     await expect(page).toHaveURL(/\/profile\/lembretes$/, { timeout: 15_000 });
@@ -136,7 +135,8 @@ test.describe("Lembretes fora do Hoje — conta gratuita", () => {
     await page.goto("/profile");
     await expect(page.getByTestId("today-section")).not.toContainText(title);
     await expect(page.getByText(title)).toHaveCount(0);
-    await expect(page.getByTestId("profile-reminders")).toContainText(/para hoje/);
+    await page.goto("/configuracoes");
+    await expect(page.getByTestId("settings-link-reminders")).toContainText(/para hoje/);
 
     // marcar feito hoje: sem nenhuma menção à sequência; persiste depois de recarregar
     await page.goto("/profile/lembretes");

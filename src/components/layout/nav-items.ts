@@ -23,7 +23,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "profile", href: "/profile", icon: User },
 ];
 
+function underPath(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function isActivePath(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
+  // Configurações abrem pelo avatar e pelo Perfil: a aba Perfil segue ativa lá
+  if (href === "/profile" && underPath(pathname, "/configuracoes")) return true;
+  return underPath(pathname, href);
 }

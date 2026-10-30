@@ -41,9 +41,9 @@ test.describe("botão de voltar", () => {
     await fresh.close();
   });
 
-  test("Perfil → coleção de receitas → trocar de aba → Voltar volta ao Perfil (abas não entram no histórico)", async ({ page }) => {
+  test("Configurações → coleção de receitas → trocar de aba → Voltar volta às Configurações (abas não entram no histórico)", async ({ page }) => {
     await loginAs(page, "free", { home: null });
-    await page.goto("/profile");
+    await page.goto("/configuracoes");
     await page.locator('main a[href="/profile/receitas"]').first().click();
     await expect(page).toHaveURL(/\/profile\/receitas/);
     await page.getByRole("tab", { name: "Listas" }).click();
@@ -53,7 +53,9 @@ test.describe("botão de voltar", () => {
     await page.waitForLoadState("networkidle");
     await page.getByRole("tab", { name: "Salvas" }).click();
     await expect(page).toHaveURL(/aba=salvas|receitas$/);
+    // com carga, o Voltar só sabe da tela anterior depois de hidratar
+    await expect(page.getByTestId("back-link")).toHaveAttribute("data-history", "true");
     await page.getByTestId("back-link").click();
-    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page).toHaveURL(/\/configuracoes$/);
   });
 });

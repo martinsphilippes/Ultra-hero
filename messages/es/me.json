@@ -948,5 +948,31 @@
     "code": "Código {code}",
     "symbolic": "Certificado simbólico: reconoce la finalización de contenidos educativos en un entorno de demostración. Sin validez profesional, académica ni legal.",
     "home": "Ir a Groscove Ultra"
+  },
+  "settings": {
+    "title": "Configuración",
+    "description": "Rutina, colecciones, compras, cuenta y app.",
+    "profileRow": {
+      "title": "Configuración",
+      "description": "Recordatorios, favoritos, compras, cuenta y notificaciones."
+    },
+    "sections": {
+      "routine": "Tu rutina",
+      "collections": "Colecciones",
+      "purchases": "Compras",
+      "account": "Cuenta y app",
+      "portals": "Portales"
+    },
+    "rows": {
+      "devices": {
+        "title": "Relojes y anillos",
+        "description": "Conecta tu reloj y gestiona lo que comparte."
+      },
+      "appearance": {
+        "title": "Idioma y tema",
+        "description": "Idioma de la app, tema claro u oscuro, nombre y foto."
+      }
+    },
+    "deleteAccount": "Eliminar cuenta"
   }
 }

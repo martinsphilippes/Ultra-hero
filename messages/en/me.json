@@ -948,5 +948,31 @@
     "code": "Code {code}",
     "symbolic": "Symbolic certificate: it recognizes the completion of educational content in a demo environment. No professional, academic or legal validity.",
     "home": "Go to Groscove Ultra"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Routine, collections, purchases, account and app.",
+    "profileRow": {
+      "title": "Settings",
+      "description": "Reminders, favorites, purchases, account and notifications."
+    },
+    "sections": {
+      "routine": "Your routine",
+      "collections": "Collections",
+      "purchases": "Purchases",
+      "account": "Account and app",
+      "portals": "Portals"
+    },
+    "rows": {
+      "devices": {
+        "title": "Watches and rings",
+        "description": "Connect your watch and manage what it shares."
+      },
+      "appearance": {
+        "title": "Language and theme",
+        "description": "App language, light or dark theme, name and photo."
+      }
+    },
+    "deleteAccount": "Delete account"
   }
 }

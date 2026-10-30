@@ -5,6 +5,7 @@ import { legalRichTags } from "@/components/legal/rich-tags";
 import { AccountPasswordCard, type PasswordCardMode } from "@/components/me/AccountPasswordCard";
 import { AccountPhoneForm } from "@/components/me/AccountPhoneForm";
 import { DeleteAccountDialog } from "@/components/me/DeleteAccountDialog";
+import { DELETE_ACCOUNT_ANCHOR } from "@/lib/settings/sections";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { isPasswordVaultConfigured } from "@/lib/auth/password-crypto";
 import { formatE164ForDisplay } from "@/lib/auth/phone";
@@ -97,7 +98,7 @@ export default async function AccountPage() {
         {phone.available ? <AccountPhoneForm initialPhone={formatE164ForDisplay(phone.value)} /> : null}
       </div>
 
-      <section aria-labelledby="delete-title" className="flex flex-col gap-4 rounded-2xl border border-danger/30 bg-danger-soft/40 p-5">
+      <section id={DELETE_ACCOUNT_ANCHOR} aria-labelledby="delete-title" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-danger/30 bg-danger-soft/40 p-5">
         <div className="flex items-start gap-3">
           <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-danger-soft text-danger">
             <TriangleAlert className="size-5" />

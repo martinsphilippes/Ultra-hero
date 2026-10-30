@@ -12,6 +12,12 @@ describe("navegação principal", () => {
     expect(isActivePath("/profile/evolution", "/profile")).toBe(true);
   });
 
+  it("Configurações deixam a aba Perfil ativa", () => {
+    expect(isActivePath("/configuracoes", "/profile")).toBe(true);
+    expect(isActivePath("/configuracoesx", "/profile")).toBe(false);
+    expect(isActivePath("/configuracoes", "/explore")).toBe(false);
+  });
+
   it("Comprar fica ativa na loja e na página do produto, não no carrinho", () => {
     expect(isActivePath("/shop", "/shop")).toBe(true);
     expect(isActivePath("/shop/e-creatina-po", "/shop")).toBe(true);
