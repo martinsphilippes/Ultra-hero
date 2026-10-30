@@ -1,4 +1,4 @@
-# GC Hero — app das lojas (casca Expo)
+# Groscove Ultra — app das lojas (casca Expo)
 
 A web de produção numa WebView, com login nativo (Google pelo navegador do sistema, Sign in with
 Apple), compartilhar do sistema e tela própria sem conexão. Por que assim:
@@ -9,7 +9,7 @@ Apple), compartilhar do sistema e tela própria sem conexão. Por que assim:
 npm ci
 npm run check            # typecheck + testes + permissões do manifest final do Android
 npx expo start           # Expo Go não tem Sign in with Apple; use um development build (eas build --profile development)
-npm run assets           # regenera ícones/splash/ficha (provisórios até a marca GC Hero)
+npm run assets           # regenera ícones/splash/ficha (gerados da marca em `docs/brand/`)
 ```
 
 `EXPO_PUBLIC_WEB_URL` escolhe a web que a casca abre (padrão: produção). Para apontar para o

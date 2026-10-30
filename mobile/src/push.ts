@@ -21,7 +21,7 @@ function ensureAndroidChannel() {
   if (Platform.OS !== "android") return Promise.resolve();
   // o servidor manda channelId "default" (src/lib/push/dispatch.ts)
   channelReady ??= Notifications.setNotificationChannelAsync("default", {
-    name: "GC Hero",
+    name: "Groscove Ultra",
     importance: Notifications.AndroidImportance.DEFAULT,
   }).then(() => undefined);
   return channelReady;

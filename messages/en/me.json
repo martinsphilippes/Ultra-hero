@@ -785,7 +785,7 @@
     "description": "Choose what you agree to receive and where. Your preferences apply to any future sending.",
     "delivery": {
       "title": "How we send",
-      "body": "Notifications arrive as push in the GC Hero app, once you turn on the Push channel and allow notifications on your phone. Optional emails are not sent yet. Transactional messages (sign-up confirmation and password reset) are required for your account and can't be turned off."
+      "body": "Notifications arrive as push in the Groscove Ultra app, once you turn on the Push channel and allow notifications on your phone. Optional emails are not sent yet. Transactional messages (sign-up confirmation and password reset) are required for your account and can't be turned off."
     },
     "types": {
       "title": "What you agree to receive",
@@ -830,7 +830,7 @@
       },
       "channel_push": {
         "label": "Push",
-        "description": "Phone notifications, through the GC Hero app."
+        "description": "Phone notifications, through the Groscove Ultra app."
       }
     },
     "save": "Save preferences",
@@ -840,7 +840,7 @@
       "unauthenticated": "Sign in to continue.",
       "generic": "Could not save. Please try again.",
       "push_denied": "Notifications are off on this phone. Turn them on in the device Settings and try again.",
-      "push_unavailable": "Push notifications are only available in the GC Hero app."
+      "push_unavailable": "Push notifications are only available in the Groscove Ultra app."
     }
   },
   "onboarding": {

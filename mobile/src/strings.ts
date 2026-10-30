@@ -4,17 +4,17 @@ export type Strings = { offlineTitle: string; offlineBody: string; retry: string
 const STRINGS: Record<"pt-BR" | "en" | "es", Strings> = {
   "pt-BR": {
     offlineTitle: "Sem conexão",
-    offlineBody: "Não foi possível abrir o GC Hero. Confira a internet e tente de novo.",
+    offlineBody: "Não foi possível abrir o Groscove Ultra. Confira a internet e tente de novo.",
     retry: "Tentar de novo",
   },
   en: {
     offlineTitle: "No connection",
-    offlineBody: "We couldn't open GC Hero. Check your internet connection and try again.",
+    offlineBody: "We couldn't open Groscove Ultra. Check your internet connection and try again.",
     retry: "Try again",
   },
   es: {
     offlineTitle: "Sin conexión",
-    offlineBody: "No pudimos abrir GC Hero. Revisa tu conexión a internet e inténtalo de nuevo.",
+    offlineBody: "No pudimos abrir Groscove Ultra. Revisa tu conexión a internet e inténtalo de nuevo.",
     retry: "Reintentar",
   },
 };
