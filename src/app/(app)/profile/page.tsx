@@ -12,6 +12,7 @@ import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
 import { TodaySection } from "@/components/me/today/TodaySection";
+import { DemoAccess } from "@/components/demo/DemoAccess";
 import { Avatar, Badge, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
@@ -35,8 +36,13 @@ export async function generateMetadata(): Promise<Metadata> {
 // dia, Sua noite e Evolução) e, no fim, uma linha "Configurações". Lembretes, coleções, compras, conta,
 // portais e Sair moram em /configuracoes (pedido do responsável), que também abre pelo avatar do topo.
 
-export default async function ProfilePage() {
+// Contas de demonstração: o atalho "trocar de conta" mora no fim do Perfil (saiu do Início; o responsável
+// remove depois). Mesma trava de hoje: sem DEMO_ACCOUNTS_PASSWORD, ou no app das lojas, nada aparece.
+type Props = { searchParams: Promise<{ demo?: string }> };
+
+export default async function ProfilePage({ searchParams }: Props) {
   const user = await requireUser("/profile");
+  const { demo } = await searchParams;
   const [profile, roles, locale, t, tc, tcp, ts, photoState, creator] = await Promise.all([
     getProfile(),
     getRoles(),
@@ -181,6 +187,8 @@ export default async function ProfilePage() {
         </span>
         <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
       </Link>
+
+      <DemoAccess from="profile" failed={demo === "error"} />
     </div>
   );
 }

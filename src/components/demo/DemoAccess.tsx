@@ -4,12 +4,11 @@ import { signInAsDemo } from "@/app/demo-actions";
 import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
 import { isDemoAccessEnabled, isProfessionalDemoReady } from "@/lib/demo/server";
 import { getNativeApp } from "@/lib/native-app/server";
-import { cn } from "@/lib/utils";
 
 const ICON: Record<DemoKind, typeof User> = { admin: ShieldCheck, creator: Sparkles, seller: Store, premium: UserRound, free: User, professional: Stethoscope };
 
 type Props = {
-  /** login: lista aberta abaixo da caixa de login; home: recolhida no topo do Início (trocar de conta). */
+  /** login: lista aberta abaixo da caixa de login; profile: recolhida no fim do Perfil (trocar de conta). */
   from: DemoOrigin;
   failed?: boolean;
 };
@@ -70,7 +69,7 @@ export async function DemoAccess({ from, failed }: Props) {
   }
 
   return (
-    <details className={cn("group mx-gutter rounded-2xl border border-border bg-surface md:mx-0")} open={failed} data-testid="demo-access">
+    <details className="group rounded-2xl border border-border bg-surface" open={failed} data-testid="demo-access">
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-semibold text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
         <KeyRound className="size-4 text-accent-text" aria-hidden="true" />
         {t("title")}

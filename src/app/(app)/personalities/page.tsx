@@ -111,7 +111,8 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
                   priority={index < 2}
                 />
                 {follow.available ? (
-                  <div className="absolute right-3 top-3">
+                  // pílula pequena no canto da capa, em vidro escuro (legível sobre qualquer foto)
+                  <div className="absolute right-2.5 top-2.5">
                     <FollowButton
                       creatorId={creator.id}
                       heroName={creator.name}
@@ -120,7 +121,7 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
                       path="/personalities"
                       pushReady={follow.pushReady}
                       size="compact"
-                      className="shadow-md"
+                      tone="overlay"
                     />
                   </div>
                 ) : null}

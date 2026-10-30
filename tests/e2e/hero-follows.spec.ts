@@ -31,8 +31,14 @@ test.describe("seguir heróis (visitante)", () => {
     await expect(buttons.first()).toBeVisible();
     await expect(buttons.first()).toHaveAttribute("href", `/login?next=${encodeURIComponent("/personalities")}`);
     await expect(buttons.first()).toContainText("Seguir");
-    // alvo de toque de 44px
-    expect((await buttons.first().boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+    // alvo de toque de 44px; a pílula visível é pequena (28px) e fica no canto superior direito da capa
+    const box = (await buttons.first().boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(43.5);
+    const pill = (await buttons.first().locator("> span").boundingBox())!;
+    expect(pill.height).toBeLessThanOrEqual(32);
+    const card = (await buttons.first().locator("xpath=ancestor::li[1]").boundingBox())!;
+    expect(pill.x + pill.width).toBeGreaterThan(card.x + card.width - 24);
+    expect(pill.y).toBeLessThan(card.y + 24);
   });
 
   test("página do herói: Seguir no cabeçalho com a contagem de seguidores (0056)", async ({ page }) => {
@@ -46,6 +52,8 @@ test.describe("seguir heróis (visitante)", () => {
     test.skip(follows === null, "sem como consultar o banco");
     const follow = page.getByTestId("hero-follow");
     await expect(follow.getByTestId("follow-button")).toHaveAttribute("href", `/login?next=${encodeURIComponent("/personalities/neymar")}`);
+    expect((await follow.getByTestId("follow-button").boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+    expect((await follow.getByTestId("follow-button").locator("> span").boundingBox())!.height).toBeLessThanOrEqual(32);
     // a contagem é pública e não expõe quem segue; sem a 0056 ela some
     await expect(follow.getByTestId("hero-followers")).toHaveCount(counts ? 1 : 0);
     if (counts) await expect(follow.getByTestId("hero-followers")).toContainText(/seguidor/);
@@ -81,9 +89,25 @@ test.describe("seguir heróis (conta demo, só leitura)", () => {
       const tab = await tabs.getAttribute("data-tab");
       expect(["seguindo", "todos"]).toContain(tab);
       await expect(page.getByTestId(`feed-tab-${tab}`)).toHaveAttribute("aria-current", "page");
-      await page.goto("/inicio?feed=todos");
+      // abas finas: texto pequeno, mas cada uma com alvo de 44px
+      for (const key of ["seguindo", "todos"]) {
+        expect((await page.getByTestId(`feed-tab-${key}`).boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+      }
+      // trocar de aba pelo toque (navegação de documento) e voltar
+      const other = tab === "todos" ? "seguindo" : "todos";
+      await page.getByTestId(`feed-tab-${other}`).click();
+      await expect(page).toHaveURL(new RegExp(`feed=${other}`));
+      await expect(page.getByTestId("feed-tabs")).toHaveAttribute("data-tab", other);
+      await page.getByTestId("feed-tab-todos").click();
       await expect(page.getByTestId("feed-tabs")).toHaveAttribute("data-tab", "todos");
       await expect(page.getByTestId("feed-post").first()).toBeVisible();
+      // Seguir/Seguindo do cabeçalho do post: pílula pequena, alvo de 44px, aria-pressed (sem clicar: grava)
+      const postFollow = page.getByTestId("feed-post").first().getByTestId("follow-button");
+      if ((await postFollow.count()) > 0) {
+        await expect(postFollow).toHaveAttribute("aria-pressed", /true|false/);
+        expect((await postFollow.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+        expect((await postFollow.locator("> span").boundingBox())!.height).toBeLessThanOrEqual(32);
+      }
     }
 
     await page.goto("/profile/herois");
