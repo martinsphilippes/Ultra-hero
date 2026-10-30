@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { notFound } from "next/navigation";
 import { AuctionRoom } from "@/components/collectibles/AuctionRoom";
 import { Gallery } from "@/components/collectibles/Gallery";
@@ -46,13 +47,7 @@ export default async function CollectiblePage({ params }: Props) {
   return (
     <div className="flex flex-col gap-5 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] md:items-start md:gap-8">
       <div className="flex flex-col gap-4">
-        <Link
-          href="/shop/colecionaveis"
-          className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-        >
-          <ArrowLeft aria-hidden="true" className="size-4" />
-          {t("detail.back")}
-        </Link>
+        <BackLink href="/shop/colecionaveis">{t("detail.back")}</BackLink>
         <Gallery photos={item.photos} title={item.title} />
       </div>
 

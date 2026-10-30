@@ -10,6 +10,7 @@ import { displayTimeZone, ViewTracker } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { AddToListButton, FavoriteButton } from "@/components/library";
 import { Avatar, Badge, Button, PillarBadge, ProgressBar, ProgressRing } from "@/components/ui";
+import { BackLink } from "@/components/ui/back-link";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
@@ -336,9 +337,8 @@ export default async function ProgramPage({ params }: Params) {
       <ViewTracker kind="program" id={program.id} extra={{ version_id: versionId, enrolled: Boolean(enrolledVersion) }} />
 
       <header className="flex flex-col gap-5">
-        <Link href="/explore" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-          ← {t("backToExplore")}
-        </Link>
+        {/* volta para a tela anterior do app; aberto de fora, cai no Explorar */}
+        <BackLink href="/explore">{t("backToExplore")}</BackLink>
         <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[3/1]">
           <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg")} sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />

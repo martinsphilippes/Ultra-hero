@@ -21,6 +21,22 @@ test.describe("botão de voltar", () => {
     await expect(page).toHaveURL(new RegExp(`${heroHref}$`));
   });
 
+  test("programas do herói → programa → Voltar retorna aos programas do herói (não ao Explorar)", async ({ page }) => {
+    await page.goto("/personalities/neymar");
+    await page.locator('main a[href="/personalities/neymar/programas"]').first().click();
+    await expect(page).toHaveURL(/\/personalities\/neymar\/programas$/);
+    await page.locator('main a[href^="/programs/"]').first().click();
+    await expect(page).toHaveURL(/\/programs\//);
+    const back = page.getByTestId("back-link");
+    await expect(back).toHaveAttribute("data-history", "true");
+    await expect(back).toHaveText(/Voltar/);
+    await back.click();
+    await expect(page).toHaveURL(/\/personalities\/neymar\/programas$/);
+    // e da página do herói, o Voltar volta à tela anterior também
+    await page.goBack();
+    await expect(page).toHaveURL(/\/personalities\/neymar$/);
+  });
+
   test("post aberto direto: o voltar leva ao Explorar", async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();

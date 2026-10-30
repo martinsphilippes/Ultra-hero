@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Info, ShieldCheck } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { BrandStrip } from "@/components/brands/BrandStrip";
 import { ContentTile } from "@/components/catalog";
@@ -14,6 +13,7 @@ import { LibraryHighlights } from "@/components/discover/personalities/LibraryHi
 import { FollowButton } from "@/components/heroes/FollowButton";
 import { ChefHighlights } from "@/components/recipes/catalog/ChefHighlights";
 import { AvatarInitials, Badge } from "@/components/ui";
+import { BackLink } from "@/components/ui/back-link";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
@@ -77,9 +77,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
     <div className="flex flex-col gap-5">
       {/* visita à página do herói (0061): contador por dia, sem a pessoa */}
       <HeroPageViewTracker creatorId={creator.id} />
-      <Link href="/personalities" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-        ← {t("back")}
-      </Link>
+      {/* volta para a tela anterior do app; aberto de fora, cai na lista de heróis */}
+      <BackLink href="/personalities">{t("back")}</BackLink>
 
       {/* Cabeçalho no formato do Instagram: foto pequena, nome e números lado a lado; o que importa são os posts. */}
       <header className="flex flex-col gap-3">
