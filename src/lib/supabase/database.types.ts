@@ -385,6 +385,26 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"creator_library_overrides": {
+                  Row: {
+                    "created_at": string,"creator_id": string,"icon": string | null,"is_visible": boolean | null,"label": Json | null,"sort_order": number | null,"source_key": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"creator_id": string,"icon"?: string | null,"is_visible"?: boolean | null,"label"?: Json | null,"sort_order"?: number | null,"source_key": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"creator_id"?: string,"icon"?: string | null,"is_visible"?: boolean | null,"label"?: Json | null,"sort_order"?: number | null,"source_key"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_library_overrides_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"creator_products": {
                   Row: {
                     "created_at": string,"created_by": string | null,"creator_id": string,"id": string,"note": string | null,"product_id": string,"sort_order": number,"status": Database["public"]['Enums']["link_status"],"updated_at": string,"validated_at": string | null,"validated_by": string | null
@@ -618,6 +638,26 @@ isOneToOne: false
                   }
                   Relationships: [
 
+                  ]
+                },"hero_library_tabs": {
+                  Row: {
+                    "category_id": string,"created_at": string,"icon": string | null,"is_visible": boolean,"label": Json | null,"sort_order": number,"source_key": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_id": string,"created_at"?: string,"icon"?: string | null,"is_visible"?: boolean,"label"?: Json | null,"sort_order"?: number,"source_key": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "category_id"?: string,"created_at"?: string,"icon"?: string | null,"is_visible"?: boolean,"label"?: Json | null,"sort_order"?: number,"source_key"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hero_library_tabs_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "hero_categories"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"hero_cover_uploads": {
                   Row: {
@@ -1351,6 +1391,84 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"recipe_action_counters": {
+                  Row: {
+                    "action": string,"content_id": string,"count": number,"creator_id": string,"day": string,"source_key": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action": string,"content_id": string,"count"?: number,"creator_id": string,"day": string,"source_key": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "action"?: string,"content_id"?: string,"count"?: number,"creator_id"?: string,"day"?: string,"source_key"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_action_counters_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recipe_action_counters_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_ready_products": {
+                  Row: {
+                    "content_id": string,"created_at": string,"product_id": string,"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"created_at"?: string,"product_id": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "content_id"?: string,"created_at"?: string,"product_id"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_ready_products_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: true
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recipe_ready_products_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"recipe_signers": {
+                  Row: {
+                    "chef_id": string | null,"content_id": string,"created_at": string,"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "chef_id"?: string | null,"content_id": string,"created_at"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "chef_id"?: string | null,"content_id"?: string,"created_at"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipe_signers_chef_id_fkey"
+      columns: ["chef_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "recipe_signers_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: true
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"recipe_onboarding": {
                   Row: {
                     "allergies": (string)[],"completed_at": string,"notice_accepted_at": string,"restrictions": (string)[],"updated_at": string,"user_id": string,"version": number
@@ -2027,6 +2145,9 @@ isOneToOne: false
 "admin_run_retention":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"admin_set_category_library_tabs":
+{ Args: { "p_category": string,"p_rows": Json }; Returns: undefined
+                           },
 "admin_set_content_status":
 { Args: { "p_content": string,"p_justification"?: string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
                            } |
@@ -2034,6 +2155,9 @@ isOneToOne: false
                            },
 "admin_set_creator_credentials":
 { Args: { "p_approved": boolean,"p_creator": string,"p_expected_text"?: string,"p_reason": string }; Returns: undefined
+                           },
+"admin_set_creator_library_overrides":
+{ Args: { "p_creator": string,"p_rows": Json }; Returns: undefined
                            },
 "admin_set_creator_product":
 { Args: { "p_creator": string,"p_note"?: string,"p_product": string,"p_sort"?: number,"p_status": Database["public"]['Enums']["link_status"] }; Returns: string
@@ -2374,6 +2498,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "content_id": string,"kind": string,"original": string,"outcome": string,"pos": number,"seed_key": string,"slug": string
             }[]
+                           },
+"recipe_action_bump":
+{ Args: { "p_action": string,"p_content": string,"p_creator": string,"p_source": string }; Returns: boolean
                            },
 "recipe_backfill_legacy":
 { Args: { "p_content": string }; Returns: string

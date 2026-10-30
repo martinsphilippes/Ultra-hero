@@ -23,22 +23,22 @@ test.describe("hub do herói", () => {
 
     const buttons = libraries(page);
     expect(await buttons.count()).toBeGreaterThanOrEqual(3);
-    for (const name of ["Receitas", "Programas", "Produtos"]) {
+    for (const name of ["Alimentação", "Programas", "Produtos"]) {
       await expect(buttons.filter({ hasText: name })).toHaveCount(1);
     }
-    // nome acessível = rótulo + contagem ("Receitas 4 itens"); contagem > 0 em todas
+    // nome acessível = rótulo + contagem ("Alimentação 4 itens"); contagem > 0 em todas
     const keys: string[] = [];
     for (const button of await buttons.all()) {
       const name = (await button.getAttribute("aria-label")) ?? (await button.textContent()) ?? "";
       const count = Number(name.match(/(\d+)\s*(itens|item)/i)?.[1]);
       expect(count, `contagem em "${name}"`).toBeGreaterThan(0);
-      expect(await button.getAttribute("href")).toMatch(/^\/personalities\/erick-jacquin\/(rotina|nutricao|receitas|treinos|gastronomia|programas|produtos)$/);
+      expect(await button.getAttribute("href")).toMatch(/^\/personalities\/erick-jacquin\/(dia-a-dia|nutricao|alimentacao|treinos|gastronomia|programas|produtos)$/);
       const box = await button.boundingBox();
       expect(box!.height).toBeGreaterThanOrEqual(44);
       keys.push((await button.getAttribute("data-library")) ?? "");
     }
-    // ordem fixa das bibliotecas
-    const order = ["rotina", "nutricao", "receitas", "treinos", "gastronomia", "programas", "produtos"];
+    // ordem padrão dos atalhos (sem configuração do admin para Gastronomia)
+    const order = ["dia-a-dia", "nutricao", "alimentacao", "treinos", "gastronomia", "programas", "produtos"];
     expect(keys.map((k) => order.indexOf(k))).toEqual([...keys.map((k) => order.indexOf(k))].sort((a, b) => a - b));
 
     // a nota de direitos continua no rodapé da página
@@ -46,20 +46,20 @@ test.describe("hub do herói", () => {
     await expectNoSeriousAxe(page);
   });
 
-  test("clicar em Receitas abre a biblioteca com o cabeçalho de volta e, para visitante, os cards com a faixa da etapa", async ({ page }) => {
+  test("clicar em Alimentação abre a biblioteca com o cabeçalho de volta e, para visitante, os cards com a faixa da etapa", async ({ page }) => {
     await page.goto("/personalities/erick-jacquin");
-    const recipes = libraries(page).filter({ hasText: "Receitas" });
+    const recipes = libraries(page).filter({ hasText: "Alimentação" });
     await recipes.click();
-    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/receitas$/);
+    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/alimentacao$/);
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Receitas");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Alimentação");
     // os cards também levam o nome da chef: o primeiro é o sobretítulo do cabeçalho
     await expect(page.getByText("Érick Jacquin", { exact: true }).first()).toBeVisible();
     // veio da página do herói: o voltar volta para ela (rótulo "Voltar"); o link de reserva continua o do herói
     const back = page.getByTestId("back-link");
     await expect(back).toHaveText("Voltar");
     await expect(back).toHaveAttribute("href", "/personalities/erick-jacquin");
-    await expect(page).toHaveTitle(/Receitas · Érick Jacquin/);
+    await expect(page).toHaveTitle(/Alimentação · Érick Jacquin/);
     // P2 (fase 3): os cards ficam abertos a todos; a faixa convida para a etapa que abre a receita.
     await expect(page.getByTestId("recipe-invite")).toBeVisible();
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
@@ -70,12 +70,15 @@ test.describe("hub do herói", () => {
     await expect(page).toHaveURL(/\/personalities\/erick-jacquin$/);
   });
 
-  // ronaldinho-gaucho: sem vínculo por conteúdo no seed; a biblioteca existe só pela alocação direta.
-  test("a biblioteca de produtos mostra os 7 produtos Ultra.e Life", async ({ page }) => {
+  // ronaldinho-gaucho: sem vínculo por conteúdo no seed; a biblioteca existia só pela alocação em massa
+  // da 0021, que a 0052 tira (com ela, a biblioteca fica vazia: products-heroes.spec.ts).
+  test("a biblioteca de produtos mostra os 7 produtos Ultra.e Life (banco sem a 0052)", async ({ page }) => {
     await page.goto("/personalities/ronaldinho-gaucho/produtos");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos");
     await expect(page.getByRole("link", { name: "Voltar para Ronaldinho Gaúcho" })).toHaveAttribute("href", "/personalities/ronaldinho-gaucho");
     const cards = page.getByTestId("product-action-card");
+    await expect(cards.first().or(page.getByText("Nenhum produto disponível"))).toBeVisible();
+    test.skip((await cards.count()) === 0, "banco com a 0052: o Ronaldinho não indica produtos");
     await expect(cards).toHaveCount(7);
     for (const title of ["e.water Citrus", "e.water Tangerina", "e.creatina Gummy", "e.creatina Pó", "e.focus", "e.daily", "e.melatonina"]) {
       await expect(cards.filter({ hasText: title })).toHaveCount(1);
@@ -110,7 +113,8 @@ test.describe("hub do herói", () => {
   // 0044: link antigo do personagem leva à pessoa real; os dois heróis removidos não existem mais
   test("slug antigo redireciona para o herói real e herói removido dá 404", async ({ page }) => {
     await page.goto("/personalities/helena-vilar/receitas");
-    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/receitas$/);
+    // dois saltos: slug antigo (0044) e segmento antigo (0050)
+    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/alimentacao$/);
     // a página do herói carrega em streaming: o "não encontrado" chega com status 200 (limite do Next)
     for (const removed of ["bruna-castellano", "marcos-ferraz"]) {
       await page.goto(`/personalities/${removed}`);

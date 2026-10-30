@@ -41,7 +41,7 @@ export async function RelatedRecipes({ contentId, chef, categories }: Props) {
   return (
     <div className="flex flex-col gap-8 print:hidden" data-testid="related-recipes">
       {chef && fromChef.length > 0 ? (
-        <Section id="more-from-chef" title={t("moreFrom", { chef: chef.name })} href={`/personalities/${chef.slug}/receitas`} seeAllLabel={tc("actions.seeAll")}>
+        <Section id="more-from-chef" title={t("moreFrom", { chef: chef.name })} href={`/personalities/${chef.slug}/alimentacao`} seeAllLabel={tc("actions.seeAll")}>
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {fromChef.map((recipe) => (
               <li key={recipe.id}>

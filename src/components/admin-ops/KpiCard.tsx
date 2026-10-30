@@ -17,13 +17,17 @@ type Props = {
 export function KpiCard({ label, value, hint, tag, tagVariant = "demo", tone = "default", className }: Props) {
   return (
     <div className={cn("flex min-h-24 flex-col justify-between gap-2 rounded-xl border border-border bg-surface p-4", className)}>
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{label}</p>
-        {tag && (
-          <Badge variant={tagVariant} size="sm">
-            {tag}
-          </Badge>
-        )}
+        {/* texto vira selo; um selo pronto (ex.: DemoBadge) entra como está, sem moldura dupla */}
+        {tag &&
+          (typeof tag === "string" ? (
+            <Badge variant={tagVariant} size="sm">
+              {tag}
+            </Badge>
+          ) : (
+            tag
+          ))}
       </div>
       <p className={cn("type-numeric text-2xl font-bold", tone === "muted" && "text-fg-muted", tone === "danger" && "text-danger", tone === "default" && "text-fg")}>
         {value}

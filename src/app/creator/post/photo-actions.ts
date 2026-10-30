@@ -165,7 +165,7 @@ export async function publishPhotoPost(input: { contentId: string; title: string
   revalidatePost();
   revalidatePath("/inicio");
   revalidatePath("/explore");
-  // post no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0050)
+  // post no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0054)
   schedulePushDispatch();
   return { ok: true, slug };
 }

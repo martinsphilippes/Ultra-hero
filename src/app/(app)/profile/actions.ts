@@ -257,7 +257,7 @@ export async function removeFavorite(input: { target: ListTarget }): Promise<Res
 
 // ---------------------------------------------------------------- preferências de notificação
 // A linha guarda o consentimento (opt-in por tipo e canal) que o push respeita na fila e no envio
-// (0050). Upsert pelo cliente do usuário: a RLS só aceita a própria linha.
+// (0054). Upsert pelo cliente do usuário: a RLS só aceita a própria linha.
 export async function saveNotificationPreferences(input: NotificationPreferences): Promise<Result> {
   const parsed = notificationPreferencesSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };

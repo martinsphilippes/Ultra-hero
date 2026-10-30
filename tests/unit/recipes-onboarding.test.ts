@@ -30,16 +30,16 @@ describe("etapa demonstrativa de receitas", () => {
   });
 });
 
-describe("Receitas sempre presente no hub do herói", () => {
+describe("Alimentação sempre presente no hub do herói", () => {
   it("aparece mesmo sem receitas quando está em always; as outras vazias continuam ocultas", () => {
-    const libs = buildCreatorLibraries({ contents: [{ type: "video", pillar: "routine" }], programs: [], products: [], always: ["receitas"] });
-    expect(libs.map((l) => l.key)).toEqual(["rotina", "receitas"]);
-    expect(libs.find((l) => l.key === "receitas")!.count).toBe(0);
+    const libs = buildCreatorLibraries({ contents: [{ type: "video", pillar: "routine" }], programs: [], products: [], always: ["alimentacao"] });
+    expect(libs.map((l) => l.key)).toEqual(["dia-a-dia", "alimentacao"]);
+    expect(libs.find((l) => l.key === "alimentacao")!.count).toBe(0);
   });
 
-  it("receitas de outro chef entram em Receitas (tipo recipe vence o pilar)", () => {
-    const libs = buildCreatorLibraries({ contents: [{ type: "recipe", pillar: "gastronomy" }, { type: "recipe", pillar: "nutrition" }], always: ["receitas"] });
+  it("receitas de outro chef entram em Alimentação (tipo recipe vence o pilar)", () => {
+    const libs = buildCreatorLibraries({ contents: [{ type: "recipe", pillar: "gastronomy" }, { type: "recipe", pillar: "nutrition" }], always: ["alimentacao"] });
     expect(libs).toHaveLength(1);
-    expect(libs[0]).toMatchObject({ key: "receitas", count: 2 });
+    expect(libs[0]).toMatchObject({ key: "alimentacao", count: 2 });
   });
 });

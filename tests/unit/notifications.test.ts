@@ -8,7 +8,7 @@ import {
 } from "@/components/me/notifications/schema";
 
 // Preferências de notificação (RF-023): o schema da action aceita exatamente as colunas booleanas
-// da tabela notification_preferences (0018, e os tipos do push da 0050) e nada além delas.
+// da tabela notification_preferences (0018, e os tipos do push da 0054) e nada além delas.
 
 describe("notificationPreferencesSchema", () => {
   it("aceita as preferências com os padrões da tabela", () => {

@@ -146,6 +146,8 @@
     "replacement_not_published": "The replacement content must be published.",
     "item_not_found": "Item not found in this version.",
     "version_published_readonly": "Published version: create a new version to change items.",
+    "program_item_foreign_content": "This content belongs to another hero. A hero program can only include content they published.",
+    "program_creator_has_foreign_items": "This program has steps from another hero. Remove them before changing the program hero.",
     "invalid_action": "Invalid moderation action.",
     "reason_required": "Provide a reason (required to hide or suspend).",
     "link_not_found": "Link not found.",
@@ -174,7 +176,13 @@
     "request_changed": "The hero edited the request after the queue was opened. Reload the page and read the new text before deciding.",
     "review_flow_unavailable": "This type has no “Submit for review” in the hero portal. Review can only be turned on for recipes.",
     "hero_categories_max_2": "Each hero can have at most 2 categories.",
-    "hero_categories_duplicate": "Choose different categories."
+    "hero_categories_duplicate": "Choose different categories.",
+    "library_tab_label_pt_required": "To translate the name, also fill in the pt-BR name.",
+    "own_recipe": "The recipe is already in the author's showcase.",
+    "recipe_not_found": "Recipe not found.",
+    "chef_unavailable": "Choose an active hero to sign.",
+    "showcase_unavailable": "Available after migration 0051 is applied to the database.",
+    "invalid_status": "Invalid status."
   },
   "content": {
     "title": "Content",
@@ -332,6 +340,47 @@
       "willPublishAt": "Goes live on {date}.",
       "publish_at_invalid": "Invalid date.",
       "publish_at_future": "The date must be in the future (at least 1 minute ahead)."
+    },
+    "showcase": {
+      "title": "Showcase (Food)",
+      "unavailable": "Signer and “Buy ready-made” become available after migration 0051 is applied to the database.",
+      "heroes": {
+        "title": "Showcase heroes",
+        "hint": "The recipe shows in these heroes' Food section. The author's showcase is fixed.",
+        "author": "Author",
+        "remove": "Remove",
+        "empty": "No heroes yet.",
+        "add": "Add to the showcase of",
+        "pick": "Choose a hero",
+        "addButton": "Add"
+      },
+      "signer": {
+        "title": "Who signs",
+        "label": "Signing chef",
+        "hint": "Without a chef, the recipe shows as “Recommended by” the showcase hero.",
+        "author": "The author ({name})",
+        "authorNone": "The author",
+        "none": "No chef (recommended only)",
+        "save": "Save signature"
+      },
+      "ready": {
+        "title": "Buy ready-made",
+        "hint": "One product per recipe (e.g. a ready meal). It goes to the test cart.",
+        "notPublished": "Product offline",
+        "remove": "Remove",
+        "empty": "No linked product.",
+        "replace": "Replace product",
+        "pick": "Search product",
+        "save": "Link product"
+      },
+      "messages": {
+        "heroAdded": "Recipe added to the showcase.",
+        "heroRemoved": "Recipe removed from the showcase.",
+        "signerSaved": "Signature saved.",
+        "readySaved": "“Buy ready-made” product linked.",
+        "readyRemoved": "“Buy ready-made” product removed.",
+        "saved": "Saved."
+      }
     }
   },
   "programs": {
@@ -431,6 +480,8 @@
       "published": "Version published",
       "alreadyPublished": "Published version",
       "contentArchived": "Archived content",
+      "heroScope": "Only content published by {name} is listed: a hero program only has their own steps.",
+      "foreignContent": "From another hero",
       "contentStatus": "Content status"
     },
     "concept": {
@@ -599,7 +650,7 @@
       "moderationHistory": "Moderation history",
       "moderationEmpty": "No moderation action recorded.",
       "reason": "Reason",
-      "partnerReadOnly": "Partner product: read-only here. The admin moderates; the seller edits in its own portal.",
+      "partnerReadOnly": "Partner product: the admin edits it in the organization's Products tab (the supplier portal is turned off).",
       "ownEditable": "Own-operation product: the admin can edit it.",
       "stock": "Demo stock",
       "type": "Type",
@@ -608,7 +659,8 @@
         "kit": "Kit",
         "digital": "Digital"
       },
-      "openPublic": "View in shop (demo)"
+      "openPublic": "View in shop (demo)",
+      "editInOrg": "Edit in the organization"
     },
     "moderation": {
       "title": "Moderation",
@@ -842,6 +894,56 @@
       "inactive": "inactive",
       "save": "Save categories",
       "saved": "Hero categories saved"
+    },
+    "tabs": {
+      "title": "Hero page shortcuts",
+      "description": "Per category: name, icon, order and whether it shows. What feeds each shortcut is fixed; the hero's main category decides, and each hero can have exceptions on their own screen.",
+      "unavailable": "Configurable shortcuts are not available in this database yet (apply migration 0050). Hero pages use the default shortcuts.",
+      "noCategories": "Create a category to configure the shortcuts.",
+      "categoryPick": "Category",
+      "inactiveCategory": "inactive",
+      "listLabel": "Shortcuts in hero page order",
+      "rules": "A shortcut with no items is hidden (Food always shows). The shortcut address does not change when the name changes.",
+      "source": "Content: {source}",
+      "hidden": "Hidden",
+      "labelPt": "Name (pt-BR)",
+      "labelEn": "Name (English)",
+      "labelEs": "Name (Spanish)",
+      "labelHintDefault": "Empty: “{label}”.",
+      "labelHintInherit": "Empty: inherits “{label}”.",
+      "labelFallback": "Empty: uses the Portuguese name.",
+      "icon": "Icon",
+      "visible": "Visible",
+      "duplicate": "Heads up: visible shortcuts with the same name ({labels}).",
+      "save": "Save shortcuts",
+      "saved": "Shortcuts saved",
+      "heroTitle": "This hero's shortcuts",
+      "heroDescription": "What this hero shows comes from the main category. Change here only what is an exception.",
+      "inheritedFrom": "Inherited from the {category} category.",
+      "noCategory": "No category: the app's default shortcuts apply.",
+      "inherited": "Inherited",
+      "overridden": "Exception",
+      "reset": "Back to category default",
+      "resetAll": "Reset all to category default",
+      "resetDone": "Exception removed",
+      "icons": {
+        "sunrise": "Sunrise",
+        "camera": "Camera",
+        "apple": "Apple",
+        "salad": "Salad",
+        "chef-hat": "Chef hat",
+        "utensils": "Utensils",
+        "dumbbell": "Dumbbell",
+        "trophy": "Trophy",
+        "layers": "Layers",
+        "shopping-bag": "Shopping bag",
+        "music": "Music",
+        "mic": "Microphone",
+        "palette": "Palette",
+        "star": "Star",
+        "heart": "Heart",
+        "book-open": "Book"
+      }
     }
   }
 }

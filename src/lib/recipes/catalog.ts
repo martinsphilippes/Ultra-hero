@@ -4,6 +4,7 @@ import type { Database } from "@/lib/supabase/database.types";
 import { orderByIds, RECIPE_CARD_SELECT, toRecipeCard, type RecipeCardData } from "./card";
 import { nextRecipeCursor, RECIPE_PAGE_SIZE, recipeCatalogArgs, type RecipeCatalogParams } from "./catalog-params";
 import { RECIPE_CATEGORY_CODES } from "./codes";
+import { withRecipeSigners } from "./showcase-queries";
 
 // Leitura do catálogo de receitas com o cliente de quem pede (a RLS decide): recipe_catalog (0027,
 // invoker) devolve só ids e cursor, e os cards vêm numa segunda consulta (content + recipe_details),
@@ -14,12 +15,16 @@ type Client = SupabaseClient<Database>;
 
 export type RecipeCatalogPage = { items: RecipeCardData[]; nextCursor: string | null };
 
-/** Cards pelos ids, na ordem pedida. Ids fora do ar ou invisíveis pela RLS simplesmente somem. */
+/**
+ * Cards pelos ids, na ordem pedida. Ids fora do ar ou invisíveis pela RLS simplesmente somem. Cada
+ * card leva a assinatura escolhida pelo admin (0051), quando houver.
+ */
 export async function loadRecipeCards(supabase: Client, ids: readonly string[]): Promise<RecipeCardData[]> {
   if (ids.length === 0) return [];
   const { data, error } = await supabase.from("content").select(RECIPE_CARD_SELECT).in("id", [...ids]).eq("type", "recipe");
   if (error) throw new Error(error.message);
-  return orderByIds(((data ?? []) as unknown as Parameters<typeof toRecipeCard>[0][]).map(toRecipeCard), ids);
+  const cards = orderByIds(((data ?? []) as unknown as Parameters<typeof toRecipeCard>[0][]).map(toRecipeCard), ids);
+  return withRecipeSigners(supabase, cards);
 }
 
 /** Uma página do catálogo. `exclude` tira ids (a receita aberta, nas relacionadas). */

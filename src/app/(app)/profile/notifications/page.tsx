@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Preferências de notificação (RF-023): opt-in por tipo e por canal, guardadas por usuário (RLS).
-// O push do app das lojas respeita estas escolhas (0050); e-mail opcional ainda não é enviado.
+// O push do app das lojas respeita estas escolhas (0054); e-mail opcional ainda não é enviado.
 // Mensagens transacionais não têm opt-out e aparecem só como leitura.
 export default async function NotificationsPage() {
   const user = await requireUser("/profile/notifications");

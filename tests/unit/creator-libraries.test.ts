@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CONTENT_LIBRARY_KEYS, LIBRARY_KEYS, buildCreatorLibraries, contentLibraryKey, isContentLibraryKey, isLibraryKey, type LibraryContent } from "@/lib/catalog/creator-libraries";
+import {
+  CONTENT_LIBRARY_KEYS,
+  LEGACY_LIBRARY_SEGMENTS,
+  LIBRARY_KEYS,
+  buildCreatorLibraries,
+  contentLibraryKey,
+  isContentLibraryKey,
+  isLibraryKey,
+  legacyLibraryTarget,
+  type LibraryContent,
+} from "@/lib/catalog/creator-libraries";
 import type { ContentType, Pillar } from "@/lib/supabase/helpers";
 
 type C = LibraryContent & { id: string };
@@ -7,25 +17,30 @@ let seq = 0;
 const content = (type: ContentType, pillar: Pillar): C => ({ id: `c${++seq}`, type, pillar });
 
 describe("contentLibraryKey", () => {
-  it("receita vai para Receitas em qualquer pilar", () => {
+  it("receita vai para Alimentação em qualquer pilar", () => {
     for (const pillar of ["routine", "nutrition", "training", "gastronomy"] as const) {
-      expect(contentLibraryKey(content("recipe", pillar))).toBe("receitas");
+      expect(contentLibraryKey(content("recipe", pillar))).toBe("alimentacao");
     }
   });
 
-  it("treino (tipo workout ou pilar training) vai para Treinos", () => {
+  it("só o que foi postado como treino (tipo workout) vai para Treinos, em qualquer pilar", () => {
     expect(contentLibraryKey(content("workout", "routine"))).toBe("treinos");
     expect(contentLibraryKey(content("workout", "nutrition"))).toBe("treinos");
-    expect(contentLibraryKey(content("video", "training"))).toBe("treinos");
-    expect(contentLibraryKey(content("article", "training"))).toBe("treinos");
+    expect(contentLibraryKey(content("workout", "training"))).toBe("treinos");
+  });
+
+  it("vídeo, guia ou artigo do pilar treino não é treino: vai para Dia a dia", () => {
+    expect(contentLibraryKey(content("video", "training"))).toBe("dia-a-dia");
+    expect(contentLibraryKey(content("guide", "training"))).toBe("dia-a-dia");
+    expect(contentLibraryKey(content("article", "training"))).toBe("dia-a-dia");
   });
 
   it("receita tem prioridade sobre treino", () => {
-    expect(contentLibraryKey(content("recipe", "training"))).toBe("receitas");
+    expect(contentLibraryKey(content("recipe", "training"))).toBe("alimentacao");
   });
 
   it("os demais seguem o pilar", () => {
-    expect(contentLibraryKey(content("video", "routine"))).toBe("rotina");
+    expect(contentLibraryKey(content("video", "routine"))).toBe("dia-a-dia");
     expect(contentLibraryKey(content("guide", "nutrition"))).toBe("nutricao");
     expect(contentLibraryKey(content("article", "gastronomy"))).toBe("gastronomia");
   });
@@ -45,10 +60,10 @@ describe("buildCreatorLibraries", () => {
     ];
     const libraries = buildCreatorLibraries({ contents, programs: [{ id: "p1" }], products: [{ id: "x1" }, { id: "x2" }] });
     expect(libraries.map((l) => [l.key, l.count])).toEqual([
-      ["rotina", 1],
+      ["dia-a-dia", 2],
       ["nutricao", 1],
-      ["receitas", 2],
-      ["treinos", 3],
+      ["alimentacao", 2],
+      ["treinos", 2],
       ["gastronomia", 1],
       ["programas", 1],
       ["produtos", 2],
@@ -65,7 +80,7 @@ describe("buildCreatorLibraries", () => {
       programs: [],
       products: [{ id: "x1" }],
     });
-    expect(libraries.map((l) => l.key)).toEqual(["rotina", "receitas", "gastronomia", "produtos"]);
+    expect(libraries.map((l) => l.key)).toEqual(["dia-a-dia", "alimentacao", "gastronomia", "produtos"]);
     const order = libraries.map((l) => LIBRARY_KEYS.indexOf(l.key));
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
@@ -82,24 +97,48 @@ describe("buildCreatorLibraries", () => {
   it("preserva a ordem de chegada dentro de cada biblioteca", () => {
     const a = content("video", "routine");
     const b = content("guide", "routine");
-    const [rotina] = buildCreatorLibraries({ contents: [a, b] });
-    expect(rotina.items.map((c) => (c as C).id)).toEqual([a.id, b.id]);
+    const [diaADia] = buildCreatorLibraries({ contents: [a, b] });
+    expect(diaADia.items.map((c) => (c as C).id)).toEqual([a.id, b.id]);
   });
 });
 
 describe("chaves", () => {
   it("LIBRARY_KEYS tem as sete chaves na ordem do hub", () => {
-    expect(LIBRARY_KEYS).toEqual(["rotina", "nutricao", "receitas", "treinos", "gastronomia", "programas", "produtos"]);
-    expect(CONTENT_LIBRARY_KEYS).toEqual(["rotina", "nutricao", "receitas", "treinos", "gastronomia"]);
+    expect(LIBRARY_KEYS).toEqual(["dia-a-dia", "nutricao", "alimentacao", "treinos", "gastronomia", "programas", "produtos"]);
+    expect(CONTENT_LIBRARY_KEYS).toEqual(["dia-a-dia", "nutricao", "alimentacao", "treinos", "gastronomia"]);
   });
 
   it("valida o segmento da URL", () => {
-    expect(isLibraryKey("receitas")).toBe(true);
+    expect(isLibraryKey("alimentacao")).toBe(true);
     expect(isLibraryKey("produtos")).toBe(true);
     expect(isLibraryKey("inexistente")).toBe(false);
     expect(isLibraryKey("")).toBe(false);
     expect(isLibraryKey(null)).toBe(false);
     expect(isContentLibraryKey("treinos")).toBe(true);
     expect(isContentLibraryKey("programas")).toBe(false);
+  });
+
+  it("os segmentos antigos (rotina, receitas) não são chaves: viram redirecionamento", () => {
+    expect(isLibraryKey("rotina")).toBe(false);
+    expect(isLibraryKey("receitas")).toBe(false);
+    expect(isLibraryKey("dia-a-dia")).toBe(true);
+  });
+});
+
+describe("legacyLibraryTarget (0050)", () => {
+  it("leva os segmentos antigos aos novos", () => {
+    expect(legacyLibraryTarget("rotina")).toBe("dia-a-dia");
+    expect(legacyLibraryTarget("receitas")).toBe("alimentacao");
+    expect(LEGACY_LIBRARY_SEGMENTS).toEqual({ rotina: "dia-a-dia", receitas: "alimentacao" });
+  });
+
+  it("todo destino é uma chave válida", () => {
+    for (const target of Object.values(LEGACY_LIBRARY_SEGMENTS)) expect(isLibraryKey(target)).toBe(true);
+  });
+
+  it("segmento atual, desconhecido ou vazio não redireciona", () => {
+    for (const segment of ["dia-a-dia", "alimentacao", "programas", "inexistente", "", null, undefined, "toString", "__proto__", "constructor"]) {
+      expect(legacyLibraryTarget(segment)).toBeNull();
+    }
   });
 });

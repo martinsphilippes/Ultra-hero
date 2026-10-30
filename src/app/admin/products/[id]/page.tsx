@@ -108,9 +108,10 @@ export default async function AdminProductDetailPage({ params }: Params) {
                 <Link href={`/shop/${product.slug}`}>{t("detail.openPublic")}</Link>
               </Button>
             )}
-            {isOwn && (
+            {(isOwn || product.seller) && (
               <Button asChild size="sm" variant="secondary" leadingIcon={<Pencil />}>
-                <Link href={`/admin/products/${product.id}/edit`}>{tc("edit")}</Link>
+                {/* parceiro: edita pela aba Produtos da organização (portal do fornecedor desligado, 0053) */}
+                <Link href={isOwn || !product.seller ? `/admin/products/${product.id}/edit` : `/admin/sellers/${product.seller.id}/products/${product.id}/edit`}>{tc("edit")}</Link>
               </Button>
             )}
           </>

@@ -146,6 +146,8 @@
     "replacement_not_published": "El contenido sustituto debe estar publicado.",
     "item_not_found": "Elemento no encontrado en esta versión.",
     "version_published_readonly": "Versión publicada: crea una nueva versión para cambiar elementos.",
+    "program_item_foreign_content": "Este contenido es de otro héroe. Un programa del héroe solo puede tener contenidos publicados por él.",
+    "program_creator_has_foreign_items": "El programa tiene pasos de otro héroe. Quítalos antes de cambiar el héroe del programa.",
     "invalid_action": "Acción de moderación inválida.",
     "reason_required": "Indica el motivo (obligatorio para ocultar o suspender).",
     "link_not_found": "Vínculo no encontrado.",
@@ -174,7 +176,13 @@
     "request_changed": "El héroe editó la solicitud después de abrir la cola. Recarga la página y lee el texto nuevo antes de decidir.",
     "review_flow_unavailable": "Este tipo no tiene “Enviar a revisión” en el portal del héroe. La revisión solo se puede activar para recetas.",
     "hero_categories_max_2": "Cada héroe puede tener como máximo 2 categorías.",
-    "hero_categories_duplicate": "Elige categorías diferentes."
+    "hero_categories_duplicate": "Elige categorías diferentes.",
+    "library_tab_label_pt_required": "Para traducir el nombre, completa también el nombre en pt-BR.",
+    "own_recipe": "La receta ya está en la vitrina del autor.",
+    "recipe_not_found": "Receta no encontrada.",
+    "chef_unavailable": "Elige un héroe activo para firmar.",
+    "showcase_unavailable": "Disponible después de aplicar la migración 0051 en la base de datos.",
+    "invalid_status": "Estado inválido."
   },
   "content": {
     "title": "Contenidos",
@@ -332,6 +340,47 @@
       "willPublishAt": "Sale al aire el {date}.",
       "publish_at_invalid": "Fecha inválida.",
       "publish_at_future": "La fecha debe estar en el futuro (al menos 1 minuto adelante)."
+    },
+    "showcase": {
+      "title": "Vitrina (Alimentación)",
+      "unavailable": "Quién firma y “Comprar listo” estarán disponibles después de aplicar la migración 0051 en la base de datos.",
+      "heroes": {
+        "title": "Héroes de la vitrina",
+        "hint": "La receta aparece en la Alimentación de estos héroes. La vitrina del autor es fija.",
+        "author": "Autor",
+        "remove": "Quitar",
+        "empty": "Ningún héroe todavía.",
+        "add": "Agregar a la vitrina de",
+        "pick": "Elige un héroe",
+        "addButton": "Agregar"
+      },
+      "signer": {
+        "title": "Quién firma",
+        "label": "Chef que firma",
+        "hint": "Sin chef, la receta aparece como “Recomendada por” el héroe de la vitrina.",
+        "author": "El autor ({name})",
+        "authorNone": "El autor",
+        "none": "Sin chef (solo recomendada)",
+        "save": "Guardar firma"
+      },
+      "ready": {
+        "title": "Comprar listo",
+        "hint": "Un producto por receta (p. ej.: vianda). Va al carrito de prueba.",
+        "notPublished": "Producto fuera de línea",
+        "remove": "Quitar",
+        "empty": "Ningún producto vinculado.",
+        "replace": "Cambiar producto",
+        "pick": "Buscar producto",
+        "save": "Vincular producto"
+      },
+      "messages": {
+        "heroAdded": "Receta agregada a la vitrina.",
+        "heroRemoved": "Receta quitada de la vitrina.",
+        "signerSaved": "Firma guardada.",
+        "readySaved": "Producto “Comprar listo” vinculado.",
+        "readyRemoved": "Producto “Comprar listo” quitado.",
+        "saved": "Guardado."
+      }
     }
   },
   "programs": {
@@ -431,6 +480,8 @@
       "published": "Versión publicada",
       "alreadyPublished": "Versión publicada",
       "contentArchived": "Contenido archivado",
+      "heroScope": "Solo aparecen contenidos publicados por {name}: un programa del héroe solo tiene sus propios pasos.",
+      "foreignContent": "De otro héroe",
       "contentStatus": "Estado del contenido"
     },
     "concept": {
@@ -599,7 +650,7 @@
       "moderationHistory": "Historial de moderación",
       "moderationEmpty": "No hay acciones de moderación registradas.",
       "reason": "Motivo",
-      "partnerReadOnly": "Producto de socio: solo lectura aquí. El admin modera; el proveedor edita en su propio portal.",
+      "partnerReadOnly": "Producto de socio: el admin lo edita en la pestaña Productos de la organización (el portal del proveedor está desactivado).",
       "ownEditable": "Producto de la operación propia: el admin puede editarlo.",
       "stock": "Stock demo",
       "type": "Tipo",
@@ -608,7 +659,8 @@
         "kit": "Kit",
         "digital": "Digital"
       },
-      "openPublic": "Ver en la tienda (demo)"
+      "openPublic": "Ver en la tienda (demo)",
+      "editInOrg": "Editar en la organización"
     },
     "moderation": {
       "title": "Moderación",
@@ -842,6 +894,56 @@
       "inactive": "inactiva",
       "save": "Guardar categorías",
       "saved": "Categorías del héroe guardadas"
+    },
+    "tabs": {
+      "title": "Accesos de la página del héroe",
+      "description": "Por categoría: nombre, ícono, orden y si aparece. Lo que alimenta cada acceso es fijo; la categoría principal del héroe define lo que vale, y cada héroe puede tener excepciones en su pantalla.",
+      "unavailable": "Los accesos configurables aún no están disponibles en esta base (aplica la migración 0050). Las páginas de los héroes usan los accesos predeterminados.",
+      "noCategories": "Crea una categoría para configurar los accesos.",
+      "categoryPick": "Categoría",
+      "inactiveCategory": "inactiva",
+      "listLabel": "Accesos en el orden de la página del héroe",
+      "rules": "Un acceso sin elementos no aparece (Alimentación aparece siempre). La dirección del acceso no cambia cuando cambia el nombre.",
+      "source": "Contenido: {source}",
+      "hidden": "Oculto",
+      "labelPt": "Nombre (pt-BR)",
+      "labelEn": "Nombre (inglés)",
+      "labelEs": "Nombre (español)",
+      "labelHintDefault": "Vacío: “{label}”.",
+      "labelHintInherit": "Vacío: hereda “{label}”.",
+      "labelFallback": "Vacío: usa el nombre en portugués.",
+      "icon": "Ícono",
+      "visible": "Visible",
+      "duplicate": "Atención: accesos visibles con el mismo nombre ({labels}).",
+      "save": "Guardar accesos",
+      "saved": "Accesos guardados",
+      "heroTitle": "Accesos de este héroe",
+      "heroDescription": "Lo que muestra este héroe viene de la categoría principal. Cambia aquí solo lo que sea excepción.",
+      "inheritedFrom": "Heredado de la categoría {category}.",
+      "noCategory": "Sin categoría: valen los accesos predeterminados de la app.",
+      "inherited": "Heredado",
+      "overridden": "Excepción",
+      "reset": "Volver al predeterminado de la categoría",
+      "resetAll": "Volver todo al predeterminado de la categoría",
+      "resetDone": "Excepción eliminada",
+      "icons": {
+        "sunrise": "Amanecer",
+        "camera": "Cámara",
+        "apple": "Manzana",
+        "salad": "Ensalada",
+        "chef-hat": "Gorro de chef",
+        "utensils": "Cubiertos",
+        "dumbbell": "Mancuerna",
+        "trophy": "Trofeo",
+        "layers": "Capas",
+        "shopping-bag": "Bolsa",
+        "music": "Música",
+        "mic": "Micrófono",
+        "palette": "Paleta",
+        "star": "Estrella",
+        "heart": "Corazón",
+        "book-open": "Libro"
+      }
     }
   }
 }

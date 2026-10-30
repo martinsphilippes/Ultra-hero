@@ -13,7 +13,7 @@ test.describe("aba Comprar", () => {
     await page.goto("/shop");
     const nav = page.getByRole("navigation", { name: "Navegação principal" }).filter({ visible: true }).first();
     const links = nav.getByRole("link");
-    await expect(links).toHaveText(["Hero", "Início", "Explorar", "Comprar", "Perfil"]);
+    await expect(links).toHaveText(["Hero", "Social", "Explorar", "Comprar", "Perfil"]);
     // na loja, Comprar fica marcada
     await expect(links.nth(3)).toHaveAttribute("aria-current", "page");
     for (let i = 0; i < 5; i++) {

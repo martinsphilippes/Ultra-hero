@@ -9,7 +9,7 @@ import { getNativeApp } from "@/lib/native-app/server";
 import { EXPO_PUSH_TOKEN, PUSH_TOKEN_COOKIE } from "@/lib/push/constants";
 import { createClient } from "@/lib/supabase/server";
 
-// Herói favorito e push do app das lojas (0050; docs/decisions/push-notifications.md). Regras de
+// Herói favorito e push do app das lojas (0054; docs/decisions/push-notifications.md). Regras de
 // acesso no banco: RLS de hero_favorites, RPC register_push_token, RLS de notification_preferences.
 
 type Result<T extends object = Record<never, never>> = ({ ok: true } & T) | { ok: false; error: string };

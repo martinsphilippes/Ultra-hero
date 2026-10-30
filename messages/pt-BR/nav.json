@@ -1,6 +1,6 @@
 {
   "tabs": {
-    "home": "Início",
+    "home": "Social",
     "explore": "Explorar",
     "personalities": "Hero",
     "shop": "Comprar",
@@ -30,7 +30,8 @@
     "feedback": "Feedback",
     "metrics": "Métricas",
     "audit": "Auditoria",
-    "settings": "Configurações"
+    "settings": "Configurações",
+    "shipments": "Remessas"
   },
   "creator": {
     "post": "Novo post",

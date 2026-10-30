@@ -7,7 +7,7 @@ import type { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
 import { buildPushMessage, chunk, ticketOutcomes, type ExpoTicket, type PushEvent, type PushKind } from "./message";
 
-// Envio da fila push_outbox (0050) pelo serviço de push da Expo. Chamado logo depois dos eventos
+// Envio da fila push_outbox (0054) pelo serviço de push da Expo. Chamado logo depois dos eventos
 // (publicar post, concluir conteúdo; via after()) e pelo cron diário (agendados, lembretes, sobras).
 // Reentrante: push_claim marca o lote, e uma linha só sai com sent_at quando o envio terminou.
 // docs/decisions/push-notifications.md.

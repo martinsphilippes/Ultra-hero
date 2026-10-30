@@ -91,7 +91,7 @@ export async function completeContent(input: { contentId: string; timezone: stri
       await trackEvent("content.complete", { content_id: parsed.data.contentId, source: "manual" });
       for (const p of programs) await trackEvent("program.complete", { program_id: p.program_id });
     }
-    // conquista ou programa concluído agora: o banco enfileirou o aviso (0050)
+    // conquista ou programa concluído agora: o banco enfileirou o aviso (0054)
     if (feedback.achievements.length > 0 || programs.length > 0) schedulePushDispatch();
     if (parsed.data.path) revalidatePath(parsed.data.path);
     return { ok: true, feedback };

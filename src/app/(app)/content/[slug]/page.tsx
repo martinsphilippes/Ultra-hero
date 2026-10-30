@@ -37,6 +37,9 @@ import { RecipeRating } from "@/components/recipes/view/RecipeRating";
 import { RecipeShareButtons } from "@/components/recipes/view/RecipeShareButtons";
 import { RecipeView } from "@/components/recipes/view/RecipeView";
 import { AddToShoppingList, AddToShoppingListView } from "@/components/recipes/shopping/AddToShoppingList";
+import { NutritionistSoon } from "@/components/recipes/showcase/NutritionistSoon";
+import { ReadyMealButton } from "@/components/recipes/showcase/ReadyMealButton";
+import { RecipeSignatureLine } from "@/components/recipes/showcase/RecipeSignatureLine";
 import { RelatedRecipes } from "@/components/recipes/view/RelatedRecipes";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { loadRecipeLd, loadRatingState } from "@/components/recipes/view/recipe-page-data";
@@ -55,6 +58,8 @@ import { isLive, isRecipeMediaUrl } from "@/lib/recipes/media";
 import { recipesSeoIndexEnabled } from "@/lib/recipes/jsonld";
 import { hasRecipeDetails } from "@/lib/recipes/rows";
 import { parseServingsParam } from "@/lib/recipes/scale";
+import { parseShowcaseSlug, recipeActionVisibility, recipeSignature, type RecipeActionTrack } from "@/lib/recipes/showcase";
+import { fetchReadyProducts, fetchRecipeSigners, fetchShowcaseCommerce, resolveShowcaseHero } from "@/lib/recipes/showcase-queries";
 import { createClient } from "@/lib/supabase/server";
 import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { resolveVideoSource } from "@/lib/video";
@@ -238,6 +243,23 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
         })
       : null;
   const servingsParam = parseServingsParam(query.porcoes);
+  // Alimentação (0051): herói da vitrine (?vitrine=, só se a receita está mesmo na vitrine dele),
+  // assinatura escolhida pelo admin e o produto "Comprar pronto". Sem a 0051: como antes.
+  const [showcaseHero, signers, readyMap] = isRecipe
+    ? await Promise.all([resolveShowcaseHero(supabase, parseShowcaseSlug(query.vitrine), content), fetchRecipeSigners(supabase, [content.id]), fetchReadyProducts(supabase, [content.id])])
+    : [null, null, null];
+  const readyProduct = readyMap?.get(content.id) ?? null;
+  const readyCommerce = readyProduct ? await fetchShowcaseCommerce(supabase, user?.id ?? null, [readyProduct.id]) : null;
+  const signature = isRecipe ? recipeSignature({ author: content.creator, signer: signers?.get(content.id), showcaseHero }) : null;
+  const trackHero = showcaseHero?.id ?? content.creator_id;
+  // toques contam só na receita no ar (indicador da vitrine; sem dados da pessoa)
+  const recipeTrack: RecipeActionTrack | null = isRecipe && trackHero && live ? { creatorId: trackHero, contentId: content.id, source: "receita" } : null;
+  const recipeActions = recipeActionVisibility({
+    recipeOpen: Boolean(recipeOpen && structured),
+    hasIngredients: (structured?.model.ingredients.length ?? 0) > 0,
+    readyProduct,
+    commerceEnabled: readyCommerce?.commerceEnabled ?? false,
+  });
   const [rating, categories] =
     recipeOpen && structured
       ? await Promise.all([loadRatingState(supabase, { contentId: content.id, creatorId: content.creator_id, userId: user?.id ?? null, completed: Boolean(completedAt) }), recipeCategoryOptions()])
@@ -315,10 +337,12 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
             <RecipeGallery photos={structured.model.photos} unoptimized={!live} />
           </div>
         ) : (
-        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[3/1] print:hidden">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[16/9] print:hidden" data-testid="content-cover">
+          {/* capa inteira, sem corte: a mesma foto desfocada preenche as sobras do card */}
           {/* foto de receita fora do ar: o otimizador busca sem a sessão e não a veria */}
-          <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
+          <Image src={cover} alt="" aria-hidden="true" fill unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="scale-110 object-cover opacity-60 blur-2xl" />
+          <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="object-contain" data-testid="content-cover-image" />
+          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-obsidian/50 to-transparent" />
           <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
             <PillarBadge pillar={content.pillar} />
             {content.access_level === null ? (
@@ -360,7 +384,9 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           <h1 className="type-h1 text-balance text-fg">{title}</h1>
           {summary && <p className="type-body max-w-prose text-fg-muted">{summary}</p>}
 
-          {content.creator && (
+          {isRecipe && signature ? (
+            <RecipeSignatureLine signature={signature} />
+          ) : content.creator && (
             <Link
               href={`/personalities/${content.creator.slug}`}
               className="flex w-fit min-h-11 items-center gap-3 rounded-xl pr-2 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
@@ -381,7 +407,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           )}
 
           {(user || isRecipe) && (
-            <div className="flex flex-wrap items-center gap-2 pt-1 print:hidden" role="group" aria-label={t("actionsLabel")}>
+            <div id={isRecipe ? "lista-de-compras" : undefined} className="flex scroll-mt-24 flex-wrap items-center gap-2 pt-1 print:hidden" role="group" aria-label={t("actionsLabel")}>
               {user ? (
                 <>
                   <FavoriteButton kind="content" id={content.id} initial={isFavorite} path={path} />
@@ -390,16 +416,28 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
                 </>
               ) : null}
               {isRecipe ? <RecipeShareButtons title={title} path={path} canPrint={Boolean(recipeOpen && structured)} /> : null}
+              {/* Fazer = Modo Cozinha (recipeActions.fazer: a mesma regra) */}
               {recipeOpen && structured ? (
-                <Suspense fallback={<CookModeLinkView href={cookModeHref(content.slug, null)} />}>
-                  <CookModeLink slug={content.slug} />
+                <Suspense fallback={<CookModeLinkView href={cookModeHref(content.slug, null)} track={recipeTrack} />}>
+                  <CookModeLink slug={content.slug} track={recipeTrack} />
                 </Suspense>
               ) : null}
               {/* Lista de compras (fase 5): mesma regra do RecipeGate; quem não abre a receita vê o convite */}
-              {recipeOpen && structured && structured.model.ingredients.length > 0 ? (
-                <Suspense fallback={<AddToShoppingListView contentId={content.id} ingredients={structured.model.ingredients} baseServings={structured.model.servings} locale={uiLocale} servings={servingsParam} />}>
-                  <AddToShoppingList contentId={content.id} ingredients={structured.model.ingredients} baseServings={structured.model.servings} locale={uiLocale} />
+              {recipeActions.listaCompras && structured ? (
+                <Suspense fallback={<AddToShoppingListView contentId={content.id} ingredients={structured.model.ingredients} baseServings={structured.model.servings} locale={uiLocale} servings={servingsParam} track={recipeTrack} />}>
+                  <AddToShoppingList contentId={content.id} ingredients={structured.model.ingredients} baseServings={structured.model.servings} locale={uiLocale} track={recipeTrack} />
                 </Suspense>
+              ) : null}
+              {/* Comprar pronto (0051): produto ligado pelo admin, carrinho de teste; não depende de abrir a receita */}
+              {recipeActions.comprarPronto && readyProduct && readyCommerce ? (
+                <ReadyMealButton
+                  product={{ id: readyProduct.id, slug: readyProduct.slug, title: readyProduct.title, price_cents_demo: readyProduct.price_cents_demo, maxQuantity: readyProduct.maxQuantity }}
+                  isLoggedIn={readyCommerce.isLoggedIn}
+                  inCart={readyCommerce.inCart.get(readyProduct.id) ?? 0}
+                  nextPath={path}
+                  track={recipeTrack}
+                  variant="page"
+                />
               ) : null}
               {user && state === "accessible" && !recipeBlocked && (
                 <CompleteButton
@@ -415,6 +453,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
               )}
             </div>
           )}
+          {isRecipe && recipeActions.nutricionista === "soon" ? <NutritionistSoon /> : null}
         </div>
       </header>
 

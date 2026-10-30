@@ -5,7 +5,7 @@ favoritados** e outros momentos que valem um aviso. O agente escolheu os outros 
 aqui: **conquista desbloqueada** (inclui as metas de sequência e de conteúdos concluídos, que são
 conquistas no banco), **programa concluído** e **lembrete de sequência**.
 
-Migração: `supabase/migrations/0050_push_notifications.sql`. Cenários: `S61` em
+Migração: `supabase/migrations/0054_push_notifications.sql`. Cenários: `S65` em
 `supabase/tests/rls_scenarios.sql`.
 
 ## Como funciona
@@ -60,7 +60,7 @@ evento no banco ──gatilho──▶ push_outbox ──▶ dispatchPushOutbox 
 
 ## Herói favorito
 
-Não existia: `favorites` só aponta para conteúdo, produto ou programa. A 0050 cria `hero_favorites`
+Não existia: `favorites` só aponta para conteúdo, produto ou programa. A 0054 cria `hero_favorites`
 (RLS: só a própria linha; só herói ativo). O botão fica no perfil do herói, na web e no app.
 
 ## O que fica com o dono
@@ -70,7 +70,7 @@ Não existia: `favorites` só aponta para conteúdo, produto ou programa. A 0050
   propósito: `mobile/app.config.ts`).
 - Chave APNs (`.p8`) da conta Apple, por `eas credentials -p ios`.
 - Opcional: ligar a "segurança reforçada" no projeto Expo e pôr `EXPO_ACCESS_TOKEN` na Vercel.
-- Aplicar a 0050 no projeto Supabase depois do merge.
+- Aplicar a 0054 no projeto Supabase depois do merge.
 
 ## Fora desta versão
 

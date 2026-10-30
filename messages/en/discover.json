@@ -1,6 +1,6 @@
 {
   "meta": {
-    "home": "Home",
+    "home": "Social",
     "explore": "Explore",
     "lists": "My lists",
     "list": "{name} · List",
@@ -192,18 +192,18 @@
       "libraryEmptyDescription": "This library of {name} has no items yet.",
       "back": "Back to {name}",
       "labels": {
-        "rotina": "Routine",
+        "dia-a-dia": "Day to day",
         "nutricao": "Nutrition",
-        "receitas": "Recipes",
+        "alimentacao": "Food",
         "treinos": "Workouts",
         "gastronomia": "Gastronomy",
         "programas": "Programs",
         "produtos": "Products"
       },
       "descriptions": {
-        "rotina": "Habits, calm mornings and better sleep with {name}.",
+        "dia-a-dia": "Quick posts and the routine of {name}.",
         "nutricao": "Practical food education with {name}.",
-        "receitas": "Recipes by {name}, from any pillar.",
+        "alimentacao": "Recipes by {name} and recipes {name} recommends.",
         "treinos": "Strength, mobility and running with {name}.",
         "gastronomia": "Core techniques and weekly meal prep with {name}.",
         "programas": "Guided collections by {name} to follow at your own pace.",

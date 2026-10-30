@@ -335,7 +335,7 @@ export async function publishRecipe(input: { id: string; publishAt?: string | nu
   const slug = (data as { slug?: string } | null)?.slug ?? own.slug;
   revalidateRecipe(own.id);
   revalidatePublic(slug);
-  // no ar agora: avisa quem favoritou o herói; agendada sai no cron diário (0050)
+  // no ar agora: avisa quem favoritou o herói; agendada sai no cron diário (0054)
   if (!schedule.value) schedulePushDispatch();
   return { ok: true, slug, scheduled: Boolean(schedule.value) };
 }

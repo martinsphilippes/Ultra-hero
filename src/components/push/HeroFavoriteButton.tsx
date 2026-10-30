@@ -20,7 +20,7 @@ type Props = {
   pushReady: boolean;
 };
 
-// Favoritar herói (0050). No app das lojas, o primeiro favorito é o momento de pedir a permissão de
+// Favoritar herói (0054). No app das lojas, o primeiro favorito é o momento de pedir a permissão de
 // notificação: com o "sim" do sistema, liga o push para posts de heróis favoritos. Recusar não
 // desfaz o favorito; o aviso sobre a escolha aparece uma vez.
 export function HeroFavoriteButton({ creatorId, heroName, initial, loggedIn, path, pushReady }: Props) {

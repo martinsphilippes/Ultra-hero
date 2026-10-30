@@ -83,7 +83,7 @@
   "library": {
     "signedBy": "Receita de {chef}",
     "endorsedBy": "Indicada por {hero}",
-    "endorsementNote": "{hero} indica estas receitas. Cada uma é assinada pelo chef que a criou."
+    "endorsementNote": "{hero} indica estas receitas. Quando há um chef, é ele quem assina a receita."
   },
   "structured": {
     "legacyEditor": {
@@ -1011,5 +1011,24 @@
     "filtersScope": "A busca e os filtros valem para as receitas assinadas por {hero}.",
     "endorsedHidden": "{count, plural, =1 {1 receita indicada fica de fora enquanto a busca ou um filtro estiver ativo.} other {# receitas indicadas ficam de fora enquanto a busca ou um filtro estiver ativo.}}",
     "showAll": "Ver todas"
+  },
+  "showcase": {
+    "ready": {
+      "button": "Comprar pronto",
+      "login": "Entrar para comprar",
+      "detail": "{product} · {price} (preço de teste, nenhuma compra real)"
+    },
+    "actions": {
+      "make": "Fazer",
+      "makeLabel": "Fazer {title} no Modo Cozinha",
+      "list": "Lista",
+      "listLabel": "Lista de compras: {title}"
+    },
+    "signature": {
+      "chef": "Receita de <chefLink>{chef}</chefLink>",
+      "chefIndicated": "Receita de <chefLink>{chef}</chefLink> · indicada por <heroLink>{hero}</heroLink>",
+      "indicated": "Indicada por <heroLink>{hero}</heroLink>"
+    },
+    "nutritionistSoon": "Nutricionista: em breve"
   }
 }

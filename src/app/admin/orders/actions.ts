@@ -31,6 +31,9 @@ export async function transitionFulfillmentAction(orderId: string, fulfillmentId
     if (error) return fail(error);
     revalidatePath("/admin/orders");
     revalidatePath(`/admin/orders/${parsed.data.orderId}`);
+    // a mesma ação serve à tela de Remessas e às abas da organização (0053)
+    revalidatePath("/admin/shipments");
+    revalidatePath("/admin/sellers", "layout");
     const t = await getTranslations("adminContent.orders.actions");
     return { ok: true, message: t("done") };
   } catch (error) {

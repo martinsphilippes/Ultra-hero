@@ -4,6 +4,7 @@ import { Button, EmptyState } from "@/components/ui";
 import { fetchRecipeCatalog, loadRecipeCategories, type RecipeCatalogPage, type RecipeCategoryOption } from "@/lib/recipes/catalog";
 import { EMPTY_RECIPE_PARAMS, hasRecipeCriteria, recipeCatalogHref, type RecipeCatalogParams } from "@/lib/recipes/catalog-params";
 import { createClient } from "@/lib/supabase/server";
+import { loadShowcaseCardContext, ShowcaseRecipeCard, type ShowcaseHeroRef } from "../showcase/showcase-cards";
 import { RecipeCard } from "./RecipeCard";
 import { RecipeCatalogGrid } from "./RecipeCatalogGrid";
 import { RecipeCatalogRetry } from "./RecipeCatalogRetry";
@@ -21,6 +22,8 @@ type Props = {
   idPrefix: string;
   /** Título visível da seção (na biblioteca do chef, que também lista as indicadas). */
   heading?: string;
+  /** Alimentação do herói (0051): cards com assinatura da vitrine e as ações. */
+  showcase?: ShowcaseHeroRef | null;
 };
 
 /** Categorias com rótulo no idioma da tela (compartilhado com a página da receita). */
@@ -31,7 +34,7 @@ export async function recipeCategoryOptions(): Promise<RecipeCategoryOption[]> {
 
 // Catálogo de receitas (aba Receitas do Explorar e biblioteca do chef): busca, filtros, cards e
 // carregamento progressivo, com os estados de vazio e erro. A primeira página sai do servidor.
-export async function RecipeCatalog({ params, base, fixed, creator = null, showSearch = false, track, idPrefix, heading }: Props) {
+export async function RecipeCatalog({ params, base, fixed, creator = null, showSearch = false, track, idPrefix, heading, showcase = null }: Props) {
   const t = await getTranslations("recipes.catalog.results");
   const supabase = await createClient();
   const categories = await recipeCategoryOptions();
@@ -43,6 +46,7 @@ export async function RecipeCatalog({ params, base, fixed, creator = null, showS
   } catch {
     page = null;
   }
+  const showcaseCtx = showcase && page && page.items.length > 0 ? await loadShowcaseCardContext(page.items.map((item) => item.id)) : null;
 
   return (
     <section aria-labelledby={`${idPrefix}-title`} className="flex flex-col gap-4" data-testid="recipe-catalog">
@@ -80,10 +84,11 @@ export async function RecipeCatalog({ params, base, fixed, creator = null, showS
           nextCursor={page.nextCursor}
           initialCount={page.items.length}
           track={criteria || params.ordem !== "relevance" ? track : null}
+          showcase={Boolean(showcase)}
         >
           {page.items.map((item, index) => (
             <li key={item.id}>
-              <RecipeCard recipe={item} priority={index < 4} />
+              {showcase && showcaseCtx ? <ShowcaseRecipeCard recipe={item} hero={showcase} ctx={showcaseCtx} priority={index < 4} /> : <RecipeCard recipe={item} priority={index < 4} />}
             </li>
           ))}
         </RecipeCatalogGrid>

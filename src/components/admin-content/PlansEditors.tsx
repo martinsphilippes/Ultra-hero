@@ -39,7 +39,7 @@ export function ModulesEditor({ modules }: { modules: ModuleRow[] }) {
             <caption className="sr-only">{t("caption")}</caption>
             <thead className="bg-surface-elevated">
               <tr>
-                <th scope="col" className={headCell}>{t("code")}</th>
+                <th scope="col" className={`${headCell} hidden sm:table-cell`}>{t("code")}</th>
                 <th scope="col" className={headCell}>{t("name")}</th>
                 <th scope="col" className={`${headCell} text-right`}>{t("price")}</th>
                 <th scope="col" className={`${headCell} hidden md:table-cell`}>{t("active")}</th>
@@ -49,12 +49,14 @@ export function ModulesEditor({ modules }: { modules: ModuleRow[] }) {
             <tbody className="divide-y divide-border">
               {modules.map((m) => (
                 <tr key={m.id}>
-                  <td className="px-4 py-2 font-mono text-xs text-fg-muted">{m.code}</td>
+                  {/* no celular o código vai para baixo do nome e libera espaço para o preço */}
+                  <td className="hidden px-4 py-2 font-mono text-xs text-fg-muted sm:table-cell">{m.code}</td>
                   <td className="px-4 py-2 text-fg">
                     <span className="font-medium">{m.name}</span>
+                    <span className="block font-mono text-xs text-fg-muted sm:hidden">{m.code}</span>
                     {m.description && <span className="block text-xs text-fg-muted">{m.description}</span>}
                   </td>
-                  <td className="type-numeric px-4 py-2 text-right text-fg">{formatCurrency(m.price_cents_demo / 100, locale)}</td>
+                  <td className="type-numeric whitespace-nowrap px-4 py-2 text-right text-fg">{formatCurrency(m.price_cents_demo / 100, locale)}</td>
                   <td className="hidden px-4 py-2 md:table-cell">
                     <Badge size="sm" variant={m.is_active ? "success" : "neutral"}>
                       {m.is_active ? tc("yes") : tc("no")}

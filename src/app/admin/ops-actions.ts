@@ -529,7 +529,7 @@ export async function updateSeller(id: string, input: SellerFormValues): Promise
     if (error) return fail(error);
     if (!data) return fail("not_found");
     revalidatePath("/admin/sellers");
-    revalidatePath(`/admin/sellers/${parsed.data.id}`);
+    revalidatePath(`/admin/sellers/${parsed.data.id}`, "layout");
     const t = await getTranslations("adminOps.sellers.form");
     return { ok: true, message: t("updated") };
   } catch (error) {
@@ -550,7 +550,7 @@ export async function setSellerStatus(input: { id: string; status: "active" | "s
     });
     if (error) return fail(error);
     revalidatePath("/admin/sellers");
-    revalidatePath(`/admin/sellers/${parsed.data.id}`);
+    revalidatePath(`/admin/sellers/${parsed.data.id}`, "layout");
     const t = await getTranslations("adminOps.sellers.status");
     return { ok: true, message: t("updated") };
   } catch (error) {
@@ -575,7 +575,7 @@ export async function revokeMembership(input: { membershipId: string; orgId: str
       .maybeSingle();
     if (error) return fail(error);
     if (!data) return fail("not_found");
-    revalidatePath(`/admin/sellers/${parsed.data.orgId}`);
+    revalidatePath(`/admin/sellers/${parsed.data.orgId}`, "layout");
     const t = await getTranslations("adminOps.sellers.memberships");
     return { ok: true, message: t("revoked") };
   } catch (error) {

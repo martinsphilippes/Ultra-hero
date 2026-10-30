@@ -67,7 +67,7 @@ export async function reviewContentAction(
           p_feedback: parsed.data.feedback || undefined,
         });
     if (error) return fail(error);
-    // aprovado para agora: avisa quem favoritou o herói (agendado sai no cron; 0050)
+    // aprovado para agora: avisa quem favoritou o herói (agendado sai no cron; 0054)
     if (parsed.data.decision === "approved" && !schedule.value) schedulePushDispatch();
     revalidatePath("/admin/content");
     revalidatePath(`/admin/content/${parsed.data.contentId}`);
@@ -310,9 +310,10 @@ export async function setReviewRequiredAction(type: string, on: boolean, justifi
 }
 
 // ---------------------------------------------------------------- buscas (SearchPicker) ---
-// Conteúdo por título; `publishedOnly` para itens de programa, destaques e vínculos.
-export async function searchContentAction(q: string, publishedOnly = true): Promise<PickResult> {
-  const parsed = z.object({ q: z.string().trim().min(2).max(80), publishedOnly: z.boolean() }).safeParse({ q, publishedOnly });
+// Conteúdo por título; `publishedOnly` para itens de programa, destaques e vínculos. `creatorId` limita
+// aos conteúdos de um herói (etapas do programa do herói, 0052).
+export async function searchContentAction(q: string, publishedOnly = true, creatorId: string | null = null): Promise<PickResult> {
+  const parsed = z.object({ q: z.string().trim().min(2).max(80), publishedOnly: z.boolean(), creatorId: z.uuid().nullable() }).safeParse({ q, publishedOnly, creatorId });
   if (!parsed.success) return { ok: true, items: [] };
   try {
     await requireAdmin();
@@ -324,6 +325,7 @@ export async function searchContentAction(q: string, publishedOnly = true): Prom
       .order("title")
       .limit(12);
     if (parsed.data.publishedOnly) query = query.eq("status", "published");
+    if (parsed.data.creatorId) query = query.eq("creator_id", parsed.data.creatorId);
     const { data, error } = await query;
     if (error) return fail(error);
     const t = await getTranslations("adminContent.common.types");

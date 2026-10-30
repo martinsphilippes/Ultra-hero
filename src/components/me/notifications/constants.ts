@@ -1,5 +1,5 @@
 // Preferências de notificação (RF-023): vocabulário compartilhado entre a tela (cliente) e a action.
-// Opt-in por tipo e por canal. O push do app das lojas respeita channel_push + o tipo (0050;
+// Opt-in por tipo e por canal. O push do app das lojas respeita channel_push + o tipo (0054;
 // docs/decisions/push-notifications.md); e-mail opcional ainda não é enviado. Mensagens
 // transacionais (confirmação de cadastro, redefinição de senha) não têm opt-out e não aparecem aqui.
 
@@ -12,7 +12,7 @@ export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 export type NotificationPreferenceKey = (typeof NOTIFICATION_PREFERENCE_KEYS)[number];
 export type NotificationPreferences = Record<NotificationPreferenceKey, boolean>;
 
-// Mesmos padrões da tabela notification_preferences (0018, 0050): tipos desligados, e-mail ligado, push desligado.
+// Mesmos padrões da tabela notification_preferences (0018, 0054): tipos desligados, e-mail ligado, push desligado.
 export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   hero_posts: false,
   achievements: false,

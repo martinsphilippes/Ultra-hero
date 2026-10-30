@@ -1,5 +1,5 @@
 -- =============================================================================
--- Ultra Hero · 0050 · Push no app das lojas (docs/decisions/push-notifications.md)
+-- Ultra Hero · 0054 · Push no app das lojas (docs/decisions/push-notifications.md)
 --   1. hero_favorites: a pessoa favorita um herói (antes só conteúdos, produtos e programas).
 --   2. push_tokens: um token Expo por aparelho, gravado pela RPC register_push_token (a pessoa
 --      só lê e apaga os próprios; o mesmo aparelho trocando de conta passa o token adiante).

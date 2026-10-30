@@ -116,7 +116,8 @@
       "suggestedLinks": "Vínculos sugeridos",
       "newFeedback": "Comentarios nuevos",
       "awaitingFulfillments": "Envíos en espera",
-      "open": "Abrir"
+      "open": "Abrir",
+      "preparingFulfillments": "Envíos en preparación"
     }
   },
   "heroPublishing": {
@@ -299,7 +300,8 @@
     "goCreator": "Ir al Perfil",
     "goSeller": "Ir al portal del proveedor",
     "goHome": "Volver a la app",
-    "errorTitle": "No se pudo aceptar"
+    "errorTitle": "No se pudo aceptar",
+    "successSellerPortalOff": "Invitación aceptada. El portal del proveedor está desactivado por ahora; la operación la hace la administración."
   },
   "creators": {
     "title": "Héroes",
@@ -379,7 +381,7 @@
     },
     "products": {
       "title": "Productos del héroe",
-      "description": "Asignación directa producto↔héroe. Solo lo validado aparece en la pestaña Productos de la página pública; suspendido y rechazado desaparecen.",
+      "description": "Productos que este héroe recomienda. La pestaña Productos de la página pública solo muestra los validados aquí y los vinculados a los contenidos del propio héroe; sin ninguno, el atajo Productos no aparece. Los suspendidos y rechazados desaparecen.",
       "tableCaption": "Productos publicados y situación de la asignación para este héroe",
       "columns": {
         "product": "Producto",
@@ -417,7 +419,8 @@
       },
       "empty": "Ningún producto publicado",
       "emptyDescription": "Publica un producto en la tienda para asignarlo a este héroe.",
-      "count": "{n, plural, =1 {# producto validado} other {# productos validados}}"
+      "count": "{n, plural, =1 {# producto validado} other {# productos validados}}",
+      "jump": "Productos vinculados ({n})"
     }
   },
   "sellers": {
@@ -476,6 +479,29 @@
       "invite": "Invitar miembro",
       "owner": "Responsable",
       "staff": "Equipo"
+    },
+    "hub": {
+      "tabsLabel": "Secciones de la organización",
+      "tabs": {
+        "overview": "Resumen",
+        "products": "Productos",
+        "shipments": "Envíos",
+        "organization": "Organización"
+      },
+      "description": "Operación de esta organización por la administración: productos, envíos y perfil. Ninguna alianza real.",
+      "productsDescription": "Catálogo de {name}. Crear, editar, publicar y archivar con el mismo formulario del proveedor; todo cambio queda auditado.",
+      "shipmentsDescription": "Envíos de pedidos de prueba con productos de {name}.",
+      "shipmentsNote": "A partir de \"listo para despacho\", la simulación del sistema lleva el envío a \"en tránsito\" y \"entregado\". El admin también puede avanzar o cancelar.",
+      "shipmentActions": "Acciones de la administración",
+      "shipmentActionsNote": "Cada cambio de estado queda en la línea de tiempo y en la auditoría. Cancelar o marcar fallo pide una justificación.",
+      "zoneNote": "El envío muestra solo la zona ficticia del destino; el destino completo está en el pedido.",
+      "openOrder": "Abrir el pedido",
+      "moderationTitle": "Moderación",
+      "productSheet": "Ver la ficha completa del producto",
+      "notFoundTitle": "No encontrado en esta organización",
+      "notFoundDescription": "El producto o el envío no existe o pertenece a otra organización.",
+      "backToSellers": "Volver a los proveedores",
+      "portalOff": "El portal del proveedor está desactivado: los miembros no operan por ahora; la administración opera desde las pestañas de arriba."
     }
   },
   "feedback": {
@@ -717,6 +743,19 @@
       "createdWarning": "Anota la contraseña ahora: no se mostrará ni se guardará en texto.",
       "password": "Contraseña temporal",
       "done": "Listo"
+    }
+  },
+  "shipments": {
+    "title": "Envíos",
+    "description": "Envíos de todos los proveedores. Abre un envío para cambiar su estado (los pasos del proveedor y los del sistema).",
+    "banner": "Pedidos de prueba: ninguna entrega es real. Destinos y transporte son simulados.",
+    "tableCaption": "Envíos de todos los proveedores",
+    "emptyDescription": "Ajusta los filtros. Los envíos aparecen cuando se confirma un pedido de prueba.",
+    "open": {
+      "title": "Abiertos",
+      "awaiting": "En espera",
+      "preparing": "En preparación",
+      "readyForDispatch": "Listos para despacho"
     }
   }
 }

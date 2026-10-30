@@ -151,7 +151,7 @@ export async function publishContent(input: { id: string }): Promise<ActionResul
   revalidateContent(id);
   revalidatePath("/inicio");
   revalidatePath("/explore");
-  // no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0050)
+  // no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0054)
   schedulePushDispatch();
   return { ok: true, slug: (data as { slug?: string } | null)?.slug };
 }

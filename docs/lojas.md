@@ -39,7 +39,7 @@ npx eas-cli env:set --name EXPO_PUBLIC_WEB_URL --value https://ultra-hero.vercel
   chave `.p8` (a Apple entrega uma vez só; o EAS guarda).
 - [ ] Opcional: ligar a "segurança reforçada" no projeto Expo e cadastrar `EXPO_ACCESS_TOKEN` na
   Vercel (Production), marcada como Sensitive.
-- [ ] Banco: aplicar a `0050_push_notifications.sql` no projeto Supabase depois do merge
+- [ ] Banco: aplicar a `0054_push_notifications.sql` no projeto Supabase depois do merge
   (`node scripts/db/remote-apply.mjs`, README).
 - [ ] Conferir no primeiro build, no manifest **mesclado** (`aapt dump permissions` no APK), que
   entraram só INTERNET, VIBRATE, POST_NOTIFICATIONS e as do próprio FCM: o `check:permissions` lê
