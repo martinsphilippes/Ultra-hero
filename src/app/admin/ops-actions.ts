@@ -211,7 +211,7 @@ export async function revokeInvitation(input: { id: string }, justification: str
 }
 
 // Aceite pelo convidado (qualquer usuário autenticado; a RPC valida token, validade e e-mail).
-export async function acceptInvitation(input: { token: string }): Promise<Result<{ role: "creator" | "seller" }>> {
+export async function acceptInvitation(input: { token: string }): Promise<Result<{ role: "creator" | "seller" | "professional" }>> {
   const parsed = z.object({ token: z.string().trim().min(16).max(256) }).safeParse(input);
   if (!parsed.success) return invalid();
   try {
@@ -219,7 +219,8 @@ export async function acceptInvitation(input: { token: string }): Promise<Result
     const { data, error } = await supabase.rpc("accept_invitation", { p_token: parsed.data.token });
     if (error) return fail(error);
     const role = data && typeof data === "object" && !Array.isArray(data) ? (data as { role?: string }).role : undefined;
-    if (role !== "creator" && role !== "seller") return fail("generic");
+    // professional: convite de profissional (0058)
+    if (role !== "creator" && role !== "seller" && role !== "professional") return fail("generic");
     revalidatePath("/admin/invitations");
     return { ok: true, role };
   } catch (error) {

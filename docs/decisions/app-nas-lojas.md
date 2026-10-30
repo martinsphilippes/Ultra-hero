@@ -65,6 +65,7 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
 | Selos "Demonstração" (`DemoBadge`) | ocultos (o aviso de demonstração do topo e dos rodapés saiu também da web em 30/10/2026) | Apple 2.2 |
 | Acesso rápido às contas demo (inclui admin), em qualquer tela | oculto, e a ação recusa pedido vindo do app | Apple 2.2; o revisor recebe credenciais |
 | Itens de produto em listas e favoritos | célula inteira oculta (`data-kind="product"`) | idem |
+| Portal do profissional (`/profissional`) e "Contratar" (perfil do profissional, receita, Alimentação) | rota com 307 (middleware); botão não renderizado e a ação `hireService` recusa pedido vindo do app; a lista `/profissionais` e o perfil continuam (0058) | serviço contratado com pagamento simulado |
 
 | Todo selo `variant="demo"` (inclui "Personagem fictício", o do portal e o do relógio) | oculto pelo próprio `Badge` | decisão do responsável (30/10/2026, opção "esconder tudo") |
 | Textos que falam em demonstração, simulado ou fictício | trocados por versão do app em `messages-native/<locale>.json`, sobreposta às mesmas chaves quando o pedido vem do app | idem |

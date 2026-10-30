@@ -4,16 +4,19 @@ import Link from "next/link";
 import { MyBidsList } from "@/components/collectibles/MyBidsList";
 import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { OrdersList } from "@/components/commerce/OrdersList";
+import { ServiceOrdersList } from "@/components/professionals/ServiceOrdersList";
 import { advanceTransportSimulation } from "@/components/commerce/server/queries";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { BackLink } from "@/components/ui/back-link";
 import { requireUser } from "@/lib/auth/session";
 import { fetchMyBids } from "@/lib/collectibles/queries";
+import { myServiceOrders } from "@/lib/professionals/queries";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 // Minhas compras (dentro da aba Comprar): pedidos de teste e, com a 0057, "Lances e arremates"
 // (situação de cada item em que a pessoa deu lance; arrematado mostra o valor final, sem pagamento).
+// Com a 0058, "Serviços": pedidos a profissionais (situação, agenda e recados).
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,22 +30,23 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
   const user = await requireUser("/shop/compras");
   const params = await searchParams;
   await advanceTransportSimulation();
-  const [t, to, supabase] = await Promise.all([getTranslations("collectibles.purchases"), getTranslations("commerce.orders"), createClient()]);
-  const myBids = await fetchMyBids(supabase);
-  const tab = myBids.available && params.aba === "lances" ? "bids" : "orders";
+  const [t, to, tp, supabase] = await Promise.all([getTranslations("collectibles.purchases"), getTranslations("commerce.orders"), getTranslations("professionals.orders"), createClient()]);
+  const [myBids, services] = await Promise.all([fetchMyBids(supabase), myServiceOrders(user.id)]);
+  const tab = myBids.available && params.aba === "lances" ? "bids" : services.available && params.aba === "servicos" ? "services" : "orders";
 
   const tabs = [
-    { key: "orders", href: "/shop/compras", label: t("tabs.orders") },
-    { key: "bids", href: "/shop/compras?aba=lances", label: t("tabs.bids") },
+    { key: "orders", href: "/shop/compras", label: t("tabs.orders"), count: 0 },
+    ...(services.available ? [{ key: "services", href: "/shop/compras?aba=servicos", label: tp("tab"), count: services.orders.length }] : []),
+    ...(myBids.available ? [{ key: "bids", href: "/shop/compras?aba=lances", label: t("tabs.bids"), count: myBids.rows.length }] : []),
   ];
 
   return (
     <div className="flex flex-col gap-5">
       <BackLink href="/shop">{t("back")}</BackLink>
       <PageHeader title={t("title")} description={t("description")} eyebrow={<DemoBadge />} />
-      {myBids.available ? (
+      {tabs.length > 1 ? (
         <nav aria-label={t("tabsLabel")}>
-          <ul className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-elevated p-1 sm:w-fit sm:min-w-[24rem]">
+          <ul className={cn("grid gap-1 rounded-2xl border border-border bg-surface-elevated p-1 sm:w-fit sm:min-w-[24rem]", tabs.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
             {tabs.map((item) => (
               <li key={item.key}>
                 <Link
@@ -55,7 +59,7 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
                   )}
                 >
                   {item.label}
-                  {item.key === "bids" && myBids.rows.length > 0 ? <span className="ml-1.5 type-numeric text-xs text-fg-subtle">{myBids.rows.length}</span> : null}
+                  {item.count > 0 ? <span className="ml-1.5 type-numeric text-xs text-fg-subtle">{item.count}</span> : null}
                 </Link>
               </li>
             ))}
@@ -67,6 +71,10 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
         <section aria-label={t("tabs.orders")} className="flex flex-col gap-4" data-testid="purchases-orders">
           <DemoNotice>{to("banner")}</DemoNotice>
           <OrdersList userId={user.id} />
+        </section>
+      ) : tab === "services" ? (
+        <section aria-label={tp("tab")} className="flex flex-col gap-4" data-testid="purchases-services">
+          <ServiceOrdersList orders={services.orders} fresh={params.novo === "1"} />
         </section>
       ) : (
         <section aria-label={t("tabs.bids")} className="flex flex-col gap-4" data-testid="purchases-bids">

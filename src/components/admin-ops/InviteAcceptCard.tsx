@@ -15,7 +15,7 @@ export function InviteAcceptCard({ token, email }: Props) {
   const t = useTranslations("adminOps.invite");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [role, setRole] = useState<"creator" | "seller" | null>(null);
+  const [role, setRole] = useState<"creator" | "seller" | "professional" | null>(null);
 
   function accept() {
     setError(null);
@@ -37,11 +37,15 @@ export function InviteAcceptCard({ token, email }: Props) {
         </span>
         <div>
           <h2 className="type-h3 text-fg">{t("successTitle")}</h2>
-          <p className="type-body-sm mt-1 text-fg-muted">{role === "creator" ? t("successCreator") : SELLER_PORTAL_ENABLED ? t("successSeller") : t("successSellerPortalOff")}</p>
+          <p className="type-body-sm mt-1 text-fg-muted">
+            {role === "professional" ? t("successProfessional") : role === "creator" ? t("successCreator") : SELLER_PORTAL_ENABLED ? t("successSeller") : t("successSellerPortalOff")}
+          </p>
         </div>
         <Button asChild size="lg" block>
           {/* portal do fornecedor desligado (0053): volta ao app */}
-          {role === "creator" ? (
+          {role === "professional" ? (
+            <Link href="/profissional">{t("goProfessional")}</Link>
+          ) : role === "creator" ? (
             <Link href="/profile">{t("goCreator")}</Link>
           ) : SELLER_PORTAL_ENABLED ? (
             <Link href="/seller">{t("goSeller")}</Link>

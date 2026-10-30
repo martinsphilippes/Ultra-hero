@@ -1,0 +1,344 @@
+{
+  "meta": {
+    "list": "Profesionales",
+    "portal": "Portal del profesional"
+  },
+  "specialty": {
+    "nutritionist": "Nutricionista",
+    "personal_trainer": "Entrenador personal",
+    "physiotherapist": "Fisioterapeuta",
+    "psychologist": "Psicólogo(a)"
+  },
+  "specialtyPlural": {
+    "all": "Todos",
+    "nutritionist": "Nutricionistas",
+    "personal_trainer": "Entrenadores personales",
+    "physiotherapist": "Fisioterapeutas",
+    "psychologist": "Psicólogos"
+  },
+  "mode": {
+    "online": "En línea",
+    "in_person": "Presencial",
+    "both": "En línea o presencial"
+  },
+  "format": {
+    "minutes": "{minutes} min",
+    "weeks": "Plan de {weeks} sem."
+  },
+  "registry": "{type} {number}/{uf}",
+  "verified": "Registro verificado",
+  "verifiedHint": "El equipo verificó el registro en el consejo profesional.",
+  "online": "Atiende en línea",
+  "cities": "Atiende en {cities}",
+  "from": "Desde {price}",
+  "list": {
+    "title": "Profesionales",
+    "description": "Nutricionistas y entrenadores personales para acompañar tu rutina.",
+    "filterLabel": "Especialidad",
+    "empty": "Todavía no hay profesionales en esta especialidad.",
+    "unavailable": "Los profesionales todavía no están disponibles.",
+    "viewProfile": "Ver perfil"
+  },
+  "profile": {
+    "back": "Profesionales",
+    "about": "Sobre",
+    "services": "Servicios",
+    "noServices": "No hay servicios disponibles en este momento.",
+    "notFound": "Profesional no encontrado."
+  },
+  "hire": {
+    "button": "Contratar",
+    "inCart": "En el carrito",
+    "viewCart": "Ver carrito",
+    "login": "Inicia sesión para contratar",
+    "own": "Este servicio es tuyo",
+    "added": "Servicio en el carrito",
+    "addedDescription": "{title} se agregó al carrito.",
+    "errors": {
+      "commerce_disabled": "Las contrataciones están en pausa por ahora.",
+      "service_unavailable": "Este servicio ya no está disponible.",
+      "own_service": "No puedes contratar tu propio servicio.",
+      "too_many_services": "El carrito ya tiene el máximo de servicios.",
+      "unauthenticated": "Inicia sesión para contratar.",
+      "generic": "No se pudo agregar ahora. Inténtalo de nuevo."
+    }
+  },
+  "nutritionist": {
+    "title": "Contratar nutricionista",
+    "description": "Un nutricionista adapta esta receta y tu menú a tu rutina.",
+    "suggested": "Sugerido",
+    "seeAll": "Ver todos los nutricionistas"
+  },
+  "cart": {
+    "title": "Servicios",
+    "itemsCount": "{n} servicio(s)",
+    "remove": "Quitar",
+    "removeLabel": "Quitar {title} del carrito",
+    "unavailable": "Servicio no disponible. Quítalo para continuar.",
+    "subtotal": "Servicios",
+    "note": "Después de confirmar, el profesional recibe el pedido y responde aquí, en Mis compras."
+  },
+  "checkout": {
+    "services": "Servicios",
+    "noDestinationNeeded": "Los servicios no tienen entrega: el profesional lo coordina todo contigo.",
+    "errors": {
+      "service_unavailable": "Un servicio del carrito ya no está disponible. Revisa el carrito.",
+      "service_price_changed": "El precio de un servicio cambió. Revisa el carrito."
+    }
+  },
+  "orders": {
+    "tab": "Servicios",
+    "empty": "Todavía no contrataste servicios.",
+    "emptyAction": "Conocer profesionales",
+    "placedAt": "Pedido el {date}",
+    "newBanner": "¡Pedido enviado! El profesional responderá aquí.",
+    "schedule": "Agenda: {note}",
+    "messages": "Mensajes",
+    "cancel": "Cancelar pedido",
+    "cancelTitle": "¿Cancelar este pedido?",
+    "cancelDescription": "El profesional todavía no respondió. Cancelar no tiene costo.",
+    "cancelled": "Pedido cancelado.",
+    "keep": "Mantener pedido",
+    "status": {
+      "pending": "Esperando respuesta",
+      "accepted": "Aceptado",
+      "scheduled": "Agendado",
+      "completed": "Concluido",
+      "declined": "Rechazado",
+      "cancelled": "Cancelado"
+    },
+    "actor": {
+      "consumer": "Tú",
+      "professional": "Profesional",
+      "admin": "Equipo",
+      "system": "Sistema"
+    }
+  },
+  "errors": {
+    "forbidden": "No tienes permiso para esto.",
+    "not_found": "No encontrado.",
+    "invalid_transition": "Ese cambio no es posible en la situación actual del pedido.",
+    "note_required": "Escribe un mensaje corto para el cliente.",
+    "note_too_long": "Mensaje demasiado largo.",
+    "order_closed": "Este pedido ya fue cerrado.",
+    "professional_suspended": "Tu perfil está suspendido. Habla con el equipo.",
+    "not_professional": "Esta cuenta no tiene perfil profesional.",
+    "too_many_services": "Límite de 12 servicios alcanzado.",
+    "invalid_service": "Revisa el título, el formato y el precio del servicio.",
+    "invalid_input": "Revisa los campos.",
+    "invalid_price": "Precio entre R$ 5,00 y R$ 100.000,00.",
+    "registry_not_verified": "Para aprobar, marca el registro como verificado.",
+    "invalid_status": "Situación no válida.",
+    "invalid_target": "Elemento no válido.",
+    "professional_already_linked": "Este perfil ya tiene una cuenta vinculada.",
+    "slug_taken": "Esta dirección ya está en uso.",
+    "generic": "Algo salió mal. Inténtalo de nuevo."
+  },
+  "portal": {
+    "title": "Portal del profesional",
+    "description": "Pedidos, servicios y tu perfil público.",
+    "nav": {
+      "dashboard": "Panel",
+      "orders": "Pedidos",
+      "services": "Servicios",
+      "profile": "Perfil"
+    },
+    "noProfile": "Esta cuenta no tiene un perfil profesional vinculado.",
+    "noProfileAdmin": "Eres admin: gestiona los profesionales en Admin → Profesionales.",
+    "goAdmin": "Abrir profesionales en el admin",
+    "unavailable": "El portal del profesional todavía no está disponible.",
+    "status": {
+      "pending": "En revisión",
+      "approved": "Aprobado",
+      "suspended": "Suspendido"
+    },
+    "statusHint": {
+      "pending": "El equipo está verificando tu registro. Mientras tanto, arma el perfil y los servicios.",
+      "approved": "Tu perfil aparece en la lista de profesionales.",
+      "suspended": "Tu perfil está fuera de línea. Habla con el equipo."
+    },
+    "viewPublic": "Ver perfil público",
+    "kpi": {
+      "pending": "Esperando respuesta",
+      "open": "En curso",
+      "completed": "Concluidos",
+      "median": "Tiempo de respuesta (mediana)",
+      "none": "—"
+    },
+    "duration": {
+      "min": "{value} min",
+      "h": "{value} h",
+      "d": "{value} d"
+    },
+    "latest": "Pedidos recientes",
+    "seeAll": "Ver todos",
+    "ordersTitle": "Pedidos",
+    "filters": {
+      "open": "Abiertos",
+      "pending": "Esperando",
+      "closed": "Cerrados",
+      "all": "Todos"
+    },
+    "noOrders": "No hay pedidos aquí.",
+    "client": "Cliente: {name}",
+    "clientRemoved": "Cliente eliminado",
+    "orderBack": "Pedidos",
+    "history": "Historial",
+    "actions": {
+      "title": "Responder",
+      "accepted": "Aceptar",
+      "declined": "Rechazar",
+      "scheduled": "Agendar",
+      "reschedule": "Reprogramar",
+      "completed": "Concluir",
+      "cancelled": "Cancelar",
+      "noteOnly": "Enviar mensaje",
+      "noteLabel": "Mensaje para el cliente",
+      "noteHint": "Ej.: horario acordado, enlace de la llamada o próximo paso.",
+      "noteRequired": "Mensaje obligatorio para esta acción.",
+      "done": "Pedido actualizado.",
+      "noteSent": "Mensaje enviado."
+    },
+    "services": {
+      "title": "Servicios",
+      "description": "Lo que aparece en tu perfil con precio. El equipo puede desactivar un servicio.",
+      "add": "Nuevo servicio",
+      "edit": "Editar",
+      "empty": "Todavía no hay servicios.",
+      "inactive": "En pausa",
+      "disabledByAdmin": "Desactivado por el equipo",
+      "saved": "Servicio guardado.",
+      "form": {
+        "title": "Título",
+        "description": "Descripción",
+        "kind": "Formato",
+        "kindSession": "Sesión",
+        "kindPlan": "Plan",
+        "mode": "Atención",
+        "duration": "Duración (min)",
+        "weeks": "Semanas",
+        "price": "Precio (R$)",
+        "priceHint": "Ej.: 180 o 180,50",
+        "active": "Visible en el perfil",
+        "adminDisabled": "Desactivado por el equipo",
+        "sortOrder": "Orden",
+        "note": "Observación (auditoría)",
+        "save": "Guardar",
+        "cancel": "Cancelar"
+      }
+    },
+    "profile": {
+      "title": "Perfil",
+      "description": "Lo que la gente ve en tu página.",
+      "name": "Nombre",
+      "photo": "Foto (URL)",
+      "photoHint": "Dirección que empieza con https://",
+      "bio": "Sobre ti",
+      "cities": "Ciudades donde atiendes",
+      "citiesHint": "Separa con comas.",
+      "online": "Atiendo en línea",
+      "registryNumber": "Número de registro",
+      "registryUf": "Estado del registro",
+      "registryHint": "Cambiar el registro quita el sello de verificado hasta que el equipo lo verifique de nuevo.",
+      "save": "Guardar perfil",
+      "saved": "Perfil guardado."
+    }
+  },
+  "admin": {
+    "title": "Profesionales",
+    "description": "Aprobación, servicios, precios, sugerencias y pedidos.",
+    "new": "Nuevo profesional",
+    "newTitle": "Nuevo profesional",
+    "empty": "No hay profesionales registrados.",
+    "filters": {
+      "all": "Todos",
+      "pending": "En revisión",
+      "approved": "Aprobados",
+      "suspended": "Suspendidos"
+    },
+    "columns": {
+      "name": "Profesional",
+      "specialty": "Especialidad",
+      "status": "Situación",
+      "orders": "Pedidos",
+      "response": "Respuesta"
+    },
+    "account": {
+      "linked": "Cuenta vinculada",
+      "none": "Sin cuenta vinculada"
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "profile": "Perfil",
+      "services": "Servicios",
+      "suggestions": "Sugeridos",
+      "orders": "Pedidos"
+    },
+    "status": {
+      "title": "Aprobación",
+      "verified": "Registro verificado en el consejo",
+      "note": "Nota",
+      "noteHint": "Ej.: verificado en el sitio del CRN el 30/10. Obligatoria para suspender.",
+      "approve": "Aprobar",
+      "pending": "Volver a revisión",
+      "suspend": "Suspender",
+      "saved": "Situación actualizada.",
+      "lastNote": "Última nota: {note}"
+    },
+    "invite": {
+      "title": "Cuenta del profesional",
+      "description": "Genera una invitación para que la persona entre con su correo y asuma este perfil.",
+      "email": "Correo",
+      "days": "Validez (días)",
+      "submit": "Generar invitación",
+      "linkTitle": "Enlace de la invitación",
+      "linkWarning": "Cópialo ahora: el enlace aparece una sola vez.",
+      "linked": "Este perfil ya tiene una cuenta vinculada."
+    },
+    "form": {
+      "name": "Nombre",
+      "slug": "Dirección (slug)",
+      "slugHint": "Minúsculas, números y guion. Ej.: ana-souza",
+      "specialty": "Especialidad",
+      "registryType": "Consejo",
+      "registryNumber": "Número de registro",
+      "registryUf": "Estado",
+      "photo": "Foto (URL)",
+      "bio": "Bio",
+      "cities": "Ciudades",
+      "citiesHint": "Separa con comas.",
+      "online": "Atiende en línea",
+      "sortOrder": "Orden en la lista",
+      "save": "Guardar",
+      "created": "Profesional creado.",
+      "saved": "Perfil guardado."
+    },
+    "suggestions": {
+      "title": "Sugerido en",
+      "description": "Dónde aparece este profesional como sugerencia. Los nutricionistas aparecen en las recetas; sin sugerencia, aparece cualquier nutricionista aprobado.",
+      "heroes": "Héroes",
+      "recipes": "Recetas",
+      "programs": "Programas",
+      "add": "Agregar",
+      "remove": "Quitar",
+      "none": "Ninguno.",
+      "select": "Elige…",
+      "saved": "Sugerencias actualizadas."
+    },
+    "orders": {
+      "title": "Pedidos",
+      "empty": "No hay pedidos.",
+      "response": "Respondió en {time}",
+      "waiting": "Sin respuesta hace {time}",
+      "cancel": "Cancelar como equipo",
+      "noteOnly": "Mensaje del equipo",
+      "stats": "Respondidos: {answered} · esperando: {waiting}"
+    },
+    "demoLogin": {
+      "title": "Cuenta de acceso rápido",
+      "description": "Crea la cuenta de acceso rápido del profesional, con la misma contraseña de las otras cuentas del panel, y la vincula a este perfil de ejemplo. Después aparece en el panel de la pantalla de inicio de sesión.",
+      "button": "Crear cuenta de acceso rápido",
+      "done": "Cuenta creada y vinculada al perfil."
+    }
+  }
+}

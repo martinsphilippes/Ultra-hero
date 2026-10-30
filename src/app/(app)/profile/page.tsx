@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, Users, type LucideIcon } from "lucide-react";
+import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Stethoscope, Store, Users, type LucideIcon } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -42,6 +42,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // painel ficam com o admin ("Publicar como hero" no início do admin, 0045).
 const PORTALS: Array<{ role: Exclude<AppRole, "consumer">; href: string; icon: LucideIcon }> = [
   { role: "seller", href: "/seller", icon: Store },
+  // profissional (0058): pedidos, serviços e perfil público
+  { role: "professional", href: "/profissional", icon: Stethoscope },
   { role: "admin", href: "/admin", icon: ShieldCheck },
 ];
 
@@ -115,7 +117,7 @@ export default async function ProfilePage() {
     <nav aria-label={t("portals.title")} data-testid="profile-portals">
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {portals.map(({ role, href, icon: Icon }) => (
-          <li key={role}>
+          <li key={role} className={cn(isBlockedInNativeApp(href) && "native:hidden")}>
             <Link
               href={href}
               data-testid={`profile-portal-${role}`}

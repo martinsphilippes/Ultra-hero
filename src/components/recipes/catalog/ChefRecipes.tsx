@@ -6,7 +6,7 @@ import type { RecipeCardData } from "@/lib/recipes/card";
 import { loadRecipeCards } from "@/lib/recipes/catalog";
 import { EMPTY_RECIPE_PARAMS, hasRecipeCriteria, recipeCatalogHref, type RecipeCatalogParams } from "@/lib/recipes/catalog-params";
 import { createClient } from "@/lib/supabase/server";
-import { NutritionistSoon } from "../showcase/NutritionistSoon";
+import { HireNutritionist } from "@/components/professionals/HireNutritionist";
 import { loadShowcaseCardContext, ShowcaseRecipeCard, type ShowcaseHeroRef } from "../showcase/showcase-cards";
 import { RecipeCatalog } from "./RecipeCatalog";
 import { RECIPE_GRID } from "./grid";
@@ -88,7 +88,8 @@ export async function ChefRecipes({ recipes, hero, params }: Props) {
         </section>
       ) : null}
 
-      <NutritionistSoon />
+      {/* Contratar nutricionista (Etapa 3, 0058): sugeridos deste herói; sem a 0058, a linha "em breve" */}
+      <HireNutritionist contentId={null} creatorId={hero.id} source="alimentacao" nextPath={base} />
     </div>
   );
 }

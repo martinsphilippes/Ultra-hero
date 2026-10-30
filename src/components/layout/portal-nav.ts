@@ -1,5 +1,8 @@
 // Links dos portais (só href + chave de tradução; ícones ficam no componente cliente).
-export type Portal = "admin" | "creator" | "seller";
+export type Portal = "admin" | "creator" | "seller" | "professional";
+
+// Raiz de cada portal (o do profissional mora em /profissional, em português como as rotas do app).
+export const PORTAL_ROOT: Record<Portal, string> = { admin: "/admin", creator: "/creator", seller: "/seller", professional: "/profissional" };
 
 export type PortalLink = { key: string; href: string };
 
@@ -11,6 +14,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "creators", href: "/admin/creators" },
     { key: "heroCategories", href: "/admin/hero-categories" },
     { key: "sellers", href: "/admin/sellers" },
+    { key: "professionals", href: "/admin/professionals" },
     { key: "content", href: "/admin/content" },
     { key: "programs", href: "/admin/programs" },
     { key: "plans", href: "/admin/plans" },
@@ -36,5 +40,12 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "products", href: "/seller/products" },
     { key: "fulfillments", href: "/seller/fulfillments" },
     { key: "profile", href: "/seller/profile" },
+  ],
+  // Profissional (0058): pedidos para responder, serviços com preço e o perfil público.
+  professional: [
+    { key: "dashboard", href: "/profissional" },
+    { key: "orders", href: "/profissional/pedidos" },
+    { key: "services", href: "/profissional/servicos" },
+    { key: "profile", href: "/profissional/perfil" },
   ],
 };

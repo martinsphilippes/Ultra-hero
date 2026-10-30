@@ -7,12 +7,16 @@ import { CartItemRow } from "@/components/commerce/CartItemRow";
 import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { DestinationSelector } from "@/components/commerce/DestinationSelector";
 import { loadCartSnapshot } from "@/components/commerce/server/queries";
+import { ServiceCartSection } from "@/components/professionals/ServiceCartSection";
 import { Button, DemoBadge, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import { requireUser } from "@/lib/auth/session";
+import { loadServiceCartView } from "@/lib/professionals/cart-view";
+import { cartTotals } from "@/lib/professionals/rules";
 
 // Carrinho de teste: itens agrupados por fornecedor, destino fictício, frete simulado e problemas.
+// Serviços contratados de profissionais (0058) entram numa seção própria, sem frete nem destino.
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("commerce.cart");
@@ -21,18 +25,33 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CartPage() {
   await requireUser("/cart");
-  const [snapshot, t, td, locale] = await Promise.all([loadCartSnapshot(), getTranslations("commerce.cart"), getTranslations("commerce.demo"), getLocale()]);
+  const [snapshot, services, t, td, tp, locale] = await Promise.all([
+    loadCartSnapshot(),
+    loadServiceCartView(),
+    getTranslations("commerce.cart"),
+    getTranslations("commerce.demo"),
+    getTranslations("professionals.cart"),
+    getLocale(),
+  ]);
   const uiLocale = locale as Locale;
   const issueByProduct = new Map(snapshot.issues.map((i) => [i.product_id, i]));
-  const blocking = snapshot.issues.some((i) => i.issue !== "price_changed");
-  const canCheckout = snapshot.lines.length > 0 && !blocking;
+  const hasProducts = snapshot.lines.length > 0;
+  const hasServices = services.items.length > 0;
+  const blocking = snapshot.issues.some((i) => i.issue !== "price_changed") || services.blocking;
+  const canCheckout = (hasProducts || hasServices) && !blocking;
+  const totals = cartTotals({
+    productSubtotalCents: snapshot.subtotalCents,
+    shippingCents: snapshot.shippingCents,
+    hasProducts,
+    services: services.items.filter((i) => i.priceCents !== null).map((i) => ({ priceCents: i.priceCents as number })),
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} eyebrow={<DemoBadge />} backHref="/shop" backLabel={t("continueShopping")} />
       <DemoNotice>{td("notice")}</DemoNotice>
 
-      {snapshot.lines.length === 0 ? (
+      {!hasProducts && !hasServices ? (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState
             icon={<ShoppingBag />}
@@ -75,30 +94,41 @@ export default async function CartPage() {
                 </footer>
               </section>
             ))}
+            {hasServices ? <ServiceCartSection items={services.items} subtotalCents={services.subtotalCents} /> : null}
           </div>
 
           <aside className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-[calc(var(--spacing-topbar)+1rem)]" aria-labelledby="cart-summary">
             <h2 id="cart-summary" className="type-h3 text-fg">
               {t("summaryTitle")}
             </h2>
-            <DestinationSelector destinations={snapshot.destinations} selectedId={snapshot.destination?.id ?? null} />
+            {hasProducts ? <DestinationSelector destinations={snapshot.destinations} selectedId={snapshot.destination?.id ?? null} /> : null}
             <dl className="flex flex-col gap-2 text-sm">
-              <div className="flex justify-between gap-3">
-                <dt className="text-fg-muted">
-                  {t("subtotal")} · {t("sellersCount", { n: snapshot.sellerCount })}
-                </dt>
-                <dd className="type-numeric font-medium text-fg">{formatCurrency(snapshot.subtotalCents / 100, uiLocale)}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-fg-muted">{t("shipping")}</dt>
-                <dd className="type-numeric font-medium text-fg">
-                  {snapshot.shippingCents === null ? <span className="text-fg-muted">{t("shippingPending")}</span> : snapshot.shippingCents === 0 ? t("shippingFree") : formatCurrency(snapshot.shippingCents / 100, uiLocale)}
-                </dd>
-              </div>
-              {snapshot.rule ? <p className="type-caption text-fg-muted">{t("destination.eta", { min: snapshot.rule.eta_days_min, max: snapshot.rule.eta_days_max })}</p> : null}
+              {hasProducts ? (
+                <>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-fg-muted">
+                      {t("subtotal")} · {t("sellersCount", { n: snapshot.sellerCount })}
+                    </dt>
+                    <dd className="type-numeric font-medium text-fg">{formatCurrency(snapshot.subtotalCents / 100, uiLocale)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-fg-muted">{t("shipping")}</dt>
+                    <dd className="type-numeric font-medium text-fg">
+                      {snapshot.shippingCents === null ? <span className="text-fg-muted">{t("shippingPending")}</span> : snapshot.shippingCents === 0 ? t("shippingFree") : formatCurrency(snapshot.shippingCents / 100, uiLocale)}
+                    </dd>
+                  </div>
+                  {snapshot.rule ? <p className="type-caption text-fg-muted">{t("destination.eta", { min: snapshot.rule.eta_days_min, max: snapshot.rule.eta_days_max })}</p> : null}
+                </>
+              ) : null}
+              {hasServices ? (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-fg-muted">{tp("subtotal")}</dt>
+                  <dd className="type-numeric font-medium text-fg">{formatCurrency(totals.servicesCents / 100, uiLocale)}</dd>
+                </div>
+              ) : null}
               <div className="flex justify-between gap-3 border-t border-border pt-2 text-base">
                 <dt className="font-semibold text-fg">{t("total")}</dt>
-                <dd className="type-numeric font-bold text-fg">{snapshot.totalCents === null ? "—" : formatCurrency(snapshot.totalCents / 100, uiLocale)}</dd>
+                <dd className="type-numeric font-bold text-fg">{totals.totalCents === null ? "—" : formatCurrency(totals.totalCents / 100, uiLocale)}</dd>
               </div>
             </dl>
             <Button asChild size="lg" block trailingIcon={<ArrowRight />} disabled={!canCheckout}>

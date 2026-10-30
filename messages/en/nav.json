@@ -9,7 +9,8 @@
   "portals": {
     "admin": "Admin",
     "creator": "Hero",
-    "seller": "Supplier"
+    "seller": "Supplier",
+    "professional": "Professional"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -32,7 +33,8 @@
     "metrics": "Metrics",
     "audit": "Audit log",
     "settings": "Settings",
-    "shipments": "Shipments"
+    "shipments": "Shipments",
+    "professionals": "Professionals"
   },
   "creator": {
     "post": "New post",
@@ -47,6 +49,12 @@
     "fulfillments": "Fulfillments",
     "profile": "Operation profile"
   },
+  "professional": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "services": "Services",
+    "profile": "Profile"
+  },
   "actions": {
     "search": "Search",
     "login": "Sign in",
@@ -60,7 +68,8 @@
   "portalDescription": {
     "admin": "Groscove Ultra administration",
     "creator": "Hero area",
-    "seller": "Supplier area"
+    "seller": "Supplier area",
+    "professional": "Professional area"
   },
   "backToProfile": "Profile"
 }

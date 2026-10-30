@@ -21,6 +21,8 @@ import {
   Settings,
   ShoppingBag,
   Star,
+  Stethoscope,
+  Handshake,
   Store,
   UserRound,
   Tag,
@@ -36,7 +38,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Sheet } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
-import { PORTAL_LINKS, type Portal } from "./portal-nav";
+import { PORTAL_LINKS, PORTAL_ROOT, type Portal } from "./portal-nav";
 
 const ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -44,6 +46,8 @@ const ICONS: Record<string, LucideIcon> = {
   invitations: Mail,
   creators: Star,
   sellers: Store,
+  professionals: Stethoscope,
+  services: Handshake,
   profile: UserRound,
   content: FileText,
   programs: ClipboardList,
@@ -77,7 +81,7 @@ type PortalNavListProps = { portal: Portal; onNavigate?: () => void };
 export function PortalNavList({ portal, onNavigate }: PortalNavListProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
-  const root = `/${portal}`;
+  const root = PORTAL_ROOT[portal];
 
   return (
     <nav aria-label={t("portalLabel")} className="flex flex-col gap-4">

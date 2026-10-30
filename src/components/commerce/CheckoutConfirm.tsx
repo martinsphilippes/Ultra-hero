@@ -15,14 +15,19 @@ type Props = {
   destinationId: string | null;
   /** Preços ilustrativos exibidos no resumo (product_id → centavos). */
   expected: { product_id: string; price_cents: number }[];
+  /** Serviços do carrinho com o preço exibido (0058); vazio = só produtos. */
+  services?: { service_id: string; price_cents: number }[];
+  /** Destino só é exigido quando há produto (serviço não tem entrega). */
+  needsDestination?: boolean;
   disabled?: boolean;
 };
 
 // Botão de confirmação do pedido de teste + tratamento de cart_changed (diff e aceite de preços).
-export function CheckoutConfirm({ destinationId, expected, disabled }: Props) {
+export function CheckoutConfirm({ destinationId, expected, services = [], needsDestination = true, disabled }: Props) {
   const t = useTranslations("commerce.checkout");
   const tc = useTranslations("commerce.cart.issues");
   const te = useTranslations("commerce.errors");
+  const tp = useTranslations("professionals.checkout.errors");
   const locale = useLocale() as Locale;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -32,15 +37,16 @@ export function CheckoutConfirm({ destinationId, expected, disabled }: Props) {
   const onlyPriceChanges = issues !== null && issues.length > 0 && issues.every((i) => i.issue === "price_changed");
 
   function run(acceptChanges: boolean, prices: { product_id: string; price_cents: number }[]) {
-    if (!destinationId) {
+    if (needsDestination && !destinationId) {
       setError(te("invalid_destination"));
       return;
     }
     setError(null);
     startTransition(async () => {
-      const result = await confirmCheckout({ destinationId, expected: prices, acceptChanges });
+      const result = await confirmCheckout({ destinationId, expected: prices, acceptChanges, services });
       if (result.ok) {
-        router.push(`/orders/${result.orderId}?new=1`);
+        // com serviços: Minhas compras na aba Serviços (o pedido de produtos também fica lá, em Pedidos)
+        router.push(result.serviceOrders > 0 ? "/shop/compras?aba=servicos&novo=1" : `/orders/${result.orderId}?new=1`);
         return;
       }
       if (result.error === "cart_changed" && "issues" in result) {
@@ -48,7 +54,7 @@ export function CheckoutConfirm({ destinationId, expected, disabled }: Props) {
         return;
       }
       setIssues(null);
-      setError(te.has(result.error) ? te(result.error) : te("generic"));
+      setError(tp.has(result.error) ? tp(result.error) : te.has(result.error) ? te(result.error) : te("generic"));
     });
   }
 
@@ -110,7 +116,7 @@ export function CheckoutConfirm({ destinationId, expected, disabled }: Props) {
         <Button asChild variant="ghost">
           <Link href="/cart">{t("backToCart")}</Link>
         </Button>
-        <Button type="button" size="lg" leadingIcon={<CheckCircle2 />} onClick={() => run(false, expected)} loading={pending} disabled={disabled || !destinationId || (issues !== null && issues.length > 0)}>
+        <Button type="button" size="lg" leadingIcon={<CheckCircle2 />} onClick={() => run(false, expected)} loading={pending} disabled={disabled || (needsDestination && !destinationId) || (issues !== null && issues.length > 0)}>
           {t("confirm")}
         </Button>
       </div>

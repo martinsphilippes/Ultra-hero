@@ -38,6 +38,7 @@ import { RecipeShareButtons } from "@/components/recipes/view/RecipeShareButtons
 import { RecipeView } from "@/components/recipes/view/RecipeView";
 import { AddToShoppingList, AddToShoppingListView } from "@/components/recipes/shopping/AddToShoppingList";
 import { NutritionistSoon } from "@/components/recipes/showcase/NutritionistSoon";
+import { HireNutritionist } from "@/components/professionals/HireNutritionist";
 import { ReadyMealButton } from "@/components/recipes/showcase/ReadyMealButton";
 import { RecipeSignatureLine } from "@/components/recipes/showcase/RecipeSignatureLine";
 import { RelatedRecipes } from "@/components/recipes/view/RelatedRecipes";
@@ -459,6 +460,8 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
             </div>
           )}
           {isRecipe && recipeActions.nutricionista === "soon" ? <NutritionistSoon /> : null}
+          {/* Contratar nutricionista (Etapa 3, 0058): sugeridos da receita/herói; sem a 0058, a linha "em breve" */}
+          {isRecipe && recipeActions.nutricionista === "live" ? <HireNutritionist contentId={content.id} creatorId={trackHero ?? null} source="receita" nextPath={path} /> : null}
         </div>
       </header>
 

@@ -77,8 +77,9 @@ describe("ações visíveis", () => {
     expect(recipeActionVisibility({ recipeOpen: true, hasIngredients: true, readyProduct: { purchasable: false }, commerceEnabled: true }).comprarPronto).toBe(false);
     expect(recipeActionVisibility({ recipeOpen: true, hasIngredients: true, readyProduct: ready, commerceEnabled: false }).comprarPronto).toBe(false);
   });
-  it("nutricionista: só 'em breve' até a Etapa 3", () => {
-    expect(NUTRITIONIST_ACTION).toBe("soon");
+  it("nutricionista: ligado na Etapa 3 (0058); a página mostra os sugeridos (sem a 0058, a linha 'em breve')", () => {
+    expect(NUTRITIONIST_ACTION).toBe("live");
+    expect(recipeActionVisibility({ recipeOpen: false, hasIngredients: false, readyProduct: null, commerceEnabled: true }).nutricionista).toBe("live");
   });
   it("cards da vitrine: Fazer e Lista sempre; Comprar pronto só com produto comprável", () => {
     expect(cardActionVisibility({ readyProduct: null, commerceEnabled: true })).toEqual({ fazer: true, comprarPronto: false, listaCompras: true, nutricionista: null });

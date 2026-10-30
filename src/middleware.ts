@@ -5,7 +5,8 @@ import { isBlockedInNativeApp, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
-const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profile", "/recipes", "/cart", "/checkout", "/orders", "/shop/compras", "/onboarding"];
+// /profissional = portal do profissional (0058); /profissionais (lista pública) não entra.
+const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profissional", "/profile", "/recipes", "/cart", "/checkout", "/orders", "/shop/compras", "/onboarding"];
 
 function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

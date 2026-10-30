@@ -5,7 +5,7 @@ import { seedUuid } from "./helpers/seed";
 
 // Alimentação completa (0051): assinatura da vitrine ("Receita de <chef> · indicada por <herói>"),
 // ações nos cards da Alimentação (Fazer, Lista de compras, Comprar pronto com produto ligado), a linha
-// "Nutricionista: em breve" e o painel "Vitrine (Alimentação)" do admin. Só leitura: nada é gravado
+// "Nutricionista: em breve" (com a 0058, "Contratar nutricionista") e o painel "Vitrine (Alimentação)" do admin. Só leitura: nada é gravado
 // (o cookie uh-e2e=1 também desliga o contador de toques). Sem a 0051 no banco, a assinatura e as
 // ações continuam (vêm do modelo da 0024); quem assina e Comprar pronto ficam de fora e os testes que
 // dependem deles se pulam.
@@ -37,11 +37,16 @@ test.describe("Alimentação do herói", () => {
     await expect(actions.getByTestId("recipe-card-make")).toHaveAttribute("href", `/content/${slug}/cozinha`);
     await expect(actions.getByTestId("recipe-card-make")).toHaveText("Fazer");
     await expect(actions.getByTestId("recipe-card-list")).toHaveAttribute("href", `/content/${slug}?vitrine=anitta#lista-de-compras`);
-    // nutricionista: só uma linha "em breve", sem botão nem link
-    const soon = page.getByTestId("recipe-nutritionist-soon");
-    await expect(soon).toHaveText("Nutricionista: em breve");
-    await expect(soon.getByRole("button")).toHaveCount(0);
-    await expect(soon.getByRole("link")).toHaveCount(0);
+    // nutricionista: com a 0058, "Contratar nutricionista" com sugeridos; sem ela, só a linha "em breve"
+    const hire = page.getByTestId("hire-nutritionist");
+    if ((await hire.count()) > 0) {
+      await expect(hire.getByTestId("hire-nutritionist-item").first()).toBeVisible();
+    } else {
+      const soon = page.getByTestId("recipe-nutritionist-soon");
+      await expect(soon).toHaveText("Nutricionista: em breve");
+      await expect(soon.getByRole("button")).toHaveCount(0);
+      await expect(soon.getByRole("link")).toHaveCount(0);
+    }
     await expectNoSeriousAxe(page, "main");
   });
 
@@ -75,7 +80,8 @@ test.describe("página da receita", () => {
     const signature = page.getByTestId("recipe-page-signature");
     await expect(signature).toHaveAttribute("data-kind", "chef");
     await expect(signature).toHaveText(/Receita de Érick Jacquin/);
-    await expect(page.getByTestId("recipe-nutritionist-soon")).toHaveText("Nutricionista: em breve");
+    // sem a 0058: "em breve"; com ela, a seção "Contratar nutricionista"
+    await expect(page.getByTestId("recipe-nutritionist-soon").or(page.getByTestId("hire-nutritionist"))).toBeVisible();
 
     // herói suspenso / inexistente / formato inválido: vale o autor
     for (const vitrine of ["bruna-castellano", "nao-existe", "..%2Fadmin"]) {

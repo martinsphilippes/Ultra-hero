@@ -62,7 +62,8 @@
     "generic": "Não foi possível concluir a ação. Tente novamente.",
     "rights_holder_required": "Informe o titular da autorização para marcar como autorizado.",
     "creator_not_found": "Herói não encontrado.",
-    "product_not_found": "Produto não encontrado."
+    "product_not_found": "Produto não encontrado.",
+    "professional_profile_already_linked": "Esta conta já está ligada a outro perfil profissional."
   },
   "dashboard": {
     "title": "Painel",
@@ -177,7 +178,8 @@
       "consumer": "Consumidor",
       "creator": "Herói",
       "seller": "Fornecedor",
-      "admin": "Admin"
+      "admin": "Admin",
+      "professional": "Profissional"
     },
     "detail": {
       "title": "Detalhe do usuário",
@@ -301,7 +303,10 @@
     "goSeller": "Ir para o portal do fornecedor",
     "goHome": "Voltar ao app",
     "errorTitle": "Não foi possível aceitar",
-    "successSellerPortalOff": "Convite aceito. O portal do fornecedor está desativado por enquanto; a operação é feita pela administração."
+    "successSellerPortalOff": "Convite aceito. O portal do fornecedor está desativado por enquanto; a operação é feita pela administração.",
+    "successProfessional": "Seu acesso de profissional foi liberado. Complete o perfil e os serviços.",
+    "goProfessional": "Ir para o portal do profissional",
+    "grantProfessional": "Você receberá acesso ao portal do profissional."
   },
   "creators": {
     "title": "Heróis",

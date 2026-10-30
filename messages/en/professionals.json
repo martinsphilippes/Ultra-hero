@@ -1,0 +1,344 @@
+{
+  "meta": {
+    "list": "Professionals",
+    "portal": "Professional portal"
+  },
+  "specialty": {
+    "nutritionist": "Nutritionist",
+    "personal_trainer": "Personal trainer",
+    "physiotherapist": "Physiotherapist",
+    "psychologist": "Psychologist"
+  },
+  "specialtyPlural": {
+    "all": "All",
+    "nutritionist": "Nutritionists",
+    "personal_trainer": "Personal trainers",
+    "physiotherapist": "Physiotherapists",
+    "psychologist": "Psychologists"
+  },
+  "mode": {
+    "online": "Online",
+    "in_person": "In person",
+    "both": "Online or in person"
+  },
+  "format": {
+    "minutes": "{minutes} min",
+    "weeks": "{weeks}-wk plan"
+  },
+  "registry": "{type} {number}/{uf}",
+  "verified": "Registration checked",
+  "verifiedHint": "Our team checked the professional council registration.",
+  "online": "Works online",
+  "cities": "Works in {cities}",
+  "from": "From {price}",
+  "list": {
+    "title": "Professionals",
+    "description": "Nutritionists and personal trainers to support your routine.",
+    "filterLabel": "Specialty",
+    "empty": "No professionals in this specialty yet.",
+    "unavailable": "Professionals are not available yet.",
+    "viewProfile": "View profile"
+  },
+  "profile": {
+    "back": "Professionals",
+    "about": "About",
+    "services": "Services",
+    "noServices": "No services available right now.",
+    "notFound": "Professional not found."
+  },
+  "hire": {
+    "button": "Hire",
+    "inCart": "In cart",
+    "viewCart": "View cart",
+    "login": "Sign in to hire",
+    "own": "This is your service",
+    "added": "Service in cart",
+    "addedDescription": "{title} was added to the cart.",
+    "errors": {
+      "commerce_disabled": "Hiring is paused right now.",
+      "service_unavailable": "This service is no longer available.",
+      "own_service": "You can't hire your own service.",
+      "too_many_services": "The cart already has the maximum number of services.",
+      "unauthenticated": "Sign in to hire.",
+      "generic": "Couldn't add it now. Please try again."
+    }
+  },
+  "nutritionist": {
+    "title": "Hire a nutritionist",
+    "description": "A nutritionist adapts this recipe and your menu to your routine.",
+    "suggested": "Suggested",
+    "seeAll": "See all nutritionists"
+  },
+  "cart": {
+    "title": "Services",
+    "itemsCount": "{n} service(s)",
+    "remove": "Remove",
+    "removeLabel": "Remove {title} from the cart",
+    "unavailable": "Service unavailable. Remove it to continue.",
+    "subtotal": "Services",
+    "note": "After you confirm, the professional gets the order and replies here, in My purchases."
+  },
+  "checkout": {
+    "services": "Services",
+    "noDestinationNeeded": "Services have no delivery: the professional arranges everything with you.",
+    "errors": {
+      "service_unavailable": "A service in your cart is no longer available. Review your cart.",
+      "service_price_changed": "A service price changed. Review your cart."
+    }
+  },
+  "orders": {
+    "tab": "Services",
+    "empty": "You haven't hired any services yet.",
+    "emptyAction": "Meet professionals",
+    "placedAt": "Ordered on {date}",
+    "newBanner": "Order sent! The professional will reply here.",
+    "schedule": "Schedule: {note}",
+    "messages": "Messages",
+    "cancel": "Cancel order",
+    "cancelTitle": "Cancel this order?",
+    "cancelDescription": "The professional hasn't replied yet. Cancelling has no cost.",
+    "cancelled": "Order cancelled.",
+    "keep": "Keep order",
+    "status": {
+      "pending": "Awaiting reply",
+      "accepted": "Accepted",
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "declined": "Declined",
+      "cancelled": "Cancelled"
+    },
+    "actor": {
+      "consumer": "You",
+      "professional": "Professional",
+      "admin": "Team",
+      "system": "System"
+    }
+  },
+  "errors": {
+    "forbidden": "You don't have permission for this.",
+    "not_found": "Not found.",
+    "invalid_transition": "This change isn't possible in the order's current status.",
+    "note_required": "Write a short message to the client.",
+    "note_too_long": "Message too long.",
+    "order_closed": "This order is already closed.",
+    "professional_suspended": "Your profile is suspended. Contact the team.",
+    "not_professional": "This account has no professional profile.",
+    "too_many_services": "Limit of 12 services reached.",
+    "invalid_service": "Check the service title, format and price.",
+    "invalid_input": "Check the fields.",
+    "invalid_price": "Price between R$ 5.00 and R$ 100,000.00.",
+    "registry_not_verified": "To approve, mark the registration as checked.",
+    "invalid_status": "Invalid status.",
+    "invalid_target": "Invalid item.",
+    "professional_already_linked": "This profile already has a linked account.",
+    "slug_taken": "This address is already in use.",
+    "generic": "Something went wrong. Please try again."
+  },
+  "portal": {
+    "title": "Professional portal",
+    "description": "Orders, services and your public profile.",
+    "nav": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "services": "Services",
+      "profile": "Profile"
+    },
+    "noProfile": "This account has no linked professional profile.",
+    "noProfileAdmin": "You are an admin: manage professionals in Admin → Professionals.",
+    "goAdmin": "Open professionals in admin",
+    "unavailable": "The professional portal is not available yet.",
+    "status": {
+      "pending": "Under review",
+      "approved": "Approved",
+      "suspended": "Suspended"
+    },
+    "statusHint": {
+      "pending": "The team is checking your registration. Meanwhile, set up your profile and services.",
+      "approved": "Your profile shows up in the professionals list.",
+      "suspended": "Your profile is offline. Contact the team."
+    },
+    "viewPublic": "View public profile",
+    "kpi": {
+      "pending": "Awaiting reply",
+      "open": "In progress",
+      "completed": "Completed",
+      "median": "Reply time (median)",
+      "none": "—"
+    },
+    "duration": {
+      "min": "{value} min",
+      "h": "{value} h",
+      "d": "{value} d"
+    },
+    "latest": "Recent orders",
+    "seeAll": "See all",
+    "ordersTitle": "Orders",
+    "filters": {
+      "open": "Open",
+      "pending": "Awaiting",
+      "closed": "Closed",
+      "all": "All"
+    },
+    "noOrders": "No orders here.",
+    "client": "Client: {name}",
+    "clientRemoved": "Client removed",
+    "orderBack": "Orders",
+    "history": "History",
+    "actions": {
+      "title": "Reply",
+      "accepted": "Accept",
+      "declined": "Decline",
+      "scheduled": "Schedule",
+      "reschedule": "Reschedule",
+      "completed": "Complete",
+      "cancelled": "Cancel",
+      "noteOnly": "Send message",
+      "noteLabel": "Message to the client",
+      "noteHint": "E.g.: agreed time, call link or next step.",
+      "noteRequired": "A message is required for this action.",
+      "done": "Order updated.",
+      "noteSent": "Message sent."
+    },
+    "services": {
+      "title": "Services",
+      "description": "What shows on your profile with a price. The team can deactivate a service.",
+      "add": "New service",
+      "edit": "Edit",
+      "empty": "No services yet.",
+      "inactive": "Paused",
+      "disabledByAdmin": "Deactivated by the team",
+      "saved": "Service saved.",
+      "form": {
+        "title": "Title",
+        "description": "Description",
+        "kind": "Format",
+        "kindSession": "Session",
+        "kindPlan": "Plan",
+        "mode": "Delivery",
+        "duration": "Duration (min)",
+        "weeks": "Weeks",
+        "price": "Price (R$)",
+        "priceHint": "E.g.: 180 or 180,50",
+        "active": "Visible on profile",
+        "adminDisabled": "Deactivated by the team",
+        "sortOrder": "Order",
+        "note": "Note (audit)",
+        "save": "Save",
+        "cancel": "Cancel"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "What people see on your page.",
+      "name": "Name",
+      "photo": "Photo (URL)",
+      "photoHint": "Address starting with https://",
+      "bio": "About you",
+      "cities": "Cities you work in",
+      "citiesHint": "Separate with commas.",
+      "online": "I work online",
+      "registryNumber": "Registration number",
+      "registryUf": "Registration state",
+      "registryHint": "Changing the registration removes the checked badge until the team checks it again.",
+      "save": "Save profile",
+      "saved": "Profile saved."
+    }
+  },
+  "admin": {
+    "title": "Professionals",
+    "description": "Approval, services, prices, suggestions and orders.",
+    "new": "New professional",
+    "newTitle": "New professional",
+    "empty": "No professionals registered.",
+    "filters": {
+      "all": "All",
+      "pending": "Under review",
+      "approved": "Approved",
+      "suspended": "Suspended"
+    },
+    "columns": {
+      "name": "Professional",
+      "specialty": "Specialty",
+      "status": "Status",
+      "orders": "Orders",
+      "response": "Reply"
+    },
+    "account": {
+      "linked": "Account linked",
+      "none": "No linked account"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "profile": "Profile",
+      "services": "Services",
+      "suggestions": "Suggested",
+      "orders": "Orders"
+    },
+    "status": {
+      "title": "Approval",
+      "verified": "Registration checked with the council",
+      "note": "Note",
+      "noteHint": "E.g.: checked on the CRN website on 10/30. Required to suspend.",
+      "approve": "Approve",
+      "pending": "Back to review",
+      "suspend": "Suspend",
+      "saved": "Status updated.",
+      "lastNote": "Last note: {note}"
+    },
+    "invite": {
+      "title": "Professional account",
+      "description": "Create an invitation so the person signs in with their email and takes over this profile.",
+      "email": "Email",
+      "days": "Valid for (days)",
+      "submit": "Create invitation",
+      "linkTitle": "Invitation link",
+      "linkWarning": "Copy it now: the link is shown only once.",
+      "linked": "This profile already has a linked account."
+    },
+    "form": {
+      "name": "Name",
+      "slug": "Address (slug)",
+      "slugHint": "Lowercase letters, numbers and hyphens. E.g.: ana-souza",
+      "specialty": "Specialty",
+      "registryType": "Council",
+      "registryNumber": "Registration number",
+      "registryUf": "State",
+      "photo": "Photo (URL)",
+      "bio": "Bio",
+      "cities": "Cities",
+      "citiesHint": "Separate with commas.",
+      "online": "Works online",
+      "sortOrder": "List order",
+      "save": "Save",
+      "created": "Professional created.",
+      "saved": "Profile saved."
+    },
+    "suggestions": {
+      "title": "Suggested on",
+      "description": "Where this professional appears as a suggestion. Nutritionists appear on recipes; with no suggestion, any approved nutritionist shows up.",
+      "heroes": "Heroes",
+      "recipes": "Recipes",
+      "programs": "Programs",
+      "add": "Add",
+      "remove": "Remove",
+      "none": "None.",
+      "select": "Choose…",
+      "saved": "Suggestions updated."
+    },
+    "orders": {
+      "title": "Orders",
+      "empty": "No orders.",
+      "response": "Replied in {time}",
+      "waiting": "No reply for {time}",
+      "cancel": "Cancel as team",
+      "noteOnly": "Team message",
+      "stats": "Replied: {answered} · waiting: {waiting}"
+    },
+    "demoLogin": {
+      "title": "Quick access account",
+      "description": "Creates the professional quick access account, with the same password as the other panel accounts, and links it to this sample profile. It then shows up in the panel on the sign-in screen.",
+      "button": "Create quick access account",
+      "done": "Account created and linked to the profile."
+    }
+  }
+}

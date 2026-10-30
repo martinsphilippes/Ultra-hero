@@ -8,14 +8,18 @@ import { CommerceEventTracker } from "@/components/commerce/CommerceEventTracker
 import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { DestinationSelector } from "@/components/commerce/DestinationSelector";
 import { loadCartSnapshot } from "@/components/commerce/server/queries";
+import { ServiceCartSection } from "@/components/professionals/ServiceCartSection";
 import { Badge, Button, DemoBadge, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import { requireUser } from "@/lib/auth/session";
 import { localizedLabel } from "@/lib/catalog/queries";
+import { loadServiceCartView } from "@/lib/professionals/cart-view";
+import { cartTotals } from "@/lib/professionals/rules";
 import { createClient } from "@/lib/supabase/server";
 
 // Checkout de teste: revisão do resumo + confirmação. Não existe etapa de pagamento.
+// Com serviços (0058): seção própria; destino só é pedido quando há produto.
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("commerce.checkout");
@@ -24,11 +28,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CheckoutPage() {
   await requireUser("/checkout");
-  const [snapshot, t, tc, td, locale, supabase] = await Promise.all([
+  const [snapshot, services, t, tc, td, tp, locale, supabase] = await Promise.all([
     loadCartSnapshot(),
+    loadServiceCartView(),
     getTranslations("commerce.checkout"),
     getTranslations("commerce.cart"),
     getTranslations("commerce.demo"),
+    getTranslations("professionals"),
     getLocale(),
     createClient(),
   ]);
@@ -40,7 +46,15 @@ export default async function CheckoutPage() {
 
   const visibleLines = snapshot.lines.filter((l) => l.product);
   const expected = visibleLines.map((l) => ({ product_id: l.product_id, price_cents: l.product!.price_cents_demo }));
-  const blocking = snapshot.issues.some((i) => i.issue !== "price_changed");
+  const hasProducts = snapshot.lines.length > 0;
+  const hasServices = services.items.length > 0;
+  const blocking = snapshot.issues.some((i) => i.issue !== "price_changed") || services.blocking;
+  const totals = cartTotals({
+    productSubtotalCents: snapshot.subtotalCents,
+    shippingCents: snapshot.shippingCents,
+    hasProducts,
+    services: services.items.filter((i) => i.priceCents !== null).map((i) => ({ priceCents: i.priceCents as number })),
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -53,7 +67,7 @@ export default async function CheckoutPage() {
         </DemoNotice>
       ) : null}
 
-      {snapshot.lines.length === 0 ? (
+      {!hasProducts && !hasServices ? (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState
             icon={<ShoppingBag />}
@@ -69,6 +83,7 @@ export default async function CheckoutPage() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
           <div className="flex flex-col gap-6">
+            {hasProducts ? (
             <section aria-labelledby="checkout-items" className="rounded-2xl border border-border bg-surface p-5">
               <h2 id="checkout-items" className="type-h3 mb-3 text-fg">
                 {t("reviewItems")}
@@ -95,7 +110,11 @@ export default async function CheckoutPage() {
                 ))}
               </ul>
             </section>
+            ) : null}
 
+            {hasServices ? <ServiceCartSection items={services.items} subtotalCents={services.subtotalCents} /> : null}
+
+            {hasProducts ? (
             <section aria-labelledby="checkout-destination" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
               <h2 id="checkout-destination" className="type-h3 text-fg">
                 {t("destination")}
@@ -117,8 +136,17 @@ export default async function CheckoutPage() {
               )}
               <DestinationSelector destinations={snapshot.destinations} selectedId={snapshot.destination?.id ?? null} compact />
             </section>
+            ) : (
+              <p className="type-body-sm text-fg-muted">{tp("checkout.noDestinationNeeded")}</p>
+            )}
 
-            <CheckoutConfirm destinationId={snapshot.destination?.id ?? null} expected={expected} disabled={!commerceEnabled || blocking || visibleLines.length === 0} />
+            <CheckoutConfirm
+              destinationId={snapshot.destination?.id ?? null}
+              expected={expected}
+              services={services.expected}
+              needsDestination={hasProducts}
+              disabled={!commerceEnabled || blocking || (visibleLines.length === 0 && services.expected.length === 0)}
+            />
           </div>
 
           <aside className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 lg:sticky lg:top-[calc(var(--spacing-topbar)+1rem)]" aria-labelledby="checkout-summary">
@@ -126,20 +154,30 @@ export default async function CheckoutPage() {
               {tc("summaryTitle")}
             </h2>
             <dl className="flex flex-col gap-2 text-sm">
-              <div className="flex justify-between gap-3">
-                <dt className="text-fg-muted">{t("subtotal")}</dt>
-                <dd className="type-numeric font-medium text-fg">{formatCurrency(snapshot.subtotalCents / 100, uiLocale)}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-fg-muted">{t("shipping")}</dt>
-                <dd className="type-numeric font-medium text-fg">
-                  {snapshot.shippingCents === null ? <span className="text-fg-muted">{tc("shippingPending")}</span> : snapshot.shippingCents === 0 ? tc("shippingFree") : formatCurrency(snapshot.shippingCents / 100, uiLocale)}
-                </dd>
-              </div>
-              {snapshot.rule ? <p className="type-caption text-fg-muted">{tc("destination.eta", { min: snapshot.rule.eta_days_min, max: snapshot.rule.eta_days_max })}</p> : null}
+              {hasProducts ? (
+                <>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-fg-muted">{t("subtotal")}</dt>
+                    <dd className="type-numeric font-medium text-fg">{formatCurrency(snapshot.subtotalCents / 100, uiLocale)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-fg-muted">{t("shipping")}</dt>
+                    <dd className="type-numeric font-medium text-fg">
+                      {snapshot.shippingCents === null ? <span className="text-fg-muted">{tc("shippingPending")}</span> : snapshot.shippingCents === 0 ? tc("shippingFree") : formatCurrency(snapshot.shippingCents / 100, uiLocale)}
+                    </dd>
+                  </div>
+                  {snapshot.rule ? <p className="type-caption text-fg-muted">{tc("destination.eta", { min: snapshot.rule.eta_days_min, max: snapshot.rule.eta_days_max })}</p> : null}
+                </>
+              ) : null}
+              {hasServices ? (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-fg-muted">{tp("checkout.services")}</dt>
+                  <dd className="type-numeric font-medium text-fg">{formatCurrency(totals.servicesCents / 100, uiLocale)}</dd>
+                </div>
+              ) : null}
               <div className="flex justify-between gap-3 border-t border-border pt-2 text-base">
                 <dt className="font-semibold text-fg">{t("total")}</dt>
-                <dd className="type-numeric font-bold text-fg">{snapshot.totalCents === null ? "—" : formatCurrency(snapshot.totalCents / 100, uiLocale)}</dd>
+                <dd className="type-numeric font-bold text-fg">{totals.totalCents === null ? "—" : formatCurrency(totals.totalCents / 100, uiLocale)}</dd>
               </div>
             </dl>
             <p className="type-caption text-fg-muted">{td("priceDemo")}</p>

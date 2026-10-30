@@ -11,7 +11,7 @@ import { Logo } from "./Logo";
 import { PortalMobileMenu, PortalNavList } from "./PortalSidebar";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
-import type { Portal } from "./portal-nav";
+import { PORTAL_ROOT, type Portal } from "./portal-nav";
 
 type PortalShellProps = { portal: Portal; children: ReactNode };
 
@@ -38,7 +38,7 @@ export async function PortalShell({ portal, children }: PortalShellProps) {
         aria-label={ta("a11y.portalNavigation")}
         className="sticky top-0 hidden h-dvh w-sidebar shrink-0 flex-col gap-6 overflow-y-auto border-r border-border bg-surface px-4 py-5 md:flex"
       >
-        <Link href={`/${portal}`} className="rounded-lg px-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+        <Link href={PORTAL_ROOT[portal]} className="rounded-lg px-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
           <Logo size="sm" />
         </Link>
         <div className="flex items-center gap-2 px-2">
@@ -56,7 +56,7 @@ export async function PortalShell({ portal, children }: PortalShellProps) {
               {withMenu ? (
                 <>
                   <PortalMobileMenu portal={portal} />
-                  <Link href={`/${portal}`} className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus md:hidden">
+                  <Link href={PORTAL_ROOT[portal]} className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus md:hidden">
                     <Logo size="sm" />
                   </Link>
                   <p className="hidden truncate text-sm text-fg-muted md:block">{t(`portalDescription.${portal}`)}</p>
