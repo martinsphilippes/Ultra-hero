@@ -22,9 +22,14 @@ export function daySeed(now: Date = new Date()): number {
   return Math.floor(now.getTime() / 86_400_000);
 }
 
+/** Placeholder da marca para o pilar (capa ausente ou que não carregou). */
+export function coverFallback(pillar: Pillar): string {
+  return `/placeholders/cover-${pillar}-1.svg`;
+}
+
 /** Capa do quadro, com placeholder do pilar quando o conteúdo não tem imagem. */
 export function tileCover(coverUrl: string | null | undefined, pillar: Pillar): string {
-  return coverUrl || `/placeholders/cover-${pillar}-1.svg`;
+  return coverUrl || coverFallback(pillar);
 }
 
 type TileLabelParts = {

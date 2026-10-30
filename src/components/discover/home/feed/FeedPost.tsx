@@ -1,8 +1,7 @@
 import { Ban, BookOpen, ChefHat, Dumbbell, FileText, ImageIcon, Lock, PlayCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import Image from "next/image";
 import Link from "next/link";
-import { tileCover } from "@/components/discover/explore/tiles";
+import { CoverImage } from "@/components/catalog/CoverImage";
 import { FollowButton } from "@/components/heroes/FollowButton";
 import { Avatar } from "@/components/ui";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
@@ -25,7 +24,6 @@ export async function FeedPost({ post, priority, follow }: Props) {
   const Icon = photo ? ImageIcon : TYPE_ICON[post.type];
   const unavailable = post.access_level === null;
   const premium = post.access_level === "premium";
-  const src = tileCover(post.cover_url, post.pillar);
   const href = `/content/${post.slug}`;
   const titleId = `post-${post.id}`;
   const restriction = unavailable ? t("tile.unavailable") : premium ? t("tile.premium", { plan: post.required_module?.name ?? t("premium") }) : null;
@@ -66,7 +64,7 @@ export async function FeedPost({ post, priority, follow }: Props) {
         className="uh-post-media group relative block aspect-[4/5] overflow-hidden bg-surface-elevated md:rounded-lg"
         data-testid="feed-post-cover"
       >
-        <Image src={src} alt="" fill priority={priority} unoptimized={src.endsWith(".svg")} sizes="(min-width: 768px) 470px, 100vw" className="uh-post-image object-cover" />
+        <CoverImage src={post.cover_url} pillar={post.pillar} video={post.type === "video" && !photo} priority={priority} sizes="(min-width: 768px) 470px, 100vw" className="uh-post-image object-cover" />
         {/* véu da transição de entrada (feed-reveal em globals.css): escuro → imagem, ligado à rolagem */}
         <span aria-hidden="true" className="uh-post-veil pointer-events-none absolute inset-0 bg-black opacity-0" />
         {/* Ícones brancos com sombra: legíveis sobre qualquer capa sem escurecer a imagem. */}

@@ -1,9 +1,9 @@
 import { Ban, BookOpen, ChefHat, Dumbbell, FileText, Lock, PlayCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import Image from "next/image";
 import Link from "next/link";
-import { tileCover, tileLabel, type ContentTileData } from "@/components/discover/explore/tiles";
+import { tileLabel, type ContentTileData } from "@/components/discover/explore/tiles";
 import { cn } from "@/lib/utils";
+import { CoverImage } from "./CoverImage";
 
 const TYPE_ICON = {
   video: PlayCircle,
@@ -27,7 +27,6 @@ export async function ContentTile({ content, priority, className }: Props) {
   const Icon = TYPE_ICON[content.type];
   const unavailable = content.access_level === null;
   const premium = content.access_level === "premium";
-  const src = tileCover(content.cover_url, content.pillar);
   const restriction = unavailable ? t("tile.unavailable") : premium ? t("tile.premium", { plan: content.required_module?.name ?? t("premium") }) : null;
   const label = tileLabel({ title: content.title, creator: content.creator?.name, type: t(`types.${content.type}`), restriction });
 
@@ -43,12 +42,12 @@ export async function ContentTile({ content, priority, className }: Props) {
       )}
     >
       <span className="sr-only">{label}</span>
-      <Image
-        src={src}
-        alt=""
-        fill
+      {/* sem capa ou capa que falha: placeholder da marca (com play em vídeo), nunca um quadrado vazio */}
+      <CoverImage
+        src={content.cover_url}
+        pillar={content.pillar}
+        video={content.type === "video"}
         priority={priority}
-        unoptimized={src.endsWith(".svg")}
         sizes="(min-width: 768px) 16rem, 33vw"
         className="object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.04] motion-reduce:transition-none"
       />

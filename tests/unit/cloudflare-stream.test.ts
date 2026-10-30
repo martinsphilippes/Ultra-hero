@@ -420,16 +420,62 @@ describe("GET /media/stream/[uid]/thumbnail", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  // JPEG de mentira com `size` bytes (o proxy só olha o tamanho para achar quadro em branco)
+  const jpeg = (size: number, fill = 1) => {
+    const bytes = new Uint8Array(size).fill(fill);
+    bytes.set([0xff, 0xd8, 0xff, 0xe0]);
+    return bytes;
+  };
+  const jpegResponse = (bytes: Uint8Array<ArrayBuffer>) => new Response(bytes, { status: 200, headers: { "content-type": "image/jpeg" } });
+  const frameUrl = (time?: string) => `https://customer-${CODE}.cloudflarestream.com/${UID}/thumbnails/thumbnail.jpg?${time ? `time=${time}&` : ""}height=720`;
+
   it("sucesso repassa os bytes como image/jpeg com cache de 1 dia", async () => {
     configure();
-    const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
-    const fetchMock = mockFetch(new Response(bytes, { status: 200, headers: { "content-type": "image/jpeg" } }));
+    const bytes = jpeg(8000);
+    const fetchMock = mockFetch(() => jpegResponse(bytes));
     const res = await call(UID);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("image/jpeg");
     expect(res.headers.get("cache-control")).toBe("public, max-age=86400, s-maxage=86400");
     expect(new Uint8Array(await res.arrayBuffer())).toEqual(bytes);
-    expect(String(fetchMock.mock.calls[0][0])).toBe(`https://customer-${CODE}.cloudflarestream.com/${UID}/thumbnails/thumbnail.jpg?height=720`);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0][0])).toBe(frameUrl());
+  });
+
+  it("1º quadro preto (JPEG minúsculo) → usa o primeiro quadro seguinte com conteúdo", async () => {
+    configure();
+    const black = jpeg(2000, 0);
+    const dark = jpeg(3000, 2);
+    const scene = jpeg(16000, 3);
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("time=1s")) return jpegResponse(dark);
+      if (url.includes("time=2s")) return jpegResponse(scene);
+      return jpegResponse(black);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const res = await call(UID);
+    expect(res.status).toBe(200);
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(scene);
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([frameUrl(), frameUrl("1s"), frameUrl("2s")]);
+  });
+
+  it("vídeo curto todo escuro: para no 400 (tempo após o fim) e devolve o quadro mais detalhado", async () => {
+    configure();
+    const black = jpeg(2000, 0);
+    const dark = jpeg(3000, 2);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("time=1s")) return jpegResponse(dark);
+        if (url.includes("time=")) return new Response("bad time", { status: 400, headers: { "content-type": "text/plain" } });
+        return jpegResponse(black);
+      }),
+    );
+    const res = await call(UID);
+    expect(res.status).toBe(200);
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(dark);
   });
 
   it("vídeo inexistente no Cloudflare → 404", async () => {
