@@ -1,11 +1,11 @@
-// Página do programa em 4 cards (Conceito, Prepare-se, Conteúdo, Nutricional), cada um abrindo telas
+// Página do programa em até 5 cards (Conceito, Prepare-se, Conteúdo, Nutricional, Apoio), cada um abrindo telas
 // em sequência. Regras puras (sem Supabase/React): quais seções do conceito vão para qual card, quando
 // o Nutricional aparece e o estado na URL (?secao=conceito&tela=2).
 import type { ContentType, Pillar } from "@/lib/supabase/helpers";
 import { CARD_PARAM, parseScreenState, screenSearch, type ParamsLike, type ScreenState } from "@/lib/screen-cards";
 import { rhythmChips, type ProgramConcept } from "./concept";
 
-export const PROGRAM_CARD_KEYS = ["conceito", "prepare-se", "conteudo", "nutricional"] as const;
+export const PROGRAM_CARD_KEYS = ["conceito", "prepare-se", "conteudo", "nutricional", "apoio"] as const;
 export type ProgramCardKey = (typeof PROGRAM_CARD_KEYS)[number];
 
 export function isProgramCardKey(value: string | null | undefined): value is ProgramCardKey {
@@ -92,7 +92,10 @@ export function nutritionProductsAllowed({ commerceEnabled, nativeApp }: { comme
   return commerceEnabled && !nativeApp;
 }
 
-/** O card Nutricional só aparece com algum material: conteúdos nutricionais ou produtos permitidos. */
+/**
+ * O card Nutricional só aparece com algum material: conteúdos nutricionais (do programa ou do próprio
+ * herói como autor) ou produtos de comida permitidos (ligados ao programa ou ao herói).
+ */
 export function nutritionVisible({ contents, products, productsAllowed }: { contents: number; products: number; productsAllowed: boolean }): boolean {
   return contents > 0 || (productsAllowed && products > 0);
 }
@@ -104,6 +107,30 @@ export function nutritionScreens({ contents, products, productsAllowed }: { cont
   if (contents > 0) screens.push("contents");
   if (productsAllowed && products > 0) screens.push("products");
   return screens;
+}
+
+/**
+ * Conteúdos do Nutricional: os de nutrição/receitas do programa, depois os PRÓPRIOS do herói (autor).
+ * Receitas só indicadas pelo herói (creator_recipe_links de outro autor) ficam de fora (Etapa 4).
+ */
+export function programNutritionContents<T extends { id: string; type: ContentType; pillar: Pillar }>(
+  { programContents, heroOwnContents }: { programContents: readonly T[]; heroOwnContents: readonly T[] },
+  limit: number,
+): T[] {
+  return mergeUnique([programContents.filter(isNutritionContent), heroOwnContents.filter(isNutritionContent)], limit);
+}
+
+/** Produtos do Nutricional: os ligados ao programa primeiro, depois os do herói, sem repetir. */
+export function mergeLinkedProducts<T extends { product: { id: string } }>(linked: readonly T[], others: readonly T[], limit: number): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const item of [...linked, ...others]) {
+    if (out.length >= limit) break;
+    if (seen.has(item.product.id)) continue;
+    seen.add(item.product.id);
+    out.push(item);
+  }
+  return out;
 }
 
 /**

@@ -4,11 +4,13 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import type { ActionResult } from "@/components/admin";
+import { parseActionError } from "@/components/admin-content/lib/errors";
 import { slugify } from "@/components/admin-content/lib/slug";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import { getUser, hasRole } from "@/lib/auth/session";
 import { programConceptSchema } from "@/lib/programs/concept";
 import { PROGRAM_ITEM_FOREIGN_CONTENT, canUseInProgram } from "@/lib/programs/item-ownership";
+import { normalizeProgramProducts } from "@/lib/programs/support";
 import { createClient } from "@/lib/supabase/server";
 
 // Ações administrativas de programas versionados. Versões publicadas têm itens congelados;
@@ -343,5 +345,84 @@ export async function substituteItemAction(programId: string, versionId: string,
     return { ok: true, message: t("substituted") };
   } catch (error) {
     return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------- produto e profissional (0059)
+// Até 3 produtos (ordem + nota) e profissionais sugeridos com o serviço escolhido. Tudo por RPC
+// auditada; os erros saem com o texto de adminContent.programs.support.errors.
+async function supportFail(error: unknown): Promise<{ ok: false; error: string }> {
+  const t = await getTranslations("adminContent.programs.support.errors");
+  const { code } = parseActionError(error);
+  return { ok: false, error: t.has(code) ? t(code) : t("generic") };
+}
+
+function revalidateSupport(programId: string) {
+  revalidateProgram(programId);
+  revalidatePath("/programs/[slug]", "page");
+}
+
+export async function saveProgramProductsAction(programId: string, items: { productId: string; note: string }[]): Promise<ActionResult> {
+  const id = uuid.safeParse(programId);
+  const list = normalizeProgramProducts(Array.isArray(items) ? items : []);
+  if (!id.success) return supportFail("invalid_input");
+  if (!list.ok) return supportFail(list.error);
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_program_products_save", {
+      p_program: id.data,
+      p_items: list.items.map((i) => ({ product_id: i.productId, note: i.note })),
+    });
+    if (error) return supportFail(error);
+    revalidateSupport(id.data);
+    const t = await getTranslations("adminContent.programs.support");
+    return { ok: true, message: t("productsSaved") };
+  } catch (error) {
+    return supportFail(error);
+  }
+}
+
+/** Sugere (on) ou tira (off) um profissional do programa; reaproveita a RPC da 0058. */
+export async function setProgramProfessionalAction(programId: string, professionalId: string, on: boolean): Promise<ActionResult> {
+  const parsed = z.object({ programId: uuid, professionalId: uuid, on: z.boolean() }).safeParse({ programId, professionalId, on });
+  if (!parsed.success) return supportFail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_professional_suggestion_set", {
+      p_professional: parsed.data.professionalId,
+      p_target: "program",
+      p_target_id: parsed.data.programId,
+      p_on: parsed.data.on,
+    });
+    if (error) return supportFail(error);
+    revalidateSupport(parsed.data.programId);
+    revalidatePath(`/admin/professionals/${parsed.data.professionalId}`);
+    const t = await getTranslations("adminContent.programs.support");
+    return { ok: true, message: t("professionalSaved") };
+  } catch (error) {
+    return supportFail(error);
+  }
+}
+
+/** Serviço mostrado para o profissional sugerido (nulo = 1º serviço ativo). */
+export async function setProgramProfessionalServiceAction(programId: string, professionalId: string, serviceId: string | null): Promise<ActionResult> {
+  const parsed = z.object({ programId: uuid, professionalId: uuid, serviceId: uuid.nullable() }).safeParse({ programId, professionalId, serviceId });
+  if (!parsed.success) return supportFail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_program_professional_service_set", {
+      p_program: parsed.data.programId,
+      p_professional: parsed.data.professionalId,
+      p_service: parsed.data.serviceId,
+    });
+    if (error) return supportFail(error);
+    revalidateSupport(parsed.data.programId);
+    const t = await getTranslations("adminContent.programs.support");
+    return { ok: true, message: t("professionalSaved") };
+  } catch (error) {
+    return supportFail(error);
   }
 }

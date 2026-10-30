@@ -523,6 +523,39 @@
       "sourceConcept": "Concepto original",
       "noSourceConcept": "La versión original aún no tiene concepto.",
       "translationHint": "Vale cuando la traducción esté publicada. Vacío = la página usa el concepto original."
+    },
+    "support": {
+      "title": "Producto y profesional",
+      "description": "Lo que aparece en la página del programa en Próximos pasos y en la tarjeta Apoyo. Hasta 3 productos, en orden.",
+      "products": "Productos (hasta 3)",
+      "productsNone": "Ningún producto vinculado.",
+      "selectProduct": "Elige un producto",
+      "addProduct": "Agregar producto",
+      "note": "Por qué este producto (opcional)",
+      "noteHint": "Hasta 200 caracteres. Aparece junto al producto.",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "remove": "Quitar",
+      "saveProducts": "Guardar productos",
+      "productsSaved": "Productos del programa guardados.",
+      "professionals": "Profesionales sugeridos",
+      "professionalsNone": "Ningún profesional sugerido.",
+      "selectProfessional": "Elige un profesional",
+      "addProfessional": "Sugerir",
+      "service": "Servicio mostrado",
+      "serviceAuto": "Primer servicio activo",
+      "professionalSaved": "Profesional del programa actualizado.",
+      "unavailable": "Actualiza la base de datos (0059) para vincular productos y elegir el servicio.",
+      "errors": {
+        "too_many_products": "Como máximo 3 productos por programa.",
+        "duplicate_product": "Ese producto ya está en la lista.",
+        "invalid_product": "Producto no encontrado.",
+        "invalid_service": "Ese servicio no es de este profesional.",
+        "invalid_input": "Datos inválidos.",
+        "not_found": "No encontrado.",
+        "forbidden": "Sin permiso.",
+        "generic": "No se pudo guardar. Inténtalo de nuevo."
+      }
     }
   },
   "plans": {

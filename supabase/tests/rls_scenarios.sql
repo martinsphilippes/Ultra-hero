@@ -6738,5 +6738,181 @@ select tests.ok('S68 reaplicar a 0058 mantém edições, pedidos e o seed',
 -- limpeza (a transação inteira é desfeita no fim)
 drop table t_s68;
 
+-- ================================================================ S69 · Programa com produto e profissional (0059)
+-- Até 3 produtos por programa (ordem + nota) e serviço escolhido para o profissional sugerido. Só o
+-- admin grava (por RPC, auditada); o público lê só programa publicado com produto publicado; S14 = 17;
+-- sem tabela-ponte na chave (S65/PGRST201).
+select tests.su();
+insert into auth.users (id, email) values ('69000000-0000-4000-8000-000000000691', 'cli69@test.local');
+create temp table t_s69 (k text primary key, v text);
+grant all on t_s69 to anon, authenticated;
+insert into t_s69 values
+  ('forca', (select id from public.programs where slug = 'base-de-forca-4-semanas')::text),
+  ('cozinha', (select id from public.programs where slug = 'cozinha-rapida-do-dia-a-dia')::text),
+  ('elastico', (select id from public.products where slug = 'elastico-de-resistencia-3-niveis-a1')::text),
+  ('tapete', (select id from public.products where slug = 'tapete-de-treino-6-mm-a2')::text),
+  ('corda', (select id from public.products where slug = 'corda-de-pular-ajustavel-a3')::text),
+  ('rolo', (select id from public.products where slug = 'rolo-de-liberacao-miofascial-a4')::text),
+  ('teo', public.seed_uuid('professional:teo-folego')::text),
+  ('nina', public.seed_uuid('professional:nina-horta')::text),
+  ('teo_plano', public.seed_uuid('professional_service:teo-plano')::text),
+  ('teo_aula', public.seed_uuid('professional_service:teo-aula')::text),
+  ('nina_consulta', public.seed_uuid('professional_service:nina-consulta')::text),
+  ('audit', (select coalesce(max(id), 0) from public.admin_audit)::text);
+-- o S68 suspende o Téo no fim: volta aprovado para o público enxergar o sugerido
+update public.professionals set status = 'approved', registry_verified = true where id = (select v::uuid from t_s69 where k = 'teo');
+
+select tests.ok('S69 seed: Base de força com elástico e tapete (ordem 1 e 2, com nota), Cozinha rápida com o kit; Téo com o plano de 4 semanas',
+  (select array_agg(pr.slug order by pp.sort_order) from public.program_products pp join public.products pr on pr.id = pp.product_id
+     where pp.program_id = (select v::uuid from t_s69 where k = 'forca')) = array['elastico-de-resistencia-3-niveis-a1', 'tapete-de-treino-6-mm-a2']
+  and (select count(*) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'forca') and note <> '') = 2
+  and (select count(*) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'cozinha')) = 1
+  and (select service_id from public.professional_suggestions where professional_id = (select v::uuid from t_s69 where k = 'teo')
+         and program_id = (select v::uuid from t_s69 where k = 'forca')) = (select v::uuid from t_s69 where k = 'teo_plano'));
+
+-- estrutura: chave própria (sem tabela-ponte na chave) e S65 segue
+select tests.ok('S69 program_products e professional_suggestions sem chave primária de FK para duas tabelas (sem PGRST201)',
+  not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.conrelid in ('public.program_products'::regclass, 'public.professional_suggestions'::regclass)
+      and (select count(distinct f.confrelid) from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.conkey <@ pk.conkey) > 0)
+  and (select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
+         where pk.contype = 'p' and pk.conrelid = 'public.program_products'::regclass) = array['id']);
+select tests.ok('S69 nenhuma tabela-ponte content↔creator_profiles na chave primária (S65 segue)',
+  not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.connamespace = 'public'::regnamespace
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.confrelid = 'public.content'::regclass and f.conkey <@ pk.conkey)
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.confrelid = 'public.creator_profiles'::regclass and f.conkey <@ pk.conkey)));
+
+-- leitura pública: programa publicado e produto publicado
+select tests.anon();
+select tests.ok('S69 visitante lê os produtos dos programas publicados e o serviço do sugerido',
+  (select count(*) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'forca')) = 2
+  and exists (select 1 from public.professional_suggestions where program_id = (select v::uuid from t_s69 where k = 'forca') and service_id is not null));
+select tests.su();
+update public.programs set status = 'draft' where id = (select v::uuid from t_s69 where k = 'cozinha');
+update public.products set status = 'draft' where id = (select v::uuid from t_s69 where k = 'tapete');
+select tests.anon();
+select tests.ok('S69 visitante não vê produto de programa fora do ar nem produto fora do ar',
+  (select count(*) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'cozinha')) = 0
+  and (select count(*) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'forca')) = 1);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S69 admin vê todos os vínculos (inclusive fora do ar)',
+  (select count(*) from public.program_products where program_id in ((select v::uuid from t_s69 where k = 'cozinha'), (select v::uuid from t_s69 where k = 'forca'))) = 3);
+select tests.su();
+update public.programs set status = 'published' where id = (select v::uuid from t_s69 where k = 'cozinha');
+update public.products set status = 'published' where id = (select v::uuid from t_s69 where k = 'tapete');
+
+-- escrita: nunca direto; RPC só do admin
+select tests.anon();
+select tests.expect_error('S69 visitante não grava vínculo direto',
+  format($q$insert into public.program_products (program_id, product_id, sort_order) values (%L, %L, 3)$q$, (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'corda')), 'permission denied');
+select tests.expect_error('S69 visitante não executa a RPC de produtos',
+  format($q$select public.admin_program_products_save(%L, '[]'::jsonb)$q$, (select v from t_s69 where k = 'forca')), 'permission denied');
+select tests.expect_error('S69 visitante não executa a RPC do serviço',
+  format($q$select public.admin_program_professional_service_set(%L, %L, null)$q$, (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'teo')), 'permission denied');
+select tests.login('69000000-0000-4000-8000-000000000691', 'cli69@test.local');
+select tests.expect_error('S69 conta comum não grava vínculo direto',
+  format($q$insert into public.program_products (program_id, product_id, sort_order) values (%L, %L, 3)$q$, (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'corda')), 'permission denied');
+select tests.expect_error('S69 conta comum não troca a serviço do sugerido direto',
+  format($q$update public.professional_suggestions set service_id = null where professional_id = %L$q$, (select v from t_s69 where k = 'teo')), 'permission denied');
+select tests.expect_error('S69 conta comum não liga produtos pela RPC',
+  format($q$select public.admin_program_products_save(%L, '[]'::jsonb)$q$, (select v from t_s69 where k = 'forca')), 'forbidden');
+select tests.expect_error('S69 conta comum não escolhe serviço pela RPC',
+  format($q$select public.admin_program_professional_service_set(%L, %L, null)$q$, (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'teo')), 'forbidden');
+
+-- admin: troca a lista (reordena, nota, até 3), recusas e auditoria
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_program_products_save((select v::uuid from t_s69 where k = 'forca'), jsonb_build_array(
+  jsonb_build_object('product_id', (select v from t_s69 where k = 'tapete'), 'note', '  Tapete primeiro  '),
+  jsonb_build_object('product_id', (select v from t_s69 where k = 'corda')),
+  jsonb_build_object('product_id', (select v from t_s69 where k = 'elastico'), 'note', 'Elástico')));
+select tests.ok('S69 admin reordena, acrescenta e grava a nota sem espaços nas pontas (3 produtos)',
+  (select array_agg(product_id::text || ':' || note order by sort_order) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'forca'))
+    = array[(select v from t_s69 where k = 'tapete') || ':Tapete primeiro', (select v from t_s69 where k = 'corda') || ':', (select v from t_s69 where k = 'elastico') || ':Elástico']);
+select tests.expect_error('S69 quarto produto é recusado',
+  format($q$select public.admin_program_products_save(%L, jsonb_build_array(jsonb_build_object('product_id', %L), jsonb_build_object('product_id', %L), jsonb_build_object('product_id', %L), jsonb_build_object('product_id', %L)))$q$,
+    (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'tapete'), (select v from t_s69 where k = 'corda'), (select v from t_s69 where k = 'elastico'), (select v from t_s69 where k = 'rolo')), 'too_many_products');
+select tests.expect_error('S69 produto repetido é recusado',
+  format($q$select public.admin_program_products_save(%L, jsonb_build_array(jsonb_build_object('product_id', %L), jsonb_build_object('product_id', %L)))$q$,
+    (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'corda'), (select v from t_s69 where k = 'corda')), 'duplicate_product');
+select tests.expect_error('S69 produto inexistente é recusado',
+  format($q$select public.admin_program_products_save(%L, jsonb_build_array(jsonb_build_object('product_id', gen_random_uuid())))$q$, (select v from t_s69 where k = 'forca')), 'invalid_product');
+select tests.expect_error('S69 nota longa é recusada',
+  format($q$select public.admin_program_products_save(%L, jsonb_build_array(jsonb_build_object('product_id', %L, 'note', repeat('x', 201))))$q$, (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'corda')), 'invalid_input');
+select tests.ok('S69 recusa não muda a lista', (select count(*) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'forca')) = 3);
+-- salvar igual não gera auditoria nova; lista vazia tira todos
+select public.admin_program_products_save((select v::uuid from t_s69 where k = 'forca'), jsonb_build_array(
+  jsonb_build_object('product_id', (select v from t_s69 where k = 'tapete'), 'note', 'Tapete primeiro'),
+  jsonb_build_object('product_id', (select v from t_s69 where k = 'corda')),
+  jsonb_build_object('product_id', (select v from t_s69 where k = 'elastico'), 'note', 'Elástico')));
+select public.admin_program_products_save((select v::uuid from t_s69 where k = 'cozinha'), '[]'::jsonb);
+select tests.ok('S69 lista vazia tira todos os produtos do programa',
+  not exists (select 1 from public.program_products where program_id = (select v::uuid from t_s69 where k = 'cozinha')));
+select tests.su();
+select tests.expect_error('S69 a ordem só vai de 1 a 3 (no banco)',
+  format($q$insert into public.program_products (program_id, product_id, sort_order) values (%L, %L, 4)$q$, (select v from t_s69 where k = 'cozinha'), (select v from t_s69 where k = 'rolo')), 'program_products_sort_check');
+
+-- admin: serviço do sugerido (do mesmo profissional), limpar e auditoria
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S69 serviço de outro profissional é recusado',
+  format($q$select public.admin_program_professional_service_set(%L, %L, %L)$q$, (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'teo'), (select v from t_s69 where k = 'nina_consulta')), 'invalid_service');
+select tests.expect_error('S69 profissional não sugerido no programa é recusado',
+  format($q$select public.admin_program_professional_service_set(%L, %L, null)$q$, (select v from t_s69 where k = 'forca'), (select v from t_s69 where k = 'nina')), 'not_found');
+select public.admin_program_professional_service_set((select v::uuid from t_s69 where k = 'forca'), (select v::uuid from t_s69 where k = 'teo'), (select v::uuid from t_s69 where k = 'teo_aula'));
+select public.admin_program_professional_service_set((select v::uuid from t_s69 where k = 'forca'), (select v::uuid from t_s69 where k = 'teo'), (select v::uuid from t_s69 where k = 'teo_aula'));
+select tests.ok('S69 admin escolhe o serviço do sugerido',
+  (select service_id from public.professional_suggestions where professional_id = (select v::uuid from t_s69 where k = 'teo') and program_id = (select v::uuid from t_s69 where k = 'forca'))
+    = (select v::uuid from t_s69 where k = 'teo_aula'));
+-- sugerir a Nina no programa (RPC da 0058) e tirar: o vínculo vai junto com o serviço
+select public.admin_professional_suggestion_set((select v::uuid from t_s69 where k = 'nina'), 'program', (select v::uuid from t_s69 where k = 'forca'), true);
+select public.admin_program_professional_service_set((select v::uuid from t_s69 where k = 'forca'), (select v::uuid from t_s69 where k = 'nina'), (select v::uuid from t_s69 where k = 'nina_consulta'));
+select public.admin_program_professional_service_set((select v::uuid from t_s69 where k = 'forca'), (select v::uuid from t_s69 where k = 'nina'), null);
+select public.admin_professional_suggestion_set((select v::uuid from t_s69 where k = 'nina'), 'program', (select v::uuid from t_s69 where k = 'forca'), false);
+select tests.su();
+select tests.ok('S69 auditoria: produtos (2 trocas, salvar igual não conta), serviço (3 trocas, repetir não conta), sugerir/tirar',
+  (select count(*) from public.admin_audit where id > (select v::bigint from t_s69 where k = 'audit') and action = 'program.products') = 2
+  and (select count(*) from public.admin_audit where id > (select v::bigint from t_s69 where k = 'audit') and action = 'program.products'
+         and resource_id = (select v from t_s69 where k = 'forca') and jsonb_array_length(after_data->'products') = 3 and jsonb_array_length(before_data->'products') = 2) = 1
+  and (select count(*) from public.admin_audit where id > (select v::bigint from t_s69 where k = 'audit') and action = 'program.professional_service') = 3
+  and (select count(*) from public.admin_audit where id > (select v::bigint from t_s69 where k = 'audit') and action in ('professional.suggest', 'professional.unsuggest')
+         and resource_id = (select v from t_s69 where k = 'nina')) = 2
+  and (select bool_and(actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin') from public.admin_audit where id > (select v::bigint from t_s69 where k = 'audit')));
+
+-- integridade: serviço só em sugestão de programa; serviço apagado zera só a coluna
+select tests.expect_error('S69 serviço em sugestão de herói é recusado',
+  format($q$update public.professional_suggestions set service_id = %L where professional_id = %L and creator_id is not null$q$, (select v from t_s69 where k = 'teo_aula'), (select v from t_s69 where k = 'teo')), 'professional_suggestions_service_program');
+select tests.expect_error('S69 serviço de outro profissional é recusado pela FK',
+  format($q$update public.professional_suggestions set service_id = %L where professional_id = %L and program_id is not null$q$, (select v from t_s69 where k = 'nina_consulta'), (select v from t_s69 where k = 'teo')), 'professional_suggestions_service_fk');
+delete from public.professional_services where id = (select v::uuid from t_s69 where k = 'teo_aula');
+select tests.ok('S69 serviço apagado: a sugestão fica, sem serviço',
+  exists (select 1 from public.professional_suggestions where professional_id = (select v::uuid from t_s69 where k = 'teo')
+          and program_id = (select v::uuid from t_s69 where k = 'forca') and service_id is null));
+
+-- funções e políticas
+select tests.ok('S69 RPCs: security definer, search_path fixo, sem execute para anon; authenticated executa (confere admin dentro)',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
+                   and not has_function_privilege('anon', p.oid, 'execute') and has_function_privilege('authenticated', p.oid, 'execute'))
+     from pg_proc p where p.oid in ('public.admin_program_products_save(uuid, jsonb)'::regprocedure, 'public.admin_program_professional_service_set(uuid, uuid, uuid)'::regprocedure)));
+select tests.ok('S69 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S69 políticas de program_products não avaliam auth.uid()/is_admin() por linha; RLS ligada; sem insert/update/delete para o app',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename = 'program_products'
+     and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin)\(\)') = 0
+  and (select relrowsecurity from pg_class where oid = 'public.program_products'::regclass)
+  and not has_table_privilege('authenticated', 'public.program_products', 'insert')
+  and not has_table_privilege('authenticated', 'public.program_products', 'update')
+  and not has_table_privilege('authenticated', 'public.program_products', 'delete')
+  and not has_table_privilege('anon', 'public.program_products', 'insert'));
+
+-- reaplicar a 0059 não muda o que o admin editou nem duplica o seed
+\ir ../migrations/0059_program_links.sql
+select tests.ok('S69 reaplicar a 0059 mantém a lista do admin (Cozinha rápida segue vazia, Base de força com 3)',
+  (select count(*) from public.program_products where program_id = (select v::uuid from t_s69 where k = 'forca')) = 3
+  and not exists (select 1 from public.program_products where program_id = (select v::uuid from t_s69 where k = 'cozinha')));
+
+drop table t_s69;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

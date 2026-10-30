@@ -6,13 +6,16 @@ import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { Panel } from "@/components/admin-content";
 import { ProgramDetailActions } from "@/components/admin-content/ProgramDetailActions";
 import { NewVersionDialog, ProgramBasicsForm } from "@/components/admin-content/ProgramForms";
+import { ProgramSupportEditor } from "@/components/admin-content/ProgramSupportEditor";
 import { Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import type { Enums } from "@/lib/supabase/helpers";
+import { loadProgramSupportAdmin } from "@/lib/programs/support-admin";
 import { createClient } from "@/lib/supabase/server";
 
-// Detalhe do programa: dados básicos, lista de versões (status, nº, publicação, inscrições) e ações.
+// Detalhe do programa: dados básicos, lista de versões (status, nº, publicação, inscrições), ações e
+// produto/profissional ligados (0059).
 
 type Program = {
   id: string;
@@ -61,7 +64,7 @@ export default async function AdminProgramDetailPage({ params }: Params) {
   const program = await loadProgram(id);
   if (!program) notFound();
   const supabase = await createClient();
-  const [t, tc, ts, locale, versionsRes, creatorsRes] = await Promise.all([
+  const [t, tc, ts, locale, versionsRes, creatorsRes, support] = await Promise.all([
     getTranslations("adminContent.programs"),
     getTranslations("adminContent.common"),
     getTranslations("adminCommon"),
@@ -72,6 +75,7 @@ export default async function AdminProgramDetailPage({ params }: Params) {
       .eq("program_id", id)
       .order("version_no", { ascending: false }),
     supabase.from("creator_profiles").select("id, name").order("name"),
+    loadProgramSupportAdmin(id),
   ]);
   const versions = (versionsRes.data ?? []) as unknown as Version[];
   const current = versions.find((v) => v.id === program.current_version_id) ?? null;
@@ -143,6 +147,9 @@ export default async function AdminProgramDetailPage({ params }: Params) {
         <div className="flex min-w-0 flex-col gap-4">
           <Panel title={t("detail.versions")}>
             <DataTable columns={columns} rows={versions} rowKey={(v) => v.id} caption={t("detail.versionsCaption")} emptyTitle={t("detail.noVersions")} />
+          </Panel>
+          <Panel title={t("support.title")} description={t("support.description")}>
+            <ProgramSupportEditor programId={program.id} {...support} />
           </Panel>
         </div>
         <aside className="flex min-w-0 flex-col gap-4">

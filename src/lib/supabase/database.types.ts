@@ -1173,14 +1173,14 @@ isOneToOne: false
                   ]
                 },"professional_suggestions": {
                   Row: {
-                    "content_id": string | null,"created_at": string,"created_by": string | null,"creator_id": string | null,"id": string,"professional_id": string,"program_id": string | null
+                    "content_id": string | null,"created_at": string,"created_by": string | null,"creator_id": string | null,"id": string,"professional_id": string,"program_id": string | null,"service_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "content_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"id"?: string,"professional_id": string,"program_id"?: string | null
+                    "content_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"id"?: string,"professional_id": string,"program_id"?: string | null,"service_id"?: string | null
                   }
                   Update: {
-                    "content_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"id"?: string,"professional_id"?: string,"program_id"?: string | null
+                    "content_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"id"?: string,"professional_id"?: string,"program_id"?: string | null,"service_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1207,6 +1207,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "programs"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professional_suggestions_service_fk"
+      columns: ["service_id", "professional_id"]
+isOneToOne: false
+      referencedRelation: "professional_services"
+      referencedColumns: ["id", "professional_id"]
     }
                   ]
                 },"professional_tap_counters": {
@@ -1447,6 +1453,32 @@ isOneToOne: false
       columns: ["version_id"]
 isOneToOne: false
       referencedRelation: "program_versions"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"program_products": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"id": string,"note": string,"product_id": string,"program_id": string,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"note"?: string,"product_id": string,"program_id": string,"sort_order": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"note"?: string,"product_id"?: string,"program_id"?: string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "program_products_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_products_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
       referencedColumns: ["id"]
     }
                   ]
@@ -2838,6 +2870,12 @@ isOneToOne: false
                            },
 "admin_professional_suggestion_set":
 { Args: { "p_on": boolean,"p_professional": string,"p_target": string,"p_target_id": string }; Returns: undefined
+                           },
+"admin_program_products_save":
+{ Args: { "p_items": Json,"p_program": string }; Returns: number
+                           },
+"admin_program_professional_service_set":
+{ Args: { "p_professional": string,"p_program": string,"p_service": string | null }; Returns: undefined
                            },
 "admin_invite_professional":
 { Args: { "p_days"?: number,"p_email": string,"p_professional": string }; Returns: {

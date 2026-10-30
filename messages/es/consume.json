@@ -240,9 +240,35 @@
       "idea": "La idea",
       "nutritionTeaser": "Para saber qué comer en este mismo programa.",
       "nutritionContents": "Para comer bien",
-      "nutritionContentsNote": "Recetas y contenidos de nutrición de este programa y del mismo héroe.",
+      "nutritionContentsNote": "Recetas y contenidos de nutrición de este programa y del propio héroe.",
       "nutritionProducts": "Productos para este programa",
-      "nutritionProductsNote": "Comidas, kits, suplementos y bebidas vinculados a los contenidos del programa o al héroe."
+      "nutritionProductsNote": "Comidas, kits, suplementos y bebidas vinculados al programa, a sus contenidos o al héroe.",
+      "support": "Apoyo",
+      "supportTeaser": "Productos y profesionales recomendados para este programa.",
+      "supportProducts": "Productos del programa",
+      "supportProductsNote": "Elegidos por el equipo para acompañar el programa.",
+      "supportProfessionals": "Profesionales recomendados",
+      "supportProfessionalsNote": "Sugeridos por el equipo para este programa."
+    },
+    "actions": {
+      "title": "Próximos pasos",
+      "description": "Empieza el programa y, si quieres, suma el producto y el profesional recomendados.",
+      "start": "Empezar",
+      "startHint": {
+        "login": "Inicia sesión para participar y seguir tu progreso.",
+        "enroll": "Participa para seguir tu progreso.",
+        "reenroll": "Vuelve al programa cuando quieras.",
+        "continue": "Sigue donde lo dejaste.",
+        "review": "Programa completado. Repásalo cuando quieras."
+      },
+      "continue": "Continuar",
+      "review": "Repasar contenidos",
+      "buy": "Comprar producto",
+      "buyHint": "Elegido para acompañar este programa.",
+      "hire": "Contratar profesional",
+      "hireHint": "Acompañamiento de quien conoce el programa.",
+      "professionals": "Profesionales recomendados",
+      "why": "Por qué este producto"
     }
   },
   "certificate": {

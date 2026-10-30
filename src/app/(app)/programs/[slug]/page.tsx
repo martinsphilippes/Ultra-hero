@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Award, Download, Layers, LogIn } from "lucide-react";
+import { Award, Download, Layers, LogIn, Play } from "lucide-react";
 import { displayTimeZone, ViewTracker } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { AddToListButton, FavoriteButton } from "@/components/library";
@@ -16,8 +16,12 @@ import { favoriteStatus, mixedListsSupported } from "@/lib/library/lists-support
 import { getNativeApp } from "@/lib/native-app/server";
 import { rhythmChips } from "@/lib/programs/concept";
 import { loadProgramConcept } from "@/lib/programs/concept-query";
+import { programProfessionals, serviceIdsInCart } from "@/lib/professionals/queries";
+import { loadHireEnv } from "@/lib/professionals/server";
 import { loadProgramNutrition } from "@/lib/programs/nutrition-query";
-import { cardSearch, conceptScreens, firstSentence, nutritionScreens, nutritionVisible, type ConceptScreenKey } from "@/lib/programs/program-cards";
+import { cardSearch, conceptScreens, firstSentence, nutritionProductsAllowed, nutritionScreens, nutritionVisible, type ConceptScreenKey } from "@/lib/programs/program-cards";
+import { nextPendingSlug, startAction, supportPlan } from "@/lib/programs/support";
+import { loadProgramProducts } from "@/lib/programs/support-query";
 import type { Enums, FnReturns, Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { AbandonButton } from "./AbandonButton";
@@ -25,10 +29,13 @@ import { EnrollButton } from "./EnrollButton";
 import { ProgramCards, type ProgramCard } from "./ProgramCards";
 import { CONCEPT_SCREEN_TITLE, ConceptScreenBody } from "./ConceptScreen";
 import { NutritionContentList, NutritionProductGrid, ProgramItemList, type ProgramItemView } from "./ProgramScreens";
+import { ProgramActions, ProgramProductRows, ProgramProfessionalRows } from "./ProgramSupport";
 
 // Página de programa: cabeçalho da versão (atual ou a versão em que o usuário está inscrito),
 // itens via program_required_items (com substituições), progresso e certificado simbólico.
-// Depois do cabeçalho, 4 cards (Conceito, Prepare-se, Conteúdo, Nutricional) que abrem telas em sequência.
+// Depois do cabeçalho, "Próximos passos" (Começar, Comprar produto, Contratar profissional; só com
+// produto ou profissional ligado, 0059) e até 5 cards (Conceito, Prepare-se, Conteúdo, Nutricional,
+// Apoio) que abrem telas em sequência.
 
 const PROGRAM_SELECT = "id, slug, pillar, cover_url, status, current_version_id, creator:creator_profiles(id, slug, name, headline, avatar_url, is_fictional)";
 
@@ -169,13 +176,27 @@ export default async function ProgramPage({ params }: Params) {
     });
   }
 
-  // Nutricional: conteúdos de nutrição/receitas do programa e do herói + produtos de comida.
+  // Apoio (0059): produtos ligados (só onde o comércio vale) e profissionais sugeridos no programa.
+  const hireEnv = await loadHireEnv();
+  const commerceAllowed = nutritionProductsAllowed({ commerceEnabled: hireEnv.commerceEnabled, nativeApp: hireEnv.nativeApp });
+  const [programProducts, professionals] = await Promise.all([
+    commerceAllowed ? loadProgramProducts(supabase, { programId: program.id, userId: user?.id ?? null }) : [],
+    programProfessionals(program.id),
+  ]);
+  const servicesInCart = !hireEnv.nativeApp && user && professionals.length > 0 ? await serviceIdsInCart() : new Set<string>();
+  const support = supportPlan({ products: programProducts.length, professionals: professionals.length, commerceEnabled: hireEnv.commerceEnabled, nativeApp: hireEnv.nativeApp });
+  const creatorId = program.creator?.id ?? null;
+
+  // Nutricional: conteúdos de nutrição/receitas do programa e os próprios do herói + produtos de comida.
   const programContents = Array.from(new Set(items.map((i) => i.content_id)))
     .map((id) => contentById.get(id))
     .filter((c): c is ItemContent => Boolean(c));
-  const nutrition = await loadProgramNutrition(supabase, { creatorId: program.creator?.id ?? null, programContents, userId: user?.id ?? null, nativeApp: Boolean(nativeApp) });
+  const nutrition = await loadProgramNutrition(supabase, { creatorId, programContents, userId: user?.id ?? null, nativeApp: Boolean(nativeApp), linkedProducts: programProducts });
   const enrolled = Boolean(enrollment && enrollment.status !== "abandoned");
   const cards = buildCards();
+  const start = startAction({ loggedIn: Boolean(user), enrollment: enrollment?.status ?? null });
+  const nextSlug = nextPendingSlug(items.map((i) => ({ slug: contentById.get(i.content_id)?.slug ?? null, required: i.is_required, done: isDone(i) })));
+  const contentCardHref = `${path}${cardSearch("", { card: "conteudo", screen: 0 })}`;
 
   const tz = displayTimeZone(profile?.timezone);
   const cover = program.cover_url ?? `/placeholders/cover-${program.pillar}-1.svg`;
@@ -236,7 +257,59 @@ export default async function ProgramPage({ params }: Params) {
         ),
       });
     }
+    if (support.apoioScreens.length > 0) {
+      list.push({
+        key: "apoio",
+        title: t("cards.support"),
+        teaser: t("cards.supportTeaser"),
+        screens: support.apoioScreens.map((key, i) =>
+          key === "products"
+            ? {
+                id: key,
+                title: t("cards.supportProducts"),
+                body: (
+                  <div className="flex flex-col gap-3">
+                    <p className="type-body-sm text-fg-muted">{t("cards.supportProductsNote")}</p>
+                    <ProgramProductRows products={programProducts} isLoggedIn={Boolean(user)} nextPath={`${path}${cardSearch("", { card: "apoio", screen: i })}`} />
+                  </div>
+                ),
+              }
+            : {
+                id: key,
+                title: t("cards.supportProfessionals"),
+                body: (
+                  <div className="flex flex-col gap-3">
+                    <p className="type-body-sm text-fg-muted">{t("cards.supportProfessionalsNote")}</p>
+                    <ProgramProfessionalRows
+                      professionals={professionals}
+                      env={{ ...hireEnv, inCart: servicesInCart }}
+                      creatorId={creatorId}
+                      nextPath={`${path}${cardSearch("", { card: "apoio", screen: i })}`}
+                    />
+                  </div>
+                ),
+              },
+        ),
+      });
+    }
     return list.filter((card) => card.screens.length > 0);
+  }
+
+  // Passo "Começar" de Próximos passos (o mesmo botão de participar, que sai do cabeçalho)
+  function startNode() {
+    if (start === "login") {
+      return (
+        <Button asChild variant="primary" leadingIcon={<LogIn />} className="self-start">
+          <Link href={`/login?next=${encodeURIComponent(path)}`}>{t("visitorCta")}</Link>
+        </Button>
+      );
+    }
+    if (start === "enroll" || start === "reenroll") return <EnrollButton programId={program!.id} path={path} reenroll={start === "reenroll"} className="self-start" />;
+    return (
+      <Button asChild variant={start === "continue" ? "primary" : "secondary"} leadingIcon={<Play />} className="self-start" data-testid="program-action-continue">
+        <Link href={start === "continue" && nextSlug ? `/content/${nextSlug}` : contentCardHref}>{start === "continue" ? t("actions.continue") : t("actions.review")}</Link>
+      </Button>
+    );
   }
 
   return (
@@ -305,7 +378,7 @@ export default async function ProgramPage({ params }: Params) {
           ) : null}
 
           {/* Estado de inscrição */}
-          {!user ? (
+          {!user && support.showActions ? null : !user ? (
             <div className="flex flex-col items-start gap-2 pt-1">
               <Button asChild variant="primary" size="lg" leadingIcon={<LogIn />}>
                 <Link href={`/login?next=${encodeURIComponent(path)}`}>{t("visitorCta")}</Link>
@@ -314,11 +387,13 @@ export default async function ProgramPage({ params }: Params) {
             </div>
           ) : !enrollment || enrollment.status === "abandoned" ? (
             <div className="flex flex-col items-start gap-2 pt-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <EnrollButton programId={program.id} path={path} reenroll={enrollment?.status === "abandoned"} />
-                {favorite ? <FavoriteButton kind="program" id={program.id} initial={favorite.favorite} path={path} /> : null}
-                {canSaveToList ? <AddToListButton kind="program" id={program.id} withLabel /> : null}
-              </div>
+              {!support.showActions || favorite || canSaveToList ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {support.showActions ? null : <EnrollButton programId={program.id} path={path} reenroll={enrollment?.status === "abandoned"} />}
+                  {favorite ? <FavoriteButton kind="program" id={program.id} initial={favorite.favorite} path={path} /> : null}
+                  {canSaveToList ? <AddToListButton kind="program" id={program.id} withLabel /> : null}
+                </div>
+              ) : null}
               <span className="type-caption text-fg-muted">{t("freeOrder")}</span>
             </div>
           ) : (
@@ -343,6 +418,20 @@ export default async function ProgramPage({ params }: Params) {
           )}
         </div>
       </header>
+
+      {support.showActions ? (
+        <ProgramActions
+          start={startNode()}
+          startHint={t(`actions.startHint.${start}`)}
+          nativeApp={hireEnv.nativeApp}
+          products={support.showProducts ? <ProgramProductRows products={programProducts} isLoggedIn={Boolean(user)} nextPath={path} /> : null}
+          professionals={
+            support.showProfessionals ? (
+              <ProgramProfessionalRows professionals={professionals} env={{ ...hireEnv, inCart: servicesInCart }} creatorId={creatorId} nextPath={path} />
+            ) : null
+          }
+        />
+      ) : null}
 
       {cards.length > 0 ? (
         <section aria-labelledby="program-cards-title" className="flex flex-col gap-4" data-testid="program-cards-section">

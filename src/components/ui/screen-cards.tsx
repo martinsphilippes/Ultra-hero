@@ -71,12 +71,14 @@ export function ScreenCards({ cards, testIdPrefix, listClassName, label }: Props
   }, [pathname]);
 
   const active = state ? cards.find((c) => c.key === state.card) ?? null : null;
+  // 5+ cards a 390 px: menos folga e letra um pouco menor para "Nutricional" caber sem quebrar no meio
+  const dense = cards.length >= 5;
 
   return (
     <>
       {/* compactos, todos numa linha (pedido do responsável); o resumo fica para leitores de tela */}
       <ul
-        className={cn("grid gap-2", listClassName)}
+        className={cn("grid", dense ? "gap-1.5" : "gap-2", listClassName)}
         style={{ gridTemplateColumns: `repeat(${Math.max(1, cards.length)}, minmax(0, 1fr))` }}
         aria-label={label}
         data-testid={`${testIdPrefix}-cards`}
@@ -89,12 +91,15 @@ export function ScreenCards({ cards, testIdPrefix, listClassName, label }: Props
               aria-haspopup="dialog"
               data-testid={`${testIdPrefix}-card-${card.key}`}
               data-screens={card.screens.length}
-              className="uh-card group flex min-h-11 w-full flex-col items-center gap-1.5 rounded-xl border border-border bg-surface px-1.5 py-2.5 text-center shadow-sm transition-[transform,box-shadow,border-color] duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className={cn(
+                "uh-card group flex min-h-11 w-full flex-col items-center gap-1.5 rounded-xl border border-border bg-surface py-2.5 text-center shadow-sm transition-[transform,box-shadow,border-color] duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                dense ? "px-0.5" : "px-1.5",
+              )}
             >
               <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-text [&_svg]:size-[1.125rem]">
                 {card.icon}
               </span>
-              <span className="w-full text-[0.75rem] font-medium leading-tight text-fg [overflow-wrap:anywhere]">{card.title}</span>
+              <span className={cn("w-full font-medium leading-tight text-fg [overflow-wrap:anywhere]", dense ? "text-[0.6875rem] tracking-[-0.01em]" : "text-[0.75rem]")}>{card.title}</span>
               {card.teaser ? (
                 <span className="sr-only" data-teaser="">
                   {card.teaser}

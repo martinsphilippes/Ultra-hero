@@ -240,9 +240,35 @@
       "idea": "The idea",
       "nutritionTeaser": "To know what to eat during this same program.",
       "nutritionContents": "Eat well",
-      "nutritionContentsNote": "Recipes and nutrition content from this program and the same hero.",
+      "nutritionContentsNote": "Recipes and nutrition content from this program and from the hero themselves.",
       "nutritionProducts": "Products for this program",
-      "nutritionProductsNote": "Meals, kits, supplements and drinks linked to the program's content or to the hero."
+      "nutritionProductsNote": "Meals, kits, supplements and drinks linked to the program, its content or the hero.",
+      "support": "Support",
+      "supportTeaser": "Products and professionals recommended for this program.",
+      "supportProducts": "Program products",
+      "supportProductsNote": "Chosen by the team to go with the program.",
+      "supportProfessionals": "Recommended professionals",
+      "supportProfessionalsNote": "Suggested by the team for this program."
+    },
+    "actions": {
+      "title": "Next steps",
+      "description": "Start the program and, if you like, get the recommended product and professional too.",
+      "start": "Start",
+      "startHint": {
+        "login": "Sign in to join and track your progress.",
+        "enroll": "Join to track your progress.",
+        "reenroll": "Come back to the program whenever you like.",
+        "continue": "Pick up where you left off.",
+        "review": "Program completed. Review it whenever you like."
+      },
+      "continue": "Continue",
+      "review": "Review contents",
+      "buy": "Buy product",
+      "buyHint": "Chosen to go with this program.",
+      "hire": "Hire a professional",
+      "hireHint": "Support from someone who knows the program.",
+      "professionals": "Recommended professionals",
+      "why": "Why this product"
     }
   },
   "certificate": {

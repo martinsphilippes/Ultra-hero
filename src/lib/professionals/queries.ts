@@ -223,6 +223,46 @@ export async function suggestedNutritionists(input: { contentId: string | null; 
   }
 }
 
+export type ProgramProfessional = ProfessionalCardView & { services: ServiceView[]; preferredServiceId: string | null };
+
+/**
+ * Profissionais sugeridos no programa (0058) com o serviço escolhido pelo admin (0059, service_id).
+ * Sem a 0059 no banco a coluna não existe: lê sem ela (vale o 1º serviço ativo). Sem a 0058: vazio.
+ */
+export async function programProfessionals(programId: string, limit = 3): Promise<ProgramProfessional[]> {
+  try {
+    const supabase = await createClient();
+    let links: { professional_id: string; service_id: string | null }[] = [];
+    const withService = await supabase.from("professional_suggestions").select("professional_id, service_id, created_at").eq("program_id", programId).order("created_at").limit(20);
+    if (withService.error) {
+      const plain = await supabase.from("professional_suggestions").select("professional_id, created_at").eq("program_id", programId).order("created_at").limit(20);
+      if (plain.error) return [];
+      links = (plain.data ?? []).map((r) => ({ professional_id: r.professional_id, service_id: null }));
+    } else {
+      links = (withService.data ?? []).map((r) => ({ professional_id: r.professional_id, service_id: r.service_id }));
+    }
+    if (links.length === 0) return [];
+    const ids = links.map((l) => l.professional_id);
+    const [prosRes, servicesRes] = await Promise.all([
+      supabase.from("professionals").select(PRO_SELECT).in("id", ids).eq("status", "approved"),
+      supabase.from("professional_services").select(SERVICE_SELECT).in("professional_id", ids).eq("is_active", true).eq("admin_disabled", false).order("sort_order").order("price_cents"),
+    ]);
+    if (prosRes.error) return [];
+    const byId = new Map(((prosRes.data ?? []) as ProRow[]).map((r) => [r.id, r]));
+    const services = ((servicesRes.data ?? []) as ServiceRow[]).map(toService);
+    return links
+      .filter((l) => byId.has(l.professional_id))
+      .slice(0, limit)
+      .map((l) => {
+        const mine = services.filter((s) => s.professionalId === l.professional_id);
+        const from = mine.length ? Math.min(...mine.map((s) => s.priceCents)) : null;
+        return { ...toProfessional(byId.get(l.professional_id) as ProRow, from), services: mine, preferredServiceId: l.service_id };
+      });
+  } catch {
+    return [];
+  }
+}
+
 // ---------------------------------------------------------------- carrinho
 export type ServiceCartLine = {
   id: string;
