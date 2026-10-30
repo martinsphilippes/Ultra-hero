@@ -1,14 +1,13 @@
 # Publicação nas lojas — App Store e Google Play
 
-Roteiro do app **GC Hero** (`mobile/`, identificador `com.gchero.com`). O porquê de cada escolha
+Roteiro do app **GC Hero** (`mobile/`, identificador `com.groscove.ultra`). O porquê de cada escolha
 está em [`decisions/app-nas-lojas.md`](decisions/app-nas-lojas.md). Os passos marcados **(dono)**
 pedem conta, pagamento ou assinatura de quem responde pela empresa; o resto é do time.
 
 ## 0. Antes de tudo (irreversível)
 
-- [ ] **(dono)** Confirmar o identificador `com.gchero.com` (`mobile/app.config.ts`, `APP_ID`).
-  Depois do primeiro envio ele não muda em nenhuma das lojas. O padrão para o domínio `gchero.com`
-  seria `com.gchero.app`; os dois funcionam.
+- [x] Identificador `com.groscove.ultra` (`mobile/app.config.ts`, `APP_ID`), decisão do responsável
+  (30/10/2026). Depois do primeiro envio ele não muda em nenhuma das lojas.
 - [ ] **(dono)** App **gratuito** nas duas lojas (no Google, gratuito → pago não volta).
 - [ ] Domínio e marca: `EXPO_PUBLIC_WEB_URL` aponta para a web (hoje `https://ultra-hero.vercel.app`).
   Trocar o nome da web para GC Hero antes do envio (a Apple confere nome do app × conteúdo).
@@ -19,7 +18,7 @@ pedem conta, pagamento ou assinatura de quem responde pela empresa; o resto é d
 |---|---|---|
 | Expo (EAS) | a do Quantso | `cd mobile && npx eas-cli login && npx eas-cli init` → copie o `projectId` e a conta para `EAS_PROJECT_ID` e `EXPO_OWNER` em `mobile/app.config.ts` e commite |
 | Google Play Console | organização (Quantso) | criar o app "GC Hero" na mesma conta; conta de organização **não** tem a regra dos 12 testadores por 14 dias |
-| Apple Developer | pessoal | **(dono)** US$ 99/ano; criar o app no App Store Connect com o bundle `com.gchero.com`; habilitar **Sign in with Apple** no identificador (Certificates, Identifiers & Profiles) |
+| Apple Developer | pessoal | **(dono)** US$ 99/ano; criar o app no App Store Connect com o bundle `com.groscove.ultra`; habilitar **Sign in with Apple** no identificador (Certificates, Identifiers & Profiles) |
 
 ## 2. Configuração do projeto EAS
 
@@ -31,7 +30,7 @@ npx eas-cli env:set --name EXPO_PUBLIC_WEB_URL --value https://ultra-hero.vercel
 
 ### Push (`docs/decisions/push-notifications.md`)
 
-- [ ] **Android (FCM)**: criar projeto no Firebase com o app Android `com.gchero.com`, baixar o
+- [ ] **Android (FCM)**: criar projeto no Firebase com o app Android `com.groscove.ultra`, baixar o
   `google-services.json` para `mobile/` e **commitar** (não é segredo; vai no APK). Gerar a chave da
   conta de serviço do FCM v1 e subir com `npx eas-cli credentials -p android` (essa sim é segredo:
   nunca no repositório). Build de produção sem o arquivo falha de propósito (`app.config.ts`).
@@ -52,7 +51,7 @@ revisor. `env:set` cria ou atualiza (o `env:create` antigo falhava se a variáve
 ## 3. Supabase (login no app)
 
 - [ ] **Apple**: Authentication → Providers → Apple → ligar; em **Client IDs** incluir
-  `com.gchero.com` (login nativo por token de identidade; não precisa de Services ID nem de chave
+  `com.groscove.ultra` (login nativo por token de identidade; não precisa de Services ID nem de chave
   enquanto não houver "Entrar com Apple" na web).
 - [ ] **Google**: nada novo. A volta passa por `/auth/native`, já coberto por `https://<site>/**` nas
   Redirect URLs. Se o domínio mudar, atualizar a Site URL e as Redirect URLs.

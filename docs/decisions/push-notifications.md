@@ -65,7 +65,7 @@ Não existia: `favorites` só aponta para conteúdo, produto ou programa. A 0054
 
 ## O que fica com o dono
 
-- Projeto Firebase com o app Android `com.gchero.com`, `mobile/google-services.json` e a chave da
+- Projeto Firebase com o app Android `com.groscove.ultra`, `mobile/google-services.json` e a chave da
   conta de serviço do FCM v1 subida por `eas credentials` (build de produção sem o arquivo falha de
   propósito: `mobile/app.config.ts`).
 - Chave APNs (`.p8`) da conta Apple, por `eas credentials -p ios`.

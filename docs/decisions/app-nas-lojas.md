@@ -1,7 +1,7 @@
 # App nas lojas (App Store e Google Play): casca Expo sobre a web
 
 Decisões do responsável (30/10/2026): publicar o GC Hero na App Store e no Google Play **mantendo a
-versão web**; arquitetura de casca Expo + WebView; identificador `com.gchero.com`; nome **GC Hero**;
+versão web**; arquitetura de casca Expo + WebView; identificador `com.groscove.ultra` (trocado de `com.gchero.com` antes do primeiro envio, 30/10/2026); nome **GC Hero**;
 no app das lojas, comércio e assinaturas simuladas ficam **ocultos**. Contas: Apple Developer
 **pessoal**, Google Play de **organização** (a do Quantso), Expo do Quantso.
 
@@ -47,7 +47,7 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
   faz o login nativo com nonce (a Apple recebe o SHA-256, o Supabase confere o nonce cru) e devolve o
   token de identidade; a web chama `signInWithIdToken({ provider: "apple" })`, que grava os cookies
   da sessão como qualquer login. Exige o provedor Apple ligado no Supabase com o Client ID
-  `com.gchero.com` (passo em `docs/lojas.md`).
+  `com.groscove.ultra` (passo em `docs/lojas.md`).
 - **Contas demo de um toque** (inclui admin) não aparecem no app, em nenhuma tela, e a ação
   `signInAsDemo` recusa pedido vindo do app: o revisor recebe credenciais.
 - **Nome na Apple**: a Apple manda o nome só no primeiro login e fora do token; a casca o repassa e
