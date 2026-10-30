@@ -28,6 +28,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "shipments", href: "/admin/shipments" },
     { key: "feedback", href: "/admin/feedback" },
     { key: "metrics", href: "/admin/metrics" },
+    // Indicadores (Etapa 5, 0060): por herói, atalho, conversão, profissionais, colecionáveis, ranking
+    { key: "indicators", href: "/admin/indicadores" },
     { key: "audit", href: "/admin/audit" },
     { key: "settings", href: "/admin/settings" },
   ],

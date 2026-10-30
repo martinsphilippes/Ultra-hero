@@ -762,5 +762,185 @@
       "preparing": "Em preparação",
       "readyForDispatch": "Prontas para expedição"
     }
+  },
+  "indicators": {
+    "title": "Indicadores",
+    "description": "Por herói, atalho, conversão, profissionais, colecionáveis e ranking. Só números agregados.",
+    "privacy": "Só totais agregados: nenhuma pessoa aparece aqui (LGPD).",
+    "simulatedNote": "Pedidos, contratações e lances são de teste: valores simulados.",
+    "export": "Exportar CSV",
+    "exportHint": "Baixar esta seção em CSV (só totais agregados)",
+    "sectionsLabel": "Seções dos indicadores",
+    "currentView": "{section}, últimos {days} dias",
+    "sections": {
+      "herois": "Por herói",
+      "atalhos": "Por atalho",
+      "conversao": "Conversão",
+      "profissionais": "Profissionais",
+      "colecionaveis": "Colecionáveis",
+      "ranking": "Ranking"
+    },
+    "noData": "Sem dados ainda",
+    "none": "—",
+    "missing": {
+      "title": "Sem dados ainda",
+      "description": "Os indicadores aparecem quando a migração 0060 estiver no banco."
+    },
+    "ofPrevious": "{share} da etapa anterior",
+    "dayBar": "{date}: {count}",
+    "heroes": {
+      "kpis": {
+        "followers": "Seguidores",
+        "newFollowers": "Novos seguidores",
+        "views": "Visualizações",
+        "recipeTaps": "Toques em receitas",
+        "proTaps": "Toques em profissionais",
+        "shortcutOpens": "Atalhos abertos"
+      },
+      "dailyTitle": "Novos seguidores por dia",
+      "dailyDescription": "Todos os heróis somados, horário de Brasília. Quem deixou de seguir não conta.",
+      "listTitle": "Heróis",
+      "listDescription": "Seguidores = total de hoje; o resto é do período.",
+      "inactive": "Fora do ar",
+      "stats": {
+        "followers": "Seguidores",
+        "newFollowers": "Novos",
+        "contentViews": "Views conteúdo",
+        "programViews": "Views programa",
+        "fazer": "Fazer",
+        "comprarPronto": "Comprar pronto",
+        "listaCompras": "Lista",
+        "verPerfil": "Ver profissional",
+        "contratar": "Contratar",
+        "shortcutOpens": "Atalhos",
+        "bids": "Lances",
+        "collectibleViews": "Views colecionável"
+      }
+    },
+    "shortcuts": {
+      "trackingSince": "Aberturas de atalho contadas desde {date}.",
+      "notTracked": "Nenhuma abertura de atalho registrada ainda: a contagem começa com a migração 0060.",
+      "bySourceTitle": "Aberturas por atalho",
+      "bySourceDescription": "Quantas vezes cada atalho da página do herói foi aberto.",
+      "heroesCount": "Heróis: {count}",
+      "dailyTitle": "Aberturas por dia",
+      "dailyDescription": "Total no período: {count}",
+      "byHeroTitle": "Herói e atalho",
+      "byHeroDescription": "Os pares mais abertos no período.",
+      "pair": "{hero} · {shortcut}"
+    },
+    "conversion": {
+      "recipeTitle": "Receita → carrinho",
+      "recipeDescription": "Views da receita, toques em Comprar pronto e o produto pronto no carrinho e em pedidos de teste. O carrinho conta o produto vindo de qualquer lugar.",
+      "otherActions": "Outras ações na receita: Fazer {fazer} · Lista de compras {lista}",
+      "programTitle": "Programa → inscrição → conclusão",
+      "programDescription": "Views do programa, inscrições e conclusões no período.",
+      "shopTitle": "Loja",
+      "shopDescription": "Views de produto, carrinho, checkout e pedidos de teste.",
+      "testOrdersTotal": "Total dos pedidos de teste: {total}",
+      "steps": {
+        "recipeViews": "Views de receitas",
+        "comprarPronto": "Comprar pronto",
+        "readyCartAdds": "Produto pronto no carrinho",
+        "readyOrdered": "Produto pronto em pedidos (unid.)",
+        "programViews": "Views de programas",
+        "enrolled": "Inscrições",
+        "completed": "Conclusões",
+        "productViews": "Views de produtos",
+        "cartAdds": "Adições ao carrinho",
+        "checkouts": "Checkouts iniciados",
+        "testOrders": "Pedidos de teste"
+      },
+      "recipesTitle": "Receitas: Comprar pronto",
+      "recipesDescription": "Toques em Comprar pronto por receita.",
+      "recipeHint": "Views {views} · Carrinho {cart} · Pedidos {ordered}",
+      "recipeHintNoProduct": "Views {views} · sem produto pronto",
+      "programsTitle": "Programas: inscrições",
+      "programsDescription": "Inscrições por programa no período.",
+      "programHint": "Views {views} · Conclusões {completed}"
+    },
+    "professionals": {
+      "kpis": {
+        "orders": "Contratações",
+        "completed": "Concluídas",
+        "revenue": "Receita",
+        "medianResponse": "Resposta (mediana)",
+        "taps": "Toques em Contratar"
+      },
+      "revenueHint": "Aceitas, agendadas e concluídas · valores simulados",
+      "tapsHint": "Ver perfil: {count}",
+      "noResponse": "sem resposta",
+      "statusTitle": "Contratações por situação",
+      "statusDescription": "Pedidos criados no período, pela situação de hoje.",
+      "status": {
+        "pending": "Aguardando",
+        "accepted": "Aceitas",
+        "scheduled": "Agendadas",
+        "completed": "Concluídas",
+        "declined": "Recusadas",
+        "cancelled": "Canceladas"
+      },
+      "perProTitle": "Por profissional",
+      "perServiceTitle": "Por serviço",
+      "serviceHint": "{professional} · Concluídas {completed} · {revenue}",
+      "stats": {
+        "orders": "Pedidos",
+        "completed": "Concluídos",
+        "revenue": "Receita",
+        "response": "Resposta",
+        "verPerfil": "Ver perfil",
+        "contratar": "Contratar"
+      }
+    },
+    "collectibles": {
+      "kpis": {
+        "live": "Ao vivo",
+        "ended": "Encerrados",
+        "bids": "Lances",
+        "views": "Visualizações",
+        "won": "Arrematados",
+        "finalValue": "Valor final"
+      },
+      "noBidsHint": "Sem lance: {count}",
+      "statusTitle": "Itens por situação",
+      "statusDescription": "Situação de hoje, todos os itens.",
+      "status": {
+        "live": "Ao vivo",
+        "scheduled": "Agendados",
+        "ended": "Encerrados",
+        "cancelled": "Cancelados",
+        "draft": "Rascunhos"
+      },
+      "contactTitle": "Contato com quem arrematou",
+      "contactDescription": "Situação de hoje.",
+      "contact": {
+        "pending": "A contatar",
+        "contacted": "Contatado",
+        "delivered": "Entregue"
+      },
+      "itemsTitle": "Itens",
+      "itemsDescription": "Ao vivo primeiro; lances e views do período.",
+      "itemHint": "{hero} · {status}",
+      "stats": {
+        "bids": "Lances",
+        "totalBids": "Lances (total)",
+        "views": "Views",
+        "final": "Valor final",
+        "contact": "Contato"
+      }
+    },
+    "ranking": {
+      "heroesTitle": "Top heróis",
+      "heroesDescription": "Por ações: seguir, ver, tocar, abrir atalho e dar lance.",
+      "heroHint": "Views {views} · Toques {taps} · Atalhos {opens}",
+      "recipesTitle": "Top receitas",
+      "recipesDescription": "Por toques em Fazer, Comprar pronto e Lista de compras.",
+      "recipeHint": "Fazer {fazer} · Comprar pronto {comprar} · Lista {lista}",
+      "programsTitle": "Top programas",
+      "programsDescription": "Por inscrições no período.",
+      "productsTitle": "Top produtos",
+      "productsDescription": "Por adições ao carrinho no período.",
+      "viewsHint": "Views {views}"
+    }
   }
 }
