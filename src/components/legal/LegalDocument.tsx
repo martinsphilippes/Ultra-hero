@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Button, PageHeader } from "@/components/ui";
 import { formatDate } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
+import { LEGAL_ENTITY } from "@/lib/legal/entity";
 import { legalLinkClass, legalRichTags } from "./rich-tags";
 
 export type LegalDoc = "terms" | "privacy";
@@ -28,7 +29,8 @@ export async function LegalDocument({ doc }: { doc: LegalDoc }) {
   const [t, locale] = await Promise.all([getTranslations("legal"), getLocale()]);
   const sections = Object.entries(t.raw(`${doc}.sections`) as Record<string, Section>);
   const other: LegalDoc = doc === "terms" ? "privacy" : "terms";
-  const rich = (key: string) => t.rich(key, legalRichTags);
+  // identificação da empresa vem de um lugar só (src/lib/legal/entity.ts)
+  const rich = (key: string) => t.rich(key, { ...legalRichTags, ...LEGAL_ENTITY });
   const updated = formatDate(`${LAST_UPDATED}T12:00:00Z`, locale);
 
   const renderBlock = (base: string, id: string, block: Block): ReactNode => {
