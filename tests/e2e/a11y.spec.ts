@@ -15,14 +15,14 @@ for (const route of PUBLIC_ROUTES) {
   });
 }
 
-test("documentos legais: públicos, um h1, aviso de demonstração, data e tabelas acessíveis", async ({ page }) => {
+test("documentos legais: públicos, um h1, aviso da loja em modo de teste, data e tabelas acessíveis", async ({ page }) => {
   for (const route of ["/legal/terms", "/legal/privacy"]) {
     await page.goto(route);
     await expect(page).toHaveURL(new RegExp(`${route}$`));
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("main h3, main h4, main h5, main h6")).toHaveCount(0);
-    await expect(page.getByRole("note")).toContainText(/revisão jurídica antes da abertura pública/);
-    await expect(page.getByText("Última atualização: 29/10/2026")).toBeVisible();
+    await expect(page.getByRole("note")).toContainText(/modo de teste/);
+    await expect(page.getByText("Última atualização: 30/10/2026")).toBeVisible();
   }
   const tables = page.locator("main table");
   await expect(tables).toHaveCount(2);

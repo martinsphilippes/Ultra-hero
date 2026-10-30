@@ -56,8 +56,7 @@
   },
   "demo": {
     "banner": "Entorno de demostración: ningún pago, envío ni cobro es real.",
-    "tag": "Demostración",
-    "dismiss": "Descartar aviso de demostración"
+    "tag": "Demostración"
   },
   "languages": {
     "label": "Idioma",

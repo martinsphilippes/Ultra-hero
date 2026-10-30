@@ -133,9 +133,11 @@ test.describe("visitante", () => {
     await expect(page.getByRole("rowheader", { name: "Avaliações de receitas (estrelas)" })).toBeVisible();
   });
 
-  test("ambiente de demonstração está sinalizado", async ({ page }) => {
+  // Decisão do responsável (30/10/2026): o site não se apresenta mais como demonstração; a loja e os
+  // planos seguem marcados como teste onde aparecem.
+  test("sem aviso de ambiente de demonstração no topo", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();
+    await expect(page.getByText(/ambiente de demonstração/i)).toHaveCount(0);
   });
 
   // RB-05/RB-06 (0044): os heróis são pessoas reais com uso autorizado (nota de direitos com o titular,

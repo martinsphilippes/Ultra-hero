@@ -287,11 +287,6 @@
                 "purpose": "Lembra o tema escolhido (claro, escuro ou do sistema).",
                 "duration": "1 ano"
               },
-              "demo": {
-                "name": "<code>uh-demo-dismissed</code>",
-                "purpose": "Lembra que você dispensou o aviso exibido no topo do site.",
-                "duration": "24 horas"
-              },
               "destination": {
                 "name": "<code>uh-dest</code>",
                 "purpose": "Lembra o destino fictício escolhido no carrinho de teste do site.",
