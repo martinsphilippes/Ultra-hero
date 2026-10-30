@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode, type TouchEvent } from "react";
@@ -74,7 +74,13 @@ export function ScreenCards({ cards, testIdPrefix, listClassName, label }: Props
 
   return (
     <>
-      <ul className={cn("grid gap-3 sm:grid-cols-2", listClassName)} aria-label={label} data-testid={`${testIdPrefix}-cards`}>
+      {/* compactos, todos numa linha (pedido do responsável); o resumo fica para leitores de tela */}
+      <ul
+        className={cn("grid gap-2", listClassName)}
+        style={{ gridTemplateColumns: `repeat(${Math.max(1, cards.length)}, minmax(0, 1fr))` }}
+        aria-label={label}
+        data-testid={`${testIdPrefix}-cards`}
+      >
         {cards.map((card) => (
           <li key={card.key} className="flex">
             <button
@@ -83,21 +89,18 @@ export function ScreenCards({ cards, testIdPrefix, listClassName, label }: Props
               aria-haspopup="dialog"
               data-testid={`${testIdPrefix}-card-${card.key}`}
               data-screens={card.screens.length}
-              className="uh-card group flex min-h-11 w-full items-start gap-3 rounded-xl border border-border bg-surface p-4 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className="uh-card group flex min-h-11 w-full flex-col items-center gap-1.5 rounded-xl border border-border bg-surface px-1.5 py-2.5 text-center shadow-sm transition-[transform,box-shadow,border-color] duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             >
-              <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-text [&_svg]:size-5">
+              <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-text [&_svg]:size-[1.125rem]">
                 {card.icon}
               </span>
-              <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="type-h3 text-fg">{card.title}</span>
-                {card.teaser ? (
-                  <span className="line-clamp-2 type-body-sm type-numeric text-fg-muted" data-teaser="">
-                    {card.teaser}
-                  </span>
-                ) : null}
-                <span className="type-caption font-medium text-accent-text">{t("screens", { n: card.screens.length })}</span>
-              </span>
-              <ChevronRight aria-hidden="true" className="mt-3 size-5 shrink-0 text-fg-subtle transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
+              <span className="w-full text-[0.75rem] font-medium leading-tight text-fg [overflow-wrap:anywhere]">{card.title}</span>
+              {card.teaser ? (
+                <span className="sr-only" data-teaser="">
+                  {card.teaser}
+                </span>
+              ) : null}
+              <span className="sr-only">{t("screens", { n: card.screens.length })}</span>
             </button>
           </li>
         ))}

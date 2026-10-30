@@ -80,12 +80,11 @@ for (const kind of ["premium", "free"] as const) {
       await expect(page.getByRole("button", { name: /adicionar/i })).toHaveCount(0);
       await expect(page.getByText(/Hidratação|Registrar descanso|Adicionar item/)).toHaveCount(0);
 
-      // 1 coluna no celular: os cards ocupam a largura toda; sem rolagem horizontal
-      const viewport = page.viewportSize();
-      if (viewport && viewport.width < 600) {
-        const box = await hubCard(page, "noite").boundingBox();
-        expect(box!.width).toBeGreaterThan(viewport.width * 0.8);
-      }
+      // cards compactos numa linha só: mesma altura (topo) e lado a lado; sem rolagem horizontal
+      const dia = await hubCard(page, "dia").boundingBox();
+      const noite = await hubCard(page, "noite").boundingBox();
+      expect(Math.abs(dia!.y - noite!.y)).toBeLessThanOrEqual(4); // folga do leve "levantar" no hover
+      expect(noite!.x).toBeGreaterThan(dia!.x);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(1);
       expect(await seriousViolations(page)).toEqual([]);
