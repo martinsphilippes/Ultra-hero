@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { Stethoscope } from "lucide-react";
 import { ProfessionalCard } from "@/components/professionals/ProfessionalBits";
 import { EmptyState, PageHeader } from "@/components/ui";
@@ -41,7 +40,8 @@ export default async function ProfessionalsPage({ searchParams }: Props) {
                 const active = key === specialty;
                 return (
                   <li key={key ?? "all"}>
-                    <Link
+                    {/* <a> comum: o roteador às vezes abortava a troca só de parâmetros na mesma página */}
+                    <a
                       href={key ? `/profissionais?especialidade=${key}` : "/profissionais"}
                       aria-current={active ? "page" : undefined}
                       className={cn(
@@ -50,7 +50,7 @@ export default async function ProfessionalsPage({ searchParams }: Props) {
                       )}
                     >
                       {t(`specialtyPlural.${key ?? "all"}`)}
-                    </Link>
+                    </a>
                   </li>
                 );
               })}
