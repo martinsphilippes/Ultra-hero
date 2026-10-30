@@ -13,7 +13,10 @@ export function BrandLogo({ name, logoUrl, className }: Props) {
     );
   }
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={logoUrl} alt="" aria-hidden="true" loading="lazy" decoding="async" className={cn("h-6 w-auto max-w-[110px] rounded-md object-contain", className)} />
+    // logos oficiais em cores próprias: placa clara para aparecerem certos também no tema escuro
+    <span aria-hidden="true" className={cn("inline-flex h-6 max-w-[110px] items-center rounded-md bg-white px-1.5 py-1", className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={logoUrl} alt="" loading="lazy" decoding="async" className="h-full w-auto max-w-full object-contain" />
+    </span>
   );
 }

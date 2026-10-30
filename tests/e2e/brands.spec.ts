@@ -6,9 +6,9 @@ import { loginAs } from "./helpers/login";
 // desliga o contador de cliques). Roda contra o banco remoto; sem a 0062 lá, as partes que dependem
 // dela pulam e o resto confere que nada quebrou (feed, perfil, post, programa e o admin com o aviso).
 
-const HERO = "/personalities/gabriel-medina";
-const TAGGED_POST = "/content/afiar-e-cuidar-das-facas-g7";
-const PROGRAM = "/programs/hidratacao-e-energia";
+const HERO = "/personalities/neymar";
+const TAGGED_POST = "/content/como-escolher-o-tenis-de-corrida-t8";
+const PROGRAM = "/programs/do-sofa-aos-5-km";
 
 test.beforeEach(async ({ context, baseURL }) => {
   await context.addCookies([{ name: "uh-e2e", value: "1", url: baseURL! }]);

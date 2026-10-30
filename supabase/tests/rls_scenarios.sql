@@ -7270,6 +7270,11 @@ delete from auth.users where id in ('71000000-0000-4000-8000-0000000007a1', '710
 -- ativo/no ar; escrita só por RPC do admin, auditada; cliques agregados só do service role; S14 = 17;
 -- chave própria em toda ligação (S65/PGRST201).
 select tests.su();
+-- a 0063 trocou as marcas de exemplo pelas reais: para o S72 testar o seed da 0062 como foi escrito,
+-- tira as reais e reaplica a 0062 (tudo some no rollback); o S73 confere o estado final da 0063
+delete from public.brands where not is_demo;
+\ir ../migrations/0062_brands_smart_tags.sql
+select tests.su();
 create temp table t_s72 (k text primary key, v text);
 grant all on t_s72 to anon, authenticated, service_role;
 insert into t_s72 values
@@ -7497,6 +7502,29 @@ select tests.ok('S72 reaplicar a 0062 mantém edição e exclusão do admin',
 
 drop table t_s72_bump;
 drop table t_s71;
+
+-- ================================================================ S73 · Marcas reais no lugar das de exemplo (0063)
+select tests.su();
+\ir ../migrations/0063_real_brands.sql
+select tests.su();
+select tests.ok('S73 sem marcas de exemplo; Nike, PUMA, ASICS, Yonex e C6 Bank com logo e site oficiais',
+  not exists (select 1 from public.brands where is_demo)
+  and (select string_agg(slug, ',' order by slug) from public.brands where slug in ('nike','puma','asics','yonex','c6-bank')) = 'asics,c6-bank,nike,puma,yonex'
+  and not exists (select 1 from public.brands where slug in ('nike','puma','asics','yonex','c6-bank') and (logo_url is null or not public.brand_https_url_ok(site_url))));
+select tests.ok('S73 Neymar com as 5 marcas como patrocinadoras, na ordem do pedido',
+  (select string_agg(b.slug, ',' order by cb.sort_order) from public.creator_brands cb join public.brands b on b.id = cb.brand_id
+     join public.creator_profiles c on c.id = cb.creator_id where c.slug = 'neymar' and cb.relationship = 'sponsor') = 'nike,puma,asics,yonex,c6-bank');
+select tests.ok('S73 produtos com link https da loja oficial; marcações nas fotos do Neymar guardam a capa',
+  (select count(*) from public.brand_products p join public.brands b on b.id = p.brand_id where b.slug in ('nike','asics','puma')) = 5
+  and not exists (select 1 from public.brand_products where not public.brand_https_url_ok(external_url))
+  and (select count(*) from public.media_smart_tags t join public.content c on c.id = t.content_id where c.slug in ('como-escolher-o-tenis-de-corrida-t8','caminhada-corrida-semana-1-t4')) = 6
+  and not exists (select 1 from public.media_smart_tags t join public.content c on c.id = t.content_id where t.media_url is distinct from c.cover_url));
+\ir ../migrations/0063_real_brands.sql
+select tests.su();
+select tests.ok('S73 reaplicar a 0063 não duplica nada',
+  (select count(*) from public.brands where slug in ('nike','puma','asics','yonex','c6-bank')) = 5
+  and (select count(*) from public.creator_brands cb join public.creator_profiles c on c.id = cb.creator_id where c.slug = 'neymar') = 5
+  and (select count(*) from public.media_smart_tags) = 6);
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
