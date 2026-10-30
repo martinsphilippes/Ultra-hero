@@ -809,6 +809,10 @@
       "commerce_updates": {
         "label": "Pedidos de prueba",
         "description": "Cambios de estado de los pedidos demostrativos."
+      },
+      "auction_outbid": {
+        "label": "Puja superada en Coleccionables",
+        "description": "Un aviso cuando alguien supera tu puja (como máximo uno por artículo cada 2 minutos)."
       }
     },
     "transactional": {

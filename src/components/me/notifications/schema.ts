@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Validação da action de preferências de notificação (RF-023). As colunas booleanas da
-// tabela notification_preferences (0018, 0054) e nada além delas; o banco só aceita a linha do próprio usuário.
+// tabela notification_preferences (0018, 0054, 0061) e nada além delas; o banco só aceita a linha do próprio usuário.
 // Componentes cliente importam o vocabulário de ./constants (sem zod no bundle).
 
 export {
@@ -19,6 +19,7 @@ export const notificationPreferencesSchema = z
   .object({
     hero_posts: z.boolean(),
     achievements: z.boolean(),
+    auction_outbid: z.boolean(),
     editorial_digest: z.boolean(),
     streak_reminders: z.boolean(),
     commerce_updates: z.boolean(),

@@ -15,5 +15,9 @@
   "streakReminder": {
     "title": "Tu racha está en juego",
     "body": "{streak, plural, =1 {Llevas 1 día seguido.} other {Llevas # días seguidos.}} Completa un contenido hoy para no perderla."
+  },
+  "auctionOutbid": {
+    "title": "Superaron tu puja",
+    "body": "{item}: la puja ahora es {price}. Toca para hacer una nueva puja."
   }
 }

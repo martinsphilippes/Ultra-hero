@@ -295,5 +295,12 @@
       "no_winner": "This item has no winner.",
       "invalid_contact_status": "Invalid contact status."
     }
+  },
+  "alert": {
+    "region": "Bid alerts",
+    "title": "Your bid on {item} was topped",
+    "price": "Current bid: {price}",
+    "cta": "Bid again",
+    "close": "Close alert"
   }
 }

@@ -157,3 +157,57 @@ describe("dispatchPushOutbox", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+// Lance superado nos Colecionáveis (0061): consentimento próprio, item ao vivo e a pessoa ainda atrás.
+describe("dispatchPushOutbox · lance superado", () => {
+  const ITEM = "c-1";
+  const outbidRow = { id: 7, user_id: USER, kind: "auction_outbid", payload: { collectible_id: ITEM, bid_id: "b2", amount_cents: 156000 }, attempts: 1, created_at: NOW };
+  const tables = (over: { prefs?: Row; item?: Row; leader?: string } = {}) => ({
+    ...baseTables({ auction_outbid: true, ...over.prefs }),
+    collectibles: [
+      {
+        id: ITEM,
+        title: "Bola assinada",
+        status: "live",
+        starts_at: new Date(Date.now() - 3_600_000).toISOString(),
+        ends_at: new Date(Date.now() + 3_600_000).toISOString(),
+        current_cents: 157000,
+        leading_bid_id: "b9",
+        ...over.item,
+      },
+    ],
+    collectible_bid_owners: [{ bid_id: "b9", user_id: over.leader ?? "u2" }],
+  });
+
+  it("envia com o valor atual do item e o link para dar outro lance", async () => {
+    fetchMock.mockResolvedValue(expoReply([{ status: "ok", id: "t1" }]));
+    const { admin } = fakeAdmin(tables(), [outbidRow]);
+    expect(await dispatchPushOutbox(admin)).toMatchObject({ sent: 1 });
+    const [message] = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(message).toMatchObject({
+      title: "Seu lance foi superado",
+      body: "Bola assinada: o lance agora é R$\u00a01.570,00. Toque para dar um novo lance.",
+      data: { url: `/shop/colecionaveis/${ITEM}`, kind: "auction_outbid" },
+    });
+  });
+
+  it("tipo desligado (ou coluna ausente, banco sem a 0061) não envia", async () => {
+    for (const prefs of [{ auction_outbid: false }, { auction_outbid: undefined }]) {
+      fetchMock.mockReset();
+      const { admin, updates } = fakeAdmin(tables({ prefs }), [outbidRow]);
+      await dispatchPushOutbox(admin);
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(updates[0].values).toMatchObject({ outcome: "skipped_consent" });
+    }
+  });
+
+  it("a pessoa já voltou à frente, ou o item acabou: o aviso perdeu o sentido", async () => {
+    for (const over of [{ leader: USER }, { item: { ends_at: new Date(Date.now() - 1000).toISOString() } }, { item: { status: "cancelled" } }]) {
+      fetchMock.mockReset();
+      const { admin, updates } = fakeAdmin(tables(over), [outbidRow]);
+      await dispatchPushOutbox(admin);
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(updates[0].values).toMatchObject({ outcome: "skipped_stale" });
+    }
+  });
+});

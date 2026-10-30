@@ -295,5 +295,12 @@
       "no_winner": "Este item não tem vencedor.",
       "invalid_contact_status": "Situação de contato inválida."
     }
+  },
+  "alert": {
+    "region": "Avisos de lance",
+    "title": "Seu lance em {item} foi superado",
+    "price": "Lance atual: {price}",
+    "cta": "Dar novo lance",
+    "close": "Fechar aviso"
   }
 }

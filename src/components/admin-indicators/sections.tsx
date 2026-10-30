@@ -9,6 +9,7 @@ import {
   heroTotals,
   heroViews,
   rankHeroes,
+  rankHeroesByPageViews,
   recipeTaps,
   SERVICE_ORDER_STATUSES,
   sumDaily,
@@ -44,11 +45,15 @@ async function tools() {
 export async function HeroesSection({ data }: { data: HeroesData }) {
   const { t, n, day, dayBar, empty } = await tools();
   const totals = heroTotals(data.rows);
-  const anyActivity = data.rows.some((h) => h.followers > 0 || heroViews(h) + recipeTaps(h) + h.shortcutOpens + h.proContratar + h.proVerPerfil + h.collectibleBids + h.newFollowers > 0);
+  const anyActivity = data.rows.some(
+    (h) => h.followers > 0 || heroViews(h) + recipeTaps(h) + h.shortcutOpens + h.proContratar + h.proVerPerfil + h.collectibleBids + h.newFollowers + h.pageViews > 0,
+  );
+  const pageViewsTotal = sumDaily(data.dailyPageViews);
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
         <KpiCard label={t("heroes.kpis.followers")} value={n(totals.followers)} />
+        <KpiCard label={t("heroes.kpis.pageViews")} value={n(totals.pageViews)} />
         <KpiCard label={t("heroes.kpis.newFollowers")} value={n(totals.newFollowers)} />
         <KpiCard label={t("heroes.kpis.views")} value={n(totals.views)} />
         <KpiCard label={t("heroes.kpis.recipeTaps")} value={n(totals.recipeTaps)} />
@@ -56,9 +61,21 @@ export async function HeroesSection({ data }: { data: HeroesData }) {
         <KpiCard label={t("heroes.kpis.shortcutOpens")} value={n(totals.shortcutOpens)} />
       </div>
 
-      <Block id="ind-follows" title={t("heroes.dailyTitle")} description={t("heroes.dailyDescription")} empty={sumDaily(data.dailyFollows) === 0} emptyLabel={empty}>
-        <DailyBars points={data.dailyFollows} label={t("heroes.dailyTitle")} barLabel={dayBar} formatDay={day} />
-      </Block>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Block id="ind-follows" title={t("heroes.dailyTitle")} description={t("heroes.dailyDescription")} empty={sumDaily(data.dailyFollows) === 0} emptyLabel={empty}>
+          <DailyBars points={data.dailyFollows} label={t("heroes.dailyTitle")} barLabel={dayBar} formatDay={day} />
+        </Block>
+        {/* visitas à página do herói (0061): contador por dia, sem pessoa */}
+        <Block
+          id="ind-page-views"
+          title={t("heroes.pageViewsTitle")}
+          description={`${t("heroes.pageViewsDescription", { count: n(pageViewsTotal) })} ${data.pageViewsSince ? t("heroes.pageViewsSince", { date: day(data.pageViewsSince) }) : t("heroes.pageViewsNotTracked")}`}
+          empty={pageViewsTotal === 0}
+          emptyLabel={empty}
+        >
+          <DailyBars points={data.dailyPageViews} label={t("heroes.pageViewsTitle")} barLabel={dayBar} formatDay={day} />
+        </Block>
+      </div>
 
       <Block id="ind-heroes" title={t("heroes.listTitle")} description={t("heroes.listDescription")} empty={!anyActivity} emptyLabel={empty}>
         <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2" data-testid="indicator-heroes">
@@ -76,6 +93,7 @@ export async function HeroesSection({ data }: { data: HeroesData }) {
                 stats={[
                   { key: "followers", label: t("heroes.stats.followers"), value: n(h.followers) },
                   { key: "new", label: t("heroes.stats.newFollowers"), value: n(h.newFollowers) },
+                  { key: "pageviews", label: t("heroes.stats.pageViews"), value: n(h.pageViews) },
                   { key: "cv", label: t("heroes.stats.contentViews"), value: n(h.contentViews) },
                   { key: "pv", label: t("heroes.stats.programViews"), value: n(h.programViews) },
                   { key: "fazer", label: t("heroes.stats.fazer"), value: n(h.recipeFazer) },
@@ -348,6 +366,7 @@ const contactKey = (s: string) => ((CONTACT_STATUSES as readonly string[]).inclu
 export async function RankingSection({ data }: { data: { ranking: RankingData; heroes: HeroesData } }) {
   const { t, n, empty } = await tools();
   const heroes = rankHeroes(data.heroes.rows);
+  const byPageViews = rankHeroesByPageViews(data.heroes.rows);
   const r = data.ranking;
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -362,6 +381,14 @@ export async function RankingSection({ data }: { data: { ranking: RankingData; h
             display: n(actions),
             hint: t("ranking.heroHint", { views: n(heroViews(hero)), taps: n(recipeTaps(hero) + hero.proContratar + hero.proVerPerfil), opens: n(hero.shortcutOpens) }),
           }))}
+        />
+      </Block>
+      <Block id="ind-rank-page-views" title={t("ranking.pageViewsTitle")} description={t("ranking.pageViewsDescription")} empty={byPageViews.length === 0} emptyLabel={empty}>
+        <BarList
+          ordered
+          tone="info"
+          label={t("ranking.pageViewsTitle")}
+          items={byPageViews.map((hero) => ({ key: hero.id, label: hero.name, value: hero.pageViews, display: n(hero.pageViews) }))}
         />
       </Block>
       <Block id="ind-rank-recipes" title={t("ranking.recipesTitle")} description={t("ranking.recipesDescription")} empty={r.recipes.length === 0} emptyLabel={empty}>

@@ -809,6 +809,10 @@
       "commerce_updates": {
         "label": "Pedidos de teste",
         "description": "Mudanças de status dos pedidos demonstrativos."
+      },
+      "auction_outbid": {
+        "label": "Lance superado nos Colecionáveis",
+        "description": "Um aviso quando alguém cobre o seu lance (no máximo um por item a cada 2 minutos)."
       }
     },
     "transactional": {

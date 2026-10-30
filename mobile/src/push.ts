@@ -7,11 +7,12 @@ import { Platform } from "react-native";
 import type { NativeToWeb } from "../../src/lib/native-app/bridge-contract";
 
 // No primeiro plano a pessoa já está no app: post de herói aparece como banner; conquista e
-// programa a web já mostrou na tela (toast), então não repete.
+// programa a web já mostrou na tela (toast), então não repete. Lance superado (0061) aparece: o pop-up
+// da web não roda no app (os Colecionáveis não existem nas lojas).
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
     const kind = notification.request.content.data?.kind;
-    const show = kind === "hero_post" || kind === "streak_reminder";
+    const show = kind === "hero_post" || kind === "streak_reminder" || kind === "auction_outbid";
     return { shouldShowBanner: show, shouldShowList: show, shouldPlaySound: false, shouldSetBadge: false };
   },
 });

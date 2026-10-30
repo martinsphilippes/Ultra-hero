@@ -15,5 +15,9 @@
   "streakReminder": {
     "title": "Sua sequência está em jogo",
     "body": "{streak, plural, =1 {Você está em 1 dia seguido.} other {Você está em # dias seguidos.}} Conclua um conteúdo hoje para não zerar."
+  },
+  "auctionOutbid": {
+    "title": "Seu lance foi superado",
+    "body": "{item}: o lance agora é {price}. Toque para dar um novo lance."
   }
 }
