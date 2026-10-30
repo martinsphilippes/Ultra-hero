@@ -240,9 +240,35 @@
       "idea": "A ideia",
       "nutritionTeaser": "Para saber o que comer neste mesmo programa.",
       "nutritionContents": "Para comer bem",
-      "nutritionContentsNote": "Receitas e conteúdos de nutrição deste programa e do mesmo herói.",
+      "nutritionContentsNote": "Receitas e conteúdos de nutrição deste programa e do próprio herói.",
       "nutritionProducts": "Produtos para este programa",
-      "nutritionProductsNote": "Refeições, kits, suplementos e bebidas ligados aos conteúdos do programa ou ao herói."
+      "nutritionProductsNote": "Refeições, kits, suplementos e bebidas ligados ao programa, aos conteúdos dele ou ao herói.",
+      "support": "Apoio",
+      "supportTeaser": "Produtos e profissionais indicados para este programa.",
+      "supportProducts": "Produtos do programa",
+      "supportProductsNote": "Escolhidos pela equipe para acompanhar o programa.",
+      "supportProfessionals": "Profissionais indicados",
+      "supportProfessionalsNote": "Sugeridos pela equipe para este programa."
+    },
+    "actions": {
+      "title": "Próximos passos",
+      "description": "Comece o programa e, se quiser, tenha junto o produto e o profissional indicados.",
+      "start": "Começar",
+      "startHint": {
+        "login": "Entre para participar e acompanhar seu progresso.",
+        "enroll": "Participe para acompanhar seu progresso.",
+        "reenroll": "Volte ao programa quando quiser.",
+        "continue": "Continue de onde parou.",
+        "review": "Programa concluído. Reveja quando quiser."
+      },
+      "continue": "Continuar",
+      "review": "Rever conteúdos",
+      "buy": "Comprar produto",
+      "buyHint": "Escolhido para acompanhar este programa.",
+      "hire": "Contratar profissional",
+      "hireHint": "Acompanhamento de quem conhece o programa.",
+      "professionals": "Profissionais indicados",
+      "why": "Por que este produto"
     }
   },
   "certificate": {

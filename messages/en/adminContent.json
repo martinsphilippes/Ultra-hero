@@ -523,6 +523,39 @@
       "sourceConcept": "Original concept",
       "noSourceConcept": "The original version has no concept yet.",
       "translationHint": "Applies when the translation is published. Empty = the page uses the original concept."
+    },
+    "support": {
+      "title": "Product and professional",
+      "description": "What shows on the program page under Next steps and in the Support card. Up to 3 products, in order.",
+      "products": "Products (up to 3)",
+      "productsNone": "No linked products.",
+      "selectProduct": "Choose a product",
+      "addProduct": "Add product",
+      "note": "Why this product (optional)",
+      "noteHint": "Up to 200 characters. Shown next to the product.",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "saveProducts": "Save products",
+      "productsSaved": "Program products saved.",
+      "professionals": "Suggested professionals",
+      "professionalsNone": "No suggested professionals.",
+      "selectProfessional": "Choose a professional",
+      "addProfessional": "Suggest",
+      "service": "Service shown",
+      "serviceAuto": "First active service",
+      "professionalSaved": "Program professional updated.",
+      "unavailable": "Update the database (0059) to link products and choose the service.",
+      "errors": {
+        "too_many_products": "At most 3 products per program.",
+        "duplicate_product": "That product is already on the list.",
+        "invalid_product": "Product not found.",
+        "invalid_service": "That service doesn't belong to this professional.",
+        "invalid_input": "Invalid data.",
+        "not_found": "Not found.",
+        "forbidden": "Not allowed.",
+        "generic": "Couldn't save. Please try again."
+      }
     }
   },
   "plans": {

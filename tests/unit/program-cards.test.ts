@@ -15,7 +15,7 @@ import {
   parseCardState,
 } from "@/lib/programs/program-cards";
 
-// Página do programa em 4 cards: seções do conceito → card, regra do Nutricional e estado na URL.
+// Página do programa em até 5 cards: seções do conceito → card, regra do Nutricional e estado na URL.
 
 const concept: ProgramConcept = {
   idea: "Eu sou um começo de dia que cabe em dez minutos. Antes de abrir o celular.",

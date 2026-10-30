@@ -114,3 +114,25 @@ contratações por profissional.
    painel da tela de login só aparece depois disso. LGPD: conta anonimizada sai dos pedidos (sem
    vínculo nem nome). Fica para a Etapa 4: mostrar o profissional sugerido na página do programa.
 4. Programas com produto e profissional ligados.
+   Feito (0059). Dados: program_products (até 3 produtos por programa, ordem 1..3 única, nota "por que
+   este produto" até 200; chave primária própria, nunca tabela-ponte na chave) e
+   professional_suggestions.service_id (serviço escolhido para o profissional sugerido no programa; FK
+   composta (service_id, professional_id) garante que é do mesmo profissional; só com program_id;
+   serviço apagado zera só a coluna). Leitura pública: programa publicado e produto publicado/liberado.
+   Escrita só por RPC do admin, auditada: admin_program_products_save (troca a lista inteira;
+   program.products) e admin_program_professional_service_set (program.professional_service); sugerir
+   ou tirar o profissional reaproveita admin_professional_suggestion_set da 0058. Admin: painel
+   "Produto e profissional" em /admin/programs/<id>. Página do programa: "Próximos passos" (só com
+   produto ou profissional ligado) com Começar (o botão de participar sai do cabeçalho; inscrito vê
+   Continuar → 1º obrigatório pendente; concluído vê Rever conteúdos), Comprar produto (linhas com
+   nota e "Adicionar ao carrinho de teste"; some com o comércio desligado e no app das lojas) e
+   Contratar profissional (serviço escolhido, senão o 1º ativo; Contratar → carrinho; no app vira
+   "Profissionais indicados" só com Ver perfil). 5º card "Apoio" (telas Produtos do programa e
+   Profissionais indicados), só quando há vínculo visível; com 5 cards a linha fica mais densa
+   (folga e letra menores) para os rótulos caberem a 390 px. Nutricional (decisão do responsável):
+   só com conteúdo de nutrição/receita do programa, conteúdo PRÓPRIO do herói (autor) ou produto de
+   comida ligado ao programa/herói; receitas apenas indicadas pelo herói (creator_recipe_links de
+   outro autor) não contam mais nem aparecem. Indicadores: Contratar/Ver perfil a partir do programa
+   contam em professional_tap_counters com origem "programa"; "Comprar produto" não tem contador
+   próprio (recipe_action_counters é só de receita; ficou para a Etapa 5). Sem a 0059 no banco: os
+   profissionais sugeridos (0058) aparecem com o 1º serviço ativo; produtos ligados não aparecem.
