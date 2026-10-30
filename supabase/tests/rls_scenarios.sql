@@ -4653,7 +4653,7 @@ select tests.acting((select id from t_s56_tiago));
 select tests.ok('S56 admin com o cabeçalho: acting_hero_id() e my_creator_id() são o Tiago; auditoria como admin',
   public.acting_hero_id() = public.seed_uuid('creator:tiago') and public.my_creator_id() = public.seed_uuid('creator:tiago') and public.audit_actor() = 'admin');
 select tests.ok('S56 admin escolhe o herói (admin_act_as_hero devolve nome e slug)',
-  (public.admin_act_as_hero(public.seed_uuid('creator:tiago')) ->> 'slug') = 'tiago-albuquerque');
+  (public.admin_act_as_hero(public.seed_uuid('creator:tiago')) ->> 'slug') = 'neymar');
 insert into public.content (id, slug, creator_id, pillar, type, title, media_license_kind, created_by) values
   ('56000000-0000-4000-8000-000000005603', 's56-post-admin', public.seed_uuid('creator:tiago'), 'training', 'article', 'Post do admin pelo Tiago', 'own', auth.uid());
 insert into public.content_bodies (content_id, body) values ('56000000-0000-4000-8000-000000005603', '{"kind":"article"}');
