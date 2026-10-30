@@ -1,4 +1,4 @@
-import { dispatchPushOutbox } from "@/lib/push/dispatch";
+import { drainPushOutbox } from "@/lib/push/dispatch";
 import { runCronJob } from "../_lib/cron";
 
 // Push diário (docs/decisions/push-notifications.md): enfileira os lembretes de sequência, envia o
@@ -7,12 +7,14 @@ import { runCronJob } from "../_lib/cron";
 // dois envios ao mesmo tempo.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+// lotes até esvaziar a fila (drainPushOutbox para em 45 s)
+export const maxDuration = 60;
 
 async function handler(request: Request) {
   return runCronJob(request, "push", async (admin) => {
     const reminders = await admin.rpc("push_enqueue_streak_reminders");
     if (reminders.error) throw new Error(reminders.error.message);
-    const dispatch = await dispatchPushOutbox(admin);
+    const dispatch = await drainPushOutbox(admin);
     const cleanup = await admin.rpc("push_outbox_cleanup");
     if (cleanup.error) throw new Error(cleanup.error.message);
     return { streak_reminders: Number(reminders.data ?? 0), ...dispatch, cleaned: Number(cleanup.data ?? 0) };

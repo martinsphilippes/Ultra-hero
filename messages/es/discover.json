@@ -178,7 +178,8 @@
         "willNotify": "Te avisamos cuando haya una publicación nueva.",
         "pushDenied": "Las notificaciones están desactivadas en el teléfono. Para recibir las publicaciones nuevas, actívalas en los Ajustes del dispositivo.",
         "unavailable": "Este héroe no está disponible ahora.",
-        "error": "No se pudo guardar. Inténtalo de nuevo."
+        "error": "No se pudo guardar. Inténtalo de nuevo.",
+        "pushError": "No pudimos activar los avisos ahora. Inténtalo de nuevo en Perfil › Notificaciones."
       }
     },
     "libraries": {

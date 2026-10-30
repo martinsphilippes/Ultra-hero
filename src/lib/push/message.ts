@@ -47,17 +47,18 @@ export function chunk<T>(items: T[], size: number): T[][] {
 
 export type ExpoTicket = { status: "ok"; id: string } | { status: "error"; message: string; details?: { error?: string } };
 
-/** Resposta da Expo, na ordem dos tokens enviados: quem recebeu, quem saiu do aparelho, quem falhou. */
-export function interpretTickets(tokens: string[], tickets: ExpoTicket[]) {
-  const ok: string[] = [];
-  const gone: string[] = [];
-  const failed: { token: string; error: string }[] = [];
-  tokens.forEach((token, index) => {
+export type TicketOutcome = { status: "ok" } | { status: "gone" } | { status: "failed"; error: string };
+
+/**
+ * Resposta da Expo para cada mensagem, pela posição (a resposta vem na ordem do envio). Pela
+ * posição e não pelo token: o mesmo aparelho pode ter dois avisos no mesmo lote.
+ */
+export function ticketOutcomes(count: number, tickets: ExpoTicket[]): TicketOutcome[] {
+  return Array.from({ length: count }, (_, index): TicketOutcome => {
     const ticket = tickets[index];
-    if (!ticket) failed.push({ token, error: "missing_ticket" });
-    else if (ticket.status === "ok") ok.push(token);
-    else if (ticket.details?.error === "DeviceNotRegistered") gone.push(token);
-    else failed.push({ token, error: ticket.details?.error ?? ticket.message ?? "error" });
+    if (!ticket) return { status: "failed", error: "missing_ticket" };
+    if (ticket.status === "ok") return { status: "ok" };
+    if (ticket.details?.error === "DeviceNotRegistered") return { status: "gone" };
+    return { status: "failed", error: ticket.details?.error ?? ticket.message ?? "error" };
   });
-  return { ok, gone, failed };
 }

@@ -55,12 +55,14 @@ export function HeroFavoriteButton({ creatorId, heroName, initial, loggedIn, pat
         return;
       }
       const push = await requestNativePush(true);
-      if (push.ok) {
-        await registerPushToken({ token: push.token });
-        await enablePush({ types: ["hero_posts"] });
+      const registered = push.ok ? await registerPushToken({ token: push.token }) : null;
+      if (registered?.ok && (await enablePush({ types: ["hero_posts"] })).ok) {
         toast({ title: t("added", { name: heroName }), description: t("willNotify"), variant: "success", duration: 3500 });
+      } else if (registered) {
+        // permissão dada, mas a conta não guardou o aparelho: não promete aviso
+        toast({ title: t("added", { name: heroName }), description: t("pushError"), variant: "success", duration: 4000 });
       } else {
-        toast({ title: t("added", { name: heroName }), description: push.reason === "denied" ? t("pushDenied") : undefined, variant: "success", duration: 4000 });
+        toast({ title: t("added", { name: heroName }), description: !push.ok && push.reason === "denied" ? t("pushDenied") : undefined, variant: "success", duration: 4000 });
       }
     });
   }

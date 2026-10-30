@@ -43,7 +43,10 @@ export function NotificationPreferencesForm({ initial }: Props) {
           setError(push.reason === "denied" ? t("errors.push_denied") : t("errors.push_unavailable"));
           return;
         }
-        await registerPushToken({ token: push.token });
+        if (!(await registerPushToken({ token: push.token })).ok) {
+          setError(t("errors.generic"));
+          return;
+        }
       }
       const result = await saveNotificationPreferences(values);
       if (!result.ok) {

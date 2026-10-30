@@ -1,7 +1,7 @@
 import "server-only";
 import { after } from "next/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
-import { dispatchPushOutbox } from "./dispatch";
+import { drainPushOutbox } from "./dispatch";
 
 // Depois da resposta (post publicado, conteúdo concluído), esvazia a fila de push que o banco acabou
 // de encher. Dependência não crítica: falha é logada e engolida; o cron diário recolhe o que sobrar.
@@ -10,7 +10,7 @@ export function schedulePushDispatch(): void {
   try {
     after(async () => {
       try {
-        await dispatchPushOutbox(createAdminClient());
+        await drainPushOutbox(createAdminClient(), 20_000);
       } catch (error) {
         console.warn("[push] dispatch após evento falhou; fica para o cron", error instanceof Error ? error.message : String(error));
       }

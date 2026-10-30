@@ -34,7 +34,7 @@ const NOT_IN_APP = [
   "common.demo.", "catalog.", "me.plan.", "me.today.", "me.profile.plan.", "me.profile.links.plan.", "me.profile.links.orders.",
   "me.profile.demoNote", "me.account.demo.", "me.notifications.types.commerce_updates.", "consume.content.relatedProducts",
   "consume.content.lockNote", "consume.content.creatorFictional", "consume.player.demoBadge",
-  "consume.certificate.disclaimer", "discover.explore.products.", "discover.personalities.profile.fictional",
+  "discover.explore.products.", "discover.personalities.profile.fictional",
   "discover.personalities.profile.products", "shopping.",
 ];
 

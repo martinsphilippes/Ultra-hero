@@ -37,8 +37,18 @@ const PUSH_TIMEOUT_MS = 60_000;
  * Pede à casca o token de push: `ask` abre o pedido do sistema se ainda não houve resposta; sem
  * `ask`, só devolve o token quando a permissão já existe.
  */
+// Um pedido por vez: as respostas da casca não dizem a que pedido respondem, então um renovar
+// silencioso em andamento (PushRegistrar) não pode tomar a resposta do pedido de permissão.
+let queue: Promise<unknown> = Promise.resolve();
+
 export function requestNativePush(ask: boolean): Promise<NativePushResult> {
   if (!hasNativeBridge()) return Promise.resolve({ ok: false, reason: "no_app" });
+  const next = queue.then(() => askNative(ask));
+  queue = next.catch(() => undefined);
+  return next;
+}
+
+function askNative(ask: boolean): Promise<NativePushResult> {
   return new Promise((resolve) => {
     const timer = window.setTimeout(() => finish({ ok: false, reason: "error" }), PUSH_TIMEOUT_MS);
     const stop = onNativeMessage((message) => {

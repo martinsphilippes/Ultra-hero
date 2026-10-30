@@ -17,6 +17,9 @@ evento no banco ──gatilho──▶ push_outbox ──▶ dispatchPushOutbox 
  cron diário 22:00 UTC ─────▶ lembrete       diário /api/cron/push)
 ```
 
+- **Envio**: `drainPushOutbox` pede lotes de 200 até esvaziar o que venceu (cron: até 45 s; logo
+  depois de uma ação: até 20 s). Publicar pelo herói, pelo admin (aprovar ou publicar agora) e
+  concluir conteúdo disparam o envio na hora.
 - **A fila é enchida pelo banco**, por gatilhos em `content` (passagem para `published`),
   `user_achievements` (insert) e `enrollments` (passagem para `completed`), e pela função
   `push_enqueue_streak_reminders()` que o cron chama. Qualquer caminho que publique (herói, admin
@@ -28,16 +31,23 @@ evento no banco ──gatilho──▶ push_outbox ──▶ dispatchPushOutbox 
 - **Consentimento em dois pontos**: só enfileira para quem tem `channel_push` e o tipo ligados e um
   aparelho registrado; o envio confere de novo (a pessoa pode ter desligado no meio).
 - **Post que saiu do ar** (voltou a rascunho, herói suspenso) antes do envio não é avisado.
+- **Reagendado** para mais tarde depois de publicado: o envio vê a data nova e devolve a linha à
+  fila para ela, sem gastar tentativa.
 - **Agendado**: entra na fila com `not_before` = data de ir ao ar e sai no primeiro envio depois dela
   (próxima ação que dispare o envio ou o cron diário). Com a Vercel no plano Hobby, o cron é diário:
   um post agendado pode avisar com atraso de até um dia. Com Vercel Pro, basta um cron a cada
   15 minutos em `vercel.json`.
 - **Anti-spam**: no máximo um aviso por herói, por pessoa, por dia (UTC). Lembrete de sequência: um
-  por dia local, só para quem tem sequência viva e ainda não fez nada no dia.
+  por dia local, só para quem tem sequência viva e ainda não fez nada no dia; se não saiu em 12 h,
+  é descartado.
+- **Escala**: o gatilho de post enfileira todos os seguidores dentro da transação que publica. Com
+  milhares de seguidores por herói, mover o fan-out para o envio (uma linha por post) antes que a
+  publicação chegue perto do limite de tempo do PostgREST.
 - **Aparelho desinstalado**: a Expo responde `DeviceNotRegistered` e o token é apagado.
   Recibos de entrega (segunda etapa da API da Expo) não são consultados nesta versão.
-- **Sair da conta** no app apaga o token daquele aparelho (cookie `uh-push-token`, lido por
-  `/auth/signout`). O mesmo aparelho que entra em outra conta passa o token adiante
+- **Sair da conta** pelo app apaga o token daquele aparelho (cookie `uh-push-token`, lido por
+  `/auth/signout`). Sessão que expira sem "Sair" deixa o token na conta até a pessoa entrar de novo
+  (o token passa para quem entrar) ou desinstalar o app. O mesmo aparelho que entra em outra conta passa o token adiante
   (`register_push_token`).
 
 ## Consentimento e pedido de permissão

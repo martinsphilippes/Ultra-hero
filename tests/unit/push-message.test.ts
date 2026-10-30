@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildPushMessage, chunk, interpretTickets, type PushEvent } from "@/lib/push/message";
+import { buildPushMessage, chunk, ticketOutcomes, type PushEvent } from "@/lib/push/message";
 
 const messages = (locale: string) => JSON.parse(readFileSync(path.join(process.cwd(), "messages", locale, "push.json"), "utf8"));
 
@@ -40,16 +40,17 @@ describe("chunk", () => {
   });
 });
 
-describe("interpretTickets", () => {
-  it("separa enviado, aparelho que saiu e erro", () => {
-    const result = interpretTickets(
-      ["ExponentPushToken[a]", "ExponentPushToken[b]", "ExponentPushToken[c]"],
-      [{ status: "ok", id: "1" }, { status: "error", message: "x", details: { error: "DeviceNotRegistered" } }, { status: "error", message: "rate", details: { error: "MessageRateExceeded" } }],
-    );
-    expect(result).toEqual({ ok: ["ExponentPushToken[a]"], gone: ["ExponentPushToken[b]"], failed: [{ token: "ExponentPushToken[c]", error: "MessageRateExceeded" }] });
+describe("ticketOutcomes", () => {
+  it("separa enviado, aparelho que saiu e erro, pela posição", () => {
+    const result = ticketOutcomes(3, [
+      { status: "ok", id: "1" },
+      { status: "error", message: "x", details: { error: "DeviceNotRegistered" } },
+      { status: "error", message: "rate", details: { error: "MessageRateExceeded" } },
+    ]);
+    expect(result).toEqual([{ status: "ok" }, { status: "gone" }, { status: "failed", error: "MessageRateExceeded" }]);
   });
 
   it("resposta mais curta que o lote conta como falha dos que faltaram", () => {
-    expect(interpretTickets(["ExponentPushToken[a]", "ExponentPushToken[b]"], [{ status: "ok", id: "1" }]).failed).toEqual([{ token: "ExponentPushToken[b]", error: "missing_ticket" }]);
+    expect(ticketOutcomes(2, [{ status: "ok", id: "1" }])[1]).toEqual({ status: "failed", error: "missing_ticket" });
   });
 });

@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { dispatchPushOutbox } from "@/lib/push/dispatch";
+import { CLAIM_LIMIT, dispatchPushOutbox, drainPushOutbox } from "@/lib/push/dispatch";
 
 // Cliente falso do Supabase: tabelas em memória, só o que o envio usa (select/in/eq/update/delete).
 type Row = Record<string, unknown>;
-function fakeAdmin(tables: Record<string, Row[]>, claim: Row[]) {
+function fakeAdmin(tables: Record<string, Row[]>, claim: Row[] | Row[][]) {
   const updates: { table: string; values: Row; ids: unknown[] }[] = [];
   const deletes: { table: string; values: unknown[] }[] = [];
   const from = (table: string) => {
@@ -23,20 +23,22 @@ function fakeAdmin(tables: Record<string, Row[]>, claim: Row[]) {
       },
       then: (resolve: (v: { data: Row[]; error: null }) => void) => resolve({ data: (tables[table] ?? []).filter((r) => (filter ? filter(r) : true)), error: null }),
       update: (values: Row) => ({
-        in: async (_col: string, ids: unknown[]) => void updates.push({ table, values, ids }),
-        eq: async (_col: string, id: unknown) => void updates.push({ table, values, ids: [id] }),
+        in: async (_col: string, ids: unknown[]) => (updates.push({ table, values, ids }), { error: null }),
+        eq: async (_col: string, id: unknown) => (updates.push({ table, values, ids: [id] }), { error: null }),
       }),
-      delete: () => ({ in: async (_col: string, values: unknown[]) => void deletes.push({ table, values }) }),
+      delete: () => ({ in: async (_col: string, values: unknown[]) => (deletes.push({ table, values }), { error: null }) }),
     };
     return api;
   };
-  const admin = { from, rpc: async () => ({ data: claim, error: null }) };
+  // vários lotes: cada chamada de push_claim devolve o próximo
+  const rounds = Array.isArray(claim[0]) ? [...(claim as Row[][])] : [claim as Row[]];
+  const admin = { from, rpc: async () => ({ data: rounds.shift() ?? [], error: null }) };
   return { admin: admin as never, updates, deletes };
 }
 
 const USER = "u1";
 const TOKEN = "ExponentPushToken[abcdefghij]";
-const baseTables = (prefs: Row) => ({
+const baseTables = (prefs: Row): Record<string, Row[]> => ({
   push_tokens: [{ token: TOKEN, user_id: USER }],
   notification_preferences: [{ user_id: USER, channel_push: true, hero_posts: true, achievements: true, streak_reminders: true, ...prefs }],
   profiles: [{ id: USER, locale: "pt-BR" }],
@@ -44,7 +46,8 @@ const baseTables = (prefs: Row) => ({
   programs: [],
   achievements: [{ code: "first_step", name: "Primeiro passo" }],
 });
-const postRow = { id: 1, user_id: USER, kind: "hero_post", payload: { content_id: "c1" }, attempts: 1 };
+const NOW = new Date().toISOString();
+const postRow = { id: 1, user_id: USER, kind: "hero_post", payload: { content_id: "c1" }, attempts: 1, created_at: NOW };
 
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
@@ -107,9 +110,45 @@ describe("dispatchPushOutbox", () => {
 
   it("conquista usa o nome traduzido do código", async () => {
     fetchMock.mockResolvedValue(expoReply([{ status: "ok", id: "t1" }]));
-    const { admin } = fakeAdmin(baseTables({}), [{ id: 2, user_id: USER, kind: "achievement", payload: { code: "first_step" }, attempts: 1 }]);
+    const { admin } = fakeAdmin(baseTables({}), [{ id: 2, user_id: USER, kind: "achievement", payload: { code: "first_step" }, attempts: 1, created_at: NOW }]);
     await dispatchPushOutbox(admin);
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)[0]).toMatchObject({ title: "Conquista desbloqueada", body: "Primeiro passo. Continue assim!" });
+  });
+
+  it("dois avisos para o mesmo aparelho no lote: cada resposta vale para o seu aviso", async () => {
+    fetchMock.mockResolvedValue(expoReply([{ status: "ok", id: "t1" }, { status: "error", message: "rate", details: { error: "MessageRateExceeded" } }]));
+    const achievement = { id: 2, user_id: USER, kind: "achievement", payload: { code: "first_step" }, attempts: 1, created_at: NOW };
+    const { admin, updates } = fakeAdmin(baseTables({}), [postRow, achievement]);
+    const result = await dispatchPushOutbox(admin);
+    expect(result).toMatchObject({ sent: 1, failed: 1 });
+    expect(updates).toContainEqual({ table: "push_outbox", values: expect.objectContaining({ outcome: "sent" }), ids: [1] });
+    expect(updates).toContainEqual({ table: "push_outbox", values: { last_error: "MessageRateExceeded", claimed_at: null }, ids: [2] });
+  });
+
+  it("post reagendado para depois: volta à fila na data nova, sem gastar tentativa", async () => {
+    const tables = baseTables({});
+    const later = new Date(Date.now() + 86_400_000).toISOString();
+    tables.content[0].publish_at = later;
+    const { admin, updates } = fakeAdmin(tables, [postRow]);
+    await dispatchPushOutbox(admin);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(updates).toEqual([{ table: "push_outbox", values: { not_before: later, claimed_at: null, attempts: 0 }, ids: [1] }]);
+  });
+
+  it("lembrete de sequência com mais de 12 h não sai", async () => {
+    const old = new Date(Date.now() - 13 * 3_600_000).toISOString();
+    const { admin, updates } = fakeAdmin(baseTables({}), [{ id: 3, user_id: USER, kind: "streak_reminder", payload: { streak: 4 }, attempts: 1, created_at: old }]);
+    await dispatchPushOutbox(admin);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(updates[0].values).toMatchObject({ outcome: "skipped_stale" });
+  });
+
+  it("esvaziar a fila pede lotes até vir um incompleto", async () => {
+    fetchMock.mockImplementation(async (_url: string, init: { body: string }) => expoReply(JSON.parse(init.body).map(() => ({ status: "ok", id: "t" }))));
+    const full = Array.from({ length: CLAIM_LIMIT }, (_, i) => ({ ...postRow, id: i + 1 }));
+    const { admin } = fakeAdmin(baseTables({}), [full, [{ ...postRow, id: 9999 }]]);
+    const result = await drainPushOutbox(admin);
+    expect(result).toMatchObject({ rounds: 2, claimed: CLAIM_LIMIT + 1, sent: CLAIM_LIMIT + 1 });
   });
 
   it("fila vazia não chama a Expo", async () => {

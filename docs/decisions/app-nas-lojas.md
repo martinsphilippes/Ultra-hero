@@ -70,6 +70,7 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
 | Textos que falam em demonstração, simulado ou fictício | trocados por versão do app em `messages-native/<locale>.json`, sobreposta às mesmas chaves quando o pedido vem do app | idem |
 | Relógio simulado (Hoje da conta demo e "Ver um exemplo") | oculto; `?exemplo=1` travado no middleware | dado de saúde inventado sem o aviso de demonstração confundiria |
 | Contagem de produtos no perfil do herói | oculta | sem comércio no app |
+| Certificado (PDF) | aviso sem "ambiente de demonstração" (segue simbólico e sem validade); autor sem "(demo)" | idem |
 
 O que garante que nada escape: `tests/unit/native-messages.test.ts` reprova texto da base que fale
 em demonstração sem versão do app, a menos que a chave esteja numa superfície que o app não mostra
