@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   ANTI_SNIPE_MS,
+  CONTACT_STATUSES,
+  isContactStatus,
   bidderStanding,
   bidErrorCode,
   centsToInput,
@@ -156,5 +158,13 @@ describe("colecionáveis · contagem regressiva", () => {
     expect(remainingMs(ends, T0 - 10_000, 10_000)).toBe(60_000);
     expect(remainingMs(ends, T0 + 120_000, 0)).toBe(0);
     expect(remainingMs(null, T0, 0)).toBe(0);
+  });
+});
+
+describe("contato com o vencedor (sem pagamento online)", () => {
+  it("aceita só as 3 situações da 0054, na ordem do andamento", () => {
+    expect(CONTACT_STATUSES).toEqual(["pending", "contacted", "delivered"]);
+    for (const s of CONTACT_STATUSES) expect(isContactStatus(s)).toBe(true);
+    for (const s of ["none", "paid", "pending_payment", "", null, undefined, 1]) expect(isContactStatus(s)).toBe(false);
   });
 });

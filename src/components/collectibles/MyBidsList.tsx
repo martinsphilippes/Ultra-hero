@@ -21,7 +21,8 @@ const TONES: Record<BidderStanding, string> = {
 };
 
 // "Lances e arremates" em Minhas compras: cada item em que a pessoa deu lance, com a situação
-// (vencendo, superado, arrematado, encerrado), o maior lance dela e, se venceu, o pedido ou o pagamento.
+// (vencendo, superado, arrematado, encerrado) e o maior lance dela. Arrematado mostra
+// "Arrematado · R$ X": sem pagamento online, a equipe entra em contato com quem venceu.
 export async function MyBidsList({ rows, serverNow }: { rows: MyBidRow[]; serverNow: number }) {
   const [t, locale] = await Promise.all([getTranslations("collectibles.myBids"), getLocale()]);
   const money = (cents: number) => formatCurrency(cents / 100, locale as Locale);
@@ -61,10 +62,12 @@ export async function MyBidsList({ rows, serverNow }: { rows: MyBidRow[]; server
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="line-clamp-2 text-sm font-semibold text-fg">{row.item.title}</span>
                 <span className={cn("w-fit rounded-full border px-2 py-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-wider", TONES[standing])} data-standing={standing}>
-                  {t(`standing.${standing}`)}
+                  {standing === "won" ? t("wonAt", { price: money(row.item.currentCents) }) : t(`standing.${standing}`)}
                 </span>
                 <span className="text-xs text-fg-muted">
-                  {t("myTop", { price: money(row.myTopCents) })} · {phase === "ended" || phase === "cancelled" ? t("final", { price: money(row.item.currentCents) }) : t("current", { price: money(row.item.currentCents) })}
+                  {standing === "won"
+                    ? t("wonContact")
+                    : `${t("myTop", { price: money(row.myTopCents) })} · ${phase === "ended" || phase === "cancelled" ? t("final", { price: money(row.item.currentCents) }) : t("current", { price: money(row.item.currentCents) })}`}
                 </span>
               </span>
               <span className="flex shrink-0 flex-col items-end gap-1">
@@ -72,17 +75,6 @@ export async function MyBidsList({ rows, serverNow }: { rows: MyBidRow[]; server
                 <ChevronRight aria-hidden="true" className="size-5 text-fg-muted" />
               </span>
             </Link>
-            {standing === "won" ? (
-              row.claimStatus === "paid" && row.orderId ? (
-                <Button asChild variant="secondary" size="sm" block>
-                  <Link href={`/orders/${row.orderId}`}>{t("viewOrder")}</Link>
-                </Button>
-              ) : (
-                <Button asChild size="sm" block>
-                  <Link href={`/shop/colecionaveis/${row.item.id}/pagamento`}>{t("payCta")}</Link>
-                </Button>
-              )
-            ) : null}
           </li>
         );
       })}

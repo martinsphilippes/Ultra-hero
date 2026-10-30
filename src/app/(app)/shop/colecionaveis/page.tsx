@@ -40,7 +40,6 @@ export default async function CollectiblesPage() {
           <Shelf id="encerrados" title={t("list.ended")} items={list.ended} serverNow={serverNow} />
         </>
       )}
-      <p className="type-caption text-fg-subtle">{t("list.legal")}</p>
     </div>
   );
 }

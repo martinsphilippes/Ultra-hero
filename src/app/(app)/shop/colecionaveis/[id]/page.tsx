@@ -108,7 +108,7 @@ export default async function CollectiblePage({ params }: Props) {
             <li>{t("detail.rules.increments")}</li>
             <li>{t("detail.rules.antiSnipe")}</li>
             <li>{t("detail.rules.selfOutbid")}</li>
-            <li>{t("detail.rules.payment")}</li>
+            <li>{t("detail.rules.winner")}</li>
           </ul>
         </details>
       </div>

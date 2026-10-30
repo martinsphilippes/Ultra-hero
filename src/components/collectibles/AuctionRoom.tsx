@@ -340,7 +340,7 @@ export function AuctionRoom({ initial, serverNow, viewer, loginHref, mode = "con
       </section>
 
       {/* situação de quem assiste */}
-      {mode === "consumer" ? <StandingBanner standing={standing} phase={phase} item={item} mine={mine} viewer={viewer} locale={locale} /> : null}
+      {mode === "consumer" ? <StandingBanner standing={standing} phase={phase} item={item} viewer={viewer} locale={locale} /> : null}
 
       {/* lance rápido */}
       {mode === "consumer" && phase === "live" ? (
@@ -453,7 +453,6 @@ export function AuctionRoom({ initial, serverNow, viewer, loginHref, mode = "con
             {t("confirm.breakdown", { current: money(item.currentCents, locale), increment: money(confirmIncrement ?? 0, locale, true) })}
           </p>
           {phase === "live" && remaining < 2 * 60 * 1000 ? <p className="mt-2 text-xs text-warning">{t("confirm.antiSnipe")}</p> : null}
-          <p className="mt-3 text-xs text-fg-subtle">{t("confirm.simulated")}</p>
         </div>
       </Sheet>
     </div>
@@ -475,14 +474,12 @@ function StandingBanner({
   standing,
   phase,
   item,
-  mine,
   viewer,
   locale,
 }: {
   standing: BidderStanding;
   phase: string;
   item: CollectibleView;
-  mine: MyCollectibleState;
   viewer: Props["viewer"];
   locale: string;
 }) {
@@ -513,23 +510,18 @@ function StandingBanner({
   }
   if (standing === "won") {
     return (
-      <div data-testid="standing" data-standing="won" className={cn(base, "flex-col border-accent/50 bg-accent-soft text-fg")}>
+      <div role="status" data-testid="standing" data-standing="won" className={cn(base, "flex-col border-accent/50 bg-accent-soft text-fg")}>
         <p className="flex items-start gap-3">
           <Trophy aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-accent-text" />
-          <span>
+          <span className="flex flex-col gap-1">
             <strong className="block text-lg">{t("won")}</strong>
-            <span className="text-sm text-fg-muted">{t("wonHint", { price: money(item.currentCents, locale) })}</span>
+            <span className="text-sm text-fg-muted">{t("wonFinal")}</span>
+            <span className="type-numeric text-2xl font-extrabold text-fg" data-testid="won-price">
+              {money(item.currentCents, locale)}
+            </span>
+            <span className="text-sm text-fg">{t("wonContact")}</span>
           </span>
         </p>
-        {mine.claimStatus === "paid" && mine.orderId ? (
-          <Button asChild variant="secondary" block>
-            <Link href={`/orders/${mine.orderId}`}>{t("viewOrder")}</Link>
-          </Button>
-        ) : (
-          <Button asChild size="lg" block>
-            <Link href={`/shop/colecionaveis/${item.id}/pagamento`}>{t("payCta")}</Link>
-          </Button>
-        )}
       </div>
     );
   }

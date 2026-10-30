@@ -209,14 +209,14 @@ isOneToOne: false
                   ]
                 },"collectible_results": {
                   Row: {
-                    "claim_status": string,"collectible_id": string,"final_cents": number,"finalized_at": string,"order_id": string | null,"outcome": string,"paid_at": string | null,"winner_user_id": string | null,"winning_bid_id": string | null
+                    "collectible_id": string,"contact_status": string,"contact_updated_at": string | null,"final_cents": number,"finalized_at": string,"outcome": string,"winner_user_id": string | null,"winning_bid_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "claim_status"?: string,"collectible_id": string,"final_cents": number,"finalized_at"?: string,"order_id"?: string | null,"outcome": string,"paid_at"?: string | null,"winner_user_id"?: string | null,"winning_bid_id"?: string | null
+                    "collectible_id": string,"contact_status"?: string,"contact_updated_at"?: string | null,"final_cents": number,"finalized_at"?: string,"outcome": string,"winner_user_id"?: string | null,"winning_bid_id"?: string | null
                   }
                   Update: {
-                    "claim_status"?: string,"collectible_id"?: string,"final_cents"?: number,"finalized_at"?: string,"order_id"?: string | null,"outcome"?: string,"paid_at"?: string | null,"winner_user_id"?: string | null,"winning_bid_id"?: string | null
+                    "collectible_id"?: string,"contact_status"?: string,"contact_updated_at"?: string | null,"final_cents"?: number,"finalized_at"?: string,"outcome"?: string,"winner_user_id"?: string | null,"winning_bid_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -224,12 +224,6 @@ isOneToOne: false
       columns: ["collectible_id"]
 isOneToOne: true
       referencedRelation: "collectibles"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "collectible_results_order_id_fkey"
-      columns: ["order_id"]
-isOneToOne: false
-      referencedRelation: "test_orders"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "collectible_results_winning_bid_id_fkey"
@@ -2158,6 +2152,9 @@ isOneToOne: false
 "admin_collectible_save":
 { Args: { "p_data": Json,"p_id"?: string }; Returns: string
                            },
+"admin_collectible_set_contact":
+{ Args: { "p_id": string,"p_status": string }; Returns: string
+                           },
 "admin_create_invitation":
 { Args: { "p_creator_profile_id"?: string,"p_days"?: number,"p_email": string,"p_role": Database["public"]['Enums']["app_role"],"p_seller_org_id"?: string }; Returns: {
               "invitation_id": string,"token": string
@@ -2333,9 +2330,6 @@ isOneToOne: false
                            },
 "collectible_mask_label":
 { Args: { "p_name": string }; Returns: string
-                           },
-"collectible_pay":
-{ Args: { "p_collectible": string,"p_destination": string }; Returns: string
                            },
 "collectible_phase":
 { Args: { "p_ends": string,"p_starts": string,"p_status": string }; Returns: string

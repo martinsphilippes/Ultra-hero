@@ -1,6 +1,7 @@
 # Decisão: Colecionáveis (lances ao vivo de itens assinados) e Minhas compras
 
-Status: **implementado** (30/10/2026). Migração `0054_collectibles_auctions.sql`, cenário S0054 em
+Status: **implementado** (30/10/2026; revisado no mesmo dia: **sem pagamento online**). Migração
+`0054_collectibles_auctions.sql`, cenário S66 em
 `supabase/tests/rls_scenarios.sql`, regras puras em `src/lib/collectibles/rules.ts` (testes em
 `tests/unit/collectibles-rules.test.ts`), leituras em `src/lib/collectibles/queries.ts`, componentes em
 `src/components/collectibles/`, E2E `tests/e2e/collectibles.spec.ts`.
@@ -13,11 +14,27 @@ Status: **implementado** (30/10/2026). Migração `0054_collectibles_auctions.sq
   ao vivo, "Colecionáveis" ganha o selo **AO VIVO** pulsando. Sem a 0054 no banco o seletor some.
 - **Minhas compras** (`/shop/compras`, dentro de Comprar, a aba fica marcada): **Pedidos** (a lista que
   morava em `/orders`, que agora redireciona para cá; o detalhe continua em `/orders/[id]`) e **Lances e
-  arremates** (vencendo, superado, arrematado, encerrado, cancelado; arrematado leva ao pagamento ou ao pedido).
+  arremates** (vencendo, superado, encerrado, cancelado; arrematado aparece como "Arrematado · R$ X", sem
+  link de pedido nem de pagamento).
 - Página do herói: cartão pequeno quando ele tem item ao vivo ou agendado. Social (`/inicio`): destaque
   "Ao vivo" no topo quando há item ao vivo. Os dois somem sem item ou sem a 0054.
 - Admin: `/admin/collectibles` (lista com fase, preço, lances e visualizações), novo, detalhe com
   lançar agora / agendar, cancelar com justificativa, lances chegando ao vivo, histórico de ações e edição.
+  Item encerrado com vencedor: painel **Vencedor** com nome, e-mail (só admin, pela RPC `admin_get_user`),
+  valor final e o andamento do contato (**A contatar → Contatado → Entregue**).
+
+## Sem pagamento online
+
+Decisão do responsável: "Não terá pagamento online, é só uma dinâmica." Não há checkout, destino, pedido nem
+cobrança. Ao encerrar:
+
+- **Vencedor**: estado de comemoração "**Você arrematou!**" com o valor final e "Nossa equipe vai entrar em
+  contato para combinar a entrega."
+- **Demais**: veem o valor final (e o rótulo mascarado de quem arrematou).
+- **Equipe**: no detalhe do admin, vê nome e e-mail do vencedor e marca o contato com
+  `admin_collectible_set_contact(id, 'pending' | 'contacted' | 'delivered')` (security definer, só admin, sem
+  execute para anon; cada troca grava `collectible.contact` em `admin_audit`; repetir a mesma situação não
+  grava nada). Item sem lances não tem contato (`no_winner`).
 
 ## Regras (no banco, `place_bid(auction_id, increment_cents)`)
 
@@ -34,11 +51,10 @@ Status: **implementado** (30/10/2026). Migração `0054_collectibles_auctions.sq
 - **Encerramento por tempo**, sem rotina obrigatória: a fase é calculada na leitura
   (`collectible_phase`). Quem está logado e abre um item vencido grava o resultado
   (`collectible_finalize`, idempotente); a rotina diária `/api/cron/collectibles` (`collectible_finalize_due`,
-  só service role) encerra o resto. Resultado: vencedor (ou "sem lances"), valor final, pagamento pendente.
-- **Pagamento simulado**: o vencedor escolhe um destino fictício e `collectible_pay` cria um **pedido de teste
-  comum** (`test_orders` + remessa da operação própria + item com o título e a foto), idempotente. Aparece em
-  Minhas compras e segue o transporte simulado.
-- Admin escreve só por RPC (`admin_collectible_save`, `admin_collectible_launch`, `admin_collectible_cancel`),
+  só service role) encerra o resto. Resultado: vencedor (ou "sem lances"), valor final e contato
+  "a contatar" (`contact_status = 'pending'`; sem vencedor, `'none'`).
+- Admin escreve só por RPC (`admin_collectible_save`, `admin_collectible_launch`, `admin_collectible_cancel`,
+  `admin_collectible_set_contact`),
   todas com `admin_audit`. Antes de começar tudo é editável; depois, só textos e fotos (preço, botões e
   duração travados). Cancelar exige justificativa; encerrado não volta.
 
@@ -49,7 +65,10 @@ Status: **implementado** (30/10/2026). Migração `0054_collectibles_auctions.sq
 | `collectibles` | todos (rascunho só admin) | item + estado público do lance (preço, fim, nº de lances, lance vencedor, rótulo mascarado do vencedor). Sem id de usuário. |
 | `collectible_bids` | todos (do item público) | valor, hora, rótulo mascarado ("Ma***a"). Sem id de usuário. |
 | `collectible_bid_owners` | cada um os seus; admin | dono de cada lance. A tela marca "Você" comparando os ids dos lances. |
-| `collectible_results` | vencedor; admin | vencedor, valor final, pagamento simulado, pedido. |
+| `collectible_results` | vencedor; admin | vencedor, lance vencedor, valor final, situação do contato (`none`, `pending`, `contacted`, `delivered`) e quando mudou. Sem pedido, sem cobrança. |
+
+Nenhuma tabela da 0054 tem chave primária com FK para duas tabelas (não cria caminho muitos-para-muitos na
+API, que deixaria embeds como `collectibles → creator_profiles` ambíguos, PGRST201); o S66 confere.
 
 O rótulo mascarado é gravado no lance (primeira palavra do nome: 2 letras + `***` + última letra; nome curto
 vira 1 letra + `***`; sem nome, a tela mostra "Participante"). Ninguém recebe id ou nome de outra pessoa.
@@ -73,12 +92,6 @@ Indicadores (sem dado pessoal): visualizações = eventos `collectible.view` no 
 4 itens de **demonstração em rascunho** (nunca começam sozinhos): bola assinada por Neymar, prancha e
 bermuda de surf assinadas por Gabriel Medina, camisa assinada por Ronaldinho Gaúcho. Imagens neutras em
 `public/collectibles/*.svg` (sem marca, sem logotipo). O admin revisa e lança. Reaplicar não sobrescreve.
-
-## Nota legal
-
-Aqui **nada é cobrado**: lances e pagamento são simulados, como o resto do comércio de demonstração. Leilão
-com dinheiro real (pagamento, intermediação, nota fiscal, direito de arrependimento, autenticidade, uso de
-nome/imagem do atleta, regras de sorteio/leilão) **exige revisão jurídica** antes de qualquer ativação.
 
 ## Limites conhecidos
 

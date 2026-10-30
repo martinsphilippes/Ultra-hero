@@ -7,16 +7,19 @@ import { KeyValue, Panel } from "@/components/admin-content";
 import { AuctionRoom } from "@/components/collectibles/AuctionRoom";
 import { CollectibleControls } from "@/components/collectibles/admin/CollectibleControls";
 import { CollectibleForm } from "@/components/collectibles/admin/CollectibleForm";
+import { WinnerContact } from "@/components/collectibles/admin/WinnerContact";
 import { Badge, Button, PageHeader } from "@/components/ui";
 import { BackLink } from "@/components/ui/back-link";
 import type { Locale } from "@/i18n/config";
-import { formatDateTime } from "@/i18n/format";
+import { formatCurrency, formatDateTime } from "@/i18n/format";
 import { fetchCollectibleViews, PHASE_BADGE } from "@/lib/collectibles/admin";
 import { EMPTY_MINE, fetchCollectible, finalizeIfDue, phaseOf } from "@/lib/collectibles/queries";
+import { isContactStatus } from "@/lib/collectibles/rules";
 import { createClient } from "@/lib/supabase/server";
 
 // Detalhe do colecionável no admin: lançar/agendar/cancelar, lances chegando ao vivo, indicadores
-// (visualizações e lances, agregados), histórico de ações e o formulário de edição.
+// (visualizações e lances, agregados), vencedor (nome e e-mail, só aqui no admin) com o andamento do
+// contato para combinar a entrega (sem pagamento online), histórico de ações e o formulário de edição.
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
@@ -36,7 +39,7 @@ export default async function AdminCollectiblePage({ params }: Props) {
   if (!loaded) notFound();
   if (await finalizeIfDue(supabase, loaded.item, true)) loaded = (await fetchCollectible(supabase, id)) ?? loaded;
   const { item } = loaded;
-  const [{ data: heroes }, { data: audit }, views] = await Promise.all([
+  const [{ data: heroes }, { data: audit }, views, { data: result }] = await Promise.all([
     supabase.from("creator_profiles").select("id, name").order("name"),
     supabase
       .from("admin_audit")
@@ -46,7 +49,16 @@ export default async function AdminCollectiblePage({ params }: Props) {
       .order("created_at", { ascending: false })
       .limit(10),
     fetchCollectibleViews(supabase, [id]),
+    supabase
+      .from("collectible_results")
+      .select("outcome, winner_user_id, final_cents, contact_status, contact_updated_at")
+      .eq("collectible_id", id)
+      .maybeSingle(),
   ]);
+  // vencedor: nome e e-mail pela RPC só de admin (admin_get_user), para a equipe entrar em contato
+  const winner = result?.winner_user_id
+    ? ((await supabase.rpc("admin_get_user", { p_id: result.winner_user_id })).data?.[0] ?? null)
+    : null;
   const phase = phaseOf(item);
   const started = phase !== "draft" && phase !== "scheduled";
   const locked = started || item.bidsCount > 0;
@@ -91,6 +103,44 @@ export default async function AdminCollectiblePage({ params }: Props) {
           />
         ) : null}
       </Panel>
+
+      {phase === "ended" ? (
+        <Panel title={t("result.panel")} description={t("result.hint")}>
+          <div data-testid="admin-collectible-winner" className="flex flex-col gap-4">
+            {!result ? (
+              <p className="text-sm text-fg-muted">{t("result.pending")}</p>
+            ) : result.outcome !== "won" ? (
+              <p className="text-sm text-fg-muted">{t("result.noWinner")}</p>
+            ) : (
+              <>
+                <KeyValue
+                  items={[
+                    { label: t("result.name"), value: winner?.display_name || "—" },
+                    {
+                      label: t("result.email"),
+                      value: winner?.email ? (
+                        <a href={`mailto:${winner.email}`} className="break-all text-accent-text hover:underline">
+                          {winner.email}
+                        </a>
+                      ) : (
+                        t("result.unavailable")
+                      ),
+                    },
+                    { label: t("result.finalPrice"), value: formatCurrency(result.final_cents / 100, locale as Locale) },
+                    {
+                      label: t("result.contactLabel"),
+                      value: isContactStatus(result.contact_status)
+                        ? `${t(`result.status.${result.contact_status}`)}${result.contact_updated_at ? ` · ${t("result.contactUpdated", { date: fmt(result.contact_updated_at) })}` : ""}`
+                        : "—",
+                    },
+                  ]}
+                />
+                {isContactStatus(result.contact_status) ? <WinnerContact id={id} status={result.contact_status} /> : null}
+              </>
+            )}
+          </div>
+        </Panel>
+      ) : null}
 
       {phase !== "draft" ? (
         <Panel title={t("livePanel")} description={t("livePanelHint")}>

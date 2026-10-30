@@ -180,3 +180,11 @@ export function bidErrorCode(message: string | null | undefined): BidErrorCode {
   const text = message ?? "";
   return BID_ERROR_CODES.find((code) => text.includes(code)) ?? "generic";
 }
+
+/** Andamento do contato da equipe com quem arrematou (sem pagamento online). Mesma lista da 0054. */
+export const CONTACT_STATUSES = ["pending", "contacted", "delivered"] as const;
+export type ContactStatus = (typeof CONTACT_STATUSES)[number];
+
+export function isContactStatus(value: unknown): value is ContactStatus {
+  return typeof value === "string" && (CONTACT_STATUSES as readonly string[]).includes(value);
+}

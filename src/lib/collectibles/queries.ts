@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { collectiblePhase, type CollectiblePhase } from "./rules";
 
-// Leituras dos Colecionáveis (0054). Tudo sob a RLS da sessão: o público lê o item e os lances
+// Leituras dos Colecionáveis (0054). Sem pagamento online: o vencedor só vê "Você arrematou!".
+// Tudo sob a RLS da sessão: o público lê o item e os lances
 // (sem id de usuário); cada pessoa lê só os próprios donos de lance e o próprio resultado.
 // Sem a 0054 no banco (tabela ausente) as leituras devolvem "indisponível" e a tela esconde o recurso.
 
@@ -41,11 +42,9 @@ export type PublicBid = { id: string; amountCents: number; label: string | null;
 export type MyCollectibleState = {
   bidIds: string[];
   won: boolean;
-  claimStatus: "none" | "pending_payment" | "paid" | null;
-  orderId: string | null;
 };
 
-export const EMPTY_MINE: MyCollectibleState = { bidIds: [], won: false, claimStatus: null, orderId: null };
+export const EMPTY_MINE: MyCollectibleState = { bidIds: [], won: false };
 
 const ITEM_SELECT =
   "id, title, description, photos, authenticity_note, start_price_cents, current_cents, bid_increments_cents, bids_count, leading_bid_id, " +
@@ -182,14 +181,12 @@ export async function fetchMyCollectibleState(supabase: Client, id: string): Pro
   try {
     const [ownersRes, resultRes] = await Promise.all([
       supabase.from("collectible_bid_owners").select("bid_id").eq("collectible_id", id),
-      supabase.from("collectible_results").select("outcome, claim_status, order_id").eq("collectible_id", id).maybeSingle(),
+      supabase.from("collectible_results").select("outcome").eq("collectible_id", id).maybeSingle(),
     ]);
     const result = resultRes.data;
     return {
       bidIds: (ownersRes.data ?? []).map((o) => o.bid_id),
       won: result?.outcome === "won",
-      claimStatus: (result?.claim_status as MyCollectibleState["claimStatus"]) ?? null,
-      orderId: result?.order_id ?? null,
     };
   } catch {
     return EMPTY_MINE;
@@ -208,8 +205,6 @@ export type MyBidRow = {
   myTopCents: number;
   myBidIds: string[];
   won: boolean;
-  claimStatus: MyCollectibleState["claimStatus"];
-  orderId: string | null;
 };
 
 /** "Lances e arremates": cada item em que a pessoa deu lance, com o maior lance dela e o resultado. */
@@ -232,7 +227,7 @@ export async function fetchMyBids(supabase: Client): Promise<{ available: boolea
     if (ids.length === 0) return { available: true, rows: [] };
     const [itemsRes, resultsRes] = await Promise.all([
       supabase.from("collectibles").select(ITEM_SELECT).in("id", ids),
-      supabase.from("collectible_results").select("collectible_id, outcome, claim_status, order_id").in("collectible_id", ids),
+      supabase.from("collectible_results").select("collectible_id, outcome").in("collectible_id", ids),
     ]);
     if (itemsRes.error) return { available: false, rows: [] };
     const results = new Map((resultsRes.data ?? []).map((r) => [r.collectible_id, r]));
@@ -245,8 +240,6 @@ export async function fetchMyBids(supabase: Client): Promise<{ available: boolea
         myTopCents: mine.top,
         myBidIds: mine.ids,
         won: result?.outcome === "won",
-        claimStatus: (result?.claim_status as MyCollectibleState["claimStatus"]) ?? null,
-        orderId: result?.order_id ?? null,
       };
     });
     // ao vivo primeiro (acaba antes no topo), depois os encerrados mais recentes

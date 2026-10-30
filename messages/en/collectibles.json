@@ -18,14 +18,13 @@
   },
   "list": {
     "title": "Collectibles",
-    "description": "Rare items signed by the heroes, with live bidding. Simulated payment.",
+    "description": "Rare items signed by the heroes, with live bidding.",
     "empty": "No collectibles right now",
     "unavailable": "Collectibles are coming soon",
     "emptyDescription": "When a signed item goes live, it shows up here with its countdown.",
     "live": "Live now",
     "upcoming": "Coming soon",
-    "ended": "Ended",
-    "legal": "Demo environment: bids and payment are simulated, with no real charge. Third-party brands and images are not used."
+    "ended": "Ended"
   },
   "highlight": {
     "many": "{n} collectibles live"
@@ -41,7 +40,7 @@
       "increments": "Each bid adds one of the button amounts to the current bid. The first bid starts from the starting bid.",
       "antiSnipe": "A bid in the last 2 minutes extends the end to 2 minutes after that bid.",
       "selfOutbid": "If you are already winning you can't outbid yourself. One bid every 2 seconds per person.",
-      "payment": "The winner completes the simulated payment and the order shows up in My purchases."
+      "winner": "The winner is contacted by our team to arrange delivery."
     }
   },
   "gallery": {
@@ -109,8 +108,7 @@
       "submit": "Bid {price}",
       "yourBid": "Your bid",
       "breakdown": "Current bid {current} + {increment}",
-      "antiSnipe": "Less than 2 minutes left: your bid extends the end by 2 minutes.",
-      "simulated": "Demo: no real charge. If you win, payment is simulated."
+      "antiSnipe": "Less than 2 minutes left: your bid extends the end by 2 minutes."
     },
     "connection": {
       "connecting": "Connecting…",
@@ -123,9 +121,8 @@
       "outbid": "You've been outbid",
       "outbidHint": "Place a new bid to get back in front.",
       "won": "You won!",
-      "wonHint": "Your bid of {price} won. Complete the simulated payment to create the order.",
-      "viewOrder": "View order",
-      "payCta": "Complete payment (simulated)",
+      "wonFinal": "Final amount of your bid",
+      "wonContact": "Our team will contact you to arrange delivery.",
       "ended": "Ended",
       "endedNoBids": "Ended with no bids",
       "endedBy": "Won by {name} for {price}.",
@@ -134,23 +131,6 @@
       "cancelledHint": "The admin cancelled this item. No bid counts.",
       "scheduled": "This item isn't live yet. Bidding opens when the countdown reaches zero.",
       "scheduledAnon": "This item isn't live yet. Sign in to bid when it opens."
-    }
-  },
-  "pay": {
-    "title": "Pay for your win",
-    "description": "Pick a fictional destination and confirm. Nothing is charged.",
-    "banner": "Simulated payment: no real charge and no real address. The order shows up in My purchases.",
-    "back": "Back to item",
-    "wonFor": "You won it for",
-    "destination": "Destination (fictional)",
-    "fictional": "Fictional",
-    "submit": "Confirm simulated payment · {total}",
-    "simulated": "Demo: this is a test order and follows the simulated shipping.",
-    "errors": {
-      "forbidden": "Only the winner can complete this payment.",
-      "invalid_destination": "Choose a destination.",
-      "commerce_disabled": "Demo purchases are paused.",
-      "generic": "We couldn't complete it. Try again."
     }
   },
   "purchases": {
@@ -179,8 +159,8 @@
     "myTop": "Your top bid {price}",
     "final": "final {price}",
     "current": "current {price}",
-    "viewOrder": "View order",
-    "payCta": "Complete payment (simulated)"
+    "wonAt": "Won · {price}",
+    "wonContact": "Our team will contact you to arrange delivery."
   },
   "admin": {
     "title": "Collectibles",
@@ -206,12 +186,32 @@
     "livePanelHint": "Updates by itself. Names are masked, as for the public.",
     "auditPanel": "Action history",
     "auditEmpty": "No actions recorded.",
+    "result": {
+      "panel": "Winner",
+      "hint": "Only admins see this data, to arrange delivery with the winner.",
+      "name": "Name",
+      "email": "Email",
+      "finalPrice": "Final price",
+      "noWinner": "Ended with no bids: there is no winner.",
+      "pending": "Waiting for the item to end.",
+      "unavailable": "Winner data unavailable.",
+      "contactLabel": "Contact",
+      "contactUpdated": "Updated on {date}",
+      "status": {
+        "pending": "To contact",
+        "contacted": "Contacted",
+        "delivered": "Delivered"
+      },
+      "save": "Save contact",
+      "done": "Contact updated"
+    },
     "audit": {
       "collectible": {
         "create": "Created",
         "update": "Edited",
         "launch": "Launched or scheduled",
-        "cancel": "Cancelled"
+        "cancel": "Cancelled",
+        "contact": "Winner contact"
       }
     },
     "fields": {
@@ -291,7 +291,9 @@
       "invalid_start": "The start can't be in the past.",
       "reason_required": "Write the reason (at least 5 characters).",
       "invalid_input": "Check the highlighted fields.",
-      "generic": "We couldn't save. Try again."
+      "generic": "We couldn't save. Try again.",
+      "no_winner": "This item has no winner.",
+      "invalid_contact_status": "Invalid contact status."
     }
   }
 }

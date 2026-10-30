@@ -18,14 +18,13 @@
   },
   "list": {
     "title": "Coleccionables",
-    "description": "Objetos raros firmados por los héroes, con pujas en vivo. Pago simulado.",
+    "description": "Objetos raros firmados por los héroes, con pujas en vivo.",
     "empty": "No hay coleccionables por ahora",
     "unavailable": "Los coleccionables llegan pronto",
     "emptyDescription": "Cuando un objeto firmado salga al aire, aparecerá aquí con la cuenta regresiva.",
     "live": "En vivo ahora",
     "upcoming": "Próximamente",
-    "ended": "Finalizados",
-    "legal": "Entorno de demostración: las pujas y el pago son simulados, sin cobro real. No se usan marcas ni imágenes de terceros."
+    "ended": "Finalizados"
   },
   "highlight": {
     "many": "{n} coleccionables en vivo"
@@ -41,7 +40,7 @@
       "increments": "Cada puja suma uno de los valores de los botones a la puja actual. La primera puja parte de la puja inicial.",
       "antiSnipe": "Una puja en los últimos 2 minutos extiende el final a 2 minutos después de esa puja.",
       "selfOutbid": "Quien ya va ganando no supera su propia puja. Una puja cada 2 segundos por persona.",
-      "payment": "Quien gana completa el pago simulado y el pedido aparece en Mis compras."
+      "winner": "Quien gana recibe el contacto de nuestro equipo para coordinar la entrega."
     }
   },
   "gallery": {
@@ -109,8 +108,7 @@
       "submit": "Pujar {price}",
       "yourBid": "Tu puja",
       "breakdown": "Puja actual {current} + {increment}",
-      "antiSnipe": "Quedan menos de 2 minutos: tu puja extiende el final 2 minutos.",
-      "simulated": "Demostración: sin cobro real. Si ganas, el pago es simulado."
+      "antiSnipe": "Quedan menos de 2 minutos: tu puja extiende el final 2 minutos."
     },
     "connection": {
       "connecting": "Conectando…",
@@ -123,9 +121,8 @@
       "outbid": "Superaron tu puja",
       "outbidHint": "Haz una nueva puja para volver al frente.",
       "won": "¡Ganaste!",
-      "wonHint": "Tu puja de {price} ganó. Completa el pago simulado para generar el pedido.",
-      "viewOrder": "Ver pedido",
-      "payCta": "Completar pago (simulado)",
+      "wonFinal": "Valor final de tu puja",
+      "wonContact": "Nuestro equipo se pondrá en contacto para coordinar la entrega.",
       "ended": "Finalizado",
       "endedNoBids": "Finalizado sin pujas",
       "endedBy": "Adjudicado a {name} por {price}.",
@@ -134,23 +131,6 @@
       "cancelledHint": "La administración canceló este objeto. Ninguna puja vale.",
       "scheduled": "Este objeto aún no está al aire. Las pujas abren cuando la cuenta llegue a cero.",
       "scheduledAnon": "Este objeto aún no está al aire. Inicia sesión para pujar cuando abra."
-    }
-  },
-  "pay": {
-    "title": "Pago de lo ganado",
-    "description": "Elige un destino ficticio y confirma. No se cobra nada.",
-    "banner": "Pago simulado: sin cobro real y sin dirección real. El pedido aparece en Mis compras.",
-    "back": "Volver al objeto",
-    "wonFor": "Lo ganaste por",
-    "destination": "Destino (ficticio)",
-    "fictional": "Ficticio",
-    "submit": "Confirmar pago simulado · {total}",
-    "simulated": "Demostración: el pedido es de prueba y sigue el transporte simulado.",
-    "errors": {
-      "forbidden": "Solo quien ganó completa este pago.",
-      "invalid_destination": "Elige un destino.",
-      "commerce_disabled": "Las compras de demostración están en pausa.",
-      "generic": "No se pudo completar. Inténtalo de nuevo."
     }
   },
   "purchases": {
@@ -179,8 +159,8 @@
     "myTop": "Tu mayor puja {price}",
     "final": "final {price}",
     "current": "actual {price}",
-    "viewOrder": "Ver pedido",
-    "payCta": "Completar pago (simulado)"
+    "wonAt": "Adjudicado · {price}",
+    "wonContact": "Nuestro equipo se pondrá en contacto para coordinar la entrega."
   },
   "admin": {
     "title": "Coleccionables",
@@ -206,12 +186,32 @@
     "livePanelHint": "Se actualiza solo. Los nombres aparecen enmascarados, como para el público.",
     "auditPanel": "Historial de acciones",
     "auditEmpty": "No hay acciones registradas.",
+    "result": {
+      "panel": "Ganador",
+      "hint": "Solo la administración ve estos datos, para coordinar la entrega con quien ganó.",
+      "name": "Nombre",
+      "email": "Correo",
+      "finalPrice": "Valor final",
+      "noWinner": "Terminó sin pujas: no hay ganador.",
+      "pending": "Esperando el cierre.",
+      "unavailable": "Datos del ganador no disponibles.",
+      "contactLabel": "Contacto",
+      "contactUpdated": "Actualizado el {date}",
+      "status": {
+        "pending": "Por contactar",
+        "contacted": "Contactado",
+        "delivered": "Entregado"
+      },
+      "save": "Guardar contacto",
+      "done": "Contacto actualizado"
+    },
     "audit": {
       "collectible": {
         "create": "Creado",
         "update": "Editado",
         "launch": "Lanzado o programado",
-        "cancel": "Cancelado"
+        "cancel": "Cancelado",
+        "contact": "Contacto con el ganador"
       }
     },
     "fields": {
@@ -291,7 +291,9 @@
       "invalid_start": "El inicio no puede quedar en el pasado.",
       "reason_required": "Escribe el motivo (mínimo 5 caracteres).",
       "invalid_input": "Revisa los campos marcados.",
-      "generic": "No se pudo guardar. Inténtalo de nuevo."
+      "generic": "No se pudo guardar. Inténtalo de nuevo.",
+      "no_winner": "Este objeto no tiene ganador.",
+      "invalid_contact_status": "Estado de contacto no válido."
     }
   }
 }

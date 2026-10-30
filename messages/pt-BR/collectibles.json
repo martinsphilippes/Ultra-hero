@@ -18,14 +18,13 @@
   },
   "list": {
     "title": "Colecionáveis",
-    "description": "Itens raros assinados pelos heróis, com lances ao vivo. Pagamento simulado.",
+    "description": "Itens raros assinados pelos heróis, com lances ao vivo.",
     "empty": "Nenhum colecionável no momento",
     "unavailable": "Colecionáveis chegam em breve",
     "emptyDescription": "Quando um item assinado entrar no ar, ele aparece aqui com a contagem regressiva.",
     "live": "Ao vivo agora",
     "upcoming": "Em breve",
-    "ended": "Encerrados",
-    "legal": "Ambiente de demonstração: lances e pagamento são simulados, sem cobrança real. Marcas e imagens de terceiros não são usadas."
+    "ended": "Encerrados"
   },
   "highlight": {
     "many": "{n} colecionáveis ao vivo"
@@ -41,7 +40,7 @@
       "increments": "Cada lance soma um dos valores dos botões ao lance atual. O primeiro lance parte do lance inicial.",
       "antiSnipe": "Lance nos 2 últimos minutos estende o fim para 2 minutos depois do lance.",
       "selfOutbid": "Quem já está vencendo não cobre o próprio lance. Um lance a cada 2 segundos por pessoa.",
-      "payment": "Quem arremata conclui o pagamento simulado e o pedido aparece em Minhas compras."
+      "winner": "Quem arremata recebe o contato da nossa equipe para combinar a entrega."
     }
   },
   "gallery": {
@@ -109,8 +108,7 @@
       "submit": "Dar lance de {price}",
       "yourBid": "Seu lance",
       "breakdown": "Lance atual {current} + {increment}",
-      "antiSnipe": "Faltam menos de 2 minutos: seu lance estende o fim em 2 minutos.",
-      "simulated": "Demonstração: nenhuma cobrança real. Se você arrematar, o pagamento é simulado."
+      "antiSnipe": "Faltam menos de 2 minutos: seu lance estende o fim em 2 minutos."
     },
     "connection": {
       "connecting": "Conectando…",
@@ -123,9 +121,8 @@
       "outbid": "Seu lance foi superado",
       "outbidHint": "Dê um novo lance para voltar à frente.",
       "won": "Você arrematou!",
-      "wonHint": "Seu lance de {price} venceu. Conclua o pagamento simulado para gerar o pedido.",
-      "viewOrder": "Ver pedido",
-      "payCta": "Concluir pagamento (simulado)",
+      "wonFinal": "Valor final do seu lance",
+      "wonContact": "Nossa equipe vai entrar em contato para combinar a entrega.",
       "ended": "Encerrado",
       "endedNoBids": "Encerrado sem lances",
       "endedBy": "Arrematado por {name} por {price}.",
@@ -134,23 +131,6 @@
       "cancelledHint": "A administração cancelou este item. Nenhum lance vale.",
       "scheduled": "Este item ainda não está no ar. Os lances abrem quando a contagem chegar a zero.",
       "scheduledAnon": "Este item ainda não está no ar. Entre para dar lance quando abrir."
-    }
-  },
-  "pay": {
-    "title": "Pagamento do arremate",
-    "description": "Escolha um destino fictício e confirme. Nada é cobrado.",
-    "banner": "Pagamento simulado: nenhuma cobrança real e nenhum endereço real. O pedido aparece em Minhas compras.",
-    "back": "Voltar ao item",
-    "wonFor": "Você arrematou por",
-    "destination": "Destino (fictício)",
-    "fictional": "Fictício",
-    "submit": "Confirmar pagamento simulado · {total}",
-    "simulated": "Demonstração: o pedido é de teste e segue o transporte simulado.",
-    "errors": {
-      "forbidden": "Só quem arrematou conclui este pagamento.",
-      "invalid_destination": "Escolha um destino.",
-      "commerce_disabled": "As compras de demonstração estão pausadas.",
-      "generic": "Não foi possível concluir. Tente de novo."
     }
   },
   "purchases": {
@@ -179,8 +159,8 @@
     "myTop": "Seu maior lance {price}",
     "final": "final {price}",
     "current": "atual {price}",
-    "viewOrder": "Ver pedido",
-    "payCta": "Concluir pagamento (simulado)"
+    "wonAt": "Arrematado · {price}",
+    "wonContact": "Nossa equipe vai entrar em contato para combinar a entrega."
   },
   "admin": {
     "title": "Colecionáveis",
@@ -206,12 +186,32 @@
     "livePanelHint": "Atualiza sozinho. Os nomes aparecem mascarados, como para o público.",
     "auditPanel": "Histórico de ações",
     "auditEmpty": "Nenhuma ação registrada.",
+    "result": {
+      "panel": "Vencedor",
+      "hint": "Só a administração vê estes dados, para combinar a entrega com quem arrematou.",
+      "name": "Nome",
+      "email": "E-mail",
+      "finalPrice": "Valor final",
+      "noWinner": "Encerrado sem lances: não há vencedor.",
+      "pending": "Aguardando o encerramento.",
+      "unavailable": "Dados do vencedor indisponíveis.",
+      "contactLabel": "Contato",
+      "contactUpdated": "Atualizado em {date}",
+      "status": {
+        "pending": "A contatar",
+        "contacted": "Contatado",
+        "delivered": "Entregue"
+      },
+      "save": "Salvar contato",
+      "done": "Contato atualizado"
+    },
     "audit": {
       "collectible": {
         "create": "Criado",
         "update": "Editado",
         "launch": "Lançado ou agendado",
-        "cancel": "Cancelado"
+        "cancel": "Cancelado",
+        "contact": "Contato com o vencedor"
       }
     },
     "fields": {
@@ -291,7 +291,9 @@
       "invalid_start": "O início não pode ficar no passado.",
       "reason_required": "Escreva o motivo (mínimo 5 caracteres).",
       "invalid_input": "Confira os campos destacados.",
-      "generic": "Não foi possível salvar. Tente de novo."
+      "generic": "Não foi possível salvar. Tente de novo.",
+      "no_winner": "Este item não tem vencedor.",
+      "invalid_contact_status": "Situação de contato inválida."
     }
   }
 }

@@ -5,13 +5,25 @@ import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import type { ActionResult } from "@/components/admin";
 import { getUser, hasRole } from "@/lib/auth/session";
-import { normalizeIncrements } from "@/lib/collectibles/rules";
+import { CONTACT_STATUSES, normalizeIncrements, type ContactStatus } from "@/lib/collectibles/rules";
 import { createClient } from "@/lib/supabase/server";
 
-// Colecionáveis no admin: criar/editar, lançar (agora ou agendado) e cancelar. As regras e a
+// Colecionáveis no admin: criar/editar, lançar (agora ou agendado), cancelar e marcar o contato com
+// o vencedor (sem pagamento online: a equipe combina a entrega). As regras e a
 // auditoria (admin_audit) ficam nas RPCs da 0054; aqui só validamos a forma e traduzimos o erro.
 
-const ERROR_CODES = ["forbidden", "not_found", "collectible_locked", "invalid_increment", "invalid_photo", "invalid_creator", "invalid_start", "reason_required"] as const;
+const ERROR_CODES = [
+  "forbidden",
+  "not_found",
+  "collectible_locked",
+  "invalid_increment",
+  "invalid_photo",
+  "invalid_creator",
+  "invalid_start",
+  "reason_required",
+  "no_winner",
+  "invalid_contact_status",
+] as const;
 
 async function fail(error: unknown): Promise<{ ok: false; error: string }> {
   const t = await getTranslations("collectibles.admin.errors");
@@ -112,6 +124,23 @@ export async function cancelCollectibleAction(id: string, reason: string): Promi
     if (error) return fail(error);
     revalidateAll(parsed.data.id);
     const t = await getTranslations("collectibles.admin.cancel");
+    return { ok: true, message: t("done") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+/** Andamento do contato com quem arrematou: a contatar → contatado → entregue (auditado no banco). */
+export async function setCollectibleContactAction(id: string, status: ContactStatus): Promise<ActionResult> {
+  const parsed = z.object({ id: z.uuid(), status: z.enum(CONTACT_STATUSES) }).safeParse({ id, status });
+  if (!parsed.success) return fail("invalid_contact_status");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("admin_collectible_set_contact", { p_id: parsed.data.id, p_status: parsed.data.status });
+    if (error) return fail(error);
+    revalidatePath(`/admin/collectibles/${parsed.data.id}`);
+    const t = await getTranslations("collectibles.admin.result");
     return { ok: true, message: t("done") };
   } catch (error) {
     return fail(error);

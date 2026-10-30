@@ -1,5 +1,5 @@
 -- =============================================================================
--- Ultra Hero · 0054 · Colecionáveis (lances ao vivo de itens assinados) — pagamento SIMULADO
+-- Ultra Hero · 0054 · Colecionáveis (lances ao vivo de itens assinados) — sem pagamento online
 --   Itens raros assinados pelos heróis vão a lance com tempo marcado. Na UI o nome é sempre
 --   "Colecionáveis" (nunca "leilão"); "lance" e "arrematar" aparecem dentro da página.
 --   Docs: docs/decisions/colecionaveis.md.
@@ -12,8 +12,8 @@
 --                           Publicada no Realtime (INSERT de cada lance).
 --   collectible_bid_owners  dono de cada lance (privado: cada um lê só os seus; admin lê tudo).
 --                           É assim que a tela marca "Você" sem expor ids a ninguém.
---   collectible_results     resultado do encerramento (vencedor, valor, pagamento simulado). Só o
---                           vencedor e o admin leem.
+--   collectible_results     resultado do encerramento (vencedor, valor final, situação do contato da
+--                           equipe com o vencedor). Só o vencedor e o admin leem.
 -- Regras (no banco)
 --   place_bid(auction, increment): só authenticated (sem execute para anon: S14 segue com 17);
 --   trava a linha (FOR UPDATE); exige fase "ao vivo" e now() < ends_at; o incremento tem de ser um
@@ -23,7 +23,8 @@
 --   admin e o próprio herói do item não dão lance.
 --   Encerramento por tempo: a fase é calculada na leitura (collectible_phase); collectible_finalize
 --   grava o resultado de forma idempotente (chamado ao abrir a página e pela rotina diária).
---   O vencedor paga (simulado) com collectible_pay → vira um pedido de teste comum (test_orders).
+--   Não há pagamento nem pedido: é uma dinâmica. A equipe entra em contato com o vencedor e marca
+--   o andamento (admin_collectible_set_contact: a contatar → contatado → entregue), auditado.
 -- Escrita do admin só por RPCs (security definer, checam is_admin, sem execute para anon) e cada
 --   uma grava em admin_audit. As tabelas não têm grant de escrita para a API.
 -- Seed: 4 itens de DEMONSTRAÇÃO em rascunho (nunca ao vivo sozinhos), imagens neutras.
@@ -90,10 +91,11 @@ create table if not exists public.collectible_results (
   winner_user_id uuid references auth.users (id) on delete set null,
   winning_bid_id uuid references public.collectible_bids (id) on delete set null,
   final_cents int not null check (final_cents >= 0),
-  claim_status text not null default 'none' check (claim_status in ('none', 'pending_payment', 'paid')),
-  order_id uuid references public.test_orders (id) on delete set null,
+  -- 'none' = sem vencedor; com vencedor nasce 'pending' (a equipe vai entrar em contato)
+  contact_status text not null default 'none' check (contact_status in ('none', 'pending', 'contacted', 'delivered')),
+  contact_updated_at timestamptz,
   finalized_at timestamptz not null default now(),
-  paid_at timestamptz
+  constraint collectible_results_contact check ((outcome = 'won') = (contact_status <> 'none'))
 );
 create index if not exists collectible_results_winner_idx on public.collectible_results (winner_user_id) where winner_user_id is not null;
 
@@ -238,9 +240,9 @@ begin
     select o.user_id into v_owner from public.collectible_bid_owners o where o.bid_id = c.leading_bid_id;
     select b.bidder_label into v_label from public.collectible_bids b where b.id = c.leading_bid_id;
   end if;
-  insert into public.collectible_results (collectible_id, outcome, winner_user_id, winning_bid_id, final_cents, claim_status)
+  insert into public.collectible_results (collectible_id, outcome, winner_user_id, winning_bid_id, final_cents, contact_status)
   values (c.id, case when c.leading_bid_id is null then 'no_bids' else 'won' end, v_owner, c.leading_bid_id,
-          c.current_cents, case when v_owner is null then 'none' else 'pending_payment' end)
+          c.current_cents, case when v_owner is null then 'none' else 'pending' end)
   on conflict (collectible_id) do nothing;
   update public.collectibles set status = 'ended', finalized_at = now(), winner_label = v_label where id = c.id;
   return true;
@@ -278,50 +280,7 @@ end $$;
 revoke execute on function public.collectible_finalize_due() from public, anon, authenticated;
 grant execute on function public.collectible_finalize_due() to service_role;
 
--- ---------------------------------------------------------------- 7) pagamento simulado do vencedor
--- Cria um pedido de teste comum (operação própria), aparece em Minhas compras. Idempotente.
-create or replace function public.collectible_pay(p_collectible uuid, p_destination uuid)
-returns uuid language plpgsql security definer set search_path = public as $$
-declare
-  v_uid uuid := auth.uid(); r public.collectible_results%rowtype; c public.collectibles%rowtype;
-  v_dest public.demo_destinations%rowtype; v_seller public.seller_organizations%rowtype;
-  v_order uuid; v_f uuid; v_shipping int; v_eta int;
-begin
-  if v_uid is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
-  perform public.collectible_finalize_row(p_collectible);
-  select * into r from public.collectible_results where collectible_id = p_collectible for update;
-  if not found or r.winner_user_id is distinct from v_uid then raise exception 'forbidden' using errcode = '42501'; end if;
-  if r.claim_status = 'paid' and r.order_id is not null then return r.order_id; end if;
-  if coalesce((public.setting('commerce.enabled'))::boolean, true) is false then raise exception 'commerce_disabled'; end if;
-  select * into v_dest from public.demo_destinations where id = p_destination and is_active;
-  if not found then raise exception 'invalid_destination'; end if;
-  select * into c from public.collectibles where id = p_collectible;
-  select * into v_seller from public.seller_organizations where kind = 'own' and status = 'active'
-    order by (id = public.seed_uuid('seller:own')) desc, created_at limit 1;
-  if not found then raise exception 'seller_unavailable'; end if;
-
-  v_shipping := coalesce(public.quote_shipping(v_dest.zone, 1, r.final_cents), 0);
-  select eta_days_max into v_eta from public.demo_shipping_rules where zone = v_dest.zone;
-
-  insert into public.test_orders (user_id, destination_snapshot, subtotal_cents, shipping_cents, total_cents)
-  values (v_uid, jsonb_build_object('id', v_dest.id, 'code', v_dest.code, 'name', v_dest.name, 'zone', v_dest.zone, 'fictional', true),
-          r.final_cents, v_shipping, r.final_cents + v_shipping)
-  returning id into v_order;
-  insert into public.test_fulfillments (order_id, seller_org_id, seller_name_snapshot, shipping_cents_snapshot, destination_zone, eta_days)
-  values (v_order, v_seller.id, v_seller.name, v_shipping, v_dest.zone, v_eta)
-  returning id into v_f;
-  insert into public.fulfillment_events (fulfillment_id, from_status, to_status, actor_type, actor_id, note)
-  values (v_f, null, 'awaiting', 'system', null, 'collectible_won');
-  insert into public.test_order_items (order_id, fulfillment_id, product_id, seller_org_id, title_snapshot, image_snapshot, price_cents_snapshot, quantity)
-  values (v_order, v_f, null, v_seller.id, c.title, c.photos[1], r.final_cents, 1);
-
-  update public.collectible_results set claim_status = 'paid', order_id = v_order, paid_at = now() where collectible_id = p_collectible;
-  return v_order;
-end $$;
-revoke execute on function public.collectible_pay(uuid, uuid) from public, anon;
-grant execute on function public.collectible_pay(uuid, uuid) to authenticated, service_role;
-
--- ---------------------------------------------------------------- 8) admin (auditado)
+-- ---------------------------------------------------------------- 7) admin (auditado)
 -- Cria/edita. Antes de começar (rascunho/agendado sem lances) tudo é editável; depois, só textos e fotos.
 create or replace function public.admin_collectible_save(p_id uuid, p_data jsonb)
 returns uuid language plpgsql security definer set search_path = public as $$
@@ -428,7 +387,28 @@ end $$;
 revoke execute on function public.admin_collectible_cancel(uuid, text) from public, anon;
 grant execute on function public.admin_collectible_cancel(uuid, text) to authenticated, service_role;
 
--- ---------------------------------------------------------------- 9) Realtime
+-- Andamento do contato com o vencedor (sem pagamento online): a contatar → contatado → entregue.
+-- Só item encerrado com vencedor. Mesma situação de novo não grava nem audita.
+create or replace function public.admin_collectible_set_contact(p_id uuid, p_status text)
+returns text language plpgsql security definer set search_path = public as $$
+declare r public.collectible_results%rowtype;
+begin
+  if auth.uid() is null or not public.is_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
+  if p_status is null or p_status not in ('pending', 'contacted', 'delivered') then
+    raise exception 'invalid_contact_status' using errcode = '22023';
+  end if;
+  select * into r from public.collectible_results where collectible_id = p_id for update;
+  if not found or r.outcome <> 'won' or r.winner_user_id is null then raise exception 'no_winner' using errcode = 'P0001'; end if;
+  if r.contact_status = p_status then return p_status; end if;
+  update public.collectible_results set contact_status = p_status, contact_updated_at = now() where collectible_id = p_id;
+  perform public.audit_log('collectible.contact', 'collectible', p_id::text,
+    jsonb_build_object('contact_status', r.contact_status), jsonb_build_object('contact_status', p_status), null);
+  return p_status;
+end $$;
+revoke execute on function public.admin_collectible_set_contact(uuid, text) from public, anon;
+grant execute on function public.admin_collectible_set_contact(uuid, text) to authenticated, service_role;
+
+-- ---------------------------------------------------------------- 8) Realtime
 -- Só as duas tabelas públicas (sem ids de usuário). A RLS vale também para o Realtime.
 do $$
 begin
@@ -442,7 +422,7 @@ begin
   end if;
 end $$;
 
--- ---------------------------------------------------------------- 10) seed de DEMONSTRAÇÃO (rascunho)
+-- ---------------------------------------------------------------- 9) seed de DEMONSTRAÇÃO (rascunho)
 -- Nunca começa sozinho: o admin revisa e lança. Reaplicar não sobrescreve edição do admin.
 insert into public.collectibles (id, title, description, creator_id, photos, authenticity_note, start_price_cents,
   bid_increments_cents, duration_minutes, current_cents, is_demo)

@@ -5949,7 +5949,8 @@ select tests.ok('S65 limpeza de contadores sem execução por clientes',
 -- ================================================================ S66 · Colecionáveis (lances ao vivo, 0054)
 -- Leitura pública sem ids de usuário; lance só pela RPC e só logado; incremento, fim, auto-cobertura,
 -- limite de 2 s, conta suspensa, admin e o próprio herói recusados; anti-sniping; escrita só do admin
--- (auditada); encerramento e pagamento simulado idempotentes; Realtime só nas tabelas públicas; S14 = 17.
+-- (auditada); encerramento idempotente; sem pagamento: o admin marca o contato com o vencedor (auditado);
+-- Realtime só nas tabelas públicas; nenhuma tabela-ponte na chave primária (embeds sem PGRST201); S14 = 17.
 select tests.su();
 insert into auth.users (id, email) values
   ('10000000-0000-4000-8000-000000005401', 'lance1@test.local'),
@@ -5964,6 +5965,18 @@ grant all on t_s66 to anon, authenticated;
 select tests.ok('S66 seed: 4 itens de demonstração em rascunho, nenhum ao vivo',
   (select count(*) from public.collectibles where is_demo and status = 'draft') = 4
   and not exists (select 1 from public.collectibles where status <> 'draft'));
+select tests.ok('S66 sem pagamento: resultado sem pedido nem cobrança, nenhuma FK para pedidos',
+  not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name like 'collectible%'
+              and column_name in ('order_id', 'claim_status', 'paid_at'))
+  and not exists (select 1 from pg_constraint f where f.contype = 'f' and f.conrelid::regclass::text like 'collectible%'
+                  and f.confrelid = 'public.test_orders'::regclass)
+  and to_regprocedure('public.collectible_pay(uuid, uuid)') is null);
+select tests.ok('S66 nenhuma tabela dos colecionáveis tem chave primária com FK para duas tabelas (sem ambiguidade na API)',
+  not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.connamespace = 'public'::regnamespace and pk.conrelid::regclass::text like 'collectible%'
+      and (select count(distinct f.confrelid) from pg_constraint f
+           where f.conrelid = pk.conrelid and f.contype = 'f' and f.conkey <@ pk.conkey) > 1));
 select tests.ok('S66 tabelas públicas sem coluna de usuário',
   not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name in ('collectibles', 'collectible_bids')
               and (column_name like '%user%' or column_name in ('created_by', 'bidder_id', 'owner_id'))));
@@ -6114,24 +6127,40 @@ select tests.ok('S66 2ª chamada não muda nada', not ((public.collectible_final
 select tests.ok('S66 perdedor não vê o resultado; vê o preço final e o rótulo do vencedor',
   (select count(*) from public.collectible_results) = 0
   and (select status = 'ended' and current_cents = 159000 and winner_label = 'Ma***a' from public.collectibles where id = public.seed_uuid('collectible:bola-neymar')));
-select tests.expect_error('S66 perdedor não paga', format($q$select public.collectible_pay(%L, %L)$q$,
-  public.seed_uuid('collectible:bola-neymar'), public.seed_uuid('dest:centro')), 'forbidden');
+select tests.expect_error('S66 perdedor não marca contato', format($q$select public.admin_collectible_set_contact(%L, 'delivered')$q$,
+  public.seed_uuid('collectible:bola-neymar')), 'forbidden');
 select tests.expect_error('S66 rotina de encerramento é só do sistema', $q$select public.collectible_finalize_due()$q$, 'permission denied');
 select tests.login('10000000-0000-4000-8000-000000005401', 'lance1@test.local');
-select tests.ok('S66 vencedor vê "arrematado" com pagamento pendente',
-  (select outcome = 'won' and final_cents = 159000 and claim_status = 'pending_payment' and winner_user_id = auth.uid()
+select tests.ok('S66 vencedor vê "arrematado" com o valor final; a equipe ainda vai entrar em contato',
+  (select outcome = 'won' and final_cents = 159000 and contact_status = 'pending' and contact_updated_at is null and winner_user_id = auth.uid()
      from public.collectible_results where collectible_id = public.seed_uuid('collectible:bola-neymar')));
-insert into t_s66 select 'order', public.collectible_pay(public.seed_uuid('collectible:bola-neymar'), public.seed_uuid('dest:centro'))::text;
-select tests.ok('S66 pagamento simulado cria pedido de teste comum do vencedor',
-  (select o.user_id = auth.uid() and o.subtotal_cents = 159000 and o.total_cents >= 159000 and o.is_demo
-     from public.test_orders o where o.id = (select v::uuid from t_s66 where k = 'order'))
-  and (select count(*) from public.test_order_items i where i.order_id = (select v::uuid from t_s66 where k = 'order')
-       and i.title_snapshot = 'Bola assinada (editada)' and i.price_cents_snapshot = 159000 and i.product_id is null) = 1
-  and (select claim_status = 'paid' from public.collectible_results where collectible_id = public.seed_uuid('collectible:bola-neymar')));
-select tests.ok('S66 pagar de novo devolve o mesmo pedido (idempotente)',
-  public.collectible_pay(public.seed_uuid('collectible:bola-neymar'), public.seed_uuid('dest:centro'))::text = (select v from t_s66 where k = 'order')
-  and (select count(*) from public.test_orders where user_id = auth.uid()) = 1);
+select tests.expect_error('S66 vencedor não marca o próprio contato', format($q$select public.admin_collectible_set_contact(%L, 'delivered')$q$,
+  public.seed_uuid('collectible:bola-neymar')), 'forbidden');
+select tests.expect_error('S66 vencedor não altera o resultado direto (sem grant)',
+  $q$update public.collectible_results set contact_status = 'delivered'$q$, 'permission denied');
+select tests.ok('S66 nenhum pedido criado para o vencedor', (select count(*) from public.test_orders where user_id = auth.uid()) = 0);
+
+-- contato com o vencedor: só admin, auditado; repetir a mesma situação não audita
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S66 admin lê o resultado com o vencedor (para contato)',
+  (select winner_user_id = '10000000-0000-4000-8000-000000005401' from public.collectible_results
+     where collectible_id = public.seed_uuid('collectible:bola-neymar')));
+insert into t_s66 select 'contact', public.admin_collectible_set_contact(public.seed_uuid('collectible:bola-neymar'), 'contacted');
+select tests.ok('S66 admin marca "contatado"',
+  (select v from t_s66 where k = 'contact') = 'contacted'
+  and (select contact_status = 'contacted' and contact_updated_at is not null from public.collectible_results
+         where collectible_id = public.seed_uuid('collectible:bola-neymar')));
+select public.admin_collectible_set_contact(public.seed_uuid('collectible:bola-neymar'), 'contacted');
+select public.admin_collectible_set_contact(public.seed_uuid('collectible:bola-neymar'), 'delivered');
+select tests.expect_error('S66 situação de contato fora da lista recusada',
+  format($q$select public.admin_collectible_set_contact(%L, 'paid')$q$, public.seed_uuid('collectible:bola-neymar')), 'invalid_contact_status');
+select tests.expect_error('S66 item sem resultado não tem contato',
+  format($q$select public.admin_collectible_set_contact(%L, 'contacted')$q$, public.seed_uuid('collectible:prancha-medina')), 'no_winner');
 select tests.su();
+select tests.ok('S66 auditoria do contato: 2 trocas (contatado, entregue), a repetição não conta',
+  (select count(*) from public.admin_audit where action = 'collectible.contact' and resource_id = public.seed_uuid('collectible:bola-neymar')::text
+     and actor_id = '10000000-0000-4000-8000-000000000001') = 2
+  and (select contact_status = 'delivered' from public.collectible_results where collectible_id = public.seed_uuid('collectible:bola-neymar')));
 select tests.ok('S66 rotina do sistema: nada a encerrar de novo', public.collectible_finalize_due() = 0
   and (select count(*) from public.collectible_results) = 1);
 -- item vencido sem lance: encerra como "sem lances", sem vencedor
@@ -6139,14 +6168,18 @@ update public.collectibles set status = 'live', starts_at = now() - interval '2 
   where id = (select v::uuid from t_s66 where k = 'new');
 insert into t_s66 select 'due', public.collectible_finalize_due()::text;
 select tests.ok('S66 rotina encerra o vencido sem lances (sem vencedor)', (select v from t_s66 where k = 'due') = '1'
-  and (select outcome = 'no_bids' and winner_user_id is null and claim_status = 'none' from public.collectible_results
+  and (select outcome = 'no_bids' and winner_user_id is null and contact_status = 'none' from public.collectible_results
        where collectible_id = (select v::uuid from t_s66 where k = 'new')));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S66 encerrado sem lances: não há vencedor para contatar',
+  format($q$select public.admin_collectible_set_contact(%L, 'contacted')$q$, (select v from t_s66 where k = 'new')), 'no_winner');
+select tests.su();
 
 -- funções: security definer com search_path fixo; nenhuma nova para o visitante
 select tests.ok('S66 RPCs: security definer, search_path fixo, sem execute para anon',
   (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
      from pg_proc p where p.oid in ('public.place_bid(uuid, int)'::regprocedure, 'public.collectible_finalize(uuid)'::regprocedure,
-       'public.collectible_finalize_row(uuid)'::regprocedure, 'public.collectible_finalize_due()'::regprocedure, 'public.collectible_pay(uuid, uuid)'::regprocedure,
+       'public.collectible_finalize_row(uuid)'::regprocedure, 'public.collectible_finalize_due()'::regprocedure, 'public.admin_collectible_set_contact(uuid, text)'::regprocedure,
        'public.admin_collectible_save(uuid, jsonb)'::regprocedure, 'public.admin_collectible_launch(uuid, timestamptz)'::regprocedure,
        'public.admin_collectible_cancel(uuid, text)'::regprocedure))
   and has_function_privilege('authenticated', 'public.place_bid(uuid, int)', 'execute')

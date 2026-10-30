@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 // Minhas compras (dentro da aba Comprar): pedidos de teste e, com a 0054, "Lances e arremates"
-// (situação de cada item em que a pessoa deu lance; arremate leva ao pagamento simulado ou ao pedido).
+// (situação de cada item em que a pessoa deu lance; arrematado mostra o valor final, sem pagamento).
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
