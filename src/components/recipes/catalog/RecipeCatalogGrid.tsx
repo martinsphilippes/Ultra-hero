@@ -17,6 +17,8 @@ type Props = {
   initialCount: number;
   /** Registra recipe.catalog_filter (só os nomes) quando há busca ou filtro. */
   track: "explore" | "chef" | null;
+  /** Alimentação do herói (0051): as próximas páginas vêm com as ações da vitrine. */
+  showcase?: boolean;
   children: ReactNode;
 };
 
@@ -28,7 +30,7 @@ const AUTO_PAGES = 3;
 // Carregamento progressivo do catálogo pelo cursor de recipe_catalog: a primeira página vem do
 // servidor; as seguintes chegam pela action (cards já renderizados) ao se aproximar do fim da
 // grade, e depois de 3 cargas automáticas por "Carregar mais".
-export function RecipeCatalogGrid({ params, creator, nextCursor, initialCount, track, children }: Props) {
+export function RecipeCatalogGrid({ params, creator, nextCursor, initialCount, track, showcase = false, children }: Props) {
   const t = useTranslations("recipes.catalog.grid");
   const [batches, setBatches] = useState<Batch[]>([]);
   const [cursor, setCursor] = useState<string | null>(nextCursor);
@@ -61,7 +63,7 @@ export function RecipeCatalogGrid({ params, creator, nextCursor, initialCount, t
       const before = loaded;
       startTransition(async () => {
         try {
-          const result = await loadMoreRecipes({ params, creator, cursor });
+          const result = await loadMoreRecipes({ params, creator, cursor, ...(showcase ? { showcase } : {}) });
           if (!result.ok) {
             setError(true);
             return;
@@ -83,7 +85,7 @@ export function RecipeCatalogGrid({ params, creator, nextCursor, initialCount, t
         }
       });
     },
-    [creator, cursor, loaded, params, t],
+    [creator, cursor, loaded, params, showcase, t],
   );
 
   useEffect(() => {

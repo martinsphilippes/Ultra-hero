@@ -1767,7 +1767,8 @@ select tests.ok('S25 RLS ligada nas 16 tabelas novas e nada para anon além das 
                      'shopping_list_items', 'user_recipe_prefs', 'recipe_view_history')) = 16
   and (select string_agg(relname, ',' order by relname) from pg_class where relnamespace = 'public'::regnamespace and relkind = 'r'
          and relname like any (array['recipe\_%', 'shopping\_%', 'user\_recipe\_%']) and has_table_privilege('anon', oid, 'select'))
-      = 'recipe_categories,recipe_category_links,recipe_details,recipe_media'
+      -- + as 2 de leitura pública da 0051 (assinatura e produto pronto; o S62 cobre as regras delas)
+      = 'recipe_categories,recipe_category_links,recipe_details,recipe_media,recipe_ready_products,recipe_signers'
   and not has_table_privilege('authenticated', 'public.recipe_details', 'insert')
   and not has_table_privilege('authenticated', 'public.recipe_ingredients', 'update')
   and not has_table_privilege('authenticated', 'public.recipe_versions', 'delete'));
@@ -5501,6 +5502,166 @@ select tests.ok('S61 estado restaurado',
   (select count(*) from public.hero_categories where is_active) = 4
   and (select count(*) from public.creator_category_links) = 7
   and (select count(*) from public.hero_library_tabs) = 0);
+
+-- ================================================================ S62 · Alimentação completa (0051)
+-- recipe_signers (quem assina; sem linha = o autor), recipe_ready_products (1 produto "Comprar pronto"
+-- por receita) e recipe_action_counters (toques agregados por dia; sem pessoa, sem IP). Leitura pública
+-- só do que está no ar; escrita só do admin, auditada; contadores só pelo service role.
+select tests.su();
+create temp table t_s62 as select
+  (select id from public.content where slug = 'bowl-de-frango-grelhado-com-legumes-assados-g1') as g1,
+  (select id from public.content where slug = 'marmita-de-carne-moida-com-abobora-g8') as g8,
+  (select id from public.content where type <> 'recipe' and status = 'published' order by slug limit 1) as other,
+  (select id from public.products where slug = 'bowl-de-frango-com-legumes-350-g-m1') as m1,
+  (select id from public.products where slug = 'salmao-com-batata-doce-350-g-m4') as m4;
+grant select on t_s62 to anon, authenticated, service_role;
+select tests.ok('S62 dados do cenário: receita no ar do Érick Jacquin (g1), receita arquivada (g8), outro tipo e 2 produtos publicados',
+  (select g1 is not null and g8 is not null and other is not null and m1 is not null and m4 is not null from t_s62)
+  and (select creator_id = public.seed_uuid('creator:helena') and status = 'published' from public.content where id = (select g1 from t_s62))
+  and (select status = 'archived' from public.content where id = (select g8 from t_s62)));
+select tests.ok('S62 sem seed: nenhuma assinatura, produto pronto ou contador',
+  (select count(*) from public.recipe_signers) = 0 and (select count(*) from public.recipe_ready_products) = 0 and (select count(*) from public.recipe_action_counters) = 0);
+select tests.ok('S62 RLS ligada nas 3 tabelas; visitante só lê assinatura e produto pronto; contadores sem nenhum privilégio para anon/authenticated e sem política',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.recipe_signers'::regclass, 'public.recipe_ready_products'::regclass, 'public.recipe_action_counters'::regclass))
+  and has_table_privilege('anon', 'public.recipe_signers', 'select') and not has_table_privilege('anon', 'public.recipe_signers', 'insert')
+  and has_table_privilege('anon', 'public.recipe_ready_products', 'select') and not has_table_privilege('anon', 'public.recipe_ready_products', 'delete')
+  and not has_table_privilege('anon', 'public.recipe_action_counters', 'select, insert, update, delete, truncate, references, trigger')
+  and not has_table_privilege('authenticated', 'public.recipe_action_counters', 'select, insert, update, delete, truncate, references, trigger')
+  and has_table_privilege('service_role', 'public.recipe_action_counters', 'insert')
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename = 'recipe_action_counters') = 0);
+select tests.ok('S62 políticas: leitura pública só de SELECT; escrita só para authenticated com (select is_admin())',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in ('recipe_signers', 'recipe_ready_products') and 'anon' = any (roles) and cmd <> 'SELECT') = 0
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename in ('recipe_signers', 'recipe_ready_products') and cmd = 'ALL'
+         and roles = '{authenticated}'::name[] and qual like '%is_admin()%' and with_check like '%is_admin()%') = 2);
+select tests.ok('S62 contadores não guardam pessoa nem IP: só dia, herói, origem, ação, receita, contagem e atualização',
+  (select string_agg(column_name::text, ',' order by column_name) from information_schema.columns where table_schema = 'public' and table_name = 'recipe_action_counters')
+    = 'action,content_id,count,creator_id,day,source_key,updated_at');
+
+-- admin: Neymar assina a g1 (depois sem chef), Comprar pronto m1 → m4; g8 (arquivada) também ganha linhas
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into public.recipe_signers (content_id, chef_id) values ((select g1 from t_s62), public.seed_uuid('creator:tiago'));
+update public.recipe_signers set chef_id = null where content_id = (select g1 from t_s62);
+update public.recipe_signers set chef_id = null where content_id = (select g1 from t_s62); -- mesmo valor: sem auditoria
+insert into public.recipe_ready_products (content_id, product_id) values ((select g1 from t_s62), (select m1 from t_s62));
+insert into public.recipe_ready_products (content_id, product_id) values ((select g1 from t_s62), (select m4 from t_s62))
+  on conflict (content_id) do update set product_id = excluded.product_id;
+insert into public.recipe_signers (content_id, chef_id) values ((select g8 from t_s62), null);
+insert into public.recipe_ready_products (content_id, product_id) values ((select g8 from t_s62), (select m1 from t_s62));
+select tests.ok('S62 admin grava: g1 sem chef (linha com chef nulo), produto pronto trocado para m4; quem gravou fica registrado',
+  (select chef_id is null and updated_by = '10000000-0000-4000-8000-000000000001' from public.recipe_signers where content_id = (select g1 from t_s62))
+  and (select product_id = (select m4 from t_s62) and updated_by = '10000000-0000-4000-8000-000000000001' from public.recipe_ready_products where content_id = (select g1 from t_s62))
+  and (select count(*) from public.recipe_ready_products) = 2);
+select tests.expect_error('S62 um produto pronto por receita (chave primária)',
+  $q$insert into public.recipe_ready_products (content_id, product_id) values ((select g1 from t_s62), (select m1 from t_s62))$q$, 'recipe_ready_products_pkey');
+select tests.expect_error('S62 produto pronto só em receita',
+  $q$insert into public.recipe_ready_products (content_id, product_id) values ((select other from t_s62), (select m1 from t_s62))$q$, 'recipe_not_found');
+select tests.expect_error('S62 assinatura só em receita',
+  $q$insert into public.recipe_signers (content_id, chef_id) values ((select other from t_s62), null)$q$, 'recipe_not_found');
+select tests.expect_error('S62 chef suspenso não assina',
+  $q$update public.recipe_signers set chef_id = public.seed_uuid('creator:bruna') where content_id = (select g1 from t_s62)$q$, 'chef_unavailable');
+select tests.expect_error('S62 produto inexistente é recusado (chave estrangeira)',
+  $q$update public.recipe_ready_products set product_id = '62000000-0000-4000-8000-000000000099' where content_id = (select g1 from t_s62)$q$, 'recipe_ready_products_product_id_fkey');
+
+select tests.su();
+select tests.ok('S62 auditoria do admin: assinatura (insert, update; o update sem mudança não conta) e produto pronto (insert, update)',
+  (select string_agg(action, ',' order by id) from public.admin_audit where resource_type = 'recipe_signer' and resource_id = (select g1 from t_s62)::text)
+    = 'recipe_signers.insert,recipe_signers.update'
+  and (select string_agg(action, ',' order by id) from public.admin_audit where resource_type = 'recipe_ready_product' and resource_id = (select g1 from t_s62)::text)
+    = 'recipe_ready_products.insert,recipe_ready_products.update'
+  and (select after_data ->> 'product_id' from public.admin_audit where resource_type = 'recipe_ready_product' and action = 'recipe_ready_products.update') = (select m4 from t_s62)::text
+  and (select bool_and(actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin') from public.admin_audit where resource_type in ('recipe_signer', 'recipe_ready_product')));
+
+-- leitura: visitante vê só o da receita no ar; produto fora do ar some
+select tests.anon();
+select tests.ok('S62 visitante lê a assinatura e o produto pronto da receita no ar, não os da arquivada',
+  (select count(*) from public.recipe_signers) = 1 and (select count(*) from public.recipe_ready_products) = 1
+  and exists (select 1 from public.recipe_ready_products where content_id = (select g1 from t_s62)));
+select tests.su();
+update public.products set status = 'draft' where id = (select m4 from t_s62);
+select tests.anon();
+select tests.ok('S62 produto pronto fora do ar some para o visitante',
+  (select count(*) from public.recipe_ready_products) = 0);
+select tests.su();
+update public.products set status = 'published' where id = (select m4 from t_s62);
+
+select tests.anon();
+select tests.expect_error('S62 visitante não grava assinatura', $q$insert into public.recipe_signers (content_id) values ((select g1 from t_s62))$q$, 'permission denied');
+select tests.expect_error('S62 visitante não troca produto pronto', $q$update public.recipe_ready_products set product_id = (select m1 from t_s62)$q$, 'permission denied');
+select tests.expect_error('S62 visitante não lê contadores', $q$select count(*) from public.recipe_action_counters$q$, 'permission denied');
+select tests.expect_error('S62 visitante não soma contador', $q$select public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select g1 from t_s62))$q$, 'permission denied');
+
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S62 consumidor lê o mesmo que o visitante', (select count(*) from public.recipe_signers) = 1 and (select count(*) from public.recipe_ready_products) = 1);
+select tests.expect_error('S62 consumidor não grava assinatura (RLS)',
+  $q$insert into public.recipe_signers (content_id, chef_id) values ((select id from public.content where slug = 'omelete-de-forno-para-a-semana-g2'), null)$q$, 'row-level security');
+select tests.expect_error('S62 consumidor não liga produto pronto (RLS)',
+  $q$insert into public.recipe_ready_products (content_id, product_id) values ((select id from public.content where slug = 'omelete-de-forno-para-a-semana-g2'), (select m1 from t_s62))$q$, 'row-level security');
+update public.recipe_ready_products set product_id = (select m1 from t_s62);
+delete from public.recipe_signers;
+select tests.expect_error('S62 consumidor não lê contadores', $q$select count(*) from public.recipe_action_counters$q$, 'permission denied');
+select tests.expect_error('S62 consumidor não grava contador', $q$insert into public.recipe_action_counters (day, creator_id, source_key, action, content_id) values (current_date, public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select g1 from t_s62))$q$, 'permission denied');
+select tests.expect_error('S62 consumidor não soma contador', $q$select public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select g1 from t_s62))$q$, 'permission denied');
+select tests.su();
+select tests.ok('S62 update/delete de quem não é admin não afeta nada',
+  (select product_id = (select m4 from t_s62) from public.recipe_ready_products where content_id = (select g1 from t_s62))
+  and (select count(*) from public.recipe_signers) = 2);
+
+-- contador: só o service role; só receita no ar na vitrine de herói ativo (autor ou vínculo validado)
+select set_config('role', 'service_role', true);
+create temp table t_s62_bump as select
+  public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select g1 from t_s62)) as a1,
+  public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select g1 from t_s62)) as a2,
+  public.recipe_action_bump(public.seed_uuid('creator:tiago'), 'alimentacao', 'comprar_pronto', (select g1 from t_s62)) as a3,
+  public.recipe_action_bump(public.seed_uuid('creator:tiago'), 'receita', 'lista_compras', (select g1 from t_s62)) as a4,
+  public.recipe_action_bump(public.seed_uuid('creator:bruna'), 'alimentacao', 'fazer', (select g1 from t_s62)) as b1,
+  public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select g8 from t_s62)) as b2,
+  public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'fazer', (select other from t_s62)) as b3,
+  public.recipe_action_bump(public.seed_uuid('creator:helena'), 'alimentacao', 'contratar', (select g1 from t_s62)) as b4,
+  public.recipe_action_bump(public.seed_uuid('creator:helena'), 'produtos', 'fazer', (select g1 from t_s62)) as b5,
+  public.recipe_action_bump(null, 'alimentacao', 'fazer', (select g1 from t_s62)) as b6;
+select set_config('role', 'none', true); -- o service role não usa o schema tests
+select tests.ok('S62 service role soma: autor (2x), herói que indica (Neymar) e na página da receita',
+  (select a1 and a2 and a3 and a4 from t_s62_bump));
+select tests.ok('S62 fora da regra não conta: herói suspenso, receita arquivada, outro tipo, ação ou origem desconhecida, nulos',
+  (select not (b1 or b2 or b3 or b4 or b5 or coalesce(b6, false)) from t_s62_bump));
+drop table t_s62_bump;
+select tests.su();
+select tests.ok('S62 contadores agregados por dia (Brasília), herói, origem, ação e receita',
+  (select count(*) from public.recipe_action_counters) = 3
+  and (select count from public.recipe_action_counters where creator_id = public.seed_uuid('creator:helena') and action = 'fazer') = 2
+  and (select bool_and(day = (now() at time zone 'America/Sao_Paulo')::date) from public.recipe_action_counters)
+  and (select count from public.recipe_action_counters where creator_id = public.seed_uuid('creator:tiago') and source_key = 'receita' and action = 'lista_compras') = 1);
+select tests.expect_error('S62 ação fora da lista é recusada pela tabela',
+  $q$insert into public.recipe_action_counters (day, creator_id, source_key, action, content_id) values (current_date, public.seed_uuid('creator:helena'), 'alimentacao', 'contratar', (select g1 from t_s62))$q$, 'recipe_action_counters_action_check');
+
+select tests.ok('S62 funções: guarda e contador security invoker, auditoria security definer; search_path fixo; nada executável pelo visitante; contador e auditoria fora do authenticated',
+  (select bool_and(exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')) from pg_proc p
+     where p.oid in ('public.recipe_showcase_guard()'::regprocedure, 'public.recipe_showcase_audit()'::regprocedure, 'public.recipe_action_bump(uuid, text, text, uuid)'::regprocedure))
+  and not (select prosecdef from pg_proc where oid = 'public.recipe_showcase_guard()'::regprocedure)
+  and not (select prosecdef from pg_proc where oid = 'public.recipe_action_bump(uuid, text, text, uuid)'::regprocedure)
+  and (select prosecdef from pg_proc where oid = 'public.recipe_showcase_audit()'::regprocedure)
+  and not has_function_privilege('anon', 'public.recipe_showcase_guard()', 'execute')
+  and not has_function_privilege('anon', 'public.recipe_showcase_audit()', 'execute')
+  and not has_function_privilege('authenticated', 'public.recipe_showcase_audit()', 'execute')
+  and not has_function_privilege('anon', 'public.recipe_action_bump(uuid, text, text, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.recipe_action_bump(uuid, text, text, uuid)', 'execute')
+  and has_function_privilege('service_role', 'public.recipe_action_bump(uuid, text, text, uuid)', 'execute'));
+select tests.ok('S62 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- reaplicar a 0051 mantém os dados
+\ir ../migrations/0051_alimentacao.sql
+select tests.ok('S62 reaplicar a 0051 mantém assinaturas, produtos prontos e contadores',
+  (select count(*) from public.recipe_signers) = 2 and (select count(*) from public.recipe_ready_products) = 2 and (select count(*) from public.recipe_action_counters) = 3);
+
+-- excluir a receita leva as linhas (cascata); limpeza
+delete from public.recipe_signers;
+delete from public.recipe_ready_products;
+delete from public.recipe_action_counters;
+delete from public.admin_audit where resource_type in ('recipe_signer', 'recipe_ready_product');
+drop table t_s62;
+select tests.ok('S62 estado restaurado',
+  (select count(*) from public.recipe_signers) = 0 and (select count(*) from public.recipe_ready_products) = 0 and (select count(*) from public.recipe_action_counters) = 0);
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

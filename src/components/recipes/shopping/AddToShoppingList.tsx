@@ -9,9 +9,11 @@ import { addRecipeToShoppingList } from "@/app/(app)/profile/lista-de-compras/ac
 import { Button, Checkbox, Sheet, buttonBase, buttonSizes, buttonVariants, useToast } from "@/components/ui";
 import { RECIPE_UNITS, type RecipeUnit } from "@/lib/recipes/codes";
 import { parseServingsParam, servingsFactor } from "@/lib/recipes/scale";
+import type { RecipeActionTrack } from "@/lib/recipes/showcase";
 import { defaultShoppingSelection, SHOPPING_LIST_PATH } from "@/lib/recipes/shopping";
 import { scaledAmount, type UnitLabels, type ViewQuantity } from "@/lib/recipes/view-model";
 import { cn } from "@/lib/utils";
+import { fireRecipeAction } from "../showcase/track-action";
 
 export type ShoppingSheetIngredient = ViewQuantity & { id: string; name: string; toTaste: boolean; optional: boolean };
 
@@ -21,6 +23,8 @@ type Props = {
   /** Porções da receita (sem elas não há ajuste). */
   baseServings: number | null;
   locale: string;
+  /** Indicador da vitrine (0051): abrir a lista conta um toque em "Lista de compras". */
+  track?: RecipeActionTrack | null;
 };
 
 /** Botão "Adicionar à lista de compras" com as porções da URL (?porcoes=, mantidas pelo painel de ingredientes). */
@@ -32,7 +36,7 @@ export function AddToShoppingList(props: Props) {
 // Lista de compras a partir da receita (fase 5, decisão 5): o Sheet mostra os ingredientes já com o
 // fator de porções da página; "a gosto" e item sem quantidade vêm desmarcados; nada é convertido
 // para embalagem. O servidor recalcula as quantidades a partir das tabelas e confere o acesso.
-export function AddToShoppingListView({ contentId, ingredients, baseServings, locale, servings }: Props & { servings: number | null }) {
+export function AddToShoppingListView({ contentId, ingredients, baseServings, locale, servings, track = null }: Props & { servings: number | null }) {
   const t = useTranslations("shopping.add");
   const te = useTranslations("shopping.errors");
   const tu = useTranslations("recipes.structured.units");
@@ -54,6 +58,7 @@ export function AddToShoppingListView({ contentId, ingredients, baseServings, lo
   );
 
   function openSheet() {
+    fireRecipeAction(track, "lista_compras");
     setSelected(new Set(defaultShoppingSelection(ingredients.map((i, index) => ({ ...i, position: index + 1 })))));
     setError(null);
     setOpen(true);

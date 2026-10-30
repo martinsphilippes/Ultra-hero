@@ -6,12 +6,14 @@ import { ExternalLink, Eye, Pencil } from "lucide-react";
 import { StatusBadge } from "@/components/admin";
 import { JsonView, KeyValue, Panel } from "@/components/admin-content";
 import { ContentReviewActions } from "@/components/admin-content/ContentReviewActions";
+import { RecipeShowcaseAdmin } from "@/components/admin-content/RecipeShowcaseAdmin";
 import { summarizeBody, summarizeRecipeRows } from "@/components/admin-content/lib/body-summary";
 import { isScheduled } from "@/components/admin-content/lib/publish-at";
 import { Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { hasRecipeDetails, loadRecipeRows } from "@/lib/recipes/rows";
+import { signerChoiceValue } from "@/lib/recipes/showcase";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -66,6 +68,38 @@ async function loadContent(id: string): Promise<Content | null> {
 
 type Params = { params: Promise<{ id: string }> };
 
+type ShowcaseData = {
+  showcase: { id: string; name: string }[];
+  heroes: { id: string; name: string }[];
+  available: boolean;
+  signer: string;
+  ready: { id: string; title: string; status: string } | null;
+};
+
+// Vitrine da receita (0051): heróis com vínculo validado (0024), heróis ativos, assinatura e produto
+// pronto. Sem a 0051 (tabelas ausentes), só a parte da vitrine fica editável.
+async function loadShowcase(contentId: string): Promise<ShowcaseData> {
+  const supabase = await createClient();
+  const [linksRes, heroesRes, signerRes, readyRes] = await Promise.all([
+    supabase.from("creator_recipe_links").select("status, creator:creator_profiles(id, name)").eq("content_id", contentId).eq("status", "validated"),
+    supabase.from("creator_profiles").select("id, name").eq("status", "active").order("name"),
+    supabase.from("recipe_signers").select("chef_id").eq("content_id", contentId).maybeSingle(),
+    supabase.from("recipe_ready_products").select("product:products(id, title, status)").eq("content_id", contentId).maybeSingle(),
+  ]);
+  const showcase = ((linksRes.data ?? []) as unknown as { creator: { id: string; name: string } | null }[])
+    .map((row) => row.creator)
+    .filter((c): c is { id: string; name: string } => Boolean(c))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const ready = (readyRes.data as unknown as { product: { id: string; title: string; status: string } | null } | null)?.product ?? null;
+  return {
+    showcase,
+    heroes: (heroesRes.data ?? []) as { id: string; name: string }[],
+    available: !signerRes.error && !readyRes.error,
+    signer: signerChoiceValue(signerRes.data),
+    ready,
+  };
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const content = await loadContent(id);
@@ -95,6 +129,7 @@ export default async function AdminContentDetailPage({ params }: Params) {
   const uiLocale = locale as Locale;
   const summary = structured ? summarizeRecipeRows(await loadRecipeRows(supabase, id)) : body ? summarizeBody(content.type, body.body) : null;
   const scheduled = isScheduled(content.status, content.publish_at);
+  const showcaseData = content.type === "recipe" ? await loadShowcase(id) : null;
 
   const summaryText = (() => {
     if (!summary || summary.kind === "empty") return t("summary.empty");
@@ -262,6 +297,21 @@ export default async function AdminContentDetailPage({ params }: Params) {
           <Panel title={tc("actions")}>
             <ContentReviewActions contentId={content.id} type={content.type} status={content.status} reviewStatus={content.review_status} isFeatured={content.is_featured} hasOpenRound={hasOpenRound} publishAt={content.publish_at} />
           </Panel>
+          {showcaseData ? (
+            <div id="vitrine" className="scroll-mt-24">
+              <Panel title={t("showcase.title")}>
+                <RecipeShowcaseAdmin
+                  contentId={content.id}
+                  author={content.creator ? { id: content.creator.id, name: content.creator.name } : null}
+                  showcase={showcaseData.showcase}
+                  heroes={showcaseData.heroes}
+                  available={showcaseData.available}
+                  signer={showcaseData.signer}
+                  ready={showcaseData.ready}
+                />
+              </Panel>
+            </div>
+          ) : null}
         </aside>
       </div>
     </div>

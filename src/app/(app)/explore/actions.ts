@@ -8,6 +8,7 @@ import { exploreFeedPage } from "@/components/discover/explore/feed";
 import { renderContentTiles } from "@/components/discover/explore/renderTiles";
 import { MAX_OFFSET, TILE_PAGE_SIZE } from "@/components/discover/explore/tiles";
 import { renderRecipeCards } from "@/components/recipes/catalog/renderRecipeCards";
+import { renderShowcaseRecipeCards } from "@/components/recipes/showcase/showcase-cards";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
 import { CONTENT_TYPES, PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
@@ -75,6 +76,8 @@ const recipesSchema = z.object({
   creator: z.uuid().nullable(),
   // cursor de recipe_catalog: "rn" (relevância) ou "chave|uuid"; a função recusa o malformado
   cursor: z.string().min(1).max(120),
+  // Alimentação do herói (0051): cards com as ações da vitrine do herói `creator`
+  showcase: z.boolean().optional(),
 });
 
 export type LoadMoreRecipesInput = z.input<typeof recipesSchema>;
@@ -86,6 +89,10 @@ export async function loadMoreRecipes(input: LoadMoreRecipesInput): Promise<Resu
   try {
     const supabase = await createClient();
     const page = await fetchRecipeCatalog(supabase, parsed.data.params, { creator: parsed.data.creator, cursor: parsed.data.cursor });
+    if (parsed.data.showcase && parsed.data.creator) {
+      const { data: hero } = await supabase.from("creator_profiles").select("id, slug, name, avatar_url, is_fictional").eq("id", parsed.data.creator).maybeSingle();
+      if (hero) return { ok: true, nodes: await renderShowcaseRecipeCards(page.items, hero), count: page.items.length, nextCursor: page.nextCursor };
+    }
     return { ok: true, nodes: renderRecipeCards(page.items), count: page.items.length, nextCursor: page.nextCursor };
   } catch (error) {
     return fail(error);

@@ -4,6 +4,7 @@
 import type { RecipeAllergen, RecipeDiet } from "./codes";
 import { RECIPE_ALLERGENS, RECIPE_DIETS } from "./codes";
 import type { RecipeDifficulty } from "./payload";
+import type { SignerOverride } from "./showcase";
 
 export type RecipeCardData = {
   id: string;
@@ -20,6 +21,8 @@ export type RecipeCardData = {
   allergensDeclared: boolean;
   allergens: RecipeAllergen[];
   diets: RecipeDiet[];
+  /** Assinatura escolhida pelo admin (0051); ausente = o autor (creator) assina. */
+  signer?: SignerOverride;
 };
 
 /** Colunas do card (content + recipe_details embutido, 1:1 pela PK). */
@@ -27,7 +30,7 @@ export const RECIPE_CARD_SELECT =
   "id, slug, title, cover_url, pillar, access_level, difficulty, required_module:plan_modules(code, name), " +
   "creator:creator_profiles(slug, name, avatar_url, is_fictional), details:recipe_details(total_minutes, servings, diets, allergens, allergens_declared)";
 
-type Row = Omit<RecipeCardData, "totalMinutes" | "servings" | "allergensDeclared" | "allergens" | "diets"> & {
+type Row = Omit<RecipeCardData, "totalMinutes" | "servings" | "allergensDeclared" | "allergens" | "diets" | "signer"> & {
   details:
     | { total_minutes: number | null; servings: number | null; diets: string[] | null; allergens: string[] | null; allergens_declared: boolean | null }
     | { total_minutes: number | null; servings: number | null; diets: string[] | null; allergens: string[] | null; allergens_declared: boolean | null }[]

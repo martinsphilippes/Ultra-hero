@@ -84,7 +84,7 @@ export default async function LibraryPage({ params, searchParams }: Props) {
           />
         </div>
       ) : (
-        <LibraryBody library={current} slug={creator.slug} hub={hub} hero={{ id: creator.id, slug: creator.slug, name: creator.name }} recipeParams={recipeParams} />
+        <LibraryBody library={current} slug={creator.slug} hub={hub} hero={{ id: creator.id, slug: creator.slug, name: creator.name, avatar_url: creator.avatar_url, is_fictional: creator.is_fictional }} recipeParams={recipeParams} />
       )}
     </div>
   );
@@ -94,7 +94,7 @@ type BodyProps = {
   library: HubLibrary;
   slug: string;
   hub: Awaited<ReturnType<typeof loadCreatorHub>>;
-  hero: { id: string; slug: string; name: string };
+  hero: { id: string; slug: string; name: string; avatar_url: string | null; is_fictional: boolean };
   recipeParams: ReturnType<typeof parseRecipeCatalogParams> | null;
 };
 
