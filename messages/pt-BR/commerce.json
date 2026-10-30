@@ -22,29 +22,25 @@
     "fulfillment_not_found": "Remessa não encontrada."
   },
   "shop": {
-    "title": "Loja de demonstração",
-    "description": "Produtos da marca Ultra.e Life e de fornecedores fictícios, ligados às receitas, treinos e rotinas do app. As compras aqui são simuladas.",
-    "searchLabel": "Buscar produtos",
-    "searchPlaceholder": "Buscar por nome ou descrição",
+    "title": "Comprar",
+    "description": "Produtos da marca Ultra.e Life e de parceiros, ligados às receitas, treinos e rotinas do app. As compras aqui são simuladas.",
     "filtersLabel": "Filtros da loja",
-    "categoriesLabel": "Categorias",
-    "categoryAll": "Todas",
-    "sellerLabel": "Fornecedor",
-    "sellerAll": "Todos os fornecedores",
-    "sortLabel": "Ordenar por",
-    "sort": {
-      "newest": "Mais recentes",
-      "priceAsc": "Menor preço",
-      "priceDesc": "Maior preço",
-      "title": "Nome (A–Z)"
-    },
-    "results": "{n, plural, =1 {# produto} other {# produtos}}",
-    "empty": "Nenhum produto encontrado",
-    "emptyDescription": "Ajuste a busca ou os filtros para ver outros produtos de demonstração.",
-    "clearFilters": "Limpar filtros",
-    "unavailableHint": "Produtos esmaecidos estão indisponíveis e não podem ser adicionados ao carrinho de teste.",
+    "all": "Tudo",
+    "productsLabel": "Produtos",
+    "empty": "Nenhum produto por aqui",
+    "emptyDescription": "Nenhum produto de demonstração está disponível agora. Volte mais tarde.",
+    "emptyFilterDescription": "Este filtro ainda não tem produtos disponíveis.",
+    "clearFilters": "Ver todos os produtos",
     "cartLink": "Carrinho de teste",
-    "ordersLink": "Meus pedidos de teste"
+    "ordersLink": "Meus pedidos de teste",
+    "grid": {
+      "count": "Produtos carregados: {count}.",
+      "end": "Você chegou ao fim dos produtos.",
+      "loadMore": "Carregar mais",
+      "loading": "Carregando…",
+      "loadMoreError": "Não foi possível carregar mais produtos.",
+      "retry": "Tentar de novo"
+    }
   },
   "product": {
     "backToShop": "Loja",

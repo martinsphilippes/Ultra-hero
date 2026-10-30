@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Suspense } from "react";
 import { PackageSearch, ReceiptText, ShoppingBag } from "lucide-react";
-import { ProductCard } from "@/components/catalog";
-import { DemoNotice } from "@/components/commerce/DemoNotice";
-import { ShopFilters } from "@/components/commerce/ShopFilters";
-import { SHOP_SORTS, type ShopSort } from "@/components/commerce/shop-sorts";
+import { ShopGrid } from "@/components/commerce/shop/ShopGrid";
+import { ShopTile } from "@/components/commerce/shop/ShopTile";
+import { ChipLink } from "@/components/discover/ChipLink";
 import { Button, DemoBadge, EmptyState, PageHeader } from "@/components/ui";
 import { getUser } from "@/lib/auth/session";
-import { localizedLabel, type ProductCardData } from "@/lib/catalog/queries";
+import { localizedLabel } from "@/lib/catalog/queries";
+import { SHOP_FILTER_PARAM, shopHref } from "@/lib/shop/filters";
+import { loadShopView } from "@/lib/shop/queries";
 import { createClient } from "@/lib/supabase/server";
 
-// Loja de demonstração: grade de produtos compráveis (publicados, moderação regular, fornecedor
-// ativo). Indisponíveis aparecem esmaecidos. Filtros vivem na URL (Server Component).
+// Aba Comprar (estilo vitrine de marketplace): chips de filtro no topo ("Tudo" + os do admin, 0047)
+// e grade de produtos, 3 por linha no celular, com rolagem infinita. O filtro vive na URL
+// (?filtro=slug). Sem a 0047 no banco, só "Tudo" aparece. Compras continuam simuladas.
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("commerce.shop");
@@ -22,61 +23,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const SHOP_SELECT =
-  "id, slug, title, image_url, price_cents_demo, availability, demo_stock, published_at, " +
-  "category:product_categories!inner(code, name), seller:seller_organizations!inner(slug, name, status)";
-
-type ShopProduct = ProductCardData & { demo_stock: number | null; published_at: string | null };
-
-function first(value: string | string[] | undefined): string {
-  return (Array.isArray(value) ? value[0] : value) ?? "";
-}
-
 export default async function ShopPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const q = first(params.q).trim().slice(0, 80);
-  const category = first(params.category).slice(0, 40) || null;
-  const seller = first(params.seller).slice(0, 80) || null;
-  const sortRaw = first(params.sort);
-  const sort: ShopSort = (SHOP_SORTS as string[]).includes(sortRaw) ? (sortRaw as ShopSort) : "newest";
-
   const [t, locale, user, supabase] = await Promise.all([getTranslations("commerce.shop"), getLocale(), getUser(), createClient()]);
-
-  let query = supabase.from("products").select(SHOP_SELECT).eq("status", "published").eq("moderation_status", "clear").eq("seller.status", "active");
-  if (category) query = query.eq("category.code", category);
-  if (seller) query = query.eq("seller.slug", seller);
-  if (q) {
-    // sanitiza para a sintaxe .or() do PostgREST (vírgula/parênteses separam filtros)
-    const safe = q.replace(/[,()%]/g, " ").trim();
-    if (safe) query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
-  }
-  switch (sort) {
-    case "priceAsc":
-      query = query.order("price_cents_demo", { ascending: true });
-      break;
-    case "priceDesc":
-      query = query.order("price_cents_demo", { ascending: false });
-      break;
-    case "title":
-      query = query.order("title", { ascending: true });
-      break;
-    default:
-      query = query.order("published_at", { ascending: false, nullsFirst: false });
-  }
-
-  const [{ data: productsRaw, error }, { data: categoriesRaw }, { data: sellersRaw }] = await Promise.all([
-    query.limit(60),
-    supabase.from("product_categories").select("code, name, sort_order").order("sort_order"),
-    supabase.from("seller_organizations").select("slug, name").eq("status", "active").order("name"),
-  ]);
-  if (error) throw new Error(error.message);
-
-  const products = (productsRaw ?? []) as unknown as ShopProduct[];
-  const categories = (categoriesRaw ?? []).map((c) => ({ code: c.code, label: localizedLabel(c.name, locale) }));
-  const sellers = (sellersRaw ?? []).map((s) => ({ slug: s.slug, name: s.name }));
+  const view = await loadShopView(supabase, params[SHOP_FILTER_PARAM], 0);
+  const selectedSlug = view.selected?.slug ?? null;
+  const selectedName = view.selected ? localizedLabel(view.selected.name, locale) : t("all");
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <PageHeader
         title={t("title")}
         description={t("description")}
@@ -94,38 +49,54 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
           ) : undefined
         }
       />
-      <DemoNotice>{t("unavailableHint")}</DemoNotice>
 
-      {/* useSearchParams no cliente exige Suspense para o prerender */}
-      <Suspense fallback={null}>
-        <ShopFilters categories={categories} sellers={sellers} current={{ q, category, seller, sort }} resultCount={products.length} />
-      </Suspense>
+      {/* Cabeçalho de filtros fixo sob a barra superior; rola na horizontal no celular */}
+      <div
+        role="group"
+        aria-label={t("filtersLabel")}
+        data-testid="shop-filters"
+        className="sticky top-[calc(var(--spacing-topbar)+env(safe-area-inset-top))] z-30 -mx-gutter border-b border-border bg-bg/95 backdrop-blur-md"
+      >
+        <div className="flex gap-2 overflow-x-auto px-gutter py-2 scrollbar-none">
+          <ChipLink href={shopHref(null)} selected={!selectedSlug}>
+            {t("all")}
+          </ChipLink>
+          {view.filters.map((filter) => (
+            <ChipLink key={filter.id} href={shopHref(filter.slug)} selected={filter.slug === selectedSlug}>
+              {localizedLabel(filter.name, locale)}
+            </ChipLink>
+          ))}
+        </div>
+      </div>
 
-      {products.length === 0 ? (
+      {view.tiles.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState
             icon={<PackageSearch />}
             title={t("empty")}
-            description={t("emptyDescription")}
+            description={selectedSlug ? t("emptyFilterDescription") : t("emptyDescription")}
             action={
-              <Button asChild variant="secondary">
-                <Link href="/shop">{t("clearFilters")}</Link>
-              </Button>
+              selectedSlug ? (
+                <Button asChild variant="secondary">
+                  <Link href="/shop">{t("clearFilters")}</Link>
+                </Button>
+              ) : undefined
             }
           />
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label={t("title")}>
-          {products.map((product, index) => {
-            const outOfStock = product.demo_stock !== null && product.demo_stock <= 0;
-            const card: ProductCardData = outOfStock ? { ...product, availability: "unavailable" } : product;
-            return (
-              <li key={product.id}>
-                <ProductCard product={card} priority={index < 3} />
-              </li>
-            );
-          })}
-        </ul>
+        <ShopGrid
+          key={selectedSlug ?? ""}
+          filtro={selectedSlug}
+          label={`${t("productsLabel")} · ${selectedName}`}
+          nextOffset={view.nextOffset}
+          hasMore={view.hasMore}
+          initialCount={view.tiles.length}
+        >
+          {view.tiles.map((product, index) => (
+            <ShopTile key={product.id} product={product} priority={index < 3} />
+          ))}
+        </ShopGrid>
       )}
     </div>
   );

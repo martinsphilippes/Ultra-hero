@@ -3,6 +3,7 @@
     "home": "Inicio",
     "explore": "Explorar",
     "personalities": "Hero",
+    "shop": "Comprar",
     "profile": "Perfil"
   },
   "portals": {
@@ -22,6 +23,7 @@
     "featured": "Destacados",
     "translations": "Traducciones",
     "products": "Productos",
+    "shopFilters": "Filtros de la tienda",
     "links": "Vínculos",
     "orders": "Pedidos",
     "feedback": "Comentarios",

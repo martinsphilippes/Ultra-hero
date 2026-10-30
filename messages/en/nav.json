@@ -3,6 +3,7 @@
     "home": "Home",
     "explore": "Explore",
     "personalities": "Hero",
+    "shop": "Shop",
     "profile": "Profile"
   },
   "portals": {
@@ -22,6 +23,7 @@
     "featured": "Featured",
     "translations": "Translations",
     "products": "Products",
+    "shopFilters": "Shop filters",
     "links": "Links",
     "orders": "Orders",
     "feedback": "Feedback",

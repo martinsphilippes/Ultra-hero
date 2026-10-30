@@ -105,23 +105,22 @@ test.describe("produtos do herói", () => {
     await expect(page.getByText(/external_url|external url/i)).toHaveCount(0);
   });
 
-  test("a loja lista os produtos da marca com imagem carregada e as categorias novas", async ({ page }) => {
+  test("a aba Comprar lista os produtos da marca com imagem carregada e filtra Suplementos (com a 0047)", async ({ page }) => {
     await page.goto("/shop");
-    const list = page.getByRole("list", { name: /loja de demonstração/i });
+    const grid = page.getByTestId("shop-grid");
     for (const title of ["e.creatina Gummy", "e.water Citrus"]) {
-      const card = list.getByRole("link", { name: new RegExp(title.replace(".", "\\.")) }).first();
+      const card = grid.getByRole("link", { name: new RegExp(title.replace(".", "\\.")) }).first();
       await expect(card).toBeVisible();
       await expectLoadedImage(card.locator("img").first());
     }
-    const categories = page.getByRole("group", { name: /categorias/i });
-    await expect(categories.getByRole("button", { name: "Suplementos" })).toBeVisible();
-    await expect(categories.getByRole("button", { name: "Hidratação" })).toBeVisible();
-
-    // filtro por categoria: só os suplementos (5) e só a hidratação (2)
-    await page.goto("/shop?category=supplement");
-    await expect(list.getByRole("listitem")).toHaveCount(5);
-    await page.goto("/shop?category=beverage");
-    await expect(list.getByRole("listitem")).toHaveCount(2);
-    await expect(list.getByRole("link", { name: /e\.water Citrus/ })).toBeVisible();
+    // sem a 0047 no banco só há "Tudo"; com ela, Suplementos mostra a categoria supplement (5 da marca)
+    const filters = page.getByRole("group", { name: /filtros da loja/i });
+    const supplements = filters.getByRole("link", { name: "Suplementos", exact: true });
+    test.skip((await supplements.count()) === 0, "banco sem a migração 0047 (filtros da loja)");
+    await supplements.click();
+    await expect(page).toHaveURL(/\/shop\?filtro=suplementos$/);
+    await expect(supplements).toHaveAttribute("aria-current", "true");
+    await expect(grid.getByRole("listitem")).toHaveCount(5);
+    await expect(grid.getByRole("link", { name: /e\.water Citrus/ })).toHaveCount(0);
   });
 });

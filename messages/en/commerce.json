@@ -22,29 +22,25 @@
     "fulfillment_not_found": "Shipment not found."
   },
   "shop": {
-    "title": "Demo store",
-    "description": "Products from the Ultra.e Life brand and from fictional sellers, linked to the app's recipes, workouts and routines. Purchases here are simulated.",
-    "searchLabel": "Search products",
-    "searchPlaceholder": "Search by name or description",
+    "title": "Shop",
+    "description": "Products from the Ultra.e Life brand and partners, linked to the app's recipes, workouts and routines. Purchases here are simulated.",
     "filtersLabel": "Store filters",
-    "categoriesLabel": "Categories",
-    "categoryAll": "All",
-    "sellerLabel": "Seller",
-    "sellerAll": "All sellers",
-    "sortLabel": "Sort by",
-    "sort": {
-      "newest": "Newest",
-      "priceAsc": "Lowest price",
-      "priceDesc": "Highest price",
-      "title": "Name (A–Z)"
-    },
-    "results": "{n, plural, =1 {# product} other {# products}}",
-    "empty": "No products found",
-    "emptyDescription": "Adjust the search or filters to see other demo products.",
-    "clearFilters": "Clear filters",
-    "unavailableHint": "Greyed-out products are unavailable and cannot be added to the test cart.",
+    "all": "All",
+    "productsLabel": "Products",
+    "empty": "No products here",
+    "emptyDescription": "No demo products are available right now. Come back later.",
+    "emptyFilterDescription": "This filter has no available products yet.",
+    "clearFilters": "See all products",
     "cartLink": "Test cart",
-    "ordersLink": "My test orders"
+    "ordersLink": "My test orders",
+    "grid": {
+      "count": "Products loaded: {count}.",
+      "end": "You've reached the end of the products.",
+      "loadMore": "Load more",
+      "loading": "Loading…",
+      "loadMoreError": "Couldn't load more products.",
+      "retry": "Try again"
+    }
   },
   "product": {
     "backToShop": "Store",
