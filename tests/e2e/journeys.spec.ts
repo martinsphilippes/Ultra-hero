@@ -41,7 +41,7 @@ test.describe("visitante", () => {
     const nav = page.getByRole("navigation", { name: "Navegação principal" }).filter({ visible: true }).first();
     const links = nav.getByRole("link");
     await expect(links).toHaveCount(5);
-    await expect(links).toHaveText(["Hero", "Início", "Explorar", "Comprar", "Perfil"]);
+    await expect(links).toHaveText(["Hero", "Social", "Explorar", "Comprar", "Perfil"]);
     await expect(links.nth(3)).toHaveAttribute("href", "/shop");
   });
 
