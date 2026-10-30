@@ -20,14 +20,14 @@ async function expectLoadedImage(img: Locator) {
 }
 
 test.describe("produtos do herói", () => {
-  // rafael-duarte: sem vínculo por conteúdo no seed; a biblioteca existe só pela alocação direta.
+  // ronaldinho-gaucho: sem vínculo por conteúdo no seed; a biblioteca existe só pela alocação direta.
   test("herói só com alocação direta mostra os 7 produtos da marca, em ordem e com imagem", async ({ page }) => {
-    await page.goto("/personalities/rafael-duarte");
+    await page.goto("/personalities/ronaldinho-gaucho");
     await expect(page.getByTestId("hero-stats")).toContainText(/7\s*produtos/i);
     const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
     await expect(button).toHaveText(/7 itens/i);
-    await expect(button).toHaveAttribute("href", "/personalities/rafael-duarte/produtos");
-    await page.goto("/personalities/rafael-duarte/produtos");
+    await expect(button).toHaveAttribute("href", "/personalities/ronaldinho-gaucho/produtos");
+    await page.goto("/personalities/ronaldinho-gaucho/produtos");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos");
 
     const cards = productCards(page);
@@ -46,9 +46,9 @@ test.describe("produtos do herói", () => {
     }
   });
 
-  // helena-vilar: tem vínculos validados por conteúdo (seed 0008) além da alocação direta.
+  // erick-jacquin: tem vínculos validados por conteúdo (seed 0008) além da alocação direta.
   test("herói com as duas origens mostra a marca primeiro e depois os vinculados por conteúdo", async ({ page }) => {
-    await page.goto("/personalities/helena-vilar/produtos");
+    await page.goto("/personalities/erick-jacquin/produtos");
     const cards = productCards(page);
     await expect(cards.first()).toBeVisible();
     const count = await cards.count();
@@ -66,14 +66,14 @@ test.describe("produtos do herói", () => {
     for (let i = 0; i < 7; i += 1) await expect(cards.nth(i).locator('a[href^="/content/"]')).toHaveCount(0);
 
     // cabeçalho do hub e botão da biblioteca contam a união
-    await page.goto("/personalities/helena-vilar");
+    await page.goto("/personalities/erick-jacquin");
     const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
     expect(Number(((await button.textContent()) ?? "").match(/(\d+)/)?.[1])).toBe(count);
     await expect(page.getByTestId("hero-stats")).toContainText(new RegExp(`${count}\\s*produtos`, "i"));
   });
 
   test("cada card da Ultra.e Life tem o link da loja oficial em nova aba, sem tirar o carrinho de teste", async ({ page }) => {
-    await page.goto("/personalities/rafael-duarte/produtos");
+    await page.goto("/personalities/ronaldinho-gaucho/produtos");
     const cards = productCards(page);
     await expect(cards).toHaveCount(7);
     for (const card of await cards.all()) {

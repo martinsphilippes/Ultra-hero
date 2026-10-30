@@ -9,7 +9,7 @@
       "title": "Conta sem perfil de herói",
       "description": "Sua conta tem o papel de herói, mas não está vinculada a um perfil ativo. Aceite o convite recebido por e-mail ou fale com a administração."
     },
-    "help": "Dúvidas? Fale com a equipe editorial do Groscove Ultra. Lembre-se: os heróis desta plataforma são fictícios e o ambiente é de demonstração."
+    "help": "Dúvidas? Fale com a equipe editorial do Groscove Ultra. Lembre-se: o ambiente é de demonstração."
   },
   "dashboard": {
     "title": "Olá, {name}",
@@ -316,7 +316,7 @@
     "headline": "Headline",
     "headlineHint": "Uma frase curta sobre você (até 120 caracteres).",
     "bio": "Bio",
-    "bioHint": "Apresentação em primeira pessoa. Lembre-se: personagem fictício, conteúdo educativo.",
+    "bioHint": "Apresentação em primeira pessoa. Lembre-se: conteúdo educativo.",
     "avatarTitle": "Foto de perfil",
     "avatarShared": "Vale no app e na sua página pública.",
     "avatarReadOnly": "Foto da sua página pública. Enquanto o perfil estiver bloqueado, a foto do app fica em Dados.",
@@ -360,7 +360,7 @@
       }
     },
     "socials": "Redes (texto simples)",
-    "socialsHint": "Exibidas como texto, sem links automáticos. Perfis fictícios: use identificadores ilustrativos.",
+    "socialsHint": "Exibidas como texto, sem links automáticos.",
     "site": "Site",
     "savedDescription": "Seu perfil público foi atualizado.",
     "fixFields": "{count, plural, =1 {Há 1 campo para corrigir.} other {Há # campos para corrigir.}}",

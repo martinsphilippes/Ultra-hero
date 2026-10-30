@@ -302,11 +302,11 @@
     },
     "form": {
       "createTitle": "Novo conteúdo (admin)",
-      "createDescription": "Escolha o herói fictício responsável e preencha os campos. O conteúdo nasce como rascunho.",
+      "createDescription": "Escolha o herói responsável e preencha os campos. O conteúdo nasce como rascunho.",
       "editTitle": "Editar conteúdo",
       "editDescription": "Admin edita qualquer campo, inclusive regra de acesso, módulo e modo de conclusão.",
       "creatorLabel": "Herói responsável",
-      "creatorHint": "Todos os heróis são fictícios.",
+      "creatorHint": "Heróis fictícios aparecem marcados na lista.",
       "creatorRequired": "Escolha um herói antes de salvar.",
       "created": "Conteúdo criado como rascunho",
       "updated": "Conteúdo atualizado"

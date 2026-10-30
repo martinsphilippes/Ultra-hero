@@ -16,6 +16,6 @@ describe("navegação principal", () => {
     expect(isActivePath("/", "/")).toBe(true);
     expect(isActivePath("/explore", "/")).toBe(false);
     expect(isActivePath("/profiles", "/profile")).toBe(false);
-    expect(isActivePath("/personalities/helena-vilar/produtos", "/personalities")).toBe(true);
+    expect(isActivePath("/personalities/erick-jacquin/produtos", "/personalities")).toBe(true);
   });
 });

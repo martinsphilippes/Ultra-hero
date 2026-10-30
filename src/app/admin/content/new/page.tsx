@@ -4,7 +4,7 @@ import { AdminContentEditor } from "@/components/admin-content/AdminContentEdito
 import { PageHeader } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 
-// Criação de conteúdo pelo admin escolhendo a personalidade fictícia responsável.
+// Criação de conteúdo pelo admin escolhendo o herói responsável.
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("adminContent.content.form");

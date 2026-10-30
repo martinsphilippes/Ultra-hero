@@ -6,7 +6,7 @@ import { publicSetting, rpcExists } from "./helpers/supabase";
 
 // Receitas fase 6 (seção 4.5 de docs/decisions/recipes-module.md): jornadas completas contra o banco
 // remoto, com as contas de demonstração. O cookie uh-e2e=1 desliga eventos e registro de interesse.
-//  - chef (Helena): cria a receita "[E2E] …" com ingredientes e etapas, salva, recarrega e confere;
+//  - chef (Érick Jacquin, conta demo do herói): cria a receita "[E2E] …" com ingredientes e etapas, salva, recarrega e confere;
 //  - publicação efêmera (P4, opção a): com a revisão desligada (estado atual) a receita vai ao ar, a conta
 //    free (que já fez a etapa) a encontra no catálogo, a assinatura leva ao perfil do chef e o Modo Cozinha
 //    abre no celular; NO FIM a receita é arquivada e excluída (no afterEach, que roda mesmo quando o tempo
@@ -25,10 +25,10 @@ import { publicSetting, rpcExists } from "./helpers/supabase";
 
 const G1 = { slug: "bowl-de-frango-grelhado-com-legumes-assados-g1", title: "Bowl de frango grelhado com legumes assados" };
 const G3 = { slug: "molho-de-ervas-em-5-minutos-g3", title: "Molho de ervas em 5 minutos" };
-const G2_ID = seedUuid("content:g2"); // receita do Marcos (outro chef)
+const G6_ID = seedUuid("content:g6"); // receita de outro chef (do herói removido na 0044, arquivada)
 const PREFIX = "[E2E] Jornada";
 const LIST_PATH = "/profile/lista-de-compras";
-const CHEF_SLUG = "helena-vilar";
+const CHEF_SLUG = "erick-jacquin";
 
 test.beforeEach(async ({ context, baseURL }) => {
   await context.addCookies([{ name: "uh-e2e", value: "1", url: baseURL! }]);
@@ -141,7 +141,7 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     }
   });
 
-  /** Entra como a Helena, leva sobras antigas e cria a receita desta execução (registrada para o afterEach). */
+  /** Entra como o Érick Jacquin, leva sobras antigas e cria a receita desta execução (registrada para o afterEach). */
   async function startRun(page: Page): Promise<{ id: string; title: string }> {
     await loginAs(page, "creator");
     await purgeTestRecipes(page, PREFIX); // sobras antigas de execuções interrompidas
@@ -204,7 +204,7 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     await expect(card.getByTestId("recipe-signature")).toHaveAttribute("href", `/personalities/${CHEF_SLUG}`);
     await card.getByTestId("recipe-signature").click();
     await expect(free).toHaveURL(new RegExp(`/personalities/${CHEF_SLUG}$`));
-    await expect(free.getByRole("heading", { level: 1 })).toContainText("Helena");
+    await expect(free.getByRole("heading", { level: 1 })).toContainText("Érick Jacquin");
     // a receita nova está entre as assinadas pelo chef
     await free.goto(`/personalities/${CHEF_SLUG}/receitas?q=${encodeURIComponent(title)}`);
     await expect(free.getByTestId("recipe-card").filter({ hasText: title })).toHaveCount(1);
@@ -295,15 +295,15 @@ test.describe("permissões", () => {
 
   test("chef: editar a receita de outro chef dá 404", async ({ page }) => {
     await loginAs(page, "creator");
-    await page.goto(`/creator/recipes/${G2_ID}/edit`);
+    await page.goto(`/creator/recipes/${G6_ID}/edit`);
     await expectNotFound(page);
     await expect(page.getByTestId("recipe-wizard")).toHaveCount(0);
-    await expect(page.getByText("Omelete de forno")).toHaveCount(0);
+    await expect(page.getByText("Sopa de legumes")).toHaveCount(0);
     // a prévia e as versões também não abrem
-    await page.goto(`/creator/recipes/${G2_ID}/preview`);
+    await page.goto(`/creator/recipes/${G6_ID}/preview`);
     await expectNotFound(page);
     await expect(page.getByTestId("recipe-view")).toHaveCount(0);
-    await page.goto(`/creator/recipes/${G2_ID}/versions`);
+    await page.goto(`/creator/recipes/${G6_ID}/versions`);
     await expectNotFound(page);
   });
 

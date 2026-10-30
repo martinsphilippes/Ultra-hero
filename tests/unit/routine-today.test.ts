@@ -3,7 +3,7 @@ import { pickProgramSuggestions, rhythmCounter, type EnrollmentLike } from "@/li
 
 // Itens de rotina manuais saíram do Hoje (F1 do Hoje com relógio): ficam só as sugestões dos programas.
 describe("pickProgramSuggestions", () => {
-  const content = (id: string) => ({ id, slug: `slug-${id}`, title: `Título ${id}`, cover_url: null, creatorName: "Helena" });
+  const content = (id: string) => ({ id, slug: `slug-${id}`, title: `Título ${id}`, cover_url: null, creatorName: "Érick" });
   const enrollment = (id: string, status: EnrollmentLike["status"], contents: Array<[string, boolean]>): EnrollmentLike => ({
     id,
     status,
@@ -21,7 +21,7 @@ describe("pickProgramSuggestions", () => {
     ];
     const picked = pickProgramSuggestions(enrollments, ["a4"]);
     expect(picked.map((s) => s.contentId)).toEqual(["a3", "a2", "b3"]);
-    expect(picked[0]).toMatchObject({ enrollmentId: "A", programName: "Programa A", programSlug: "programa-A", contentSlug: "slug-a3", creatorName: "Helena" });
+    expect(picked[0]).toMatchObject({ enrollmentId: "A", programName: "Programa A", programSlug: "programa-A", contentSlug: "slug-a3", creatorName: "Érick" });
   });
 
   it("ignora inscrições concluídas ou abandonadas, itens sem conteúdo e conteúdo repetido entre programas", () => {

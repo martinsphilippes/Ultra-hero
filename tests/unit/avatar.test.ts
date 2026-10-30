@@ -252,7 +252,7 @@ describe("paths: URLs do bucket público avatars", () => {
     expect(AVATAR_CACHE_SECONDS).toBe(3600);
     expect(safeAvatarSrc(own, BASE)).toBe(own);
     // foto oficial dos heróis demo (foto real) continua
-    expect(safeAvatarSrc("/heroes/rafael-duarte-avatar.webp", BASE)).toBe("/heroes/rafael-duarte-avatar.webp");
+    expect(safeAvatarSrc("/heroes/ronaldinho-gaucho-avatar.webp", BASE)).toBe("/heroes/ronaldinho-gaucho-avatar.webp");
     // ilustração antiga salva no banco = sem foto
     for (const legacy of ["/placeholders/avatar-1.svg", "/placeholders/avatar-8.svg"]) {
       expect(isLegacyAvatarArt(legacy)).toBe(true);
@@ -287,7 +287,7 @@ describe("paths: URLs do bucket público avatars", () => {
     expect(acceptsAvatarChoice(own, own, ids.USER, BASE)).toBe(true);
     expect(acceptsAvatarChoice("/placeholders/avatar-2.svg", null, ids.USER, BASE)).toBe(false);
     expect(acceptsAvatarChoice("/placeholders/avatar-2.svg", "/placeholders/avatar-2.svg", ids.USER, BASE)).toBe(false);
-    expect(acceptsAvatarChoice("/heroes/rafael-duarte-avatar.webp", null, ids.USER, BASE)).toBe(false);
+    expect(acceptsAvatarChoice("/heroes/ronaldinho-gaucho-avatar.webp", null, ids.USER, BASE)).toBe(false);
     expect(acceptsAvatarChoice(own, null, ids.USER, BASE)).toBe(false);
     expect(acceptsAvatarChoice(url(ids.OTHER, `${ids.OLD}.jpg`), url(ids.OTHER, `${ids.OLD}.jpg`), ids.USER, BASE)).toBe(false);
   });
@@ -356,7 +356,7 @@ describe("validações", () => {
 // ---------------------------------------------------------------- envio
 describe("uploadAvatar", () => {
   it("reserva, grava com o service role, aplica e só então apaga a foto anterior da própria pessoa", async () => {
-    state.hero = { slug: "helena-vilar", avatar_url: OLD_URL };
+    state.hero = { slug: "erick-jacquin", avatar_url: OLD_URL };
     state.setPhoto = { data: [OLD_URL, "/placeholders/avatar-2.svg", url(ids.OTHER, `${ids.OLD}.webp`)], error: null };
     const result = await uploadAvatar(form(webpVp8(512, 512)));
     expect(result).toEqual({ ok: true, avatarUrl: url(ids.USER, `${ids.NEW}.webp`) });
@@ -372,7 +372,7 @@ describe("uploadAvatar", () => {
       `admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`,
       "admin:update:avatar_uploads",
     ]);
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/creator", "/personalities/helena-vilar"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/creator", "/personalities/erick-jacquin"]));
     // o perfil do herói mora no /profile: o endereço antigo só redireciona
     expect(state.revalidated).not.toContain("/creator/profile");
   });
@@ -440,7 +440,7 @@ describe("removeAvatar", () => {
 
   it("com foto própria limpa as referências, apaga o objeto e marca o envio", async () => {
     state.profile = { avatar_url: OLD_URL };
-    state.hero = { slug: "helena-vilar", avatar_url: OLD_URL };
+    state.hero = { slug: "erick-jacquin", avatar_url: OLD_URL };
     expect(await removeAvatar()).toEqual({ ok: true, avatarUrl: null });
     expect(state.log).toEqual([
       "admin:update:profiles",
@@ -510,7 +510,7 @@ describe("updateProfile sem mexer no avatar", () => {
 
   it("cenário B: avatar ausente mantém a foto do banco (nem lê, nem regrava, nem libera)", async () => {
     state.profile = { avatar_url: OLD_URL };
-    state.hero = { slug: "helena-vilar", avatar_url: OLD_URL };
+    state.hero = { slug: "erick-jacquin", avatar_url: OLD_URL };
     expect(await updateProfile(base)).toEqual({ ok: true });
     expect(state.log).toEqual(["user:update:profiles"]);
     expect(state.writes[0].payload).toEqual({ display_name: "Ana" });
@@ -532,7 +532,7 @@ describe("updateProfile sem mexer no avatar", () => {
     state.profile = { avatar_url: OLD_URL };
     expect(await updateProfile({ ...base, avatarUrl: "/placeholders/avatar-2.svg" })).toEqual({ ok: false, error: "invalid_input" });
     expect(await updateProfile({ ...base, avatarUrl: "/placeholders/cover-training-1.svg" })).toEqual({ ok: false, error: "invalid_input" });
-    expect(await updateProfile({ ...base, avatarUrl: "/heroes/rafael-duarte-avatar.webp" })).toEqual({ ok: false, error: "invalid_input" });
+    expect(await updateProfile({ ...base, avatarUrl: "/heroes/ronaldinho-gaucho-avatar.webp" })).toEqual({ ok: false, error: "invalid_input" });
     expect(await updateProfile({ ...base, avatarUrl: url(ids.OTHER, `${ids.OLD}.jpg`) })).toEqual({ ok: false, error: "invalid_input" });
     expect(await updateProfile({ ...base, avatarUrl: url(ids.USER, `${ids.NEW}.webp`) })).toEqual({ ok: false, error: "invalid_input" });
     expect(await updateProfile({ ...base, displayName: " " })).toEqual({ ok: false, error: "invalid_input" });
@@ -543,10 +543,10 @@ describe("updateProfile sem mexer no avatar", () => {
 // Herói ativo: um avatar só. A tela Dados dele nunca envia o avatar; se um chegar (POST direto, aba
 // antiga), vale também no perfil público, para os dois nunca ficarem diferentes.
 describe("updateProfile com herói ativo (um avatar só)", () => {
-  const base = { displayName: "Helena", locale: "pt-BR", theme: "dark" };
+  const base = { displayName: "Érick", locale: "pt-BR", theme: "dark" };
   const HERO_ID = "c0000000-0000-4000-8000-000000000002";
   beforeEach(() => {
-    state.hero = { id: HERO_ID, slug: "helena-vilar", status: "active", avatar_url: "/placeholders/avatar-1.svg" };
+    state.hero = { id: HERO_ID, slug: "erick-jacquin", status: "active", avatar_url: "/placeholders/avatar-1.svg" };
     state.profile = { avatar_url: "/placeholders/avatar-1.svg" };
   });
 
@@ -560,7 +560,7 @@ describe("updateProfile com herói ativo (um avatar só)", () => {
   it("sem o avatar (o que a tela Dados do herói envia) nenhum dos dois é tocado", async () => {
     expect(await updateProfile(base)).toEqual({ ok: true });
     expect(state.log).toEqual(["user:update:profiles"]);
-    expect(state.writes[0].payload).toEqual({ display_name: "Helena" });
+    expect(state.writes[0].payload).toEqual({ display_name: "Érick" });
   });
 
   it("perfil inativo ou sem o papel: só o app muda (como antes)", async () => {
@@ -581,7 +581,7 @@ describe("updateProfile com herói ativo (um avatar só)", () => {
     expect(state.writes[2].payload).toEqual({ avatar_url: "/placeholders/avatar-1.svg" });
     // só o nome foi salvo: idioma e tema não mudam, e o aviso diz exatamente isso nos 3 idiomas
     expect(state.prefs).toEqual([]);
-    expect(state.writes[0].payload).toMatchObject({ display_name: "Helena" });
+    expect(state.writes[0].payload).toMatchObject({ display_name: "Érick" });
     expect(ptMe.profile.data.errors.avatar_not_saved).toBe("Seu nome foi salvo, mas o avatar, o idioma e o tema não mudaram. Tente de novo.");
     expect(enMe.profile.data.errors.avatar_not_saved).toBe("Your name was saved, but your avatar, language and theme did not change. Please try again.");
     expect(esMe.profile.data.errors.avatar_not_saved).toBe("Tu nombre se guardó, pero el avatar, el idioma y el tema no cambiaron. Inténtalo de nuevo.");
@@ -606,13 +606,13 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     headline: "Treino curto",
     bio: "Bio nova",
     ...(avatar === undefined ? {} : { avatar_url: avatar }),
-    socials: { instagram: "@helena", youtube: "", site: "" },
+    socials: { instagram: "@erick", youtube: "", site: "" },
   });
   const heroUpdates = () => state.writes.filter((w) => w.client === "user" && w.table === "creator_profiles" && w.op === "update");
   const appUpdates = () => state.writes.filter((w) => w.client === "user" && w.table === "profiles" && w.op === "update");
 
   beforeEach(() => {
-    state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "helena-vilar", status: "active", avatar_url: OLD_URL };
+    state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "erick-jacquin", status: "active", avatar_url: OLD_URL };
     state.profile = { avatar_url: OLD_URL };
   });
 
@@ -625,7 +625,7 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     expect(heroUpdates()[0].payload).toMatchObject({ headline: "Treino curto", bio: "Bio nova" });
     // a capa só muda pelo envio próprio (0042): salvar o formulário nunca a regrava
     expect(heroUpdates()[0].payload).not.toHaveProperty("cover_url");
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities/helena-vilar"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities/erick-jacquin"]));
     expect(state.revalidated).not.toContain("/creator/profile");
   });
 
@@ -661,7 +661,7 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     expect(state.log).toEqual(["user:update:creator_profiles", "user:update:profiles"]);
     expect(heroUpdates()[0].payload).toMatchObject({ avatar_url: null });
     expect(appUpdates()[0].payload).toEqual({ avatar_url: null });
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/personalities/helena-vilar"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/personalities/erick-jacquin"]));
   });
 
   it("app com outra foto própria (dados antigos): tirar a foto apaga as duas e os dois lados ficam sem foto", async () => {
@@ -680,7 +680,7 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
   });
 
   it("ilustração (qualquer uma), capa desenhada, foto oficial ou caminho solto são recusados sem gravar nada", async () => {
-    for (const bad of ["/placeholders/avatar-1.svg", "/placeholders/avatar-4.svg", "/placeholders/cover-training-1.svg", "/heroes/rafael-duarte-avatar.webp", "/placeholders/avatar-9.svg", "/qualquer.png"]) {
+    for (const bad of ["/placeholders/avatar-1.svg", "/placeholders/avatar-4.svg", "/placeholders/cover-training-1.svg", "/heroes/ronaldinho-gaucho-avatar.webp", "/placeholders/avatar-9.svg", "/qualquer.png"]) {
       expect(await updateCreatorProfile(values(bad))).toEqual({ ok: false, error: "invalid_input" });
     }
     expect(state.writes).toEqual([]);
@@ -740,7 +740,7 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
 
   it("formulário: nunca envia avatar nem capa (foto e capa têm envio próprio)", () => {
     const form = { ...values(), avatar_url: "/placeholders/avatar-1.svg", cover_url: "/placeholders/cover-training-1.svg" };
-    expect(creatorProfilePayload(form)).toEqual({ headline: "Treino curto", bio: "Bio nova", socials: { instagram: "@helena", youtube: "", site: "" } });
+    expect(creatorProfilePayload(form)).toEqual({ headline: "Treino curto", bio: "Bio nova", socials: { instagram: "@erick", youtube: "", site: "" } });
   });
 
   it("esquema: avatar ausente = inalterado; presente só vazio ou foto do bucket; capa nem entra", () => {
@@ -759,7 +759,7 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
 describe("deleteAccount com foto", () => {
   it("a foto sai do Storage e do perfil público só depois da exclusão confirmada", async () => {
     state.profile = { avatar_url: OLD_URL };
-    state.hero = { slug: "helena-vilar", avatar_url: OLD_URL };
+    state.hero = { slug: "erick-jacquin", avatar_url: OLD_URL };
     expect(await deleteAccount({ confirmation: DELETE_CONFIRM_WORD })).toEqual({ ok: true });
     expect(state.log).toEqual([
       "user:rpc:delete_my_account",
@@ -833,8 +833,8 @@ describe("cleanupAvatarUploads", () => {
 describe("admin: foto do herói", () => {
   const CREATOR = "c0000000-0000-4000-8000-000000000001";
   const values = (): CreatorFormValues => ({
-    name: "Rafael Duarte",
-    slug: "rafael-duarte",
+    name: "Ronaldinho Gaúcho",
+    slug: "ronaldinho-gaucho",
     headline: "",
     bio: "Nova bio",
     pillars: ["training"],
@@ -850,7 +850,7 @@ describe("admin: foto do herói", () => {
   const creatorUpdates = () => state.writes.filter((w) => w.table === "creator_profiles" && w.op === "update");
 
   it("remover a foto do próprio usuário ligado: referências, objeto e envio", async () => {
-    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: ids.USER, avatar_url: OLD_URL };
+    state.hero = { id: CREATOR, slug: "ronaldinho-gaucho", user_id: ids.USER, avatar_url: OLD_URL };
     expect(await adminRemoveCreatorPhoto({ id: CREATOR }, "foto imprópria")).toMatchObject({ ok: true });
     expect(state.log).toEqual([
       "admin:update:profiles",
@@ -863,7 +863,7 @@ describe("admin: foto do herói", () => {
 
   it("herói apontando para a foto de outra pessoa: só a referência dele sai; o objeto e o perfil do dono ficam", async () => {
     const othersPhoto = url(ids.OTHER, `${ids.OLD}.webp`);
-    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: ids.USER, avatar_url: othersPhoto };
+    state.hero = { id: CREATOR, slug: "ronaldinho-gaucho", user_id: ids.USER, avatar_url: othersPhoto };
     expect(await adminRemoveCreatorPhoto({ id: CREATOR }, "foto de terceiro")).toMatchObject({ ok: true });
     expect(state.log).toEqual(["admin:update:creator_profiles", "admin:rpc:audit_log"]);
     expect(creatorUpdates()[0].payload).toEqual({ avatar_url: null });
@@ -874,7 +874,7 @@ describe("admin: foto do herói", () => {
     // herói sem usuário (conta excluída): também só a referência; a limpeza diária apaga o objeto
     state.log = [];
     state.writes = [];
-    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: null, avatar_url: OLD_URL };
+    state.hero = { id: CREATOR, slug: "ronaldinho-gaucho", user_id: null, avatar_url: OLD_URL };
     expect(await adminRemoveCreatorPhoto({ id: CREATOR }, "conta excluída")).toMatchObject({ ok: true });
     expect(state.log.some((l) => l.includes("storage"))).toBe(false);
   });
@@ -890,14 +890,14 @@ describe("admin: foto do herói", () => {
   it("criar herói: nasce sem foto e sem capa (nada de ilustração)", async () => {
     await createCreator({ ...values(), avatarUrl: "/placeholders/avatar-1.svg", coverUrl: "/placeholders/cover-routine-1.svg" } as CreatorFormValues);
     const insert = state.writes.find((w) => w.table === "creator_profiles" && w.op === "insert");
-    expect(insert?.payload).toMatchObject({ name: "Rafael Duarte" });
+    expect(insert?.payload).toMatchObject({ name: "Ronaldinho Gaúcho" });
     expect(insert?.payload).not.toHaveProperty("avatar_url");
     expect(insert?.payload).not.toHaveProperty("cover_url");
   });
 
   it("remover a capa enviada pelo próprio usuário ligado: referência, objeto, envio e auditoria", async () => {
     const cover = coverUrl(ids.USER, `${ids.OLD}.webp`);
-    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: ids.USER, avatar_url: null, cover_url: cover };
+    state.hero = { id: CREATOR, slug: "ronaldinho-gaucho", user_id: ids.USER, avatar_url: null, cover_url: cover };
     expect(await adminRemoveCreatorCover({ id: CREATOR }, "capa imprópria")).toMatchObject({ ok: true });
     expect(state.log).toEqual([
       "admin:update:creator_profiles",
@@ -910,11 +910,11 @@ describe("admin: foto do herói", () => {
 
   it("capa de outra pessoa ou capa que não é foto enviada: só a referência sai (ou nada)", async () => {
     const others = coverUrl(ids.OTHER, `${ids.OLD}.webp`);
-    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: ids.USER, avatar_url: null, cover_url: others };
+    state.hero = { id: CREATOR, slug: "ronaldinho-gaucho", user_id: ids.USER, avatar_url: null, cover_url: others };
     expect(await adminRemoveCreatorCover({ id: CREATOR }, "capa de terceiro")).toMatchObject({ ok: true });
     expect(state.log).toEqual(["admin:update:creator_profiles", "admin:rpc:audit_log"]);
     state.log = [];
-    state.hero = { id: CREATOR, slug: "rafael-duarte", user_id: ids.USER, avatar_url: null, cover_url: "/heroes/rafael-duarte-cover.webp" };
+    state.hero = { id: CREATOR, slug: "ronaldinho-gaucho", user_id: ids.USER, avatar_url: null, cover_url: "/heroes/ronaldinho-gaucho-cover.webp" };
     expect(await adminRemoveCreatorCover({ id: CREATOR }, "capa oficial")).toMatchObject({ ok: false });
     expect(state.log).toEqual([]);
   });
@@ -934,7 +934,7 @@ describe("capa do herói: caminhos e exibição", () => {
   it("só foto real aparece: capa desenhada antiga, vazio e URL de outro host viram superfície lisa (null)", () => {
     const own = coverUrl(ids.USER, `${ids.NEW}.webp`);
     expect(safeCoverSrc(own, BASE)).toBe(own);
-    expect(safeCoverSrc("/heroes/lia-monteiro-cover.webp", BASE)).toBe("/heroes/lia-monteiro-cover.webp");
+    expect(safeCoverSrc("/heroes/anitta-cover.webp", BASE)).toBe("/heroes/anitta-cover.webp");
     for (const none of [
       "/placeholders/cover-routine-1.svg",
       "/placeholders/cover-gastronomy-3.svg",
@@ -971,7 +971,7 @@ describe("uploadHeroCover / removeHeroCover", () => {
   const NEW_COVER = coverUrl(ids.USER, `${ids.NEW}.webp`);
   const OLD_COVER = coverUrl(ids.USER, `${ids.OLD}.jpg`);
   beforeEach(() => {
-    state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "helena-vilar", status: "active", avatar_url: null, cover_url: OLD_COVER };
+    state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "erick-jacquin", status: "active", avatar_url: null, cover_url: OLD_COVER };
   });
 
   it("reserva, grava com o service role, aplica no herói e só então apaga a capa anterior própria", async () => {
@@ -987,13 +987,13 @@ describe("uploadHeroCover / removeHeroCover", () => {
       `admin:storage:remove:hero-covers/${ids.USER}/${ids.OLD}.jpg`,
       "admin:update:hero_cover_uploads",
     ]);
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities", "/personalities/helena-vilar"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities", "/personalities/erick-jacquin"]));
     // nada do avatar é tocado
     expect(state.log.some((l) => l.includes("avatar"))).toBe(false);
   });
 
   it("capa anterior oficial, desenhada ou de outra pessoa não é apagada do Storage", async () => {
-    for (const previous of ["/heroes/helena-vilar-cover.webp", "/placeholders/cover-gastronomy-1.svg", coverUrl(ids.OTHER, `${ids.OLD}.webp`), null]) {
+    for (const previous of ["/heroes/erick-jacquin-cover.webp", "/placeholders/cover-gastronomy-1.svg", coverUrl(ids.OTHER, `${ids.OLD}.webp`), null]) {
       state.log = [];
       state.coverSet = { data: previous, error: null };
       expect(await uploadHeroCover(form(webpVp8(1600, 900)))).toMatchObject({ ok: true });
@@ -1062,7 +1062,7 @@ describe("uploadHeroCover / removeHeroCover", () => {
       `admin:storage:remove:hero-covers/${ids.USER}/${ids.OLD}.jpg`,
       "admin:update:hero_cover_uploads",
     ]);
-    for (const previous of ["/heroes/helena-vilar-cover.webp", "/placeholders/cover-routine-1.svg", coverUrl(ids.OTHER, `${ids.OLD}.webp`), null]) {
+    for (const previous of ["/heroes/erick-jacquin-cover.webp", "/placeholders/cover-routine-1.svg", coverUrl(ids.OTHER, `${ids.OLD}.webp`), null]) {
       state.log = [];
       state.coverClear = { data: previous, error: null };
       expect(await removeHeroCover()).toEqual({ ok: true, coverUrl: null });
@@ -1074,7 +1074,7 @@ describe("uploadHeroCover / removeHeroCover", () => {
 describe("deleteAccount com capa de herói", () => {
   it("a capa própria sai do Storage junto com a foto, só depois da exclusão confirmada", async () => {
     state.profile = { avatar_url: OLD_URL };
-    state.hero = { slug: "helena-vilar", avatar_url: OLD_URL, cover_url: coverUrl(ids.USER, `${ids.NEW}.webp`) };
+    state.hero = { slug: "erick-jacquin", avatar_url: OLD_URL, cover_url: coverUrl(ids.USER, `${ids.NEW}.webp`) };
     expect(await deleteAccount({ confirmation: DELETE_CONFIRM_WORD })).toEqual({ ok: true });
     expect(state.log).toEqual([
       "user:rpc:delete_my_account",
@@ -1089,11 +1089,11 @@ describe("deleteAccount com capa de herói", () => {
   });
 
   it("capa oficial ou de outra pessoa não é apagada; exclusão recusada não apaga nada", async () => {
-    state.hero = { slug: "helena-vilar", avatar_url: null, cover_url: "/heroes/helena-vilar-cover.webp" };
+    state.hero = { slug: "erick-jacquin", avatar_url: null, cover_url: "/heroes/erick-jacquin-cover.webp" };
     expect(await deleteAccount({ confirmation: DELETE_CONFIRM_WORD })).toEqual({ ok: true });
     expect(state.log).toEqual(["user:rpc:delete_my_account"]);
     state.log = [];
-    state.hero = { slug: "helena-vilar", avatar_url: null, cover_url: coverUrl(ids.USER, `${ids.NEW}.webp`) };
+    state.hero = { slug: "erick-jacquin", avatar_url: null, cover_url: coverUrl(ids.USER, `${ids.NEW}.webp`) };
     state.deleteAccountError = { message: "retention_exception_active" };
     expect(await deleteAccount({ confirmation: DELETE_CONFIRM_WORD })).toMatchObject({ ok: false });
     expect(state.log).toEqual(["user:rpc:delete_my_account"]);

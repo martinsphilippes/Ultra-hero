@@ -8,7 +8,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("createTitle") };
 }
 
-// Nova personalidade (sempre fictícia por padrão).
+// Nova personalidade (fictícia por padrão; pessoa real exige direitos autorizados).
 export default async function NewCreatorPage() {
   const [t, tn] = await Promise.all([getTranslations("adminOps.creators"), getTranslations("nav")]);
   return (

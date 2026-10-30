@@ -1,6 +1,6 @@
 # Groscove Ultra (antes Ultra Hero) — POC
 
-PWA mobile-first de conteúdo, hábitos, treino, nutrição e gastronomia com **personalidades fictícias**, programas, evolução, **assinaturas simuladas** e **comércio demonstrativo**. Nenhum pagamento, entrega ou parceria real.
+PWA mobile-first de conteúdo, hábitos, treino, nutrição e gastronomia com **seis heróis reais** (Neymar, Gabriel Medina, João Fonseca, Anitta, Ronaldinho Gaúcho e Érick Jacquin; uso de nome e imagem sob contrato informado pelo responsável), programas, evolução, **assinaturas simuladas** e **comércio demonstrativo**. Nenhum pagamento ou entrega real.
 
 Stack aprovada: **Next.js 15 + TypeScript** · **Supabase** (Postgres/RLS/Auth/Storage) · **Vercel**. Idiomas: pt-BR (padrão), en, es.
 
@@ -39,7 +39,7 @@ Na interface, o papel `creator` (quem assina conteúdos e programas) aparece com
 
 ### Banco de dados
 
-Migrations versionadas em `supabase/migrations/0001…0039*.sql` (38 arquivos; não há 0034; aplicar **em ordem**). Em produção (23/10/2026): todas, nada pendente — 39 registros em `supabase_migrations.schema_migrations` (o remoto sempre teve 1 registro a mais que os arquivos). As últimas: `0036_recipe_delete_archived.sql` (o herói exclui de vez a receita que ele arquivou; `docs/decisions/recipes-module.md`, seção "Fase 6"), `0037_streak_contents_only.sql` (a sequência conta só conteúdos concluídos e entradas em programas; Lembretes não contam) e `0038_health_foundation.sql` + `0039_health_ingest.sql` (schema `health` do relógio real, fora da API, aplicadas vazias; ver `WEARABLES_REAL_ENABLED` abaixo). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`).
+Migrations versionadas em `supabase/migrations/0001…0039*.sql` (38 arquivos; não há 0034; aplicar **em ordem**). Em produção (23/10/2026): todas, nada pendente — 39 registros em `supabase_migrations.schema_migrations` (o remoto sempre teve 1 registro a mais que os arquivos). As últimas: `0036_recipe_delete_archived.sql` (o herói exclui de vez a receita que ele arquivou; `docs/decisions/recipes-module.md`, seção "Fase 6"), `0037_streak_contents_only.sql` (a sequência conta só conteúdos concluídos e entradas em programas; Lembretes não contam) e `0038_health_foundation.sql` + `0039_health_ingest.sql` (schema `health` do relógio real, fora da API, aplicadas vazias; ver `WEARABLES_REAL_ENABLED` abaixo). Seed determinístico e reexecutável em `0008_seed.sql` (8 personalidades fictícias, 40 conteúdos, 8 programas, 24 produtos, 4 operações, destinos fictícios, planos/módulos, conquistas, interesses). A `0035_program_shelves_seed.sql` acrescenta 16 programas de demonstração (24 no total, 3 por herói; ver `docs/decisions/program-shelves.md`). A `0044_real_heroes.sql` troca os personagens pelas seis pessoas reais (mesmas linhas, slugs novos) e tira do app, de forma reversível, os dois personagens restantes (perfil suspenso, conteúdo arquivado ou passado ao dono do programa que o usava; auditoria `hero.removed`): no fim ficam 6 heróis, 38 conteúdos no ar e 18 programas publicados. Fotos e licenças em `docs/photo-credits.md`.
 
 Aplicar no projeto Supabase remoto:
 
@@ -108,4 +108,4 @@ Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**
 
 ## Licenças e direitos
 
-Nenhuma imagem, nome ou marca real. Placeholders são SVGs próprios. Personalidades, fornecedores e produtos são fictícios e identificados como tal.
+Os heróis são as seis pessoas reais citadas acima (fotos de licença livre, créditos em `docs/photo-credits.md`). Fornecedores de exemplo e destinos são fictícios e identificados como tal.

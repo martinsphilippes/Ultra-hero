@@ -3,6 +3,16 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+// 0044: slug antigo do personagem -> slug da pessoa real (os dois heróis removidos dão 404)
+const HERO_SLUG_REDIRECTS: Record<string, string> = {
+  "tiago-albuquerque": "neymar",
+  "davi-nascimento": "gabriel-medina",
+  "camila-sato": "joao-fonseca",
+  "lia-monteiro": "anitta",
+  "rafael-duarte": "ronaldinho-gaucho",
+  "helena-vilar": "erick-jacquin",
+};
+
 const nextConfig: NextConfig = {
   images: {
     // Só as fotos de perfil (0031), as capas de herói (0042) e as fotos de post (0043) dos buckets
@@ -25,11 +35,16 @@ const nextConfig: NextConfig = {
     "/**/*": ["./messages/**/*"],
   },
   // A listagem de programas vive na aba "Programas" do Explorar; evita 404 em links diretos.
+  // Links antigos dos heróis (0044: personagens viraram as pessoas reais) levam ao slug novo.
   async redirects() {
     return [
       { source: "/programs", destination: "/explore?tab=programas", permanent: true },
       // abrir o app (endereço principal, ícone do celular) entra direto na aba Hero; o feed mora em /inicio
       { source: "/", destination: "/personalities", permanent: false },
+      ...Object.entries(HERO_SLUG_REDIRECTS).flatMap(([from, to]) => [
+        { source: `/personalities/${from}`, destination: `/personalities/${to}`, permanent: true },
+        { source: `/personalities/${from}/:library`, destination: `/personalities/${to}/:library`, permanent: true },
+      ]),
     ];
   },
   async headers() {

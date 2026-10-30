@@ -302,11 +302,11 @@
     },
     "form": {
       "createTitle": "New content (admin)",
-      "createDescription": "Pick the fictional hero in charge and fill in the fields. The content starts as a draft.",
+      "createDescription": "Pick the hero in charge and fill in the fields. The content starts as a draft.",
       "editTitle": "Edit content",
       "editDescription": "Admin edits any field, including access rule, module and completion mode.",
       "creatorLabel": "Hero in charge",
-      "creatorHint": "All heroes are fictional.",
+      "creatorHint": "Fictional heroes are marked in the list.",
       "creatorRequired": "Pick a hero before saving.",
       "created": "Content created as draft",
       "updated": "Content updated"

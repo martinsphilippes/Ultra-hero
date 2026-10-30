@@ -302,11 +302,11 @@
     },
     "form": {
       "createTitle": "Nuevo contenido (admin)",
-      "createDescription": "Elige el héroe ficticio responsable y completa los campos. El contenido nace como borrador.",
+      "createDescription": "Elige el héroe responsable y completa los campos. El contenido nace como borrador.",
       "editTitle": "Editar contenido",
       "editDescription": "El admin edita cualquier campo, incluida la regla de acceso, el módulo y el modo de finalización.",
       "creatorLabel": "Héroe responsable",
-      "creatorHint": "Todos los héroes son ficticios.",
+      "creatorHint": "Los héroes ficticios aparecen marcados en la lista.",
       "creatorRequired": "Elige un héroe antes de guardar.",
       "created": "Contenido creado como borrador",
       "updated": "Contenido actualizado"

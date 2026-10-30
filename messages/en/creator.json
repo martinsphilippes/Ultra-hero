@@ -9,7 +9,7 @@
       "title": "Account without a hero profile",
       "description": "Your account has the hero role but is not linked to an active profile. Accept the invitation you received by email or contact the administration."
     },
-    "help": "Questions? Contact the Groscove Ultra editorial team. Remember: heroes on this platform are fictional and this is a demo environment."
+    "help": "Questions? Contact the Groscove Ultra editorial team. Remember: this is a demo environment."
   },
   "dashboard": {
     "title": "Hello, {name}",
@@ -316,7 +316,7 @@
     "headline": "Headline",
     "headlineHint": "A short sentence about you (up to 120 characters).",
     "bio": "Bio",
-    "bioHint": "First-person introduction. Remember: fictional character, educational content.",
+    "bioHint": "First-person introduction. Remember: educational content.",
     "avatarTitle": "Profile photo",
     "avatarShared": "Used in the app and on your public page.",
     "avatarReadOnly": "Photo on your public page. While your profile is blocked, your app photo stays in Details.",
@@ -360,7 +360,7 @@
       }
     },
     "socials": "Socials (plain text)",
-    "socialsHint": "Shown as text, without automatic links. Fictional profiles: use illustrative handles.",
+    "socialsHint": "Shown as text, without automatic links.",
     "site": "Website",
     "savedDescription": "Your public profile has been updated.",
     "fixFields": "{count, plural, =1 {There is 1 field to fix.} other {There are # fields to fix.}}",

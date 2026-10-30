@@ -1,5 +1,5 @@
-// SEO da receita: JSON-LD schema.org/Recipe, só com RECIPES_SEO_INDEX ligada (P6: desligada enquanto
-// os chefs forem fictícios). Puro e testável. Regras: duração em ISO 8601, ingredientes e preparo só
+// SEO da receita: JSON-LD schema.org/Recipe, só com RECIPES_SEO_INDEX ligada (P6: desligada por
+// padrão). Puro e testável. Regras: duração em ISO 8601, ingredientes e preparo só
 // para quem pode abrir a receita, `<` escapado no JSON embutido e, quando o herói é fictício, o autor
 // é a Organization "Groscove Ultra" (não se atribui receita a uma pessoa que não existe).
 import type { RecipeDiet } from "./codes";

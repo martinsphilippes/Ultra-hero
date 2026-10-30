@@ -197,7 +197,7 @@ describe("JSON-LD schema.org/Recipe (P6)", () => {
     summary: "Clássico",
     image: "https://ultra.example/media/recipe/x",
     publishedAt: "2026-10-01T00:00:00Z",
-    chef: { name: "Helena Vilar", url: "https://ultra.example/personalities/helena-vilar", fictional: true },
+    chef: { name: "Chef de Exemplo", url: "https://ultra.example/personalities/chef-de-exemplo", fictional: true },
     prepMinutes: 15,
     cookMinutes: 25,
     totalMinutes: 65,
@@ -232,8 +232,8 @@ describe("JSON-LD schema.org/Recipe (P6)", () => {
   });
 
   it("chef real vira Person; com acesso, ingredientes e etapas; nota só com 3 avaliações", () => {
-    const ld = buildRecipeJsonLd({ ...base, chef: { ...base.chef, fictional: false }, ingredients: ["300 g Peito de frango"], steps: ["Asse."], ratingAvg: 4.5, ratingCount: 3 });
-    expect(ld.author).toEqual({ "@type": "Person", name: "Helena Vilar", url: base.chef.url });
+    const ld = buildRecipeJsonLd({ ...base, chef: { name: "Érick Jacquin", url: "https://ultra.example/personalities/erick-jacquin", fictional: false }, ingredients: ["300 g Peito de frango"], steps: ["Asse."], ratingAvg: 4.5, ratingCount: 3 });
+    expect(ld.author).toEqual({ "@type": "Person", name: "Érick Jacquin", url: "https://ultra.example/personalities/erick-jacquin" });
     expect(ld.recipeIngredient).toEqual(["300 g Peito de frango"]);
     expect(ld.recipeInstructions).toEqual([{ "@type": "HowToStep", text: "Asse." }]);
     expect(ld.aggregateRating).toEqual({ "@type": "AggregateRating", ratingValue: 4.5, ratingCount: 3 });

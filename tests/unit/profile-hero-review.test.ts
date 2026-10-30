@@ -68,7 +68,7 @@ const formProps = {
   initial: { headline: "", bio: "", socials: { instagram: "", youtube: "", site: "" } },
   avatarUrl: null as string | null,
   coverUrl: null as string | null,
-  name: "Helena Vilar",
+  name: "Érick Jacquin",
 };
 const photoState = { upload: "not_configured" as const, canRemove: false };
 const coverState = { upload: "not_configured" as const, canRemove: false };
@@ -104,7 +104,7 @@ describe("editor do herói: só foto real, sem ilustrações", () => {
   it("sem foto: as iniciais no círculo (nada de ilustração sorteada pelo nome)", () => {
     const html = render(createElement(CreatorProfileForm, { ...formProps, showPhotoPicker: true, photoState, coverState }));
     const picker = html.slice(html.indexOf('data-testid="avatar-photo"'), html.indexOf('data-testid="hero-cover"'));
-    expect(picker).toContain(">HV</span>");
+    expect(picker).toContain(">ÉJ</span>");
     expect(imgSrcs(picker)).toEqual([]);
   });
 
@@ -113,7 +113,7 @@ describe("editor do herói: só foto real, sem ilustrações", () => {
       createElement(CreatorProfileForm, { ...formProps, avatarUrl: "/placeholders/avatar-4.svg", coverUrl: "/placeholders/cover-training-1.svg", showPhotoPicker: true, photoState, coverState }),
     );
     expect(html).not.toContain("/placeholders/");
-    expect(html).toContain(">HV</span>");
+    expect(html).toContain(">ÉJ</span>");
     expect(html).toContain('data-testid="hero-cover-empty"');
   });
 
@@ -121,16 +121,16 @@ describe("editor do herói: só foto real, sem ilustrações", () => {
     const html = render(
       createElement(CreatorProfileForm, {
         ...formProps,
-        avatarUrl: "/heroes/helena-vilar-avatar.webp",
-        coverUrl: "/heroes/helena-vilar-cover.webp",
+        avatarUrl: "/heroes/erick-jacquin-avatar.webp",
+        coverUrl: "/heroes/erick-jacquin-cover.webp",
         showPhotoPicker: true,
         photoState,
         coverState: { upload: "ready" as const, canRemove: true },
       }),
     );
     const srcs = imgSrcs(html);
-    expect(srcs.some((src) => src.includes("/heroes/helena-vilar-avatar.webp"))).toBe(true);
-    expect(srcs.some((src) => src.includes("/heroes/helena-vilar-cover.webp"))).toBe(true);
+    expect(srcs.some((src) => src.includes("/heroes/erick-jacquin-avatar.webp"))).toBe(true);
+    expect(srcs.some((src) => src.includes("/heroes/erick-jacquin-cover.webp"))).toBe(true);
     expect(html).toContain('data-testid="hero-cover-image"');
     expect(html).not.toContain('data-testid="hero-cover-unavailable"');
     expect(html).toContain(creatorMessages.profile.cover.remove);
@@ -149,14 +149,14 @@ describe("editor do herói: só foto real, sem ilustrações", () => {
 describe("Avatar: só foto real; sem foto, as iniciais", () => {
   it("sem foto, com ilustração antiga ou URL de outro host: iniciais sobre a cor sólida; foto real aparece", () => {
     for (const src of [null, "", "/placeholders/avatar-1.svg", "/placeholders/avatar-6.svg", "https://lh3.googleusercontent.com/a/foto"]) {
-      const html = renderToStaticMarkup(createElement(Avatar, { src, name: "Helena Vilar", size: "xl", alt: "" }));
-      expect(html).toContain(">HV</span>");
+      const html = renderToStaticMarkup(createElement(Avatar, { src, name: "Érick Jacquin", size: "xl", alt: "" }));
+      expect(html).toContain(">ÉJ</span>");
       expect(html).not.toContain("<img");
       expect(html).toContain("bg-surface-elevated");
     }
-    const html = renderToStaticMarkup(createElement(Avatar, { src: "/heroes/helena-vilar-avatar.webp", name: "Helena Vilar", alt: "" }));
+    const html = renderToStaticMarkup(createElement(Avatar, { src: "/heroes/erick-jacquin-avatar.webp", name: "Érick Jacquin", alt: "" }));
     expect(html).toContain("<img");
-    expect(html).not.toContain(">HV</span>");
+    expect(html).not.toContain(">ÉJ</span>");
   });
 
   it("nenhuma tela usa mais ilustração de reserva (cabeçalho, página pública, card, menu)", () => {
@@ -180,7 +180,7 @@ describe("Avatar: só foto real; sem foto, as iniciais", () => {
 });
 
 describe("Dados: foto só pelo envio", () => {
-  const dataProps = { displayName: "Helena", avatarUrl: "/placeholders/avatar-3.svg", locale: "pt-BR" as const, theme: "dark" as const, photoState };
+  const dataProps = { displayName: "Érick", avatarUrl: "/placeholders/avatar-3.svg", locale: "pt-BR" as const, theme: "dark" as const, photoState };
 
   it("herói ativo: sem avatar nem atalho repetido ('Editar perfil' fica só no topo da página)", () => {
     const html = render(createElement(ProfileDataForm, { ...dataProps, avatarInHeroEditor: true }));
@@ -199,12 +199,12 @@ describe("Dados: foto só pelo envio", () => {
     expect(html).not.toContain('name="avatar"');
     expect(html).not.toContain("avatar-illustrations-label");
     expect(html).not.toContain("/placeholders/");
-    expect(html).toContain(">H</span>");
+    expect(html).toContain(">É</span>");
   });
 
   it("salvar Dados nunca envia o avatar (a action mantém o do banco)", () => {
-    expect(profileDataInput({ name: " Helena ", locale: "pt-BR", theme: "dark" })).toEqual({ displayName: "Helena", locale: "pt-BR", theme: "dark" });
-    expect(profileDataInput({ name: "Helena", locale: "pt-BR", theme: "dark" })).not.toHaveProperty("avatarUrl");
+    expect(profileDataInput({ name: " Érick ", locale: "pt-BR", theme: "dark" })).toEqual({ displayName: "Érick", locale: "pt-BR", theme: "dark" });
+    expect(profileDataInput({ name: "Érick", locale: "pt-BR", theme: "dark" })).not.toHaveProperty("avatarUrl");
   });
 });
 
@@ -212,14 +212,14 @@ describe("Editar perfil recolhido", () => {
   it("fechado por padrão: botão com aria-expanded/aria-controls, região escondida com título h2 focável e dois Fechar", () => {
     // arquivo .ts (sem JSX): o tipo das props exige children
     // eslint-disable-next-line react/no-children-prop
-    const html = render(createElement(HeroEditorDisclosure, { publicHref: "/personalities/helena-vilar", children: createElement("p", null, "conteúdo") }));
+    const html = render(createElement(HeroEditorDisclosure, { publicHref: "/personalities/erick-jacquin", children: createElement("p", null, "conteúdo") }));
     expect(html).toMatch(/<button[^>]*aria-expanded="false"[^>]*aria-controls="editar-perfil"[^>]*>.*Editar perfil<\/span><\/button>/);
     expect(html).toMatch(/<section id="editar-perfil" aria-labelledby="hero-editor-title" hidden=""/);
     expect(html).toContain('<h2 id="hero-editor-title" tabindex="-1"');
     expect(count(html, ">Fechar</span></button>")).toBe(2);
     // o link da página pública vem depois do botão (o Portal do herói continua o primeiro link da página)
-    expect(html).toContain('href="/personalities/helena-vilar"');
-    expect(html.indexOf("Editar perfil")).toBeLessThan(html.indexOf('href="/personalities/helena-vilar"'));
+    expect(html).toContain('href="/personalities/erick-jacquin"');
+    expect(html.indexOf("Editar perfil")).toBeLessThan(html.indexOf('href="/personalities/erick-jacquin"'));
   });
 
   it("perfil inativo: sem o link da página pública", () => {
