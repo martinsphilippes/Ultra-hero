@@ -88,8 +88,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         </div>
       </AuthCard>
       {/* Contas de demonstração, uma por tipo de acesso: um toque e a pessoa entra. */}
-      {/* Contas demo de um toque (inclui admin) não vão para o app das lojas; o revisor recebe credenciais */}
-      {nativeApp ? null : <DemoAccess from="login" failed={demo === "error"} />}
+      <DemoAccess from="login" failed={demo === "error"} />
     </div>
   );
 }

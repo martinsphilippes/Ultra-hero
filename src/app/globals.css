@@ -3,6 +3,10 @@
 /* App das lojas (mobile/): <html data-native-app="ios|android">. `native:hidden` tira da casca o que
    lá não existe (comércio e planos simulados); a trava de verdade é a rota, no middleware. */
 @custom-variant native (&:where([data-native-app] *));
+/* listas e favoritos misturam itens: a célula inteira do produto sai, não só o card */
+[data-native-app] [data-kind="product"] {
+  display: none;
+}
 
 /* =============================================================================
    Groscove Ultra · Design system (paleta PROVISÓRIA, não é a marca final)

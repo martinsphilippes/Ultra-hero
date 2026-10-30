@@ -48,7 +48,12 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
   token de identidade; a web chama `signInWithIdToken({ provider: "apple" })`, que grava os cookies
   da sessão como qualquer login. Exige o provedor Apple ligado no Supabase com o Client ID
   `com.gchero.com` (passo em `docs/lojas.md`).
-- **Contas demo de um toque** (inclui admin) não aparecem no app: o revisor recebe credenciais.
+- **Contas demo de um toque** (inclui admin) não aparecem no app, em nenhuma tela, e a ação
+  `signInAsDemo` recusa pedido vindo do app: o revisor recebe credenciais.
+- **Nome na Apple**: a Apple manda o nome só no primeiro login e fora do token; a casca o repassa e
+  a web grava em `full_name` e no `display_name` do perfil.
+- **A ponte só aceita mensagens do próprio site** (no Android ela ouve qualquer quadro, inclusive
+  iframes de terceiros) e o pedido de OAuth só abre `/auth/v1/authorize`.
 
 ## O que o app das lojas não mostra (e por quê)
 
@@ -57,7 +62,14 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
 | `/shop`, `/cart`, `/checkout`, `/orders`, `/profile/plan`, `/personalities/<slug>/produtos` | 307 para a aba Hero (middleware) | compra e assinatura simuladas: Apple 2.2 (app de demonstração) e 3.1.1 (desbloqueio de conteúdo digital fora da compra no app) |
 | Aba Comprar, aba Produtos do Explorar, biblioteca Produtos do herói, cards de produto, produtos relacionados, oferta da lista de compras, linhas Plano e Pedidos do Perfil | ocultos (`native:hidden` / filtro no servidor) | idem; a trava de verdade é a rota |
 | CTA "ver planos" do conteúdo bloqueado | oculto; fica o aviso de conteúdo do plano | Apple 3.1.1: nada de caminho de compra fora do IAP |
-| Banner e selos "Demonstração" | ocultos | Apple 2.2 |
+| Banner e selos "Demonstração" (`DemoBanner`, `DemoBadge`) | ocultos | Apple 2.2 |
+| Acesso rápido às contas demo (inclui admin), em qualquer tela | oculto, e a ação recusa pedido vindo do app | Apple 2.2; o revisor recebe credenciais |
+| Itens de produto em listas e favoritos | célula inteira oculta (`data-kind="product"`) | idem |
+
+**Ainda visíveis no app, pendentes de decisão do responsável**: textos que dizem "simulado",
+"demonstração" ou "fictício" fora dos selos (descrição do conteúdo bloqueado, player simulado,
+dados de demonstração do relógio, "Personagem fictício", trechos da Política de Privacidade e das
+Notificações), o selo de demo do portal e a contagem de produtos no perfil do herói.
 
 Ficam fora deste corte, e são decisão do responsável antes de abrir ao público:
 compra real pelo app (IAP/Play Billing, ex.: RevenueCat); push nativo (exige tabela de tokens e

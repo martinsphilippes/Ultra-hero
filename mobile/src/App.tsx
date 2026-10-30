@@ -27,7 +27,18 @@ const USER_AGENT_SUFFIX = `GCHeroApp/${Constants.expoConfig?.version ?? "0.0.0"}
 const SPLASH_TIMEOUT_MS = 8000;
 
 const OBSIDIAN = "#0B0B0B";
+// fundo do tema claro da web (--uh-bg), atrás das barras do sistema no Android
+const SAND = "#F7F4EF";
 const ORANGE = "#FF5A1F";
+
+function sameOrigin(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    return new URL(url).origin === ORIGIN;
+  } catch {
+    return false;
+  }
+}
 
 export default function App() {
   const webView = useRef<WebView>(null);
@@ -35,6 +46,8 @@ export default function App() {
   const authInFlight = useRef(false);
   const [source, setSource] = useState({ uri: START_URL });
   const [failed, setFailed] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const loaded = useRef(false);
   const strings = useMemo(() => stringsFor(Intl.DateTimeFormat().resolvedOptions().locale), []);
 
   const sendToWeb = useCallback((message: NativeToWeb) => {
@@ -43,8 +56,10 @@ export default function App() {
 
   const open = useCallback((url: string) => {
     setFailed(false);
-    // nova chave no source força a navegação mesmo quando o endereço se repete
-    setSource({ uri: url });
+    // Com a página já carregada, navega por dentro dela: trocar o source pelo mesmo endereço não
+    // recarrega (a WebView compara com o source anterior) e um link para /personalities não faria nada.
+    if (loaded.current && webView.current) webView.current.injectJavaScript(`window.location.assign(${JSON.stringify(url)}); true;`);
+    else setSource({ uri: url });
   }, []);
 
   const hideSplash = useCallback(() => {
@@ -114,7 +129,9 @@ export default function App() {
         sendToWeb({ type: "apple-result", ok: false, reason: "error" });
         return;
       }
-      sendToWeb({ type: "apple-result", ok: true, token: credential.identityToken, nonce });
+      // o nome só vem no primeiro login com a Apple; a web grava no perfil
+      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName].filter(Boolean).join(" ") || undefined;
+      sendToWeb({ type: "apple-result", ok: true, token: credential.identityToken, nonce, ...(fullName ? { fullName } : {}) });
     } catch (error) {
       const canceled = (error as { code?: string }).code === "ERR_REQUEST_CANCELED";
       sendToWeb({ type: "apple-result", ok: false, reason: canceled ? "canceled" : "error" });
@@ -123,8 +140,15 @@ export default function App() {
 
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
+      // Só a página do próprio site fala com a ponte: no Android a ponte aceita qualquer quadro, e um
+      // iframe de terceiro (player) não pode abrir login, folha da Apple ou compartilhar.
+      if (!sameOrigin(event.nativeEvent.url)) return;
       const message = parseWebToNative(event.nativeEvent.data);
       if (!message) return;
+      if (message.type === "theme") {
+        setTheme(message.theme);
+        return;
+      }
       if (message.type === "oauth") void signInWithOAuth(message.url);
       else if (message.type === "apple-signin") void signInWithApple();
       else if (message.type === "share") {
@@ -184,10 +208,22 @@ export default function App() {
       injectedJavaScriptBeforeContentLoaded={BEFORE_CONTENT_SCRIPT}
       onMessage={onMessage}
       onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
-      onOpenWindow={(event) => routeOutside(event.nativeEvent.targetUrl)}
+      // target="_blank": do próprio site (ex.: certificado em PDF, que pede a sessão) abre aqui mesmo;
+      // de fora, no navegador do app. Sem isto o iOS não abre nada.
+      onOpenWindow={(event) => {
+        const url = event.nativeEvent.targetUrl;
+        if (decideNavigation(url, ORIGIN, true) === "load") open(url);
+        else routeOutside(url);
+      }}
       onNavigationStateChange={onNavigationStateChange}
+      // onLoad só no sucesso (onLoadEnd vem também depois de erro): navegar por dentro da página só
+      // quando há página
+      onLoad={() => {
+        loaded.current = true;
+      }}
       onLoadEnd={hideSplash}
       onError={() => {
+        loaded.current = false;
         setFailed(true);
         hideSplash();
       }}
@@ -213,10 +249,10 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
+      <StatusBar style={theme === "light" ? "dark" : "light"} />
       {Platform.OS === "android" ? (
         // A WebView do Android não repassa os recortes da tela ao CSS: a margem fica aqui.
-        <SafeAreaView style={styles.root} edges={["top", "bottom", "left", "right"]}>
+        <SafeAreaView style={[styles.root, theme === "light" && { backgroundColor: SAND }]} edges={["top", "bottom", "left", "right"]}>
           {web}
           {content}
         </SafeAreaView>

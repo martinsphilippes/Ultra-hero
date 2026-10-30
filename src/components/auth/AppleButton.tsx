@@ -33,10 +33,19 @@ export function AppleButton({ next, size = "md" }: AppleButtonProps) {
           setStatus(message.reason === "canceled" ? "idle" : "error");
           return;
         }
-        const { error } = await createClient().auth.signInWithIdToken({ provider: "apple", token: message.token, nonce: message.nonce });
-        if (error) {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.signInWithIdToken({ provider: "apple", token: message.token, nonce: message.nonce });
+        if (error || !data.user) {
           setStatus("error");
           return;
+        }
+        // A Apple manda o nome só no primeiro login e não o põe no token: sem isto, a conta nasce com
+        // o começo do e-mail (muitas vezes o relay privado) como nome. Melhor esforço.
+        if (message.fullName) {
+          await Promise.allSettled([
+            supabase.auth.updateUser({ data: { full_name: message.fullName } }),
+            supabase.from("profiles").update({ display_name: message.fullName }).eq("id", data.user.id),
+          ]);
         }
         window.location.assign(safeNext(next, LOGIN_HOME));
       }),

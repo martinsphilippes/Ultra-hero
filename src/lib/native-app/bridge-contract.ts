@@ -12,14 +12,28 @@ export type WebToNative =
   /** Sign in with Apple nativo (só iOS). */
   | { type: "apple-signin" }
   /** Folha de compartilhar do sistema (a WebView do Android não tem navigator.share). */
-  | { type: "share"; title?: string; text?: string; url?: string };
+  | { type: "share"; title?: string; text?: string; url?: string }
+  /** Tema da página, para a barra de status do sistema acompanhar (claro/escuro). */
+  | { type: "theme"; theme: "light" | "dark" };
 
 export type NativeToWeb =
   | { type: "oauth-result"; ok: false; reason: "canceled" | "error" }
-  | { type: "apple-result"; ok: true; token: string; nonce: string }
+  /** fullName só vem no primeiro login da pessoa com a Apple (a Apple não manda de novo). */
+  | { type: "apple-result"; ok: true; token: string; nonce: string; fullName?: string }
   | { type: "apple-result"; ok: false; reason: "canceled" | "unavailable" | "error" };
 
 const isString = (value: unknown): value is string => typeof value === "string";
+
+// Só a tela de autorização do Supabase Auth abre pelo pedido de OAuth: a casca não vira abridor de
+// endereço qualquer, mesmo que algo na página consiga falar com a ponte.
+function isOAuthAuthorizeUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" && url.pathname === "/auth/v1/authorize";
+  } catch {
+    return false;
+  }
+}
 const optionalString = (value: unknown) => value === undefined || isString(value);
 
 /** Valida o que chega do outro lado; mensagem fora do contrato vira null e é ignorada. */
@@ -34,12 +48,14 @@ export function parseWebToNative(raw: string): WebToNative | null {
   const message = data as Record<string, unknown>;
   switch (message.type) {
     case "oauth":
-      return isString(message.url) && message.url.startsWith("https://") ? { type: "oauth", url: message.url } : null;
+      return isString(message.url) && isOAuthAuthorizeUrl(message.url) ? { type: "oauth", url: message.url } : null;
     case "apple-signin":
       return { type: "apple-signin" };
     case "share":
       if (!optionalString(message.title) || !optionalString(message.text) || !optionalString(message.url)) return null;
       return { type: "share", title: message.title as string | undefined, text: message.text as string | undefined, url: message.url as string | undefined };
+    case "theme":
+      return message.theme === "light" || message.theme === "dark" ? { type: "theme", theme: message.theme } : null;
     default:
       return null;
   }
@@ -52,7 +68,9 @@ export function parseNativeToWeb(detail: unknown): NativeToWeb | null {
     return { type: "oauth-result", ok: false, reason: message.reason };
   }
   if (message.type === "apple-result") {
-    if (message.ok === true && isString(message.token) && isString(message.nonce)) return { type: "apple-result", ok: true, token: message.token, nonce: message.nonce };
+    if (message.ok === true && isString(message.token) && isString(message.nonce) && optionalString(message.fullName)) {
+      return { type: "apple-result", ok: true, token: message.token, nonce: message.nonce, ...(isString(message.fullName) ? { fullName: message.fullName } : {}) };
+    }
     if (message.ok === false && (message.reason === "canceled" || message.reason === "unavailable" || message.reason === "error")) {
       return { type: "apple-result", ok: false, reason: message.reason };
     }

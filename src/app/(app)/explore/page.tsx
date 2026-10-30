@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Bookmark, ChefHat, Layers, LibraryBig, ShoppingBag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
@@ -51,6 +52,7 @@ export default async function ExplorePage({ searchParams }: Props) {
 
   // No app das lojas a aba Produtos não existe (compras simuladas; docs/decisions/app-nas-lojas.md).
   const showProducts = nativeApp === null;
+  if (!showProducts && params.tab === "produtos") redirect("/explore");
   const tabs: { value: ExploreTab; label: string; icon: ReactNode }[] = [
     { value: "conteudos", label: t("tabs.contents"), icon: <LibraryBig /> },
     { value: "receitas", label: t("tabs.recipes"), icon: <ChefHat /> },

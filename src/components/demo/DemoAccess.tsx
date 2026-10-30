@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { signInAsDemo } from "@/app/demo-actions";
 import { DEMO_ACCOUNTS, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
 import { isDemoAccessEnabled } from "@/lib/demo/server";
+import { getNativeApp } from "@/lib/native-app/server";
 import { cn } from "@/lib/utils";
 
 const ICON: Record<DemoKind, typeof User> = { admin: ShieldCheck, creator: Sparkles, seller: Store, premium: UserRound, free: User };
@@ -14,9 +15,10 @@ type Props = {
 };
 
 // Acesso rápido às contas de demonstração, uma por tipo de acesso: um toque e a pessoa entra. Sem a
-// senha configurada no servidor, não aparece nada.
+// senha configurada no servidor, não aparece nada. No app das lojas também não (Apple 2.2; inclui
+// admin): o revisor recebe credenciais (docs/lojas.md §8).
 export async function DemoAccess({ from, failed }: Props) {
-  if (!isDemoAccessEnabled()) return null;
+  if (!isDemoAccessEnabled() || (await getNativeApp())) return null;
   const t = await getTranslations("demo");
 
   const list = (
