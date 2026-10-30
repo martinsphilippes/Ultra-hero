@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Award, BookOpen, Check, ChefHat, CircleSlash, Download, Dumbbell, FileText, Layers, LockKeyhole, LogIn, Play, Repeat } from "lucide-react";
+import { Award, Download, Layers, LogIn } from "lucide-react";
 import { displayTimeZone, ViewTracker } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { AddToListButton, FavoriteButton } from "@/components/library";
@@ -13,16 +13,22 @@ import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
 import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
 import { favoriteStatus, mixedListsSupported } from "@/lib/library/lists-support";
+import { getNativeApp } from "@/lib/native-app/server";
+import { rhythmChips } from "@/lib/programs/concept";
 import { loadProgramConcept } from "@/lib/programs/concept-query";
+import { loadProgramNutrition } from "@/lib/programs/nutrition-query";
+import { cardSearch, conceptScreens, firstSentence, nutritionScreens, nutritionVisible, type ConceptScreenKey } from "@/lib/programs/program-cards";
 import type { Enums, FnReturns, Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
 import { AbandonButton } from "./AbandonButton";
 import { EnrollButton } from "./EnrollButton";
-import { ProgramConcept } from "./ProgramConcept";
+import { ProgramCards, type ProgramCard } from "./ProgramCards";
+import { CONCEPT_SCREEN_TITLE, ConceptScreenBody } from "./ConceptScreen";
+import { NutritionContentList, NutritionProductGrid, ProgramItemList, type ProgramItemView } from "./ProgramScreens";
 
 // Página de programa: cabeçalho da versão (atual ou a versão em que o usuário está inscrito),
 // itens via program_required_items (com substituições), progresso e certificado simbólico.
+// Depois do cabeçalho, 4 cards (Conceito, Prepare-se, Conteúdo, Nutricional) que abrem telas em sequência.
 
 const PROGRAM_SELECT = "id, slug, pillar, cover_url, status, current_version_id, creator:creator_profiles(id, slug, name, headline, avatar_url, is_fictional)";
 
@@ -51,8 +57,6 @@ type Enrollment = { id: string; status: Enums<"enrollment_status">; version_id: 
 type RequiredItem = FnReturns<"program_required_items">[number];
 type ItemContent = ContentCardData & { required_module_id: string | null };
 
-const TYPE_ICON = { video: Play, recipe: ChefHat, workout: Dumbbell, guide: BookOpen, article: FileText } as const;
-
 type Params = { params: Promise<{ slug: string }> };
 
 async function loadProgram(slug: string): Promise<Program | null> {
@@ -72,7 +76,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function ProgramPage({ params }: Params) {
   const { slug } = await params;
-  const [program, user, locale, t, tcat] = await Promise.all([loadProgram(slug), getUser(), getLocale(), getTranslations("consume.program"), getTranslations("catalog")]);
+  const [program, user, locale, t, tcat, nativeApp] = await Promise.all([
+    loadProgram(slug),
+    getUser(),
+    getLocale(),
+    getTranslations("consume.program"),
+    getTranslations("catalog"),
+    getNativeApp(),
+  ]);
   if (!program) notFound();
 
   const supabase = await createClient();
@@ -141,16 +152,92 @@ export default async function ProgramPage({ params }: Params) {
   const progressPct = required.length > 0 ? Math.round((requiredDone / required.length) * 100) : 0;
 
   // Agrupa por seção preservando a ordem de aparição.
-  const sections = new Map<string, RequiredItem[]>();
+  const sections = new Map<string, ProgramItemView[]>();
   for (const item of items) {
     const key = item.section ?? "";
+    const content = contentById.get(item.content_id) ?? null;
+    const progress = content ? progressById.get(content.id) : undefined;
     if (!sections.has(key)) sections.set(key, []);
-    sections.get(key)!.push(item);
+    sections.get(key)!.push({
+      key: `${item.original_content_id}-${item.content_id}`,
+      content,
+      required: item.is_required,
+      done: isDone(item),
+      locked: Boolean(content && content.access_level === "premium" && content.required_module_id && !entitled.has(content.required_module_id)),
+      substituted: Boolean(item.substituted),
+      progress: typeof progress === "number" ? progress : null,
+    });
   }
+
+  // Nutricional: conteúdos de nutrição/receitas do programa e do herói + produtos de comida.
+  const programContents = Array.from(new Set(items.map((i) => i.content_id)))
+    .map((id) => contentById.get(id))
+    .filter((c): c is ItemContent => Boolean(c));
+  const nutrition = await loadProgramNutrition(supabase, { creatorId: program.creator?.id ?? null, programContents, userId: user?.id ?? null, nativeApp: Boolean(nativeApp) });
+  const enrolled = Boolean(enrollment && enrollment.status !== "abandoned");
+  const cards = buildCards();
 
   const tz = displayTimeZone(profile?.timezone);
   const cover = program.cover_url ?? `/placeholders/cover-${program.pillar}-1.svg`;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+
+  // Cards na ordem pedida: Conceito, Prepare-se, Conteúdo e Nutricional (só os que têm telas).
+  function buildCards(): ProgramCard[] {
+    const split = conceptScreens(concept, description, version!.estimated_weeks);
+    const conceptScreen = (key: ConceptScreenKey) => ({
+      id: key,
+      title: t(CONCEPT_SCREEN_TITLE[key]),
+      body: <ConceptScreenBody screen={key} concept={concept} description={description} estimatedWeeks={version!.estimated_weeks} />,
+    });
+    const chips = rhythmChips(version!.estimated_weeks, concept)
+      .map((chip) => (chip.key === "weeks" ? t("weeks", { n: chip.n }) : t(`concept.${chip.key}`, { n: chip.n })))
+      .join(" · ");
+    const nutritionKeys = nutritionScreens({ contents: nutrition.contents.length, products: nutrition.products.length, productsAllowed: nutrition.productsAllowed });
+
+    const list: ProgramCard[] = [
+      { key: "conceito", title: t("cards.concept"), teaser: firstSentence(concept?.idea ?? description), screens: split.conceito.map(conceptScreen) },
+      {
+        key: "prepare-se",
+        title: t("cards.prepare"),
+        teaser: chips || firstSentence(concept?.rhythm.note ?? concept?.care),
+        screens: split["prepare-se"].map(conceptScreen),
+      },
+      {
+        key: "conteudo",
+        title: t("cards.content"),
+        teaser: enrolled ? t("progressText", { done: requiredDone, total: required.length }) : t("items", { n: items.length }),
+        screens: Array.from(sections.entries()).map(([section, list], i) => ({
+          id: `secao-${i + 1}`,
+          title: section || t("sectionDefault"),
+          body: <ProgramItemList items={list} pillar={program!.pillar} note={i === 0 ? t("freeOrder") : undefined} />,
+        })),
+      },
+    ];
+    if (nutritionVisible({ contents: nutrition.contents.length, products: nutrition.products.length, productsAllowed: nutrition.productsAllowed })) {
+      list.push({
+        key: "nutricional",
+        title: t("cards.nutrition"),
+        teaser: t("cards.nutritionTeaser"),
+        screens: nutritionKeys.map((key, i) =>
+          key === "contents"
+            ? { id: key, title: t("cards.nutritionContents"), body: <NutritionContentList contents={nutrition.contents} note={t("cards.nutritionContentsNote")} /> }
+            : {
+                id: key,
+                title: t("cards.nutritionProducts"),
+                body: (
+                  <NutritionProductGrid
+                    products={nutrition.products}
+                    note={t("cards.nutritionProductsNote")}
+                    isLoggedIn={Boolean(user)}
+                    nextPath={`${path}${cardSearch("", { card: "nutricional", screen: i })}`}
+                  />
+                ),
+              },
+        ),
+      });
+    }
+    return list.filter((card) => card.screens.length > 0);
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -257,7 +344,17 @@ export default async function ProgramPage({ params }: Params) {
         </div>
       </header>
 
-      <ProgramConcept concept={concept} description={description} estimatedWeeks={version.estimated_weeks} />
+      {cards.length > 0 ? (
+        <section aria-labelledby="program-cards-title" className="flex flex-col gap-4" data-testid="program-cards-section">
+          <div className="flex flex-col gap-0.5">
+            <h2 id="program-cards-title" className="type-h2 text-fg">
+              {t("cards.title")}
+            </h2>
+            <p className="type-body-sm text-fg-muted">{t("cards.description")}</p>
+          </div>
+          <ProgramCards cards={cards} />
+        </section>
+      ) : null}
 
       {/* Certificado simbólico */}
       {enrollment?.status === "completed" && certificate && (
@@ -289,103 +386,6 @@ export default async function ProgramPage({ params }: Params) {
           </Button>
         </section>
       )}
-
-      {/* Itens por seção */}
-      <section aria-labelledby="program-items" className="flex flex-col gap-6">
-        <div className="flex flex-col gap-0.5">
-          <h2 id="program-items" className="type-h2 text-fg">
-            {t("contents")}
-          </h2>
-          <p className="type-body-sm text-fg-muted">{t("freeOrder")}</p>
-        </div>
-        {Array.from(sections.entries()).map(([section, list]) => (
-          <div key={section || "default"} className="flex flex-col gap-2">
-            <h3 className="type-overline text-accent-text">{section || t("sectionDefault")}</h3>
-            <ol className="flex flex-col gap-2">
-              {list.map((item) => {
-                const content = contentById.get(item.content_id);
-                const done = isDone(item);
-                const locked = Boolean(content && content.access_level === "premium" && content.required_module_id && !entitled.has(content.required_module_id));
-                const Icon = content ? TYPE_ICON[content.type] : CircleSlash;
-                const row = (
-                  <>
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "flex size-8 shrink-0 items-center justify-center rounded-full border",
-                        done ? "border-success bg-success text-white" : "border-border-strong bg-surface text-fg-subtle",
-                      )}
-                    >
-                      {done ? <Check className="size-4" strokeWidth={3} /> : <Icon className="size-4" />}
-                    </span>
-                    <span className="relative hidden h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-surface-elevated sm:block">
-                      <Image
-                        src={content?.cover_url ?? `/placeholders/cover-${program.pillar}-2.svg`}
-                        alt=""
-                        fill
-                        unoptimized
-                        sizes="96px"
-                        className={cn("object-cover", !content && "opacity-40")}
-                      />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className={cn("line-clamp-2 text-sm font-semibold", content ? "text-fg" : "text-fg-muted")}>
-                        {content?.title ?? t("itemUnavailable")}
-                      </span>
-                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-fg-muted">
-                        {content ? (
-                          <>
-                            <span>{tcat(`types.${content.type}`)}</span>
-                            {content.duration_minutes ? <span>· {tcat("minutes", { n: content.duration_minutes })}</span> : null}
-                          </>
-                        ) : (
-                          <span>{t("itemUnavailableHint")}</span>
-                        )}
-                      </span>
-                      <span className="flex flex-wrap gap-1.5">
-                        <Badge variant={item.is_required ? "accent" : "neutral"} size="sm">
-                          {item.is_required ? t("required") : t("optional")}
-                        </Badge>
-                        <Badge variant={done ? "success" : "neutral"} size="sm">
-                          {done ? t("done") : t("pending")}
-                        </Badge>
-                        {locked && content?.required_module ? (
-                          <Badge variant="premium" size="sm" icon={<LockKeyhole />}>
-                            {t("premiumLocked", { module: content.required_module.name })}
-                          </Badge>
-                        ) : null}
-                        {item.substituted ? (
-                          <Badge variant="warning" size="sm" icon={<Repeat />}>
-                            {t("substituted")}
-                          </Badge>
-                        ) : null}
-                        {content && typeof progressById.get(content.id) === "number" && !done && (progressById.get(content.id) ?? 0) > 0 ? (
-                          <span className="type-caption text-fg-muted">{tcat("progress")}: {progressById.get(content.id)}%</span>
-                        ) : null}
-                      </span>
-                    </span>
-                  </>
-                );
-                return (
-                  <li key={`${item.original_content_id}-${item.content_id}`}>
-                    {content ? (
-                      <Link
-                        href={`/content/${content.slug}`}
-                        aria-label={`${content.title} — ${done ? t("done") : t("pending")}`}
-                        className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                      >
-                        {row}
-                      </Link>
-                    ) : (
-                      <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-surface/60 p-3">{row}</div>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        ))}
-      </section>
 
       <section aria-label={t("feedbackTitle")} className="pt-2">
         <FeedbackWidget context={`program:${program.id}`} />

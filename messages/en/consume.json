@@ -229,6 +229,26 @@
       "needs": "What you'll need",
       "needsNothing": "Nothing but yourself",
       "care": "Take care"
+    },
+    "cards": {
+      "title": "Explore the program",
+      "description": "Tap a card to see its screens, one at a time.",
+      "concept": "Concept",
+      "prepare": "Get ready",
+      "content": "Content",
+      "nutrition": "Nutrition",
+      "idea": "The idea",
+      "screens": "{n, plural, =1 {1 screen} other {# screens}}",
+      "position": "Screen {current} of {total}",
+      "back": "Previous",
+      "next": "Next",
+      "done": "Finish",
+      "close": "Close",
+      "nutritionTeaser": "To know what to eat during this same program.",
+      "nutritionContents": "Eat well",
+      "nutritionContentsNote": "Recipes and nutrition content from this program and the same hero.",
+      "nutritionProducts": "Products for this program",
+      "nutritionProductsNote": "Meals, kits, supplements and drinks linked to the program's content or to the hero."
     }
   },
   "certificate": {

@@ -229,6 +229,26 @@
       "needs": "Vas a necesitar",
       "needsNothing": "Nada más que tú",
       "care": "Cuidados"
+    },
+    "cards": {
+      "title": "Explora el programa",
+      "description": "Toca una tarjeta para ver sus pantallas, una a la vez.",
+      "concept": "Concepto",
+      "prepare": "Prepárate",
+      "content": "Contenido",
+      "nutrition": "Nutricional",
+      "idea": "La idea",
+      "screens": "{n, plural, =1 {1 pantalla} other {# pantallas}}",
+      "position": "Pantalla {current} de {total}",
+      "back": "Anterior",
+      "next": "Siguiente",
+      "done": "Terminar",
+      "close": "Cerrar",
+      "nutritionTeaser": "Para saber qué comer en este mismo programa.",
+      "nutritionContents": "Para comer bien",
+      "nutritionContentsNote": "Recetas y contenidos de nutrición de este programa y del mismo héroe.",
+      "nutritionProducts": "Productos para este programa",
+      "nutritionProductsNote": "Comidas, kits, suplementos y bebidas vinculados a los contenidos del programa o al héroe."
     }
   },
   "certificate": {
