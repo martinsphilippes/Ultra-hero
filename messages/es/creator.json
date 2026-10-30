@@ -9,6 +9,10 @@
       "title": "Cuenta sin perfil de héroe",
       "description": "Tu cuenta tiene el rol de héroe, pero no está vinculada a un perfil activo. Acepta la invitación recibida por correo o habla con la administración."
     },
+    "acting_unavailable": {
+      "title": "Publicar como héroe no disponible",
+      "description": "La base de datos de este entorno aún no tiene la actualización que permite a la administración publicar para los héroes (0045)."
+    },
     "help": "¿Dudas? Habla con el equipo editorial de Groscove Ultra. Recuerda: el entorno es de demostración."
   },
   "dashboard": {
@@ -173,6 +177,8 @@
       "unauthenticated": "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
       "forbidden": "Esta cuenta no puede publicar este video.",
       "creator_unavailable": "Tu perfil de héroe no está activo.",
+      "acting_hero_required": "Elige el héroe en \"Publicar como héroe\", en el inicio de la administración, e inténtalo de nuevo.",
+      "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
       "invalid_input": "Revisa los campos e inténtalo de nuevo.",
       "video_not_configured": "El video aún no está configurado: pide al administrador que active Cloudflare Stream.",
       "not_video": "Este archivo no es un video. Graba uno nuevo o elige otro de la galería.",
@@ -374,6 +380,8 @@
     "unauthenticated": "Inicia sesión para continuar.",
     "invalid_input": "Datos inválidos.",
     "creator_unavailable": "Tu perfil de héroe no está activo.",
+    "acting_hero_required": "Elige el héroe en \"Publicar como héroe\", en el inicio de la administración, e inténtalo de nuevo.",
+    "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
     "avatar_not_saved": "Los demás campos se guardaron, pero la foto no cambió. Intenta guardar de nuevo.",
     "not_found": "No encontrado.",
     "content_not_found": "Contenido no encontrado.",

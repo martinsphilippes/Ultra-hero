@@ -11,8 +11,7 @@ import { DemoBadge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import type { Enums } from "@/lib/supabase/helpers";
-import { createClient } from "@/lib/supabase/server";
-import { getMyCreator } from "../_lib/creator";
+import { getManagedCreator } from "../_lib/creator";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("nav");
@@ -32,10 +31,10 @@ type LinkRow = {
 
 // Vínculos conteúdo ↔ produto: sugerir (RLS insert) e acompanhar o status decidido pelo admin.
 export default async function CreatorLinksPage() {
-  const [t, tn, ts, locale, ctx] = await Promise.all([getTranslations("creator"), getTranslations("nav"), getTranslations("adminCommon"), getLocale(), getMyCreator()]);
+  const [t, tn, ts, locale, ctx] = await Promise.all([getTranslations("creator"), getTranslations("nav"), getTranslations("adminCommon"), getLocale(), getManagedCreator("links")]);
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={tn("creator.links")} />;
 
-  const supabase = await createClient();
+  const supabase = ctx.supabase;
   const [{ data: contents }, { data: links, error }] = await Promise.all([
     supabase.from("content").select("id, title, status").eq("creator_id", ctx.creatorId).neq("status", "archived").order("title"),
     supabase

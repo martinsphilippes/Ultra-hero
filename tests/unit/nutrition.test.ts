@@ -35,6 +35,11 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => Object.assign((key: string) => `${namespace}.${key}`, { has: () => true }),
 }));
 vi.mock("@/lib/auth/session", () => ({ getUser: async () => ({ id: ids.USER }), hasRole: async () => true }));
+// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+vi.mock("@/lib/acting-hero/server", () => ({
+  getActingHero: async () => ({ status: "ok", hero: { id: ids.CREATOR, slug: "heroi", name: "Herói", avatar_url: null } }),
+  actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
+}));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     rpc: async (fn: string) => {
@@ -42,7 +47,7 @@ vi.mock("@/lib/supabase/server", () => ({
       return fn === "my_creator_id" ? { data: ids.CREATOR, error: null } : { data: null, error: null };
     },
     from: (table: string) => ({
-      select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: ids.CONTENT, status: "draft", review_status: "none" }, error: null }) }) }),
+      select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: ids.CONTENT, status: "draft", review_status: "none", creator_id: ids.CREATOR }, error: null }) }) }),
       update: (payload: Record<string, unknown>) => {
         server.writes.push({ table, op: "update", payload });
         return { eq: async () => ({ error: null }) };

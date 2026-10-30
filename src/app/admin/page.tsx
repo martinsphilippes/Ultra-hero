@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Suspense } from "react";
+import { HeroPublishing, type PickerHero } from "@/components/admin-ops/HeroPublishing";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { MiniBarChart, type DailyPoint } from "@/components/admin-ops/MiniBarChart";
 import { parsePeriod } from "@/components/admin-ops/period";
@@ -10,6 +11,8 @@ import { PeriodSelector } from "@/components/admin-ops/PeriodSelector";
 import { Badge, Button, DemoBadge, ErrorState, PageHeader, Skeleton, VisuallyHidden } from "@/components/ui";
 import { formatCurrency, formatNumber, formatPercent } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
+import { isHeroCard, type HeroCard } from "@/lib/acting-hero/constants";
+import { actingAvailable, getActingHero } from "@/lib/acting-hero/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,20 +20,41 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: `${t("portals.admin")} · ${t("admin.dashboard")}` };
 }
 
-type SearchParams = Promise<{ days?: string }>;
+type SearchParams = Promise<{ days?: string; heroi?: string }>;
 
-// Painel do admin: KPIs do admin_metrics, mini-gráfico diário, kill switches e pendências.
+// Painel do admin: "Publicar como hero" no topo (só o admin cria e gerencia conteúdo pelos heróis),
+// KPIs do admin_metrics, mini-gráfico diário, kill switches e pendências.
 export default async function AdminHomePage({ searchParams }: { searchParams: SearchParams }) {
-  const { days: rawDays } = await searchParams;
+  const { days: rawDays, heroi } = await searchParams;
   const days = parsePeriod(rawDays);
   const t = await getTranslations("adminOps.dashboard");
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={(await getTranslations("nav"))("portals.admin")} actions={<PeriodSelector value={days} />} />
+      <HeroPublishingSection initialCard={isHeroCard(heroi) ? heroi : null} />
       <Suspense key={days} fallback={<DashboardSkeleton />}>
         <DashboardContent days={Number(days)} />
       </Suspense>
     </div>
+  );
+}
+
+// Heróis ativos para o seletor e o último escolhido (revalidado no banco a cada visita).
+async function HeroPublishingSection({ initialCard }: { initialCard: HeroCard | null }) {
+  const supabase = await createClient();
+  const [{ data: heroes }, acting, available] = await Promise.all([
+    supabase.from("creator_profiles").select("id, slug, name, avatar_url").eq("status", "active").order("name"),
+    getActingHero(),
+    actingAvailable(),
+  ]);
+  return (
+    <HeroPublishing
+      key={initialCard ?? "fechado"}
+      heroes={(heroes ?? []) as PickerHero[]}
+      current={acting.status === "ok" ? acting.hero : null}
+      initialCard={initialCard}
+      available={available && acting.status !== "unavailable"}
+    />
   );
 }
 

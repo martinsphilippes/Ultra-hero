@@ -7,16 +7,16 @@ import { loginAs } from "./helpers/login";
 // Só leitura: nenhum dado é gravado.
 
 test.describe("portais no topo do Perfil", () => {
-  test("herói ativo: sem o cartão Portal do herói (o portal está nos atalhos, com o Painel)", async ({ page }) => {
+  test("herói ativo: sem o cartão Portal do herói; a primeira opção de toque é o Novo post", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/profile");
-    await expect(page.getByTestId("hero-quick-actions")).toBeVisible();
+    await expect(page.getByTestId("hero-new-post")).toBeVisible();
     await expect(page.getByTestId("profile-portal-creator")).toHaveCount(0);
     await expect(page.getByText("Portal do herói", { exact: true })).toHaveCount(0);
-    // primeira opção de toque: os atalhos do portal
-    await expect(page.locator("main a").first()).toHaveAttribute("data-testid", "hero-action-post");
-    await page.getByTestId("hero-action-dashboard").click();
-    await expect(page).toHaveURL(/\/creator$/);
+    // primeira opção de toque: o Novo post (o resto do portal é da administração, 0045)
+    await expect(page.locator("main a").first()).toHaveAttribute("data-testid", "hero-new-post");
+    await page.getByTestId("hero-new-post").click();
+    await expect(page).toHaveURL(/\/creator\/post\/new$/);
   });
 
   test("admin: o portal continua como primeiro link da página, acima do Hoje, e abre o portal", async ({ page }) => {

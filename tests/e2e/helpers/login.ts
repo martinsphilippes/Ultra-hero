@@ -8,14 +8,15 @@ export type DemoKind = "creator" | "admin" | "premium" | "free";
 /** Todo login chega na aba Hero. */
 export const LOGIN_LANDING = /\/personalities$/;
 
-/** Área de cada conta demo (o portal ou a tela que os specs usam depois do login). */
+/** Área de cada conta demo (o portal ou a tela que os specs usam depois do login). O herói não tem mais
+ *  painel (0045: só o admin gerencia conteúdo pelos heróis): a área dele é o Perfil, com o Novo post. */
 export const DEMO_HOME: Record<DemoKind, RegExp> = {
-  creator: /\/creator$/,
+  creator: /\/profile$/,
   admin: /\/admin$/,
   premium: /\/profile$/,
   free: /\/explore/,
 };
-const DEMO_PATH: Record<DemoKind, string> = { creator: "/creator", admin: "/admin", premium: "/profile", free: "/explore" };
+const DEMO_PATH: Record<DemoKind, string> = { creator: "/profile", admin: "/admin", premium: "/profile", free: "/explore" };
 
 type Options = {
   /** Onde a conta deve estar depois do login (padrão: DEMO_HOME); null fica na aba Hero, onde o login chega. */

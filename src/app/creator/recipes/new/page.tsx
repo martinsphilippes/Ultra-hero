@@ -4,8 +4,7 @@ import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { RecipeWizard } from "@/components/recipes/editor/RecipeWizard";
 import { PageHeader } from "@/components/ui";
 import { emptyDraft } from "@/lib/recipes/draft";
-import { createClient } from "@/lib/supabase/server";
-import { getMyCreator } from "../../_lib/creator";
+import { getManagedCreator } from "../../_lib/creator";
 import { loadRecipeCategories, loadRecipeReviewRequired } from "../_lib/load";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,9 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
 // receita, pilar gastronomia, capa placeholder) e grava pela recipe_save; as demais etapas seguem
 // no editor do rascunho criado.
 export default async function NewRecipePage() {
-  const [t, tp, tn, locale, ctx] = await Promise.all([getTranslations("recipes.editor"), getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getMyCreator()]);
+  const [t, tp, tn, locale, ctx] = await Promise.all([getTranslations("recipes.editor"), getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getManagedCreator("recipes")]);
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("metaNew")} />;
-  const supabase = await createClient();
+  const supabase = ctx.supabase;
   const [categories, reviewRequired] = await Promise.all([loadRecipeCategories(supabase, locale), loadRecipeReviewRequired(supabase)]);
 
   return (

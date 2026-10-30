@@ -23,6 +23,7 @@ type Status = { state: string; durationSec: number | null; creatorId: string | n
 const state = vi.hoisted(() => ({
   user: null as { id: string } | null,
   isCreator: true,
+  isAdmin: false,
   creatorId: null as string | null,
   configured: true,
   hasAdmin: true,
@@ -58,7 +59,12 @@ vi.mock("next-intl/server", () => ({
 }));
 vi.mock("@/lib/auth/session", () => ({
   getUser: async () => state.user,
-  hasRole: async (role: string) => role === "creator" && state.isCreator,
+  hasRole: async (role: string) => (role === "admin" ? state.isAdmin : role === "creator" && state.isCreator),
+}));
+// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+vi.mock("@/lib/acting-hero/server", () => ({
+  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Herói", avatar_url: null } } : { status: "none" })),
+  actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
 }));
 vi.mock("@/lib/video", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/video")>();
@@ -187,6 +193,7 @@ vi.mock("@/lib/supabase/server", () => ({
 beforeEach(() => {
   state.user = { id: ids.USER };
   state.isCreator = true;
+  state.isAdmin = false;
   state.creatorId = ids.CREATOR;
   state.configured = true;
   state.hasAdmin = true;
@@ -508,6 +515,11 @@ describe("discardVideoPost", () => {
 });
 
 describe("publicar/despublicar pelo editor", () => {
+  // editor de conteúdo: só o admin, pelo herói escolhido (0045)
+  beforeEach(() => {
+    state.isAdmin = true;
+  });
+
   it("vídeo do Stream passa pela mesma checagem do composer", async () => {
     state.status = { state: "pending", durationSec: null, creatorId: ids.CREATOR, reason: null };
     expect(await publishContent({ id: ids.CONTENT })).toEqual({ ok: false, error: "processing" });
@@ -541,6 +553,10 @@ describe("publicar/despublicar pelo editor", () => {
 });
 
 describe("editor completo com vídeo do Stream", () => {
+  beforeEach(() => {
+    state.isAdmin = true;
+  });
+
   const form = (ref: string) =>
     ({
       id: ids.CONTENT,

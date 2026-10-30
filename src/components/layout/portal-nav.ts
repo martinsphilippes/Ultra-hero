@@ -24,13 +24,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "settings", href: "/admin/settings" },
   ],
   creator: [
-    // Postar é a ação principal do herói: primeiro item do menu.
+    // O herói só posta; conteúdos, receitas, vínculos e painel são do admin ("Publicar como hero").
     { key: "post", href: "/creator/post/new" },
-    { key: "dashboard", href: "/creator" },
-    { key: "content", href: "/creator/content" },
-    { key: "recipes", href: "/creator/recipes" },
-    { key: "links", href: "/creator/links" },
-    // sem "Meu perfil": o perfil do herói fica na tela Perfil (/profile)
   ],
   seller: [
     { key: "dashboard", href: "/seller" },

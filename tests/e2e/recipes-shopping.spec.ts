@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect as baseExpect, test, type Page } from "@playwright/test";
+import { loginAsAdminActing } from "./helpers/acting";
 import { loginAs } from "./helpers/login";
 import { expectNoTestRecipe, purgeTestRecipes } from "./helpers/recipes";
 
@@ -139,11 +140,11 @@ test.describe("lista de compras (só leitura)", () => {
   });
 });
 
-test.describe("produto correspondente no editor (conta do herói)", () => {
+test.describe("produto correspondente no editor (admin pelo herói da conta demo, 0045)", () => {
   test("ingrediente gravado recebe a sugestão de produto (pendente de validação), retirada em seguida; o rascunho é excluído", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== "mobile", "grava um rascunho no remoto: roda só no mobile");
     test.setTimeout(180_000);
-    await loginAs(page, "creator");
+    await loginAsAdminActing(page, "recipes");
     const titlePrefix = "[E2E] Lista de compras";
     // sobras antigas de execuções interrompidas (os vínculos saem em cascata); a conta é compartilhada,
     // então o rascunho de outra execução em andamento fica

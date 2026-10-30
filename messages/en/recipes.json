@@ -263,6 +263,8 @@
       "missing_title": "The title is missing.",
       "missing_body": "Save the draft before publishing.",
       "creator_unavailable": "Your hero profile is inactive or not linked.",
+      "acting_hero_required": "Choose the hero in \"Publish as hero\" on the admin home and try again.",
+      "acting_unavailable": "Publish as hero is not available in this environment yet.",
       "duplicate": "An identical record already exists.",
       "network": "No connection. Try again.",
       "generic": "Something went wrong. Try again."

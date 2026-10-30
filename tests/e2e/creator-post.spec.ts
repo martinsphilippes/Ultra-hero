@@ -1,6 +1,7 @@
 import path from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { loginAsAdminActing } from "./helpers/acting";
 import { loginAs } from "./helpers/login";
 import { deletePhotoPostAsService, serviceRoleKey } from "./helpers/supabase";
 
@@ -16,24 +17,32 @@ async function loginAsHero(page: Page) {
 }
 
 test.describe("portal do herói: novo post com foto ou vídeo", () => {
-  test("portal do herói sem menu: só “← Perfil” no topo; Novo post fica nos atalhos do Perfil", async ({ page }) => {
+  test("Novo post do herói sem menu: só “← Perfil” no topo, e o Perfil leva de volta ao Novo post", async ({ page }) => {
     await loginAsHero(page);
-    // sem botão de três linhas, sem menu lateral e sem os botões repetidos no painel
+    await page.goto("/creator/post/new");
+    // sem botão de três linhas e sem menu lateral (o resto do portal é da administração, 0045)
     await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveCount(0);
     await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
-    await expect(page.locator("main").getByTestId("new-post")).toHaveCount(0);
+    await expect(page.getByTestId("acting-hero-banner")).toHaveCount(0);
     const back = page.getByTestId("portal-back-profile");
     await expect(back).toHaveAttribute("href", "/profile");
     expect((await back.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     await back.click();
     await expect(page).toHaveURL(/\/profile$/);
-    await expect(page.getByTestId("hero-action-post")).toHaveAttribute("href", "/creator/post/new");
+    await expect(page.getByTestId("hero-new-post")).toHaveAttribute("href", "/creator/post/new");
   });
 
-  test("a lista de conteúdos também leva ao novo post", async ({ page }) => {
+  test("herói: a lista de conteúdos do portal não existe mais (volta ao Perfil)", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/creator/content");
-    await expect(page.getByTestId("new-post")).toHaveAttribute("href", "/creator/post/new");
+    await expect(page).toHaveURL(/\/profile$/);
+  });
+
+  test("admin: Novo post pelo herói escolhido abre o mesmo composer, com a faixa do herói", async ({ page }) => {
+    await loginAsAdminActing(page, "post");
+    await expect(page.getByRole("heading", { level: 1, name: "Novo post" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Tirar foto/ })).toBeVisible();
+    await expect(page.getByTestId("acting-hero-name")).not.toBeEmpty();
   });
 
   test("/creator/post/new abre com Tirar foto, Gravar vídeo e Escolher da galeria; foto independe do Stream", async ({ page }) => {
@@ -114,37 +123,17 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
     await expect(page.getByRole("button", { name: /Tirar foto/ })).toBeVisible();
   });
 
-  test("o editor de um rascunho mostra Publicar e não Enviar para revisão", async ({ page }) => {
-    await loginAsHero(page);
+  test("admin: Conteúdos do herói abre a lista do admin filtrada pelo herói; os endereços antigos levam para lá", async ({ page }) => {
+    await loginAsAdminActing(page, "content");
+    // a lista do admin, filtrada pelo herói escolhido, com a faixa e o "Novo conteúdo" já com o herói
+    await expect(page.getByRole("heading", { level: 1, name: "Conteúdos" })).toBeVisible();
+    const heroId = new URL(page.url()).searchParams.get("creator")!;
+    await expect(page.getByRole("link", { name: "Novo conteúdo" })).toHaveAttribute("href", `/admin/content/new?creator=${heroId}`);
+    // o painel do herói (modo do admin) leva os filtros para a lista do admin
     await page.goto("/creator/content?status=draft");
-    // receita fica só para leitura no editor antigo (0027): o teste usa outro tipo
-    const editLink = page.locator('a[href^="/creator/content/"][href$="/edit"][data-content-type]:not([data-content-type="recipe"])').first();
-    test.skip((await editLink.count()) === 0, "a conta de demonstração não tem rascunhos");
-    // navegação direta pelo href: o clique logo após o carregamento às vezes chega antes da hidratação
-    await page.goto((await editLink.getAttribute("href"))!);
-    await expect(page).toHaveURL(/\/creator\/content\/[0-9a-f-]+\/edit$/);
-    await expect(page.getByTestId("publish-content")).toHaveText(/Publicar/);
-    await expect(page.getByRole("button", { name: "Enviar para revisão" })).toHaveCount(0);
-    await expect(page.getByText("Você publica e despublica seus conteúdos.", { exact: false })).toBeVisible();
-
-    // abre a confirmação para ver o checklist de ajuda e cancela: nada vai ao ar
-    await page.getByTestId("publish-content").click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("list", { name: "Checklist de ajuda" })).toBeVisible();
-    await dialog.getByRole("button", { name: "Cancelar" }).click();
-    await expect(dialog).toBeHidden();
-  });
-
-  test("o editor de um publicado mostra Despublicar", async ({ page }) => {
-    await loginAsHero(page);
-    await page.goto("/creator/content?status=published");
-    const editLink = page.locator('a[href^="/creator/content/"][href$="/edit"][data-content-type]:not([data-content-type="recipe"])').first();
-    test.skip((await editLink.count()) === 0, "a conta de demonstração não tem publicados");
-    // navegação direta pelo href: o clique logo após o carregamento às vezes chega antes da hidratação
-    await page.goto((await editLink.getAttribute("href"))!);
-    await expect(page).toHaveURL(/\/creator\/content\/[0-9a-f-]+\/edit$/);
-    await expect(page.getByTestId("unpublish-content")).toHaveText(/Despublicar/, { timeout: 15_000 });
-    await expect(page.getByTestId("publish-content")).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`/admin/content\\?creator=${heroId}&status=draft$`));
+    await page.goto("/creator/content/new");
+    await expect(page).toHaveURL(new RegExp(`/admin/content/new\\?creator=${heroId}$`));
   });
 });
 

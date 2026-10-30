@@ -1784,6 +1784,12 @@ isOneToOne: false
             "accept_invitation":
 { Args: { "p_token": string }; Returns: Json
                            },
+"acting_hero_id":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"admin_act_as_hero":
+{ Args: { "p_creator": string }; Returns: Json
+                           },
 "admin_advance_transport":
 { Args: { "p_minutes"?: number }; Returns: number
                            },

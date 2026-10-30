@@ -7,9 +7,8 @@ import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimel
 import { Avatar, Badge, Card, CardBody, PageHeader, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatRelativeTime } from "@/i18n/format";
-import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
-import { getMyCreator } from "./_lib/creator";
+import { getManagedCreator } from "./_lib/creator";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("nav");
@@ -18,15 +17,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type StatusRow = { status: "draft" | "published" | "archived"; review_status: "none" | "in_review" | "returned" | "approved" | "rejected" };
 
-// Painel da personalidade: contagens por status/revisão, devolvidos com feedback e últimas revisões.
+// Painel do herói escolhido pelo admin (Publicar como hero): contagens por status/revisão, devolvidos
+// com feedback e últimas revisões. O herói comum volta ao Perfil (só o Novo post é dele).
 export default async function CreatorHomePage() {
-  const [t, tn, tcat, locale, ctx] = await Promise.all([getTranslations("creator"), getTranslations("nav"), getTranslations("catalog"), getLocale(), getMyCreator()]);
+  const [t, tn, tcat, locale, ctx] = await Promise.all([getTranslations("creator"), getTranslations("nav"), getTranslations("catalog"), getLocale(), getManagedCreator("dashboard")]);
   if (!ctx.creatorId || !ctx.profile) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} />;
 
-  const supabase = await createClient();
+  const supabase = ctx.supabase;
   const [{ data: rows }, { data: reviews }, { data: returned }] = await Promise.all([
     supabase.from("content").select("status, review_status").eq("creator_id", ctx.creatorId),
-    supabase.from("content_reviews").select("id, round, decision, feedback, submitted_at, decided_at, content:content(id, title)").order("submitted_at", { ascending: false }).limit(6),
+    // o admin lê todas as revisões: o filtro pelo herói escolhido fica explícito
+    supabase.from("content_reviews").select("id, round, decision, feedback, submitted_at, decided_at, content:content!inner(id, title)").eq("content.creator_id", ctx.creatorId).order("submitted_at", { ascending: false }).limit(6),
     supabase.from("content").select("id, title, updated_at").eq("creator_id", ctx.creatorId).eq("review_status", "returned").order("updated_at", { ascending: false }).limit(5),
   ]);
 
@@ -53,7 +54,7 @@ export default async function CreatorHomePage() {
         description={t("dashboard.description")}
         eyebrow={tn("portals.creator")}
       >
-        {/* Novo post e Novo conteúdo ficam nos atalhos do Perfil (perto de "Editar perfil"). */}
+        {/* Novo post e Novo conteúdo ficam nos atalhos de "Publicar como hero" no início do admin. */}
         <div className="flex items-center gap-3">
           <Avatar src={ctx.profile.avatar_url} name={ctx.profile.name} size="md" alt="" />
           <div className="flex min-w-0 flex-col">

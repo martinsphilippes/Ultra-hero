@@ -263,6 +263,8 @@
       "missing_title": "Falta el título.",
       "missing_body": "Guarda el borrador antes de publicar.",
       "creator_unavailable": "Tu perfil de héroe está inactivo o sin vínculo.",
+      "acting_hero_required": "Elige el héroe en \"Publicar como héroe\", en el inicio de la administración, e inténtalo de nuevo.",
+      "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
       "duplicate": "Ya existe un registro igual.",
       "network": "Sin conexión. Intenta de nuevo.",
       "generic": "Algo salió mal. Intenta de nuevo."

@@ -21,7 +21,7 @@ function revalidateProfile() {
 export async function saveSpecialties(input: { specialties: string[] }): Promise<ActionResult> {
   const parsed = z.object({ specialties: z.array(z.string().trim().min(1).max(SPECIALTY_MAX_LENGTH)).max(SPECIALTIES_MAX) }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("own");
   if (!ctx.ok) return ctx;
   const specialties = Array.from(new Set(parsed.data.specialties));
   const { error } = await ctx.supabase.from("creator_profiles").update({ specialties }).eq("id", ctx.creatorId);
@@ -34,7 +34,7 @@ export async function saveSpecialties(input: { specialties: string[] }): Promise
 export async function requestCredentials(input: { text: string }): Promise<ActionResult> {
   const parsed = z.object({ text: z.string().trim().min(1).max(CREDENTIALS_MAX_LENGTH) }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("own");
   if (!ctx.ok) return ctx;
   const { data: existing, error: readError } = await ctx.supabase.from("creator_credentials_requests").select("creator_id").eq("creator_id", ctx.creatorId).maybeSingle();
   if (readError) return failFrom(readError);
@@ -47,7 +47,7 @@ export async function requestCredentials(input: { text: string }): Promise<Actio
 }
 
 export async function withdrawCredentials(): Promise<ActionResult> {
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("own");
   if (!ctx.ok) return ctx;
   const { error } = await ctx.supabase.from("creator_credentials_requests").delete().eq("creator_id", ctx.creatorId);
   if (error) return failFrom(error);

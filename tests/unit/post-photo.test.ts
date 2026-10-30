@@ -30,6 +30,7 @@ type Result = { data: unknown; error: { message: string; code?: string } | null 
 const state = vi.hoisted(() => ({
   user: null as { id: string } | null,
   isCreator: true,
+  isAdmin: false,
   creatorId: null as string | null,
   hasAdmin: true,
   claim: { data: null, error: null } as Result,
@@ -126,7 +127,12 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => Object.assign((key: string) => `${namespace}.${key}`, { has: () => true }),
   getLocale: async () => "pt-BR",
 }));
-vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async (role: string) => role === "creator" && state.isCreator }));
+vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async (role: string) => (role === "admin" ? state.isAdmin : role === "creator" && state.isCreator) }));
+// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+vi.mock("@/lib/acting-hero/server", () => ({
+  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Herói", avatar_url: null } } : { status: "none" })),
+  actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
+}));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => client("user") }));
 vi.mock("@/lib/supabase/admin", () => ({
   hasAdminClient: () => state.hasAdmin,
@@ -156,6 +162,7 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = BASE;
   state.user = { id: ids.USER };
   state.isCreator = true;
+  state.isAdmin = false;
   state.creatorId = ids.CREATOR;
   state.hasAdmin = true;
   state.claim = { data: PATH, error: null };
@@ -406,6 +413,8 @@ describe("editor de conteúdo com post de foto", () => {
   });
 
   it("salvar mantém a foto do rascunho; trocar por outra é recusado; criar com foto só pelo composer", async () => {
+    // editor de conteúdo: só o admin, pelo herói escolhido (0045)
+    state.isAdmin = true;
     expect(await updateContent(values(PATH))).toEqual({ ok: true, id: ids.CONTENT });
     expect(state.writes.find((w) => w.op === "upsert")?.payload).toMatchObject({ media_provider: "upload", media_ref: PATH });
     state.writes = [];

@@ -39,7 +39,7 @@ export function InviteAcceptCard({ token, email }: Props) {
           <p className="type-body-sm mt-1 text-fg-muted">{role === "creator" ? t("successCreator") : t("successSeller")}</p>
         </div>
         <Button asChild size="lg" block>
-          <Link href={role === "creator" ? "/creator" : "/seller"}>{role === "creator" ? t("goCreator") : t("goSeller")}</Link>
+          <Link href={role === "creator" ? "/profile" : "/seller"}>{role === "creator" ? t("goCreator") : t("goSeller")}</Link>
         </Button>
       </div>
     );

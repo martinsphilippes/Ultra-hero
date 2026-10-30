@@ -88,6 +88,8 @@
     "forbidden": "Você não tem permissão para esta ação.",
     "unauthenticated": "Entre para continuar.",
     "creator_unavailable": "Seu perfil de herói não está ativo.",
+    "acting_hero_required": "Escolha o hero em \"Publicar como hero\", no início do admin, e tente de novo.",
+    "acting_unavailable": "Publicar como hero ainda não está disponível neste ambiente.",
     "not_found": "Conteúdo não encontrado.",
     "media_license_mismatch": "Licença incoerente com a mídia: ajuste a licença e salve de novo.",
     "recipe_editor_pending": "A edição de receitas volta com o novo editor."

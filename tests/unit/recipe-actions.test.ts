@@ -3,7 +3,8 @@ import { createRecipeDraft, deleteRecipeDraft, duplicateRecipe, publishRecipe, r
 import { cleanupRecipeOrphans } from "@/app/api/cron/_lib/recipe-orphans";
 import { buildPayload, emptyDraft } from "@/lib/recipes/draft";
 
-// Actions do Portal do Chef sem Next, Supabase nem Cloudflare: dono e herói vêm da sessão, erros do
+// Actions do Portal do Chef sem Next, Supabase nem Cloudflare: desde a 0045 é o admin agindo pelo herói
+// escolhido (o herói vem do cookie revalidado, nunca do cliente); erros do
 // banco viram códigos (stale_draft, recipe_incomplete com os itens, invalid_payload com o caminho),
 // os dois modos de revisão escolhem a RPC certa, a foto com bytes que não batem é apagada e a
 // exclusão do rascunho limpa o Storage. Também a limpeza diária das fotos órfãs.
@@ -21,6 +22,7 @@ type Res = { data: unknown; error: { message: string; code?: string } | null };
 const state = vi.hoisted(() => ({
   user: { id: "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d" } as { id: string } | null,
   isCreator: true,
+  isAdmin: true,
   creatorId: "a3bb189e-8bf9-4888-9912-ace4e6543002" as string | null,
   content: null as Record<string, unknown> | null,
   body: null as Record<string, unknown> | null,
@@ -39,7 +41,12 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async (ns: string) => Object.assign((key: string, values?: Record<string, unknown>) => (values?.title ? `${values.title} (cópia)` : `${ns}.${key}`), { has: () => true }),
   getLocale: async () => "pt-BR",
 }));
-vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async (r: string) => r === "creator" && state.isCreator }));
+vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async (r: string) => (r === "admin" ? state.isAdmin : r === "creator" && state.isCreator) }));
+// admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
+vi.mock("@/lib/acting-hero/server", () => ({
+  getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Herói", avatar_url: null } } : { status: "none" })),
+  actingClient: async () => (await import("@/lib/supabase/server")).createClient(),
+}));
 vi.mock("@/lib/supabase/admin", () => ({
   hasAdminClient: () => false,
   createAdminClient: () => {
@@ -139,6 +146,7 @@ const calls = (fn: string) => state.rpcs.filter((r) => r.fn === fn);
 beforeEach(() => {
   state.user = { id: ids.USER };
   state.isCreator = true;
+  state.isAdmin = true;
   state.creatorId = ids.CREATOR;
   state.content = ownDraftRow();
   state.body = { media_provider: "none", media_ref: null };

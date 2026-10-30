@@ -8,8 +8,7 @@ import { RestoreVersionButton } from "@/components/recipes/portal/RestoreVersion
 import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
-import { createClient } from "@/lib/supabase/server";
-import { getMyCreator } from "../../../_lib/creator";
+import { getManagedCreator } from "../../../_lib/creator";
 import { loadOwnRecipeContent } from "../../_lib/load";
 
 type Params = { params: Promise<{ id: string }> };
@@ -26,10 +25,10 @@ type VersionRow = { id: string; version_no: number; reason: string; changed_sect
 export default async function RecipeVersionsPage({ params }: Params) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
-  const [t, tp, tn, locale, ctx] = await Promise.all([getTranslations("recipes.versions"), getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getMyCreator()]);
+  const [t, tp, tn, locale, ctx] = await Promise.all([getTranslations("recipes.versions"), getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getManagedCreator("recipes")]);
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("title")} />;
   const creatorId = ctx.creatorId;
-  const supabase = await createClient();
+  const supabase = ctx.supabase;
   const content = await loadOwnRecipeContent(supabase, id, creatorId);
   if (!content) notFound();
 
