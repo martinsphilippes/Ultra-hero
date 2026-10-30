@@ -7040,5 +7040,231 @@ select tests.ok('S70 reaplicar a 0060 mantém as aberturas somadas', (select sum
 delete from auth.users where id in ('70000000-0000-4000-8000-000000000701', '70000000-0000-4000-8000-000000000702');
 drop table t_s70;
 
+-- ================================================================ S71 · Lance superado e visitas ao herói (0061)
+-- Push só para quem vencia (com consentimento e aparelho), no máximo 1 a cada 2 min por item; aviso no app
+-- (user_alerts) só da própria pessoa, que só marca como visto; contador de visitas só do service role, sem
+-- pessoa e sem FK; leitura do admin com as visitas; S14 = 17; S65 (sem tabela-ponte na chave) segue.
+-- S65 e S70 reaplicam a 0054 e a 0060 (que voltam push_allowed e admin_indicators_heroes à versão antiga):
+-- reaplicar a 0061 aqui repete a ordem de produção e prova que ela é idempotente.
+\ir ../migrations/0061_outbid_and_hero_views.sql
+select tests.su();
+delete from public.push_outbox;
+insert into auth.users (id, email) values
+  ('71000000-0000-4000-8000-0000000007a1', 's71a@test.local'),
+  ('71000000-0000-4000-8000-0000000007a2', 's71b@test.local'),
+  ('71000000-0000-4000-8000-0000000007a3', 's71c@test.local');
+update public.profiles set display_name = 'Ana Lima' where id = '71000000-0000-4000-8000-0000000007a1';
+update public.profiles set display_name = 'Bia Reis' where id = '71000000-0000-4000-8000-0000000007a2';
+update public.profiles set display_name = 'Caio Dias' where id = '71000000-0000-4000-8000-0000000007a3';
+-- a1 aceitou o aviso de lance superado; a2 ligou o push sem esse tipo; a3 não ligou nada
+insert into public.notification_preferences (user_id, channel_push, auction_outbid) values
+  ('71000000-0000-4000-8000-0000000007a1', true, true),
+  ('71000000-0000-4000-8000-0000000007a2', true, false);
+insert into public.push_tokens (token, user_id, platform) values
+  ('ExponentPushToken[s71aaaaaaaaaaaa]', '71000000-0000-4000-8000-0000000007a1', 'ios'),
+  ('ExponentPushToken[s71bbbbbbbbbbbb]', '71000000-0000-4000-8000-0000000007a2', 'android'),
+  ('ExponentPushToken[s71cccccccccccc]', '71000000-0000-4000-8000-0000000007a3', 'ios');
+insert into public.collectibles (id, title, start_price_cents, current_cents, status, starts_at, ends_at)
+values ('71000000-0000-4000-8000-0000000007c1', 'Luva assinada S71', 10000, 10000, 'live', now() - interval '1 hour', now() + interval '1 day');
+create temp table t_s71 (k text primary key, v text);
+grant all on t_s71 to anon, authenticated, service_role;
+
+select tests.ok('S71 push_allowed conhece o tipo novo (opt-in)',
+  public.push_allowed('71000000-0000-4000-8000-0000000007a1', 'auction_outbid')
+  and not public.push_allowed('71000000-0000-4000-8000-0000000007a2', 'auction_outbid')
+  and not public.push_allowed('71000000-0000-4000-8000-0000000007a3', 'auction_outbid'));
+
+-- 1º lance: ninguém vencia, nada sai
+select tests.login('71000000-0000-4000-8000-0000000007a1', 's71a@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 1000); end $$;
+select tests.su();
+select tests.ok('S71 primeiro lance não avisa ninguém',
+  (select count(*) from public.push_outbox) = 0
+  and (select count(*) from public.user_alerts where collectible_id = '71000000-0000-4000-8000-0000000007c1') = 0);
+
+-- a3 cobre: só a1 (quem vencia) é avisada; a3 (quem deu o lance) não
+select tests.login('71000000-0000-4000-8000-0000000007a3', 's71c@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 5000); end $$;
+select tests.su();
+select tests.ok('S71 lance coberto: push só para quem vencia, com consentimento, apontando o item e o valor',
+  (select count(*) from public.push_outbox) = 1
+  and (select user_id = '71000000-0000-4000-8000-0000000007a1' and kind = 'auction_outbid'
+            and payload ->> 'collectible_id' = '71000000-0000-4000-8000-0000000007c1' and (payload ->> 'amount_cents')::int = 16000
+       from public.push_outbox));
+select tests.ok('S71 aviso no app só para quem vencia, com título e valor do item',
+  (select count(*) from public.user_alerts where collectible_id = '71000000-0000-4000-8000-0000000007c1') = 1
+  and (select user_id = '71000000-0000-4000-8000-0000000007a1' and seen_at is null and amount_cents = 16000 and title = 'Luva assinada S71'
+       from public.user_alerts where collectible_id = '71000000-0000-4000-8000-0000000007c1'));
+
+-- o limite de 1 lance a cada 2 s usa now(), que não anda dentro da transação: os lances anteriores recuam
+-- a1 volta à frente: o aviso dela é dado como visto; a3 (sem consentimento) ganha só o aviso no app
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds' where collectible_id = '71000000-0000-4000-8000-0000000007c1';
+select tests.login('71000000-0000-4000-8000-0000000007a1', 's71a@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 1000); end $$;
+select tests.su();
+select tests.ok('S71 quem volta à frente tem o aviso pendente dado como visto',
+  (select seen_at is not null from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a1'));
+select tests.ok('S71 sem consentimento de push: nada na fila, mas o aviso no app chega',
+  (select count(*) from public.push_outbox where user_id = '71000000-0000-4000-8000-0000000007a3') = 0
+  and (select count(*) from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a3' and seen_at is null) = 1);
+
+-- guerra de lances: a1 coberta de novo em menos de 2 min → nenhum push novo; aviso no app sim
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds' where collectible_id = '71000000-0000-4000-8000-0000000007c1';
+select tests.login('71000000-0000-4000-8000-0000000007a3', 's71c@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 1000); end $$;
+select tests.su();
+select tests.ok('S71 janela de 2 min: a mesma pessoa e item não recebem outro push',
+  (select count(*) from public.push_outbox where user_id = '71000000-0000-4000-8000-0000000007a1') = 1
+  and (select count(*) from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a1' and seen_at is null) = 1);
+-- passada a janela, o próximo lance superado volta a avisar
+update public.push_outbox set created_at = now() - interval '3 minutes' where user_id = '71000000-0000-4000-8000-0000000007a1';
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds' where collectible_id = '71000000-0000-4000-8000-0000000007c1';
+select tests.login('71000000-0000-4000-8000-0000000007a1', 's71a@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 1000); end $$;
+select tests.su();
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds' where collectible_id = '71000000-0000-4000-8000-0000000007c1';
+select tests.login('71000000-0000-4000-8000-0000000007a3', 's71c@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 1000); end $$;
+select tests.su();
+select tests.ok('S71 passados 2 min, um novo push (outra chave de dedupe, a do lance)',
+  (select count(*) from public.push_outbox where user_id = '71000000-0000-4000-8000-0000000007a1') = 2
+  and (select count(distinct dedupe_key) from public.push_outbox where user_id = '71000000-0000-4000-8000-0000000007a1') = 2);
+
+-- push ligado sem o tipo "lance superado": nada na fila
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds' where collectible_id = '71000000-0000-4000-8000-0000000007c1';
+select tests.login('71000000-0000-4000-8000-0000000007a2', 's71b@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 1000); end $$;
+select tests.su();
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds' where collectible_id = '71000000-0000-4000-8000-0000000007c1';
+select tests.login('71000000-0000-4000-8000-0000000007a3', 's71c@test.local');
+do $$ begin perform public.place_bid('71000000-0000-4000-8000-0000000007c1', 1000); end $$;
+select tests.su();
+select tests.ok('S71 push ligado sem o tipo: nada na fila para essa pessoa (aviso no app sim)',
+  (select count(*) from public.push_outbox where user_id = '71000000-0000-4000-8000-0000000007a2') = 0
+  and (select count(*) from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a2' and seen_at is null) = 1);
+select tests.ok('S71 quem dá o lance nunca é avisado do próprio lance',
+  (select count(*) from public.push_outbox where user_id = '71000000-0000-4000-8000-0000000007a3') = 0
+  and not exists (select 1 from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a3' and seen_at is null));
+
+-- user_alerts: cada um lê só os seus e só marca como visto
+select tests.anon();
+select tests.expect_error('S71 visitante não lê avisos', $q$select count(*) from public.user_alerts$q$, 'permission denied');
+select tests.login('71000000-0000-4000-8000-0000000007a2', 's71b@test.local');
+select tests.ok('S71 a pessoa lê só os próprios avisos',
+  (select count(*) from public.user_alerts) = 1 and not exists (select 1 from public.user_alerts where user_id <> auth.uid()));
+select tests.expect_error('S71 a pessoa não cria aviso',
+  $q$insert into public.user_alerts (user_id, kind, collectible_id, title, amount_cents) values (auth.uid(), 'auction_outbid', '71000000-0000-4000-8000-0000000007c1', 'x', 1)$q$, 'permission denied');
+select tests.expect_error('S71 a pessoa não muda o valor do aviso', $q$update public.user_alerts set amount_cents = 1$q$, 'permission denied');
+select tests.expect_error('S71 a pessoa não apaga aviso', $q$delete from public.user_alerts$q$, 'permission denied');
+update public.user_alerts set seen_at = now();
+select tests.login('71000000-0000-4000-8000-0000000007a3', 's71c@test.local');
+update public.user_alerts set seen_at = now() where user_id = '71000000-0000-4000-8000-0000000007a1';
+select tests.su();
+select tests.ok('S71 marcar como visto vale só para a própria linha',
+  (select seen_at is not null from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a2')
+  and (select count(*) from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a1' and seen_at is null) = 1);
+select tests.ok('S71 a fila continua só do servidor; gatilho e consentimento sem execução por clientes',
+  not has_table_privilege('authenticated', 'public.push_outbox', 'select')
+  and not has_function_privilege('anon', 'public.collectible_outbid_notify()', 'execute')
+  and not has_function_privilege('authenticated', 'public.collectible_outbid_notify()', 'execute')
+  and not has_function_privilege('authenticated', 'public.push_allowed(uuid, text)', 'execute'));
+-- Realtime: com a publicação da Supabase, a 0061 só acrescenta user_alerts (com RLS da própria pessoa)
+create publication supabase_realtime;
+\ir ../migrations/0061_outbid_and_hero_views.sql
+select tests.ok('S71 Realtime: a 0061 publica só user_alerts, que tem RLS ligada e leitura só da própria pessoa',
+  (select string_agg(tablename, ',' order by tablename) from pg_publication_tables where pubname = 'supabase_realtime') = 'user_alerts'
+  and (select relrowsecurity from pg_class where oid = 'public.user_alerts'::regclass)
+  and (select string_agg(policyname || ':' || cmd, ',' order by policyname) from pg_policies where schemaname = 'public' and tablename = 'user_alerts')
+      = 'user_alerts_select_own:SELECT,user_alerts_update_own:UPDATE');
+drop publication supabase_realtime;
+
+-- visitas à página do herói: só o service role soma
+insert into t_s71 values ('hero', public.seed_uuid('creator:tiago')::text);
+select tests.anon();
+select tests.expect_error('S71 visitante não lê o contador de visitas', $q$select count(*) from public.hero_page_view_counters$q$, 'permission denied');
+select tests.expect_error('S71 visitante não soma visita', format($q$select public.hero_page_view_bump(%L)$q$, (select v from t_s71 where k = 'hero')), 'permission denied');
+select tests.expect_error('S71 visitante não executa admin_indicators_heroes', $q$select public.admin_indicators_heroes(7)$q$, 'permission denied');
+select tests.login('71000000-0000-4000-8000-0000000007a1', 's71a@test.local');
+select tests.expect_error('S71 consumidor não lê o contador de visitas', $q$select count(*) from public.hero_page_view_counters$q$, 'permission denied');
+select tests.expect_error('S71 consumidor não grava no contador de visitas',
+  format($q$insert into public.hero_page_view_counters (day, creator_id, count) values (current_date, %L, 99)$q$, (select v from t_s71 where k = 'hero')), 'permission denied');
+select tests.expect_error('S71 consumidor não soma visita', format($q$select public.hero_page_view_bump(%L)$q$, (select v from t_s71 where k = 'hero')), 'permission denied');
+select tests.expect_error('S71 consumidor não lê indicadores por herói', $q$select public.admin_indicators_heroes(7)$q$, 'forbidden');
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:lia');
+select set_config('role', 'service_role', true);
+create temp table t_s71_bump as select
+  public.hero_page_view_bump((select v::uuid from t_s71 where k = 'hero')) as a1,
+  public.hero_page_view_bump((select v::uuid from t_s71 where k = 'hero')) as a2,
+  public.hero_page_view_bump(public.seed_uuid('creator:lia')) as b1,
+  public.hero_page_view_bump('71000000-0000-4000-8000-0000000007ff') as b2,
+  public.hero_page_view_bump(null) as b3;
+select set_config('role', 'none', true);
+select tests.ok('S71 service role soma visitas de herói ativo; suspenso, inexistente e nulo não contam',
+  (select a1 and a2 and not (b1 or b2 or b3) from t_s71_bump));
+drop table t_s71_bump;
+select tests.su();
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:lia');
+select tests.ok('S71 contador de visitas por dia (Brasília) e herói, sem pessoa, sem FK e com chave própria',
+  (select count(*) from public.hero_page_view_counters) = 1
+  and (select count = 2 and day = (now() at time zone 'America/Sao_Paulo')::date from public.hero_page_view_counters)
+  and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'hero_page_view_counters' and column_name in ('user_id', 'anon_id', 'ip'))
+  and not exists (select 1 from pg_constraint where conrelid = 'public.hero_page_view_counters'::regclass and contype = 'f')
+  and (select pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.hero_page_view_counters'::regclass and contype = 'p') = 'PRIMARY KEY (id)');
+
+-- admin: visitas por herói, por dia e desde quando
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s71 select 'heroes', public.admin_indicators_heroes(7)::text;
+select tests.ok('S71 admin: visitas à página do herói por herói e por dia',
+  (select (r ->> 'page_views')::int = 2 from t_s71, jsonb_array_elements(v::jsonb -> 'rows') r where k = 'heroes' and r ->> 'id' = (select v from t_s71 where k = 'hero'))
+  and (select jsonb_array_length(v::jsonb -> 'daily_page_views') = 7
+            and (select sum((d ->> 'value')::int) from jsonb_array_elements(v::jsonb -> 'daily_page_views') d) = 2
+            and (v::jsonb ->> 'page_views_since') is not null
+       from t_s71 where k = 'heroes'));
+select tests.expect_error('S71 admin também não lê o contador direto (só pela RPC)', $q$select count(*) from public.hero_page_view_counters$q$, 'permission denied');
+
+-- estrutura: S14 = 17, sem tabela-ponte na chave (S65), avisos com chave própria
+select tests.su();
+select tests.ok('S71 funções novas ou trocadas: search_path fixo, nada para anon; a soma é invoker e só do service role',
+  (select bool_and(exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
+     from pg_proc p where p.oid in ('public.collectible_outbid_notify()'::regprocedure, 'public.hero_page_view_bump(uuid)'::regprocedure,
+       'public.push_allowed(uuid, text)'::regprocedure, 'public.push_outbox_cleanup()'::regprocedure, 'public.admin_indicators_heroes(int)'::regprocedure))
+  and not (select prosecdef from pg_proc where oid = 'public.hero_page_view_bump(uuid)'::regprocedure)
+  and has_function_privilege('service_role', 'public.hero_page_view_bump(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.hero_page_view_bump(uuid)', 'execute'));
+select tests.ok('S71 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S71 nenhuma tabela-ponte content↔creator_profiles na chave primária (S65 segue)',
+  not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.connamespace = 'public'::regnamespace
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f'
+                  and f.confrelid = 'public.content'::regclass and f.conkey <@ pk.conkey)
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f'
+                  and f.confrelid = 'public.creator_profiles'::regclass and f.conkey <@ pk.conkey)));
+select tests.ok('S71 user_alerts com chave própria (nenhuma FK na chave primária)',
+  (select pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.user_alerts'::regclass and contype = 'p') = 'PRIMARY KEY (id)');
+
+-- limpeza diária: avisos com mais de 30 dias saem, os recentes ficam
+update public.user_alerts set updated_at = now() - interval '31 days' where user_id = '71000000-0000-4000-8000-0000000007a2';
+select set_config('role', 'service_role', true);
+select public.push_outbox_cleanup();
+select set_config('role', 'none', true);
+select tests.ok('S71 limpeza diária remove o aviso antigo e mantém os recentes',
+  not exists (select 1 from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a2')
+  and exists (select 1 from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a1'));
+
+-- reaplicar a 0061 mantém preferências, avisos e visitas
+\ir ../migrations/0061_outbid_and_hero_views.sql
+select tests.ok('S71 reaplicar a 0061 mantém preferências, avisos e visitas',
+  (select auction_outbid from public.notification_preferences where user_id = '71000000-0000-4000-8000-0000000007a1')
+  and (select count(*) from public.user_alerts where user_id = '71000000-0000-4000-8000-0000000007a1') >= 1
+  and (select sum(count) from public.hero_page_view_counters) = 2);
+
+-- limpeza (a transação inteira é desfeita no fim)
+delete from public.collectibles where id = '71000000-0000-4000-8000-0000000007c1';
+delete from auth.users where id in ('71000000-0000-4000-8000-0000000007a1', '71000000-0000-4000-8000-0000000007a2', '71000000-0000-4000-8000-0000000007a3');
+drop table t_s71;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
