@@ -14,7 +14,8 @@ import { createClient } from "@/lib/supabase/server";
 
 // Aba Comprar (estilo vitrine de marketplace): chips de filtro no topo ("Tudo" + os do admin, 0047)
 // e grade de produtos, 3 por linha no celular, com rolagem infinita. O filtro vive na URL
-// (?filtro=slug). Sem a 0047 no banco, só "Tudo" aparece. Compras continuam simuladas.
+// (?filtro=slug), com navegação de documento (o roteador do Next abortava a troca só de query na
+// mesma rota). Sem a 0047 no banco, só "Tudo" aparece. Compras continuam simuladas.
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("commerce.shop");
@@ -58,11 +59,11 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
         className="sticky top-[calc(var(--spacing-topbar)+env(safe-area-inset-top))] z-30 -mx-gutter border-b border-border bg-bg/95 backdrop-blur-md"
       >
         <div className="flex gap-2 overflow-x-auto px-gutter py-2 scrollbar-none">
-          <ChipLink href={shopHref(null)} selected={!selectedSlug}>
+          <ChipLink href={shopHref(null)} selected={!selectedSlug} document>
             {t("all")}
           </ChipLink>
           {view.filters.map((filter) => (
-            <ChipLink key={filter.id} href={shopHref(filter.slug)} selected={filter.slug === selectedSlug}>
+            <ChipLink key={filter.id} href={shopHref(filter.slug)} selected={filter.slug === selectedSlug} document>
               {localizedLabel(filter.name, locale)}
             </ChipLink>
           ))}

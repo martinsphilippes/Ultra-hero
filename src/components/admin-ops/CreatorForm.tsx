@@ -3,7 +3,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
-import { RIGHTS_STATUSES, createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
+import { createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
+import { RIGHTS_STATUSES } from "@/lib/catalog/rights";
 import { Button, Chip, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
