@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveContentLocalizationAction, saveProgramLocalizationAction } from "@/app/admin/translations/actions";
 import { Button, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { conceptToForm, formToConcept, type ConceptForm } from "@/lib/programs/concept";
+import { ConceptFields } from "./ProgramConceptFields";
 
-type Source = { title: string; summary: string | null; description?: string | null; body?: unknown };
-type Existing = { title: string; summary: string | null; description?: string | null; body?: unknown; status: "draft" | "published"; updated_at: string } | null;
+type Source = { title: string; summary: string | null; description?: string | null; body?: unknown; concept?: unknown };
+type Existing = { title: string; summary: string | null; description?: string | null; body?: unknown; concept?: unknown; status: "draft" | "published"; updated_at: string } | null;
 
 type Props = {
   kind: "content" | "program";
@@ -18,10 +20,12 @@ type Props = {
   source: Source;
   existing: Existing;
   existingLabel: string | null;
+  /** Programa: banco com a coluna concept (0048)? Sem ela, os campos de conceito somem. */
+  conceptSupported?: boolean;
 };
 
 // Formulário de tradução por idioma com o original lado a lado (lado esquerdo só leitura).
-export function TranslationEditor({ kind, targetId, locale, localeLabel, sourceLocaleLabel, source, existing, existingLabel }: Props) {
+export function TranslationEditor({ kind, targetId, locale, localeLabel, sourceLocaleLabel, source, existing, existingLabel, conceptSupported = false }: Props) {
   const t = useTranslations("adminContent.translations");
   const tc = useTranslations("adminContent.common");
   const router = useRouter();
@@ -36,6 +40,11 @@ export function TranslationEditor({ kind, targetId, locale, localeLabel, sourceL
     body: existing?.body ? JSON.stringify(existing.body, null, 2) : "",
     status: existing?.status ?? ("draft" as "draft" | "published"),
   });
+  const withConcept = kind === "program" && conceptSupported;
+  const tconcept = useTranslations("adminContent.programs.concept");
+  const [concept, setConcept] = useState<ConceptForm>(() => conceptToForm(existing?.concept ?? null));
+  const [conceptInvalid, setConceptInvalid] = useState<string[]>([]);
+  const sourceConcept = withConcept && source.concept ? conceptToForm(source.concept) : null;
 
   function validateJson(value: string) {
     if (!value.trim()) {
@@ -56,11 +65,29 @@ export function TranslationEditor({ kind, targetId, locale, localeLabel, sourceL
   function submit() {
     setError(null);
     if (kind === "content" && !validateJson(form.body)) return;
+    // conceito traduzido: undefined = não mexe na coluna (banco sem a 0048)
+    let conceptValue: ReturnType<typeof formToConcept> | null = null;
+    if (withConcept) {
+      conceptValue = formToConcept(concept);
+      if (!conceptValue.ok) {
+        setConceptInvalid(conceptValue.paths);
+        setError(tconcept("invalid"));
+        return;
+      }
+      setConceptInvalid([]);
+    }
+    const conceptPayload = conceptValue?.ok ? conceptValue.concept : undefined;
     startTransition(async () => {
       const result =
         kind === "content"
           ? await saveContentLocalizationAction(targetId, locale, { title: form.title, summary: form.summary, body: form.body, status: form.status })
-          : await saveProgramLocalizationAction(targetId, locale, { title: form.title, summary: form.summary, description: form.description, status: form.status });
+          : await saveProgramLocalizationAction(targetId, locale, {
+              title: form.title,
+              summary: form.summary,
+              description: form.description,
+              status: form.status,
+              ...(conceptPayload !== undefined ? { concept: conceptPayload } : {}),
+            });
       if (result.ok) {
         toast({ title: result.message ?? tc("saved"), variant: "success" });
         router.refresh();
@@ -88,9 +115,21 @@ export function TranslationEditor({ kind, targetId, locale, localeLabel, sourceL
           <Textarea value={source.summary ?? ""} readOnly rows={3} />
         </FormField>
         {kind === "program" ? (
-          <FormField label={t("sourceDescription")}>
-            <Textarea value={source.description ?? ""} readOnly rows={8} />
-          </FormField>
+          <>
+            <FormField label={t("sourceDescription")}>
+              <Textarea value={source.description ?? ""} readOnly rows={8} />
+            </FormField>
+            {withConcept ? (
+              <section className="flex flex-col gap-2 rounded-lg border border-border p-3" aria-label={tconcept("sourceConcept")}>
+                <h4 className="text-sm font-semibold text-fg">{tconcept("sourceConcept")}</h4>
+                {sourceConcept ? (
+                  <ConceptFields value={sourceConcept} onChange={() => undefined} readOnly idPrefix={`concept-src-${targetId}-${locale}`} />
+                ) : (
+                  <p className="type-caption text-fg-muted">{tconcept("noSourceConcept")}</p>
+                )}
+              </section>
+            ) : null}
+          </>
         ) : (
           <FormField label={t("sourceBody")}>
             <Textarea value={sourceBody} readOnly rows={12} className="font-mono text-xs" />
@@ -107,9 +146,18 @@ export function TranslationEditor({ kind, targetId, locale, localeLabel, sourceL
           <Textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={3} maxLength={600} />
         </FormField>
         {kind === "program" ? (
-          <FormField label={tc("description")}>
-            <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={8} maxLength={4000} />
-          </FormField>
+          <>
+            <FormField label={tc("description")}>
+              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={8} maxLength={4000} />
+            </FormField>
+            {withConcept ? (
+              <section className="flex flex-col gap-2 rounded-lg border border-border p-3" aria-label={tconcept("title")}>
+                <h4 className="text-sm font-semibold text-fg">{tconcept("title")}</h4>
+                <p className="type-caption text-fg-muted">{tconcept("translationHint")}</p>
+                <ConceptFields value={concept} onChange={setConcept} invalid={conceptInvalid} idPrefix={`concept-${targetId}-${locale}`} />
+              </section>
+            ) : null}
+          </>
         ) : (
           <FormField label={t("bodyLabel")} hint={tc("jsonHint")} error={jsonError ?? undefined}>
             <Textarea

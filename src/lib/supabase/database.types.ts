@@ -973,14 +973,14 @@ isOneToOne: false
                   ]
                 },"program_localizations": {
                   Row: {
-                    "description": string | null,"locale": Database["public"]['Enums']["locale_code"],"status": string,"summary": string | null,"title": string,"updated_at": string,"updated_by": string | null,"version_id": string
+                    "concept": Json | null,"description": string | null,"locale": Database["public"]['Enums']["locale_code"],"status": string,"summary": string | null,"title": string,"updated_at": string,"updated_by": string | null,"version_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "description"?: string | null,"locale": Database["public"]['Enums']["locale_code"],"status"?: string,"summary"?: string | null,"title": string,"updated_at"?: string,"updated_by"?: string | null,"version_id": string
+                    "concept"?: Json | null,"description"?: string | null,"locale": Database["public"]['Enums']["locale_code"],"status"?: string,"summary"?: string | null,"title": string,"updated_at"?: string,"updated_by"?: string | null,"version_id": string
                   }
                   Update: {
-                    "description"?: string | null,"locale"?: Database["public"]['Enums']["locale_code"],"status"?: string,"summary"?: string | null,"title"?: string,"updated_at"?: string,"updated_by"?: string | null,"version_id"?: string
+                    "concept"?: Json | null,"description"?: string | null,"locale"?: Database["public"]['Enums']["locale_code"],"status"?: string,"summary"?: string | null,"title"?: string,"updated_at"?: string,"updated_by"?: string | null,"version_id"?: string
                   }
                   Relationships: [
                     {
@@ -993,14 +993,14 @@ isOneToOne: false
                   ]
                 },"program_versions": {
                   Row: {
-                    "certificate_fields": NonNullable<Json>,"created_at": string,"created_by": string | null,"description": string | null,"estimated_weeks": number | null,"id": string,"program_id": string,"published_at": string | null,"source_locale": Database["public"]['Enums']["locale_code"],"status": Database["public"]['Enums']["content_status"],"summary": string | null,"title": string,"version_no": number
+                    "certificate_fields": NonNullable<Json>,"concept": Json | null,"created_at": string,"created_by": string | null,"description": string | null,"estimated_weeks": number | null,"id": string,"program_id": string,"published_at": string | null,"source_locale": Database["public"]['Enums']["locale_code"],"status": Database["public"]['Enums']["content_status"],"summary": string | null,"title": string,"version_no": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "certificate_fields"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"estimated_weeks"?: number | null,"id"?: string,"program_id": string,"published_at"?: string | null,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"title": string,"version_no": number
+                    "certificate_fields"?: NonNullable<Json>,"concept"?: Json | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"estimated_weeks"?: number | null,"id"?: string,"program_id": string,"published_at"?: string | null,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"title": string,"version_no": number
                   }
                   Update: {
-                    "certificate_fields"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"estimated_weeks"?: number | null,"id"?: string,"program_id"?: string,"published_at"?: string | null,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"title"?: string,"version_no"?: number
+                    "certificate_fields"?: NonNullable<Json>,"concept"?: Json | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"estimated_weeks"?: number | null,"id"?: string,"program_id"?: string,"published_at"?: string | null,"source_locale"?: Database["public"]['Enums']["locale_code"],"status"?: Database["public"]['Enums']["content_status"],"summary"?: string | null,"title"?: string,"version_no"?: number
                   }
                   Relationships: [
                     {
@@ -2152,6 +2152,9 @@ isOneToOne: false
                            },
 "product_is_purchasable":
 { Args: { "p_product": string }; Returns: boolean
+                           },
+"program_concept_valid":
+{ Args: { "c": Json }; Returns: boolean
                            },
 "program_required_items":
 { Args: { "p_version": string }; Returns: {

@@ -11,6 +11,7 @@ import { Badge, Button, FormField, Input, PageHeader } from "@/components/ui";
 import { locales, type Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { loadLocalizedBody } from "@/lib/catalog/localized-body";
+import { conceptColumnSupported } from "@/lib/programs/concept-query";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -107,10 +108,18 @@ export default async function AdminTranslationsPage({ searchParams }: { searchPa
         );
       }
     } else {
-      const [{ data: version }, { data: locs }] = await Promise.all([
+      const [{ data: version }, { data: locs }, conceptOk] = await Promise.all([
         supabase.from("program_versions").select("id, title, summary, description, source_locale, status, version_no").eq("id", id).maybeSingle(),
         supabase.from("program_localizations").select("locale, title, summary, description, status, updated_at").eq("version_id", id),
+        conceptColumnSupported(supabase),
       ]);
+      // conceito (0048) em consulta própria: sem a coluna, o editor de tradução segue sem os campos de conceito
+      const [{ data: sourceConcept }, { data: locConcepts }] = conceptOk
+        ? await Promise.all([
+            supabase.from("program_versions").select("concept").eq("id", id).maybeSingle(),
+            supabase.from("program_localizations").select("locale, concept").eq("version_id", id),
+          ])
+        : [{ data: null }, { data: null }];
       if (version) {
         const targets = locales.filter((l) => l !== version.source_locale);
         editor = (
@@ -130,8 +139,9 @@ export default async function AdminTranslationsPage({ searchParams }: { searchPa
                   locale={target as LocaleCode}
                   localeLabel={tc(`localeName.${target}` as never)}
                   sourceLocaleLabel={tc(`localeName.${version.source_locale}` as never)}
-                  source={{ title: version.title, summary: version.summary, description: version.description }}
-                  existing={existing ? { title: existing.title, summary: existing.summary, description: existing.description, status: existing.status as "draft" | "published", updated_at: existing.updated_at } : null}
+                  source={{ title: version.title, summary: version.summary, description: version.description, concept: sourceConcept?.concept ?? null }}
+                  existing={existing ? { title: existing.title, summary: existing.summary, description: existing.description, concept: (locConcepts ?? []).find((l) => l.locale === target)?.concept ?? null, status: existing.status as "draft" | "published", updated_at: existing.updated_at } : null}
+                  conceptSupported={conceptOk}
                   existingLabel={existing ? t("existing", { date: formatDateTime(existing.updated_at, uiLocale) }) : null}
                 />
               );

@@ -216,6 +216,19 @@
       "download": "Download PDF",
       "verify": "Verify at {url}",
       "revoked": "Certificate revoked"
+    },
+    "concept": {
+      "title": "Program concept",
+      "forWho": "Who it's for",
+      "notFor": "Not for",
+      "outcomes": "What you'll achieve",
+      "method": "How it works",
+      "rhythm": "Pace",
+      "sessions": "{n}× a week",
+      "minutes": "~{n} min a day",
+      "needs": "What you'll need",
+      "needsNothing": "Nothing but yourself",
+      "care": "Take care"
     }
   },
   "certificate": {

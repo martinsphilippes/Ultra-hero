@@ -4556,6 +4556,52 @@ select tests.ok('S55 nada do cenário fica no ar e os heróis voltam sem usuári
   (select count(*) from public.content where slug like 's55-%') = 0
   and (select count(*) from public.creator_profiles where id in (public.seed_uuid('creator:rafael'), public.seed_uuid('creator:tiago')) and user_id is null) = 2);
 
+-- ================================================================ S0048 · Conceito do programa (0048)
+-- Colunas jsonb em program_versions/program_localizations, sem política nova (herdam a RLS de cada tabela).
+-- Forma travada por program_concept_valid (invoker, sem execute para o visitante). Nova versão copia o conceito.
+select tests.su();
+select tests.ok('S0048 seed: conceito em todas as 24 versões atuais e em en/es das 16 traduzidas',
+  (select count(*) from public.programs p join public.program_versions v on v.id = p.current_version_id where v.concept is not null) = 24
+  and (select count(*) from public.program_localizations where concept is not null and locale = 'en') = 16
+  and (select count(*) from public.program_localizations where concept is not null and locale = 'es') = 16
+  and (select bool_and(public.program_concept_valid(concept)) from public.program_versions where concept is not null));
+select tests.ok('S0048 políticas de versões e traduções inalteradas',
+  (select string_agg(policyname, ',' order by policyname) from pg_policies where schemaname = 'public' and tablename = 'program_versions') = 'pv_admin,pv_select'
+  and (select string_agg(policyname, ',' order by policyname) from pg_policies where schemaname = 'public' and tablename = 'program_localizations') = 'ploc_admin,ploc_select');
+-- a versão 2 do p1 criada no S9 (copiada da 1) herdou o conceito
+select tests.ok('S0048 nova versão copiada carrega o conceito da origem',
+  (select concept from public.program_versions where id = (select id from t_v2)) = (select concept from public.program_versions where id = public.seed_uuid('pv:p1:1')));
+select tests.anon();
+select tests.ok('S0048 visitante lê o conceito da versão publicada e da tradução publicada',
+  (select concept ->> 'idea' from public.program_versions where id = public.seed_uuid('pv:shelf-lia-2:1')) is not null
+  and (select concept ->> 'idea' from public.program_localizations where version_id = public.seed_uuid('pv:shelf-lia-2:1') and locale = 'en') is not null);
+select tests.su();
+update public.program_localizations set status = 'draft' where version_id = public.seed_uuid('pv:shelf-lia-2:1') and locale = 'es';
+select tests.anon();
+select tests.ok('S0048 visitante não vê tradução em rascunho (nem o conceito dela)',
+  not exists (select 1 from public.program_localizations where version_id = public.seed_uuid('pv:shelf-lia-2:1') and locale = 'es'));
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S0048 usuário comum não grava conceito (RLS: nada atualizado vira erro)',
+  $q$do $b$ declare n int; begin
+    update public.program_versions set concept = null where id = public.seed_uuid('pv:shelf-lia-2:1');
+    get diagnostics n = row_count; if n = 0 then raise exception 'no_rows'; end if; end $b$$q$, 'no_rows');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S0048 forma inválida é recusada pela constraint',
+  $q$update public.program_versions set concept = '{"idea":"x","outcomes":[]}'::jsonb where id = public.seed_uuid('pv:shelf-lia-2:1')$q$, 'program_versions_concept_shape');
+select tests.expect_error('S0048 tradução com forma inválida é recusada',
+  $q$update public.program_localizations set concept = '{"idea":1}'::jsonb where version_id = public.seed_uuid('pv:shelf-lia-2:1') and locale = 'en'$q$, 'program_localizations_concept_shape');
+update public.program_versions set concept = null where id = public.seed_uuid('pv:shelf-lia-2:1');
+select tests.su();
+select tests.ok('S0048 admin pode limpar o conceito (null é válido)', (select concept is null from public.program_versions where id = public.seed_uuid('pv:shelf-lia-2:1')));
+select tests.ok('S0048 validador: invoker, search_path fixo, sem execute para o visitante; S14 segue com 17 security definer',
+  (select not p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.program_concept_valid(jsonb)'::regprocedure)
+  and not has_function_privilege('anon', 'public.program_concept_valid(jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.program_concept_valid(jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.admin_create_program_version(uuid, uuid)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+-- restaura o que o cenário mexeu
+update public.program_localizations set status = 'published' where version_id = public.seed_uuid('pv:shelf-lia-2:1') and locale = 'es';
+
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();
 select tests.expect_error('S14 anon não executa admin_set_role (permission denied)',

@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { ActionResult } from "@/components/admin";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import { getUser, hasRole } from "@/lib/auth/session";
+import { programConceptSchema } from "@/lib/programs/concept";
 import { createClient } from "@/lib/supabase/server";
 
 // Traduções manuais (content_localizations / program_localizations). Nunca traduz automaticamente.
@@ -84,9 +85,11 @@ const programLoc = z.object({
   summary: z.string().trim().max(600),
   description: z.string().trim().max(4000),
   status: z.enum(["draft", "published"]),
+  // ausente = banco sem a 0048 (não mexe na coluna); null remove o conceito traduzido
+  concept: programConceptSchema.nullable().optional(),
 });
 
-export async function saveProgramLocalizationAction(versionId: string, targetLocale: string, input: z.infer<typeof programLoc>): Promise<ActionResult> {
+export async function saveProgramLocalizationAction(versionId: string, targetLocale: string, input: z.input<typeof programLoc>): Promise<ActionResult> {
   const ids = z.object({ versionId: uuid, targetLocale: locale }).safeParse({ versionId, targetLocale });
   const parsed = programLoc.safeParse(input);
   if (!ids.success || !parsed.success) return fail("invalid_input");
@@ -100,6 +103,7 @@ export async function saveProgramLocalizationAction(versionId: string, targetLoc
         title: parsed.data.title,
         summary: parsed.data.summary || null,
         description: parsed.data.description || null,
+        ...(parsed.data.concept !== undefined ? { concept: parsed.data.concept } : {}),
         status: parsed.data.status,
         updated_by: userId,
         updated_at: new Date().toISOString(),

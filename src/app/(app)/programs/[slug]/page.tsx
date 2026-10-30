@@ -13,11 +13,13 @@ import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
 import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
 import { favoriteStatus, mixedListsSupported } from "@/lib/library/lists-support";
+import { loadProgramConcept } from "@/lib/programs/concept-query";
 import type { Enums, FnReturns, Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { AbandonButton } from "./AbandonButton";
 import { EnrollButton } from "./EnrollButton";
+import { ProgramConcept } from "./ProgramConcept";
 
 // Página de programa: cabeçalho da versão (atual ou a versão em que o usuário está inscrito),
 // itens via program_required_items (com substituições), progresso e certificado simbólico.
@@ -95,7 +97,8 @@ export default async function ProgramPage({ params }: Params) {
 
   // Guardar em lista e favoritar: só programa publicado (as políticas da 0040/0041 recusam o resto) e só
   // com a migração no banco; favorite nulo = sem a 0041, coração escondido.
-  const [versionRes, locRes, itemsRes, currentRes, profile, canSaveToList, favorite] = await Promise.all([
+  // Conceito em consulta separada: banco sem a 0048 cai na descrição em vez de quebrar a página.
+  const [versionRes, locRes, itemsRes, currentRes, profile, canSaveToList, favorite, concept] = await Promise.all([
     supabase.from("program_versions").select("id, version_no, title, summary, description, source_locale, estimated_weeks, status").eq("id", versionId).maybeSingle(),
     supabase.from("program_localizations").select("title, summary, description").eq("version_id", versionId).eq("locale", uiLocale).eq("status", "published").maybeSingle(),
     supabase.rpc("program_required_items", { p_version: versionId }),
@@ -105,6 +108,7 @@ export default async function ProgramPage({ params }: Params) {
     user ? getProfile() : null,
     user && program.status === "published" ? mixedListsSupported() : false,
     user && program.status === "published" ? favoriteStatus(user.id, { kind: "program", id: program.id }) : null,
+    loadProgramConcept(supabase, versionId, uiLocale),
   ]);
   const version = (versionRes.data as Version | null) ?? null;
   if (!version) notFound();
@@ -253,6 +257,8 @@ export default async function ProgramPage({ params }: Params) {
         </div>
       </header>
 
+      <ProgramConcept concept={concept} description={description} estimatedWeeks={version.estimated_weeks} />
+
       {/* Certificado simbólico */}
       {enrollment?.status === "completed" && certificate && (
         <section aria-labelledby="certificate-title" className="flex flex-col gap-3 rounded-2xl border border-accent/40 bg-accent-soft/40 p-5 md:flex-row md:items-center md:justify-between">
@@ -380,15 +386,6 @@ export default async function ProgramPage({ params }: Params) {
           </div>
         ))}
       </section>
-
-      {description && (
-        <section aria-labelledby="program-about" className="flex flex-col gap-2">
-          <h2 id="program-about" className="type-h2 text-fg">
-            {t("about")}
-          </h2>
-          <p className="type-body max-w-prose text-fg">{description}</p>
-        </section>
-      )}
 
       <section aria-label={t("feedbackTitle")} className="pt-2">
         <FeedbackWidget context={`program:${program.id}`} />
