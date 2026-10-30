@@ -2,13 +2,13 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
-// Casca das lojas do GC Hero: a web de produção numa WebView, com login nativo (Google pelo navegador
+// Casca das lojas do Groscove Ultra: a web de produção numa WebView, com login nativo (Google pelo navegador
 // do sistema, Sign in with Apple), compartilhar do sistema e tela própria sem conexão.
 // Decisões e lições do Quantso: ../docs/decisions/app-nas-lojas.md. Publicação: ../docs/lojas.md.
 
 // Irreversível depois do primeiro envio a qualquer loja (Apple e Google não deixam trocar).
 const APP_ID = "com.groscove.ultra";
-// Endereço da web que a casca abre; muda com o domínio da marca GC Hero (EAS env por perfil).
+// Endereço da web que a casca abre; muda com o domínio definitivo (EAS env por perfil).
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "https://ultra-hero.vercel.app";
 // Preenchidos depois do `eas init` na conta Expo do Quantso (não são segredo; ficam no código porque o
 // EAS resolve esta config na máquina de quem roda `eas build`, antes de ler as variáveis da nuvem).
@@ -16,7 +16,8 @@ const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "https://ultra-hero.vercel.ap
 const EAS_PROJECT_ID: string | undefined = undefined;
 const EXPO_OWNER: string | undefined = undefined;
 
-const OBSIDIAN = "#0B0B0B";
+// mesmo fundo dos ícones da web (public/icons)
+const OBSIDIAN = "#111111";
 const ORANGE = "#FF5A1F";
 
 // Push no Android passa pelo FCM: sem o google-services.json do projeto Firebase o build fica verde
@@ -30,8 +31,8 @@ if (process.env.EAS_BUILD_PROFILE === "production" && !hasGoogleServices) {
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "GC Hero",
-  slug: "gc-hero",
+  name: "Groscove Ultra",
+  slug: "groscove-ultra",
   ...(EXPO_OWNER ? { owner: EXPO_OWNER } : {}),
   scheme: "gchero",
   // versão que a pessoa vê; o número do build vem do EAS (appVersionSource remote)
@@ -51,9 +52,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     config: { usesNonExemptEncryption: false },
     infoPlist: {
       // o <input type="file"> da web (foto de perfil, post, receita) abre câmera e fotos
-      NSCameraUsageDescription: "O GC Hero usa a câmera quando você escolhe tirar uma foto para o perfil ou para um post.",
-      NSPhotoLibraryUsageDescription: "O GC Hero acessa suas fotos quando você escolhe uma imagem para o perfil ou para um post.",
-      NSMicrophoneUsageDescription: "O GC Hero usa o microfone quando você grava um vídeo para um post.",
+      NSCameraUsageDescription: "O Groscove Ultra usa a câmera quando você escolhe tirar uma foto para o perfil ou para um post.",
+      NSPhotoLibraryUsageDescription: "O Groscove Ultra acessa suas fotos quando você escolhe uma imagem para o perfil ou para um post.",
+      NSMicrophoneUsageDescription: "O Groscove Ultra usa o microfone quando você grava um vídeo para um post.",
     },
     // A casca não coleta dado próprio; os rótulos de privacidade da loja descrevem o que a web coleta.
     // Razões das APIs exigidas pela Apple desde 05/2024 (UserDefaults e data de arquivo, usadas pelo RN).

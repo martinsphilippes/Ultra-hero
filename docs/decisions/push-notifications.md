@@ -1,6 +1,6 @@
 # Push no app das lojas
 
-Decisão do responsável (30/10/2026): o app GC Hero avisa por push sobre **posts novos de heróis
+Decisão do responsável (30/10/2026): o app Groscove Ultra avisa por push sobre **posts novos de heróis
 favoritados** e outros momentos que valem um aviso. O agente escolheu os outros casos, registrados
 aqui: **conquista desbloqueada** (inclui as metas de sequência e de conteúdos concluídos, que são
 conquistas no banco), **programa concluído** e **lembrete de sequência**.

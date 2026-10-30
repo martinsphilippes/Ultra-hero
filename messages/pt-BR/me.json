@@ -785,7 +785,7 @@
     "description": "Escolha o que aceita receber e por onde. Suas preferências valem para qualquer envio futuro.",
     "delivery": {
       "title": "Como enviamos",
-      "body": "Os avisos chegam por push no app GC Hero, depois que você liga o canal Push e permite as notificações no celular. E-mails opcionais ainda não são enviados. As mensagens transacionais (confirmação de cadastro e redefinição de senha) são necessárias para a conta funcionar e não podem ser desligadas."
+      "body": "Os avisos chegam por push no app Groscove Ultra, depois que você liga o canal Push e permite as notificações no celular. E-mails opcionais ainda não são enviados. As mensagens transacionais (confirmação de cadastro e redefinição de senha) são necessárias para a conta funcionar e não podem ser desligadas."
     },
     "types": {
       "title": "O que você aceita receber",
@@ -830,7 +830,7 @@
       },
       "channel_push": {
         "label": "Push",
-        "description": "Notificações no celular, pelo app GC Hero."
+        "description": "Notificações no celular, pelo app Groscove Ultra."
       }
     },
     "save": "Salvar preferências",
@@ -840,7 +840,7 @@
       "unauthenticated": "Entre para continuar.",
       "generic": "Não foi possível salvar. Tente novamente.",
       "push_denied": "As notificações estão desligadas no celular. Ative-as nos Ajustes do aparelho e tente de novo.",
-      "push_unavailable": "Notificações push só estão disponíveis no app GC Hero."
+      "push_unavailable": "Notificações push só estão disponíveis no app Groscove Ultra."
     }
   },
   "onboarding": {

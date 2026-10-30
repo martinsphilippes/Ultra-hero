@@ -13,7 +13,7 @@ describe("buildPushMessage", () => {
 
   it("post sem título usa o texto genérico", () => {
     const event: PushEvent = { kind: "hero_post", hero: "Anitta", contentTitle: "  ", contentSlug: "x" };
-    expect(buildPushMessage(event, "en", messages("en")).body).toBe("There's a new post from Anitta on GC Hero.");
+    expect(buildPushMessage(event, "en", messages("en")).body).toBe("There's a new post from Anitta on Groscove Ultra.");
   });
 
   it("conquista, programa e sequência nos três idiomas", () => {

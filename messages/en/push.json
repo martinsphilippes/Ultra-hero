@@ -2,7 +2,7 @@
   "heroPost": {
     "title": "{hero} posted",
     "body": "{title}",
-    "bodyFallback": "There's a new post from {hero} on GC Hero."
+    "bodyFallback": "There's a new post from {hero} on Groscove Ultra."
   },
   "achievement": {
     "title": "Achievement unlocked",

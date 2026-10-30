@@ -2,7 +2,7 @@
   "heroPost": {
     "title": "{hero} publicó",
     "body": "{title}",
-    "bodyFallback": "Hay una publicación nueva de {hero} en GC Hero."
+    "bodyFallback": "Hay una publicación nueva de {hero} en Groscove Ultra."
   },
   "achievement": {
     "title": "Logro desbloqueado",

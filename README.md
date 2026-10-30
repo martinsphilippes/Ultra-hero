@@ -9,7 +9,7 @@ Stack aprovada: **Next.js 15 + TypeScript** · **Supabase** (Postgres/RLS/Auth/S
 - Privacidade/retenção: [`docs/privacy-and-retention.md`](docs/privacy-and-retention.md)
 - Checklist de lançamento: [`docs/launch-checklist.md`](docs/launch-checklist.md)
 
-## App nas lojas (GC Hero)
+## App nas lojas (Groscove Ultra)
 
 A mesma web vai para a App Store e o Google Play numa casca Expo em [`mobile/`](mobile/README.md): no app, comércio, planos e textos de demonstração não aparecem, o login usa Google pelo navegador do sistema e Sign in with Apple, e há push para posts de heróis favoritos, conquistas, programas concluídos e lembrete de sequência ([`docs/decisions/push-notifications.md`](docs/decisions/push-notifications.md)). Decisão: [`docs/decisions/app-nas-lojas.md`](docs/decisions/app-nas-lojas.md). Roteiro de publicação: [`docs/lojas.md`](docs/lojas.md).
 

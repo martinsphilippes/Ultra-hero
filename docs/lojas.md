@@ -1,6 +1,6 @@
 # Publicação nas lojas — App Store e Google Play
 
-Roteiro do app **GC Hero** (`mobile/`, identificador `com.groscove.ultra`). O porquê de cada escolha
+Roteiro do app **Groscove Ultra** (`mobile/`, identificador `com.groscove.ultra`). O porquê de cada escolha
 está em [`decisions/app-nas-lojas.md`](decisions/app-nas-lojas.md). Os passos marcados **(dono)**
 pedem conta, pagamento ou assinatura de quem responde pela empresa; o resto é do time.
 
@@ -10,14 +10,14 @@ pedem conta, pagamento ou assinatura de quem responde pela empresa; o resto é d
   (30/10/2026). Depois do primeiro envio ele não muda em nenhuma das lojas.
 - [ ] **(dono)** App **gratuito** nas duas lojas (no Google, gratuito → pago não volta).
 - [ ] Domínio e marca: `EXPO_PUBLIC_WEB_URL` aponta para a web (hoje `https://ultra-hero.vercel.app`).
-  Trocar o nome da web para GC Hero antes do envio (a Apple confere nome do app × conteúdo).
+  O nome do app (Groscove Ultra) é o mesmo da web.
 
 ## 1. Contas
 
 | Conta | Situação | O que fazer |
 |---|---|---|
 | Expo (EAS) | a do Quantso | `cd mobile && npx eas-cli login && npx eas-cli init` → copie o `projectId` e a conta para `EAS_PROJECT_ID` e `EXPO_OWNER` em `mobile/app.config.ts` e commite |
-| Google Play Console | organização (Quantso) | criar o app "GC Hero" na mesma conta; conta de organização **não** tem a regra dos 12 testadores por 14 dias |
+| Google Play Console | organização (Quantso) | criar o app "Groscove Ultra" na mesma conta; conta de organização **não** tem a regra dos 12 testadores por 14 dias |
 | Apple Developer | pessoal | **(dono)** US$ 99/ano; criar o app no App Store Connect com o bundle `com.groscove.ultra`; habilitar **Sign in with Apple** no identificador (Certificates, Identifiers & Profiles) |
 
 ## 2. Configuração do projeto EAS
@@ -103,7 +103,7 @@ Roteiro mínimo, nas duas plataformas, contra o endereço de produção:
 
 - **Ficha**: ícone 512 (`mobile/assets/store-icon-512.png`), feature graphic 1024×500
   (`mobile/assets/feature-graphic-1024x500.png`), capturas do app **das lojas** (sem comércio). Os
-  dois arquivos são provisórios até a marca GC Hero: `npm run assets` em `mobile/` regenera.
+  dois arquivos são gerados da marca em `docs/brand/`: `npm run assets` em `mobile/` regenera.
   Capturas que o revisor não consegue alcançar com a conta demo contam como propaganda enganosa.
 - **Acesso ao app**: conta demo com e-mail e senha (o revisor está fora do Brasil). Nota em inglês
   (§8). Garantir que a conta tem os conteúdos que as capturas mostram.
@@ -141,7 +141,7 @@ Roteiro mínimo, nas duas plataformas, contra o endereço de produção:
 
 ## 8. Nota ao revisor (modelo, em inglês)
 
-> GC Hero is a fitness, nutrition and cooking companion featuring content from real athletes and
+> Groscove Ultra is a fitness, nutrition and cooking companion featuring content from real athletes and
 > chefs, used under license (agreements attached). Sign in with the demo account below, or create
 > an account with Sign in with Apple / Google. There are no purchases in the app: all content shown
 > is included. Account deletion: Profile › Account & privacy › Delete my account (please use an
