@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { hasNativeBridge, onNativeMessage, postToNative } from "@/lib/native-app/client";
 import { createClient } from "@/lib/supabase/client";
 import { AuthAlert } from "./AuthAlert";
 
@@ -23,10 +24,20 @@ export function GoogleButton({ next, size = "md" }: GoogleButtonProps) {
   const t = useTranslations("auth");
   const [status, setStatus] = useState<"idle" | "loading" | "unavailable" | "error">("idle");
 
+  // App das lojas: o login abre no navegador do sistema; se a pessoa cancelar, o botão volta.
+  useEffect(() => {
+    if (!hasNativeBridge()) return;
+    return onNativeMessage((message) => {
+      if (message.type === "oauth-result") setStatus(message.reason === "canceled" ? "idle" : "error");
+    });
+  }, []);
+
   const signIn = async () => {
     setStatus("loading");
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    // No app das lojas a volta passa por /auth/native, que devolve o código ao app (gchero://).
+    const native = hasNativeBridge();
+    const redirectTo = `${window.location.origin}/auth/${native ? "native" : "callback"}?next=${encodeURIComponent(next)}`;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo, skipBrowserRedirect: true },
@@ -48,6 +59,7 @@ export function GoogleButton({ next, size = "md" }: GoogleButtonProps) {
       // CORS/rede: segue o fluxo normal de redirecionamento.
     }
 
+    if (native && postToNative({ type: "oauth", url: data.url })) return;
     window.location.assign(data.url);
   };
 

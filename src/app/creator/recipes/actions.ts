@@ -19,6 +19,7 @@ import { creatorActionContext, type CreatorActionContext } from "../_lib/creator
 import { setDraftSlug } from "../_lib/draft-slug";
 import { uniqueSlug } from "../_lib/slug";
 import { checkStreamVideo, providerFailure, readVideoUploadConfigured } from "../_lib/video-post";
+import { schedulePushDispatch } from "@/lib/push/schedule";
 
 // Ações do Portal do Chef (receitas estruturadas, 0027/0028). Toda regra de dono, situação e
 // checklist mora nas RPCs; aqui validamos a entrada (o mesmo Zod do editor), traduzimos o erro
@@ -334,6 +335,8 @@ export async function publishRecipe(input: { id: string; publishAt?: string | nu
   const slug = (data as { slug?: string } | null)?.slug ?? own.slug;
   revalidateRecipe(own.id);
   revalidatePublic(slug);
+  // no ar agora: avisa quem favoritou o herói; agendada sai no cron diário (0054)
+  if (!schedule.value) schedulePushDispatch();
   return { ok: true, slug, scheduled: Boolean(schedule.value) };
 }
 

@@ -14,6 +14,7 @@ import { parseContentForm } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { getUser, hasRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { schedulePushDispatch } from "@/lib/push/schedule";
 
 // Ações administrativas de conteúdo: revisão editorial, status, destaque, edição completa
 // (content + content_bodies) e padrões de conclusão por tipo. Regras ficam nas RPCs/RLS;
@@ -66,6 +67,8 @@ export async function reviewContentAction(
           p_feedback: parsed.data.feedback || undefined,
         });
     if (error) return fail(error);
+    // aprovado para agora: avisa quem favoritou o herói (agendado sai no cron; 0054)
+    if (parsed.data.decision === "approved" && !schedule.value) schedulePushDispatch();
     revalidatePath("/admin/content");
     revalidatePath(`/admin/content/${parsed.data.contentId}`);
     const t = await getTranslations("adminContent.content.review");
@@ -111,6 +114,7 @@ export async function setContentStatusAction(
           p_justification: parsed.data.justification,
         });
     if (error) return fail(error);
+    if (parsed.data.status === "published" && !schedule.value) schedulePushDispatch();
     revalidatePath("/admin/content");
     revalidatePath(`/admin/content/${parsed.data.contentId}`);
     revalidatePath("/admin/featured");

@@ -17,6 +17,7 @@ import { failFrom, type ActionFailure } from "../_lib/action-utils";
 import { insertCreatorContent } from "../_lib/content-insert";
 import { creatorActionContext } from "../_lib/creator-action";
 import { setDraftSlug } from "../_lib/draft-slug";
+import { schedulePushDispatch } from "@/lib/push/schedule";
 
 // Post com foto (0043). Os bytes passam pelo servidor: tipo e dimensões conferidos pelos magic
 // bytes, envio reservado no banco (herói ativo, cota, kill switch), objeto gravado no bucket público
@@ -164,6 +165,8 @@ export async function publishPhotoPost(input: { contentId: string; title: string
   revalidatePost();
   revalidatePath("/inicio");
   revalidatePath("/explore");
+  // post no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0054)
+  schedulePushDispatch();
   return { ok: true, slug };
 }
 

@@ -25,6 +25,8 @@ const eslintConfig = [
       "test-results/**",
       // Assets estáticos (service worker roda em outro contexto global)
       "public/**",
+      // App das lojas (Expo): projeto próprio, com lint e tsconfig dele
+      "mobile/**",
     ],
   },
   {

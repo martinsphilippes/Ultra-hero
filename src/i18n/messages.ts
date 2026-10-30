@@ -39,6 +39,36 @@ export function loadMessages(locale: Locale): Promise<AbstractIntlMessages> {
   return pending;
 }
 
+// App das lojas: textos alternativos sem "demonstração", "simulado" ou "fictício"
+// (messages-native/<locale>.json, sobrepostos às mesmas chaves; docs/decisions/app-nas-lojas.md).
+const NATIVE_MESSAGES_DIR = path.join(process.cwd(), "messages-native");
+const nativeCache = new Map<Locale, Promise<AbstractIntlMessages>>();
+
+async function readNativeOverlay(locale: Locale): Promise<AbstractIntlMessages> {
+  try {
+    return JSON.parse(await fs.readFile(path.join(NATIVE_MESSAGES_DIR, `${locale}.json`), "utf8")) as AbstractIntlMessages;
+  } catch {
+    return {};
+  }
+}
+
+function loadNativeOverlay(locale: Locale): Promise<AbstractIntlMessages> {
+  if (process.env.NODE_ENV !== "production") return readNativeOverlay(locale);
+  let pending = nativeCache.get(locale);
+  if (!pending) {
+    pending = readNativeOverlay(locale);
+    nativeCache.set(locale, pending);
+  }
+  return pending;
+}
+
+/** Mensagens do request; no app das lojas, com a sobreposição de messages-native por cima. */
+export async function loadRequestMessages(locale: Locale, nativeApp: boolean): Promise<AbstractIntlMessages> {
+  const base = await loadMessagesWithFallback(locale);
+  if (!nativeApp) return base;
+  return deepMerge(base, await loadNativeOverlay(locale));
+}
+
 // Mescla o idioma padrão por baixo para que chaves faltantes não quebrem a UI.
 export async function loadMessagesWithFallback(locale: Locale): Promise<AbstractIntlMessages> {
   const primary = await loadMessages(locale);

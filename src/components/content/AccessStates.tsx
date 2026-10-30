@@ -43,7 +43,8 @@ export function LockCard({ moduleName }: { moduleName: string }) {
           </>
         }
         action={
-          <div className="flex flex-col items-center gap-2">
+          // no app das lojas não há plano à venda (Apple 3.1.1): fica o aviso, sem caminho de compra
+          <div className="flex flex-col items-center gap-2 native:hidden">
             <Button asChild variant="primary">
               <Link href="/profile/plan">{t("lockCta")}</Link>
             </Button>

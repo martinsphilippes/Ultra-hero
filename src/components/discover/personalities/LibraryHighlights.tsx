@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { hubHref } from "@/lib/catalog/creator-hub";
 import type { LibraryTile } from "@/lib/heroes/library-tabs";
+import { cn } from "@/lib/utils";
 import { LIBRARY_ICONS } from "./library-icons";
 
 type Props = { slug: string; tiles: LibraryTile[] };
@@ -15,8 +16,9 @@ export async function LibraryHighlights({ slug, tiles }: Props) {
     <ul className="-mx-gutter flex gap-4 overflow-x-auto px-gutter pb-1 scrollbar-none md:mx-0 md:px-0" data-testid="hero-libraries">
       {tiles.map((tile) => {
         const Icon = LIBRARY_ICONS[tile.icon];
+        // produtos não existem no app das lojas (docs/decisions/app-nas-lojas.md)
         return (
-          <li key={tile.key} className="shrink-0">
+          <li key={tile.key} className={cn("shrink-0", tile.key === "produtos" && "native:hidden")}>
             <Link
               href={hubHref(slug, tile.key)}
               data-library={tile.key}

@@ -20,7 +20,7 @@ export function DemoBanner({ initiallyDismissed = false }: DemoBannerProps) {
   };
 
   return (
-    <div role="status" className="border-b border-warning/30 bg-warning-soft text-fg">
+    <div role="status" className="border-b border-warning/30 bg-warning-soft text-fg native:hidden">
       <div className="mx-auto flex max-w-content items-center gap-3 px-gutter py-2">
         <FlaskConical className="size-4 shrink-0 text-warning" aria-hidden="true" />
         <p className="type-caption flex-1 text-balance">{t("banner")}</p>

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthAlert } from "@/components/auth/AuthAlert";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { AppleButton } from "@/components/auth/AppleButton";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { QuickSignupForm } from "@/components/auth/QuickSignupForm";
@@ -16,6 +17,7 @@ import { quickSignupAvailability } from "@/lib/auth/quick-signup-server";
 import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import { getUser } from "@/lib/auth/session";
 import { isAuthQueryError } from "@/lib/auth/types";
+import { getNativeApp } from "@/lib/native-app/server";
 import { createClient } from "@/lib/supabase/server";
 
 type SearchParams = Promise<{ next?: string; error?: string; demo?: string; mode?: string }>;
@@ -37,7 +39,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   const pendingSignup = cookieStore.get(QUICK_SIGNUP_PENDING_COOKIE)?.value === "1";
   if (user && !pendingSignup) redirect(next);
 
-  const [t, open, availability] = await Promise.all([getTranslations("auth"), createClient().then(readExperimentOpen), quickSignupAvailability()]);
+  const [t, open, availability, nativeApp] = await Promise.all([getTranslations("auth"), createClient().then(readExperimentOpen), quickSignupAvailability(), getNativeApp()]);
   const queryError = isAuthQueryError(error) ? error : undefined;
   // Veio do link de convite (/invite?token=…): o cadastro segue liberado para o e-mail convidado.
   const fromInvitation = next === "/invite" || next.startsWith("/invite?");
@@ -47,6 +49,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   const alternatives = (
     <div className="flex flex-col gap-5">
       <Divider label={t("divider")} />
+      {/* App iOS das lojas: com login do Google, a Apple exige o dela também (guideline 4.8) */}
+      {nativeApp?.platform === "ios" ? <AppleButton next={next} size="lg" /> : null}
       <GoogleButton next={next} size="lg" />
       {/* O Google cria a conta no primeiro acesso: a declaração de 18+ e o aceite também valem aqui. */}
       <p className="type-caption text-center text-fg-muted">{t.rich("login.googleTerms", { terms: legalRichTags.terms, privacy: legalRichTags.privacy })}</p>

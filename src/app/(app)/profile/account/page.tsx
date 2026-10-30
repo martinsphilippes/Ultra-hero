@@ -13,6 +13,7 @@ import { requireUser } from "@/lib/auth/session";
 import { DEMO_ACCOUNTS } from "@/lib/demo/accounts";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("me.meta");
@@ -76,7 +77,7 @@ export default async function AccountPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {blocks.map(({ key, icon: Icon, title, body }) => (
-          <section key={key} aria-labelledby={`${key}-title`} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+          <section key={key} aria-labelledby={`${key}-title`} className={cn("flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5", key === "demo" && "native:hidden")}>
             <div className="flex items-center gap-3">
               <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
                 <Icon className="size-5" />

@@ -10,6 +10,7 @@ import { indexCardKind, sectionAvailable, sectionPoints, trendCodes, usualRange 
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { isDetailSection, metricDef, MODEL_INFO, type MetricCode } from "@/lib/wearables/catalog";
 import type { MetricPoint, WatchSnapshot } from "@/lib/wearables/demo";
+import { getNativeApp } from "@/lib/native-app/server";
 import { formatClock, formatDecimal, formatMetric } from "@/lib/wearables/format";
 import { cn } from "@/lib/utils";
 import { loadWatchView, wantsExample } from "../view";
@@ -36,6 +37,8 @@ export default async function TodayDetailPage({ params, searchParams }: { params
   const suffix = example ? "?exemplo=1" : "";
   const view = await loadWatchView(`/profile/today/${section}${suffix}`, example);
   if (view.kind === "connect" || view.kind === "syncing") redirect("/profile/today");
+  // app das lojas: sem relógio simulado (TodaySection)
+  if (view.kind !== "real" && (await getNativeApp())) redirect("/profile");
   const snapshot = view.snapshot;
   if (!sectionAvailable(snapshot, section)) notFound();
 

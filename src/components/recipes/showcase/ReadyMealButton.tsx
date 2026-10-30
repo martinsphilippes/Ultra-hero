@@ -34,6 +34,7 @@ type Props = {
 // "Comprar pronto" (0051): 1 unidade do produto ligado à receita (ex.: marmita) no carrinho de TESTE,
 // pelas mesmas regras da loja (addToCart: logado, comprável, limite min(20, estoque demo), kill switch).
 // Visitante vê "Entrar para comprar". O toque conta no indicador da vitrine (sem dados da pessoa).
+// Comprar pronto é comércio simulado: some no app das lojas (docs/decisions/app-nas-lojas.md).
 export function ReadyMealButton({ product, isLoggedIn, inCart, nextPath, track, variant }: Props) {
   const t = useTranslations("recipes.showcase.ready");
   const tq = useTranslations("commerce.quickAdd");
@@ -50,7 +51,7 @@ export function ReadyMealButton({ product, isLoggedIn, inCart, nextPath, track, 
 
   if (!isLoggedIn) {
     return (
-      <div className={cn("flex flex-col gap-1", card && "w-full")}>
+      <div className={cn("flex flex-col gap-1 native:hidden", card && "w-full")}>
         <Link
           href={`/login?next=${encodeURIComponent(nextPath)}`}
           onClick={() => fireRecipeAction(track, "comprar_pronto")}
@@ -94,7 +95,7 @@ export function ReadyMealButton({ product, isLoggedIn, inCart, nextPath, track, 
   }
 
   return (
-    <div className={cn("flex flex-col gap-1", card && "w-full")}>
+    <div className={cn("flex flex-col gap-1 native:hidden", card && "w-full")}>
       <Button
         type="button"
         variant={card ? "secondary" : "primary"}

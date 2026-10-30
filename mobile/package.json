@@ -1,0 +1,43 @@
+{
+  "name": "gchero-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "doctor": "expo-doctor",
+    "config": "expo config --type introspect",
+    "check": "npm run typecheck && npm run test && npm run check:permissions",
+    "check:permissions": "node scripts/check-permissions.mjs",
+    "assets": "node scripts/generate-assets.mjs"
+  },
+  "dependencies": {
+    "expo": "~54.0.38",
+    "expo-apple-authentication": "~8.0.8",
+    "expo-build-properties": "~1.0.10",
+    "expo-constants": "~18.0.14",
+    "expo-crypto": "~15.0.9",
+    "expo-device": "~8.0.10",
+    "expo-linking": "~8.0.12",
+    "expo-notifications": "~0.32.17",
+    "expo-splash-screen": "~31.0.13",
+    "expo-status-bar": "~3.0.9",
+    "expo-system-ui": "~6.0.9",
+    "expo-updates": "~29.0.20",
+    "expo-web-browser": "~15.0.11",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-url-polyfill": "^2.0.0",
+    "react-native-webview": "13.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "typescript": "~5.9",
+    "vitest": "^3.2.7"
+  }
+}

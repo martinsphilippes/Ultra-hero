@@ -1,7 +1,8 @@
 import { cookies, headers } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 import { defaultTimeZone, formats, isLocale, LOCALE_COOKIE, type Locale } from "./config";
-import { loadMessagesWithFallback } from "./messages";
+import { parseNativeApp } from "@/lib/native-app/surface";
+import { loadRequestMessages } from "./messages";
 import { negotiateLocale } from "./negotiate";
 
 // Resolve o idioma por request: cookie NEXT_LOCALE válido > Accept-Language > pt-BR.
@@ -17,7 +18,7 @@ export default getRequestConfig(async ({ locale: explicit }) => {
   const locale = isLocale(explicit) ? explicit : await resolveLocale();
   return {
     locale,
-    messages: await loadMessagesWithFallback(locale),
+    messages: await loadRequestMessages(locale, parseNativeApp((await headers()).get("user-agent")) !== null),
     timeZone: defaultTimeZone,
     formats,
     // Em produção não vaza chaves faltantes para o usuário; em dev loga no console.

@@ -12,6 +12,7 @@ import { SkipLink } from "@/components/ui/skip-link";
 import { ToastProvider } from "@/components/ui/toast";
 import { getOrigin } from "@/lib/auth/origin";
 import { INTRO_INIT_SCRIPT } from "@/lib/intro/script";
+import { getNativeApp } from "@/lib/native-app/server";
 import { resolveTheme, THEME_COOKIE, THEME_INIT_SCRIPT } from "@/lib/theme/constants";
 import { resolveTemplate, TEMPLATE_COOKIE, TEMPLATE_INIT_SCRIPT } from "@/lib/theme/template";
 import "./globals.css";
@@ -75,14 +76,15 @@ export const viewport: Viewport = {
 
 // Layout raiz: idioma do request, tema do cookie (sem flash) e provedores globais.
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const [locale, cookieStore] = await Promise.all([getLocale(), cookies()]);
+  const [locale, cookieStore, nativeApp] = await Promise.all([getLocale(), cookies(), getNativeApp()]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
   // Template visual (Aparência): o servidor já manda o do cookie; o script corrige pelo localStorage.
   const template = resolveTemplate(cookieStore.get(TEMPLATE_COOKIE)?.value);
 
   return (
-    <html lang={locale} data-theme={theme} data-template={template} suppressHydrationWarning className={fontVariables}>
+    // data-native-app: a casca das lojas (variante `native:` do CSS esconde o que lá não existe)
+    <html lang={locale} data-theme={theme} data-template={template} data-native-app={nativeApp?.platform} suppressHydrationWarning className={fontVariables}>
       <head>
         {/* tema, template e (se for a hora) a abertura: tudo decidido antes da primeira pintura */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + TEMPLATE_INIT_SCRIPT + INTRO_INIT_SCRIPT }} />

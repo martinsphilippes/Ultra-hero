@@ -14,6 +14,7 @@ import { insertCreatorContent } from "../_lib/content-insert";
 import { creatorActionContext, type CreatorActionContext } from "../_lib/creator-action";
 import { setDraftSlug } from "../_lib/draft-slug";
 import { checkStreamVideo, providerFailure, readVideoUploadConfigured } from "../_lib/video-post";
+import { schedulePushDispatch } from "@/lib/push/schedule";
 
 // Composer de post em vídeo do herói. O ticket de upload, o vínculo uid → herói (stream_uploads,
 // gravado só pelo service role) e o rascunho nascem juntos no servidor; o banco recusa corpo e
@@ -211,6 +212,8 @@ export async function publishVideoPost(input: { contentId: string; title: string
   revalidatePost();
   revalidatePath("/inicio");
   revalidatePath("/explore");
+  // post no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0054)
+  schedulePushDispatch();
   return { ok: true, slug };
 }
 

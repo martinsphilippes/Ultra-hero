@@ -40,7 +40,7 @@ export default async function LegalLayout({ children }: { children: ReactNode })
       <footer className="border-t border-border safe-bottom">
         <div className="mx-auto flex w-full max-w-prose flex-col gap-2 px-gutter py-6">
           <LegalLinks />
-          <p className="flex flex-wrap items-center gap-2">
+          <p className="flex flex-wrap items-center gap-2 native:hidden">
             <Badge variant="demo">{t("demo.tag")}</Badge>
             <span className="type-caption text-fg-muted">{t("demo.banner")}</span>
           </p>

@@ -60,6 +60,8 @@ import { hasRecipeDetails } from "@/lib/recipes/rows";
 import { parseServingsParam } from "@/lib/recipes/scale";
 import { parseShowcaseSlug, recipeActionVisibility, recipeSignature, type RecipeActionTrack } from "@/lib/recipes/showcase";
 import { fetchReadyProducts, fetchRecipeSigners, fetchShowcaseCommerce, resolveShowcaseHero } from "@/lib/recipes/showcase-queries";
+import { getNativeApp } from "@/lib/native-app/server";
+import { hidesVideoPlayer } from "@/lib/native-app/surface";
 import { createClient } from "@/lib/supabase/server";
 import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { resolveVideoSource } from "@/lib/video";
@@ -218,7 +220,10 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           locale: uiLocale,
         })
       : null;
-  const allowManual = content.type === "video" && video?.type === "iframe";
+  // App das lojas: o player simulado (conteúdo sem vídeo real) não aparece; com vídeo real
+  // (embed/Stream) o player volta sozinho. Sem o player, a conclusão é pelo botão.
+  const hideDemoPlayer = hidesVideoPlayer(video?.type, (await getNativeApp()) !== null);
+  const allowManual = content.type === "video" && (video?.type === "iframe" || hideDemoPlayer);
   const readingAuto = (content.type === "guide" || content.type === "article") && mode === "auto";
 
   // Receita só abre depois da etapa demonstrativa (vale para todos, inclusive quem tem acesso ao módulo).
@@ -294,7 +299,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
   const photoPost = isPhotoPost(content, supabaseBaseUrl());
   const TypeIcon = photoPost ? ImageIcon : TYPE_ICON[content.type];
   // vídeo que toca: o player ocupa o topo no lugar da capa (a capa vira o pôster dele)
-  const playerOnTop = !isRecipe && state === "accessible" && content.type === "video" && video !== null && isPlayableVideo(video);
+  const playerOnTop = !isRecipe && state === "accessible" && content.type === "video" && video !== null && isPlayableVideo(video) && !hideDemoPlayer;
   const videoProps = video
     ? {
         contentId: content.id,
@@ -494,7 +499,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
       {!isRecipe && state === "accessible" && (
         <div className="flex flex-col gap-6">
           {readingAuto && !completedAt && <ReadingTracker contentId={content.id} targetId="content-body" threshold={threshold} path={path} />}
-          {content.type === "video" && videoProps && <VideoBody {...videoProps} part={playerOnTop ? "details" : "all"} />}
+          {content.type === "video" && videoProps && <VideoBody {...videoProps} part={playerOnTop || hideDemoPlayer ? "details" : "all"} />}
           {content.type === "workout" && <WorkoutBody workout={parseWorkoutBody(body)} />}
           {/* post com foto: a foto do topo é o corpo (e o alvo da leitura); a legenda é o resumo */}
           {(content.type === "guide" || content.type === "article") && !photoPost && <GuideBody guide={parseGuideBody(body)} id="content-body" />}

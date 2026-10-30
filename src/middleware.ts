@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
+import { isBlockedInNativeApp, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
@@ -51,12 +52,23 @@ function legacyEvolutionResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 308);
 }
 
+// App das lojas: comércio e planos simulados não existem lá (docs/decisions/app-nas-lojas.md).
+// A trava é aqui, e não só no botão escondido: link antigo, histórico ou digitação não abrem a rota.
+function nativeAppResponse(request: NextRequest): NextResponse | null {
+  if (!parseNativeApp(request.headers.get("user-agent"))) return null;
+  if (!isBlockedInNativeApp(request.nextUrl.pathname, request.nextUrl.searchParams)) return null;
+  const target = request.nextUrl.clone();
+  target.pathname = NATIVE_BLOCKED_FALLBACK;
+  target.search = "";
+  return NextResponse.redirect(target, 307);
+}
+
 export async function middleware(request: NextRequest) {
   // Renova a sessão (cookies) em toda requisição.
   const response = await updateSession(request);
 
   const { pathname, search } = request.nextUrl;
-  const early = heroHubResponse(request) ?? legacyEvolutionResponse(request);
+  const early = nativeAppResponse(request) ?? heroHubResponse(request) ?? legacyEvolutionResponse(request);
   if (early) {
     // Mantém os cookies renovados na resposta.
     for (const cookie of response.cookies.getAll()) early.cookies.set(cookie);

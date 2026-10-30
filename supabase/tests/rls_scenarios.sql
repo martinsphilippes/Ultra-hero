@@ -5929,6 +5929,120 @@ update public.seller_organizations set description = 'Fornecedor fictício de re
 delete from public.products where id = '62000000-0000-4000-8000-000000000001';
 delete from public.admin_audit where id > (select id from t_s64_base);
 drop table t_s64_base, t_s64_order, t_s64_f;
+-- ============================================================================ S65 · push (0054)
+-- pessoas próprias do cenário (as de cima já passaram por exclusão de conta)
+select tests.su();
+insert into auth.users (id, email) values ('65000000-0000-4000-8000-0000000000a1', 's65a@test.local'), ('65000000-0000-4000-8000-0000000000a2', 's65b@test.local');
+-- herói favorito: só a própria linha; herói inativo não entra
+select tests.login('65000000-0000-4000-8000-0000000000a1', 's65a@test.local');
+insert into public.hero_favorites (user_id, creator_id) values ('65000000-0000-4000-8000-0000000000a1', public.seed_uuid('creator:tiago'));
+select tests.expect_error('S65 favoritar herói em nome de outra pessoa é recusado',
+  $q$insert into public.hero_favorites (user_id, creator_id) values ('65000000-0000-4000-8000-0000000000a2', public.seed_uuid('creator:lia'))$q$, 'row-level security');
+select tests.login('65000000-0000-4000-8000-0000000000a2', 's65b@test.local');
+select tests.ok('S65 outra pessoa não vê o favorito de ninguém', (select count(*) from public.hero_favorites) = 0);
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:lia');
+select tests.login('65000000-0000-4000-8000-0000000000a2', 's65b@test.local');
+select tests.expect_error('S65 herói suspenso não pode ser favoritado',
+  $q$insert into public.hero_favorites (user_id, creator_id) values ('65000000-0000-4000-8000-0000000000a2', public.seed_uuid('creator:lia'))$q$, 'row-level security');
+select tests.su();
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:lia');
+select tests.anon();
+select tests.expect_error('S65 visitante não lê favoritos', $q$select count(*) from public.hero_favorites$q$, 'permission denied');
+
+-- tokens: só pela RPC, com formato válido; o mesmo aparelho passa para a conta nova
+select tests.login('65000000-0000-4000-8000-0000000000a1', 's65a@test.local');
+select tests.expect_error('S65 token fora do formato Expo é recusado', $q$select public.register_push_token('abc', 'ios', '1.0.0')$q$, 'invalid_token');
+select tests.expect_error('S65 plataforma desconhecida é recusada', $q$select public.register_push_token('ExponentPushToken[s65aaaaaaaaaaaa]', 'web', null)$q$, 'invalid_platform');
+select tests.expect_error('S65 token não entra por insert direto',
+  $q$insert into public.push_tokens (token, user_id, platform) values ('ExponentPushToken[s65direct0000]', '65000000-0000-4000-8000-0000000000a1', 'ios')$q$, '42501');
+select public.register_push_token('ExponentPushToken[s65aaaaaaaaaaaa]', 'ios', '1.0.0');
+select tests.ok('S65 a pessoa vê o próprio token', (select count(*) from public.push_tokens) = 1);
+select tests.login('65000000-0000-4000-8000-0000000000a2', 's65b@test.local');
+select tests.ok('S65 outra pessoa não vê o token', (select count(*) from public.push_tokens) = 0);
+select public.register_push_token('ExponentPushToken[s65bbbbbbbbbbbb]', 'android', '1.0.0');
+select public.register_push_token('ExponentPushToken[s65aaaaaaaaaaaa]', 'ios', '1.0.1');
+select tests.su();
+select tests.ok('S65 aparelho que troca de conta leva o token para a conta nova',
+  (select user_id from public.push_tokens where token = 'ExponentPushToken[s65aaaaaaaaaaaa]') = '65000000-0000-4000-8000-0000000000a2');
+update public.push_tokens set user_id = '65000000-0000-4000-8000-0000000000a1' where token = 'ExponentPushToken[s65aaaaaaaaaaaa]';
+
+-- a fila é só do servidor
+select tests.login('65000000-0000-4000-8000-0000000000a1', 's65a@test.local');
+select tests.expect_error('S65 authenticated não lê a fila', $q$select count(*) from public.push_outbox$q$, 'permission denied');
+select tests.expect_error('S65 authenticated não enfileira', $q$select public.push_enqueue('65000000-0000-4000-8000-0000000000a1', 'hero_post', 'x', '{}')$q$, 'permission denied');
+select tests.expect_error('S65 authenticated não pega lote', $q$select * from public.push_claim(10)$q$, 'permission denied');
+
+-- post de herói favorito: sem consentimento, nada; com consentimento, um aviso por dia por herói
+select tests.su();
+select id as s65_post from public.content where creator_id = public.seed_uuid('creator:tiago') and status = 'published' order by id limit 1 \gset
+select id as s65_post2 from public.content where creator_id = public.seed_uuid('creator:tiago') and status = 'published' order by id offset 1 limit 1 \gset
+update public.content set status = 'draft' where id in (:'s65_post', :'s65_post2');
+update public.content set status = 'published' where id = :'s65_post';
+select tests.ok('S65 sem consentimento de push nada entra na fila', (select count(*) from public.push_outbox) = 0);
+insert into public.notification_preferences (user_id, channel_push, hero_posts) values ('65000000-0000-4000-8000-0000000000a1', true, false);
+update public.content set status = 'draft' where id = :'s65_post';
+update public.content set status = 'published' where id = :'s65_post';
+select tests.ok('S65 push ligado sem o tipo "posts de heróis": nada', (select count(*) from public.push_outbox) = 0);
+update public.notification_preferences set hero_posts = true where user_id = '65000000-0000-4000-8000-0000000000a1';
+update public.content set status = 'draft' where id = :'s65_post';
+update public.content set status = 'published' where id = :'s65_post';
+select tests.ok('S65 com consentimento: um aviso para quem favoritou, apontando o post',
+  (select count(*) from public.push_outbox) = 1
+  and (select user_id = '65000000-0000-4000-8000-0000000000a1' and kind = 'hero_post' and payload ->> 'content_id' = :'s65_post' from public.push_outbox));
+update public.content set status = 'published' where id = :'s65_post2';
+update public.content set title = title || ' ' where id = :'s65_post';
+select tests.ok('S65 segundo post do mesmo herói no dia e edição do publicado não geram outro aviso', (select count(*) from public.push_outbox) = 1);
+update public.content set status = 'draft', publish_at = now() + interval '3 days' where id = :'s65_post2';
+update public.content set status = 'published' where id = :'s65_post2';
+select tests.ok('S65 post agendado entra na fila para a data de ir ao ar',
+  (select count(*) from public.push_outbox where kind = 'hero_post' and not_before > now() + interval '2 days') = 1);
+select tests.ok('S65 o lote não pega o agendado antes da hora',
+  (select count(*) from public.push_claim(50)) = 1
+  and (select count(*) from public.push_claim(50)) = 0);
+update public.push_outbox set claimed_at = now() - interval '10 minutes' where kind = 'hero_post' and not_before <= now();
+select tests.ok('S65 linha pega e não enviada volta ao lote depois de 5 minutos', (select count(*) from public.push_claim(50)) = 1);
+
+-- conquista e programa concluído
+update public.notification_preferences set achievements = true where user_id = '65000000-0000-4000-8000-0000000000a1';
+insert into public.user_achievements (user_id, achievement_id) select '65000000-0000-4000-8000-0000000000a1', id from public.achievements where code = 'first_step';
+insert into public.user_achievements (user_id, achievement_id) select '65000000-0000-4000-8000-0000000000a2', id from public.achievements where code = 'first_step';
+select tests.ok('S65 conquista nova vira aviso só para quem aceitou',
+  (select count(*) from public.push_outbox where kind = 'achievement') = 1
+  and (select payload ->> 'code' from public.push_outbox where kind = 'achievement') = 'first_step');
+select p.id as s65_program, p.current_version_id as s65_version from public.programs p where p.current_version_id is not null limit 1 \gset
+select set_config('app.trusted', 'on', true);
+insert into public.enrollments (id, user_id, program_id, version_id, status) values ('65000000-0000-4000-8000-000000000001', '65000000-0000-4000-8000-0000000000a1', :'s65_program', :'s65_version', 'active');
+update public.enrollments set status = 'completed', completed_at = now() where id = '65000000-0000-4000-8000-000000000001';
+update public.enrollments set completed_at = now() where id = '65000000-0000-4000-8000-000000000001';
+select set_config('app.trusted', 'off', true);
+select tests.ok('S65 programa concluído vira um aviso (e só um)', (select count(*) from public.push_outbox where kind = 'program_completed') = 1);
+
+-- lembrete de sequência: sequência viva, nada hoje, aceitou → um por dia
+update public.notification_preferences set streak_reminders = true where user_id = '65000000-0000-4000-8000-0000000000a1';
+update public.profiles set timezone = 'America/Sao_Paulo' where id = '65000000-0000-4000-8000-0000000000a1';
+insert into public.streak_events (user_id, kind, ref_id, timezone, local_date)
+values ('65000000-0000-4000-8000-0000000000a1', 'completion', :'s65_post', 'America/Sao_Paulo', (now() at time zone 'America/Sao_Paulo')::date - 1);
+select tests.ok('S65 lembrete de sequência entra uma vez por dia', public.push_enqueue_streak_reminders() = 1 and public.push_enqueue_streak_reminders() = 0);
+insert into public.streak_events (user_id, kind, ref_id, timezone, local_date)
+values ('65000000-0000-4000-8000-0000000000a1', 'completion', :'s65_post2', 'America/Sao_Paulo', (now() at time zone 'America/Sao_Paulo')::date);
+delete from public.push_outbox where kind = 'streak_reminder';
+select tests.ok('S65 quem já fez atividade hoje não recebe lembrete', public.push_enqueue_streak_reminders() = 0);
+
+-- sem aparelho, nada entra; a conta excluída leva tokens, favoritos e fila
+delete from public.push_tokens where user_id = '65000000-0000-4000-8000-0000000000a1';
+delete from public.push_outbox;
+insert into public.user_achievements (user_id, achievement_id) select '65000000-0000-4000-8000-0000000000a1', id from public.achievements where code = 'five_done';
+select tests.ok('S65 sem aparelho registrado nada entra na fila', (select count(*) from public.push_outbox) = 0);
+select tests.ok('S65 funções do push: security definer com search_path fixo e nada para anon',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
+     from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname like any (array['push\_%', 'register_push_token'])));
+select tests.ok('S65 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+\ir ../migrations/0054_push_notifications.sql
+select tests.ok('S65 reaplicar a 0054 não perde favoritos nem preferências',
+  (select count(*) from public.hero_favorites) = 1
+  and (select hero_posts and achievements from public.notification_preferences where user_id = '65000000-0000-4000-8000-0000000000a1'));
 
 -- ================================================================ S65 · Embed conteúdo → herói sem ambiguidade (0055)
 -- Uma tabela cuja chave primária tem FK para content E para creator_profiles vira, para a API,

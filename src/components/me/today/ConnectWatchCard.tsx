@@ -56,7 +56,7 @@ export async function ConnectWatchCard({ headingLevel = "h3", providers = [] }: 
         <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         {anyAvailable ? t("privacyAvailable") : t("privacy")}
       </p>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center native:hidden">
         <Button asChild variant="primary" size="lg" leadingIcon={<Eye />}>
           <Link href="/profile/today?exemplo=1" data-testid="watch-example-link">
             {t("exampleCta")}

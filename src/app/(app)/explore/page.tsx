@@ -16,6 +16,7 @@ import { RecipeSearchForm } from "@/components/recipes/catalog/RecipeFilters";
 import { RecipeInviteBand } from "@/components/recipes/catalog/RecipeInviteBand";
 import { PageHeader } from "@/components/ui";
 import { parseRecipeCatalogParams, recipeCatalogHref, type RecipeCatalogParams } from "@/lib/recipes/catalog-params";
+import { getNativeApp } from "@/lib/native-app/server";
 import { getRecipeGate } from "@/lib/recipes/gate";
 
 type Props = { searchParams: Promise<RawSearchParams> };
@@ -45,14 +46,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 // Explorar: busca (GET) e abas (conteúdos, receitas, programas, produtos, listas). Só a aba
 // Receitas tem filtros; nela a caixa do cabeçalho busca receitas por nome, chef ou ingrediente.
 export default async function ExplorePage({ searchParams }: Props) {
-  const [{ recipes, ...params }, t] = await Promise.all([readParams(searchParams), getTranslations("discover.explore")]);
+  const [{ recipes, ...params }, t, nativeApp] = await Promise.all([readParams(searchParams), getTranslations("discover.explore"), getNativeApp()]);
   const gate = recipes ? await getRecipeGate() : null;
 
+  // No app das lojas a aba Produtos não existe (compras simuladas; docs/decisions/app-nas-lojas.md).
+  const showProducts = nativeApp === null;
   const tabs: { value: ExploreTab; label: string; icon: ReactNode }[] = [
     { value: "conteudos", label: t("tabs.contents"), icon: <LibraryBig /> },
     { value: "receitas", label: t("tabs.recipes"), icon: <ChefHat /> },
     { value: "programas", label: t("tabs.programs"), icon: <Layers /> },
-    { value: "produtos", label: t("tabs.products"), icon: <ShoppingBag /> },
+    ...(showProducts ? [{ value: "produtos" as const, label: t("tabs.products"), icon: <ShoppingBag /> }] : []),
     { value: "listas", label: t("tabs.lists"), icon: <Bookmark /> },
   ];
 
@@ -82,7 +85,7 @@ export default async function ExplorePage({ searchParams }: Props) {
             <ProgramsTab params={params} />
           </Suspense>
         )}
-        {params.tab === "produtos" && (
+        {params.tab === "produtos" && showProducts && (
           <Suspense fallback={<CardsSkeleton count={8} />}>
             <ProductsTab />
           </Suspense>

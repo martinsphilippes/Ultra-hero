@@ -195,7 +195,7 @@
       },
       "notifications": {
         "title": "Notificações",
-        "description": "O que você aceita receber e por qual canal. Nada é enviado na demonstração."
+        "description": "O que você aceita receber e por qual canal."
       },
       "account": {
         "title": "Conta e privacidade",
@@ -760,9 +760,9 @@
   "notifications": {
     "title": "Notificações",
     "description": "Escolha o que aceita receber e por onde. Suas preferências valem para qualquer envio futuro.",
-    "demo": {
-      "title": "Nada é enviado nesta demonstração",
-      "body": "Nenhum e-mail ou push sai do app nesta versão. O que você marca aqui fica guardado como consentimento e precisa ser respeitado por qualquer envio futuro. As mensagens transacionais (confirmação de cadastro e redefinição de senha) são necessárias para a conta funcionar e não podem ser desligadas."
+    "delivery": {
+      "title": "Como enviamos",
+      "body": "Os avisos chegam por push no app GC Hero, depois que você liga o canal Push e permite as notificações no celular. E-mails opcionais ainda não são enviados. As mensagens transacionais (confirmação de cadastro e redefinição de senha) são necessárias para a conta funcionar e não podem ser desligadas."
     },
     "types": {
       "title": "O que você aceita receber",
@@ -774,6 +774,14 @@
       "streak_reminders": {
         "label": "Lembretes de sequência",
         "description": "Um aviso quando sua sequência de dias estiver prestes a zerar."
+      },
+      "hero_posts": {
+        "label": "Posts dos heróis favoritos",
+        "description": "Um aviso quando um herói que você favoritou posta (no máximo um por herói por dia)."
+      },
+      "achievements": {
+        "label": "Conquistas e programas concluídos",
+        "description": "Quando você desbloqueia uma conquista ou conclui um programa."
       },
       "commerce_updates": {
         "label": "Pedidos de teste",
@@ -799,7 +807,7 @@
       },
       "channel_push": {
         "label": "Push",
-        "description": "Notificações do navegador ou do app instalado, quando existirem."
+        "description": "Notificações no celular, pelo app GC Hero."
       }
     },
     "save": "Salvar preferências",
@@ -807,7 +815,9 @@
     "errors": {
       "invalid_input": "Verifique as opções.",
       "unauthenticated": "Entre para continuar.",
-      "generic": "Não foi possível salvar. Tente novamente."
+      "generic": "Não foi possível salvar. Tente novamente.",
+      "push_denied": "As notificações estão desligadas no celular. Ative-as nos Ajustes do aparelho e tente de novo.",
+      "push_unavailable": "Notificações push só estão disponíveis no app GC Hero."
     }
   },
   "onboarding": {

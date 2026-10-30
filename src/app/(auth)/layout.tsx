@@ -29,7 +29,7 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
       </header>
       <main id="main" tabIndex={-1} className="relative flex flex-1 flex-col items-center justify-center px-gutter py-8 outline-none">
         <div className="w-full max-w-md animate-slide-up">{children}</div>
-        <p className="mt-6 flex items-center gap-2 text-center">
+        <p className="mt-6 flex items-center gap-2 text-center native:hidden">
           <Badge variant="demo">{t("demo.tag")}</Badge>
           <span className="type-caption text-fg-muted">{t("demo.banner")}</span>
         </p>

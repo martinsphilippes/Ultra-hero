@@ -31,8 +31,8 @@ const nextConfig: NextConfig = {
   // As mensagens são lidas com fs em tempo de request: garante que vão para o bundle serverless.
   // "/*" cobre a rota raiz "/", "/**/*" as demais (o matcher usa `contains`).
   outputFileTracingIncludes: {
-    "/*": ["./messages/**/*"],
-    "/**/*": ["./messages/**/*"],
+    "/*": ["./messages/**/*", "./messages-native/**/*"],
+    "/**/*": ["./messages/**/*", "./messages-native/**/*"],
   },
   // A listagem de programas vive na aba "Programas" do Explorar; evita 404 em links diretos.
   // Links antigos dos heróis (0044: personagens viraram as pessoas reais) levam ao slug novo.

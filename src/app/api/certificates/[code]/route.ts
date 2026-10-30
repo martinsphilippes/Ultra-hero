@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { formatDate } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { requireUser } from "@/lib/auth/session";
+import { getNativeApp } from "@/lib/native-app/server";
 import { createClient } from "@/lib/supabase/server";
 
 // GET /api/certificates/[code] → PDF (A4 paisagem) do certificado SIMBÓLICO.
@@ -79,7 +80,8 @@ export async function GET(_request: Request, context: { params: Promise<{ code: 
 
   const pdf = await PDFDocument.create();
   pdf.setTitle(`${t("title")} - ${cert.code}`);
-  pdf.setAuthor("Groscove Ultra (demo)");
+  // no app das lojas não há "demo" (docs/decisions/app-nas-lojas.md)
+  pdf.setAuthor((await getNativeApp()) ? "Groscove Ultra" : "Groscove Ultra (demo)");
   pdf.setSubject(t("disclaimer"));
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);

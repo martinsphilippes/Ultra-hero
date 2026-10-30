@@ -1,21 +1,24 @@
 {
   "meta": {
     "terms": "Termos de Uso",
-    "termsDescription": "Regras de uso do Groscove Ultra, uma versão de demonstração com conteúdo educativo, planos simulados e pedidos de teste.",
+    "termsDescription": "Regras de uso da plataforma de conteúdo sobre treino, nutrição e gastronomia com heróis reais, incluindo a loja e os planos do site em modo de teste.",
     "privacy": "Política de Privacidade",
-    "privacyDescription": "Quais dados o Groscove Ultra trata, por quanto tempo, com quem compartilha e como você exerce seus direitos."
+    "privacyDescription": "Quais dados tratamos, para quê, por quanto tempo, com quem compartilhamos e como você exerce seus direitos.",
+    "deletion": "Excluir conta",
+    "deletionDescription": "Como excluir sua conta e o que acontece com os seus dados."
   },
   "links": {
     "nav": "Documentos legais",
     "terms": "Termos de Uso",
     "privacy": "Política de Privacidade",
-    "accountNote": "Os prazos de retenção e o que acontece com cada dado na exclusão estão na <privacy>Política de Privacidade</privacy>. As regras de uso estão nos <terms>Termos de Uso</terms>."
+    "accountNote": "Os prazos de retenção e o que acontece com cada dado na exclusão estão na <privacy>Política de Privacidade</privacy>. As regras de uso estão nos <terms>Termos de Uso</terms>.",
+    "deletion": "Excluir conta"
   },
   "page": {
     "eyebrow": "Documentos legais",
     "updated": "Última atualização: <time>{date}</time>",
-    "noticeTitle": "Versão de demonstração",
-    "noticeBody": "Este texto acompanha uma prova de conceito e está pendente de revisão jurídica antes da abertura pública. Ele não é declaração de conformidade legal nem certificação de qualquer tipo.",
+    "noticeTitle": "Loja e planos do site em modo de teste",
+    "noticeBody": "No site, a loja e os planos funcionam em modo de teste: nenhum meio de pagamento é pedido, nada é cobrado e nenhum pedido é entregue. O app para iOS e Android não vende nada.",
     "toc": "Nesta página",
     "home": "Voltar ao início",
     "read": {
@@ -23,21 +26,38 @@
       "privacy": "Ler a Política de Privacidade"
     }
   },
+  "deletion": {
+    "title": "Excluir sua conta",
+    "intro": "Você pode excluir sua conta a qualquer momento, pelo app ou pelo site, sem precisar pedir a ninguém.",
+    "stepsTitle": "Como excluir",
+    "step1": "Entre na sua conta, no app ou no site.",
+    "step2": "Abra <account>Perfil › Conta e privacidade</account>.",
+    "step3": "Escolha “Excluir minha conta” e digite a palavra de confirmação indicada.",
+    "dataTitle": "O que acontece com os seus dados",
+    "data": "A conta e os dados ligados a ela são apagados, ou anonimizados quando precisam ser guardados, nos prazos descritos na <privacy>Política de Privacidade</privacy>.",
+    "cta": "Entrar para excluir a conta"
+  },
   "terms": {
     "title": "Termos de Uso",
-    "intro": "Estes Termos explicam as regras para usar o Groscove Ultra. Ao criar uma conta ou usar o app, você concorda com eles. Leia também a <privacy>Política de Privacidade</privacy>, que explica como tratamos seus dados.",
+    "intro": "Estes Termos explicam as regras para usar o {app}, no site e no app para iOS e Android. Ao criar uma conta ou usar o serviço, você concorda com eles. Leia também a <privacy>Política de Privacidade</privacy>, que explica como tratamos seus dados.",
     "sections": {
       "about": {
-        "title": "O que é o Groscove Ultra",
+        "title": "Sobre o serviço",
         "blocks": {
-          "p1": "O Groscove Ultra é uma prova de conceito: um app experimental, em fase de demonstração, com conteúdos educativos sobre rotina, treino, nutrição e gastronomia, programas guiados, heróis, planos simulados e uma loja simulada.",
-          "p2": "O objetivo é testar a experiência e aprender com o uso. Não é um serviço comercial: <strong>não há cobranças, pagamentos, vendas nem entregas reais</strong>."
+          "p1": "O {app} é uma plataforma de conteúdo sobre treino, nutrição, rotina e gastronomia. Ela reúne heróis — atletas, chefs e outras personalidades reais —, conteúdos educativos, programas guiados, receitas, lembretes e recomendações de conteúdo.",
+          "p2": "O app para iOS e Android não vende nada nem mostra planos ou loja. No site, a loja e os planos funcionam em <strong>modo de teste</strong>: nenhum meio de pagamento é pedido, nada é cobrado e os pedidos de teste não são entregues, como explicam as seções sobre planos e loja abaixo."
+        }
+      },
+      "provider": {
+        "title": "Quem oferece o serviço",
+        "blocks": {
+          "p1": "O {app} é oferecido por {company}, inscrita no CNPJ sob o nº {cnpj}, com endereço em {address}. Para falar com a gente, escreva para {email}."
         }
       },
       "eligibility": {
         "title": "Quem pode usar",
         "blocks": {
-          "p1": "O Groscove Ultra é destinado <strong>exclusivamente a maiores de 18 anos</strong>. Ao criar uma conta, você declara ter 18 anos ou mais. Se você tem menos de 18 anos, não crie uma conta nem use o app.",
+          "p1": "O {app} é destinado <strong>exclusivamente a maiores de 18 anos</strong>. Ao criar uma conta, você declara ter 18 anos ou mais. Se você tem menos de 18 anos, não crie uma conta nem use o serviço.",
           "p2": "Contas que pareçam pertencer a menores de idade podem ser suspensas ou excluídas."
         }
       },
@@ -58,46 +78,46 @@
       "personalities": {
         "title": "Heróis",
         "blocks": {
-          "p1": "Os heróis do app são personalidades reais que autorizaram o uso do nome e da imagem no Groscove Ultra. As fotos dos perfis e dos posts vêm de bancos de imagens com licença livre, com autor e licença registrados.",
-          "p2": "Os conteúdos dos perfis são educativos e não substituem orientação profissional individual. Os fornecedores de exemplo da loja simulada são fictícios."
+          "p1": "Os heróis do {app} são personalidades reais que autorizaram o uso do nome e da imagem no serviço. As fotos dos perfis e dos posts que não foram enviadas pelos próprios heróis vêm de bancos de imagens com licença livre, com autor e licença registrados.",
+          "p2": "Os conteúdos dos perfis são educativos e não substituem orientação profissional individual. Os fornecedores de exemplo da loja de teste do site são fictícios."
         }
       },
       "plans": {
-        "title": "Planos e assinaturas simulados",
+        "title": "Planos e assinaturas no site (modo de teste)",
         "blocks": {
           "list1": {
-            "i1": "Planos, módulos e assinaturas são <strong>simulados</strong>. Os preços exibidos são valores ilustrativos.",
+            "i1": "No site, planos, módulos e assinaturas funcionam em <strong>modo de teste</strong>, e os preços exibidos são ilustrativos. O app para iOS e Android não mostra planos nem vende assinaturas.",
             "i2": "Nenhum meio de pagamento é pedido e nada é cobrado, nem agora nem depois.",
-            "i3": "A renovação é apenas simulada: o período de demonstração avança automaticamente, sem qualquer cobrança.",
-            "i4": "Você pode trocar módulos ou cancelar a assinatura simulada quando quiser em <plan>Plano e módulos</plan>.",
-            "i5": "Um plano simulado não dá direito a serviço pago, reembolso, crédito ou condição especial em uma eventual versão comercial."
+            "i3": "A renovação também é de teste: o período avança automaticamente, sem qualquer cobrança.",
+            "i4": "Você pode trocar módulos ou cancelar a assinatura de teste quando quiser em <plan>Plano e módulos</plan>, no site.",
+            "i5": "Uma assinatura de teste não dá direito a serviço pago, reembolso, crédito ou condição especial."
           }
         }
       },
       "commerce": {
-        "title": "Loja simulada e pedidos de teste",
+        "title": "Loja do site e pedidos de teste",
         "blocks": {
           "list1": {
-            "i1": "A loja é 100% simulada. Produtos, preços, frete e estoque são ilustrativos.",
+            "i1": "A loja existe só no site e funciona em modo de teste. Produtos, preços, frete e estoque são ilustrativos.",
             "i2": "Ao finalizar uma compra, você cria um <strong>pedido de teste</strong>: não há pagamento, nota fiscal, separação, envio nem entrega de produto.",
-            "i3": "O destino é escolhido em uma lista de <strong>destinos fictícios</strong>. O app não pede nem usa endereço real.",
-            "i4": "O acompanhamento do transporte é uma simulação automática de etapas.",
+            "i3": "O destino é escolhido em uma lista de <strong>destinos fictícios</strong>. O serviço não pede nem usa endereço real.",
+            "i4": "O acompanhamento do transporte é uma sequência automática de etapas, sem transporte real.",
             "i5": "Pedidos de teste não criam obrigação de compra, venda, troca ou devolução, nem para você nem para os fornecedores.",
-            "i6": "Demonstrar interesse em um produto é só um sinal para as métricas da demonstração. Não é reserva nem compra."
+            "i6": "Registrar interesse em um produto é só um sinal para as métricas do serviço. Não é reserva nem compra."
           }
         }
       },
       "account": {
         "title": "Conta e uso aceitável",
         "blocks": {
-          "p1": "Para salvar progresso, favoritos, planos e pedidos de teste, você precisa de uma conta, criada com e-mail e senha ou, quando disponível, com login do Google. Mantenha sua senha em sigilo e troque-a se suspeitar de uso indevido.",
-          "p2": "Ao usar o Groscove Ultra, você se compromete a não:",
+          "p1": "Para salvar progresso, favoritos, lembretes, planos e pedidos de teste, você precisa de uma conta. Você pode criá-la com e-mail e senha, entrar com Google ou, no app para iOS, entrar com Apple. Mantenha sua senha em sigilo e troque-a se suspeitar de uso indevido.",
+          "p2": "Ao usar o {app}, você se compromete a não:",
           "list1": {
             "i1": "informar no app dados pessoais de outras pessoas, endereço real, dados de pagamento ou dados de saúde (por exemplo, no nome exibido ou no feedback);",
             "i2": "tentar acessar contas, dados ou áreas que não são suas, nem contornar limites e regras de acesso;",
             "i3": "prejudicar o funcionamento do app, por exemplo com automações abusivas, sobrecarga ou exploração de falhas;",
             "i4": "enviar conteúdo ilegal, ofensivo, discriminatório, enganoso ou que viole direitos de terceiros;",
-            "i5": "apresentar o app, seus conteúdos ou seus planos simulados como serviço real ou como aconselhamento profissional."
+            "i5": "apresentar os conteúdos do {app} como aconselhamento profissional individual, nem os planos e pedidos de teste do site como compra ou serviço real."
           },
           "p3": "Se encontrar uma falha de segurança, avise pelo canal de contato indicado no fim desta página, sem explorá-la."
         }
@@ -105,85 +125,86 @@
       "partners": {
         "title": "Conteúdo de parceiros",
         "blocks": {
-          "p1": "Criadores de conteúdo e fornecedores participam <strong>somente por convite</strong> da equipe que administra a demonstração. Cada parceiro usa um portal próprio e só vê e gerencia o que é seu.",
+          "p1": "Criadores de conteúdo e fornecedores participam <strong>somente por convite</strong> da equipe do {app}. Cada parceiro usa um portal próprio e só vê e gerencia o que é seu.",
           "list1": {
             "i1": "Conteúdos enviados por criadores passam por revisão editorial antes de serem publicados.",
             "i2": "Produtos de fornecedores podem ser ocultados ou suspensos pela moderação a qualquer momento. Vínculos entre conteúdos e produtos também podem ser suspensos, inclusive automaticamente quando um produto muda de forma relevante.",
             "i3": "Parceiros respondem pela veracidade e pela legalidade do que enviam e seguem as mesmas regras de conteúdo educativo, sem prescrição individual.",
-            "i4": "Parceiros veem apenas o necessário para a operação simulada. Fornecedores, por exemplo, veem os itens e a zona fictícia de entrega dos pedidos de teste, sem o nome ou o e-mail de quem fez o pedido."
+            "i4": "Parceiros veem apenas o necessário para a operação. Fornecedores, por exemplo, veem os itens e a zona fictícia de entrega dos pedidos de teste, sem o nome ou o e-mail de quem fez o pedido."
           }
         }
       },
       "ip": {
         "title": "Propriedade intelectual",
         "blocks": {
-          "p1": "A marca, o design, os textos, as imagens e os conteúdos do Groscove Ultra pertencem a seus respectivos titulares e estão disponíveis apenas para uso pessoal e não comercial, dentro do app, durante a demonstração. Não é permitido copiar, redistribuir, revender ou explorar comercialmente esses materiais sem autorização.",
-          "p2": "Ao enviar conteúdos ou produtos, parceiros declaram ter os direitos necessários e autorizam sua exibição no app durante a demonstração.",
+          "p1": "A marca, o design, os textos, as imagens e os conteúdos do {app} pertencem a seus respectivos titulares e estão disponíveis apenas para uso pessoal e não comercial, dentro do serviço. Não é permitido copiar, redistribuir, revender ou explorar comercialmente esses materiais sem autorização.",
+          "p2": "Ao enviar conteúdos ou produtos, parceiros declaram ter os direitos necessários e autorizam sua exibição no {app}.",
           "p3": "Os certificados emitidos ao concluir programas são simbólicos e não têm valor acadêmico, profissional ou de certificação."
         }
       },
       "availability": {
         "title": "Disponibilidade, mudanças e chaves de desligamento",
         "blocks": {
-          "p1": "Por ser uma demonstração, o Groscove Ultra é oferecido no estado em que se encontra, sem garantia de funcionamento contínuo, de ausência de erros ou de preservação permanente de conteúdos.",
-          "p2": "A equipe pode alterar, pausar ou desligar funcionalidades a qualquer momento, inclusive sem aviso prévio. A loja simulada e as recomendações por inteligência artificial, por exemplo, têm chaves de desligamento (kill switches), usadas para proteger as pessoas e o próprio serviço.",
-          "p3": "A demonstração pode ser encerrada. Nesse caso, os dados seguem o que diz a <privacy>Política de Privacidade</privacy>."
+          "p1": "O {app} é oferecido no estado em que se encontra. Trabalhamos para mantê-lo disponível e correto, mas não garantimos funcionamento contínuo, ausência de erros ou preservação permanente de conteúdos.",
+          "p2": "Podemos alterar, pausar ou desligar funcionalidades a qualquer momento, inclusive sem aviso prévio. A loja de teste e as recomendações por inteligência artificial, por exemplo, têm chaves de desligamento (kill switches), usadas para proteger as pessoas e o próprio serviço.",
+          "p3": "Se o serviço for encerrado, os dados seguem o que diz a <privacy>Política de Privacidade</privacy>."
         }
       },
       "suspension": {
         "title": "Suspensão e encerramento",
         "blocks": {
-          "p1": "Podemos limitar, suspender ou encerrar o acesso de contas, parceiros, conteúdos ou produtos que violem estes Termos, coloquem pessoas em risco ou prejudiquem a demonstração. As principais ações feitas pelo painel de administração, como a suspensão de parceiros e a moderação de conteúdos e produtos, ficam registradas em auditoria.",
-          "p2": "Você pode parar de usar o app quando quiser e excluir sua conta a qualquer momento em <account>Conta e privacidade</account>."
+          "p1": "Podemos limitar, suspender ou encerrar o acesso de contas, parceiros, conteúdos ou produtos que violem estes Termos, coloquem pessoas em risco ou prejudiquem o serviço. As principais ações feitas pelo painel de administração, como a suspensão de parceiros e a moderação de conteúdos e produtos, ficam registradas em auditoria.",
+          "p2": "Você pode parar de usar o serviço quando quiser e excluir sua conta a qualquer momento em <account>Perfil › Conta e privacidade</account>, no app ou no site. A página pública <deletion>/legal/account-deletion</deletion> explica como excluir e o que acontece com os seus dados."
         }
       },
       "limitation": {
-        "title": "Limitações da demonstração",
+        "title": "Limitação de responsabilidade",
         "blocks": {
-          "p1": "O Groscove Ultra é um experimento. Na medida permitida pela lei aplicável, a equipe responsável não responde por decisões tomadas apenas com base nos conteúdos educativos, por indisponibilidades, por perda de dados de demonstração ou por expectativas de compra, entrega ou assinatura, que aqui são sempre simuladas.",
+          "p1": "Na medida permitida pela lei aplicável, {company} não responde por decisões tomadas apenas com base nos conteúdos educativos, por indisponibilidades temporárias ou por expectativas de compra, entrega ou assinatura ligadas à loja e aos planos do site, que funcionam em modo de teste.",
           "p2": "Nada nestes Termos limita direitos que a lei garante a você e que não podem ser afastados por contrato."
         }
       },
       "changes": {
         "title": "Mudanças nestes Termos",
         "blocks": {
-          "p1": "Estes Termos podem ser atualizados, em especial depois da revisão jurídica prevista antes da abertura pública. A data da última atualização aparece no topo desta página."
+          "p1": "Estes Termos podem ser atualizados quando o serviço mudar ou quando a lei exigir. A data da última atualização aparece no topo desta página."
         }
       },
       "contact": {
         "title": "Contato",
         "blocks": {
-          "p1": "Canal de contato: o formulário de feedback dentro do app, disponível nas páginas de conteúdos e de programas. Por esse formulário, a equipe não consegue responder a você diretamente. Um canal dedicado será publicado antes da abertura pública.",
-          "p2": "A identificação completa do responsável pelo serviço também será publicada antes da abertura pública."
+          "p1": "Fale com a gente pelo e-mail {email}. Dentro do app há também o formulário de feedback, nas páginas de conteúdos e de programas; por ele, porém, a equipe não consegue responder a você diretamente."
         }
       }
     }
   },
   "privacy": {
     "title": "Política de Privacidade",
-    "intro": "Esta Política explica, de forma direta, quais dados o Groscove Ultra trata, para quê, com quem compartilha, por quanto tempo guarda e como você exerce seus direitos. Ela descreve o funcionamento atual desta versão de demonstração. As regras de uso estão nos <terms>Termos de Uso</terms>.",
+    "intro": "Esta Política explica, de forma direta, quais dados o {app} trata, para quê, com quem compartilha, por quanto tempo guarda e como você exerce seus direitos. Ela descreve o funcionamento atual do serviço. As regras de uso estão nos <terms>Termos de Uso</terms>.",
     "sections": {
       "who": {
         "title": "Quem somos e o que esta Política cobre",
         "blocks": {
-          "p1": "O Groscove Ultra é uma prova de conceito com conteúdos educativos, heróis, assinaturas simuladas e comércio simulado. Esta Política vale para o app (web e instalável) e para os portais de parceiros e de administração.",
-          "p2": "A identificação do controlador dos dados e do encarregado (DPO) será publicada antes da abertura pública. Até lá, use o canal de contato indicado no fim desta página."
+          "p1": "O {app} é uma plataforma de conteúdo sobre treino, nutrição, rotina e gastronomia, com heróis reais, conteúdos educativos e receitas; no site, há também loja e planos em modo de teste. Esta Política vale para o site, para o app para iOS e Android e para os portais de parceiros e de administração.",
+          "p2": "O controlador dos seus dados pessoais é {company}, inscrita no CNPJ sob o nº {cnpj}, com endereço em {address}. O encarregado pelo tratamento de dados pessoais (DPO) é {dpo}, que atende pelo mesmo canal de contato do serviço: {email}."
         }
       },
       "collected": {
         "title": "Dados que coletamos",
         "blocks": {
-          "p1": "Coletamos apenas o necessário para a demonstração funcionar:",
+          "p1": "Coletamos apenas o necessário para o serviço funcionar:",
           "list1": {
-            "account": "<strong>Conta:</strong> nome completo, e-mail, celular e nome exibido. No cadastro rápido, o app gera sua senha e guarda uma cópia cifrada (AES-256, com chave que fica só no servidor, fora do banco de dados) para você consultar e trocar em Perfil › Conta e privacidade; ninguém mais, nem a administração, consegue lê-la pelo app. Se você escolher a própria senha pela recuperação por e-mail, ela é tratada só pelo serviço de autenticação e a cópia gerada é apagada. Se você entrar com Google, recebemos do Google seu nome, seu e-mail e, se houver, o endereço da sua foto de perfil; o celular fica opcional.",
+            "account": "<strong>Conta:</strong> nome completo, e-mail, celular e nome exibido. No cadastro rápido, o app gera sua senha e guarda uma cópia cifrada (AES-256, com chave que fica só no servidor, fora do banco de dados) para você consultar e trocar em Perfil › Conta e privacidade; ninguém mais, nem a administração, consegue lê-la pelo app. Se você escolher a própria senha pela recuperação por e-mail, ela é tratada só pelo serviço de autenticação e a cópia gerada é apagada. Se você entrar com Google, recebemos do Google seu nome, seu e-mail e, se houver, o endereço da sua foto de perfil; o celular fica opcional. Se você entrar com Apple, no app para iOS, a Apple nos envia o seu e-mail — ou um endereço de retransmissão privado da Apple, se você escolher ocultar o seu — e, só no primeiro login, o seu nome; guardamos esses dados como os das demais contas.",
             "preferences": "<strong>Preferências:</strong> idioma, tema, avatar (a foto que você enviar; sem foto, aparecem as suas iniciais) e fuso horário do dispositivo, usado para contar sua sequência de dias.",
             "profilePhoto": "<strong>Foto de perfil (opcional):</strong> se você tirar ou escolher uma foto, ela é recortada em quadrado e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu avatar no app; se você é herói, aparece também na sua página pública, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar fotos sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
             "heroCover": "<strong>Capa do herói (opcional, só heróis):</strong> se você é herói e tira ou escolhe uma foto de capa, ela é recortada em 16:9 e reduzida no seu aparelho antes do envio, sem dados de localização nem outros metadados da câmera, e fica guardada no Supabase Storage num endereço público que não pode ser listado. Ela aparece no seu card na lista de heróis, que qualquer visitante vê. Para limitar envios (até 20 por dia) e apagar capas sem uso, guardamos a data, o tamanho e o tipo de cada envio.",
-            "notifications": "<strong>Preferências de notificação:</strong> o que você aceita receber (resumo editorial, lembretes de sequência, pedidos de teste) e por quais canais. Nesta versão nada é enviado; a escolha fica guardada para ser respeitada em qualquer envio futuro.",
+            "notifications": "<strong>Preferências de notificação:</strong> o que você aceita receber (posts dos heróis favoritos, conquistas e programas concluídos, lembretes de sequência, resumo editorial, pedidos de teste) e por quais canais. Os avisos de push só saem para os tipos que você ligou, com o canal Push ligado e a permissão dada no celular. E-mails opcionais ainda não são enviados.",
+            "pushDevice": "<strong>Aparelho para push (só no app):</strong> quando você permite notificações no app {app} para iOS ou Android, guardamos o identificador de envio do aparelho (token do serviço de push), a plataforma (iOS ou Android) e a versão do app, ligados à sua conta, para entregar os avisos que você escolheu. Ao sair da conta pelo app, o aparelho deixa de receber os avisos dela.",
+            "heroFavorites": "<strong>Heróis favoritos:</strong> os heróis que você favoritou e quando, para lembrar quais você favoritou e, se você aceitar, avisar sobre posts novos deles.",
             "usage": "<strong>Uso do conteúdo:</strong> interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas e certificados simbólicos (o PDF do certificado traz seu nome exibido).",
-            "routine": "<strong>Lembretes (itens de rotina):</strong> título, nota, horário, dias da semana e as marcações de “feito hoje”. Desde 23/10/2026 eles ficam em Perfil › Lembretes, fora do Hoje, onde você cria, edita, exclui e marca — os itens que você já tinha voltaram a aparecer ali. O Groscove Ultra não envia avisos deles. Marcar um lembrete não conta na sequência, que conta conteúdos concluídos e entradas em programas; as marcações antigas continuam guardadas, mas também deixaram de contar.",
-            "subscription": "<strong>Assinatura simulada:</strong> módulos escolhidos, períodos e histórico de mudanças.",
-            "commerce": "<strong>Comércio simulado:</strong> carrinho, pedidos de teste (itens, valores ilustrativos e o destino fictício escolhido em uma lista) e registros de interesse em produtos.",
+            "routine": "<strong>Lembretes (itens de rotina):</strong> título, nota, horário, dias da semana e as marcações de “feito hoje”. Desde 23/10/2026 eles ficam em Perfil › Lembretes, fora do Hoje, onde você cria, edita, exclui e marca — os itens que você já tinha voltaram a aparecer ali. O {app} não envia avisos deles. Marcar um lembrete não conta na sequência, que conta conteúdos concluídos e entradas em programas; as marcações antigas continuam guardadas, mas também deixaram de contar.",
+            "subscription": "<strong>Assinatura de teste (só no site):</strong> módulos escolhidos, períodos e histórico de mudanças.",
+            "commerce": "<strong>Loja de teste (só no site):</strong> carrinho, pedidos de teste (itens, valores ilustrativos e o destino fictício escolhido em uma lista) e registros de interesse em produtos.",
             "events": "<strong>Eventos de uso:</strong> ações no app, como abrir um conteúdo, concluir um programa ou iniciar um pedido de teste, com data, idioma e propriedades técnicas, como o identificador do conteúdo. Quando você está conectado, os eventos ficam vinculados à sua conta; para visitantes sem conta, são registrados sem identificador. O banco de dados recusa propriedades cujos nomes indiquem dados pessoais, como e-mail, telefone, CPF, nome, endereço ou senha.",
             "feedback": "<strong>Feedback opcional:</strong> nota, comentário de até 1.000 caracteres, o conteúdo ou programa de onde foi enviado e o idioma.",
             "recommendations": "<strong>Recomendações:</strong> a lista de conteúdos recomendados para você e um registro técnico de cada cálculo (motor usado, tempo, quantidade de itens, custo estimado e erros).",
@@ -192,8 +213,8 @@
             "heroVideos": "<strong>Vídeos dos heróis:</strong> se você é herói e grava ou envia um vídeo pelo app, o arquivo vai direto do seu aparelho para o Cloudflare Stream. O app guarda só o identificador do vídeo, o conteúdo ao qual ele pertence e as datas de envio e de descarte (para limitar envios e limpar vídeos abandonados).",
             "recipePhotos": "<strong>Fotos e vídeos de receitas:</strong> se você é herói e envia fotos para uma receita, a foto é reduzida no seu aparelho (perde a localização e os dados da câmera) e fica num espaço privado do armazenamento do Supabase, ligada à receita. Quem vê: as fotos da galeria, todos, quando a receita está no ar; as fotos das etapas, só quem pode abrir a receita; o rascunho, só você e a administração. O vídeo de uma receita segue a regra dos vídeos dos heróis.",
             "recipeHistory": "<strong>Histórico de receitas vistas (opcional):</strong> desligado por padrão. Se você ligar em <recipes>Minha coleção de receitas</recipes>, guardamos só qual receita você abriu e a data do último acesso a cada uma (nada mais), para mostrar a lista a você. Só você vê. Desligar ou usar “Limpar histórico” apaga tudo na hora, e cada registro é apagado depois de 90 dias.",
-            "recipeRatings": "<strong>Avaliações de receitas:</strong> se você concluiu uma receita, pode dar de 1 a 5 estrelas. Guardamos a nota, a receita e a data, ligadas à sua conta; ninguém vê a sua nota, só a média da receita (a partir de 3 avaliações, sem contar as contas de demonstração). Você pode trocar a nota quando quiser.",
-            "shoppingList": "<strong>Lista de compras (opcional):</strong> se você usar “Adicionar à lista de compras” numa receita, guardamos os itens que escolher (nome, quantidade, unidade, a receita de origem, se já comprou e a ordem), ligados à sua conta, para montar a sua <shopping>Lista de compras</shopping>. Só você vê: nem a administração lê a lista. Os itens ficam até você remover, usar “Limpar comprados” ou “Limpar lista”, ou excluir a conta. Comprar o kit da receita usa o carrinho de teste, sem cobrança."
+            "recipeRatings": "<strong>Avaliações de receitas:</strong> se você concluiu uma receita, pode dar de 1 a 5 estrelas. Guardamos a nota, a receita e a data, ligadas à sua conta; ninguém vê a sua nota, só a média da receita (a partir de 3 avaliações, sem contar as contas de exemplo mantidas pela equipe). Você pode trocar a nota quando quiser.",
+            "shoppingList": "<strong>Lista de compras (opcional):</strong> se você usar “Adicionar à lista de compras” numa receita, guardamos os itens que escolher (nome, quantidade, unidade, a receita de origem, se já comprou e a ordem), ligados à sua conta, para montar a sua <shopping>Lista de compras</shopping>. Só você vê: nem a administração lê a lista. Os itens ficam até você remover, usar “Limpar comprados” ou “Limpar lista”, ou excluir a conta. Comprar o kit da receita usa o carrinho de teste do site, sem cobrança."
           },
           "p2": "Os provedores de infraestrutura também registram dados técnicos de acesso, como endereço IP, data e hora e informações do navegador, em seus próprios logs operacionais."
         }
@@ -202,10 +223,10 @@
         "title": "Dados que não coletamos",
         "blocks": {
           "list1": {
-            "address": "endereço real ou de entrega: os destinos da loja são fictícios;",
+            "address": "endereço real ou de entrega: os destinos da loja de teste do site são fictícios;",
             "location": "geolocalização;",
-            "payment": "dados de pagamento, como cartão, conta bancária ou Pix: nada é cobrado;",
-            "health": "dados de saúde individuais, como peso, medidas, exames, diagnósticos ou condições médicas, nem dados de relógios, anéis ou pulseiras: o Hoje ainda não se conecta a nenhuma marca, e o relógio de demonstração (das contas demo e do botão “Ver um exemplo”) é gerado na hora no servidor, não usa dados seus, não é guardado e não vai para os eventos de uso;",
+            "payment": "dados de pagamento, como cartão, conta bancária ou Pix: o app para celular não vende nada e, no site, nada é cobrado;",
+            "health": "dados de saúde individuais, como peso, medidas, exames, diagnósticos ou condições médicas, nem dados de relógios, anéis ou pulseiras: o Hoje não se conecta a nenhum relógio ou marca, e o relógio de exemplo (das contas de exemplo e do botão “Ver um exemplo”, só no site) é gerado na hora no servidor, não usa dados seus, não é guardado e não vai para os eventos de uso;",
             "hydration": "registros de hidratação e descanso: o Hoje deixou de aceitá-los. Os antigos ficavam só no seu aparelho; o novo Hoje os apaga do armazenamento local do navegador uma única vez, sem ler nem enviar nada ao app;",
             "documents": "documentos (como CPF) e data de nascimento: a idade mínima de 18 anos é declarada por você ao criar a conta."
           },
@@ -219,20 +240,22 @@
             "account": "criar e manter sua conta, autenticar seu acesso e enviar os e-mails de confirmação de cadastro e de redefinição de senha;",
             "personalization": "personalizar a experiência: idioma, tema, conteúdos para continuar e recomendações;",
             "progress": "registrar progresso, sequência de dias, conquistas e certificados simbólicos;",
-            "simulation": "simular planos, assinaturas, carrinho e pedidos de teste;",
-            "metrics": "medir o experimento com métricas agregadas (por exemplo, quantas pessoas concluem um conteúdo) e melhorar o produto com o seu feedback;",
+            "notifications": "enviar os avisos de push que você escolheu, só no app e só com a sua permissão;",
+            "simulation": "operar a loja e os planos do site em modo de teste: carrinho, pedidos e assinaturas de teste, sem cobrança;",
+            "metrics": "medir o uso do serviço com métricas agregadas (por exemplo, quantas pessoas concluem um conteúdo) e melhorar o produto com o seu feedback;",
             "security": "proteger o serviço: aplicar limites de uso, investigar abusos e incidentes e registrar ações administrativas em auditoria."
           }
         }
       },
       "legalBases": {
-        "title": "Bases legais (a confirmar)",
+        "title": "Bases legais",
         "blocks": {
-          "p1": "As bases legais abaixo são uma avaliação preliminar e <strong>ainda serão confirmadas</strong> na revisão jurídica prevista antes da abertura pública:",
+          "p1": "Tratamos dados pessoais com base nas hipóteses da Lei Geral de Proteção de Dados (LGPD, Lei nº 13.709/2018):",
           "list1": {
-            "service": "conta, preferências, progresso, assinatura simulada e pedidos de teste: execução do serviço que você pediu;",
-            "interest": "eventos de uso e feedback: legítimo interesse em avaliar e melhorar o experimento;",
-            "consent": "histórico de receitas vistas: consentimento, que você dá ao ligar o histórico e retira ao desligar (o que apaga o histórico);",
+            "service": "conta (inclusive o login com Google ou Apple), preferências, progresso, lembretes, heróis favoritos e os pedidos e assinaturas de teste do site: execução do serviço que você pediu;",
+            "interest": "eventos de uso e feedback: legítimo interesse em avaliar e melhorar o serviço;",
+            "consent": "histórico de receitas vistas e avisos de push: consentimento, que você dá ao ligar o histórico ou ao permitir notificações e retira quando quiser, desligando o histórico (o que o apaga) ou as notificações;",
+            "sensitive": "restrições e alergias da etapa de receitas, que são dados pessoais sensíveis de saúde: consentimento específico, que você dá ao marcá-las e pode retirar a qualquer momento refazendo a etapa;",
             "audit": "auditoria administrativa e segurança: legítimo interesse e, quando aplicável, cumprimento de obrigação legal."
           }
         }
@@ -242,7 +265,7 @@
         "blocks": {
           "p1": "Usamos apenas cookies e armazenamento necessários para o app funcionar e lembrar suas escolhas. Não usamos cookies de publicidade nem de análise de terceiros.",
           "table": {
-            "caption": "Cookies usados pelo Groscove Ultra",
+            "caption": "Cookies usados pelo site e pelo app",
             "headers": {
               "name": "Cookie",
               "purpose": "Para que serve",
@@ -266,12 +289,12 @@
               },
               "demo": {
                 "name": "<code>uh-demo-dismissed</code>",
-                "purpose": "Lembra que você dispensou o aviso de demonstração.",
+                "purpose": "Lembra que você dispensou o aviso exibido no topo do site.",
                 "duration": "24 horas"
               },
               "destination": {
                 "name": "<code>uh-dest</code>",
-                "purpose": "Lembra o destino fictício escolhido no carrinho de teste.",
+                "purpose": "Lembra o destino fictício escolhido no carrinho de teste do site.",
                 "duration": "30 dias"
               },
               "prices": {
@@ -288,30 +311,32 @@
           },
           "p2": "<strong>Armazenamento local do navegador:</strong> a chave <code>uh-theme</code> guarda o tema escolhido, para que ele também valha em páginas abertas sem conexão. No Modo Cozinha, as chaves <code>uh-cook:…</code> (uma por conta e receita, apagadas depois de 24 horas) guardam as etapas marcadas e os cronômetros por 24 horas, e <code>uh-cook-sound</code> lembra se o som do alarme está ligado. Na página da receita, as chaves <code>uh-recipe-check:…</code> (uma por conta e receita, apagadas depois de 24 horas) guardam os ingredientes que você marcou como separados. A chave <code>uh:today:migrated</code> só marca que os antigos registros de hidratação e descanso (<code>uh:today:…</code>) já foram apagados deste aparelho. Essas chaves locais não saem do aparelho. As porções ajustadas não ficam guardadas na sua conta: vão no endereço da página (<code>?porcoes=</code>), que o servidor lê para mostrar as quantidades, e a primeira mudança de porções em cada visita gera um evento de uso só com o número de porções (veja “Eventos de uso”).",
           "p3": "<strong>Cache do app:</strong> o service worker guarda no navegador a página offline, o manifesto, os ícones e arquivos estáticos do app, para carregar mais rápido e funcionar sem conexão. Esse cache não contém seus dados pessoais.",
-          "p4": "<strong>Vídeos incorporados:</strong> se um conteúdo exibir vídeo do YouTube (pelo domínio youtube-nocookie.com) ou do Vimeo, o player é carregado diretamente desse serviço quando o vídeo aparece na página, e o serviço pode coletar dados técnicos e usar cookies próprios, conforme a política dele. Os conteúdos de exemplo da demonstração usam um player simulado, sem serviço externo.",
+          "p4": "<strong>Vídeos incorporados:</strong> se um conteúdo exibir vídeo do YouTube (pelo domínio youtube-nocookie.com) ou do Vimeo, o player é carregado diretamente desse serviço quando o vídeo aparece na página, e o serviço pode coletar dados técnicos e usar cookies próprios, conforme a política dele. Conteúdos sem vídeo real usam, no site, um player simulado, sem serviço externo; no app para celular, esse player não aparece.",
           "p5": "Você pode apagar cookies e dados do site nas configurações do navegador. Sem o cookie de sessão, será preciso entrar de novo."
         }
       },
       "processors": {
         "title": "Com quem compartilhamos",
         "blocks": {
-          "p1": "Usamos fornecedores de tecnologia que tratam dados por nossa conta, apenas para operar o app:",
+          "p1": "Usamos fornecedores de tecnologia que tratam dados por nossa conta, apenas para operar o serviço:",
           "list1": {
             "supabase": "<strong>Supabase:</strong> banco de dados, autenticação e armazenamento das fotos de perfil e das capas de herói, incluindo o envio dos e-mails de confirmação de cadastro e de redefinição de senha.",
             "vercel": "<strong>Vercel:</strong> hospedagem do app e execução das funções do servidor, incluindo as rotinas automáticas diárias, como a de retenção.",
             "cloudflare": "<strong>Cloudflare (Stream):</strong> recebe, processa, armazena e entrega os vídeos que os heróis gravam ou enviam pelo app, e o player desses vídeos é carregado a partir do Cloudflare. Ele não recebe seu nome nem seu e-mail; o vídeo fica ligado ao conteúdo, não à sua conta.",
-            "ai": "<strong>OpenAI ou Google (Gemini), somente se as recomendações por IA estiverem ativadas</strong> pela administração. Na configuração inicial da demonstração, as recomendações usam um motor próprio, sem IA externa. Quando a IA está ativada, o provedor escolhido recebe apenas: seus interesses (tags), sua afinidade por pilar, seu nível estimado, quantos conteúdos você concluiu, o idioma das justificativas e dados do catálogo (identificadores opacos de conteúdo, pilar, tipo, dificuldade, tags, módulo exigido, se o conteúdo está em destaque, há quantos dias foi publicado e se está liberado no seu plano). <strong>Nunca</strong> recebe seu nome, seu e-mail, o identificador da sua conta ou textos que você escreveu. A IA pode ser desligada a qualquer momento por uma chave de desligamento.",
-            "google": "<strong>Google (login):</strong> se você escolher entrar com Google, o Google autentica você e nos envia os dados básicos do seu perfil, conforme a política de privacidade dele."
+            "expo": "<strong>Expo (serviço de push) e os serviços de push da Apple e do Google:</strong> entregam os avisos ao seu celular. Recebem o identificador de envio do aparelho e o texto do aviso (por exemplo, o nome do herói e o título do post); não recebem seu nome nem seu e-mail.",
+            "ai": "<strong>OpenAI ou Google (Gemini), somente se as recomendações por IA estiverem ativadas</strong> pela administração. Na configuração padrão, as recomendações usam um motor próprio, sem IA externa. Quando a IA está ativada, o provedor escolhido recebe apenas: seus interesses (tags), sua afinidade por pilar, seu nível estimado, quantos conteúdos você concluiu, o idioma das justificativas e dados do catálogo (identificadores opacos de conteúdo, pilar, tipo, dificuldade, tags, módulo exigido, se o conteúdo está em destaque, há quantos dias foi publicado e se está liberado no seu plano). <strong>Nunca</strong> recebe seu nome, seu e-mail, o identificador da sua conta ou textos que você escreveu. A IA pode ser desligada a qualquer momento por uma chave de desligamento.",
+            "google": "<strong>Google (login):</strong> se você escolher entrar com Google, o Google autentica você e nos envia os dados básicos do seu perfil, conforme a política de privacidade dele.",
+            "apple": "<strong>Apple (Sign in with Apple):</strong> no app para iOS, se você escolher entrar com Apple, a Apple autentica você e nos envia o seu e-mail ou um endereço de retransmissão privado e, só no primeiro login, o seu nome, conforme a política de privacidade dela."
           },
-          "p2": "Dentro do app, parceiros veem apenas o necessário para a operação simulada (por exemplo, os itens e a zona fictícia dos pedidos de teste, sem o seu nome ou e-mail). Para operação e suporte, a equipe que administra a demonstração pode ver dados de contas (como e-mail, nome exibido, data de cadastro e último acesso), o feedback enviado e os pedidos de teste. As principais ações feitas pelo painel de administração ficam registradas em auditoria.",
+          "p2": "Dentro do serviço, parceiros veem apenas o necessário para a operação (por exemplo, os itens e a zona fictícia dos pedidos de teste, sem o seu nome ou e-mail). Para operação e suporte, a equipe do {app} pode ver dados de contas (como e-mail, nome exibido, data de cadastro e último acesso), o feedback enviado e os pedidos de teste. As principais ações feitas pelo painel de administração ficam registradas em auditoria.",
           "p3": "A verificação pública de certificados mostra apenas o programa, a versão, a data de emissão e se o certificado é válido. Ela não mostra seu nome.",
-          "p4": "Não há parceiros de pagamento ou de logística, nem repasse comercial de dados."
+          "p4": "Não há parceiros de pagamento ou de logística — a loja e os planos do site funcionam em modo de teste —, nem repasse comercial de dados."
         }
       },
       "retention": {
         "title": "Por quanto tempo guardamos",
         "blocks": {
-          "p1": "Os prazos abaixo refletem o funcionamento atual da demonstração. Uma rotina automática diária aplica os prazos de exclusão e de anonimização indicados na tabela.",
+          "p1": "Os prazos abaixo refletem o funcionamento atual do serviço. Uma rotina automática diária aplica os prazos de exclusão e de anonimização indicados na tabela.",
           "table": {
             "caption": "Prazos de retenção por tipo de dado",
             "headers": {
@@ -321,7 +346,7 @@
             },
             "rows": {
               "account": {
-                "data": "Conta, perfil, preferências, interesses, favoritos, listas, progresso, conquistas, certificados e assinatura simulada",
+                "data": "Conta, perfil, preferências, interesses, favoritos, listas, progresso, conquistas, certificados e assinatura de teste",
                 "period": "Enquanto a conta existir",
                 "details": "São apagados quando você exclui a conta."
               },
@@ -333,7 +358,7 @@
               "notifications": {
                 "data": "Preferências de notificação",
                 "period": "Enquanto a conta existir",
-                "details": "São apagadas junto com a conta. Nada é enviado nesta versão: as preferências só guardam o seu consentimento para envios futuros."
+                "details": "São apagadas junto com a conta. O identificador de envio do aparelho é apagado ao sair da conta pelo app, quando o app é desinstalado (o serviço de push avisa) ou junto com a conta; o registro de cada aviso enviado é apagado em 30 dias."
               },
               "routine": {
                 "data": "Lembretes: itens de rotina e marcações diárias",
@@ -358,7 +383,7 @@
               "orders": {
                 "data": "Pedidos de teste vinculados à conta",
                 "period": "90 dias após o pedido",
-                "details": "Depois do prazo, são anonimizados: perdem o vínculo com a conta e o nome do destino fictício. O registro anônimo não tem exclusão automática e pode continuar nas métricas da demonstração."
+                "details": "Depois do prazo, são anonimizados: perdem o vínculo com a conta e o nome do destino fictício. O registro anônimo não tem exclusão automática e pode continuar nas métricas do serviço."
               },
               "runs": {
                 "data": "Execuções de recomendação",
@@ -368,7 +393,7 @@
               "logs": {
                 "data": "Logs técnicos da hospedagem e do banco de dados",
                 "period": "Conforme cada provedor",
-                "details": "O prazo previsto é de 30 dias, mas o app não controla esses logs: eles seguem a configuração de cada provedor, que será verificada antes da abertura pública."
+                "details": "O app não controla esses logs: eles seguem a configuração e a política de retenção de cada provedor."
               },
               "audit": {
                 "data": "Auditoria administrativa",
@@ -377,13 +402,13 @@
               },
               "feedback": {
                 "data": "Feedback",
-                "period": "A definir",
-                "details": "Não tem exclusão automática nesta versão. Deixa de ser vinculado a você se você excluir a conta. Um prazo será definido antes da abertura pública."
+                "period": "Sem prazo automático",
+                "details": "Não tem exclusão automática. Deixa de ser vinculado a você se você excluir a conta, e você pode pedir a remoção pelo {email}."
               },
               "backups": {
                 "data": "Cópias de segurança (backups)",
                 "period": "Conforme o plano do provedor",
-                "details": "A política de backup e restauração será verificada e documentada antes da abertura pública."
+                "details": "Seguem a política de cópias de segurança do plano contratado com o provedor do banco de dados (Supabase); o app não controla esse prazo."
               },
               "recipeStep": {
                 "data": "Etapa de receitas (aviso, restrições e alergias)",
@@ -423,24 +448,26 @@
       "rights": {
         "title": "Seus direitos e como exercê-los no app",
         "blocks": {
-          "p1": "Você tem direitos sobre seus dados pessoais. Nesta demonstração, a maior parte deles pode ser exercida diretamente no app:",
+          "p1": "A Lei Geral de Proteção de Dados (LGPD) garante a você, entre outros, os direitos de confirmar se tratamos seus dados, acessá-los, corrigi-los, pedir anonimização, bloqueio ou eliminação de dados desnecessários, pedir a portabilidade, saber com quem compartilhamos e revogar o consentimento. A maior parte deles pode ser exercida diretamente no app ou no site:",
           "list1": {
-            "access": "<strong>Acessar:</strong> veja seus dados em <profile>Perfil</profile>, <evolution>Evolução</evolution>, <plan>Plano e módulos</plan> e <orders>Meus pedidos de teste</orders>. O resumo do que guardamos e dos prazos está em <account>Conta e privacidade</account>.",
+            "access": "<strong>Acessar:</strong> veja seus dados em <profile>Perfil</profile> e <evolution>Evolução</evolution> e, no site, em <plan>Plano e módulos</plan> e <orders>Meus pedidos de teste</orders>. O resumo do que guardamos e dos prazos está em <account>Conta e privacidade</account>.",
             "correct": "<strong>Corrigir:</strong> altere nome exibido, avatar, idioma e tema em <profile>Perfil</profile>, o celular em Perfil › Conta e privacidade e seus interesses em <interests>Interesses</interests>. Para trocar a senha, gere uma nova em Perfil › Conta e privacidade ou use <forgot>Esqueci minha senha</forgot>.",
-            "cancel": "<strong>Cancelar a assinatura simulada:</strong> em <plan>Plano e módulos</plan>, quando quiser.",
-            "delete": "<strong>Excluir a conta:</strong> em <account>Conta e privacidade</account>, escolha “Excluir minha conta” e digite a palavra de confirmação indicada."
+            "cancel": "<strong>Cancelar a assinatura de teste:</strong> em <plan>Plano e módulos</plan>, no site, quando quiser.",
+            "revoke": "<strong>Revogar consentimento:</strong> desligue o histórico de receitas vistas em <recipes>Minha coleção de receitas</recipes>, desmarque restrições e alergias refazendo a etapa de receitas e desligue os avisos de push nas preferências de notificação ou nas configurações do celular.",
+            "delete": "<strong>Excluir a conta:</strong> em <account>Perfil › Conta e privacidade</account>, no app ou no site, escolha “Excluir minha conta” e digite a palavra de confirmação indicada. A página pública <deletion>/legal/account-deletion</deletion> explica o passo a passo.",
+            "other": "<strong>Outros pedidos e reclamações:</strong> escreva para o encarregado (DPO), {dpo}, em {email}. Você também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD)."
           },
           "p2": "Quando você exclui a conta:",
           "list2": {
             "profile": "seu perfil é anonimizado e apagado junto com a conta;",
-            "removed": "interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas, certificados, recomendações, lembretes e marcações, lista de compras, carrinho, assinatura simulada e registros de interesse em produtos são apagados;",
+            "removed": "interesses, itens marcados como “não me interessa”, favoritos, listas, progresso, conclusões, sequência de dias, conquistas, inscrições em programas, certificados, recomendações, lembretes e marcações, lista de compras, carrinho, assinatura de teste e registros de interesse em produtos são apagados;",
             "unlinked": "eventos de uso, feedback, pedidos de teste e execuções de recomendação deixam de ser vinculados a você, e os pedidos de teste também perdem o nome do destino fictício. Eventos de uso e execuções de recomendação continuam sendo excluídos nos prazos da tabela acima; feedback e pedidos de teste anonimizados não têm exclusão automática;",
             "audit": "um registro da exclusão, com o identificador interno da conta e sem e-mail ou nome, fica na auditoria por até 365 dias;",
-            "partner": "se você atuava como parceiro, o perfil de parceiro e o que foi publicado nele deixam de ser vinculados à sua conta, mas não são apagados automaticamente. O registro do convite, que guarda o e-mail convidado, também é mantido. Peça a remoção pelo canal de contato;",
+            "partner": "se você atuava como parceiro, o perfil de parceiro e o que foi publicado nele deixam de ser vinculados à sua conta, mas não são apagados automaticamente. O registro do convite, que guarda o e-mail convidado, também é mantido. Peça a remoção pelo {email};",
             "session": "você é desconectado neste dispositivo. A exclusão não pode ser desfeita.",
             "blocked": "se houver uma exceção de retenção ativa para a sua conta, a exclusão fica bloqueada até ela ser encerrada, e o app avisa você."
           },
-          "p3": "Ainda não disponíveis nesta versão: exportar seus dados em arquivo (portabilidade), alterar o e-mail da conta e desativar individualmente os eventos de uso. Para esses pedidos ou para qualquer outra solicitação sobre seus dados, use o canal de contato."
+          "p3": "Ainda não disponíveis no app: exportar seus dados em arquivo (portabilidade), alterar o e-mail da conta e desativar individualmente os eventos de uso. Para esses pedidos ou qualquer outra solicitação sobre seus dados, escreva para {email}."
         }
       },
       "security": {
@@ -450,9 +477,9 @@
             "rls": "<strong>Regras de acesso no próprio banco de dados</strong> (Row Level Security): cada pessoa só lê e altera os próprios dados, parceiros só acessam o que é deles e operações sensíveis passam por funções no servidor que conferem as permissões.",
             "keys": "<strong>Chaves protegidas:</strong> credenciais com privilégios elevados e chaves de provedores de IA ficam apenas no servidor, nunca no navegador.",
             "passwords": "<strong>Senhas</strong> são verificadas pelo serviço de autenticação. A senha gerada no cadastro rápido fica guardada cifrada (AES-256-GCM, chave só no servidor) numa tabela sem nenhum acesso pela API; só é aberta para a própria pessoa, quando ela pede em Perfil › Conta e privacidade.",
-            "minimization": "<strong>Minimização:</strong> eventos de uso recusam propriedades cujos nomes indiquem dados pessoais, a IA (quando ativada) não recebe seu nome, seu e-mail nem o identificador da sua conta e os destinos de entrega são fictícios.",
+            "minimization": "<strong>Minimização:</strong> eventos de uso recusam propriedades cujos nomes indiquem dados pessoais, a IA (quando ativada) não recebe seu nome, seu e-mail nem o identificador da sua conta e os destinos de entrega da loja de teste são fictícios.",
             "audit": "<strong>Auditoria e limites:</strong> as principais ações administrativas ficam registradas, cada conta pode enviar até 20 feedbacks por dia e o uso de IA nas recomendações tem limite por hora.",
-            "https": "<strong>Conexão criptografada</strong> (HTTPS) entre o seu navegador e o app, fornecida pela hospedagem."
+            "https": "<strong>Conexão criptografada</strong> (HTTPS) entre o seu navegador ou o app e o servidor, fornecida pela hospedagem."
           },
           "p1": "Nenhum sistema é totalmente imune a falhas. Se identificarmos um incidente que afete seus dados, vamos tratá-lo e comunicar as pessoas afetadas quando necessário."
         }
@@ -460,19 +487,19 @@
       "transfer": {
         "title": "Transferência internacional",
         "blocks": {
-          "p1": "Alguns fornecedores listados acima operam globalmente e podem armazenar ou tratar dados em outros países. As regiões de armazenamento e as salvaguardas aplicáveis a cada fornecedor serão confirmadas e publicadas antes da abertura pública."
+          "p1": "O banco de dados e as funções do servidor ficam no Brasil (região de São Paulo). Alguns fornecedores listados acima — como Cloudflare, Expo, Apple, Google e, se a IA estiver ativada, OpenAI — operam globalmente e podem tratar dados fora do Brasil, conforme os termos de tratamento de dados e as políticas de cada um."
         }
       },
       "changes": {
         "title": "Mudanças nesta Política",
         "blocks": {
-          "p1": "Esta Política pode ser atualizada, em especial depois da revisão jurídica prevista antes da abertura pública ou quando o funcionamento do app mudar. A data da última atualização aparece no topo desta página."
+          "p1": "Esta Política é atualizada quando o funcionamento do serviço mudar ou quando a lei exigir. A data da última atualização aparece no topo desta página."
         }
       },
       "contact": {
         "title": "Contato",
         "blocks": {
-          "p1": "Canal de contato: o formulário de feedback dentro do app, disponível nas páginas de conteúdos e de programas. Por esse formulário, a equipe não consegue responder a você diretamente. Um canal dedicado a privacidade, com a identificação do encarregado (DPO), será publicado antes da abertura pública.",
+          "p1": "Para dúvidas, pedidos sobre seus dados ou para falar com o encarregado (DPO), {dpo}, escreva para {email}. Dentro do app há também o formulário de feedback, nas páginas de conteúdos e de programas; por ele, porém, a equipe não consegue responder a você diretamente.",
           "p2": "Não inclua dados pessoais sensíveis na mensagem de feedback."
         }
       }

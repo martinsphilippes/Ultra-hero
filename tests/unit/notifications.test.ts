@@ -7,14 +7,16 @@ import {
   notificationPreferencesSchema,
 } from "@/components/me/notifications/schema";
 
-// Preferências de notificação (RF-023): o schema da action aceita exatamente as cinco
-// colunas booleanas da tabela notification_preferences (0018) e nada além delas.
+// Preferências de notificação (RF-023): o schema da action aceita exatamente as colunas booleanas
+// da tabela notification_preferences (0018, e os tipos do push da 0054) e nada além delas.
 
 describe("notificationPreferencesSchema", () => {
-  it("aceita as cinco preferências com os padrões da tabela", () => {
+  it("aceita as preferências com os padrões da tabela", () => {
     const parsed = notificationPreferencesSchema.safeParse(DEFAULT_NOTIFICATION_PREFERENCES);
     expect(parsed.success).toBe(true);
     expect(parsed.success && parsed.data).toEqual({
+      hero_posts: false,
+      achievements: false,
       editorial_digest: false,
       streak_reminders: false,
       commerce_updates: false,
@@ -24,7 +26,7 @@ describe("notificationPreferencesSchema", () => {
   });
 
   it("mantém a lista de chaves alinhada com tipos + canais", () => {
-    expect(NOTIFICATION_TYPES).toEqual(["editorial_digest", "streak_reminders", "commerce_updates"]);
+    expect(NOTIFICATION_TYPES).toEqual(["hero_posts", "achievements", "streak_reminders", "editorial_digest", "commerce_updates"]);
     expect(NOTIFICATION_CHANNELS).toEqual(["channel_email", "channel_push"]);
     expect([...NOTIFICATION_PREFERENCE_KEYS].sort()).toEqual(Object.keys(DEFAULT_NOTIFICATION_PREFERENCES).sort());
   });

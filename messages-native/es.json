@@ -1,0 +1,108 @@
+{
+  "common": {
+    "app": {
+      "description": "GC Hero: contenidos, hábitos, entrenamientos, nutrición y gastronomía con héroes, programas y evolución."
+    }
+  },
+  "consume": {
+    "content": {
+      "lockDescription": "Este contenido pertenece a un módulo premium. El catálogo muestra los ítems premium para que conozcas todo lo que existe.",
+      "license": {
+        "platform_demo": "plataforma"
+      }
+    },
+    "disclaimer": {
+      "general": "Contenido educativo. No sustituye la orientación profesional individual."
+    },
+    "player": {
+      "label": "Reproductor: {title}",
+      "demoNote": "El texto de abajo acompaña el video, como subtítulos."
+    },
+    "certificate": {
+      "subtitle": "Groscove Ultra",
+      "disclaimer": "Este certificado es simbólico. No tiene validez profesional, académica ni legal; solo reconoce la finalización de contenidos educativos."
+    }
+  },
+  "me": {
+    "profile": {
+      "description": "Tus datos y preferencias.",
+      "links": {
+        "shoppingList": {
+          "description": "Ingredientes de las recetas, por receta."
+        }
+      }
+    },
+    "recommendations": {
+      "locked": "Requiere el módulo {module}"
+    },
+    "feedback": {
+      "description": "Opcional y rápido. Ayuda a mejorar la app.",
+      "categories": {
+        "commerce": "Tienda"
+      }
+    },
+    "verify": {
+      "symbolic": "Certificado simbólico: reconoce la finalización de contenidos educativos. Sin validez profesional, académica ni legal."
+    },
+    "account": {
+      "store": {
+        "item3": "Plan (módulos y períodos) y pedidos hechos en el sitio web."
+      },
+      "retention": {
+        "orders": "Pedidos vinculados a la cuenta: {days} días (después, anonimizados)"
+      },
+      "password": {
+        "demoDescription": "La contraseña de esta cuenta la gestiona el equipo y no se puede ver ni cambiar aquí.",
+        "errors": {
+          "demo": "La contraseña de esta cuenta no se puede cambiar aquí."
+        }
+      }
+    },
+    "today": {
+      "about": {
+        "intro": "En esta fase Groscove Ultra no lee ningún reloj real y no recopila datos de tu reloj."
+      }
+    }
+  },
+  "recipes": {
+    "gate": {
+      "cardTitle": "Etapa inicial pendiente.",
+      "cardDescription": "No hay revisión profesional. Completa la etapa inicial para abrir las recetas.",
+      "stepsLabel": "{total} pasos de la etapa inicial",
+      "start": "Ver etapa inicial"
+    },
+    "onboarding": {
+      "metaTitle": "Etapa inicial de recetas",
+      "title": "Etapa inicial",
+      "description": "Cuatro pasos rápidos para abrir las recetas.",
+      "notice": {
+        "description": "Las recetas de Groscove Ultra son contenido educativo, sin revisión profesional."
+      }
+    },
+    "catalog": {
+      "invite": {
+        "title": "Abre las recetas con la etapa inicial",
+        "description": "Las tarjetas están abiertas a todos. Para ver ingredientes, preparación y el modo cocina, completa la etapa inicial ({total} pasos rápidos)."
+      }
+    }
+  },
+  "devices": {
+    "demo": "Esta cuenta no conecta relojes.",
+    "errors": {
+      "demo": "Esta cuenta no conecta relojes."
+    }
+  },
+  "discover": {
+    "personalities": {
+      "profile": {
+        "rightsDefault": "Fotos y textos publicados por el equipo de la app.",
+        "rightsPending": "Autorización de uso de nombre e imagen en validación."
+      }
+    }
+  },
+  "auth": {
+    "quick": {
+      "terms": "Al continuar, declaras tener 18 años o más, aceptas los <terms>Términos de Uso</terms> y confirmas que leíste la <privacy>Política de Privacidad</privacy>."
+    }
+  }
+}
