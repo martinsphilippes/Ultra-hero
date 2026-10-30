@@ -146,7 +146,7 @@ export async function setFeaturedAction(kind: "content" | "program", id: string,
     if (error) return fail(error);
     revalidatePath("/admin/featured");
     revalidatePath(parsed.data.kind === "content" ? `/admin/content/${parsed.data.id}` : `/admin/programs/${parsed.data.id}`);
-    revalidatePath("/");
+    revalidatePath("/inicio");
     const t = await getTranslations("adminContent.content.statusActions");
     return { ok: true, message: t("featured") };
   } catch (error) {

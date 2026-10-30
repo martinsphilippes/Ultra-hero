@@ -18,12 +18,14 @@ const html = (page: Page) => page.locator("html");
 const bodyBg = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
 test.describe("Aparência", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    // o app abre no escuro; estes testes conferem os templates no claro (fundo de cada um)
+    await page.context().addCookies([{ name: "uh-theme", value: "light", url: baseURL! }]);
     await loginAs(page, "free");
   });
 
   test("troca os 5 templates na hora, sem recarregar, com o painel aberto e o ativo destacado; a escolha persiste", async ({ page, browser }) => {
-    await page.goto("/");
+    await page.goto("/inicio");
     await page.waitForLoadState("networkidle");
     await expect(html(page)).toHaveAttribute("data-template", "original");
     expect(await bodyBg(page)).toBe(LIGHT_BG.original);
@@ -86,7 +88,7 @@ test.describe("Aparência", () => {
   });
 
   test("preferência inválida no armazenamento cai no Original; cookie inválido não esconde o localStorage válido", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/inicio");
     await page.evaluate(() => {
       localStorage.setItem("uh-template", "nike");
       document.cookie = "uh-template=%3Cscript%3E; path=/";
@@ -108,7 +110,7 @@ test.describe("Aparência", () => {
 
     // escolhe na Início, em outra aba do mesmo aparelho; a aba do Explorar acompanha sem recarregar
     const home = await page.context().newPage();
-    await home.goto("/");
+    await home.goto("/inicio");
     await home.getByTestId("appearance-button").click();
     await home.getByTestId("appearance-option-performance").click();
     await expect(html(home)).toHaveAttribute("data-template", "performance");
@@ -129,7 +131,7 @@ test.describe("Aparência", () => {
       await page.goto("/explore");
       const content = await page.locator('main a[href^="/content/"]').first().getAttribute("href");
       expect(content).toBeTruthy();
-      for (const route of ["/", "/explore", content!, "/profile"]) {
+      for (const route of ["/inicio", "/explore", content!, "/profile"]) {
         await page.goto(route);
         await page.waitForLoadState("networkidle");
         await expect(html(page)).toHaveAttribute("data-template", id);

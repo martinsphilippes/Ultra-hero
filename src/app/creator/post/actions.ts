@@ -209,7 +209,7 @@ export async function publishVideoPost(input: { contentId: string; title: string
   const slug = (published as { slug?: string } | null)?.slug ?? content.slug;
 
   revalidatePost();
-  revalidatePath("/");
+  revalidatePath("/inicio");
   revalidatePath("/explore");
   return { ok: true, slug };
 }

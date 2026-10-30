@@ -406,7 +406,7 @@ describe("publishVideoPost", () => {
     expect(fns.indexOf("creator_set_draft_slug")).toBeLessThan(fns.indexOf("creator_publish_content"));
     expect(state.rpcs.find((r) => r.fn === "creator_publish_content")?.args).toEqual({ p_content: ids.CONTENT });
     expect(state.writes.filter((w) => w.op === "update").map((w) => w.payload)).toContainEqual({ duration_minutes: 2 });
-    expect(state.revalidated).toEqual(["/creator", "/creator/content", "/", "/explore"]);
+    expect(state.revalidated).toEqual(["/creator", "/creator/content", "/inicio", "/explore"]);
   });
 
   it("slug já usado: tenta outro sufixo uma vez; duas colisões viram slug_taken", async () => {

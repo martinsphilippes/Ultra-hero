@@ -55,14 +55,14 @@ test.describe("acesso rápido às contas de demonstração", () => {
   }
 
   test("no Início o painel fica recolhido e troca de conta com um toque", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/inicio");
     const panel = page.getByTestId("demo-access");
     test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
     await expect(panel.locator('[data-demo-kind="premium"]')).toBeHidden();
     await panel.locator("summary").click();
     await panel.locator('[data-demo-kind="premium"]').click();
     await expect(page).toHaveURL(/\/personalities$/, { timeout: 20_000 });
-    await page.goto("/");
+    await page.goto("/inicio");
     await page.getByTestId("demo-access").locator("summary").click();
     await page.getByTestId("demo-access").locator('[data-demo-kind="free"]').click();
     await expect(page).toHaveURL(/\/personalities$/, { timeout: 20_000 });

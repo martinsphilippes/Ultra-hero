@@ -14,12 +14,12 @@ export function isTheme(value: unknown): value is Theme {
 /** Tema efetivamente aplicado na interface. */
 export type ResolvedTheme = "light" | "dark";
 
-// O app sempre abre no claro. Só fica escuro quando a pessoa escolheu "escuro" no botão ou no perfil;
-// preferências antigas ("system", ausente ou inválida) caem no claro, sem seguir o tema do aparelho.
+// O app sempre abre no escuro (decisão do responsável). Só fica claro quando a pessoa escolheu "claro"
+// no botão ou no perfil; preferências antigas ("system", ausente ou inválida) caem no escuro.
 export function resolveTheme(value: unknown): ResolvedTheme {
-  return value === "dark" ? "dark" : "light";
+  return value === "light" ? "light" : "dark";
 }
 
 // Script inline (sem flash): aplica data-theme antes da hidratação.
-// Cookie tem prioridade; localStorage cobre páginas servidas pelo service worker. Sem escolha: claro.
-export const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);var t=m?decodeURIComponent(m[1]):null;if(!t){t=localStorage.getItem("${THEME_COOKIE}")}var d=document.documentElement;d.setAttribute("data-theme",t==="dark"?"dark":"light")}catch(e){}})();`;
+// Cookie tem prioridade; localStorage cobre páginas servidas pelo service worker. Sem escolha: escuro.
+export const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);var t=m?decodeURIComponent(m[1]):null;if(!t){t=localStorage.getItem("${THEME_COOKIE}")}var d=document.documentElement;d.setAttribute("data-theme",t==="light"?"light":"dark")}catch(e){}})();`;

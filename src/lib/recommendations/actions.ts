@@ -28,7 +28,7 @@ export async function dismissRecommendation(input: { contentId: string }): Promi
       await createAdminClient().from("user_recommendations").delete().eq("user_id", user.id).eq("content_id", parsed.data.contentId);
     }
     await trackEvent("recommendation.not_interested", { content_id: parsed.data.contentId, source: "home" });
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return { ok: true };
   } catch (error) {
     return { ok: false, error: rpcErrorCode(error instanceof Error ? error.message : undefined) || "generic" };

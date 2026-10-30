@@ -12,7 +12,7 @@ export const INTRO_E2E_COOKIE = "uh-e2e";
 
 // Entrada pública (home, login, cadastro) e telas do app. Portais (admin, creator, seller), checkout,
 // páginas legais e de verificação ficam de fora.
-export const INTRO_PATH_RE = /^\/(?:|login|signup|explore|programs|personalities|profile|recipes|shop|content|cart|orders)(?:\/.*)?$/;
+export const INTRO_PATH_RE = /^\/(?:|inicio|login|signup|explore|programs|personalities|profile|recipes|shop|content|cart|orders)(?:\/.*)?$/;
 
 // Robôs e prévias de link (o HTML do app continua inteiro por baixo; isto só evita pintar o overlay).
 export const INTRO_BOT_RE = /bot|crawl|spider|slurp|facebookexternalhit|embedly|preview|lighthouse|pagespeed|headlesschrome|googleother/i;

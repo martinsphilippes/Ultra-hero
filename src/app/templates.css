@@ -153,6 +153,7 @@
   --uh-warning: #8a5a00;
   --uh-warning-soft: rgba(255, 200, 87, 0.24);
   --uh-danger: #c62828;
+  --uh-danger-fg: #ffffff;
   --uh-danger-soft: rgba(198, 40, 40, 0.1);
   --uh-info: #1d5fb0;
   --uh-info-soft: rgba(29, 95, 176, 0.1);
@@ -192,6 +193,7 @@
   --uh-warning: #ffc857;
   --uh-warning-soft: rgba(255, 200, 87, 0.14);
   --uh-danger: #ff6b6b;
+  --uh-danger-fg: #0b0b0b;
   --uh-danger-soft: rgba(255, 107, 107, 0.14);
   --uh-info: #6fb7ff;
   --uh-info-soft: rgba(111, 183, 255, 0.14);
@@ -288,6 +290,7 @@
   --uh-warning: #835a12;
   --uh-warning-soft: rgba(214, 168, 80, 0.2);
   --uh-danger: #b3261e;
+  --uh-danger-fg: #ffffff;
   --uh-danger-soft: rgba(179, 38, 30, 0.09);
   --uh-info: #2c5a8a;
   --uh-info-soft: rgba(44, 90, 138, 0.1);
@@ -327,6 +330,7 @@
   --uh-warning: #e9c27a;
   --uh-warning-soft: rgba(233, 194, 122, 0.13);
   --uh-danger: #f09a92;
+  --uh-danger-fg: #0b0b0b;
   --uh-danger-soft: rgba(240, 154, 146, 0.13);
   --uh-info: #9cc3ea;
   --uh-info-soft: rgba(156, 195, 234, 0.13);
@@ -421,6 +425,7 @@
   --uh-warning: #8a5300;
   --uh-warning-soft: rgba(245, 166, 35, 0.18);
   --uh-danger: #c0262d;
+  --uh-danger-fg: #ffffff;
   --uh-danger-soft: rgba(192, 38, 45, 0.09);
   --uh-info: #0b62a8;
   --uh-info-soft: rgba(11, 98, 168, 0.1);
@@ -460,6 +465,7 @@
   --uh-warning: #ffc857;
   --uh-warning-soft: rgba(255, 200, 87, 0.13);
   --uh-danger: #ff6b6b;
+  --uh-danger-fg: #0b0b0b;
   --uh-danger-soft: rgba(255, 107, 107, 0.13);
   --uh-info: #6fb7ff;
   --uh-info-soft: rgba(111, 183, 255, 0.13);
@@ -558,6 +564,7 @@
   --uh-warning: #7d5200;
   --uh-warning-soft: rgba(255, 200, 87, 0.3);
   --uh-danger: #b01b1b;
+  --uh-danger-fg: #ffffff;
   --uh-danger-soft: rgba(176, 27, 27, 0.1);
   --uh-info: #1550a8;
   --uh-info-soft: rgba(21, 80, 168, 0.1);
@@ -599,6 +606,7 @@
   --uh-warning: #ffc857;
   --uh-warning-soft: rgba(255, 200, 87, 0.14);
   --uh-danger: #ff6b6b;
+  --uh-danger-fg: #0b0b0b;
   --uh-danger-soft: rgba(255, 107, 107, 0.14);
   --uh-info: #6fb7ff;
   --uh-info-soft: rgba(111, 183, 255, 0.14);

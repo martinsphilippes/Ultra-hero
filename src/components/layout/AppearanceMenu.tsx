@@ -24,7 +24,7 @@ export function AppearanceMenu() {
   // O painel vai para o <body>: dentro do cabeçalho herdaria as cores da barra (ex.: bloco escuro do Urban).
   useEffect(() => setMounted(true), []);
 
-  if (pathname !== "/") return null;
+  if (pathname !== "/inicio") return null;
 
   const openPanel = () => {
     // Lê o que está de fato aplicado (o script inicial pode ter usado o localStorage).

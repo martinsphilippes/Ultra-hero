@@ -14,7 +14,7 @@ export type NavItem = {
 export const NAV_ITEMS: readonly NavItem[] = [
   // Hero vem primeiro (pedido do responsável): é onde todo login chega.
   { key: "personalities", href: "/personalities", icon: Users },
-  { key: "home", href: "/", icon: Home },
+  { key: "home", href: "/inicio", icon: Home },
   { key: "explore", href: "/explore", icon: Compass },
   { key: "profile", href: "/profile", icon: User },
 ];

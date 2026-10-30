@@ -68,8 +68,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    // O app abre no claro independentemente do tema do aparelho.
-    { color: "#F7F4EF" },
+    // O app abre no escuro independentemente do tema do aparelho.
+    { color: "#0B0B0B" },
   ],
 };
 

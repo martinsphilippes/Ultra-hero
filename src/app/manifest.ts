@@ -8,11 +8,11 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Rotina, treino, nutrição e gastronomia em um só lugar. Ambiente de demonstração.",
     lang: "pt-BR",
     dir: "ltr",
-    start_url: "/",
+    start_url: "/personalities",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#F7F4EF",
+    background_color: "#0B0B0B",
     theme_color: "#FF5A1F",
     categories: ["health", "lifestyle", "food"],
     icons: [

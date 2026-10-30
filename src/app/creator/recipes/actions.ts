@@ -55,7 +55,7 @@ function revalidateRecipe(id?: string) {
 }
 
 function revalidatePublic(slug?: string | null) {
-  revalidatePath("/");
+  revalidatePath("/inicio");
   revalidatePath("/explore");
   if (slug) revalidatePath(`/content/${slug}`);
 }

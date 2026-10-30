@@ -177,7 +177,7 @@ export async function publishVersionAction(programId: string, versionId: string)
     const { error } = await supabase.rpc("admin_publish_program_version", { p_version: ids.data.versionId });
     if (error) return fail(error);
     revalidateProgram(ids.data.programId, ids.data.versionId);
-    revalidatePath("/");
+    revalidatePath("/inicio");
     const t = await getTranslations("adminContent.programs.version");
     return { ok: true, message: t("published") };
   } catch (error) {

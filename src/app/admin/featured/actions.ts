@@ -29,7 +29,7 @@ export async function reorderFeaturedAction(kind: "content" | "program", ordered
       if (error) return fail(error);
     }
     revalidatePath("/admin/featured");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     const t = await getTranslations("adminContent.featured");
     return { ok: true, message: t("reordered") };
   } catch (error) {

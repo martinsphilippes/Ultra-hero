@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("feed do Início", () => {
   test("mostra posts com herói no topo e capa 4:5, sem faixa de pilares nem seções", async ({ page }, info) => {
-    await page.goto("/");
+    await page.goto("/inicio");
     const posts = page.getByTestId("feed-post");
     await expect(posts.first()).toBeVisible();
     expect(await posts.count()).toBeLessThanOrEqual(10);
@@ -26,7 +26,7 @@ test.describe("feed do Início", () => {
   });
 
   test("rolar carrega mais posts sem repetir", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/inicio");
     const posts = page.getByTestId("feed-post");
     await expect(posts.first()).toBeVisible();
     await expect(async () => {
@@ -38,7 +38,7 @@ test.describe("feed do Início", () => {
   });
 
   test("tocar no post abre o post isolado e o nome do herói leva ao perfil", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/inicio");
     const post = page.getByTestId("feed-post").first();
     const heroHref = await post.getByTestId("feed-post-hero").getAttribute("href");
     await post.getByRole("heading").getByRole("link").click();

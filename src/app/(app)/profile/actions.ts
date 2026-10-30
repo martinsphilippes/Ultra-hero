@@ -211,7 +211,7 @@ export async function saveInterests(input: { tags: string[] }): Promise<Result<{
       console.warn("[profile] recálculo de recomendações falhou:", error);
     }
     revalidatePath("/profile/interests");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return { ok: true, recalculated };
   } catch (error) {
     return fail(error);
@@ -228,7 +228,7 @@ export async function restoreNotInterested(input: { contentId: string }): Promis
     const { error } = await supabase.from("not_interested").delete().eq("user_id", user.id).eq("content_id", parsed.data.contentId);
     if (error) return fail(error.message);
     revalidatePath("/profile/interests");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return { ok: true };
   } catch (error) {
     return fail(error);

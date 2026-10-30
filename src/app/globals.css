@@ -34,6 +34,7 @@
   --uh-warning: #ffc857;
   --uh-warning-soft: rgba(255, 200, 87, 0.14);
   --uh-danger: #ff6b6b;
+  --uh-danger-fg: #0b0b0b; /* texto sobre o vermelho claro do escuro */
   --uh-danger-soft: rgba(255, 107, 107, 0.14);
   --uh-info: #6fb7ff;
   --uh-info-soft: rgba(111, 183, 255, 0.14);
@@ -76,6 +77,7 @@
   --uh-warning: #8a5a00;
   --uh-warning-soft: rgba(255, 200, 87, 0.22);
   --uh-danger: #c62828;
+  --uh-danger-fg: #ffffff;
   --uh-danger-soft: rgba(198, 40, 40, 0.1);
   --uh-info: #1d5fb0;
   --uh-info-soft: rgba(29, 95, 176, 0.1);
@@ -117,6 +119,7 @@
     --uh-warning: #8a5a00;
     --uh-warning-soft: rgba(255, 200, 87, 0.22);
     --uh-danger: #c62828;
+    --uh-danger-fg: #ffffff;
     --uh-danger-soft: rgba(198, 40, 40, 0.1);
     --uh-info: #1d5fb0;
     --uh-info-soft: rgba(29, 95, 176, 0.1);
@@ -158,6 +161,7 @@
   --color-warning: var(--uh-warning);
   --color-warning-soft: var(--uh-warning-soft);
   --color-danger: var(--uh-danger);
+  --color-danger-fg: var(--uh-danger-fg);
   --color-danger-soft: var(--uh-danger-soft);
   --color-info: var(--uh-info);
   --color-info-soft: var(--uh-info-soft);

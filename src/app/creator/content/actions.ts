@@ -153,7 +153,7 @@ export async function publishContent(input: { id: string }): Promise<ActionResul
   const { data, error } = await supabase.rpc("creator_publish_content", { p_content: id });
   if (error) return failFrom(error);
   revalidateContent(id);
-  revalidatePath("/");
+  revalidatePath("/inicio");
   revalidatePath("/explore");
   return { ok: true, slug: (data as { slug?: string } | null)?.slug };
 }
@@ -168,7 +168,7 @@ export async function unpublishContent(input: { id: string }): Promise<ActionRes
   const { error } = await ctx.supabase.rpc("creator_unpublish_content", { p_content: parsed.data.id });
   if (error) return failFrom(error);
   revalidateContent(parsed.data.id);
-  revalidatePath("/");
+  revalidatePath("/inicio");
   revalidatePath("/explore");
   return { ok: true };
 }

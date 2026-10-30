@@ -15,7 +15,7 @@ export const DEMO_ACCOUNTS = [
 export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];
 
 /** Telas onde o painel aparece; o erro de login volta para a mesma tela. */
-export const DEMO_ORIGINS = { login: "/login", home: "/" } as const;
+export const DEMO_ORIGINS = { login: "/login", home: "/inicio" } as const;
 export type DemoOrigin = keyof typeof DEMO_ORIGINS;
 
 export function demoAccount(kind: string) {

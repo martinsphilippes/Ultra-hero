@@ -26,7 +26,11 @@ const nextConfig: NextConfig = {
   },
   // A listagem de programas vive na aba "Programas" do Explorar; evita 404 em links diretos.
   async redirects() {
-    return [{ source: "/programs", destination: "/explore?tab=programas", permanent: true }];
+    return [
+      { source: "/programs", destination: "/explore?tab=programas", permanent: true },
+      // abrir o app (endereço principal, ícone do celular) entra direto na aba Hero; o feed mora em /inicio
+      { source: "/", destination: "/personalities", permanent: false },
+    ];
   },
   async headers() {
     return [

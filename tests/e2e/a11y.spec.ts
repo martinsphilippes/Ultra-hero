@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 
 // Varredura de acessibilidade (axe, WCAG 2.x A/AA) nas rotas públicas.
 // Não declara conformidade: aponta violações para correção.
-const PUBLIC_ROUTES = ["/", "/explore", "/personalities", "/personalities/helena-vilar", "/personalities/helena-vilar/produtos", "/login", "/signup", "/shop", "/offline", "/legal/terms", "/legal/privacy"];
+const PUBLIC_ROUTES = ["/inicio", "/explore", "/personalities", "/personalities/helena-vilar", "/personalities/helena-vilar/produtos", "/login", "/signup", "/shop", "/offline", "/legal/terms", "/legal/privacy"];
 
 for (const route of PUBLIC_ROUTES) {
   test(`axe sem violações sérias em ${route}`, async ({ page }) => {

@@ -11,7 +11,7 @@ export const buttonVariants: Record<ButtonVariant, string> = {
   secondary:
     "bg-surface-elevated text-fg border border-border-strong hover:bg-surface-hover hover:border-fg-subtle active:translate-y-px",
   ghost: "bg-transparent text-fg hover:bg-surface-hover active:translate-y-px",
-  danger: "bg-danger text-white hover:brightness-110 active:translate-y-px",
+  danger: "bg-danger text-danger-fg hover:brightness-110 active:translate-y-px",
   link: "bg-transparent text-accent-text underline-offset-4 hover:underline px-0 min-h-0 min-w-0 rounded-sm",
 };
 
