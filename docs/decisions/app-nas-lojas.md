@@ -1,7 +1,7 @@
 # App nas lojas (App Store e Google Play): casca Expo sobre a web
 
-Decisões do responsável (30/10/2026): publicar o GC Hero na App Store e no Google Play **mantendo a
-versão web**; arquitetura de casca Expo + WebView; identificador `com.groscove.ultra` (trocado de `com.gchero.com` antes do primeiro envio, 30/10/2026); nome **GC Hero**;
+Decisões do responsável (30/10/2026): publicar o Groscove Ultra na App Store e no Google Play **mantendo a
+versão web**; arquitetura de casca Expo + WebView; identificador `com.groscove.ultra` (trocado de `com.gchero.com` antes do primeiro envio, 30/10/2026); nome **Groscove Ultra** (antes previsto como GC Hero);
 no app das lojas, comércio e assinaturas simuladas ficam **ocultos**. Contas: Apple Developer
 **pessoal**, Google Play de **organização** (a do Quantso), Expo do Quantso.
 
@@ -90,8 +90,8 @@ Health Connect (o "relógio real" hoje é só por API das marcas).
   conexão, gestos e voltar do sistema, e push nativo (posts de heróis favoritos, conquistas).
 - **Apple 5.2.1 (pessoas reais)**: nomes e fotos de Neymar, Medina, Fonseca, Anitta, Ronaldinho e
   Jacquin exigem prova de direito de uso; os contratos vão em anexo na nota ao revisor.
-- **Nome**: a loja diz "GC Hero" e a web ainda diz "Groscove Ultra". Trocar a marca da web antes do
-  primeiro envio evita "app não corresponde à ficha".
+- **Nome**: "Groscove Ultra" na loja e na web (decisão do responsável, 30/10/2026). O identificador
+  `com.groscove.ultra` e o esquema interno `gchero://` não aparecem para a pessoa.
 - **Conta Apple pessoal**: a ficha mostra o nome da pessoa como vendedor; dá para transferir o app
   para uma conta de organização depois (Apple permite transferência).
 

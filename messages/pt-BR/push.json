@@ -2,7 +2,7 @@
   "heroPost": {
     "title": "{hero} postou",
     "body": "{title}",
-    "bodyFallback": "Tem post novo de {hero} no GC Hero."
+    "bodyFallback": "Tem post novo de {hero} no Groscove Ultra."
   },
   "achievement": {
     "title": "Conquista desbloqueada",
