@@ -100,11 +100,6 @@
       }
     }
   },
-  "auth": {
-    "quick": {
-      "terms": "Ao entrar, você declara ter 18 anos ou mais, concorda com os <terms>Termos de Uso</terms> e confirma que leu a <privacy>Política de Privacidade</privacy>."
-    }
-  },
   "collectibles": {
     "demo": "Exemplo",
     "detail": {
