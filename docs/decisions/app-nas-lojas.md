@@ -66,20 +66,26 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
 | Acesso rápido às contas demo (inclui admin), em qualquer tela | oculto, e a ação recusa pedido vindo do app | Apple 2.2; o revisor recebe credenciais |
 | Itens de produto em listas e favoritos | célula inteira oculta (`data-kind="product"`) | idem |
 
-**Ainda visíveis no app, pendentes de decisão do responsável**: textos que dizem "simulado",
-"demonstração" ou "fictício" fora dos selos (descrição do conteúdo bloqueado, player simulado,
-dados de demonstração do relógio, "Personagem fictício", trechos da Política de Privacidade e das
-Notificações), o selo de demo do portal e a contagem de produtos no perfil do herói.
+| Todo selo `variant="demo"` (inclui "Personagem fictício", o do portal e o do relógio) | oculto pelo próprio `Badge` | decisão do responsável (30/10/2026, opção "esconder tudo") |
+| Textos que falam em demonstração, simulado ou fictício | trocados por versão do app em `messages-native/<locale>.json`, sobreposta às mesmas chaves quando o pedido vem do app | idem |
+| Relógio simulado (Hoje da conta demo e "Ver um exemplo") | oculto; `?exemplo=1` travado no middleware | dado de saúde inventado sem o aviso de demonstração confundiria |
+| Contagem de produtos no perfil do herói | oculta | sem comércio no app |
 
-Ficam fora deste corte, e são decisão do responsável antes de abrir ao público:
-compra real pelo app (IAP/Play Billing, ex.: RevenueCat); push nativo (exige tabela de tokens e
-envio no servidor); HealthKit / Health Connect (o "relógio real" hoje é só por API das marcas).
+O que garante que nada escape: `tests/unit/native-messages.test.ts` reprova texto da base que fale
+em demonstração sem versão do app, a menos que a chave esteja numa superfície que o app não mostra
+(lista `NOT_IN_APP` do teste); e reprova sobreposição que mude placeholder ou volte a dizer
+"demonstração". **Os Termos de Uso e a Política de Privacidade não são sobrepostos**: valem para a
+web e o app e só mudam com revisão jurídica — eles ainda descrevem a versão de demonstração.
+
+Push: [`push-notifications.md`](push-notifications.md). Ficam fora, e são decisão do responsável
+antes de abrir ao público: compra real pelo app (IAP/Play Billing, ex.: RevenueCat); HealthKit /
+Health Connect (o "relógio real" hoje é só por API das marcas).
 
 ## Riscos conhecidos de revisão
 
 - **Apple 4.2 (funcionalidade mínima)**: casca de site é o motivo mais comum de recusa. Mitigação
   atual: login nativo (Apple, Google pelo sistema), compartilhar do sistema, tela própria sem
-  conexão, gestos e voltar do sistema. Se a Apple recusar por 4.2, o próximo passo é o push nativo.
+  conexão, gestos e voltar do sistema, e push nativo (posts de heróis favoritos, conquistas).
 - **Apple 5.2.1 (pessoas reais)**: nomes e fotos de Neymar, Medina, Fonseca, Anitta, Ronaldinho e
   Jacquin exigem prova de direito de uso; os contratos vão em anexo na nota ao revisor.
 - **Nome**: a loja diz "GC Hero" e a web ainda diz "Groscove Ultra". Trocar a marca da web antes do

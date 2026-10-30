@@ -32,6 +32,9 @@ describe("isBlockedInNativeApp", () => {
     expect(isBlockedInNativeApp("/personalities/neymar/produtos")).toBe(true);
     expect(isBlockedInNativeApp("/explore", new URLSearchParams("tab=produtos"))).toBe(true);
     expect(isBlockedInNativeApp("/explore", new URLSearchParams("tab=receitas"))).toBe(false);
+    expect(isBlockedInNativeApp("/profile/today", new URLSearchParams("exemplo=1"))).toBe(true);
+    expect(isBlockedInNativeApp("/profile/today/sono", new URLSearchParams("exemplo=1"))).toBe(true);
+    expect(isBlockedInNativeApp("/profile/today")).toBe(false);
   });
 
   it("não bloqueia o resto do app, nem prefixo parecido", () => {

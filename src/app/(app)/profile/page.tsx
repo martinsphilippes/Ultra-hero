@@ -323,7 +323,7 @@ export default async function ProfilePage() {
             {t("signOut")}
           </Button>
         </form>
-        <p className="type-caption text-fg-muted">{t("demoNote")}</p>
+        <p className="type-caption text-fg-muted native:hidden">{t("demoNote")}</p>
       </div>
     </div>
   );

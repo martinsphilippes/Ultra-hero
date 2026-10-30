@@ -5,6 +5,8 @@ import { LegacyTodayCleanup } from "@/components/me/today/LegacyTodayCleanup";
 import { SyncingCard } from "@/components/me/today/SyncingCard";
 import { WatchToday } from "@/components/me/today/WatchToday";
 import { DemoBadge, PageHeader } from "@/components/ui";
+import { redirect } from "next/navigation";
+import { getNativeApp } from "@/lib/native-app/server";
 import { loadWatchView, wantsExample } from "./view";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,6 +20,9 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const example = wantsExample(params.exemplo);
   const [view, t] = await Promise.all([loadWatchView(example ? "/profile/today?exemplo=1" : "/profile/today", example), getTranslations("me.today")]);
+
+  // app das lojas: sem relógio simulado (TodaySection)
+  if ((view.kind === "demo" || view.kind === "example") && (await getNativeApp())) redirect("/profile");
 
   return (
     <div className="flex flex-col gap-6">

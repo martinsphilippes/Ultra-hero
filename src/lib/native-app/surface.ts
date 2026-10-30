@@ -29,6 +29,8 @@ export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams)
   if (BLOCKED_HERO_LIBRARY.test(pathname)) return true;
   // aba Produtos do Explorar (as páginas fazem streaming: redirect lá dentro chegaria com 200)
   if (pathname === "/explore" && search?.get("tab") === "produtos") return true;
+  // relógio simulado de exemplo (Hoje)
+  if ((pathname === "/profile/today" || pathname.startsWith("/profile/today/")) && search?.get("exemplo") === "1") return true;
   return BLOCKED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 

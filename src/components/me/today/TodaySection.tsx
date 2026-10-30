@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import { getNativeApp } from "@/lib/native-app/server";
 import type { WatchView } from "@/lib/wearables/context";
 import { ymdToDate } from "../dates";
 import { ConnectWatchCard } from "./ConnectWatchCard";
@@ -16,6 +17,9 @@ type Props = {
 // Conta demo → relógio simulado da persona; conta real → card "Conectar relógio" com "Ver um exemplo"
 // ou, com WEARABLES_REAL_ENABLED=1 e relógio conectado, os dados reais ("Sincronizando…" até o 1º).
 export async function TodaySection({ localDate, view }: Props) {
+  // App das lojas: sem relógio simulado (dados de saúde inventados sem o aviso de demonstração
+  // confundiriam); a seção só aparece com relógio real ou para conectar um.
+  if ((view.kind === "demo" || view.kind === "example") && (await getNativeApp())) return null;
   const [t, locale] = await Promise.all([getTranslations("me.today"), getLocale()]);
   const dateLabel = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(ymdToDate(localDate));
 

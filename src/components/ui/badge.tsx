@@ -49,6 +49,8 @@ export function Badge({ variant = "neutral", size = "md", icon, className, child
     <span
       className={cn(
         `uh-badge uh-badge--${variant}`,
+        // selos de demonstração/fictício não aparecem no app das lojas (docs/decisions/app-nas-lojas.md)
+        variant === "demo" && "native:hidden",
         "inline-flex shrink-0 items-center rounded-(--uh-badge-radius) border font-mono font-medium uppercase leading-none tracking-wider whitespace-nowrap",
         badgeVariants[variant],
         sizes[size],
@@ -88,7 +90,7 @@ export function PlanBadge({ plan, ...props }: Omit<BadgeProps, "variant" | "chil
 export function DemoBadge({ className, ...props }: Omit<BadgeProps, "variant" | "children">) {
   const t = useTranslations("common.demo");
   return (
-    <Badge variant="demo" className={cn("native:hidden", className)} {...props}>
+    <Badge variant="demo" className={className} {...props}>
       {t("tag")}
     </Badge>
   );
