@@ -59,6 +59,7 @@ const ICONS: Record<string, LucideIcon> = {
   audit: ScrollText,
   settings: Settings,
   fulfillments: Truck,
+  shipments: Truck,
   post: SquarePlus,
   recipes: ChefHat,
 };

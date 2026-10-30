@@ -5502,5 +5502,133 @@ select tests.ok('S61 estado restaurado',
   and (select count(*) from public.creator_category_links) = 7
   and (select count(*) from public.hero_library_tabs) = 0);
 
+-- ================================================================ S62 · Operação dos fornecedores pelo admin (0053)
+-- Sem portal do fornecedor: o admin cria/edita produtos de qualquer organização (parceira inclusive),
+-- move remessas e edita o perfil da organização. A RLS/RPC de admin já existia; a 0053 audita tudo
+-- (products.insert/update e fulfillment.transition). Quem não é admin não opera nem gera trilha.
+select tests.su();
+create temp table t_s62_base as select coalesce(max(id), 0) as id from public.admin_audit;
+grant select on t_s62_base to authenticated;
+
+-- admin cria produto da Vértice (parceira) e edita: título, preço, estoque e arquivamento
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into public.products (id, seller_org_id, category_id, slug, title, description, image_url, price_cents_demo, product_type, status, availability, created_by)
+values ('62000000-0000-4000-8000-000000000001', public.seed_uuid('seller:vertice'), (select category_id from public.products where id = public.seed_uuid('product:m2')),
+        's62-produto-admin', 'Produto S62 do admin', 'Descrição de teste do produto S62.', '/placeholders/product-1.svg', 1990, 'physical', 'draft', 'available',
+        '10000000-0000-4000-8000-000000000001');
+update public.products set title = 'Produto S62 renomeado', price_cents_demo = 2490, demo_stock = 7 where id = '62000000-0000-4000-8000-000000000001';
+update public.products set status = 'archived' where id = '62000000-0000-4000-8000-000000000001';
+update public.products set title = 'Produto S62 renomeado' where id = '62000000-0000-4000-8000-000000000001'; -- nada muda: sem trilha
+select tests.ok('S62 admin cria e edita produto de organização parceira (RLS de admin)',
+  (select title = 'Produto S62 renomeado' and status = 'archived' and demo_stock = 7 and seller_org_id = public.seed_uuid('seller:vertice')
+   from public.products where id = '62000000-0000-4000-8000-000000000001'));
+select tests.su();
+select tests.ok('S62 auditoria do produto: insert e 2 updates só com os campos alterados (antes/depois) e a organização',
+  (select string_agg(action, ',' order by id) from public.admin_audit where id > (select id from t_s62_base) and resource_type = 'product'
+     and resource_id = '62000000-0000-4000-8000-000000000001' and action like 'products.%') = 'products.insert,products.update,products.update'
+  and (select after_data - 'seller_org_id' from public.admin_audit where id > (select id from t_s62_base) and action = 'products.update'
+       and resource_id = '62000000-0000-4000-8000-000000000001' order by id limit 1) = '{"title":"Produto S62 renomeado","demo_stock":7,"price_cents_demo":2490}'::jsonb
+  and (select before_data ->> 'title' from public.admin_audit where id > (select id from t_s62_base) and action = 'products.update'
+       and resource_id = '62000000-0000-4000-8000-000000000001' order by id limit 1) = 'Produto S62 do admin'
+  and (select after_data ->> 'status' from public.admin_audit where id > (select id from t_s62_base) and action = 'products.update'
+       and resource_id = '62000000-0000-4000-8000-000000000001' order by id desc limit 1) = 'archived'
+  and (select bool_and(actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin' and after_data ->> 'seller_org_id' = public.seed_uuid('seller:vertice')::text)
+       from public.admin_audit where id > (select id from t_s62_base) and action like 'products.%'));
+
+-- moderação: só product.moderate (a 0053 não duplica)
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_moderate_product('62000000-0000-4000-8000-000000000001', 'hide', 'Teste S62');
+select tests.su();
+select tests.ok('S62 mudança só de moderação não gera products.update',
+  (select count(*) from public.admin_audit where id > (select id from t_s62_base) and action = 'products.update' and resource_id = '62000000-0000-4000-8000-000000000001') = 2
+  and exists (select 1 from public.admin_audit where id > (select id from t_s62_base) and action = 'product.moderate' and resource_id = '62000000-0000-4000-8000-000000000001'));
+
+-- quem não é admin: consumidor não cria nem altera; fornecedor (conta antiga) não gera trilha de admin
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S62 consumidor não cria produto de organização (RLS)',
+  $q$insert into public.products (seller_org_id, category_id, slug, title, description, image_url, price_cents_demo, product_type)
+     values (public.seed_uuid('seller:vertice'), (select id from public.product_categories limit 1), 's62-x', 'Produto X', 'Descrição longa X.', '/placeholders/product-1.svg', 1, 'physical')$q$, 'row-level security');
+update public.products set price_cents_demo = 1 where id = public.seed_uuid('product:m2');
+select tests.login('10000000-0000-4000-8000-000000000005', 'sellera@test.local');
+update public.products set demo_stock = 30 where id = public.seed_uuid('product:m2');
+select tests.su();
+select tests.ok('S62 escrita de quem não é admin não gera products.* (nem altera produto alheio)',
+  (select price_cents_demo from public.products where id = public.seed_uuid('product:m2')) <> 1
+  and (select demo_stock from public.products where id = public.seed_uuid('product:m2')) = 30
+  and not exists (select 1 from public.admin_audit where id > (select id from t_s62_base) and action like 'products.%' and resource_id <> '62000000-0000-4000-8000-000000000001'));
+
+-- remessas: pedido novo com produto da Vértice; admin move aguardando → em preparação → pronta (auditado)
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select public.cart_set_item(public.seed_uuid('product:m2'), 1);
+create temp table t_s62_order as select public.checkout_cart(public.seed_uuid('dest:centro'), '[]'::jsonb, true) as id;
+select tests.su();
+grant select on t_s62_order to authenticated;
+create temp table t_s62_f as select id from public.test_fulfillments where order_id = (select id from t_s62_order) and seller_org_id = public.seed_uuid('seller:vertice');
+grant select on t_s62_f to authenticated;
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+select tests.expect_error('S62 quem não é admin nem fornecedor da remessa não a move', format($q$select public.fulfillment_transition(%L, 'preparing', null)$q$, (select id from t_s62_f)), '42501');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S62 admin vê a remessa da Vértice e os itens dela', (select count(*) from public.test_fulfillments where id = (select id from t_s62_f)) = 1
+  and (select count(*) from public.test_order_items where fulfillment_id = (select id from t_s62_f)) = 1);
+select public.fulfillment_transition((select id from t_s62_f), 'preparing', 'Separando itens');
+select public.fulfillment_transition((select id from t_s62_f), 'ready_for_dispatch', null);
+select tests.expect_error('S62 admin não pula etapas (máquina de estados vale para o admin)',
+  format($q$select public.fulfillment_transition(%L, 'delivered', null)$q$, (select id from t_s62_f)), 'invalid_transition');
+select tests.su();
+select tests.ok('S62 transições do admin: eventos com ator admin e status pronta para expedição',
+  (select status from public.test_fulfillments where id = (select id from t_s62_f)) = 'ready_for_dispatch'
+  and (select count(*) from public.fulfillment_events where fulfillment_id = (select id from t_s62_f) and actor_type = 'admin') = 2);
+select tests.ok('S62 auditoria das remessas: 2 fulfillment.transition com antes/depois, organização, pedido e observação',
+  (select string_agg((before_data ->> 'status') || '>' || (after_data ->> 'status'), ',' order by id) from public.admin_audit
+     where id > (select id from t_s62_base) and action = 'fulfillment.transition' and resource_type = 'fulfillment' and resource_id = (select id::text from t_s62_f))
+    = 'awaiting>preparing,preparing>ready_for_dispatch'
+  and (select bool_and(after_data ->> 'seller_org_id' = public.seed_uuid('seller:vertice')::text and after_data ->> 'order_id' = (select id::text from t_s62_order)
+                       and actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin')
+       from public.admin_audit where id > (select id from t_s62_base) and action = 'fulfillment.transition')
+  and (select justification from public.admin_audit where id > (select id from t_s62_base) and action = 'fulfillment.transition' order by id limit 1) = 'Separando itens');
+-- transição do sistema (simulação) não vira trilha de admin
+alter table public.test_fulfillments disable trigger trg_test_fulfillments_updated;
+update public.test_fulfillments set updated_at = now() - interval '1 hour' where id = (select id from t_s62_f);
+select public.advance_simulated_transport(10);
+alter table public.test_fulfillments enable trigger trg_test_fulfillments_updated;
+select tests.ok('S62 transporte simulado (sistema) não gera fulfillment.transition',
+  (select status from public.test_fulfillments where id = (select id from t_s62_f)) = 'in_transit'
+  and (select count(*) from public.admin_audit where id > (select id from t_s62_base) and action = 'fulfillment.transition') = 2);
+
+-- perfil da organização pelo admin (gatilho da 0012 já audita); consumidor não vê nem altera
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+update public.seller_organizations set description = 'Descrição S62 pelo admin.' where id = public.seed_uuid('seller:vertice');
+select tests.su();
+select tests.ok('S62 admin edita o perfil da organização com auditoria',
+  (select description from public.seller_organizations where id = public.seed_uuid('seller:vertice')) = 'Descrição S62 pelo admin.'
+  and exists (select 1 from public.admin_audit where id > (select id from t_s62_base) and action = 'seller_organizations.update'
+              and resource_id = public.seed_uuid('seller:vertice')::text and after_data ->> 'description' = 'Descrição S62 pelo admin.'));
+select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
+update public.seller_organizations set description = 'invadido' where id = public.seed_uuid('seller:vertice');
+select tests.ok('S62 quem não é admin não vê remessas da organização nem a altera',
+  (select count(*) from public.test_fulfillments where seller_org_id = public.seed_uuid('seller:vertice')) = 0
+  and (select description from public.seller_organizations where id = public.seed_uuid('seller:vertice')) = 'Descrição S62 pelo admin.');
+
+select tests.su();
+select tests.ok('S62 gatilho de auditoria: security definer, search_path fixo, sem execute para anon nem authenticated',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.admin_seller_ops_audit()'::regprocedure)
+  and not has_function_privilege('anon', 'public.admin_seller_ops_audit()', 'execute')
+  and not has_function_privilege('authenticated', 'public.admin_seller_ops_audit()', 'execute')
+  and exists (select 1 from pg_trigger where tgrelid = 'public.products'::regclass and tgname = 'trg_z_audit_products_admin')
+  and exists (select 1 from pg_trigger where tgrelid = 'public.fulfillment_events'::regclass and tgname = 'trg_audit_fulfillment_events_admin'));
+select tests.ok('S62 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- reaplicar a 0053 não duplica gatilhos
+\ir ../migrations/0053_admin_seller_ops.sql
+select tests.ok('S62 reaplicar a 0053 mantém um gatilho por tabela',
+  (select count(*) from pg_trigger where tgname in ('trg_z_audit_products_admin', 'trg_audit_fulfillment_events_admin')) = 2);
+
+-- limpeza (a transação inteira é desfeita no fim)
+update public.seller_organizations set description = 'Fornecedor fictício de refeições prontas para a demonstração.' where id = public.seed_uuid('seller:vertice');
+delete from public.products where id = '62000000-0000-4000-8000-000000000001';
+delete from public.admin_audit where id > (select id from t_s62_base);
+drop table t_s62_base, t_s62_order, t_s62_f;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

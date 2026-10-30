@@ -20,7 +20,7 @@
     "preparing": "Preparing",
     "readyForDispatch": "Ready for dispatch",
     "moderationTitle": "Recent moderation",
-    "moderationEmpty": "No moderation action on your products.",
+    "moderationEmpty": "No moderation actions on this organization's products.",
     "moderationAction": {
       "hide": "Hidden",
       "suspend": "Suspended",
@@ -108,7 +108,7 @@
     "etaDays": "{n, plural, =1 {1 day} other {# days}}",
     "itemsCount": "{n, plural, =1 {1 item} other {# items}}",
     "empty": "No shipments",
-    "emptyDescription": "When a test order includes your products, the shipment appears here.",
+    "emptyDescription": "When a test order includes this organization's products, the shipment shows up here.",
     "open": "Open",
     "openLabel": "Open shipment {id}",
     "detail": {
@@ -167,5 +167,10 @@
       "invalid_input": "Invalid data.",
       "generic": "Could not save. Try again."
     }
+  },
+  "closed": {
+    "title": "Supplier portal turned off",
+    "description": "There is no supplier access for now. Organizations' products, shipments and profiles are managed by the administration.",
+    "back": "Go to the app"
   }
 }

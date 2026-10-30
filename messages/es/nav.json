@@ -30,7 +30,8 @@
     "feedback": "Comentarios",
     "metrics": "Métricas",
     "audit": "Auditoría",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "shipments": "Envíos"
   },
   "creator": {
     "post": "Nueva publicación",

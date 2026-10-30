@@ -59,7 +59,7 @@ Não há senhas no seed. Para testar portais no ambiente remoto: admin cria conv
 
 ## O que ainda não é automatizado
 
-- Fluxos autenticados usam as contas demo (um toque em `/login`); sem `DEMO_ACCOUNTS_PASSWORD` no ambiente eles pulam. O fornecedor (`/seller`) e o checkout completo ainda não têm jornada E2E.
+- Fluxos autenticados usam as contas demo (um toque em `/login`); sem `DEMO_ACCOUNTS_PASSWORD` no ambiente eles pulam. O checkout completo ainda não tem jornada E2E. A operação dos fornecedores pelo admin e o portal `/seller` desligado têm checagens só de leitura em `tests/e2e/admin-seller-ops.spec.ts`; as regras de banco ficam no S62 (0053).
 - Relógio real (Garmin, Oura, WHOOP, Polar): pronto e oculto (`WEARABLES_REAL_ENABLED` desligada na Vercel; `connect_open = 'false'` em `health.config`). O banco é coberto pelo RLS S43–S51 e, no remoto, com a chave desligada, `health_consent_grant` devolve `health_disabled` para conta não demo e `demo_account_cannot_connect` para conta demo (0 consentimentos gravados). A conexão de ponta a ponta com as marcas só pode ser exercitada depois de ligar (`docs/decisions/hoje-relogio.md`, seção "Roteiro de ligar").
 - Comparação real OpenAI vs Gemini — `npm run eval:recommendations` roda os cenários com o motor determinístico e só compara provedores quando há chaves.
 - Auditoria completa WCAG 2.2 AA — axe cobre uma parte; o restante está no `docs/launch-checklist.md` para verificação manual.

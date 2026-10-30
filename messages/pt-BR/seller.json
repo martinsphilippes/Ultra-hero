@@ -20,7 +20,7 @@
     "preparing": "Em preparação",
     "readyForDispatch": "Prontas para expedição",
     "moderationTitle": "Moderação recente",
-    "moderationEmpty": "Nenhuma ação de moderação nos seus produtos.",
+    "moderationEmpty": "Nenhuma ação de moderação nos produtos desta organização.",
     "moderationAction": {
       "hide": "Ocultado",
       "suspend": "Suspenso",
@@ -108,7 +108,7 @@
     "etaDays": "{n, plural, =1 {1 dia} other {# dias}}",
     "itemsCount": "{n, plural, =1 {1 item} other {# itens}}",
     "empty": "Nenhuma remessa",
-    "emptyDescription": "Quando um pedido de teste incluir seus produtos, a remessa aparece aqui.",
+    "emptyDescription": "Quando um pedido de teste incluir produtos desta organização, a remessa aparece aqui.",
     "open": "Abrir",
     "openLabel": "Abrir remessa {id}",
     "detail": {
@@ -167,5 +167,10 @@
       "invalid_input": "Dados inválidos.",
       "generic": "Não foi possível salvar. Tente novamente."
     }
+  },
+  "closed": {
+    "title": "Portal do fornecedor desativado",
+    "description": "Por enquanto não há acesso de fornecedor. Produtos, remessas e perfil das organizações são geridos pela administração.",
+    "back": "Ir para o app"
   }
 }

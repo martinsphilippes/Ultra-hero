@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import { DemoNotice } from "@/components/admin-content";
 import { AdminProductEditor } from "@/components/admin-content/ProductAdminActions";
 import type { ProductFormValues } from "@/components/editors/types";
-import { PageHeader } from "@/components/ui";
+import Link from "next/link";
+import { Button, PageHeader } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 
-// Edição de produto da operação própria (ProductForm). Parceiros: somente leitura no admin.
+// Edição de produto da operação própria (ProductForm). Parceiros: editados na aba Produtos da organização.
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -40,6 +41,9 @@ export default async function AdminProductEditPage({ params }: Params) {
         <p role="note" className="rounded-lg border border-warning/40 bg-warning-soft/50 px-3 py-2 text-sm text-fg">
           {t("detail.partnerReadOnly")}
         </p>
+        <Button asChild className="w-fit">
+          <Link href={`/admin/sellers/${product.seller_org_id}/products/${id}/edit`}>{t("detail.editInOrg")}</Link>
+        </Button>
       </div>
     );
   }

@@ -20,6 +20,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "shopFilters", href: "/admin/shop-filters" },
     { key: "links", href: "/admin/links" },
     { key: "orders", href: "/admin/orders" },
+    { key: "shipments", href: "/admin/shipments" },
     { key: "feedback", href: "/admin/feedback" },
     { key: "metrics", href: "/admin/metrics" },
     { key: "audit", href: "/admin/audit" },

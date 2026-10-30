@@ -3,25 +3,13 @@
 import { useTranslations } from "next-intl";
 import { cancelOrderAction, transitionFulfillmentAction } from "@/app/admin/orders/actions";
 import { ConfirmActionDialog } from "@/components/admin";
+import { adminTargetsFor, transitionNeedsJustification, type FulfillmentStatus } from "@/lib/seller-ops/shipments";
 
-type FStatus = "awaiting" | "preparing" | "ready_for_dispatch" | "in_transit" | "delivered" | "cancelled" | "failed";
-type Target = "preparing" | "ready_for_dispatch" | "in_transit" | "delivered" | "failed" | "cancelled";
-
-// Transições permitidas ao admin (espelha fulfillment_transition no SQL).
-const ADMIN_TRANSITIONS: Record<FStatus, Target[]> = {
-  awaiting: ["preparing", "cancelled"],
-  preparing: ["ready_for_dispatch", "cancelled"],
-  ready_for_dispatch: ["in_transit", "cancelled"],
-  in_transit: ["delivered", "failed"],
-  delivered: [],
-  cancelled: [],
-  failed: [],
-};
-
-export function FulfillmentActions({ orderId, fulfillmentId, status }: { orderId: string; fulfillmentId: string; status: FStatus }) {
+// Transições permitidas ao admin (espelha fulfillment_transition no SQL; usada em Pedidos e Remessas).
+export function FulfillmentActions({ orderId, fulfillmentId, status }: { orderId: string; fulfillmentId: string; status: FulfillmentStatus }) {
   const t = useTranslations("adminContent.orders.actions");
   const ts = useTranslations("adminCommon.status");
-  const targets = ADMIN_TRANSITIONS[status] ?? [];
+  const targets = adminTargetsFor(status);
   if (targets.length === 0) return <p className="type-caption text-fg-muted">{t("noTransitions")}</p>;
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -29,11 +17,11 @@ export function FulfillmentActions({ orderId, fulfillmentId, status }: { orderId
         <ConfirmActionDialog
           key={to}
           triggerLabel={t("transition", { status: ts(to) })}
-          triggerVariant={to === "cancelled" || to === "failed" ? "danger" : "secondary"}
-          destructive={to === "cancelled" || to === "failed"}
+          triggerVariant={transitionNeedsJustification(to) ? "danger" : "secondary"}
+          destructive={transitionNeedsJustification(to)}
           title={t("transitionTitle", { status: ts(to) })}
           description={t("transitionDescription")}
-          requireJustification={to === "cancelled" || to === "failed"}
+          requireJustification={transitionNeedsJustification(to)}
           action={(note) => transitionFulfillmentAction(orderId, fulfillmentId, to, note)}
         />
       ))}

@@ -1,7 +1,7 @@
 import { KeyRound, ShieldCheck, Sparkles, Store, User, UserRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { signInAsDemo } from "@/app/demo-actions";
-import { DEMO_ACCOUNTS, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
+import { DEMO_ACCESS_ACCOUNTS, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
 import { isDemoAccessEnabled } from "@/lib/demo/server";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ export async function DemoAccess({ from, failed }: Props) {
         </p>
       ) : null}
       <ul className="grid gap-2 sm:grid-cols-2" aria-label={t("listLabel")}>
-        {DEMO_ACCOUNTS.map((account) => {
+        {DEMO_ACCESS_ACCOUNTS.map((account) => {
           const Icon = ICON[account.kind];
           return (
             <li key={account.kind}>

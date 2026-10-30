@@ -3,23 +3,24 @@ import { expect, test } from "@playwright/test";
 
 // Acesso rápido às contas de demonstração (uma por tipo de acesso), direto abaixo da caixa de login e
 // recolhido no topo do Início. Todas as contas entram direto na aba Hero. Só aparece quando DEMO_ACCOUNTS_PASSWORD está configurada no servidor.
+// Sem o portal do fornecedor (a operação é do admin, 0053), a conta do fornecedor sai do painel.
 
 const ACCOUNTS = [
   { kind: "admin", label: "Admin", url: /\/personalities$/ },
   { kind: "creator", label: "Herói / Chef", url: /\/personalities$/ },
-  { kind: "seller", label: "Fornecedor", url: /\/personalities$/ },
   { kind: "premium", label: "Consumidor premium", url: /\/personalities$/ },
   { kind: "free", label: "Consumidor gratuito", url: /\/personalities$/ },
 ] as const;
 
 test.describe("acesso rápido às contas de demonstração", () => {
-  test("login mostra as 5 contas abaixo da caixa, sem código, e passa no axe", async ({ page }) => {
+  test("login mostra as 4 contas abaixo da caixa (sem o fornecedor), sem código, e passa no axe", async ({ page }) => {
     await page.goto("/login");
     const panel = page.getByTestId("demo-access");
     test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
     await expect(panel.getByRole("heading", { name: "Entrar com uma conta de demonstração" })).toBeVisible();
     const buttons = panel.locator("[data-demo-kind]");
-    await expect(buttons).toHaveCount(5);
+    await expect(buttons).toHaveCount(4);
+    await expect(panel.locator('[data-demo-kind="seller"]')).toHaveCount(0);
     for (const account of ACCOUNTS) {
       const button = panel.locator(`[data-demo-kind="${account.kind}"]`);
       await expect(button).toBeVisible();

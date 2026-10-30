@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { acceptInvitation } from "@/app/admin/ops-actions";
 import { Button } from "@/components/ui";
+import { SELLER_PORTAL_ENABLED } from "@/lib/seller-ops/portal";
 
 type Props = { token: string; email: string | null };
 
@@ -36,10 +37,17 @@ export function InviteAcceptCard({ token, email }: Props) {
         </span>
         <div>
           <h2 className="type-h3 text-fg">{t("successTitle")}</h2>
-          <p className="type-body-sm mt-1 text-fg-muted">{role === "creator" ? t("successCreator") : t("successSeller")}</p>
+          <p className="type-body-sm mt-1 text-fg-muted">{role === "creator" ? t("successCreator") : SELLER_PORTAL_ENABLED ? t("successSeller") : t("successSellerPortalOff")}</p>
         </div>
         <Button asChild size="lg" block>
-          <Link href={role === "creator" ? "/profile" : "/seller"}>{role === "creator" ? t("goCreator") : t("goSeller")}</Link>
+          {/* portal do fornecedor desligado (0053): volta ao app */}
+          {role === "creator" ? (
+            <Link href="/profile">{t("goCreator")}</Link>
+          ) : SELLER_PORTAL_ENABLED ? (
+            <Link href="/seller">{t("goSeller")}</Link>
+          ) : (
+            <Link href="/personalities">{t("goHome")}</Link>
+          )}
         </Button>
       </div>
     );

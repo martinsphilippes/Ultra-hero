@@ -116,7 +116,8 @@
       "suggestedLinks": "Suggested links",
       "newFeedback": "New feedback",
       "awaitingFulfillments": "Fulfillments awaiting",
-      "open": "Open"
+      "open": "Open",
+      "preparingFulfillments": "Shipments being prepared"
     }
   },
   "heroPublishing": {
@@ -299,7 +300,8 @@
     "goCreator": "Go to Profile",
     "goSeller": "Go to the supplier portal",
     "goHome": "Back to the app",
-    "errorTitle": "Could not accept"
+    "errorTitle": "Could not accept",
+    "successSellerPortalOff": "Invitation accepted. The supplier portal is turned off for now; operations are handled by the administration."
   },
   "creators": {
     "title": "Heroes",
@@ -476,6 +478,29 @@
       "invite": "Invite member",
       "owner": "Owner",
       "staff": "Staff"
+    },
+    "hub": {
+      "tabsLabel": "Organization sections",
+      "tabs": {
+        "overview": "Overview",
+        "products": "Products",
+        "shipments": "Shipments",
+        "organization": "Organization"
+      },
+      "description": "This organization run by the administration: products, shipments and profile. No real partnership.",
+      "productsDescription": "{name}'s catalog. Create, edit, publish and archive with the same form the supplier used; every change is audited.",
+      "shipmentsDescription": "Test-order shipments with {name}'s products.",
+      "shipmentsNote": "From \"ready for dispatch\" on, the system simulation moves the shipment to \"in transit\" and \"delivered\". The admin can also advance or cancel it.",
+      "shipmentActions": "Administration actions",
+      "shipmentActionsNote": "Every status change goes to the timeline and the audit log. Cancelling or marking as failed asks for a reason.",
+      "zoneNote": "The shipment only shows the fictional destination zone; the full destination is on the order.",
+      "openOrder": "Open the order",
+      "moderationTitle": "Moderation",
+      "productSheet": "See the full product sheet",
+      "notFoundTitle": "Not found in this organization",
+      "notFoundDescription": "The product or shipment does not exist or belongs to another organization.",
+      "backToSellers": "Back to suppliers",
+      "portalOff": "The supplier portal is turned off: members don't operate for now; the administration operates through the tabs above."
     }
   },
   "feedback": {
@@ -717,6 +742,19 @@
       "createdWarning": "Write down the password now: it will not be shown or stored as text.",
       "password": "Temporary password",
       "done": "Done"
+    }
+  },
+  "shipments": {
+    "title": "Shipments",
+    "description": "Shipments from every supplier. Open a shipment to change its status (the supplier's steps plus the system's).",
+    "banner": "Test orders: no delivery is real. Destinations and transport are simulated.",
+    "tableCaption": "Shipments from every supplier",
+    "emptyDescription": "Adjust the filters. Shipments appear when a test order is confirmed.",
+    "open": {
+      "title": "Open",
+      "awaiting": "Awaiting",
+      "preparing": "Preparing",
+      "readyForDispatch": "Ready for dispatch"
     }
   }
 }
