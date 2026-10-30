@@ -4,7 +4,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ProgramConcept } from "@/app/(app)/programs/[slug]/ProgramConcept";
+import { ConceptScreenBody } from "@/app/(app)/programs/[slug]/ConceptScreen";
+import { conceptScreens, type ConceptScreenKey } from "@/lib/programs/program-cards";
 import {
   conceptToForm,
   conceptView,
@@ -134,51 +135,51 @@ describe("formulário do admin", () => {
   });
 });
 
-describe("seção Conceito do programa", () => {
+// Telas dos cards Conceito e Prepare-se: cada seção do conceito vira uma tela.
+function renderScreens(c: Concept | null, description: string | null, estimatedWeeks: number | null, locale: "pt-BR" | "en" = "pt-BR") {
+  const split = conceptScreens(c, description, estimatedWeeks);
+  const keys: ConceptScreenKey[] = [...split.conceito, ...split["prepare-se"]];
+  return render(
+    keys.map((screen) => createElement(ConceptScreenBody, { key: screen, screen, concept: c, description, estimatedWeeks })),
+    locale,
+  );
+}
+
+describe("telas do conceito do programa", () => {
   it("renderiza ideia, públicos, conquistas, etapas numeradas, ritmo, itens e cuidados", () => {
-    const html = render(createElement(ProgramConcept, { concept, description: "Descrição antiga.", estimatedWeeks: 1 }));
-    expect(html).toContain('data-concept="concept"');
-    expect(html).toContain("Conceito do programa");
+    const html = renderScreens(concept, "Descrição antiga.", 1);
     expect(html).toContain(concept.idea);
-    expect(html).toContain("Para quem é");
+    expect(html).toContain(concept.for_who);
     expect(html).toContain("Não é para");
-    expect(html).toContain("O que você vai conquistar");
     expect(html.match(/<li/g)?.length).toBeGreaterThanOrEqual(3 + 3 + 3 + 1);
-    expect(html).toContain("Como funciona");
+    expect(html).toContain("Monte o ritual");
     expect(html).toContain("1 semana");
     expect(html).toContain("7× por semana");
     expect(html).toContain("~10 min por dia");
     expect(html).toContain("Um copo de água");
-    expect(html).toContain("Cuidados");
+    expect(html).toContain(concept.care);
     // a descrição antiga não duplica quando há conceito
     expect(html).not.toContain("Descrição antiga.");
   });
 
-  it("esconde blocos vazios: sem 'Não é para', sem ritmo; sem itens mostra 'Nada além de você'", () => {
-    const html = render(
-      createElement(ProgramConcept, {
-        concept: { ...concept, not_for: null, needs: [], rhythm: { sessions_per_week: null, minutes_per_day: null, note: null } },
-        description: null,
-        estimatedWeeks: null,
-      }),
-    );
+  it("esconde o vazio: sem 'Não é para', sem tela de ritmo; sem itens mostra 'Nada além de você'", () => {
+    const bare = { ...concept, not_for: null, needs: [], rhythm: { sessions_per_week: null, minutes_per_day: null, note: null } };
+    expect(conceptScreens(bare, null, null)["prepare-se"]).toEqual(["needs", "care"]);
+    const html = renderScreens(bare, null, null);
     expect(html).not.toContain("Não é para");
-    expect(html).not.toContain("Ritmo");
     expect(html).toContain("Nada além de você");
   });
 
-  it("sem conceito mostra a descrição; sem nada não renderiza", () => {
-    const html = render(createElement(ProgramConcept, { concept: null, description: "Descrição antiga.", estimatedWeeks: 2 }));
-    expect(html).toContain('data-concept="description"');
-    expect(html).toContain("Descrição antiga.");
-    expect(render(createElement(ProgramConcept, { concept: null, description: null, estimatedWeeks: 2 }))).toBe("");
+  it("sem conceito mostra a descrição; sem nada não há telas", () => {
+    expect(renderScreens(null, "Descrição antiga.", 2)).toContain("Descrição antiga.");
+    expect(renderScreens(null, null, 2)).toBe("");
   });
 
   it("em inglês usa os rótulos traduzidos", () => {
-    const html = render(createElement(ProgramConcept, { concept, description: null, estimatedWeeks: 2 }), "en");
-    expect(html).toContain("Program concept");
+    const html = renderScreens(concept, null, 2, "en");
     expect(html).toContain("2 weeks");
     expect(html).toContain("7× a week");
+    expect(html).toContain("Not for");
   });
 });
 
@@ -186,13 +187,11 @@ describe("página e migração", () => {
   const page = readFileSync(path.join(ROOT, "src/app/(app)/programs/[slug]/page.tsx"), "utf8");
   const migration = readFileSync(path.join(ROOT, "supabase/migrations/0048_program_concept.sql"), "utf8");
 
-  it("a seção fica logo depois do cabeçalho e antes dos conteúdos; o parágrafo antigo saiu", () => {
+  it("os cards ficam logo depois do cabeçalho (e do progresso); o parágrafo antigo saiu", () => {
     const header = page.indexOf("</header>");
-    const conceptAt = page.indexOf("<ProgramConcept");
-    const items = page.indexOf('aria-labelledby="program-items"');
+    const cardsAt = page.indexOf("<ProgramCards");
     expect(header).toBeGreaterThan(0);
-    expect(conceptAt).toBeGreaterThan(header);
-    expect(items).toBeGreaterThan(conceptAt);
+    expect(cardsAt).toBeGreaterThan(header);
     expect(page).not.toContain('aria-labelledby="program-about"');
     // conceito em consulta própria (banco sem a 0048 não quebra o select principal)
     expect(page).not.toMatch(/select\("[^"]*concept/);
