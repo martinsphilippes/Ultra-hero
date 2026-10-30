@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 // Acesso rápido às contas de demonstração (uma por tipo de acesso), direto abaixo da caixa de login e
-// recolhido no topo do Início. Todas as contas entram direto na aba Hero. Só aparece quando DEMO_ACCOUNTS_PASSWORD está configurada no servidor.
+// recolhido no fim do Perfil (saiu do Início). Todas as contas entram direto na aba Hero. Só aparece quando DEMO_ACCOUNTS_PASSWORD está configurada no servidor.
 // Sem o portal do fornecedor (a operação é do admin, 0053), a conta do fornecedor sai do painel.
 
 const ACCOUNTS = [
@@ -55,17 +55,27 @@ test.describe("acesso rápido às contas de demonstração", () => {
     });
   }
 
-  test("no Início o painel fica recolhido e troca de conta com um toque", async ({ page }) => {
-    await page.goto("/inicio");
-    const panel = page.getByTestId("demo-access");
-    test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
-    await expect(panel.locator('[data-demo-kind="premium"]')).toBeHidden();
-    await panel.locator("summary").click();
-    await panel.locator('[data-demo-kind="premium"]').click();
+  test("Início não mostra o painel; no Perfil ele fica recolhido no fim e troca de conta com um toque", async ({ page }) => {
+    await page.goto("/login");
+    const login = page.getByTestId("demo-access");
+    test.skip((await login.count()) === 0, "contas de demonstração desligadas neste ambiente");
+    await login.locator('[data-demo-kind="premium"]').click();
     await expect(page).toHaveURL(/\/personalities$/, { timeout: 20_000 });
+
     await page.goto("/inicio");
-    await page.getByTestId("demo-access").locator("summary").click();
-    await page.getByTestId("demo-access").locator('[data-demo-kind="free"]').click();
+    await expect(page.getByTestId("feed-post").first()).toBeVisible();
+    await expect(page.getByTestId("demo-access")).toHaveCount(0);
+
+    await page.goto("/profile");
+    const panel = page.getByTestId("demo-access");
+    await expect(panel).toHaveCount(1);
+    // no fim do Perfil, depois da linha de Configurações
+    const settings = page.getByTestId("profile-settings");
+    await panel.scrollIntoViewIfNeeded();
+    expect((await settings.boundingBox())!.y).toBeLessThan((await panel.boundingBox())!.y);
+    await expect(panel.locator('[data-demo-kind="free"]')).toBeHidden();
+    await panel.locator("summary").click();
+    await panel.locator('[data-demo-kind="free"]').click();
     await expect(page).toHaveURL(/\/personalities$/, { timeout: 20_000 });
   });
 });

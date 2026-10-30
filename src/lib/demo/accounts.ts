@@ -2,8 +2,8 @@ import { visibleDemoKinds } from "@/lib/seller-ops/portal";
 
 // Contas de demonstração, uma por tipo de acesso (criadas no banco com app_metadata.ultra_hero_demo).
 // Módulo puro: a senha fica só na variável de ambiente do servidor (DEMO_ACCOUNTS_PASSWORD).
-// Pedido do responsável: acesso direto, sem código, na tela de login e no Início enquanto o app é um
-// experimento. Apagar DEMO_ACCOUNTS_PASSWORD na Vercel desliga os botões; remover antes de abrir ao público.
+// Pedido do responsável: acesso direto, sem código, na tela de login e no fim do Perfil (trocar de
+// conta; saiu do Início) enquanto o app é um experimento. Apagar DEMO_ACCOUNTS_PASSWORD na Vercel desliga os botões; remover antes de abrir ao público.
 
 // Todas entram direto na aba Hero (pedido do responsável); os portais ficam a um toque no Perfil.
 export const DEMO_ACCOUNTS = [
@@ -35,7 +35,7 @@ export function readyDemoAccounts<A extends { kind: string }>(accounts: readonly
 }
 
 /** Telas onde o painel aparece; o erro de login volta para a mesma tela. */
-export const DEMO_ORIGINS = { login: "/login", home: "/inicio" } as const;
+export const DEMO_ORIGINS = { login: "/login", profile: "/profile" } as const;
 export type DemoOrigin = keyof typeof DEMO_ORIGINS;
 
 export function demoAccount(kind: string) {
@@ -43,5 +43,5 @@ export function demoAccount(kind: string) {
 }
 
 export function demoOrigin(value: unknown): DemoOrigin {
-  return value === "login" ? "login" : "home";
+  return value === "login" ? "login" : "profile";
 }
