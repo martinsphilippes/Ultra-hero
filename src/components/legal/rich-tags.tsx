@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 // Tags de rich text (t.rich) dos textos legais. Sem dependências de servidor: serve em server e client.
 export const LEGAL_TERMS_HREF = "/legal/terms";
 export const LEGAL_PRIVACY_HREF = "/legal/privacy";
+export const LEGAL_DELETION_HREF = "/legal/account-deletion";
 
 export const legalLinkClass =
   "font-medium text-accent-text underline underline-offset-2 hover:text-fg focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";

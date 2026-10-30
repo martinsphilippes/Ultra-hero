@@ -3,13 +3,16 @@
     "terms": "Terms of Use",
     "termsDescription": "Rules for using Groscove Ultra, a demo version with educational content, simulated plans and test orders.",
     "privacy": "Privacy Policy",
-    "privacyDescription": "What data Groscove Ultra processes, how long it is kept, who it is shared with and how you exercise your rights."
+    "privacyDescription": "What data Groscove Ultra processes, how long it is kept, who it is shared with and how you exercise your rights.",
+    "deletion": "Delete account",
+    "deletionDescription": "How to delete your account and what happens to your data."
   },
   "links": {
     "nav": "Legal documents",
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
-    "accountNote": "Retention periods and what happens to each type of data when you delete your account are explained in the <privacy>Privacy Policy</privacy>. The rules of use are in the <terms>Terms of Use</terms>."
+    "accountNote": "Retention periods and what happens to each type of data when you delete your account are explained in the <privacy>Privacy Policy</privacy>. The rules of use are in the <terms>Terms of Use</terms>.",
+    "deletion": "Delete account"
   },
   "page": {
     "eyebrow": "Legal documents",
@@ -22,6 +25,17 @@
       "terms": "Read the Terms of Use",
       "privacy": "Read the Privacy Policy"
     }
+  },
+  "deletion": {
+    "title": "Delete your account",
+    "intro": "You can delete your account at any time, in the app or on the website, without having to ask anyone.",
+    "stepsTitle": "How to delete",
+    "step1": "Sign in to your account, in the app or on the website.",
+    "step2": "Open <account>Profile › Account & privacy</account>.",
+    "step3": "Choose “Delete my account” and type the confirmation word shown.",
+    "dataTitle": "What happens to your data",
+    "data": "Your account and the data linked to it are deleted, or anonymized when they must be kept, within the periods described in the <privacy>Privacy Policy</privacy>.",
+    "cta": "Sign in to delete your account"
   },
   "terms": {
     "title": "Terms of Use",

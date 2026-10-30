@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+dist/
+web-build/
+# gerados pelo prebuild (o EAS gera na nuvem; ver ../docs/lojas.md)
+/ios
+/android
+# credenciais: nunca no git (sobem por `eas credentials` / `eas secret`)
+play-service-account.json
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+.env*

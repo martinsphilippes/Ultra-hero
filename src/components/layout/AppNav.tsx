@@ -19,11 +19,11 @@ export function BottomNav() {
       aria-label={ta("mainNavigation")}
       className="uh-bottomnav uh-chrome fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/90 backdrop-blur-md safe-bottom md:hidden"
     >
-      <ul className="mx-auto grid h-bottomnav max-w-content grid-cols-5">
-        {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
+      <ul className="mx-auto grid h-bottomnav max-w-content grid-cols-5 native:grid-cols-4">
+        {NAV_ITEMS.map(({ key, href, icon: Icon, webOnly }) => {
           const active = isActivePath(pathname, href);
           return (
-            <li key={key} className="contents">
+            <li key={key} className={cn("contents", webOnly && "native:hidden")}>
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
@@ -52,10 +52,10 @@ export function TopNavLinks() {
 
   return (
     <ul className="flex items-center gap-1">
-      {NAV_ITEMS.map(({ key, href }) => {
+      {NAV_ITEMS.map(({ key, href, webOnly }) => {
         const active = isActivePath(pathname, href);
         return (
-          <li key={key}>
+          <li key={key} className={cn(webOnly && "native:hidden")}>
             <Link
               href={href}
               aria-current={active ? "page" : undefined}

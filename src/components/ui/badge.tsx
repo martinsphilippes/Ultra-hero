@@ -84,11 +84,11 @@ export function PlanBadge({ plan, ...props }: Omit<BadgeProps, "variant" | "chil
   );
 }
 
-// Etiqueta "Demonstração" para tudo que simula comércio.
-export function DemoBadge(props: Omit<BadgeProps, "variant" | "children">) {
+// Etiqueta "Demonstração" para tudo que simula comércio. Some no app das lojas, onde não há comércio.
+export function DemoBadge({ className, ...props }: Omit<BadgeProps, "variant" | "children">) {
   const t = useTranslations("common.demo");
   return (
-    <Badge variant="demo" {...props}>
+    <Badge variant="demo" className={cn("native:hidden", className)} {...props}>
       {t("tag")}
     </Badge>
   );

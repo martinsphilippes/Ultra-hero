@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* App das lojas (mobile/): <html data-native-app="ios|android">. `native:hidden` tira da casca o que
+   lá não existe (comércio e planos simulados); a trava de verdade é a rota, no middleware. */
+@custom-variant native (&:where([data-native-app] *));
+
 /* =============================================================================
    Groscove Ultra · Design system (paleta PROVISÓRIA, não é a marca final)
    obsidian #0B0B0B · vital orange #FF5A1F · sand #E8E3DB

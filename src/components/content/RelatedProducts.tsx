@@ -28,7 +28,7 @@ export async function RelatedProducts({ contentId, showUnavailable = false }: { 
 
   const t = await getTranslations("consume.content");
   return (
-    <Section id="related-products" title={t("relatedProducts")} description={t("relatedProductsNote")} action={<DemoBadge />}>
+    <Section className="native:hidden" id="related-products" title={t("relatedProducts")} description={t("relatedProductsNote")} action={<DemoBadge />}>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="related-products">
         {products.map(({ product, unavailable }) => (
           <ProductInterestTracker key={product.id} productId={product.id} contentId={contentId}>

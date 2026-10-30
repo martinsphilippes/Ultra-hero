@@ -21,7 +21,7 @@ export async function ProductCard({ product, priority, className, unavailable: f
   const [t, locale] = await Promise.all([getTranslations("catalog"), getLocale()]);
   const unavailable = forced || product.availability !== "available";
   return (
-    <Card interactive asChild className={cn("h-full", className)}>
+    <Card interactive asChild className={cn("h-full native:hidden", className)}>
       <Link href={`/shop/${product.slug}`}>
         <CardImage
           src={product.image_url}

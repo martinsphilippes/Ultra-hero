@@ -69,7 +69,7 @@ export async function ProductActionCard({ product, usedIn, purchasable, maxQuant
   );
 
   return (
-    <Card data-testid="product-action-card" className={cn("h-full", className)}>
+    <Card data-testid="product-action-card" className={cn("h-full native:hidden", className)}>
       {interestContentId ? (
         <ProductInterestTracker productId={product.id} contentId={interestContentId}>
           {link}

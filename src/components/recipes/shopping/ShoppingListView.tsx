@@ -35,7 +35,7 @@ function OfferBlock({ offer, compact = false }: { offer: ShoppingOffer; compact?
     <span className="font-medium text-fg">{title}</span>
   );
   return (
-    <div className="flex flex-col gap-2" data-testid={`shopping-offer-${offer.state}`}>
+    <div className="flex flex-col gap-2 native:hidden" data-testid={`shopping-offer-${offer.state}`}>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg">
         {compact ? <span className="text-fg-muted">{t("productLabel")}</span> : null}
         {name}

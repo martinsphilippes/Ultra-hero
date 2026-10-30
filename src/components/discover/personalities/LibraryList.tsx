@@ -27,7 +27,7 @@ export async function LibraryList({ slug, libraries, className }: Props) {
       {libraries.map((library) => {
         const Icon = LIBRARY_ICON[library.key];
         return (
-          <li key={library.key}>
+          <li key={library.key} className={cn(library.key === "produtos" && "native:hidden")}>
             <Link
               href={hubHref(slug, library.key)}
               data-library={library.key}

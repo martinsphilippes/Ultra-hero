@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { hubHref, type HubLibrary } from "@/lib/catalog/creator-hub";
+import { cn } from "@/lib/utils";
 import { LIBRARY_ICON } from "./LibraryList";
 
 type Props = { slug: string; libraries: HubLibrary[] };
@@ -14,7 +15,7 @@ export async function LibraryHighlights({ slug, libraries }: Props) {
       {libraries.map((library) => {
         const Icon = LIBRARY_ICON[library.key];
         return (
-          <li key={library.key} className="shrink-0">
+          <li key={library.key} className={cn("shrink-0", library.key === "produtos" && "native:hidden")}>
             <Link
               href={hubHref(slug, library.key)}
               data-library={library.key}

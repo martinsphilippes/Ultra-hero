@@ -4,11 +4,13 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LEGAL_PRIVACY_HREF, LEGAL_TERMS_HREF } from "./rich-tags";
+import { LEGAL_DELETION_HREF, LEGAL_PRIVACY_HREF, LEGAL_TERMS_HREF } from "./rich-tags";
 
 const LINKS = [
   { key: "terms", href: LEGAL_TERMS_HREF },
   { key: "privacy", href: LEGAL_PRIVACY_HREF },
+  // alcançável a partir de qualquer página: o Google Play confere a URL de exclusão (docs/lojas.md)
+  { key: "deletion", href: LEGAL_DELETION_HREF },
 ] as const;
 
 type LegalLinksProps = { className?: string; align?: "start" | "center" };

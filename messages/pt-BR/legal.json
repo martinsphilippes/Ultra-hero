@@ -3,13 +3,16 @@
     "terms": "Termos de Uso",
     "termsDescription": "Regras de uso do Groscove Ultra, uma versão de demonstração com conteúdo educativo, planos simulados e pedidos de teste.",
     "privacy": "Política de Privacidade",
-    "privacyDescription": "Quais dados o Groscove Ultra trata, por quanto tempo, com quem compartilha e como você exerce seus direitos."
+    "privacyDescription": "Quais dados o Groscove Ultra trata, por quanto tempo, com quem compartilha e como você exerce seus direitos.",
+    "deletion": "Excluir conta",
+    "deletionDescription": "Como excluir sua conta e o que acontece com os seus dados."
   },
   "links": {
     "nav": "Documentos legais",
     "terms": "Termos de Uso",
     "privacy": "Política de Privacidade",
-    "accountNote": "Os prazos de retenção e o que acontece com cada dado na exclusão estão na <privacy>Política de Privacidade</privacy>. As regras de uso estão nos <terms>Termos de Uso</terms>."
+    "accountNote": "Os prazos de retenção e o que acontece com cada dado na exclusão estão na <privacy>Política de Privacidade</privacy>. As regras de uso estão nos <terms>Termos de Uso</terms>.",
+    "deletion": "Excluir conta"
   },
   "page": {
     "eyebrow": "Documentos legais",
@@ -22,6 +25,17 @@
       "terms": "Ler os Termos de Uso",
       "privacy": "Ler a Política de Privacidade"
     }
+  },
+  "deletion": {
+    "title": "Excluir sua conta",
+    "intro": "Você pode excluir sua conta a qualquer momento, pelo app ou pelo site, sem precisar pedir a ninguém.",
+    "stepsTitle": "Como excluir",
+    "step1": "Entre na sua conta, no app ou no site.",
+    "step2": "Abra <account>Perfil › Conta e privacidade</account>.",
+    "step3": "Escolha “Excluir minha conta” e digite a palavra de confirmação indicada.",
+    "dataTitle": "O que acontece com os seus dados",
+    "data": "A conta e os dados ligados a ela são apagados, ou anonimizados quando precisam ser guardados, nos prazos descritos na <privacy>Política de Privacidade</privacy>.",
+    "cta": "Entrar para excluir a conta"
   },
   "terms": {
     "title": "Termos de Uso",

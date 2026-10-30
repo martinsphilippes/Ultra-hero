@@ -8,6 +8,8 @@ export type NavItem = {
   key: NavKey;
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
+  /** Some no app das lojas (compras simuladas; docs/decisions/app-nas-lojas.md). */
+  webOnly?: boolean;
 };
 
 // Exatamente 5 abas: a Evolução virou uma seção do Perfil (/profile/evolution) e Comprar leva à loja.
@@ -17,7 +19,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "home", href: "/inicio", icon: Home },
   { key: "explore", href: "/explore", icon: Compass },
   // Comprar: todos os produtos da loja (compras simuladas), antes do Perfil.
-  { key: "shop", href: "/shop", icon: ShoppingBag },
+  { key: "shop", href: "/shop", icon: ShoppingBag, webOnly: true },
   { key: "profile", href: "/profile", icon: User },
 ];
 

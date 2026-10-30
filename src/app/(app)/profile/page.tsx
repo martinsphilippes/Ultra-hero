@@ -20,7 +20,9 @@ import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { appliesOn } from "@/lib/routine/reminders";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
+import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { createClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
 
@@ -295,7 +297,7 @@ export default async function ProfilePage() {
       <nav aria-label={t("title")}>
         <ul className="grid gap-3 sm:grid-cols-2">
           {LINKS.map(({ key, href, icon: Icon }) => (
-            <li key={key}>
+            <li key={key} className={cn(isBlockedInNativeApp(href) && "native:hidden")}>
               <Link
                 href={href}
                 className="flex min-h-16 items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"

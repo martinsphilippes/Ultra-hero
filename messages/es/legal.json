@@ -3,13 +3,16 @@
     "terms": "Términos de uso",
     "termsDescription": "Reglas de uso de Groscove Ultra, una versión de demostración con contenido educativo, planes simulados y pedidos de prueba.",
     "privacy": "Política de privacidad",
-    "privacyDescription": "Qué datos trata Groscove Ultra, por cuánto tiempo, con quién los comparte y cómo ejerces tus derechos."
+    "privacyDescription": "Qué datos trata Groscove Ultra, por cuánto tiempo, con quién los comparte y cómo ejerces tus derechos.",
+    "deletion": "Eliminar cuenta",
+    "deletionDescription": "Cómo eliminar tu cuenta y qué pasa con tus datos."
   },
   "links": {
     "nav": "Documentos legales",
     "terms": "Términos de uso",
     "privacy": "Política de privacidad",
-    "accountNote": "Los plazos de conservación y lo que ocurre con cada dato al eliminar la cuenta se explican en la <privacy>Política de privacidad</privacy>. Las reglas de uso están en los <terms>Términos de uso</terms>."
+    "accountNote": "Los plazos de conservación y lo que ocurre con cada dato al eliminar la cuenta se explican en la <privacy>Política de privacidad</privacy>. Las reglas de uso están en los <terms>Términos de uso</terms>.",
+    "deletion": "Eliminar cuenta"
   },
   "page": {
     "eyebrow": "Documentos legales",
@@ -22,6 +25,17 @@
       "terms": "Leer los Términos de uso",
       "privacy": "Leer la Política de privacidad"
     }
+  },
+  "deletion": {
+    "title": "Eliminar tu cuenta",
+    "intro": "Puedes eliminar tu cuenta en cualquier momento, en la app o en el sitio web, sin tener que pedírselo a nadie.",
+    "stepsTitle": "Cómo eliminarla",
+    "step1": "Inicia sesión en tu cuenta, en la app o en el sitio web.",
+    "step2": "Abre <account>Perfil › Cuenta y privacidad</account>.",
+    "step3": "Elige “Eliminar mi cuenta” y escribe la palabra de confirmación indicada.",
+    "dataTitle": "Qué pasa con tus datos",
+    "data": "La cuenta y los datos vinculados a ella se eliminan, o se anonimizan cuando deben conservarse, en los plazos descritos en la <privacy>Política de Privacidad</privacy>.",
+    "cta": "Inicia sesión para eliminar la cuenta"
   },
   "terms": {
     "title": "Términos de uso",
