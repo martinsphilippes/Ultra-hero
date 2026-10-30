@@ -70,6 +70,8 @@ Roteiro mínimo, nas duas plataformas, contra o endereço de produção:
 - [ ] Sair e entrar de novo; fechar e reabrir o app mantém a sessão.
 - [ ] Foto de perfil/post: o seletor do sistema abre (câmera e galeria).
 - [ ] Vídeo toca inline e em tela cheia.
+- [ ] Certificado do programa (PDF) abre no iOS e baixa no Android 10+. No Android 7–9 o download
+  pede uma permissão de armazenamento que o app bloqueia: conhecido, sem correção nesta versão.
 - [ ] Link externo (Instagram do herói) abre no navegador do app, não dentro da casca.
 - [ ] Modo avião: aparece "Sem conexão" com "Tentar de novo".
 - [ ] (Android) voltar do sistema navega no histórico antes de sair.

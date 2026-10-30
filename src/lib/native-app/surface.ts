@@ -25,8 +25,10 @@ export function parseNativeApp(userAgent: string | null | undefined): NativeApp 
 const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profile/plan"];
 const BLOCKED_HERO_LIBRARY = /^\/personalities\/[^/]+\/produtos\/?$/;
 
-export function isBlockedInNativeApp(pathname: string): boolean {
+export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams): boolean {
   if (BLOCKED_HERO_LIBRARY.test(pathname)) return true;
+  // aba Produtos do Explorar (as páginas fazem streaming: redirect lá dentro chegaria com 200)
+  if (pathname === "/explore" && search?.get("tab") === "produtos") return true;
   return BLOCKED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 

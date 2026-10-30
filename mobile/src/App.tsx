@@ -216,8 +216,8 @@ export default function App() {
         else routeOutside(url);
       }}
       onNavigationStateChange={onNavigationStateChange}
-      // onLoad só no sucesso (onLoadEnd vem também depois de erro): navegar por dentro da página só
-      // quando há página
+      // navegar por dentro da página só quando há página: onError zera o marcador (no Android ele vem
+      // depois de onLoad, então a última escrita vale)
       onLoad={() => {
         loaded.current = true;
       }}

@@ -49,7 +49,7 @@ function legacyEvolutionResponse(request: NextRequest): NextResponse | null {
 // A trava é aqui, e não só no botão escondido: link antigo, histórico ou digitação não abrem a rota.
 function nativeAppResponse(request: NextRequest): NextResponse | null {
   if (!parseNativeApp(request.headers.get("user-agent"))) return null;
-  if (!isBlockedInNativeApp(request.nextUrl.pathname)) return null;
+  if (!isBlockedInNativeApp(request.nextUrl.pathname, request.nextUrl.searchParams)) return null;
   const target = request.nextUrl.clone();
   target.pathname = NATIVE_BLOCKED_FALLBACK;
   target.search = "";

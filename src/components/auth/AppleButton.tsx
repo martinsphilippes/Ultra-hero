@@ -40,11 +40,14 @@ export function AppleButton({ next, size = "md" }: AppleButtonProps) {
           return;
         }
         // A Apple manda o nome só no primeiro login e não o põe no token: sem isto, a conta nasce com
-        // o começo do e-mail (muitas vezes o relay privado) como nome. Melhor esforço.
-        if (message.fullName) {
+        // o começo do e-mail (muitas vezes o relay privado) como nome. Só em conta nova (uma identidade,
+        // a da Apple): conta antiga ligada pelo mesmo e-mail mantém o nome que a pessoa escolheu.
+        // Mesmo teto de 60 caracteres do updateProfile. Melhor esforço.
+        const fullName = message.fullName?.trim().slice(0, 60);
+        if (fullName && data.user.identities?.length === 1) {
           await Promise.allSettled([
-            supabase.auth.updateUser({ data: { full_name: message.fullName } }),
-            supabase.from("profiles").update({ display_name: message.fullName }).eq("id", data.user.id),
+            supabase.auth.updateUser({ data: { full_name: fullName } }),
+            supabase.from("profiles").update({ display_name: fullName }).eq("id", data.user.id),
           ]);
         }
         window.location.assign(safeNext(next, LOGIN_HOME));

@@ -21,10 +21,14 @@ export const BEFORE_CONTENT_SCRIPT = `
     last = theme;
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: "theme", theme: theme }));
   }
-  document.addEventListener("DOMContentLoaded", function () {
+  function init() {
     send();
     new MutationObserver(send).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-  });
+  }
+  // no Android este script roda por evaluateJavascript no início da carga, que pode cair depois do
+  // DOMContentLoaded
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
 })();
 true;
 `;
