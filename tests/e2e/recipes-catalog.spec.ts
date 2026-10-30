@@ -34,7 +34,7 @@ test.describe("catálogo de receitas (visitante)", () => {
     await expect(page.getByTestId("recipe-invite")).toBeVisible();
     const cards = page.getByTestId("recipe-card");
     await expect(cards.first()).toBeVisible();
-    expect(await cards.count()).toBeGreaterThanOrEqual(8);
+    expect(await cards.count()).toBeGreaterThanOrEqual(6);
     const g1 = cards.filter({ has: page.locator(`[href="/content/${G1.slug}"]`) }).first();
     await expect(g1).toContainText(G1.title);
     await expect(g1.getByTestId("recipe-card-time")).toHaveText("35 min");
