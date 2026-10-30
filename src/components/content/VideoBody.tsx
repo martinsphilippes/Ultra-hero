@@ -46,7 +46,7 @@ export async function VideoBody({ contentId, title, source, meta, hasCaptions, p
         />
       ) : source.type === "iframe" ? (
         <div className="flex flex-col gap-2">
-          <VideoEmbed src={source.url} title={title} hasCaptions={hasCaptions} />
+          <VideoEmbed src={source.url} title={title} hasCaptions={hasCaptions} autoPlay />
           {!alreadyCompleted && <p className="type-caption text-fg-muted">{t("manualCompleteHint")}</p>}
         </div>
       ) : source.type === "hls" ? (
