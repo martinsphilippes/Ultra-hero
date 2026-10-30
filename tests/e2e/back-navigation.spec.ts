@@ -48,6 +48,9 @@ test.describe("botão de voltar", () => {
     await expect(page).toHaveURL(/\/profile\/receitas/);
     await page.getByRole("tab", { name: "Listas" }).click();
     await expect(page).toHaveURL(/aba=listas/);
+    // a troca de aba recarrega a página: espera a nova aba estar ativa antes do próximo toque
+    await expect(page.getByRole("tab", { name: "Listas" })).toHaveAttribute("aria-selected", "true");
+    await page.waitForLoadState("networkidle");
     await page.getByRole("tab", { name: "Salvas" }).click();
     await expect(page).toHaveURL(/aba=salvas|receitas$/);
     await page.getByTestId("back-link").click();
