@@ -9,9 +9,9 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 // programa só com E2E_PROGRAMS_REAL=1.
 
 const hubCard = (page: Page, key: string) => page.getByTestId(`today-hub-card-${key}`);
-const viewer = (page: Page) => page.getByTestId("today-hub-screen-viewer");
-const position = (page: Page) => page.getByTestId("today-hub-screen-position");
-const current = (page: Page) => page.getByTestId("today-hub-screen-current");
+// cards = abas: o conteúdo do card escolhido aparece logo abaixo, na mesma página (sem tela cheia)
+const panel = (page: Page) => page.getByTestId("today-hub-panel");
+const panelScreens = (page: Page) => panel(page).locator("section[data-screen]").evaluateAll((els) => els.map((el) => el.getAttribute("data-screen")));
 
 async function seriousViolations(page: Page) {
   await page.waitForLoadState("networkidle");
@@ -63,7 +63,6 @@ for (const kind of ["premium", "free"] as const) {
       await expect(hubCard(page, "noite")).toContainText("Sua noite");
       await expect(hubCard(page, "noite")).toContainText(/\d+ h \d+ min/);
       await expect(hubCard(page, "evolucao")).toContainText(/Sequência \d+ dias?/);
-      for (const key of ["dia", "noite", "evolucao"]) await expect(hubCard(page, key)).toContainText(/\d+ telas?/);
 
       // avisos de demonstração e de bem-estar seguem visíveis na página, abaixo dos cards
       const label = today.getByTestId("watch-demo-label");
@@ -74,9 +73,11 @@ for (const kind of ["premium", "free"] as const) {
       const [cardsBox, labelBox] = await Promise.all([cards.boundingBox(), label.boundingBox()]);
       expect(labelBox!.y).toBeGreaterThan(cardsBox!.y);
 
-      // nada para digitar: nenhum campo; os únicos botões são os 3 cards (o visualizador está fechado)
+      // nada para digitar: nenhum campo; os 3 cards são abas e "Seu dia" vem aberto abaixo deles
       await expect(today.locator("input, textarea, select, [contenteditable='true']")).toHaveCount(0);
-      await expect(today.getByRole("button")).toHaveCount(3);
+      await expect(today.getByRole("tab")).toHaveCount(3);
+      await expect(hubCard(page, "dia")).toHaveAttribute("aria-selected", "true");
+      await expect(panel(page)).toHaveAttribute("data-section", "dia");
       await expect(page.getByRole("button", { name: /adicionar/i })).toHaveCount(0);
       await expect(page.getByText(/Hidratação|Registrar descanso|Adicionar item/)).toHaveCount(0);
 
@@ -90,81 +91,65 @@ for (const kind of ["premium", "free"] as const) {
       expect(await seriousViolations(page)).toEqual([]);
     });
 
-    test("Sua noite: telas em sequência com fonte e horário; Voltar do navegador fecha; axe no visualizador", async () => {
+    test("Sua noite: tocar no card troca o conteúdo abaixo, sem ir para outra tela; teclado entre abas; axe", async () => {
       await page.goto("/profile");
-      const total = Number(await hubCard(page, "noite").getAttribute("data-screens"));
       await hubCard(page, "noite").click();
-      await expect(viewer(page)).toBeVisible();
-      await expect(page).toHaveURL(/secao=noite&tela=1/);
-      await expect(position(page)).toHaveText(`Tela 1 de ${total}`);
-      await expect(page.getByTestId("today-hub-screen-back")).toBeDisabled();
-      // 1ª tela: o índice da manhã (marca ou Disposição), com "Ver detalhes"
-      const readiness = current(page).getByTestId("today-card-readiness");
+      await expect(hubCard(page, "noite")).toHaveAttribute("aria-selected", "true");
+      await expect(panel(page)).toHaveAttribute("data-section", "noite");
+      await expect(page).toHaveURL(/\/profile\?secao=noite$/);
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      // o índice da manhã (marca ou Disposição) e o Sono, empilhados, cada um com "Ver detalhes"
+      const readiness = panel(page).getByTestId("today-card-readiness");
       await expect(readiness).toBeVisible();
       if (kind === "premium") {
-        await expect(current(page).getByRole("heading", { name: "Disposição Groscove Ultra" })).toBeVisible();
+        await expect(panel(page).getByRole("heading", { name: "Disposição Groscove Ultra" })).toBeVisible();
         await expect(readiness).toContainText("pode diferir do número do seu relógio");
       } else {
-        await expect(current(page).getByRole("heading", { name: /Body Battery/ })).toBeVisible();
+        await expect(panel(page).getByRole("heading", { name: /Body Battery/ })).toBeVisible();
         await expect(readiness).toContainText("Training Readiness");
       }
       await expect(readiness.getByRole("link", { name: /Ver detalhes/ })).toHaveAttribute("href", "/profile/today/readiness");
-
-      // teclado: seta para a direita vai para o Sono (foco no título da tela, posição anunciada)
-      await page.keyboard.press("ArrowRight");
-      await expect(page).toHaveURL(/secao=noite&tela=2/);
-      await expect(position(page)).toHaveText(`Tela 2 de ${total}`);
-      const sleep = current(page).getByTestId("today-card-sleep");
+      const sleep = panel(page).getByTestId("today-card-sleep");
       await expect(sleep).toContainText(/\(simulado\) · .*\d{2}:\d{2}/);
-      await expect(current(page).getByRole("heading", { name: "Sono" })).toBeFocused();
       if (kind === "free") await expect(sleep).toContainText(/ · nota Garmin \d+/);
       expect(await seriousViolations(page)).toEqual([]);
 
-      // Voltar do navegador fecha o visualizador (abrir empilhou uma entrada; trocar de tela não)
-      await page.goBack();
-      await expect(viewer(page)).toBeHidden();
-      await expect(page).toHaveURL(/\/profile$/);
+      // teclado: seta para a direita passa para a aba Evolução
+      await hubCard(page, "noite").focus();
+      await page.keyboard.press("ArrowRight");
+      await expect(hubCard(page, "evolucao")).toHaveAttribute("aria-selected", "true");
+      await expect(hubCard(page, "evolucao")).toBeFocused();
     });
 
-    test("Seu dia: uma tela por métrica; o que o modelo não mede não aparece", async () => {
-      await page.goto("/profile?secao=dia&tela=1");
-      await expect(viewer(page)).toBeVisible();
-      const screens = await viewer(page).locator("section[data-screen]").evaluateAll((els) => els.map((el) => el.getAttribute("data-screen")));
+    test("Seu dia: uma seção por métrica; o que o modelo não mede não aparece", async () => {
+      await page.goto("/profile?secao=dia");
+      const screens = await panelScreens(page);
       // antes da sincronização da manhã o "Seu dia" tem só o aviso de sem dados
       if (screens[0] === "sem-dados") {
-        await expect(current(page)).toContainText("Sem dados de hoje ainda");
+        await expect(panel(page)).toContainText("Sem dados de hoje ainda");
       } else {
         expect(screens[0]).toBe("activity");
         expect(screens).toContain("workouts");
         // Apple não mede estresse; Garmin não mede ruído ambiente: escondidos, nunca zero
         if (kind === "premium") expect(screens).not.toContain("stress");
         else expect(screens).not.toContain("environment");
-        await expect(current(page).getByTestId("today-card-activity").getByRole("link", { name: /Ver detalhes/ })).toHaveAttribute("href", "/profile/today/activity");
+        await expect(panel(page).getByTestId("today-card-activity").getByRole("link", { name: /Ver detalhes/ })).toHaveAttribute("href", "/profile/today/activity");
       }
-      // link direto não empilhou histórico: fechar tira o estado da URL
-      await page.getByTestId("today-hub-screen-close").click();
-      await expect(viewer(page)).toBeHidden();
-      await expect(page).toHaveURL(/\/profile$/);
     });
 
-    test("Evolução: resumo → Continue seus programas → Você vs Hero (se houver)", async () => {
+    test("Evolução: resumo, Continue seus programas e Você vs Hero (se houver), abaixo dos cards", async () => {
       await page.goto("/profile");
-      await expect(page.getByTestId("profile-evolution")).toHaveCount(0);
       await hubCard(page, "evolucao").click();
-      await expect(page).toHaveURL(/secao=evolucao&tela=1/);
-      const evolution = current(page).getByTestId("profile-evolution");
+      await expect(panel(page)).toHaveAttribute("data-section", "evolucao");
+      const evolution = panel(page).getByTestId("profile-evolution");
       await expect(evolution).toContainText("Sequência atual");
       await expect(evolution.getByRole("link", { name: "Ver evolução" })).toHaveAttribute("href", "/profile/evolution");
-
-      await page.getByTestId("today-hub-screen-next").click();
-      await expect(page).toHaveURL(/secao=evolucao&tela=2/);
-      await expect(current(page).getByRole("heading", { name: "Continue seus programas" })).toBeVisible();
-      const programs = current(page).getByTestId("continue-programs");
+      await expect(panel(page).getByRole("heading", { name: "Continue seus programas" })).toBeVisible();
+      const programs = panel(page).getByTestId("continue-programs");
       const list = programs.getByTestId("continue-programs-list");
       if ((await list.count()) === 0) {
         await expect(programs.getByRole("link", { name: "Ver programas" })).toHaveAttribute("href", /programas/);
       } else {
-        await expect(hubCard(page, "evolucao")).toContainText(/\d+\/\d+ passos dos programas/);
         const first = list.locator("li").first();
         const done = first.getByRole("button", { name: "Marcar como feito" });
         await expect(done).toBeEnabled();
@@ -174,39 +159,30 @@ for (const kind of ["premium", "free"] as const) {
           await expect(first.getByText("Feito", { exact: true })).toBeVisible({ timeout: 15_000 });
         }
       }
-
-      // 3ª tela só com comparação (Hero escolhido ou convite para escolher)
-      const screens = await viewer(page).locator("section[data-screen]").evaluateAll((els) => els.map((el) => el.getAttribute("data-screen")));
+      const screens = await panelScreens(page);
       expect(screens.slice(0, 2)).toEqual(["resumo", "programas"]);
       if (screens.includes("comparacao")) {
-        await page.getByTestId("today-hub-screen-next").click();
-        await expect(current(page).locator("[data-testid='hero-compare'], [data-testid='hero-compare-invite']")).toBeVisible();
+        await expect(panel(page).locator("[data-testid='hero-compare'], [data-testid='hero-compare-invite']")).toBeVisible();
       }
-      await page.getByTestId("today-hub-screen-done").click();
-      await expect(viewer(page)).toBeHidden();
-      await expect(page).toHaveURL(/\/profile$/);
-
       // o resumo leva à página completa
-      await page.goto("/profile?secao=evolucao&tela=1");
-      await current(page).getByRole("link", { name: "Ver evolução" }).click();
+      await evolution.getByRole("link", { name: "Ver evolução" }).click();
       await expect(page).toHaveURL(/\/profile\/evolution$/, { timeout: 15_000 });
     });
 
-    test("/profile/today: os mesmos 3 cards e o link direto abre a tela", async () => {
+    test("/profile/today: os mesmos 3 cards e o link direto abre a aba", async () => {
       await page.goto("/profile/today");
       await expect(page.locator("main h1").first()).toHaveText("Hoje — Seu dia, em foco");
       const keys = await page.getByTestId("today-hub-cards").locator("[data-testid^='today-hub-card-']").evaluateAll((els) => els.map((el) => el.getAttribute("data-testid")));
       expect(keys).toEqual(["today-hub-card-dia", "today-hub-card-noite", "today-hub-card-evolucao"]);
       await expect(page.getByTestId("watch-demo-label")).toBeVisible();
-      await page.goto("/profile/today?secao=evolucao&tela=2");
-      await expect(viewer(page)).toBeVisible();
-      await expect(position(page)).toHaveText(/^Tela 2 de [23]$/);
-      await expect(current(page).getByTestId("continue-programs")).toBeVisible();
+      await page.goto("/profile/today?secao=evolucao");
+      await expect(hubCard(page, "evolucao")).toHaveAttribute("aria-selected", "true");
+      await expect(panel(page).getByTestId("continue-programs")).toBeVisible();
     });
 
     test("detalhe por categoria com métricas, tendência 7/30 dias e tabela; axe sem violações sérias", async () => {
-      await page.goto("/profile?secao=noite&tela=2");
-      await current(page).getByTestId("today-card-sleep").getByRole("link", { name: /Ver detalhes/ }).click();
+      await page.goto("/profile?secao=noite");
+      await panel(page).getByTestId("today-card-sleep").getByRole("link", { name: /Ver detalhes/ }).click();
       await expect(page).toHaveURL(/\/profile\/today\/sleep$/, { timeout: 15_000 });
       const detail = page.getByTestId("today-detail");
       await expect(detail.getByRole("heading", { level: 1, name: "Sono" })).toBeVisible();
@@ -239,12 +215,11 @@ for (const kind of ["premium", "free"] as const) {
     });
 
     test("card Treinos leva ao detalhe mesmo em dia sem treino (VO₂máx, cargas)", async () => {
-      await page.goto("/profile?secao=dia&tela=1");
-      const screens = await viewer(page).locator("section[data-screen]").evaluateAll((els) => els.map((el) => el.getAttribute("data-screen")));
+      await page.goto("/profile?secao=dia");
+      const screens = await panelScreens(page);
       // antes da sincronização da manhã o "Seu dia" ainda não tem métricas
       test.skip(!screens.includes("workouts"), "relógio simulado ainda não sincronizou depois do despertar");
-      await page.goto(`/profile?secao=dia&tela=${screens.indexOf("workouts") + 1}`);
-      const card = current(page).getByTestId("today-card-workouts");
+      const card = panel(page).getByTestId("today-card-workouts");
       await expect(card).toContainText(/Carga do dia \d+/);
       await card.getByRole("link", { name: /Ver detalhes/ }).click();
       await expect(page).toHaveURL(/\/profile\/today\/workouts$/, { timeout: 15_000 });

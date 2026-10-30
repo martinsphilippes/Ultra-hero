@@ -101,7 +101,7 @@ export async function TodayHub({ view, evolution, hideWatch = false, compare = t
   return (
     <div className="flex flex-col gap-4" data-testid="today-hub" data-watch={watchState}>
       {parts?.source}
-      <ScreenCards cards={cards} testIdPrefix="today-hub" listClassName="lg:grid-cols-3" label={t("hub.label")} />
+      <ScreenCards cards={cards} testIdPrefix="today-hub" label={t("hub.label")} mode="inline" />
       {parts?.notes}
       {/* sem relógio: o "Conectar relógio" mora nas telas; o link de privacidade fica à vista */}
       {watchState === "connect" || watchState === "syncing" ? (

@@ -33,9 +33,19 @@ type Props = {
   listClassName?: string;
   /** Nome da lista para o leitor de tela (opcional). */
   label?: string;
+  /**
+   * "viewer" (padrão): cada card abre suas telas em tela cheia. "inline": os cards viram abas e o
+   * conteúdo do card escolhido aparece logo abaixo, na mesma página, sem Próxima (Hoje).
+   */
+  mode?: "viewer" | "inline";
 };
 
-export function ScreenCards({ cards, testIdPrefix, listClassName, label }: Props) {
+export function ScreenCards(props: Props) {
+  if (props.mode === "inline") return <InlineScreenCards {...props} />;
+  return <ViewerScreenCards {...props} />;
+}
+
+function ViewerScreenCards({ cards, testIdPrefix, listClassName, label }: Props) {
   const t = useTranslations("common.screenViewer");
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -112,6 +122,100 @@ export function ScreenCards({ cards, testIdPrefix, listClassName, label }: Props
       </ul>
       <ScreenViewer card={active} index={state?.screen ?? 0} onIndex={(screen) => active && go({ card: active.key, screen })} onClose={close} testIdPrefix={testIdPrefix} />
     </>
+  );
+}
+
+// Modo abas: o card escolhido fica marcado e as telas dele aparecem empilhadas logo abaixo.
+// A escolha vai para a URL (?secao=) só com replaceState: sem navegação e sem entrada no histórico.
+function InlineScreenCards({ cards, testIdPrefix: p, listClassName, label }: Props) {
+  const t = useTranslations("common.screenViewer");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const fromUrl = searchParams.get("secao");
+  const [selected, setSelected] = useState<string>(() => (cards.some((c) => c.key === fromUrl) ? fromUrl! : cards[0]?.key ?? ""));
+  const active = cards.find((c) => c.key === selected) ?? cards[0];
+  const baseId = useId();
+  if (!active) return null;
+
+  function choose(key: string) {
+    setSelected(key);
+    const params = new URLSearchParams(window.location.search);
+    params.set("secao", key);
+    params.delete("tela");
+    window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
+  }
+
+  function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    const i = cards.findIndex((c) => c.key === active.key);
+    const next = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? cards.length - 1 : null;
+    if (next === null) return;
+    e.preventDefault();
+    const key = cards[(next + cards.length) % cards.length].key;
+    choose(key);
+    document.getElementById(`${baseId}-tab-${key}`)?.focus();
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div
+        role="tablist"
+        aria-label={label}
+        onKeyDown={onKeyDown}
+        className={cn("grid gap-2", listClassName)}
+        style={{ gridTemplateColumns: `repeat(${Math.max(1, cards.length)}, minmax(0, 1fr))` }}
+        data-testid={`${p}-cards`}
+      >
+        {cards.map((card) => {
+          const current = card.key === active.key;
+          return (
+            <button
+              key={card.key}
+              id={`${baseId}-tab-${card.key}`}
+              type="button"
+              role="tab"
+              aria-selected={current}
+              aria-controls={current ? `${baseId}-panel` : undefined}
+              tabIndex={current ? 0 : -1}
+              onClick={() => choose(card.key)}
+              data-testid={`${p}-card-${card.key}`}
+              data-screens={card.screens.length}
+              className={cn(
+                "uh-card flex min-h-11 w-full flex-col items-center gap-1.5 rounded-xl border bg-surface px-1.5 py-2.5 text-center shadow-sm transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none",
+                current ? "border-accent ring-1 ring-accent/40" : "border-border hover:border-accent/40",
+              )}
+            >
+              <span aria-hidden="true" className={cn("flex size-9 shrink-0 items-center justify-center rounded-full [&_svg]:size-[1.125rem]", current ? "bg-accent text-accent-fg" : "bg-accent-soft text-accent-text")}>
+                {card.icon}
+              </span>
+              <span className="w-full text-[0.75rem] font-medium leading-tight text-fg [overflow-wrap:anywhere]">{card.title}</span>
+              {card.teaser ? (
+                <span className="sr-only" data-teaser="">
+                  {card.teaser}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      <div
+        id={`${baseId}-panel`}
+        role="tabpanel"
+        aria-labelledby={`${baseId}-tab-${active.key}`}
+        className="flex flex-col gap-4 motion-safe:animate-fade-in"
+        data-testid={`${p}-panel`}
+        data-section={active.key}
+        key={active.key}
+      >
+        {active.teaser ? <p className="type-body-sm type-numeric text-fg-muted">{active.teaser}</p> : null}
+        {active.screens.map((screen) => (
+          <section key={screen.id} data-screen={screen.id} aria-label={screen.title} className="flex flex-col gap-3">
+            <h3 className="type-h3 text-fg">{screen.title}</h3>
+            {screen.body}
+          </section>
+        ))}
+        <span className="sr-only">{t("screens", { n: active.screens.length })}</span>
+      </div>
+    </div>
   );
 }
 
