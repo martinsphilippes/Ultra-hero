@@ -38,21 +38,22 @@ export function isContentLibraryKey(value: string | null | undefined): value is 
   return (CONTENT_LIBRARY_KEYS as readonly string[]).includes(value ?? "");
 }
 
+// Pilar training não manda para Treinos: Treinos é só o que foi postado como treino (tipo workout).
 const PILLAR_LIBRARY: Record<Pillar, ContentLibraryKey> = {
   routine: "dia-a-dia",
   nutrition: "nutricao",
-  training: "treinos",
+  training: "dia-a-dia",
   gastronomy: "gastronomia",
 };
 
 /**
- * Cada conteúdo entra numa única biblioteca. Prioridade: receita (qualquer pilar) > treino
- * (tipo workout ou pilar training) > pilar. Assim uma receita de nutrição fica só em Alimentação
- * e um vídeo de treino fica só em Treinos.
+ * Cada conteúdo entra numa única biblioteca. Prioridade: receita (qualquer pilar) > treino (só o
+ * tipo workout) > pilar. Assim uma receita de nutrição fica só em Alimentação, e um vídeo ou guia do
+ * pilar treino (que não foi postado como treino) fica em Dia a dia, com os posts gerais do herói.
  */
 export function contentLibraryKey(content: LibraryContent): ContentLibraryKey {
   if (content.type === "recipe") return "alimentacao";
-  if (content.type === "workout" || content.pillar === "training") return "treinos";
+  if (content.type === "workout") return "treinos";
   return PILLAR_LIBRARY[content.pillar] ?? "dia-a-dia";
 }
 

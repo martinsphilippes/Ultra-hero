@@ -70,12 +70,15 @@ test.describe("hub do herói", () => {
     await expect(page).toHaveURL(/\/personalities\/erick-jacquin$/);
   });
 
-  // ronaldinho-gaucho: sem vínculo por conteúdo no seed; a biblioteca existe só pela alocação direta.
-  test("a biblioteca de produtos mostra os 7 produtos Ultra.e Life", async ({ page }) => {
+  // ronaldinho-gaucho: sem vínculo por conteúdo no seed; a biblioteca existia só pela alocação em massa
+  // da 0021, que a 0052 tira (com ela, a biblioteca fica vazia: products-heroes.spec.ts).
+  test("a biblioteca de produtos mostra os 7 produtos Ultra.e Life (banco sem a 0052)", async ({ page }) => {
     await page.goto("/personalities/ronaldinho-gaucho/produtos");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos");
     await expect(page.getByRole("link", { name: "Voltar para Ronaldinho Gaúcho" })).toHaveAttribute("href", "/personalities/ronaldinho-gaucho");
     const cards = page.getByTestId("product-action-card");
+    await expect(cards.first().or(page.getByText("Nenhum produto disponível"))).toBeVisible();
+    test.skip((await cards.count()) === 0, "banco com a 0052: o Ronaldinho não indica produtos");
     await expect(cards).toHaveCount(7);
     for (const title of ["e.water Citrus", "e.water Tangerina", "e.creatina Gummy", "e.creatina Pó", "e.focus", "e.daily", "e.melatonina"]) {
       await expect(cards.filter({ hasText: title })).toHaveCount(1);

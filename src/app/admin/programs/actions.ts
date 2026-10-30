@@ -8,6 +8,7 @@ import { slugify } from "@/components/admin-content/lib/slug";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import { getUser, hasRole } from "@/lib/auth/session";
 import { programConceptSchema } from "@/lib/programs/concept";
+import { PROGRAM_ITEM_FOREIGN_CONTENT, canUseInProgram } from "@/lib/programs/item-ownership";
 import { createClient } from "@/lib/supabase/server";
 
 // Ações administrativas de programas versionados. Versões publicadas têm itens congelados;
@@ -220,6 +221,19 @@ async function rewritePositions(supabase: Awaited<ReturnType<typeof createClient
   }
 }
 
+// Etapa do programa do herói só com conteúdo do próprio herói (0052; o gatilho do banco também garante,
+// isto só dá a mensagem certa antes de tentar gravar).
+async function assertProgramOwnsContent(supabase: Awaited<ReturnType<typeof createClient>>, programId: string, versionId: string, contentId: string): Promise<void> {
+  const [{ data: version }, { data: content }] = await Promise.all([
+    supabase.from("program_versions").select("program:programs(creator_id)").eq("id", versionId).eq("program_id", programId).maybeSingle(),
+    supabase.from("content").select("creator_id").eq("id", contentId).maybeSingle(),
+  ]);
+  if (!version) throw new Error("version_not_found");
+  if (!content) throw new Error("content_not_found");
+  const program = (Array.isArray(version.program) ? version.program[0] : version.program) as { creator_id: string | null } | null;
+  if (!canUseInProgram(program?.creator_id ?? null, content.creator_id)) throw new Error(PROGRAM_ITEM_FOREIGN_CONTENT);
+}
+
 export async function addItemAction(programId: string, versionId: string, contentId: string, section: string | null): Promise<ActionResult> {
   const parsed = z.object({ programId: uuid, versionId: uuid, contentId: uuid, section: z.string().trim().max(60).nullable() }).safeParse({ programId, versionId, contentId, section });
   if (!parsed.success) return fail("invalid_input");
@@ -227,6 +241,7 @@ export async function addItemAction(programId: string, versionId: string, conten
     await requireAdmin();
     const supabase = await createClient();
     await assertDraftVersion(supabase, parsed.data.versionId);
+    await assertProgramOwnsContent(supabase, parsed.data.programId, parsed.data.versionId, parsed.data.contentId);
     const { data: last } = await supabase.from("program_items").select("position").eq("version_id", parsed.data.versionId).order("position", { ascending: false }).limit(1).maybeSingle();
     const { error } = await supabase.from("program_items").insert({
       version_id: parsed.data.versionId,
@@ -315,6 +330,7 @@ export async function substituteItemAction(programId: string, versionId: string,
   try {
     await requireAdmin();
     const supabase = await createClient();
+    await assertProgramOwnsContent(supabase, parsed.data.programId, parsed.data.versionId, parsed.data.replacementId);
     const { error } = await supabase.rpc("admin_substitute_program_item", {
       p_version: parsed.data.versionId,
       p_original: parsed.data.originalId,

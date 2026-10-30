@@ -379,7 +379,7 @@
     },
     "products": {
       "title": "Productos del héroe",
-      "description": "Asignación directa producto↔héroe. Solo lo validado aparece en la pestaña Productos de la página pública; suspendido y rechazado desaparecen.",
+      "description": "Productos que este héroe recomienda. La pestaña Productos de la página pública solo muestra los validados aquí y los vinculados a los contenidos del propio héroe; sin ninguno, el atajo Productos no aparece. Los suspendidos y rechazados desaparecen.",
       "tableCaption": "Productos publicados y situación de la asignación para este héroe",
       "columns": {
         "product": "Producto",
@@ -417,7 +417,8 @@
       },
       "empty": "Ningún producto publicado",
       "emptyDescription": "Publica un producto en la tienda para asignarlo a este héroe.",
-      "count": "{n, plural, =1 {# producto validado} other {# productos validados}}"
+      "count": "{n, plural, =1 {# producto validado} other {# productos validados}}",
+      "jump": "Productos vinculados ({n})"
     }
   },
   "sellers": {

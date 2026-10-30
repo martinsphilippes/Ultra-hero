@@ -146,6 +146,8 @@
     "replacement_not_published": "O conteúdo substituto precisa estar publicado.",
     "item_not_found": "Item não encontrado nesta versão.",
     "version_published_readonly": "Versão publicada: crie uma nova versão para alterar itens.",
+    "program_item_foreign_content": "Este conteúdo é de outro herói. Programa do herói só pode ter conteúdos publicados por ele.",
+    "program_creator_has_foreign_items": "O programa tem etapas de outro herói. Remova essas etapas antes de trocar o herói do programa.",
     "invalid_action": "Ação de moderação inválida.",
     "reason_required": "Informe o motivo (obrigatório para ocultar ou suspender).",
     "link_not_found": "Vínculo não encontrado.",
@@ -478,6 +480,8 @@
       "published": "Versão publicada",
       "alreadyPublished": "Versão publicada",
       "contentArchived": "Conteúdo arquivado",
+      "heroScope": "Só aparecem conteúdos publicados por {name}: programa do herói tem apenas etapas dele.",
+      "foreignContent": "De outro herói",
       "contentStatus": "Status do conteúdo"
     },
     "concept": {

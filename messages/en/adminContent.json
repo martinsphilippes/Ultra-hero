@@ -146,6 +146,8 @@
     "replacement_not_published": "The replacement content must be published.",
     "item_not_found": "Item not found in this version.",
     "version_published_readonly": "Published version: create a new version to change items.",
+    "program_item_foreign_content": "This content belongs to another hero. A hero program can only include content they published.",
+    "program_creator_has_foreign_items": "This program has steps from another hero. Remove them before changing the program hero.",
     "invalid_action": "Invalid moderation action.",
     "reason_required": "Provide a reason (required to hide or suspend).",
     "link_not_found": "Link not found.",
@@ -478,6 +480,8 @@
       "published": "Version published",
       "alreadyPublished": "Published version",
       "contentArchived": "Archived content",
+      "heroScope": "Only content published by {name} is listed: a hero program only has their own steps.",
+      "foreignContent": "From another hero",
       "contentStatus": "Content status"
     },
     "concept": {
