@@ -17,7 +17,7 @@ const PLACEHOLDER_COVER = "/placeholders/cover-routine-1.svg";
 // "Continue seus programas": os próximos passos obrigatórios dos programas ativos, que antes
 // ficavam no Hoje. Mesma ação de concluir (completeContent → mesma RPC e o mesmo feedback de
 // sequência); o estado "feito" é otimista e a revalidação do servidor confirma.
-export function ContinuePrograms({ suggestions }: { suggestions: ProgramSuggestion[] }) {
+export function ContinuePrograms({ suggestions, bare = false }: { suggestions: ProgramSuggestion[]; /** Tela do card Evolução: sem moldura e sem título (o título é o da tela). */ bare?: boolean }) {
   const t = useTranslations("me.today.programs");
   const { toast } = useToast();
   const announce = useCompletionFeedback();
@@ -42,11 +42,17 @@ export function ContinuePrograms({ suggestions }: { suggestions: ProgramSuggesti
   }
 
   return (
-    <section aria-labelledby="continue-programs-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5" data-testid="continue-programs">
+    <section
+      aria-labelledby={bare ? undefined : "continue-programs-title"}
+      className={cn("flex flex-col gap-4", !bare && "rounded-2xl border border-border bg-surface p-5")}
+      data-testid="continue-programs"
+    >
       <div className="flex flex-col gap-0.5">
-        <h2 id="continue-programs-title" className="type-h3 text-fg">
-          {t("title")}
-        </h2>
+        {bare ? null : (
+          <h2 id="continue-programs-title" className="type-h3 text-fg">
+            {t("title")}
+          </h2>
+        )}
         <p className="type-caption text-fg-muted">{t("description")}</p>
         {suggestions.length > 0 ? (
           <p className="type-caption text-fg-muted" aria-live="polite" aria-atomic="true">
@@ -92,7 +98,7 @@ export function ContinuePrograms({ suggestions }: { suggestions: ProgramSuggesti
                     </Link>
                     <span className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-fg-muted">
                       {suggestion.creatorName ? <span>{t("byHero", { name: suggestion.creatorName })}</span> : null}
-                      <Badge variant="info" size="sm" className="h-auto whitespace-normal py-0.5 text-left">
+                      <Badge variant="info" size="sm" className="h-auto max-w-full whitespace-normal break-words py-0.5 text-left">
                         {t("fromProgram", { name: suggestion.programName })}
                       </Badge>
                     </span>

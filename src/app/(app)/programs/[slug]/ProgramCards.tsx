@@ -1,243 +1,26 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, ChevronRight, ListChecks, Salad, Sparkles, Sunrise, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode, type TouchEvent } from "react";
-import { Button, IconButton } from "@/components/ui";
-import { useDialog } from "@/components/ui/use-dialog";
-import { cardSearch, parseCardState, type CardState, type ProgramCardKey } from "@/lib/programs/program-cards";
-import { applyNav, keyToNav, swipeToNav } from "@/lib/recipes/cook-mode";
-import { cn } from "@/lib/utils";
+import { ListChecks, Salad, Sparkles, Sunrise } from "lucide-react";
+import { useMemo, type ReactNode } from "react";
+import { ScreenCards, type Screen } from "@/components/ui/screen-cards";
+import type { ProgramCardKey } from "@/lib/programs/program-cards";
 
-// Os 4 cards do programa e o visualizador em tela cheia: cada card abre suas telas uma a uma, com
-// deslize horizontal, pontos de progresso, Anterior/Próxima, setas do teclado e gesto de arrastar.
-// Estado na URL (?secao=conceito&tela=2): abrir empilha uma entrada no histórico (o Voltar do
-// navegador fecha); trocar de tela só substitui, para o Voltar não percorrer tela por tela.
+// Os 4 cards do programa: o visualizador em tela cheia é o compartilhado (components/ui/screen-cards),
+// também usado pelo Hoje. Aqui só os ícones e o prefixo dos testids.
 
-export type ProgramScreen = { id: string; title: string; body: ReactNode };
+export type ProgramScreen = Screen & { body: ReactNode };
 export type ProgramCard = { key: ProgramCardKey; title: string; teaser: string; screens: ProgramScreen[] };
 
 const CARD_ICON: Record<ProgramCardKey, typeof Sparkles> = { conceito: Sparkles, "prepare-se": Sunrise, conteudo: ListChecks, nutricional: Salad };
 
 export function ProgramCards({ cards }: { cards: ProgramCard[] }) {
-  const t = useTranslations("consume.program.cards");
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const counts = useMemo(() => Object.fromEntries(cards.map((c) => [c.key, c.screens.length])), [cards]);
-  const state = parseCardState(searchParams, counts);
-  // abrimos com pushState nesta página? então fechar = voltar no histórico
-  const pushed = useRef(false);
-
-  useEffect(() => {
-    if (!state) pushed.current = false;
-  }, [state]);
-
-  const open = useCallback(
-    (card: ProgramCardKey) => {
-      window.history.pushState(null, "", `${pathname}${cardSearch(window.location.search, { card, screen: 0 })}`);
-      pushed.current = true;
-    },
-    [pathname],
+  const withIcons = useMemo(
+    () =>
+      cards.map((card) => {
+        const Icon = CARD_ICON[card.key];
+        return { ...card, icon: <Icon /> };
+      }),
+    [cards],
   );
-  const go = useCallback(
-    (next: CardState) => {
-      window.history.replaceState(null, "", `${pathname}${cardSearch(window.location.search, next)}`);
-    },
-    [pathname],
-  );
-  const close = useCallback(() => {
-    if (pushed.current) {
-      pushed.current = false;
-      window.history.back();
-    } else {
-      window.history.replaceState(null, "", `${pathname}${cardSearch(window.location.search, null)}`);
-    }
-  }, [pathname]);
-
-  const active = state ? cards.find((c) => c.key === state.card) ?? null : null;
-
-  return (
-    <>
-      <ul className="grid gap-3 sm:grid-cols-2" data-testid="program-cards">
-        {cards.map((card) => {
-          const Icon = CARD_ICON[card.key];
-          return (
-            <li key={card.key} className="flex">
-              <button
-                type="button"
-                onClick={() => open(card.key)}
-                aria-haspopup="dialog"
-                data-testid={`program-card-${card.key}`}
-                className="uh-card group flex min-h-11 w-full items-start gap-3 rounded-xl border border-border bg-surface p-4 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-              >
-                <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-text">
-                  <Icon className="size-5" />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="type-h3 text-fg">{card.title}</span>
-                  {card.teaser ? <span className="line-clamp-2 type-body-sm text-fg-muted">{card.teaser}</span> : null}
-                  <span className="type-caption font-medium text-accent-text">{t("screens", { n: card.screens.length })}</span>
-                </span>
-                <ChevronRight aria-hidden="true" className="mt-3 size-5 shrink-0 text-fg-subtle transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      <ScreenViewer card={active} index={state?.screen ?? 0} onIndex={(screen) => active && go({ card: active.key, screen })} onClose={close} />
-    </>
-  );
-}
-
-type ViewerProps = { card: ProgramCard | null; index: number; onIndex: (index: number) => void; onClose: () => void };
-
-function ScreenViewer({ card, index, onIndex, onClose }: ViewerProps) {
-  const t = useTranslations("consume.program.cards");
-  const id = useId();
-  const isOpen = Boolean(card);
-  const onOpenChange = useCallback((next: boolean) => (next ? undefined : onClose()), [onClose]);
-  const dialog = useDialog({ open: isOpen, onOpenChange });
-  const touch = useRef<{ x: number; y: number } | null>(null);
-  const headings = useRef<(HTMLHeadingElement | null)[]>([]);
-  const [lastCard, setLastCard] = useState<ProgramCard | null>(card);
-  // mantém o último card enquanto o diálogo fecha (sem piscar vazio)
-  if (card && card !== lastCard) setLastCard(card);
-  const shown = card ?? lastCard;
-  const total = shown?.screens.length ?? 0;
-  const first = index === 0;
-  const last = index >= total - 1;
-
-  // foco no título da tela ao trocar (o leitor anuncia a tela nova; o Tab segue dali)
-  const previous = useRef<{ key: string | null; index: number }>({ key: null, index: -1 });
-  useEffect(() => {
-    if (!card) {
-      previous.current = { key: null, index: -1 };
-      return;
-    }
-    const changed = previous.current.key === card.key && previous.current.index !== index;
-    previous.current = { key: card.key, index };
-    if (changed) headings.current[index]?.focus({ preventScroll: true });
-  }, [card, index]);
-
-  const nav = (to: number) => {
-    if (to !== index && to >= 0 && to < total) onIndex(to);
-  };
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDialogElement>) => {
-    dialog.onKeyDown(event);
-    if (event.defaultPrevented || event.key === "Tab") return;
-    const move = keyToNav({ key: event.key, altKey: event.altKey, ctrlKey: event.ctrlKey, metaKey: event.metaKey, targetTag: (event.target as HTMLElement | null)?.tagName ?? null });
-    if (!move) return;
-    event.preventDefault();
-    nav(applyNav(index, move, total));
-  };
-
-  const onTouchStart = (event: TouchEvent) => {
-    const p = event.touches[0];
-    touch.current = p ? { x: p.clientX, y: p.clientY } : null;
-  };
-  const onTouchEnd = (event: TouchEvent) => {
-    const start = touch.current;
-    const p = event.changedTouches[0];
-    touch.current = null;
-    if (!start || !p) return;
-    const move = swipeToNav(p.clientX - start.x, p.clientY - start.y);
-    if (move) nav(applyNav(index, move, total));
-  };
-
-  return (
-    <dialog
-      ref={dialog.ref}
-      aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-position`}
-      onCancel={dialog.onCancel}
-      onClose={dialog.onClose}
-      onKeyDown={onKeyDown}
-      data-testid="program-screen-viewer"
-      className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none border-0 bg-bg p-0 text-fg open:animate-fade-in md:m-auto md:h-[min(52rem,calc(100dvh-2rem))] md:max-w-2xl md:rounded-2xl md:border md:border-border"
-    >
-      {shown ? (
-        <div className="flex h-full flex-col">
-          <header className="safe-top border-b border-border">
-            <div className="flex flex-col gap-3 px-4 py-3 sm:px-6">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-col">
-                <h2 id={`${id}-title`} className="type-h3 truncate text-fg">
-                  {shown.title}
-                </h2>
-                <p id={`${id}-position`} aria-live="polite" aria-atomic="true" className="type-caption text-fg-muted" data-testid="program-screen-position">
-                  {t("position", { current: Math.min(index, total - 1) + 1, total })}
-                </p>
-              </div>
-              <IconButton label={t("close")} icon={<X />} onClick={onClose} className="-mr-2 shrink-0" data-testid="program-screen-close" />
-            </div>
-            <ol aria-hidden="true" className="flex gap-1.5">
-              {shown.screens.map((screen, i) => (
-                <li
-                  key={screen.id}
-                  className={cn("h-1 flex-1 rounded-full transition-colors duration-300 motion-reduce:transition-none", i <= index ? "bg-accent" : "bg-border-strong")}
-                />
-              ))}
-            </ol>
-            </div>
-          </header>
-
-          <div className="relative min-h-0 flex-1 overflow-hidden" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-            <div
-              className="flex h-full transition-transform duration-300 ease-out-expo motion-reduce:transition-none"
-              style={{ transform: `translateX(-${Math.min(index, total - 1) * 100}%)` }}
-            >
-              {shown.screens.map((screen, i) => {
-                const current = i === index;
-                return (
-                  <section
-                    key={screen.id}
-                    aria-labelledby={`${id}-screen-${i}`}
-                    aria-hidden={!current}
-                    inert={!current}
-                    data-testid={current ? "program-screen-current" : undefined}
-                    data-screen={screen.id}
-                    className="h-full w-full shrink-0 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6"
-                  >
-                    <div className="mx-auto flex max-w-prose flex-col gap-4">
-                      <h3
-                        id={`${id}-screen-${i}`}
-                        ref={(el) => {
-                          headings.current[i] = el;
-                        }}
-                        tabIndex={-1}
-                        data-autofocus={current ? "" : undefined}
-                        className="type-h2 text-fg focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
-                      >
-                        {screen.title}
-                      </h3>
-                      {screen.body}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          </div>
-
-          <footer className="safe-bottom border-t border-border">
-            <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <Button variant="secondary" leadingIcon={<ArrowLeft />} onClick={() => nav(index - 1)} disabled={first} data-testid="program-screen-back">
-              {t("back")}
-            </Button>
-            {last ? (
-              <Button variant="primary" leadingIcon={<Check />} onClick={onClose} data-testid="program-screen-done">
-                {t("done")}
-              </Button>
-            ) : (
-              <Button variant="primary" trailingIcon={<ArrowRight />} onClick={() => nav(index + 1)} data-testid="program-screen-next">
-                {t("next")}
-              </Button>
-            )}
-            </div>
-          </footer>
-        </div>
-      ) : null}
-    </dialog>
-  );
+  return <ScreenCards testIdPrefix="program" cards={withIcons} />;
 }

@@ -1,6 +1,7 @@
 import { ArrowRight, Info, Scale } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { isValidTimeZone, localDateIn, shiftDate } from "@/components/me/dates";
 import { AvatarInitials } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
@@ -24,43 +25,36 @@ type Props = {
 // "Você vs Hero" (0056): cada indicador que a pessoa tem, com barras e a frase "Seu sono está em 85%
 // da referência de Neymar". O lado do herói é a REFERÊNCIA da equipe, sempre rotulada assim.
 // Sem a 0056 no banco (ou sem nada para comparar), não renderiza nada.
-export async function HeroComparison({ watch, only, invite = true, headingLevel = "h2" }: Props) {
+type Resolved =
+  | { kind: "invite" }
+  | { kind: "compare"; hero: { slug: string; name: string; avatar_url: string | null }; rows: CompareRow[]; locale: string };
+
+/** Busca o Hero escolhido e monta as linhas; null = nada a mostrar (sem 0056, sem Hero e sem convite…). */
+async function resolveComparison(watch: Props["watch"], only: Props["only"], invite: boolean): Promise<Resolved | null> {
   const user = await getUser();
   if (!user) return null;
   const supabase = await createClient();
   const compareId = await loadCompareCreatorId(supabase, user.id);
   if (compareId === undefined) return null;
-  const [t, locale] = await Promise.all([getTranslations("follows.compare"), getLocale()]);
-  const Heading = headingLevel;
 
   if (compareId === null) {
     if (!invite) return null;
     // convite só para quem já segue alguém (seguir é o caminho para comparar)
     const follows = await loadMyFollows(supabase, user.id);
     if (!follows.available || follows.ids.length === 0) return null;
-    return (
-      <section aria-labelledby="hero-compare-invite" className="flex flex-col gap-3 rounded-2xl border border-dashed border-border-strong bg-surface p-5" data-testid="hero-compare-invite">
-        <Heading id="hero-compare-invite" className="type-h3 text-fg">
-          {t("chooseTitle")}
-        </Heading>
-        <p className="type-body-sm max-w-prose text-fg-muted">{t("chooseDescription")}</p>
-        <Link href="/profile/herois" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-          {t("chooseCta")}
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
-      </section>
-    );
+    return { kind: "invite" };
   }
 
   const profile = await getProfile();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
   const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
-  const [heroRes, references, eventsRes, completionsRes] = await Promise.all([
+  const [heroRes, references, eventsRes, completionsRes, locale] = await Promise.all([
     supabase.from("creator_profiles").select("id, slug, name, avatar_url").eq("id", compareId).maybeSingle(),
     loadReferences(supabase, compareId),
     supabase.from("streak_events").select("local_date").eq("user_id", user.id).gte("local_date", shiftDate(today, -6)).limit(100),
     supabase.from("completions").select("completed_at, content:content(type)").eq("user_id", user.id).gte("completed_at", since).limit(500),
+    getLocale(),
   ]);
   const hero = heroRes.data;
   if (!hero || references === null) return null;
@@ -77,7 +71,55 @@ export async function HeroComparison({ watch, only, invite = true, headingLevel 
   const refs = Object.fromEntries(references.map((r) => [r.key, r.value]));
   const rows = compareRows(refs, mine, only);
   if (only && rows.length === 0) return null;
+  return { kind: "compare", hero, rows, locale };
+}
 
+export async function HeroComparison({ watch, only, invite = true, headingLevel = "h2" }: Props) {
+  const resolved = await resolveComparison(watch, only, invite);
+  if (!resolved) return null;
+  return <ComparisonBody resolved={resolved} headingLevel={headingLevel} />;
+}
+
+/**
+ * "Você vs Hero" como tela do card Evolução do Hoje: o título vai para a tela (com o nome do Hero) e
+ * o corpo sai sem moldura nem título repetido. null = sem comparação (a tela some).
+ */
+export async function heroComparisonScreen(watch: Props["watch"]): Promise<{ title: string; body: ReactNode } | null> {
+  const resolved = await resolveComparison(watch, undefined, true);
+  if (!resolved) return null;
+  const t = await getTranslations("follows.compare");
+  return {
+    title: resolved.kind === "invite" ? t("chooseTitle") : t("title", { name: resolved.hero.name }),
+    body: <ComparisonBody resolved={resolved} bare />,
+  };
+}
+
+async function ComparisonBody({ resolved, headingLevel = "h2", bare = false }: { resolved: Resolved; headingLevel?: "h2" | "h3"; bare?: boolean }) {
+  const t = await getTranslations("follows.compare");
+  const Heading = headingLevel;
+
+  if (resolved.kind === "invite") {
+    return (
+      <section
+        aria-labelledby={bare ? undefined : "hero-compare-invite"}
+        className={cn("flex flex-col gap-3", !bare && "rounded-2xl border border-dashed border-border-strong bg-surface p-5")}
+        data-testid="hero-compare-invite"
+      >
+        {bare ? null : (
+          <Heading id="hero-compare-invite" className="type-h3 text-fg">
+            {t("chooseTitle")}
+          </Heading>
+        )}
+        <p className="type-body-sm max-w-prose text-fg-muted">{t("chooseDescription")}</p>
+        <Link href="/profile/herois" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+          {t("chooseCta")}
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
+      </section>
+    );
+  }
+
+  const { hero, rows, locale } = resolved;
   const number = (key: CompareMetricKey, value: number) => {
     const d = COMPARE_METRIC_DEFS[key].decimals;
     return new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: d }).format(d === 0 ? Math.round(value) : value);
@@ -85,15 +127,22 @@ export async function HeroComparison({ watch, only, invite = true, headingLevel 
   const tm = (key: CompareMetricKey, field: "label" | "value", value?: number) => (field === "label" ? t(`metrics.${key}.label`) : t(`metrics.${key}.value`, { value: number(key, value ?? 0) }));
 
   return (
-    <section aria-labelledby="hero-compare-title" className="flex flex-col gap-4 rounded-2xl border border-accent/30 bg-surface p-5" data-testid="hero-compare" data-hero={hero.slug}>
+    <section
+      aria-labelledby={bare ? undefined : "hero-compare-title"}
+      className={cn("flex flex-col gap-4", !bare && "rounded-2xl border border-accent/30 bg-surface p-5")}
+      data-testid="hero-compare"
+      data-hero={hero.slug}
+    >
       <div className="flex items-center gap-3">
         <span className="relative inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-elevated text-sm font-bold uppercase text-fg-muted">
           <AvatarImage src={hero.avatar_url} alt="" fallback={<AvatarInitials name={hero.name} />} fill sizes="48px" className="object-cover" />
         </span>
         <div className="flex min-w-0 flex-1 flex-col">
-          <Heading id="hero-compare-title" className="type-h3 text-fg">
-            {t("title", { name: hero.name })}
-          </Heading>
+          {bare ? null : (
+            <Heading id="hero-compare-title" className="type-h3 text-fg">
+              {t("title", { name: hero.name })}
+            </Heading>
+          )}
           <p className="type-caption text-fg-muted">{t("description", { name: hero.name })}</p>
         </div>
         <Link href="/profile/herois" className="inline-flex min-h-11 shrink-0 items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">

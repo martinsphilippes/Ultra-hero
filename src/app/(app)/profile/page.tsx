@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Flame, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, Users, type LucideIcon } from "lucide-react";
+import { Bell, BellRing, ChefHat, ChevronRight, CreditCard, Heart, LogOut, Package, Shield, ShieldCheck, ShoppingBasket, Sparkles, Store, Users, type LucideIcon } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -11,7 +11,6 @@ import { HeroNewPost } from "@/components/creator/HeroNewPost";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
-import { ContinuePrograms } from "@/components/me/today/ContinuePrograms";
 import { TodaySection } from "@/components/me/today/TodaySection";
 import { Avatar, Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -19,7 +18,7 @@ import { getProfile, getRoles, requireUser, type AppRole } from "@/lib/auth/sess
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { appliesOn } from "@/lib/routine/reminders";
-import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
+import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { portalRolesShown } from "@/lib/seller-ops/portal";
 import { createClient } from "@/lib/supabase/server";
@@ -36,22 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // perfil público com selo e bio recolhida; as outras contas, e-mail, papéis e plano), Portais logo
 // abaixo e um só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes
 // em /creator/profile) e "Sua conta" (nome exibido, foto, idioma e tema; antes a seção Dados). Depois:
-// "Hoje" (só o que o relógio mede), Evolução, "Continue seus programas", Lembretes (fora do Hoje, Q5),
-// atalhos e, no fim, "Sair da conta".
-
-// Inscrição ativa com os itens do programa (program_items + conteúdo + herói) para as sugestões do dia.
-type EnrollmentWithItems = {
-  id: string;
-  status: "active" | "completed" | "abandoned";
-  program: { slug: string } | null;
-  version: {
-    title: string;
-    items: { position: number; is_required: boolean; content: { id: string; slug: string; title: string; cover_url: string | null; creator: { name: string } | null } | null }[];
-  } | null;
-};
-
-const ENROLLMENT_SELECT =
-  "id, status, program:programs(slug), version:program_versions(title, items:program_items(position, is_required, content:content(id, slug, title, cover_url, creator:creator_profiles(name))))";
+// "Hoje" em 3 cards (Seu dia, Sua noite e Evolução, que traz "Continue seus programas"), Lembretes
+// (fora do Hoje, Q5), atalhos e, no fim, "Sair da conta".
 
 // Sem "Portal do herói": o herói só posta (botão Novo post no topo); conteúdos, receitas, vínculos e
 // painel ficam com o admin ("Publicar como hero" no início do admin, 0045).
@@ -95,36 +80,19 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
-  const [{ data: subscriptionRaw }, enrollmentsRes, completionsRes, streakRes, remindersRes] = await Promise.all([
+  const [{ data: subscriptionRaw }, evolution, remindersRes] = await Promise.all([
     supabase.rpc("my_subscription"),
-    supabase.from("enrollments").select(ENROLLMENT_SELECT).eq("user_id", user.id).eq("status", "active").order("enrolled_at", { ascending: false }),
-    supabase.from("completions").select("content_id").eq("user_id", user.id).limit(2000),
-    supabase.rpc("compute_streak", { p_user: user.id, p_timezone: tz }),
+    // Evolução (sequência, conteúdos concluídos e próximos passos dos programas): card do Hoje
+    loadEvolutionSummary(user.id, tz),
     // Só para o resumo do atalho de Lembretes; a lista mora em /profile/lembretes.
     supabase.from("routine_items").select("weekdays, active").eq("user_id", user.id).eq("active", true),
   ]);
-  // Resumo da Evolução (a página completa fica em /profile/evolution).
-  const currentStreak = Number(streakRes.data ?? 0);
-  const completionsCount = (completionsRes.data ?? []).length;
   const subscription = parseSubscription(subscriptionRaw);
 
   // Itens de rotina criados à mão viraram Lembretes (Q5), fora do Hoje; a sequência conta só
   // conteúdos (Q10, 0037). Se a leitura falhar, o atalho aparece sem a contagem.
   const reminders = remindersRes.error ? null : (remindersRes.data ?? []);
   const remindersToday = reminders ? reminders.filter((r) => appliesOn(r, today)).length : null;
-  // Programas: próximos passos.
-  const enrollments: EnrollmentLike[] = ((enrollmentsRes.data ?? []) as unknown as EnrollmentWithItems[]).map((e) => ({
-    id: e.id,
-    status: e.status,
-    programName: e.version?.title ?? "",
-    programSlug: e.program?.slug ?? "",
-    items: (e.version?.items ?? []).map((i) => ({
-      position: i.position,
-      is_required: i.is_required,
-      content: i.content ? { id: i.content.id, slug: i.content.slug, title: i.content.title, cover_url: i.content.cover_url, creatorName: i.content.creator?.name ?? null } : null,
-    })),
-  }));
-  const suggestions = pickProgramSuggestions(enrollments, (completionsRes.data ?? []).map((c) => c.content_id));
 
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
@@ -255,30 +223,7 @@ export default async function ProfilePage() {
       )}
 
       {/* Hoje: só o que o relógio mede (nada digitado); dado real só com a chave ligada e consentimento */}
-      <TodaySection localDate={today} view={watchView} />
-
-      {/* Evolução: resumo; a página completa virou subpágina do Perfil */}
-      <section aria-labelledby="evolution-title" className="flex flex-col gap-4 rounded-2xl border border-accent/30 bg-gradient-to-br from-accent-soft/60 to-surface p-5 sm:flex-row sm:items-center" data-testid="profile-evolution">
-        <div className="flex flex-1 items-center gap-4">
-          <span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-fg shadow-sm">
-            <Flame className="size-6" />
-          </span>
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <h2 id="evolution-title" className="type-h3 text-fg">
-              {t("evolution.title")}
-            </h2>
-            <p className="type-overline text-accent-text">{t("evolution.streakLabel")}</p>
-            <p className="type-h2 type-numeric text-fg">{t("evolution.streakDays", { n: currentStreak })}</p>
-            <p className="type-caption text-fg-muted">{t("evolution.completions", { n: completionsCount })}</p>
-          </div>
-        </div>
-        <Button asChild variant="secondary" trailingIcon={<ChevronRight />}>
-          <Link href="/profile/evolution">{t("evolution.open")}</Link>
-        </Button>
-      </section>
-
-      {/* Continue seus programas: as sugestões dos programas que antes ficavam no Hoje */}
-      <ContinuePrograms suggestions={suggestions} />
+      <TodaySection localDate={today} view={watchView} evolution={evolution} />
 
       {/* Lembretes: itens de rotina da pessoa, fora do Hoje (Q5); o Hoje não tem link para criá-los */}
       <Link
