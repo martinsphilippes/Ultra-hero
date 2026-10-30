@@ -478,3 +478,21 @@
 @media (prefers-reduced-motion: reduce) {
   .uh-fix-flash { animation: none; box-shadow: 0 0 0 3px var(--color-warning, #b45309); }
 }
+
+/* Campos de data/hora no iOS têm largura mínima própria e passam da tela: ficam na largura do campo. */
+@layer base {
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="datetime-local"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
+}
