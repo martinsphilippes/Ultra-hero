@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Faca do chef">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a0f0a"/><stop offset="1" stop-color="#2d1a10"/></linearGradient>
+    <linearGradient id="blade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#94a3b8"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#bg)"/>
+  <circle cx="160" cy="160" r="122" fill="#ff7a1a" opacity=".08"/>
+  <g transform="rotate(-32 160 160)">
+    <path d="M60 150 H232 C254 150 276 158 292 172 H60 Z" fill="url(#blade)"/>
+    <path d="M60 150 H232" stroke="#ffffff" stroke-width="2" opacity=".7"/>
+    <rect x="20" y="146" width="46" height="30" rx="6" fill="#ff7a1a"/>
+    <rect x="-28" y="148" width="52" height="26" rx="10" fill="#3f2a1d"/>
+    <circle cx="-14" cy="161" r="3" fill="#ffd166"/>
+    <circle cx="6" cy="161" r="3" fill="#ffd166"/>
+  </g>
+</svg>

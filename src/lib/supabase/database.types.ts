@@ -2178,6 +2178,184 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"brands": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"default_relationship": string,"id": string,"is_demo": boolean,"logo_url": string | null,"name": string,"site_url": string,"slug": string,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"default_relationship"?: string,"id"?: string,"is_demo"?: boolean,"logo_url"?: string | null,"name": string,"site_url": string,"slug": string,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"default_relationship"?: string,"id"?: string,"is_demo"?: boolean,"logo_url"?: string | null,"name"?: string,"site_url"?: string,"slug"?: string,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"brand_products": {
+                  Row: {
+                    "brand_id": string,"created_at": string,"created_by": string | null,"currency": string,"description": string,"external_url": string,"id": string,"image_url": string | null,"is_demo": boolean,"name": string,"price_cents": number | null,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand_id": string,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"description"?: string,"external_url": string,"id"?: string,"image_url"?: string | null,"is_demo"?: boolean,"name": string,"price_cents"?: number | null,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand_id"?: string,"created_at"?: string,"created_by"?: string | null,"currency"?: string,"description"?: string,"external_url"?: string,"id"?: string,"image_url"?: string | null,"is_demo"?: boolean,"name"?: string,"price_cents"?: number | null,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "brand_products_brand_id_fkey"
+      columns: ["brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"creator_brands": {
+                  Row: {
+                    "brand_id": string,"created_at": string,"creator_id": string,"id": string,"relationship": string,"sort_order": number,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand_id": string,"created_at"?: string,"creator_id": string,"id"?: string,"relationship": string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand_id"?: string,"created_at"?: string,"creator_id"?: string,"id"?: string,"relationship"?: string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_brands_brand_id_fkey"
+      columns: ["brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creator_brands_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"content_brands": {
+                  Row: {
+                    "brand_id": string,"content_id": string,"created_at": string,"id": string,"relationship": string,"sort_order": number,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand_id": string,"content_id": string,"created_at"?: string,"id"?: string,"relationship": string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand_id"?: string,"content_id"?: string,"created_at"?: string,"id"?: string,"relationship"?: string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "content_brands_brand_id_fkey"
+      columns: ["brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_brands_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"content_brand_products": {
+                  Row: {
+                    "brand_product_id": string,"content_id": string,"created_at": string,"id": string,"sort_order": number,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand_product_id": string,"content_id": string,"created_at"?: string,"id"?: string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand_product_id"?: string,"content_id"?: string,"created_at"?: string,"id"?: string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "content_brand_products_brand_product_id_fkey"
+      columns: ["brand_product_id"]
+isOneToOne: false
+      referencedRelation: "brand_products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "content_brand_products_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"program_brand_products": {
+                  Row: {
+                    "brand_product_id": string,"created_at": string,"id": string,"note": string,"program_id": string,"sort_order": number,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand_product_id": string,"created_at"?: string,"id"?: string,"note"?: string,"program_id": string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "brand_product_id"?: string,"created_at"?: string,"id"?: string,"note"?: string,"program_id"?: string,"sort_order"?: number,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "program_brand_products_brand_product_id_fkey"
+      columns: ["brand_product_id"]
+isOneToOne: false
+      referencedRelation: "brand_products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "program_brand_products_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"media_smart_tags": {
+                  Row: {
+                    "brand_product_id": string,"content_id": string,"created_at": string,"id": string,"is_demo": boolean,"label_side": string,"media_key": string,"media_url": string | null,"sort_order": number,"status": string,"updated_at": string,"x_pct": number,"y_pct": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand_product_id": string,"content_id": string,"created_at"?: string,"id"?: string,"is_demo"?: boolean,"label_side"?: string,"media_key"?: string,"media_url"?: string | null,"sort_order"?: number,"status"?: string,"updated_at"?: string,"x_pct": number,"y_pct": number
+                  }
+                  Update: {
+                    "brand_product_id"?: string,"content_id"?: string,"created_at"?: string,"id"?: string,"is_demo"?: boolean,"label_side"?: string,"media_key"?: string,"media_url"?: string | null,"sort_order"?: number,"status"?: string,"updated_at"?: string,"x_pct"?: number,"y_pct"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "media_smart_tags_brand_product_id_fkey"
+      columns: ["brand_product_id"]
+isOneToOne: false
+      referencedRelation: "brand_products"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "media_smart_tags_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"brand_click_counters": {
+                  Row: {
+                    "count": number,"day": string,"id": number,"source": string,"target_id": string,"target_kind": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "count"?: number,"day": string,"id"?: number,"source": string,"target_id": string,"target_kind": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "count"?: number,"day"?: string,"id"?: number,"source"?: string,"target_id"?: string,"target_kind"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"shortcut_open_counters": {
                   Row: {
                     "count": number,"creator_id": string,"day": string,"id": number,"source_key": string,"updated_at": string
@@ -2902,6 +3080,36 @@ isOneToOne: false
                            },
 "admin_professional_suggestion_set":
 { Args: { "p_on": boolean,"p_professional": string,"p_target": string,"p_target_id": string }; Returns: undefined
+                           },
+"admin_brand_save":
+{ Args: { "p_data": Json,"p_id"?: string | null }; Returns: string
+                           },
+"admin_brand_delete":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"admin_brand_product_save":
+{ Args: { "p_data": Json,"p_id"?: string | null }; Returns: string
+                           },
+"admin_brand_product_delete":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"admin_creator_brands_save":
+{ Args: { "p_creator": string,"p_items": Json }; Returns: number
+                           },
+"admin_program_brand_products_save":
+{ Args: { "p_items": Json,"p_program": string }; Returns: number
+                           },
+"admin_content_brand_links_save":
+{ Args: { "p_brands": Json,"p_content": string,"p_products": Json }; Returns: number
+                           },
+"admin_content_smart_tags_save":
+{ Args: { "p_content": string,"p_tags": Json }; Returns: number
+                           },
+"admin_brand_clicks":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
+"brand_click_bump":
+{ Args: { "p_kind": string,"p_source": string,"p_target": string }; Returns: boolean
                            },
 "admin_program_products_save":
 { Args: { "p_items": Json,"p_program": string }; Returns: number

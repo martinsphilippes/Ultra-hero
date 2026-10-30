@@ -1,6 +1,7 @@
 import { Ban, BookOpen, ChefHat, Dumbbell, FileText, ImageIcon, Lock, PlayCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { SmartTagLayer } from "@/components/brands/SmartTagLayer";
 import { CoverImage } from "@/components/catalog/CoverImage";
 import { FollowButton } from "@/components/heroes/FollowButton";
 import { Avatar } from "@/components/ui";
@@ -57,11 +58,13 @@ export async function FeedPost({ post, priority, follow }: Props) {
         <div className="min-h-3" />
       )}
 
+      {/* capa (link para o post) + Smart Tags (0062) por cima, fora do link: tocar numa marcação não abre o post */}
+      <div className="uh-post-media relative aspect-[4/5] overflow-hidden bg-surface-elevated md:rounded-lg">
       <Link
         href={href}
         tabIndex={-1}
         aria-hidden="true"
-        className="uh-post-media group relative block aspect-[4/5] overflow-hidden bg-surface-elevated md:rounded-lg"
+        className="group absolute inset-0 block"
         data-testid="feed-post-cover"
       >
         <CoverImage src={post.cover_url} pillar={post.pillar} video={post.type === "video" && !photo} priority={priority} sizes="(min-width: 768px) 470px, 100vw" className="uh-post-image object-cover" />
@@ -75,6 +78,8 @@ export async function FeedPost({ post, priority, follow }: Props) {
           <Lock className="absolute bottom-3 left-3 size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
         ) : null}
       </Link>
+      {post.smart_tags?.length ? <SmartTagLayer tags={post.smart_tags} fit="cover" /> : null}
+      </div>
 
       <div className="uh-post-caption flex flex-col gap-1 px-gutter pt-3 md:px-0">
         <p className="uh-post-type type-caption text-fg-muted">{[photo ? t("photoPost") : t(`types.${post.type}`), restriction].filter(Boolean).join(" · ")}</p>

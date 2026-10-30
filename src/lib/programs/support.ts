@@ -29,7 +29,8 @@ export function normalizeProgramProducts(items: readonly { productId: unknown; n
   return { ok: true, items: out };
 }
 
-export type SupportScreenKey = "products" | "professionals";
+// equipment: equipamentos e produtos de marca recomendados (0062), comprados no site da marca
+export type SupportScreenKey = "products" | "equipment" | "professionals";
 
 export type SupportPlan = {
   /** "Comprar produto": só com o comércio ligado e fora do app das lojas. */
@@ -42,11 +43,25 @@ export type SupportPlan = {
   apoioScreens: SupportScreenKey[];
 };
 
-export function supportPlan({ products, professionals, commerceEnabled, nativeApp }: { products: number; professionals: number; commerceEnabled: boolean; nativeApp: boolean }): SupportPlan {
+export function supportPlan({
+  products,
+  professionals,
+  commerceEnabled,
+  nativeApp,
+  equipment = 0,
+}: {
+  products: number;
+  professionals: number;
+  commerceEnabled: boolean;
+  nativeApp: boolean;
+  /** Produtos de marca recomendados (0062): link externo, valem também no app das lojas. */
+  equipment?: number;
+}): SupportPlan {
   const showProducts = products > 0 && nutritionProductsAllowed({ commerceEnabled, nativeApp });
   const showProfessionals = professionals > 0;
   const apoioScreens: SupportScreenKey[] = [];
   if (showProducts) apoioScreens.push("products");
+  if (equipment > 0) apoioScreens.push("equipment");
   if (showProfessionals) apoioScreens.push("professionals");
   return { showProducts, showProfessionals, showActions: showProducts || showProfessionals, apoioScreens };
 }

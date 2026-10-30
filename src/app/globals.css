@@ -504,3 +504,67 @@
     text-align: left;
   }
 }
+
+/* ------------------------------------------------------- Ultra Hero Smart Tags (0062) ---------- */
+/* Marcação de produto sobre a foto: ponto que brilha, linha fina até o rótulo, visual "tech".
+   As marcações ficam sempre sobre a foto (fundo escuro translúcido), então as cores são fixas e
+   legíveis nos dois temas. "Reduzir movimento": sem pulso e sem animação de entrada. */
+.uh-tag {
+  --uh-tag-glow: #5ef2e3;
+  --uh-tag-line: rgba(94, 242, 227, 0.85);
+}
+.uh-tag-dot {
+  background: radial-gradient(circle at 35% 35%, #ffffff 0 22%, var(--uh-tag-glow) 23% 58%, rgba(94, 242, 227, 0.15) 60%);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.85), 0 0 14px 2px rgba(94, 242, 227, 0.75);
+}
+.uh-tag-ring {
+  border: 1px solid rgba(94, 242, 227, 0.7);
+}
+.uh-tag-chip {
+  background: linear-gradient(135deg, rgba(8, 14, 20, 0.86), rgba(8, 20, 24, 0.72));
+  border: 1px solid rgba(94, 242, 227, 0.45);
+  box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 18px -8px rgba(94, 242, 227, 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.uh-tag-line {
+  background: linear-gradient(var(--uh-tag-dir, 90deg), var(--uh-tag-line), rgba(94, 242, 227, 0.25));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .uh-tag-ring {
+    animation: uh-tag-pulse 2.4s ease-out infinite;
+  }
+  .uh-tag-in {
+    animation: uh-tag-in 0.42s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  }
+  .uh-tag-dot {
+    transition: transform 0.2s ease;
+  }
+  .uh-tag:hover .uh-tag-dot,
+  .uh-tag:focus-within .uh-tag-dot {
+    transform: scale(1.18);
+  }
+}
+@keyframes uh-tag-pulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  70% { transform: scale(1.9); opacity: 0; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@keyframes uh-tag-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+/* faixa de marcas: rolagem lateral sem barra, com as pontas esmaecidas */
+.uh-brand-strip {
+  /* a largura vem do pai, nunca do conteúdo: muitos chips não alargam a página (flex/grid acima) */
+  contain: inline-size;
+  width: 100%;
+  /* contém os textos sr-only (absolutos) dos chips: sem isto eles vazam e alargam a página */
+  position: relative;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 20px), transparent 100%);
+}
+.uh-brand-strip::-webkit-scrollbar {
+  display: none;
+}

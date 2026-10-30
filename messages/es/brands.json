@@ -1,0 +1,40 @@
+{
+  "strip": {
+    "label": "Marcas de {name}",
+    "opensSite": "abre el sitio de la marca en una pestaña nueva"
+  },
+  "relationship": {
+    "sponsor": "Patrocinador",
+    "mentioned": "Marca mencionada",
+    "identified": "Producto identificado"
+  },
+  "example": "Marca de ejemplo",
+  "tags": {
+    "show": "Ver productos en la foto",
+    "hide": "Ocultar productos de la foto",
+    "region": "Productos marcados en la foto",
+    "open": "Ver {name}, de {brand}"
+  },
+  "card": {
+    "viewProduct": "Ver producto",
+    "back": "Volver al resumen",
+    "buy": "Comprar en el sitio de la marca",
+    "priceNote": "Precio sujeto a cambios en el sitio de la marca.",
+    "noPrice": "Precio y disponibilidad en el sitio de la marca.",
+    "brandSite": "Sitio de la marca",
+    "leaving": "La compra se hace en {host}, fuera de la app.",
+    "by": "de {brand}",
+    "newTab": "abre en una pestaña nueva"
+  },
+  "recommended": {
+    "title": "Equipos y productos recomendados",
+    "description": "Indicados para este contenido. La compra se hace directo en el sitio de cada marca.",
+    "programDescription": "Lo que ayuda a seguir el programa. La compra se hace directo en el sitio de cada marca.",
+    "buy": "Comprar",
+    "view": "Detalles"
+  },
+  "program": {
+    "cardTitle": "Equipos",
+    "cardTeaser": "Productos recomendados para el programa"
+  }
+}

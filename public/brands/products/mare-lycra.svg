@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Lycra de manga longa">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#04443f"/><stop offset="1" stop-color="#065f57"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#bg)"/>
+  <circle cx="160" cy="160" r="122" fill="#7ff5d6" opacity=".08"/>
+  <path d="M122 52 C134 64 186 64 198 52 L254 80 L292 196 L262 206 L232 124 V276 H88 V124 L58 206 L28 196 L66 80 Z" fill="#0b1f1d" stroke="#7ff5d6" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M88 200 C110 186 130 186 150 200 C170 214 192 214 232 196" fill="none" stroke="#7ff5d6" stroke-width="7" stroke-linecap="round"/>
+  <text x="160" y="160" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#ffffff">UV50</text>
+</svg>

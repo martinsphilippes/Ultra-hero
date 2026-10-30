@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 36" role="img" aria-label="Kairo Footwear">
+  <rect width="132" height="36" rx="9" fill="#f4efe6"/>
+  <path d="M9 24 C14 24 18 21 21 16 L25 10 L29 13 L26 19 C30 21 33 22 34 24 Z" fill="#c2410c"/>
+  <text x="41" y="21" font-family="Georgia, 'Times New Roman', serif" font-size="15" font-weight="700" font-style="italic" fill="#1c1917">Kairo</text>
+  <text x="86" y="21" font-family="Arial, Helvetica, sans-serif" font-size="7" font-weight="700" letter-spacing="1.2" fill="#c2410c">FOOTWEAR</text>
+  <rect x="41" y="25" width="45" height="1.6" rx=".8" fill="#c2410c" opacity=".6"/>
+</svg>

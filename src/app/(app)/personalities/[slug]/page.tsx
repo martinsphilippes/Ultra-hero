@@ -3,6 +3,7 @@ import { Info, ShieldCheck } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
+import { BrandStrip } from "@/components/brands/BrandStrip";
 import { ContentTile } from "@/components/catalog";
 import { HeroCollectibleBanner } from "@/components/collectibles/HeroCollectibleBanner";
 import { TILE_GRID } from "@/components/discover/grid";
@@ -19,6 +20,7 @@ import { hubHref, loadCreator, loadCreatorHub } from "@/lib/catalog/creator-hub"
 import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
 import { getFollowContext } from "@/lib/heroes/follow-context";
 import { loadFollowerCount } from "@/lib/heroes/follow-queries";
+import { loadCreatorBrandChips, loadSmartTagsFor } from "@/lib/brands/queries";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -48,11 +50,20 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
 
   // RB-05: só "autorizado" com titular documentado e dentro da validade tira o selo de fictício.
   const rights = effectiveRightsStatus(creator.rights_status, creator.rights_valid_until);
-  const [hub, follow, followers] = await Promise.all([loadCreatorHub(creator), getFollowContext(), createClient().then((supabase) => loadFollowerCount(supabase, creator.id))]);
+  const supabase = await createClient();
+  const [hub, follow, followers, brands] = await Promise.all([
+    loadCreatorHub(creator),
+    getFollowContext(),
+    loadFollowerCount(supabase, creator.id),
+    // marcas do herói (0062); sem a 0062, nenhuma
+    loadCreatorBrandChips(supabase, creator.id),
+  ]);
   const hasError = hub.errors.contents || hub.errors.programs || hub.errors.products;
 
   // Grade de posts: só o que o herói publicou (as receitas que ele indica ficam em Alimentação).
   const posts = hub.contents.filter((c) => c.creator?.slug === creator.slug);
+  // posts com produtos marcados na foto: ícone discreto no quadro (as marcações abrem no post)
+  const tagged = await loadSmartTagsFor(supabase, posts);
   const statLabel = (key: "posts" | "programs" | "products", n: number) => t(`statLabels.${key}${n === 1 ? "One" : "Other"}`);
   const stats = [
     { key: "posts", value: posts.length, label: statLabel("posts", posts.length) },
@@ -90,6 +101,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
             </ul>
           </div>
         </div>
+        {/* Marcas do herói (0062): logos em chips com o tipo de relação; rolagem lateral quando são muitas */}
+        <BrandStrip brands={brands} heroName={creator.name} />
         {/* Seguir (hero_favorites, 0054) com a contagem pública de seguidores (0056) */}
         {follow.available ? (
           <div data-testid="hero-follow">
@@ -126,7 +139,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
         {posts.length > 0 ? (
           <div className={TILE_GRID} data-testid="hero-posts">
             {posts.map((post, index) => (
-              <ContentTile key={post.id} content={post} priority={index < 3} />
+              <ContentTile key={post.id} content={post} priority={index < 3} tagged={tagged.has(post.id)} />
             ))}
           </div>
         ) : hasError ? null : (
