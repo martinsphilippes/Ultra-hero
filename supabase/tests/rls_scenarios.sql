@@ -6433,5 +6433,310 @@ select tests.ok('S67 reaplicar a 0056 mantém gatilhos, contagens e a edição d
 delete from auth.users where id in ('67000000-0000-4000-8000-000000000671', '67000000-0000-4000-8000-000000000672');
 drop table t_s67;
 
+-- ================================================================ S68 · Profissionais e serviços (0058)
+-- Profissional vê só os próprios pedidos e serviços; cliente vê os próprios pedidos; o público vê só
+-- aprovados e serviços ativos; admin aprova/suspende (registro conferido + nota), edita serviços e
+-- sugeridos, sempre auditado; situação do pedido só pelas transições permitidas; checkout atômico
+-- com produtos; contador sem pessoa e só do service role; S14 = 17; sem tabela-ponte na chave.
+select tests.su();
+insert into auth.users (id, email) values
+  ('68000000-0000-4000-8000-000000000681', 'pro68@test.local'),
+  ('68000000-0000-4000-8000-000000000682', 'cli68a@test.local'),
+  ('68000000-0000-4000-8000-000000000683', 'cli68b@test.local');
+update public.profiles set display_name = 'Maria Souza Lima' where id = '68000000-0000-4000-8000-000000000682';
+create temp table t_s68 (k text primary key, v text);
+grant all on t_s68 to anon, authenticated;
+insert into t_s68 values
+  ('nina', public.seed_uuid('professional:nina-horta')::text),
+  ('teo', public.seed_uuid('professional:teo-folego')::text),
+  ('nina_consulta', public.seed_uuid('professional_service:nina-consulta')::text),
+  ('nina_plano', public.seed_uuid('professional_service:nina-plano')::text),
+  ('teo_aula', public.seed_uuid('professional_service:teo-aula')::text),
+  ('audit', (select coalesce(max(id), 0) from public.admin_audit)::text);
+
+select tests.ok('S68 seed: 2 profissionais de exemplo aprovados e conferidos, 6 serviços, sugeridos, sem conta ligada',
+  (select count(*) from public.professionals where is_demo and status = 'approved' and registry_verified and user_id is null) = 2
+  and (select count(*) from public.professional_services) = 6
+  and (select count(*) from public.professional_suggestions) >= 5
+  and exists (select 1 from public.professional_suggestions s join public.content c on c.id = s.content_id where c.slug = 'bowl-de-frango-grelhado-com-legumes-assados-g1')
+  and exists (select 1 from public.professional_suggestions s join public.creator_profiles cp on cp.id = s.creator_id where cp.slug = 'neymar'));
+
+-- estrutura: nenhuma tabela nova com chave primária de FK para duas tabelas; contadores sem FK e sem pessoa
+select tests.ok('S68 nenhuma tabela da 0058 com chave primária de FK para duas tabelas (sem ambiguidade na API)',
+  not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.connamespace = 'public'::regnamespace
+      and pk.conrelid::regclass::text in ('professionals', 'professional_verifications', 'professional_services', 'professional_suggestions',
+        'service_cart_items', 'service_orders', 'service_order_events', 'professional_tap_counters')
+      and (select count(distinct f.confrelid) from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.conkey <@ pk.conkey) > 1)
+  and not exists (select 1 from pg_constraint f where f.contype = 'f' and f.conrelid = 'public.professional_tap_counters'::regclass)
+  and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'professional_tap_counters' and column_name like '%user%'));
+select tests.ok('S68 nenhuma tabela-ponte content↔creator_profiles na chave primária (S65 segue)',
+  not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.connamespace = 'public'::regnamespace
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.confrelid = 'public.content'::regclass and f.conkey <@ pk.conkey)
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.confrelid = 'public.creator_profiles'::regclass and f.conkey <@ pk.conkey)));
+
+-- visitante: só aprovados e serviços ativos; nada privado
+select tests.su();
+update public.professional_services set is_active = false where id = (select v::uuid from t_s68 where k = 'nina_plano');
+select tests.anon();
+select tests.ok('S68 visitante vê os aprovados e só os serviços ativos',
+  (select count(*) from public.professionals) = 2
+  and (select count(*) from public.professional_services) = 5
+  and not exists (select 1 from public.professional_services where id = (select v::uuid from t_s68 where k = 'nina_plano')));
+select tests.expect_error('S68 visitante não lê pedidos de serviço', $q$select count(*) from public.service_orders$q$, 'permission denied');
+select tests.expect_error('S68 visitante não lê a nota de conferência', $q$select count(*) from public.professional_verifications$q$, 'permission denied');
+select tests.expect_error('S68 visitante não lê carrinho de serviços', $q$select count(*) from public.service_cart_items$q$, 'permission denied');
+select tests.expect_error('S68 visitante não lê contadores', $q$select count(*) from public.professional_tap_counters$q$, 'permission denied');
+select tests.expect_error('S68 visitante não contrata', format($q$select public.service_cart_set(%L, true)$q$, (select v from t_s68 where k = 'nina_consulta')), 'permission denied');
+select tests.expect_error('S68 visitante não executa my_professional_id', $q$select public.my_professional_id()$q$, 'permission denied');
+select tests.su();
+update public.professional_services set is_active = true where id = (select v::uuid from t_s68 where k = 'nina_plano');
+
+-- admin: cria pendente (invisível), aprovar exige registro conferido, suspender exige nota; tudo auditado
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s68 values ('new', public.admin_professional_save(null,
+  '{"slug":"pro-s68","name":"Pro S68","specialty":"personal_trainer","registry_type":"CREF","registry_number":"123456-G","registry_uf":"MG","bio":"x","cities":["BH"," ",""],"online":false}'::jsonb)::text);
+select tests.ok('S68 admin cria perfil pendente, sem selo, cidades limpas',
+  (select status = 'pending' and not registry_verified and cities = '{BH}' and not online from public.professionals where id = (select v::uuid from t_s68 where k = 'new')));
+select tests.anon();
+select tests.ok('S68 visitante não vê pendente', not exists (select 1 from public.professionals where slug = 'pro-s68'));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S68 aprovar sem conferir o registro é recusado',
+  format($q$select public.admin_professional_set_status(%L, 'approved', false, 'ok')$q$, (select v from t_s68 where k = 'new')), 'registry_not_verified');
+select tests.expect_error('S68 suspender sem nota é recusado',
+  format($q$select public.admin_professional_set_status(%L, 'suspended', false, '')$q$, (select v from t_s68 where k = 'new')), 'note_required');
+select public.admin_professional_set_status((select v::uuid from t_s68 where k = 'new'), 'approved', true, 'Conferido no site do CREF');
+select public.admin_professional_service_save(null, (select v::uuid from t_s68 where k = 'new'),
+  '{"title":"Treino S68","kind":"session","mode":"online","duration_minutes":30,"price_cents":5000}'::jsonb);
+select tests.ok('S68 admin aprova (com nota de conferência) e cadastra serviço',
+  (select status = 'approved' and registry_verified and approved_at is not null from public.professionals where id = (select v::uuid from t_s68 where k = 'new'))
+  and (select note from public.professional_verifications where professional_id = (select v::uuid from t_s68 where k = 'new')) = 'Conferido no site do CREF'
+  and exists (select 1 from public.professional_services where professional_id = (select v::uuid from t_s68 where k = 'new') and price_cents = 5000));
+select tests.expect_error('S68 serviço sem formato válido é recusado',
+  format($q$select public.admin_professional_service_save(null, %L, '{"title":"Plano X","kind":"plan","mode":"online","price_cents":5000}'::jsonb)$q$, (select v from t_s68 where k = 'new')), 'professional_services_shape');
+select public.admin_professional_suggestion_set((select v::uuid from t_s68 where k = 'new'), 'creator', (select id from public.creator_profiles where slug = 'anitta'), true);
+select public.admin_professional_suggestion_set((select v::uuid from t_s68 where k = 'new'), 'creator', (select id from public.creator_profiles where slug = 'anitta'), true);
+select tests.expect_error('S68 sugestão com alvo inexistente é recusada',
+  format($q$select public.admin_professional_suggestion_set(%L, 'content', gen_random_uuid(), true)$q$, (select v from t_s68 where k = 'new')), 'invalid_target');
+select tests.ok('S68 sugestão sem repetir (ligar duas vezes = uma linha)',
+  (select count(*) from public.professional_suggestions where professional_id = (select v::uuid from t_s68 where k = 'new')) = 1);
+select public.admin_professional_suggestion_set((select v::uuid from t_s68 where k = 'new'), 'creator', (select id from public.creator_profiles where slug = 'anitta'), false);
+select public.admin_professional_set_status((select v::uuid from t_s68 where k = 'new'), 'suspended', true, 'Registro vencido');
+select tests.su();
+select tests.ok('S68 auditoria: criar, aprovar, serviço, sugerir/tirar e suspender (com a nota)',
+  (select count(*) from public.admin_audit where id > (select v::bigint from t_s68 where k = 'audit') and resource_id = (select v from t_s68 where k = 'new')
+     and action in ('professional.create', 'professional.set_status', 'professional.suggest', 'professional.unsuggest')) = 5
+  and exists (select 1 from public.admin_audit where id > (select v::bigint from t_s68 where k = 'audit') and action = 'professional.set_status'
+              and resource_id = (select v from t_s68 where k = 'new') and justification = 'Registro vencido' and after_data ->> 'status' = 'suspended')
+  and exists (select 1 from public.admin_audit where id > (select v::bigint from t_s68 where k = 'audit') and action = 'professional_service.create'));
+select tests.login('68000000-0000-4000-8000-000000000682', 'cli68a@test.local');
+select tests.expect_error('S68 consumidor não usa RPC do admin',
+  format($q$select public.admin_professional_set_status(%L, 'approved', true, 'x')$q$, (select v from t_s68 where k = 'nina')), 'forbidden');
+select tests.expect_error('S68 consumidor não escreve direto em professionals',
+  $q$update public.professionals set status = 'approved'$q$, 'permission denied');
+select tests.expect_error('S68 consumidor não cria pedido direto',
+  format($q$insert into public.service_orders (professional_id, title_snapshot, kind_snapshot, mode_snapshot, price_cents) values (%L, 'x', 'session', 'online', 1)$q$, (select v from t_s68 where k = 'nina')), 'permission denied');
+
+-- convite: a pessoa assume o perfil da Nina e ganha o papel 'professional'
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s68 select 'token', token from public.admin_invite_professional('pro68@test.local', (select v::uuid from t_s68 where k = 'nina'), 7);
+select tests.login('68000000-0000-4000-8000-000000000683', 'cli68b@test.local');
+select tests.expect_error('S68 convite só vale para o e-mail convidado',
+  format($q$select public.accept_invitation(%L)$q$, (select v from t_s68 where k = 'token')), 'invitation_email_mismatch');
+select tests.login('68000000-0000-4000-8000-000000000681', 'pro68@test.local');
+insert into t_s68 select 'accepted', public.accept_invitation((select v from t_s68 where k = 'token')) ->> 'role';
+select tests.ok('S68 aceitar o convite liga a conta ao perfil e grava o papel',
+  (select v from t_s68 where k = 'accepted') = 'professional'
+  and public.my_professional_id() = (select v::uuid from t_s68 where k = 'nina'));
+select tests.su();
+select tests.ok('S68 papel professional com escopo do perfil',
+  exists (select 1 from public.role_assignments where user_id = '68000000-0000-4000-8000-000000000681' and role = 'professional'
+          and scope_type = 'professional' and scope_id = (select v::uuid from t_s68 where k = 'nina') and revoked_at is null));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S68 perfil já ligado não recebe outro convite',
+  format($q$select * from public.admin_invite_professional('x68@test.local', %L, 7)$q$, (select v from t_s68 where k = 'nina')), 'professional_already_linked');
+
+-- profissional: vê e edita só o que é dele
+select tests.login('68000000-0000-4000-8000-000000000681', 'pro68@test.local');
+select public.professional_save_service((select v::uuid from t_s68 where k = 'nina_plano'),
+  '{"title":"Plano alimentar de 4 semanas","kind":"plan","mode":"online","plan_weeks":4,"price_cents":41000,"is_active":false}'::jsonb);
+select tests.ok('S68 profissional vê os próprios serviços (inclusive pausado) e edita preço',
+  (select count(*) from public.professional_services where professional_id = (select v::uuid from t_s68 where k = 'nina')) = 3
+  and (select price_cents = 41000 and not is_active from public.professional_services where id = (select v::uuid from t_s68 where k = 'nina_plano')));
+select tests.expect_error('S68 profissional não edita serviço de outro',
+  format($q$select public.professional_save_service(%L, '{"title":"Hack","kind":"session","mode":"online","duration_minutes":60,"price_cents":500}'::jsonb)$q$, (select v from t_s68 where k = 'teo_aula')), 'not_found');
+select tests.expect_error('S68 profissional não contrata o próprio serviço',
+  format($q$select public.service_cart_set(%L, true)$q$, (select v from t_s68 where k = 'nina_consulta')), 'own_service');
+select tests.expect_error('S68 profissional não usa RPC do admin',
+  format($q$select public.admin_professional_service_save(%L, null, '{"title":"x","kind":"session","mode":"online","duration_minutes":30,"price_cents":500,"admin_disabled":false}'::jsonb)$q$, (select v from t_s68 where k = 'nina_consulta')), 'forbidden');
+select tests.ok('S68 profissional não lê a nota de conferência (só o admin)', (select count(*) from public.professional_verifications) = 0);
+
+-- cliente: carrinho, preço visto e checkout atômico com produto
+select tests.login('68000000-0000-4000-8000-000000000682', 'cli68a@test.local');
+select tests.expect_error('S68 serviço pausado não entra no carrinho',
+  format($q$select public.service_cart_set(%L, true)$q$, (select v from t_s68 where k = 'nina_plano')), 'service_unavailable');
+select tests.ok('S68 contratar põe 1 de cada no carrinho', public.service_cart_set((select v::uuid from t_s68 where k = 'nina_consulta'), true) = 1
+  and public.service_cart_set((select v::uuid from t_s68 where k = 'nina_consulta'), true) = 1);
+select public.cart_set_item(public.seed_uuid('product:m2'), 1);
+select tests.expect_error('S68 preço diferente do visto recusa tudo',
+  format($q$select public.checkout_with_services(public.seed_uuid('dest:centro'), '[]'::jsonb, false, '[{"service_id":"%s","price_cents":1}]'::jsonb)$q$, (select v from t_s68 where k = 'nina_consulta')), 'service_price_changed');
+select tests.ok('S68 nada gravado na recusa', (select count(*) from public.service_orders) = 0
+  and (select count(*) from public.service_cart_items) = 1 and (select count(*) from public.cart_items) = 1);
+select tests.expect_error('S68 produto sem destino recusa também os serviços',
+  format($q$select public.checkout_with_services(null, '[]'::jsonb, false, '[{"service_id":"%s","price_cents":18000}]'::jsonb)$q$, (select v from t_s68 where k = 'nina_consulta')), 'invalid_destination');
+select tests.ok('S68 recusa no produto não deixa pedido de serviço', (select count(*) from public.service_orders) = 0);
+insert into t_s68 select 'checkout', public.checkout_with_services(public.seed_uuid('dest:centro'), '[]'::jsonb, false,
+  format('[{"service_id":"%s","price_cents":18000}]', (select v from t_s68 where k = 'nina_consulta'))::jsonb)::text;
+insert into t_s68 select 'order', (v::jsonb -> 'service_order_ids' ->> 0) from t_s68 where k = 'checkout';
+select tests.ok('S68 checkout: pedido de produtos + pedido de serviço com preço congelado e nome curto do cliente; carrinhos vazios',
+  (select (v::jsonb ->> 'order_id') is not null from t_s68 where k = 'checkout')
+  and (select status = 'pending' and price_cents = 18000 and title_snapshot = 'Consulta online de nutrição' and client_label = 'Maria L.' and is_demo
+       from public.service_orders where id = (select v::uuid from t_s68 where k = 'order'))
+  and (select count(*) from public.service_cart_items) = 0 and (select count(*) from public.cart_items) = 0
+  and (select count(*) from public.service_order_events where order_id = (select v::uuid from t_s68 where k = 'order') and actor_type = 'system' and to_status = 'pending') = 1);
+select tests.expect_error('S68 carrinho vazio não fecha pedido', $q$select public.checkout_with_services(null, '[]'::jsonb, false, '[]'::jsonb)$q$, 'cart_empty');
+
+-- outro cliente contrata o Téo: cada um vê só os seus; a Nina não vê o pedido do Téo
+select tests.login('68000000-0000-4000-8000-000000000683', 'cli68b@test.local');
+select public.service_cart_set((select v::uuid from t_s68 where k = 'teo_aula'), true);
+insert into t_s68 select 'order_teo', (public.checkout_with_services(null, '[]'::jsonb, false,
+  format('[{"service_id":"%s","price_cents":15000}]', (select v from t_s68 where k = 'teo_aula'))::jsonb) -> 'service_order_ids' ->> 0);
+select tests.ok('S68 cliente vê só os próprios pedidos', (select count(*) from public.service_orders) = 1
+  and (select count(*) from public.service_order_events) = 1);
+select tests.expect_error('S68 cliente não mexe no pedido de outro',
+  format($q$select public.service_order_update(%L, 'cancelled')$q$, (select v from t_s68 where k = 'order')), 'not_found');
+select tests.login('68000000-0000-4000-8000-000000000681', 'pro68@test.local');
+select tests.ok('S68 profissional vê só os pedidos dele', (select count(*) from public.service_orders) = 1
+  and exists (select 1 from public.service_orders where id = (select v::uuid from t_s68 where k = 'order')));
+select tests.expect_error('S68 profissional não mexe em pedido de outro profissional',
+  format($q$select public.service_order_update(%L, 'accepted')$q$, (select v from t_s68 where k = 'order_teo')), 'not_found');
+
+-- transições
+select tests.login('68000000-0000-4000-8000-000000000682', 'cli68a@test.local');
+select tests.expect_error('S68 cliente não aceita o próprio pedido',
+  format($q$select public.service_order_update(%L, 'accepted')$q$, (select v from t_s68 where k = 'order')), 'invalid_transition');
+select tests.expect_error('S68 cliente não manda recado sem mudar situação',
+  format($q$select public.service_order_update(%L, null, 'oi')$q$, (select v from t_s68 where k = 'order')), 'forbidden');
+select tests.login('68000000-0000-4000-8000-000000000681', 'pro68@test.local');
+select tests.expect_error('S68 recusar exige recado',
+  format($q$select public.service_order_update(%L, 'declined', 'não')$q$, (select v from t_s68 where k = 'order')), 'note_required');
+select tests.expect_error('S68 não pula de novo para concluído',
+  format($q$select public.service_order_update(%L, 'completed')$q$, (select v from t_s68 where k = 'order')), 'invalid_transition');
+select public.service_order_update((select v::uuid from t_s68 where k = 'order'), 'accepted', 'Oi Maria! Vamos marcar?');
+select tests.ok('S68 aceitar grava a 1ª resposta (tempo de resposta)',
+  (select status = 'accepted' and first_response_at is not null from public.service_orders where id = (select v::uuid from t_s68 where k = 'order')));
+select tests.expect_error('S68 agendar exige recado',
+  format($q$select public.service_order_update(%L, 'scheduled', '')$q$, (select v from t_s68 where k = 'order')), 'note_required');
+select public.service_order_update((select v::uuid from t_s68 where k = 'order'), 'scheduled', 'Terça, 10h, link por aqui');
+select public.service_order_update((select v::uuid from t_s68 where k = 'order'), null, 'Link: chamada de vídeo');
+select tests.login('68000000-0000-4000-8000-000000000682', 'cli68a@test.local');
+select tests.ok('S68 cliente vê a agenda e os recados do profissional',
+  (select schedule_note from public.service_orders where id = (select v::uuid from t_s68 where k = 'order')) = 'Terça, 10h, link por aqui'
+  and (select count(*) from public.service_order_events where order_id = (select v::uuid from t_s68 where k = 'order') and actor_type = 'professional') = 3);
+select tests.expect_error('S68 cliente não cancela depois da resposta',
+  format($q$select public.service_order_update(%L, 'cancelled')$q$, (select v from t_s68 where k = 'order')), 'invalid_transition');
+select tests.expect_error('S68 cliente não escreve recado direto na tabela',
+  format($q$insert into public.service_order_events (order_id, to_status, actor_type, note) values (%L, 'completed', 'professional', 'x')$q$, (select v from t_s68 where k = 'order')), 'permission denied');
+select tests.login('68000000-0000-4000-8000-000000000681', 'pro68@test.local');
+select public.service_order_update((select v::uuid from t_s68 where k = 'order'), 'completed', '');
+select tests.ok('S68 concluir fecha o pedido',
+  (select status = 'completed' and closed_at is not null from public.service_orders where id = (select v::uuid from t_s68 where k = 'order')));
+select tests.expect_error('S68 pedido encerrado não recebe recado',
+  format($q$select public.service_order_update(%L, null, 'mais uma')$q$, (select v from t_s68 where k = 'order')), 'order_closed');
+
+-- cliente cancela pedido ainda sem resposta; admin cancela com nota (auditado)
+select tests.login('68000000-0000-4000-8000-000000000683', 'cli68b@test.local');
+select public.service_cart_set(public.seed_uuid('professional_service:teo-plano'), true);
+insert into t_s68 select 'order_teo2', (public.checkout_with_services(null, '[]'::jsonb, false,
+  ('[{"service_id":"' || public.seed_uuid('professional_service:teo-plano') || '","price_cents":29000}]')::jsonb) -> 'service_order_ids' ->> 0);
+select public.service_order_update((select v::uuid from t_s68 where k = 'order_teo2'), 'cancelled');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S68 admin vê todos os pedidos', (select count(*) from public.service_orders where id in
+  ((select v::uuid from t_s68 where k = 'order'), (select v::uuid from t_s68 where k = 'order_teo'), (select v::uuid from t_s68 where k = 'order_teo2'))) = 3);
+select tests.expect_error('S68 admin cancela só com nota',
+  format($q$select public.service_order_update(%L, 'cancelled', 'x')$q$, (select v from t_s68 where k = 'order_teo')), 'note_required');
+select public.service_order_update((select v::uuid from t_s68 where k = 'order_teo'), 'cancelled', 'Profissional indisponível');
+select tests.su();
+select tests.ok('S68 cancelamentos: cliente sem auditoria; admin auditado com a nota',
+  (select status from public.service_orders where id = (select v::uuid from t_s68 where k = 'order_teo2')) = 'cancelled'
+  and (select status from public.service_orders where id = (select v::uuid from t_s68 where k = 'order_teo')) = 'cancelled'
+  and exists (select 1 from public.admin_audit where action = 'service_order.transition' and resource_id = (select v from t_s68 where k = 'order_teo')
+              and justification = 'Profissional indisponível')
+  and not exists (select 1 from public.admin_audit where resource_id = (select v from t_s68 where k = 'order_teo2')));
+
+-- profissional suspenso: some do público e não age; trocar o registro tira o selo e volta para análise
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_professional_set_status((select v::uuid from t_s68 where k = 'teo'), 'suspended', true, 'Teste de suspensão');
+select tests.anon();
+select tests.ok('S68 suspenso some da lista e os serviços também',
+  not exists (select 1 from public.professionals where id = (select v::uuid from t_s68 where k = 'teo'))
+  and not exists (select 1 from public.professional_services where professional_id = (select v::uuid from t_s68 where k = 'teo')));
+select tests.login('68000000-0000-4000-8000-000000000683', 'cli68b@test.local');
+select tests.expect_error('S68 serviço de suspenso não entra no carrinho',
+  format($q$select public.service_cart_set(%L, true)$q$, (select v from t_s68 where k = 'teo_aula')), 'service_unavailable');
+select tests.login('68000000-0000-4000-8000-000000000681', 'pro68@test.local');
+select public.professional_save_profile('{"name":"Nina Horta","bio":"Nova bio","cities":["São Paulo","Santos"],"online":true,"registry_number":"3-99999","registry_uf":"SP"}'::jsonb);
+select tests.su();
+select tests.ok('S68 trocar o registro tira o selo e volta para análise; o resto é salvo',
+  (select status = 'pending' and not registry_verified and bio = 'Nova bio' and cities = '{São Paulo,Santos}' and slug = 'nina-horta'
+   from public.professionals where id = (select v::uuid from t_s68 where k = 'nina')));
+
+-- contador: só o service role soma; profissional fora do ar não conta
+select tests.login('68000000-0000-4000-8000-000000000682', 'cli68a@test.local');
+select tests.expect_error('S68 pessoa logada não soma contador',
+  format($q$select public.professional_tap_bump(%L, null, 'receita', 'contratar')$q$, (select v from t_s68 where k = 'new')), 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_professional_set_status((select v::uuid from t_s68 where k = 'new'), 'approved', true, 'ok');
+select tests.su();
+select public.professional_tap_bump((select v::uuid from t_s68 where k = 'new'), (select id from public.creator_profiles where slug = 'erick-jacquin'), 'receita', 'contratar');
+select public.professional_tap_bump((select v::uuid from t_s68 where k = 'new'), (select id from public.creator_profiles where slug = 'erick-jacquin'), 'receita', 'contratar');
+select public.professional_tap_bump((select v::uuid from t_s68 where k = 'new'), null, 'perfil', 'ver_perfil');
+select public.professional_tap_bump((select v::uuid from t_s68 where k = 'teo'), null, 'perfil', 'contratar');
+select tests.ok('S68 contador agrega por dia/herói/origem/ação; suspenso não conta',
+  (select count from public.professional_tap_counters where professional_id = (select v::uuid from t_s68 where k = 'new') and source = 'receita') = 2
+  and (select count(*) from public.professional_tap_counters where professional_id = (select v::uuid from t_s68 where k = 'new')) = 2
+  and not exists (select 1 from public.professional_tap_counters where professional_id = (select v::uuid from t_s68 where k = 'teo')));
+
+-- LGPD: conta anonimizada some dos pedidos (o profissional mantém o histórico)
+update public.profiles set anonymized_at = now() where id = '68000000-0000-4000-8000-000000000682';
+select tests.ok('S68 conta anonimizada: pedido sem vínculo nem nome',
+  (select user_id is null and client_label = '' from public.service_orders where id = (select v::uuid from t_s68 where k = 'order')));
+
+-- funções: security definer com search_path fixo; nenhuma nova para o visitante
+select tests.ok('S68 RPCs: security definer, search_path fixo, sem execute para anon',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
+     from pg_proc p where p.oid in ('public.my_professional_id()'::regprocedure, 'public.professional_save_profile(jsonb)'::regprocedure,
+       'public.professional_save_service(uuid, jsonb)'::regprocedure, 'public.service_order_update(uuid, text, text)'::regprocedure,
+       'public.service_is_hireable(uuid)'::regprocedure, 'public.service_cart_set(uuid, boolean)'::regprocedure,
+       'public.checkout_with_services(uuid, jsonb, boolean, jsonb)'::regprocedure, 'public.admin_professional_save(uuid, jsonb)'::regprocedure,
+       'public.admin_professional_set_status(uuid, text, boolean, text)'::regprocedure, 'public.admin_professional_service_save(uuid, uuid, jsonb)'::regprocedure,
+       'public.admin_professional_suggestion_set(uuid, text, uuid, boolean)'::regprocedure, 'public.admin_invite_professional(text, uuid, int)'::regprocedure,
+       'public.professional_tap_bump(uuid, uuid, text, text)'::regprocedure, 'public.service_orders_forget_user()'::regprocedure,
+       'public.accept_invitation(text)'::regprocedure))
+  and not has_function_privilege('authenticated', 'public.professional_tap_bump(uuid, uuid, text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.professional_service_fields(jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.service_orders_forget_user()', 'execute'));
+select tests.ok('S68 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S68 políticas novas não avaliam auth.uid()/is_admin()/my_professional_id() por linha',
+  (select count(*) from pg_policies where schemaname = 'public'
+     and tablename in ('professionals', 'professional_verifications', 'professional_services', 'professional_suggestions', 'service_cart_items', 'service_orders', 'service_order_events')
+     and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|my_professional_id)\(\)') = 0);
+
+-- reaplicar a 0058 não muda o que foi editado nem duplica o seed
+\ir ../migrations/0058_professionals.sql
+select tests.ok('S68 reaplicar a 0058 mantém edições, pedidos e o seed',
+  (select count(*) from public.professionals where is_demo) = 2
+  and (select bio from public.professionals where id = (select v::uuid from t_s68 where k = 'nina')) = 'Nova bio'
+  and (select price_cents from public.professional_services where id = (select v::uuid from t_s68 where k = 'nina_plano')) = 41000
+  and (select count(*) from public.service_orders) = 3
+  and exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = 'app_role' and e.enumlabel = 'professional'));
+
+-- limpeza (a transação inteira é desfeita no fim)
+drop table t_s68;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
