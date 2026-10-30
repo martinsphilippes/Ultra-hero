@@ -35,7 +35,7 @@ const NOT_IN_APP = [
   "me.profile.demoNote", "me.account.demo.", "me.notifications.types.commerce_updates.", "consume.content.relatedProducts",
   "consume.content.lockNote", "consume.content.creatorFictional", "consume.player.demoBadge",
   "discover.explore.products.", "discover.personalities.profile.fictional",
-  "discover.personalities.profile.products", "shopping.", "recipes.showcase.ready.",
+  "discover.personalities.profile.products", "shopping.", "recipes.showcase.ready.", "collectibles.admin.",
 ];
 
 describe("messages-native", () => {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { LiveHighlight } from "@/components/collectibles/LiveHighlight";
 import { DemoAccess } from "@/components/demo/DemoAccess";
 import { FeedSkeleton } from "@/components/discover/home/feed/FeedSkeleton";
 import { HomeFeed } from "@/components/discover/home/feed/HomeFeed";
@@ -22,6 +23,10 @@ export default async function HomePage({ searchParams }: Props) {
     <div className="-mx-gutter flex flex-col gap-8 md:mx-auto md:w-full md:max-w-[470px]">
       <h1 className="sr-only">{th("title")}</h1>
       <DemoAccess from="home" failed={demo === "error"} />
+      {/* Colecionáveis ao vivo (0057): destaque pequeno no topo; sem item ao vivo, nada */}
+      <Suspense fallback={null}>
+        <LiveHighlight />
+      </Suspense>
       <Suspense fallback={<FeedSkeleton />}>
         <HomeFeed />
       </Suspense>

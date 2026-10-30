@@ -25,6 +25,7 @@ export type AnalyticsEvent =
   | "recommendation.not_interested"
   | "product.view"
   | "product.interest"
+  | "collectible.view"
   | "cart.add"
   | "cart.remove"
   | "checkout.start"

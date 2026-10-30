@@ -17,6 +17,9 @@ describe("navegação principal", () => {
     expect(isActivePath("/shop/e-creatina-po", "/shop")).toBe(true);
     expect(isActivePath("/shopping", "/shop")).toBe(false);
     expect(isActivePath("/cart", "/shop")).toBe(false);
+    // Colecionáveis e Minhas compras moram dentro de Comprar (0057)
+    expect(isActivePath("/shop/colecionaveis", "/shop")).toBe(true);
+    expect(isActivePath("/shop/compras", "/shop")).toBe(true);
   });
 
   it("Início só fica ativo na raiz e prefixos exigem fronteira de segmento", () => {
