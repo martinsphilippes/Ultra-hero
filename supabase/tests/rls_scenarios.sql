@@ -5930,5 +5930,21 @@ delete from public.products where id = '62000000-0000-4000-8000-000000000001';
 delete from public.admin_audit where id > (select id from t_s64_base);
 drop table t_s64_base, t_s64_order, t_s64_f;
 
+-- ================================================================ S65 · Embed conteúdo → herói sem ambiguidade (0055)
+-- Uma tabela cuja chave primária tem FK para content E para creator_profiles vira, para a API,
+-- um caminho muitos-para-muitos e quebra "creator:creator_profiles(...)" em content (PGRST201).
+select tests.su();
+select tests.ok('S65 nenhuma tabela-ponte content↔creator_profiles na chave primária',
+  not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.connamespace = 'public'::regnamespace
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f'
+                  and f.confrelid = 'public.content'::regclass and f.conkey <@ pk.conkey)
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f'
+                  and f.confrelid = 'public.creator_profiles'::regclass and f.conkey <@ pk.conkey)));
+select tests.ok('S65 limpeza de contadores sem execução por clientes',
+  not has_function_privilege('anon', 'public.recipe_action_counters_creator_cleanup()', 'execute')
+  and not has_function_privilege('authenticated', 'public.recipe_action_counters_creator_cleanup()', 'execute'));
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
