@@ -62,7 +62,7 @@ mobile/ (Expo SDK 54, EAS)                 web (Next.js na Vercel, sem mudança 
 | `/shop`, `/cart`, `/checkout`, `/orders`, `/profile/plan`, `/personalities/<slug>/produtos` | 307 para a aba Hero (middleware) | compra e assinatura simuladas: Apple 2.2 (app de demonstração) e 3.1.1 (desbloqueio de conteúdo digital fora da compra no app) |
 | Aba Comprar, aba Produtos do Explorar, biblioteca Produtos do herói, cards de produto, produtos relacionados, oferta da lista de compras, linhas Plano e Pedidos do Perfil | ocultos (`native:hidden` / filtro no servidor) | idem; a trava de verdade é a rota |
 | CTA "ver planos" do conteúdo bloqueado | oculto; fica o aviso de conteúdo do plano | Apple 3.1.1: nada de caminho de compra fora do IAP |
-| Banner e selos "Demonstração" (`DemoBanner`, `DemoBadge`) | ocultos | Apple 2.2 |
+| Selos "Demonstração" (`DemoBadge`) | ocultos (o aviso de demonstração do topo e dos rodapés saiu também da web em 30/10/2026) | Apple 2.2 |
 | Acesso rápido às contas demo (inclui admin), em qualquer tela | oculto, e a ação recusa pedido vindo do app | Apple 2.2; o revisor recebe credenciais |
 | Itens de produto em listas e favoritos | célula inteira oculta (`data-kind="product"`) | idem |
 

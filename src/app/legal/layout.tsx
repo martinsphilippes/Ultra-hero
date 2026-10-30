@@ -6,12 +6,11 @@ import { LegalLinks } from "@/components/legal/LegalLinks";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo } from "@/components/layout/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { Badge } from "@/components/ui/badge";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 
 // Casca pública e enxuta dos documentos legais (sem login): marca, tema/idioma, leitura em largura de prosa.
 export default async function LegalLayout({ children }: { children: ReactNode }) {
-  const [cookieStore, t, tn] = await Promise.all([cookies(), getTranslations("common"), getTranslations("nav.tabs")]);
+  const [cookieStore, tn] = await Promise.all([cookies(), getTranslations("nav.tabs")]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
 
@@ -40,10 +39,6 @@ export default async function LegalLayout({ children }: { children: ReactNode })
       <footer className="border-t border-border safe-bottom">
         <div className="mx-auto flex w-full max-w-prose flex-col gap-2 px-gutter py-6">
           <LegalLinks />
-          <p className="flex flex-wrap items-center gap-2 native:hidden">
-            <Badge variant="demo">{t("demo.tag")}</Badge>
-            <span className="type-caption text-fg-muted">{t("demo.banner")}</span>
-          </p>
         </div>
       </footer>
     </div>

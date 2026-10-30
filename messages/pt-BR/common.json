@@ -56,8 +56,7 @@
   },
   "demo": {
     "banner": "Ambiente de demonstração: nenhum pagamento, entrega ou cobrança real.",
-    "tag": "Demonstração",
-    "dismiss": "Dispensar aviso de demonstração"
+    "tag": "Demonstração"
   },
   "languages": {
     "label": "Idioma",

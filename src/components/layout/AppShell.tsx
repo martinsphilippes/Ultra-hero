@@ -8,16 +8,15 @@ import { PushRegistrar } from "@/components/push/PushRegistrar";
 import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
 import { getNativeApp } from "@/lib/native-app/server";
-import { DEMO_BANNER_COOKIE, resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
+import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import { BottomNav, TopNavLinks } from "./AppNav";
 import { AppearanceMenu } from "./AppearanceMenu";
-import { DemoBanner } from "./DemoBanner";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 
-// Casca do consumidor: banner de demo, barra superior (md+), conteúdo com links legais no fim e barra inferior (mobile).
+// Casca do consumidor: barra superior (md+), conteúdo com links legais no fim e barra inferior (mobile).
 export async function AppShell({ children }: { children: ReactNode }) {
   const [session, cookieStore, t, ta, nativeApp] = await Promise.all([
     getSessionSummary(),
@@ -28,14 +27,10 @@ export async function AppShell({ children }: { children: ReactNode }) {
   ]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
-  const demoDismissed = cookieStore.get(DEMO_BANNER_COOKIE)?.value === "1";
 
   return (
     <div className="flex min-h-dvh flex-col">
       {/* Impressão (receitas): só o conteúdo da página; a casca do app fica de fora */}
-      <div className="print:hidden">
-        <DemoBanner initiallyDismissed={demoDismissed} />
-      </div>
 
       <header className="uh-header uh-chrome sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-4 px-gutter">

@@ -287,11 +287,6 @@
                 "purpose": "Remembers the theme you chose (light, dark or system).",
                 "duration": "1 year"
               },
-              "demo": {
-                "name": "<code>uh-demo-dismissed</code>",
-                "purpose": "Remembers that you dismissed the notice shown at the top of the website.",
-                "duration": "24 hours"
-              },
               "destination": {
                 "name": "<code>uh-dest</code>",
                 "purpose": "Remembers the fictional destination chosen in the website’s test cart.",

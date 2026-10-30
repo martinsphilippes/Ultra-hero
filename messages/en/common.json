@@ -56,8 +56,7 @@
   },
   "demo": {
     "banner": "Demo environment: no real payments, deliveries or charges.",
-    "tag": "Demo",
-    "dismiss": "Dismiss demo notice"
+    "tag": "Demo"
   },
   "languages": {
     "label": "Language",
