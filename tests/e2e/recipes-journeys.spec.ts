@@ -208,7 +208,7 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     await expect(free).toHaveURL(new RegExp(`/personalities/${CHEF_SLUG}$`));
     await expect(free.getByRole("heading", { level: 1 })).toContainText("Érick Jacquin");
     // a receita nova está entre as assinadas pelo chef
-    await free.goto(`/personalities/${CHEF_SLUG}/receitas?q=${encodeURIComponent(title)}`);
+    await free.goto(`/personalities/${CHEF_SLUG}/alimentacao?q=${encodeURIComponent(title)}`);
     await expect(free.getByTestId("recipe-card").filter({ hasText: title })).toHaveCount(1);
 
     await free.goto(publicPath);

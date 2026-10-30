@@ -174,7 +174,8 @@
     "request_changed": "O herói editou o pedido depois que a fila abriu. Recarregue a página e leia o texto novo antes de decidir.",
     "review_flow_unavailable": "Este tipo não tem “Enviar para revisão” no portal do herói. A revisão só pode ser ligada para receitas.",
     "hero_categories_max_2": "Cada herói pode ter no máximo 2 categorias.",
-    "hero_categories_duplicate": "Escolha categorias diferentes."
+    "hero_categories_duplicate": "Escolha categorias diferentes.",
+    "library_tab_label_pt_required": "Para traduzir o nome, preencha também o nome em pt-BR."
   },
   "content": {
     "title": "Conteúdos",
@@ -842,6 +843,56 @@
       "inactive": "inativa",
       "save": "Salvar categorias",
       "saved": "Categorias do herói salvas"
+    },
+    "tabs": {
+      "title": "Atalhos da página do herói",
+      "description": "Por categoria: nome, ícone, ordem e se aparece. O conteúdo de cada atalho é fixo; a categoria principal do herói define o que vale, e cada herói pode ter exceções na tela dele.",
+      "unavailable": "Os atalhos configuráveis ainda não estão disponíveis neste banco (aplique a migração 0050). As páginas dos heróis usam os atalhos padrão.",
+      "noCategories": "Crie uma categoria para configurar os atalhos.",
+      "categoryPick": "Categoria",
+      "inactiveCategory": "inativa",
+      "listLabel": "Atalhos na ordem da página do herói",
+      "rules": "Atalho sem itens não aparece (Alimentação aparece sempre). O endereço do atalho não muda quando o nome muda.",
+      "source": "Conteúdo: {source}",
+      "hidden": "Oculto",
+      "labelPt": "Nome (pt-BR)",
+      "labelEn": "Nome (inglês)",
+      "labelEs": "Nome (espanhol)",
+      "labelHintDefault": "Vazio: “{label}”.",
+      "labelHintInherit": "Vazio: herda “{label}”.",
+      "labelFallback": "Vazio: usa o nome em português.",
+      "icon": "Ícone",
+      "visible": "Visível",
+      "duplicate": "Atenção: atalhos visíveis com o mesmo nome ({labels}).",
+      "save": "Salvar atalhos",
+      "saved": "Atalhos salvos",
+      "heroTitle": "Atalhos deste herói",
+      "heroDescription": "O que este herói mostra vem da categoria principal. Mude aqui só o que for exceção.",
+      "inheritedFrom": "Herdado da categoria {category}.",
+      "noCategory": "Sem categoria: valem os atalhos padrão do app.",
+      "inherited": "Herdado",
+      "overridden": "Exceção",
+      "reset": "Voltar ao padrão da categoria",
+      "resetAll": "Voltar tudo ao padrão da categoria",
+      "resetDone": "Exceção removida",
+      "icons": {
+        "sunrise": "Nascer do sol",
+        "camera": "Câmera",
+        "apple": "Maçã",
+        "salad": "Salada",
+        "chef-hat": "Chapéu de chef",
+        "utensils": "Talheres",
+        "dumbbell": "Haltere",
+        "trophy": "Troféu",
+        "layers": "Camadas",
+        "shopping-bag": "Sacola",
+        "music": "Música",
+        "mic": "Microfone",
+        "palette": "Paleta",
+        "star": "Estrela",
+        "heart": "Coração",
+        "book-open": "Livro"
+      }
     }
   }
 }

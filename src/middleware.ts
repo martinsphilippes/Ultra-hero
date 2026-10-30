@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isLibraryKey } from "@/lib/catalog/creator-libraries";
+import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
@@ -15,7 +15,8 @@ const HERO_ROUTE = /^\/personalities\/([^/]+)(?:\/([^/]+))?$/;
 
 // As páginas ficam dentro de loading.tsx (streaming), então redirect() e notFound() chegariam ao
 // navegador com status 200. Aqui, antes do streaming, as abas antigas (?tab=) viram 308 para a
-// biblioteca e um segmento fora de LIBRARY_KEYS vira o 404 global de verdade.
+// biblioteca, os segmentos antigos (rotina, receitas; 0050) viram 308 para os novos (dia-a-dia,
+// alimentacao) mantendo a query, e um segmento fora de LIBRARY_KEYS vira o 404 global de verdade.
 function heroHubResponse(request: NextRequest): NextResponse | null {
   const { pathname, searchParams } = request.nextUrl;
   const match = HERO_ROUTE.exec(pathname);
@@ -23,6 +24,12 @@ function heroHubResponse(request: NextRequest): NextResponse | null {
   const [, slug, library] = match;
   if (library !== undefined) {
     if (isLibraryKey(library)) return null;
+    const legacy = legacyLibraryTarget(library);
+    if (legacy) {
+      const target = request.nextUrl.clone();
+      target.pathname = `/personalities/${slug}/${legacy}`;
+      return NextResponse.redirect(target, 308);
+    }
     return NextResponse.rewrite(new URL("/_not-found", request.url), { status: 404 });
   }
   const tab = searchParams.get("tab");

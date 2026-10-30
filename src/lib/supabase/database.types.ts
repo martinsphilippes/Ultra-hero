@@ -385,6 +385,26 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"creator_library_overrides": {
+                  Row: {
+                    "created_at": string,"creator_id": string,"icon": string | null,"is_visible": boolean | null,"label": Json | null,"sort_order": number | null,"source_key": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"creator_id": string,"icon"?: string | null,"is_visible"?: boolean | null,"label"?: Json | null,"sort_order"?: number | null,"source_key": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"creator_id"?: string,"icon"?: string | null,"is_visible"?: boolean | null,"label"?: Json | null,"sort_order"?: number | null,"source_key"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_library_overrides_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"creator_products": {
                   Row: {
                     "created_at": string,"created_by": string | null,"creator_id": string,"id": string,"note": string | null,"product_id": string,"sort_order": number,"status": Database["public"]['Enums']["link_status"],"updated_at": string,"validated_at": string | null,"validated_by": string | null
@@ -618,6 +638,26 @@ isOneToOne: false
                   }
                   Relationships: [
 
+                  ]
+                },"hero_library_tabs": {
+                  Row: {
+                    "category_id": string,"created_at": string,"icon": string | null,"is_visible": boolean,"label": Json | null,"sort_order": number,"source_key": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_id": string,"created_at"?: string,"icon"?: string | null,"is_visible"?: boolean,"label"?: Json | null,"sort_order"?: number,"source_key": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "category_id"?: string,"created_at"?: string,"icon"?: string | null,"is_visible"?: boolean,"label"?: Json | null,"sort_order"?: number,"source_key"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hero_library_tabs_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "hero_categories"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"hero_cover_uploads": {
                   Row: {
@@ -1979,6 +2019,9 @@ isOneToOne: false
 "admin_run_retention":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"admin_set_category_library_tabs":
+{ Args: { "p_category": string,"p_rows": Json }; Returns: undefined
+                           },
 "admin_set_content_status":
 { Args: { "p_content": string,"p_justification"?: string,"p_status": Database["public"]['Enums']["content_status"] }; Returns: undefined
                            } |
@@ -1986,6 +2029,9 @@ isOneToOne: false
                            },
 "admin_set_creator_credentials":
 { Args: { "p_approved": boolean,"p_creator": string,"p_expected_text"?: string,"p_reason": string }; Returns: undefined
+                           },
+"admin_set_creator_library_overrides":
+{ Args: { "p_creator": string,"p_rows": Json }; Returns: undefined
                            },
 "admin_set_creator_product":
 { Args: { "p_creator": string,"p_note"?: string,"p_product": string,"p_sort"?: number,"p_status": Database["public"]['Enums']["link_status"] }; Returns: string

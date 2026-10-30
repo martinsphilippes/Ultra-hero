@@ -5337,5 +5337,170 @@ delete from public.creator_category_links where creator_id = public.seed_uuid('c
 insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:tiago'), public.seed_uuid('herocat:esporte'), 1);
 delete from public.admin_audit where resource_type in ('hero_category', 'hero_category_link');
 
+-- ================================================================ S61 · Atalhos da página do herói (0050)
+-- hero_library_tabs (por categoria) e creator_library_overrides (exceção por herói). Fontes fixas
+-- (7 chaves), ícone de lista fixa, rótulo com pt-BR. Leitura pública: categoria ativa / herói ativo.
+-- Escrita só do admin (RLS + RPCs security invoker que só gravam o que mudou), auditada em admin_audit.
+select tests.su();
+select tests.ok('S61 sem seed: os padrões vivem no código (nenhuma linha nas 2 tabelas)',
+  (select count(*) from public.hero_library_tabs) = 0 and (select count(*) from public.creator_library_overrides) = 0);
+select tests.ok('S61 RLS ligada nas 2 tabelas, visitante só com SELECT; chaves em cascata',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.hero_library_tabs'::regclass, 'public.creator_library_overrides'::regclass))
+  and has_table_privilege('anon', 'public.hero_library_tabs', 'select')
+  and not has_table_privilege('anon', 'public.hero_library_tabs', 'insert')
+  and not has_table_privilege('anon', 'public.creator_library_overrides', 'update')
+  and not has_table_privilege('anon', 'public.creator_library_overrides', 'delete')
+  and (select confdeltype from pg_constraint where conrelid = 'public.hero_library_tabs'::regclass and contype = 'f') = 'c'
+  and (select confdeltype from pg_constraint where conrelid = 'public.creator_library_overrides'::regclass and contype = 'f') = 'c');
+select tests.ok('S61 políticas: leitura pública só de SELECT; escrita só para authenticated com (select is_admin())',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in ('hero_library_tabs', 'creator_library_overrides') and 'anon' = any (roles) and cmd <> 'SELECT') = 0
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename in ('hero_library_tabs', 'creator_library_overrides') and cmd = 'ALL'
+         and roles = '{authenticated}'::name[] and qual like '%is_admin()%' and with_check like '%is_admin()%') = 2);
+
+-- admin configura Esporte (7 atalhos, Programas → "Planos") e Música (1 atalho); exceção para Tiago e Bruna (suspensa)
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_category_library_tabs(public.seed_uuid('herocat:esporte'), $j$[
+  {"source_key":"programas","label":{"pt-BR":"Planos","en":"Plans"},"icon":"trophy","sort_order":10,"is_visible":true},
+  {"source_key":"dia-a-dia","label":null,"icon":null,"sort_order":20,"is_visible":true},
+  {"source_key":"nutricao","label":null,"icon":null,"sort_order":30,"is_visible":false},
+  {"source_key":"alimentacao","label":null,"icon":null,"sort_order":40,"is_visible":true},
+  {"source_key":"treinos","label":null,"icon":null,"sort_order":50,"is_visible":true},
+  {"source_key":"gastronomia","label":null,"icon":null,"sort_order":60,"is_visible":true},
+  {"source_key":"produtos","label":null,"icon":null,"sort_order":70,"is_visible":true}]$j$::jsonb);
+select public.admin_set_category_library_tabs(public.seed_uuid('herocat:musica'), '[{"source_key":"programas","label":{"pt-BR":"Turnês"},"icon":"music","sort_order":10,"is_visible":true}]');
+select public.admin_set_creator_library_overrides(public.seed_uuid('creator:tiago'), $j$[
+  {"source_key":"programas","label":{"pt-BR":"Treinos do Neymar"},"icon":null,"sort_order":null,"is_visible":null},
+  {"source_key":"produtos","label":null,"icon":null,"sort_order":null,"is_visible":null}]$j$::jsonb);
+insert into public.creator_library_overrides (creator_id, source_key, is_visible) values (public.seed_uuid('creator:bruna'), 'produtos', false);
+select tests.ok('S61 admin grava os 7 atalhos de Esporte na ordem, 1 de Música e a exceção (linha sem campo nenhum fica de fora)',
+  (select string_agg(source_key, ',' order by sort_order) from public.hero_library_tabs where category_id = public.seed_uuid('herocat:esporte'))
+    = 'programas,dia-a-dia,nutricao,alimentacao,treinos,gastronomia,produtos'
+  and (select label ->> 'en' from public.hero_library_tabs where category_id = public.seed_uuid('herocat:esporte') and source_key = 'programas') = 'Plans'
+  and (select count(*) from public.hero_library_tabs where category_id = public.seed_uuid('herocat:musica')) = 1
+  and (select string_agg(source_key, ',') from public.creator_library_overrides where creator_id = public.seed_uuid('creator:tiago')) = 'programas');
+
+-- repetir a mesma configuração não grava nada; mudar um campo audita só aquela linha; tirar da lista apaga
+select tests.su();
+create temp table t_s61_audit as select count(*) as n from public.admin_audit where resource_type in ('hero_library_tab', 'creator_library_override');
+grant select on t_s61_audit to authenticated;
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_category_library_tabs(public.seed_uuid('herocat:musica'), '[{"source_key":"programas","label":{"pt-BR":"Turnês"},"icon":"music","sort_order":10,"is_visible":true}]');
+select public.admin_set_creator_library_overrides(public.seed_uuid('creator:tiago'), '[{"source_key":"programas","label":{"pt-BR":"Treinos do Neymar"}}]');
+select tests.su();
+select tests.ok('S61 repetir a mesma configuração não gera auditoria',
+  (select count(*) from public.admin_audit where resource_type in ('hero_library_tab', 'creator_library_override')) = (select n from t_s61_audit));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_set_category_library_tabs(public.seed_uuid('herocat:musica'), '[{"source_key":"programas","label":{"pt-BR":"Turnês"},"icon":"mic","sort_order":10,"is_visible":true}]');
+select public.admin_set_category_library_tabs(public.seed_uuid('herocat:musica'), '[]');
+select tests.su();
+select tests.ok('S61 auditoria de Música: criar, mudar o ícone e apagar (lista vazia = volta ao padrão)',
+  (select string_agg(action, ',' order by id) from public.admin_audit where resource_type = 'hero_library_tab' and resource_id = public.seed_uuid('herocat:musica')::text)
+    = 'hero_library_tabs.insert,hero_library_tabs.update,hero_library_tabs.delete'
+  and (select after_data ->> 'icon' from public.admin_audit where resource_type = 'hero_library_tab' and action = 'hero_library_tabs.update') = 'mic'
+  and not exists (select 1 from public.hero_library_tabs where category_id = public.seed_uuid('herocat:musica')));
+select tests.ok('S61 auditoria de Esporte (7 inserts) e das exceções (Tiago e Bruna), sempre do admin',
+  (select count(*) from public.admin_audit where resource_type = 'hero_library_tab' and resource_id = public.seed_uuid('herocat:esporte')::text and action = 'hero_library_tabs.insert') = 7
+  and (select string_agg(resource_id || ':' || action, ',' order by id) from public.admin_audit where resource_type = 'creator_library_override')
+    = public.seed_uuid('creator:tiago')::text || ':creator_library_overrides.insert,' || public.seed_uuid('creator:bruna')::text || ':creator_library_overrides.insert'
+  and (select bool_and(actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin') from public.admin_audit where resource_type in ('hero_library_tab', 'creator_library_override')));
+
+-- validação: fonte fixa, ícone da lista, pt-BR obrigatório, exceção não vazia, fonte repetida
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S61 fonte fora das 7 é recusada (rotina virou dia-a-dia)',
+  $q$insert into public.hero_library_tabs (category_id, source_key) values (public.seed_uuid('herocat:musica'), 'rotina')$q$, 'hero_library_tabs_source_check');
+select tests.expect_error('S61 ícone fora da lista é recusado',
+  $q$insert into public.hero_library_tabs (category_id, source_key, icon) values (public.seed_uuid('herocat:musica'), 'produtos', 'rocket')$q$, 'hero_library_tabs_icon_check');
+select tests.expect_error('S61 rótulo sem pt-BR é recusado',
+  $q$insert into public.hero_library_tabs (category_id, source_key, label) values (public.seed_uuid('herocat:musica'), 'produtos', '{"en":"Shop"}')$q$, 'hero_library_tabs_label_check');
+select tests.expect_error('S61 rótulo com mais de 40 letras é recusado',
+  $q$insert into public.creator_library_overrides (creator_id, source_key, label) values (public.seed_uuid('creator:lia'), 'produtos', jsonb_build_object('pt-BR', repeat('x', 41)))$q$, 'creator_library_overrides_label_check');
+select tests.expect_error('S61 exceção sem nenhum campo é recusada',
+  $q$insert into public.creator_library_overrides (creator_id, source_key) values (public.seed_uuid('creator:lia'), 'produtos')$q$, 'creator_library_overrides_not_empty');
+select tests.expect_error('S61 fonte repetida na mesma troca é recusada',
+  $q$select public.admin_set_category_library_tabs(public.seed_uuid('herocat:musica'), '[{"source_key":"produtos"},{"source_key":"produtos"}]')$q$, 'invalid_input');
+select tests.expect_error('S61 categoria inexistente',
+  $q$select public.admin_set_category_library_tabs('61000000-0000-4000-8000-000000000099', '[]')$q$, 'not_found');
+
+-- leitura: Música desativada com atalho; visitante não vê atalho de categoria inativa nem exceção de herói suspenso
+select public.admin_set_category_library_tabs(public.seed_uuid('herocat:musica'), '[{"source_key":"produtos","label":null,"icon":"star","sort_order":10,"is_visible":true}]');
+update public.hero_categories set is_active = false where slug = 'musica';
+select tests.anon();
+select tests.ok('S61 visitante lê os atalhos de categoria ativa (Esporte) e não os de Música (inativa)',
+  (select count(*) from public.hero_library_tabs) = 7
+  and not exists (select 1 from public.hero_library_tabs where category_id = public.seed_uuid('herocat:musica')));
+select tests.ok('S61 visitante lê a exceção de herói ativo e não a de herói suspenso',
+  (select count(*) from public.creator_library_overrides) = 1
+  and (select label ->> 'pt-BR' from public.creator_library_overrides where creator_id = public.seed_uuid('creator:tiago')) = 'Treinos do Neymar');
+select tests.ok('S61 visitante lê a categoria principal do herói com os atalhos embutidos (mesma leitura do app)',
+  (select count(*) from public.creator_category_links l join public.hero_library_tabs t on t.category_id = l.category_id
+     where l.creator_id = public.seed_uuid('creator:tiago') and l.position = 1) = 7);
+select tests.expect_error('S61 visitante não cria atalho', $q$insert into public.hero_library_tabs (category_id, source_key) values (public.seed_uuid('herocat:esporte'), 'produtos')$q$, 'permission denied');
+select tests.expect_error('S61 visitante não altera exceção', $q$update public.creator_library_overrides set is_visible = false$q$, 'permission denied');
+select tests.expect_error('S61 visitante não executa admin_set_category_library_tabs',
+  $q$select public.admin_set_category_library_tabs(public.seed_uuid('herocat:esporte'), '[]')$q$, 'permission denied');
+select tests.expect_error('S61 visitante não executa admin_set_creator_library_overrides',
+  $q$select public.admin_set_creator_library_overrides(public.seed_uuid('creator:tiago'), '[]')$q$, 'permission denied');
+
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S61 consumidor lê o mesmo que o visitante', (select count(*) from public.hero_library_tabs) = 7 and (select count(*) from public.creator_library_overrides) = 1);
+select tests.expect_error('S61 consumidor não cria atalho (RLS)',
+  $q$insert into public.hero_library_tabs (category_id, source_key) values (public.seed_uuid('herocat:gastronomia'), 'produtos')$q$, 'row-level security');
+select tests.expect_error('S61 consumidor não cria exceção (RLS)',
+  $q$insert into public.creator_library_overrides (creator_id, source_key, is_visible) values (public.seed_uuid('creator:lia'), 'produtos', false)$q$, 'row-level security');
+select tests.expect_error('S61 consumidor não troca os atalhos da categoria (forbidden)',
+  $q$select public.admin_set_category_library_tabs(public.seed_uuid('herocat:esporte'), '[]')$q$, 'forbidden');
+select tests.expect_error('S61 consumidor não troca a exceção do herói (forbidden)',
+  $q$select public.admin_set_creator_library_overrides(public.seed_uuid('creator:tiago'), '[]')$q$, 'forbidden');
+update public.hero_library_tabs set is_visible = false;
+delete from public.creator_library_overrides;
+select tests.su();
+select tests.ok('S61 update/delete de quem não é admin não afeta nada',
+  (select count(*) from public.hero_library_tabs where is_visible) = 7
+  and (select count(*) from public.creator_library_overrides) = 2);
+
+-- cascata: excluir a categoria leva os atalhos dela (auditado); o herói continua com a exceção
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S61 admin lê tudo (inclusive Música inativa e a exceção da suspensa)',
+  (select count(*) from public.hero_library_tabs) = 8 and (select count(*) from public.creator_library_overrides) = 2);
+delete from public.hero_categories where slug = 'musica';
+select public.admin_set_creator_library_overrides(public.seed_uuid('creator:bruna'), '[]');
+select tests.su();
+select tests.ok('S61 excluir a categoria leva os atalhos (cascata auditada); lista vazia apaga a exceção',
+  not exists (select 1 from public.hero_library_tabs where category_id = public.seed_uuid('herocat:musica'))
+  and (select count(*) from public.admin_audit where resource_type = 'hero_library_tab' and resource_id = public.seed_uuid('herocat:musica')::text and action = 'hero_library_tabs.delete') = 2
+  and not exists (select 1 from public.creator_library_overrides where creator_id = public.seed_uuid('creator:bruna')));
+select tests.ok('S61 escrita fora do admin (superusuário) não gera auditoria',
+  (select count(*) from public.admin_audit where resource_type in ('hero_library_tab', 'creator_library_override') and actor_id is distinct from '10000000-0000-4000-8000-000000000001') = 0);
+
+select tests.ok('S61 gatilho de auditoria: security definer, search_path fixo, sem execute para anon nem authenticated',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.hero_library_tabs_audit()'::regprocedure)
+  and not has_function_privilege('anon', 'public.hero_library_tabs_audit()', 'execute')
+  and not has_function_privilege('authenticated', 'public.hero_library_tabs_audit()', 'execute'));
+select tests.ok('S61 RPCs: security invoker, search_path fixo, sem execute para anon',
+  (select bool_and(not p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')) from pg_proc p
+     where p.oid in ('public.admin_set_category_library_tabs(uuid, jsonb)'::regprocedure, 'public.admin_set_creator_library_overrides(uuid, jsonb)'::regprocedure))
+  and not has_function_privilege('anon', 'public.admin_set_category_library_tabs(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.admin_set_creator_library_overrides(uuid, jsonb)', 'execute'));
+select tests.ok('S61 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- reaplicar a 0050 não mexe na configuração gravada
+\ir ../migrations/0050_hero_library_tabs.sql
+select tests.ok('S61 reaplicar a 0050 mantém a configuração',
+  (select count(*) from public.hero_library_tabs) = 7 and (select count(*) from public.creator_library_overrides) = 1);
+
+-- limpeza: Música volta como no seed (com os vínculos da Anitta); sem atalhos nem exceções; sem trilha
+insert into public.hero_categories (id, slug, name, sort_order) values
+  (public.seed_uuid('herocat:musica'), 'musica', '{"pt-BR":"Música","en":"Music","es":"Música"}', 20);
+insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:lia'), public.seed_uuid('herocat:musica'), 1);
+delete from public.hero_library_tabs;
+delete from public.creator_library_overrides;
+delete from public.admin_audit where resource_type in ('hero_library_tab', 'creator_library_override', 'hero_category', 'hero_category_link');
+drop table t_s61_audit;
+select tests.ok('S61 estado restaurado',
+  (select count(*) from public.hero_categories where is_active) = 4
+  and (select count(*) from public.creator_category_links) = 7
+  and (select count(*) from public.hero_library_tabs) = 0);
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

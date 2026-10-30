@@ -43,7 +43,16 @@ contratações por profissional.
 1. Atalhos configuráveis (Dia a dia, Alimentação) + categorias da aba Hero + editor no admin.
    Feito: categorias da aba Hero (0049: hero_categories com id/slug estáveis e sort_order,
    creator_category_links com posição 1|2; /admin/hero-categories; campo Categorias no herói).
-   Os atalhos por categoria (hero_library_tabs) virão ligados a hero_categories.id.
+   Feito: atalhos configuráveis (0050). Fontes fixas no código (dia-a-dia, nutricao, alimentacao,
+   treinos, gastronomia, programas, produtos = segmento da URL); hero_library_tabs (por categoria:
+   rótulo pt-BR/en/es, ícone de lista fixa, ordem, visível) e creator_library_overrides (exceção por
+   herói, campo nulo = herda), RLS de leitura pública e escrita só do admin, auditoria, RPCs atômicas.
+   Vale a categoria principal (posição 1) do herói; a exceção vence; sem categoria/config: padrões.
+   "Rotina" → Dia a dia e "Receitas" → Alimentação (/rotina e /receitas viram 308). Editor em
+   /admin/hero-categories (Atalhos por categoria) e "Atalhos deste herói" em /admin/creators/[id].
+   Sem seed: Esporte com "Programas" → "Treinos" daria dois atalhos "Treinos" nos heróis com vídeos
+   de treino (Neymar, João Fonseca); o editor avisa nomes repetidos. Decidir no admin (ex.: renomear
+   a fonte treinos para "Vídeos de treino" junto).
 2. Alimentação completa (chef que assina, comprar pronto, lista de compras).
 3. Profissionais e serviços (conta, perfil, serviços, contratação simulada, caixa de pedidos).
 4. Programas com produto e profissional ligados.

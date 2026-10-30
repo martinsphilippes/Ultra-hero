@@ -23,7 +23,7 @@ type Props = {
 // valem para elas; com busca ou filtro ativo, as indicadas saem e um aviso explica.
 export async function ChefRecipes({ recipes, hero, params }: Props) {
   const [t, tl] = await Promise.all([getTranslations("recipes.chefProfile"), getTranslations("recipes.library")]);
-  const base = hubHref(hero.slug, "receitas");
+  const base = hubHref(hero.slug, "alimentacao");
   const own = recipes.filter((r) => r.creator?.slug === hero.slug);
   const endorsedIds = recipes.filter((r) => r.creator?.slug !== hero.slug).map((r) => r.id);
   const criteria = own.length > 0 && hasRecipeCriteria(params);

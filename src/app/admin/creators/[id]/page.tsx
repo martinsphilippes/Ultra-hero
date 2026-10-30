@@ -8,10 +8,13 @@ import { CreatorForm } from "@/components/admin-ops/CreatorForm";
 import { CreatorProductActions } from "@/components/admin-ops/CreatorProductActions";
 import { CreatorCoverRemoveButton, CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
 import { HeroCategoriesField } from "@/components/admin-content/HeroCategoriesField";
+import { LibraryTabsEditor } from "@/components/admin-content/LibraryTabsEditor";
 import { Badge, Button, PageHeader } from "@/components/ui";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { isStoredCoverUrl } from "@/lib/hero-cover/paths";
 import { localizedLabel } from "@/lib/catalog/queries";
+import { toCategoryTabRow, toOverrideRow } from "@/lib/heroes/library-tab-queries";
+import { primaryCategoryId, resolveLibraryConfig, toEditorRows, type LibraryTabEditorRow } from "@/lib/heroes/library-tabs";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = Promise<{ id: string }>;
@@ -24,6 +27,36 @@ const ALLOCATION_STATUSES = ["validated", "suspended", "rejected", "suggested"] 
 type AllocationStatus = (typeof ALLOCATION_STATUSES)[number];
 const allocationKey = (status: string | null): AllocationStatus | "none" => (ALLOCATION_STATUSES as readonly string[]).includes(status ?? "") ? (status as AllocationStatus) : "none";
 
+type Client = Awaited<ReturnType<typeof createClient>>;
+
+// Atalhos do herói (0050): configuração herdada da categoria principal ativa + exceção do herói.
+// null = 0050 ausente no banco (a seção avisa).
+async function loadHeroTabs(
+  supabase: Client,
+  creatorId: string,
+  categories: { id: string; name: unknown; is_active: boolean }[],
+  links: { category_id: string; position: number }[],
+  locale: string,
+): Promise<{ rows: LibraryTabEditorRow[]; inheritedFrom: string | null } | null> {
+  const active = new Map(categories.filter((c) => c.is_active).map((c) => [c.id, c]));
+  const categoryId = primaryCategoryId(links.filter((l) => active.has(l.category_id)).map((l) => ({ categoryId: l.category_id, position: l.position })));
+  const [defaults, tabsRes, overridesRes] = await Promise.all([
+    getTranslations({ locale: "pt-BR", namespace: "discover.personalities.libraries.labels" }),
+    categoryId
+      ? supabase.from("hero_library_tabs").select("source_key, label, icon, sort_order, is_visible").eq("category_id", categoryId)
+      : supabase.from("hero_library_tabs").select("source_key").limit(0),
+    supabase.from("creator_library_overrides").select("source_key, label, icon, sort_order, is_visible").eq("creator_id", creatorId),
+  ]);
+  if (tabsRes.error || overridesRes.error) return null;
+  const categoryRows = categoryId ? ((tabsRes.data ?? []) as Parameters<typeof toCategoryTabRow>[1][]).map((row) => toCategoryTabRow(categoryId, row)) : [];
+  const inherited = new Map(resolveLibraryConfig({ categoryId, categoryRows }).map((tab) => [tab.key, tab]));
+  const effective = resolveLibraryConfig({ categoryId, categoryRows, overrideRows: (overridesRes.data ?? []).map(toOverrideRow) });
+  return {
+    rows: toEditorRows(effective, (key) => inherited.get(key)?.label?.["pt-BR"] ?? defaults(key), "hero"),
+    inheritedFrom: categoryId ? localizedLabel(active.get(categoryId)?.name, locale) : null,
+  };
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("adminOps.creators");
   return { title: t("editTitle") };
@@ -34,13 +67,14 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();
-  const [t, tc, ts, tn, tp, thc, locale, { data: creator, error }, { data: privateRow }, productsRes, allocationsRes, categoriesRes, categoryLinksRes] = await Promise.all([
+  const [t, tc, ts, tn, tp, thc, tht, locale,{ data: creator, error }, { data: privateRow }, productsRes, allocationsRes, categoriesRes, categoryLinksRes] = await Promise.all([
     getTranslations("adminOps.creators"),
     getTranslations("adminOps.common"),
     getTranslations("adminCommon.status"),
     getTranslations("nav"),
     getTranslations("adminOps.creators.products"),
     getTranslations("adminContent.heroCategories.field"),
+    getTranslations("adminContent.heroCategories.tabs"),
     getLocale(),
     supabase.from("creator_profiles").select("*").eq("id", id).maybeSingle(),
     // Documentação privada: RLS só devolve para admin; nunca vai à página pública.
@@ -52,6 +86,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
     supabase.from("hero_categories").select("id, name, is_active").order("sort_order").order("slug"),
     supabase.from("creator_category_links").select("category_id, position").eq("creator_id", id).order("position"),
   ]);
+  const tabsSection = await loadHeroTabs(supabase, id, categoriesRes.data ?? [], categoryLinksRes.data ?? [], locale);
   if (error) throw new Error(error.message);
   if (!creator) notFound();
   const rightsVariant = creator.rights_status === "authorized" ? "success" : creator.rights_status === "pending" ? "info" : "demo";
@@ -166,6 +201,23 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
             options={(categoriesRes.data ?? []).map((c) => ({ id: c.id, label: localizedLabel(c.name, locale), is_active: c.is_active }))}
             initial={(categoryLinksRes.data ?? []).map((l) => l.category_id)}
           />
+        )}
+      </section>
+
+      {/* Atalhos da página do herói (0050): herdados da categoria principal, com exceção por herói. */}
+      <section aria-labelledby="hero-tabs-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
+        <div className="flex flex-col gap-1">
+          <h2 id="hero-tabs-title" className="type-h2 text-fg">
+            {tht("heroTitle")}
+          </h2>
+          <p className="type-body-sm text-fg-muted">{tht("heroDescription")}</p>
+        </div>
+        {!tabsSection ? (
+          <p role="status" data-testid="hero-tabs-unavailable" className="rounded-xl border border-dashed border-warning/40 bg-warning-soft/40 p-4 text-sm text-fg">
+            {tht("unavailable")}
+          </p>
+        ) : (
+          <LibraryTabsEditor key={JSON.stringify(tabsSection.rows)} mode="hero" targetId={creator.id} rows={tabsSection.rows} inheritedFrom={tabsSection.inheritedFrom} />
         )}
       </section>
 

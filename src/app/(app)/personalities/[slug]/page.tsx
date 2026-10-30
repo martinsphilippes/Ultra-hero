@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 // Perfil do herói no formato do Instagram (RF-004): foto pequena, nome e números, bio em uma linha,
-// bibliotecas como destaques e a grade de posts 3 por linha. A nota de direitos (fictício, em
+// atalhos (configurados pelo admin por categoria, 0050) como destaques e a grade de posts 3 por linha. A nota de direitos (fictício, em
 // validação ou autorizado) fica discreta no fim. Cada biblioteca tem a sua própria página.
 export default async function PersonalityPage({ params, searchParams }: Props) {
   const [{ slug }, raw] = await Promise.all([params, searchParams]);
@@ -46,7 +46,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   const hub = await loadCreatorHub(creator);
   const hasError = hub.errors.contents || hub.errors.programs || hub.errors.products;
 
-  // Grade de posts: só o que o herói publicou (as receitas que ele indica ficam na biblioteca Receitas).
+  // Grade de posts: só o que o herói publicou (as receitas que ele indica ficam em Alimentação).
   const posts = hub.contents.filter((c) => c.creator?.slug === creator.slug);
   const statLabel = (key: "posts" | "programs" | "products", n: number) => t(`statLabels.${key}${n === 1 ? "One" : "Other"}`);
   const stats = [
@@ -94,7 +94,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
           {tl("title", { name: creator.name })}
         </h2>
         {hasError ? <InlineError /> : null}
-        {hub.libraries.length > 0 ? <LibraryHighlights slug={creator.slug} libraries={hub.libraries} /> : null}
+        {hub.tiles.length > 0 ? <LibraryHighlights slug={creator.slug} tiles={hub.tiles} /> : null}
       </section>
 
       <section aria-labelledby="hero-posts-title" className="flex flex-col gap-2">

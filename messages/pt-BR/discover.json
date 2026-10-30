@@ -181,18 +181,18 @@
       "libraryEmptyDescription": "Esta biblioteca de {name} ainda não tem itens.",
       "back": "Voltar para {name}",
       "labels": {
-        "rotina": "Rotina",
+        "dia-a-dia": "Dia a dia",
         "nutricao": "Nutrição",
-        "receitas": "Receitas",
+        "alimentacao": "Alimentação",
         "treinos": "Treinos",
         "gastronomia": "Gastronomia",
         "programas": "Programas",
         "produtos": "Produtos"
       },
       "descriptions": {
-        "rotina": "Hábitos, manhãs calmas e sono melhor com {name}.",
+        "dia-a-dia": "Posts rápidos e a rotina de {name}.",
         "nutricao": "Educação alimentar prática com {name}.",
-        "receitas": "Receitas de {name}, de qualquer pilar.",
+        "alimentacao": "Receitas de {name} e receitas que {name} indica.",
         "treinos": "Força, mobilidade e corrida com {name}.",
         "gastronomia": "Técnicas de base e marmitas com {name}.",
         "programas": "Coleções guiadas de {name} para seguir no seu ritmo.",

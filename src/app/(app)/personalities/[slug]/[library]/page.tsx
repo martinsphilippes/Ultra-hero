@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { ContentTile, ProductActionCard } from "@/components/catalog";
 import { CARD_GRID, TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
-import { LIBRARY_ICON } from "@/components/discover/personalities/LibraryList";
+import { LIBRARY_ICONS } from "@/components/discover/personalities/library-icons";
 import { ProgramShelf } from "@/components/programs/ProgramShelf";
 import { ChefRecipes } from "@/components/recipes/catalog/ChefRecipes";
 import { RecipeInviteBand } from "@/components/recipes/catalog/RecipeInviteBand";
@@ -25,12 +25,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!isLibraryKey(library)) return {};
   const [creator, t] = await Promise.all([loadCreator(slug), getTranslations("discover")]);
   if (!creator) return {};
-  return { title: t("meta.library", { library: t(`personalities.libraries.labels.${library}`), name: creator.name }), description: t(`personalities.libraries.descriptions.${library}`, { name: creator.name }) };
+  // rótulo configurado pelo admin (0050) ou o padrão; loadCreatorHub é memoizado com a página
+  const hub = await loadCreatorHub(creator);
+  const label = hub.tabs[library].text ?? t(`personalities.libraries.labels.${library}`);
+  return { title: t("meta.library", { library: label, name: creator.name }), description: t(`personalities.libraries.descriptions.${library}`, { name: creator.name }) };
 }
 
-// Uma biblioteca do herói (RF-004): grade de quadrados para conteúdos, catálogo para receitas,
+// Uma biblioteca do herói (RF-004): grade de quadrados para conteúdos, catálogo para Alimentação,
 // prateleiras para programas (uma por programa, etapas com rolagem lateral) e cards com ação para
-// produtos. Segmento fora de LIBRARY_KEYS é 404.
+// produtos. Segmento fora de LIBRARY_KEYS é 404 (os antigos rotina/receitas viram 308 no middleware).
+// Título e ícone seguem a configuração do admin (0050); atalho oculto continua acessível pela URL.
 export default async function LibraryPage({ params, searchParams }: Props) {
   const [{ slug, library }, raw] = await Promise.all([params, searchParams]);
   if (!isLibraryKey(library)) notFound();
@@ -38,15 +42,16 @@ export default async function LibraryPage({ params, searchParams }: Props) {
   const [creator, t, tp] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.libraries"), getTranslations("discover.personalities.profile")]);
   if (!creator) notFound();
 
-  // Receitas (P2): os cards ficam abertos a todos, com a faixa da etapa demonstrativa para quem ainda
+  // Alimentação (P2): os cards ficam abertos a todos, com a faixa da etapa demonstrativa para quem ainda
   // não a fez; abrir a receita é que pede a etapa (o banco garante por can_access_content).
-  const recipeParams = library === "receitas" ? parseRecipeCatalogParams(raw) : null;
+  const recipeParams = library === "alimentacao" ? parseRecipeCatalogParams(raw) : null;
   const gate = recipeParams ? await getRecipeGate() : null;
 
   const hub = await loadCreatorHub(creator);
   const current = hub.libraries.find((item) => item.key === library);
   const error = library === "programas" ? hub.errors.programs : library === "produtos" ? hub.errors.products : hub.errors.contents;
-  const Icon = LIBRARY_ICON[library];
+  const tab = hub.tabs[library];
+  const Icon = LIBRARY_ICONS[tab.icon];
   const hubPath = hubHref(creator.slug);
 
   return (
@@ -55,12 +60,12 @@ export default async function LibraryPage({ params, searchParams }: Props) {
         backHref={hubPath}
         backLabel={t("back", { name: creator.name })}
         eyebrow={creator.name}
-        title={t(`labels.${library}`)}
+        title={tab.text ?? t(`labels.${library}`)}
         description={t(`descriptions.${library}`, { name: creator.name })}
       />
 
       {recipeParams && gate && !gate.completed ? (
-        <RecipeInviteBand nextPath={recipeCatalogHref(hubHref(creator.slug, "receitas"), recipeParams)} loggedIn={gate.loggedIn} />
+        <RecipeInviteBand nextPath={recipeCatalogHref(hubHref(creator.slug, "alimentacao"), recipeParams)} loggedIn={gate.loggedIn} />
       ) : null}
 
       {error ? (
@@ -98,8 +103,8 @@ async function LibraryBody({ library, slug, hub, hero, recipeParams }: BodyProps
   const tl = await getTranslations("discover.personalities.libraries");
   const key: LibraryKey = library.key;
 
-  // Receitas: as assinadas pelo herói (com busca e filtros) e depois as que ele indica.
-  if (library.kind === "content" && key === "receitas") {
+  // Alimentação: as receitas assinadas pelo herói (com busca e filtros) e depois as que ele indica.
+  if (library.kind === "content" && key === "alimentacao") {
     return <ChefRecipes recipes={library.items} hero={hero} params={recipeParams ?? parseRecipeCatalogParams({})} />;
   }
 
