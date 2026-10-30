@@ -795,7 +795,8 @@
         "views": "Visualizaciones",
         "recipeTaps": "Toques en recetas",
         "proTaps": "Toques en profesionales",
-        "shortcutOpens": "Atajos abiertos"
+        "shortcutOpens": "Atajos abiertos",
+        "pageViews": "Visitas a la página del héroe"
       },
       "dailyTitle": "Nuevos seguidores por día",
       "dailyDescription": "Todos los héroes sumados, hora de Brasilia. Quien dejó de seguir no cuenta.",
@@ -814,8 +815,13 @@
         "contratar": "Contratar",
         "shortcutOpens": "Atajos",
         "bids": "Pujas",
-        "collectibleViews": "Vistas coleccionable"
-      }
+        "collectibleViews": "Vistas coleccionable",
+        "pageViews": "Visitas a la página"
+      },
+      "pageViewsTitle": "Visitas a la página del héroe por día",
+      "pageViewsDescription": "Todos los héroes sumados, hora de Brasilia. Total en el período: {count}",
+      "pageViewsSince": "Visitas a la página del héroe contadas desde {date}.",
+      "pageViewsNotTracked": "Todavía no hay visitas a la página del héroe registradas: el conteo empieza con la migración 0061."
     },
     "shortcuts": {
       "trackingSince": "Aperturas de atajos contadas desde {date}.",
@@ -940,7 +946,9 @@
       "programsDescription": "Por inscripciones en el período.",
       "productsTitle": "Top productos",
       "productsDescription": "Por añadidos al carrito en el período.",
-      "viewsHint": "Vistas {views}"
+      "viewsHint": "Vistas {views}",
+      "pageViewsTitle": "Héroes por visitas a la página",
+      "pageViewsDescription": "Visitas a la página del héroe en el período (una por héroe cada vez que se abre el sitio o la app)."
     }
   }
 }

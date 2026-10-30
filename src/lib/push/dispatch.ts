@@ -5,7 +5,9 @@ import type { AbstractIntlMessages } from "next-intl";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
 import type { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
-import { buildPushMessage, chunk, ticketOutcomes, type ExpoTicket, type PushEvent, type PushKind } from "./message";
+import { collectiblePhase } from "@/lib/collectibles/rules";
+import { pushAllowedFor } from "./consent";
+import { buildPushMessage, chunk, ticketOutcomes, type ExpoTicket, type PushEvent } from "./message";
 
 // Envio da fila push_outbox (0054) pelo serviço de push da Expo. Chamado logo depois dos eventos
 // (publicar post, concluir conteúdo; via after()) e pelo cron diário (agendados, lembretes, sobras).
@@ -46,17 +48,30 @@ async function resolveEvents(admin: Admin, rows: OutboxRow[], locales: Map<strin
   const contentIds = rows.filter((r) => r.kind === "hero_post").map((r) => str(payloadOf(r).content_id)).filter((id): id is string => Boolean(id));
   const programIds = rows.filter((r) => r.kind === "program_completed").map((r) => str(payloadOf(r).program_id)).filter((id): id is string => Boolean(id));
   const codes = rows.filter((r) => r.kind === "achievement").map((r) => str(payloadOf(r).code)).filter((c): c is string => Boolean(c));
+  const collectibleIds = rows.filter((r) => r.kind === "auction_outbid").map((r) => str(payloadOf(r).collectible_id)).filter((id): id is string => Boolean(id));
 
-  const [contents, programs, achievements] = await Promise.all([
+  const [contents, programs, achievements, collectibles] = await Promise.all([
     contentIds.length
       ? admin.from("content").select("id, slug, title, status, publish_at, creator:creator_profiles(name, status)").in("id", contentIds)
       : Promise.resolve({ data: [], error: null }),
     programIds.length ? admin.from("programs").select("id, slug, version:program_versions!programs_current_version_fk(title)").in("id", programIds) : Promise.resolve({ data: [], error: null }),
     codes.length ? admin.from("achievements").select("code, name").in("code", codes) : Promise.resolve({ data: [], error: null }),
+    collectibleIds.length
+      ? admin.from("collectibles").select("id, title, status, starts_at, ends_at, current_cents, leading_bid_id").in("id", collectibleIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
   if (contents.error) throw new Error(`push: content ${contents.error.message}`);
   if (programs.error) throw new Error(`push: programs ${programs.error.message}`);
   if (achievements.error) throw new Error(`push: achievements ${achievements.error.message}`);
+  if (collectibles.error) throw new Error(`push: collectibles ${collectibles.error.message}`);
+
+  // lance superado (0061): quem vence agora (para não avisar quem já voltou à frente)
+  type CollectibleRow = { id: string; title: string; status: string; starts_at: string | null; ends_at: string | null; current_cents: number; leading_bid_id: string | null };
+  const collectibleById = new Map((collectibles.data as CollectibleRow[] | null ?? []).map((c) => [c.id, c]));
+  const leadingIds = [...collectibleById.values()].map((c) => c.leading_bid_id).filter((id): id is string => Boolean(id));
+  const leaders = leadingIds.length ? await admin.from("collectible_bid_owners").select("bid_id, user_id").in("bid_id", leadingIds) : { data: [], error: null };
+  if (leaders.error) throw new Error(`push: bid owners ${leaders.error.message}`);
+  const leaderByBid = new Map((leaders.data ?? []).map((o) => [o.bid_id, o.user_id]));
 
   type ContentRow = { id: string; slug: string; title: string | null; status: string; publish_at: string | null; creator: { name: string; status: string } | { name: string; status: string }[] | null };
   type ProgramRow = { id: string; slug: string; version: { title: string } | { title: string }[] | null };
@@ -88,6 +103,12 @@ async function resolveEvents(admin: Admin, rows: OutboxRow[], locales: Map<strin
       const streak = typeof p.streak === "number" ? p.streak : null;
       const fresh = Date.now() - new Date(row.created_at).getTime() < STREAK_TTL_MS;
       out.set(row.id, streak && streak > 0 && fresh ? { kind: "streak_reminder", streak } : null);
+    } else if (row.kind === "auction_outbid") {
+      // item que saiu do ar ou acabou, ou a pessoa já voltou à frente: o aviso perdeu o sentido
+      const item = collectibleById.get(str(p.collectible_id) ?? "");
+      const live = item && collectiblePhase(item.status, item.starts_at, item.ends_at, Date.now()) === "live";
+      const leadingAgain = item?.leading_bid_id ? leaderByBid.get(item.leading_bid_id) === row.user_id : false;
+      out.set(row.id, item && live && !leadingAgain ? { kind: "auction_outbid", item: item.title, amountCents: item.current_cents, collectibleId: item.id } : null);
     } else out.set(row.id, null);
   }
   return out;
@@ -128,7 +149,8 @@ export async function dispatchPushOutbox(admin: Admin): Promise<DispatchResult> 
   const userIds = [...new Set(rows.map((r) => r.user_id))];
   const [tokensRes, prefsRes, profilesRes] = await Promise.all([
     admin.from("push_tokens").select("token, user_id").in("user_id", userIds),
-    admin.from("notification_preferences").select("user_id, channel_push, hero_posts, achievements, streak_reminders").in("user_id", userIds),
+    // "*": num banco sem a 0061 a coluna auction_outbid não existe (conta como desligada)
+    admin.from("notification_preferences").select("*").in("user_id", userIds),
     admin.from("profiles").select("id, locale").in("id", userIds),
   ]);
   if (tokensRes.error) throw new Error(`push: tokens ${tokensRes.error.message}`);
@@ -142,12 +164,7 @@ export async function dispatchPushOutbox(admin: Admin): Promise<DispatchResult> 
   const events = await resolveEvents(admin, rows, locales);
 
   // o consentimento pode ter mudado entre a fila e o envio
-  const allowed = (row: OutboxRow) => {
-    const p = prefs.get(row.user_id);
-    if (!p?.channel_push) return false;
-    const kind = row.kind as PushKind;
-    return kind === "hero_post" ? p.hero_posts : kind === "streak_reminder" ? p.streak_reminders : p.achievements;
-  };
+  const allowed = (row: OutboxRow) => pushAllowedFor(prefs.get(row.user_id), row.kind);
 
   const skipped: { id: number; outcome: string }[] = [];
   const deferred: { id: number; notBefore: string }[] = [];

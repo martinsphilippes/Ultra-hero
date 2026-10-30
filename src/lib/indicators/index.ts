@@ -76,8 +76,10 @@ export type HeroIndicator = {
   shortcutOpens: number;
   collectibleBids: number;
   collectibleViews: number;
+  /** Visitas à página do herói (0061). */
+  pageViews: number;
 };
-export type HeroesData = { rows: HeroIndicator[]; dailyFollows: DailyPoint[] };
+export type HeroesData = { rows: HeroIndicator[]; dailyFollows: DailyPoint[]; dailyPageViews: DailyPoint[]; pageViewsSince: string | null };
 
 export function parseHeroes(raw: unknown): HeroesData {
   const o = obj(raw);
@@ -99,8 +101,12 @@ export function parseHeroes(raw: unknown): HeroesData {
       shortcutOpens: num(r.shortcut_opens),
       collectibleBids: num(r.collectible_bids),
       collectibleViews: num(r.collectible_views),
+      pageViews: num(r.page_views),
     })),
     dailyFollows: daily(o.daily_follows),
+    // sem a 0061 as chaves não vêm: série vazia e "ainda não contadas"
+    dailyPageViews: daily(o.daily_page_views),
+    pageViewsSince: str(o.page_views_since) || null,
   };
 }
 
@@ -122,6 +128,7 @@ export function heroTotals(rows: HeroIndicator[]) {
     proTaps: sum((h) => h.proVerPerfil + h.proContratar),
     shortcutOpens: sum((h) => h.shortcutOpens),
     collectibleBids: sum((h) => h.collectibleBids),
+    pageViews: sum((h) => h.pageViews),
   };
 }
 
@@ -131,6 +138,14 @@ export function rankHeroes(rows: HeroIndicator[], limit = 10): { hero: HeroIndic
     .map((hero) => ({ hero, actions: heroActions(hero) }))
     .filter((r) => r.actions > 0)
     .sort((a, b) => b.actions - a.actions || b.hero.followers - a.hero.followers || a.hero.name.localeCompare(b.hero.name, "pt-BR"))
+    .slice(0, limit);
+}
+
+/** Top heróis por visitas à página (só quem teve alguma). Empate: mais seguidores, depois nome. */
+export function rankHeroesByPageViews(rows: HeroIndicator[], limit = 10): HeroIndicator[] {
+  return rows
+    .filter((h) => h.pageViews > 0)
+    .sort((a, b) => b.pageViews - a.pageViews || b.followers - a.followers || a.name.localeCompare(b.name, "pt-BR"))
     .slice(0, limit);
 }
 
@@ -166,6 +181,14 @@ export function parseShortcutOpen(input: unknown): ShortcutOpen | null {
   if (typeof creatorId !== "string" || !UUID.test(creatorId)) return null;
   if (!isLibraryKey(sourceKey)) return null;
   return { creatorId: creatorId.toLowerCase(), sourceKey };
+}
+
+/** Visita à página do herói (POST /api/hero-page-views): só o herói (uuid), nada da pessoa. */
+export function parseHeroPageView(input: unknown): { creatorId: string } | null {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return null;
+  const { creatorId } = input as Record<string, unknown>;
+  if (typeof creatorId !== "string" || !UUID.test(creatorId)) return null;
+  return { creatorId: creatorId.toLowerCase() };
 }
 
 // ---------------------------------------------------------------- conversão
@@ -429,9 +452,11 @@ export function sectionCsvRows<S extends IndicatorSection>(section: S, data: Sec
             shortcut_opens: h.shortcutOpens,
             collectible_bids: h.collectibleBids,
             collectible_views: h.collectibleViews,
+            page_views: h.pageViews,
           }),
         ),
         ...d.dailyFollows.map((p): Row => ["daily_follows", p.day, p.day, "new_followers", p.value]),
+        ...d.dailyPageViews.map((p): Row => ["daily_page_views", p.day, p.day, "page_views", p.value]),
       ];
     }
     case "atalhos": {
@@ -528,6 +553,7 @@ export function sectionCsvRows<S extends IndicatorSection>(section: S, data: Sec
       const d = data as SectionData["ranking"];
       return [
         ...rankHeroes(d.heroes.rows).map(({ hero, actions }, i): Row => ["top_heroes", String(i + 1), hero.name, "actions", actions]),
+        ...rankHeroesByPageViews(d.heroes.rows).map((hero, i): Row => ["top_heroes_page_views", String(i + 1), hero.name, "page_views", hero.pageViews]),
         ...d.ranking.recipes.map((r, i): Row => ["top_recipes", String(i + 1), r.title, "actions", r.actions]),
         ...d.ranking.programs.map((p, i): Row => ["top_programs", String(i + 1), p.title, "enrolled", p.enrolled]),
         ...d.ranking.products.map((p, i): Row => ["top_products", String(i + 1), p.title, "cart_adds", p.cartAdds]),

@@ -8,6 +8,9 @@ conquistas no banco), **programa concluído** e **lembrete de sequência**.
 Migração: `supabase/migrations/0054_push_notifications.sql`. Cenários: `S65` em
 `supabase/tests/rls_scenarios.sql`.
 
+Depois (0061, pedido do responsável): **lance superado nos Colecionáveis** (`auction_outbid`). Detalhes em
+`docs/decisions/colecionaveis.md` ("Aviso de lance superado"); cenário `S71`.
+
 ## Como funciona
 
 ```
@@ -18,8 +21,8 @@ evento no banco ──gatilho──▶ push_outbox ──▶ dispatchPushOutbox 
 ```
 
 - **Envio**: `drainPushOutbox` pede lotes de 200 até esvaziar o que venceu (cron: até 45 s; logo
-  depois de uma ação: até 20 s). Publicar pelo herói, pelo admin (aprovar ou publicar agora) e
-  concluir conteúdo disparam o envio na hora.
+  depois de uma ação: até 20 s). Publicar pelo herói, pelo admin (aprovar ou publicar agora),
+  concluir conteúdo e dar um lance que cobre outro (0061) disparam o envio na hora.
 - **A fila é enchida pelo banco**, por gatilhos em `content` (passagem para `published`),
   `user_achievements` (insert) e `enrollments` (passagem para `completed`), e pela função
   `push_enqueue_streak_reminders()` que o cron chama. Qualquer caminho que publique (herói, admin
@@ -39,7 +42,13 @@ evento no banco ──gatilho──▶ push_outbox ──▶ dispatchPushOutbox 
   15 minutos em `vercel.json`.
 - **Anti-spam**: no máximo um aviso por herói, por pessoa, por dia (UTC). Lembrete de sequência: um
   por dia local, só para quem tem sequência viva e ainda não fez nada no dia; se não saiu em 12 h,
-  é descartado.
+  é descartado. Lance superado: um por pessoa e item a cada 2 minutos; o envio descarta se o item
+  acabou ou se a pessoa já voltou à frente.
+- **Lance superado** (0061): gatilho em `collectibles` (troca do lance vencedor) enfileira só para quem
+  vencia antes, com `channel_push` + `auction_outbid` e aparelho; dedupe pelo lance que cobriu. Sai em
+  segundos (o `placeBidAction` agenda o envio com `after()`); o cron diário só recolhe sobras. O toque abre
+  `/shop/colecionaveis/<id>`, rota bloqueada no app das lojas (cai na aba Hero): ver a decisão pendente em
+  `colecionaveis.md`. Em primeiro plano o app mostra o banner (`mobile/src/push.ts`; vale no próximo build).
 - **Escala**: o gatilho de post enfileira todos os seguidores dentro da transação que publica. Com
   milhares de seguidores por herói, mover o fan-out para o envio (uma linha por post) antes que a
   publicação chegue perto do limite de tempo do PostgREST.
@@ -52,7 +61,9 @@ evento no banco ──gatilho──▶ push_outbox ──▶ dispatchPushOutbox 
 
 ## Consentimento e pedido de permissão
 
-- Os tipos novos (`hero_posts`, `achievements`) nascem **desligados**, como os outros (0018: opt-in).
+- Os tipos novos (`hero_posts`, `achievements`; depois `auction_outbid`, 0061) nascem **desligados**,
+  como os outros (0018: opt-in). A regra do consentimento está no banco (`push_allowed`) e, igual, em
+  `src/lib/push/consent.ts` (`pushAllowedFor`), que o envio usa para conferir de novo.
 - O app **não pede permissão ao abrir**. Pede no contexto: ao favoritar o primeiro herói (com o
   "sim" do sistema, liga `channel_push` e `hero_posts`) ou ao ligar o Push na tela de Notificações.
   Recusar no sistema não desfaz o favorito e não liga nada.
@@ -71,8 +82,9 @@ Não existia: `favorites` só aponta para conteúdo, produto ou programa. A 0054
 - Chave APNs (`.p8`) da conta Apple, por `eas credentials -p ios`.
 - Opcional: ligar a "segurança reforçada" no projeto Expo e pôr `EXPO_ACCESS_TOKEN` na Vercel.
 - Aplicar a 0057 no projeto Supabase depois do merge.
+- Aplicar a 0061 no projeto Supabase depois do merge (lance superado e visitas à página do herói).
 
 ## Fora desta versão
 
 E-mail; push no navegador (web push); resumo editorial; recibos de entrega; caixa de entrada de
-avisos dentro do app.
+avisos dentro do app (o pop-up de lance superado da 0061 mostra cada aviso uma vez; não há lista).

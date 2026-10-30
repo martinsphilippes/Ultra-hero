@@ -809,6 +809,10 @@
       "commerce_updates": {
         "label": "Test orders",
         "description": "Status changes of your demo orders."
+      },
+      "auction_outbid": {
+        "label": "Outbid on Collectibles",
+        "description": "A notice when someone tops your bid (at most one per item every 2 minutes)."
       }
     },
     "transactional": {

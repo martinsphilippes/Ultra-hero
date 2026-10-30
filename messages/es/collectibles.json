@@ -295,5 +295,12 @@
       "no_winner": "Este objeto no tiene ganador.",
       "invalid_contact_status": "Estado de contacto no válido."
     }
+  },
+  "alert": {
+    "region": "Avisos de puja",
+    "title": "Superaron tu puja en {item}",
+    "price": "Puja actual: {price}",
+    "cta": "Pujar de nuevo",
+    "close": "Cerrar aviso"
   }
 }

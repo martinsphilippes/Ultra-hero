@@ -963,14 +963,14 @@ isOneToOne: false
                   ]
                 },"notification_preferences": {
                   Row: {
-                    "achievements": boolean,"channel_email": boolean,"channel_push": boolean,"commerce_updates": boolean,"editorial_digest": boolean,"hero_posts": boolean,"streak_reminders": boolean,"updated_at": string,"user_id": string
+                    "achievements": boolean,"auction_outbid": boolean,"channel_email": boolean,"channel_push": boolean,"commerce_updates": boolean,"editorial_digest": boolean,"hero_posts": boolean,"streak_reminders": boolean,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "achievements"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id": string
+                    "achievements"?: boolean,"auction_outbid"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "achievements"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id"?: string
+                    "achievements"?: boolean,"auction_outbid"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -2190,7 +2190,21 @@ isOneToOne: false
                     "count"?: number,"creator_id"?: string,"day"?: string,"id"?: number,"source_key"?: string,"updated_at"?: string
                   }
                   Relationships: [
-                    
+
+                  ]
+                },"hero_page_view_counters": {
+                  Row: {
+                    "count": number,"creator_id": string,"day": string,"id": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "count"?: number,"creator_id": string,"day": string,"id"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "count"?: number,"creator_id"?: string,"day"?: string,"id"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+
                   ]
                 },"simulated_subscriptions": {
                   Row: {
@@ -2387,6 +2401,26 @@ isOneToOne: false
       columns: ["achievement_id"]
 isOneToOne: false
       referencedRelation: "achievements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"user_alerts": {
+                  Row: {
+                    "amount_cents": number,"collectible_id": string,"created_at": string,"id": string,"kind": string,"seen_at": string | null,"title": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"collectible_id": string,"created_at"?: string,"id"?: string,"kind": string,"seen_at"?: string | null,"title": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"collectible_id"?: string,"created_at"?: string,"id"?: string,"kind"?: string,"seen_at"?: string | null,"title"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "user_alerts_collectible_id_fkey"
+      columns: ["collectible_id"]
+isOneToOne: false
+      referencedRelation: "collectibles"
       referencedColumns: ["id"]
     }
                   ]
@@ -3111,6 +3145,9 @@ isOneToOne: false
                            },
 "shortcut_open_bump":
 { Args: { "p_creator": string,"p_source": string }; Returns: boolean
+                           },
+"hero_page_view_bump":
+{ Args: { "p_creator": string }; Returns: boolean
                            },
 "slugify":
 { Args: { "p": string }; Returns: string

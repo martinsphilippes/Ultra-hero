@@ -97,7 +97,7 @@ describe("por herói", () => {
     expect(d.rows[0].contentViews).toBe(0);
     expect(d.rows[0].collectibleViews).toBe(0);
     expect(d.dailyFollows).toEqual([{ day: "2026-10-30", value: 3 }]);
-    expect(parseHeroes(null)).toEqual({ rows: [], dailyFollows: [] });
+    expect(parseHeroes(null)).toEqual({ rows: [], dailyFollows: [], dailyPageViews: [], pageViewsSince: null });
     expect(parseHeroes({ rows: "nope" }).rows).toEqual([]);
   });
 
@@ -207,16 +207,23 @@ describe("CSV", () => {
   });
 
   it("formato longo igual para todas as seções, sem id de pessoa", () => {
-    const heroes = parseHeroes({ rows: [heroRaw()], daily_follows: [{ day: "2026-10-30", value: 2 }] });
+    const heroes = parseHeroes({
+      rows: [heroRaw({ page_views: 9 })],
+      daily_follows: [{ day: "2026-10-30", value: 2 }],
+      daily_page_views: [{ day: "2026-10-30", value: 9 }],
+    });
     const csv = sectionCsv("herois", heroes);
     const lines = csv.trim().split("\n");
     expect(lines[0]).toBe(CSV_HEADER.join(","));
     expect(lines).toContain("hero,anitta,Anitta,followers,10");
     expect(lines).toContain("hero,anitta,Anitta,shortcut_opens,7");
     expect(lines).toContain("daily_follows,2026-10-30,2026-10-30,new_followers,2");
+    // visitas à página do herói (0061): por herói e por dia
+    expect(lines).toContain("hero,anitta,Anitta,page_views,9");
+    expect(lines).toContain("daily_page_views,2026-10-30,2026-10-30,page_views,9");
     // o id do herói não vai para o CSV (só slug e nome públicos)
     expect(csv).not.toContain("533f427b");
-    expect(lines).toHaveLength(1 + 12 + 1);
+    expect(lines).toHaveLength(1 + 13 + 1 + 1);
   });
 
   it("cada seção gera linhas; ranking soma heróis pela mesma regra da tela", () => {

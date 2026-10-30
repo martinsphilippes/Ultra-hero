@@ -265,7 +265,13 @@ export async function saveNotificationPreferences(input: NotificationPreferences
     const user = await getUser();
     if (!user) return { ok: false, error: "unauthenticated" };
     const supabase = await createClient();
-    const { error } = await supabase.from("notification_preferences").upsert({ user_id: user.id, ...parsed.data }, { onConflict: "user_id" });
+    let { error } = await supabase.from("notification_preferences").upsert({ user_id: user.id, ...parsed.data }, { onConflict: "user_id" });
+    // banco ainda sem a 0061 (coluna auction_outbid ausente, PGRST204): salva o resto
+    if (error?.code === "PGRST204" && /auction_outbid/.test(error.message)) {
+      const { auction_outbid: _skip, ...rest } = parsed.data;
+      void _skip;
+      ({ error } = await supabase.from("notification_preferences").upsert({ user_id: user.id, ...rest }, { onConflict: "user_id" }));
+    }
     if (error) return fail(error.message);
     revalidatePath("/profile/notifications");
     return { ok: true };

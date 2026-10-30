@@ -8,6 +8,7 @@ import { HeroCollectibleBanner } from "@/components/collectibles/HeroCollectible
 import { TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
+import { HeroPageViewTracker } from "@/components/discover/personalities/HeroPageViewTracker";
 import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
 import { FollowButton } from "@/components/heroes/FollowButton";
 import { ChefHighlights } from "@/components/recipes/catalog/ChefHighlights";
@@ -63,6 +64,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* visita à página do herói (0061): contador por dia, sem a pessoa */}
+      <HeroPageViewTracker creatorId={creator.id} />
       <Link href="/personalities" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
         ← {t("back")}
       </Link>

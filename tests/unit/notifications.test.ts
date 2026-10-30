@@ -17,6 +17,7 @@ describe("notificationPreferencesSchema", () => {
     expect(parsed.success && parsed.data).toEqual({
       hero_posts: false,
       achievements: false,
+      auction_outbid: false,
       editorial_digest: false,
       streak_reminders: false,
       commerce_updates: false,
@@ -26,7 +27,7 @@ describe("notificationPreferencesSchema", () => {
   });
 
   it("mantém a lista de chaves alinhada com tipos + canais", () => {
-    expect(NOTIFICATION_TYPES).toEqual(["hero_posts", "achievements", "streak_reminders", "editorial_digest", "commerce_updates"]);
+    expect(NOTIFICATION_TYPES).toEqual(["hero_posts", "achievements", "auction_outbid", "streak_reminders", "editorial_digest", "commerce_updates"]);
     expect(NOTIFICATION_CHANNELS).toEqual(["channel_email", "channel_push"]);
     expect([...NOTIFICATION_PREFERENCE_KEYS].sort()).toEqual(Object.keys(DEFAULT_NOTIFICATION_PREFERENCES).sort());
   });

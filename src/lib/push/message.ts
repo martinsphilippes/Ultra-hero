@@ -2,14 +2,17 @@
 // Textos em messages/<locale>/push.json; o link é um caminho do site que a casca abre ao tocar.
 import { createTranslator, type AbstractIntlMessages } from "next-intl";
 import type { Locale } from "@/i18n/config";
+import { formatCurrency } from "@/i18n/format";
 
-export type PushKind = "hero_post" | "achievement" | "program_completed" | "streak_reminder";
+export type PushKind = "hero_post" | "achievement" | "program_completed" | "streak_reminder" | "auction_outbid";
 
 export type PushEvent =
   | { kind: "hero_post"; hero: string; contentTitle: string | null; contentSlug: string }
   | { kind: "achievement"; name: string }
   | { kind: "program_completed"; program: string; programSlug: string }
-  | { kind: "streak_reminder"; streak: number };
+  | { kind: "streak_reminder"; streak: number }
+  // lance superado nos Colecionáveis (0061): valor atual do item e link para dar outro lance
+  | { kind: "auction_outbid"; item: string; amountCents: number; collectibleId: string };
 
 export type PushMessage = { title: string; body: string; url: string };
 
@@ -36,6 +39,12 @@ export function buildPushMessage(event: PushEvent, locale: Locale, messages: Abs
       return out(t("programCompleted.title"), t("programCompleted.body", { program: event.program }), `/programs/${event.programSlug}`);
     case "streak_reminder":
       return out(t("streakReminder.title"), t("streakReminder.body", { streak: event.streak }), "/inicio");
+    case "auction_outbid":
+      return out(
+        t("auctionOutbid.title"),
+        t("auctionOutbid.body", { item: event.item.trim(), price: formatCurrency(event.amountCents / 100, locale) }),
+        `/shop/colecionaveis/${event.collectibleId}`,
+      );
   }
 }
 

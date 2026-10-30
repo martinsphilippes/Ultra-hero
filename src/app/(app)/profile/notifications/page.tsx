@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { BellRing } from "lucide-react";
 import { NotificationPreferencesForm } from "@/components/me/NotificationPreferencesForm";
-import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from "@/components/me/notifications/constants";
+import { DEFAULT_NOTIFICATION_PREFERENCES, NOTIFICATION_PREFERENCE_KEYS, type NotificationPreferences } from "@/components/me/notifications/constants";
 import { PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -19,13 +19,12 @@ export default async function NotificationsPage() {
   const user = await requireUser("/profile/notifications");
   const [t, tc] = await Promise.all([getTranslations("me.notifications"), getTranslations("common")]);
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("notification_preferences")
-    .select("hero_posts, achievements, editorial_digest, streak_reminders, commerce_updates, channel_email, channel_push")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // "*": num banco sem a 0061 a coluna auction_outbid ainda não existe (fica com o padrão, desligada)
+  const { data, error } = await supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle();
   if (error) throw new Error(error.message);
-  const initial: NotificationPreferences = data ?? DEFAULT_NOTIFICATION_PREFERENCES;
+  const initial: NotificationPreferences = Object.fromEntries(
+    NOTIFICATION_PREFERENCE_KEYS.map((key) => [key, typeof data?.[key] === "boolean" ? data[key] : DEFAULT_NOTIFICATION_PREFERENCES[key]]),
+  ) as NotificationPreferences;
 
   return (
     <div className="flex flex-col gap-8">

@@ -795,7 +795,8 @@
         "views": "Views",
         "recipeTaps": "Recipe taps",
         "proTaps": "Professional taps",
-        "shortcutOpens": "Shortcuts opened"
+        "shortcutOpens": "Shortcuts opened",
+        "pageViews": "Hero page visits"
       },
       "dailyTitle": "New followers per day",
       "dailyDescription": "All heroes combined, Brasília time. People who unfollowed are not counted.",
@@ -814,8 +815,13 @@
         "contratar": "Hire",
         "shortcutOpens": "Shortcuts",
         "bids": "Bids",
-        "collectibleViews": "Collectible views"
-      }
+        "collectibleViews": "Collectible views",
+        "pageViews": "Page visits"
+      },
+      "pageViewsTitle": "Hero page visits per day",
+      "pageViewsDescription": "All heroes combined, Brasília time. Total in the period: {count}",
+      "pageViewsSince": "Hero page visits counted since {date}.",
+      "pageViewsNotTracked": "No hero page visits recorded yet: counting starts with migration 0061."
     },
     "shortcuts": {
       "trackingSince": "Shortcut opens counted since {date}.",
@@ -940,7 +946,9 @@
       "programsDescription": "By enrollments in the period.",
       "productsTitle": "Top products",
       "productsDescription": "By cart adds in the period.",
-      "viewsHint": "Views {views}"
+      "viewsHint": "Views {views}",
+      "pageViewsTitle": "Heroes by page visits",
+      "pageViewsDescription": "Hero page visits in the period (one per hero each time the site or app is opened)."
     }
   }
 }

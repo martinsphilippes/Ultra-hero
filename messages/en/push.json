@@ -15,5 +15,9 @@
   "streakReminder": {
     "title": "Your streak is on the line",
     "body": "{streak, plural, =1 {You're on a 1-day streak.} other {You're on a #-day streak.}} Complete something today to keep it going."
+  },
+  "auctionOutbid": {
+    "title": "You've been outbid",
+    "body": "{item}: the bid is now {price}. Tap to place a new bid."
   }
 }
