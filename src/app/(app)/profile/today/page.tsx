@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { ConnectWatchCard } from "@/components/me/today/ConnectWatchCard";
 import { LegacyTodayCleanup } from "@/components/me/today/LegacyTodayCleanup";
-import { SyncingCard } from "@/components/me/today/SyncingCard";
-import { WatchToday } from "@/components/me/today/WatchToday";
-import { HeroComparison } from "@/components/heroes/HeroComparison";
+import { TodayHub } from "@/components/me/today/TodayHub";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { redirect } from "next/navigation";
+import { isValidTimeZone } from "@/components/me/dates";
+import { getProfile, requireUser } from "@/lib/auth/session";
 import { getNativeApp } from "@/lib/native-app/server";
+import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
 import { loadWatchView, wantsExample } from "./view";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,11 +16,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Hoje em tela própria: a conta demo vê o seu relógio simulado; a conta real vê o "Exemplo"
-// (?exemplo=1, aberto pelo botão "Ver um exemplo"), sempre separado do perfil da pessoa.
+// (?exemplo=1, aberto pelo botão "Ver um exemplo"), sempre separado do perfil da pessoa. Mesmos 3
+// cards do Perfil (Seu dia, Sua noite, Evolução); no "Exemplo" a Evolução não traz a comparação.
 export default async function TodayPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const example = wantsExample(params.exemplo);
-  const [view, t] = await Promise.all([loadWatchView(example ? "/profile/today?exemplo=1" : "/profile/today", example), getTranslations("me.today")]);
+  const next = example ? "/profile/today?exemplo=1" : "/profile/today";
+  const user = await requireUser(next);
+  const profile = await getProfile();
+  const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
+  const [view, t, evolution] = await Promise.all([loadWatchView(next, example), getTranslations("me.today"), loadEvolutionSummary(user.id, tz)]);
 
   // app das lojas: sem relógio simulado (TodaySection)
   if ((view.kind === "demo" || view.kind === "example") && (await getNativeApp())) redirect("/profile");
@@ -35,17 +40,7 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
         backLabel={t("example.back")}
         actions={view.kind === "demo" || view.kind === "example" ? <DemoBadge /> : null}
       />
-      {view.kind === "connect" ? (
-        <ConnectWatchCard headingLevel="h2" providers={view.providers} />
-      ) : view.kind === "syncing" ? (
-        <SyncingCard provider={view.provider} deviceName={view.deviceName} />
-      ) : view.kind === "real" ? (
-        <WatchToday snapshot={view.snapshot} mode="real" lastSync={view.lastSync} stale={view.stale} blockHeading="h2" />
-      ) : (
-        <WatchToday snapshot={view.snapshot} mode={view.kind} blockHeading="h2" />
-      )}
-      {/* Você vs Hero (0056): só com o relógio da própria pessoa; o "Exemplo" não entra na comparação */}
-      {view.kind === "example" ? null : <HeroComparison watch={view.kind === "demo" || view.kind === "real" ? view.snapshot : null} />}
+      <TodayHub view={view} evolution={evolution} compare={view.kind !== "example"} />
     </div>
   );
 }

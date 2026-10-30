@@ -2,6 +2,7 @@
 // em sequência. Regras puras (sem Supabase/React): quais seções do conceito vão para qual card, quando
 // o Nutricional aparece e o estado na URL (?secao=conceito&tela=2).
 import type { ContentType, Pillar } from "@/lib/supabase/helpers";
+import { CARD_PARAM, parseScreenState, screenSearch, type ParamsLike, type ScreenState } from "@/lib/screen-cards";
 import { rhythmChips, type ProgramConcept } from "./concept";
 
 export const PROGRAM_CARD_KEYS = ["conceito", "prepare-se", "conteudo", "nutricional"] as const;
@@ -124,36 +125,19 @@ export function mergeUnique<T extends { id: string }>(lists: readonly (readonly 
 }
 
 // ---------------------------------------------------------------- estado na URL
+// (regras genéricas em lib/screen-cards.ts; aqui só a lista de cards do programa)
 
-export const CARD_PARAM = "secao";
-export const SCREEN_PARAM = "tela";
+export { CARD_PARAM, SCREEN_PARAM } from "@/lib/screen-cards";
 
-export type CardState = { card: ProgramCardKey; /** índice 0-based */ screen: number };
-type ParamsLike = { get(name: string): string | null };
+export type CardState = ScreenState<ProgramCardKey>;
 
-/**
- * Lê ?secao=…&tela=N (N começa em 1). Card inexistente ou sem telas = fechado (null); tela fora do
- * intervalo ou inválida vai para a mais próxima (sem tela = a primeira).
- */
+/** Lê ?secao=…&tela=N só para os cards do programa (outro card = fechado). */
 export function parseCardState(params: ParamsLike, counts: Partial<Record<ProgramCardKey, number>>): CardState | null {
-  const card = params.get(CARD_PARAM);
-  if (!isProgramCardKey(card)) return null;
-  const total = counts[card] ?? 0;
-  if (total <= 0) return null;
-  const raw = Number.parseInt(params.get(SCREEN_PARAM) ?? "", 10);
-  const n = Number.isFinite(raw) ? raw : 1;
-  return { card, screen: Math.min(Math.max(n, 1), total) - 1 };
+  if (!isProgramCardKey(params.get(CARD_PARAM))) return null;
+  return parseScreenState(params, counts);
 }
 
 /** Query string com o estado (ou sem ele, para fechar), preservando os outros parâmetros. */
 export function cardSearch(current: string | URLSearchParams, state: CardState | null): string {
-  const params = new URLSearchParams(current);
-  params.delete(CARD_PARAM);
-  params.delete(SCREEN_PARAM);
-  if (state) {
-    params.set(CARD_PARAM, state.card);
-    params.set(SCREEN_PARAM, String(state.screen + 1));
-  }
-  const s = params.toString();
-  return s ? `?${s}` : "";
+  return screenSearch(current, state);
 }

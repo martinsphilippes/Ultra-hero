@@ -60,17 +60,16 @@ test.describe("Lembretes fora do Hoje — conta gratuita", () => {
     test.skip(!enabled, "contas de demonstração desligadas neste ambiente");
   });
 
-  test("atalho no Perfil depois de Continue seus programas; o Hoje não tem campo nem link de lembrete", async () => {
+  test("atalho no Perfil depois do Hoje (que traz Continue seus programas na Evolução); o Hoje não tem campo nem link de lembrete", async () => {
     await page.goto("/profile");
     const today = page.getByTestId("today-section");
-    const programs = page.getByTestId("continue-programs");
     const shortcut = page.getByTestId("profile-reminders");
     await expect(shortcut).toBeVisible();
     await expect(shortcut).toContainText("Lembretes");
     await expect(shortcut).toHaveAttribute("href", "/profile/lembretes");
-    const [yToday, yPrograms, yShortcut] = await Promise.all([today, programs, shortcut].map(async (l) => (await l.boundingBox())!.y));
-    expect(yToday).toBeLessThan(yPrograms);
-    expect(yPrograms).toBeLessThan(yShortcut);
+    const [yToday, yShortcut] = await Promise.all([today, shortcut].map(async (l) => (await l.boundingBox())!.y));
+    expect(yToday).toBeLessThan(yShortcut);
+    await expect(today.getByTestId("today-hub-card-evolucao")).toBeVisible();
 
     await expect(today.locator("input, textarea, select, [contenteditable='true']")).toHaveCount(0);
     await expect(today.locator('a[href*="lembretes"]')).toHaveCount(0);

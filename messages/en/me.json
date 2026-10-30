@@ -496,6 +496,22 @@
       "body": "Your {device} is connected. We are bringing in today's data; the next updates arrive when the watch syncs with the {app} app.",
       "bodyNoHistory": "Your {device} is connected. The first data arrives when the watch syncs with the {app} app; the brand does not share what was measured before the connection.",
       "devicesLink": "Watches and rings"
+    },
+    "hub": {
+      "label": "Today sections",
+      "day": "Your day",
+      "night": "Your night",
+      "load": "Load {value}",
+      "workouts": "{n, plural, =1 {1 workout today} other {# workouts today}}",
+      "stress": "Average stress {value}",
+      "bodyBattery": "Body Battery {value}",
+      "readiness": "Brand score {value}",
+      "streak": "Streak {days}",
+      "programSteps": "{done}/{total} program steps",
+      "connectDay": "Connect a watch to see steps, workouts and stress.",
+      "connectNight": "Connect a watch to see your sleep and how you woke up.",
+      "nightEmpty": "No night data yet.",
+      "descriptionNoWatch": "Your streak and the next steps in your programs."
     }
   },
   "reminders": {

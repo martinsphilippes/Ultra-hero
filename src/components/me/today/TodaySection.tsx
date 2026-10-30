@@ -1,25 +1,27 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { getNativeApp } from "@/lib/native-app/server";
+import type { EvolutionSummary } from "@/lib/routine/evolution-summary";
 import type { WatchView } from "@/lib/wearables/context";
 import { ymdToDate } from "../dates";
-import { ConnectWatchCard } from "./ConnectWatchCard";
 import { LegacyTodayCleanup } from "./LegacyTodayCleanup";
-import { SyncingCard } from "./SyncingCard";
-import { WatchToday } from "./WatchToday";
+import { TodayHub } from "./TodayHub";
 
 type Props = {
   /** Data local de hoje (YYYY-MM-DD) no fuso do perfil (ou UTC). */
   localDate: string;
   view: WatchView;
+  evolution: EvolutionSummary;
 };
 
-// "Hoje — Seu dia, em foco" no topo do Perfil: só o que o relógio mede sozinho (nada para digitar).
-// Conta demo → relógio simulado da persona; conta real → card "Conectar relógio" com "Ver um exemplo"
-// ou, com WEARABLES_REAL_ENABLED=1 e relógio conectado, os dados reais ("Sincronizando…" até o 1º).
-export async function TodaySection({ localDate, view }: Props) {
+// "Hoje — Seu dia, em foco" no Perfil: 3 cards (Seu dia, Sua noite, Evolução) que abrem telas.
+// Seu dia/Sua noite: só o que o relógio mede sozinho (nada para digitar). Conta demo → relógio
+// simulado da persona; conta real → "Conectar relógio" com "Ver um exemplo" ou, com
+// WEARABLES_REAL_ENABLED=1 e relógio conectado, os dados reais ("Sincronizando…" até o 1º).
+// Evolução: sequência, "Continue seus programas" e "Você vs Hero".
+export async function TodaySection({ localDate, view, evolution }: Props) {
   // App das lojas: sem relógio simulado (dados de saúde inventados sem o aviso de demonstração
-  // confundiriam); a seção só aparece com relógio real ou para conectar um.
-  if ((view.kind === "demo" || view.kind === "example") && (await getNativeApp())) return null;
+  // confundiriam); lá ficam só os cards do relógio real/conectar e a Evolução.
+  const hideWatch = (view.kind === "demo" || view.kind === "example") && Boolean(await getNativeApp());
   const [t, locale] = await Promise.all([getTranslations("me.today"), getLocale()]);
   const dateLabel = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(ymdToDate(localDate));
 
@@ -34,17 +36,9 @@ export async function TodaySection({ localDate, view }: Props) {
           {t("title")}
         </h2>
         {/* sem relógio, não prometer "medido pelo seu relógio" */}
-        <p className="type-body-sm max-w-prose text-fg-muted">{view.kind === "connect" ? ((view.providers?.length ?? 0) > 0 ? t("descriptionConnectAvailable") : t("descriptionConnect")) : t("description")}</p>
+        <p className="type-body-sm max-w-prose text-fg-muted">{hideWatch ? t("hub.descriptionNoWatch") : view.kind === "connect" ? ((view.providers?.length ?? 0) > 0 ? t("descriptionConnectAvailable") : t("descriptionConnect")) : t("description")}</p>
       </div>
-      {view.kind === "connect" ? (
-        <ConnectWatchCard providers={view.providers} />
-      ) : view.kind === "syncing" ? (
-        <SyncingCard provider={view.provider} deviceName={view.deviceName} />
-      ) : view.kind === "real" ? (
-        <WatchToday snapshot={view.snapshot} mode="real" lastSync={view.lastSync} stale={view.stale} />
-      ) : (
-        <WatchToday snapshot={view.snapshot} mode={view.kind} />
-      )}
+      <TodayHub view={view} evolution={evolution} hideWatch={hideWatch} />
     </section>
   );
 }

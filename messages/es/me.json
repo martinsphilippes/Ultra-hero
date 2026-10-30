@@ -496,6 +496,22 @@
       "body": "Tu {device} está conectado. Estamos trayendo los datos de hoy; los siguientes llegan cuando el reloj se sincronice con la app {app}.",
       "bodyNoHistory": "Tu {device} está conectado. Los primeros datos llegan cuando el reloj se sincronice con la app {app}; la marca no comparte lo medido antes de la conexión.",
       "devicesLink": "Relojes y anillos"
+    },
+    "hub": {
+      "label": "Secciones de Hoy",
+      "day": "Tu día",
+      "night": "Tu noche",
+      "load": "Carga {value}",
+      "workouts": "{n, plural, =1 {1 entrenamiento hoy} other {# entrenamientos hoy}}",
+      "stress": "Estrés medio {value}",
+      "bodyBattery": "Body Battery {value}",
+      "readiness": "Índice de la marca {value}",
+      "streak": "Racha {days}",
+      "programSteps": "{done}/{total} pasos de los programas",
+      "connectDay": "Conecta un reloj para ver pasos, entrenamientos y estrés.",
+      "connectNight": "Conecta un reloj para ver tu sueño y cómo despertaste.",
+      "nightEmpty": "Aún no hay datos de la noche.",
+      "descriptionNoWatch": "Tu racha y los próximos pasos de tus programas."
     }
   },
   "reminders": {
