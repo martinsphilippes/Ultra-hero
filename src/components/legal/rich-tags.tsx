@@ -35,4 +35,5 @@ export const legalRichTags = {
   shopping: linkTo("/profile/lista-de-compras"),
   orders: linkTo("/orders"),
   forgot: linkTo("/forgot-password"),
+  deletion: linkTo(LEGAL_DELETION_HREF),
 } satisfies RichTranslationValues;
