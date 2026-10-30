@@ -175,7 +175,7 @@
         "blocks": {
           "p1": "Solo recopilamos lo necesario para que la demostración funcione:",
           "list1": {
-            "account": "<strong>Cuenta:</strong> correo, contraseña y nombre visible. La contraseña la gestiona el servicio de autenticación; la app no la guarda en sus propias tablas. Si inicias sesión con Google, cuando esa opción esté disponible, recibimos de Google tu nombre, tu correo y, si existe, la dirección de tu foto de perfil.",
+            "account": "<strong>Cuenta:</strong> nombre completo, correo, celular y nombre visible. En el registro rápido, la app genera tu contraseña y guarda una copia cifrada (AES-256, con una clave que está solo en el servidor, fuera de la base de datos) para que la consultes y la cambies en Perfil › Cuenta y privacidad; nadie más, ni la administración, puede leerla por la app. Si eliges tu propia contraseña mediante la recuperación por correo, la gestiona solo el servicio de autenticación y la copia generada se elimina. Si inicias sesión con Google, recibimos de Google tu nombre, tu correo y, si existe, la dirección de tu foto de perfil; el celular es opcional.",
             "preferences": "<strong>Preferencias:</strong> idioma, tema, avatar (la foto que subas; sin foto, se muestran tus iniciales) y zona horaria del dispositivo, que se usa para contar tu racha de días.",
             "profilePhoto": "<strong>Foto de perfil (opcional):</strong> si tomas o eliges una foto, se recorta en cuadrado y se reduce en tu dispositivo antes del envío, sin datos de ubicación ni otros metadatos de la cámara, y se guarda en Supabase Storage en una dirección pública que no se puede listar. Aparece en tu avatar en la app; si eres héroe, también aparece en tu página pública, que cualquier visitante ve. Para limitar envíos (hasta 20 por día) y eliminar fotos sin uso, guardamos la fecha, el tamaño y el tipo de cada envío.",
             "heroCover": "<strong>Portada del héroe (opcional, solo héroes):</strong> si eres héroe y tomas o eliges una foto de portada, se recorta en 16:9 y se reduce en tu dispositivo antes del envío, sin datos de ubicación ni otros metadatos de la cámara, y se guarda en Supabase Storage en una dirección pública que no se puede listar. Aparece en tu tarjeta en la lista de héroes, que cualquier visitante ve. Para limitar envíos (hasta 20 por día) y borrar portadas sin uso, guardamos la fecha, el tamaño y el tipo de cada envío.",
@@ -207,7 +207,7 @@
             "payment": "datos de pago, como tarjetas o cuentas bancarias: no se cobra nada;",
             "health": "datos de salud individuales, como peso, medidas, exámenes, diagnósticos o condiciones médicas, ni datos de relojes, anillos o pulseras: Hoy aún no se conecta a ninguna marca, y el reloj de demostración (de las cuentas demo y del botón “Ver un ejemplo”) se genera al momento en el servidor, no usa tus datos, no se guarda y no va a los eventos de uso;",
             "hydration": "registros de hidratación y descanso: Hoy dejó de aceptarlos. Los antiguos quedaban solo en tu dispositivo; el nuevo Hoy los borra del almacenamiento local del navegador una sola vez, sin leer ni enviar nada a la app;",
-            "documents": "documentos de identidad, teléfono y fecha de nacimiento: declaras cumplir la edad mínima de 18 años al crear la cuenta."
+            "documents": "documentos de identidad y fecha de nacimiento: declaras cumplir la edad mínima de 18 años al crear la cuenta."
           },
           "p1": "No vendemos datos, no los cedemos con fines comerciales ni publicitarios y no usamos herramientas de publicidad ni de analítica de terceros."
         }
@@ -325,6 +325,11 @@
                 "period": "Mientras exista la cuenta",
                 "details": "Se eliminan cuando eliminas la cuenta."
               },
+              "quickSignup": {
+                "data": "Intentos de registro rápido (IP y correo como código irreversible, nunca el valor original)",
+                "period": "1 día",
+                "details": "Sirven solo para limitar abusos (como máximo 10 por hora por red y 3 por hora por correo) y se eliminan después de 1 día."
+              },
               "notifications": {
                 "data": "Preferencias de notificación",
                 "period": "Mientras exista la cuenta",
@@ -421,7 +426,7 @@
           "p1": "Tienes derechos sobre tus datos personales. En esta demostración, la mayoría puede ejercerse directamente en la app:",
           "list1": {
             "access": "<strong>Acceder:</strong> consulta tus datos en <profile>Perfil</profile>, <evolution>Evolución</evolution>, <plan>Plan y módulos</plan> y <orders>Mis pedidos de prueba</orders>. El resumen de lo que guardamos y de los plazos está en <account>Cuenta y privacidad</account>.",
-            "correct": "<strong>Corregir:</strong> cambia tu nombre visible, avatar, idioma y tema en <profile>Perfil</profile> y tus intereses en <interests>Intereses</interests>. Para cambiar la contraseña, usa <forgot>Olvidé mi contraseña</forgot>.",
+            "correct": "<strong>Corregir:</strong> cambia tu nombre visible, avatar, idioma y tema en <profile>Perfil</profile>, el celular en Perfil › Cuenta y privacidad y tus intereses en <interests>Intereses</interests>. Para cambiar la contraseña, genera una nueva en Perfil › Cuenta y privacidad o usa <forgot>Olvidé mi contraseña</forgot>.",
             "cancel": "<strong>Cancelar la suscripción simulada:</strong> en <plan>Plan y módulos</plan>, cuando quieras.",
             "delete": "<strong>Eliminar la cuenta:</strong> en <account>Cuenta y privacidad</account>, elige “Eliminar mi cuenta” y escribe la palabra de confirmación indicada."
           },
@@ -444,7 +449,7 @@
           "list1": {
             "rls": "<strong>Reglas de acceso en la propia base de datos</strong> (Row Level Security): cada persona solo lee y modifica sus propios datos, los socios solo acceden a lo que les pertenece y las operaciones sensibles pasan por funciones del servidor que verifican los permisos.",
             "keys": "<strong>Claves protegidas:</strong> las credenciales con privilegios elevados y las claves de los proveedores de IA están solo en el servidor, nunca en el navegador.",
-            "passwords": "<strong>Las contraseñas</strong> las gestiona el servicio de autenticación, y la app no las guarda en sus propias tablas.",
+            "passwords": "<strong>Las contraseñas</strong> las verifica el servicio de autenticación. La contraseña generada en el registro rápido se guarda cifrada (AES-256-GCM, clave solo en el servidor) en una tabla sin ningún acceso por la API; solo se abre para la propia persona, cuando la pide en Perfil › Cuenta y privacidad.",
             "minimization": "<strong>Minimización:</strong> los eventos de uso rechazan propiedades cuyos nombres indiquen datos personales, la IA (cuando está activada) no recibe tu nombre, tu correo ni el identificador de tu cuenta y los destinos de entrega son ficticios.",
             "audit": "<strong>Auditoría y límites:</strong> las principales acciones administrativas quedan registradas, cada cuenta puede enviar hasta 20 mensajes de feedback por día y el uso de IA en las recomendaciones tiene un límite por hora.",
             "https": "<strong>Conexión cifrada</strong> (HTTPS) entre tu navegador y la app, proporcionada por el servicio de alojamiento."

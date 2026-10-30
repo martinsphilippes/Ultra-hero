@@ -4717,6 +4717,79 @@ delete from auth.users where id = '56000000-0000-4000-8000-000000000561';
 select tests.ok('S56 nada do cenário fica no ar e o Rafael volta sem usuário',
   (select count(*) from public.content where slug like 's56-%') = 0
   and (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:rafael')));
+-- ================================================================ S56 · Cadastro rápido: celular e senha gerada cifrada (0046)
+-- Nome completo e celular ficam em profiles (só o dono e o admin leem). A senha gerada fica cifrada em
+-- user_generated_passwords e as tentativas em quick_signup_attempts: as duas sem nenhum acesso pela API
+-- (nem leitura) para anon e authenticated; só o service role. A linha da senha some com a conta.
+select tests.su();
+insert into auth.users (id, email) values
+  ('56000000-0000-4000-8000-000000000561', 's56a@test.local'),
+  ('56000000-0000-4000-8000-000000000562', 's56b@test.local');
+insert into public.user_generated_passwords (user_id, ciphertext, key_version) values
+  ('56000000-0000-4000-8000-000000000561', repeat('A', 60), 1),
+  ('56000000-0000-4000-8000-000000000562', repeat('B', 60), 1);
+insert into public.quick_signup_attempts (ip_hash, email_hash) values (repeat('a', 64), repeat('b', 64));
+select tests.ok('S56 tabelas novas: RLS ligada, nenhuma política, nenhum privilégio para anon/authenticated, tudo para o service role',
+  (select bool_and(c.relrowsecurity) from pg_class c where c.oid in ('public.user_generated_passwords'::regclass, 'public.quick_signup_attempts'::regclass))
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename in ('user_generated_passwords', 'quick_signup_attempts')) = 0
+  and not exists (select 1 from unnest(array['anon', 'authenticated']) r, unnest(array['select', 'insert', 'update', 'delete', 'truncate', 'references', 'trigger']) p,
+                    unnest(array['public.user_generated_passwords', 'public.quick_signup_attempts']) t
+                  where has_table_privilege(r, t, p))
+  and has_table_privilege('service_role', 'public.user_generated_passwords', 'select')
+  and has_table_privilege('service_role', 'public.user_generated_passwords', 'insert')
+  and has_table_privilege('service_role', 'public.quick_signup_attempts', 'insert'));
+select tests.ok('S56 senha some com a conta (on delete cascade a partir de auth.users)',
+  (select confdeltype from pg_constraint where conrelid = 'public.user_generated_passwords'::regclass and contype = 'f' and confrelid = 'auth.users'::regclass) = 'c');
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S56 anon não lê senhas', $q$select count(*) from public.user_generated_passwords$q$, 'permission denied');
+select tests.expect_error('S56 anon não grava senha', $q$insert into public.user_generated_passwords (user_id, ciphertext, key_version) values ('56000000-0000-4000-8000-000000000561', repeat('C', 60), 1)$q$, 'permission denied');
+select tests.expect_error('S56 anon não lê tentativas', $q$select count(*) from public.quick_signup_attempts$q$, 'permission denied');
+select tests.expect_error('S56 anon não grava tentativa', $q$insert into public.quick_signup_attempts (ip_hash, email_hash) values (repeat('c', 64), repeat('d', 64))$q$, 'permission denied');
+select tests.ok('S56 anon não vê perfis (nem celular)', (select count(*) from public.profiles where phone_e164 is not null or id = '56000000-0000-4000-8000-000000000561') = 0);
+
+-- dono
+select tests.login('56000000-0000-4000-8000-000000000561', 's56a@test.local');
+select tests.expect_error('S56 dono não lê a própria senha pela API (só o servidor decifra)', $q$select ciphertext from public.user_generated_passwords where user_id = auth.uid()$q$, 'permission denied');
+select tests.expect_error('S56 dono não troca a própria senha cifrada', $q$update public.user_generated_passwords set key_version = 2 where user_id = auth.uid()$q$, 'permission denied');
+select tests.expect_error('S56 dono não apaga a própria senha cifrada', $q$delete from public.user_generated_passwords where user_id = auth.uid()$q$, 'permission denied');
+select tests.expect_error('S56 dono não grava tentativa', $q$insert into public.quick_signup_attempts (ip_hash, email_hash) values (repeat('c', 64), repeat('d', 64))$q$, 'permission denied');
+update public.profiles set phone_e164 = '+5511912345678', full_name = 'Pessoa Teste S56' where id = auth.uid();
+select tests.ok('S56 dono grava e lê o próprio celular e nome completo',
+  (select phone_e164 = '+5511912345678' and full_name = 'Pessoa Teste S56' from public.profiles where id = auth.uid()));
+select tests.expect_error('S56 celular fora do E.164 é recusado', $q$update public.profiles set phone_e164 = '11 91234-5678' where id = auth.uid()$q$, 'profiles_phone_e164_format');
+select tests.expect_error('S56 nome completo de 1 letra é recusado', $q$update public.profiles set full_name = 'A' where id = auth.uid()$q$, 'profiles_full_name_len');
+select tests.expect_error('S56 guarda de colunas continua barrando o resto (anonymized_at)', $q$update public.profiles set anonymized_at = now() where id = auth.uid()$q$, 'protected_column');
+
+-- outra pessoa
+select tests.login('56000000-0000-4000-8000-000000000562', 's56b@test.local');
+select tests.ok('S56 outra pessoa não vê o celular de ninguém além do próprio',
+  (select count(*) from public.profiles where id = '56000000-0000-4000-8000-000000000561') = 0
+  and (select count(*) from public.profiles where phone_e164 = '+5511912345678') = 0);
+update public.profiles set phone_e164 = '+5521998765432' where id = '56000000-0000-4000-8000-000000000561';
+select tests.su();
+select tests.ok('S56 outra pessoa não altera o celular alheio (a política filtra a linha)',
+  (select phone_e164 from public.profiles where id = '56000000-0000-4000-8000-000000000561') = '+5511912345678');
+
+-- admin lê (suporte), como o resto do perfil
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S56 admin vê o celular (suporte), como o resto do perfil',
+  (select phone_e164 from public.profiles where id = '56000000-0000-4000-8000-000000000561') = '+5511912345678');
+select tests.expect_error('S56 nem o admin lê senhas pela API', $q$select count(*) from public.user_generated_passwords$q$, 'permission denied');
+
+-- exclusão de conta leva a senha cifrada e o perfil
+select tests.login('56000000-0000-4000-8000-000000000561', 's56a@test.local');
+select public.delete_my_account();
+select tests.su();
+select tests.ok('S56 excluir a conta apaga a senha cifrada e o perfil com o celular',
+  not exists (select 1 from public.user_generated_passwords where user_id = '56000000-0000-4000-8000-000000000561')
+  and not exists (select 1 from public.profiles where id = '56000000-0000-4000-8000-000000000561')
+  and exists (select 1 from public.user_generated_passwords where user_id = '56000000-0000-4000-8000-000000000562'));
+select tests.ok('S56 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+delete from auth.users where id = '56000000-0000-4000-8000-000000000562';
+delete from public.quick_signup_attempts where ip_hash = repeat('a', 64);
 
 -- ================================================================ S14 · Endurecimento (0016): grants e search_path
 select tests.anon();

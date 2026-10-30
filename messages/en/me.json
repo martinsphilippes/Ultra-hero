@@ -679,7 +679,7 @@
     },
     "store": {
       "title": "What we store",
-      "item1": "Email, display name, avatar (a photo you uploaded, if any), language, theme and time zone.",
+      "item1": "Full name, mobile number, email, display name, avatar (a photo you uploaded, if any), language, theme and time zone. The password generated at quick sign-up is stored encrypted; only you can see it, here.",
       "item2": "Interests, favorites, lists, progress, completions, streak, reminders and check marks.",
       "item3": "Simulated subscription (modules and periods) and test orders with a fictional destination.",
       "item4": "Usage events without personal data and optional feedback.",
@@ -696,6 +696,48 @@
     "ai": {
       "title": "AI recommendations",
       "body": "Only if enabled by the administration. They receive only opaque ids, tags and pillars — never name or email."
+    },
+    "password": {
+      "title": "Your password",
+      "storedDescription": "Created automatically when you signed up. Only you can see it: it is stored encrypted and only opened when you tap Show.",
+      "googleDescription": "You sign in with Google. If you also want to sign in with email and password, create a password here.",
+      "ownDescription": "You use a password you chose, which we do not store. If you like, generate a new password (it will be kept here).",
+      "demoDescription": "Demo account: the password is shared and cannot be viewed or changed here.",
+      "unavailableDescription": "Password lookup is unavailable right now. If you forgot your password, use “Forgot my password” on the sign-in screen or sign in with Google.",
+      "show": "Show",
+      "hide": "Hide",
+      "copy": "Copy",
+      "copied": "Password copied",
+      "copyFailed": "Could not copy.",
+      "generate": "Generate new password",
+      "create": "Create a password",
+      "generated": "New password ready. Write it down or copy it.",
+      "notStoredNote": "Write it down now: this password could not be stored for later lookup.",
+      "confirmTitle": "Generate a new password?",
+      "confirmCreateTitle": "Create a password?",
+      "confirmDescription": "The current password stops working and other connected devices are signed out.",
+      "confirmBody": "This device stays signed in. The new password shows up here right away and is kept for you to look up.",
+      "errors": {
+        "unauthenticated": "Sign in to continue.",
+        "unavailable": "Password lookup is unavailable right now.",
+        "demo": "Demo accounts cannot change their password.",
+        "none": "There is no generated password stored for this account.",
+        "generic": "Could not complete. Please try again."
+      }
+    },
+    "phone": {
+      "title": "Mobile number",
+      "label": "Your mobile number",
+      "hint": "With area code. Only you and the administrators can see it. Leave blank to remove.",
+      "optional": "optional",
+      "save": "Save mobile number",
+      "saved": "Mobile number saved.",
+      "errors": {
+        "invalidPhone": "Enter a Brazilian mobile number with area code, e.g. (11) 91234-5678.",
+        "unavailable": "The mobile number cannot be saved right now.",
+        "unauthenticated": "Sign in to continue.",
+        "generic": "Could not save. Please try again."
+      }
     },
     "delete": {
       "title": "Delete account",

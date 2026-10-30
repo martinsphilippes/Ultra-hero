@@ -899,16 +899,44 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"profiles": {
+                },"quick_signup_attempts": {
                   Row: {
-                    "anonymized_at": string | null,"avatar_url": string | null,"created_at": string,"display_name": string | null,"id": string,"locale": Database["public"]['Enums']["locale_code"] | null,"onboarding_completed": boolean,"theme": string,"timezone": string | null,"updated_at": string
+                    "created_at": string,"email_hash": string,"id": string,"ip_hash": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"id": string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"email_hash": string,"id"?: string,"ip_hash": string
                   }
                   Update: {
-                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
+                    "created_at"?: string,"email_hash"?: string,"id"?: string,"ip_hash"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"user_generated_passwords": {
+                  Row: {
+                    "ciphertext": string,"created_at": string,"key_version": number,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ciphertext": string,"created_at"?: string,"key_version": number,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "ciphertext"?: string,"created_at"?: string,"key_version"?: number,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"profiles": {
+                  Row: {
+                    "anonymized_at": string | null,"avatar_url": string | null,"created_at": string,"display_name": string | null,"full_name": string | null,"id": string,"locale": Database["public"]['Enums']["locale_code"] | null,"onboarding_completed": boolean,"phone_e164": string | null,"theme": string,"timezone": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"full_name"?: string | null,"id": string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"phone_e164"?: string | null,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "anonymized_at"?: string | null,"avatar_url"?: string | null,"created_at"?: string,"display_name"?: string | null,"full_name"?: string | null,"id"?: string,"locale"?: Database["public"]['Enums']["locale_code"] | null,"onboarding_completed"?: boolean,"phone_e164"?: string | null,"theme"?: string,"timezone"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
