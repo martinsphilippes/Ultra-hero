@@ -2,7 +2,8 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 // Página do programa em até 5 cards (Conceito, Prepare-se, Conteúdo, Nutricional, Apoio), logo depois
-// do cabeçalho. Cada card abre um visualizador em tela cheia com as telas em sequência (estado na URL).
+// do cabeçalho. Os cards são abas: o conteúdo do escolhido aparece logo abaixo, sem trocar de tela
+// (estado na URL só com ?secao=, sem entrada no histórico).
 // Só leitura: visitante, sem inscrição (cookie uh-e2e: nada é gravado). Roda contra o banco remoto; os
 // ramos que dependem do conceito (0048) ou dos produtos ligados ao programa (0059) pulam sem eles.
 
@@ -14,9 +15,7 @@ const NUTRITION = "/programs/cozinha-rapida-do-dia-a-dia";
 const SUPPORT = "/programs/base-de-forca-4-semanas";
 
 const card = (page: Page, key: string) => page.getByTestId(`program-card-${key}`);
-const viewer = (page: Page) => page.getByRole("dialog");
-const position = (page: Page) => page.getByTestId("program-screen-position");
-const current = (page: Page) => page.getByTestId("program-screen-current");
+const panel = (page: Page) => page.getByTestId("program-panel");
 
 async function hasConcept(page: Page): Promise<boolean> {
   return (await card(page, "prepare-se").count()) > 0;
@@ -27,7 +26,7 @@ test.describe("cards do programa", () => {
     await context.addCookies([{ name: "uh-e2e", value: "1", url: baseURL! }]);
   });
 
-  test("cards depois do cabeçalho, na ordem, sem rolagem horizontal; Nutricional só com material", async ({ page }) => {
+  test("cards depois do cabeçalho, na ordem, sem rolagem horizontal; Conceito aberto abaixo; Nutricional só com material", async ({ page }) => {
     await page.goto(PROGRAM);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Manhãs com Intenção");
     await expect(page.getByRole("heading", { level: 2, name: "Explore o programa" })).toBeVisible();
@@ -36,90 +35,58 @@ test.describe("cards do programa", () => {
     const support = (await card(page, "apoio").count()) > 0;
     const expected = [...((await hasConcept(page)) ? ["conceito", "prepare-se"] : ["conceito"]), "conteudo", ...(nutrition ? ["nutricional"] : []), ...(support ? ["apoio"] : [])];
     expect(keys).toEqual(expected.map((k) => `program-card-${k}`));
-    // o Nutricional, quando aparece, tem material (conteúdos do programa ou do próprio herói, ou produtos);
-    // receitas só indicadas pelo herói não contam mais (regra em tests/unit/program-support.test.ts)
+    // abre com o Conceito escolhido e o conteúdo dele logo abaixo, sem visualizador
+    await expect(card(page, "conceito")).toHaveAttribute("aria-selected", "true");
+    await expect(panel(page)).toHaveAttribute("data-section", "conceito");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    const [cardsBox, panelBox] = await Promise.all([page.getByTestId("program-cards").boundingBox(), panel(page).boundingBox()]);
+    expect(panelBox!.y).toBeGreaterThan(cardsBox!.y);
     if (nutrition) {
       await card(page, "nutricional").click();
-      await expect(current(page).locator('[data-testid^="program-nutrition-"]').first()).toBeVisible();
-      await page.getByTestId("program-screen-close").click();
-      await expect(viewer(page)).toBeHidden();
+      await expect(panel(page).locator('[data-testid^="program-nutrition-"]').first()).toBeVisible();
     }
-    // cabeçalho antes dos cards; antigos blocos fora da página
-    const [h1Box, cardsBox] = await Promise.all([page.getByRole("heading", { level: 1 }).boundingBox(), page.getByTestId("program-cards").boundingBox()]);
-    expect(cardsBox!.y).toBeGreaterThan(h1Box!.y);
+    const [h1Box, cards2] = await Promise.all([page.getByRole("heading", { level: 1 }).boundingBox(), page.getByTestId("program-cards").boundingBox()]);
+    expect(cards2!.y).toBeGreaterThan(h1Box!.y);
     await expect(page.getByRole("heading", { name: "Conceito do programa" })).toHaveCount(0);
-    await expect(card(page, "conceito")).toContainText(/\d+ telas?/);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("Conceito: abre em tela cheia, avança, volta, fecha; URL acompanha e o foco volta ao card", async ({ page }) => {
+  test("Conceito e Prepare-se: tocar troca o conteúdo abaixo, sem trocar de tela; teclado entre abas", async ({ page }) => {
     await page.goto(PROGRAM);
     test.skip(!(await hasConcept(page)), "banco sem a 0048: o Conceito tem só a descrição");
-    await card(page, "conceito").click();
-    await expect(viewer(page)).toBeVisible();
-    await expect(page).toHaveURL(/secao=conceito&tela=1/);
-    await expect(position(page)).toHaveText("Tela 1 de 4");
-    await expect(current(page)).toContainText("dez minutos");
-    await expect(page.getByTestId("program-screen-back")).toBeDisabled();
+    await expect(panel(page)).toContainText("dez minutos");
+    await expect(panel(page).getByRole("heading", { name: "Para quem é" })).toBeVisible();
+    await expect(panel(page)).toContainText("Não é para:");
 
-    await page.getByTestId("program-screen-next").click();
-    await expect(position(page)).toHaveText("Tela 2 de 4");
-    await expect(page).toHaveURL(/secao=conceito&tela=2/);
-    await expect(current(page).getByRole("heading", { name: "Para quem é" })).toBeFocused();
-    await expect(current(page)).toContainText("Não é para:");
-
-    // teclado: seta direita avança, esquerda volta
-    await page.keyboard.press("ArrowRight");
-    await expect(position(page)).toHaveText("Tela 3 de 4");
-    await expect(current(page).getByRole("listitem")).toHaveCount(3);
-    await page.keyboard.press("ArrowLeft");
-    await expect(position(page)).toHaveText("Tela 2 de 4");
-
-    await page.getByTestId("program-screen-back").click();
-    await expect(position(page)).toHaveText("Tela 1 de 4");
-
-    await page.getByTestId("program-screen-close").click();
-    await expect(viewer(page)).toBeHidden();
-    await expect(page).not.toHaveURL(/secao=/);
-    await expect(card(page, "conceito")).toBeFocused();
-  });
-
-  test("Prepare-se: ritmo, o que precisa e cuidados; Voltar do navegador fecha; link direto abre na tela", async ({ page }) => {
-    await page.goto(PROGRAM);
-    test.skip(!(await hasConcept(page)), "banco sem a 0048");
     await card(page, "prepare-se").click();
-    await expect(position(page)).toHaveText("Tela 1 de 3");
-    await expect(current(page)).toContainText("7× por semana");
-    await expect(current(page)).toContainText("~10 min por dia");
-    await page.getByTestId("program-screen-next").click();
-    await expect(position(page)).toHaveText("Tela 2 de 3");
-    await page.getByTestId("program-screen-next").click();
-    await expect(position(page)).toHaveText("Tela 3 de 3");
-    await expect(current(page).getByRole("note", { name: "Cuidados" })).toContainText("Conteúdo educativo");
-    await expect(page.getByTestId("program-screen-done")).toBeVisible();
+    await expect(page).toHaveURL(/secao=prepare-se$/);
+    await expect(panel(page)).toHaveAttribute("data-section", "prepare-se");
+    await expect(panel(page)).toContainText("7× por semana");
+    await expect(panel(page)).toContainText("~10 min por dia");
+    await expect(panel(page).getByRole("note", { name: "Cuidados" })).toBeVisible();
 
-    await page.goBack();
-    await expect(viewer(page)).toBeHidden();
-    await expect(page).toHaveURL(new RegExp(`${PROGRAM}$`));
+    // teclado: seta para a esquerda volta para o Conceito
+    await card(page, "prepare-se").focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(card(page, "conceito")).toHaveAttribute("aria-selected", "true");
+    await expect(card(page, "conceito")).toBeFocused();
 
-    await page.goto(`${PROGRAM}?secao=prepare-se&tela=3`);
-    await expect(viewer(page)).toBeVisible();
-    await expect(position(page)).toHaveText("Tela 3 de 3");
-    await page.getByTestId("program-screen-done").click();
-    await expect(viewer(page)).toBeHidden();
-    await expect(page).not.toHaveURL(/secao=/);
+    // link direto abre já na aba
+    await page.goto(`${PROGRAM}?secao=prepare-se`);
+    await expect(card(page, "prepare-se")).toHaveAttribute("aria-selected", "true");
   });
 
   test("Conteúdo: lista dos passos com estado e links para os conteúdos; acessível", async ({ page }) => {
     await page.goto(`${PROGRAM}?secao=conteudo`);
-    await expect(viewer(page)).toBeVisible();
-    const items = current(page).getByTestId("program-items").getByRole("listitem");
+    await expect(panel(page)).toHaveAttribute("data-section", "conteudo");
+    const items = panel(page).getByTestId("program-items").getByRole("listitem");
+    await expect(items.first()).toBeVisible();
     expect(await items.count()).toBeGreaterThanOrEqual(3);
     await expect(items.first().getByRole("link")).toHaveAttribute("href", /^\/content\//);
     await expect(items.first()).toContainText(/Obrigatório|Opcional/);
 
-    const results = await new AxeBuilder({ page }).include('[data-testid="program-screen-viewer"]').withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const results = await new AxeBuilder({ page }).include('[data-testid="program-panel"]').include('[data-testid="program-cards"]').withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(serious, JSON.stringify(serious.map((v) => ({ id: v.id, help: v.help })), null, 2)).toEqual([]);
   });
@@ -128,26 +95,23 @@ test.describe("cards do programa", () => {
     await page.goto(NUTRITION);
     await expect(card(page, "nutricional")).toBeVisible();
     await card(page, "nutricional").click();
-    await expect(page).toHaveURL(/secao=nutricional&tela=1/);
-    await expect(current(page).getByRole("heading", { name: "Para comer bem" })).toBeVisible();
-    const contents = current(page).getByTestId("program-nutrition-contents").getByRole("link");
+    await expect(page).toHaveURL(/secao=nutricional$/);
+    await expect(panel(page).getByRole("heading", { name: "Para comer bem" })).toBeVisible();
+    const contents = panel(page).getByTestId("program-nutrition-contents").getByRole("link");
     expect(await contents.count()).toBeGreaterThan(0);
-    await page.getByTestId("program-screen-next").click();
-    await expect(current(page).getByRole("heading", { name: "Produtos para este programa" })).toBeVisible();
-    const products = current(page).getByTestId("product-action-card");
+    await expect(panel(page).getByRole("heading", { name: "Produtos para este programa" })).toBeVisible();
+    const products = panel(page).getByTestId("product-action-card");
     expect(await products.count()).toBeGreaterThan(0);
-    // visitante: o carrinho pede login e volta para esta mesma tela
-    await expect(products.first().getByRole("link", { name: /Entrar/ })).toHaveAttribute("href", /secao%3Dnutricional%26tela%3D2/);
+    // visitante: o carrinho pede login e volta para esta mesma aba
+    await expect(products.first().getByRole("link", { name: /Entrar/ })).toHaveAttribute("href", /secao%3Dnutricional/);
   });
 
-  test("tradução em inglês: rótulos dos cards e do visualizador", async ({ page }) => {
+  test("tradução em inglês: rótulos dos cards", async ({ page }) => {
     await page.context().addCookies([{ name: "NEXT_LOCALE", value: "en", url: new URL(TRANSLATED, test.info().project.use.baseURL ?? "http://localhost:3100").toString() }]);
     await page.goto(TRANSLATED);
     await expect(page.getByRole("heading", { level: 2, name: "Explore the program" })).toBeVisible();
-    await card(page, "conceito").click();
-    await expect(position(page)).toHaveText(/^Screen 1 of \d+$/);
     test.skip(!(await hasConcept(page)), "banco sem a 0048");
-    await expect(current(page).getByTestId("program-concept-idea")).toContainText("rigid sleep rules");
+    await expect(panel(page).getByTestId("program-concept-idea")).toContainText("rigid sleep rules");
   });
 
   test("app das lojas: Nutricional sem produtos (compra simulada não existe lá), só conteúdos", async ({ browser }) => {
@@ -157,8 +121,7 @@ test.describe("cards do programa", () => {
     const page = await context.newPage();
     await page.goto(NUTRITION);
     await card(page, "nutricional").click();
-    await expect(position(page)).toHaveText("Tela 1 de 1");
-    await expect(current(page).getByTestId("program-nutrition-contents")).toBeVisible();
+    await expect(panel(page).getByTestId("program-nutrition-contents")).toBeVisible();
     await expect(page.getByTestId("program-nutrition-products")).toHaveCount(0);
     await context.close();
   });
@@ -187,17 +150,12 @@ test.describe("cards do programa", () => {
       await expect(buy.getByRole("link", { name: /Entrar/ }).first()).toHaveAttribute("href", /\/login\?next=/);
     }
 
-    // card Apoio: produtos (se houver) e depois profissionais
+    // card Apoio: produtos (se houver) e profissionais, logo abaixo dos cards
     await card(page, "apoio").click();
-    await expect(page).toHaveURL(/secao=apoio&tela=1/);
-    if (hasProducts) {
-      await expect(current(page).getByRole("heading", { name: "Produtos do programa" })).toBeVisible();
-      await page.getByTestId("program-screen-next").click();
-    }
-    await expect(current(page).getByRole("heading", { name: "Profissionais indicados" })).toBeVisible();
-    await expect(current(page).getByTestId("program-support-professional").first()).toContainText("Téo Fôlego");
-    await page.getByTestId("program-screen-close").click();
-    await expect(viewer(page)).toBeHidden();
+    await expect(panel(page)).toHaveAttribute("data-section", "apoio");
+    if (hasProducts) await expect(panel(page).getByRole("heading", { name: "Produtos do programa" })).toBeVisible();
+    await expect(panel(page).getByRole("heading", { name: "Profissionais indicados" })).toBeVisible();
+    await expect(panel(page).getByTestId("program-support-professional").first()).toContainText("Téo Fôlego");
   });
 
   test("390 px: até 5 cards numa linha, rótulos sem estourar e sem rolagem horizontal", async ({ page }) => {
@@ -241,21 +199,4 @@ test.describe("cards do programa", () => {
     await context.close();
   });
 
-  test("celular: deslizar para o lado troca de tela", async ({ page }, info) => {
-    test.skip(info.project.name !== "mobile", "gesto de toque só no celular");
-    await page.goto(PROGRAM);
-    await card(page, "conceito").click();
-    await expect(position(page)).toHaveText(/^Tela 1 de \d+$/);
-    test.skip((await position(page).textContent()) === "Tela 1 de 1", "Conceito com uma tela só (banco sem a 0048)");
-    const swipe = (fromX: number, toX: number) =>
-      current(page).evaluate((el, [a, b]) => {
-        const touch = (x: number) => new Touch({ identifier: 1, target: el, clientX: x, clientY: 300 });
-        el.dispatchEvent(new TouchEvent("touchstart", { bubbles: true, touches: [touch(a)], changedTouches: [touch(a)] }));
-        el.dispatchEvent(new TouchEvent("touchend", { bubbles: true, touches: [], changedTouches: [touch(b)] }));
-      }, [fromX, toX]);
-    await swipe(320, 60);
-    await expect(position(page)).toHaveText(/^Tela 2 de \d+$/);
-    await swipe(60, 320);
-    await expect(position(page)).toHaveText(/^Tela 1 de \d+$/);
-  });
 });

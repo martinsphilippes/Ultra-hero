@@ -22,5 +22,5 @@ export function ProgramCards({ cards }: { cards: ProgramCard[] }) {
       }),
     [cards],
   );
-  return <ScreenCards testIdPrefix="program" cards={withIcons} />;
+  return <ScreenCards testIdPrefix="program" cards={withIcons} mode="inline" />;
 }
