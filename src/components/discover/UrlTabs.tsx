@@ -15,7 +15,8 @@ type Props = {
   className?: string;
 };
 
-// Abas cujo estado vive na URL: trocar de aba navega (sem rolar) e o servidor renderiza o painel.
+// Abas cujo estado vive na URL: trocar de aba substitui a URL (sem rolar, sem nova entrada no
+// histórico) e o servidor renderiza o painel. Assim o "Voltar" sai da tela, não volta de aba em aba.
 export function UrlTabs({ value, tabs, children, className, ...props }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -23,7 +24,7 @@ export function UrlTabs({ value, tabs, children, className, ...props }: Props) {
   const onValueChange = (next: string) => {
     const target = tabs.find((tab) => tab.value === next);
     if (!target || target.value === value) return;
-    startTransition(() => router.push(target.href, { scroll: false }));
+    startTransition(() => router.replace(target.href, { scroll: false }));
   };
 
   return (

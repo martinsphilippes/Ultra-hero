@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 // "Voltar" volta para a tela anterior do app (não para um destino fixo). Aberta direto (link de
 // fora, aba nova), a página usa o destino padrão dela. Só leitura.
@@ -38,5 +39,18 @@ test.describe("botão de voltar", () => {
     await expect(back).not.toHaveAttribute("data-history", /.*/);
     await expect(back).toHaveAttribute("href", /\/explore/);
     await fresh.close();
+  });
+
+  test("Perfil → coleção de receitas → trocar de aba → Voltar volta ao Perfil (abas não entram no histórico)", async ({ page }) => {
+    await loginAs(page, "free", { home: null });
+    await page.goto("/profile");
+    await page.locator('main a[href="/profile/receitas"]').first().click();
+    await expect(page).toHaveURL(/\/profile\/receitas/);
+    await page.getByRole("tab", { name: "Listas" }).click();
+    await expect(page).toHaveURL(/aba=listas/);
+    await page.getByRole("tab", { name: "Salvas" }).click();
+    await expect(page).toHaveURL(/aba=salvas|receitas$/);
+    await page.getByTestId("back-link").click();
+    await expect(page).toHaveURL(/\/profile$/);
   });
 });
