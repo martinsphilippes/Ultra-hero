@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { ContentTile } from "@/components/catalog";
+import { HeroCollectibleBanner } from "@/components/collectibles/HeroCollectibleBanner";
 import { TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
@@ -87,6 +88,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
         <HeroBio headline={creator.headline} bio={creator.bio} />
         {/* perfil do chef: especialidades e credenciais aprovadas pelo admin (P7) */}
         <ChefHighlights creatorId={creator.id} />
+        {/* Colecionáveis do herói ao vivo/agendados (0054); sem item, nada */}
+        <HeroCollectibleBanner creatorId={creator.id} />
       </header>
 
       <section aria-labelledby="hero-libraries-title" className="flex flex-col gap-2">

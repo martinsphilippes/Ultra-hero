@@ -5946,5 +5946,227 @@ select tests.ok('S65 limpeza de contadores sem execução por clientes',
   not has_function_privilege('anon', 'public.recipe_action_counters_creator_cleanup()', 'execute')
   and not has_function_privilege('authenticated', 'public.recipe_action_counters_creator_cleanup()', 'execute'));
 
+-- ================================================================ S66 · Colecionáveis (lances ao vivo, 0054)
+-- Leitura pública sem ids de usuário; lance só pela RPC e só logado; incremento, fim, auto-cobertura,
+-- limite de 2 s, conta suspensa, admin e o próprio herói recusados; anti-sniping; escrita só do admin
+-- (auditada); encerramento e pagamento simulado idempotentes; Realtime só nas tabelas públicas; S14 = 17.
+select tests.su();
+insert into auth.users (id, email) values
+  ('10000000-0000-4000-8000-000000005401', 'lance1@test.local'),
+  ('10000000-0000-4000-8000-000000005402', 'lance2@test.local'),
+  ('10000000-0000-4000-8000-000000005403', 'lance3@test.local');
+update public.profiles set display_name = 'Maria Silva' where id = '10000000-0000-4000-8000-000000005401';
+update public.profiles set display_name = 'João Souza' where id = '10000000-0000-4000-8000-000000005402';
+update public.profiles set display_name = null where id = '10000000-0000-4000-8000-000000005403';
+create temp table t_s66 (k text primary key, v text);
+grant all on t_s66 to anon, authenticated;
+
+select tests.ok('S66 seed: 4 itens de demonstração em rascunho, nenhum ao vivo',
+  (select count(*) from public.collectibles where is_demo and status = 'draft') = 4
+  and not exists (select 1 from public.collectibles where status <> 'draft'));
+select tests.ok('S66 tabelas públicas sem coluna de usuário',
+  not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name in ('collectibles', 'collectible_bids')
+              and (column_name like '%user%' or column_name in ('created_by', 'bidder_id', 'owner_id'))));
+
+select tests.anon();
+select tests.ok('S66 visitante não vê rascunho', (select count(*) from public.collectibles) = 0);
+
+-- admin lança a bola agora e agenda a camisa para amanhã
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.admin_collectible_launch(public.seed_uuid('collectible:bola-neymar'), null);
+select public.admin_collectible_launch(public.seed_uuid('collectible:camisa-ronaldinho'), now() + interval '1 day');
+select tests.ok('S66 admin lança agora (ao vivo, fim = início + duração) e agenda outro',
+  (select status = 'live' and starts_at = now() and ends_at = now() + interval '1440 minutes' and current_cents = 150000
+     from public.collectibles where id = public.seed_uuid('collectible:bola-neymar'))
+  and (select status = 'scheduled' and public.collectible_phase(status, starts_at, ends_at) = 'scheduled'
+     from public.collectibles where id = public.seed_uuid('collectible:camisa-ronaldinho')));
+select tests.expect_error('S66 lançamento no passado recusado',
+  $q$select public.admin_collectible_launch(public.seed_uuid('collectible:prancha-medina'), now() - interval '1 hour')$q$, 'invalid_start');
+
+select tests.anon();
+select tests.ok('S66 visitante vê o ao vivo e o agendado (não o rascunho)', (select count(*) from public.collectibles) = 2);
+select tests.expect_error('S66 visitante não executa place_bid', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'permission denied');
+select tests.expect_error('S66 visitante não grava lance direto', $q$insert into public.collectible_bids (collectible_id, amount_cents) values (public.seed_uuid('collectible:bola-neymar'), 999999)$q$, 'permission denied');
+select tests.expect_error('S66 visitante não lê donos dos lances', $q$select count(*) from public.collectible_bid_owners$q$, 'permission denied');
+select tests.expect_error('S66 visitante não lê resultados', $q$select count(*) from public.collectible_results$q$, 'permission denied');
+select tests.expect_error('S66 visitante não encerra', $q$select public.collectible_finalize(public.seed_uuid('collectible:bola-neymar'))$q$, 'permission denied');
+
+-- lances
+select tests.login('10000000-0000-4000-8000-000000005401', 'lance1@test.local');
+insert into t_s66 select 'b1', (public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)) ->> 'bid_id';
+select tests.ok('S66 1º lance = preço inicial + incremento, rótulo mascarado',
+  (select amount_cents = 151000 and bidder_label = 'Ma***a' from public.collectible_bids where id = (select v::uuid from t_s66 where k = 'b1'))
+  and (select current_cents = 151000 and bids_count = 1 and leading_bid_id = (select v::uuid from t_s66 where k = 'b1')
+       from public.collectibles where id = public.seed_uuid('collectible:bola-neymar')));
+select tests.expect_error('S66 quem já vence não cobre o próprio lance',
+  $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'already_winning');
+select tests.login('10000000-0000-4000-8000-000000005402', 'lance2@test.local');
+select tests.expect_error('S66 incremento fora da lista recusado',
+  $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 2000)$q$, 'invalid_increment');
+select tests.expect_error('S66 incremento negativo recusado',
+  $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), -1000)$q$, 'invalid_increment');
+select tests.ok('S66 2º participante cobre com +R$ 50',
+  ((public.place_bid(public.seed_uuid('collectible:bola-neymar'), 5000)) ->> 'amount_cents')::int = 156000);
+select tests.login('10000000-0000-4000-8000-000000005401', 'lance1@test.local');
+select tests.expect_error('S66 limite: 1 lance a cada 2 s por pessoa e item',
+  $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'rate_limited');
+select tests.su();
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds' where user_id = '10000000-0000-4000-8000-000000005401';
+select tests.login('10000000-0000-4000-8000-000000005401', 'lance1@test.local');
+select tests.ok('S66 passado o limite, o lance entra',
+  ((public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)) ->> 'amount_cents')::int = 157000);
+select tests.ok('S66 cada um lê só os próprios donos de lance',
+  (select count(*) from public.collectible_bid_owners) = 2
+  and not exists (select 1 from public.collectible_bid_owners where user_id <> auth.uid()));
+select tests.login('10000000-0000-4000-8000-000000005403', 'lance3@test.local');
+select tests.ok('S66 quem não deu lance não vê dono nenhum, mas vê os 3 lances públicos',
+  (select count(*) from public.collectible_bid_owners) = 0 and (select count(*) from public.collectible_bids) = 3);
+select tests.expect_error('S66 sem lance não se escreve na tabela de lances (sem grant)',
+  $q$update public.collectible_bids set amount_cents = 1$q$, 'permission denied');
+select tests.expect_error('S66 consumidor não muda o item direto (sem grant)',
+  $q$update public.collectibles set current_cents = 1$q$, 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S66 admin vê todos os donos', (select count(*) from public.collectible_bid_owners) = 3);
+select tests.expect_error('S66 admin não dá lance', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'admin_cannot_bid');
+
+-- conta suspensa e o próprio herói do item
+select tests.su();
+update auth.users set banned_until = now() + interval '1 day' where id = '10000000-0000-4000-8000-000000005402';
+select tests.login('10000000-0000-4000-8000-000000005402', 'lance2@test.local');
+select tests.expect_error('S66 conta suspensa não dá lance', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'account_suspended');
+select tests.su();
+update auth.users set banned_until = null where id = '10000000-0000-4000-8000-000000005402';
+insert into t_s66 select 'hero_user', coalesce(user_id::text, '') from public.creator_profiles where slug = 'neymar';
+update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000005403' where slug = 'neymar';
+select tests.login('10000000-0000-4000-8000-000000005403', 'lance3@test.local');
+select tests.expect_error('S66 o herói não dá lance no próprio item', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'creator_cannot_bid');
+select tests.su();
+update public.creator_profiles set user_id = nullif((select v from t_s66 where k = 'hero_user'), '')::uuid where slug = 'neymar';
+
+-- agendado e rascunho não aceitam lance
+select tests.login('10000000-0000-4000-8000-000000005402', 'lance2@test.local');
+select tests.expect_error('S66 agendado ainda não aceita lance', $q$select public.place_bid(public.seed_uuid('collectible:camisa-ronaldinho'), 1000)$q$, 'auction_not_live');
+select tests.expect_error('S66 rascunho não existe para o público', $q$select public.place_bid(public.seed_uuid('collectible:prancha-medina'), 1000)$q$, 'not_found');
+
+-- anti-sniping: com 1 min para o fim, o lance leva o fim para now() + 2 min; com 1 h, não mexe
+select tests.su();
+update public.collectibles set ends_at = now() + interval '1 minute' where id = public.seed_uuid('collectible:bola-neymar');
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds';
+select tests.login('10000000-0000-4000-8000-000000005402', 'lance2@test.local');
+select tests.ok('S66 lance no último minuto devolve extended = true',
+  ((public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)) ->> 'extended')::boolean);
+select tests.ok('S66 anti-sniping estende para now() + 2 min',
+  (select ends_at = now() + interval '2 minutes' and extensions_count = 1 and current_cents = 158000
+     from public.collectibles where id = public.seed_uuid('collectible:bola-neymar')));
+select tests.su();
+update public.collectibles set ends_at = now() + interval '1 hour' where id = public.seed_uuid('collectible:bola-neymar');
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds';
+select tests.login('10000000-0000-4000-8000-000000005401', 'lance1@test.local');
+select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000);
+select tests.ok('S66 lance longe do fim não estende',
+  (select ends_at = now() + interval '1 hour' and extensions_count = 1 and current_cents = 159000 and bids_count = 5
+     from public.collectibles where id = public.seed_uuid('collectible:bola-neymar')));
+
+-- escrita do admin: só por RPC, auditada; depois de começar, preço/incrementos/tempo travados
+select tests.expect_error('S66 consumidor não cria item', $q$select public.admin_collectible_save(null, '{"title":"x"}')$q$, 'forbidden');
+select tests.expect_error('S66 consumidor não lança', $q$select public.admin_collectible_launch(public.seed_uuid('collectible:prancha-medina'), null)$q$, 'forbidden');
+select tests.expect_error('S66 consumidor não cancela', $q$select public.admin_collectible_cancel(public.seed_uuid('collectible:bola-neymar'), 'motivo qualquer')$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s66 select 'new', public.admin_collectible_save(null, jsonb_build_object('title', 'Luva assinada [S66]', 'description', 'teste',
+  'photos', jsonb_build_array('/collectibles/ball.svg', ' '), 'start_price_cents', 5000, 'bid_increments_cents', jsonb_build_array(5000, 1000),
+  'duration_minutes', 30))::text;
+select tests.ok('S66 admin cria rascunho (fotos vazias saem, incrementos ordenados, preço atual = inicial)',
+  (select status = 'draft' and photos = '{/collectibles/ball.svg}' and bid_increments_cents = '{1000,5000}' and current_cents = 5000
+     from public.collectibles where id = (select v::uuid from t_s66 where k = 'new')));
+select tests.expect_error('S66 incrementos repetidos recusados',
+  $q$select public.admin_collectible_save(null, '{"title":"Item com repetição","start_price_cents":1000,"bid_increments_cents":[1000,1000],"duration_minutes":60}')$q$, 'invalid_increment');
+select tests.expect_error('S66 mais de 4 incrementos recusados (regra da tabela)',
+  $q$select public.admin_collectible_save(null, '{"title":"Item com cinco","start_price_cents":1000,"bid_increments_cents":[1,2,3,4,5],"duration_minutes":60}')$q$, 'collectibles_bid_increments_cents_check');
+select tests.expect_error('S66 foto com endereço inválido recusada',
+  $q$select public.admin_collectible_save(null, '{"title":"Item com foto ruim","photos":["javascript:alert(1)"],"start_price_cents":1000,"bid_increments_cents":[1000],"duration_minutes":60}')$q$, 'invalid_photo');
+select tests.expect_error('S66 item ao vivo com lances: preço travado',
+  format($q$select public.admin_collectible_save(%L, '{"title":"Bola","start_price_cents":100,"bid_increments_cents":[1000,5000,10000],"duration_minutes":1440}')$q$,
+         public.seed_uuid('collectible:bola-neymar')), 'collectible_locked');
+select public.admin_collectible_save(public.seed_uuid('collectible:bola-neymar'), jsonb_build_object('title', 'Bola assinada (editada)',
+  'description', 'nova', 'creator_id', public.seed_uuid('creator:tiago'), 'photos', jsonb_build_array('/collectibles/ball.svg'),
+  'authenticity_note', 'cert', 'start_price_cents', 150000, 'bid_increments_cents', jsonb_build_array(1000, 5000, 10000), 'duration_minutes', 1440));
+select tests.ok('S66 ao vivo: textos editáveis, estado do lance intacto',
+  (select title = 'Bola assinada (editada)' and current_cents = 159000 and bids_count = 5 from public.collectibles where id = public.seed_uuid('collectible:bola-neymar')));
+select tests.expect_error('S66 cancelamento exige justificativa',
+  $q$select public.admin_collectible_cancel(public.seed_uuid('collectible:camisa-ronaldinho'), 'x')$q$, 'reason_required');
+select public.admin_collectible_cancel(public.seed_uuid('collectible:camisa-ronaldinho'), 'Item danificado no transporte');
+select tests.ok('S66 admin cancela o agendado',
+  (select status = 'cancelled' and public.collectible_phase(status, starts_at, ends_at) = 'cancelled'
+     from public.collectibles where id = public.seed_uuid('collectible:camisa-ronaldinho')));
+select tests.su();
+select tests.ok('S66 auditoria: criar, lançar (2), editar e cancelar, com o admin como autor',
+  (select count(*) from public.admin_audit where resource_type = 'collectible' and actor_id = '10000000-0000-4000-8000-000000000001'
+     and action in ('collectible.create', 'collectible.launch', 'collectible.update', 'collectible.cancel')) = 5
+  and exists (select 1 from public.admin_audit where action = 'collectible.cancel' and justification = 'Item danificado no transporte'));
+
+-- encerramento por tempo: lance recusado; encerrar é idempotente; só o vencedor vê o resultado
+update public.collectibles set starts_at = now() - interval '2 hours', ends_at = now() - interval '1 minute' where id = public.seed_uuid('collectible:bola-neymar');
+update public.collectible_bid_owners set created_at = now() - interval '5 seconds';
+select tests.login('10000000-0000-4000-8000-000000005402', 'lance2@test.local');
+select tests.expect_error('S66 depois do fim o lance é recusado', $q$select public.place_bid(public.seed_uuid('collectible:bola-neymar'), 1000)$q$, 'auction_ended');
+select tests.ok('S66 1ª chamada encerra', ((public.collectible_finalize(public.seed_uuid('collectible:bola-neymar'))) ->> 'finalized_now')::boolean);
+select tests.ok('S66 2ª chamada não muda nada', not ((public.collectible_finalize(public.seed_uuid('collectible:bola-neymar'))) ->> 'finalized_now')::boolean);
+select tests.ok('S66 perdedor não vê o resultado; vê o preço final e o rótulo do vencedor',
+  (select count(*) from public.collectible_results) = 0
+  and (select status = 'ended' and current_cents = 159000 and winner_label = 'Ma***a' from public.collectibles where id = public.seed_uuid('collectible:bola-neymar')));
+select tests.expect_error('S66 perdedor não paga', format($q$select public.collectible_pay(%L, %L)$q$,
+  public.seed_uuid('collectible:bola-neymar'), public.seed_uuid('dest:centro')), 'forbidden');
+select tests.expect_error('S66 rotina de encerramento é só do sistema', $q$select public.collectible_finalize_due()$q$, 'permission denied');
+select tests.login('10000000-0000-4000-8000-000000005401', 'lance1@test.local');
+select tests.ok('S66 vencedor vê "arrematado" com pagamento pendente',
+  (select outcome = 'won' and final_cents = 159000 and claim_status = 'pending_payment' and winner_user_id = auth.uid()
+     from public.collectible_results where collectible_id = public.seed_uuid('collectible:bola-neymar')));
+insert into t_s66 select 'order', public.collectible_pay(public.seed_uuid('collectible:bola-neymar'), public.seed_uuid('dest:centro'))::text;
+select tests.ok('S66 pagamento simulado cria pedido de teste comum do vencedor',
+  (select o.user_id = auth.uid() and o.subtotal_cents = 159000 and o.total_cents >= 159000 and o.is_demo
+     from public.test_orders o where o.id = (select v::uuid from t_s66 where k = 'order'))
+  and (select count(*) from public.test_order_items i where i.order_id = (select v::uuid from t_s66 where k = 'order')
+       and i.title_snapshot = 'Bola assinada (editada)' and i.price_cents_snapshot = 159000 and i.product_id is null) = 1
+  and (select claim_status = 'paid' from public.collectible_results where collectible_id = public.seed_uuid('collectible:bola-neymar')));
+select tests.ok('S66 pagar de novo devolve o mesmo pedido (idempotente)',
+  public.collectible_pay(public.seed_uuid('collectible:bola-neymar'), public.seed_uuid('dest:centro'))::text = (select v from t_s66 where k = 'order')
+  and (select count(*) from public.test_orders where user_id = auth.uid()) = 1);
+select tests.su();
+select tests.ok('S66 rotina do sistema: nada a encerrar de novo', public.collectible_finalize_due() = 0
+  and (select count(*) from public.collectible_results) = 1);
+-- item vencido sem lance: encerra como "sem lances", sem vencedor
+update public.collectibles set status = 'live', starts_at = now() - interval '2 hours', ends_at = now() - interval '1 minute'
+  where id = (select v::uuid from t_s66 where k = 'new');
+insert into t_s66 select 'due', public.collectible_finalize_due()::text;
+select tests.ok('S66 rotina encerra o vencido sem lances (sem vencedor)', (select v from t_s66 where k = 'due') = '1'
+  and (select outcome = 'no_bids' and winner_user_id is null and claim_status = 'none' from public.collectible_results
+       where collectible_id = (select v::uuid from t_s66 where k = 'new')));
+
+-- funções: security definer com search_path fixo; nenhuma nova para o visitante
+select tests.ok('S66 RPCs: security definer, search_path fixo, sem execute para anon',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
+     from pg_proc p where p.oid in ('public.place_bid(uuid, int)'::regprocedure, 'public.collectible_finalize(uuid)'::regprocedure,
+       'public.collectible_finalize_row(uuid)'::regprocedure, 'public.collectible_finalize_due()'::regprocedure, 'public.collectible_pay(uuid, uuid)'::regprocedure,
+       'public.admin_collectible_save(uuid, jsonb)'::regprocedure, 'public.admin_collectible_launch(uuid, timestamptz)'::regprocedure,
+       'public.admin_collectible_cancel(uuid, text)'::regprocedure))
+  and has_function_privilege('authenticated', 'public.place_bid(uuid, int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.collectible_finalize_row(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.collectible_finalize_due()', 'execute'));
+select tests.ok('S66 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- Realtime: com a publicação da Supabase, só as duas tabelas públicas entram; reaplicar não muda o que o admin editou
+create publication supabase_realtime;
+\ir ../migrations/0054_collectibles_auctions.sql
+select tests.ok('S66 Realtime publica só collectibles e collectible_bids',
+  (select string_agg(tablename, ',' order by tablename) from pg_publication_tables where pubname = 'supabase_realtime') = 'collectible_bids,collectibles');
+\ir ../migrations/0054_collectibles_auctions.sql
+select tests.ok('S66 reaplicar a 0054 mantém edição do admin, estado e publicação',
+  (select title = 'Bola assinada (editada)' and status = 'ended' from public.collectibles where id = public.seed_uuid('collectible:bola-neymar'))
+  and (select count(*) from public.collectibles) = 5
+  and (select count(*) from pg_publication_tables where pubname = 'supabase_realtime') = 2);
+drop publication supabase_realtime;
+drop table t_s66;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

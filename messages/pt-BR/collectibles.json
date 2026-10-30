@@ -1,0 +1,297 @@
+{
+  "demo": "Demonstração",
+  "segment": {
+    "label": "Seções da aba Comprar",
+    "shop": "Loja",
+    "collectibles": "Colecionáveis",
+    "live": "Ao vivo",
+    "purchases": "Minhas compras"
+  },
+  "card": {
+    "finalPrice": "Valor final",
+    "currentBid": "Lance atual",
+    "startPrice": "Lance inicial",
+    "endsIn": "Termina em",
+    "startsIn": "Começa em",
+    "ended": "Encerrado",
+    "bids": "{n, plural, =0 {sem lances} =1 {1 lance} other {# lances}}"
+  },
+  "list": {
+    "title": "Colecionáveis",
+    "description": "Itens raros assinados pelos heróis, com lances ao vivo. Pagamento simulado.",
+    "empty": "Nenhum colecionável no momento",
+    "unavailable": "Colecionáveis chegam em breve",
+    "emptyDescription": "Quando um item assinado entrar no ar, ele aparece aqui com a contagem regressiva.",
+    "live": "Ao vivo agora",
+    "upcoming": "Em breve",
+    "ended": "Encerrados",
+    "legal": "Ambiente de demonstração: lances e pagamento são simulados, sem cobrança real. Marcas e imagens de terceiros não são usadas."
+  },
+  "highlight": {
+    "many": "{n} colecionáveis ao vivo"
+  },
+  "detail": {
+    "back": "Colecionáveis",
+    "demoItem": "Item de demonstração",
+    "signedBy": "Assinado por {name}",
+    "about": "Sobre o item",
+    "authenticity": "Autenticidade",
+    "rulesTitle": "Como funcionam os lances",
+    "rules": {
+      "increments": "Cada lance soma um dos valores dos botões ao lance atual. O primeiro lance parte do lance inicial.",
+      "antiSnipe": "Lance nos 2 últimos minutos estende o fim para 2 minutos depois do lance.",
+      "selfOutbid": "Quem já está vencendo não cobre o próprio lance. Um lance a cada 2 segundos por pessoa.",
+      "payment": "Quem arremata conclui o pagamento simulado e o pedido aparece em Minhas compras."
+    }
+  },
+  "gallery": {
+    "label": "Fotos de {title}",
+    "photo": "Foto {n} de {total}",
+    "thumbs": "Escolher foto"
+  },
+  "room": {
+    "statusLabel": "Situação do lance",
+    "live": "Ao vivo",
+    "phase": {
+      "scheduled": "Em breve",
+      "ended": "Encerrado",
+      "cancelled": "Cancelado"
+    },
+    "price": {
+      "final": "Arrematado por",
+      "noBids": "Lance inicial (sem lances)",
+      "current": "Lance atual",
+      "start": "Lance inicial"
+    },
+    "bidsCount": "{n, plural, =0 {Nenhum lance ainda} =1 {1 lance} other {# lances}}",
+    "extendedCount": "{n, plural, =1 {estendido 1 vez} other {estendido # vezes}}",
+    "endsIn": "Termina em",
+    "startsIn": "Começa em",
+    "lastMinute": "Último minuto!",
+    "quickBidLabel": "Lance rápido",
+    "quickBidAria": "Dar lance de mais {increment}, total {total}",
+    "winningHint": "Você está vencendo. Os botões voltam se alguém cobrir seu lance.",
+    "quickBidHint": "Toque num valor para ver o total e confirmar.",
+    "loginToBid": "Entre para dar lances. Você pode assistir sem entrar.",
+    "loginCta": "Entrar para dar lance",
+    "adminCannotBid": "Contas de administração acompanham, mas não dão lance.",
+    "feedTitle": "Lances",
+    "feedScheduled": "Os lances aparecem aqui assim que o item entrar no ar.",
+    "feedEmpty": "Nenhum lance ainda. Seja o primeiro!",
+    "you": "Você",
+    "anonymousBidder": "Participante",
+    "winningBid": "Vencedor",
+    "topBid": "Maior",
+    "announce": {
+      "newPrice": "Novo lance: {price}"
+    },
+    "toast": {
+      "placed": "Lance de {price} registrado",
+      "extended": "Faltava pouco: o fim foi estendido em 2 minutos."
+    },
+    "errors": {
+      "unauthenticated": "Entre para dar lance.",
+      "admin_cannot_bid": "Contas de administração não dão lance.",
+      "account_suspended": "Sua conta está suspensa e não pode dar lances.",
+      "creator_cannot_bid": "O herói não dá lance no próprio item.",
+      "not_found": "Item não encontrado.",
+      "auction_ended": "O tempo acabou. Esse lance não entrou.",
+      "auction_not_live": "Este item ainda não está aceitando lances.",
+      "invalid_increment": "Valor de lance inválido. Use um dos botões.",
+      "already_winning": "Você já está vencendo.",
+      "rate_limited": "Calma! Espere 2 segundos entre um lance e outro.",
+      "generic": "Não foi possível registrar o lance. Tente de novo."
+    },
+    "confirm": {
+      "title": "Confirmar lance",
+      "description": "O valor pode subir se alguém der um lance antes de você confirmar.",
+      "cancel": "Cancelar",
+      "submit": "Dar lance de {price}",
+      "yourBid": "Seu lance",
+      "breakdown": "Lance atual {current} + {increment}",
+      "antiSnipe": "Faltam menos de 2 minutos: seu lance estende o fim em 2 minutos.",
+      "simulated": "Demonstração: nenhuma cobrança real. Se você arrematar, o pagamento é simulado."
+    },
+    "connection": {
+      "connecting": "Conectando…",
+      "realtime": "Ao vivo",
+      "polling": "Atualiza a cada 3 s"
+    },
+    "standing": {
+      "winning": "Você está vencendo",
+      "winningHint": "Seu lance é o maior até agora.",
+      "outbid": "Seu lance foi superado",
+      "outbidHint": "Dê um novo lance para voltar à frente.",
+      "won": "Você arrematou!",
+      "wonHint": "Seu lance de {price} venceu. Conclua o pagamento simulado para gerar o pedido.",
+      "viewOrder": "Ver pedido",
+      "payCta": "Concluir pagamento (simulado)",
+      "ended": "Encerrado",
+      "endedNoBids": "Encerrado sem lances",
+      "endedBy": "Arrematado por {name} por {price}.",
+      "endedPrice": "Valor final: {price}.",
+      "cancelled": "Cancelado",
+      "cancelledHint": "A administração cancelou este item. Nenhum lance vale.",
+      "scheduled": "Este item ainda não está no ar. Os lances abrem quando a contagem chegar a zero.",
+      "scheduledAnon": "Este item ainda não está no ar. Entre para dar lance quando abrir."
+    }
+  },
+  "pay": {
+    "title": "Pagamento do arremate",
+    "description": "Escolha um destino fictício e confirme. Nada é cobrado.",
+    "banner": "Pagamento simulado: nenhuma cobrança real e nenhum endereço real. O pedido aparece em Minhas compras.",
+    "back": "Voltar ao item",
+    "wonFor": "Você arrematou por",
+    "destination": "Destino (fictício)",
+    "fictional": "Fictício",
+    "submit": "Confirmar pagamento simulado · {total}",
+    "simulated": "Demonstração: o pedido é de teste e segue o transporte simulado.",
+    "errors": {
+      "forbidden": "Só quem arrematou conclui este pagamento.",
+      "invalid_destination": "Escolha um destino.",
+      "commerce_disabled": "As compras de demonstração estão pausadas.",
+      "generic": "Não foi possível concluir. Tente de novo."
+    }
+  },
+  "purchases": {
+    "title": "Minhas compras",
+    "description": "Seus pedidos de teste e seus lances nos colecionáveis.",
+    "back": "Comprar",
+    "tabsLabel": "Tipo de compra",
+    "tabs": {
+      "orders": "Pedidos",
+      "bids": "Lances e arremates"
+    }
+  },
+  "myBids": {
+    "empty": "Você ainda não deu lances",
+    "emptyDescription": "Os itens em que você der lance aparecem aqui, com a situação de cada um.",
+    "goToCollectibles": "Ver colecionáveis",
+    "listLabel": "Lances e arremates",
+    "standing": {
+      "winning": "Vencendo",
+      "outbid": "Superado",
+      "won": "Arrematado",
+      "lost": "Encerrado",
+      "cancelled": "Cancelado",
+      "watching": "Acompanhando"
+    },
+    "myTop": "Seu maior lance {price}",
+    "final": "final {price}",
+    "current": "atual {price}",
+    "viewOrder": "Ver pedido",
+    "payCta": "Concluir pagamento (simulado)"
+  },
+  "admin": {
+    "title": "Colecionáveis",
+    "description": "Itens assinados com lance ao vivo. Crie em rascunho, revise e lance agora ou agende.",
+    "unavailable": "Colecionáveis indisponíveis: aplique a migração 0054 no banco.",
+    "new": "Novo colecionável",
+    "newDescription": "O item nasce em rascunho. Lançar ou agendar fica no detalhe.",
+    "empty": "Nenhum colecionável ainda.",
+    "demo": "Demonstração",
+    "phase": {
+      "draft": "Rascunho",
+      "scheduled": "Agendado",
+      "live": "Ao vivo",
+      "ended": "Encerrado",
+      "cancelled": "Cancelado"
+    },
+    "bids": "{n, plural, =1 {1 lance} other {# lances}}",
+    "views": "{n, plural, =1 {1 visualização} other {# visualizações}}",
+    "endsAt": "fim {date}",
+    "viewPublic": "Ver na loja",
+    "statusPanel": "Situação",
+    "livePanel": "Lances ao vivo",
+    "livePanelHint": "Atualiza sozinho. Os nomes aparecem mascarados, como para o público.",
+    "auditPanel": "Histórico de ações",
+    "auditEmpty": "Nenhuma ação registrada.",
+    "audit": {
+      "collectible": {
+        "create": "Criado",
+        "update": "Editado",
+        "launch": "Lançado ou agendado",
+        "cancel": "Cancelado"
+      }
+    },
+    "fields": {
+      "startsAt": "Início",
+      "endsAt": "Fim",
+      "views": "Visualizações",
+      "bids": "Lances",
+      "extensions": "Extensões (últimos 2 min)",
+      "winner": "Vencedor (mascarado)"
+    },
+    "form": {
+      "panel": "Dados do item",
+      "title": "Título",
+      "hero": "Herói",
+      "heroHint": "Opcional. O item aparece também na página do herói enquanto estiver ao vivo ou agendado.",
+      "noHero": "Sem herói",
+      "description": "Descrição",
+      "photos": "Fotos",
+      "photosHint": "Um endereço por linha (até 8): caminho do app (/collectibles/…) ou https://. Não use logotipos nem imagens de marcas.",
+      "authenticity": "Autenticidade",
+      "authenticityHint": "Certificado, número de série, como a assinatura foi registrada.",
+      "rulesTitle": "Lance",
+      "lockedHint": "O item já começou: preço, botões e duração ficam travados.",
+      "startPrice": "Lance inicial",
+      "moneyHint": "Em reais, ex.: 1500 ou 1.500,00.",
+      "increments": "Botões de lance",
+      "incrementN": "Botão {n}",
+      "removeIncrement": "Remover botão",
+      "incrementsHint": "De 1 a 4 valores diferentes, em reais. Ex.: 10, 50, 100.",
+      "addIncrement": "Adicionar botão",
+      "duration": "Duração",
+      "durationUnit": "Unidade da duração",
+      "units": {
+        "minutes": "minutos",
+        "hours": "horas",
+        "days": "dias"
+      },
+      "save": "Salvar",
+      "create": "Criar rascunho",
+      "created": "Rascunho criado",
+      "updated": "Alterações salvas",
+      "errors": {
+        "title": "Use de 3 a 120 caracteres.",
+        "price": "Informe um valor a partir de R$ 1,00.",
+        "increments": "Use de 1 a 4 valores positivos e diferentes.",
+        "duration": "A duração vai de 5 minutos a 30 dias.",
+        "photos": "Até 8 endereços, cada um começando com / ou https://."
+      }
+    },
+    "launch": {
+      "whenLabel": "Quando começar",
+      "now": "Agora",
+      "later": "Agendar",
+      "startsAt": "Início",
+      "endsPreview": "Termina em {date}.",
+      "endsNow": "Começa agora e termina {minutes} minutos depois.",
+      "launchNow": "Lançar agora",
+      "schedule": "Agendar",
+      "pickDate": "Escolha a data e a hora de início.",
+      "scheduledDone": "Item agendado",
+      "liveDone": "Item no ar"
+    },
+    "cancel": {
+      "trigger": "Cancelar item",
+      "title": "Cancelar este colecionável?",
+      "description": "Os lances deixam de valer e quem deu lance vê o item como cancelado. Não dá para desfazer.",
+      "confirm": "Cancelar item",
+      "done": "Item cancelado"
+    },
+    "errors": {
+      "forbidden": "Só a administração pode fazer isso.",
+      "not_found": "Item não encontrado.",
+      "collectible_locked": "O item já começou: preço, botões e duração não mudam mais.",
+      "invalid_increment": "Botões de lance inválidos: de 1 a 4 valores positivos e diferentes.",
+      "invalid_photo": "Endereço de foto inválido: use / ou https://.",
+      "invalid_creator": "Herói não encontrado.",
+      "invalid_start": "O início não pode ficar no passado.",
+      "reason_required": "Escreva o motivo (mínimo 5 caracteres).",
+      "invalid_input": "Confira os campos destacados.",
+      "generic": "Não foi possível salvar. Tente de novo."
+    }
+  }
+}
