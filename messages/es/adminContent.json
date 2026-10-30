@@ -650,7 +650,7 @@
       "moderationHistory": "Historial de moderación",
       "moderationEmpty": "No hay acciones de moderación registradas.",
       "reason": "Motivo",
-      "partnerReadOnly": "Producto de socio: solo lectura aquí. El admin modera; el proveedor edita en su propio portal.",
+      "partnerReadOnly": "Producto de socio: el admin lo edita en la pestaña Productos de la organización (el portal del proveedor está desactivado).",
       "ownEditable": "Producto de la operación propia: el admin puede editarlo.",
       "stock": "Stock demo",
       "type": "Tipo",
@@ -659,7 +659,8 @@
         "kit": "Kit",
         "digital": "Digital"
       },
-      "openPublic": "Ver en la tienda (demo)"
+      "openPublic": "Ver en la tienda (demo)",
+      "editInOrg": "Editar en la organización"
     },
     "moderation": {
       "title": "Moderación",

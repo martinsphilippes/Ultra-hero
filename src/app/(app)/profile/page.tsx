@@ -20,6 +20,7 @@ import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { appliesOn } from "@/lib/routine/reminders";
 import { pickProgramSuggestions, type EnrollmentLike } from "@/lib/routine/today";
+import { portalRolesShown } from "@/lib/seller-ops/portal";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
@@ -127,7 +128,9 @@ export default async function ProfilePage() {
   // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio"
   // ou, com WEARABLES_REAL_ENABLED=1, o relógio que conectaram.
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
-  const portals = PORTALS.filter((p) => roleSet.includes(p.role));
+  // sem portal do fornecedor por enquanto (a operação é do admin, 0053)
+  const shownRoles = portalRolesShown(roleSet);
+  const portals = PORTALS.filter((p) => shownRoles.includes(p.role));
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
   const planKey = subscription.status === "anonymous" ? "unknown" : subscription.status;

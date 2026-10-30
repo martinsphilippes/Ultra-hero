@@ -1,3 +1,5 @@
+import { visibleDemoKinds } from "@/lib/seller-ops/portal";
+
 // Contas de demonstração, uma por tipo de acesso (criadas no banco com app_metadata.ultra_hero_demo).
 // Módulo puro: a senha fica só na variável de ambiente do servidor (DEMO_ACCOUNTS_PASSWORD).
 // Pedido do responsável: acesso direto, sem código, na tela de login e no Início enquanto o app é um
@@ -14,12 +16,17 @@ export const DEMO_ACCOUNTS = [
 
 export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];
 
+// Painel de acesso rápido: sem o portal do fornecedor (SELLER_PORTAL_ENABLED), a conta do fornecedor
+// sai do painel e não entra pelo atalho. A conta continua no banco (DEMO_ACCOUNTS segue completo).
+const ACCESS_KINDS = visibleDemoKinds(DEMO_ACCOUNTS.map((a) => a.kind));
+export const DEMO_ACCESS_ACCOUNTS = DEMO_ACCOUNTS.filter((a) => ACCESS_KINDS.includes(a.kind));
+
 /** Telas onde o painel aparece; o erro de login volta para a mesma tela. */
 export const DEMO_ORIGINS = { login: "/login", home: "/inicio" } as const;
 export type DemoOrigin = keyof typeof DEMO_ORIGINS;
 
 export function demoAccount(kind: string) {
-  return DEMO_ACCOUNTS.find((account) => account.kind === kind) ?? null;
+  return DEMO_ACCESS_ACCOUNTS.find((account) => account.kind === kind) ?? null;
 }
 
 export function demoOrigin(value: unknown): DemoOrigin {

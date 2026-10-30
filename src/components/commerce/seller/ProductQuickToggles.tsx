@@ -3,14 +3,22 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
+import { setOrgProductAvailabilityAction, setOrgProductStockAction } from "@/app/admin/sellers/product-actions";
 import { setProductDemoStock, toggleProductAvailability } from "@/app/seller/products/actions";
 import { splitErrorString } from "@/components/commerce/lib/errors";
 import { Button, Input, Switch, useToast } from "@/components/ui";
 
-type Props = { productId: string; title: string; availability: "available" | "unavailable"; demoStock: number | null };
+type Props = {
+  productId: string;
+  title: string;
+  availability: "available" | "unavailable";
+  demoStock: number | null;
+  /** No admin (aba Produtos da organização): usa as ações do admin para esta organização. */
+  adminOrgId?: string;
+};
 
 // Atalhos na listagem: alternar disponibilidade e ajustar estoque de demonstração.
-export function ProductQuickToggles({ productId, title, availability, demoStock }: Props) {
+export function ProductQuickToggles({ productId, title, availability, demoStock, adminOrgId }: Props) {
   const t = useTranslations("seller.products");
   const tf = useTranslations("commerce.productForm.errors");
   const router = useRouter();
@@ -29,7 +37,10 @@ export function ProductQuickToggles({ productId, title, availability, demoStock 
   function toggle(next: boolean) {
     setAvailable(next);
     startTransition(async () => {
-      const result = await toggleProductAvailability({ productId, availability: next ? "available" : "unavailable" });
+      const availability = next ? "available" : "unavailable";
+      const result = adminOrgId
+        ? await setOrgProductAvailabilityAction({ orgId: adminOrgId, productId, availability })
+        : await toggleProductAvailability({ productId, availability });
       if (result.ok) {
         toast({ title: t("availabilityUpdated"), variant: "success", duration: 2000 });
         router.refresh();
@@ -43,7 +54,7 @@ export function ProductQuickToggles({ productId, title, availability, demoStock 
   function saveStock() {
     const value = stock.trim() === "" ? null : Number(stock);
     startTransition(async () => {
-      const result = await setProductDemoStock({ productId, demoStock: value });
+      const result = adminOrgId ? await setOrgProductStockAction({ orgId: adminOrgId, productId, demoStock: value }) : await setProductDemoStock({ productId, demoStock: value });
       if (result.ok) {
         toast({ title: t("stockUpdated"), variant: "success", duration: 2000 });
         router.refresh();

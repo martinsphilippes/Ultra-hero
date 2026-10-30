@@ -63,7 +63,7 @@ const num = (m: Metrics, key: string) => (typeof m[key] === "number" ? (m[key] a
 
 async function DashboardContent({ days }: { days: number }) {
   const supabase = await createClient();
-  const [t, tn, locale, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting] = await Promise.all([
+  const [t, tn, locale, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting, preparing] = await Promise.all([
     getTranslations("adminOps.dashboard"),
     getTranslations("nav.admin"),
     getLocale(),
@@ -73,6 +73,7 @@ async function DashboardContent({ days }: { days: number }) {
     supabase.from("content_product_links").select("id", { count: "exact", head: true }).eq("status", "suggested"),
     supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
     supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "awaiting"),
+    supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "preparing"),
   ]);
 
   if (metricsRes.error || !metricsRes.data || typeof metricsRes.data !== "object" || Array.isArray(metricsRes.data)) {
@@ -91,7 +92,9 @@ async function DashboardContent({ days }: { days: number }) {
     { key: "inReview", count: inReview.count ?? 0, href: "/admin/content", nav: tn("content") },
     { key: "suggestedLinks", count: suggested.count ?? 0, href: "/admin/links", nav: tn("links") },
     { key: "newFeedback", count: newFeedback.count ?? 0, href: "/admin/feedback?status=new", nav: tn("feedback") },
-    { key: "awaitingFulfillments", count: awaiting.count ?? 0, href: "/admin/orders", nav: tn("orders") },
+    // remessas: operação do fornecedor que passou ao admin (0053)
+    { key: "awaitingFulfillments", count: awaiting.count ?? 0, href: "/admin/shipments?status=awaiting", nav: tn("shipments") },
+    { key: "preparingFulfillments", count: preparing.count ?? 0, href: "/admin/shipments?status=preparing", nav: tn("shipments") },
   ] as const;
 
   const switches = [
@@ -170,7 +173,7 @@ async function DashboardContent({ days }: { days: number }) {
           </h2>
           <p className="type-caption text-fg-muted">{t("pending.description")}</p>
         </div>
-        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           {pending.map((p) => (
             <li key={p.key}>
               <Link

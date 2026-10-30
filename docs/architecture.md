@@ -21,8 +21,8 @@ Princípio central: **o cliente nunca decide permissão, preço ou direito de ac
 |---|---|---|
 | Consumidor | `/`, `/explore` (abas Conteúdos, Receitas, Programas, Produtos e Listas), `/personalities/*`, `/content/[slug]` (receita: `RecipeView`; Modo Cozinha em `/content/[slug]/cozinha`), `/programs/[slug]`, `/profile/*` (inclui `/profile/evolution`, `/profile/today/[categoria]`, `/profile/receitas`, `/profile/lista-de-compras` e `/profile/lembretes`; `/evolution` responde 308), `/onboarding`, `/recipes/onboarding`, `/shop/*`, `/cart`, `/checkout`, `/orders/*`, `/verify/[code]` | visitante (catálogo) / consumidor logado (consumo, listas, pedidos de teste) |
 | Portal da personalidade (herói) | `/creator/*` (inclui `/creator/post/new` e Minhas Receitas em `/creator/recipes/*`) | papel `creator` por convite; consumidor que abre `/creator` volta ao início, visitante vai ao login |
-| Portal do fornecedor | `/seller/*` | papel `seller` por convite (escopo = organização) |
-| Administração | `/admin/*` | papel `admin` (global) |
+| Portal do fornecedor | `/seller/*` | **desligado** (`SELLER_PORTAL_ENABLED = false`, 0053): admin é levado a `/admin/sellers`, as demais contas veem um aviso e as server actions do portal recusam. Ligado, volta a exigir papel `seller` por convite (escopo = organização) |
+| Administração | `/admin/*` (inclui a operação dos fornecedores: `/admin/sellers/[id]` com abas Visão geral, Produtos — criar/editar/publicar/arquivar com o `ProductForm` do fornecedor —, Remessas e Organização; `/admin/shipments` com todas as remessas) | papel `admin` (global) |
 | Sistema | `/api/cron/{transport,retention,renewals}`, `/api/certificates/[code]` | cron (CRON_SECRET) / dono do certificado |
 
 ## 3. Identidade e papéis
@@ -62,6 +62,10 @@ Princípio central: **o cliente nunca decide permissão, preço ou direito de ac
 - Carrinho multi-fornecedor → `checkout_cart` revalida (disponível, moderação, fornecedor ativo, preço esperado) e congela snapshots em `test_orders` / `test_order_items` / `test_fulfillments` (uma remessa por operação). Destinos fictícios (`demo_destinations`) e frete por regra (`demo_shipping_rules`).
 - Máquina de estados (`fulfillment_transition`): fornecedor `awaiting → preparing → ready_for_dispatch` (+ cancelar); sistema `ready_for_dispatch → in_transit → delivered|failed` (`advance_simulated_transport`); admin tudo. Fornecedor nunca marca entrega.
 - Retenção: pedidos ligados ao usuário por 90 dias → anonimização (`run_retention`), com `retention_exceptions` documentadas.
+
+### 6.1 Operação dos fornecedores pelo admin (0053)
+
+Decisão do responsável: sem cadastro/login de fornecedor por enquanto; o admin faz tudo o que o portal fazia, sem perder nada do admin. Não há contexto "agindo como fornecedor" (como o `x-acting-hero` da 0045): as políticas e RPCs do fornecedor já aceitam `is_admin()` (insert/update de `products`, update de `seller_organizations`, leitura de remessas/itens/eventos, `fulfillment_transition` com ator `admin` e as transições do fornecedor e do sistema). As telas filtram pela organização da URL; as ações do admin (`src/app/admin/sellers/product-actions.ts`, `transitionFulfillmentAction`) exigem papel admin. A 0053 só acrescenta a trilha: gatilho `admin_seller_ops_audit` (security definer, sem execute para anon/authenticated; S14 segue com 17) grava `products.insert`/`products.update` (só os campos alterados; moderação continua em `product.moderate`) e `fulfillment.transition` (antes/depois, organização, pedido, observação). O cadastro da organização já era auditado (0012). As telas do portal viraram componentes compartilhados (`src/components/commerce/seller/views/*`) usados pelo `/seller` (guardado) e pelo admin.
 
 ## 7. Recomendações
 

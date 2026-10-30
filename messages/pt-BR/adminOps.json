@@ -116,7 +116,8 @@
       "suggestedLinks": "Vínculos sugeridos",
       "newFeedback": "Feedbacks novos",
       "awaitingFulfillments": "Remessas aguardando",
-      "open": "Abrir"
+      "open": "Abrir",
+      "preparingFulfillments": "Remessas em preparação"
     }
   },
   "heroPublishing": {
@@ -299,7 +300,8 @@
     "goCreator": "Ir para o Perfil",
     "goSeller": "Ir para o portal do fornecedor",
     "goHome": "Voltar ao app",
-    "errorTitle": "Não foi possível aceitar"
+    "errorTitle": "Não foi possível aceitar",
+    "successSellerPortalOff": "Convite aceito. O portal do fornecedor está desativado por enquanto; a operação é feita pela administração."
   },
   "creators": {
     "title": "Heróis",
@@ -477,6 +479,29 @@
       "invite": "Convidar membro",
       "owner": "Responsável",
       "staff": "Equipe"
+    },
+    "hub": {
+      "tabsLabel": "Seções da organização",
+      "tabs": {
+        "overview": "Visão geral",
+        "products": "Produtos",
+        "shipments": "Remessas",
+        "organization": "Organização"
+      },
+      "description": "Operação desta organização pela administração: produtos, remessas e perfil. Nenhuma parceria real.",
+      "productsDescription": "Catálogo de {name}. Criar, editar, publicar e arquivar com o mesmo formulário do fornecedor; toda alteração é auditada.",
+      "shipmentsDescription": "Remessas de pedidos de teste com produtos de {name}.",
+      "shipmentsNote": "A partir de \"pronta para expedição\", a simulação do sistema leva a remessa a \"em trânsito\" e \"entregue\". O admin também pode avançar ou cancelar.",
+      "shipmentActions": "Ações da administração",
+      "shipmentActionsNote": "Cada mudança de status fica na linha do tempo e na auditoria. Cancelar ou marcar falha pede justificativa.",
+      "zoneNote": "A remessa mostra só a zona fictícia do destino; o destino completo fica no pedido.",
+      "openOrder": "Abrir o pedido",
+      "moderationTitle": "Moderação",
+      "productSheet": "Ver ficha completa do produto",
+      "notFoundTitle": "Não encontrado nesta organização",
+      "notFoundDescription": "O produto ou a remessa não existe ou pertence a outra organização.",
+      "backToSellers": "Voltar aos fornecedores",
+      "portalOff": "O portal do fornecedor está desativado: os membros não operam por enquanto; a administração opera pelas abas acima."
     }
   },
   "feedback": {
@@ -718,6 +743,19 @@
       "createdWarning": "Anote a senha agora: ela não será exibida nem armazenada em texto.",
       "password": "Senha temporária",
       "done": "Concluir"
+    }
+  },
+  "shipments": {
+    "title": "Remessas",
+    "description": "Remessas de todos os fornecedores. Abra uma remessa para mudar o status (as mesmas etapas do fornecedor, mais as do sistema).",
+    "banner": "Pedidos de teste: nenhuma entrega é real. Destinos e transporte são simulados.",
+    "tableCaption": "Remessas de todos os fornecedores",
+    "emptyDescription": "Ajuste os filtros. Remessas aparecem quando um pedido de teste é confirmado.",
+    "open": {
+      "title": "Em aberto",
+      "awaiting": "Aguardando",
+      "preparing": "Em preparação",
+      "readyForDispatch": "Prontas para expedição"
     }
   }
 }

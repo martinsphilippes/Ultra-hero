@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { getRoles, getUser } from "@/lib/auth/session";
+import { SELLER_PORTAL_ENABLED } from "@/lib/seller-ops/portal";
 import { createClient } from "@/lib/supabase/server";
 
 // Contexto do portal do fornecedor: organizações do usuário (my_seller_org_ids), organização
@@ -33,6 +34,8 @@ const ORG_SELECT = "id, slug, name, kind, status, description, logo_url, is_fict
 
 export const getSellerContext = cache(async (): Promise<SellerContext> => {
   const user = await getUser();
+  // Portal desligado: nenhuma ação do fornecedor opera (as server actions continuam acessíveis por POST).
+  if (!SELLER_PORTAL_ENABLED) return { userId: user?.id ?? "", isAdmin: false, supervising: false, state: "not_linked", orgs: [], org: null };
   if (!user) return { userId: "", isAdmin: false, supervising: false, state: "not_linked", orgs: [], org: null };
   const [roles, supabase, jar] = await Promise.all([getRoles(), createClient(), cookies()]);
   const isAdmin = roles.some((r) => r.role === "admin");

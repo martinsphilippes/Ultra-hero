@@ -27,6 +27,8 @@ function revalidateProduct(id?: string) {
   revalidatePath("/admin/products");
   if (id) revalidatePath(`/admin/products/${id}`);
   revalidatePath("/admin/links");
+  // abas Produtos/Visão geral da organização (0053)
+  revalidatePath("/admin/sellers", "layout");
 }
 
 // ---------------------------------------------------------------- moderação ---

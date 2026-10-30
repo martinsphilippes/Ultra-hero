@@ -20,7 +20,7 @@
     "preparing": "En preparación",
     "readyForDispatch": "Listos para despacho",
     "moderationTitle": "Moderación reciente",
-    "moderationEmpty": "Ninguna acción de moderación en tus productos.",
+    "moderationEmpty": "Ninguna acción de moderación en los productos de esta organización.",
     "moderationAction": {
       "hide": "Ocultado",
       "suspend": "Suspendido",
@@ -108,7 +108,7 @@
     "etaDays": "{n, plural, =1 {1 día} other {# días}}",
     "itemsCount": "{n, plural, =1 {1 artículo} other {# artículos}}",
     "empty": "Ningún envío",
-    "emptyDescription": "Cuando un pedido de prueba incluya tus productos, el envío aparecerá aquí.",
+    "emptyDescription": "Cuando un pedido de prueba incluya productos de esta organización, el envío aparece aquí.",
     "open": "Abrir",
     "openLabel": "Abrir envío {id}",
     "detail": {
@@ -167,5 +167,10 @@
       "invalid_input": "Datos inválidos.",
       "generic": "No se pudo guardar. Inténtalo de nuevo."
     }
+  },
+  "closed": {
+    "title": "Portal del proveedor desactivado",
+    "description": "Por ahora no hay acceso de proveedor. Los productos, envíos y perfiles de las organizaciones los gestiona la administración.",
+    "back": "Ir a la app"
   }
 }

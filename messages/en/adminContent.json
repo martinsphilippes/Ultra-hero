@@ -650,7 +650,7 @@
       "moderationHistory": "Moderation history",
       "moderationEmpty": "No moderation action recorded.",
       "reason": "Reason",
-      "partnerReadOnly": "Partner product: read-only here. The admin moderates; the seller edits in its own portal.",
+      "partnerReadOnly": "Partner product: the admin edits it in the organization's Products tab (the supplier portal is turned off).",
       "ownEditable": "Own-operation product: the admin can edit it.",
       "stock": "Demo stock",
       "type": "Type",
@@ -659,7 +659,8 @@
         "kit": "Kit",
         "digital": "Digital"
       },
-      "openPublic": "View in shop (demo)"
+      "openPublic": "View in shop (demo)",
+      "editInOrg": "Edit in the organization"
     },
     "moderation": {
       "title": "Moderation",

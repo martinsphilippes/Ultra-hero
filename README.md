@@ -74,8 +74,8 @@ Google OAuth: configurar em Supabase → Authentication → Providers → Google
 | Visitante | — | explorar catálogo, programas e perfis públicos |
 | Consumidor | cadastro público (nível gratuito) | consumir conteúdo liberado, listas, progresso, assinatura simulada, pedidos de teste |
 | Personalidade | convite + ativação pelo admin | rascunhos, submissão para revisão, sugestão de vínculo com produto |
-| Fornecedor | convite + ativação pelo admin | produtos da própria operação, preparação das próprias remessas |
-| Admin | bootstrap/concessão auditada | tudo, com confirmação e trilha de auditoria |
+| Fornecedor | convite + ativação pelo admin | **desligado por enquanto** (0053): o portal `/seller` não abre e a conta demo do fornecedor saiu do painel; produtos, remessas e perfil das organizações são operados pelo admin em `/admin/sellers/[id]` (abas Visão geral, Produtos, Remessas, Organização) e `/admin/shipments`. Contas e dados mantidos; religar = `SELLER_PORTAL_ENABLED` em `src/lib/seller-ops/portal.ts` |
+| Admin | bootstrap/concessão auditada | tudo, com confirmação e trilha de auditoria (inclui a operação dos fornecedores: escritas em produtos e transições de remessa vão para `admin_audit`, 0053) |
 
 Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**; a interface só reflete.
 
@@ -83,7 +83,7 @@ Autorização é aplicada em **PostgreSQL (RLS + funções `security definer`)**
 
 - **Consumidor**: Início (curadoria → recomendações), Explorar (busca, filtros, programas, produtos, listas), Heróis (hub de bibliotecas por herói), Conteúdo (gate server-side, player abstrato, conclusão, favoritos), Programas (versionados, substituições, certificado simbólico em PDF), Perfil (portais no topo para quem tem papel de herói, fornecedor ou admin, como a primeira opção de toque; "Hoje — Seu dia, em foco" só com o que o relógio mede, sem nada digitado: relógio simulado nas contas demo, "Conectar relógio — em breve" e "Ver um exemplo" nas contas reais, detalhe por categoria em `/profile/today/[categoria]`; "Continue seus programas" depois da Evolução; Evolução com streak (só conteúdos concluídos e entradas em programas; Lembretes não contam, 0037) e conquistas em `/profile/evolution`; Lembretes em Perfil › Lembretes, fora do Hoje; para o herói, o topo do Perfil segue o Instagram (foto, nome, headline e bio públicos, Portal do herói logo abaixo, botões "Editar perfil" e "Ver página pública"); "Editar perfil" abre na mesma tela o editor recolhível (avatar, headline, bio, capa, redes, especialidades e credenciais de chef, nota de direitos), e o herói ativo tem um avatar só (foto ou ilustração, igual no app e na página pública); planos simulados, interesses, conta/exclusão). A barra inferior tem 4 abas: Início, Explorar, Heróis e Perfil, Loja/carrinho/checkout/pedidos **de teste**.
 - **Receitas**: catálogo em Explorar › Receitas, página da receita com porções, checklist e Modo Cozinha, Minha coleção, lista de compras ligada ao comércio de teste e, no portal do herói, Minhas Receitas com editor em 6 etapas, versões, publicação direta (revisão por tipo desligada) e exclusão da receita arquivada (`docs/decisions/recipes-module.md`).
-- **Portais**: Herói (`/creator`; o perfil público saiu do portal e mora no Perfil, `/creator/profile` redireciona para `/profile#perfil-publico`, que abre o editor), Fornecedor (`/seller`), Administração (`/admin`).
+- **Portais**: Herói (`/creator`; o perfil público saiu do portal e mora no Perfil, `/creator/profile` redireciona para `/profile#perfil-publico`, que abre o editor), Fornecedor (`/seller`, desligado por enquanto: a operação mora em `/admin/sellers` e `/admin/shipments`), Administração (`/admin`).
 - **Sistema**: cron diário (transporte simulado, retenção, renovações), certificados, recomendações.
 
 ## Limitações da simulação
