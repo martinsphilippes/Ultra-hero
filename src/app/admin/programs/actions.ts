@@ -7,6 +7,7 @@ import type { ActionResult } from "@/components/admin";
 import { slugify } from "@/components/admin-content/lib/slug";
 import { failWith } from "@/components/admin-content/lib/translate-error";
 import { getUser, hasRole } from "@/lib/auth/session";
+import { programConceptSchema } from "@/lib/programs/concept";
 import { createClient } from "@/lib/supabase/server";
 
 // Ações administrativas de programas versionados. Versões publicadas têm itens congelados;
@@ -163,6 +164,24 @@ export async function saveVersionFieldsAction(programId: string, versionId: stri
     revalidateProgram(ids.data.programId, ids.data.versionId);
     const t = await getTranslations("adminContent.programs.version");
     return { ok: true, message: t("saved") };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// Conceito (0048): null remove; editável mesmo com a versão publicada, como os demais textos.
+export async function saveVersionConceptAction(programId: string, versionId: string, concept: unknown): Promise<ActionResult> {
+  const ids = z.object({ programId: uuid, versionId: uuid }).safeParse({ programId, versionId });
+  const parsed = programConceptSchema.nullable().safeParse(concept);
+  if (!ids.success || !parsed.success) return fail("invalid_input");
+  try {
+    await requireAdmin();
+    const supabase = await createClient();
+    const { error } = await supabase.from("program_versions").update({ concept: parsed.data }).eq("id", ids.data.versionId).eq("program_id", ids.data.programId);
+    if (error) return fail(error);
+    revalidateProgram(ids.data.programId, ids.data.versionId);
+    const t = await getTranslations("adminContent.programs.concept");
+    return { ok: true, message: parsed.data ? t("saved") : t("cleared") };
   } catch (error) {
     return fail(error);
   }

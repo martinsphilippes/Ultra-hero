@@ -216,6 +216,19 @@
       "download": "Baixar PDF",
       "verify": "Verifique em {url}",
       "revoked": "Certificado revogado"
+    },
+    "concept": {
+      "title": "Conceito do programa",
+      "forWho": "Para quem é",
+      "notFor": "Não é para",
+      "outcomes": "O que você vai conquistar",
+      "method": "Como funciona",
+      "rhythm": "Ritmo",
+      "sessions": "{n}× por semana",
+      "minutes": "~{n} min por dia",
+      "needs": "Você vai precisar",
+      "needsNothing": "Nada além de você",
+      "care": "Cuidados"
     }
   },
   "certificate": {

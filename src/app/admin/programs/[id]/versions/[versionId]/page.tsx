@@ -5,10 +5,12 @@ import { StatusBadge } from "@/components/admin";
 import { Panel } from "@/components/admin-content";
 import { PublishVersionButton } from "@/components/admin-content/ProgramDetailActions";
 import { ProgramVersionFields } from "@/components/admin-content/ProgramForms";
+import { ProgramConceptForm } from "@/components/admin-content/ProgramConceptFields";
 import { ProgramItemsEditor, SubstitutionsPanel, type Substitution, type VersionItem } from "@/components/admin-content/ProgramItemsEditor";
 import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
+import { conceptColumnSupported } from "@/lib/programs/concept-query";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -42,11 +44,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function AdminProgramVersionPage({ params }: Params) {
   const { id, versionId } = await params;
   const supabase = await createClient();
-  const [t, tc, ts, td, locale, versionRes, itemsRes, subsRes] = await Promise.all([
+  const [t, tc, ts, td, tconcept, locale, versionRes, itemsRes, subsRes, conceptRes] = await Promise.all([
     getTranslations("adminContent.programs.version"),
     getTranslations("adminContent.common"),
     getTranslations("adminCommon.status"),
     getTranslations("adminContent.programs.detail"),
+    getTranslations("adminContent.programs.concept"),
     getLocale(),
     supabase
       .from("program_versions")
@@ -60,6 +63,8 @@ export default async function AdminProgramVersionPage({ params }: Params) {
       .select("id, original_content_id, replacement_content_id, reason, created_at, original:content!program_item_substitutions_original_content_id_fkey(title), replacement:content!program_item_substitutions_replacement_content_id_fkey(title, status)")
       .eq("version_id", versionId)
       .order("created_at", { ascending: false }),
+    // conceito à parte: sem a 0048 no banco o painel mostra o aviso em vez de quebrar a página
+    conceptColumnSupported(supabase).then(async (ok) => (ok ? await supabase.from("program_versions").select("concept").eq("id", versionId).maybeSingle() : null)),
   ]);
   const version = (versionRes.data as unknown as Version | null) ?? null;
   if (!version) notFound();
@@ -115,6 +120,14 @@ export default async function AdminProgramVersionPage({ params }: Params) {
           </Panel>
         </aside>
       </div>
+
+      <Panel title={tconcept("title")} description={tconcept("description")}>
+        {conceptRes && !conceptRes.error ? (
+          <ProgramConceptForm programId={id} versionId={version.id} initial={conceptRes.data?.concept ?? null} />
+        ) : (
+          <p className="text-sm text-fg-muted">{tconcept("unsupported")}</p>
+        )}
+      </Panel>
     </div>
   );
 }
