@@ -12,6 +12,8 @@ type Props = {
   seed: number;
   nextOffset: number;
   hasMore: boolean;
+  /** Aba do feed ("Seguindo" pagina só os heróis seguidos). */
+  feed?: "seguindo" | "todos";
   /** Primeira página, já renderizada no servidor. */
   children: ReactNode;
 };
@@ -19,7 +21,7 @@ type Props = {
 type Batch = { id: number; nodes: ReactNode };
 
 // Feed infinito do Início: ao se aproximar do fim, a próxima página chega já renderizada do servidor.
-export function FeedList({ seed, nextOffset, hasMore, children }: Props) {
+export function FeedList({ seed, nextOffset, hasMore, feed = "todos", children }: Props) {
   const t = useTranslations("discover.home.feed");
   const [batches, setBatches] = useState<Batch[]>([]);
   const [cursor, setCursor] = useState({ offset: nextOffset, hasMore });
@@ -36,7 +38,7 @@ export function FeedList({ seed, nextOffset, hasMore, children }: Props) {
     setError(false);
     startTransition(async () => {
       try {
-        const result = await loadMoreFeed({ seed, offset: cursor.offset });
+        const result = await loadMoreFeed({ seed, offset: cursor.offset, feed });
         if (!result.ok) {
           setError(true);
           return;
@@ -53,7 +55,7 @@ export function FeedList({ seed, nextOffset, hasMore, children }: Props) {
         loadingRef.current = false;
       }
     });
-  }, [cursor, seed, t]);
+  }, [cursor, seed, feed, t]);
 
   // Sentinela perto do fim: carrega a próxima página um pouco antes de a pessoa chegar lá.
   useEffect(() => {

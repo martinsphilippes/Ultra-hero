@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CreatorForm } from "@/components/admin-ops/CreatorForm";
 import { CreatorProductActions } from "@/components/admin-ops/CreatorProductActions";
+import { ReferenceMetricsEditor } from "@/components/admin-ops/ReferenceMetricsEditor";
 import { CreatorCoverRemoveButton, CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
 import { HeroCategoriesField } from "@/components/admin-content/HeroCategoriesField";
 import { LibraryTabsEditor } from "@/components/admin-content/LibraryTabsEditor";
@@ -15,6 +16,7 @@ import { isStoredCoverUrl } from "@/lib/hero-cover/paths";
 import { localizedLabel } from "@/lib/catalog/queries";
 import { toCategoryTabRow, toOverrideRow } from "@/lib/heroes/library-tab-queries";
 import { primaryCategoryId, resolveLibraryConfig, toEditorRows, type LibraryTabEditorRow } from "@/lib/heroes/library-tabs";
+import { loadFollowerCount, loadReferences } from "@/lib/heroes/follow-queries";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = Promise<{ id: string }>;
@@ -86,7 +88,13 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
     supabase.from("hero_categories").select("id, name, is_active").order("sort_order").order("slug"),
     supabase.from("creator_category_links").select("category_id, position").eq("creator_id", id).order("position"),
   ]);
-  const tabsSection = await loadHeroTabs(supabase, id, categoriesRes.data ?? [], categoryLinksRes.data ?? [], locale);
+  const [tabsSection, references, followers, tf] = await Promise.all([
+    loadHeroTabs(supabase, id, categoriesRes.data ?? [], categoryLinksRes.data ?? [], locale),
+    // referências para comparação e seguidores (0056); null = migração ausente
+    loadReferences(supabase, id),
+    loadFollowerCount(supabase, id),
+    getTranslations("follows.admin"),
+  ]);
   if (error) throw new Error(error.message);
   if (!creator) notFound();
   const rightsVariant = creator.rights_status === "authorized" ? "success" : creator.rights_status === "pending" ? "info" : "demo";
@@ -225,6 +233,34 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
           </p>
         ) : (
           <LibraryTabsEditor key={JSON.stringify(tabsSection.rows)} mode="hero" targetId={creator.id} rows={tabsSection.rows} inheritedFrom={tabsSection.inheritedFrom} />
+        )}
+      </section>
+
+      {/* Referências para comparação (0056): metas da equipe no "Você vs Hero"; auditadas pelo banco. */}
+      <section aria-labelledby="hero-references-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <h2 id="hero-references-title" className="type-h2 text-fg">
+              {tf("title")}
+            </h2>
+            <p className="type-body-sm max-w-prose text-fg-muted">{tf("description")}</p>
+          </div>
+          {followers !== null ? (
+            <p className="type-caption type-numeric text-fg-muted" data-testid="hero-followers-admin">
+              {tf("followers", { n: followers })}
+            </p>
+          ) : null}
+        </div>
+        {references === null ? (
+          <p role="status" data-testid="hero-references-unavailable" className="rounded-xl border border-dashed border-warning/40 bg-warning-soft/40 p-4 text-sm text-fg">
+            {tf("unavailable")}
+          </p>
+        ) : (
+          <ReferenceMetricsEditor
+            key={references.map((r) => `${r.key}:${r.value}`).join(",")}
+            creatorId={creator.id}
+            initial={Object.fromEntries(references.map((r) => [r.key, r.value]))}
+          />
         )}
       </section>
 

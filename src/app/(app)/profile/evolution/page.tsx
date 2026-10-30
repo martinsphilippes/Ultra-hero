@@ -9,7 +9,9 @@ import { isValidTimeZone, localDateIn, longestRun } from "@/components/me/dates"
 import { Badge, Button, EmptyState, PageHeader, PillarBadge, ProgressBar } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate, formatRelativeTime } from "@/i18n/format";
-import { getProfile, requireUser } from "@/lib/auth/session";
+import { HeroComparison } from "@/components/heroes/HeroComparison";
+import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
+import { resolveTodayView } from "@/lib/health/view";
 import type { Enums, FnReturns, Pillar } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -114,6 +116,7 @@ export default async function EvolutionPage() {
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
     .slice(0, 10);
 
+  const watchView = await resolveTodayView({ user, roles: (await getRoles()).map((r) => r.role), timeZone: tz, example: false });
   const isNew = eventDates.length === 0 && completionsCount === 0 && enrollments.length === 0;
 
   const stats = [
@@ -181,6 +184,9 @@ export default async function EvolutionPage() {
           </li>
         ))}
       </ul>
+
+      {/* Você vs Hero (0056): relógio da própria pessoa (demo ou real) + uso do app */}
+      <HeroComparison watch={watchView.kind === "demo" || watchView.kind === "real" ? watchView.snapshot : null} />
 
       {/* Meus programas */}
       <section aria-labelledby="programs-title" className="flex flex-col gap-3">

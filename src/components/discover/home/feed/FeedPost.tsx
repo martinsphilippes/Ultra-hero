@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { tileCover } from "@/components/discover/explore/tiles";
+import { FollowButton } from "@/components/heroes/FollowButton";
 import { Avatar } from "@/components/ui";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { isPhotoPost } from "@/lib/post-photo/paths";
@@ -10,11 +11,14 @@ import type { FeedPostData } from "./posts";
 
 const TYPE_ICON = { video: PlayCircle, recipe: ChefHat, workout: Dumbbell, guide: BookOpen, article: FileText } as const;
 
-type Props = { post: FeedPostData; priority?: boolean };
+/** Estado do botão Seguir no cabeçalho do post; ausente = sem botão (banco sem hero_favorites). */
+export type FeedFollow = { signedIn: boolean; following: ReadonlySet<string>; pushReady: boolean; path: string };
+
+type Props = { post: FeedPostData; priority?: boolean; follow?: FeedFollow };
 
 // Post do feed do Início, no formato do Instagram: herói no topo (leva ao perfil dele), capa grande
 // 4:5 (de borda a borda no celular) e legenda com tipo, título e resumo. Capa e título abrem o post.
-export async function FeedPost({ post, priority }: Props) {
+export async function FeedPost({ post, priority, follow }: Props) {
   const t = await getTranslations("catalog");
   // post com foto do composer (0043): artigo cuja capa é a foto; aparece como "Foto"
   const photo = isPhotoPost(post, supabaseBaseUrl());
@@ -29,14 +33,28 @@ export async function FeedPost({ post, priority }: Props) {
   return (
     <article aria-labelledby={titleId} className="flex flex-col" data-testid="feed-post">
       {post.creator ? (
-        <Link
-          href={`/personalities/${post.creator.slug}`}
-          className="flex min-h-14 items-center gap-3 self-start px-gutter py-2 md:px-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          data-testid="feed-post-hero"
-        >
-          <Avatar src={post.creator.avatar_url} name={post.creator.name} alt="" size="sm" />
-          <span className="text-sm font-semibold text-fg">{post.creator.name}</span>
-        </Link>
+        // cabeçalho: herói (leva ao perfil) e, ao lado, Seguir — fora do link
+        <div className="flex items-center justify-between gap-3 px-gutter md:px-0">
+          <Link
+            href={`/personalities/${post.creator.slug}`}
+            className="flex min-h-14 min-w-0 items-center gap-3 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            data-testid="feed-post-hero"
+          >
+            <Avatar src={post.creator.avatar_url} name={post.creator.name} alt="" size="sm" />
+            <span className="truncate text-sm font-semibold text-fg">{post.creator.name}</span>
+          </Link>
+          {follow && post.creator_id ? (
+            <FollowButton
+              creatorId={post.creator_id}
+              heroName={post.creator.name}
+              initialFollowing={follow.following.has(post.creator_id)}
+              signedIn={follow.signedIn}
+              path={follow.path}
+              pushReady={follow.pushReady}
+              size="compact"
+            />
+          ) : null}
+        </div>
       ) : (
         <div className="min-h-3" />
       )}

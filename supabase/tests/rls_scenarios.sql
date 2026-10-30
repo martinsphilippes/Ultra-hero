@@ -6060,5 +6060,123 @@ select tests.ok('S65 limpeza de contadores sem execução por clientes',
   not has_function_privilege('anon', 'public.recipe_action_counters_creator_cleanup()', 'execute')
   and not has_function_privilege('authenticated', 'public.recipe_action_counters_creator_cleanup()', 'execute'));
 
+-- ================================================================ S66 · Seguir heróis e comparar (0056)
+-- Seguir = hero_favorites (0054). Contagem pública por herói sem identidades; Hero de comparação em
+-- profiles.compare_creator_id (exige seguir, some ao deixar de seguir); referências: leitura
+-- pública, escrita só do admin, com auditoria.
+select tests.su();
+insert into auth.users (id, email) values
+  ('66000000-0000-4000-8000-000000000661', 's66a@test.local'),
+  ('66000000-0000-4000-8000-000000000662', 's66b@test.local');
+create temporary table t_s66 as
+select (select id from public.creator_profiles where slug = 'neymar') as neymar,
+       (select id from public.creator_profiles where slug = 'anitta') as anitta,
+       (select id from public.creator_profiles where slug = 'erick-jacquin') as jacquin,
+       (select coalesce(max(id), 0) from public.admin_audit) as audit_base,
+       -- o S65 já segue heróis com outras pessoas: as contagens são relativas a este ponto
+       coalesce((select followers from public.creator_follower_counts where creator_id = (select id from public.creator_profiles where slug = 'neymar')), 0) as base_n,
+       coalesce((select followers from public.creator_follower_counts where creator_id = (select id from public.creator_profiles where slug = 'anitta')), 0) as base_a;
+grant select on t_s66 to anon, authenticated;
+
+select tests.login('66000000-0000-4000-8000-000000000661', 's66a@test.local');
+insert into public.hero_favorites (user_id, creator_id) select '66000000-0000-4000-8000-000000000661', neymar from t_s66;
+insert into public.hero_favorites (user_id, creator_id) select '66000000-0000-4000-8000-000000000661', anitta from t_s66;
+select tests.login('66000000-0000-4000-8000-000000000662', 's66b@test.local');
+insert into public.hero_favorites (user_id, creator_id) select '66000000-0000-4000-8000-000000000662', neymar from t_s66;
+select tests.ok('S66 cada pessoa só vê o próprio seguir',
+  (select count(*) from public.hero_favorites) = 1);
+
+select tests.anon();
+select tests.ok('S66 contagem pública por herói, sem identidades',
+  (select followers from public.creator_follower_counts where creator_id = (select neymar from t_s66)) = (select base_n + 2 from t_s66)
+  and (select followers from public.creator_follower_counts where creator_id = (select anitta from t_s66)) = (select base_a + 1 from t_s66)
+  and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'creator_follower_counts' and column_name = 'user_id'));
+select tests.expect_error('S66 visitante não escreve na contagem',
+  $q$update public.creator_follower_counts set followers = 999$q$, '42501');
+select tests.login('66000000-0000-4000-8000-000000000662', 's66b@test.local');
+select tests.expect_error('S66 pessoa logada não escreve na contagem',
+  $q$insert into public.creator_follower_counts (creator_id, followers) select jacquin, 50 from t_s66$q$, '42501');
+
+-- Hero de comparação: só entre os que segue; deixar de seguir limpa a escolha
+select tests.login('66000000-0000-4000-8000-000000000661', 's66a@test.local');
+update public.profiles set compare_creator_id = (select neymar from t_s66) where id = '66000000-0000-4000-8000-000000000661';
+select tests.ok('S66 escolhe um herói seguido para comparar',
+  (select compare_creator_id from public.profiles where id = '66000000-0000-4000-8000-000000000661') = (select neymar from t_s66));
+select tests.expect_error('S66 comparar exige seguir',
+  $q$update public.profiles set compare_creator_id = (select jacquin from t_s66) where id = '66000000-0000-4000-8000-000000000661'$q$, 'compare_requires_follow');
+select tests.login('66000000-0000-4000-8000-000000000662', 's66b@test.local');
+update public.profiles set compare_creator_id = (select neymar from t_s66) where id = '66000000-0000-4000-8000-000000000661';
+select tests.su();
+select tests.ok('S66 ninguém escolhe o Hero de comparação de outra pessoa',
+  (select compare_creator_id from public.profiles where id = '66000000-0000-4000-8000-000000000661') = (select neymar from t_s66));
+select tests.login('66000000-0000-4000-8000-000000000661', 's66a@test.local');
+delete from public.hero_favorites where creator_id = (select neymar from t_s66);
+select tests.ok('S66 deixar de seguir limpa o Hero de comparação e baixa a contagem',
+  (select compare_creator_id from public.profiles where id = '66000000-0000-4000-8000-000000000661') is null
+  and (select followers from public.creator_follower_counts where creator_id = (select neymar from t_s66)) = (select base_n + 1 from t_s66));
+update public.profiles set compare_creator_id = (select anitta from t_s66) where id = '66000000-0000-4000-8000-000000000661';
+
+-- conta anonimizada (LGPD) deixa de seguir e perde o Hero de comparação
+select tests.su();
+update public.profiles set anonymized_at = now() where id = '66000000-0000-4000-8000-000000000661';
+select tests.ok('S66 conta anonimizada deixa de seguir (contagem e comparação acompanham)',
+  not exists (select 1 from public.hero_favorites where user_id = '66000000-0000-4000-8000-000000000661')
+  and (select compare_creator_id from public.profiles where id = '66000000-0000-4000-8000-000000000661') is null
+  and (select followers from public.creator_follower_counts where creator_id = (select anitta from t_s66)) = (select base_a from t_s66));
+
+-- referências: leitura pública (herói ativo), escrita só do admin, auditada
+select tests.anon();
+select tests.ok('S66 visitante lê as referências do herói ativo (seed de demonstração)',
+  (select count(*) from public.creator_reference_metrics where creator_id = (select neymar from t_s66) and source = 'reference') = 7);
+select tests.login('66000000-0000-4000-8000-000000000662', 's66b@test.local');
+select tests.expect_error('S66 consumidor não grava referência',
+  $q$insert into public.creator_reference_metrics (creator_id, metric_key, value, unit) select jacquin, 'sleep_hours', 8, 'h' from t_s66$q$, '42501');
+update public.creator_reference_metrics set value = 1 where creator_id = (select neymar from t_s66);
+select tests.ok('S66 consumidor não altera referência',
+  (select value from public.creator_reference_metrics where creator_id = (select neymar from t_s66) and metric_key = 'sleep_hours') = 8);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+update public.creator_reference_metrics set value = 8.5 where creator_id = (select neymar from t_s66) and metric_key = 'sleep_hours';
+delete from public.creator_reference_metrics where creator_id = (select neymar from t_s66) and metric_key = 'recipes_week';
+select tests.expect_error('S66 unidade e faixa fixas por indicador',
+  $q$insert into public.creator_reference_metrics (creator_id, metric_key, value, unit) select neymar, 'recipes_week', 3, 'h' from t_s66$q$, '23514');
+select tests.su();
+select tests.ok('S66 admin edita e apaga referência com auditoria (antes/depois, por herói)',
+  (select value from public.creator_reference_metrics where creator_id = (select neymar from t_s66) and metric_key = 'sleep_hours') = 8.5
+  and exists (select 1 from public.admin_audit where id > (select audit_base from t_s66) and action = 'creator_reference_metrics.update'
+              and resource_type = 'creator_reference' and resource_id = (select neymar from t_s66)::text
+              and (before_data ->> 'value')::numeric = 8 and (after_data ->> 'value')::numeric = 8.5)
+  and exists (select 1 from public.admin_audit where id > (select audit_base from t_s66) and action = 'creator_reference_metrics.delete'
+              and resource_id = (select neymar from t_s66)::text)
+  and not exists (select 1 from public.admin_audit where id > (select audit_base from t_s66) and resource_type <> 'creator_reference'));
+
+select tests.ok('S66 gatilhos: security definer, search_path fixo, sem execute para anon nem authenticated',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
+                   and not has_function_privilege('anon', p.oid, 'execute') and not has_function_privilege('authenticated', p.oid, 'execute'))
+   from pg_proc p where p.oid in ('public.hero_favorites_follow_sync()'::regprocedure, 'public.hero_favorites_forget_user()'::regprocedure,
+                                  'public.profiles_compare_requires_follow()'::regprocedure, 'public.creator_reference_metrics_audit()'::regprocedure)));
+select tests.ok('S66 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S66 um só caminho profiles↔creator_profiles na API (sem tabela-ponte entre as duas)',
+  (select count(*) from pg_constraint f where f.contype = 'f'
+     and ((f.conrelid = 'public.profiles'::regclass and f.confrelid = 'public.creator_profiles'::regclass)
+          or (f.conrelid = 'public.creator_profiles'::regclass and f.confrelid = 'public.profiles'::regclass))) = 1
+  and not exists (
+    select 1 from pg_constraint a join pg_constraint b on b.conrelid = a.conrelid and b.contype = 'f'
+    where a.contype = 'f' and a.connamespace = 'public'::regnamespace
+      and a.confrelid = 'public.profiles'::regclass and b.confrelid = 'public.creator_profiles'::regclass));
+
+-- reaplicar a 0056 não duplica gatilhos nem muda contagens ou referências editadas
+\ir ../migrations/0056_hero_follows_compare.sql
+select tests.ok('S66 reaplicar a 0056 mantém gatilhos, contagens e a edição do admin',
+  (select count(*) from pg_trigger where tgname in ('trg_hero_favorites_follow_sync', 'trg_hero_favorites_forget_user',
+                                                   'trg_profiles_compare_requires_follow', 'trg_audit_creator_reference_metrics')) = 4
+  and (select followers from public.creator_follower_counts where creator_id = (select neymar from t_s66)) = (select base_n + 1 from t_s66)
+  and (select value from public.creator_reference_metrics where creator_id = (select neymar from t_s66) and metric_key = 'sleep_hours') = 8.5
+  and not exists (select 1 from public.creator_reference_metrics where creator_id = (select neymar from t_s66) and metric_key = 'recipes_week'));
+
+-- limpeza (a transação inteira é desfeita no fim)
+delete from auth.users where id in ('66000000-0000-4000-8000-000000000661', '66000000-0000-4000-8000-000000000662');
+drop table t_s66;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

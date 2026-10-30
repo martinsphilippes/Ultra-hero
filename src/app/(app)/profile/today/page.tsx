@@ -4,6 +4,7 @@ import { ConnectWatchCard } from "@/components/me/today/ConnectWatchCard";
 import { LegacyTodayCleanup } from "@/components/me/today/LegacyTodayCleanup";
 import { SyncingCard } from "@/components/me/today/SyncingCard";
 import { WatchToday } from "@/components/me/today/WatchToday";
+import { HeroComparison } from "@/components/heroes/HeroComparison";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { redirect } from "next/navigation";
 import { getNativeApp } from "@/lib/native-app/server";
@@ -43,6 +44,8 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
       ) : (
         <WatchToday snapshot={view.snapshot} mode={view.kind} blockHeading="h2" />
       )}
+      {/* Você vs Hero (0056): só com o relógio da própria pessoa; o "Exemplo" não entra na comparação */}
+      {view.kind === "example" ? null : <HeroComparison watch={view.kind === "demo" || view.kind === "real" ? view.snapshot : null} />}
     </div>
   );
 }
