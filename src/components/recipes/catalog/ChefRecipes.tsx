@@ -6,14 +6,15 @@ import type { RecipeCardData } from "@/lib/recipes/card";
 import { loadRecipeCards } from "@/lib/recipes/catalog";
 import { EMPTY_RECIPE_PARAMS, hasRecipeCriteria, recipeCatalogHref, type RecipeCatalogParams } from "@/lib/recipes/catalog-params";
 import { createClient } from "@/lib/supabase/server";
-import { RecipeCard } from "./RecipeCard";
+import { NutritionistSoon } from "../showcase/NutritionistSoon";
+import { loadShowcaseCardContext, ShowcaseRecipeCard, type ShowcaseHeroRef } from "../showcase/showcase-cards";
 import { RecipeCatalog } from "./RecipeCatalog";
 import { RECIPE_GRID } from "./grid";
 
 type Props = {
   /** Receitas da biblioteca (próprias e indicadas, já filtradas pelo que está no ar). */
   recipes: ContentTileData[];
-  hero: { id: string; slug: string; name: string };
+  hero: ShowcaseHeroRef;
   params: RecipeCatalogParams;
 };
 
@@ -21,6 +22,8 @@ type Props = {
 // busca e filtros (recipe_catalog com p_creator, carregamento progressivo); depois as que ele
 // indica, assinadas por outros chefs. Busca e filtros só aparecem quando há receitas próprias e
 // valem para elas; com busca ou filtro ativo, as indicadas saem e um aviso explica.
+// Alimentação completa (0051): cada card traz a assinatura da vitrine (chef escolhido pelo admin ·
+// indicada por este herói) e as ações Fazer, Lista de compras e, com produto ligado, Comprar pronto.
 export async function ChefRecipes({ recipes, hero, params }: Props) {
   const [t, tl] = await Promise.all([getTranslations("recipes.chefProfile"), getTranslations("recipes.library")]);
   const base = hubHref(hero.slug, "alimentacao");
@@ -36,6 +39,7 @@ export async function ChefRecipes({ recipes, hero, params }: Props) {
       endorsed = [];
     }
   }
+  const ctx = endorsed.length > 0 ? await loadShowcaseCardContext(endorsed.map((r) => r.id)) : null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -47,6 +51,7 @@ export async function ChefRecipes({ recipes, hero, params }: Props) {
             fixed={[]}
             creator={{ id: hero.id, name: hero.name }}
             showSearch
+            showcase={hero}
             track="chef"
             idPrefix="chef-recipes"
             heading={endorsedIds.length > 0 ? t("own", { hero: hero.name }) : undefined}
@@ -64,7 +69,7 @@ export async function ChefRecipes({ recipes, hero, params }: Props) {
         </p>
       ) : null}
 
-      {endorsed.length > 0 ? (
+      {endorsed.length > 0 && ctx ? (
         <section aria-labelledby="chef-endorsed-title" className="flex flex-col gap-3" data-testid="chef-endorsed">
           <h2 id="chef-endorsed-title" className="type-h3 text-fg">
             {t("endorsed", { hero: hero.name })}
@@ -76,12 +81,14 @@ export async function ChefRecipes({ recipes, hero, params }: Props) {
           <ul className={RECIPE_GRID}>
             {endorsed.map((recipe, index) => (
               <li key={recipe.id}>
-                <RecipeCard recipe={recipe} endorsedBy={hero.name} priority={own.length === 0 && index < 4} />
+                <ShowcaseRecipeCard recipe={recipe} hero={hero} ctx={ctx} priority={own.length === 0 && index < 4} />
               </li>
             ))}
           </ul>
         </section>
       ) : null}
+
+      <NutritionistSoon />
     </div>
   );
 }

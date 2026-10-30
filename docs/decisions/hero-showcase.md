@@ -54,5 +54,22 @@ contratações por profissional.
    de treino (Neymar, João Fonseca); o editor avisa nomes repetidos. Decidir no admin (ex.: renomear
    a fonte treinos para "Vídeos de treino" junto).
 2. Alimentação completa (chef que assina, comprar pronto, lista de compras).
+   Feito (0051). Reaproveita o modelo das receitas: o herói autor (content.creator_id) segue dono e
+   assinatura padrão; a vitrine de outros heróis continua em creator_recipe_links (0024, admin valida,
+   auditado). Novo: recipe_signers (sem linha = o autor assina; chef_id = herói chef que assina;
+   chef_id nulo = sem chef, "Indicada por") e recipe_ready_products (1 produto "Comprar pronto" por
+   receita, chave primária). Assinatura: "Receita de <chef>", "Receita de <chef> · indicada por
+   <herói>" ou "Indicada por <herói>" (o herói é o da vitrine de onde a pessoa veio, ?vitrine=, ou o
+   autor). Ações na página da receita e nos cards da Alimentação: Fazer (Modo Cozinha), Lista de
+   compras (folha de ingredientes da receita; no card, leva à receita em #lista-de-compras), Comprar
+   pronto (carrinho de teste, mesmas regras da loja, não depende da etapa demonstrativa) e a linha
+   "Nutricionista: em breve" (constante NUTRITIONIST_ACTION em lib/recipes/showcase; a Etapa 3 liga).
+   Admin: painel "Vitrine (Alimentação)" em /admin/content/[id] (heróis da vitrine, quem assina,
+   produto pronto). Indicadores (base da Etapa 5): recipe_action_counters por dia (Brasília), herói
+   da vitrine, origem (alimentacao = card, receita = página), ação (fazer, comprar_pronto,
+   lista_compras) e receita; sem pessoa e sem IP; nenhum grant para anon/authenticated; soma só pelo
+   service role (POST /api/recipe-actions → recipe_action_bump, que confere se a receita está na
+   vitrine do herói), sem esperar resposta, 1 toque por ação e receita por página, limite por
+   instância; o navegador do E2E não grava. Sem a 0051: tudo como antes, sem as partes novas.
 3. Profissionais e serviços (conta, perfil, serviços, contratação simulada, caixa de pedidos).
 4. Programas com produto e profissional ligados.

@@ -83,7 +83,7 @@
   "library": {
     "signedBy": "Recipe by {chef}",
     "endorsedBy": "Recommended by {hero}",
-    "endorsementNote": "{hero} recommends these recipes. Each one is signed by the chef who created it."
+    "endorsementNote": "{hero} recommends these recipes. When there is a chef, the chef signs the recipe."
   },
   "structured": {
     "legacyEditor": {
@@ -1011,5 +1011,24 @@
     "filtersScope": "Search and filters apply to the recipes signed by {hero}.",
     "endorsedHidden": "{count, plural, =1 {1 recommended recipe is hidden while a search or filter is active.} other {# recommended recipes are hidden while a search or filter is active.}}",
     "showAll": "Show all"
+  },
+  "showcase": {
+    "ready": {
+      "button": "Buy ready-made",
+      "login": "Sign in to buy",
+      "detail": "{product} · {price} (test price, no real purchase)"
+    },
+    "actions": {
+      "make": "Cook",
+      "makeLabel": "Cook {title} in Kitchen Mode",
+      "list": "List",
+      "listLabel": "List: add {title} to your shopping list"
+    },
+    "signature": {
+      "chef": "Recipe by <chefLink>{chef}</chefLink>",
+      "chefIndicated": "Recipe by <chefLink>{chef}</chefLink> · recommended by <heroLink>{hero}</heroLink>",
+      "indicated": "Recommended by <heroLink>{hero}</heroLink>"
+    },
+    "nutritionistSoon": "Nutritionist: coming soon"
   }
 }

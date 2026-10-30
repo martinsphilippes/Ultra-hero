@@ -175,7 +175,12 @@
     "review_flow_unavailable": "Este tipo no tiene “Enviar a revisión” en el portal del héroe. La revisión solo se puede activar para recetas.",
     "hero_categories_max_2": "Cada héroe puede tener como máximo 2 categorías.",
     "hero_categories_duplicate": "Elige categorías diferentes.",
-    "library_tab_label_pt_required": "Para traducir el nombre, completa también el nombre en pt-BR."
+    "library_tab_label_pt_required": "Para traducir el nombre, completa también el nombre en pt-BR.",
+    "own_recipe": "La receta ya está en la vitrina del autor.",
+    "recipe_not_found": "Receta no encontrada.",
+    "chef_unavailable": "Elige un héroe activo para firmar.",
+    "showcase_unavailable": "Disponible después de aplicar la migración 0051 en la base de datos.",
+    "invalid_status": "Estado inválido."
   },
   "content": {
     "title": "Contenidos",
@@ -333,6 +338,47 @@
       "willPublishAt": "Sale al aire el {date}.",
       "publish_at_invalid": "Fecha inválida.",
       "publish_at_future": "La fecha debe estar en el futuro (al menos 1 minuto adelante)."
+    },
+    "showcase": {
+      "title": "Vitrina (Alimentación)",
+      "unavailable": "Quién firma y “Comprar listo” estarán disponibles después de aplicar la migración 0051 en la base de datos.",
+      "heroes": {
+        "title": "Héroes de la vitrina",
+        "hint": "La receta aparece en la Alimentación de estos héroes. La vitrina del autor es fija.",
+        "author": "Autor",
+        "remove": "Quitar",
+        "empty": "Ningún héroe todavía.",
+        "add": "Agregar a la vitrina de",
+        "pick": "Elige un héroe",
+        "addButton": "Agregar"
+      },
+      "signer": {
+        "title": "Quién firma",
+        "label": "Chef que firma",
+        "hint": "Sin chef, la receta aparece como “Recomendada por” el héroe de la vitrina.",
+        "author": "El autor ({name})",
+        "authorNone": "El autor",
+        "none": "Sin chef (solo recomendada)",
+        "save": "Guardar firma"
+      },
+      "ready": {
+        "title": "Comprar listo",
+        "hint": "Un producto por receta (p. ej.: vianda). Va al carrito de prueba.",
+        "notPublished": "Producto fuera de línea",
+        "remove": "Quitar",
+        "empty": "Ningún producto vinculado.",
+        "replace": "Cambiar producto",
+        "pick": "Buscar producto",
+        "save": "Vincular producto"
+      },
+      "messages": {
+        "heroAdded": "Receta agregada a la vitrina.",
+        "heroRemoved": "Receta quitada de la vitrina.",
+        "signerSaved": "Firma guardada.",
+        "readySaved": "Producto “Comprar listo” vinculado.",
+        "readyRemoved": "Producto “Comprar listo” quitado.",
+        "saved": "Guardado."
+      }
     }
   },
   "programs": {
