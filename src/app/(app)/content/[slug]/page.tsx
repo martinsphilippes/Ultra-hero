@@ -315,10 +315,12 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
             <RecipeGallery photos={structured.model.photos} unoptimized={!live} />
           </div>
         ) : (
-        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[3/1] print:hidden">
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[16/9] print:hidden" data-testid="content-cover">
+          {/* capa inteira, sem corte: a mesma foto desfocada preenche as sobras do card */}
           {/* foto de receita fora do ar: o otimizador busca sem a sessão e não a veria */}
-          <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-obsidian/70 via-transparent to-transparent" />
+          <Image src={cover} alt="" aria-hidden="true" fill unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="scale-110 object-cover opacity-60 blur-2xl" />
+          <Image src={cover} alt="" fill priority unoptimized={cover.endsWith(".svg") || (isRecipeMediaUrl(cover) && !live)} sizes="(min-width: 1024px) 60vw, 100vw" className="object-contain" data-testid="content-cover-image" />
+          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-obsidian/50 to-transparent" />
           <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
             <PillarBadge pillar={content.pillar} />
             {content.access_level === null ? (
