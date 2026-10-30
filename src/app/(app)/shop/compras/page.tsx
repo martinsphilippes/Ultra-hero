@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { MyBidsList } from "@/components/collectibles/MyBidsList";
 import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { OrdersList } from "@/components/commerce/OrdersList";
@@ -45,7 +44,10 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
           <ul className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-surface-elevated p-1 sm:w-fit sm:min-w-[24rem]">
             {tabs.map((item) => (
               <li key={item.key}>
-                <Link
+                {/* <a> comum, não <Link>: o roteador do Next às vezes abortava a ida de /shop/compras para
+                    /shop/compras?aba=lances (mesmo caminho, sem → com parâmetros) e a aba não mudava; o
+                    mesmo caso dos filtros de receitas (ChipLink com document, docs/decisions/recipes-module.md) */}
+                <a
                   href={item.href}
                   aria-current={tab === item.key ? "page" : undefined}
                   className={cn(
@@ -56,7 +58,7 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
                 >
                   {item.label}
                   {item.key === "bids" && myBids.rows.length > 0 ? <span className="ml-1.5 type-numeric text-xs text-fg-subtle">{myBids.rows.length}</span> : null}
-                </Link>
+                </a>
               </li>
             ))}
           </ul>
