@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // Início como feed do Instagram: posts um abaixo do outro, rolagem infinita, capa grande, herói no topo.
-// Roda contra o banco remoto (seed: 40 posts no ar de 8 heróis).
+// Roda contra o banco remoto (depois da 0044: 38 posts no ar de 6 heróis).
 
 test.describe("feed do Início", () => {
   test("mostra posts com herói no topo e capa 4:5, sem faixa de pilares nem seções", async ({ page }, info) => {

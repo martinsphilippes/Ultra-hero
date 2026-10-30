@@ -81,17 +81,17 @@ test.describe("catálogo de receitas (visitante)", () => {
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
   });
 
-  test("busca pelo nome da chef traz só receitas da Helena", async ({ page }) => {
+  test("busca pelo nome do chef traz só receitas do Érick Jacquin", async ({ page }) => {
     await page.goto("/explore?tab=receitas");
     const search = page.getByTestId("recipe-search");
-    await search.getByRole("searchbox").fill("Helena");
+    await search.getByRole("searchbox").fill("Jacquin");
     await search.getByRole("button", { name: "Buscar" }).click();
-    await expect(page).toHaveURL(/tab=receitas&q=Helena/);
-    await expect(page.getByRole("heading", { name: "Receitas para “Helena”" })).toBeVisible();
+    await expect(page).toHaveURL(/tab=receitas&q=Jacquin/);
+    await expect(page.getByRole("heading", { name: "Receitas para “Jacquin”" })).toBeVisible();
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     const signatures = await page.getByTestId("recipe-signature").allTextContents();
     expect(signatures.length).toBeGreaterThan(0);
-    for (const s of signatures) expect(s).toContain("Helena Vilar");
+    for (const s of signatures) expect(s).toContain("Érick Jacquin");
   });
 
   test("página da receita para o visitante: parte pública, compartilhar, bloqueio no corpo e sem ingredientes", async ({ page }) => {
@@ -235,23 +235,23 @@ test.describe("receita aberta (conta free com a etapa)", () => {
 });
 
 test.describe("perfil público do chef", () => {
-  test("Helena: busca dentro das receitas assinadas; as indicadas saem com aviso enquanto há busca", async ({ page }) => {
-    await page.goto("/personalities/helena-vilar/receitas");
+  test("Érick Jacquin: busca dentro das receitas assinadas; as indicadas saem com aviso enquanto há busca", async ({ page }) => {
+    await page.goto("/personalities/erick-jacquin/receitas");
     const search = page.getByTestId("recipe-search");
     await expect(search).toBeVisible();
     await search.getByRole("searchbox").fill("panqueca");
     await search.getByRole("button", { name: "Buscar" }).click();
-    await expect(page).toHaveURL(/\/personalities\/helena-vilar\/receitas\?q=panqueca/);
+    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/receitas\?q=panqueca/);
     await expect.poll(() => cardSlugs(page)).toEqual(["panqueca-de-aveia-e-banana-g9"]);
     await expect(page.getByTestId("chef-endorsed")).toHaveCount(0);
     await expectNoSeriousAxe(page);
   });
 
-  test("Helena: o atalho 'Até 15 min' filtra a partir da biblioteca sem parâmetros", async ({ page }) => {
-    await page.goto("/personalities/helena-vilar/receitas");
+  test("Érick Jacquin: o atalho 'Até 15 min' filtra a partir da biblioteca sem parâmetros", async ({ page }) => {
+    await page.goto("/personalities/erick-jacquin/receitas");
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     await page.getByTestId("recipe-filters").getByRole("link", { name: "Até 15 min" }).click();
-    await expect(page).toHaveURL(/\/personalities\/helena-vilar\/receitas\?tempo=15$/);
+    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/receitas\?tempo=15$/);
     await expect(page.getByTestId("recipe-active-filters")).toContainText("Até 15 min");
     await expect(page.getByTestId("recipe-filters").getByRole("link", { name: "Até 15 min", exact: true })).toHaveAttribute("aria-current", "true");
     const times = await page.getByTestId("recipe-card-time").allTextContents();
@@ -265,18 +265,18 @@ test.describe("perfil público do chef", () => {
   });
 
   test("herói sem receitas próprias: só as indicadas, sem busca nem filtros", async ({ page }) => {
-    await page.goto("/personalities/lia-monteiro/receitas");
+    await page.goto("/personalities/anitta/receitas");
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     await expect(page.getByTestId("recipe-search")).toHaveCount(0);
     await expect(page.getByTestId("recipe-filters")).toHaveCount(0);
-    await expect(page.getByTestId("recipe-endorsed").first()).toContainText("Indicada por Lia Monteiro");
+    await expect(page.getByTestId("recipe-endorsed").first()).toContainText("Indicada por Anitta");
   });
 
-  test("perfil da Helena mantém o selo de personagem fictício e mostra especialidades e credenciais quando aprovadas", async ({ page }) => {
-    await page.goto("/personalities/helena-vilar");
-    await expect(page.getByText("Personagem fictício").first()).toBeVisible();
+  test("perfil do Érick Jacquin (pessoa real, 0044) sem selo de fictício e com especialidades e credenciais quando aprovadas", async ({ page }) => {
+    await page.goto("/personalities/erick-jacquin");
+    await expect(page.getByText("Personagem fictício")).toHaveCount(0);
     const highlights = page.getByTestId("chef-highlights");
-    test.skip((await highlights.count()) === 0, "a Helena ainda não tem especialidades nem credenciais aprovadas no remoto");
+    test.skip((await highlights.count()) === 0, "o Érick Jacquin ainda não tem especialidades nem credenciais aprovadas no remoto");
     const credentials = page.getByTestId("chef-credentials");
     if ((await credentials.count()) > 0) await expect(credentials).toContainText("Credenciais informadas pelo herói");
   });

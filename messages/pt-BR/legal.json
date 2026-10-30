@@ -30,7 +30,7 @@
       "about": {
         "title": "O que é o Groscove Ultra",
         "blocks": {
-          "p1": "O Groscove Ultra é uma prova de conceito: um app experimental, em fase de demonstração, com conteúdos educativos sobre rotina, treino, nutrição e gastronomia, programas guiados, heróis fictícios, planos simulados e uma loja simulada.",
+          "p1": "O Groscove Ultra é uma prova de conceito: um app experimental, em fase de demonstração, com conteúdos educativos sobre rotina, treino, nutrição e gastronomia, programas guiados, heróis, planos simulados e uma loja simulada.",
           "p2": "O objetivo é testar a experiência e aprender com o uso. Não é um serviço comercial: <strong>não há cobranças, pagamentos, vendas nem entregas reais</strong>."
         }
       },
@@ -56,10 +56,10 @@
         }
       },
       "personalities": {
-        "title": "Heróis fictícios",
+        "title": "Heróis",
         "blocks": {
-          "p1": "Os heróis do app são personagens fictícios criados para a demonstração e aparecem com a indicação “Personagem fictício”. Nomes, histórias, imagens e falas não representam pessoas reais, e qualquer semelhança é coincidência.",
-          "p2": "Conteúdos atribuídos a esses heróis não são depoimentos, endossos ou recomendações de pessoas reais. Os fornecedores de exemplo da loja simulada também são fictícios."
+          "p1": "Os heróis do app são personalidades reais que autorizaram o uso do nome e da imagem no Groscove Ultra. As fotos dos perfis e dos posts vêm de bancos de imagens com licença livre, com autor e licença registrados.",
+          "p2": "Os conteúdos dos perfis são educativos e não substituem orientação profissional individual. Os fornecedores de exemplo da loja simulada são fictícios."
         }
       },
       "plans": {
@@ -166,7 +166,7 @@
       "who": {
         "title": "Quem somos e o que esta Política cobre",
         "blocks": {
-          "p1": "O Groscove Ultra é uma prova de conceito com conteúdos educativos, heróis fictícios, assinaturas simuladas e comércio simulado. Esta Política vale para o app (web e instalável) e para os portais de parceiros e de administração.",
+          "p1": "O Groscove Ultra é uma prova de conceito com conteúdos educativos, heróis, assinaturas simuladas e comércio simulado. Esta Política vale para o app (web e instalável) e para os portais de parceiros e de administração.",
           "p2": "A identificação do controlador dos dados e do encarregado (DPO) será publicada antes da abertura pública. Até lá, use o canal de contato indicado no fim desta página."
         }
       },

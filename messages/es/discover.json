@@ -129,7 +129,7 @@
   },
   "personalities": {
     "title": "Héroes",
-    "description": "Personajes ficticios que guían los contenidos. Fotos ilustrativas.",
+    "description": "Personalidades que guían los contenidos.",
     "filterLabel": "Filtrar por pilar",
     "all": "Todos",
     "count": "{count, plural, =1 {1 héroe} other {# héroes}}",

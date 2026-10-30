@@ -70,15 +70,15 @@ describe("tileCover", () => {
 
 describe("tileLabel", () => {
   it("monta 'título · herói · tipo' quando o conteúdo é livre", () => {
-    expect(tileLabel({ title: "Sono profundo em 7 dias", creator: "Helena Vilar", type: "Vídeo" })).toBe("Sono profundo em 7 dias · Helena Vilar · Vídeo");
-    expect(tileLabel({ title: "Sono", creator: "Helena", type: "Vídeo", restriction: null })).toBe("Sono · Helena · Vídeo");
+    expect(tileLabel({ title: "Sono profundo em 7 dias", creator: "Érick Jacquin", type: "Vídeo" })).toBe("Sono profundo em 7 dias · Érick Jacquin · Vídeo");
+    expect(tileLabel({ title: "Sono", creator: "Érick", type: "Vídeo", restriction: null })).toBe("Sono · Érick · Vídeo");
   });
 
   it("acrescenta a restrição no fim quando existe", () => {
     expect(tileLabel({ title: "Mobilidade", creator: "Kai", type: "Treino", restriction: "Requer plano Treino" })).toBe(
       "Mobilidade · Kai · Treino · Requer plano Treino",
     );
-    expect(tileLabel({ title: "Marmita", creator: "Lia", type: "Receita", restriction: "Indisponível" })).toBe("Marmita · Lia · Receita · Indisponível");
+    expect(tileLabel({ title: "Marmita", creator: "Anitta", type: "Receita", restriction: "Indisponível" })).toBe("Marmita · Anitta · Receita · Indisponível");
   });
 
   it("sem herói, pula o trecho (não deixa separador duplo)", () => {

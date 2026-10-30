@@ -203,7 +203,7 @@
       }
     },
     "signOut": "Cerrar sesión",
-    "demoNote": "Entorno de demostración: héroes ficticios, suscripción simulada, ningún pago real.",
+    "demoNote": "Entorno de demostración: suscripción simulada, ningún pago real.",
     "evolution": {
       "title": "Evolución",
       "description": "Tu racha y el camino recorrido.",
@@ -681,7 +681,7 @@
     "description": "Transparencia sobre lo que guarda la POC y cómo eliminar tu cuenta.",
     "demo": {
       "title": "Naturaleza demostrativa",
-      "body": "Groscove Ultra es una prueba de concepto pública. Los héroes son ficticios, las suscripciones son simuladas y los pedidos son de prueba: no hay pago, entrega ni dirección real."
+      "body": "Groscove Ultra es una prueba de concepto pública. Las suscripciones son simuladas y los pedidos son de prueba: no hay pago, entrega ni dirección real."
     },
     "store": {
       "title": "Qué guardamos",

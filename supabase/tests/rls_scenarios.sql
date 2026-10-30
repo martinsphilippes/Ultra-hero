@@ -86,9 +86,10 @@ select tests.ok('S0 seed_uuid é determinístico e RFC 4122', public.seed_uuid('
 
 -- ================================================================ S1 · Visitante
 select tests.anon();
-select tests.ok('S1 visitante vê catálogo publicado (40)', (select count(*) from public.content where status = 'published') = 40);
+-- 0044: g6 e g8 (do herói removido) arquivadas: 38 no ar
+select tests.ok('S1 visitante vê catálogo publicado (38)', (select count(*) from public.content where status = 'published') = 38);
 select tests.ok('S1 visitante não lê corpo de conteúdo', (select count(*) from public.content_bodies) = 0);
-select tests.ok('S1 visitante vê personalidades ativas (8)', (select count(*) from public.creator_profiles) = 8);
+select tests.ok('S1 visitante vê personalidades ativas (6; as 2 removidas na 0044 estão suspensas)', (select count(*) from public.creator_profiles) = 6);
 select tests.ok('S1 visitante vê produtos regulares (31 = 24 do seed + 7 Ultra.e Life; 1 indisponível ainda aparece; nenhum oculto)', (select count(*) from public.products) = 31);
 select tests.ok('S1 visitante não vê pedidos', (select count(*) from public.test_orders) = 0);
 select tests.expect_error('S1 visitante não faz checkout', $q$select public.checkout_cart(public.seed_uuid('dest:centro'))$q$, 'permission denied');
@@ -122,13 +123,15 @@ select tests.ok('S3 após o fim do período volta ao gratuito', (public.my_subsc
 select tests.ok('S3 corpo premium bloqueado novamente', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:t7')) = 0);
 -- downgrade agendado: adiciona dois módulos, remove um → só sai no fim do período
 select tests.ok('S3 upgrade imediato com 2 módulos', jsonb_array_length(public.select_modules(array[public.seed_uuid('module:base'), public.seed_uuid('module:chef_full')]) -> 'modules') = 2);
--- desde a 0027 a etapa demonstrativa vale no banco: g8 é receita, então consumer1 conclui a etapa
--- antes (a linha sai logo depois, porque o S22 confere que consumer1 não tem etapa)
+-- desde a 0027 a etapa demonstrativa vale no banco: consumer1 conclui a etapa antes (a linha sai
+-- logo depois, porque o S22 confere que consumer1 não tem etapa). Desde a 0044 a g8 (Chef FULL) está
+-- arquivada: o módulo que segue ativo é conferido pelo vídeo g10 (Chef FULL) e a etapa pela receita g5 (Base).
 insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('10000000-0000-4000-8000-000000000002', now());
 select tests.ok('S3 downgrade fica agendado (módulo segue ativo até o fim)', (select count(*) from jsonb_array_elements(public.select_modules(array[public.seed_uuid('module:base')]) -> 'modules') m where m ->> 'status' = 'scheduled_removal') = 1
-  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g8')) = 1);
+  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g10')) = 1
+  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g5')) = 1);
 delete from public.recipe_onboarding where user_id = '10000000-0000-4000-8000-000000000002';
-select tests.ok('S3 sem a etapa, o mesmo módulo não abre o corpo da receita g8', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g8')) = 0);
+select tests.ok('S3 sem a etapa, o módulo ativo não abre o corpo da receita g5', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g5')) = 0);
 -- dependência configurável
 select tests.su();
 insert into public.module_dependencies (module_id, requires_module_id) values (public.seed_uuid('module:nutrition_full'), public.seed_uuid('module:base'));
@@ -578,8 +581,8 @@ select tests.ok('S19 explore_feed é security invoker, com search_path fixo, exe
 create temporary table t_s19_live as
   select id, creator_id, pillar, type, access_level, difficulty from public.content where public.content_is_live(status, publish_at);
 grant select on t_s19_live to anon, authenticated; -- o visitante e o herói comparam o feed com a referência
-select tests.ok('S19 referência: 40 no ar, de 8 heróis, todos com herói', (select count(*) from t_s19_live) = 40
-  and (select count(distinct creator_id) from t_s19_live) = 8 and not exists (select 1 from t_s19_live where creator_id is null));
+select tests.ok('S19 referência: 38 no ar, de 6 heróis, todos com herói', (select count(*) from t_s19_live) = 38
+  and (select count(distinct creator_id) from t_s19_live) = 6 and not exists (select 1 from t_s19_live where creator_id is null));
 
 -- 1) visitante recebe exatamente o catálogo no ar
 select tests.anon();
@@ -720,10 +723,12 @@ select tests.ok('S19 estado restaurado: catálogo no ar igual à referência',
 -- sugestão; não há grant de update para authenticated: status muda só pela RPC admin_set_creator_product.
 -- A junção com products herda a RLS de products: produto fora do ar some mesmo com a alocação validada.
 select tests.su();
--- 1) seed: 56 linhas validadas, 7 por herói, 8 heróis, ordem fixa da vitrine
-select tests.ok('S20 seed: 56 alocações validadas, 7 por herói em 8 heróis, só produtos Ultra.e Life',
+-- 1) seed: 56 linhas, 7 por herói, 8 heróis, ordem fixa da vitrine; desde a 0044 as 14 dos 2 heróis
+--    removidos ficam suspensas (42 validadas nos 6 heróis no ar)
+select tests.ok('S20 seed: 56 alocações, 7 por herói em 8 heróis (42 validadas; 14 suspensas dos removidos na 0044), só produtos Ultra.e Life',
   (select count(*) from public.creator_products) = 56
-  and (select count(*) from public.creator_products where status = 'validated' and validated_at is not null) = 56
+  and (select count(*) from public.creator_products where status = 'validated' and validated_at is not null) = 42
+  and (select count(*) from public.creator_products cp join public.creator_profiles h on h.id = cp.creator_id where cp.status = 'suspended' and h.status = 'suspended') = 14
   and (select count(distinct creator_id) from public.creator_products) = 8
   and not exists (select creator_id from public.creator_products group by creator_id having count(*) <> 7)
   and (select count(distinct product_id) from public.creator_products) = 7
@@ -733,9 +738,9 @@ select tests.ok('S20 seed: sort_order 10..70 na ordem da vitrine (citrus, tanger
     = array['e-water-citrus', 'e-water-tangerina', 'e-creatina-gummy', 'e-creatina-po', 'e-focus', 'e-daily', 'e-melatonina']
   and (select array_agg(distinct sort_order order by sort_order) from public.creator_products) = array[10, 20, 30, 40, 50, 60, 70]);
 select tests.anon();
-select tests.ok('S20 visitante vê as 56 alocações e, na junção com products, os 7 produtos Ultra.e Life publicados com imagem e loja oficial',
-  (select count(*) from public.creator_products) = 56
-  and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 56
+select tests.ok('S20 visitante vê as 42 alocações validadas e, na junção com products, os 7 produtos Ultra.e Life publicados com imagem e loja oficial',
+  (select count(*) from public.creator_products) = 42
+  and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 42
   and (select count(distinct p.id) from public.creator_products cp join public.products p on p.id = cp.product_id
        where p.status = 'published' and p.seller_org_id = public.seed_uuid('seller:ultrae')) = 7
   and (select bool_and(p.image_url like '/products/%.jpg' and p.attributes ->> 'external_url' like 'https://selvaje.lojavirtualnuvem.com.br/%' and p.price_cents_demo in (6990, 8990))
@@ -749,8 +754,8 @@ insert into public.creator_products (creator_id, product_id, status, note) value
   (public.seed_uuid('creator:lia'), public.seed_uuid('product:a1'), 'rejected', 'não combina'),
   (public.seed_uuid('creator:rafael'), public.seed_uuid('product:k2'), 'suggested', null);
 select tests.anon();
-select tests.ok('S20 visitante não vê suggested/suspended/rejected (segue vendo 56, 7 de Lia)',
-  (select count(*) from public.creator_products) = 56
+select tests.ok('S20 visitante não vê suggested/suspended/rejected (segue vendo 42, 7 de Lia)',
+  (select count(*) from public.creator_products) = 42
   and not exists (select 1 from public.creator_products where status <> 'validated')
   and (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia')) = 7
   and (select count(*) from public.creator_products where product_id in (public.seed_uuid('product:m1'), public.seed_uuid('product:k1'), public.seed_uuid('product:a1'), public.seed_uuid('product:k2'))) = 0);
@@ -760,16 +765,16 @@ select tests.expect_error('S20 visitante não insere alocação (sem grant)', $q
 select tests.su();
 update public.products set status = 'draft' where id = public.seed_uuid('product:ue-focus');
 select tests.anon();
-select tests.ok('S20 produto despublicado: a alocação segue visível, mas a junção com products não o traz (48 de 56)',
-  (select count(*) from public.creator_products where product_id = public.seed_uuid('product:ue-focus')) = 8
+select tests.ok('S20 produto despublicado: a alocação segue visível, mas a junção com products não o traz (36 de 42)',
+  (select count(*) from public.creator_products where product_id = public.seed_uuid('product:ue-focus')) = 6
   and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id where cp.product_id = public.seed_uuid('product:ue-focus')) = 0
-  and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 48
-  and (select count(*) from public.creator_products cp left join public.products p on p.id = cp.product_id where p.id is null) = 8);
+  and (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 36
+  and (select count(*) from public.creator_products cp left join public.products p on p.id = cp.product_id where p.id is null) = 6);
 select tests.su();
 update public.products set status = 'published' where id = public.seed_uuid('product:ue-focus');
 select tests.anon();
-select tests.ok('S20 republicado: a junção volta a 56',
-  (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 56
+select tests.ok('S20 republicado: a junção volta a 42',
+  (select count(*) from public.creator_products cp join public.products p on p.id = cp.product_id) = 42
   and (select status from public.products where id = public.seed_uuid('product:ue-focus')) = 'published');
 
 -- 4) herói (creator1 = Lia): sugere para si; não valida, não sugere para outro, não assina por terceiro
@@ -785,10 +790,10 @@ select tests.expect_error('S20 herói não insere alocação já validada', $q$i
 select tests.expect_error('S20 herói não sugere para outro herói', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:rafael'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
 select tests.expect_error('S20 herói não assina a sugestão com created_by de terceiro', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
 select tests.expect_error('S20 herói não insere sem created_by', $q$insert into public.creator_products (creator_id, product_id) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'))$q$, '42501');
-select tests.ok('S20 herói vê as próprias linhas em qualquer status (12 de Lia) e só validated dos outros (61 no total)',
+select tests.ok('S20 herói vê as próprias linhas em qualquer status (12 de Lia) e só validated dos outros (47 no total)',
   (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia')) = 12
   and (select count(*) from public.creator_products where creator_id = public.seed_uuid('creator:lia') and status <> 'validated') = 5
-  and (select count(*) from public.creator_products) = 61
+  and (select count(*) from public.creator_products) = 47
   and not exists (select 1 from public.creator_products where creator_id <> public.seed_uuid('creator:lia') and status <> 'validated'));
 do $s20$
 declare n int;
@@ -813,7 +818,7 @@ select tests.expect_error('S20 herói não executa a RPC de status', $q$select p
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
 select tests.expect_error('S20 consumidor não sugere alocação (não é herói)', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000002')$q$, '42501');
 select tests.expect_error('S20 consumidor não insere nem fingindo created_by do herói', $q$insert into public.creator_products (creator_id, product_id, status, created_by) values (public.seed_uuid('creator:lia'), public.seed_uuid('product:l3'), 'suggested', '10000000-0000-4000-8000-000000000004')$q$, '42501');
-select tests.ok('S20 consumidor vê só validated (56)', (select count(*) from public.creator_products) = 56 and not exists (select 1 from public.creator_products where status <> 'validated'));
+select tests.ok('S20 consumidor vê só validated (42)', (select count(*) from public.creator_products) = 42 and not exists (select 1 from public.creator_products where status <> 'validated'));
 select tests.expect_error('S20 consumidor não executa a RPC de status', $q$select public.admin_set_creator_product(public.seed_uuid('creator:lia'), public.seed_uuid('product:l1'), 'validated')$q$, 'forbidden');
 
 -- 6) RPC admin_set_creator_product: valida, suspende, rejeita, cria, ordena; tudo auditado
@@ -1070,12 +1075,17 @@ select tests.ok('S21 RLS ativa nas duas tabelas, gatilhos instalados e chaves: p
 select tests.su();
 insert into auth.users (id, email) values ('10000000-0000-4000-8000-000000000022', 's22@test.local');
 
--- 1) seed: todo herói indica as receitas que não são dele, já validadas
-select tests.ok('S22 seed: cada herói indica todas as receitas de outros chefs e nenhuma própria',
-  (select count(*) from public.creator_recipe_links) =
-    (select count(*) from public.creator_profiles cp join public.content c on c.type = 'recipe' and c.creator_id is not null and c.creator_id <> cp.id)
-  and not exists (select 1 from public.creator_recipe_links l join public.content c on c.id = l.content_id where c.creator_id = l.creator_id or c.type <> 'recipe')
-  and not exists (select 1 from public.creator_recipe_links where status <> 'validated'));
+-- 1) seed: todo herói ativo indica, validadas, as receitas no ar dos outros chefs; desde a 0044 as indicações
+--    dos heróis removidos, das receitas arquivadas e das que viraram próprias (receita movida) ficam suspensas
+select tests.ok('S22 seed: cada herói ativo indica todas as receitas no ar de outros chefs e nenhuma própria',
+  (select count(*) from public.creator_recipe_links where status = 'validated') =
+    (select count(*) from public.creator_profiles cp join public.content c on c.type = 'recipe' and c.status = 'published' and c.creator_id is not null and c.creator_id <> cp.id
+     where cp.status = 'active')
+  and not exists (select 1 from public.creator_recipe_links l join public.content c on c.id = l.content_id where c.type <> 'recipe')
+  and not exists (select 1 from public.creator_recipe_links l join public.content c on c.id = l.content_id
+                  where l.status = 'validated' and (c.creator_id = l.creator_id or c.status <> 'published'))
+  and not exists (select 1 from public.creator_recipe_links l join public.creator_profiles cp on cp.id = l.creator_id where l.status = 'validated' and cp.status <> 'active')
+  and not exists (select 1 from public.creator_recipe_links where status not in ('validated', 'suspended')));
 
 -- 2) visitante e consumidor leem só validados e não escrevem
 select tests.su();
@@ -1596,6 +1606,8 @@ update auth.users set raw_app_meta_data = raw_app_meta_data || '{"ultra_hero_dem
 where id in ('10000000-0000-4000-8000-000000000027', '10000000-0000-4000-8000-000000000030');
 update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000026' where id = public.seed_uuid('creator:helena') and user_id is null;
 update public.creator_profiles set user_id = '10000000-0000-4000-8000-000000000027' where id = public.seed_uuid('creator:marcos') and user_id is null;
+-- a 0044 suspendeu o Marcos; aqui ele volta a ativo só como segundo chef de teste (suspenso de novo no fim do S32)
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:marcos');
 insert into public.recipe_onboarding (user_id, notice_accepted_at) values
   ('10000000-0000-4000-8000-000000000028', now()), ('10000000-0000-4000-8000-000000000029', now()),
   ('10000000-0000-4000-8000-000000000030', now()), ('10000000-0000-4000-8000-000000000031', now());
@@ -1803,8 +1815,8 @@ select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local
 select tests.ok('S26 Helena vinculada ao usuário de teste', public.my_creator_id() = public.seed_uuid('creator:helena'));
 insert into public.content (id, slug, creator_id, pillar, type, title, summary) values
   ('26000000-0000-4000-8000-000000000001', 's26-receita', public.seed_uuid('creator:helena'), 'gastronomy', 'recipe', 'Receita S26', 'Resumo S26');
-select tests.ok('S26 dono vê as versões só das próprias receitas (8 do seed da Helena e do Marcos: só as 4 dela)',
-  (select count(*) from public.recipe_versions) = 4);
+select tests.ok('S26 dono vê as versões só das próprias receitas (8 do seed: as 4 dela + g2 e g4, que a 0044 passou a ela; g6 e g8 ficam com o removido)',
+  (select count(*) from public.recipe_versions) = 6);
 select tests.expect_error('S26 insert direto em recipe_ingredients: permission denied',
   $q$insert into public.recipe_ingredients (content_id, position, name) values ('26000000-0000-4000-8000-000000000001', 1, 'X')$q$, 'permission denied');
 select tests.expect_error('S26 insert direto em recipe_details: permission denied',
@@ -2621,24 +2633,26 @@ create temporary table t_s31_hero as select * from public.recipe_catalog(null, n
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 create temporary table t_s31_admin as select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', null, 48);
 select tests.su();
-select tests.ok('S31 catálogo: visitante, herói (com rascunhos e agendada) e admin recebem só as 8 receitas no ar',
-  (select count(*) from t_s31_anon) = 8 and (select count(*) from t_s31_hero) = 8 and (select count(*) from t_s31_admin) = 8
+-- 0044: g6 e g8 arquivadas, 6 receitas no ar
+select tests.ok('S31 catálogo: visitante, herói (com rascunhos e agendada) e admin recebem só as 6 receitas no ar',
+  (select count(*) from t_s31_anon) = 6 and (select count(*) from t_s31_hero) = 6 and (select count(*) from t_s31_admin) = 6
   and not exists (select 1 from (select content_id from t_s31_anon union all select content_id from t_s31_hero union all select content_id from t_s31_admin) x
                   join public.content c on c.id = x.content_id where not public.content_is_live(c.status, c.publish_at))
   and not exists (select 1 from t_s31_hero where content_id = '28000000-0000-4000-8000-000000000001'));
 select tests.anon();
 select tests.ok('S31 "cabotiá" como visitante não encontra nada (ingrediente é protegido)',
   (select count(*) from public.recipe_catalog('cabotiá', null, null, null, null, null, null, 'relevance', null, 24)) = 0);
-select tests.ok('S31 nome do chef encontra as receitas dele (Helena: g1, g3, g5, g9)',
-  (select array_agg(content_id order by content_id) from public.recipe_catalog('Helena', null, null, null, null, null, null, 'relevance', null, 24))
-  = (select array_agg(id order by id) from public.content where id in (public.seed_uuid('content:g1'), public.seed_uuid('content:g3'), public.seed_uuid('content:g5'), public.seed_uuid('content:g9'))));
+select tests.ok('S31 nome do chef encontra as receitas dele (Érick Jacquin: g1, g3, g5, g9 e g2, g4 movidas na 0044)',
+  (select array_agg(content_id order by content_id) from public.recipe_catalog('Jacquin', null, null, null, null, null, null, 'relevance', null, 24))
+  = (select array_agg(id order by id) from public.content where id in (public.seed_uuid('content:g1'), public.seed_uuid('content:g3'), public.seed_uuid('content:g5'),
+                                                                       public.seed_uuid('content:g9'), public.seed_uuid('content:g2'), public.seed_uuid('content:g4'))));
 select tests.ok('S31 até 15 minutos traz g3 e g9',
   (select array_agg(content_id order by content_id) from public.recipe_catalog(null, null, 15, null, null, null, null, 'quick', null, 24))
   = (select array_agg(id order by id) from public.content where id in (public.seed_uuid('content:g3'), public.seed_uuid('content:g9'))));
 select tests.ok('S31 sem ovo traz só as declaradas sem ovo (g5); "não informado" não passa',
   (select array_agg(content_id) from public.recipe_catalog(null, null, null, null, null, array['egg'], null, 'recent', null, 24)) = array[public.seed_uuid('content:g5')]);
 select tests.ok('S31 filtro de categoria e de dieta (nenhuma dieta declarada no seed)',
-  (select count(*) from public.recipe_catalog(null, array['marmitas'], null, null, null, null, null, 'recent', null, 24)) = 2
+  (select count(*) from public.recipe_catalog(null, array['marmitas'], null, null, null, null, null, 'recent', null, 24)) = 1
   and (select count(*) from public.recipe_catalog(null, null, null, null, array['vegan'], null, null, 'recent', null, 24)) = 0);
 do $s31$ declare v_sort text; v_cursor text; v_seen uuid[]; v_page int; r record; n int;
 begin
@@ -2653,13 +2667,14 @@ begin
       v_page := v_page + 1;
       exit when n < 3 or v_page > 10;
     end loop;
-    perform tests.ok('S31 cursor (' || v_sort || ') pagina de 3 em 3 sem repetir e cobre as 8', cardinality(v_seen) = 8);
+    perform tests.ok('S31 cursor (' || v_sort || ') pagina de 3 em 3 sem repetir e cobre as 6', cardinality(v_seen) = 6);
   end loop;
 end $s31$;
 select tests.login('10000000-0000-4000-8000-000000000028', 's28prem@test.local');
-select public.select_modules(array[public.seed_uuid('module:chef_full')]);
-select tests.ok('S31 premium com a etapa encontra g8 por "cabotiá" (ingrediente)',
-  exists (select 1 from public.recipe_catalog('cabotiá', null, null, null, null, null, null, 'relevance', null, 24) where content_id = public.seed_uuid('content:g8')));
+select public.select_modules(array[public.seed_uuid('module:base')]);
+-- 0044: a g8 (Chef FULL) foi arquivada; a receita premium no ar é a g5 (Base)
+select tests.ok('S31 premium com a etapa encontra g5 por "alecrim" (ingrediente)',
+  exists (select 1 from public.recipe_catalog('alecrim', null, null, null, null, null, null, 'relevance', null, 24) where content_id = public.seed_uuid('content:g5')));
 select tests.expect_error('S31 cursor que não é do formato: invalid_cursor', $q$select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', 'abc', 3)$q$, 'invalid_cursor');
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');
 select public.creator_unpublish_content('28000000-0000-4000-8000-000000000001');
@@ -2738,6 +2753,8 @@ select tests.ok('S32 dados pessoais do comentarista saem (avaliação, comentár
   and not exists (select 1 from public.user_recipe_prefs where user_id = '10000000-0000-4000-8000-000000000031')
   and (select rating_count = 0 and rating_sum = 0 from public.recipe_details where content_id = public.seed_uuid('content:g1')));
 select tests.ok('S32 o perfil do Marcos fica sem usuário (set null)', (select user_id is null from public.creator_profiles where id = public.seed_uuid('creator:marcos')));
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:marcos');
 -- caminho do painel do Auth: delete direto em auth.users de um herói com versões (Helena de teste)
 select tests.ok('S32 a Helena de teste tem versões antes do delete direto', exists (select 1 from public.recipe_versions where created_by = '10000000-0000-4000-8000-000000000026'));
 delete from auth.users where id = '10000000-0000-4000-8000-000000000026';
@@ -2751,7 +2768,7 @@ update public.app_settings set value = 'false'::jsonb where key = 'recipes.comme
 update public.recipe_nutrition set validated = false, validated_by = null, validated_at = null, validation_note = null where content_id = '26000000-0000-4000-8000-000000000001';
 select tests.ok('S32 nada dos cenários S25–S32 ficou no ar e as chaves de receita voltaram ao padrão',
   not exists (select 1 from public.content where (id::text ~ '^2[5-9]000000-' or id::text ~ '^3[0-2]000000-' or slug like 's2_-%') and status = 'published')
-  and (select count(*) from public.content where status = 'published') = 40
+  and (select count(*) from public.content where status = 'published') = 38
   and (public.public_settings() -> 'recipes.ratings_enabled') = 'true'::jsonb and (public.public_settings() -> 'recipes.comments_enabled') = 'false'::jsonb
   and (public.public_settings() -> 'recipes.uploads_enabled') = 'true'::jsonb);
 
@@ -3060,28 +3077,33 @@ create or replace function tests.s38_programs() returns table (key text, creator
          ('shelf-bruna-2', 'bruna', 'p5'), ('shelf-bruna-3', 'bruna', 'p5'), ('shelf-davi-2', 'davi', 'p6'), ('shelf-davi-3', 'davi', 'p6'),
          ('shelf-helena-2', 'helena', 'p7'), ('shelf-helena-3', 'helena', 'p7'), ('shelf-marcos-2', 'marcos', 'p8'), ('shelf-marcos-3', 'marcos', 'p8')
 $$;
+-- 0044: os programas dos 2 heróis removidos (bruna, marcos) estão arquivados; as checagens públicas usam os 12 no ar
+create or replace function tests.s38_live() returns table (key text, creator text, base text) language sql immutable as $$
+  select * from tests.s38_programs() where creator not in ('bruna', 'marcos')
+$$;
 grant execute on function tests.s38_programs() to anon, authenticated;
+grant execute on function tests.s38_live() to anon, authenticated;
 -- duas contas comuns próprias (as do topo já saíram em S11 e seguintes); removidas no fim do S39
 insert into auth.users (id, email) values ('38000000-0000-4000-8000-000000000011', 's38a@test.local'), ('38000000-0000-4000-8000-000000000012', 's38b@test.local');
 
 select tests.anon();
-select tests.ok('S38 visitante vê 24 programas publicados, exatamente 3 por herói',
-  (select count(*) from public.programs) = 24
-  and (select count(*) from public.programs where status = 'published') = 24
-  and (select count(*) from public.creator_profiles) = 8
+select tests.ok('S38 visitante vê 18 programas publicados, exatamente 3 por herói ativo (os 6 dos removidos na 0044 estão arquivados)',
+  (select count(*) from public.programs) = 18
+  and (select count(*) from public.programs where status = 'published') = 18
+  and (select count(*) from public.creator_profiles) = 6
   and not exists (select 1 from public.creator_profiles cp where (select count(*) from public.programs p where p.creator_id = cp.id) <> 3));
-select tests.ok('S38 os 16 novos: do herói certo, versão 1 publicada como atual, sem destaque e capa de imagem do repositório',
-  (select count(*) from tests.s38_programs() s
+select tests.ok('S38 os 12 novos no ar: do herói certo, versão 1 publicada como atual, sem destaque e capa de imagem do repositório',
+  (select count(*) from tests.s38_live() s
      join public.programs p on p.id = public.seed_uuid('program:' || s.key)
      join public.program_versions v on v.id = p.current_version_id
     where p.creator_id = public.seed_uuid('creator:' || s.creator) and p.status = 'published'
       and v.id = public.seed_uuid('pv:' || s.key || ':1') and v.version_no = 1 and v.status = 'published' and v.source_locale = 'pt-BR'
       and v.estimated_weeks between 1 and 6 and length(v.summary) > 20 and length(v.description) > 80
-      and not p.is_featured and p.featured_rank is null and p.cover_url ~ '^/content/[a-z0-9-]+\.webp$') = 16);
-select tests.ok('S38 destaques do Início/Explorar inalterados (os 4 do seed, ranks 1–4)',
-  (select array_agg(featured_rank order by featured_rank) from public.programs where is_featured) = array[1, 2, 3, 4]);
+      and not p.is_featured and p.featured_rank is null and p.cover_url ~ '^/content/[a-z0-9-]+\.webp$') = 12);
+select tests.ok('S38 destaques do Início/Explorar: os do seed menos o do herói removido (ranks 1, 2 e 4)',
+  (select array_agg(featured_rank order by featured_rank) from public.programs where is_featured) = array[1, 2, 4]);
 select tests.ok('S38 cada novo tem 6 a 10 etapas, ao menos 4 "Essencial" obrigatórias e o resto "Para ir além" opcional',
-  not exists (select 1 from tests.s38_programs() s
+  not exists (select 1 from tests.s38_live() s
     where (select count(*) from public.program_items pi where pi.version_id = public.seed_uuid('pv:' || s.key || ':1')) not between 6 and 10
        or (select count(*) from public.program_items pi where pi.version_id = public.seed_uuid('pv:' || s.key || ':1') and pi.is_required and pi.section = 'Essencial') < 4
        or exists (select 1 from public.program_items pi where pi.version_id = public.seed_uuid('pv:' || s.key || ':1')
@@ -3089,20 +3111,24 @@ select tests.ok('S38 cada novo tem 6 a 10 etapas, ao menos 4 "Essencial" obrigat
                          or (not pi.is_required and pi.section = 'Para ir além' and pi.position > 100)))));
 -- como superusuário: o r7 foi arquivado de propósito no S9 (o visitante não o vê mais); é a única exceção a "publicado"
 select tests.su();
-select tests.ok('S38 etapas usam conteúdos publicados do mesmo pilar, com pelo menos 3 do próprio herói (105 etapas; só o r7 do S9 fora do ar)',
-  not exists (select 1 from tests.s38_programs() s join public.programs p on p.id = public.seed_uuid('program:' || s.key)
+select tests.ok('S38 etapas usam conteúdos publicados do mesmo pilar, com pelo menos 3 do próprio herói (79 etapas nos 12 no ar; só o r7 do S9 fora do ar)',
+  not exists (select 1 from tests.s38_live() s join public.programs p on p.id = public.seed_uuid('program:' || s.key)
     where exists (select 1 from public.program_items pi left join public.content c on c.id = pi.content_id
                    where pi.version_id = public.seed_uuid('pv:' || s.key || ':1')
                      and (c.id is null or c.pillar <> p.pillar or (c.status <> 'published' and c.id <> public.seed_uuid('content:r7'))))
        or (select count(*) from public.program_items pi join public.content c on c.id = pi.content_id
             where pi.version_id = public.seed_uuid('pv:' || s.key || ':1') and c.creator_id = p.creator_id) < 3)
-  and (select count(*) from public.program_items pi join tests.s38_programs() s on pi.version_id = public.seed_uuid('pv:' || s.key || ':1')) = 105);
+  and (select count(*) from public.program_items pi join tests.s38_live() s on pi.version_id = public.seed_uuid('pv:' || s.key || ':1')) = 79
+  and (select count(*) from public.program_items pi join tests.s38_programs() s on pi.version_id = public.seed_uuid('pv:' || s.key || ':1')) = 105
+  and (select count(*) from tests.s38_programs() s join public.programs p on p.id = public.seed_uuid('program:' || s.key)
+        where s.creator in ('bruna', 'marcos') and p.status = 'archived') = 4);
 select tests.anon();
 select tests.ok('S38 en e es publicados para os 16 (32 linhas, títulos diferentes do português); nenhuma linha pt-BR',
   (select count(*) from public.program_localizations l join tests.s38_programs() s on l.version_id = public.seed_uuid('pv:' || s.key || ':1')
     where l.status = 'published' and l.locale in ('en', 'es') and length(l.summary) > 20 and length(l.description) > 80) = 32
   and not exists (select 1 from public.program_localizations l join tests.s38_programs() s on l.version_id = public.seed_uuid('pv:' || s.key || ':1')
     join public.program_versions v on v.id = l.version_id where l.locale = 'pt-BR' or l.title = v.title));
+select tests.su();
 select tests.ok('S38 os 8 originais intactos: 40 etapas na versão 1 e nenhuma tradução nova',
   (select count(*) from public.program_items pi where pi.version_id in (select public.seed_uuid('pv:p' || n || ':1') from generate_series(1, 8) n)) = 40
   and not exists (select 1 from public.program_localizations l where l.version_id in (select public.seed_uuid('pv:p' || n || ':1') from generate_series(1, 8) n))
@@ -3141,12 +3167,12 @@ insert into public.program_versions (id, program_id, version_no, title, status, 
 select tests.ok('S38 admin vê o rascunho', (select count(*) from public.programs where id = '38000000-0000-4000-8000-000000000001') = 1);
 select tests.anon();
 select tests.ok('S38 visitante não vê programa, versões, etapa nem tradução em rascunho',
-  (select count(*) from public.programs) = 24
+  (select count(*) from public.programs) = 18
   and (select count(*) from public.program_versions where program_id = '38000000-0000-4000-8000-000000000001') = 0
   and (select count(*) from public.program_items where version_id = '38000000-0000-4000-8000-000000000002') = 0
   and (select count(*) from public.program_localizations where version_id = '38000000-0000-4000-8000-000000000002') = 0);
 select tests.login('38000000-0000-4000-8000-000000000011', 's38a@test.local');
-select tests.ok('S38 consumidor também não vê o rascunho', (select count(*) from public.programs) = 24
+select tests.ok('S38 consumidor também não vê o rascunho', (select count(*) from public.programs) = 18
   and (select count(*) from public.program_versions where program_id = '38000000-0000-4000-8000-000000000001') = 0
   and (select count(*) from public.program_localizations where version_id = '38000000-0000-4000-8000-000000000002') = 0);
 select tests.expect_error('S38 consumidor não cria programa', $q$insert into public.programs (slug, pillar, status) values ('s38-intruso', 'routine', 'published')$q$, 'row-level security');
@@ -3163,7 +3189,7 @@ select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_substitute_program_item(public.seed_uuid('pv:shelf-rafael-2:1'), public.seed_uuid('content:r7'), public.seed_uuid('content:r4'), 'S39 substituição de teste');
 select tests.anon();
 select tests.ok('S39 visitante lê a substituição da versão publicada', (select count(*) from public.program_item_substitutions where version_id = public.seed_uuid('pv:shelf-rafael-2:1')) = 1);
-select tests.ok('S39 itens + substituições (leitura em lote) = program_required_items nas 24 versões atuais',
+select tests.ok('S39 itens + substituições (leitura em lote) = program_required_items nas 18 versões atuais (0044: 6 arquivadas)',
   not exists (
     (select pi.version_id, coalesce(s.replacement_content_id, pi.content_id), pi.content_id, pi.position, pi.section, pi.is_required, s.id is not null
        from public.program_items pi
@@ -3180,7 +3206,7 @@ select tests.ok('S39 itens + substituições (leitura em lote) = program_require
        from public.program_items pi
        left join public.program_item_substitutions s on s.version_id = pi.version_id and s.original_content_id = pi.content_id
       where pi.version_id in (select current_version_id from public.programs)))
-  and (select count(*) from public.programs p cross join lateral public.program_required_items(p.current_version_id) r) > 140);
+  and (select count(*) from public.programs p cross join lateral public.program_required_items(p.current_version_id) r) > 100);
 
 select tests.login('38000000-0000-4000-8000-000000000011', 's38a@test.local');
 create temporary table t_s39_enr as select public.enroll_program(public.seed_uuid('program:shelf-lia-2'), 'America/Sao_Paulo') as id;
@@ -4569,7 +4595,7 @@ select tests.expect_error('S14 anon não executa user_entitled_modules de tercei
   $q$select public.user_entitled_modules('10000000-0000-4000-8000-000000000001')$q$, 'permission denied');
 select tests.ok('S14 anon lê configurações públicas', (public.public_settings() ->> 'commerce.enabled') is not null);
 select tests.ok('S14 anon busca no catálogo', (select count(*) from public.search_content('sono')) > 0);
-select tests.ok('S14 anon vê catálogo publicado com políticas reescritas (40)', (select count(*) from public.content where status = 'published') = 40);
+select tests.ok('S14 anon vê catálogo publicado com políticas reescritas (38)', (select count(*) from public.content where status = 'published') = 38);
 select tests.ok('S14 anon vê produtos publicados', (select count(*) from public.products where status = 'published') > 0);
 select tests.ok('S14 anon consulta certificado inexistente sem erro', coalesce((public.verify_certificate('NAO-EXISTE') ->> 'valid')::boolean, false) = false);
 select public.track_event('page.view', '{"path":"/"}'::jsonb, 'anon-s14', 'pt-BR');
@@ -4620,7 +4646,7 @@ select tests.ok('S15 admin lê a tradução publicada do agendado', (select coun
 select tests.anon();
 select tests.ok('S15 visitante não vê o agendado', (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 0);
 select tests.ok('S15 visitante não lê a tradução do agendado', (select count(*) from public.content_localizations where content_id = public.seed_uuid('content:r2')) = 0);
-select tests.ok('S15 visitante vê 39 no ar (40 publicados menos o agendado)', (select count(*) from public.content where status = 'published') = 39);
+select tests.ok('S15 visitante vê 37 no ar (38 publicados menos o agendado)', (select count(*) from public.content where status = 'published') = 37);
 select tests.ok('S15 busca não devolve o agendado', (select count(*) from public.search_content(null, null, null, null, null, 100, 0) where id = public.seed_uuid('content:r2')) = 0);
 select tests.ok('S15 can_access_content nega o agendado ao visitante', not public.can_access_content(public.seed_uuid('content:r2')));
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
@@ -4637,10 +4663,10 @@ select tests.expect_error('S15 personalidade não agenda (coluna protegida)', $q
 select tests.su();
 update public.content set publish_at = now() - interval '1 minute' where id = public.seed_uuid('content:r2');
 select tests.anon();
-select tests.ok('S15 data chegou: visitante vê, busca devolve e o catálogo volta a 40 sem nova ação',
+select tests.ok('S15 data chegou: visitante vê, busca devolve e o catálogo volta a 38 sem nova ação',
   (select count(*) from public.content where id = public.seed_uuid('content:r2')) = 1
   and (select count(*) from public.search_content(null, null, null, null, null, 100, 0) where id = public.seed_uuid('content:r2')) = 1
-  and (select count(*) from public.content where status = 'published') = 40
+  and (select count(*) from public.content where status = 'published') = 38
   and (select count(*) from public.content_localizations where content_id = public.seed_uuid('content:r2') and locale = 'en') = 1);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_set_content_status(public.seed_uuid('content:r3'), 'draft', 'Teste de agendamento');
@@ -4677,7 +4703,7 @@ select tests.ok('S15 sobrecargas com agendamento: security definer, search_path 
 
 -- ================================================================ S16 · Direitos por personalidade, licença de mídia e origem do vínculo (0017)
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
-select tests.expect_error('S16 personalidade não altera rights_status', $q$update public.creator_profiles set rights_status = 'authorized' where id = public.seed_uuid('creator:lia')$q$, 'protected_column');
+select tests.expect_error('S16 personalidade não altera rights_status', $q$update public.creator_profiles set rights_status = 'fictional' where id = public.seed_uuid('creator:lia')$q$, 'protected_column');
 select tests.expect_error('S16 personalidade não altera rights_holder', $q$update public.creator_profiles set rights_holder = 'Eu mesma' where id = public.seed_uuid('creator:lia')$q$, 'protected_column');
 select tests.expect_error('S16 personalidade não altera rights_valid_until', $q$update public.creator_profiles set rights_valid_until = current_date + 30 where id = public.seed_uuid('creator:lia')$q$, 'protected_column');
 update public.creator_profiles set headline = 'Chamada ajustada pela personalidade' where id = public.seed_uuid('creator:lia');
@@ -4690,7 +4716,10 @@ select tests.ok('S16 consumidor não lê creator_rights_private', (select count(
 select tests.anon();
 select tests.expect_error('S16 visitante não lê creator_rights_private (tabela sem grant para anon)', $q$select count(*) from public.creator_rights_private$q$, 'permission denied');
 select tests.expect_error('S16 visitante não executa a RPC privada de direitos', $q$select public.admin_set_creator_rights_private(public.seed_uuid('creator:lia'), 'FALSO', null, null)$q$, 'permission denied');
-select tests.ok('S16 seed: todas as personalidades seguem fictícias, sem titular nem validade', (select count(*) from public.creator_profiles where rights_status = 'fictional' and rights_holder is null and rights_valid_until is null) = 8);
+-- 0044: os 6 heróis no ar são pessoas reais com uso autorizado (titular = a própria pessoa, sem validade)
+select tests.ok('S16 seed: os 6 heróis no ar são reais e autorizados, titular = o próprio nome, sem validade',
+  (select count(*) from public.creator_profiles where rights_status = 'authorized' and rights_holder = name and rights_valid_until is null and not is_fictional) = 6
+  and (select count(*) from public.creator_profiles) = 6);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select tests.expect_error('S16 autorizado sem titular é recusado (check no banco)', $q$update public.creator_profiles set rights_status = 'authorized', rights_holder = null where id = public.seed_uuid('creator:lia')$q$, '23514');
 select tests.expect_error('S16 autorizado com titular em branco é recusado', $q$update public.creator_profiles set rights_status = 'authorized', rights_holder = '   ' where id = public.seed_uuid('creator:lia')$q$, '23514');
@@ -4789,6 +4818,59 @@ select tests.ok('S16 funções novas: triggers e checagem interna sem execute pa
   and not has_function_privilege('authenticated', 'public.content_assert_media_license(uuid)', 'execute')
   and (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
        from pg_proc p where p.oid = 'public.admin_set_creator_rights_private(uuid, text, text, text)'::regprocedure));
+
+-- ================================================================ S44 · Heróis reais (0044)
+-- Os seis heróis viram as pessoas reais com contrato (slug, nome, foto, direitos autorizados) e os dois
+-- personagens restantes saem do app de forma reversível: perfil suspenso, nada deles no ar, vínculos
+-- suspensos e um registro de auditoria por perfil. Reaplicar a migração não muda nada.
+select tests.su();
+-- (o S16 mexe nos direitos da Anitta, herói do creator1: ela fica fora da checagem de direitos)
+select tests.ok('S44 os seis heróis reais: slug novo, ativos, sem fictício, autorizados e com foto do repositório',
+  (select count(*) from public.creator_profiles
+    where slug in ('neymar', 'gabriel-medina', 'joao-fonseca', 'anitta', 'ronaldinho-gaucho', 'erick-jacquin')
+      and status = 'active' and not is_fictional
+      and (slug = 'anitta' or (rights_status = 'authorized' and rights_holder = name))
+      and avatar_url = '/heroes/' || slug || '-avatar.webp' and cover_url = '/heroes/' || slug || '-cover.webp') = 6
+  and not exists (select 1 from public.creator_profiles
+                  where slug in ('tiago-albuquerque', 'davi-nascimento', 'camila-sato', 'lia-monteiro', 'rafael-duarte', 'helena-vilar')));
+select tests.ok('S44 removidos: suspensos e sem foto; nada deles no ar (conteúdo, programa, produto, indicação); auditoria por perfil',
+  (select count(*) from public.creator_profiles where slug in ('bruna-castellano', 'marcos-ferraz') and status = 'suspended' and avatar_url is null and cover_url is null) = 2
+  and not exists (select 1 from public.content c join public.creator_profiles cp on cp.id = c.creator_id where cp.status = 'suspended' and c.status = 'published')
+  and not exists (select 1 from public.programs p join public.creator_profiles cp on cp.id = p.creator_id where cp.status = 'suspended' and p.status = 'published')
+  and not exists (select 1 from public.creator_products x join public.creator_profiles cp on cp.id = x.creator_id where cp.status = 'suspended' and x.status = 'validated')
+  and not exists (select 1 from public.creator_recipe_links x join public.creator_profiles cp on cp.id = x.creator_id where cp.status = 'suspended' and x.status = 'validated')
+  and (select count(*) from public.admin_audit where action = 'hero.removed' and before_data ->> 'status' = 'active'
+         and after_data ? 'content_archived' and after_data ? 'content_moved') = 2);
+select tests.ok('S44 programa no ar não tem etapa de conteúdo de herói removido (o que era etapa passou ao dono do programa)',
+  not exists (select 1 from public.program_items pi join public.program_versions v on v.id = pi.version_id join public.programs p on p.id = v.program_id
+              join public.content c on c.id = pi.content_id join public.creator_profiles cp on cp.id = c.creator_id
+              where p.status = 'published' and cp.status = 'suspended')
+  and (select creator_id from public.content where id = public.seed_uuid('content:n1')) = public.seed_uuid('creator:davi')
+  and (select creator_id from public.content where id = public.seed_uuid('content:g4')) = public.seed_uuid('creator:helena')
+  and (select status from public.content where id = public.seed_uuid('content:g8')) = 'archived');
+select tests.ok('S44 textos dos seis sem os nomes antigos dos personagens',
+  not exists (select 1 from public.content c left join public.content_bodies b on b.content_id = c.id
+              where c.creator_id in (select id from public.creator_profiles where status = 'active')
+                and concat_ws(' ', c.title, c.summary, b.body::text) ~ '\m(Helena|Camila|Tiago|Davi|Lia|Rafael|Bruna|Marcos)\M'));
+select tests.anon();
+select tests.ok('S44 visitante não vê os removidos nem as receitas arquivadas deles',
+  not exists (select 1 from public.creator_profiles where slug in ('bruna-castellano', 'marcos-ferraz'))
+  and not exists (select 1 from public.content where id in (public.seed_uuid('content:g6'), public.seed_uuid('content:g8')))
+  and (select count(*) from public.creator_profiles where slug = 'erick-jacquin') = 1);
+select tests.su();
+create temporary table t_s44_before as
+  select (select md5(string_agg(id::text || slug || name || status::text || coalesce(avatar_url, '') || coalesce(cover_url, '') || rights_status, ',' order by id)) from public.creator_profiles) as heroes,
+         (select md5(string_agg(id::text || status::text || coalesce(creator_id::text, '') || coalesce(cover_url, ''), ',' order by id)) from public.content) as contents,
+         (select md5(string_agg(id::text || status::text, ',' order by id)) from public.creator_recipe_links) as links,
+         (select count(*) from public.admin_audit where action like 'hero.%') as audits;
+\ir ../migrations/0044_real_heroes.sql
+select tests.ok('S44 reaplicar a 0044 não muda nada (heróis, conteúdos, indicações e auditoria)',
+  (select (b.heroes, b.contents, b.links, b.audits) = (
+     (select md5(string_agg(id::text || slug || name || status::text || coalesce(avatar_url, '') || coalesce(cover_url, '') || rights_status, ',' order by id)) from public.creator_profiles),
+     (select md5(string_agg(id::text || status::text || coalesce(creator_id::text, '') || coalesce(cover_url, ''), ',' order by id)) from public.content),
+     (select md5(string_agg(id::text || status::text, ',' order by id)) from public.creator_recipe_links),
+     (select count(*) from public.admin_audit where action like 'hero.%'))
+   from t_s44_before b));
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

@@ -15,7 +15,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("next/navigation", () => ({ redirect: () => undefined }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
-    auth: { getUser: async () => ({ data: { user: { id: "u1", email: "helena@example.com", user_metadata: {} } } }) },
+    auth: { getUser: async () => ({ data: { user: { id: "u1", email: "erick@example.com", user_metadata: {} } } }) },
     from: (table: string) => {
       const filters: string[] = [];
       const chain = {
@@ -25,7 +25,7 @@ vi.mock("@/lib/supabase/server", () => ({
         limit: () => chain,
         maybeSingle: async () => {
           state.queries.push(`${table}?${filters.join("&")}`);
-          if (table === "profiles") return { data: { id: "u1", display_name: "Herói Demo (Helena Vilar)", avatar_url: state.avatar }, error: null };
+          if (table === "profiles") return { data: { id: "u1", display_name: "Herói Demo (Érick Jacquin)", avatar_url: state.avatar }, error: null };
           if (table === "creator_profiles") return { data: state.heroError ? null : state.hero, error: state.heroError };
           return { data: null, error: null };
         },
@@ -56,8 +56,8 @@ describe("getSessionSummary: avatar só com foto real", () => {
 
   it("avatar salvo vai como está (o Avatar decide: foto real aparece, ilustração antiga vira as iniciais)", async () => {
     state.roles = ["creator"];
-    state.avatar = "/heroes/helena-vilar-avatar.webp";
-    expect((await getSessionSummary())?.avatarUrl).toBe("/heroes/helena-vilar-avatar.webp");
+    state.avatar = "/heroes/erick-jacquin-avatar.webp";
+    expect((await getSessionSummary())?.avatarUrl).toBe("/heroes/erick-jacquin-avatar.webp");
     state.avatar = "/placeholders/avatar-6.svg";
     expect((await getSessionSummary())?.avatarUrl).toBe("/placeholders/avatar-6.svg");
   });

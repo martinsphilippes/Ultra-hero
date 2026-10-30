@@ -267,7 +267,7 @@
   },
   "creators": {
     "title": "Héroes",
-    "description": "Perfiles ficticios del catálogo. Identificados como ficticios para el público.",
+    "description": "Perfiles de los héroes del catálogo. Los perfiles ficticios aparecen identificados como ficticios para el público.",
     "create": "Nuevo héroe",
     "createTitle": "Crear héroe",
     "editTitle": "Editar héroe",
@@ -281,7 +281,7 @@
       "rights": "Derechos"
     },
     "empty": "Sin héroes",
-    "emptyDescription": "Crea el primer héroe ficticio.",
+    "emptyDescription": "Crea el primer héroe.",
     "notFound": "Héroe no encontrado",
     "form": {
       "name": "Nombre",
@@ -291,9 +291,9 @@
       "bio": "Biografía",
       "pillars": "Pilares",
       "isFictional": "Héroe ficticio",
-      "isFictionalHint": "Obligatorio en la POC: no se representa a ninguna persona real.",
+      "isFictionalHint": "Actívalo solo para un personaje creado para la demostración. Persona real: desactívalo y registra los derechos como autorizados.",
       "rightsNote": "Nota de derechos",
-      "rightsNoteHint": "Ej.: perfil ficticio; sin contrato, imagen ni respaldo real.",
+      "rightsNoteHint": "Ej.: uso de nombre e imagen autorizado por contrato.",
       "sortOrder": "Orden",
       "mediaNote": "La foto y la portada son fotos reales que sube el propio héroe. Aquí solo se pueden quitar las subidas (moderación).",
       "save": "Guardar",
@@ -303,7 +303,7 @@
       "rightsStatus": "Situación de los derechos",
       "rightsStatusHint": "\"En validación\" nunca se muestra como autorizado; \"autorizado\" muestra titular y vigencia en la página pública.",
       "rights": {
-        "fictional": "Ficticio (predeterminado de la POC)",
+        "fictional": "Ficticio",
         "pending": "En validación",
         "authorized": "Autorizado"
       },

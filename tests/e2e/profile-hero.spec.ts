@@ -39,11 +39,11 @@ test.describe("perfil do herói no topo do /profile", () => {
     const publicLink = page.getByRole("link", { name: "Ver página pública" });
     const editor = page.locator("#editar-perfil");
 
-    // cabeçalho: avatar, nome (h2), selo de personagem fictício e bio recolhida
+    // cabeçalho: avatar, nome (h2) e bio recolhida; herói real (0044) não tem selo de personagem fictício
     await expect(header).toBeVisible();
     await expect(header).toHaveAttribute("id", "perfil-publico");
     await expect(header.getByRole("heading", { level: 2 })).toBeVisible();
-    await expect(header.getByText("Personagem fictício", { exact: true })).toBeVisible();
+    await expect(header.getByText("Personagem fictício", { exact: true })).toHaveCount(0);
     await expect(header.getByTestId("hero-bio")).toBeVisible();
     await expect(main.getByRole("heading", { level: 1, name: "Perfil" })).toBeVisible();
     // nenhum link antes dos atalhos do portal (o cartão "Portal do herói" saiu: o Painel está nos atalhos)

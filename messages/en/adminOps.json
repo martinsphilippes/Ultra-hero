@@ -267,7 +267,7 @@
   },
   "creators": {
     "title": "Heroes",
-    "description": "Fictional catalog profiles. Identified as fictional to the public.",
+    "description": "Catalog hero profiles. Fictional profiles are labeled as fictional to the public.",
     "create": "New hero",
     "createTitle": "Create hero",
     "editTitle": "Edit hero",
@@ -281,7 +281,7 @@
       "rights": "Rights"
     },
     "empty": "No heroes",
-    "emptyDescription": "Create the first fictional hero.",
+    "emptyDescription": "Create the first hero.",
     "notFound": "Hero not found",
     "form": {
       "name": "Name",
@@ -291,9 +291,9 @@
       "bio": "Biography",
       "pillars": "Pillars",
       "isFictional": "Fictional hero",
-      "isFictionalHint": "Required in the POC: no real person is represented.",
+      "isFictionalHint": "Turn on only for a character created for the demo. Real person: turn off and record the rights as authorized.",
       "rightsNote": "Rights note",
-      "rightsNoteHint": "E.g.: fictional profile; no real contract, image or endorsement.",
+      "rightsNoteHint": "E.g.: use of name and likeness authorized by contract.",
       "sortOrder": "Order",
       "mediaNote": "Photo and cover are real photos uploaded by the hero. Here you can only remove the uploaded ones (moderation).",
       "save": "Save",
@@ -303,7 +303,7 @@
       "rightsStatus": "Rights status",
       "rightsStatusHint": "\"Under validation\" is never shown as authorized; \"authorized\" shows the holder and validity on the public page.",
       "rights": {
-        "fictional": "Fictional (POC default)",
+        "fictional": "Fictional",
         "pending": "Under validation",
         "authorized": "Authorized"
       },

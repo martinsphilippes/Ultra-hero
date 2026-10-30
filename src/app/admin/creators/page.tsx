@@ -18,7 +18,7 @@ type CreatorRow = Pick<Tables<"creator_profiles">, "id" | "slug" | "name" | "pil
 type RightsStatus = "fictional" | "pending" | "authorized";
 const RIGHTS_VARIANT: Record<RightsStatus, "demo" | "info" | "success"> = { fictional: "demo", pending: "info", authorized: "success" };
 
-// Personalidades fictícias: lista com status, pilares, vínculo e ações auditadas.
+// Personalidades: lista com status, pilares, vínculo e ações auditadas.
 export default async function AdminCreatorsPage() {
   const [t, tc, ts, tn] = await Promise.all([
     getTranslations("adminOps.creators"),

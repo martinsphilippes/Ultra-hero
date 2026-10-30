@@ -129,7 +129,7 @@
   },
   "personalities": {
     "title": "Heroes",
-    "description": "Fictional characters who guide the content. Photos are illustrative.",
+    "description": "Personalities who guide the content.",
     "filterLabel": "Filter by pillar",
     "all": "All",
     "count": "{count, plural, =1 {1 hero} other {# heroes}}",

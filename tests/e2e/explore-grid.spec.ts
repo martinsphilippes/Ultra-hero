@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Grade do Explorar (aba Conteúdos, estilo Instagram): 15 quadros por carga, quadrados, variedade de
-// heróis e rolagem infinita. Roda contra o banco remoto (seed: 40 posts no ar de 8 heróis).
+// heróis e rolagem infinita. Roda contra o banco remoto (depois da 0044: 38 posts no ar de 6 heróis).
 
 // Quadros da primeira carga: filhos diretos da grade (os lotes seguintes chegam dentro de `.contents`).
 const firstPage = (page: Page) => page.getByTestId("explore-grid").locator("> a");

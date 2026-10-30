@@ -44,14 +44,14 @@ test.describe("visitante", () => {
     await expect(links).toHaveText(["Hero", "Início", "Explorar", "Perfil"]);
   });
 
-  // helena-vilar: personalidade do seed (0008) com vínculos validados (g1→m1, g3→k1, g5→m4, g9→k3).
+  // erick-jacquin: personalidade do seed (0008) com vínculos validados (g1→m1, g3→k1, g5→m4, g9→k3).
   test("vê os produtos ligados à personalidade e recebe CTA de login no carrinho de teste", async ({ page }) => {
-    await page.goto("/personalities/helena-vilar");
+    await page.goto("/personalities/erick-jacquin");
     const button = page.getByTestId("hero-libraries").getByRole("link").filter({ hasText: "Produtos" });
     await expect(button).toBeVisible();
     const label = (await button.textContent()) ?? "";
     await button.click();
-    await expect(page).toHaveURL(/\/personalities\/helena-vilar\/produtos$/);
+    await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/produtos$/);
 
     const cards = page.getByTestId("product-action-card");
     await expect(cards.first()).toBeVisible();
@@ -67,7 +67,7 @@ test.describe("visitante", () => {
     // visitante: cada card leva ao login com retorno para a biblioteca de produtos; nenhum botão de adicionar
     const loginCta = cards.first().getByRole("link", { name: /entrar para adicionar/i });
     await expect(loginCta).toBeVisible();
-    await expect(loginCta).toHaveAttribute("href", /^\/login\?next=%2Fpersonalities%2Fhelena-vilar%2Fprodutos$/);
+    await expect(loginCta).toHaveAttribute("href", /^\/login\?next=%2Fpersonalities%2Ferick-jacquin%2Fprodutos$/);
     await expect(page.getByRole("button", { name: /adicionar ao carrinho/i })).toHaveCount(0);
     // "Usado em": ao menos um card (os vinculados por conteúdo vêm depois dos alocados diretamente) com link para o conteúdo de origem
     await expect(cards.filter({ has: page.locator('a[href^="/content/"]') }).first().locator('a[href^="/content/"]').first()).toBeVisible();
@@ -137,17 +137,17 @@ test.describe("visitante", () => {
     await expect(page.getByText(/demonstra|demo/i).first()).toBeVisible();
   });
 
-  // RB-05/RB-06: perfil do seed segue fictício (nota de direitos + selo) e todo conteúdo expõe crédito/licença.
-  test("perfil de personalidade mostra a nota de direitos como fictício e o conteúdo mostra crédito/licença", async ({ page }) => {
-    await page.goto("/personalities/lia-monteiro");
+  // RB-05/RB-06 (0044): os heróis são pessoas reais com uso autorizado (nota de direitos com o titular,
+  // sem selo de fictício) e todo conteúdo expõe crédito/licença.
+  test("perfil de personalidade mostra a nota de direitos como autorizado e o conteúdo mostra crédito/licença", async ({ page }) => {
+    await page.goto("/personalities/anitta");
     const notice = page.getByRole("complementary", { name: /sobre este perfil|about this profile/i });
     await expect(notice).toBeVisible();
-    await expect(notice).toContainText(/fict/i);
-    await expect(notice).not.toContainText(/autorizado por|authorized by/i);
-    await expect(page.getByText(/personagem fictício|fictional character/i).first()).toBeVisible();
+    await expect(notice).toContainText(/autorizado por Anitta|authorized by Anitta/i);
+    await expect(page.getByText(/personagem fictício|fictional character/i)).toHaveCount(0);
 
     // Receitas ficam atrás da etapa demonstrativa: o crédito/licença é conferido num conteúdo de rotina.
-    await page.goto("/personalities/lia-monteiro/rotina");
+    await page.goto("/personalities/anitta/rotina");
     const firstCard = page.getByTestId("library-grid").locator("> a").first();
     await firstCard.click();
     await expect(page).toHaveURL(/\/content\//);

@@ -203,7 +203,7 @@
       }
     },
     "signOut": "Sign out",
-    "demoNote": "Demo environment: fictional heroes, simulated subscription, no real payments.",
+    "demoNote": "Demo environment: simulated subscription, no real payments.",
     "evolution": {
       "title": "Progress",
       "description": "Your streak and how far you've come.",
@@ -681,7 +681,7 @@
     "description": "Transparency about what the POC stores and how to delete your account.",
     "demo": {
       "title": "Demo nature",
-      "body": "Groscove Ultra is a public proof of concept. Heroes are fictional, subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
+      "body": "Groscove Ultra is a public proof of concept. Subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
     },
     "store": {
       "title": "What we store",

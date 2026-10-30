@@ -44,7 +44,7 @@ describe("links e chips dos filtros", () => {
 
   it("monta a URL do Explorar com a aba fixa e repete dieta/sem", () => {
     expect(recipeCatalogHref("/explore", p, [["tab", "receitas"]])).toBe("/explore?tab=receitas&q=ovo&cat=almoco&tempo=30&dieta=vegan&dieta=gluten_free&sem=egg&ordem=recent");
-    expect(recipeCatalogHref("/personalities/helena-vilar/receitas", EMPTY_RECIPE_PARAMS)).toBe("/personalities/helena-vilar/receitas");
+    expect(recipeCatalogHref("/personalities/erick-jacquin/receitas", EMPTY_RECIPE_PARAMS)).toBe("/personalities/erick-jacquin/receitas");
   });
 
   it("chips removíveis: tirar um mantém os outros", () => {
@@ -105,7 +105,7 @@ describe("card público da receita", () => {
     access_level: "free" as const,
     difficulty: "beginner" as const,
     required_module: null,
-    creator: { slug: "helena-vilar", name: "Helena Vilar", avatar_url: null, is_fictional: true },
+    creator: { slug: "erick-jacquin", name: "Érick Jacquin", avatar_url: null, is_fictional: false },
   };
 
   it("alérgenos só quando declarados; lixo fora da lista é descartado", () => {

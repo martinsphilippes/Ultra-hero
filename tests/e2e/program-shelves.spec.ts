@@ -2,10 +2,10 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Biblioteca "Programas" do herói como pilha de prateleiras (estilo playlists): título por programa
-// e quadrados das etapas com rolagem lateral. Roda contra o banco remoto: antes da 0035 a Lia tem
+// e quadrados das etapas com rolagem lateral. Roda contra o banco remoto: antes da 0035 a Anitta tem
 // 1 programa (5 etapas); depois, 3 (5, 8 e 6 etapas). O que depende da 0035 pula sem ela.
 
-const LIBRARY = "/personalities/lia-monteiro/programas";
+const LIBRARY = "/personalities/anitta/programas";
 
 const shelves = (page: Page) => page.getByTestId("program-shelf");
 const steps = (shelf: Locator) => shelf.getByTestId("shelf-step");
@@ -63,11 +63,11 @@ test.describe("prateleiras de programas", () => {
     await expectNoSeriousAxe(page);
   });
 
-  test("a Lia tem 3 prateleiras (seed 0035)", async ({ page }) => {
+  test("a Anitta tem 3 prateleiras (seed 0035)", async ({ page }) => {
     await page.goto(LIBRARY);
     await expect(shelves(page).first()).toBeVisible();
     const count = await shelves(page).count();
-    test.skip(count < 3, `banco sem a 0035 (${count} programa da Lia)`);
+    test.skip(count < 3, `banco sem a 0035 (${count} programa da Anitta)`);
     expect(count).toBe(3);
     // o original (em destaque) vem primeiro
     await expect(shelves(page).first()).toHaveAttribute("data-program", "manhas-com-intencao");
@@ -180,7 +180,7 @@ test.describe("prateleiras de programas", () => {
   test("no desktop: setas ‹ › rolam a linha e ficam desabilitadas nas pontas", async ({ page, isMobile }) => {
     test.skip(isMobile, "setas só no desktop");
     // tablet/desktop estreito (≥ md): 5 quadrados de 11rem já passam da largura, então as setas têm o que fazer
-    // mesmo antes da 0035 (no remoto a Lia tem 1 programa de 5 etapas)
+    // mesmo antes da 0035 (no remoto a Anitta tem 1 programa de 5 etapas)
     await page.setViewportSize({ width: 820, height: 900 });
     await page.goto(LIBRARY);
     await expect(shelves(page).first()).toBeVisible();

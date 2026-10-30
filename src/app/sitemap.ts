@@ -10,7 +10,7 @@ const PAGE = 48;
 const MAX_PAGES = 40;
 
 // Sitemap das receitas no ar, só com RECIPES_SEO_INDEX ligada (P6). Desligada, sai vazio: nada é
-// promovido nos buscadores enquanto os chefs forem fictícios. Lê o catálogo como visitante (a RLS
+// promovido nos buscadores enquanto a indexação não for ligada. Lê o catálogo como visitante (a RLS
 // e o content_is_live da recipe_catalog garantem que só entra o que está no ar).
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!recipesSeoIndexEnabled()) return [];

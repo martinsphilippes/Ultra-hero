@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 // Receitas por herói: o botão existe em todo herói; os cards ficam abertos e abrir a receita pede a
-// etapa demonstrativa (P2). Roda contra o banco remoto (seed: 8 heróis; Helena e Marcos são os chefs das receitas).
+// etapa demonstrativa (P2). Roda contra o banco remoto (0044: 6 heróis reais; Érick Jacquin é o chef das receitas no ar).
 
-const HEROES = ["lia-monteiro", "rafael-duarte", "camila-sato", "helena-vilar", "marcos-ferraz"];
+const HEROES = ["anitta", "ronaldinho-gaucho", "joao-fonseca", "erick-jacquin", "neymar", "gabriel-medina"];
 
 test.describe("receitas do herói", () => {
   for (const slug of HEROES) {
@@ -16,7 +16,7 @@ test.describe("receitas do herói", () => {
   // P2 (fase 3): a biblioteca não troca mais a lista pela tela de bloqueio; os cards ficam abertos e
   // uma faixa convida para a etapa, que continua exigindo conta.
   test("visitante vê os cards da biblioteca e a faixa da etapa, que leva ao login", async ({ page }) => {
-    await page.goto("/personalities/lia-monteiro/receitas");
+    await page.goto("/personalities/anitta/receitas");
     await expect(page.getByTestId("recipe-gate")).toHaveCount(0);
     await expect(page.getByTestId("recipe-card").first()).toBeVisible();
     const invite = page.getByTestId("recipe-invite");

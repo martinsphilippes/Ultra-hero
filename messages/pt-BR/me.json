@@ -203,7 +203,7 @@
       }
     },
     "signOut": "Sair da conta",
-    "demoNote": "Ambiente de demonstração: heróis fictícios, assinatura simulada, nenhum pagamento real.",
+    "demoNote": "Ambiente de demonstração: assinatura simulada, nenhum pagamento real.",
     "evolution": {
       "title": "Evolução",
       "description": "Sua sequência e o caminho até aqui.",
@@ -681,7 +681,7 @@
     "description": "Transparência sobre o que a POC guarda e como excluir sua conta.",
     "demo": {
       "title": "Natureza demonstrativa",
-      "body": "O Groscove Ultra é uma prova de conceito pública. Heróis são fictícios, assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
+      "body": "O Groscove Ultra é uma prova de conceito pública. Assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
     },
     "store": {
       "title": "O que guardamos",

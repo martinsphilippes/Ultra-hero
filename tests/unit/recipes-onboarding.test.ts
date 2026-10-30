@@ -17,7 +17,7 @@ describe("etapa demonstrativa de receitas", () => {
   });
 
   it("safeNext só aceita caminhos internos", () => {
-    expect(safeNext("/personalities/lia-monteiro/receitas")).toBe("/personalities/lia-monteiro/receitas");
+    expect(safeNext("/personalities/anitta/receitas")).toBe("/personalities/anitta/receitas");
     expect(safeNext("https://evil.example")).toBe("/explore");
     expect(safeNext("//evil.example")).toBe("/explore");
     expect(safeNext("/\\evil.example")).toBe("/explore");
