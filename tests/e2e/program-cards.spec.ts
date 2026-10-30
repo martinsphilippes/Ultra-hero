@@ -86,7 +86,9 @@ test.describe("cards do programa", () => {
     await expect(current(page)).toContainText("7× por semana");
     await expect(current(page)).toContainText("~10 min por dia");
     await page.getByTestId("program-screen-next").click();
+    await expect(position(page)).toHaveText("Tela 2 de 3");
     await page.getByTestId("program-screen-next").click();
+    await expect(position(page)).toHaveText("Tela 3 de 3");
     await expect(current(page).getByRole("note", { name: "Cuidados" })).toContainText("Conteúdo educativo");
     await expect(page.getByTestId("program-screen-done")).toBeVisible();
 
