@@ -136,3 +136,29 @@ contratações por profissional.
    contam em professional_tap_counters com origem "programa"; "Comprar produto" não tem contador
    próprio (recipe_action_counters é só de receita; ficou para a Etapa 5). Sem a 0059 no banco: os
    profissionais sugeridos (0058) aparecem com o 1º serviço ativo; produtos ligados não aparecem.
+
+5. Indicadores (painel do admin).
+   Feito (0060). /admin/indicadores (menu do admin logo depois de Métricas, que continua igual),
+   seis seções em abas (Por herói, Por atalho, Conversão, Profissionais, Colecionáveis, Ranking);
+   seção e período (7/30/90 dias) na URL (?secao=&days=) e CSV por seção em
+   /admin/indicadores/export (só admin; formato longo block,key,label,metric,value; texto que
+   começa com = + - @ ganha ' para não virar fórmula na planilha). Gráficos só em CSS (barras,
+   colunas por dia, funil com % da etapa anterior), cada número também em texto.
+   Dados: só agregados (LGPD), por RPCs do admin admin_indicators_heroes | shortcuts | conversion |
+   professionals | collectibles | ranking (security definer, is_admin() no início, sem execute para
+   anon; a lista do S14 segue com 17). Fontes: creator_follower_counts (total de hoje) e
+   hero_favorites.created_at (novos no período, quem deixou de seguir não conta), analytics_events
+   (content.view/program.view pelo dono do conteúdo/programa, product.view, cart.add,
+   checkout.start, collectible.view), recipe_action_counters, professional_tap_counters,
+   service_orders (pedidos criados no período pela situação de hoje; receita simulada = aceitos,
+   agendados e concluídos; mediana da 1ª resposta), collectibles/collectible_bids/
+   collectible_results, enrollments, test_orders/test_order_items.
+   Novo: shortcut_open_counters (dia em Brasília, herói, fonte = LIBRARY_KEYS; chave própria, sem
+   FK — lição da 0055; nenhum grant para anon/authenticated) somado só pelo service role
+   (POST /api/shortcut-opens → shortcut_open_bump, herói ativo), disparado ao abrir
+   /personalities/<slug>/<atalho> (uma vez por herói e atalho por carregamento; o navegador do E2E
+   não grava). Antes da 0060 não havia contagem de atalhos: a seção mostra "contadas desde <data>".
+   Limites conhecidos: cart.add não diz de onde veio, então "Comprar pronto → carrinho" conta o
+   produto pronto no carrinho vindo de qualquer lugar; views de herói (página do herói) não são
+   eventos hoje, então "Visualizações" do herói = views de conteúdos, programas e colecionáveis dele.
+   Sem a 0060 no banco: "Sem dados ainda" e sem botão de CSV.

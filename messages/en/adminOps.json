@@ -762,5 +762,185 @@
       "preparing": "Preparing",
       "readyForDispatch": "Ready for dispatch"
     }
+  },
+  "indicators": {
+    "title": "Indicators",
+    "description": "By hero, shortcut, conversion, professionals, collectibles and ranking. Aggregated numbers only.",
+    "privacy": "Aggregated totals only: no person shows up here (LGPD).",
+    "simulatedNote": "Orders, hires and bids are tests: simulated values.",
+    "export": "Export CSV",
+    "exportHint": "Download this section as CSV (aggregated totals only)",
+    "sectionsLabel": "Indicator sections",
+    "currentView": "{section}, last {days} days",
+    "sections": {
+      "herois": "By hero",
+      "atalhos": "By shortcut",
+      "conversao": "Conversion",
+      "profissionais": "Professionals",
+      "colecionaveis": "Collectibles",
+      "ranking": "Ranking"
+    },
+    "noData": "No data yet",
+    "none": "—",
+    "missing": {
+      "title": "No data yet",
+      "description": "Indicators show up once migration 0060 is in the database."
+    },
+    "ofPrevious": "{share} of previous step",
+    "dayBar": "{date}: {count}",
+    "heroes": {
+      "kpis": {
+        "followers": "Followers",
+        "newFollowers": "New followers",
+        "views": "Views",
+        "recipeTaps": "Recipe taps",
+        "proTaps": "Professional taps",
+        "shortcutOpens": "Shortcuts opened"
+      },
+      "dailyTitle": "New followers per day",
+      "dailyDescription": "All heroes combined, Brasília time. People who unfollowed are not counted.",
+      "listTitle": "Heroes",
+      "listDescription": "Followers = today's total; the rest is for the period.",
+      "inactive": "Offline",
+      "stats": {
+        "followers": "Followers",
+        "newFollowers": "New",
+        "contentViews": "Content views",
+        "programViews": "Program views",
+        "fazer": "Cook",
+        "comprarPronto": "Buy ready",
+        "listaCompras": "List",
+        "verPerfil": "View professional",
+        "contratar": "Hire",
+        "shortcutOpens": "Shortcuts",
+        "bids": "Bids",
+        "collectibleViews": "Collectible views"
+      }
+    },
+    "shortcuts": {
+      "trackingSince": "Shortcut opens counted since {date}.",
+      "notTracked": "No shortcut opens recorded yet: counting starts with migration 0060.",
+      "bySourceTitle": "Opens by shortcut",
+      "bySourceDescription": "How many times each shortcut on the hero page was opened.",
+      "heroesCount": "Heroes: {count}",
+      "dailyTitle": "Opens per day",
+      "dailyDescription": "Total in the period: {count}",
+      "byHeroTitle": "Hero and shortcut",
+      "byHeroDescription": "Most opened pairs in the period.",
+      "pair": "{hero} · {shortcut}"
+    },
+    "conversion": {
+      "recipeTitle": "Recipe → cart",
+      "recipeDescription": "Recipe views, Buy ready taps and the ready product in the cart and in test orders. The cart counts the product coming from anywhere.",
+      "otherActions": "Other recipe actions: Cook {fazer} · Shopping list {lista}",
+      "programTitle": "Program → enrollment → completion",
+      "programDescription": "Program views, enrollments and completions in the period.",
+      "shopTitle": "Shop",
+      "shopDescription": "Product views, cart, checkout and test orders.",
+      "testOrdersTotal": "Test orders total: {total}",
+      "steps": {
+        "recipeViews": "Recipe views",
+        "comprarPronto": "Buy ready",
+        "readyCartAdds": "Ready product in cart",
+        "readyOrdered": "Ready product in orders (units)",
+        "programViews": "Program views",
+        "enrolled": "Enrollments",
+        "completed": "Completions",
+        "productViews": "Product views",
+        "cartAdds": "Cart adds",
+        "checkouts": "Checkouts started",
+        "testOrders": "Test orders"
+      },
+      "recipesTitle": "Recipes: Buy ready",
+      "recipesDescription": "Buy ready taps per recipe.",
+      "recipeHint": "Views {views} · Cart {cart} · Orders {ordered}",
+      "recipeHintNoProduct": "Views {views} · no ready product",
+      "programsTitle": "Programs: enrollments",
+      "programsDescription": "Enrollments per program in the period.",
+      "programHint": "Views {views} · Completions {completed}"
+    },
+    "professionals": {
+      "kpis": {
+        "orders": "Hires",
+        "completed": "Completed",
+        "revenue": "Revenue",
+        "medianResponse": "Response (median)",
+        "taps": "Hire taps"
+      },
+      "revenueHint": "Accepted, scheduled and completed · simulated values",
+      "tapsHint": "View profile: {count}",
+      "noResponse": "no response",
+      "statusTitle": "Hires by status",
+      "statusDescription": "Orders created in the period, by today's status.",
+      "status": {
+        "pending": "Waiting",
+        "accepted": "Accepted",
+        "scheduled": "Scheduled",
+        "completed": "Completed",
+        "declined": "Declined",
+        "cancelled": "Cancelled"
+      },
+      "perProTitle": "By professional",
+      "perServiceTitle": "By service",
+      "serviceHint": "{professional} · Completed {completed} · {revenue}",
+      "stats": {
+        "orders": "Orders",
+        "completed": "Completed",
+        "revenue": "Revenue",
+        "response": "Response",
+        "verPerfil": "View profile",
+        "contratar": "Hire"
+      }
+    },
+    "collectibles": {
+      "kpis": {
+        "live": "Live",
+        "ended": "Ended",
+        "bids": "Bids",
+        "views": "Views",
+        "won": "Won",
+        "finalValue": "Final value"
+      },
+      "noBidsHint": "No bids: {count}",
+      "statusTitle": "Items by status",
+      "statusDescription": "Today's status, all items.",
+      "status": {
+        "live": "Live",
+        "scheduled": "Scheduled",
+        "ended": "Ended",
+        "cancelled": "Cancelled",
+        "draft": "Drafts"
+      },
+      "contactTitle": "Contact with winners",
+      "contactDescription": "Today's status.",
+      "contact": {
+        "pending": "To contact",
+        "contacted": "Contacted",
+        "delivered": "Delivered"
+      },
+      "itemsTitle": "Items",
+      "itemsDescription": "Live first; bids and views for the period.",
+      "itemHint": "{hero} · {status}",
+      "stats": {
+        "bids": "Bids",
+        "totalBids": "Bids (total)",
+        "views": "Views",
+        "final": "Final value",
+        "contact": "Contact"
+      }
+    },
+    "ranking": {
+      "heroesTitle": "Top heroes",
+      "heroesDescription": "By actions: follow, view, tap, open shortcut and bid.",
+      "heroHint": "Views {views} · Taps {taps} · Shortcuts {opens}",
+      "recipesTitle": "Top recipes",
+      "recipesDescription": "By Cook, Buy ready and Shopping list taps.",
+      "recipeHint": "Cook {fazer} · Buy ready {comprar} · List {lista}",
+      "programsTitle": "Top programs",
+      "programsDescription": "By enrollments in the period.",
+      "productsTitle": "Top products",
+      "productsDescription": "By cart adds in the period.",
+      "viewsHint": "Views {views}"
+    }
   }
 }

@@ -6914,5 +6914,131 @@ select tests.ok('S69 reaplicar a 0059 mantém a lista do admin (Cozinha rápida 
 
 drop table t_s69;
 
+-- ================================================================ S70 · Indicadores (0060)
+-- Leituras agregadas só do admin; contador de atalhos só do service role; nenhum id de pessoa sai.
+select tests.su();
+insert into auth.users (id, email) values ('70000000-0000-4000-8000-000000000701', 's70a@test.local'), ('70000000-0000-4000-8000-000000000702', 's70b@test.local');
+create temp table t_s70 (k text primary key, v text);
+grant all on t_s70 to anon, authenticated, service_role;
+insert into t_s70 values ('hero', public.seed_uuid('creator:tiago')::text),
+  ('content', (select id::text from public.content where creator_id = public.seed_uuid('creator:tiago') and status = 'published' order by slug limit 1));
+
+-- visitante: nem RPC do admin, nem contadores, nem soma
+select tests.anon();
+select tests.expect_error('S70 visitante não executa admin_indicators_heroes', $q$select public.admin_indicators_heroes(30)$q$, 'permission denied');
+select tests.expect_error('S70 visitante não executa admin_indicators_shortcuts', $q$select public.admin_indicators_shortcuts(30)$q$, 'permission denied');
+select tests.expect_error('S70 visitante não executa admin_indicators_conversion', $q$select public.admin_indicators_conversion(30)$q$, 'permission denied');
+select tests.expect_error('S70 visitante não executa admin_indicators_professionals', $q$select public.admin_indicators_professionals(30)$q$, 'permission denied');
+select tests.expect_error('S70 visitante não executa admin_indicators_collectibles', $q$select public.admin_indicators_collectibles(30)$q$, 'permission denied');
+select tests.expect_error('S70 visitante não executa admin_indicators_ranking', $q$select public.admin_indicators_ranking(30)$q$, 'permission denied');
+select tests.expect_error('S70 visitante não lê o contador de atalhos', $q$select count(*) from public.shortcut_open_counters$q$, 'permission denied');
+select tests.expect_error('S70 visitante não lê o contador de receitas', $q$select count(*) from public.recipe_action_counters$q$, 'permission denied');
+select tests.expect_error('S70 visitante não lê o contador de profissionais', $q$select count(*) from public.professional_tap_counters$q$, 'permission denied');
+select tests.expect_error('S70 visitante não soma atalho', format($q$select public.shortcut_open_bump(%L, 'alimentacao')$q$, (select v from t_s70 where k = 'hero')), 'permission denied');
+
+-- pessoa logada (não admin): RPC recusa; contadores fechados
+select tests.login('70000000-0000-4000-8000-000000000701', 's70a@test.local');
+insert into public.hero_favorites (user_id, creator_id) values ('70000000-0000-4000-8000-000000000701', (select v::uuid from t_s70 where k = 'hero'));
+select tests.expect_error('S70 consumidor não lê indicadores por herói', $q$select public.admin_indicators_heroes(30)$q$, 'forbidden');
+select tests.expect_error('S70 consumidor não lê indicadores de atalhos', $q$select public.admin_indicators_shortcuts(7)$q$, 'forbidden');
+select tests.expect_error('S70 consumidor não lê conversão', $q$select public.admin_indicators_conversion(7)$q$, 'forbidden');
+select tests.expect_error('S70 consumidor não lê profissionais', $q$select public.admin_indicators_professionals(7)$q$, 'forbidden');
+select tests.expect_error('S70 consumidor não lê colecionáveis', $q$select public.admin_indicators_collectibles(7)$q$, 'forbidden');
+select tests.expect_error('S70 consumidor não lê ranking', $q$select public.admin_indicators_ranking(7)$q$, 'forbidden');
+select tests.expect_error('S70 consumidor não lê o contador de atalhos', $q$select count(*) from public.shortcut_open_counters$q$, 'permission denied');
+select tests.expect_error('S70 consumidor não grava no contador de atalhos',
+  format($q$insert into public.shortcut_open_counters (day, creator_id, source_key, count) values (current_date, %L, 'treinos', 99)$q$, (select v from t_s70 where k = 'hero')), 'permission denied');
+select tests.expect_error('S70 consumidor não soma atalho', format($q$select public.shortcut_open_bump(%L, 'alimentacao')$q$, (select v from t_s70 where k = 'hero')), 'permission denied');
+select tests.expect_error('S70 consumidor não lê o contador de receitas', $q$select count(*) from public.recipe_action_counters$q$, 'permission denied');
+select tests.expect_error('S70 consumidor não lê o contador de profissionais', $q$select count(*) from public.professional_tap_counters$q$, 'permission denied');
+
+-- service role soma: herói ativo e fonte conhecida; fora disso nada
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('creator:lia');
+select set_config('role', 'service_role', true);
+create temp table t_s70_bump as select
+  public.shortcut_open_bump((select v::uuid from t_s70 where k = 'hero'), 'alimentacao') as a1,
+  public.shortcut_open_bump((select v::uuid from t_s70 where k = 'hero'), 'alimentacao') as a2,
+  public.shortcut_open_bump((select v::uuid from t_s70 where k = 'hero'), 'treinos') as a3,
+  public.shortcut_open_bump((select v::uuid from t_s70 where k = 'hero'), 'rotina') as b1,
+  public.shortcut_open_bump(public.seed_uuid('creator:lia'), 'alimentacao') as b2,
+  public.shortcut_open_bump('70000000-0000-4000-8000-0000000007ff', 'alimentacao') as b3,
+  public.shortcut_open_bump(null, 'alimentacao') as b4;
+select set_config('role', 'none', true);
+select tests.ok('S70 service role soma aberturas de atalho de herói ativo', (select a1 and a2 and a3 from t_s70_bump));
+select tests.ok('S70 fonte desconhecida, herói suspenso, herói inexistente e nulo não contam',
+  (select not (b1 or b2 or b3 or coalesce(b4, false)) from t_s70_bump));
+drop table t_s70_bump;
+select tests.su();
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('creator:lia');
+select tests.ok('S70 contador agregado por dia (Brasília), herói e atalho: sem pessoa',
+  (select count(*) from public.shortcut_open_counters) = 2
+  and (select count from public.shortcut_open_counters where source_key = 'alimentacao') = 2
+  and (select day from public.shortcut_open_counters limit 1) = (now() at time zone 'America/Sao_Paulo')::date
+  and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'shortcut_open_counters' and column_name in ('user_id', 'anon_id', 'ip')));
+select tests.ok('S70 contador de atalhos sem FK (lição da 0055) e com chave própria',
+  not exists (select 1 from pg_constraint where conrelid = 'public.shortcut_open_counters'::regclass and contype = 'f')
+  and (select pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.shortcut_open_counters'::regclass and contype = 'p') = 'PRIMARY KEY (id)');
+
+-- eventos agregáveis (views/carrinho) como o app grava
+insert into public.analytics_events (user_id, event_name, properties) values
+  ('70000000-0000-4000-8000-000000000702', 'content.view', jsonb_build_object('content_id', (select v from t_s70 where k = 'content'))),
+  ('70000000-0000-4000-8000-000000000702', 'content.view', jsonb_build_object('content_id', (select v from t_s70 where k = 'content'))),
+  (null, 'content.view', '{"content_id":"nao-e-uuid"}'::jsonb),
+  ('70000000-0000-4000-8000-000000000702', 'product.view', jsonb_build_object('product_id', public.seed_uuid('product:m2'))),
+  ('70000000-0000-4000-8000-000000000702', 'cart.add', jsonb_build_object('product_id', public.seed_uuid('product:m2'), 'quantity', 1));
+
+-- admin: lê tudo agregado, período limitado a 1..90
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s70 select 'heroes', public.admin_indicators_heroes(7)::text;
+insert into t_s70 select 'shortcuts', public.admin_indicators_shortcuts(7)::text;
+insert into t_s70 select 'conversion', public.admin_indicators_conversion(30)::text;
+insert into t_s70 select 'professionals', public.admin_indicators_professionals(90)::text;
+insert into t_s70 select 'collectibles', public.admin_indicators_collectibles(30)::text;
+insert into t_s70 select 'ranking', public.admin_indicators_ranking(30)::text;
+select tests.ok('S70 admin: por herói com seguidor novo, views e atalhos do período',
+  (select (r ->> 'new_followers')::int >= 1 and (r ->> 'followers')::int >= 1 and (r ->> 'shortcut_opens')::int = 3 and (r ->> 'content_views')::int >= 2
+   from t_s70, jsonb_array_elements(v::jsonb -> 'rows') r where k = 'heroes' and r ->> 'id' = (select v from t_s70 where k = 'hero'))
+  and (select (v::jsonb ->> 'window_days')::int = 7 and jsonb_array_length(v::jsonb -> 'daily_follows') = 7 from t_s70 where k = 'heroes'));
+select tests.ok('S70 admin: atalhos por fonte, por herói e por dia',
+  (select (v::jsonb -> 'by_source' -> 0 ->> 'source_key') = 'alimentacao' and (v::jsonb -> 'by_source' -> 0 ->> 'opens')::int = 2
+     and jsonb_array_length(v::jsonb -> 'by_hero') = 2 and (v::jsonb ->> 'tracking_since') is not null from t_s70 where k = 'shortcuts'));
+select tests.ok('S70 admin: conversão, profissionais, colecionáveis e ranking respondem com as chaves esperadas',
+  (select v::jsonb ?& array['recipe_funnel', 'recipes', 'program_funnel', 'programs', 'shop_funnel'] and (v::jsonb -> 'shop_funnel' ->> 'cart_adds')::int >= 1 from t_s70 where k = 'conversion')
+  and (select v::jsonb ?& array['totals', 'professionals', 'services'] from t_s70 where k = 'professionals')
+  and (select v::jsonb ?& array['status', 'contact', 'bids', 'views', 'final_cents', 'items'] from t_s70 where k = 'collectibles')
+  and (select v::jsonb ?& array['recipes', 'programs', 'products'] and (v::jsonb -> 'products' -> 0 ->> 'cart_adds')::int >= 1 from t_s70 where k = 'ranking'));
+select tests.ok('S70 nenhuma leitura devolve id de pessoa, e-mail ou nome de cliente',
+  (select bool_and(position('70000000-0000-4000-8000-00000000070' in v) = 0 and position('@test.local' in v) = 0 and position('user_id' in v) = 0 and position('client_label' in v) = 0)
+   from t_s70 where k in ('heroes', 'shortcuts', 'conversion', 'professionals', 'collectibles', 'ranking')));
+select tests.ok('S70 período fora da faixa vira 1..90 dias',
+  (public.admin_indicators_shortcuts(0) ->> 'window_days')::int = 1 and (public.admin_indicators_shortcuts(400) ->> 'window_days')::int = 90
+  and (public.admin_indicators_heroes(null) ->> 'window_days')::int = 30);
+select tests.expect_error('S70 admin também não lê o contador direto (só pelas RPCs)', $q$select count(*) from public.shortcut_open_counters$q$, 'permission denied');
+
+-- funções: security definer com search_path fixo e sem execute para anon; soma só do service role
+select tests.su();
+select tests.ok('S70 RPCs do admin: security definer, search_path fixo, sem execute para anon; soma só do service role',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
+     from pg_proc p where p.oid in ('public.admin_indicators_heroes(int)'::regprocedure, 'public.admin_indicators_shortcuts(int)'::regprocedure,
+       'public.admin_indicators_conversion(int)'::regprocedure, 'public.admin_indicators_professionals(int)'::regprocedure,
+       'public.admin_indicators_collectibles(int)'::regprocedure, 'public.admin_indicators_ranking(int)'::regprocedure))
+  and not has_function_privilege('anon', 'public.shortcut_open_bump(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.shortcut_open_bump(uuid, text)', 'execute')
+  and has_function_privilege('service_role', 'public.shortcut_open_bump(uuid, text)', 'execute')
+  and not has_function_privilege('anon', 'public.indicators_window(int)', 'execute')
+  and not has_table_privilege('anon', 'public.shortcut_open_counters', 'select')
+  and not has_table_privilege('authenticated', 'public.shortcut_open_counters', 'select'));
+select tests.ok('S70 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- reaplicar a 0060 mantém o contador
+\ir ../migrations/0060_indicators.sql
+select tests.ok('S70 reaplicar a 0060 mantém as aberturas somadas', (select sum(count) from public.shortcut_open_counters) = 3);
+
+-- limpeza (a transação inteira é desfeita no fim)
+delete from auth.users where id in ('70000000-0000-4000-8000-000000000701', '70000000-0000-4000-8000-000000000702');
+drop table t_s70;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

@@ -2178,6 +2178,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"shortcut_open_counters": {
+                  Row: {
+                    "count": number,"creator_id": string,"day": string,"id": number,"source_key": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "count"?: number,"creator_id": string,"day": string,"id"?: number,"source_key": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "count"?: number,"creator_id"?: string,"day"?: string,"id"?: number,"source_key"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"simulated_subscriptions": {
                   Row: {
                     "auto_renew": boolean,"cancelled_at": string | null,"created_at": string,"current_period_end": string,"current_period_start": string,"id": string,"status": Database["public"]['Enums']["subscription_status"],"updated_at": string,"user_id": string
@@ -2485,6 +2499,24 @@ isOneToOne: false
                            },
 "admin_log_account_status":
 { Args: { "p_justification": string,"p_suspended": boolean,"p_user": string }; Returns: undefined
+                           },
+"admin_indicators_collectibles":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
+"admin_indicators_conversion":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
+"admin_indicators_heroes":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
+"admin_indicators_professionals":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
+"admin_indicators_ranking":
+{ Args: { "p_days"?: number }; Returns: Json
+                           },
+"admin_indicators_shortcuts":
+{ Args: { "p_days"?: number }; Returns: Json
                            },
 "admin_metrics":
 { Args: { "p_days"?: number }; Returns: Json
@@ -3076,6 +3108,9 @@ isOneToOne: false
                            },
 "setting":
 { Args: { "p_key": string }; Returns: Json
+                           },
+"shortcut_open_bump":
+{ Args: { "p_creator": string,"p_source": string }; Returns: boolean
                            },
 "slugify":
 { Args: { "p": string }; Returns: string

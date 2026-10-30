@@ -6,6 +6,7 @@ import { ContentTile, ProductActionCard } from "@/components/catalog";
 import { CARD_GRID, TILE_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
 import { LIBRARY_ICONS } from "@/components/discover/personalities/library-icons";
+import { ShortcutOpenTracker } from "@/components/discover/personalities/ShortcutOpenTracker";
 import { ProgramShelf } from "@/components/programs/ProgramShelf";
 import { ChefRecipes } from "@/components/recipes/catalog/ChefRecipes";
 import { RecipeInviteBand } from "@/components/recipes/catalog/RecipeInviteBand";
@@ -56,6 +57,8 @@ export default async function LibraryPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* indicador agregado de aberturas do atalho (0060): herói + fonte, nada da pessoa */}
+      <ShortcutOpenTracker creatorId={creator.id} sourceKey={library} />
       <PageHeader
         backHref={hubPath}
         backLabel={t("back", { name: creator.name })}
