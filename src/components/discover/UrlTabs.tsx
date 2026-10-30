@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTransition, type ReactNode } from "react";
 import { Tab, TabPanel, Tabs, TabsList } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -18,13 +17,14 @@ type Props = {
 // Abas cujo estado vive na URL: trocar de aba substitui a URL (sem rolar, sem nova entrada no
 // histórico) e o servidor renderiza o painel. Assim o "Voltar" sai da tela, não volta de aba em aba.
 export function UrlTabs({ value, tabs, children, className, ...props }: Props) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const onValueChange = (next: string) => {
     const target = tabs.find((tab) => tab.value === next);
     if (!target || target.value === value) return;
-    startTransition(() => router.replace(target.href, { scroll: false }));
+    // carga completa sem nova entrada no histórico: o roteador do Next às vezes abortava a troca só
+    // de parâmetros na mesma página (a aba não mudava)
+    startTransition(() => window.location.replace(target.href));
   };
 
   return (
