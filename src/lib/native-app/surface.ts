@@ -34,6 +34,14 @@ export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams)
   return BLOCKED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+/**
+ * Player simulado (conteúdo sem vídeo real) não aparece no app; vídeo real (embed, Stream) aparece
+ * em qualquer lugar. Decisão do responsável (30/10/2026): quando houver vídeo real, volta sozinho.
+ */
+export function hidesVideoPlayer(sourceType: string | null | undefined, nativeApp: boolean): boolean {
+  return nativeApp && sourceType === "demo";
+}
+
 /** Para onde o app nativo vai quando abre uma rota bloqueada. */
 export const NATIVE_BLOCKED_FALLBACK = LOGIN_HOME;
 

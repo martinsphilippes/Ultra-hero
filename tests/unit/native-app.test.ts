@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isBlockedInNativeApp, nativeAuthRedirect, parseNativeApp } from "@/lib/native-app/surface";
+import { hidesVideoPlayer, isBlockedInNativeApp, nativeAuthRedirect, parseNativeApp } from "@/lib/native-app/surface";
 
 const IOS_UA =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GCHeroApp/1.0.0 (ios)";
@@ -41,6 +41,18 @@ describe("isBlockedInNativeApp", () => {
     for (const path of ["/", "/personalities", "/personalities/neymar", "/personalities/neymar/receitas", "/profile", "/profile/plans-x", "/shopping", "/explore", "/profile/lista-de-compras"]) {
       expect(isBlockedInNativeApp(path), path).toBe(false);
     }
+  });
+});
+
+describe("hidesVideoPlayer", () => {
+  it("no app, só o player simulado some; vídeo real aparece", () => {
+    expect(hidesVideoPlayer("demo", true)).toBe(true);
+    expect(hidesVideoPlayer("iframe", true)).toBe(false);
+    expect(hidesVideoPlayer("hls", true)).toBe(false);
+  });
+
+  it("na web nada muda", () => {
+    expect(hidesVideoPlayer("demo", false)).toBe(false);
   });
 });
 
