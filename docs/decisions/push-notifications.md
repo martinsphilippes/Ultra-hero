@@ -70,7 +70,7 @@ Não existia: `favorites` só aponta para conteúdo, produto ou programa. A 0054
   propósito: `mobile/app.config.ts`).
 - Chave APNs (`.p8`) da conta Apple, por `eas credentials -p ios`.
 - Opcional: ligar a "segurança reforçada" no projeto Expo e pôr `EXPO_ACCESS_TOKEN` na Vercel.
-- Aplicar a 0054 no projeto Supabase depois do merge.
+- Aplicar a 0057 no projeto Supabase depois do merge.
 
 ## Fora desta versão
 

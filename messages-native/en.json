@@ -104,5 +104,14 @@
     "quick": {
       "terms": "By continuing, you declare you are 18 or older, agree to the <terms>Terms of Use</terms> and confirm you have read the <privacy>Privacy Policy</privacy>."
     }
+  },
+  "collectibles": {
+    "demo": "Sample",
+    "detail": {
+      "demoItem": "Sample item"
+    },
+    "purchases": {
+      "description": "Your orders and your collectible bids."
+    }
   }
 }

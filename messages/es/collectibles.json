@@ -1,0 +1,299 @@
+{
+  "demo": "Demostración",
+  "segment": {
+    "label": "Secciones de la pestaña Comprar",
+    "shop": "Tienda",
+    "collectibles": "Coleccionables",
+    "live": "En vivo",
+    "purchases": "Mis compras"
+  },
+  "card": {
+    "finalPrice": "Valor final",
+    "currentBid": "Puja actual",
+    "startPrice": "Puja inicial",
+    "endsIn": "Termina en",
+    "startsIn": "Empieza en",
+    "ended": "Finalizado",
+    "bids": "{n, plural, =0 {sin pujas} =1 {1 puja} other {# pujas}}"
+  },
+  "list": {
+    "title": "Coleccionables",
+    "description": "Objetos raros firmados por los héroes, con pujas en vivo.",
+    "empty": "No hay coleccionables por ahora",
+    "unavailable": "Los coleccionables llegan pronto",
+    "emptyDescription": "Cuando un objeto firmado salga al aire, aparecerá aquí con la cuenta regresiva.",
+    "live": "En vivo ahora",
+    "upcoming": "Próximamente",
+    "ended": "Finalizados"
+  },
+  "highlight": {
+    "many": "{n} coleccionables en vivo"
+  },
+  "detail": {
+    "back": "Coleccionables",
+    "demoItem": "Objeto de demostración",
+    "signedBy": "Firmado por {name}",
+    "about": "Sobre el objeto",
+    "authenticity": "Autenticidad",
+    "rulesTitle": "Cómo funcionan las pujas",
+    "rules": {
+      "increments": "Cada puja suma uno de los valores de los botones a la puja actual. La primera puja parte de la puja inicial.",
+      "antiSnipe": "Una puja en los últimos 2 minutos extiende el final a 2 minutos después de esa puja.",
+      "selfOutbid": "Quien ya va ganando no supera su propia puja. Una puja cada 2 segundos por persona.",
+      "winner": "Quien gana recibe el contacto de nuestro equipo para coordinar la entrega."
+    }
+  },
+  "gallery": {
+    "label": "Fotos de {title}",
+    "photo": "Foto {n} de {total}",
+    "thumbs": "Elegir foto"
+  },
+  "room": {
+    "statusLabel": "Estado de la puja",
+    "live": "En vivo",
+    "phase": {
+      "scheduled": "Próximamente",
+      "ended": "Finalizado",
+      "cancelled": "Cancelado"
+    },
+    "price": {
+      "final": "Adjudicado por",
+      "noBids": "Puja inicial (sin pujas)",
+      "current": "Puja actual",
+      "start": "Puja inicial"
+    },
+    "bidsCount": "{n, plural, =0 {Aún no hay pujas} =1 {1 puja} other {# pujas}}",
+    "extendedCount": "{n, plural, =1 {extendido 1 vez} other {extendido # veces}}",
+    "endsIn": "Termina en",
+    "startsIn": "Empieza en",
+    "lastMinute": "¡Último minuto!",
+    "quickBidLabel": "Puja rápida",
+    "quickBidAria": "Pujar {increment} más, total {total}",
+    "winningHint": "Vas ganando. Los botones vuelven si alguien supera tu puja.",
+    "quickBidHint": "Toca un valor para ver el total y confirmar.",
+    "loginToBid": "Inicia sesión para pujar. Puedes mirar sin iniciar sesión.",
+    "loginCta": "Iniciar sesión para pujar",
+    "adminCannotBid": "Las cuentas de administración siguen la puja, pero no pujan.",
+    "feedTitle": "Pujas",
+    "feedScheduled": "Las pujas aparecen aquí en cuanto el objeto salga al aire.",
+    "feedEmpty": "Aún no hay pujas. ¡Sé el primero!",
+    "you": "Tú",
+    "anonymousBidder": "Participante",
+    "winningBid": "Ganadora",
+    "topBid": "Mayor",
+    "announce": {
+      "newPrice": "Nueva puja: {price}"
+    },
+    "toast": {
+      "placed": "Puja de {price} registrada",
+      "extended": "Faltaba poco: el final se extendió 2 minutos."
+    },
+    "errors": {
+      "unauthenticated": "Inicia sesión para pujar.",
+      "admin_cannot_bid": "Las cuentas de administración no pujan.",
+      "account_suspended": "Tu cuenta está suspendida y no puede pujar.",
+      "creator_cannot_bid": "El héroe no puja en su propio objeto.",
+      "not_found": "Objeto no encontrado.",
+      "auction_ended": "Se acabó el tiempo. Esa puja no entró.",
+      "auction_not_live": "Este objeto aún no acepta pujas.",
+      "invalid_increment": "Valor de puja no válido. Usa uno de los botones.",
+      "already_winning": "Ya vas ganando.",
+      "rate_limited": "¡Calma! Espera 2 segundos entre pujas.",
+      "generic": "No se pudo registrar la puja. Inténtalo de nuevo."
+    },
+    "confirm": {
+      "title": "Confirmar puja",
+      "description": "El valor puede subir si alguien puja antes de que confirmes.",
+      "cancel": "Cancelar",
+      "submit": "Pujar {price}",
+      "yourBid": "Tu puja",
+      "breakdown": "Puja actual {current} + {increment}",
+      "antiSnipe": "Quedan menos de 2 minutos: tu puja extiende el final 2 minutos."
+    },
+    "connection": {
+      "connecting": "Conectando…",
+      "realtime": "En vivo",
+      "polling": "Se actualiza cada 3 s"
+    },
+    "standing": {
+      "winning": "Vas ganando",
+      "winningHint": "Tu puja es la mayor hasta ahora.",
+      "outbid": "Superaron tu puja",
+      "outbidHint": "Haz una nueva puja para volver al frente.",
+      "won": "¡Ganaste!",
+      "wonFinal": "Valor final de tu puja",
+      "wonContact": "Nuestro equipo se pondrá en contacto para coordinar la entrega.",
+      "ended": "Finalizado",
+      "endedNoBids": "Finalizado sin pujas",
+      "endedBy": "Adjudicado a {name} por {price}.",
+      "endedPrice": "Valor final: {price}.",
+      "cancelled": "Cancelado",
+      "cancelledHint": "La administración canceló este objeto. Ninguna puja vale.",
+      "scheduled": "Este objeto aún no está al aire. Las pujas abren cuando la cuenta llegue a cero.",
+      "scheduledAnon": "Este objeto aún no está al aire. Inicia sesión para pujar cuando abra."
+    }
+  },
+  "purchases": {
+    "title": "Mis compras",
+    "description": "Tus pedidos de prueba y tus pujas en los coleccionables.",
+    "back": "Comprar",
+    "tabsLabel": "Tipo de compra",
+    "tabs": {
+      "orders": "Pedidos",
+      "bids": "Pujas y adjudicaciones"
+    }
+  },
+  "myBids": {
+    "empty": "Aún no has pujado",
+    "emptyDescription": "Los objetos en los que pujes aparecen aquí, con el estado de cada uno.",
+    "goToCollectibles": "Ver coleccionables",
+    "listLabel": "Pujas y adjudicaciones",
+    "standing": {
+      "winning": "Ganando",
+      "outbid": "Superada",
+      "won": "Adjudicado",
+      "lost": "Finalizado",
+      "cancelled": "Cancelado",
+      "watching": "Siguiendo"
+    },
+    "myTop": "Tu mayor puja {price}",
+    "final": "final {price}",
+    "current": "actual {price}",
+    "wonAt": "Adjudicado · {price}",
+    "wonContact": "Nuestro equipo se pondrá en contacto para coordinar la entrega."
+  },
+  "admin": {
+    "title": "Coleccionables",
+    "description": "Objetos firmados con puja en vivo. Crea en borrador, revisa y lanza ahora o programa.",
+    "unavailable": "Coleccionables no disponibles: aplica la migración 0057 en la base de datos.",
+    "new": "Nuevo coleccionable",
+    "newDescription": "El objeto nace en borrador. Lanzar o programar está en el detalle.",
+    "empty": "Aún no hay coleccionables.",
+    "demo": "Demostración",
+    "phase": {
+      "draft": "Borrador",
+      "scheduled": "Programado",
+      "live": "En vivo",
+      "ended": "Finalizado",
+      "cancelled": "Cancelado"
+    },
+    "bids": "{n, plural, =1 {1 puja} other {# pujas}}",
+    "views": "{n, plural, =1 {1 visualización} other {# visualizaciones}}",
+    "endsAt": "fin {date}",
+    "viewPublic": "Ver en la tienda",
+    "statusPanel": "Estado",
+    "livePanel": "Pujas en vivo",
+    "livePanelHint": "Se actualiza solo. Los nombres aparecen enmascarados, como para el público.",
+    "auditPanel": "Historial de acciones",
+    "auditEmpty": "No hay acciones registradas.",
+    "result": {
+      "panel": "Ganador",
+      "hint": "Solo la administración ve estos datos, para coordinar la entrega con quien ganó.",
+      "name": "Nombre",
+      "email": "Correo",
+      "finalPrice": "Valor final",
+      "noWinner": "Terminó sin pujas: no hay ganador.",
+      "pending": "Esperando el cierre.",
+      "unavailable": "Datos del ganador no disponibles.",
+      "contactLabel": "Contacto",
+      "contactUpdated": "Actualizado el {date}",
+      "status": {
+        "pending": "Por contactar",
+        "contacted": "Contactado",
+        "delivered": "Entregado"
+      },
+      "save": "Guardar contacto",
+      "done": "Contacto actualizado"
+    },
+    "audit": {
+      "collectible": {
+        "create": "Creado",
+        "update": "Editado",
+        "launch": "Lanzado o programado",
+        "cancel": "Cancelado",
+        "contact": "Contacto con el ganador"
+      }
+    },
+    "fields": {
+      "startsAt": "Inicio",
+      "endsAt": "Fin",
+      "views": "Visualizaciones",
+      "bids": "Pujas",
+      "extensions": "Extensiones (últimos 2 min)",
+      "winner": "Ganador (enmascarado)"
+    },
+    "form": {
+      "panel": "Datos del objeto",
+      "title": "Título",
+      "hero": "Héroe",
+      "heroHint": "Opcional. El objeto también aparece en la página del héroe mientras esté en vivo o programado.",
+      "noHero": "Sin héroe",
+      "description": "Descripción",
+      "photos": "Fotos",
+      "photosHint": "Una dirección por línea (hasta 8): ruta de la app (/collectibles/…) o https://. No uses logotipos ni imágenes de marcas.",
+      "authenticity": "Autenticidad",
+      "authenticityHint": "Certificado, número de serie, cómo se registró la firma.",
+      "rulesTitle": "Puja",
+      "lockedHint": "El objeto ya empezó: precio, botones y duración quedan bloqueados.",
+      "startPrice": "Puja inicial",
+      "moneyHint": "En reales, ej.: 1500 o 1.500,00.",
+      "increments": "Botones de puja",
+      "incrementN": "Botón {n}",
+      "removeIncrement": "Quitar botón",
+      "incrementsHint": "De 1 a 4 valores distintos, en reales. Ej.: 10, 50, 100.",
+      "addIncrement": "Añadir botón",
+      "duration": "Duración",
+      "durationUnit": "Unidad de la duración",
+      "units": {
+        "minutes": "minutos",
+        "hours": "horas",
+        "days": "días"
+      },
+      "save": "Guardar",
+      "create": "Crear borrador",
+      "created": "Borrador creado",
+      "updated": "Cambios guardados",
+      "errors": {
+        "title": "Usa de 3 a 120 caracteres.",
+        "price": "Indica un valor desde R$ 1,00.",
+        "increments": "Usa de 1 a 4 valores positivos y distintos.",
+        "duration": "La duración va de 5 minutos a 30 días.",
+        "photos": "Hasta 8 direcciones, cada una empezando con / o https://."
+      }
+    },
+    "launch": {
+      "whenLabel": "Cuándo empezar",
+      "now": "Ahora",
+      "later": "Programar",
+      "startsAt": "Inicio",
+      "endsPreview": "Termina el {date}.",
+      "endsNow": "Empieza ahora y termina {minutes} minutos después.",
+      "launchNow": "Lanzar ahora",
+      "schedule": "Programar",
+      "pickDate": "Elige la fecha y la hora de inicio.",
+      "scheduledDone": "Objeto programado",
+      "liveDone": "Objeto al aire"
+    },
+    "cancel": {
+      "trigger": "Cancelar objeto",
+      "title": "¿Cancelar este coleccionable?",
+      "description": "Las pujas dejan de valer y quien pujó ve el objeto como cancelado. No se puede deshacer.",
+      "confirm": "Cancelar objeto",
+      "done": "Objeto cancelado"
+    },
+    "errors": {
+      "forbidden": "Solo la administración puede hacer esto.",
+      "not_found": "Objeto no encontrado.",
+      "collectible_locked": "El objeto ya empezó: precio, botones y duración ya no cambian.",
+      "invalid_increment": "Botones de puja no válidos: de 1 a 4 valores positivos y distintos.",
+      "invalid_photo": "Dirección de foto no válida: usa / o https://.",
+      "invalid_creator": "Héroe no encontrado.",
+      "invalid_start": "El inicio no puede quedar en el pasado.",
+      "reason_required": "Escribe el motivo (mínimo 5 caracteres).",
+      "invalid_input": "Revisa los campos marcados.",
+      "generic": "No se pudo guardar. Inténtalo de nuevo.",
+      "no_winner": "Este objeto no tiene ganador.",
+      "invalid_contact_status": "Estado de contacto no válido."
+    }
+  }
+}

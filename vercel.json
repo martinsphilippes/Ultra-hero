@@ -5,6 +5,7 @@
     { "path": "/api/cron/retention", "schedule": "0 3 * * *" },
     { "path": "/api/cron/renewals", "schedule": "30 3 * * *" },
     { "path": "/api/cron/transport", "schedule": "0 4 * * *" },
-    { "path": "/api/cron/push", "schedule": "0 22 * * *" }
+    { "path": "/api/cron/push", "schedule": "0 22 * * *" },
+    { "path": "/api/cron/collectibles", "schedule": "15 4 * * *" }
   ]
 }

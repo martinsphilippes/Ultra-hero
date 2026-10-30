@@ -161,6 +161,104 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"collectible_bid_owners": {
+                  Row: {
+                    "bid_id": string,"collectible_id": string,"created_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bid_id": string,"collectible_id": string,"created_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "bid_id"?: string,"collectible_id"?: string,"created_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "collectible_bid_owners_bid_id_fkey"
+      columns: ["bid_id"]
+isOneToOne: true
+      referencedRelation: "collectible_bids"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "collectible_bid_owners_collectible_id_fkey"
+      columns: ["collectible_id"]
+isOneToOne: false
+      referencedRelation: "collectibles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"collectible_bids": {
+                  Row: {
+                    "amount_cents": number,"bidder_label": string | null,"collectible_id": string,"created_at": string,"id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_cents": number,"bidder_label"?: string | null,"collectible_id": string,"created_at"?: string,"id"?: string
+                  }
+                  Update: {
+                    "amount_cents"?: number,"bidder_label"?: string | null,"collectible_id"?: string,"created_at"?: string,"id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "collectible_bids_collectible_id_fkey"
+      columns: ["collectible_id"]
+isOneToOne: false
+      referencedRelation: "collectibles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"collectible_results": {
+                  Row: {
+                    "collectible_id": string,"contact_status": string,"contact_updated_at": string | null,"final_cents": number,"finalized_at": string,"outcome": string,"winner_user_id": string | null,"winning_bid_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "collectible_id": string,"contact_status"?: string,"contact_updated_at"?: string | null,"final_cents": number,"finalized_at"?: string,"outcome": string,"winner_user_id"?: string | null,"winning_bid_id"?: string | null
+                  }
+                  Update: {
+                    "collectible_id"?: string,"contact_status"?: string,"contact_updated_at"?: string | null,"final_cents"?: number,"finalized_at"?: string,"outcome"?: string,"winner_user_id"?: string | null,"winning_bid_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "collectible_results_collectible_id_fkey"
+      columns: ["collectible_id"]
+isOneToOne: true
+      referencedRelation: "collectibles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "collectible_results_winning_bid_id_fkey"
+      columns: ["winning_bid_id"]
+isOneToOne: false
+      referencedRelation: "collectible_bids"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"collectibles": {
+                  Row: {
+                    "authenticity_note": string,"bid_increments_cents": number[],"bids_count": number,"cancelled_at": string | null,"created_at": string,"creator_id": string | null,"current_cents": number,"description": string,"duration_minutes": number,"ends_at": string | null,"extensions_count": number,"finalized_at": string | null,"id": string,"is_demo": boolean,"leading_bid_id": string | null,"photos": string[],"start_price_cents": number,"starts_at": string | null,"status": string,"title": string,"updated_at": string,"winner_label": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "authenticity_note"?: string,"bid_increments_cents"?: number[],"bids_count"?: number,"cancelled_at"?: string | null,"created_at"?: string,"creator_id"?: string | null,"current_cents": number,"description"?: string,"duration_minutes"?: number,"ends_at"?: string | null,"extensions_count"?: number,"finalized_at"?: string | null,"id"?: string,"is_demo"?: boolean,"leading_bid_id"?: string | null,"photos"?: string[],"start_price_cents": number,"starts_at"?: string | null,"status"?: string,"title": string,"updated_at"?: string,"winner_label"?: string | null
+                  }
+                  Update: {
+                    "authenticity_note"?: string,"bid_increments_cents"?: number[],"bids_count"?: number,"cancelled_at"?: string | null,"created_at"?: string,"creator_id"?: string | null,"current_cents"?: number,"description"?: string,"duration_minutes"?: number,"ends_at"?: string | null,"extensions_count"?: number,"finalized_at"?: string | null,"id"?: string,"is_demo"?: boolean,"leading_bid_id"?: string | null,"photos"?: string[],"start_price_cents"?: number,"starts_at"?: string | null,"status"?: string,"title"?: string,"updated_at"?: string,"winner_label"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "collectibles_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "collectibles_leading_bid_fkey"
+      columns: ["leading_bid_id"]
+isOneToOne: false
+      referencedRelation: "collectible_bids"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"completions": {
                   Row: {
                     "completed_at": string,"content_id": string,"id": string,"local_date": string,"source": string,"timezone": string,"user_id": string
@@ -2140,6 +2238,18 @@ isOneToOne: false
 "admin_advance_transport":
 { Args: { "p_minutes"?: number }; Returns: number
                            },
+"admin_collectible_cancel":
+{ Args: { "p_id": string,"p_reason": string }; Returns: undefined
+                           },
+"admin_collectible_launch":
+{ Args: { "p_id": string,"p_starts_at"?: string }; Returns: Json
+                           },
+"admin_collectible_save":
+{ Args: { "p_data": Json,"p_id"?: string }; Returns: string
+                           },
+"admin_collectible_set_contact":
+{ Args: { "p_id": string,"p_status": string }; Returns: string
+                           },
 "admin_create_invitation":
 { Args: { "p_creator_profile_id"?: string,"p_days"?: number,"p_email": string,"p_role": Database["public"]['Enums']["app_role"],"p_seller_org_id"?: string }; Returns: {
               "invitation_id": string,"token": string
@@ -2303,6 +2413,21 @@ isOneToOne: false
                            },
 "checkout_create_fulfillment":
 { Args: { "p_eta": number,"p_order": string,"p_seller": string,"p_seller_name": string,"p_shipping_share": number,"p_user": string,"p_zone": string }; Returns: string
+                           },
+"collectible_finalize":
+{ Args: { "p_collectible": string }; Returns: Json
+                           },
+"collectible_finalize_due":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"collectible_finalize_row":
+{ Args: { "p_collectible": string }; Returns: boolean
+                           },
+"collectible_mask_label":
+{ Args: { "p_name": string }; Returns: string
+                           },
+"collectible_phase":
+{ Args: { "p_ends": string,"p_starts": string,"p_status": string }; Returns: string
                            },
 "complete_content":
 { Args: { "p_content": string,"p_source"?: string,"p_timezone": string }; Returns: Json
@@ -2499,6 +2624,9 @@ isOneToOne: false
                            },
 "my_wearable_connections":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"place_bid":
+{ Args: { "auction_id": string,"increment_cents": number }; Returns: Json
                            },
 "post_photo_orphan_uploads":
 { Args: { "p_limit": number }; Returns: string[]

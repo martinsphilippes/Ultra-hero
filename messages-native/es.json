@@ -104,5 +104,14 @@
     "quick": {
       "terms": "Al continuar, declaras tener 18 años o más, aceptas los <terms>Términos de Uso</terms> y confirmas que leíste la <privacy>Política de Privacidad</privacy>."
     }
+  },
+  "collectibles": {
+    "demo": "Ejemplo",
+    "detail": {
+      "demoItem": "Objeto de ejemplo"
+    },
+    "purchases": {
+      "description": "Tus pedidos y tus pujas en los coleccionables."
+    }
   }
 }
