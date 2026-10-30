@@ -77,7 +77,8 @@ test.describe("Colecionáveis e Minhas compras", () => {
     await expect(link).toBeVisible();
     await expect(link).toHaveText("Minhas compras");
     await link.click();
-    await expect(page).toHaveURL(/\/shop\/compras$/);
+    // 1ª visita no remoto: a página é renderizada a frio; espera a navegação, não só os 5 s padrão
+    await expect(page).toHaveURL(/\/shop\/compras$/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { level: 1, name: "Minhas compras" })).toBeVisible();
     await expect(page.getByTestId("purchases-orders")).toBeVisible();
     if (testInfo.project.name === "mobile") {
@@ -87,15 +88,19 @@ test.describe("Colecionáveis e Minhas compras", () => {
 
     const bidsTab = page.getByRole("link", { name: /Lances e arremates/ });
     if (await collectiblesInDb()) {
+      // as abas são <a> comuns (o roteador do Next às vezes abortava /shop/compras → ?aba=lances e o URL
+      // não mudava); a navegação de documento renderiza a página inteira no remoto: espera mais que 5 s
       await bidsTab.click();
-      await expect(page).toHaveURL(/\/shop\/compras\?aba=lances$/);
-      await expect(page.getByTestId("purchases-bids")).toBeVisible();
+      await expect(page).toHaveURL(/\/shop\/compras\?aba=lances$/, { timeout: 15_000 });
+      await expect(page.getByTestId("purchases-bids")).toBeVisible({ timeout: 15_000 });
     } else {
       await expect(bidsTab).toHaveCount(0);
     }
 
+    // redirect HTTP (next.config): o goto já termina em Minhas compras
     await page.goto("/orders");
     await expect(page).toHaveURL(/\/shop\/compras$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Minhas compras" })).toBeVisible();
   });
 
   test("admin: tela de Colecionáveis pelo menu (itens ou aviso da migração)", async ({ page }, testInfo) => {

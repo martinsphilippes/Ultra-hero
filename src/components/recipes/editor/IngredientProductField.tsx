@@ -2,7 +2,7 @@
 
 import { PackageSearch } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { searchIngredientProducts, suggestIngredientProduct, withdrawIngredientProduct } from "@/app/creator/recipes/ingredient-product-actions";
 import { SearchPicker, type PickItem } from "@/components/admin-content/SearchPicker";
 import { Badge, Button } from "@/components/ui";
@@ -56,14 +56,28 @@ export function IngredientProductField({ ingredientId, ingredientName, saved, su
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("");
-  const [pending, startTransition] = useTransition();
+  // Estado próprio, não useTransition: a ação rodando dentro de uma transição deixava o botão em
+  // "Carregando" até o roteador terminar de aplicar a página re-renderizada que vem na resposta da
+  // server action (qualquer revalidatePath a dispara). Com o editor remoto lento isso passava dos 5 s
+  // e às vezes não terminava; o campo já atualiza o estado local com o resultado da ação.
+  const [pending, setPending] = useState(false);
+  const run = async (task: () => Promise<void>) => {
+    setPending(true);
+    try {
+      await task();
+    } catch {
+      setError(t("errors.generic"));
+    } finally {
+      setPending(false);
+    }
+  };
   const pickerRef = useRef<HTMLDivElement>(null);
   const chooseRef = useRef<HTMLButtonElement>(null);
   const errorText = (code: string) => (t.has(`errors.${code}`) ? t(`errors.${code}`) : t("errors.generic"));
   const hasAny = Boolean(summary?.validated || summary?.pending);
 
   // abrir a busca leva o foco ao campo (o botão focado some); fechar, escolher ou retirar devolve o
-  // foco ao botão — só depois da transição, porque durante ela o botão fica desabilitado
+  // foco ao botão — só depois da ação, porque durante ela o botão fica desabilitado
   const restoreFocus = useRef(false);
   useEffect(() => {
     if (picking) pickerRef.current?.querySelector<HTMLInputElement>("input")?.focus();
@@ -83,7 +97,7 @@ export function IngredientProductField({ ingredientId, ingredientName, saved, su
   function choose(item: PickItem | null) {
     if (!item) return;
     setError(null);
-    startTransition(async () => {
+    void run(async () => {
       const replaced = summary?.pending?.id ?? null;
       const result = await suggestIngredientProduct({ ingredientId, productId: item.id, replaceLinkId: replaced });
       if (!result.ok) {
@@ -99,7 +113,7 @@ export function IngredientProductField({ ingredientId, ingredientName, saved, su
 
   function withdraw(linkId: string) {
     setError(null);
-    startTransition(async () => {
+    void run(async () => {
       const result = await withdrawIngredientProduct({ linkId });
       if (!result.ok) {
         setError(errorText(result.error));

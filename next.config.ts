@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
       { source: "/programs", destination: "/explore?tab=programas", permanent: true },
       // abrir o app (endereço principal, ícone do celular) entra direto na aba Hero; o feed mora em /inicio
       { source: "/", destination: "/personalities", permanent: false },
+      // pedidos moram em Minhas compras: redirect HTTP aqui, e não só o redirect() da página — com o
+      // loading.tsx de /orders a resposta já começava a ser enviada e o redirect virava um refresh no
+      // cliente (meta refresh/roteador depois de hidratar), lento na 1ª visita (o E2E às vezes via /orders)
+      { source: "/orders", destination: "/shop/compras", permanent: false },
       ...Object.entries(HERO_SLUG_REDIRECTS).flatMap(([from, to]) => [
         { source: `/personalities/${from}`, destination: `/personalities/${to}`, permanent: true },
         { source: `/personalities/${from}/:library`, destination: `/personalities/${to}/:library`, permanent: true },
