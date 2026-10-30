@@ -7040,5 +7040,238 @@ select tests.ok('S70 reaplicar a 0060 mantém as aberturas somadas', (select sum
 delete from auth.users where id in ('70000000-0000-4000-8000-000000000701', '70000000-0000-4000-8000-000000000702');
 drop table t_s70;
 
+-- ================================================================ S71 · Marcas, produtos externos e Smart Tags (0062)
+-- Seed só de exemplo (is_demo, só "produto identificado", nada de patrocínio); leitura pública só do
+-- ativo/no ar; escrita só por RPC do admin, auditada; cliques agregados só do service role; S14 = 17;
+-- chave própria em toda ligação (S65/PGRST201).
+select tests.su();
+create temp table t_s71 (k text primary key, v text);
+grant all on t_s71 to anon, authenticated, service_role;
+insert into t_s71 values
+  ('volta', public.seed_uuid('brand:volta-sports')::text),
+  ('brasa', public.seed_uuid('brand:brasa-cozinha')::text),
+  ('copo', public.seed_uuid('brand_product:volta-copo')::text),
+  ('garrafa', public.seed_uuid('brand_product:volta-garrafa')::text),
+  ('faca', public.seed_uuid('brand_product:brasa-faca')::text),
+  ('medina', (select id from public.creator_profiles where slug = 'gabriel-medina')::text),
+  ('jacquin', (select id from public.creator_profiles where slug = 'erick-jacquin')::text),
+  ('hidratacao', (select id from public.content where slug = 'hidratacao-quanto-beber-de-verdade-n2')::text),
+  ('facas', (select id from public.content where slug = 'afiar-e-cuidar-das-facas-g7')::text),
+  ('prog_h', (select id from public.programs where slug = 'hidratacao-e-energia')::text),
+  ('prog_f', (select id from public.programs where slug = 'tecnicas-de-faca-e-mise-en-place')::text),
+  ('audit', (select coalesce(max(id), 0) from public.admin_audit)::text);
+-- cenários anteriores podem ter mexido: volta ao estado publicado/ativo do seed
+update public.creator_profiles set status = 'active' where id in ((select v::uuid from t_s71 where k = 'medina'), (select v::uuid from t_s71 where k = 'jacquin'));
+update public.content set status = 'published', publish_at = null where id in ((select v::uuid from t_s71 where k = 'hidratacao'), (select v::uuid from t_s71 where k = 'facas'));
+update public.programs set status = 'published' where id in ((select v::uuid from t_s71 where k = 'prog_h'), (select v::uuid from t_s71 where k = 'prog_f'));
+
+select tests.ok('S71 seed: 5 marcas e 9 produtos fictícios (is_demo), links example.com, nenhum patrocínio',
+  (select count(*) from public.brands where is_demo) = 5 and (select count(*) from public.brand_products where is_demo) = 9
+  and not exists (select 1 from public.brand_products where external_url !~ '^https://example\.com/')
+  and not exists (select 1 from public.brands where site_url !~ '^https://example\.com/')
+  and not exists (select 1 from public.creator_brands where relationship = 'sponsor')
+  and (select count(*) from public.creator_brands) = 3
+  and (select count(*) from public.media_smart_tags where is_demo) = 4
+  and (select count(*) from public.program_brand_products) = 6
+  and (select count(*) from public.content_brand_products) = 4);
+select tests.ok('S71 seed: marcação guarda a foto marcada (igual à capa atual)',
+  not exists (select 1 from public.media_smart_tags t join public.content c on c.id = t.content_id where t.media_url is distinct from c.cover_url));
+
+-- estrutura: chave própria (id) em toda tabela nova; nenhuma FK na chave primária (S65)
+select tests.ok('S71 tabelas da 0062 com chave primária só "id" (sem tabela-ponte na chave; sem PGRST201)',
+  (select bool_and((select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
+                    where pk.contype = 'p' and pk.conrelid = r) = array['id'])
+   from unnest(array['public.brands'::regclass, 'public.brand_products'::regclass, 'public.creator_brands'::regclass, 'public.content_brands'::regclass,
+                     'public.content_brand_products'::regclass, 'public.program_brand_products'::regclass, 'public.media_smart_tags'::regclass,
+                     'public.brand_click_counters'::regclass]) r)
+  and not exists (
+    select 1 from pg_constraint pk
+    where pk.contype = 'p' and pk.connamespace = 'public'::regnamespace
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.confrelid = 'public.content'::regclass and f.conkey <@ pk.conkey)
+      and exists (select 1 from pg_constraint f where f.conrelid = pk.conrelid and f.contype = 'f' and f.confrelid = 'public.creator_profiles'::regclass and f.conkey <@ pk.conkey)));
+select tests.ok('S71 RLS ligada nas 8 tabelas; contador sem FK nenhuma',
+  (select bool_and(c.relrowsecurity) from pg_class c where c.oid in ('public.brands'::regclass, 'public.brand_products'::regclass, 'public.creator_brands'::regclass,
+     'public.content_brands'::regclass, 'public.content_brand_products'::regclass, 'public.program_brand_products'::regclass, 'public.media_smart_tags'::regclass,
+     'public.brand_click_counters'::regclass))
+  and not exists (select 1 from pg_constraint where conrelid = 'public.brand_click_counters'::regclass and contype = 'f'));
+select tests.ok('S71 validador de link: só https com domínio, sem usuário/senha nem espaço',
+  public.brand_https_url_ok('https://example.com/a?b=1') and not public.brand_https_url_ok('http://example.com')
+  and not public.brand_https_url_ok('https://user:pw@example.com') and not public.brand_https_url_ok('https://exa mple.com')
+  and not public.brand_https_url_ok('javascript:alert(1)') and not public.brand_https_url_ok('https://localhost/x')
+  and public.brand_image_url_ok('/brands/volta-sports.svg') and not public.brand_image_url_ok('/brands/../x.svg') and public.brand_image_url_ok(null));
+
+-- visitante: lê o que está no ar
+select tests.anon();
+select tests.ok('S71 visitante lê marcas, produtos, marcas do herói, marcações e recomendados no ar',
+  (select count(*) from public.brands) = 5 and (select count(*) from public.brand_products) = 9
+  and (select count(*) from public.creator_brands where creator_id = (select v::uuid from t_s71 where k = 'medina')) = 2
+  and (select count(*) from public.media_smart_tags where content_id = (select v::uuid from t_s71 where k = 'facas')) = 2
+  and (select count(*) from public.program_brand_products where program_id = (select v::uuid from t_s71 where k = 'prog_h')) = 3
+  and (select count(*) from public.content_brand_products where content_id = (select v::uuid from t_s71 where k = 'hidratacao')) = 2);
+select tests.expect_error('S71 visitante não grava marca direto', $q$insert into public.brands (slug, name, site_url) values ('x', 'X', 'https://example.com')$q$, 'permission denied');
+select tests.expect_error('S71 visitante não grava marcação direto',
+  format($q$update public.media_smart_tags set x_pct = 1 where content_id = %L$q$, (select v from t_s71 where k = 'facas')), 'permission denied');
+select tests.expect_error('S71 visitante não executa RPC do admin', $q$select public.admin_brand_save(null, '{}'::jsonb)$q$, 'permission denied');
+select tests.expect_error('S71 visitante não lê o contador de cliques', $q$select count(*) from public.brand_click_counters$q$, 'permission denied');
+select tests.expect_error('S71 visitante não soma clique', format($q$select public.brand_click_bump('brand', %L, 'strip')$q$, (select v from t_s71 where k = 'volta')), 'permission denied');
+
+-- fora do ar some para o público: marca desativada, produto desativado, conteúdo e programa em rascunho
+select tests.su();
+update public.brands set status = 'inactive' where id = (select v::uuid from t_s71 where k = 'volta');
+update public.brand_products set status = 'inactive' where id = (select v::uuid from t_s71 where k = 'faca');
+update public.content set status = 'draft' where id = (select v::uuid from t_s71 where k = 'hidratacao');
+update public.programs set status = 'draft' where id = (select v::uuid from t_s71 where k = 'prog_f');
+select tests.anon();
+select tests.ok('S71 marca desativada some com os produtos, a ligação do herói e as marcações dela',
+  (select count(*) from public.brands where id = (select v::uuid from t_s71 where k = 'volta')) = 0
+  and (select count(*) from public.brand_products where brand_id = (select v::uuid from t_s71 where k = 'volta')) = 0
+  and (select count(*) from public.creator_brands where creator_id = (select v::uuid from t_s71 where k = 'medina')) = 1
+  and (select count(*) from public.program_brand_products where program_id = (select v::uuid from t_s71 where k = 'prog_h')) = 2);
+select tests.ok('S71 produto desativado sai da foto e dos recomendados; conteúdo e programa fora do ar não mostram nada',
+  (select count(*) from public.media_smart_tags where content_id = (select v::uuid from t_s71 where k = 'facas')) = 1
+  and (select count(*) from public.content_brand_products where content_id = (select v::uuid from t_s71 where k = 'facas')) = 1
+  and (select count(*) from public.media_smart_tags where content_id = (select v::uuid from t_s71 where k = 'hidratacao')) = 0
+  and (select count(*) from public.content_brand_products where content_id = (select v::uuid from t_s71 where k = 'hidratacao')) = 0
+  and (select count(*) from public.program_brand_products where program_id = (select v::uuid from t_s71 where k = 'prog_f')) = 0);
+select tests.su();
+update public.brands set status = 'active' where id = (select v::uuid from t_s71 where k = 'volta');
+update public.brand_products set status = 'active' where id = (select v::uuid from t_s71 where k = 'faca');
+update public.content set status = 'published' where id = (select v::uuid from t_s71 where k = 'hidratacao');
+update public.programs set status = 'published' where id = (select v::uuid from t_s71 where k = 'prog_f');
+
+-- consumidor: não grava nem pela RPC
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S71 consumidor não grava marca direto', $q$update public.brands set name = 'X'$q$, 'permission denied');
+select tests.expect_error('S71 consumidor não salva marca pela RPC', $q$select public.admin_brand_save(null, '{"name":"X","slug":"x","site_url":"https://example.com"}'::jsonb)$q$, 'forbidden');
+select tests.expect_error('S71 consumidor não marca a foto', format($q$select public.admin_content_smart_tags_save(%L, '[]'::jsonb)$q$, (select v from t_s71 where k = 'facas')), 'forbidden');
+select tests.expect_error('S71 consumidor não liga marca ao herói', format($q$select public.admin_creator_brands_save(%L, '[]'::jsonb)$q$, (select v from t_s71 where k = 'medina')), 'forbidden');
+select tests.expect_error('S71 consumidor não lê os cliques', $q$select public.admin_brand_clicks(30)$q$, 'forbidden');
+
+-- admin: grava pelas RPCs, sempre auditado
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s71 select 'nova', public.admin_brand_save(null, '{"name":"Marca Teste S71","slug":"marca-teste-s71","site_url":"https://example.com/s71","logo_url":"","default_relationship":"sponsor","is_demo":true}'::jsonb)::text;
+select tests.ok('S71 admin cria marca (auditado) e lê inclusive desativada',
+  exists (select 1 from public.admin_audit where action = 'brand.create' and resource_id = (select v from t_s71 where k = 'nova') and actor_id = '10000000-0000-4000-8000-000000000001'));
+select tests.expect_error('S71 link http recusado', $q$select public.admin_brand_save(null, '{"name":"Y","slug":"y-s71","site_url":"http://example.com"}'::jsonb)$q$, 'invalid_url');
+select tests.expect_error('S71 slug repetido recusado', $q$select public.admin_brand_save(null, '{"name":"Y","slug":"volta-sports","site_url":"https://example.com"}'::jsonb)$q$, 'duplicate_slug');
+select tests.expect_error('S71 logo fora do formato recusado', $q$select public.admin_brand_save(null, '{"name":"Y","slug":"y-s71","site_url":"https://example.com","logo_url":"javascript:x"}'::jsonb)$q$, 'invalid_image');
+insert into t_s71 select 'nprod', public.admin_brand_product_save(null, jsonb_build_object('brand_id', (select v from t_s71 where k = 'nova'), 'name', 'Produto S71',
+  'external_url', 'https://example.com/s71/p', 'price_cents', '', 'description', 'Teste'))::text;
+select tests.ok('S71 admin cria produto sem preço (auditado)',
+  (select price_cents is null and currency = 'BRL' from public.brand_products where id = (select v::uuid from t_s71 where k = 'nprod'))
+  and exists (select 1 from public.admin_audit where action = 'brand_product.create' and resource_id = (select v from t_s71 where k = 'nprod')));
+select tests.expect_error('S71 produto com link inválido recusado',
+  format($q$select public.admin_brand_product_save(null, '{"brand_id":"%s","name":"Z","external_url":"ftp://x"}'::jsonb)$q$, (select v from t_s71 where k = 'nova')), 'invalid_url');
+
+select public.admin_creator_brands_save((select v::uuid from t_s71 where k = 'medina'),
+  jsonb_build_array(jsonb_build_object('brand_id', (select v from t_s71 where k = 'nova'), 'relationship', 'sponsor'),
+                    jsonb_build_object('brand_id', (select v from t_s71 where k = 'volta'), 'relationship', 'identified', 'status', 'inactive')));
+select tests.ok('S71 marcas do herói trocadas na ordem, com relação e situação (auditado)',
+  (select array_agg(relationship || ':' || status order by sort_order) from public.creator_brands where creator_id = (select v::uuid from t_s71 where k = 'medina')) = array['sponsor:active', 'identified:inactive']
+  and exists (select 1 from public.admin_audit where action = 'creator.brands' and resource_id = (select v from t_s71 where k = 'medina')));
+select tests.expect_error('S71 marca repetida na lista do herói recusada',
+  format($q$select public.admin_creator_brands_save(%L, '[{"brand_id":"%s","relationship":"sponsor"},{"brand_id":"%s","relationship":"mentioned"}]'::jsonb)$q$,
+    (select v from t_s71 where k = 'medina'), (select v from t_s71 where k = 'nova'), (select v from t_s71 where k = 'nova')), 'duplicate_item');
+
+select public.admin_content_smart_tags_save((select v::uuid from t_s71 where k = 'hidratacao'),
+  jsonb_build_array(jsonb_build_object('brand_product_id', (select v from t_s71 where k = 'nprod'), 'x_pct', 12.345, 'y_pct', 40, 'label_side', 'top'),
+                    jsonb_build_object('brand_product_id', (select v from t_s71 where k = 'copo'), 'x_pct', 66, 'y_pct', 68, 'label_side', 'left', 'status', 'inactive')));
+select tests.ok('S71 Smart Tags trocadas (posição com 2 casas, foto atual gravada, auditado)',
+  (select array_agg(x_pct::text || '/' || label_side || '/' || status order by sort_order) from public.media_smart_tags where content_id = (select v::uuid from t_s71 where k = 'hidratacao'))
+    = array['12.35/top/active', '66.00/left/inactive']
+  and not exists (select 1 from public.media_smart_tags t join public.content c on c.id = t.content_id where t.content_id = (select v::uuid from t_s71 where k = 'hidratacao') and t.media_url is distinct from c.cover_url)
+  and exists (select 1 from public.admin_audit where action = 'content.smart_tags' and resource_id = (select v from t_s71 where k = 'hidratacao')));
+select tests.expect_error('S71 posição fora de 0..100 recusada',
+  format($q$select public.admin_content_smart_tags_save(%L, '[{"brand_product_id":"%s","x_pct":120,"y_pct":5,"label_side":"left"}]'::jsonb)$q$,
+    (select v from t_s71 where k = 'hidratacao'), (select v from t_s71 where k = 'copo')), 'invalid_input');
+select tests.expect_error('S71 mais de 8 marcações recusadas',
+  format($q$select public.admin_content_smart_tags_save(%L, (select jsonb_agg(jsonb_build_object('brand_product_id', %L, 'x_pct', 1, 'y_pct', 1, 'label_side', 'left')) from generate_series(1, 9)))$q$,
+    (select v from t_s71 where k = 'hidratacao'), (select v from t_s71 where k = 'copo')), 'too_many_items');
+
+select public.admin_content_brand_links_save((select v::uuid from t_s71 where k = 'hidratacao'),
+  jsonb_build_array(jsonb_build_object('brand_id', (select v from t_s71 where k = 'nova'), 'relationship', 'mentioned')),
+  jsonb_build_array(jsonb_build_object('brand_product_id', (select v from t_s71 where k = 'nprod'))));
+select public.admin_program_brand_products_save((select v::uuid from t_s71 where k = 'prog_h'),
+  jsonb_build_array(jsonb_build_object('brand_product_id', (select v from t_s71 where k = 'nprod'), 'note', 'Nota S71')));
+select tests.ok('S71 ligações do conteúdo e do programa trocadas (auditadas)',
+  (select count(*) from public.content_brands where content_id = (select v::uuid from t_s71 where k = 'hidratacao')) = 1
+  and (select count(*) from public.content_brand_products where content_id = (select v::uuid from t_s71 where k = 'hidratacao')) = 1
+  and (select note from public.program_brand_products where program_id = (select v::uuid from t_s71 where k = 'prog_h')) = 'Nota S71'
+  and exists (select 1 from public.admin_audit where action = 'content.brand_links' and resource_id = (select v from t_s71 where k = 'hidratacao'))
+  and exists (select 1 from public.admin_audit where action = 'program.brand_products' and resource_id = (select v from t_s71 where k = 'prog_h')));
+
+-- público vê o que o admin deixou ativo (marcação desativada não aparece)
+select tests.anon();
+select tests.ok('S71 visitante vê só a marcação ativa e o patrocinador novo do herói',
+  (select count(*) from public.media_smart_tags where content_id = (select v::uuid from t_s71 where k = 'hidratacao')) = 1
+  and (select relationship from public.creator_brands where creator_id = (select v::uuid from t_s71 where k = 'medina')) = 'sponsor');
+
+-- cliques: só o service role soma; alvo desativado não conta; admin lê só contagens
+select tests.su();
+update public.brand_products set status = 'inactive' where id = (select v::uuid from t_s71 where k = 'garrafa');
+select set_config('role', 'service_role', true);
+create temp table t_s71_bump as select
+  public.brand_click_bump('product', (select v::uuid from t_s71 where k = 'copo'), 'tag') as a1,
+  public.brand_click_bump('product', (select v::uuid from t_s71 where k = 'copo'), 'tag') as a2,
+  public.brand_click_bump('brand', (select v::uuid from t_s71 where k = 'brasa'), 'strip') as a3,
+  public.brand_click_bump('product', (select v::uuid from t_s71 where k = 'garrafa'), 'card') as b1,
+  public.brand_click_bump('person', (select v::uuid from t_s71 where k = 'copo'), 'tag') as b2,
+  public.brand_click_bump('brand', (select v::uuid from t_s71 where k = 'brasa'), 'email') as b3;
+select set_config('role', 'none', true);
+select tests.ok('S71 service role soma cliques de alvo ativo; desativado, tipo ou origem desconhecidos não contam',
+  (select a1 and a2 and a3 and not (b1 or b2 or b3) from t_s71_bump)
+  and (select sum(count) from public.brand_click_counters) = 3);
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s71 select 'clicks', public.admin_brand_clicks(30)::text;
+select tests.ok('S71 admin lê cliques por marca (marca + produtos) e por produto, sem pessoa',
+  (select (r ->> 'clicks')::int from t_s71, jsonb_array_elements(v::jsonb -> 'brands') r where k = 'clicks' and r ->> 'id' = (select v from t_s71 where k = 'volta')) = 2
+  and (select (r ->> 'clicks')::int from t_s71, jsonb_array_elements(v::jsonb -> 'brands') r where k = 'clicks' and r ->> 'id' = (select v from t_s71 where k = 'brasa')) = 1
+  and (select (v::jsonb -> 'by_source' ->> 'tag')::int from t_s71 where k = 'clicks') = 2
+  and (select position('@test.local' in v) = 0 and position('user_id' in v) = 0 from t_s71 where k = 'clicks'));
+select tests.expect_error('S71 admin também não lê o contador direto (só pela RPC)', $q$select count(*) from public.brand_click_counters$q$, 'permission denied');
+
+-- apagar marca leva produtos, ligações e marcações (auditado com o retrato)
+select public.admin_brand_delete((select v::uuid from t_s71 where k = 'nova'));
+select tests.ok('S71 apagar marca leva produtos, ligações e marcações; auditoria guarda o antes',
+  not exists (select 1 from public.brand_products where id = (select v::uuid from t_s71 where k = 'nprod'))
+  and not exists (select 1 from public.media_smart_tags where brand_product_id = (select v::uuid from t_s71 where k = 'nprod'))
+  and not exists (select 1 from public.creator_brands where brand_id = (select v::uuid from t_s71 where k = 'nova'))
+  and (select before_data ->> 'name' from public.admin_audit where action = 'brand.delete' and resource_id = (select v from t_s71 where k = 'nova')) = 'Marca Teste S71');
+select public.admin_brand_delete((select v::uuid from t_s71 where k = 'brasa'));
+
+-- funções: security definer com search_path fixo e sem execute para anon; S14 segue 17
+select tests.su();
+select tests.ok('S71 RPCs do admin: security definer, search_path fixo, sem execute para anon; soma só do service role',
+  (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
+     from pg_proc p where p.oid in ('public.admin_brand_save(uuid, jsonb)'::regprocedure, 'public.admin_brand_delete(uuid)'::regprocedure,
+       'public.admin_brand_product_save(uuid, jsonb)'::regprocedure, 'public.admin_brand_product_delete(uuid)'::regprocedure,
+       'public.admin_creator_brands_save(uuid, jsonb)'::regprocedure, 'public.admin_program_brand_products_save(uuid, jsonb)'::regprocedure,
+       'public.admin_content_brand_links_save(uuid, jsonb, jsonb)'::regprocedure, 'public.admin_content_smart_tags_save(uuid, jsonb)'::regprocedure,
+       'public.admin_brand_clicks(int)'::regprocedure))
+  and not has_function_privilege('anon', 'public.brand_click_bump(text, uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_click_bump(text, uuid, text)', 'execute')
+  and has_function_privilege('service_role', 'public.brand_click_bump(text, uuid, text)', 'execute')
+  and not (select prosecdef from pg_proc where oid = 'public.brand_click_bump(text, uuid, text)'::regprocedure)
+  and not has_table_privilege('authenticated', 'public.brands', 'insert')
+  and not has_table_privilege('authenticated', 'public.media_smart_tags', 'update'));
+select tests.ok('S71 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S71 políticas novas sem auth.uid()/is_admin() por linha (S14 segue)',
+  (select count(*) from pg_policies where schemaname = 'public'
+     and tablename in ('brands', 'brand_products', 'creator_brands', 'content_brands', 'content_brand_products', 'program_brand_products', 'media_smart_tags')
+     and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|my_creator_id)\(\)') = 0);
+
+-- reaplicar a 0062 não desfaz o que o admin fez (marca apagada não volta; ligações editadas ficam)
+\ir ../migrations/0062_brands_smart_tags.sql
+select tests.ok('S71 reaplicar a 0062 mantém edição e exclusão do admin',
+  not exists (select 1 from public.brands where id = (select v::uuid from t_s71 where k = 'brasa'))
+  and (select array_agg(relationship || ':' || status) from public.creator_brands where creator_id = (select v::uuid from t_s71 where k = 'medina')) = array['identified:inactive']
+  and (select count(*) from public.media_smart_tags where content_id = (select v::uuid from t_s71 where k = 'hidratacao')) = 1
+  and (select sum(count) from public.brand_click_counters) = 3
+  and (select count(*) from public.brands) = 4);
+
+drop table t_s71_bump;
+drop table t_s71;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
