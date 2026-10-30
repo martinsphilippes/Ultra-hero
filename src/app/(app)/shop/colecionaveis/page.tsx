@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { CollectibleCard } from "@/components/collectibles/CollectibleCard";
 import { LiveBadge } from "@/components/collectibles/LiveBadge";
 import { ShopSegment } from "@/components/collectibles/ShopSegment";
+import { getNativeApp } from "@/lib/native-app/server";
 import { DemoBadge, EmptyState, PageHeader } from "@/components/ui";
 import { fetchCollectiblesList, type CollectibleView } from "@/lib/collectibles/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CollectiblesPage() {
-  const [t, supabase] = await Promise.all([getTranslations("collectibles"), createClient()]);
+  const [t, supabase, nativeApp] = await Promise.all([getTranslations("collectibles"), createClient(), getNativeApp()]);
   const serverNow = Date.now();
   const list = await fetchCollectiblesList(supabase, serverNow);
   const empty = list.live.length + list.upcoming.length + list.ended.length === 0;
@@ -27,7 +28,8 @@ export default async function CollectiblesPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t("list.title")} description={t("list.description")} eyebrow={<DemoBadge />} />
-      <ShopSegment current="collectibles" />
+      {/* no app das lojas a Loja não existe: sem o seletor */}
+      {nativeApp ? null : <ShopSegment current="collectibles" />}
 
       {empty ? (
         <div className="rounded-2xl border border-border bg-surface">

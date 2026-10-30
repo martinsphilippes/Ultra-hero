@@ -33,6 +33,9 @@ export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams)
   if (pathname === "/explore" && search?.get("tab") === "produtos") return true;
   // relógio simulado de exemplo (Hoje)
   if ((pathname === "/profile/today" || pathname.startsWith("/profile/today/")) && search?.get("exemplo") === "1") return true;
+  // Colecionáveis: só lances, sem pagamento (decisão do responsável) — liberados no app para o aviso
+  // de lance superado levar direto ao item
+  if (pathname === "/shop/colecionaveis" || pathname.startsWith("/shop/colecionaveis/")) return false;
   return BLOCKED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
