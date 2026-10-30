@@ -1,0 +1,19 @@
+{
+  "heroPost": {
+    "title": "{hero} publicó",
+    "body": "{title}",
+    "bodyFallback": "Hay una publicación nueva de {hero} en GC Hero."
+  },
+  "achievement": {
+    "title": "Logro desbloqueado",
+    "body": "{name}. ¡Sigue así!"
+  },
+  "programCompleted": {
+    "title": "Programa completado",
+    "body": "Completaste {program}. Tu certificado está en el Perfil."
+  },
+  "streakReminder": {
+    "title": "Tu racha está en juego",
+    "body": "{streak, plural, =1 {Llevas 1 día seguido.} other {Llevas # días seguidos.}} Completa un contenido hoy para no perderla."
+  }
+}

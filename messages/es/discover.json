@@ -169,6 +169,16 @@
         "programsOther": "programas",
         "productsOne": "producto",
         "productsOther": "productos"
+      },
+      "favorite": {
+        "add": "Marcar favorito",
+        "remove": "Favorito",
+        "added": "{name} está en tus favoritos.",
+        "removed": "{name} salió de tus favoritos.",
+        "willNotify": "Te avisamos cuando haya una publicación nueva.",
+        "pushDenied": "Las notificaciones están desactivadas en el teléfono. Para recibir las publicaciones nuevas, actívalas en los Ajustes del dispositivo.",
+        "unavailable": "Este héroe no está disponible ahora.",
+        "error": "No se pudo guardar. Inténtalo de nuevo."
       }
     },
     "libraries": {

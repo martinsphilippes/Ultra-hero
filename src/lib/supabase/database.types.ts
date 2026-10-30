@@ -633,6 +633,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"hero_favorites": {
+                  Row: {
+                    "created_at": string,"creator_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"creator_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"creator_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hero_favorites_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"interest_tags": {
                   Row: {
                     "label": NonNullable<Json>,"pillar": Database["public"]['Enums']["pillar"] | null,"sort_order": number,"tag": string
@@ -759,14 +779,14 @@ isOneToOne: false
                   ]
                 },"notification_preferences": {
                   Row: {
-                    "channel_email": boolean,"channel_push": boolean,"commerce_updates": boolean,"editorial_digest": boolean,"streak_reminders": boolean,"updated_at": string,"user_id": string
+                    "achievements": boolean,"channel_email": boolean,"channel_push": boolean,"commerce_updates": boolean,"editorial_digest": boolean,"hero_posts": boolean,"streak_reminders": boolean,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id": string
+                    "achievements"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id"?: string
+                    "achievements"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -938,6 +958,34 @@ isOneToOne: false
       referencedRelation: "seller_organizations"
       referencedColumns: ["id"]
     }
+                  ]
+                },"push_outbox": {
+                  Row: {
+                    "attempts": number,"claimed_at": string | null,"created_at": string,"dedupe_key": string,"id": number,"kind": string,"last_error": string | null,"not_before": string,"outcome": string | null,"payload": Json,"sent_at": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"claimed_at"?: string | null,"created_at"?: string,"dedupe_key": string,"id"?: number,"kind": string,"last_error"?: string | null,"not_before"?: string,"outcome"?: string | null,"payload"?: Json,"sent_at"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "attempts"?: number,"claimed_at"?: string | null,"created_at"?: string,"dedupe_key"?: string,"id"?: number,"kind"?: string,"last_error"?: string | null,"not_before"?: string,"outcome"?: string | null,"payload"?: Json,"sent_at"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"push_tokens": {
+                  Row: {
+                    "app_version": string | null,"created_at": string,"last_seen_at": string,"platform": string,"token": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "app_version"?: string | null,"created_at"?: string,"last_seen_at"?: string,"platform": string,"token": string,"user_id": string
+                  }
+                  Update: {
+                    "app_version"?: string | null,"created_at"?: string,"last_seen_at"?: string,"platform"?: string,"token"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"quick_signup_attempts": {
                   Row: {
@@ -2307,6 +2355,15 @@ isOneToOne: false
 "public_settings":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"push_claim":
+{ Args: { "p_limit"?: number }; Returns: { "attempts": number,"claimed_at": string | null,"created_at": string,"dedupe_key": string,"id": number,"kind": string,"last_error": string | null,"not_before": string,"outcome": string | null,"payload": Json,"sent_at": string | null,"user_id": string }[]
+                           },
+"push_enqueue_streak_reminders":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"push_outbox_cleanup":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "quote_shipping":
 { Args: { "p_seller_count": number,"p_subtotal": number,"p_zone": string }; Returns: number
                            },
@@ -2397,6 +2454,9 @@ isOneToOne: false
                            },
 "recompute_order_status":
 { Args: { "p_order": string }; Returns: undefined
+                           },
+"register_push_token":
+{ Args: { "p_app_version"?: string,"p_platform": string,"p_token": string }; Returns: undefined
                            },
 "routine_check":
 { Args: { "p_done"?: boolean,"p_item": string,"p_timezone": string }; Returns: Json

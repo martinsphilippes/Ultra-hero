@@ -30,6 +30,12 @@ function safePath(path: string | null): string | null {
   return path;
 }
 
+/** Caminho do site (vindo de um aviso de push) → endereço que a WebView abre; null se não for seguro. */
+export function webUrlFromPath(path: string | null | undefined, origin: string): string | null {
+  const safe = safePath(path ?? null);
+  return safe ? `${origin}${safe}` : null;
+}
+
 /** Link gchero:// → endereço do site que a WebView abre; null quando não é nosso ou não é seguro. */
 export function webUrlFromDeepLink(link: string, origin: string): string | null {
   let parsed: URL;

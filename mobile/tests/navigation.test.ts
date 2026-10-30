@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decideNavigation, webUrlFromDeepLink } from "../src/navigation";
+import { decideNavigation, webUrlFromDeepLink, webUrlFromPath } from "../src/navigation";
 
 const ORIGIN = "https://ultra-hero.vercel.app";
 
@@ -45,5 +45,17 @@ describe("webUrlFromDeepLink", () => {
   it("outro esquema ou rota desconhecida é ignorado", () => {
     expect(webUrlFromDeepLink("https://evil.com/auth/callback?code=x", ORIGIN)).toBeNull();
     expect(webUrlFromDeepLink("gchero://wipe", ORIGIN)).toBeNull();
+  });
+});
+
+describe("webUrlFromPath", () => {
+  it("caminho do aviso de push vira endereço do próprio site", () => {
+    expect(webUrlFromPath("/content/treino", ORIGIN)).toBe(`${ORIGIN}/content/treino`);
+  });
+
+  it("endereço absoluto, protocolo relativo ou vazio são recusados", () => {
+    expect(webUrlFromPath("https://evil.com", ORIGIN)).toBeNull();
+    expect(webUrlFromPath("//evil.com", ORIGIN)).toBeNull();
+    expect(webUrlFromPath(null, ORIGIN)).toBeNull();
   });
 });

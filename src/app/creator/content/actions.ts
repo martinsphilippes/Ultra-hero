@@ -10,6 +10,7 @@ import { insertCreatorContent, type CreatorSupabase } from "../_lib/content-inse
 import { creatorActionContext } from "../_lib/creator-action";
 import { setDraftSlug } from "../_lib/draft-slug";
 import { checkStreamVideo, readVideoUploadConfigured } from "../_lib/video-post";
+import { schedulePushDispatch } from "@/lib/push/schedule";
 
 // Ações sobre conteúdo do herói. Desde a 0045 só o admin, pelo herói escolhido (creatorActionContext
 // "manage"); o herói comum fica só com o Novo post. Rascunhos e publicar/despublicar pelas RPCs da 0025.
@@ -150,6 +151,8 @@ export async function publishContent(input: { id: string }): Promise<ActionResul
   revalidateContent(id);
   revalidatePath("/inicio");
   revalidatePath("/explore");
+  // no ar: avisa quem favoritou o herói (fila enchida pelo banco, 0050)
+  schedulePushDispatch();
   return { ok: true, slug: (data as { slug?: string } | null)?.slug };
 }
 

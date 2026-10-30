@@ -29,6 +29,22 @@ npm ci
 npx eas-cli env:set --name EXPO_PUBLIC_WEB_URL --value https://ultra-hero.vercel.app --visibility plaintext --environment production --environment preview --environment development
 ```
 
+### Push (`docs/decisions/push-notifications.md`)
+
+- [ ] **Android (FCM)**: criar projeto no Firebase com o app Android `com.gchero.com`, baixar o
+  `google-services.json` para `mobile/` e **commitar** (não é segredo; vai no APK). Gerar a chave da
+  conta de serviço do FCM v1 e subir com `npx eas-cli credentials -p android` (essa sim é segredo:
+  nunca no repositório). Build de produção sem o arquivo falha de propósito (`app.config.ts`).
+- [ ] **iOS (APNs)**: `npx eas-cli credentials -p ios` → "Push Notifications" → deixar o EAS gerar a
+  chave `.p8` (a Apple entrega uma vez só; o EAS guarda).
+- [ ] Opcional: ligar a "segurança reforçada" no projeto Expo e cadastrar `EXPO_ACCESS_TOKEN` na
+  Vercel (Production), marcada como Sensitive.
+- [ ] Banco: aplicar a `0050_push_notifications.sql` no projeto Supabase depois do merge
+  (`node scripts/db/remote-apply.mjs`, README).
+- [ ] Conferir no primeiro build, no manifest **mesclado** (`aapt dump permissions` no APK), que
+  entraram só INTERNET, VIBRATE, POST_NOTIFICATIONS e as do próprio FCM: o `check:permissions` lê
+  a config, não as permissões que as bibliotecas trazem no manifest delas.
+
 Lição do Quantso: variável faltando no EAS **não quebra o build**, quebra a tela na frente do
 revisor. `env:set` cria ou atualiza (o `env:create` antigo falhava se a variável já existia). `EXPO_PUBLIC_*` vai como `plaintext`, nunca
 `secret` (vai no binário de qualquer jeito).
@@ -75,6 +91,13 @@ Roteiro mínimo, nas duas plataformas, contra o endereço de produção:
 - [ ] Link externo (Instagram do herói) abre no navegador do app, não dentro da casca.
 - [ ] Modo avião: aparece "Sem conexão" com "Tentar de novo".
 - [ ] (Android) voltar do sistema navega no histórico antes de sair.
+- [ ] Nenhum "demonstração", "simulado" ou "fictício" na tela (Hero, perfil do herói, conteúdo,
+  Perfil, Conta e privacidade, Notificações, Receitas); sem "Hoje" de relógio simulado.
+- [ ] Push: favoritar um herói pede a permissão do sistema; aceitar e publicar um post desse herói
+  (outra conta) faz o aviso chegar com o app fechado; tocar abre o post. Recusar não desfaz o favorito.
+- [ ] Push: concluir um conteúdo que dá conquista com o app em segundo plano mostra o aviso; com o app
+  aberto, só o aviso da tela (sem banner repetido).
+- [ ] Sair da conta: o aparelho deixa de receber os avisos dela.
 - [ ] Excluir conta por Perfil › Conta e privacidade (com uma conta de teste — por último).
 
 ## 6. Google Play — ficha e formulários
@@ -90,8 +113,9 @@ Roteiro mínimo, nas duas plataformas, contra o endereço de produção:
   respondem 200 **depois** do deploy (no Quantso a URL deu 404 após o merge).
 - **Data Safety**: declarar o que a **web** coleta (a casca não coleta nada próprio), a partir de
   `docs/privacy-and-retention.md`: nome, e-mail, celular (opcional), foto de perfil, conteúdo gerado
-  (posts, receitas, listas), atividade no app (progresso, favoritos), identificadores de conta.
-  Operadores (Supabase, Vercel, Cloudflare Stream) não contam como "compartilhamento".
+  (posts, receitas, listas), atividade no app (progresso, favoritos, heróis favoritos),
+  identificadores de conta e **IDs do dispositivo** (token de push, para "Funcionalidade do app").
+  Operadores (Supabase, Vercel, Cloudflare Stream, Expo/FCM/APNs) não contam como "compartilhamento".
   Criptografia em trânsito: sim. Exclusão a pedido: sim.
 - **Classificação etária**: público adulto (os Termos dizem 18+). **Anúncios**: não. **App de saúde**:
   responder o questionário de saúde/condicionamento (treino e nutrição), sem alegação médica.

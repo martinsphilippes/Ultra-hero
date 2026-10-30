@@ -2,6 +2,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import Constants from "expo-constants";
 import * as Crypto from "expo-crypto";
 import * as Linking from "expo-linking";
+import * as Notifications from "expo-notifications";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as WebBrowser from "expo-web-browser";
@@ -12,7 +13,8 @@ import { WebView, type WebViewMessageEvent, type WebViewNavigation } from "react
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 import { NATIVE_EVENT, parseWebToNative, type NativeToWeb } from "../../src/lib/native-app/bridge-contract";
 import { BEFORE_CONTENT_SCRIPT, dispatchToWeb } from "./injected";
-import { decideNavigation, webUrlFromDeepLink } from "./navigation";
+import { decideNavigation, webUrlFromDeepLink, webUrlFromPath } from "./navigation";
+import { pathFromResponse, pushToken } from "./push";
 import { stringsFor } from "./strings";
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -83,6 +85,17 @@ export default function App() {
     return () => subscription.remove();
   }, [open]);
 
+  // Toque num aviso de push (com o app aberto, em segundo plano ou fechado): abre a página do aviso.
+  useEffect(() => {
+    const handle = (response: Notifications.NotificationResponse | null) => {
+      const target = webUrlFromPath(pathFromResponse(response), ORIGIN);
+      if (target) open(target);
+    };
+    Notifications.getLastNotificationResponseAsync().then(handle).catch(() => undefined);
+    const subscription = Notifications.addNotificationResponseReceivedListener(handle);
+    return () => subscription.remove();
+  }, [open]);
+
   // Android: o botão voltar navega no histórico do site antes de sair do app.
   useEffect(() => {
     if (Platform.OS !== "android") return;
@@ -149,6 +162,10 @@ export default function App() {
         setTheme(message.theme);
         return;
       }
+      if (message.type === "push-permission" || message.type === "push-sync") {
+        void pushToken(message.type === "push-permission").then(sendToWeb);
+        return;
+      }
       if (message.type === "oauth") void signInWithOAuth(message.url);
       else if (message.type === "apple-signin") void signInWithApple();
       else if (message.type === "share") {
@@ -158,7 +175,7 @@ export default function App() {
         Share.share(content).catch(() => undefined);
       }
     },
-    [signInWithApple, signInWithOAuth],
+    [sendToWeb, signInWithApple, signInWithOAuth],
   );
 
   const routeOutside = useCallback((url: string) => {

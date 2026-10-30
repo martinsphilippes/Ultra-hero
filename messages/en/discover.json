@@ -169,6 +169,16 @@
         "programsOther": "programs",
         "productsOne": "product",
         "productsOther": "products"
+      },
+      "favorite": {
+        "add": "Favorite",
+        "remove": "Favorited",
+        "added": "{name} is in your favorites.",
+        "removed": "{name} was removed from your favorites.",
+        "willNotify": "We'll let you know when there's a new post.",
+        "pushDenied": "Notifications are off on this phone. To get new posts, turn them on in the device Settings.",
+        "unavailable": "This hero isn't available right now.",
+        "error": "Couldn't save. Please try again."
       }
     },
     "libraries": {

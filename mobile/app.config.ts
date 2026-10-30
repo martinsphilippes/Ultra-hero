@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
 // Casca das lojas do GC Hero: a web de produção numa WebView, com login nativo (Google pelo navegador
@@ -15,6 +17,16 @@ const EAS_PROJECT_ID: string | undefined = undefined;
 const EXPO_OWNER: string | undefined = undefined;
 
 const OBSIDIAN = "#0B0B0B";
+const ORANGE = "#FF5A1F";
+
+// Push no Android passa pelo FCM: sem o google-services.json do projeto Firebase o build fica verde
+// e o push não chega (lição do Quantso). Não é segredo (vai dentro do APK); a chave da conta de
+// serviço do FCM é que sobe por `eas credentials`. Build de loja sem ele falha aqui, de propósito.
+const GOOGLE_SERVICES = "./google-services.json";
+const hasGoogleServices = existsSync(path.join(__dirname, GOOGLE_SERVICES));
+if (process.env.EAS_BUILD_PROFILE === "production" && !hasGoogleServices) {
+  throw new Error("mobile/google-services.json ausente: o push do Android não funcionaria (docs/lojas.md §2).");
+}
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -61,6 +73,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: APP_ID,
     adaptiveIcon: { foregroundImage: "./assets/adaptive-icon.png", backgroundColor: OBSIDIAN },
     edgeToEdgeEnabled: true,
+    ...(hasGoogleServices ? { googleServicesFile: GOOGLE_SERVICES } : {}),
     // Lição do Quantso: a Play cobra o que o app pede, não o que usa. A WebView não precisa de nada
     // além de internet; o seletor de arquivo do sistema não exige permissão de câmera nem de armazenamento.
     permissions: [],
@@ -77,6 +90,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     "expo-apple-authentication",
     "expo-web-browser",
+    ["expo-notifications", { icon: "./assets/notification-icon.png", color: ORANGE }],
     [
       "expo-splash-screen",
       { image: "./assets/splash-icon.png", imageWidth: 160, resizeMode: "contain", backgroundColor: OBSIDIAN },

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser } from "@/lib/auth/session";
+import { schedulePushDispatch } from "@/lib/push/schedule";
 import { favoriteEventProps, favoriteRow, isMissingMixedFavoritesError } from "@/lib/library/favorites";
 import { isMissingMixedListsError, listContains, listTargetSchema, targetColumn, type ListTarget, type ListTargetIds } from "@/lib/library/list-items";
 import { createClient } from "@/lib/supabase/server";
@@ -90,6 +91,8 @@ export async function completeContent(input: { contentId: string; timezone: stri
       await trackEvent("content.complete", { content_id: parsed.data.contentId, source: "manual" });
       for (const p of programs) await trackEvent("program.complete", { program_id: p.program_id });
     }
+    // conquista ou programa concluído agora: o banco enfileirou o aviso (0050)
+    if (feedback.achievements.length > 0 || programs.length > 0) schedulePushDispatch();
     if (parsed.data.path) revalidatePath(parsed.data.path);
     return { ok: true, feedback };
   } catch (error) {
@@ -152,6 +155,7 @@ export async function trackProgress(input: {
       for (const p of feedback.programsCompleted) await trackEvent("program.complete", { program_id: p.program_id });
       if (parsed.data.path) revalidatePath(parsed.data.path);
     }
+    if (feedback.achievements.length > 0 || feedback.programsCompleted.length > 0) schedulePushDispatch();
     return { ok: true, completed: true, feedback };
   } catch (error) {
     return fail(error);

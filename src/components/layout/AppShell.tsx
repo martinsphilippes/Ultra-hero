@@ -4,8 +4,10 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LegalLinks } from "@/components/legal/LegalLinks";
+import { PushRegistrar } from "@/components/push/PushRegistrar";
 import { IconButton } from "@/components/ui/icon-button";
 import { getSessionSummary } from "@/lib/auth/session";
+import { getNativeApp } from "@/lib/native-app/server";
 import { DEMO_BANNER_COOKIE, resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import { BottomNav, TopNavLinks } from "./AppNav";
 import { AppearanceMenu } from "./AppearanceMenu";
@@ -17,11 +19,12 @@ import { UserMenu } from "./UserMenu";
 
 // Casca do consumidor: banner de demo, barra superior (md+), conteúdo com links legais no fim e barra inferior (mobile).
 export async function AppShell({ children }: { children: ReactNode }) {
-  const [session, cookieStore, t, ta] = await Promise.all([
+  const [session, cookieStore, t, ta, nativeApp] = await Promise.all([
     getSessionSummary(),
     cookies(),
     getTranslations("nav"),
     getTranslations("common.a11y"),
+    getNativeApp(),
   ]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
@@ -75,6 +78,8 @@ export async function AppShell({ children }: { children: ReactNode }) {
       <div className="print:hidden">
         <BottomNav />
       </div>
+      {/* app das lojas, logado: mantém o token de push deste aparelho na conta */}
+      {session && nativeApp ? <PushRegistrar /> : null}
     </div>
   );
 }

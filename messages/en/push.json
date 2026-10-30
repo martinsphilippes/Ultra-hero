@@ -1,0 +1,19 @@
+{
+  "heroPost": {
+    "title": "{hero} posted",
+    "body": "{title}",
+    "bodyFallback": "There's a new post from {hero} on GC Hero."
+  },
+  "achievement": {
+    "title": "Achievement unlocked",
+    "body": "{name}. Keep it up!"
+  },
+  "programCompleted": {
+    "title": "Program completed",
+    "body": "You completed {program}. Your certificate is in your Profile."
+  },
+  "streakReminder": {
+    "title": "Your streak is on the line",
+    "body": "{streak, plural, =1 {You're on a 1-day streak.} other {You're on a #-day streak.}} Complete something today to keep it going."
+  }
+}

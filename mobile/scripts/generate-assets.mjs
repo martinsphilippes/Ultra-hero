@@ -24,6 +24,10 @@ const diamond = (size, scale, background) => {
 await sharp(diamond(1024, 0.62, OBSIDIAN)).flatten({ background: OBSIDIAN }).removeAlpha().png().toFile(path.join(OUT, "icon.png"));
 await sharp(diamond(1024, 0.42)).png().toFile(path.join(OUT, "adaptive-icon.png"));
 await sharp(diamond(1024, 0.6)).png().toFile(path.join(OUT, "splash-icon.png"));
+// Ícone da notificação no Android: só a forma, branca sobre transparente (lição do Quantso: ícone
+// sem alfa vira quadrado branco na barra de status). 96 px = xxxhdpi.
+const white = (size, scale) => Buffer.from(diamond(size, scale).toString().replace(ORANGE, "#FFFFFF"));
+await sharp(white(96, 0.84)).png().toFile(path.join(OUT, "notification-icon.png"));
 // ficha do Google Play: ícone 512 (sem alfa) e feature graphic 1024x500
 await sharp(diamond(512, 0.62, OBSIDIAN)).flatten({ background: OBSIDIAN }).removeAlpha().png().toFile(path.join(OUT, "store-icon-512.png"));
 await sharp({ create: { width: 1024, height: 500, channels: 3, background: OBSIDIAN } })

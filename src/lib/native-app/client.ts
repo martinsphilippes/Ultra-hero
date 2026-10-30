@@ -27,3 +27,29 @@ export function onNativeMessage(handler: (message: NativeToWeb) => void): () => 
   window.addEventListener(NATIVE_EVENT, listener);
   return () => window.removeEventListener(NATIVE_EVENT, listener);
 }
+
+export type NativePushResult = { ok: true; token: string } | { ok: false; reason: "denied" | "unavailable" | "error" | "no_app" };
+
+// a resposta vem pelo sistema (pedido de permissão pode ficar aberto); sem resposta, desiste
+const PUSH_TIMEOUT_MS = 60_000;
+
+/**
+ * Pede à casca o token de push: `ask` abre o pedido do sistema se ainda não houve resposta; sem
+ * `ask`, só devolve o token quando a permissão já existe.
+ */
+export function requestNativePush(ask: boolean): Promise<NativePushResult> {
+  if (!hasNativeBridge()) return Promise.resolve({ ok: false, reason: "no_app" });
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => finish({ ok: false, reason: "error" }), PUSH_TIMEOUT_MS);
+    const stop = onNativeMessage((message) => {
+      if (message.type === "push-token") finish({ ok: true, token: message.token });
+      else if (message.type === "push-result") finish({ ok: false, reason: message.reason });
+    });
+    function finish(result: NativePushResult) {
+      window.clearTimeout(timer);
+      stop();
+      resolve(result);
+    }
+    postToNative({ type: ask ? "push-permission" : "push-sync" });
+  });
+}

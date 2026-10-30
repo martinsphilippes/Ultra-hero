@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { BellOff } from "lucide-react";
+import { BellRing } from "lucide-react";
 import { NotificationPreferencesForm } from "@/components/me/NotificationPreferencesForm";
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from "@/components/me/notifications/constants";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,14 +13,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // Preferências de notificação (RF-023): opt-in por tipo e por canal, guardadas por usuário (RLS).
-// Nada é enviado na demonstração; mensagens transacionais não têm opt-out e aparecem só como leitura.
+// O push do app das lojas respeita estas escolhas (0050); e-mail opcional ainda não é enviado.
+// Mensagens transacionais não têm opt-out e aparecem só como leitura.
 export default async function NotificationsPage() {
   const user = await requireUser("/profile/notifications");
   const [t, tc] = await Promise.all([getTranslations("me.notifications"), getTranslations("common")]);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("notification_preferences")
-    .select("editorial_digest, streak_reminders, commerce_updates, channel_email, channel_push")
+    .select("hero_posts, achievements, editorial_digest, streak_reminders, commerce_updates, channel_email, channel_push")
     .eq("user_id", user.id)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -28,17 +29,17 @@ export default async function NotificationsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} backHref="/profile" backLabel={tc("actions.back")} actions={<DemoBadge />} />
+      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} backHref="/profile" backLabel={tc("actions.back")} />
 
-      <section aria-labelledby="notifications-demo-title" className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-5">
+      <section aria-labelledby="notifications-delivery-title" className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-5">
         <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
-          <BellOff className="size-5" />
+          <BellRing className="size-5" />
         </span>
         <div className="flex flex-col gap-1">
-          <h2 id="notifications-demo-title" className="type-h3 text-fg">
-            {t("demo.title")}
+          <h2 id="notifications-delivery-title" className="type-h3 text-fg">
+            {t("delivery.title")}
           </h2>
-          <p className="type-body-sm max-w-prose text-fg-muted">{t("demo.body")}</p>
+          <p className="type-body-sm max-w-prose text-fg-muted">{t("delivery.body")}</p>
         </div>
       </section>
 

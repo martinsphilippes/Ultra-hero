@@ -14,9 +14,15 @@ export type WebToNative =
   /** Folha de compartilhar do sistema (a WebView do Android não tem navigator.share). */
   | { type: "share"; title?: string; text?: string; url?: string }
   /** Tema da página, para a barra de status do sistema acompanhar (claro/escuro). */
-  | { type: "theme"; theme: "light" | "dark" };
+  | { type: "theme"; theme: "light" | "dark" }
+  /** Pede a permissão de notificação ao sistema (no contexto: favoritar herói, tela de avisos). */
+  | { type: "push-permission" }
+  /** Só devolve o token se a permissão já foi dada; nunca abre o pedido do sistema. */
+  | { type: "push-sync" };
 
 export type NativeToWeb =
+  | { type: "push-token"; token: string }
+  | { type: "push-result"; ok: false; reason: "denied" | "unavailable" | "error" }
   | { type: "oauth-result"; ok: false; reason: "canceled" | "error" }
   /** fullName só vem no primeiro login da pessoa com a Apple (a Apple não manda de novo). */
   | { type: "apple-result"; ok: true; token: string; nonce: string; fullName?: string }
@@ -54,6 +60,10 @@ export function parseWebToNative(raw: string): WebToNative | null {
     case "share":
       if (!optionalString(message.title) || !optionalString(message.text) || !optionalString(message.url)) return null;
       return { type: "share", title: message.title as string | undefined, text: message.text as string | undefined, url: message.url as string | undefined };
+    case "push-permission":
+      return { type: "push-permission" };
+    case "push-sync":
+      return { type: "push-sync" };
     case "theme":
       return message.theme === "light" || message.theme === "dark" ? { type: "theme", theme: message.theme } : null;
     default:
@@ -64,6 +74,12 @@ export function parseWebToNative(raw: string): WebToNative | null {
 export function parseNativeToWeb(detail: unknown): NativeToWeb | null {
   if (typeof detail !== "object" || detail === null) return null;
   const message = detail as Record<string, unknown>;
+  if (message.type === "push-token" && isString(message.token) && /^Expo(nent)?PushToken\[[A-Za-z0-9_-]{8,200}\]$/.test(message.token)) {
+    return { type: "push-token", token: message.token };
+  }
+  if (message.type === "push-result" && message.ok === false && (message.reason === "denied" || message.reason === "unavailable" || message.reason === "error")) {
+    return { type: "push-result", ok: false, reason: message.reason };
+  }
   if (message.type === "oauth-result" && message.ok === false && (message.reason === "canceled" || message.reason === "error")) {
     return { type: "oauth-result", ok: false, reason: message.reason };
   }
