@@ -339,6 +339,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"creator_category_links": {
+                  Row: {
+                    "category_id": string,"created_at": string,"creator_id": string,"position": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_id": string,"created_at"?: string,"creator_id": string,"position": number
+                  }
+                  Update: {
+                    "category_id"?: string,"created_at"?: string,"creator_id"?: string,"position"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "creator_category_links_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "hero_categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "creator_category_links_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"creator_credentials_requests": {
                   Row: {
                     "creator_id": string,"decided_at": string | null,"decision": string | null,"text": string,"updated_at": string
@@ -578,6 +604,20 @@ isOneToOne: false
       referencedRelation: "test_fulfillments"
       referencedColumns: ["id"]
     }
+                  ]
+                },"hero_categories": {
+                  Row: {
+                    "created_at": string,"id": string,"is_active": boolean,"name": NonNullable<Json>,"slug": string,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"name": NonNullable<Json>,"slug": string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"name"?: NonNullable<Json>,"slug"?: string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+
                   ]
                 },"hero_cover_uploads": {
                   Row: {
@@ -1955,6 +1995,9 @@ isOneToOne: false
                            },
 "admin_set_creator_rights_private":
 { Args: { "p_creator": string,"p_document_ref": string,"p_justification"?: string,"p_notes": string }; Returns: undefined
+                           },
+"admin_set_creator_categories":
+{ Args: { "p_categories": string[],"p_creator": string }; Returns: undefined
                            },
 "admin_set_creator_status":
 { Args: { "p_creator": string,"p_justification"?: string,"p_status": Database["public"]['Enums']["partner_status"] }; Returns: undefined

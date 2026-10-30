@@ -129,12 +129,12 @@
   },
   "personalities": {
     "title": "Héroes",
-    "description": "Personalidades que guían los contenidos.",
-    "filterLabel": "Filtrar por pilar",
+    "description": "Atletas, artistas y chefs que sigues.",
+    "filterLabel": "Filtrar por categoría",
     "all": "Todos",
     "count": "{count, plural, =1 {1 héroe} other {# héroes}}",
-    "emptyTitle": "Ningún héroe en este pilar",
-    "emptyDescription": "Prueba otro pilar o mira todos.",
+    "emptyTitle": "Ningún héroe en esta categoría",
+    "emptyDescription": "Prueba otra categoría o mira todos.",
     "profile": {
       "back": "Héroes",
       "fictional": "Personaje ficticio",

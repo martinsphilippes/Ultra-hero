@@ -5215,5 +5215,127 @@ update public.shop_filters set is_active = true where slug = 'surf';
 delete from public.shop_filter_products where filter_id in (public.seed_uuid('shopfilter:surf'), public.seed_uuid('shopfilter:futebol'));
 delete from public.admin_audit where resource_type = 'shop_filter';
 
+-- ================================================================ S60 · Categorias dos heróis (0049)
+select tests.su();
+select tests.ok('S60 seed: 4 categorias na ordem Esporte, Música, Gastronomia, Arte e Entretenimento, todas ativas',
+  (select string_agg(slug, ',' order by sort_order) from public.hero_categories) = 'esporte,musica,gastronomia,arte-e-entretenimento'
+  and (select bool_and(is_active) from public.hero_categories)
+  and (select name ->> 'pt-BR' from public.hero_categories where slug = 'arte-e-entretenimento') = 'Arte e Entretenimento');
+select tests.ok('S60 seed: 4 atletas em Esporte, Anitta em Música + Arte e Entretenimento, Jacquin em Gastronomia',
+  (select string_agg(p.slug || ':' || c.slug || ':' || l.position, ',' order by p.slug, l.position) from public.creator_category_links l
+     join public.creator_profiles p on p.id = l.creator_id join public.hero_categories c on c.id = l.category_id)
+    = 'anitta:musica:1,anitta:arte-e-entretenimento:2,erick-jacquin:gastronomia:1,gabriel-medina:esporte:1,joao-fonseca:esporte:1,neymar:esporte:1,ronaldinho-gaucho:esporte:1');
+select tests.ok('S60 RLS ligada nas 2 tabelas, visitante só com SELECT',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.hero_categories'::regclass, 'public.creator_category_links'::regclass))
+  and has_table_privilege('anon', 'public.hero_categories', 'select')
+  and not has_table_privilege('anon', 'public.hero_categories', 'insert')
+  and not has_table_privilege('anon', 'public.creator_category_links', 'update')
+  and not has_table_privilege('anon', 'public.creator_category_links', 'delete'));
+
+-- prepara: Música desativada; herói suspenso (Bruna) ligado a Esporte
+update public.hero_categories set is_active = false where slug = 'musica';
+insert into public.creator_category_links (creator_id, category_id, position)
+values (public.seed_uuid('creator:bruna'), public.seed_uuid('herocat:esporte'), 1);
+
+select tests.anon();
+select tests.ok('S60 visitante lê só as categorias ativas', (select string_agg(slug, ',' order by sort_order) from public.hero_categories) = 'esporte,gastronomia,arte-e-entretenimento');
+select tests.ok('S60 visitante lê só vínculos de categoria ativa com herói ativo (sem Música, sem herói suspenso)',
+  (select count(*) from public.creator_category_links) = 6
+  and not exists (select 1 from public.creator_category_links where creator_id = public.seed_uuid('creator:bruna'))
+  and not exists (select 1 from public.creator_category_links where category_id = public.seed_uuid('herocat:musica')));
+select tests.expect_error('S60 visitante não cria categoria', $q$insert into public.hero_categories (slug, name) values ('s60-anon', '{"pt-BR":"X"}')$q$, 'permission denied');
+select tests.expect_error('S60 visitante não altera categoria', $q$update public.hero_categories set is_active = false$q$, 'permission denied');
+select tests.expect_error('S60 visitante não liga herói', $q$insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:bruna'), public.seed_uuid('herocat:gastronomia'), 2)$q$, 'permission denied');
+select tests.expect_error('S60 visitante não executa admin_set_creator_categories',
+  $q$select public.admin_set_creator_categories(public.seed_uuid('creator:bruna'), '{}')$q$, 'permission denied');
+
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S60 consumidor lê só as categorias ativas e seus vínculos visíveis',
+  (select count(*) from public.hero_categories) = 3 and (select count(*) from public.creator_category_links) = 6);
+select tests.expect_error('S60 consumidor não cria categoria (RLS)', $q$insert into public.hero_categories (slug, name) values ('s60-user', '{"pt-BR":"X"}')$q$, 'row-level security');
+select tests.expect_error('S60 consumidor não liga herói (RLS)',
+  $q$insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:bruna'), public.seed_uuid('herocat:gastronomia'), 2)$q$, 'row-level security');
+select tests.expect_error('S60 consumidor não troca categorias de herói (forbidden)',
+  $q$select public.admin_set_creator_categories(public.seed_uuid('creator:bruna'), '{}')$q$, 'forbidden');
+update public.hero_categories set name = '{"pt-BR":"Hack"}', sort_order = 1 where slug = 'gastronomia';
+delete from public.creator_category_links;
+delete from public.hero_categories where slug = 'esporte';
+select tests.su();
+select tests.ok('S60 update/delete de quem não é admin não afeta nada',
+  (select name ->> 'pt-BR' = 'Gastronomia' and sort_order = 30 from public.hero_categories where slug = 'gastronomia')
+  and (select count(*) from public.hero_categories) = 4
+  and (select count(*) from public.creator_category_links) = 8);
+
+-- admin: lê tudo, cria, renomeia, troca as categorias de um herói, exclui; máximo de 2 garantido
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S60 admin lê também a categoria inativa e todos os vínculos',
+  (select count(*) from public.hero_categories) = 4 and (select count(*) from public.creator_category_links) = 8);
+insert into public.hero_categories (id, slug, name, sort_order) values ('60000000-0000-4000-8000-000000000001', 's60-moda', '{"pt-BR":"Moda","en":"Fashion","es":"Moda"}', 50);
+update public.hero_categories set name = '{"pt-BR":"Moda e Estilo","en":"Fashion","es":"Moda"}', sort_order = 5 where id = '60000000-0000-4000-8000-000000000001';
+select public.admin_set_creator_categories(public.seed_uuid('creator:tiago'), array['60000000-0000-4000-8000-000000000001', public.seed_uuid('herocat:esporte')]::uuid[]);
+select tests.ok('S60 admin troca as categorias do herói na ordem pedida',
+  (select string_agg(category_id::text || ':' || position, ',' order by position) from public.creator_category_links where creator_id = public.seed_uuid('creator:tiago'))
+    = '60000000-0000-4000-8000-000000000001:1,' || public.seed_uuid('herocat:esporte')::text || ':2');
+select public.admin_set_creator_categories(public.seed_uuid('creator:tiago'), array['60000000-0000-4000-8000-000000000001', public.seed_uuid('herocat:esporte')]::uuid[]);
+select tests.expect_error('S60 máximo de 2: terceira categoria pela função',
+  $q$select public.admin_set_creator_categories(public.seed_uuid('creator:lia'), array[public.seed_uuid('herocat:musica'), public.seed_uuid('herocat:esporte'), public.seed_uuid('herocat:gastronomia')])$q$, 'hero_categories_max_2');
+select tests.expect_error('S60 máximo de 2: posição 3 é recusada pelo banco',
+  $q$insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:lia'), public.seed_uuid('herocat:esporte'), 3)$q$, 'creator_category_links_position_check');
+select tests.expect_error('S60 máximo de 2: posição repetida é recusada pelo banco',
+  $q$insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:lia'), public.seed_uuid('herocat:esporte'), 1)$q$, 'creator_category_links_position_key');
+select tests.expect_error('S60 a mesma categoria duas vezes é recusada',
+  $q$select public.admin_set_creator_categories(public.seed_uuid('creator:lia'), array[public.seed_uuid('herocat:esporte'), public.seed_uuid('herocat:esporte')])$q$, 'hero_categories_duplicate');
+select tests.expect_error('S60 slug duplicado é recusado', $q$insert into public.hero_categories (slug, name) values ('esporte', '{"pt-BR":"Outro"}')$q$, 'duplicate key');
+select tests.expect_error('S60 slug "todos" é reservado', $q$insert into public.hero_categories (slug, name) values ('todos', '{"pt-BR":"Todos"}')$q$, 'hero_categories_slug_check');
+select tests.expect_error('S60 nome em pt-BR é obrigatório', $q$insert into public.hero_categories (slug, name) values ('s60-sem-nome', '{"en":"No name"}')$q$, 'hero_categories_name_check');
+select tests.ok('S60 Anitta segue com 2 categorias depois das tentativas',
+  (select count(*) from public.creator_category_links where creator_id = public.seed_uuid('creator:lia')) = 2);
+delete from public.hero_categories where id = '60000000-0000-4000-8000-000000000001';
+update public.hero_categories set name = '{"pt-BR":"Esportes","en":"Sports","es":"Deportes"}' where slug = 'esporte';
+select tests.su();
+select tests.ok('S60 excluir a categoria leva os vínculos (cascata); o herói fica com a outra',
+  not exists (select 1 from public.creator_category_links where category_id = '60000000-0000-4000-8000-000000000001')
+  and (select string_agg(category_id::text, ',') from public.creator_category_links where creator_id = public.seed_uuid('creator:tiago')) = public.seed_uuid('herocat:esporte')::text);
+select tests.ok('S60 auditoria da categoria: criar, renomear e excluir',
+  (select string_agg(action, ',' order by id) from public.admin_audit where resource_type = 'hero_category' and resource_id = '60000000-0000-4000-8000-000000000001')
+    = 'hero_categories.insert,hero_categories.update,hero_categories.delete');
+select tests.ok('S60 auditoria do herói: troca (sai Esporte, entram as 2) e a cascata; repetir a mesma troca não audita nada',
+  (select string_agg(action || ':' || (coalesce(after_data, before_data) ->> 'position'), ',' order by id) from public.admin_audit
+     where resource_type = 'hero_category_link' and resource_id = public.seed_uuid('creator:tiago')::text)
+    = 'creator_category_links.delete:1,creator_category_links.insert:1,creator_category_links.insert:2,creator_category_links.delete:1'
+  and (select bool_and(actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin') from public.admin_audit where resource_type in ('hero_category', 'hero_category_link')));
+select tests.ok('S60 escrita de quem não é admin não gerou auditoria (nem o seed)',
+  not exists (select 1 from public.admin_audit where resource_type = 'hero_category_link' and resource_id <> public.seed_uuid('creator:tiago')::text)
+  and (select count(*) from public.admin_audit where resource_type = 'hero_category') = 4);
+
+-- reaplicar a 0049 não desfaz edição do admin: nome editado fica; herói com trilha não ganha o seed de volta
+delete from public.creator_category_links where creator_id = public.seed_uuid('creator:tiago');
+\ir ../migrations/0049_hero_categories.sql
+select tests.ok('S60 reaplicar a 0049 respeita a edição do admin',
+  (select name ->> 'pt-BR' from public.hero_categories where slug = 'esporte') = 'Esportes'
+  and not exists (select 1 from public.creator_category_links where creator_id = public.seed_uuid('creator:tiago'))
+  and (select count(*) from public.hero_categories) = 4
+  and (select count(*) from public.creator_category_links) = 7);
+select tests.ok('S60 gatilho de auditoria: security definer, search_path fixo, sem execute para anon nem authenticated',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.hero_categories_audit()'::regprocedure)
+  and not has_function_privilege('anon', 'public.hero_categories_audit()', 'execute')
+  and not has_function_privilege('authenticated', 'public.hero_categories_audit()', 'execute'));
+select tests.ok('S60 admin_set_creator_categories: security invoker, search_path fixo, sem execute para anon',
+  (select not p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.admin_set_creator_categories(uuid, uuid[])'::regprocedure)
+  and not has_function_privilege('anon', 'public.admin_set_creator_categories(uuid, uuid[])', 'execute'));
+select tests.ok('S60 políticas: leitura pública só de SELECT; escrita só para authenticated com (select is_admin())',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in ('hero_categories', 'creator_category_links') and 'anon' = any (roles) and cmd <> 'SELECT') = 0
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename in ('hero_categories', 'creator_category_links') and cmd = 'ALL'
+         and roles = '{authenticated}'::name[] and qual like '%is_admin()%' and with_check like '%is_admin()%') = 2);
+select tests.ok('S60 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- limpeza: o seed volta ao estado da migração
+update public.hero_categories set is_active = true where slug = 'musica';
+update public.hero_categories set name = '{"pt-BR":"Esporte","en":"Sports","es":"Deporte"}' where slug = 'esporte';
+delete from public.creator_category_links where creator_id = public.seed_uuid('creator:bruna');
+insert into public.creator_category_links (creator_id, category_id, position) values (public.seed_uuid('creator:tiago'), public.seed_uuid('herocat:esporte'), 1);
+delete from public.admin_audit where resource_type in ('hero_category', 'hero_category_link');
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

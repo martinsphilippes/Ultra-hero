@@ -1,15 +1,17 @@
 import { Mail } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CreatorForm } from "@/components/admin-ops/CreatorForm";
 import { CreatorProductActions } from "@/components/admin-ops/CreatorProductActions";
 import { CreatorCoverRemoveButton, CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
+import { HeroCategoriesField } from "@/components/admin-content/HeroCategoriesField";
 import { Badge, Button, PageHeader } from "@/components/ui";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { isStoredCoverUrl } from "@/lib/hero-cover/paths";
+import { localizedLabel } from "@/lib/catalog/queries";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = Promise<{ id: string }>;
@@ -32,18 +34,23 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();
-  const [t, tc, ts, tn, tp, { data: creator, error }, { data: privateRow }, productsRes, allocationsRes] = await Promise.all([
+  const [t, tc, ts, tn, tp, thc, locale, { data: creator, error }, { data: privateRow }, productsRes, allocationsRes, categoriesRes, categoryLinksRes] = await Promise.all([
     getTranslations("adminOps.creators"),
     getTranslations("adminOps.common"),
     getTranslations("adminCommon.status"),
     getTranslations("nav"),
     getTranslations("adminOps.creators.products"),
+    getTranslations("adminContent.heroCategories.field"),
+    getLocale(),
     supabase.from("creator_profiles").select("*").eq("id", id).maybeSingle(),
     // Documentação privada: RLS só devolve para admin; nunca vai à página pública.
     supabase.from("creator_rights_private").select("document_ref, notes, reviewed_at").eq("creator_id", id).maybeSingle(),
     // Todos os produtos publicados (admin vê tudo) + a alocação deste herói (admin vê todos os status).
     supabase.from("products").select("id, title, slug, seller:seller_organizations(name)").eq("status", "published").order("title").limit(200),
     supabase.from("creator_products").select("product_id, status, sort_order").eq("creator_id", id),
+    // Categorias do herói (0049; admin vê também as inativas). Sem a 0049: aviso na seção.
+    supabase.from("hero_categories").select("id, name, is_active").order("sort_order").order("slug"),
+    supabase.from("creator_category_links").select("category_id, position").eq("creator_id", id).order("position"),
   ]);
   if (error) throw new Error(error.message);
   if (!creator) notFound();
@@ -139,6 +146,28 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
           privateMeta={{ reviewedAt: privateRow?.reviewed_at ?? null }}
         />
       </div>
+
+      {/* Categorias do herói (até 2): definem os chips da aba Hero e, depois, os atalhos da página. */}
+      <section aria-labelledby="hero-categories-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
+        <div className="flex flex-col gap-1">
+          <h2 id="hero-categories-title" className="type-h2 text-fg">
+            {thc("title")}
+          </h2>
+          <p className="type-body-sm text-fg-muted">{thc("description")}</p>
+        </div>
+        {categoriesRes.error || categoryLinksRes.error ? (
+          <p role="status" data-testid="hero-categories-unavailable" className="rounded-xl border border-dashed border-warning/40 bg-warning-soft/40 p-4 text-sm text-fg">
+            {thc("unavailable")}
+          </p>
+        ) : (
+          <HeroCategoriesField
+            key={(categoryLinksRes.data ?? []).map((l) => l.category_id).join(",")}
+            creatorId={creator.id}
+            options={(categoriesRes.data ?? []).map((c) => ({ id: c.id, label: localizedLabel(c.name, locale), is_active: c.is_active }))}
+            initial={(categoryLinksRes.data ?? []).map((l) => l.category_id)}
+          />
+        )}
+      </section>
 
       {/* Produtos do herói: alocação direta, validada pelo admin (RPC auditada). */}
       <section aria-labelledby="hero-products-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">

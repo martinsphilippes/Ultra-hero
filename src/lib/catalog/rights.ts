@@ -3,6 +3,10 @@
 
 export type RightsStatus = "fictional" | "authorized" | "pending";
 
+/** Estados de direitos que o admin escolhe (ordem do seletor). Fica fora do arquivo "use server":
+ *  constante exportada de lá chega ao cliente como referência de servidor, não como lista. */
+export const RIGHTS_STATUSES = ["fictional", "pending", "authorized"] as const;
+
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /** Estado exibido ao público: autorização vencida (rights_valid_until < hoje) volta a "em validação". */

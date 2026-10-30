@@ -41,6 +41,9 @@ contratações por profissional.
 
 ## Etapas
 1. Atalhos configuráveis (Dia a dia, Alimentação) + categorias da aba Hero + editor no admin.
+   Feito: categorias da aba Hero (0049: hero_categories com id/slug estáveis e sort_order,
+   creator_category_links com posição 1|2; /admin/hero-categories; campo Categorias no herói).
+   Os atalhos por categoria (hero_library_tabs) virão ligados a hero_categories.id.
 2. Alimentação completa (chef que assina, comprar pronto, lista de compras).
 3. Profissionais e serviços (conta, perfil, serviços, contratação simulada, caixa de pedidos).
 4. Programas com produto e profissional ligados.

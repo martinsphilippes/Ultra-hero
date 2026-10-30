@@ -1,17 +1,24 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { HeroCoverImage } from "@/components/creator/HeroCoverImage";
-import { AvatarInitials, Badge, Card, PillarBadge } from "@/components/ui";
+import { AvatarInitials, Badge, Card } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import type { CreatorCardData } from "@/lib/catalog/queries";
 import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
 import { cn } from "@/lib/utils";
 
-type Props = { creator: CreatorCardData; priority?: boolean; className?: string };
+type Props = {
+  creator: CreatorCardData;
+  /** Rótulos das categorias do herói (até 2, já traduzidos e na ordem); vazio = sem selo. */
+  categories?: readonly { id: string; label: string }[];
+  priority?: boolean;
+  className?: string;
+};
 
 // Card de personalidade. O selo de fictício só sai com uso de nome e imagem autorizado e válido (RB-05).
+// Selos: as categorias do herói (0049), não os pilares.
 // Só fotos reais: sem capa, uma superfície lisa do tema; sem foto, as iniciais do nome.
-export async function CreatorCard({ creator, priority, className }: Props) {
+export async function CreatorCard({ creator, categories = [], priority, className }: Props) {
   const t = await getTranslations("catalog");
   const fictional = showsFictionalBadge(effectiveRightsStatus(creator.rights_status, creator.rights_valid_until));
   return (
@@ -28,8 +35,10 @@ export async function CreatorCard({ creator, priority, className }: Props) {
             {creator.headline ? <p className="type-body-sm text-fg-muted">{creator.headline}</p> : null}
           </div>
           <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
-            {creator.pillars.map((p) => (
-              <PillarBadge key={p} pillar={p} size="sm" />
+            {categories.map((c) => (
+              <Badge key={c.id} size="sm" data-testid="hero-category-badge">
+                {c.label}
+              </Badge>
             ))}
             {fictional ? <Badge variant="demo" size="sm">{t("fictional")}</Badge> : null}
           </div>

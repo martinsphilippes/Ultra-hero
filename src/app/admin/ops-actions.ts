@@ -11,6 +11,7 @@ import { feedbackTriageSchema, type FeedbackTriageInput } from "@/components/fee
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { requireRole } from "@/lib/auth/session";
 import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
+import { RIGHTS_STATUSES } from "@/lib/catalog/rights";
 import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { isStoredCoverUrl, storedCoverOwner } from "@/lib/hero-cover/paths";
 import { releaseStoredCover } from "@/lib/hero-cover/server";
@@ -230,7 +231,6 @@ export async function acceptInvitation(input: { token: string }): Promise<Result
 // Direitos de nome e imagem (RF-003, RB-05): campos públicos em creator_profiles (auditados pelo
 // trigger audit_partner_changes; só o admin altera) e documentação em creator_rights_private
 // (só admin; gravada pela RPC auditada admin_set_creator_rights_private).
-export const RIGHTS_STATUSES = ["fictional", "pending", "authorized"] as const;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const creatorSchema = z
