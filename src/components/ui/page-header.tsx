@@ -23,7 +23,8 @@ type PageHeaderProps = {
 export function PageHeader({ title, description, eyebrow, backHref, backLabel, actions, children, as: Heading = "h1", className }: PageHeaderProps) {
   return (
     <header className={cn("uh-page-header flex flex-col gap-4 pb-2", className)}>
-      <div className="flex items-start justify-between gap-4">
+      {/* no celular as ações descem para baixo do título: nunca disputam espaço com ele */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-col gap-1.5">
           {backHref && (
             <BackLink href={backHref} className="pr-2">
@@ -39,7 +40,7 @@ export function PageHeader({ title, description, eyebrow, backHref, backLabel, a
           <Heading className={cn(Heading === "h1" ? "type-h1 uh-page-title" : "type-h2", "text-balance text-fg")}>{title}</Heading>
           {description && <p className="type-body max-w-prose text-fg-muted">{description}</p>}
         </div>
-        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:flex-nowrap">{actions}</div>}
       </div>
       {children}
     </header>
