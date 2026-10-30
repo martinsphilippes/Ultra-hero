@@ -111,9 +111,11 @@ test.describe("hub do herói", () => {
   test("slug antigo redireciona para o herói real e herói removido dá 404", async ({ page }) => {
     await page.goto("/personalities/helena-vilar/receitas");
     await expect(page).toHaveURL(/\/personalities\/erick-jacquin\/receitas$/);
+    // a página do herói carrega em streaming: o "não encontrado" chega com status 200 (limite do Next)
     for (const removed of ["bruna-castellano", "marcos-ferraz"]) {
-      const response = await page.goto(`/personalities/${removed}`);
-      expect(response?.status()).toBe(404);
+      await page.goto(`/personalities/${removed}`);
+      await expect(page.getByText(/não encontrad/i).first()).toBeVisible();
+      await expect(page.getByText(removed === "bruna-castellano" ? "Bruna Castellano" : "Marcos Ferraz")).toHaveCount(0);
     }
   });
   test("perfil no formato do Instagram: foto pequena, bio em uma linha com mais e posts 3 por linha", async ({ page }) => {
