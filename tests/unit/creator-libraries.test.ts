@@ -23,11 +23,16 @@ describe("contentLibraryKey", () => {
     }
   });
 
-  it("treino (tipo workout ou pilar training) vai para Treinos", () => {
+  it("só o que foi postado como treino (tipo workout) vai para Treinos, em qualquer pilar", () => {
     expect(contentLibraryKey(content("workout", "routine"))).toBe("treinos");
     expect(contentLibraryKey(content("workout", "nutrition"))).toBe("treinos");
-    expect(contentLibraryKey(content("video", "training"))).toBe("treinos");
-    expect(contentLibraryKey(content("article", "training"))).toBe("treinos");
+    expect(contentLibraryKey(content("workout", "training"))).toBe("treinos");
+  });
+
+  it("vídeo, guia ou artigo do pilar treino não é treino: vai para Dia a dia", () => {
+    expect(contentLibraryKey(content("video", "training"))).toBe("dia-a-dia");
+    expect(contentLibraryKey(content("guide", "training"))).toBe("dia-a-dia");
+    expect(contentLibraryKey(content("article", "training"))).toBe("dia-a-dia");
   });
 
   it("receita tem prioridade sobre treino", () => {
@@ -55,10 +60,10 @@ describe("buildCreatorLibraries", () => {
     ];
     const libraries = buildCreatorLibraries({ contents, programs: [{ id: "p1" }], products: [{ id: "x1" }, { id: "x2" }] });
     expect(libraries.map((l) => [l.key, l.count])).toEqual([
-      ["dia-a-dia", 1],
+      ["dia-a-dia", 2],
       ["nutricao", 1],
       ["alimentacao", 2],
-      ["treinos", 3],
+      ["treinos", 2],
       ["gastronomia", 1],
       ["programas", 1],
       ["produtos", 2],

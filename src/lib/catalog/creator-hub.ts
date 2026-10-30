@@ -126,7 +126,12 @@ export const loadCreatorHub = cache(async (creator: Creator): Promise<CreatorHub
   let products: CreatorProduct<HubProduct>[] = [];
   let inCartByProduct = new Map<string, number>();
   if (commerceEnabled && !productsError) {
-    const grouped = mergeCreatorProducts((directRes.data ?? []) as unknown as DirectRow[], groupCreatorProducts((linksRes.data ?? []) as unknown as LinkRow[]));
+    // só vínculos de conteúdo do próprio herói (o !inner já filtra; isto garante se o embed vier sem filtro)
+    const ownLinks = ((linksRes.data ?? []) as unknown as LinkRow[]).filter((row) => {
+      const content = (Array.isArray(row.content) ? row.content[0] : row.content) as { creator_id?: string | null } | null | undefined;
+      return content?.creator_id === creator.id;
+    });
+    const grouped = mergeCreatorProducts((directRes.data ?? []) as unknown as DirectRow[], groupCreatorProducts(ownLinks));
     const [purchasable, cartRes] = await Promise.all([
       Promise.all(grouped.map(async ({ product }) => Boolean((await supabase.rpc("product_is_purchasable", { p_product: product.id })).data))),
       user && grouped.length > 0

@@ -1,4 +1,4 @@
-import { Mail } from "lucide-react";
+import { Mail, Package } from "lucide-react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -153,7 +153,14 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         ) : (
           <span className="text-fg-muted">{tc("noUser")}</span>
         )}
+        {/* atalho para a seção de produtos que o herói indica (fica no fim da página) */}
         <Button asChild variant="secondary" size="sm" className="ml-auto">
+          <a href="#hero-products" data-testid="hero-products-jump">
+            <Package className="size-4" aria-hidden="true" />
+            {tp("jump", { n: validatedCount })}
+          </a>
+        </Button>
+        <Button asChild variant="secondary" size="sm">
           <Link href={`/admin/invitations?new=1&role=creator&creator=${creator.id}`}>
             <Mail className="size-4" aria-hidden="true" />
             {t("invite")}
@@ -222,7 +229,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
       </section>
 
       {/* Produtos do herói: alocação direta, validada pelo admin (RPC auditada). */}
-      <section aria-labelledby="hero-products-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
+      <section id="hero-products" aria-labelledby="hero-products-title" className="scroll-mt-20 flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="flex flex-col gap-1">
             <h2 id="hero-products-title" className="type-h2 text-fg">

@@ -3,7 +3,8 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 // Biblioteca "Programas" do herói como pilha de prateleiras (estilo playlists): título por programa
 // e quadrados das etapas com rolagem lateral. Roda contra o banco remoto: antes da 0035 a Anitta tem
-// 1 programa (5 etapas); depois, 3 (5, 8 e 6 etapas). O que depende da 0035 pula sem ela.
+// 1 programa (5 etapas); depois, 3 (5, 8 e 6 etapas); com a 0052 só ficam as etapas dela (4, 5 e 3).
+// O que depende da 0035 pula sem ela.
 
 const LIBRARY = "/personalities/anitta/programas";
 
@@ -51,7 +52,8 @@ test.describe("prateleiras de programas", () => {
       await expect(list).toBeVisible();
       const tiles = steps(shelf);
       const total = await tiles.count();
-      expect(total).toBeGreaterThanOrEqual(4);
+      // 0052: programa do herói só com etapas dele (o menor da Anitta fica com 3)
+      expect(total).toBeGreaterThanOrEqual(3);
       for (let i = 0; i < total; i++) {
         // nome vindo do texto visível + trechos só para leitor de tela: "Etapa 2 de 6: Título[, concluída]"
         await expect(tiles.nth(i)).toHaveAccessibleName(new RegExp(`^Etapa ${i + 1} de ${total}: \\S.+$`));
@@ -71,7 +73,7 @@ test.describe("prateleiras de programas", () => {
     expect(count).toBe(3);
     // o original (em destaque) vem primeiro
     await expect(shelves(page).first()).toHaveAttribute("data-program", "manhas-com-intencao");
-    for (const shelf of await shelves(page).all()) expect(await steps(shelf).count()).toBeGreaterThanOrEqual(5);
+    for (const shelf of await shelves(page).all()) expect(await steps(shelf).count()).toBeGreaterThanOrEqual(3);
   });
 
   test("no celular: 3 quadrados inteiros e a ponta do 4º; rolar para a direita revela mais", async ({ page, isMobile }) => {
@@ -81,9 +83,12 @@ test.describe("prateleiras de programas", () => {
     for (const shelf of await shelves(page).all()) {
       const tiles = steps(shelf);
       for (let i = 0; i < 3; i++) expect(await visibleFraction(page, tiles.nth(i)), `quadrado ${i + 1} inteiro`).toBeGreaterThan(0.99);
-      const fourth = await visibleFraction(page, tiles.nth(3));
-      expect(fourth, "ponta do 4º quadrado").toBeGreaterThan(0.15);
-      expect(fourth).toBeLessThan(0.75);
+      // prateleira de 3 etapas (0052) não tem 4º quadrado
+      if ((await tiles.count()) >= 4) {
+        const fourth = await visibleFraction(page, tiles.nth(3));
+        expect(fourth, "ponta do 4º quadrado").toBeGreaterThan(0.15);
+        expect(fourth).toBeLessThan(0.75);
+      }
       // primeiro quadrado alinhado à margem de 16px, sem barra de rolagem visível e sem rolar a página
       expect(Math.round((await tiles.first().boundingBox())!.x)).toBe(16);
       const rail = shelf.getByTestId("shelf-rail");

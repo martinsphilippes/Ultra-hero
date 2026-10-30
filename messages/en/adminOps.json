@@ -379,7 +379,7 @@
     },
     "products": {
       "title": "Hero products",
-      "description": "Direct product↔hero allocation. Only validated items appear in the Products tab of the public page; suspended and rejected ones are hidden.",
+      "description": "Products this hero recommends. The Products tab of the public page only shows the ones validated here and the ones linked to the hero's own content; with none, the Products shortcut is hidden. Suspended and rejected ones are hidden.",
       "tableCaption": "Published products and allocation status for this hero",
       "columns": {
         "product": "Product",
@@ -417,7 +417,8 @@
       },
       "empty": "No published products",
       "emptyDescription": "Publish a product in the shop to allocate it to this hero.",
-      "count": "{n, plural, =1 {# validated product} other {# validated products}}"
+      "count": "{n, plural, =1 {# validated product} other {# validated products}}",
+      "jump": "Linked products ({n})"
     }
   },
   "sellers": {

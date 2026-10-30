@@ -379,7 +379,7 @@
     },
     "products": {
       "title": "Produtos do herói",
-      "description": "Alocação direta produto↔herói. Só o que está validado aparece na aba Produtos da página pública; suspenso e rejeitado somem.",
+      "description": "Produtos que este herói indica. A aba Produtos da página pública mostra só os validados aqui e os vinculados aos conteúdos do próprio herói; sem nenhum, o atalho Produtos não aparece. Suspenso e rejeitado somem.",
       "tableCaption": "Produtos publicados e situação da alocação para este herói",
       "columns": {
         "product": "Produto",
@@ -417,7 +417,8 @@
       },
       "empty": "Nenhum produto publicado",
       "emptyDescription": "Publique um produto na loja para alocá-lo a este herói.",
-      "count": "{n, plural, =1 {# produto validado} other {# produtos validados}}"
+      "count": "{n, plural, =1 {# produto validado} other {# produtos validados}}",
+      "jump": "Produtos vinculados ({n})"
     }
   },
   "sellers": {

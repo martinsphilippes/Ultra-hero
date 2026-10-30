@@ -8,6 +8,7 @@ import { searchContentAction } from "@/app/admin/content-actions";
 import { addItemAction, moveItemAction, removeItemAction, substituteItemAction, updateItemAction } from "@/app/admin/programs/actions";
 import { StatusBadge } from "@/components/admin";
 import { Badge, Button, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
+import { canUseInProgram } from "@/lib/programs/item-ownership";
 import { ActionButton } from "./ActionButton";
 import { SearchPicker, type PickItem } from "./SearchPicker";
 
@@ -17,13 +18,16 @@ export type VersionItem = {
   position: number;
   section: string | null;
   is_required: boolean;
-  content: { id: string; title: string; type: string; status: string } | null;
+  content: { id: string; title: string; type: string; status: string; creator_id: string | null } | null;
 };
 
-type EditorProps = { programId: string; versionId: string; items: VersionItem[]; readOnly: boolean };
+/** Herói dono do programa: a busca só traz conteúdos dele (0052). Nulo = programa editorial, sem herói. */
+export type ProgramHero = { id: string; name: string } | null;
+
+type EditorProps = { programId: string; versionId: string; items: VersionItem[]; readOnly: boolean; hero: ProgramHero };
 
 // Editor de itens da versão: busca conteúdo publicado → adicionar; ordem; seção; obrigatório; remover.
-export function ProgramItemsEditor({ programId, versionId, items, readOnly }: EditorProps) {
+export function ProgramItemsEditor({ programId, versionId, items, readOnly, hero }: EditorProps) {
   const t = useTranslations("adminContent.programs.version");
   const tc = useTranslations("adminContent.common");
   const ts = useTranslations("adminCommon.status");
@@ -53,7 +57,14 @@ export function ProgramItemsEditor({ programId, versionId, items, readOnly }: Ed
         </p>
       ) : (
         <div className="grid gap-3 rounded-lg border border-dashed border-border-strong p-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-end">
-          <SearchPicker label={t("searchContent")} search={(q) => searchContentAction(q, true)} value={picked} onChange={setPicked} />
+          <div className="flex min-w-0 flex-col gap-1">
+            <SearchPicker label={t("searchContent")} search={(q) => searchContentAction(q, true, hero?.id ?? null)} value={picked} onChange={setPicked} />
+            {hero && (
+              <p className="type-caption text-fg-muted" data-testid="program-items-hero-scope">
+                {t("heroScope", { name: hero.name })}
+              </p>
+            )}
+          </div>
           <FormField label={t("section")} optionalLabel={tc("optional")}>
             <Input value={section} onChange={(e) => setSection(e.target.value)} placeholder={t("sectionPlaceholder")} maxLength={60} />
           </FormField>
@@ -76,6 +87,7 @@ export function ProgramItemsEditor({ programId, versionId, items, readOnly }: Ed
               programId={programId}
               versionId={versionId}
               readOnly={readOnly}
+              foreign={Boolean(item.content) && !canUseInProgram(hero?.id, item.content?.creator_id)}
               statusLabel={item.content ? ts(item.content.status as never) : ""}
               typeLabel={item.content ? tc(`types.${item.content.type}` as never) : ""}
             />
@@ -86,9 +98,9 @@ export function ProgramItemsEditor({ programId, versionId, items, readOnly }: Ed
   );
 }
 
-type RowProps = { item: VersionItem; index: number; total: number; programId: string; versionId: string; readOnly: boolean; statusLabel: string; typeLabel: string };
+type RowProps = { item: VersionItem; index: number; total: number; programId: string; versionId: string; readOnly: boolean; foreign: boolean; statusLabel: string; typeLabel: string };
 
-function ItemRow({ item, index, total, programId, versionId, readOnly, statusLabel, typeLabel }: RowProps) {
+function ItemRow({ item, index, total, programId, versionId, readOnly, foreign, statusLabel, typeLabel }: RowProps) {
   const t = useTranslations("adminContent.programs.version");
   const tc = useTranslations("adminContent.common");
   const router = useRouter();
@@ -129,6 +141,12 @@ function ItemRow({ item, index, total, programId, versionId, readOnly, statusLab
             {archived && (
               <Badge variant="danger" size="sm">
                 {t("contentArchived")}
+              </Badge>
+            )}
+            {/* etapa de outro herói (legado da troca de heróis da 0044): a 0052 remove */}
+            {foreign && (
+              <Badge variant="warning" size="sm">
+                {t("foreignContent")}
               </Badge>
             )}
             {item.section && readOnly && <span className="type-caption text-fg-muted">{item.section}</span>}
@@ -174,9 +192,9 @@ export type Substitution = {
   replacement: { title: string; status: string } | null;
 };
 
-type SubsProps = { programId: string; versionId: string; items: VersionItem[]; substitutions: Substitution[] };
+type SubsProps = { programId: string; versionId: string; items: VersionItem[]; substitutions: Substitution[]; hero: ProgramHero };
 
-export function SubstitutionsPanel({ programId, versionId, items, substitutions }: SubsProps) {
+export function SubstitutionsPanel({ programId, versionId, items, substitutions, hero }: SubsProps) {
   const t = useTranslations("adminContent.programs.version");
   const tc = useTranslations("adminContent.common");
   const router = useRouter();
@@ -224,7 +242,7 @@ export function SubstitutionsPanel({ programId, versionId, items, substitutions 
             ))}
           </Select>
         </FormField>
-        <SearchPicker label={t("replacement")} search={(q) => searchContentAction(q, true)} value={replacement} onChange={setReplacement} />
+        <SearchPicker label={t("replacement")} search={(q) => searchContentAction(q, true, hero?.id ?? null)} value={replacement} onChange={setReplacement} />
         <FormField label={t("reason")} required className="sm:col-span-2" error={error ?? undefined}>
           <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} maxLength={500} required />
         </FormField>

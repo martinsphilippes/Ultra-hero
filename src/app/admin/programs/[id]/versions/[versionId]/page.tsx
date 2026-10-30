@@ -6,7 +6,7 @@ import { Panel } from "@/components/admin-content";
 import { PublishVersionButton } from "@/components/admin-content/ProgramDetailActions";
 import { ProgramVersionFields } from "@/components/admin-content/ProgramForms";
 import { ProgramConceptForm } from "@/components/admin-content/ProgramConceptFields";
-import { ProgramItemsEditor, SubstitutionsPanel, type Substitution, type VersionItem } from "@/components/admin-content/ProgramItemsEditor";
+import { ProgramItemsEditor, SubstitutionsPanel, type ProgramHero, type Substitution, type VersionItem } from "@/components/admin-content/ProgramItemsEditor";
 import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function AdminProgramVersionPage({ params }: Params) {
   const { id, versionId } = await params;
   const supabase = await createClient();
-  const [t, tc, ts, td, tconcept, locale, versionRes, itemsRes, subsRes, conceptRes] = await Promise.all([
+  const [t, tc, ts, td, tconcept, locale, versionRes, itemsRes, subsRes, conceptRes, programRes] = await Promise.all([
     getTranslations("adminContent.programs.version"),
     getTranslations("adminContent.common"),
     getTranslations("adminCommon.status"),
@@ -57,7 +57,7 @@ export default async function AdminProgramVersionPage({ params }: Params) {
       .eq("id", versionId)
       .eq("program_id", id)
       .maybeSingle(),
-    supabase.from("program_items").select("id, content_id, position, section, is_required, content:content(id, title, type, status)").eq("version_id", versionId).order("position").order("id"),
+    supabase.from("program_items").select("id, content_id, position, section, is_required, content:content(id, title, type, status, creator_id)").eq("version_id", versionId).order("position").order("id"),
     supabase
       .from("program_item_substitutions")
       .select("id, original_content_id, replacement_content_id, reason, created_at, original:content!program_item_substitutions_original_content_id_fkey(title), replacement:content!program_item_substitutions_replacement_content_id_fkey(title, status)")
@@ -65,6 +65,8 @@ export default async function AdminProgramVersionPage({ params }: Params) {
       .order("created_at", { ascending: false }),
     // conceito à parte: sem a 0048 no banco o painel mostra o aviso em vez de quebrar a página
     conceptColumnSupported(supabase).then(async (ok) => (ok ? await supabase.from("program_versions").select("concept").eq("id", versionId).maybeSingle() : null)),
+    // herói do programa: as etapas só podem ser conteúdos dele (0052)
+    supabase.from("programs").select("creator:creator_profiles(id, name)").eq("id", id).maybeSingle(),
   ]);
   const version = (versionRes.data as unknown as Version | null) ?? null;
   if (!version) notFound();
@@ -75,6 +77,8 @@ export default async function AdminProgramVersionPage({ params }: Params) {
     ? (version.certificate_fields.filter((f): f is (typeof CERT_FIELDS)[number] => typeof f === "string" && (CERT_FIELDS as readonly string[]).includes(f)) as (typeof CERT_FIELDS)[number][])
     : [...CERT_FIELDS].slice(0, 4);
   const enrollments = version.enrollments?.[0]?.count ?? 0;
+  const heroEmbed = (programRes.data?.creator ?? null) as { id: string; name: string } | { id: string; name: string }[] | null;
+  const hero: ProgramHero = (Array.isArray(heroEmbed) ? heroEmbed[0] : heroEmbed) ?? null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -98,10 +102,10 @@ export default async function AdminProgramVersionPage({ params }: Params) {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex min-w-0 flex-col gap-4">
           <Panel title={t("items")} description={t("itemsDescription")}>
-            <ProgramItemsEditor programId={id} versionId={version.id} items={items} readOnly={readOnly} />
+            <ProgramItemsEditor programId={id} versionId={version.id} items={items} readOnly={readOnly} hero={hero} />
           </Panel>
           <Panel title={t("substitutions")} description={t("substitutionsDescription")}>
-            <SubstitutionsPanel programId={id} versionId={version.id} items={items} substitutions={substitutions} />
+            <SubstitutionsPanel programId={id} versionId={version.id} items={items} substitutions={substitutions} hero={hero} />
           </Panel>
         </div>
         <aside className="flex min-w-0 flex-col gap-4">
