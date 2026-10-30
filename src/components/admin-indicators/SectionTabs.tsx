@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import Link from "next/link";
 import { INDICATOR_SECTIONS, indicatorsHref, type IndicatorPeriod, type IndicatorSection } from "@/lib/indicators";
 import { cn } from "@/lib/utils";
 
-// Abas das seções (links: funcionam sem JS; o período segue junto). Rolagem lateral no celular.
+// Abas das seções (links comuns: funcionam sem JS e não sofrem o aborto do roteador do Next na troca
+// só de parâmetros da mesma página; o período segue junto). Rolagem lateral no celular.
 export async function SectionTabs({ active, period }: { active: IndicatorSection; period: IndicatorPeriod }) {
   const t = await getTranslations("adminOps.indicators");
   return (
@@ -13,9 +13,8 @@ export async function SectionTabs({ active, period }: { active: IndicatorSection
           const current = section === active;
           return (
             <li key={section}>
-              <Link
+              <a
                 href={indicatorsHref(section, period)}
-                scroll={false}
                 aria-current={current ? "page" : undefined}
                 data-testid={`indicator-tab-${section}`}
                 className={cn(
@@ -24,7 +23,7 @@ export async function SectionTabs({ active, period }: { active: IndicatorSection
                 )}
               >
                 {t(`sections.${section}`)}
-              </Link>
+              </a>
             </li>
           );
         })}

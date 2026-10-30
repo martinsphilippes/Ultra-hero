@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { SegmentedControl } from "@/components/ui";
 import { PERIODS } from "./period";
@@ -10,7 +10,6 @@ import { PERIODS } from "./period";
 // (Server Component relê os dados; os outros parâmetros da URL ficam).
 export function PeriodSelector<P extends string>({ value, periods = PERIODS as unknown as readonly P[] }: { value: P; periods?: readonly P[] }) {
   const t = useTranslations("adminOps.common");
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -18,7 +17,8 @@ export function PeriodSelector<P extends string>({ value, periods = PERIODS as u
   function change(next: P) {
     const sp = new URLSearchParams(params.toString());
     sp.set("days", next);
-    startTransition(() => router.replace(`${pathname}?${sp.toString()}`, { scroll: false }));
+    // carga completa: o roteador do Next às vezes abortava a troca só de parâmetros na mesma página
+    startTransition(() => window.location.replace(`${pathname}?${sp.toString()}`));
   }
 
   return (
