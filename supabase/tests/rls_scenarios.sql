@@ -4790,5 +4790,95 @@ select tests.ok('S16 funções novas: triggers e checagem interna sem execute pa
   and (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
        from pg_proc p where p.oid = 'public.admin_set_creator_rights_private(uuid, text, text, text)'::regprocedure));
 
+-- ================================================================ S59 · Filtros da aba Comprar (0047)
+select tests.su();
+select tests.ok('S59 seed: 5 filtros na ordem Suplementos, Alimentação, Tênis, Surf, Futebol, todos ativos',
+  (select string_agg(slug, ',' order by sort_order) from public.shop_filters) = 'suplementos,alimentacao,tenis,surf,futebol'
+  and (select bool_and(is_active) from public.shop_filters));
+select tests.ok('S59 seed: Suplementos → supplement; Alimentação → meal + ingredient_kit; Tênis, Surf e Futebol sem regra',
+  (select string_agg(f.slug || ':' || c.code, ',' order by f.slug, c.code) from public.shop_filter_categories l
+     join public.shop_filters f on f.id = l.filter_id join public.product_categories c on c.id = l.category_id)
+    = 'alimentacao:ingredient_kit,alimentacao:meal,suplementos:supplement'
+  and (select count(*) from public.shop_filter_products) = 0);
+select tests.ok('S59 RLS ligada nas 3 tabelas, visitante só com SELECT',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.shop_filters'::regclass, 'public.shop_filter_categories'::regclass, 'public.shop_filter_products'::regclass))
+  and has_table_privilege('anon', 'public.shop_filters', 'select')
+  and not has_table_privilege('anon', 'public.shop_filters', 'insert')
+  and not has_table_privilege('anon', 'public.shop_filter_categories', 'update')
+  and not has_table_privilege('anon', 'public.shop_filter_products', 'delete'));
+
+-- prepara: Surf desativado com um produto escolhido à mão; Futebol ativo com outro produto
+update public.shop_filters set is_active = false where slug = 'surf';
+insert into public.shop_filter_products (filter_id, product_id) values
+  (public.seed_uuid('shopfilter:surf'), public.seed_uuid('product:ue-creatina-po')),
+  (public.seed_uuid('shopfilter:futebol'), public.seed_uuid('product:ue-creatina-gummy'));
+
+select tests.anon();
+select tests.ok('S59 visitante lê só os filtros ativos', (select string_agg(slug, ',' order by sort_order) from public.shop_filters) = 'suplementos,alimentacao,tenis,futebol');
+select tests.ok('S59 visitante lê só os vínculos de filtros ativos',
+  (select count(*) from public.shop_filter_categories) = 3
+  and (select string_agg(product_id::text, ',') from public.shop_filter_products) = public.seed_uuid('product:ue-creatina-gummy')::text);
+select tests.expect_error('S59 visitante não cria filtro', $q$insert into public.shop_filters (slug, name) values ('s59-anon', '{"pt-BR":"X"}')$q$, 'permission denied');
+select tests.expect_error('S59 visitante não altera filtro', $q$update public.shop_filters set is_active = false$q$, 'permission denied');
+select tests.expect_error('S59 visitante não liga produto', $q$insert into public.shop_filter_products (filter_id, product_id) values (public.seed_uuid('shopfilter:tenis'), public.seed_uuid('product:ue-creatina-po'))$q$, 'permission denied');
+
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S59 consumidor lê só os filtros ativos e seus vínculos',
+  (select count(*) from public.shop_filters) = 4 and (select count(*) from public.shop_filter_products) = 1);
+select tests.expect_error('S59 consumidor não cria filtro (RLS)', $q$insert into public.shop_filters (slug, name) values ('s59-user', '{"pt-BR":"X"}')$q$, 'row-level security');
+select tests.expect_error('S59 consumidor não liga categoria (RLS)',
+  $q$insert into public.shop_filter_categories (filter_id, category_id) values (public.seed_uuid('shopfilter:tenis'), public.seed_uuid('cat:accessory'))$q$, 'row-level security');
+update public.shop_filters set is_active = false, name = '{"pt-BR":"Hack"}' where slug = 'suplementos';
+delete from public.shop_filter_categories;
+delete from public.shop_filters where slug = 'tenis';
+select tests.login('10000000-0000-4000-8000-000000000005', 'sellera@test.local');
+select tests.expect_error('S59 fornecedor não cria filtro (RLS)', $q$insert into public.shop_filters (slug, name) values ('s59-seller', '{"pt-BR":"X"}')$q$, 'row-level security');
+update public.shop_filters set sort_order = 1 where slug = 'futebol';
+select tests.su();
+select tests.ok('S59 update/delete de quem não é admin não afeta nada',
+  (select name ->> 'pt-BR' = 'Suplementos' and is_active from public.shop_filters where slug = 'suplementos')
+  and (select count(*) from public.shop_filters) = 5
+  and (select count(*) from public.shop_filter_categories) = 3
+  and (select sort_order from public.shop_filters where slug = 'futebol') = 50);
+
+-- admin: lê todos (inclusive inativos), cria, renomeia, reordena, liga, desliga e exclui; tudo auditado
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S59 admin lê também o filtro inativo e os vínculos dele',
+  (select count(*) from public.shop_filters) = 5 and (select count(*) from public.shop_filter_products) = 2);
+insert into public.shop_filters (id, slug, name, sort_order) values ('59000000-0000-4000-8000-000000000001', 's59-corrida', '{"pt-BR":"Corrida","en":"Running","es":"Carrera"}', 60);
+insert into public.shop_filter_categories (filter_id, category_id) values ('59000000-0000-4000-8000-000000000001', public.seed_uuid('cat:accessory'));
+insert into public.shop_filter_products (filter_id, product_id) values ('59000000-0000-4000-8000-000000000001', public.seed_uuid('product:ue-creatina-po'));
+update public.shop_filters set name = '{"pt-BR":"Corrida de rua","en":"Road running","es":"Carrera"}', sort_order = 5 where id = '59000000-0000-4000-8000-000000000001';
+delete from public.shop_filter_products where filter_id = '59000000-0000-4000-8000-000000000001';
+select tests.expect_error('S59 slug duplicado é recusado', $q$insert into public.shop_filters (slug, name) values ('suplementos', '{"pt-BR":"Outro"}')$q$, 'duplicate key');
+select tests.expect_error('S59 slug "tudo" é reservado', $q$insert into public.shop_filters (slug, name) values ('tudo', '{"pt-BR":"Tudo"}')$q$, 'shop_filters_slug_check');
+select tests.expect_error('S59 nome em pt-BR é obrigatório', $q$insert into public.shop_filters (slug, name) values ('s59-sem-nome', '{"en":"No name"}')$q$, 'shop_filters_name_check');
+select tests.ok('S59 admin vê a mudança', (select name ->> 'pt-BR' = 'Corrida de rua' and sort_order = 5 from public.shop_filters where slug = 's59-corrida'));
+delete from public.shop_filters where id = '59000000-0000-4000-8000-000000000001';
+select tests.su();
+select tests.ok('S59 excluir o filtro leva os vínculos (cascata)',
+  not exists (select 1 from public.shop_filter_categories where filter_id = '59000000-0000-4000-8000-000000000001'));
+select tests.ok('S59 auditoria: criar, ligar categoria e produto, renomear, desligar produto e excluir (com a cascata) ficam em admin_audit',
+  (select string_agg(action, ',' order by id) from public.admin_audit where resource_type = 'shop_filter' and resource_id = '59000000-0000-4000-8000-000000000001')
+    = 'shop_filters.insert,shop_filter_categories.insert,shop_filter_products.insert,shop_filters.update,shop_filter_products.delete,shop_filters.delete,shop_filter_categories.delete'
+  and (select bool_and(actor_id = '10000000-0000-4000-8000-000000000001' and actor_type = 'admin') from public.admin_audit where resource_type = 'shop_filter'));
+select tests.ok('S59 escrita de quem não é admin não gerou auditoria (nem o seed)',
+  (select count(*) from public.admin_audit where resource_type = 'shop_filter' and resource_id <> '59000000-0000-4000-8000-000000000001') = 0);
+select tests.ok('S59 gatilho de auditoria: security definer, search_path fixo, sem execute para anon nem authenticated',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.shop_filters_audit()'::regprocedure)
+  and not has_function_privilege('anon', 'public.shop_filters_audit()', 'execute')
+  and not has_function_privilege('authenticated', 'public.shop_filters_audit()', 'execute'));
+select tests.ok('S59 políticas: leitura pública só de SELECT; escrita só para authenticated com (select is_admin())',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename like 'shop\_filter%' and 'anon' = any (roles) and cmd <> 'SELECT') = 0
+  and (select count(*) from pg_policies where schemaname = 'public' and tablename like 'shop\_filter%' and cmd = 'ALL'
+         and roles = '{authenticated}'::name[] and qual like '%is_admin()%' and with_check like '%is_admin()%') = 3);
+select tests.ok('S59 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- limpeza: o seed volta ao estado da migração
+update public.shop_filters set is_active = true where slug = 'surf';
+delete from public.shop_filter_products where filter_id in (public.seed_uuid('shopfilter:surf'), public.seed_uuid('shopfilter:futebol'));
+delete from public.admin_audit where resource_type = 'shop_filter';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

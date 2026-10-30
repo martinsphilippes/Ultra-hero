@@ -36,12 +36,13 @@ test.describe("visitante", () => {
     }
   });
 
-  test("navegação principal tem 4 abas e a Evolução não é uma delas", async ({ page }) => {
+  test("navegação principal tem 5 abas (com Comprar) e a Evolução não é uma delas", async ({ page }) => {
     await page.goto("/explore");
     const nav = page.getByRole("navigation", { name: "Navegação principal" }).filter({ visible: true }).first();
     const links = nav.getByRole("link");
-    await expect(links).toHaveCount(4);
-    await expect(links).toHaveText(["Hero", "Início", "Explorar", "Perfil"]);
+    await expect(links).toHaveCount(5);
+    await expect(links).toHaveText(["Hero", "Início", "Explorar", "Comprar", "Perfil"]);
+    await expect(links.nth(3)).toHaveAttribute("href", "/shop");
   });
 
   // helena-vilar: personalidade do seed (0008) com vínculos validados (g1→m1, g3→k1, g5→m4, g9→k3).

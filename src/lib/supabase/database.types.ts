@@ -1491,6 +1491,72 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"shop_filter_categories": {
+                  Row: {
+                    "category_id": string,"created_at": string,"filter_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_id": string,"created_at"?: string,"filter_id": string
+                  }
+                  Update: {
+                    "category_id"?: string,"created_at"?: string,"filter_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shop_filter_categories_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "product_categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shop_filter_categories_filter_id_fkey"
+      columns: ["filter_id"]
+isOneToOne: false
+      referencedRelation: "shop_filters"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shop_filter_products": {
+                  Row: {
+                    "created_at": string,"filter_id": string,"product_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"filter_id": string,"product_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"filter_id"?: string,"product_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "shop_filter_products_filter_id_fkey"
+      columns: ["filter_id"]
+isOneToOne: false
+      referencedRelation: "shop_filters"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "shop_filter_products_product_id_fkey"
+      columns: ["product_id"]
+isOneToOne: false
+      referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"shop_filters": {
+                  Row: {
+                    "created_at": string,"id": string,"is_active": boolean,"name": NonNullable<Json>,"slug": string,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"name": NonNullable<Json>,"slug": string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"is_active"?: boolean,"name"?: NonNullable<Json>,"slug"?: string,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+
+                  ]
                 },"shopping_list_items": {
                   Row: {
                     "checked": boolean,"content_id": string | null,"created_at": string,"id": string,"ingredient_id": string | null,"name": string,"position": number,"product_id": string | null,"quantity": number | null,"quantity_text": string | null,"unit": string | null,"updated_at": string,"user_id": string

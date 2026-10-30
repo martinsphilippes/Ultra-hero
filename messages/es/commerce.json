@@ -22,29 +22,25 @@
     "fulfillment_not_found": "Envío no encontrado."
   },
   "shop": {
-    "title": "Tienda de demostración",
-    "description": "Productos de la marca Ultra.e Life y de proveedores ficticios, vinculados a las recetas, entrenamientos y rutinas de la app. Las compras aquí son simuladas.",
-    "searchLabel": "Buscar productos",
-    "searchPlaceholder": "Buscar por nombre o descripción",
+    "title": "Comprar",
+    "description": "Productos de la marca Ultra.e Life y de socios, vinculados a las recetas, entrenamientos y rutinas de la app. Las compras aquí son simuladas.",
     "filtersLabel": "Filtros de la tienda",
-    "categoriesLabel": "Categorías",
-    "categoryAll": "Todas",
-    "sellerLabel": "Proveedor",
-    "sellerAll": "Todos los proveedores",
-    "sortLabel": "Ordenar por",
-    "sort": {
-      "newest": "Más recientes",
-      "priceAsc": "Menor precio",
-      "priceDesc": "Mayor precio",
-      "title": "Nombre (A–Z)"
-    },
-    "results": "{n, plural, =1 {# producto} other {# productos}}",
-    "empty": "Ningún producto encontrado",
-    "emptyDescription": "Ajusta la búsqueda o los filtros para ver otros productos de demostración.",
-    "clearFilters": "Limpiar filtros",
-    "unavailableHint": "Los productos atenuados no están disponibles y no pueden añadirse al carrito de prueba.",
+    "all": "Todo",
+    "productsLabel": "Productos",
+    "empty": "No hay productos aquí",
+    "emptyDescription": "No hay productos de demostración disponibles ahora. Vuelve más tarde.",
+    "emptyFilterDescription": "Este filtro todavía no tiene productos disponibles.",
+    "clearFilters": "Ver todos los productos",
     "cartLink": "Carrito de prueba",
-    "ordersLink": "Mis pedidos de prueba"
+    "ordersLink": "Mis pedidos de prueba",
+    "grid": {
+      "count": "Productos cargados: {count}.",
+      "end": "Llegaste al final de los productos.",
+      "loadMore": "Cargar más",
+      "loading": "Cargando…",
+      "loadMoreError": "No se pudieron cargar más productos.",
+      "retry": "Intentar de nuevo"
+    }
   },
   "product": {
     "backToShop": "Tienda",
