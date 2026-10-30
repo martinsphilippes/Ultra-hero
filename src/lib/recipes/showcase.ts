@@ -40,10 +40,10 @@ export function recipeSignature(input: { author: ShowcasePerson | null; signer: 
 
 // ---------------------------------------------------------------- ações
 /**
- * "Contratar nutricionista": profissionais chegam na Etapa 3. Até lá, uma linha discreta "em breve"
- * (sem botão). A Etapa 3 troca para "live" e liga a ação de verdade.
+ * "Contratar nutricionista": ligado na Etapa 3 (0058). "live" = sugeridos com "Contratar"
+ * (HireNutritionist); sem a 0058 no banco a própria seção volta à linha "em breve".
  */
-export const NUTRITIONIST_ACTION: "soon" | "live" = "soon";
+export const NUTRITIONIST_ACTION: "soon" | "live" = "live";
 
 export type RecipeActionInput = {
   /** Receita aberta (etapa demonstrativa feita e acesso ao conteúdo): Fazer e Lista dependem disso. */

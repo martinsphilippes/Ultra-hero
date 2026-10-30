@@ -62,7 +62,8 @@
     "generic": "The action could not be completed. Try again.",
     "rights_holder_required": "Enter the authorization holder to mark as authorized.",
     "creator_not_found": "Hero not found.",
-    "product_not_found": "Product not found."
+    "product_not_found": "Product not found.",
+    "professional_profile_already_linked": "This account is already linked to another professional profile."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -177,7 +178,8 @@
       "consumer": "Consumer",
       "creator": "Hero",
       "seller": "Supplier",
-      "admin": "Admin"
+      "admin": "Admin",
+      "professional": "Professional"
     },
     "detail": {
       "title": "User details",
@@ -301,7 +303,10 @@
     "goSeller": "Go to the supplier portal",
     "goHome": "Back to the app",
     "errorTitle": "Could not accept",
-    "successSellerPortalOff": "Invitation accepted. The supplier portal is turned off for now; operations are handled by the administration."
+    "successSellerPortalOff": "Invitation accepted. The supplier portal is turned off for now; operations are handled by the administration.",
+    "successProfessional": "Your professional access is ready. Complete your profile and services.",
+    "goProfessional": "Go to the professional portal",
+    "grantProfessional": "You will get access to the professional portal."
   },
   "creators": {
     "title": "Heroes",

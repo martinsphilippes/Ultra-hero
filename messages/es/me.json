@@ -95,7 +95,8 @@
       "consumer": "Consumidor",
       "creator": "Héroe",
       "seller": "Proveedor",
-      "admin": "Admin"
+      "admin": "Admin",
+      "professional": "Profesional"
     },
     "plan": {
       "label": "Plan",
@@ -114,8 +115,10 @@
       "hints": {
         "creator": "Posts, recetas y vínculos de productos",
         "seller": "Productos, entregas y perfil de la operación",
-        "admin": "Usuarios, contenidos, pedidos y configuración"
-      }
+        "admin": "Usuarios, contenidos, pedidos y configuración",
+        "professional": "Pedidos, servicios y perfil público"
+      },
+      "professional": "Portal del profesional"
     },
     "data": {
       "displayName": "Nombre visible",

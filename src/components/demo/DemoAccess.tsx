@@ -1,12 +1,12 @@
-import { KeyRound, ShieldCheck, Sparkles, Store, User, UserRound } from "lucide-react";
+import { KeyRound, ShieldCheck, Sparkles, Stethoscope, Store, User, UserRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { signInAsDemo } from "@/app/demo-actions";
-import { DEMO_ACCESS_ACCOUNTS, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
-import { isDemoAccessEnabled } from "@/lib/demo/server";
+import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
+import { isDemoAccessEnabled, isProfessionalDemoReady } from "@/lib/demo/server";
 import { getNativeApp } from "@/lib/native-app/server";
 import { cn } from "@/lib/utils";
 
-const ICON: Record<DemoKind, typeof User> = { admin: ShieldCheck, creator: Sparkles, seller: Store, premium: UserRound, free: User };
+const ICON: Record<DemoKind, typeof User> = { admin: ShieldCheck, creator: Sparkles, seller: Store, premium: UserRound, free: User, professional: Stethoscope };
 
 type Props = {
   /** login: lista aberta abaixo da caixa de login; home: recolhida no topo do Início (trocar de conta). */
@@ -20,6 +20,7 @@ type Props = {
 export async function DemoAccess({ from, failed }: Props) {
   if (!isDemoAccessEnabled() || (await getNativeApp())) return null;
   const t = await getTranslations("demo");
+  const accounts = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: await isProfessionalDemoReady() });
 
   const list = (
     <div className="flex flex-col gap-3">
@@ -29,7 +30,7 @@ export async function DemoAccess({ from, failed }: Props) {
         </p>
       ) : null}
       <ul className="grid gap-2 sm:grid-cols-2" aria-label={t("listLabel")}>
-        {DEMO_ACCESS_ACCOUNTS.map((account) => {
+        {accounts.map((account) => {
           const Icon = ICON[account.kind];
           return (
             <li key={account.kind}>

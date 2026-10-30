@@ -23,6 +23,10 @@
     "free": {
       "label": "Consumidor gratuito",
       "description": "Sin suscripción"
+    },
+    "professional": {
+      "label": "Profesional",
+      "description": "Nina Horta, nutricionista: pedidos y servicios"
     }
   }
 }

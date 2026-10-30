@@ -5,12 +5,12 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "./safe-next";
 
-export type AppRole = "consumer" | "creator" | "seller" | "admin";
+export type AppRole = "consumer" | "creator" | "seller" | "admin" | "professional";
 
 export type RoleAssignment = {
   user_id: string;
   role: AppRole;
-  scope_type: "global" | "seller_org" | "creator";
+  scope_type: "global" | "seller_org" | "creator" | "professional";
   scope_id: string | null;
   revoked_at: string | null;
 };

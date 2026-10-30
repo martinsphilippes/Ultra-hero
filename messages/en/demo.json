@@ -23,6 +23,10 @@
     "free": {
       "label": "Free member",
       "description": "No subscription"
+    },
+    "professional": {
+      "label": "Professional",
+      "description": "Nina Horta, nutritionist: orders and services"
     }
   }
 }

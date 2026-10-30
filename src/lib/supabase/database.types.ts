@@ -847,14 +847,14 @@ isOneToOne: false
                   ]
                 },"invitations": {
                   Row: {
-                    "accepted_at": string | null,"accepted_by": string | null,"created_at": string,"created_by": string | null,"creator_profile_id": string | null,"email": string,"expires_at": string,"id": string,"revoked_at": string | null,"role": Database["public"]['Enums']["app_role"],"seller_org_id": string | null,"status": Database["public"]['Enums']["invitation_status"],"token_hash": string
+                    "accepted_at": string | null,"accepted_by": string | null,"created_at": string,"created_by": string | null,"creator_profile_id": string | null,"email": string,"expires_at": string,"id": string,"professional_id": string | null,"revoked_at": string | null,"role": Database["public"]['Enums']["app_role"],"seller_org_id": string | null,"status": Database["public"]['Enums']["invitation_status"],"token_hash": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email": string,"expires_at": string,"id"?: string,"revoked_at"?: string | null,"role": Database["public"]['Enums']["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]['Enums']["invitation_status"],"token_hash": string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email": string,"expires_at": string,"id"?: string,"professional_id"?: string | null,"revoked_at"?: string | null,"role": Database["public"]['Enums']["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]['Enums']["invitation_status"],"token_hash": string
                   }
                   Update: {
-                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email"?: string,"expires_at"?: string,"id"?: string,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]['Enums']["invitation_status"],"token_hash"?: string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email"?: string,"expires_at"?: string,"id"?: string,"professional_id"?: string | null,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]['Enums']["invitation_status"],"token_hash"?: string
                   }
                   Relationships: [
                     {
@@ -868,6 +868,12 @@ isOneToOne: false
       columns: ["seller_org_id"]
 isOneToOne: false
       referencedRelation: "seller_organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invitations_professional_id_fkey"
+      columns: ["professional_id"]
+isOneToOne: false
+      referencedRelation: "professionals"
       referencedColumns: ["id"]
     }
                   ]
@@ -1108,6 +1114,178 @@ isOneToOne: false
       columns: ["product_id"]
 isOneToOne: false
       referencedRelation: "products"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"professionals": {
+                  Row: {
+                    "approved_at": string | null,"bio": string,"cities": string[],"created_at": string,"id": string,"is_demo": boolean,"name": string,"online": boolean,"photo_url": string | null,"registry_number": string,"registry_type": string,"registry_uf": string,"registry_verified": boolean,"slug": string,"sort_order": number,"specialty": string,"status": string,"updated_at": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "approved_at"?: string | null,"bio"?: string,"cities"?: string[],"created_at"?: string,"id"?: string,"is_demo"?: boolean,"name": string,"online"?: boolean,"photo_url"?: string | null,"registry_number": string,"registry_type": string,"registry_uf": string,"registry_verified"?: boolean,"slug": string,"sort_order"?: number,"specialty": string,"status"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "approved_at"?: string | null,"bio"?: string,"cities"?: string[],"created_at"?: string,"id"?: string,"is_demo"?: boolean,"name"?: string,"online"?: boolean,"photo_url"?: string | null,"registry_number"?: string,"registry_type"?: string,"registry_uf"?: string,"registry_verified"?: boolean,"slug"?: string,"sort_order"?: number,"specialty"?: string,"status"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"professional_verifications": {
+                  Row: {
+                    "note": string,"professional_id": string,"updated_at": string,"verified_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "note"?: string,"professional_id": string,"updated_at"?: string,"verified_by"?: string | null
+                  }
+                  Update: {
+                    "note"?: string,"professional_id"?: string,"updated_at"?: string,"verified_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "professional_verifications_professional_id_fkey"
+      columns: ["professional_id"]
+isOneToOne: true
+      referencedRelation: "professionals"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"professional_services": {
+                  Row: {
+                    "admin_disabled": boolean,"created_at": string,"description": string,"duration_minutes": number | null,"id": string,"is_active": boolean,"kind": string,"mode": string,"plan_weeks": number | null,"price_cents": number,"professional_id": string,"sort_order": number,"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "admin_disabled"?: boolean,"created_at"?: string,"description"?: string,"duration_minutes"?: number | null,"id"?: string,"is_active"?: boolean,"kind": string,"mode": string,"plan_weeks"?: number | null,"price_cents": number,"professional_id": string,"sort_order"?: number,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "admin_disabled"?: boolean,"created_at"?: string,"description"?: string,"duration_minutes"?: number | null,"id"?: string,"is_active"?: boolean,"kind"?: string,"mode"?: string,"plan_weeks"?: number | null,"price_cents"?: number,"professional_id"?: string,"sort_order"?: number,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "professional_services_professional_id_fkey"
+      columns: ["professional_id"]
+isOneToOne: false
+      referencedRelation: "professionals"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"professional_suggestions": {
+                  Row: {
+                    "content_id": string | null,"created_at": string,"created_by": string | null,"creator_id": string | null,"id": string,"professional_id": string,"program_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"id"?: string,"professional_id": string,"program_id"?: string | null
+                  }
+                  Update: {
+                    "content_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_id"?: string | null,"id"?: string,"professional_id"?: string,"program_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "professional_suggestions_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professional_suggestions_creator_id_fkey"
+      columns: ["creator_id"]
+isOneToOne: false
+      referencedRelation: "creator_profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professional_suggestions_professional_id_fkey"
+      columns: ["professional_id"]
+isOneToOne: false
+      referencedRelation: "professionals"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "professional_suggestions_program_id_fkey"
+      columns: ["program_id"]
+isOneToOne: false
+      referencedRelation: "programs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"professional_tap_counters": {
+                  Row: {
+                    "action": string,"count": number,"creator_id": string | null,"day": string,"id": number,"professional_id": string,"source": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "action": string,"count"?: number,"creator_id"?: string | null,"day": string,"id"?: number,"professional_id": string,"source": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "action"?: string,"count"?: number,"creator_id"?: string | null,"day"?: string,"id"?: number,"professional_id"?: string,"source"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"service_cart_items": {
+                  Row: {
+                    "added_at": string,"id": string,"price_cents_seen": number,"service_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "added_at"?: string,"id"?: string,"price_cents_seen": number,"service_id": string,"user_id": string
+                  }
+                  Update: {
+                    "added_at"?: string,"id"?: string,"price_cents_seen"?: number,"service_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "service_cart_items_service_id_fkey"
+      columns: ["service_id"]
+isOneToOne: false
+      referencedRelation: "professional_services"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"service_orders": {
+                  Row: {
+                    "client_label": string,"closed_at": string | null,"created_at": string,"duration_minutes_snapshot": number | null,"first_response_at": string | null,"id": string,"is_demo": boolean,"kind_snapshot": string,"mode_snapshot": string,"plan_weeks_snapshot": number | null,"price_cents": number,"professional_id": string,"schedule_note": string,"service_id": string | null,"status": string,"title_snapshot": string,"updated_at": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "client_label"?: string,"closed_at"?: string | null,"created_at"?: string,"duration_minutes_snapshot"?: number | null,"first_response_at"?: string | null,"id"?: string,"is_demo"?: boolean,"kind_snapshot": string,"mode_snapshot": string,"plan_weeks_snapshot"?: number | null,"price_cents": number,"professional_id": string,"schedule_note"?: string,"service_id"?: string | null,"status"?: string,"title_snapshot": string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "client_label"?: string,"closed_at"?: string | null,"created_at"?: string,"duration_minutes_snapshot"?: number | null,"first_response_at"?: string | null,"id"?: string,"is_demo"?: boolean,"kind_snapshot"?: string,"mode_snapshot"?: string,"plan_weeks_snapshot"?: number | null,"price_cents"?: number,"professional_id"?: string,"schedule_note"?: string,"service_id"?: string | null,"status"?: string,"title_snapshot"?: string,"updated_at"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "service_orders_professional_id_fkey"
+      columns: ["professional_id"]
+isOneToOne: false
+      referencedRelation: "professionals"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "service_orders_service_id_fkey"
+      columns: ["service_id"]
+isOneToOne: false
+      referencedRelation: "professional_services"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"service_order_events": {
+                  Row: {
+                    "actor_id": string | null,"actor_type": string,"created_at": string,"from_status": string | null,"id": number,"note": string,"order_id": string,"to_status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actor_id"?: string | null,"actor_type": string,"created_at"?: string,"from_status"?: string | null,"id"?: number,"note"?: string,"order_id": string,"to_status": string
+                  }
+                  Update: {
+                    "actor_id"?: string | null,"actor_type"?: string,"created_at"?: string,"from_status"?: string | null,"id"?: number,"note"?: string,"order_id"?: string,"to_status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "service_order_events_order_id_fkey"
+      columns: ["order_id"]
+isOneToOne: false
+      referencedRelation: "service_orders"
       referencedColumns: ["id"]
     }
                   ]
@@ -2625,6 +2803,50 @@ isOneToOne: false
 "my_wearable_connections":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"my_professional_id":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"professional_save_profile":
+{ Args: { "p_data": Json }; Returns: undefined
+                           },
+"professional_save_service":
+{ Args: { "p_data": Json,"p_id"?: string }; Returns: string
+                           },
+"service_order_can":
+{ Args: { "p_actor": string,"p_from": string,"p_to": string }; Returns: boolean
+                           },
+"service_order_update":
+{ Args: { "p_note"?: string,"p_order": string,"p_to"?: string }; Returns: string
+                           },
+"service_is_hireable":
+{ Args: { "p_service": string }; Returns: boolean
+                           },
+"service_cart_set":
+{ Args: { "p_add": boolean,"p_service": string }; Returns: number
+                           },
+"checkout_with_services":
+{ Args: { "p_accept_changes"?: boolean,"p_destination"?: string,"p_expected"?: Json,"p_services"?: Json }; Returns: Json
+                           },
+"admin_professional_save":
+{ Args: { "p_data": Json,"p_id"?: string }; Returns: string
+                           },
+"admin_professional_set_status":
+{ Args: { "p_id": string,"p_note"?: string,"p_status": string,"p_verified": boolean }; Returns: undefined
+                           },
+"admin_professional_service_save":
+{ Args: { "p_data": Json,"p_id"?: string,"p_professional"?: string }; Returns: string
+                           },
+"admin_professional_suggestion_set":
+{ Args: { "p_on": boolean,"p_professional": string,"p_target": string,"p_target_id": string }; Returns: undefined
+                           },
+"admin_invite_professional":
+{ Args: { "p_days"?: number,"p_email": string,"p_professional": string }; Returns: {
+              "invitation_id": string,"token": string
+            }[]
+                           },
+"professional_tap_bump":
+{ Args: { "p_action": string,"p_creator"?: string,"p_professional": string,"p_source": string }; Returns: undefined
+                           },
 "place_bid":
 { Args: { "auction_id": string,"increment_cents": number }; Returns: Json
                            },
@@ -2861,7 +3083,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "access_level": "free"|"premium","actor_type": "consumer"|"creator"|"seller"|"admin"|"system","app_role": "consumer"|"creator"|"seller"|"admin","availability": "available"|"unavailable","completion_mode": "manual"|"auto","content_status": "draft"|"published"|"archived","content_type": "video"|"recipe"|"workout"|"guide"|"article","enrollment_status": "active"|"completed"|"abandoned","fulfillment_status": "awaiting"|"preparing"|"ready_for_dispatch"|"in_transit"|"delivered"|"cancelled"|"failed","invitation_status": "pending"|"accepted"|"expired"|"revoked","link_status": "suggested"|"validated"|"suspended"|"rejected","locale_code": "pt-BR"|"en"|"es","media_provider": "none"|"embed_youtube"|"embed_vimeo"|"cloudflare_stream"|"mux"|"upload","moderation_status": "clear"|"hidden"|"suspended","order_status": "confirmed"|"in_progress"|"completed"|"partially_completed"|"cancelled"|"failed","partner_status": "pending"|"active"|"suspended","pillar": "routine"|"training"|"nutrition"|"gastronomy","product_status": "draft"|"published"|"archived","review_status": "none"|"in_review"|"returned"|"approved"|"rejected","subscription_status": "active"|"cancelled"|"expired"
+            "access_level": "free"|"premium","actor_type": "consumer"|"creator"|"seller"|"admin"|"system","app_role": "consumer"|"creator"|"seller"|"admin"|"professional","availability": "available"|"unavailable","completion_mode": "manual"|"auto","content_status": "draft"|"published"|"archived","content_type": "video"|"recipe"|"workout"|"guide"|"article","enrollment_status": "active"|"completed"|"abandoned","fulfillment_status": "awaiting"|"preparing"|"ready_for_dispatch"|"in_transit"|"delivered"|"cancelled"|"failed","invitation_status": "pending"|"accepted"|"expired"|"revoked","link_status": "suggested"|"validated"|"suspended"|"rejected","locale_code": "pt-BR"|"en"|"es","media_provider": "none"|"embed_youtube"|"embed_vimeo"|"cloudflare_stream"|"mux"|"upload","moderation_status": "clear"|"hidden"|"suspended","order_status": "confirmed"|"in_progress"|"completed"|"partially_completed"|"cancelled"|"failed","partner_status": "pending"|"active"|"suspended","pillar": "routine"|"training"|"nutrition"|"gastronomy","product_status": "draft"|"published"|"archived","review_status": "none"|"in_review"|"returned"|"approved"|"rejected","subscription_status": "active"|"cancelled"|"expired"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -2977,7 +3199,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "access_level": ["free", "premium"],"actor_type": ["consumer", "creator", "seller", "admin", "system"],"app_role": ["consumer", "creator", "seller", "admin"],"availability": ["available", "unavailable"],"completion_mode": ["manual", "auto"],"content_status": ["draft", "published", "archived"],"content_type": ["video", "recipe", "workout", "guide", "article"],"enrollment_status": ["active", "completed", "abandoned"],"fulfillment_status": ["awaiting", "preparing", "ready_for_dispatch", "in_transit", "delivered", "cancelled", "failed"],"invitation_status": ["pending", "accepted", "expired", "revoked"],"link_status": ["suggested", "validated", "suspended", "rejected"],"locale_code": ["pt-BR", "en", "es"],"media_provider": ["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"],"moderation_status": ["clear", "hidden", "suspended"],"order_status": ["confirmed", "in_progress", "completed", "partially_completed", "cancelled", "failed"],"partner_status": ["pending", "active", "suspended"],"pillar": ["routine", "training", "nutrition", "gastronomy"],"product_status": ["draft", "published", "archived"],"review_status": ["none", "in_review", "returned", "approved", "rejected"],"subscription_status": ["active", "cancelled", "expired"]
+            "access_level": ["free", "premium"],"actor_type": ["consumer", "creator", "seller", "admin", "system"],"app_role": ["consumer", "creator", "seller", "admin", "professional"],"availability": ["available", "unavailable"],"completion_mode": ["manual", "auto"],"content_status": ["draft", "published", "archived"],"content_type": ["video", "recipe", "workout", "guide", "article"],"enrollment_status": ["active", "completed", "abandoned"],"fulfillment_status": ["awaiting", "preparing", "ready_for_dispatch", "in_transit", "delivered", "cancelled", "failed"],"invitation_status": ["pending", "accepted", "expired", "revoked"],"link_status": ["suggested", "validated", "suspended", "rejected"],"locale_code": ["pt-BR", "en", "es"],"media_provider": ["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"],"moderation_status": ["clear", "hidden", "suspended"],"order_status": ["confirmed", "in_progress", "completed", "partially_completed", "cancelled", "failed"],"partner_status": ["pending", "active", "suspended"],"pillar": ["routine", "training", "nutrition", "gastronomy"],"product_status": ["draft", "published", "archived"],"review_status": ["none", "in_review", "returned", "approved", "rejected"],"subscription_status": ["active", "cancelled", "expired"]
           }
         }
 } as const

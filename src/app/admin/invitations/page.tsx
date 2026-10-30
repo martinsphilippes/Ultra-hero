@@ -24,12 +24,14 @@ const PAGE_SIZE = 25;
 type InvitationRow = {
   id: string;
   email: string;
-  role: "creator" | "seller" | "admin" | "consumer";
+  role: "creator" | "seller" | "admin" | "consumer" | "professional";
   status: Status;
   expires_at: string;
   created_at: string;
   creator_profile_id: string | null;
   seller_org_id: string | null;
+  /** Convite de profissional (0058); ausente sem a migração. */
+  professional_id?: string | null;
   creator_profiles: { name: string } | null;
   seller_organizations: { name: string } | null;
 };
@@ -47,14 +49,20 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
     getLocale(),
   ]);
   const supabase = await createClient();
-  let query = supabase
-    .from("invitations")
-    .select("id, email, role, status, expires_at, created_at, creator_profile_id, seller_org_id, creator_profiles(name), seller_organizations(name)", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-  if (status) query = query.eq("status", status);
+  const base = "id, email, role, status, expires_at, created_at, creator_profile_id, seller_org_id, creator_profiles(name), seller_organizations(name)";
+  const listQuery = (columns: string) => {
+    let query = supabase
+      .from("invitations")
+      .select(columns, { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+    if (status) query = query.eq("status", status);
+    return query;
+  };
+  // com a 0058 a lista também traz o profissional do convite; sem ela, a leitura de antes
+  const withPro = await listQuery(`${base}, professional_id`);
   const [{ data, error, count }, creatorsRes, sellersRes] = await Promise.all([
-    query,
+    withPro.error ? listQuery(base) : Promise.resolve(withPro),
     supabase.from("creator_profiles").select("id, name, user_id").order("name"),
     supabase.from("seller_organizations").select("id, name").order("name"),
   ]);
@@ -69,7 +77,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
       header: t("columns.role"),
       cell: (r) => (
         <Badge variant="info" size="sm">
-          {r.role === "creator" ? t("form.roleCreator") : t("form.roleSeller")}
+          {r.role === "professional" ? tn("portals.professional") : r.role === "creator" ? t("form.roleCreator") : t("form.roleSeller")}
         </Badge>
       ),
     },
@@ -77,7 +85,11 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
       key: "target",
       header: t("columns.target"),
       cell: (r) =>
-        r.role === "creator" && r.creator_profile_id ? (
+        r.role === "professional" && r.professional_id ? (
+          <Link href={`/admin/professionals/${r.professional_id}`} className="text-accent-text hover:underline">
+            {tn("admin.professionals")}
+          </Link>
+        ) : r.role === "creator" && r.creator_profile_id ? (
           <Link href={`/admin/creators/${r.creator_profile_id}`} className="text-accent-text hover:underline">
             {r.creator_profiles?.name ?? r.creator_profile_id}
           </Link>

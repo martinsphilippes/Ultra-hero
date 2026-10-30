@@ -12,7 +12,12 @@ export const DEMO_ACCOUNTS = [
   { kind: "seller", email: "fornecedor@demo.ultrahero.app", home: "/personalities" },
   { kind: "premium", email: "premium@demo.ultrahero.app", home: "/personalities" },
   { kind: "free", email: "gratuito@demo.ultrahero.app", home: "/personalities" },
+  // profissional de exemplo (0058): a conta é criada pelo admin em /admin/professionals/<id>
+  { kind: "professional", email: "profissional@demo.ultrahero.app", home: "/personalities" },
 ] as const;
+
+/** Conta de acesso rápido do profissional de exemplo (criada pelo admin, com a senha das demais). */
+export const PROFESSIONAL_DEMO_EMAIL = "profissional@demo.ultrahero.app";
 
 export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];
 
@@ -20,6 +25,14 @@ export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];
 // sai do painel e não entra pelo atalho. A conta continua no banco (DEMO_ACCOUNTS segue completo).
 const ACCESS_KINDS = visibleDemoKinds(DEMO_ACCOUNTS.map((a) => a.kind));
 export const DEMO_ACCESS_ACCOUNTS = DEMO_ACCOUNTS.filter((a) => ACCESS_KINDS.includes(a.kind));
+
+/**
+ * Contas que dependem de algo no banco: a do profissional só aparece depois que o admin cria a conta
+ * (sem a 0058, ou antes disso, o botão daria erro de login).
+ */
+export function readyDemoAccounts<A extends { kind: string }>(accounts: readonly A[], ready: { professional: boolean }): A[] {
+  return accounts.filter((a) => a.kind !== "professional" || ready.professional);
+}
 
 /** Telas onde o painel aparece; o erro de login volta para a mesma tela. */
 export const DEMO_ORIGINS = { login: "/login", home: "/inicio" } as const;
