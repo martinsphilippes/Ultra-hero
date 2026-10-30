@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Award, Download, Layers, LogIn, Play } from "lucide-react";
+import { BrandStrip } from "@/components/brands/BrandStrip";
+import { RecommendedProducts } from "@/components/brands/RecommendedProducts";
 import { displayTimeZone, ViewTracker } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
 import { AddToListButton, FavoriteButton } from "@/components/library";
@@ -11,6 +13,7 @@ import { Avatar, Badge, Button, PillarBadge, ProgressBar, ProgressRing } from "@
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
+import { loadCreatorBrandChips, loadProgramRecommended } from "@/lib/brands/queries";
 import { CONTENT_CARD_SELECT, type ContentCardData } from "@/lib/catalog/queries";
 import { favoriteStatus, mixedListsSupported } from "@/lib/library/lists-support";
 import { getNativeApp } from "@/lib/native-app/server";
@@ -179,12 +182,22 @@ export default async function ProgramPage({ params }: Params) {
   // Apoio (0059): produtos ligados (só onde o comércio vale) e profissionais sugeridos no programa.
   const hireEnv = await loadHireEnv();
   const commerceAllowed = nutritionProductsAllowed({ commerceEnabled: hireEnv.commerceEnabled, nativeApp: hireEnv.nativeApp });
-  const [programProducts, professionals] = await Promise.all([
+  // Marcas do herói e equipamentos recomendados (0062): links externos, valem também no app das lojas.
+  const [programProducts, professionals, brandChips, equipment, tb] = await Promise.all([
     commerceAllowed ? loadProgramProducts(supabase, { programId: program.id, userId: user?.id ?? null }) : [],
     programProfessionals(program.id),
+    loadCreatorBrandChips(supabase, program.creator?.id),
+    loadProgramRecommended(supabase, program.id),
+    getTranslations("brands"),
   ]);
   const servicesInCart = !hireEnv.nativeApp && user && professionals.length > 0 ? await serviceIdsInCart() : new Set<string>();
-  const support = supportPlan({ products: programProducts.length, professionals: professionals.length, commerceEnabled: hireEnv.commerceEnabled, nativeApp: hireEnv.nativeApp });
+  const support = supportPlan({
+    products: programProducts.length,
+    professionals: professionals.length,
+    commerceEnabled: hireEnv.commerceEnabled,
+    nativeApp: hireEnv.nativeApp,
+    equipment: equipment.length,
+  });
   const creatorId = program.creator?.id ?? null;
 
   // Nutricional: conteúdos de nutrição/receitas do programa e os próprios do herói + produtos de comida.
@@ -263,7 +276,13 @@ export default async function ProgramPage({ params }: Params) {
         title: t("cards.support"),
         teaser: t("cards.supportTeaser"),
         screens: support.apoioScreens.map((key, i) =>
-          key === "products"
+          key === "equipment"
+            ? {
+                id: key,
+                title: tb("recommended.title"),
+                body: <RecommendedProducts products={equipment} description={tb("recommended.programDescription")} />,
+              }
+            : key === "products"
             ? {
                 id: key,
                 title: t("cards.supportProducts"),
@@ -370,6 +389,9 @@ export default async function ProgramPage({ params }: Params) {
               </span>
             </Link>
           )}
+
+          {/* Marcas do herói (0062), logo abaixo do nome */}
+          {program.creator && brandChips.length > 0 ? <BrandStrip brands={brandChips} heroName={program.creator.name} /> : null}
 
           {currentRes?.data && enrolledVersion ? (
             <p className="rounded-lg border border-border bg-surface-elevated px-3 py-2 type-caption text-fg-muted" role="note">

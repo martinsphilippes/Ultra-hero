@@ -21,6 +21,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "featured", href: "/admin/featured" },
     { key: "translations", href: "/admin/translations" },
     { key: "products", href: "/admin/products" },
+    // Marcas e produtos externos + Smart Tags (0062): compra no site da marca, fora do app
+    { key: "brands", href: "/admin/marcas" },
     { key: "shopFilters", href: "/admin/shop-filters" },
     { key: "collectibles", href: "/admin/collectibles" },
     { key: "links", href: "/admin/links" },

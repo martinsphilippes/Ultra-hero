@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
+import { ProgramBrandProductsSection } from "@/components/admin-brands/AdminBrandSections";
 import { Panel } from "@/components/admin-content";
 import { ProgramDetailActions } from "@/components/admin-content/ProgramDetailActions";
 import { NewVersionDialog, ProgramBasicsForm } from "@/components/admin-content/ProgramForms";
@@ -151,6 +152,8 @@ export default async function AdminProgramDetailPage({ params }: Params) {
           <Panel title={t("support.title")} description={t("support.description")}>
             <ProgramSupportEditor programId={program.id} {...support} />
           </Panel>
+          {/* Equipamentos e produtos de marca recomendados (0062), comprados no site da marca */}
+          <ProgramBrandProductsSection programId={program.id} />
         </div>
         <aside className="flex min-w-0 flex-col gap-4">
           <Panel title={tc("actions")}>

@@ -1,0 +1,40 @@
+{
+  "strip": {
+    "label": "{name}'s brands",
+    "opensSite": "opens the brand's website in a new tab"
+  },
+  "relationship": {
+    "sponsor": "Sponsor",
+    "mentioned": "Brand mentioned",
+    "identified": "Product identified"
+  },
+  "example": "Example brand",
+  "tags": {
+    "show": "Show products in the photo",
+    "hide": "Hide products in the photo",
+    "region": "Products tagged in the photo",
+    "open": "View {name} by {brand}"
+  },
+  "card": {
+    "viewProduct": "View product",
+    "back": "Back to summary",
+    "buy": "Buy on the brand's website",
+    "priceNote": "Price subject to change on the brand's website.",
+    "noPrice": "Price and availability on the brand's website.",
+    "brandSite": "Brand website",
+    "leaving": "You'll buy it on {host}, outside the app.",
+    "by": "by {brand}",
+    "newTab": "opens in a new tab"
+  },
+  "recommended": {
+    "title": "Recommended gear and products",
+    "description": "Picked for this content. You buy them directly on each brand's website.",
+    "programDescription": "What helps you follow the program. You buy them directly on each brand's website.",
+    "buy": "Buy",
+    "view": "Details"
+  },
+  "program": {
+    "cardTitle": "Gear",
+    "cardTeaser": "Recommended products for the program"
+  }
+}

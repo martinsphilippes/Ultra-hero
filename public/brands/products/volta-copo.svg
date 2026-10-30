@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Copo de treino">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f1b3d"/><stop offset="1" stop-color="#0a2a4a"/></linearGradient>
+    <linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38e1ff" stop-opacity=".55"/><stop offset="1" stop-color="#38e1ff" stop-opacity=".9"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#bg)"/>
+  <circle cx="160" cy="170" r="118" fill="#38e1ff" opacity=".07"/>
+  <path d="M104 92 H216 L204 250 a14 14 0 0 1 -14 13 H130 a14 14 0 0 1 -14 -13 Z" fill="#ffffff" opacity=".12" stroke="#cfefff" stroke-width="4"/>
+  <path d="M112 150 H208 L201 248 a8 8 0 0 1 -8 8 H127 a8 8 0 0 1 -8 -8 Z" fill="url(#w)"/>
+  <path d="M126 108 L120 236" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity=".35"/>
+  <text x="160" y="214" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="800" letter-spacing="2" fill="#0f1b3d">VOLTA</text>
+</svg>

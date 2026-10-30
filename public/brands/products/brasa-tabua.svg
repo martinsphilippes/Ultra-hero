@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Tábua de corte de bambu">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a0f0a"/><stop offset="1" stop-color="#2d1a10"/></linearGradient>
+    <linearGradient id="w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d9a066"/><stop offset=".5" stop-color="#e8b97f"/><stop offset="1" stop-color="#c98c50"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#bg)"/>
+  <rect x="48" y="78" width="224" height="170" rx="22" fill="#000" opacity=".3" transform="translate(6 8)"/>
+  <rect x="48" y="78" width="224" height="170" rx="22" fill="url(#w)"/>
+  <rect x="66" y="96" width="188" height="134" rx="14" fill="none" stroke="#a86b35" stroke-width="4" opacity=".6"/>
+  <path d="M100 78 V248 M148 78 V248 M196 78 V248 M240 78 V248" stroke="#b97d44" stroke-width="2" opacity=".45"/>
+  <circle cx="238" cy="112" r="10" fill="#1a0f0a"/>
+</svg>

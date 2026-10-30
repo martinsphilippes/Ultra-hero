@@ -1,4 +1,4 @@
-import { Ban, BookOpen, ChefHat, Dumbbell, FileText, Lock, PlayCircle } from "lucide-react";
+import { Ban, BookOpen, ChefHat, Dumbbell, FileText, Lock, PlayCircle, Tag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { tileLabel, type ContentTileData } from "@/components/discover/explore/tiles";
@@ -17,12 +17,14 @@ type Props = {
   content: ContentTileData;
   /** Prioriza o carregamento da capa (primeiros quadros da dobra). */
   priority?: boolean;
+  /** Há produtos marcados na foto (Smart Tags, 0062): ícone discreto no canto. */
+  tagged?: boolean;
   className?: string;
 };
 
 // Quadro da grade do Explorar (estilo Instagram): só a capa, o ícone do tipo e o cadeado quando
 // restrito. Título e herói ficam para a página do conteúdo; para leitores de tela vão no sr-only.
-export async function ContentTile({ content, priority, className }: Props) {
+export async function ContentTile({ content, priority, tagged, className }: Props) {
   const t = await getTranslations("catalog");
   const Icon = TYPE_ICON[content.type];
   const unavailable = content.access_level === null;
@@ -57,6 +59,11 @@ export async function ContentTile({ content, priority, className }: Props) {
         <Ban aria-hidden="true" className="absolute bottom-1.5 left-1.5 size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
       ) : premium ? (
         <Lock aria-hidden="true" className="absolute bottom-1.5 left-1.5 size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
+      ) : null}
+      {tagged ? (
+        <span aria-hidden="true" className="absolute bottom-1.5 right-1.5 flex size-5 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm" data-testid="tile-smart-tags">
+          <Tag className="size-3 text-white" />
+        </span>
       ) : null}
       <span
         aria-hidden="true"

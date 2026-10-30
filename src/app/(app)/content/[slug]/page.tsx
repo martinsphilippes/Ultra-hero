@@ -6,6 +6,9 @@ import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 import { BookOpen, ChefHat, Clock, Copyright, Dumbbell, FileText, ImageIcon, Play } from "lucide-react";
 import { isScheduled } from "@/components/admin-content/lib/publish-at";
+import { BrandStrip } from "@/components/brands/BrandStrip";
+import { RecommendedProducts } from "@/components/brands/RecommendedProducts";
+import { SmartTagLayer } from "@/components/brands/SmartTagLayer";
 import { ContentCard } from "@/components/catalog";
 import {
   DisclaimerBanner,
@@ -49,6 +52,7 @@ import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui"
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
+import { loadContentBrandChips, loadContentRecommended, loadContentSmartTags } from "@/lib/brands/queries";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { loadLocalizedBody } from "@/lib/catalog/localized-body";
 import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
@@ -175,6 +179,15 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
       : null,
     user ? getProfile() : null,
   ]);
+
+  // Marcas e produtos (0062): faixa de marcas ao lado do herói, Smart Tags na foto e recomendados
+  // sob o conteúdo. Sem a 0062, tudo vazio.
+  const [brandChips, smartTags, recommended] = await Promise.all([
+    loadContentBrandChips(supabase, content.id, content.creator_id),
+    loadContentSmartTags(supabase, content.id, content.cover_url),
+    loadContentRecommended(supabase, content.id),
+  ]);
+  const tb = await getTranslations("brands");
 
   // Tradução publicada para o idioma da UI (quando existe) sobrepõe título/resumo/corpo.
   const localization = locRes?.data ?? null;
@@ -336,7 +349,8 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
             className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-border bg-surface-elevated sm:aspect-[4/3] print:hidden"
             data-testid="content-top-photo"
           >
-            <Image src={content.cover_url} alt={title} fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-contain" />
+            <Image src={content.cover_url} alt={title} fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-contain" data-smart-image="" />
+            {smartTags.length > 0 ? <SmartTagLayer tags={smartTags} fit="contain" imageSelector="img[data-smart-image]" defaultRevealed /> : null}
           </figure>
         ) : structured && structured.model.photos.length > 0 ? (
           <div className="print:hidden">
@@ -359,6 +373,10 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
               <PlanBadge plan="free" />
             )}
           </div>
+          {/* Smart Tags (0062): a capa usa object-contain; as marcações seguem a foto, não o quadro */}
+          {smartTags.length > 0 && content.cover_url ? (
+            <SmartTagLayer tags={smartTags} fit="contain" imageSelector='[data-testid="content-cover-image"]' defaultRevealed />
+          ) : null}
         </div>
         )}
 
@@ -411,6 +429,9 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
               </span>
             </Link>
           )}
+
+          {/* Marcas (0062): do post e do herói, logo abaixo do nome */}
+          {content.creator && brandChips.length > 0 ? <BrandStrip brands={brandChips} heroName={content.creator.name} /> : null}
 
           {(user || isRecipe) && (
             <div id={isRecipe ? "lista-de-compras" : undefined} className="flex scroll-mt-24 flex-wrap items-center gap-2 pt-1 print:hidden" role="group" aria-label={t("actionsLabel")}>
@@ -508,6 +529,11 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           {(content.type === "guide" || content.type === "article") && !photoPost && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
         </div>
       )}
+
+      {/* Equipamentos e produtos recomendados (0062): produtos externos, comprados no site da marca */}
+      {recommended.length > 0 ? (
+        <RecommendedProducts products={recommended} title={tb("recommended.title")} description={tb("recommended.description")} className="print:hidden" />
+      ) : null}
 
       {/* Crédito/licença da mídia (RF-008, RB-06): discreto, sempre visível; a referência interna nunca sai daqui. */}
       <p className="flex items-start gap-2 type-caption text-fg-muted">

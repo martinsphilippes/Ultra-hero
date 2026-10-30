@@ -1,5 +1,6 @@
 import "server-only";
 import { MAX_OFFSET, pageCursor, spreadCreators } from "@/components/discover/explore/tiles";
+import { loadSmartTagsFor } from "@/lib/brands/queries";
 import { createClient } from "@/lib/supabase/server";
 import { FEED_PAGE_SIZE, FEED_POST_SELECT, type FeedPostData } from "./posts";
 
@@ -10,7 +11,10 @@ type Client = Awaited<ReturnType<typeof createClient>>;
 async function postsByIds(supabase: Client, ids: string[]): Promise<FeedPostData[]> {
   const { data: posts, error } = await supabase.from("content").select(FEED_POST_SELECT).in("id", ids);
   if (error) throw error;
-  const byId = new Map((posts as unknown as FeedPostData[]).map((post) => [post.id, post]));
+  const list = posts as unknown as FeedPostData[];
+  // Smart Tags (0062): uma consulta para a página inteira; sem a 0062, nenhum post tem marcação
+  const tags = await loadSmartTagsFor(supabase, list);
+  const byId = new Map(list.map((post) => [post.id, tags.has(post.id) ? { ...post, smart_tags: tags.get(post.id) } : post]));
   return ids.map((id) => byId.get(id)).filter((post): post is FeedPostData => Boolean(post));
 }
 

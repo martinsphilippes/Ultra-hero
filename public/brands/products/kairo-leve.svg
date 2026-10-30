@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Tênis leve">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4efe6"/><stop offset="1" stop-color="#e7dccb"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="url(#bg)"/>
+  <ellipse cx="160" cy="238" rx="128" ry="12" fill="#1c1917" opacity=".12"/>
+  <path d="M40 214 C40 196 52 186 70 182 L130 166 C150 160 164 140 176 116 L196 120 C204 140 220 152 244 160 L272 170 C286 176 290 190 288 206 L286 218 Z" fill="#1c1917"/>
+  <path d="M44 214 H286 V224 a8 8 0 0 1 -8 8 H52 a8 8 0 0 1 -8 -8 Z" fill="#ffffff" stroke="#d6d3d1" stroke-width="2"/>
+  <path d="M120 190 C150 186 186 170 206 142" fill="none" stroke="#c2410c" stroke-width="10" stroke-linecap="round"/>
+  <path d="M168 136 L186 146 M160 148 L178 158 M152 160 L170 170" stroke="#f4efe6" stroke-width="4" stroke-linecap="round"/>
+</svg>
