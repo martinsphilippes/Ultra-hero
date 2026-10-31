@@ -9,6 +9,9 @@ import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
 import { MessageThread } from "@/components/deals/MessageThread";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { BrandStatusBadge, DeliverableStatusBadge } from "@/components/deals/StatusBadges";
+import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
+import { TaskList } from "@/components/execution/TaskList";
+import { TermsPanel } from "@/components/execution/TermsPanel";
 import { PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
@@ -17,6 +20,7 @@ import { getBrandCampaign, getRequestBudget, listMessages } from "@/lib/deals/qu
 import { BRAND_STATUSES } from "@/lib/deals/stages";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
+import { getDealExecution } from "@/lib/execution/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -42,14 +46,19 @@ export default async function BrandCampaignPage({ params }: Props) {
   const editable = isDraft && canEdit;
   const stepIndex = BRAND_STATUSES.indexOf(detail.brandStatus);
   const steps = BRAND_STATUSES.filter((s) => s !== "cancelled");
-  const [messages, docs] = await Promise.all([
+  const inExecution = deal !== null && ["contracting", "running", "done"].includes(detail.brandStatus);
+  const [messages, docs, exec] = await Promise.all([
     deal ? listMessages(deal.id, "brand_agency") : Promise.resolve([]),
     (async () => {
       const supabase = await createClient();
       const { data } = await supabase.from("documents").select("id, title, kind, created_at, share_talent, restricted, uploader_side").eq("request_id", id).eq("status", "ready").order("created_at", { ascending: false });
       return (data ?? []).map((d) => ({ id: d.id, title: d.title, kind: d.kind, createdAt: d.created_at, shareTalent: d.share_talent, restricted: d.restricted, uploaderSide: d.uploader_side }));
     })(),
+    inExecution && deal ? getDealExecution(deal.id) : Promise.resolve({ available: true, data: null }),
   ]);
+  const execution = exec.available ? exec.data : null;
+  const liveTerms = execution?.terms.filter((x) => x.status !== "draft") ?? [];
+  const brandTasks = execution?.tasks.filter((x) => x.side === "brand") ?? [];
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
   const preConfirmation = ["received", "building", "proposal"].includes(detail.brandStatus) || isDraft;
 
@@ -118,6 +127,23 @@ export default async function BrandCampaignPage({ params }: Props) {
             </h2>
             <RequestSummary request={request} budget={budget} />
           </section>
+          {deal && execution && liveTerms.length > 0 ? (
+            <section className={card} aria-labelledby="camp-terms" data-testid="campaign-terms">
+              <h2 id="camp-terms" className="text-base font-semibold text-fg">
+                {t("sections.terms")}
+              </h2>
+              <TermsPanel portal="brand" dealId={deal.id} requestId={request.id} stage={execution.stage} terms={liveTerms} canAccept={ctx.role === "owner"} />
+            </section>
+          ) : null}
+          {deal && execution && brandTasks.length > 0 ? (
+            <section className={card} aria-labelledby="camp-tasks" data-testid="campaign-tasks">
+              <h2 id="camp-tasks" className="text-base font-semibold text-fg">
+                {t("sections.approvals")}
+              </h2>
+              <p className="type-caption text-fg-muted">{t("approvalsHint")}</p>
+              <TaskList portal="brand" tasks={brandTasks} dealId={deal.id} requestId={request.id} canEdit={canEdit && detail.brandStatus !== "cancelled"} emptyText={t("approvalsNone")} />
+            </section>
+          ) : null}
           {deal ? (
             <section className={card} aria-labelledby="camp-messages">
               <h2 id="camp-messages" className="text-base font-semibold text-fg">
@@ -155,7 +181,9 @@ export default async function BrandCampaignPage({ params }: Props) {
             <h2 id="camp-deliverables" className="text-base font-semibold text-fg">
               {t("sections.deliverables")}
             </h2>
-            {detail.deliverables.length === 0 ? (
+            {deal && execution && execution.deliverables.length > 0 ? (
+              <DeliverablesBoard portal="brand" dealId={deal.id} requestId={request.id} deliverables={execution.deliverables} canAct={canEdit && detail.brandStatus !== "cancelled"} emptyText={t("deliverablesNone")} />
+            ) : detail.deliverables.length === 0 ? (
               <p className="type-body-sm text-fg-muted">{t("deliverablesNone")}</p>
             ) : (
               <ul className="flex flex-col divide-y divide-border">

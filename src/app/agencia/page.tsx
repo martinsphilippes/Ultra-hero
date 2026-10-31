@@ -11,8 +11,10 @@ import { agencyDashboard } from "@/lib/agency/queries";
 import { castingCounts } from "@/lib/talent/queries";
 import { agencyCan, canSeeValues } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
+import { getUser } from "@/lib/auth/session";
 import { upcomingCount } from "@/lib/calendar/queries";
 import { dealCounts } from "@/lib/deals/queries";
+import { taskCounts } from "@/lib/execution/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +30,10 @@ export default async function AgencyDashboardPage() {
   if (ctx.state !== "ok") return null;
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
-  const [t, data, casting, deals, upcoming] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id), dealCounts(ctx.agency.id), upcomingCount(14, { agencyId: ctx.agency.id })]);
+  const user = await getUser();
+  const [t, data, casting, deals, upcoming, tasks] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id), dealCounts(ctx.agency.id), upcomingCount(14, { agencyId: ctx.agency.id }), taskCounts(ctx.agency.id, user?.id ?? null)]);
 
-  const upcomingModules = [
-    { key: "tasks", icon: ClipboardList },
-    ...(canSeeValues(ctx.role, ctx.platformAdmin) ? [{ key: "finance", icon: Wallet }] : []),
-  ] as const;
+  const upcomingModules = [...(canSeeValues(ctx.role, ctx.platformAdmin) ? [{ key: "finance", icon: Wallet }] : [])] as const;
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,6 +50,7 @@ export default async function AgencyDashboardPage() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="agency-kpis">
         {deals ? <KpiCard label={t("kpi.deals")} value={deals.open} hint={t("kpi.dealsHint", { agency: deals.awaitingAgency, creator: deals.awaitingCreator })} tone={deals.awaitingAgency > 0 ? "danger" : "default"} /> : null}
         {deals ? <KpiCard label={t("kpi.confirmed")} value={deals.confirmed} /> : null}
+        {tasks ? <KpiCard label={t("kpi.tasks")} value={tasks.open} hint={t("kpi.tasksHint", { mine: tasks.mine, overdue: tasks.overdue })} tone={tasks.overdue > 0 ? "danger" : "default"} /> : null}
         {upcoming !== null ? <KpiCard label={t("kpi.upcoming")} value={upcoming} hint={t("kpi.upcomingHint")} /> : null}
         {casting ? <KpiCard label={t("kpi.casting")} value={casting.total} hint={t("kpi.castingActive", { count: casting.active })} /> : null}
         <KpiCard label={t("kpi.team")} value={data.members} />
@@ -66,6 +67,11 @@ export default async function AgencyDashboardPage() {
           <Button asChild size="sm" leadingIcon={<BriefcaseBusiness />}>
             <Link href="/agencia/pipeline">{t("seePipeline")}</Link>
           </Button>
+          {tasks ? (
+            <Button asChild size="sm" variant="secondary" leadingIcon={<ClipboardList />}>
+              <Link href="/agencia/tarefas">{t("seeTasks")}</Link>
+            </Button>
+          ) : null}
           {isManager ? (
             <Button asChild size="sm" variant="secondary" leadingIcon={<Contact />}>
               <Link href="/agencia/casting/novo">{t("newTalent")}</Link>
@@ -90,25 +96,27 @@ export default async function AgencyDashboardPage() {
         </div>
       </section>
 
-      <section aria-labelledby="agency-upcoming" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
-        <div className="flex flex-col gap-1">
-          <h2 id="agency-upcoming" className="text-sm font-semibold text-fg">
-            {t("upcomingTitle")}
-          </h2>
-          <p className="type-body-sm text-fg-muted">{t("upcomingHint")}</p>
-        </div>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {upcomingModules.map(({ key, icon: Icon }) => (
-            <li key={key} className="flex items-start gap-3 rounded-xl border border-border bg-bg p-3">
-              <Icon className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden="true" />
-              <span className="flex flex-col gap-0.5">
-                <span className="text-sm font-semibold text-fg">{t(`upcoming.${key}.title`)}</span>
-                <span className="type-caption text-fg-muted">{t(`upcoming.${key}.body`)}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {upcomingModules.length > 0 ? (
+        <section aria-labelledby="agency-upcoming" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+          <div className="flex flex-col gap-1">
+            <h2 id="agency-upcoming" className="text-sm font-semibold text-fg">
+              {t("upcomingTitle")}
+            </h2>
+            <p className="type-body-sm text-fg-muted">{t("upcomingHint")}</p>
+          </div>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {upcomingModules.map(({ key, icon: Icon }) => (
+              <li key={key} className="flex items-start gap-3 rounded-xl border border-border bg-bg p-3">
+                <Icon className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden="true" />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-sm font-semibold text-fg">{t(`upcoming.${key}.title`)}</span>
+                  <span className="type-caption text-fg-muted">{t(`upcoming.${key}.body`)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {ctx.role && ctx.memberName ? (
         <section aria-labelledby="agency-self" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">

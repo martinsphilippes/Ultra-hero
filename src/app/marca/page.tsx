@@ -9,6 +9,7 @@ import { Button, PageHeader } from "@/components/ui";
 import { listBrandMembers } from "@/lib/agency/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { listBrandCampaigns } from "@/lib/deals/queries";
+import { listTasks } from "@/lib/execution/queries";
 import { unreadInboxCount } from "@/lib/inbox/queries";
 
 export const dynamic = "force-dynamic";
@@ -23,8 +24,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
-  const [t, members, unread, campaigns] = await Promise.all([getTranslations("brandPortal.dashboard"), listBrandMembers(ctx.brand.id), unreadInboxCount(), listBrandCampaigns(ctx.brand.id)]);
-  const upcoming = [{ key: "approvals", icon: FileSignature }] as const;
+  const [t, members, unread, campaigns, approvals] = await Promise.all([getTranslations("brandPortal.dashboard"), listBrandMembers(ctx.brand.id), unreadInboxCount(), listBrandCampaigns(ctx.brand.id), listTasks({ open: true })]);
+  // aprovações pendentes: roteiros (passo 5) já enviados pelo creator e ainda sem decisão da marca
+  const pendingApprovals = approvals.available ? approvals.items.filter((x) => x.side === "brand" && x.attachmentUrl !== null).length : null;
   const inProgress = campaigns.items.filter((c) => ["received", "building", "proposal", "contracting", "running"].includes(c.status));
   const drafts = campaigns.items.filter((c) => c.status === "draft");
 
@@ -43,6 +45,7 @@ export default async function BrandDashboardPage() {
       </p>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="brand-kpis">
         {campaigns.available ? <KpiCard label={t("kpi.campaigns")} value={inProgress.length} hint={drafts.length > 0 ? t("kpi.drafts", { count: drafts.length }) : undefined} /> : null}
+        {pendingApprovals !== null ? <KpiCard label={t("kpi.approvals")} value={pendingApprovals} hint={t("kpi.approvalsHint")} tone={pendingApprovals > 0 ? "danger" : "default"} /> : null}
         <KpiCard label={t("kpi.team")} value={members.length} />
         <KpiCard label={t("kpi.unread")} value={unread ?? 0} />
       </div>
@@ -62,25 +65,10 @@ export default async function BrandDashboardPage() {
           <Link href="/marca/equipe">{t("seeTeam")}</Link>
         </Button>
       </div>
-      <section aria-labelledby="brand-upcoming" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
-        <div className="flex flex-col gap-1">
-          <h2 id="brand-upcoming" className="text-sm font-semibold text-fg">
-            {t("upcomingTitle")}
-          </h2>
-          <p className="type-body-sm text-fg-muted">{t("upcomingHint")}</p>
-        </div>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {upcoming.map(({ key, icon: Icon }) => (
-            <li key={key} className="flex items-start gap-3 rounded-xl border border-border bg-bg p-3">
-              <Icon className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden="true" />
-              <span className="flex flex-col gap-0.5">
-                <span className="text-sm font-semibold text-fg">{t(`upcoming.${key}.title`)}</span>
-                <span className="type-caption text-fg-muted">{t(`upcoming.${key}.body`)}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <p className="flex items-start gap-2 rounded-xl border border-dashed border-border px-3 py-2 type-caption text-fg-muted">
+        <FileSignature className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
+        {t("approvalsNote")}
+      </p>
     </div>
   );
 }

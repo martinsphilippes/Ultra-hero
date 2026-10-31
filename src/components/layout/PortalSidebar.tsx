@@ -89,6 +89,7 @@ const ICONS: Record<string, LucideIcon> = {
   campaigns: Megaphone,
   catalog: Search,
   agenda: CalendarDays,
+  tasks: ClipboardList,
 };
 
 function isActive(pathname: string, href: string, root: string) {

@@ -19,7 +19,9 @@
       "team": "Personas con acceso",
       "unread": "Avisos sin leer",
       "campaigns": "Campañas en curso",
-      "drafts": "{count, plural, one {# borrador} other {# borradores}}"
+      "drafts": "{count, plural, one {# borrador} other {# borradores}}",
+      "approvals": "Aprobaciones pendientes",
+      "approvalsHint": "guiones esperando tu decisión"
     },
     "seeTeam": "Ver equipo",
     "upcomingTitle": "Próximamente en el portal",
@@ -44,7 +46,8 @@
     },
     "newCampaign": "Nueva propuesta",
     "seeCreators": "Buscar creators",
-    "seeCampaigns": "Ver campañas"
+    "seeCampaigns": "Ver campañas",
+    "approvalsNote": "Términos, guiones y entregas por aprobar están dentro de cada campaña."
   },
   "team": {
     "title": "Equipo de la marca",
@@ -132,7 +135,9 @@
       "messages": "Conversación con la agencia",
       "talents": "Creators",
       "deliverables": "Entregas",
-      "attachments": "Adjuntos del briefing"
+      "attachments": "Adjuntos del briefing",
+      "terms": "Términos de la campaña",
+      "approvals": "Guiones por aprobar"
     },
     "requestedTalent": "Creator elegido por ti",
     "talentStatus": {
@@ -203,7 +208,9 @@
       "confirm": "Cancelar propuesta",
       "note": "Motivo",
       "noteRequired": "Escribe el motivo (al menos 5 caracteres)."
-    }
+    },
+    "approvalsHint": "Aprueba o pide ajustes en cada guion. La decisión libera la grabación.",
+    "approvalsNone": "Ningún guion por aprobar."
   },
   "agenda": {
     "title": "Agenda",

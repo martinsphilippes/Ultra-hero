@@ -21,7 +21,10 @@
     "dealMessages": "Deal conversation",
     "dealDocuments": "Deal documents",
     "talentAvailability": "Talent availability",
-    "agenda": "Calendar"
+    "agenda": "Calendar",
+    "dealTerms": "Deal terms",
+    "dealTasks": "Deal tasks",
+    "tasks": "Tasks"
   },
   "demoBanner": {
     "tag": "Demo",
@@ -68,7 +71,9 @@
       "dealsHint": "{agency} waiting on the agency · {creator} on creators",
       "confirmed": "Confirmed campaigns",
       "upcoming": "Commitments in 14 days",
-      "upcomingHint": "campaigns, deliverables, meetings"
+      "upcomingHint": "campaigns, deliverables, meetings",
+      "tasks": "Open tasks",
+      "tasksHint": "{mine} mine · {overdue} overdue"
     },
     "quickTitle": "Shortcuts",
     "newBrand": "New brand",
@@ -102,7 +107,8 @@
     "selfHint": "Your name and title in the agency lists.",
     "newTalent": "New talent",
     "seeCasting": "See roster",
-    "seePipeline": "See pipeline"
+    "seePipeline": "See pipeline",
+    "seeTasks": "My tasks"
   },
   "team": {
     "title": "Team",
@@ -278,7 +284,9 @@
     "fee_missing": "Set the creator's fee first (admin only).",
     "no_talents": "No interested or confirmed creators in this deal.",
     "schedule_conflict": "Another deal already booked this period for one of the creators. The admin can force it with a justification.",
-    "deliverables_open": "There are open deliverables; finish or cancel them before closing as won."
+    "deliverables_open": "There are open deliverables; finish or cancel them before closing as won.",
+    "terms_missing": "Send the terms before confirming the contract.",
+    "acceptance_missing": "Acceptances missing: the brand and every confirmed creator must accept the terms."
   },
   "casting": {
     "title": "Roster",
@@ -527,7 +535,9 @@
       "talents": "Creators",
       "deliverables": "Deliverables",
       "messages": "Conversation",
-      "documents": "Documents"
+      "documents": "Documents",
+      "terms": "Terms",
+      "tasks": "Tasks"
     },
     "sections": {
       "request": "Brand proposal",
@@ -660,7 +670,7 @@
       "save": "Save fee"
     },
     "deliverables": {
-      "intro": "What each creator delivers, with deadline and publication date. Versions and approval come in the next stage.",
+      "intro": "What each creator delivers, with due and publication dates.",
       "noTalents": "Suggest or confirm creators before planning deliverables.",
       "empty": "No planned deliverables.",
       "item": "Deliverable {n}",
@@ -674,7 +684,8 @@
       "publishAt": "Publication",
       "brief": "Guidance",
       "add": "Add deliverable",
-      "save": "Save deliverables"
+      "save": "Save deliverables",
+      "planTitle": "Plan"
     },
     "messages": {
       "channels": "Channels",
@@ -735,6 +746,94 @@
       "publish": "Publish",
       "titleRequired": "Give it a title.",
       "dealRequired": "Pick one of your deals."
+    }
+  },
+  "execution": {
+    "title": "Execution",
+    "intro": "Submitted versions, brand review, publication and proof. The agency can act on behalf of a creator without login.",
+    "empty": "No deliverable in execution."
+  },
+  "terms": {
+    "saved": "Terms draft saved.",
+    "sent": "Terms sent to the brand and the creators.",
+    "withdrawn": "Terms withdrawn.",
+    "acceptanceRecorded": "Acceptance recorded.",
+    "contractConfirmed": "{count, plural, =0 {Contract confirmed.} one {Contract confirmed: # task generated.} other {Contract confirmed: # tasks generated.}}",
+    "unavailable": "Terms being updated",
+    "unavailableHint": "Terms appear as soon as the database is updated.",
+    "intro": "Summarise the conditions, send them, follow the acceptances and confirm the contract. Confirming moves the deal to production and generates the 12 steps per creator.",
+    "introEarly": "Terms become available once the proposal is approved (stage 8).",
+    "newTerms": "New terms",
+    "newVersion": "New version",
+    "editDraft": "Edit draft",
+    "summary": "Conditions",
+    "summaryHint": "Deliverables, deadlines, usage rights and what was agreed. No amounts here.",
+    "summaryShort": "Describe the conditions with at least 20 characters.",
+    "usageRights": "Usage rights",
+    "exclusivity": "Exclusivity",
+    "validUntil": "Valid until",
+    "validUntilHint": "Optional.",
+    "saveDraft": "Save draft",
+    "send": "Send to the brand and the creators",
+    "confirmSend": "Send these terms? The current version, if any, will be superseded.",
+    "withdraw": "Withdraw",
+    "confirmWithdraw": "Withdraw these terms? Acceptances received no longer apply.",
+    "recordAcceptance": "Record acceptance received elsewhere",
+    "recordTitle": "Record acceptance",
+    "recordHint": "For those who answered by e-mail or message (creators without login, or the brand). The note says how it arrived.",
+    "recordSave": "Record",
+    "party": "Who accepted",
+    "partyBrand": "Brand",
+    "partyTalent": "Creator",
+    "talent": "Creator",
+    "recordNote": "How the acceptance arrived",
+    "recordNoteHint": "E.g.: e-mail on 12 Nov at 10:00.",
+    "noteRequired": "Describe how the acceptance arrived (at least 5 characters).",
+    "confirmTitle": "Ready to contract",
+    "confirmHint": "The brand and every confirmed creator accepted. Confirming moves the deal to Production, marks the creators as contracted and generates the 12-step tasks.",
+    "confirmAction": "Confirm contract",
+    "confirmDialogHint": "This generates the tasks and notifies the team, the brand and the creators.",
+    "waitingAcceptances": "The contract is confirmed once the brand and every confirmed creator accept the terms.",
+    "back": "Back"
+  },
+  "tasks": {
+    "saved": "Task saved.",
+    "title": "Tasks",
+    "description": "The 12 steps of each campaign and the team's ad-hoc tasks.",
+    "unavailable": "Tasks being updated",
+    "unavailableHint": "Tasks appear as soon as the database is updated.",
+    "intro": "{open} open of {total}. Steps 5 and 8 only change through the brand's decision.",
+    "introEarly": "Template tasks are generated when the contract is confirmed. Ad-hoc tasks can be created before.",
+    "emptyDeal": "No task in this deal.",
+    "filtersLabel": "Task filters",
+    "filters": {
+      "mine": "Mine",
+      "team": "Team",
+      "overdue": "Overdue",
+      "done": "Done"
+    },
+    "empty": {
+      "mine": "No open task for you.",
+      "team": "No open task in the team.",
+      "overdue": "No overdue task.",
+      "done": "No task completed yet."
+    },
+    "form": {
+      "new": "New task",
+      "title": "New task",
+      "hint": "Ad-hoc task, outside the 12-step template.",
+      "taskTitle": "Title",
+      "titleRequired": "Give a title with at least 3 characters.",
+      "side": "Whose task",
+      "sideAgency": "Agency",
+      "sideTalent": "Creator",
+      "talent": "Creator",
+      "assignee": "Assignee",
+      "deal": "Deal",
+      "dueDate": "Due date",
+      "description": "Description",
+      "back": "Back",
+      "save": "Save task"
     }
   }
 }

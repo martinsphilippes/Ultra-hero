@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { listOpportunities } from "@/lib/deals/queries";
+import { listTasks } from "@/lib/execution/queries";
 import { listInbox } from "@/lib/inbox/queries";
 import { formatCount } from "@/lib/talent/media-kit";
 import { getKit, listSocial } from "@/lib/talent/queries";
@@ -36,6 +37,9 @@ export default async function OfficeHomePage() {
     listInbox({ limit: 5 }),
     listOpportunities(),
   ]);
+  const tasks = await listTasks({ talentOnly: true, open: true });
+  const myTasks = tasks.available ? tasks.items.filter((x) => x.talentId === talent.id) : [];
+  const overdue = myTasks.filter((x) => x.dueAt && new Date(x.dueAt).getTime() < Date.now()).length;
   const consentOk = consentActive(talent);
   const card = "flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4";
   const pendingOpportunities = opportunities.items.filter((o) => ["consulted", "talk_requested"].includes(o.status));
@@ -62,6 +66,20 @@ export default async function OfficeHomePage() {
               <ArrowRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
             </Link>
           ))}
+        </section>
+      ) : null}
+      {tasks.available ? (
+        <section className={card} aria-labelledby="office-tasks-home" data-testid="office-tasks-home">
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="office-tasks-home" className="text-sm font-semibold text-fg">
+              {t("tasksTitle")}
+            </h2>
+            <Link href="/creator/escritorio/tarefas" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+              {t("tasksAll")}
+            </Link>
+          </div>
+          <p className="text-sm text-fg">{myTasks.length > 0 ? t("tasksPending", { count: myTasks.length }) : t("tasksNone")}</p>
+          {overdue > 0 ? <p className="type-caption font-medium text-danger">{t("tasksOverdue", { count: overdue })}</p> : null}
         </section>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">

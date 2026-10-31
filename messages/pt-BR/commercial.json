@@ -158,5 +158,188 @@
     "revoked": "Link desligado.",
     "confirmRotate": "Gerar um link novo? O anterior para de funcionar.",
     "confirmRevoke": "Desligar o link? Os calendários assinados param de atualizar."
+  },
+  "taskSteps": {
+    "1": "Briefing recebido",
+    "2": "Alinhamento com o creator",
+    "3": "Reunião de alinhamento",
+    "4": "Roteiro enviado",
+    "5": "Roteiro aprovado pela marca",
+    "6": "Gravação",
+    "7": "Conteúdo enviado",
+    "8": "Conteúdo aprovado pela marca",
+    "9": "Publicação",
+    "10": "Comprovação de publicação",
+    "11": "Relatório de resultados",
+    "12": "Encerramento"
+  },
+  "terms": {
+    "status": {
+      "draft": "Rascunho",
+      "sent": "Enviados",
+      "accepted": "Aceitos",
+      "superseded": "Substituídos",
+      "withdrawn": "Retirados"
+    },
+    "method": {
+      "in_app": "no app",
+      "recorded_by_agency": "registrado pela agência"
+    },
+    "disclaimer": "Estes termos resumem as condições combinadas e registram quem aceitou, quando e por onde. Não são assinatura eletrônica nem substituem o contrato.",
+    "version": "Termos v{n}",
+    "draftLabel": "Rascunho v{n}",
+    "history": "{count, plural, one {# versão anterior} other {# versões anteriores}}",
+    "sentAt": "enviados em {date}",
+    "validUntil": "válidos até {date}",
+    "summary": "Condições",
+    "usageRights": "Direitos de uso",
+    "exclusivity": "Exclusividade",
+    "acceptances": "Aceites",
+    "noAcceptances": "Nenhum aceite ainda.",
+    "brandAccepted": "Marca aceitou",
+    "talentAccepted": "{name} aceitou",
+    "brandPending": "Aguardando a marca",
+    "talentPending": "Aguardando {name}",
+    "youAccepted": "Você aceitou estes termos.",
+    "accept": "Aceitar termos",
+    "ownerOnly": "Só a pessoa dona da marca aceita os termos.",
+    "acceptTitle": "Aceitar os termos",
+    "acceptHint": "O aceite fica registrado com data e hora. Em caso de dúvida, fale com a agência antes.",
+    "agree": "Li e aceito as condições descritas.",
+    "agreeRequired": "Marque a confirmação para aceitar.",
+    "note": "Observação (opcional)",
+    "noteHint": "Vai junto com o registro do aceite.",
+    "back": "Voltar",
+    "accepted": "Termos aceitos."
+  },
+  "tasks": {
+    "status": {
+      "todo": "A fazer",
+      "doing": "Em andamento",
+      "blocked": "Travada",
+      "done": "Concluída",
+      "cancelled": "Cancelada"
+    },
+    "side": {
+      "agency": "Agência",
+      "talent": "Creator",
+      "brand": "Marca"
+    },
+    "dueAt": "até {date}",
+    "noDue": "sem prazo",
+    "doneAt": "concluída em {date}",
+    "feedback": "Retorno: {text}",
+    "openAttachment": "Abrir anexo",
+    "attachmentDocument": "Anexo enviado como documento",
+    "changeStatus": "Mudar situação",
+    "sendAndDone": "Enviar e concluir",
+    "markDone": "Concluir",
+    "decideScript": "Avaliar roteiro",
+    "attachTitle": "Anexar e concluir",
+    "attachHint": "Cole o link do arquivo (Drive, Dropbox, WeTransfer…). A marca recebe aviso para avaliar.",
+    "url": "Link do arquivo",
+    "urlHint": "Só links https.",
+    "urlRequired": "Informe um link https válido.",
+    "back": "Voltar",
+    "decideScriptTitle": "Roteiro",
+    "decideScriptHint": "Aprove ou peça ajustes. Ao pedir ajustes, explique o que mudar.",
+    "decideScriptAgencyHint": "Decisão registrada pela agência em nome da marca: a observação é obrigatória.",
+    "openScript": "Abrir roteiro",
+    "feedbackLabel": "Observações",
+    "feedbackHint": "Obrigatórias ao pedir ajustes.",
+    "feedbackRequired": "Explique o que precisa mudar (mínimo 5 caracteres).",
+    "requestChanges": "Pedir ajustes",
+    "approve": "Aprovar",
+    "statusSet": {
+      "todo": "Tarefa reaberta.",
+      "doing": "Tarefa em andamento.",
+      "blocked": "Tarefa marcada como travada.",
+      "done": "Tarefa concluída.",
+      "cancelled": "Tarefa cancelada."
+    },
+    "decided": {
+      "approve": "Roteiro aprovado.",
+      "changes": "Ajustes pedidos ao creator."
+    }
+  },
+  "deliverables": {
+    "revision": "v{n}",
+    "dueAt": "entrega até {date}",
+    "noDue": "sem prazo",
+    "publishAt": "publicação em {date}",
+    "changesFeedback": "Ajustes pedidos: {text}",
+    "openPublished": "Ver publicação",
+    "versionsLabel": "Versões",
+    "submissionVersion": "Envio v{n}",
+    "proofVersion": "Comprovante v{n}",
+    "submittedBy": {
+      "talent": "pelo creator",
+      "agency": "pela agência"
+    },
+    "openLink": "abrir",
+    "withDocument": "com documento",
+    "decision": {
+      "approved": "Aprovado",
+      "changes_requested": "Ajustes pedidos"
+    },
+    "decidedBy": {
+      "brand": "pela marca",
+      "agency": "pela agência"
+    },
+    "actions": {
+      "submit": "Enviar versão",
+      "decide": "Avaliar",
+      "publish": "Registrar publicação",
+      "proof": "Enviar comprovante",
+      "close": "Concluir",
+      "cancel": "Cancelar entrega"
+    },
+    "dialog": {
+      "submit": {
+        "title": "Enviar versão",
+        "hint": "Cada envio vira uma versão nova. A marca avalia e aprova ou pede ajustes."
+      },
+      "decide": {
+        "title": "Avaliar entrega",
+        "hint": "Aprove ou peça ajustes com observações. Uma nova versão volta para avaliação."
+      },
+      "publish": {
+        "title": "Registrar publicação",
+        "hint": "Cole o link público do conteúdo publicado."
+      },
+      "proof": {
+        "title": "Comprovante de publicação",
+        "hint": "Link ou documento que comprove a publicação (print, métricas)."
+      },
+      "close": {
+        "title": "Encerrar entrega",
+        "hint": "Concluir fecha o ciclo; cancelar exige um motivo."
+      }
+    },
+    "openSubmission": "Abrir versão enviada",
+    "url": "Link",
+    "urlHint": "Só links https.",
+    "document": "Ou um documento do negócio",
+    "documentHint": "Documentos já enviados na aba Documentos.",
+    "note": "Observação (opcional)",
+    "feedbackLabel": "Observações",
+    "feedbackHint": "Obrigatórias ao pedir ajustes.",
+    "back": "Voltar",
+    "requestChanges": "Pedir ajustes",
+    "approve": "Aprovar",
+    "linkOrFile": "Informe um link ou escolha um documento.",
+    "httpsOnly": "Informe um link https válido.",
+    "feedbackRequired": "Explique o motivo (mínimo 5 caracteres).",
+    "submitted": "Versão enviada.",
+    "published": "Publicação registrada.",
+    "proofSent": "Comprovante enviado.",
+    "decided": {
+      "approved": "Entrega aprovada.",
+      "changes_requested": "Ajustes pedidos."
+    },
+    "closed": {
+      "done": "Entrega concluída.",
+      "cancelled": "Entrega cancelada."
+    }
   }
 }

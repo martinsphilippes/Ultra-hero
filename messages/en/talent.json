@@ -7,7 +7,8 @@
     "opportunities": "Opportunities",
     "opportunity": "Opportunity",
     "availability": "Availability",
-    "agenda": "Calendar"
+    "agenda": "Calendar",
+    "tasks": "Tasks"
   },
   "tabs": {
     "label": "Office sections",
@@ -17,7 +18,8 @@
     "notifications": "Notices",
     "opportunities": "Opportunities",
     "availability": "Availability",
-    "agenda": "Calendar"
+    "agenda": "Calendar",
+    "tasks": "Tasks"
   },
   "home": {
     "unavailable": "Office being updated",
@@ -48,7 +50,12 @@
     "opportunitiesAll": "See all",
     "opportunitiesPending": "{count, plural, one {# opportunity awaits your reply.} other {# opportunities await your reply.}}",
     "opportunitiesNone": "No opportunity awaiting a reply.",
-    "availabilityOpen": "Declare periods"
+    "availabilityOpen": "Declare periods",
+    "tasksTitle": "Tasks",
+    "tasksAll": "See all",
+    "tasksPending": "{count, plural, one {# open task} other {# open tasks}}",
+    "tasksNone": "No open task.",
+    "tasksOverdue": "{count, plural, one {# overdue} other {# overdue}}"
   },
   "consent": {
     "title": "Commercial use terms",
@@ -89,7 +96,9 @@
     "generic": "Could not complete. Please try again.",
     "note_required": "Write the reason.",
     "invalid_state": "This opportunity was already answered or closed.",
-    "invalid_stage": "This campaign is already closed."
+    "invalid_stage": "This campaign is already closed.",
+    "file_missing": "Attach the file (link or document) to complete.",
+    "invalid_url": "Enter a valid https link."
   },
   "values": {
     "demoLockedKit": "Demo agency: the public link stays off (preview only)."
@@ -175,5 +184,20 @@
     "intro": "Confirmed campaigns, reply deadlines, deliverables and recordings. Your personal calendar stays out.",
     "empty": "Nothing this month.",
     "emptyHint": "When the agency confirms a campaign with you, it shows up here."
+  },
+  "tasks": {
+    "unavailable": "Tasks being updated",
+    "unavailableHint": "Tasks appear as soon as the database is updated.",
+    "intro": "Your steps in the campaigns: script, recording, content, publication and proof. Script and content ask for the file link on completion.",
+    "openTitle": "{count, plural, =0 {None open} one {# open} other {# open}}",
+    "doneTitle": "{count, plural, one {# completed} other {# completed}}",
+    "empty": "No open task."
+  },
+  "execution": {
+    "termsTitle": "Campaign terms",
+    "tasksTitle": "Your steps",
+    "tasksEmpty": "No step of yours in this campaign.",
+    "deliverablesTitle": "Your deliverables",
+    "deliverablesHint": "Send each version by link; the brand approves or requests changes. Then record the publication and the proof."
   }
 }

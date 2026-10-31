@@ -7,7 +7,8 @@
     "opportunities": "Oportunidades",
     "opportunity": "Oportunidad",
     "availability": "Disponibilidad",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "tasks": "Tareas"
   },
   "tabs": {
     "label": "Secciones de la oficina",
@@ -17,7 +18,8 @@
     "notifications": "Avisos",
     "opportunities": "Oportunidades",
     "availability": "Disponibilidad",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "tasks": "Tareas"
   },
   "home": {
     "unavailable": "Oficina en actualización",
@@ -48,7 +50,12 @@
     "opportunitiesAll": "Ver todas",
     "opportunitiesPending": "{count, plural, one {# oportunidad espera tu respuesta.} other {# oportunidades esperan tu respuesta.}}",
     "opportunitiesNone": "Ninguna oportunidad espera respuesta.",
-    "availabilityOpen": "Declarar períodos"
+    "availabilityOpen": "Declarar períodos",
+    "tasksTitle": "Tareas",
+    "tasksAll": "Ver todas",
+    "tasksPending": "{count, plural, one {# tarea abierta} other {# tareas abiertas}}",
+    "tasksNone": "Ninguna tarea abierta.",
+    "tasksOverdue": "{count, plural, one {# atrasada} other {# atrasadas}}"
   },
   "consent": {
     "title": "Términos de uso comercial",
@@ -89,7 +96,9 @@
     "generic": "No se pudo completar. Inténtalo de nuevo.",
     "note_required": "Escribe el motivo.",
     "invalid_state": "Esta oportunidad ya fue respondida o cerrada.",
-    "invalid_stage": "Esta campaña ya fue cerrada."
+    "invalid_stage": "Esta campaña ya fue cerrada.",
+    "file_missing": "Adjunta el archivo (enlace o documento) para completar.",
+    "invalid_url": "Indica un enlace https válido."
   },
   "values": {
     "demoLockedKit": "Agencia de demostración: el enlace público queda desactivado (solo la vista previa)."
@@ -175,5 +184,20 @@
     "intro": "Campañas confirmadas, plazos de respuesta, entregas y grabaciones. Tu agenda personal queda fuera.",
     "empty": "Nada este mes.",
     "emptyHint": "Cuando la agencia confirme una campaña contigo, aparece aquí."
+  },
+  "tasks": {
+    "unavailable": "Tareas en actualización",
+    "unavailableHint": "Las tareas aparecen en cuanto se actualice la base de datos.",
+    "intro": "Tus etapas en las campañas: guion, grabación, contenido, publicación y comprobación. Guion y contenido piden el enlace del archivo al completar.",
+    "openTitle": "{count, plural, =0 {Ninguna abierta} one {# abierta} other {# abiertas}}",
+    "doneTitle": "{count, plural, one {# completada} other {# completadas}}",
+    "empty": "Ninguna tarea abierta."
+  },
+  "execution": {
+    "termsTitle": "Términos de la campaña",
+    "tasksTitle": "Tus etapas",
+    "tasksEmpty": "Ninguna etapa tuya en esta campaña.",
+    "deliverablesTitle": "Tus entregas",
+    "deliverablesHint": "Envía cada versión por enlace; la marca aprueba o pide ajustes. Después registra la publicación y el comprobante."
   }
 }

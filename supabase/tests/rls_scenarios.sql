@@ -8268,7 +8268,7 @@ select tests.ok('S75 kit devolve só os campos marcados (sem cidade, visualizaç
   and not (((select v::jsonb from t_s75 where k = 'kit_r1') -> 'networks' -> 0) ? 'avg_views')
   and not (((select v::jsonb from t_s75 where k = 'kit_r1') -> 'networks' -> 0) ? 'audience')
   and (((select v::jsonb from t_s75 where k = 'kit_r1') -> 'networks' -> 0) ->> 'declared_side') = 'talent'
-  and (select v from t_s75 where k = 'kit_r1') !~ '(cents|amount|fee|price|budget|commission)');
+  and (select v from t_s75 where k = 'kit_r1') !~ '(cents|amount|fee_|price|budget|commission)');
 select public.media_kit_resolve((select v from t_s75 where k = 'kit_t1'), false);
 select tests.ok('S75 visita contada só com p_count',
   (select view_count from public.media_kits where talent_id = (select v::uuid from t_s75 where k = 't1')) = 1);
@@ -8539,7 +8539,7 @@ insert into t_s76 values ('search', public.brand_talent_search((select v::uuid f
 select tests.ok('S76 catálogo da marca: só o creator com consentimento e liberado; sem notas internas nem valores',
   jsonb_array_length((select v::jsonb from t_s76 where k = 'search')) = 1
   and ((select v::jsonb from t_s76 where k = 'search') -> 0 ->> 'name') = 'Creator C1'
-  and (select v from t_s76 where k = 'search') !~ '(internal_notes|commercial_status|fee|cents|budget)');
+  and (select v from t_s76 where k = 'search') !~ '(internal_notes|commercial_status|fee_|cents|budget)');
 select tests.ok('S76 filtro por UF: SP atende; RJ não devolve ninguém',
   jsonb_array_length(public.brand_talent_search((select v::uuid from t_s76 where k = 'brand_c'), '{"state": "SP"}')) = 1
   and (public.brand_talent_search((select v::uuid from t_s76 where k = 'brand_c'), '{"state": "SP"}') -> 0 -> 'matched') ? 'state'
@@ -8707,7 +8707,7 @@ select tests.ok('S76 depois da confirmação a marca vê o creator (campos do ki
   jsonb_array_length(public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) -> 'talents') = 1
   and (public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) ->> 'brand_status') = 'contracting'
   and (select count(*) from public.deliverables) = 2
-  and public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req'))::text !~ '(fee|cents|commission|internal_notes)');
+  and public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req'))::text !~ '(fee_cents|cents|commission|internal_notes)');
 select tests.expect_error('S76 marca não cancela campanha já confirmada',
   $q$select public.brand_request_cancel((select v::uuid from t_s76 where k = 'req'), 'mudamos de ideia')$q$, 'invalid_state');
 select public.brand_request_cancel((select v::uuid from t_s76 where k = 'req2'), 'rascunho descartado');
@@ -9003,6 +9003,240 @@ select tests.ok('S77 funções novas: search_path fixo, nenhuma para o visitante
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
 drop table t_s77;
 
+-- ================================================================ S78 · Gestão: termos demonstrativos, tarefas e entregas (0068)
+-- Marca D e creator D1 (S77) numa campanha nova: confirmação → termos enviados → aceites (marca no app; creator no
+-- app; talento sem login registrado pela agência) → contratação confirmada gera as 12 tarefas → entregas com versões,
+-- decisão da marca, publicação e comprovação. Cada lado vê só o seu.
+\ir ../migrations/0068_gestao_execucao.sql
+select tests.su();
+create temp table t_s78 (k text primary key, v text);
+grant all on t_s78 to anon, authenticated, service_role;
+insert into t_s78 select 'brand_d', id::text from public.brands where slug = 's77-marca-d';
+insert into t_s78 select 'td1', t.id::text from public.talent_profiles t where t.user_id = '77000000-0000-4000-8000-0000000000d1';
+-- talento sem login (aceite e envios registrados pela agência)
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s78 values ('td3', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Creator D3", "state": "RJ", "commercial_status": "active"}')::text);
+select tests.su();
+update public.talent_profiles set consent_at = now(), consent_version = '2026-10', catalog_visible = true where id = (select v::uuid from t_s78 where k = 'td3');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+insert into t_s78 values ('req', public.brand_request_save(null, (select v::uuid from t_s78 where k = 'brand_d'),
+  ('{"talent_id": "' || (select v from t_s78 where k = 'td1') || '", "title": "Campanha E", "objective": "content", "period_start": "' || (current_date + 30) || '",
+     "period_end": "' || (current_date + 40) || '", "networks": ["instagram"], "deliverables": [{"kind": "reels", "quantity": 1}]}')::jsonb)::text);
+insert into t_s78 values ('deal', public.brand_request_submit((select v::uuid from t_s78 where k = 'req'))::text);
+-- o colaborador a3 é o responsável pelo negócio (a marca D não tem gestor de conta)
+select tests.su();
+update public.deals set owner_id = '74000000-0000-4000-8000-0000000000a3' where id = (select v::uuid from t_s78 where k = 'deal');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_shortlist_set((select v::uuid from t_s78 where k = 'deal'), ('[{"talent_id": "' || (select v from t_s78 where k = 'td1') || '"}, {"talent_id": "' || (select v from t_s78 where k = 'td3') || '"}]')::jsonb);
+select tests.su();
+insert into t_s78 select 'dt1', id::text from public.deal_talents where deal_id = (select v::uuid from t_s78 where k = 'deal') and talent_id = (select v::uuid from t_s78 where k = 'td1');
+insert into t_s78 select 'dt3', id::text from public.deal_talents where deal_id = (select v::uuid from t_s78 where k = 'deal') and talent_id = (select v::uuid from t_s78 where k = 'td3');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_fee_set((select v::uuid from t_s78 where k = 'dt1'), 300000);
+select public.agency_fee_set((select v::uuid from t_s78 where k = 'dt3'), 200000);
+select public.agency_consult_talents((select v::uuid from t_s78 where k = 'deal'), array[(select v::uuid from t_s78 where k = 'dt1'), (select v::uuid from t_s78 where k = 'dt3')], now() + interval '5 days', null);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select public.talent_opportunity_respond((select v::uuid from t_s78 where k = 'dt1'), 'interested', null);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_record_talent_response((select v::uuid from t_s78 where k = 'dt3'), 'interested', 'confirmou por telefone');
+select public.agency_deliverables_save((select v::uuid from t_s78 where k = 'deal'), ('[{"deal_talent_id": "' || (select v from t_s78 where k = 'dt1') || '", "kind": "reels", "title": "Reels E", "due_at": "' || (current_date + 33) || '", "publish_at": "' || (current_date + 35) || '"},
+  {"deal_talent_id": "' || (select v from t_s78 where k = 'dt3') || '", "kind": "stories", "title": "Stories E"}]')::jsonb);
+select tests.expect_error('S78 termos só a partir da confirmação', $q$select public.agency_terms_save((select v::uuid from t_s78 where k = 'deal'), '{"summary": "x"}')$q$, 'invalid_stage');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_deal_confirm((select v::uuid from t_s78 where k = 'deal'));
+
+-- 1) termos: rascunho, envio (avisa marca e creators), visibilidade -------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.expect_error('S78 colaborador de fora não escreve termos', $q$select public.agency_terms_save((select v::uuid from t_s78 where k = 'deal'), '{"summary": "x"}')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s78 values ('terms', public.agency_terms_save((select v::uuid from t_s78 where k = 'deal'), '{"summary": "Produção de 1 reels e stories, publicação entre as datas combinadas, aprovação em 2 dias úteis.", "usage_rights": "Orgânico por 6 meses", "exclusivity": "Sem exclusividade"}')::text);
+select tests.ok('S78 segundo salvar edita o mesmo rascunho', public.agency_terms_save((select v::uuid from t_s78 where k = 'deal'), '{"exclusivity": "Sem exclusividade de categoria"}') = (select v::uuid from t_s78 where k = 'terms')
+  and (select count(*) from public.deal_terms where deal_id = (select v::uuid from t_s78 where k = 'deal')) = 1);
+select tests.expect_error('S78 confirmar contrato sem termos enviados', $q$select public.agency_contract_confirm((select v::uuid from t_s78 where k = 'deal'))$q$, 'terms_missing');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S78 marca não vê rascunho de termos', (select count(*) from public.deal_terms) = 0 and jsonb_array_length(public.deal_execution((select v::uuid from t_s78 where k = 'deal')) -> 'terms') = 0);
+select tests.expect_error('S78 marca não aceita rascunho', $q$select public.brand_terms_accept((select v::uuid from t_s78 where k = 'terms'))$q$, 'not_found');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S78 colaborador não envia termos', $q$select public.agency_terms_send((select v::uuid from t_s78 where k = 'terms'))$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_terms_send((select v::uuid from t_s78 where k = 'terms'));
+select tests.su();
+select tests.ok('S78 envio: termos "enviados", negócio em contratação, marca (dona) e creator avisados',
+  (select status from public.deal_terms where id = (select v::uuid from t_s78 where k = 'terms')) = 'sent'
+  and (select stage from public.deals where id = (select v::uuid from t_s78 where k = 'deal')) = 'contracting'
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000c1' and kind = 'contract_acceptance_requested')
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'contract_acceptance_requested'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S78 termos enviados não se editam (novo salvar abre versão 2 só depois)', $q$select public.agency_terms_send((select v::uuid from t_s78 where k = 'terms'))$q$, 'invalid_state');
+-- rascunho retirado é apagado (um "retirado" sem envio vazaria o texto interno para marca e creators)
+insert into t_s78 values ('draft2', public.agency_terms_save((select v::uuid from t_s78 where k = 'deal'), '{"summary": "Versão 2 em rascunho: texto interno de negociação, não enviar à marca."}')::text);
+select public.agency_terms_withdraw((select v::uuid from t_s78 where k = 'draft2'));
+select tests.ok('S78 rascunho retirado some; os termos enviados seguem únicos', (select count(*) from public.deal_terms where id = (select v::uuid from t_s78 where k = 'draft2')) = 0
+  and (select count(*) from public.deal_terms where deal_id = (select v::uuid from t_s78 where k = 'deal')) = 1);
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S78 marca não vê rascunho retirado nem etapa interna do pipeline', (select count(*) from public.deal_terms) = 1
+  and (public.deal_execution((select v::uuid from t_s78 where k = 'deal')) ->> 'stage') = 'contracting');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+
+-- 2) aceites: marca no app (só o dono), creator no app, talento sem login pela agência; contratação confirmada -------------
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S78 marca lê os termos enviados (sem valores)', (select count(*) from public.deal_terms) = 1 and (select string_agg(summary || usage_rights || exclusivity, ' ') from public.deal_terms) !~ '(R\$|cents)');
+select public.brand_terms_accept((select v::uuid from t_s78 where k = 'terms'), 'De acordo.');
+select tests.ok('S78 aceite da marca idempotente', (select count(*) from public.deal_acceptances where party = 'brand') = 1);
+select public.brand_terms_accept((select v::uuid from t_s78 where k = 'terms'));
+select tests.ok('S78 aceite da marca segue único', (select count(*) from public.deal_acceptances where party = 'brand') = 1);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S78 contrato só com todos os creators confirmados aceitos', $q$select public.agency_contract_confirm((select v::uuid from t_s78 where k = 'deal'))$q$, 'acceptance_missing');
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S78 creator confirmado lê os termos e o aceite da marca pela leitura fechada', (select count(*) from public.deal_terms) = 1
+  and (public.deal_execution((select v::uuid from t_s78 where k = 'deal')) -> 'terms' -> 0 -> 'acceptances') @> '[{"party": "brand"}]'::jsonb);
+select public.talent_terms_accept((select v::uuid from t_s78 where k = 'terms'), 'Topo.');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S78 agência não registra aceite de creator com login',
+  $q$select public.agency_record_acceptance((select v::uuid from t_s78 where k = 'terms'), 'talent', (select v::uuid from t_s78 where k = 'dt1'), null, 'assinou por e-mail')$q$, 'talent_has_login');
+select tests.expect_error('S78 registro exige nota', $q$select public.agency_record_acceptance((select v::uuid from t_s78 where k = 'terms'), 'talent', (select v::uuid from t_s78 where k = 'dt3'), null, 'ok')$q$, 'note_required');
+select public.agency_record_acceptance((select v::uuid from t_s78 where k = 'terms'), 'talent', (select v::uuid from t_s78 where k = 'dt3'), null, 'aceite recebido por e-mail em anexo');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S78 colaborador não confirma contrato', $q$select public.agency_contract_confirm((select v::uuid from t_s78 where k = 'deal'))$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s78 values ('tasks', public.agency_contract_confirm((select v::uuid from t_s78 where k = 'deal'))::text);
+select tests.su();
+select tests.ok('S78 contratação: produção, creators contratados, termos aceitos, 5 + 7×2 = 19 tarefas, avisos',
+  (select stage = 'production' and contract_confirmed_at is not null from public.deals where id = (select v::uuid from t_s78 where k = 'deal'))
+  and (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s78 where k = 'deal') and status = 'contracted') = 2
+  and (select status from public.deal_terms where id = (select v::uuid from t_s78 where k = 'terms')) = 'accepted'
+  and (select v from t_s78 where k = 'tasks') = '19' and (select count(*) from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal')) = 19
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step = 4 and side = 'talent' and assignee_id = '77000000-0000-4000-8000-0000000000d1') = 1
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step in (1, 2, 3, 11, 12) and talent_id is null) = 5
+  and (select bool_and(due_at >= ((current_date + 1)::timestamp + interval '18 hours') at time zone 'America/Sao_Paulo') from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal'))
+  and (select status from public.deliverables where deal_id = (select v::uuid from t_s78 where k = 'deal') and title = 'Reels E') = 'in_production'
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000c1' and kind = 'contract_confirmed')
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'task_assigned')
+  and (select count(*) from public.calendar_events where deal_id = (select v::uuid from t_s78 where k = 'deal') and kind = 'campaign') = 2);
+select tests.ok('S78 gerar de novo não duplica', public.agency_tasks_generate((select v::uuid from t_s78 where k = 'deal')) = 0);
+
+-- 3) tarefas: quem vê e quem muda; roteiro (4) → marca decide (5) ----------------------------------------------------------
+select tests.su();
+insert into t_s78 select 't4', id::text from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step = 4 and talent_id = (select v::uuid from t_s78 where k = 'td1');
+insert into t_s78 select 't5', id::text from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step = 5 and talent_id = (select v::uuid from t_s78 where k = 'td1');
+insert into t_s78 select 't1', id::text from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step = 1;
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S78 creator vê só as 5 tarefas do lado dele (os passos da marca ficam com a marca)', (select count(*) from public.tasks) = 5 and (select bool_and(side = 'talent' and talent_id = (select v::uuid from t_s78 where k = 'td1')) from public.tasks));
+select tests.expect_error('S78 creator não conclui o roteiro sem anexo', $q$select public.task_set_status((select v::uuid from t_s78 where k = 't4'), 'done')$q$, 'file_missing');
+select tests.expect_error('S78 creator não muda tarefa da agência', $q$select public.task_set_status((select v::uuid from t_s78 where k = 't1'), 'done')$q$, 'not_found');
+select tests.expect_error('S78 anexo precisa ser https', $q$select public.task_set_status((select v::uuid from t_s78 where k = 't4'), 'done', '{"url": "http://x.com/r"}')$q$, 'invalid_input');
+select public.task_set_status((select v::uuid from t_s78 where k = 't4'), 'done', '{"url": "https://example.com/roteiro-v1"}');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S78 marca vê só as tarefas do lado dela (passos 5 e 8 de cada creator), com o roteiro anexado',
+  (select count(*) from public.tasks) = 4 and (select bool_and(side = 'brand') from public.tasks)
+  and (select attachment_url from public.tasks where id = (select v::uuid from t_s78 where k = 't5')) = 'https://example.com/roteiro-v1'
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000c1' and kind = 'deliverable_submitted' and params ->> 'step' = 'script'));
+select tests.expect_error('S78 ajuste do roteiro exige feedback', $q$select public.brand_task_decide((select v::uuid from t_s78 where k = 't5'), 'changes', 'não')$q$, 'note_required');
+select public.brand_task_decide((select v::uuid from t_s78 where k = 't5'), 'changes', 'Pode incluir o tênis na abertura?');
+select tests.su();
+select tests.ok('S78 ajuste: passo 4 volta com o feedback; creator avisado',
+  (select status = 'todo' and feedback = 'Pode incluir o tênis na abertura?' from public.tasks where id = (select v::uuid from t_s78 where k = 't4'))
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'deliverable_decided' and params ->> 'status' = 'changes'));
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select public.task_set_status((select v::uuid from t_s78 where k = 't4'), 'done', '{"url": "https://example.com/roteiro-v2"}');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.expect_error('S78 marca não conclui o passo 5 por fora da decisão', $q$select public.task_set_status((select v::uuid from t_s78 where k = 't5'), 'done')$q$, 'not_found');
+select public.brand_task_decide((select v::uuid from t_s78 where k = 't5'), 'approve');
+select tests.ok('S78 roteiro aprovado', (select status from public.tasks where id = (select v::uuid from t_s78 where k = 't5')) = 'done');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S78 nem o gestor reabre ou cancela o passo 5 por fora da decisão', $q$select public.task_set_status((select v::uuid from t_s78 where k = 't5'), 'todo')$q$, 'invalid_state');
+select tests.expect_error('S78 tarefa avulsa nunca é do lado da marca', $q$select public.task_save(null, ('{"agency_id": "' || public.seed_uuid('s74:agency:a') || '", "deal_id": "' || (select v from t_s78 where k = 'deal') || '", "side": "brand", "title": "Aprovar algo"}')::jsonb)$q$, 'invalid_input');
+-- tarefa avulsa: colaborador de fora não cria no negócio; gestor cria e atribui; responsável avisado
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.expect_error('S78 colaborador de fora não cria tarefa no negócio', $q$select public.task_save(null, ('{"agency_id": "' || public.seed_uuid('s74:agency:a') || '", "deal_id": "' || (select v from t_s78 where k = 'deal') || '", "title": "Comprar props"}')::jsonb)$q$, 'forbidden');
+insert into t_s78 values ('tfree', public.task_save(null, ('{"agency_id": "' || public.seed_uuid('s74:agency:a') || '", "title": "Organizar pasta de referências"}')::jsonb)::text);
+select tests.ok('S78 colaborador cria tarefa própria da agência e a vê', (select count(*) from public.tasks where id = (select v::uuid from t_s78 where k = 'tfree')) = 1);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S78 responsável precisa ser da agência', $q$select public.task_save((select v::uuid from t_s78 where k = 't1'), '{"assignee_id": "77000000-0000-4000-8000-0000000000c1"}')$q$, 'invalid_input');
+select public.task_save((select v::uuid from t_s78 where k = 't1'), '{"assignee_id": "74000000-0000-4000-8000-0000000000a3", "description": "Checklist no drive"}');
+select tests.su();
+select tests.ok('S78 atribuição avisa o responsável', exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a3' and kind = 'task_assigned' and entity_id = (select v::uuid from t_s78 where k = 't1')));
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.ok('S78 colaborador de fora não vê tarefas do negócio alheio (só a sua)', (select count(*) from public.tasks) = 1);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.ok('S78 agência B lê 0 termos, 0 aceites, 0 tarefas, 0 versões', (select count(*) from public.deal_terms) + (select count(*) from public.deal_acceptances) + (select count(*) from public.tasks) + (select count(*) from public.deliverable_versions) = 0);
+select tests.expect_error('S78 Adm da agência B não grava tarefa em negócio da agência A (o negócio decide a agência)',
+  $q$select public.task_save(null, ('{"agency_id": "' || public.seed_uuid('s74:agency:b') || '", "deal_id": "' || (select v from t_s78 where k = 'deal') || '", "title": "Clique aqui"}')::jsonb)$q$, 'not_found');
+
+-- 4) entregas: envio com versão, decisão (ajustes → nova versão sem herdar), publicação, comprovação, fechamento ----------
+select tests.su();
+insert into t_s78 select 'd1', id::text from public.deliverables where deal_id = (select v::uuid from t_s78 where k = 'deal') and title = 'Reels E';
+insert into t_s78 select 'd3', id::text from public.deliverables where deal_id = (select v::uuid from t_s78 where k = 'deal') and title = 'Stories E';
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.expect_error('S78 marca não envia entrega', $q$select public.deliverable_submit((select v::uuid from t_s78 where k = 'd1'), 'https://example.com/v1')$q$, 'not_found');
+select tests.expect_error('S78 marca não decide entrega não enviada', $q$select public.deliverable_decide((select v::uuid from t_s78 where k = 'd1'), 'approved')$q$, 'invalid_state');
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.expect_error('S78 envio exige link ou arquivo', $q$select public.deliverable_submit((select v::uuid from t_s78 where k = 'd1'))$q$, 'file_missing');
+select tests.expect_error('S78 creator não envia a entrega de outro creator', $q$select public.deliverable_submit((select v::uuid from t_s78 where k = 'd3'), 'https://example.com/x')$q$, 'not_found');
+select public.deliverable_submit((select v::uuid from t_s78 where k = 'd1'), 'https://example.com/reels-v1', null, 'Primeira versão');
+select tests.su();
+select tests.ok('S78 envio: entrega "enviada" revisão 1, versão registrada, passo 7 concluído, marca e responsável avisados',
+  (select status = 'submitted' and revision = 1 from public.deliverables where id = (select v::uuid from t_s78 where k = 'd1'))
+  and (select count(*) from public.deliverable_versions where deliverable_id = (select v::uuid from t_s78 where k = 'd1') and kind = 'submission' and revision = 1 and submitted_side = 'talent') = 1
+  and (select status from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step = 7 and talent_id = (select v::uuid from t_s78 where k = 'td1')) = 'done'
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000c1' and kind = 'deliverable_submitted' and params ->> 'revision' = '1'));
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.expect_error('S78 ajustes exigem feedback', $q$select public.deliverable_decide((select v::uuid from t_s78 where k = 'd1'), 'changes_requested', 'não')$q$, 'note_required');
+select public.deliverable_decide((select v::uuid from t_s78 where k = 'd1'), 'changes_requested', 'Áudio baixo no início, pode reenviar?');
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S78 creator vê o pedido de ajuste e a versão 1 decidida',
+  (select status = 'changes_requested' and brand_feedback like 'Áudio%' from public.deliverables where id = (select v::uuid from t_s78 where k = 'd1'))
+  and (select decision from public.deliverable_versions where deliverable_id = (select v::uuid from t_s78 where k = 'd1') and revision = 1) = 'changes_requested'
+  and (select status from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step = 7 and talent_id = (select v::uuid from t_s78 where k = 'td1')) = 'todo');
+select tests.expect_error('S78 não publica sem aprovação', $q$select public.deliverable_publish((select v::uuid from t_s78 where k = 'd1'), 'https://instagram.com/p/x')$q$, 'invalid_state');
+select public.deliverable_submit((select v::uuid from t_s78 where k = 'd1'), 'https://example.com/reels-v2', null, 'Áudio ajustado');
+select tests.ok('S78 versão 2 nasce sem decisão (não herda a anterior)',
+  (select status = 'submitted' and revision = 2 and brand_feedback = '' and decided_at is null from public.deliverables where id = (select v::uuid from t_s78 where k = 'd1'))
+  and (select decision from public.deliverable_versions where deliverable_id = (select v::uuid from t_s78 where k = 'd1') and revision = 2) is null);
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S78 agência registra decisão só com nota', $q$select public.deliverable_decide((select v::uuid from t_s78 where k = 'd1'), 'approved')$q$, 'note_required');
+select public.deliverable_decide((select v::uuid from t_s78 where k = 'd1'), 'approved', 'Marca aprovou por e-mail hoje');
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.expect_error('S78 publicar exige URL https', $q$select public.deliverable_publish((select v::uuid from t_s78 where k = 'd1'), 'instagram.com/p/x')$q$, 'invalid_url');
+select public.deliverable_publish((select v::uuid from t_s78 where k = 'd1'), 'https://instagram.com/p/reels-e');
+select public.deliverable_proof((select v::uuid from t_s78 where k = 'd1'), 'https://example.com/prints/1');
+select tests.su();
+select tests.ok('S78 aprovado pela agência (lado agency), publicado e comprovado; passos 8, 9 e 10 concluídos',
+  (select status = 'proof_submitted' and decided_side = 'agency' and published_url is not null and proof_at is not null from public.deliverables where id = (select v::uuid from t_s78 where k = 'd1'))
+  and (select count(*) from public.deliverable_versions where deliverable_id = (select v::uuid from t_s78 where k = 'd1') and kind = 'proof') = 1
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and talent_id = (select v::uuid from t_s78 where k = 'td1') and template_step in (8, 9, 10) and status = 'done') = 3
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000c1' and kind = 'deliverable_published'));
+-- talento sem login: a agência envia por ele
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select public.deliverable_submit((select v::uuid from t_s78 where k = 'd3'), 'https://example.com/stories-d3', null, 'Enviado pelo WhatsApp');
+select tests.su();
+select tests.ok('S78 envio pela agência fica marcado como lado agência', (select submitted_side from public.deliverable_versions where deliverable_id = (select v::uuid from t_s78 where k = 'd3') and revision = 1) = 'agency');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S78 marca lê as versões das duas entregas e nenhuma coluna de valor; leitura fechada traz tarefas só do lado marca',
+  (select count(*) from public.deliverable_versions) = 4
+  and (public.deal_execution((select v::uuid from t_s78 where k = 'deal')) ->> 'side') = 'brand'
+  and (select bool_and(e ->> 'side' = 'brand') from jsonb_array_elements(public.deal_execution((select v::uuid from t_s78 where k = 'deal')) -> 'tasks') e)
+  and public.deal_execution((select v::uuid from t_s78 where k = 'deal'))::text !~ '(fee_cents|cents|commission|internal_notes|assignee)');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S78 concluir só depois da comprovação', $q$select public.agency_deliverable_close((select v::uuid from t_s78 where k = 'd3'), 'done')$q$, 'invalid_state');
+select public.agency_deliverable_close((select v::uuid from t_s78 where k = 'd1'), 'done');
+select tests.expect_error('S78 cancelar exige nota', $q$select public.agency_deliverable_close((select v::uuid from t_s78 where k = 'd3'), 'cancelled', 'x')$q$, 'note_required');
+select tests.ok('S78 entrega concluída', (select status from public.deliverables where id = (select v::uuid from t_s78 where k = 'd1')) = 'done');
+select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
+select tests.ok('S78 D6: admin de demonstração lê 0 termos, tarefas e versões da agência real', (select count(*) from public.deal_terms) + (select count(*) from public.tasks) + (select count(*) from public.deliverable_versions) = 0);
+select tests.anon();
+select tests.expect_error('S78 visitante sem acesso às tarefas', $q$select count(*) from public.tasks$q$, '42501');
+select tests.su();
+select tests.ok('S78 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+  not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+              and p.proname in ('fill_task_scope', 'my_task_ids_staff', 'my_talent_contract_deal_ids', 'agency_terms_save', 'agency_terms_send', 'agency_terms_withdraw', 'brand_terms_accept',
+                                'talent_terms_accept', 'agency_record_acceptance', 'task_template_steps', 'agency_tasks_generate', 'task_step_set', 'agency_contract_confirm',
+                                'task_save', 'task_set_status', 'brand_task_decide', 'deliverable_actor', 'deliverable_submit', 'deliverable_decide', 'deliverable_publish',
+                                'deliverable_proof', 'agency_deliverable_close', 'deal_execution', 'agency_demo_seed_execution')
+              and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+drop table t_s78;
+
 -- ================================================================ S80 · Estrutura do módulo de gestão
 -- Cresce a cada etapa (0064..0069). Tabelas novas: PK só "id", RLS ligada, sem escrita direta e sem
 -- leitura anônima; nenhuma coluna de valor em tabela operacional; políticas sem função por linha;
@@ -9012,7 +9246,7 @@ create temp table t_s80 (t text primary key);
 insert into t_s80 values ('agencies'), ('agency_members'), ('agency_brands'), ('brand_members'), ('inbox_notifications'), ('documents'),
   ('talent_segments'), ('talent_profiles'), ('talent_segment_links'), ('talent_social_accounts'), ('media_kits'),
   ('talent_availability'), ('campaign_requests'), ('deals'), ('deal_team'), ('deal_talents'), ('deliverables'), ('activities'), ('deal_messages'),
-  ('campaign_request_budgets'), ('deal_talent_fees'), ('calendar_events'), ('calendar_feeds');
+  ('campaign_request_budgets'), ('deal_talent_fees'), ('calendar_events'), ('calendar_feeds'), ('deal_terms'), ('deal_acceptances'), ('tasks'), ('deliverable_versions');
 grant all on t_s80 to anon, authenticated, service_role;
 select tests.ok('S80 tabelas novas: PK só id, RLS ligada, sem escrita para authenticated/anon, sem select para anon',
   (select bool_and((select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
@@ -9039,7 +9273,7 @@ select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_p
          'agencies_select_talent', 'role_assignments_hide_agency_from_demo')
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0);
 select tests.ok('S80 _select_admin das tabelas novas usa is_platform_admin (nunca is_admin)',
-  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 22
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 26
   and not exists (select 1 from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin'
                   and qual !~ 'is_platform_admin'));
 select tests.ok('S80 nenhum par de tabelas novas com FK nos dois sentidos',

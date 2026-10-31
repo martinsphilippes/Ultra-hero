@@ -90,7 +90,8 @@
     "team": "Equipe",
     "casting": "Casting",
     "pipeline": "Pipeline",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "tasks": "Tarefas"
   },
   "brand": {
     "dashboard": "Início",

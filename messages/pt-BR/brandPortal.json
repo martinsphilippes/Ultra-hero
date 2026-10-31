@@ -19,7 +19,9 @@
       "team": "Pessoas com acesso",
       "unread": "Avisos não lidos",
       "campaigns": "Campanhas em andamento",
-      "drafts": "{count, plural, one {# rascunho} other {# rascunhos}}"
+      "drafts": "{count, plural, one {# rascunho} other {# rascunhos}}",
+      "approvals": "Aprovações pendentes",
+      "approvalsHint": "roteiros aguardando sua decisão"
     },
     "seeTeam": "Ver equipe",
     "upcomingTitle": "Chegando ao portal",
@@ -44,7 +46,8 @@
     },
     "newCampaign": "Nova proposta",
     "seeCreators": "Buscar creators",
-    "seeCampaigns": "Ver campanhas"
+    "seeCampaigns": "Ver campanhas",
+    "approvalsNote": "Termos, roteiros e entregas para aprovar ficam dentro de cada campanha."
   },
   "team": {
     "title": "Equipe da marca",
@@ -132,7 +135,9 @@
       "messages": "Conversa com a agência",
       "talents": "Creators",
       "deliverables": "Entregas",
-      "attachments": "Anexos do briefing"
+      "attachments": "Anexos do briefing",
+      "terms": "Termos da campanha",
+      "approvals": "Roteiros para aprovar"
     },
     "requestedTalent": "Creator escolhido por você",
     "talentStatus": {
@@ -203,7 +208,9 @@
       "confirm": "Cancelar proposta",
       "note": "Motivo",
       "noteRequired": "Escreva o motivo (pelo menos 5 caracteres)."
-    }
+    },
+    "approvalsHint": "Aprove ou peça ajustes em cada roteiro. A decisão libera a gravação.",
+    "approvalsNone": "Nenhum roteiro para aprovar."
   },
   "agenda": {
     "title": "Agenda",

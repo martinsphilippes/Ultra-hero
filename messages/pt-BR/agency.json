@@ -21,7 +21,10 @@
     "dealMessages": "Conversa do negócio",
     "dealDocuments": "Documentos do negócio",
     "talentAvailability": "Disponibilidade do talento",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "dealTerms": "Termos do negócio",
+    "dealTasks": "Tarefas do negócio",
+    "tasks": "Tarefas"
   },
   "demoBanner": {
     "tag": "Demonstração",
@@ -68,7 +71,9 @@
       "dealsHint": "{agency} com a agência · {creator} com creators",
       "confirmed": "Campanhas confirmadas",
       "upcoming": "Compromissos em 14 dias",
-      "upcomingHint": "campanhas, entregas, reuniões"
+      "upcomingHint": "campanhas, entregas, reuniões",
+      "tasks": "Tarefas abertas",
+      "tasksHint": "{mine} minhas · {overdue} atrasadas"
     },
     "quickTitle": "Atalhos",
     "newBrand": "Nova marca",
@@ -102,7 +107,8 @@
     "selfHint": "Seu nome e cargo nas listas da agência.",
     "newTalent": "Novo talento",
     "seeCasting": "Ver casting",
-    "seePipeline": "Ver pipeline"
+    "seePipeline": "Ver pipeline",
+    "seeTasks": "Minhas tarefas"
   },
   "team": {
     "title": "Equipe",
@@ -278,7 +284,9 @@
     "fee_missing": "Defina o cachê do creator antes (só o Adm).",
     "no_talents": "Nenhum creator interessado ou confirmado neste negócio.",
     "schedule_conflict": "Outro negócio já reservou este período para um dos creators. O Adm pode forçar com justificativa.",
-    "deliverables_open": "Há entregas em aberto; conclua ou cancele antes de encerrar como ganho."
+    "deliverables_open": "Há entregas em aberto; conclua ou cancele antes de encerrar como ganho.",
+    "terms_missing": "Envie os termos antes de confirmar a contratação.",
+    "acceptance_missing": "Faltam aceites: a marca e todos os creators confirmados precisam aceitar os termos."
   },
   "casting": {
     "title": "Casting",
@@ -527,7 +535,9 @@
       "talents": "Creators",
       "deliverables": "Entregas",
       "messages": "Conversa",
-      "documents": "Documentos"
+      "documents": "Documentos",
+      "terms": "Termos",
+      "tasks": "Tarefas"
     },
     "sections": {
       "request": "Proposta da marca",
@@ -660,7 +670,7 @@
       "save": "Salvar cachê"
     },
     "deliverables": {
-      "intro": "O que cada creator entrega, com prazo e data de publicação. Versões e aprovação chegam na próxima etapa.",
+      "intro": "O que cada creator entrega, com prazo e data de publicação.",
       "noTalents": "Sugira ou confirme creators antes de planejar entregas.",
       "empty": "Nenhum entregável planejado.",
       "item": "Entregável {n}",
@@ -674,7 +684,8 @@
       "publishAt": "Publicação",
       "brief": "Orientações",
       "add": "Adicionar entregável",
-      "save": "Salvar entregáveis"
+      "save": "Salvar entregáveis",
+      "planTitle": "Planejamento"
     },
     "messages": {
       "channels": "Canais",
@@ -735,6 +746,94 @@
       "publish": "Publicar",
       "titleRequired": "Dê um título.",
       "dealRequired": "Escolha um negócio seu."
+    }
+  },
+  "execution": {
+    "title": "Execução",
+    "intro": "Versões enviadas, avaliação da marca, publicação e comprovação. A agência pode agir em nome do creator sem login.",
+    "empty": "Nenhuma entrega em execução."
+  },
+  "terms": {
+    "saved": "Rascunho dos termos salvo.",
+    "sent": "Termos enviados à marca e aos creators.",
+    "withdrawn": "Termos retirados.",
+    "acceptanceRecorded": "Aceite registrado.",
+    "contractConfirmed": "{count, plural, =0 {Contratação confirmada.} one {Contratação confirmada: # tarefa gerada.} other {Contratação confirmada: # tarefas geradas.}}",
+    "unavailable": "Termos em atualização",
+    "unavailableHint": "Os termos aparecem assim que o banco for atualizado.",
+    "intro": "Resuma as condições, envie, acompanhe os aceites e confirme a contratação. A confirmação leva o negócio à produção e gera as 12 etapas por creator.",
+    "introEarly": "Os termos ficam disponíveis a partir da aprovação da proposta (etapa 8).",
+    "newTerms": "Novos termos",
+    "newVersion": "Nova versão",
+    "editDraft": "Editar rascunho",
+    "summary": "Condições",
+    "summaryHint": "Entregas, prazos, direitos de uso e o que foi combinado. Sem valores aqui.",
+    "summaryShort": "Descreva as condições com pelo menos 20 caracteres.",
+    "usageRights": "Direitos de uso",
+    "exclusivity": "Exclusividade",
+    "validUntil": "Válidos até",
+    "validUntilHint": "Opcional.",
+    "saveDraft": "Salvar rascunho",
+    "send": "Enviar à marca e aos creators",
+    "confirmSend": "Enviar estes termos? A versão vigente, se houver, será substituída.",
+    "withdraw": "Retirar",
+    "confirmWithdraw": "Retirar estes termos? Os aceites recebidos deixam de valer.",
+    "recordAcceptance": "Registrar aceite recebido fora",
+    "recordTitle": "Registrar aceite",
+    "recordHint": "Para quem respondeu por e-mail ou mensagem (creators sem login, ou a marca). A observação diz como veio.",
+    "recordSave": "Registrar",
+    "party": "Quem aceitou",
+    "partyBrand": "Marca",
+    "partyTalent": "Creator",
+    "talent": "Creator",
+    "recordNote": "Como o aceite chegou",
+    "recordNoteHint": "Ex.: e-mail de 12/11 às 10h.",
+    "noteRequired": "Descreva como o aceite chegou (mínimo 5 caracteres).",
+    "confirmTitle": "Pronto para contratar",
+    "confirmHint": "A marca e todos os creators confirmados aceitaram. Confirmar move o negócio para Produção, marca os creators como contratados e gera as tarefas das 12 etapas.",
+    "confirmAction": "Confirmar contratação",
+    "confirmDialogHint": "Esta ação gera as tarefas e avisa a equipe, a marca e os creators.",
+    "waitingAcceptances": "A contratação é confirmada quando a marca e todos os creators confirmados aceitarem os termos.",
+    "back": "Voltar"
+  },
+  "tasks": {
+    "saved": "Tarefa salva.",
+    "title": "Tarefas",
+    "description": "As 12 etapas de cada campanha e as tarefas avulsas da equipe.",
+    "unavailable": "Tarefas em atualização",
+    "unavailableHint": "As tarefas aparecem assim que o banco for atualizado.",
+    "intro": "{open} abertas de {total}. As etapas 5 e 8 só mudam pela decisão da marca.",
+    "introEarly": "As tarefas do modelo são geradas na confirmação da contratação. Tarefas avulsas podem ser criadas antes.",
+    "emptyDeal": "Nenhuma tarefa neste negócio.",
+    "filtersLabel": "Filtros de tarefas",
+    "filters": {
+      "mine": "Minhas",
+      "team": "Da equipe",
+      "overdue": "Atrasadas",
+      "done": "Concluídas"
+    },
+    "empty": {
+      "mine": "Nenhuma tarefa aberta para você.",
+      "team": "Nenhuma tarefa aberta na equipe.",
+      "overdue": "Nenhuma tarefa atrasada.",
+      "done": "Nenhuma tarefa concluída ainda."
+    },
+    "form": {
+      "new": "Nova tarefa",
+      "title": "Nova tarefa",
+      "hint": "Tarefa avulsa, fora do modelo de 12 etapas.",
+      "taskTitle": "Título",
+      "titleRequired": "Dê um título com pelo menos 3 caracteres.",
+      "side": "De quem é",
+      "sideAgency": "Da agência",
+      "sideTalent": "Do creator",
+      "talent": "Creator",
+      "assignee": "Responsável",
+      "deal": "Negócio",
+      "dueDate": "Prazo",
+      "description": "Descrição",
+      "back": "Voltar",
+      "save": "Salvar tarefa"
     }
   }
 }

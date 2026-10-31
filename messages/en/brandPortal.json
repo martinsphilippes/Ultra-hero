@@ -19,7 +19,9 @@
       "team": "People with access",
       "unread": "Unread notices",
       "campaigns": "Campaigns in progress",
-      "drafts": "{count, plural, one {# draft} other {# drafts}}"
+      "drafts": "{count, plural, one {# draft} other {# drafts}}",
+      "approvals": "Pending approvals",
+      "approvalsHint": "scripts waiting for your decision"
     },
     "seeTeam": "See team",
     "upcomingTitle": "Coming to the portal",
@@ -44,7 +46,8 @@
     },
     "newCampaign": "New proposal",
     "seeCreators": "Find creators",
-    "seeCampaigns": "See campaigns"
+    "seeCampaigns": "See campaigns",
+    "approvalsNote": "Terms, scripts and deliverables to approve live inside each campaign."
   },
   "team": {
     "title": "Brand team",
@@ -132,7 +135,9 @@
       "messages": "Conversation with the agency",
       "talents": "Creators",
       "deliverables": "Deliverables",
-      "attachments": "Briefing attachments"
+      "attachments": "Briefing attachments",
+      "terms": "Campaign terms",
+      "approvals": "Scripts to approve"
     },
     "requestedTalent": "Creator you chose",
     "talentStatus": {
@@ -203,7 +208,9 @@
       "confirm": "Cancel proposal",
       "note": "Reason",
       "noteRequired": "Write the reason (at least 5 characters)."
-    }
+    },
+    "approvalsHint": "Approve or request changes on each script. The decision unlocks the recording.",
+    "approvalsNone": "No script to approve."
   },
   "agenda": {
     "title": "Calendar",

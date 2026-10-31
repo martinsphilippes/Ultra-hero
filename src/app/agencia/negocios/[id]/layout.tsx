@@ -40,6 +40,8 @@ export default async function DealLayout({ children, params }: Props) {
         tabs={[
           { href: base, label: t("tabs.overview"), exact: true },
           { href: `${base}/creators`, label: t("tabs.talents") },
+          { href: `${base}/termos`, label: t("tabs.terms") },
+          { href: `${base}/tarefas`, label: t("tabs.tasks") },
           { href: `${base}/entregas`, label: t("tabs.deliverables") },
           { href: `${base}/conversa`, label: t("tabs.messages") },
           { href: `${base}/documentos`, label: t("tabs.documents") },

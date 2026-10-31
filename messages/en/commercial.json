@@ -158,5 +158,188 @@
     "revoked": "Link turned off.",
     "confirmRotate": "Generate a new link? The previous one stops working.",
     "confirmRevoke": "Turn off the link? Subscribed calendars stop updating."
+  },
+  "taskSteps": {
+    "1": "Brief received",
+    "2": "Alignment with the creator",
+    "3": "Alignment meeting",
+    "4": "Script sent",
+    "5": "Script approved by the brand",
+    "6": "Recording",
+    "7": "Content sent",
+    "8": "Content approved by the brand",
+    "9": "Publication",
+    "10": "Proof of publication",
+    "11": "Results report",
+    "12": "Wrap-up"
+  },
+  "terms": {
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "superseded": "Superseded",
+      "withdrawn": "Withdrawn"
+    },
+    "method": {
+      "in_app": "in the app",
+      "recorded_by_agency": "recorded by the agency"
+    },
+    "disclaimer": "These terms summarise the agreed conditions and record who accepted, when and how. They are not an electronic signature and do not replace the contract.",
+    "version": "Terms v{n}",
+    "draftLabel": "Draft v{n}",
+    "history": "{count, plural, one {# previous version} other {# previous versions}}",
+    "sentAt": "sent on {date}",
+    "validUntil": "valid until {date}",
+    "summary": "Conditions",
+    "usageRights": "Usage rights",
+    "exclusivity": "Exclusivity",
+    "acceptances": "Acceptances",
+    "noAcceptances": "No acceptance yet.",
+    "brandAccepted": "Brand accepted",
+    "talentAccepted": "{name} accepted",
+    "brandPending": "Waiting for the brand",
+    "talentPending": "Waiting for {name}",
+    "youAccepted": "You accepted these terms.",
+    "accept": "Accept terms",
+    "ownerOnly": "Only the brand owner can accept the terms.",
+    "acceptTitle": "Accept the terms",
+    "acceptHint": "The acceptance is recorded with date and time. If in doubt, talk to the agency first.",
+    "agree": "I have read and accept the conditions described.",
+    "agreeRequired": "Tick the confirmation to accept.",
+    "note": "Note (optional)",
+    "noteHint": "Stored with the acceptance record.",
+    "back": "Back",
+    "accepted": "Terms accepted."
+  },
+  "tasks": {
+    "status": {
+      "todo": "To do",
+      "doing": "In progress",
+      "blocked": "Blocked",
+      "done": "Done",
+      "cancelled": "Cancelled"
+    },
+    "side": {
+      "agency": "Agency",
+      "talent": "Creator",
+      "brand": "Brand"
+    },
+    "dueAt": "by {date}",
+    "noDue": "no due date",
+    "doneAt": "done on {date}",
+    "feedback": "Feedback: {text}",
+    "openAttachment": "Open attachment",
+    "attachmentDocument": "Attachment sent as a document",
+    "changeStatus": "Change status",
+    "sendAndDone": "Send and complete",
+    "markDone": "Complete",
+    "decideScript": "Review script",
+    "attachTitle": "Attach and complete",
+    "attachHint": "Paste the file link (Drive, Dropbox, WeTransfer…). The brand is notified to review it.",
+    "url": "File link",
+    "urlHint": "https links only.",
+    "urlRequired": "Enter a valid https link.",
+    "back": "Back",
+    "decideScriptTitle": "Script",
+    "decideScriptHint": "Approve or request changes. When requesting changes, explain what to change.",
+    "decideScriptAgencyHint": "Decision recorded by the agency on behalf of the brand: the note is required.",
+    "openScript": "Open script",
+    "feedbackLabel": "Notes",
+    "feedbackHint": "Required when requesting changes.",
+    "feedbackRequired": "Explain what needs to change (at least 5 characters).",
+    "requestChanges": "Request changes",
+    "approve": "Approve",
+    "statusSet": {
+      "todo": "Task reopened.",
+      "doing": "Task in progress.",
+      "blocked": "Task marked as blocked.",
+      "done": "Task completed.",
+      "cancelled": "Task cancelled."
+    },
+    "decided": {
+      "approve": "Script approved.",
+      "changes": "Changes requested from the creator."
+    }
+  },
+  "deliverables": {
+    "revision": "v{n}",
+    "dueAt": "due by {date}",
+    "noDue": "no due date",
+    "publishAt": "publish on {date}",
+    "changesFeedback": "Changes requested: {text}",
+    "openPublished": "View post",
+    "versionsLabel": "Versions",
+    "submissionVersion": "Submission v{n}",
+    "proofVersion": "Proof v{n}",
+    "submittedBy": {
+      "talent": "by the creator",
+      "agency": "by the agency"
+    },
+    "openLink": "open",
+    "withDocument": "with document",
+    "decision": {
+      "approved": "Approved",
+      "changes_requested": "Changes requested"
+    },
+    "decidedBy": {
+      "brand": "by the brand",
+      "agency": "by the agency"
+    },
+    "actions": {
+      "submit": "Send version",
+      "decide": "Review",
+      "publish": "Record publication",
+      "proof": "Send proof",
+      "close": "Complete",
+      "cancel": "Cancel deliverable"
+    },
+    "dialog": {
+      "submit": {
+        "title": "Send version",
+        "hint": "Each submission becomes a new version. The brand reviews it and approves or requests changes."
+      },
+      "decide": {
+        "title": "Review deliverable",
+        "hint": "Approve or request changes with notes. A new version comes back for review."
+      },
+      "publish": {
+        "title": "Record publication",
+        "hint": "Paste the public link of the published content."
+      },
+      "proof": {
+        "title": "Proof of publication",
+        "hint": "Link or document proving the publication (screenshot, metrics)."
+      },
+      "close": {
+        "title": "Close deliverable",
+        "hint": "Completing closes the cycle; cancelling requires a reason."
+      }
+    },
+    "openSubmission": "Open submitted version",
+    "url": "Link",
+    "urlHint": "https links only.",
+    "document": "Or a deal document",
+    "documentHint": "Documents already uploaded in the Documents tab.",
+    "note": "Note (optional)",
+    "feedbackLabel": "Notes",
+    "feedbackHint": "Required when requesting changes.",
+    "back": "Back",
+    "requestChanges": "Request changes",
+    "approve": "Approve",
+    "linkOrFile": "Enter a link or choose a document.",
+    "httpsOnly": "Enter a valid https link.",
+    "feedbackRequired": "Explain the reason (at least 5 characters).",
+    "submitted": "Version sent.",
+    "published": "Publication recorded.",
+    "proofSent": "Proof sent.",
+    "decided": {
+      "approved": "Deliverable approved.",
+      "changes_requested": "Changes requested."
+    },
+    "closed": {
+      "done": "Deliverable completed.",
+      "cancelled": "Deliverable cancelled."
+    }
   }
 }

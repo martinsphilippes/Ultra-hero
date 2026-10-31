@@ -68,6 +68,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "dashboard", href: "/agencia" },
     // Pipeline comercial (0066): briefing → consulta → confirmação; a ficha do negócio mora em /agencia/negocios
     { key: "pipeline", href: "/agencia/pipeline" },
+    // Tarefas (0068): modelo de 12 passos por campanha + avulsas; minhas, da equipe e atrasadas
+    { key: "tasks", href: "/agencia/tarefas" },
     // Agenda (0067): eventos de sistema do pipeline + reuniões, gravações e datas comerciais
     { key: "agenda", href: "/agencia/agenda" },
     { key: "casting", href: "/agencia/casting" },

@@ -158,5 +158,188 @@
     "revoked": "Enlace apagado.",
     "confirmRotate": "¿Generar un enlace nuevo? El anterior deja de funcionar.",
     "confirmRevoke": "¿Apagar el enlace? Los calendarios suscritos dejan de actualizarse."
+  },
+  "taskSteps": {
+    "1": "Briefing recibido",
+    "2": "Alineación con el creator",
+    "3": "Reunión de alineación",
+    "4": "Guion enviado",
+    "5": "Guion aprobado por la marca",
+    "6": "Grabación",
+    "7": "Contenido enviado",
+    "8": "Contenido aprobado por la marca",
+    "9": "Publicación",
+    "10": "Comprobación de publicación",
+    "11": "Informe de resultados",
+    "12": "Cierre"
+  },
+  "terms": {
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviados",
+      "accepted": "Aceptados",
+      "superseded": "Sustituidos",
+      "withdrawn": "Retirados"
+    },
+    "method": {
+      "in_app": "en la app",
+      "recorded_by_agency": "registrado por la agencia"
+    },
+    "disclaimer": "Estos términos resumen las condiciones acordadas y registran quién aceptó, cuándo y por dónde. No son firma electrónica ni sustituyen el contrato.",
+    "version": "Términos v{n}",
+    "draftLabel": "Borrador v{n}",
+    "history": "{count, plural, one {# versión anterior} other {# versiones anteriores}}",
+    "sentAt": "enviados el {date}",
+    "validUntil": "válidos hasta {date}",
+    "summary": "Condiciones",
+    "usageRights": "Derechos de uso",
+    "exclusivity": "Exclusividad",
+    "acceptances": "Aceptaciones",
+    "noAcceptances": "Todavía sin aceptaciones.",
+    "brandAccepted": "La marca aceptó",
+    "talentAccepted": "{name} aceptó",
+    "brandPending": "Esperando a la marca",
+    "talentPending": "Esperando a {name}",
+    "youAccepted": "Aceptaste estos términos.",
+    "accept": "Aceptar términos",
+    "ownerOnly": "Solo la persona dueña de la marca acepta los términos.",
+    "acceptTitle": "Aceptar los términos",
+    "acceptHint": "La aceptación queda registrada con fecha y hora. Si tienes dudas, habla antes con la agencia.",
+    "agree": "Leí y acepto las condiciones descritas.",
+    "agreeRequired": "Marca la confirmación para aceptar.",
+    "note": "Observación (opcional)",
+    "noteHint": "Se guarda junto con el registro de la aceptación.",
+    "back": "Volver",
+    "accepted": "Términos aceptados."
+  },
+  "tasks": {
+    "status": {
+      "todo": "Por hacer",
+      "doing": "En curso",
+      "blocked": "Bloqueada",
+      "done": "Completada",
+      "cancelled": "Cancelada"
+    },
+    "side": {
+      "agency": "Agencia",
+      "talent": "Creator",
+      "brand": "Marca"
+    },
+    "dueAt": "hasta {date}",
+    "noDue": "sin plazo",
+    "doneAt": "completada el {date}",
+    "feedback": "Devolución: {text}",
+    "openAttachment": "Abrir adjunto",
+    "attachmentDocument": "Adjunto enviado como documento",
+    "changeStatus": "Cambiar estado",
+    "sendAndDone": "Enviar y completar",
+    "markDone": "Completar",
+    "decideScript": "Evaluar guion",
+    "attachTitle": "Adjuntar y completar",
+    "attachHint": "Pega el enlace del archivo (Drive, Dropbox, WeTransfer…). La marca recibe un aviso para evaluarlo.",
+    "url": "Enlace del archivo",
+    "urlHint": "Solo enlaces https.",
+    "urlRequired": "Indica un enlace https válido.",
+    "back": "Volver",
+    "decideScriptTitle": "Guion",
+    "decideScriptHint": "Aprueba o pide ajustes. Al pedir ajustes, explica qué cambiar.",
+    "decideScriptAgencyHint": "Decisión registrada por la agencia en nombre de la marca: la observación es obligatoria.",
+    "openScript": "Abrir guion",
+    "feedbackLabel": "Observaciones",
+    "feedbackHint": "Obligatorias al pedir ajustes.",
+    "feedbackRequired": "Explica qué debe cambiar (mínimo 5 caracteres).",
+    "requestChanges": "Pedir ajustes",
+    "approve": "Aprobar",
+    "statusSet": {
+      "todo": "Tarea reabierta.",
+      "doing": "Tarea en curso.",
+      "blocked": "Tarea marcada como bloqueada.",
+      "done": "Tarea completada.",
+      "cancelled": "Tarea cancelada."
+    },
+    "decided": {
+      "approve": "Guion aprobado.",
+      "changes": "Ajustes pedidos al creator."
+    }
+  },
+  "deliverables": {
+    "revision": "v{n}",
+    "dueAt": "entrega hasta {date}",
+    "noDue": "sin plazo",
+    "publishAt": "publicación el {date}",
+    "changesFeedback": "Ajustes pedidos: {text}",
+    "openPublished": "Ver publicación",
+    "versionsLabel": "Versiones",
+    "submissionVersion": "Envío v{n}",
+    "proofVersion": "Comprobante v{n}",
+    "submittedBy": {
+      "talent": "por el creator",
+      "agency": "por la agencia"
+    },
+    "openLink": "abrir",
+    "withDocument": "con documento",
+    "decision": {
+      "approved": "Aprobado",
+      "changes_requested": "Ajustes pedidos"
+    },
+    "decidedBy": {
+      "brand": "por la marca",
+      "agency": "por la agencia"
+    },
+    "actions": {
+      "submit": "Enviar versión",
+      "decide": "Evaluar",
+      "publish": "Registrar publicación",
+      "proof": "Enviar comprobante",
+      "close": "Completar",
+      "cancel": "Cancelar entrega"
+    },
+    "dialog": {
+      "submit": {
+        "title": "Enviar versión",
+        "hint": "Cada envío se convierte en una versión nueva. La marca la evalúa y aprueba o pide ajustes."
+      },
+      "decide": {
+        "title": "Evaluar entrega",
+        "hint": "Aprueba o pide ajustes con observaciones. Una nueva versión vuelve a evaluación."
+      },
+      "publish": {
+        "title": "Registrar publicación",
+        "hint": "Pega el enlace público del contenido publicado."
+      },
+      "proof": {
+        "title": "Comprobante de publicación",
+        "hint": "Enlace o documento que compruebe la publicación (captura, métricas)."
+      },
+      "close": {
+        "title": "Cerrar entrega",
+        "hint": "Completar cierra el ciclo; cancelar exige un motivo."
+      }
+    },
+    "openSubmission": "Abrir versión enviada",
+    "url": "Enlace",
+    "urlHint": "Solo enlaces https.",
+    "document": "O un documento del negocio",
+    "documentHint": "Documentos ya enviados en la pestaña Documentos.",
+    "note": "Observación (opcional)",
+    "feedbackLabel": "Observaciones",
+    "feedbackHint": "Obligatorias al pedir ajustes.",
+    "back": "Volver",
+    "requestChanges": "Pedir ajustes",
+    "approve": "Aprobar",
+    "linkOrFile": "Indica un enlace o elige un documento.",
+    "httpsOnly": "Indica un enlace https válido.",
+    "feedbackRequired": "Explica el motivo (mínimo 5 caracteres).",
+    "submitted": "Versión enviada.",
+    "published": "Publicación registrada.",
+    "proofSent": "Comprobante enviado.",
+    "decided": {
+      "approved": "Entrega aprobada.",
+      "changes_requested": "Ajustes pedidos."
+    },
+    "closed": {
+      "done": "Entrega completada.",
+      "cancelled": "Entrega cancelada."
+    }
   }
 }

@@ -135,6 +135,9 @@ export async function createAgencyDemoAction(): Promise<AdminAgencyResult> {
     });
     if (seedError) return agencyFail(seedError);
     // agenda de exemplo (0067): sem a migração no remoto, segue sem ela (isMissingSchema)
+    // segunda campanha já em produção (0068: termos aceitos, tarefas, entregas) e agenda de exemplo (0067)
+    const { error: executionError } = await client.rpc("agency_demo_seed_execution", { p_agency: agencyId, p_actor: user.id });
+    if (executionError && !isMissingSchema(executionError)) return agencyFail(executionError);
     const { error: calendarError } = await client.rpc("agency_demo_seed_calendar", { p_agency: agencyId, p_actor: user.id });
     if (calendarError && !isMissingSchema(calendarError)) return agencyFail(calendarError);
     revalidatePath("/admin/agencia");

@@ -90,7 +90,8 @@
     "team": "Team",
     "casting": "Roster",
     "pipeline": "Pipeline",
-    "agenda": "Calendar"
+    "agenda": "Calendar",
+    "tasks": "Tasks"
   },
   "brand": {
     "dashboard": "Home",

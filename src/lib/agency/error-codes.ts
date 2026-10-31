@@ -23,6 +23,9 @@ export const AGENCY_ERROR_CODES = [
   "no_talents",
   "schedule_conflict",
   "deliverables_open",
+  // execução (0068)
+  "terms_missing",
+  "acceptance_missing",
   "demo_account_forbidden",
   "demo_locked",
   "demo_brand",
