@@ -99,22 +99,29 @@ export default async function AdminAgencyPage() {
         </div>
       </Section>
 
-      <Section title={t("demo.title")} description={t("demo.description")}>
-        <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-warning/40 bg-surface p-4" data-testid="admin-agency-demo">
-          <ul className="flex flex-col gap-1.5">
-            {demoAccounts.map((acc) => (
-              <li key={acc.key} className="flex items-center gap-2 type-body-sm">
-                {acc.ready ? <CheckCircle2 className="size-4 text-success" aria-hidden="true" /> : <CircleDashed className="size-4 text-fg-subtle" aria-hidden="true" />}
-                <span className="font-medium text-fg">{t(`demo.accounts.${acc.key}`)}</span>
-                <span className="truncate font-mono text-xs text-fg-muted">{acc.email}</span>
-                <span className="sr-only">{acc.ready ? t("demo.ready") : t("demo.missing")}</span>
-              </li>
-            ))}
-          </ul>
-          {isDemoAccessEnabled() ? <AgencyDemoButton ready={anyReady} /> : <p className="type-caption text-fg-muted">{t("demo.passwordMissing")}</p>}
-          <p className="type-caption text-fg-muted">{t("demo.note")}</p>
-        </div>
-      </Section>
+      {/* ambiente de demonstração: desligado no encerramento do período de testes (DEMO_ACCESS_OFF) */}
+      {isDemoAccessEnabled() ? (
+        <Section title={t("demo.title")} description={t("demo.description")}>
+          <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-warning/40 bg-surface p-4" data-testid="admin-agency-demo">
+            <ul className="flex flex-col gap-1.5">
+              {demoAccounts.map((acc) => (
+                <li key={acc.key} className="flex items-center gap-2 type-body-sm">
+                  {acc.ready ? <CheckCircle2 className="size-4 text-success" aria-hidden="true" /> : <CircleDashed className="size-4 text-fg-subtle" aria-hidden="true" />}
+                  <span className="font-medium text-fg">{t(`demo.accounts.${acc.key}`)}</span>
+                  <span className="truncate font-mono text-xs text-fg-muted">{acc.email}</span>
+                  <span className="sr-only">{acc.ready ? t("demo.ready") : t("demo.missing")}</span>
+                </li>
+              ))}
+            </ul>
+            <AgencyDemoButton ready={anyReady} />
+            <p className="type-caption text-fg-muted">{t("demo.note")}</p>
+          </div>
+        </Section>
+      ) : (
+        <p className="rounded-xl border border-dashed border-border px-3 py-2 type-caption text-fg-muted" data-testid="admin-agency-demo-off">
+          {t("demo.off")}
+        </p>
+      )}
     </div>
   );
 }

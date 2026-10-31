@@ -38,7 +38,8 @@
     "passwordMissing": "Falta la contraseña de las cuentas de demostración en el servidor.",
     "note": "Puedes hacer clic de nuevo en cada etapa: el botón restaura los datos de ejemplo.",
     "restore": "Restaurar demostración",
-    "create": "Crear demostración"
+    "create": "Crear demostración",
+    "off": "El período de demostración terminó: las cuentas de prueba y la restauración están apagadas. El portal sigue solo con agencias, marcas y creators reales."
   },
   "saved": "Agencia guardada.",
   "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona.",

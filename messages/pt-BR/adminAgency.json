@@ -38,7 +38,8 @@
     "passwordMissing": "Sem a senha das contas de demonstração no servidor.",
     "note": "Pode clicar de novo a cada etapa nova: o botão restaura os dados de exemplo.",
     "restore": "Restaurar demonstração",
-    "create": "Criar demonstração"
+    "create": "Criar demonstração",
+    "off": "O período de demonstração terminou: contas de teste e a restauração estão desligadas. O portal segue só com agências, marcas e creators reais."
   },
   "saved": "Agência salva.",
   "inviteCreated": "Convite criado. Copie o link e envie para a pessoa.",

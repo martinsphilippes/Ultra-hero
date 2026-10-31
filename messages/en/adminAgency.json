@@ -38,7 +38,8 @@
     "passwordMissing": "The demo accounts password is not set on the server.",
     "note": "You can click again at each new stage: the button restores the sample data.",
     "restore": "Restore demo",
-    "create": "Create demo"
+    "create": "Create demo",
+    "off": "The demo period is over: test accounts and the restore are switched off. The portal now runs only with real agencies, brands and creators."
   },
   "saved": "Agency saved.",
   "inviteCreated": "Invitation created. Copy the link and send it to the person.",

@@ -5,7 +5,15 @@ import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 // Os botões de acesso rápido só existem quando a senha das contas de demonstração está configurada.
 // Ela nunca vai para o navegador: o login acontece numa server action.
 
+/**
+ * Período de demonstração encerrado (decisão do responsável, 31/10/2026): a partir daqui só contas e dados
+ * reais. Com a chave ligada, o acesso rápido do /login, a restauração da agência de demonstração e o login
+ * rápido do profissional ficam desligados mesmo que DEMO_ACCOUNTS_PASSWORD continue configurada.
+ */
+export const DEMO_ACCESS_OFF = true;
+
 export function demoPassword(): string | null {
+  if (DEMO_ACCESS_OFF) return null;
   const value = process.env.DEMO_ACCOUNTS_PASSWORD ?? "";
   return value ? value : null;
 }
