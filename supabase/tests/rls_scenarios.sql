@@ -7914,6 +7914,13 @@ select tests.login('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.lo
 select tests.ok('S74 dono da Y não lê documentos da X',
   (select count(*) from public.documents) = 0);
 select tests.su();
+-- os checks da 0064 são testados com um talento fictício: o gatilho de escopo da 0065 (que exige talento
+-- existente) fica desligado só nestas duas linhas; o S75 testa o gatilho
+do $$ begin
+  if exists (select 1 from pg_trigger where tgname = 'trg_documents_talent_scope') then
+    execute 'alter table public.documents disable trigger trg_documents_talent_scope';
+  end if;
+end $$;
 select tests.expect_error('S74 check: contrato de talento nunca vai à marca',
   $q$insert into public.documents (id, agency_id, scope_type, talent_id, kind, title, storage_path, mime_type, size_bytes, restricted, share_brand, uploader_side)
      values ('74000000-0000-4000-8000-0000000000f1', public.seed_uuid('s74:agency:a'), 'talent', '74000000-0000-4000-8000-0000000000f9', 'contract', 'C',
@@ -7924,6 +7931,11 @@ select tests.expect_error('S74 check: escopo talento não leva marca',
   $q$insert into public.documents (id, agency_id, scope_type, talent_id, brand_id, kind, title, storage_path, mime_type, size_bytes, uploader_side)
      values ('74000000-0000-4000-8000-0000000000f2', public.seed_uuid('s74:agency:a'), 'talent', '74000000-0000-4000-8000-0000000000f9', (select v::uuid from t_s74 where k = 'brand_x'), 'other', 'C',
        public.seed_uuid('s74:agency:a')::text || '/talent/74000000-0000-4000-8000-0000000000f9/74000000-0000-4000-8000-0000000000f2.pdf', 'application/pdf', 1, 'agency')$q$, 'documents_scope_shape');
+do $$ begin
+  if exists (select 1 from pg_trigger where tgname = 'trg_documents_talent_scope') then
+    execute 'alter table public.documents enable trigger trg_documents_talent_scope';
+  end if;
+end $$;
 select tests.expect_error('S74 check: contrato sempre restrito',
   $q$update public.documents set restricted = false where id = ((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid$q$, 'documents_contract_restricted');
 
@@ -8005,13 +8017,379 @@ select tests.ok('S74 funções novas com search_path fixo e nenhuma executável 
 select tests.ok('S74 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
   (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
 
+-- ================================================================ S75 · Gestão: casting e media kit (0065)
+-- Talento com e sem página, um herói por talento, consentimento LGPD, redes declaradas (source nunca vem do
+-- cliente), media kit com link por hash, creator sem leitura de talent_profiles, conta demo sem talento real.
+\ir ../migrations/0065_gestao_casting.sql
+select tests.su();
+insert into auth.users (id, email, raw_app_meta_data) values
+  ('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local', '{}'),
+  ('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local', '{}'),
+  ('75000000-0000-4000-8000-0000000000d3', 'talento-2@test.local', '{}'),
+  ('75000000-0000-4000-8000-0000000000e2', 'demo-hero@test.local', '{"ultra_hero_demo": true}');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  (public.seed_uuid('s75:creator:real'), 's75-heroi-real', 'Herói Real', 'active', '75000000-0000-4000-8000-0000000000d2'),
+  (public.seed_uuid('s75:creator:demo'), 's75-heroi-demo', 'Herói da conta demo', 'active', '75000000-0000-4000-8000-0000000000e2'),
+  (public.seed_uuid('s75:creator:livre'), 's75-heroi-livre', 'Herói livre', 'active', null),
+  (public.seed_uuid('s75:creator:pausado'), 's75-heroi-pausado', 'Herói pausado', 'pending', null);
+create temp table t_s75 (k text primary key, v text);
+grant all on t_s75 to anon, authenticated, service_role;
+insert into t_s75 select 'seg_b', s.id::text from public.talent_segments s where s.agency_id = public.seed_uuid('s74:agency:b') and s.slug = 'fitness';
+
+select tests.ok('S75 10 segmentos iniciais por agência (A, B e a demo)',
+  (select count(*) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:a')) = 10
+  and (select count(*) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:b')) = 10
+  and (select count(*) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:d')) = 10);
+select public.agency_seed_defaults(public.seed_uuid('s74:agency:a'));
+select tests.ok('S75 semear de novo não duplica segmentos',
+  (select count(*) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:a')) = 10);
+
+-- 1) cadastro: gestor cria, colaborador lê e não grava; D19 entre agências --------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s75 values ('t1', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'),
+  '{"display_name": "Talento Um", "city": "São Paulo", "state": "sp", "internal_notes": "nota interna", "commercial_status": "active",
+    "manager_id": "74000000-0000-4000-8000-0000000000a2"}')::text);
+insert into t_s75 values ('t2', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Herói Real"}')::text);
+insert into t_s75 values ('t3', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Herói da conta demo"}')::text);
+insert into t_s75 values ('t4', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Sem login"}')::text);
+select tests.expect_error('S75 UF fora da lista',
+  $q$select public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "X Y", "state": "XX"}')$q$, 'invalid_input');
+select tests.expect_error('S75 gestor responsável de outra agência',
+  $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 't1'), public.seed_uuid('s74:agency:a'), '{"manager_id": "74000000-0000-4000-8000-0000000000b1"}')$q$, 'not_found');
+select tests.expect_error('S75 colaborador não é gestor responsável',
+  $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 't1'), public.seed_uuid('s74:agency:a'), '{"manager_id": "74000000-0000-4000-8000-0000000000a3"}')$q$, 'not_found');
+select tests.ok('S75 talento salvo com UF normalizada e status inicial',
+  (select state from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't1')) = 'SP'
+  and (select commercial_status from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2')) = 'prospect');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.ok('S75 colaborador lê o casting', (select count(*) from public.talent_profiles where agency_id = public.seed_uuid('s74:agency:a')) = 4);
+select tests.expect_error('S75 colaborador não cria talento',
+  $q$select public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Novo"}')$q$, 'forbidden');
+select tests.expect_error('S75 colaborador não edita talento',
+  $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 't1'), public.seed_uuid('s74:agency:a'), '{"city": "Rio"}')$q$, 'forbidden');
+select tests.expect_error('S75 colaborador não muda segmentos',
+  $q$select public.agency_talent_set_segments((select v::uuid from t_s75 where k = 't1'), '{}')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+insert into t_s75 values ('tb', public.agency_talent_save(null, public.seed_uuid('s74:agency:b'), '{"display_name": "Talento da B"}')::text);
+select tests.ok('S75 agência B não lê talentos da A', (select count(*) from public.talent_profiles where agency_id = public.seed_uuid('s74:agency:a')) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S75 D19: p_id da agência B com p_agency da A',
+  $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 'tb'), public.seed_uuid('s74:agency:a'), '{"city": "Rio"}')$q$, 'not_found');
+select tests.expect_error('S75 D19: talento da B com a própria agência B, sem ser membro',
+  $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 'tb'), public.seed_uuid('s74:agency:b'), '{"city": "Rio"}')$q$, 'not_found');
+select tests.ok('S75 agência A não lê talentos da B', (select count(*) from public.talent_profiles where agency_id = public.seed_uuid('s74:agency:b')) = 0);
+
+-- 2) segmentos ----------------------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_talent_save((select v::uuid from t_s75 where k = 't1'), public.seed_uuid('s74:agency:a'), '{"city": "Campinas", "availability": "limited"}');
+select tests.ok('S75 edição parcial mantém o que não veio',
+  (select city = 'Campinas' and availability = 'limited' and state = 'SP' and internal_notes = 'nota interna'
+   from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't1')));
+select tests.expect_error('S75 no máximo 5 segmentos',
+  $q$select public.agency_talent_set_segments((select v::uuid from t_s75 where k = 't1'),
+     (select array_agg(id) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:a')))$q$, 'too_many_segments');
+select tests.expect_error('S75 segmento de outra agência',
+  $q$select public.agency_talent_set_segments((select v::uuid from t_s75 where k = 't1'),
+     array[(select v::uuid from t_s75 where k = 'seg_b')])$q$, 'not_found');
+select public.agency_talent_set_segments((select v::uuid from t_s75 where k = 't1'),
+  (select array_agg(id) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:a') and slug in ('fitness', 'rotina')));
+select public.agency_talent_set_segments((select v::uuid from t_s75 where k = 't1'),
+  (select array_agg(id) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:a') and slug in ('fitness', 'corrida')));
+select tests.ok('S75 segmentos trocados (escopo copiado do talento)',
+  (select array_agg(s.slug order by s.slug) from public.talent_segment_links l join public.talent_segments s on s.id = l.segment_id
+   where l.talent_id = (select v::uuid from t_s75 where k = 't1')) = array['corrida', 'fitness']
+  and not exists (select 1 from public.talent_segment_links l where l.talent_id = (select v::uuid from t_s75 where k = 't1')
+                  and l.agency_id <> public.seed_uuid('s74:agency:a')));
+
+-- 3) herói ligado: um herói por talento; conta demo sem acesso ao talento da agência real ---------
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), public.seed_uuid('s75:creator:real'));
+select tests.expect_error('S75 herói em dois talentos',
+  $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't3'), public.seed_uuid('s75:creator:real'))$q$, 'creator_already_in_casting');
+select tests.expect_error('S75 herói que não está ativo',
+  $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't3'), public.seed_uuid('s75:creator:pausado'))$q$, 'not_found');
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't3'), public.seed_uuid('s75:creator:demo'));
+select tests.su();
+select tests.ok('S75 talent_user_id: herói real tem login; herói de conta demo fica sem login na agência real',
+  public.talent_user_id((select v::uuid from t_s75 where k = 't2')) = '75000000-0000-4000-8000-0000000000d2'
+  and public.talent_user_id((select v::uuid from t_s75 where k = 't3')) is null);
+select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
+select tests.ok('S75 dono do herói age como o talento', public.my_talent_id() = (select v::uuid from t_s75 where k = 't2'));
+select tests.login('75000000-0000-4000-8000-0000000000e2', 'demo-hero@test.local');
+select tests.ok('S75 D6: conta demo dona do herói não age como o talento da agência real',
+  public.my_talent_id() is null and public.talent_my_context() is null
+  and (select count(*) from public.talent_social_accounts) = 0 and (select count(*) from public.media_kits) = 0
+  and (select count(*) from public.documents where talent_id = (select v::uuid from t_s75 where k = 't3')) = 0);
+select tests.expect_error('S75 D6: conta demo não consente pelo talento real',
+  $q$select public.talent_set_consent(true, '2026-10')$q$, 'forbidden');
+select tests.expect_error('S75 D6: conta demo não gera link do talento real',
+  $q$select public.media_kit_share((select v::uuid from t_s75 where k = 't3'), 30)$q$, 'not_found');
+
+-- 4) convite de talento sem página; aceite liga o login ---------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 convite para talento com herói',
+  $q$select * from public.agency_invite_talent((select v::uuid from t_s75 where k = 't2'), 'x@test.local')$q$, 'talent_has_creator');
+insert into t_s75 select 'tok_t1', token from public.agency_invite_talent((select v::uuid from t_s75 where k = 't1'), 'Talento-1@Test.Local');
+select tests.ok('S75 gestor lê o convite do talento (não os de equipe)',
+  exists (select 1 from public.invitations where talent_id = (select v::uuid from t_s75 where k = 't1') and status = 'pending'));
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+insert into t_s75 values ('acc_t1', public.accept_invitation((select v from t_s75 where k = 'tok_t1'))::text);
+select tests.ok('S75 aceite liga user_id, grava (creator, talent) e my_talent_id devolve o talento',
+  ((select v::jsonb from t_s75 where k = 'acc_t1') ->> 'scope_type') = 'talent'
+  and public.my_talent_id() = (select v::uuid from t_s75 where k = 't1'));
+select tests.su();
+select tests.ok('S75 papel creator com escopo talent gravado',
+  exists (select 1 from public.role_assignments where user_id = '75000000-0000-4000-8000-0000000000d1' and role = 'creator'
+          and scope_type = 'talent' and scope_id = (select v::uuid from t_s75 where k = 't1') and revoked_at is null)
+  and (select user_id from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't1')) = '75000000-0000-4000-8000-0000000000d1');
+-- D10: quem já tem talento próprio não entra por herói em outro talento
+update public.creator_profiles set user_id = '75000000-0000-4000-8000-0000000000d1' where id = public.seed_uuid('s75:creator:livre');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 usuário com talento próprio + herói em outro talento',
+  $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't4'), public.seed_uuid('s75:creator:livre'))$q$, 'user_has_talent');
+select tests.expect_error('S75 talento com login não recebe herói',
+  $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't1'), public.seed_uuid('s75:creator:pausado'))$q$, 'talent_has_login');
+select tests.expect_error('S75 convite para talento que já tem login',
+  $q$select * from public.agency_invite_talent((select v::uuid from t_s75 where k = 't1'), 'outro@test.local')$q$, 'talent_has_login');
+select tests.su();
+update public.creator_profiles set user_id = null where id = public.seed_uuid('s75:creator:livre');
+-- convite do mesmo talento para quem já é dono de herói em outro talento
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s75 select 'tok_t4', token from public.agency_invite_talent((select v::uuid from t_s75 where k = 't4'), 'heroi-real@test.local');
+select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
+select tests.expect_error('S75 D10: dono de herói no casting não aceita convite de outro talento',
+  $q$select public.accept_invitation((select v from t_s75 where k = 'tok_t4'))$q$, 'user_has_talent');
+
+-- 5) o creator não lê talent_profiles; contexto com lista fechada de campos ------------------------
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select tests.ok('S75 creator lê 0 linhas de talent_profiles (nem notas internas)', (select count(*) from public.talent_profiles) = 0);
+select tests.ok('S75 talent_my_context só com a lista fechada de campos',
+  (select array_agg(k order by k) from jsonb_object_keys(public.talent_my_context()) k)
+    = array['agency', 'agency_is_demo', 'availability', 'availability_note', 'catalog_visible', 'city', 'consent_at', 'consent_revoked_at',
+            'consent_version', 'display_name', 'has_public_page', 'id', 'manager', 'state']
+  and public.talent_my_context() ->> 'manager' = 'Gil Gestor' and public.talent_my_context() ->> 'agency' = 'Agência A');
+select tests.ok('S75 creator lê a própria agência e os segmentos ativos dela, e os próprios vínculos',
+  (select count(*) from public.agencies) = 1 and (select count(*) from public.talent_segments) = 10
+  and (select count(*) from public.talent_segment_links) = 2 and (select count(*) from public.agency_members) = 0);
+
+-- 6) consentimento, catálogo e link do kit -------------------------------------------------
+select tests.expect_error('S75 sem consentimento não gera link',
+  $q$select public.media_kit_share((select v::uuid from t_s75 where k = 't1'), 30)$q$, 'consent_required');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 sem consentimento não entra no catálogo',
+  $q$select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't1'), true)$q$, 'consent_required');
+select tests.expect_error('S75 com login, só o talento consente',
+  $q$select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't1'), '2026-10', gen_random_uuid())$q$, 'talent_has_login');
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select tests.expect_error('S75 versão do termo obrigatória', $q$select public.talent_set_consent(true, '')$q$, 'invalid_input');
+select public.talent_set_consent(true, '2026-10');
+select tests.su();
+select tests.ok('S75 consentimento gravado e gestor responsável avisado (só ele)',
+  (select consent_at is not null and consent_revoked_at is null and consent_version = '2026-10'
+   from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't1'))
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and kind = 'talent_consent_given')
+  and not exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a1' and kind = 'talent_consent_given')
+  and exists (select 1 from public.admin_audit where action = 'talent.consent' and actor_type = 'creator'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't1'), true);
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select public.media_kit_save((select v::uuid from t_s75 where k = 't1'),
+  '{"headline": "Treino curto", "about": "Rotina possível", "visible_fields": ["headline", "about", "segments", "networks", "followers"]}');
+select tests.expect_error('S75 campo de kit fora da lista',
+  $q$select public.media_kit_save((select v::uuid from t_s75 where k = 't1'), '{"visible_fields": ["cache"]}')$q$, 'invalid_input');
+select tests.expect_error('S75 validade do link entre 1 e 90 dias',
+  $q$select public.media_kit_share((select v::uuid from t_s75 where k = 't1'), 120)$q$, 'invalid_input');
+insert into t_s75 values ('kit_t1', public.media_kit_share((select v::uuid from t_s75 where k = 't1'), 30));
+select tests.ok('S75 token só na resposta: o banco guarda o SHA-256',
+  (select v from t_s75 where k = 'kit_t1') ~ '^[0-9a-f]{64}$'
+  and (select share_token_hash from public.media_kits where talent_id = (select v::uuid from t_s75 where k = 't1'))
+      = encode(extensions.digest((select v from t_s75 where k = 'kit_t1'), 'sha256'), 'hex'));
+
+-- 7) redes declaradas: source nunca vem do cliente --------------------------------------------
+insert into t_s75 values ('net_t1', public.talent_social_save((select v::uuid from t_s75 where k = 't1'), null,
+  ('{"network": "instagram", "handle": "@talento.um", "followers": 48200, "avg_views": 23100, "engagement_bp": 412, "source": "integration",
+     "as_of": "' || current_date || '", "audience": {"gender": {"female": 6100, "male": 3900}, "age": {"18-24": 3000, "25-34": 5000}, "top_states": ["SP", "RJ"]}}')::jsonb)::text);
+select tests.ok('S75 rede gravada como declarada pelo talento, sem @ no perfil',
+  (select source = 'declared' and declared_side = 'talent' and handle = 'talento.um' and agency_id = public.seed_uuid('s74:agency:a')
+   from public.talent_social_accounts where id = (select v::uuid from t_s75 where k = 'net_t1')));
+select tests.expect_error('S75 as_of no futuro',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't1'), null,
+     ('{"network": "tiktok", "handle": "t1", "as_of": "' || (current_date + 2) || '"}')::jsonb)$q$, 'invalid_input');
+select tests.expect_error('S75 as_of com mais de 2 anos',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't1'), null,
+     ('{"network": "tiktok", "handle": "t1", "as_of": "' || (current_date - 800) || '"}')::jsonb)$q$, 'invalid_input');
+select tests.expect_error('S75 audiência somando mais de 100%',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't1'), null,
+     ('{"network": "tiktok", "handle": "t1", "as_of": "' || current_date || '", "audience": {"gender": {"female": 8000, "male": 3000}}}')::jsonb)$q$, 'invalid_input');
+select tests.expect_error('S75 audiência com chave desconhecida',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't1'), null,
+     ('{"network": "tiktok", "handle": "t1", "as_of": "' || current_date || '", "audience": {"renda": {"a": 1}}}')::jsonb)$q$, 'invalid_input');
+select tests.expect_error('S75 mesma rede e perfil duas vezes',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't1'), null,
+     ('{"network": "instagram", "handle": "talento.um", "as_of": "' || current_date || '"}')::jsonb)$q$, 'duplicate_network');
+select tests.su();
+insert into public.talent_social_accounts (agency_id, talent_id, network, handle, followers, source, as_of, declared_side)
+values (public.seed_uuid('s74:agency:a'), (select v::uuid from t_s75 where k = 't2'), 'youtube', 'heroireal', 1000, 'integration', current_date, 'integration');
+insert into t_s75 select 'net_int', id::text from public.talent_social_accounts where talent_id = (select v::uuid from t_s75 where k = 't2') and source = 'integration';
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select tests.expect_error('S75 D19: conta de outro talento',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't1'), (select v::uuid from t_s75 where k = 'net_int'),
+     ('{"network": "youtube", "handle": "x", "as_of": "' || current_date || '"}')::jsonb)$q$, 'not_found');
+select tests.expect_error('S75 creator não apaga conta de outro talento',
+  $q$select public.talent_social_delete((select v::uuid from t_s75 where k = 'net_int'))$q$, 'not_found');
+select tests.ok('S75 creator lê só as próprias redes e o próprio kit',
+  (select count(*) from public.talent_social_accounts) = 1 and (select count(*) from public.media_kits) = 1);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 conta de integração não é gravável por usuário',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't2'), (select v::uuid from t_s75 where k = 'net_int'),
+     ('{"network": "youtube", "handle": "x", "as_of": "' || current_date || '"}')::jsonb)$q$, 'forbidden');
+select tests.expect_error('S75 conta de integração não é apagada por usuário',
+  $q$select public.talent_social_delete((select v::uuid from t_s75 where k = 'net_int'))$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S75 colaborador não grava rede',
+  $q$select public.talent_social_save((select v::uuid from t_s75 where k = 't1'), null,
+     ('{"network": "tiktok", "handle": "t1", "as_of": "' || current_date || '"}')::jsonb)$q$, 'forbidden');
+select tests.expect_error('S75 colaborador não gera link', $q$select public.media_kit_share((select v::uuid from t_s75 where k = 't1'), 30)$q$, 'forbidden');
+
+-- 8) /kit: só service role, só campos marcados, conta visita ------------------------------------
+select tests.su();
+select tests.ok('S75 media_kit_resolve não é executável por anon nem authenticated',
+  not has_function_privilege('anon', 'public.media_kit_resolve(text, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.media_kit_resolve(text, boolean)', 'execute')
+  and has_function_privilege('service_role', 'public.media_kit_resolve(text, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.talent_user_id(uuid)', 'execute'));
+insert into t_s75 values ('kit_r1', public.media_kit_resolve((select v from t_s75 where k = 'kit_t1'), true)::text);
+select tests.ok('S75 kit devolve só os campos marcados (sem cidade, visualizações nem audiência) e nenhum valor',
+  ((select v::jsonb from t_s75 where k = 'kit_r1') ->> 'name') = 'Talento Um'
+  and ((select v::jsonb from t_s75 where k = 'kit_r1') ->> 'headline') = 'Treino curto'
+  and not ((select v::jsonb from t_s75 where k = 'kit_r1') ? 'city')
+  and not ((select v::jsonb from t_s75 where k = 'kit_r1') ? 'agency')
+  and jsonb_array_length((select v::jsonb from t_s75 where k = 'kit_r1') -> 'segments') = 2
+  and (((select v::jsonb from t_s75 where k = 'kit_r1') -> 'networks' -> 0) ->> 'followers') = '48200'
+  and not (((select v::jsonb from t_s75 where k = 'kit_r1') -> 'networks' -> 0) ? 'avg_views')
+  and not (((select v::jsonb from t_s75 where k = 'kit_r1') -> 'networks' -> 0) ? 'audience')
+  and (((select v::jsonb from t_s75 where k = 'kit_r1') -> 'networks' -> 0) ->> 'declared_side') = 'talent'
+  and (select v from t_s75 where k = 'kit_r1') !~ '(cents|amount|fee|price|budget|commission)');
+select public.media_kit_resolve((select v from t_s75 where k = 'kit_t1'), false);
+select tests.ok('S75 visita contada só com p_count',
+  (select view_count from public.media_kits where talent_id = (select v::uuid from t_s75 where k = 't1')) = 1);
+select tests.ok('S75 token fora do formato ou desconhecido → null',
+  public.media_kit_resolve('abc', true) is null and public.media_kit_resolve(repeat('a', 64), true) is null);
+update public.media_kits set share_expires_at = now() - interval '1 minute' where talent_id = (select v::uuid from t_s75 where k = 't1');
+select tests.ok('S75 link vencido → null', public.media_kit_resolve((select v from t_s75 where k = 'kit_t1'), false) is null);
+update public.media_kits set share_expires_at = now() + interval '1 day' where talent_id = (select v::uuid from t_s75 where k = 't1');
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select public.media_kit_revoke((select v::uuid from t_s75 where k = 't1'));
+select tests.su();
+select tests.ok('S75 link revogado → null', public.media_kit_resolve((select v from t_s75 where k = 'kit_t1'), false) is null);
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+insert into t_s75 values ('kit_t1b', public.media_kit_share((select v::uuid from t_s75 where k = 't1'), 7));
+select public.talent_set_consent(false, null);
+select tests.su();
+select tests.ok('S75 revogar consentimento revoga o link e tira do catálogo',
+  public.media_kit_resolve((select v from t_s75 where k = 'kit_t1b'), false) is null
+  and (select not catalog_visible and consent_revoked_at is not null from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't1'))
+  and (select share_revoked_at is not null from public.media_kits where talent_id = (select v::uuid from t_s75 where k = 't1'))
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and kind = 'talent_consent_revoked'));
+
+-- 9) consentimento registrado pela agência (talento sem login, termo assinado) -------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s75 values ('doc_t4', public.document_reserve(public.seed_uuid('s74:agency:a'), 'talent', (select v::uuid from t_s75 where k = 't4'),
+  '{"kind": "other", "title": "Termo assinado", "mime_type": "application/pdf", "size_bytes": 1000}') ->> 'id');
+insert into t_s75 values ('doc_t2', public.document_reserve(public.seed_uuid('s74:agency:a'), 'talent', (select v::uuid from t_s75 where k = 't2'),
+  '{"kind": "other", "title": "Outro termo", "mime_type": "application/pdf", "size_bytes": 1000, "share_talent": true}') ->> 'id');
+select tests.expect_error('S75 documento de talento de outra agência',
+  $q$select public.document_reserve(public.seed_uuid('s74:agency:a'), 'talent', (select v::uuid from t_s75 where k = 'tb'),
+     '{"kind": "other", "title": "x", "mime_type": "application/pdf", "size_bytes": 10}')$q$, 'not_found');
+select tests.su();
+update public.documents set status = 'ready' where id in ((select v::uuid from t_s75 where k = 'doc_t4'), (select v::uuid from t_s75 where k = 'doc_t2'));
+select tests.ok('S75 documento de talento com escopo e agência conferidos',
+  (select talent_id from public.documents where id = (select v::uuid from t_s75 where k = 'doc_t4')) = (select v::uuid from t_s75 where k = 't4'));
+select tests.expect_error('S75 gatilho recusa documento de talento com agência trocada',
+  $q$update public.documents set agency_id = public.seed_uuid('s74:agency:b') where id = (select v::uuid from t_s75 where k = 'doc_t4')$q$, 'talent_agency_mismatch');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 termo de outro talento',
+  $q$select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't4'), '2026-10', (select v::uuid from t_s75 where k = 'doc_t2'))$q$, 'not_found');
+select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't4'), '2026-10', (select v::uuid from t_s75 where k = 'doc_t4'));
+select tests.ok('S75 consentimento registrado pela agência com o termo',
+  (select consent_at is not null from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't4')));
+select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
+select tests.ok('S75 creator lê documento compartilhado do próprio talento',
+  (select count(*) from public.documents) = 1);
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select tests.ok('S75 creator não lê documento de outro talento', (select count(*) from public.documents) = 0);
+
+-- 10) quem não é da agência não lê o casting ---------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000c1', 'marca-x-dono@test.local');
+select tests.ok('S75 marca lê 0 talentos, redes e kits',
+  (select count(*) from public.talent_profiles) = 0 and (select count(*) from public.talent_social_accounts) = 0
+  and (select count(*) from public.media_kits) = 0 and (select count(*) from public.talent_segments) = 0);
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.ok('S75 consumidor lê 0 talentos', (select count(*) from public.talent_profiles) = 0 and public.my_talent_id() is null);
+select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
+select tests.ok('S75 D6: admin de demonstração lê 0 talentos da agência real',
+  (select count(*) from public.talent_profiles) = 0 and (select count(*) from public.talent_social_accounts) = 0
+  and (select count(*) from public.media_kits) = 0
+  and not exists (select 1 from public.role_assignments where scope_type = 'talent'));
+select tests.anon();
+select tests.expect_error('S75 visitante sem acesso às tabelas do casting', $q$select count(*) from public.talent_profiles$q$, '42501');
+
+-- 11) agência demo travada ------------------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000e3', 'demo-adm@test.local');
+insert into t_s75 values ('td', public.agency_talent_save(null, public.seed_uuid('s74:agency:d'), '{"display_name": "Talento de exemplo"}')::text);
+select tests.expect_error('S75 agência demo não liga herói real',
+  $q$select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 'td'), public.seed_uuid('s75:creator:livre'))$q$, 'demo_locked');
+select tests.expect_error('S75 agência demo não registra consentimento',
+  $q$select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 'td'), '2026-10', gen_random_uuid())$q$, 'demo_locked');
+select tests.expect_error('S75 agência demo não convida talento',
+  $q$select * from public.agency_invite_talent((select v::uuid from t_s75 where k = 'td'), 'x@test.local')$q$, 'demo_locked');
+select tests.su();
+update public.talent_profiles set consent_at = now(), consent_version = 'seed' where id = (select v::uuid from t_s75 where k = 'td');
+insert into public.media_kits (agency_id, talent_id, share_token_hash, share_expires_at)
+values (public.seed_uuid('s74:agency:d'), (select v::uuid from t_s75 where k = 'td'), encode(extensions.digest(repeat('d', 64), 'sha256'), 'hex'), now() + interval '1 day');
+select tests.login('74000000-0000-4000-8000-0000000000e3', 'demo-adm@test.local');
+select tests.expect_error('S75 agência demo não gera link público',
+  $q$select public.media_kit_share((select v::uuid from t_s75 where k = 'td'), 30)$q$, 'demo_locked');
+select tests.su();
+select tests.ok('S75 talento da agência demo não tem kit público', public.media_kit_resolve(repeat('d', 64), false) is null);
+
+-- 12) arquivar: só o Adm, com justificativa; revoga link e catálogo ---------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 gestor não arquiva',
+  $q$select public.agency_talent_archive((select v::uuid from t_s75 where k = 't4'), 'saiu do casting')$q$, 'forbidden');
+select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't4'), true);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S75 arquivar exige justificativa',
+  $q$select public.agency_talent_archive((select v::uuid from t_s75 where k = 't4'), 'ok')$q$, 'justification_required');
+select public.agency_talent_archive((select v::uuid from t_s75 where k = 't4'), 'saiu do casting');
+select tests.ok('S75 arquivado sai do catálogo',
+  (select archived_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't4')));
+select tests.expect_error('S75 talento arquivado não é editado',
+  $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 't4'), public.seed_uuid('s74:agency:a'), '{"city": "Rio"}')$q$, 'talent_archived');
+select tests.su();
+select tests.ok('S75 auditoria do casting com agency_id',
+  (select count(distinct action) from public.admin_audit where action in ('talent.create', 'talent.update', 'talent.segments', 'talent.link_creator',
+     'talent.archive', 'talent.consent', 'talent.catalog', 'talent.social_save', 'media_kit.save', 'media_kit.share', 'media_kit.revoke')) = 11
+  and not exists (select 1 from public.admin_audit where action like 'talent.%' and coalesce(after_data ->> 'agency_id', before_data ->> 'agency_id') is null)
+  and not exists (select 1 from public.admin_audit where action = 'media_kit.share' and after_data::text ~ (select v from t_s75 where k = 'kit_t1')));
+select tests.ok('S75 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+  not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+              and p.proname in ('talent_audience_ok', 'fill_talent_scope', 'talent_user_id', 'my_talent_id', 'my_talent_agency_id', 'talent_write_scope',
+                                'talent_actor_side', 'talent_audit_actor', 'agency_talent_save', 'agency_talent_set_segments', 'agency_talent_link_creator',
+                                'agency_talent_archive', 'agency_invite_talent', 'talent_consent_apply', 'talent_set_consent', 'agency_talent_record_consent',
+                                'agency_talent_set_catalog', 'talent_social_save', 'talent_social_delete', 'media_kit_save', 'media_kit_share',
+                                'media_kit_revoke', 'media_kit_resolve', 'talent_my_context')
+              and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+drop table t_s75;
+
 -- ================================================================ S80 · Estrutura do módulo de gestão
 -- Cresce a cada etapa (0064..0069). Tabelas novas: PK só "id", RLS ligada, sem escrita direta e sem
 -- leitura anônima; nenhuma coluna de valor em tabela operacional; políticas sem função por linha;
 -- _select_admin com is_platform_admin; sem FK nos dois sentidos entre tabelas novas.
 select tests.su();
 create temp table t_s80 (t text primary key);
-insert into t_s80 values ('agencies'), ('agency_members'), ('agency_brands'), ('brand_members'), ('inbox_notifications'), ('documents');
+insert into t_s80 values ('agencies'), ('agency_members'), ('agency_brands'), ('brand_members'), ('inbox_notifications'), ('documents'),
+  ('talent_segments'), ('talent_profiles'), ('talent_segment_links'), ('talent_social_accounts'), ('media_kits');
 grant all on t_s80 to anon, authenticated, service_role;
 select tests.ok('S80 tabelas novas: PK só id, RLS ligada, sem escrita para authenticated/anon, sem select para anon',
   (select bool_and((select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
@@ -8031,10 +8409,11 @@ select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_p
   (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80)
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0
   and (select count(*) from pg_policies where schemaname = 'public' and policyname in ('brands_select_member', 'brands_select_agency', 'brands_hide_agency_from_demo',
-         'invitations_select_agency_admin', 'invitations_select_agency_manager', 'invitations_select_brand_owner', 'invitations_hide_from_demo', 'admin_audit_hide_agency_from_demo')
+         'invitations_select_agency_admin', 'invitations_select_agency_manager', 'invitations_select_brand_owner', 'invitations_hide_from_demo', 'admin_audit_hide_agency_from_demo',
+         'agencies_select_talent', 'role_assignments_hide_agency_from_demo')
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0);
 select tests.ok('S80 _select_admin das tabelas novas usa is_platform_admin (nunca is_admin)',
-  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 5
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 10
   and not exists (select 1 from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin'
                   and qual !~ 'is_platform_admin'));
 select tests.ok('S80 nenhum par de tabelas novas com FK nos dois sentidos',
