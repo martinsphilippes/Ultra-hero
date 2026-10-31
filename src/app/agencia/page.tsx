@@ -64,7 +64,7 @@ export default async function AgencyDashboardPage() {
               <Link href="/agencia/marcas/nova">{t("newBrand")}</Link>
             </Button>
           ) : null}
-          {isAdmin ? (
+          {isAdmin && !ctx.agency.isDemo ? (
             <Button asChild size="sm" variant="secondary" leadingIcon={<UserPlus />}>
               <Link href="/agencia/equipe">{t("inviteTeam")}</Link>
             </Button>

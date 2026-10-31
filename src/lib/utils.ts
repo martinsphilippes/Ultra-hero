@@ -18,10 +18,13 @@ export function stableHash(input: string): number {
 // Iniciais (máx. 2 letras) a partir de um nome de exibição.
 export function initials(name?: string | null): string {
   if (!name) return "";
+  // só palavras com letra ou número ("Adm da agência (exemplo)" → "AA", nunca "A(")
   return name
     .trim()
     .split(/\s+/)
+    .map((part) => part.match(/[\p{L}\p{N}]/u)?.[0] ?? "")
+    .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
+    .map((letter) => letter.toUpperCase())
     .join("");
 }

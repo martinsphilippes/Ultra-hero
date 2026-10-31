@@ -178,3 +178,14 @@ describe("integração com o app", () => {
     expect(isMissingSchema(null)).toBe(false);
   });
 });
+
+describe("iniciais do avatar", () => {
+  it("ignora parênteses e sinais", async () => {
+    const { initials } = await import("@/lib/utils");
+    expect(initials("Adm da agência (exemplo)")).toBe("AD");
+    expect(initials("Colaborador (exemplo)")).toBe("CE");
+    expect(initials("(Bia) Treinos")).toBe("BT");
+    expect(initials("Érick Jacquin")).toBe("ÉJ");
+    expect(initials("  ")).toBe("");
+  });
+});
