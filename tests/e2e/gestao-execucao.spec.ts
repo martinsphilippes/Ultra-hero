@@ -29,7 +29,8 @@ test.describe("execução da campanha", () => {
     await page.getByTestId("task-filters").getByRole("link", { name: /Atrasadas/ }).click();
     await expect(page).toHaveURL(/f=overdue/);
     await expect(page.getByTestId("agency-tasks")).toBeVisible();
-    // o formulário abre e fecha sem salvar
+    // o formulário abre e fecha sem salvar (a carga completa do filtro precisa hidratar antes do clique)
+    await page.waitForLoadState("networkidle");
     await page.getByTestId("task-new").click();
     await expect(page.getByTestId("task-form")).toBeVisible();
     await page.keyboard.press("Escape");
@@ -99,6 +100,7 @@ test.describe("execução da campanha", () => {
 
   test("marca: aprovações pendentes no início e campanha com termos, roteiros e entregas sem valores", async ({ page }) => {
     await loginAs(page, "brand", { home: null });
+    await page.goto("/marca");
     await expect(page.getByTestId("brand-kpis")).toBeVisible();
     await page.goto("/marca/campanhas");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0066 ainda não aplicada");
