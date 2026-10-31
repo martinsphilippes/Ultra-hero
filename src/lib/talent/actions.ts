@@ -6,6 +6,7 @@ import { z } from "zod";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { availabilitySchema } from "@/lib/deals/schemas";
 import { talentFail } from "./errors";
 import { kitSchema, shareKitSchema, socialSchema, type SocialInput } from "./schemas";
 
@@ -101,6 +102,42 @@ export async function shareKitAction(portal: Portal, input: { talentId: string; 
     revalidate(portal, parsed.data.talentId);
     const t = await getTranslations("mediaKit.share");
     return { ok: true, message: t("created"), token: data };
+  } catch (error) {
+    return fail(portal, error);
+  }
+}
+
+// Disponibilidade comercial (0066): períodos "disponível" e "bloqueado" que a marca vê no catálogo.
+// A agenda privada nunca sai daqui: só os períodos declarados.
+export async function saveAvailabilityAction(portal: Portal, input: z.input<typeof availabilitySchema>): Promise<TalentActionResult> {
+  await requireUser();
+  const parsed = availabilitySchema.safeParse(input);
+  if (!parsed.success) return fail(portal, "invalid_input");
+  const d = parsed.data;
+  if (d.endsOn < d.startsOn) return fail(portal, "invalid_input");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("talent_availability_save", { p_talent: d.talentId, p_id: d.id, p_data: { kind: d.kind, starts_on: d.startsOn, ends_on: d.endsOn, note: d.note } });
+    if (error) return fail(portal, error);
+    revalidate(portal, d.talentId);
+    const t = await getTranslations("talent.availability");
+    return { ok: true, message: t("saved"), id: data ?? undefined };
+  } catch (error) {
+    return fail(portal, error);
+  }
+}
+
+export async function deleteAvailabilityAction(portal: Portal, input: { talentId: string; id: string }): Promise<TalentActionResult> {
+  await requireUser();
+  const parsed = z.object({ talentId: z.uuid(), id: z.uuid() }).safeParse(input);
+  if (!parsed.success) return fail(portal, "invalid_input");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("talent_availability_delete", { p_id: parsed.data.id });
+    if (error) return fail(portal, error);
+    revalidate(portal, parsed.data.talentId);
+    const t = await getTranslations("talent.availability");
+    return { ok: true, message: t("deleted") };
   } catch (error) {
     return fail(portal, error);
   }

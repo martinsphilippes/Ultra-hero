@@ -2,7 +2,12 @@
   "adminReadOnly": "You are viewing as platform admin, read only.",
   "meta": {
     "dashboard": "Brand",
-    "team": "Brand team"
+    "team": "Brand team",
+    "creators": "Creators",
+    "creator": "Creator",
+    "campaigns": "Campaigns",
+    "newCampaign": "New proposal",
+    "campaign": "Campaign"
   },
   "dashboard": {
     "eyebrow": "Brand portal",
@@ -11,7 +16,9 @@
     "inboxNote": "Notices arrive here, on the portal bell.",
     "kpi": {
       "team": "People with access",
-      "unread": "Unread notices"
+      "unread": "Unread notices",
+      "campaigns": "Campaigns in progress",
+      "drafts": "{count, plural, one {# draft} other {# drafts}}"
     },
     "seeTeam": "See team",
     "upcomingTitle": "Coming to the portal",
@@ -33,7 +40,10 @@
         "title": "Commercial calendar",
         "body": "Dates and opportunities published by the agency."
       }
-    }
+    },
+    "newCampaign": "New proposal",
+    "seeCreators": "Find creators",
+    "seeCampaigns": "See campaigns"
   },
   "team": {
     "title": "Brand team",
@@ -47,5 +57,150 @@
     "inviteCreated": "Invitation created. Copy the link and send it to the person.",
     "removed": "Person removed.",
     "inviteRevoked": "Invitation revoked."
+  },
+  "creators": {
+    "title": "Creators",
+    "description": "Catalog authorized by {agency}: only those who consented to appear, with what the media kit shares.",
+    "descriptionNoAgency": "Your brand is not linked to an agency yet.",
+    "filters": {
+      "search": "Search",
+      "searchPlaceholder": "Creator name",
+      "segment": "Segment",
+      "all": "All",
+      "state": "State",
+      "network": "Network",
+      "minFollowers": "Followers (min.)",
+      "availability": "Availability",
+      "apply": "Filter",
+      "clear": "Clear"
+    },
+    "availability": {
+      "available": "Available",
+      "limited": "Limited schedule"
+    },
+    "sourceNote": "Metrics declared by the creator or the agency, always with the data date. No values: the commercial proposal is made with the agency.",
+    "emptyFiltered": "No creators match these filters.",
+    "empty": "No creators released to the catalog yet.",
+    "emptyHint": "The agency releases creators as each one consents.",
+    "unavailable": "Catalog being updated",
+    "unavailableHint": "The catalog appears as soon as the database is updated.",
+    "noHeadline": "No headline",
+    "insufficientData": "insufficient data",
+    "matched": {
+      "segment": "segment",
+      "state": "region",
+      "network": "network",
+      "followers": "followers",
+      "availability": "availability"
+    },
+    "noSegments": "No segment",
+    "followers": "{count} on {network}",
+    "noMetrics": "No declared metrics",
+    "propose": "Make a proposal",
+    "networksTitle": "Networks and declared metrics",
+    "brandsTitle": "Brands already working with them",
+    "availabilityTitle": "Commercial availability",
+    "availabilityHint": "Periods declared by the creator or the agency. The private calendar never shows.",
+    "noPeriods": "No declared periods. Ask the agency in the proposal.",
+    "blocked": "unavailable",
+    "representedBy": "Represented by {agency}."
+  },
+  "campaigns": {
+    "draftSaved": "Draft saved.",
+    "submitted": "Proposal sent to the agency.",
+    "cancelled": "Proposal cancelled.",
+    "title": "Campaigns",
+    "description": "Your proposals and the progress of each campaign with the agency.",
+    "new": "New proposal",
+    "unavailable": "Campaigns being updated",
+    "unavailableHint": "Campaigns appear as soon as the database is updated.",
+    "noAgency": "Your brand is not linked to an agency yet: proposals can only be sent after the link.",
+    "empty": "No campaigns yet.",
+    "emptyHint": "Build the first proposal: objective, audience, period, deliverables and offered value.",
+    "forCreator": "For {name}",
+    "startsOn": "starts {date}",
+    "updatedAt": "updated {date}",
+    "newTitle": "New campaign proposal",
+    "newDescription": "Goes to {agency}, which reviews it, consults the creators and confirms with you. Save as a draft whenever you want.",
+    "untitled": "Untitled proposal",
+    "submittedAt": "Sent on {date}",
+    "stepsLabel": "Progress",
+    "sections": {
+      "summary": "Proposal summary",
+      "messages": "Conversation with the agency",
+      "talents": "Creators",
+      "deliverables": "Deliverables",
+      "attachments": "Briefing attachments"
+    },
+    "requestedTalent": "Creator you chose",
+    "talentStatus": {
+      "proposed": "Confirmed by the agency",
+      "contracted": "Contracted"
+    },
+    "talentsPending": "The agency is consulting the creators. You see the confirmed lineup as soon as the campaign is approved.",
+    "talentsNone": "No creators in this campaign.",
+    "deliverablesNone": "Deliverables appear after confirmation.",
+    "dueAt": "due {date}",
+    "agencyNote": "Values, contracts and the negotiation with creators stay with the agency.",
+    "seeCatalog": "See catalog",
+    "form": {
+      "blocks": {
+        "goal": "1. Objective",
+        "audience": "2. Audience",
+        "when": "3. Period and format",
+        "deliverables": "4. Networks and deliverables",
+        "budget": "5. Value and notes"
+      },
+      "forCreator": "Proposal addressed to {name}. The agency may suggest other creators.",
+      "title": "Campaign name",
+      "objective": "Objective",
+      "product": "Product or service",
+      "productHint": "What will be promoted.",
+      "audience": "Target audience",
+      "audienceHint": "In words: who you want to reach.",
+      "ageBands": "Age ranges",
+      "states": "States",
+      "regionNote": "Region detail",
+      "periodStart": "Start date",
+      "periodEnd": "End date",
+      "desiredTime": "Desired time",
+      "desiredTimeHint": "For an in-person action or a live.",
+      "duration": "Duration (min)",
+      "durationHint": "In minutes, if any.",
+      "format": "Format",
+      "location": "Location",
+      "locationHint": "Address or city, if in person.",
+      "networks": "Networks",
+      "deliverables": "Deliverables",
+      "deliverablesEmpty": "Add at least one deliverable.",
+      "deliverableKind": "Type",
+      "quantity": "Qty",
+      "deliverableNetwork": "Network",
+      "removeDeliverable": "Remove deliverable {n}",
+      "remove": "Remove",
+      "addDeliverable": "Add deliverable",
+      "budget": "Offered value (R$)",
+      "budgetHint": "Optional. Only your brand and the agency admin see it.",
+      "budgetNote": "Note about the value",
+      "notes": "Notes",
+      "notesHint": "Free briefing: tone, references, what to avoid.",
+      "saveDraft": "Save draft",
+      "submit": "Send to the agency",
+      "incompleteHint": "To send: title, objective, start date, one network and one deliverable.",
+      "confirmTitle": "Send the proposal?",
+      "confirmHint": "The agency receives the briefing and starts consulting the creators. You follow the progress here and can cancel until there is a confirmation.",
+      "back": "Back",
+      "budgetInvalid": "Enter the value like 15.000,00.",
+      "incomplete": "Something is missing: title, objective, start date, one network and one deliverable."
+    },
+    "cancel": {
+      "action": "Cancel proposal",
+      "title": "Cancel this proposal?",
+      "hint": "The agency is notified. After confirmation, only the agency can close it.",
+      "back": "Back",
+      "confirm": "Cancel proposal",
+      "note": "Reason",
+      "noteRequired": "Write the reason (at least 5 characters)."
+    }
   }
 }

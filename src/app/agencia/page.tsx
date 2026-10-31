@@ -11,6 +11,7 @@ import { agencyDashboard } from "@/lib/agency/queries";
 import { castingCounts } from "@/lib/talent/queries";
 import { agencyCan, canSeeValues } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
+import { dealCounts } from "@/lib/deals/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +27,9 @@ export default async function AgencyDashboardPage() {
   if (ctx.state !== "ok") return null;
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
-  const [t, data, casting] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id)]);
+  const [t, data, casting, deals] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id), dealCounts(ctx.agency.id)]);
 
   const upcoming = [
-    { key: "pipeline", icon: BriefcaseBusiness },
     { key: "tasks", icon: ClipboardList },
     { key: "agenda", icon: CalendarDays },
     ...(canSeeValues(ctx.role, ctx.platformAdmin) ? [{ key: "finance", icon: Wallet }] : []),
@@ -48,6 +48,8 @@ export default async function AgencyDashboardPage() {
       ) : null}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="agency-kpis">
+        {deals ? <KpiCard label={t("kpi.deals")} value={deals.open} hint={t("kpi.dealsHint", { agency: deals.awaitingAgency, creator: deals.awaitingCreator })} tone={deals.awaitingAgency > 0 ? "danger" : "default"} /> : null}
+        {deals ? <KpiCard label={t("kpi.confirmed")} value={deals.confirmed} /> : null}
         {casting ? <KpiCard label={t("kpi.casting")} value={casting.total} hint={t("kpi.castingActive", { count: casting.active })} /> : null}
         <KpiCard label={t("kpi.team")} value={data.members} />
         <KpiCard label={t("kpi.brands")} value={data.brands} />
@@ -60,8 +62,11 @@ export default async function AgencyDashboardPage() {
           {t("quickTitle")}
         </h2>
         <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm" leadingIcon={<BriefcaseBusiness />}>
+            <Link href="/agencia/pipeline">{t("seePipeline")}</Link>
+          </Button>
           {isManager ? (
-            <Button asChild size="sm" leadingIcon={<Contact />}>
+            <Button asChild size="sm" variant="secondary" leadingIcon={<Contact />}>
               <Link href="/agencia/casting/novo">{t("newTalent")}</Link>
             </Button>
           ) : null}

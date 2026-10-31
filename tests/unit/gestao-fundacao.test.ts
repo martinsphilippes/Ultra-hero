@@ -35,11 +35,11 @@ describe("hierarquia da agência", () => {
   });
 
   it("menu por nível: Equipe só para o Adm, Configurações para gestor+", () => {
-    expect(agencyNavKeys("staff")).toEqual(["dashboard", "casting", "brands", "notifications"]);
-    expect(agencyNavKeys("manager")).toEqual(["dashboard", "casting", "brands", "notifications", "settings"]);
-    expect(agencyNavKeys("admin")).toEqual(["dashboard", "casting", "brands", "notifications", "settings", "team"]);
+    expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "casting", "brands", "notifications"]);
+    expect(agencyNavKeys("manager")).toEqual(["dashboard", "pipeline", "casting", "brands", "notifications", "settings"]);
+    expect(agencyNavKeys("admin")).toEqual(["dashboard", "pipeline", "casting", "brands", "notifications", "settings", "team"]);
     expect(agencyNavKeys(null, true)).toContain("team");
-    expect(brandNavKeys()).toEqual(["dashboard", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "campaigns", "catalog", "team", "notifications"]);
   });
 
   it("só o Adm convida a equipe, em qualquer nível", () => {

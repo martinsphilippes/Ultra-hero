@@ -6,7 +6,7 @@ import { z } from "zod";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { DOCUMENT_MAX_BYTES, DOCUMENT_MIME_TYPES, isDocumentsRevalidatePath } from "./constants";
+import { DOCUMENT_MAX_BYTES, DOCUMENT_MIME_TYPES, DOCUMENT_SCOPES, isDocumentsRevalidatePath } from "./constants";
 
 // Documentos do módulo (bucket privado agency-docs, 3.4): o banco escolhe o caminho na reserva, o
 // navegador envia o arquivo direto ao Storage (política: só a própria reserva pendente) e confirma.
@@ -18,9 +18,9 @@ export type DocumentResult = { ok: true; message: string; id?: string; path?: st
 
 const reserveSchema = z.object({
   agencyId: z.uuid(),
-  scopeType: z.enum(["agency", "brand", "talent"]),
+  scopeType: z.enum(DOCUMENT_SCOPES),
   scopeId: z.uuid(),
-  kind: z.enum(["contract", "report", "media", "other"]),
+  kind: z.enum(["contract", "brief_attachment", "report", "media", "other"]),
   title: z.string().trim().min(1).max(120),
   mimeType: z.enum(DOCUMENT_MIME_TYPES),
   sizeBytes: z.number().int().min(1).max(DOCUMENT_MAX_BYTES),

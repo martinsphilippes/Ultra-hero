@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { ArrowRight, Link2 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { InboxItemView } from "@/components/inbox/InboxItemView";
 import { ConsentBanner } from "@/components/talent/ConsentBanner";
 import { MetricSource } from "@/components/talent/MetricSource";
 import { Badge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
+import { listOpportunities } from "@/lib/deals/queries";
 import { listInbox } from "@/lib/inbox/queries";
 import { formatCount } from "@/lib/talent/media-kit";
 import { getKit, listSocial } from "@/lib/talent/queries";
@@ -25,20 +27,43 @@ export default async function OfficeHomePage() {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
   const talent = ctx.talent;
-  const [t, tn, locale, kit, networks, inbox] = await Promise.all([
+  const [t, tn, locale, kit, networks, inbox, opportunities] = await Promise.all([
     getTranslations("talent.home"),
     getTranslations("mediaKit.networks"),
     getLocale() as Promise<Locale>,
     getKit(talent.id),
     listSocial(talent.id),
     listInbox({ limit: 5 }),
+    listOpportunities(),
   ]);
   const consentOk = consentActive(talent);
   const card = "flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4";
+  const pendingOpportunities = opportunities.items.filter((o) => ["consulted", "talk_requested"].includes(o.status));
 
   return (
     <div className="flex flex-col gap-5">
       {!consentOk ? <ConsentBanner /> : null}
+      {opportunities.available ? (
+        <section className={card} aria-labelledby="office-opportunities" data-testid="office-opportunities">
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="office-opportunities" className="text-sm font-semibold text-fg">
+              {t("opportunitiesTitle")}
+            </h2>
+            <Link href="/creator/escritorio/oportunidades" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+              {t("opportunitiesAll")}
+            </Link>
+          </div>
+          <p className="text-sm text-fg">{pendingOpportunities.length > 0 ? t("opportunitiesPending", { count: pendingOpportunities.length }) : t("opportunitiesNone")}</p>
+          {pendingOpportunities.slice(0, 3).map((o) => (
+            <Link key={o.id} href={`/creator/escritorio/oportunidades/${o.id}`} className="flex items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 text-sm text-fg hover:bg-surface-hover">
+              <span className="min-w-0 truncate">
+                {o.brand.name} · {o.deal.title}
+              </span>
+              <ArrowRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+            </Link>
+          ))}
+        </section>
+      ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         <section className={card} aria-labelledby="office-availability">
           <h2 id="office-availability" className="text-sm font-semibold text-fg">
@@ -51,6 +76,10 @@ export default async function OfficeHomePage() {
             {talent.availabilityNote ? <span className="text-fg-muted">{talent.availabilityNote}</span> : null}
           </p>
           <p className="type-caption text-fg-muted">{t("availabilityHint")}</p>
+          <a href="/creator/escritorio/disponibilidade" className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent-text underline-offset-2 hover:underline">
+            {t("availabilityOpen")}
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </a>
         </section>
         <section className={card} aria-labelledby="office-kit">
           <h2 id="office-kit" className="flex items-center gap-2 text-sm font-semibold text-fg">

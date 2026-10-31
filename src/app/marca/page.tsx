@@ -8,6 +8,7 @@ import { RoleBadge } from "@/components/agency/RoleBadge";
 import { Button, PageHeader } from "@/components/ui";
 import { listBrandMembers } from "@/lib/agency/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
+import { listBrandCampaigns } from "@/lib/deals/queries";
 import { unreadInboxCount } from "@/lib/inbox/queries";
 
 export const dynamic = "force-dynamic";
@@ -22,13 +23,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
-  const [t, members, unread] = await Promise.all([getTranslations("brandPortal.dashboard"), listBrandMembers(ctx.brand.id), unreadInboxCount()]);
+  const [t, members, unread, campaigns] = await Promise.all([getTranslations("brandPortal.dashboard"), listBrandMembers(ctx.brand.id), unreadInboxCount(), listBrandCampaigns(ctx.brand.id)]);
   const upcoming = [
-    { key: "campaigns", icon: Megaphone },
-    { key: "creators", icon: Search },
     { key: "approvals", icon: FileSignature },
     { key: "calendar", icon: CalendarDays },
   ] as const;
+  const inProgress = campaigns.items.filter((c) => ["received", "building", "proposal", "contracting", "running"].includes(c.status));
+  const drafts = campaigns.items.filter((c) => c.status === "draft");
 
   return (
     <div className="flex flex-col gap-6">
@@ -43,11 +44,23 @@ export default async function BrandDashboardPage() {
         <Bell className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
         {t("inboxNote")}
       </p>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="brand-kpis">
+        {campaigns.available ? <KpiCard label={t("kpi.campaigns")} value={inProgress.length} hint={drafts.length > 0 ? t("kpi.drafts", { count: drafts.length }) : undefined} /> : null}
         <KpiCard label={t("kpi.team")} value={members.length} />
         <KpiCard label={t("kpi.unread")} value={unread ?? 0} />
       </div>
       <div className="flex flex-wrap gap-2">
+        {ctx.role && ctx.agency ? (
+          <Button asChild size="sm" leadingIcon={<Megaphone />}>
+            <Link href="/marca/campanhas/nova">{t("newCampaign")}</Link>
+          </Button>
+        ) : null}
+        <Button asChild size="sm" variant="secondary" leadingIcon={<Search />}>
+          <Link href="/marca/creators">{t("seeCreators")}</Link>
+        </Button>
+        <Button asChild size="sm" variant="secondary">
+          <Link href="/marca/campanhas">{t("seeCampaigns")}</Link>
+        </Button>
         <Button asChild size="sm" variant="secondary" leadingIcon={<Users />}>
           <Link href="/marca/equipe">{t("seeTeam")}</Link>
         </Button>

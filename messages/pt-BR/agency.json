@@ -12,7 +12,15 @@
     "talentNetworks": "Redes do talento",
     "talentKit": "Media kit do talento",
     "talentDocuments": "Documentos do talento",
-    "talentHistory": "Histórico do talento"
+    "talentHistory": "Histórico do talento",
+    "pipeline": "Pipeline",
+    "newDeal": "Novo negócio",
+    "deal": "Negócio",
+    "dealTalents": "Creators do negócio",
+    "dealDeliverables": "Entregas do negócio",
+    "dealMessages": "Conversa do negócio",
+    "dealDocuments": "Documentos do negócio",
+    "talentAvailability": "Disponibilidade do talento"
   },
   "demoBanner": {
     "tag": "Demonstração",
@@ -54,7 +62,10 @@
       "invites": "Convites pendentes",
       "unread": "Avisos não lidos",
       "casting": "Casting",
-      "castingActive": "{count} ativos"
+      "castingActive": "{count} ativos",
+      "deals": "Negócios abertos",
+      "dealsHint": "{agency} com a agência · {creator} com creators",
+      "confirmed": "Campanhas confirmadas"
     },
     "quickTitle": "Atalhos",
     "newBrand": "Nova marca",
@@ -87,7 +98,8 @@
     "selfTitle": "Como você aparece para a equipe",
     "selfHint": "Seu nome e cargo nas listas da agência.",
     "newTalent": "Novo talento",
-    "seeCasting": "Ver casting"
+    "seeCasting": "Ver casting",
+    "seePipeline": "Ver pipeline"
   },
   "team": {
     "title": "Equipe",
@@ -255,7 +267,15 @@
     "invalid_file_type": "Tipo de arquivo não aceito.",
     "file_too_large": "Arquivo acima de 20 MB.",
     "file_missing": "O arquivo não chegou. Envie de novo.",
-    "invalid_state": "Esta ação não vale no estado atual."
+    "invalid_state": "Esta ação não vale no estado atual.",
+    "request_incomplete": "Falta algo na proposta: título, objetivo, data de início, uma rede e um entregável.",
+    "note_required": "Escreva a justificativa (pelo menos 5 caracteres).",
+    "stage_gate": "Esta etapa só é alcançada pela ação própria (proposta, confirmação ou contrato).",
+    "invalid_stage": "Esta ação não vale na etapa atual do negócio.",
+    "fee_missing": "Defina o cachê do creator antes (só o Adm).",
+    "no_talents": "Nenhum creator interessado ou confirmado neste negócio.",
+    "schedule_conflict": "Outro negócio já reservou este período para um dos creators. O Adm pode forçar com justificativa.",
+    "deliverables_open": "Há entregas em aberto; conclua ou cancele antes de encerrar como ganho."
   },
   "casting": {
     "title": "Casting",
@@ -324,7 +344,8 @@
       "networks": "Redes",
       "kit": "Media kit",
       "documents": "Documentos",
-      "history": "Histórico"
+      "history": "Histórico",
+      "availability": "Disponibilidade"
     },
     "sections": {
       "data": "Dados do talento",
@@ -447,5 +468,215 @@
     "kind": "Tipo",
     "shareTalent": "Compartilhar com o talento",
     "shareTalentHint": "Aparece no escritório dele (quando tiver login)."
+  },
+  "pipeline": {
+    "title": "Pipeline comercial",
+    "description": "Do briefing à confirmação: cada negócio numa etapa, com responsável e creators.",
+    "new": "Novo negócio",
+    "filterLabel": "Situação dos negócios",
+    "filterOpen": "Abertos",
+    "filterClosed": "Encerrados",
+    "filters": {
+      "owner": "Responsável",
+      "all": "Todos",
+      "mine": "Meus negócios",
+      "noOwner": "Sem responsável",
+      "brand": "Marca",
+      "apply": "Filtrar",
+      "clear": "Limpar"
+    },
+    "unavailable": "Pipeline em atualização",
+    "unavailableHint": "O pipeline aparece assim que o banco for atualizado.",
+    "emptyFiltered": "Nenhum negócio com estes filtros.",
+    "emptyClosed": "Nenhum negócio encerrado.",
+    "empty": "Nenhum negócio aberto.",
+    "emptyHint": "As propostas das marcas chegam aqui; a agência também pode abrir um negócio.",
+    "ownerUnknown": "Responsável fora da equipe",
+    "noOwner": "Sem responsável",
+    "talents": "{count, plural, =0 {sem creators} one {# creator} other {# creators}}",
+    "startsOn": "Início {date}",
+    "noDate": "Sem data",
+    "inStage": "nesta etapa {when}",
+    "newTitle": "Novo negócio",
+    "newDescription": "Para um briefing recebido fora do portal. A marca só vê o negócio quando a agência confirmar.",
+    "noBrands": "Cadastre uma marca atendida antes de abrir um negócio."
+  },
+  "deal": {
+    "created": "Negócio aberto.",
+    "saved": "Negócio salvo.",
+    "teamSaved": "Equipe do negócio salva.",
+    "moved": "Etapa atualizada.",
+    "shortlistSaved": "Elenco sugerido salvo.",
+    "activityAdded": "Registro adicionado.",
+    "feeSaved": "Cachê definido.",
+    "deliverablesSaved": "Entregáveis salvos.",
+    "consulted": "{count, plural, one {# creator consultado} other {# creators consultados}}.",
+    "responseRecorded": "Resposta registrada.",
+    "talentRemoved": "Creator removido do negócio.",
+    "confirmed": "Campanha confirmada. A marca e os creators foram avisados.",
+    "backToPipeline": "Pipeline",
+    "demoTag": "demonstração",
+    "period": "{start} – {end}",
+    "noPeriod": "Sem período previsto",
+    "tabsLabel": "Seções do negócio",
+    "tabs": {
+      "overview": "Visão geral",
+      "talents": "Creators",
+      "deliverables": "Entregas",
+      "messages": "Conversa",
+      "documents": "Documentos"
+    },
+    "sections": {
+      "request": "Proposta da marca",
+      "data": "Dados do negócio",
+      "activities": "Histórico e contatos",
+      "stage": "Etapa",
+      "team": "Equipe do negócio"
+    },
+    "noActivities": "Nenhum registro ainda.",
+    "noNote": "sem nota",
+    "system": {
+      "briefing_received": "A marca enviou a proposta."
+    },
+    "stageHint": "Mover de etapa é manual; voltar pede uma nota. Proposta, confirmação e contrato têm ação própria.",
+    "form": {
+      "brand": "Marca",
+      "title": "Nome da campanha",
+      "brief": "Resumo para os creators",
+      "briefHint": "O que o creator vê ao ser consultado. Sem valores.",
+      "expectedStart": "Início previsto",
+      "expectedEnd": "Fim previsto",
+      "owner": "Responsável",
+      "ownerHint": "Quem conduz o negócio e recebe os avisos.",
+      "noOwner": "Sem responsável",
+      "notes": "Notas internas",
+      "notesHint": "Só a agência vê.",
+      "save": "Salvar",
+      "create": "Abrir negócio"
+    },
+    "move": {
+      "to": "Mover para",
+      "reopenTo": "Reabrir em {stage}",
+      "close": "Encerrar negócio",
+      "outcome": "Resultado",
+      "forceWon": "Encerrar como ganho mesmo com entregas em aberto",
+      "forceWonHint": "Só o Adm. Fica registrado na auditoria.",
+      "note": "Nota",
+      "noteHintRequired": "Obrigatória ao voltar de etapa ou encerrar sem ganho (mínimo 5 caracteres).",
+      "noteHint": "Opcional.",
+      "apply": "Aplicar",
+      "pickStage": "Escolha a etapa.",
+      "noteRequired": "Escreva a nota (pelo menos 5 caracteres)."
+    },
+    "confirm": {
+      "title": "Confirmar a campanha",
+      "hint": "Fecha os termos com a marca: os creators interessados ficam confirmados, a campanha vai para contratação e todos são avisados.",
+      "ready": "{count, plural, =0 {Nenhum creator interessado} one {# creator interessado} other {# creators interessados}}",
+      "missingFee": "{count, plural, one {# sem cachê definido} other {# sem cachê definido}}",
+      "action": "Confirmar campanha",
+      "dialogTitle": "Confirmar esta campanha?",
+      "dialogHint": "A agência confirma os termos comerciais. O banco recusa se outro negócio já reservou o mesmo período de um creator.",
+      "back": "Voltar",
+      "note": "Nota",
+      "noteHint": "Obrigatória se for forçar a confirmação.",
+      "force": "Forçar mesmo com conflito de agenda",
+      "forceHint": "Só com justificativa; fica na auditoria.",
+      "noteRequired": "Escreva a justificativa (pelo menos 5 caracteres)."
+    },
+    "team": {
+      "hint": "Quem da equipe vê e mexe neste negócio (além do responsável e dos gestores).",
+      "owner": "Responsável",
+      "save": "Salvar equipe"
+    },
+    "activity": {
+      "kind": "Tipo",
+      "body": "Registro",
+      "bodyHint": "Ligação, reunião, e-mail ou nota. Sem valores.",
+      "add": "Registrar",
+      "required": "Escreva o registro."
+    },
+    "talents": {
+      "empty": "Nenhum creator neste negócio ainda.",
+      "select": "Selecionar {name}",
+      "noLogin": "sem login",
+      "noConsent": "sem consentimento",
+      "noLocation": "Sem cidade",
+      "reasonsLabel": "Critérios",
+      "consultedAt": "Consultado em {date}",
+      "respondBy": "responde até {date}",
+      "answeredByAgency": "Resposta registrada pela agência em {date}.",
+      "answeredByCreator": "Respondeu pelo escritório em {date}.",
+      "feeMissing": "sem cachê",
+      "termsReady": "cachê definido",
+      "termsPending": "aguardando cachê",
+      "setFee": "Cachê",
+      "recordResponse": "Registrar resposta",
+      "remove": "Remover",
+      "confirmRemove": "Remover {name} deste negócio?",
+      "add": "Sugerir creators",
+      "consult": "{count, plural, =0 {Consultar interesse} one {Consultar # creator} other {Consultar # creators}}",
+      "consultHint": "Marque os creators sugeridos para consultar.",
+      "addTitle": "Sugerir creators do casting",
+      "addHint": "Ordenados por critérios atendidos (segmento, região, rede, disponibilidade). Os que já responderam ficam.",
+      "back": "Voltar",
+      "saveShortlist": "{count, plural, =0 {Salvar elenco} one {Salvar elenco (#)} other {Salvar elenco (#)}}",
+      "search": "Buscar no casting",
+      "noCandidates": "Nenhum talento encontrado.",
+      "matchCount": "{met} de {total} critérios"
+    },
+    "consultDialog": {
+      "title": "{count, plural, one {Consultar # creator} other {Consultar # creators}}",
+      "hint": "O creator recebe aviso no escritório com o resumo, o prazo e o cachê (só na web). Nada é contrato.",
+      "back": "Voltar",
+      "send": "Enviar consulta",
+      "days": "Prazo para responder",
+      "daysOption": "{count} dias",
+      "message": "Mensagem",
+      "messageHint": "Opcional. Vai para a conversa com cada creator."
+    },
+    "record": {
+      "title": "Registrar resposta de {name}",
+      "hint": "Para talento sem login: a resposta veio por fora (ligação, mensagem). Fica na auditoria com a nota.",
+      "response": "Resposta",
+      "note": "Como foi a resposta",
+      "noteHint": "Obrigatória (pelo menos 5 caracteres).",
+      "document": "Documento",
+      "documentHint": "Opcional: print ou e-mail guardado nos documentos.",
+      "back": "Voltar",
+      "save": "Registrar",
+      "noteRequired": "Escreva a nota (pelo menos 5 caracteres)."
+    },
+    "fee": {
+      "title": "Cachê de {name}",
+      "hint": "Só o Adm vê e define. Sem cachê, a consulta ao creator não sai.",
+      "amount": "Valor (R$)",
+      "changeAfterConsult": "O creator já foi consultado: mudar o cachê volta a consulta e avisa de novo.",
+      "invalid": "Informe um valor como 1.500,00.",
+      "back": "Voltar",
+      "save": "Salvar cachê"
+    },
+    "deliverables": {
+      "intro": "O que cada creator entrega, com prazo e data de publicação. Versões e aprovação chegam na próxima etapa.",
+      "noTalents": "Sugira ou confirme creators antes de planejar entregas.",
+      "empty": "Nenhum entregável planejado.",
+      "item": "Entregável {n}",
+      "removeLabel": "Remover entregável {n}",
+      "remove": "Remover",
+      "talent": "Creator",
+      "kind": "Tipo",
+      "network": "Rede",
+      "title": "Título",
+      "dueAt": "Prazo de entrega",
+      "publishAt": "Publicação",
+      "brief": "Orientações",
+      "add": "Adicionar entregável",
+      "save": "Salvar entregáveis"
+    },
+    "messages": {
+      "channels": "Canais",
+      "brandChannel": "Marca: {brand}",
+      "noLoginHint": "Este talento não tem login: o que for escrito aqui fica registrado, mas ele não recebe.",
+      "brandNotVisibleHint": "Negócio aberto pela agência: a marca só vê (e responde) depois da confirmação."
+    }
   }
 }

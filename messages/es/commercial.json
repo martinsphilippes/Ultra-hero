@@ -1,0 +1,126 @@
+{
+  "stages": {
+    "briefing_received": "Briefing recibido",
+    "qualification": "Calificación",
+    "shortlist": "Elenco sugerido",
+    "consultation": "Consulta a creators",
+    "proposal_prep": "Preparando propuesta",
+    "proposal_sent": "Propuesta enviada",
+    "negotiation": "Negociación",
+    "approved": "Aprobado",
+    "contracting": "Contratación",
+    "production": "Producción",
+    "approval": "Aprobación de contenido",
+    "delivery": "Entrega",
+    "closed": "Cerrado"
+  },
+  "outcomes": {
+    "won": "Ganado",
+    "lost": "Perdido",
+    "cancelled": "Cancelado"
+  },
+  "brandStatus": {
+    "draft": "Borrador",
+    "received": "Recibida por la agencia",
+    "building": "Armando el elenco",
+    "proposal": "Propuesta de la agencia",
+    "contracting": "Confirmada · contratación",
+    "running": "En producción",
+    "done": "Concluida",
+    "cancelled": "Cancelada"
+  },
+  "talentStatus": {
+    "suggested": "Sugerido",
+    "consulted": "Consultado",
+    "interested": "Tiene interés",
+    "talk_requested": "Quiere conversar",
+    "declined": "Sin interés",
+    "proposed": "Confirmado",
+    "contracted": "Contratado",
+    "removed": "Quitado"
+  },
+  "deliverableStatus": {
+    "planned": "Planificado",
+    "in_production": "En producción",
+    "submitted": "Enviado",
+    "changes_requested": "Ajustes pedidos",
+    "approved": "Aprobado",
+    "published": "Publicado",
+    "proof_submitted": "Comprobante enviado",
+    "done": "Concluido",
+    "cancelled": "Cancelado"
+  },
+  "deliverableKinds": {
+    "post": "Post",
+    "reels": "Reels",
+    "stories": "Stories",
+    "video": "Video",
+    "short": "Short",
+    "live": "Live",
+    "event": "Evento/presencia",
+    "ugc": "UGC",
+    "other": "Otro"
+  },
+  "objectives": {
+    "awareness": "Reconocimiento de marca",
+    "engagement": "Engagement",
+    "conversion": "Conversión/ventas",
+    "launch": "Lanzamiento",
+    "content": "Producción de contenido",
+    "event": "Evento",
+    "other": "Otro"
+  },
+  "formats": {
+    "remote": "Remoto",
+    "in_person": "Presencial",
+    "hybrid": "Híbrido"
+  },
+  "responses": {
+    "interested": "Tiene interés",
+    "declined": "Sin interés",
+    "talk_requested": "Quiere conversar"
+  },
+  "activityKinds": {
+    "call": "Llamada",
+    "meeting": "Reunión",
+    "message": "Mensaje",
+    "email": "Correo",
+    "note": "Nota",
+    "stage_change": "Cambio de etapa",
+    "system": "Sistema"
+  },
+  "reasons": {
+    "segment": "Segmento",
+    "region": "Región",
+    "audience_age": "Rango de edad",
+    "network": "Red",
+    "availability": "Disponibilidad",
+    "brand_choice": "Elección de la marca"
+  },
+  "messages": {
+    "sent": "Mensaje enviado.",
+    "required": "Escribe el mensaje.",
+    "empty": "Todavía no hay mensajes.",
+    "listLabel": "Mensajes",
+    "newMessage": "Nuevo mensaje",
+    "placeholder": "Escribe aquí. Valores y condiciones comerciales quedan con la agencia.",
+    "send": "Enviar"
+  },
+  "request": {
+    "objective": "Objetivo",
+    "product": "Producto o servicio",
+    "period": "Período",
+    "desiredAt": "Fecha y hora deseadas",
+    "duration": "Duración",
+    "format": "Formato",
+    "location": "Lugar",
+    "networks": "Redes",
+    "deliverables": "Entregables",
+    "audience": "Público objetivo",
+    "ageBands": "Rangos de edad",
+    "states": "Regiones",
+    "budget": "Valor ofrecido por la marca",
+    "budgetNotInformed": "no informado",
+    "notes": "Observaciones de la marca"
+  }
+}

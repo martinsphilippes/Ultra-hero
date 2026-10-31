@@ -88,11 +88,14 @@
     "notifications": "Avisos",
     "settings": "Configurações",
     "team": "Equipe",
-    "casting": "Casting"
+    "casting": "Casting",
+    "pipeline": "Pipeline"
   },
   "brand": {
     "dashboard": "Início",
     "team": "Equipe",
-    "notifications": "Avisos"
+    "notifications": "Avisos",
+    "campaigns": "Campanhas",
+    "catalog": "Creators"
   }
 }

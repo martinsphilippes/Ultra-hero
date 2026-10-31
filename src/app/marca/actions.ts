@@ -8,11 +8,93 @@ import { getOrigin } from "@/lib/auth/origin";
 import { agencyFail } from "@/lib/agency/errors";
 import { daysSchema, emailSchema } from "@/lib/agency/schemas";
 import { BRAND_COOKIE, getBrandContext, requireBrand } from "@/lib/brand-portal/server";
+import { brandRequestSchema, toZonedIso, type BrandRequestInput } from "@/lib/deals/schemas";
+import { defaultTimeZone } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
 
-// Portal da marca: o dono convida e remove a equipe (a RPC confere e audita).
+// Portal da marca: o dono convida e remove a equipe (a RPC confere e audita). Propostas de campanha
+// (0066): salvar rascunho, enviar à agência e cancelar; o valor oferecido vai à tabela de valor
+// (campaign_request_budgets), que só a própria marca e o Adm da agência leem.
 
-export type BrandPortalResult = { ok: true; message: string; link?: string } | { ok: false; error: string };
+export type BrandPortalResult = { ok: true; message: string; link?: string; id?: string } | { ok: false; error: string };
+
+export async function saveRequestAction(input: BrandRequestInput): Promise<BrandPortalResult> {
+  const ctx = await requireBrand();
+  if (!ctx.role) return agencyFail("forbidden");
+  const parsed = brandRequestSchema.safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  const d = parsed.data;
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("brand_request_save", {
+      p_id: d.id,
+      p_brand: ctx.brand.id,
+      p_data: {
+        talent_id: d.talentId,
+        title: d.title,
+        objective: d.objective,
+        product: d.product,
+        target_audience: d.targetAudience,
+        target_age_bands: d.targetAgeBands,
+        target_states: d.targetStates,
+        region_note: d.regionNote,
+        period_start: d.periodStart,
+        period_end: d.periodEnd,
+        desired_at: d.periodStart && d.desiredTime ? toZonedIso(d.periodStart, d.desiredTime, defaultTimeZone) : "",
+        duration_minutes: d.durationMinutes === "" ? "" : String(d.durationMinutes),
+        format: d.format,
+        location: d.location,
+        networks: d.networks,
+        deliverables: d.deliverables,
+        notes: d.notes,
+        budget_max_cents: d.budgetMaxCents === null ? "" : String(d.budgetMaxCents),
+        budget_note: d.budgetNote,
+      },
+    });
+    if (error) return agencyFail(error);
+    if (!data) return agencyFail("generic");
+    revalidatePath("/marca/campanhas");
+    revalidatePath(`/marca/campanhas/${data}`);
+    const t = await getTranslations("brandPortal.campaigns");
+    return { ok: true, message: t("draftSaved"), id: data };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+export async function submitRequestAction(input: { id: string }): Promise<BrandPortalResult> {
+  const ctx = await requireBrand();
+  if (!ctx.role) return agencyFail("forbidden");
+  const parsed = z.object({ id: z.uuid() }).safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("brand_request_submit", { p_id: parsed.data.id });
+    if (error) return agencyFail(error);
+    revalidatePath("/marca", "layout");
+    const t = await getTranslations("brandPortal.campaigns");
+    return { ok: true, message: t("submitted"), id: data ?? undefined };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+export async function cancelRequestAction(input: { id: string; note: string }): Promise<BrandPortalResult> {
+  const ctx = await requireBrand();
+  if (!ctx.role) return agencyFail("forbidden");
+  const parsed = z.object({ id: z.uuid(), note: z.string().trim().min(5).max(500) }).safeParse(input);
+  if (!parsed.success) return agencyFail("justification_required");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("brand_request_cancel", { p_id: parsed.data.id, p_note: parsed.data.note });
+    if (error) return agencyFail(error);
+    revalidatePath("/marca", "layout");
+    const t = await getTranslations("brandPortal.campaigns");
+    return { ok: true, message: t("cancelled") };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
 
 export async function inviteStaffAction(input: { email: string; days?: number }): Promise<BrandPortalResult> {
   const ctx = await requireBrand();

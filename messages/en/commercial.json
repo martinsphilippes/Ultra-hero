@@ -1,0 +1,126 @@
+{
+  "stages": {
+    "briefing_received": "Briefing received",
+    "qualification": "Qualification",
+    "shortlist": "Shortlist",
+    "consultation": "Creator consultation",
+    "proposal_prep": "Preparing proposal",
+    "proposal_sent": "Proposal sent",
+    "negotiation": "Negotiation",
+    "approved": "Approved",
+    "contracting": "Contracting",
+    "production": "Production",
+    "approval": "Content approval",
+    "delivery": "Delivery",
+    "closed": "Closed"
+  },
+  "outcomes": {
+    "won": "Won",
+    "lost": "Lost",
+    "cancelled": "Cancelled"
+  },
+  "brandStatus": {
+    "draft": "Draft",
+    "received": "Received by the agency",
+    "building": "Building the shortlist",
+    "proposal": "Agency proposal",
+    "contracting": "Confirmed · contracting",
+    "running": "In production",
+    "done": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "talentStatus": {
+    "suggested": "Suggested",
+    "consulted": "Consulted",
+    "interested": "Interested",
+    "talk_requested": "Wants to talk",
+    "declined": "Not interested",
+    "proposed": "Confirmed",
+    "contracted": "Contracted",
+    "removed": "Removed"
+  },
+  "deliverableStatus": {
+    "planned": "Planned",
+    "in_production": "In production",
+    "submitted": "Submitted",
+    "changes_requested": "Changes requested",
+    "approved": "Approved",
+    "published": "Published",
+    "proof_submitted": "Proof submitted",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "deliverableKinds": {
+    "post": "Post",
+    "reels": "Reels",
+    "stories": "Stories",
+    "video": "Video",
+    "short": "Short",
+    "live": "Live",
+    "event": "Event/appearance",
+    "ugc": "UGC",
+    "other": "Other"
+  },
+  "objectives": {
+    "awareness": "Brand awareness",
+    "engagement": "Engagement",
+    "conversion": "Conversion/sales",
+    "launch": "Launch",
+    "content": "Content production",
+    "event": "Event",
+    "other": "Other"
+  },
+  "formats": {
+    "remote": "Remote",
+    "in_person": "In person",
+    "hybrid": "Hybrid"
+  },
+  "responses": {
+    "interested": "Interested",
+    "declined": "Not interested",
+    "talk_requested": "Wants to talk"
+  },
+  "activityKinds": {
+    "call": "Call",
+    "meeting": "Meeting",
+    "message": "Message",
+    "email": "Email",
+    "note": "Note",
+    "stage_change": "Stage change",
+    "system": "System"
+  },
+  "reasons": {
+    "segment": "Segment",
+    "region": "Region",
+    "audience_age": "Age range",
+    "network": "Network",
+    "availability": "Availability",
+    "brand_choice": "Brand's choice"
+  },
+  "messages": {
+    "sent": "Message sent.",
+    "required": "Write the message.",
+    "empty": "No messages yet.",
+    "listLabel": "Messages",
+    "newMessage": "New message",
+    "placeholder": "Write here. Fees and commercial terms stay with the agency.",
+    "send": "Send"
+  },
+  "request": {
+    "objective": "Objective",
+    "product": "Product or service",
+    "period": "Period",
+    "desiredAt": "Desired date and time",
+    "duration": "Duration",
+    "format": "Format",
+    "location": "Location",
+    "networks": "Networks",
+    "deliverables": "Deliverables",
+    "audience": "Target audience",
+    "ageBands": "Age ranges",
+    "states": "Regions",
+    "budget": "Value offered by the brand",
+    "budgetNotInformed": "not informed",
+    "notes": "Brand notes"
+  }
+}

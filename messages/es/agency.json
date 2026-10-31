@@ -12,7 +12,15 @@
     "talentNetworks": "Redes del talento",
     "talentKit": "Media kit del talento",
     "talentDocuments": "Documentos del talento",
-    "talentHistory": "Historial del talento"
+    "talentHistory": "Historial del talento",
+    "pipeline": "Pipeline",
+    "newDeal": "Nuevo negocio",
+    "deal": "Negocio",
+    "dealTalents": "Creators del negocio",
+    "dealDeliverables": "Entregas del negocio",
+    "dealMessages": "Conversación del negocio",
+    "dealDocuments": "Documentos del negocio",
+    "talentAvailability": "Disponibilidad del talento"
   },
   "demoBanner": {
     "tag": "Demostración",
@@ -54,7 +62,10 @@
       "invites": "Invitaciones pendientes",
       "unread": "Avisos sin leer",
       "casting": "Casting",
-      "castingActive": "{count} activos"
+      "castingActive": "{count} activos",
+      "deals": "Negocios abiertos",
+      "dealsHint": "{agency} con la agencia · {creator} con creators",
+      "confirmed": "Campañas confirmadas"
     },
     "quickTitle": "Atajos",
     "newBrand": "Nueva marca",
@@ -87,7 +98,8 @@
     "selfTitle": "Cómo te ve el equipo",
     "selfHint": "Tu nombre y cargo en las listas de la agencia.",
     "newTalent": "Nuevo talento",
-    "seeCasting": "Ver casting"
+    "seeCasting": "Ver casting",
+    "seePipeline": "Ver pipeline"
   },
   "team": {
     "title": "Equipo",
@@ -255,7 +267,15 @@
     "invalid_file_type": "Tipo de archivo no aceptado.",
     "file_too_large": "Archivo de más de 20 MB.",
     "file_missing": "El archivo no llegó. Envíalo de nuevo.",
-    "invalid_state": "Esta acción no vale en el estado actual."
+    "invalid_state": "Esta acción no vale en el estado actual.",
+    "request_incomplete": "Falta algo en la propuesta: título, objetivo, fecha de inicio, una red y un entregable.",
+    "note_required": "Escribe la justificación (al menos 5 caracteres).",
+    "stage_gate": "A esta etapa solo se llega por su acción propia (propuesta, confirmación o contrato).",
+    "invalid_stage": "Esta acción no vale en la etapa actual del negocio.",
+    "fee_missing": "Define antes el caché del creator (solo el Adm).",
+    "no_talents": "Ningún creator interesado o confirmado en este negocio.",
+    "schedule_conflict": "Otro negocio ya reservó este período para uno de los creators. El Adm puede forzar con justificación.",
+    "deliverables_open": "Hay entregas abiertas; conclúyelas o cancélalas antes de cerrar como ganado."
   },
   "casting": {
     "title": "Casting",
@@ -324,7 +344,8 @@
       "networks": "Redes",
       "kit": "Media kit",
       "documents": "Documentos",
-      "history": "Historial"
+      "history": "Historial",
+      "availability": "Disponibilidad"
     },
     "sections": {
       "data": "Datos del talento",
@@ -447,5 +468,215 @@
     "kind": "Tipo",
     "shareTalent": "Compartir con el talento",
     "shareTalentHint": "Aparece en su oficina (cuando tenga acceso)."
+  },
+  "pipeline": {
+    "title": "Pipeline comercial",
+    "description": "Del briefing a la confirmación: cada negocio en una etapa, con responsable y creators.",
+    "new": "Nuevo negocio",
+    "filterLabel": "Situación de los negocios",
+    "filterOpen": "Abiertos",
+    "filterClosed": "Cerrados",
+    "filters": {
+      "owner": "Responsable",
+      "all": "Todos",
+      "mine": "Mis negocios",
+      "noOwner": "Sin responsable",
+      "brand": "Marca",
+      "apply": "Filtrar",
+      "clear": "Limpiar"
+    },
+    "unavailable": "Pipeline en actualización",
+    "unavailableHint": "El pipeline aparece en cuanto se actualice la base de datos.",
+    "emptyFiltered": "Ningún negocio con estos filtros.",
+    "emptyClosed": "Ningún negocio cerrado.",
+    "empty": "Ningún negocio abierto.",
+    "emptyHint": "Las propuestas de las marcas llegan aquí; la agencia también puede abrir un negocio.",
+    "ownerUnknown": "Responsable fuera del equipo",
+    "noOwner": "Sin responsable",
+    "talents": "{count, plural, =0 {sin creators} one {# creator} other {# creators}}",
+    "startsOn": "Inicio {date}",
+    "noDate": "Sin fecha",
+    "inStage": "en esta etapa {when}",
+    "newTitle": "Nuevo negocio",
+    "newDescription": "Para un briefing recibido fuera del portal. La marca solo ve el negocio cuando la agencia confirma.",
+    "noBrands": "Registra una marca atendida antes de abrir un negocio."
+  },
+  "deal": {
+    "created": "Negocio abierto.",
+    "saved": "Negocio guardado.",
+    "teamSaved": "Equipo del negocio guardado.",
+    "moved": "Etapa actualizada.",
+    "shortlistSaved": "Elenco sugerido guardado.",
+    "activityAdded": "Registro agregado.",
+    "feeSaved": "Caché definido.",
+    "deliverablesSaved": "Entregables guardados.",
+    "consulted": "{count, plural, one {# creator consultado} other {# creators consultados}}.",
+    "responseRecorded": "Respuesta registrada.",
+    "talentRemoved": "Creator quitado del negocio.",
+    "confirmed": "Campaña confirmada. La marca y los creators fueron avisados.",
+    "backToPipeline": "Pipeline",
+    "demoTag": "demostración",
+    "period": "{start} – {end}",
+    "noPeriod": "Sin período previsto",
+    "tabsLabel": "Secciones del negocio",
+    "tabs": {
+      "overview": "Visión general",
+      "talents": "Creators",
+      "deliverables": "Entregas",
+      "messages": "Conversación",
+      "documents": "Documentos"
+    },
+    "sections": {
+      "request": "Propuesta de la marca",
+      "data": "Datos del negocio",
+      "activities": "Historial y contactos",
+      "stage": "Etapa",
+      "team": "Equipo del negocio"
+    },
+    "noActivities": "Todavía no hay registros.",
+    "noNote": "sin nota",
+    "system": {
+      "briefing_received": "La marca envió la propuesta."
+    },
+    "stageHint": "Mover de etapa es manual; volver pide una nota. Propuesta, confirmación y contrato tienen acción propia.",
+    "form": {
+      "brand": "Marca",
+      "title": "Nombre de la campaña",
+      "brief": "Resumen para los creators",
+      "briefHint": "Lo que el creator ve al ser consultado. Sin valores.",
+      "expectedStart": "Inicio previsto",
+      "expectedEnd": "Fin previsto",
+      "owner": "Responsable",
+      "ownerHint": "Quien conduce el negocio y recibe los avisos.",
+      "noOwner": "Sin responsable",
+      "notes": "Notas internas",
+      "notesHint": "Solo la agencia las ve.",
+      "save": "Guardar",
+      "create": "Abrir negocio"
+    },
+    "move": {
+      "to": "Mover a",
+      "reopenTo": "Reabrir en {stage}",
+      "close": "Cerrar negocio",
+      "outcome": "Resultado",
+      "forceWon": "Cerrar como ganado aun con entregas abiertas",
+      "forceWonHint": "Solo el Adm. Queda en la auditoría.",
+      "note": "Nota",
+      "noteHintRequired": "Obligatoria al volver de etapa o cerrar sin ganar (mínimo 5 caracteres).",
+      "noteHint": "Opcional.",
+      "apply": "Aplicar",
+      "pickStage": "Elige la etapa.",
+      "noteRequired": "Escribe la nota (al menos 5 caracteres)."
+    },
+    "confirm": {
+      "title": "Confirmar la campaña",
+      "hint": "Cierra los términos con la marca: los creators interesados quedan confirmados, la campaña pasa a contratación y todos son avisados.",
+      "ready": "{count, plural, =0 {Ningún creator interesado} one {# creator interesado} other {# creators interesados}}",
+      "missingFee": "{count, plural, one {# sin caché definido} other {# sin caché definido}}",
+      "action": "Confirmar campaña",
+      "dialogTitle": "¿Confirmar esta campaña?",
+      "dialogHint": "La agencia confirma los términos comerciales. La base rechaza si otro negocio ya reservó el mismo período de un creator.",
+      "back": "Volver",
+      "note": "Nota",
+      "noteHint": "Obligatoria si vas a forzar la confirmación.",
+      "force": "Forzar aun con conflicto de agenda",
+      "forceHint": "Solo con justificación; queda en la auditoría.",
+      "noteRequired": "Escribe la justificación (al menos 5 caracteres)."
+    },
+    "team": {
+      "hint": "Quién del equipo ve y trabaja este negocio (además del responsable y los gestores).",
+      "owner": "Responsable",
+      "save": "Guardar equipo"
+    },
+    "activity": {
+      "kind": "Tipo",
+      "body": "Registro",
+      "bodyHint": "Llamada, reunión, correo o nota. Sin valores.",
+      "add": "Registrar",
+      "required": "Escribe el registro."
+    },
+    "talents": {
+      "empty": "Todavía no hay creators en este negocio.",
+      "select": "Seleccionar {name}",
+      "noLogin": "sin acceso",
+      "noConsent": "sin consentimiento",
+      "noLocation": "Sin ciudad",
+      "reasonsLabel": "Criterios",
+      "consultedAt": "Consultado el {date}",
+      "respondBy": "responde hasta {date}",
+      "answeredByAgency": "Respuesta registrada por la agencia el {date}.",
+      "answeredByCreator": "Respondió por la oficina el {date}.",
+      "feeMissing": "sin caché",
+      "termsReady": "caché definido",
+      "termsPending": "esperando caché",
+      "setFee": "Caché",
+      "recordResponse": "Registrar respuesta",
+      "remove": "Quitar",
+      "confirmRemove": "¿Quitar a {name} de este negocio?",
+      "add": "Sugerir creators",
+      "consult": "{count, plural, =0 {Consultar interés} one {Consultar # creator} other {Consultar # creators}}",
+      "consultHint": "Marca los creators sugeridos para consultar.",
+      "addTitle": "Sugerir creators del casting",
+      "addHint": "Ordenados por criterios cumplidos (segmento, región, red, disponibilidad). Los que ya respondieron se quedan.",
+      "back": "Volver",
+      "saveShortlist": "{count, plural, =0 {Guardar elenco} one {Guardar elenco (#)} other {Guardar elenco (#)}}",
+      "search": "Buscar en el casting",
+      "noCandidates": "No se encontró ningún talento.",
+      "matchCount": "{met} de {total} criterios"
+    },
+    "consultDialog": {
+      "title": "{count, plural, one {Consultar # creator} other {Consultar # creators}}",
+      "hint": "El creator recibe un aviso en la oficina con el resumen, el plazo y el caché (solo en la web). Nada es contrato.",
+      "back": "Volver",
+      "send": "Enviar consulta",
+      "days": "Plazo para responder",
+      "daysOption": "{count} días",
+      "message": "Mensaje",
+      "messageHint": "Opcional. Va a la conversación con cada creator."
+    },
+    "record": {
+      "title": "Registrar respuesta de {name}",
+      "hint": "Para talento sin acceso: la respuesta llegó por fuera (llamada, mensaje). Queda en la auditoría con la nota.",
+      "response": "Respuesta",
+      "note": "Cómo respondió",
+      "noteHint": "Obligatoria (al menos 5 caracteres).",
+      "document": "Documento",
+      "documentHint": "Opcional: captura o correo guardado en documentos.",
+      "back": "Volver",
+      "save": "Registrar",
+      "noteRequired": "Escribe la nota (al menos 5 caracteres)."
+    },
+    "fee": {
+      "title": "Caché de {name}",
+      "hint": "Solo el Adm lo ve y lo define. Sin caché, la consulta al creator no sale.",
+      "amount": "Valor (R$)",
+      "changeAfterConsult": "El creator ya fue consultado: cambiar el caché reenvía la consulta.",
+      "invalid": "Indica un valor como 1.500,00.",
+      "back": "Volver",
+      "save": "Guardar caché"
+    },
+    "deliverables": {
+      "intro": "Lo que entrega cada creator, con plazo y fecha de publicación. Versiones y aprobación llegan en la próxima etapa.",
+      "noTalents": "Sugiere o confirma creators antes de planificar entregas.",
+      "empty": "Ningún entregable planificado.",
+      "item": "Entregable {n}",
+      "removeLabel": "Quitar entregable {n}",
+      "remove": "Quitar",
+      "talent": "Creator",
+      "kind": "Tipo",
+      "network": "Red",
+      "title": "Título",
+      "dueAt": "Plazo de entrega",
+      "publishAt": "Publicación",
+      "brief": "Orientaciones",
+      "add": "Agregar entregable",
+      "save": "Guardar entregables"
+    },
+    "messages": {
+      "channels": "Canales",
+      "brandChannel": "Marca: {brand}",
+      "noLoginHint": "Este talento no tiene acceso: lo escrito aquí queda registrado, pero él no lo recibe.",
+      "brandNotVisibleHint": "Negocio abierto por la agencia: la marca solo ve (y responde) después de la confirmación."
+    }
   }
 }

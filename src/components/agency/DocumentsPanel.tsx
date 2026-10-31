@@ -7,14 +7,14 @@ import { Badge, Button, Checkbox, FormField, Input, Select, useToast } from "@/c
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { archiveDocumentAction, confirmDocumentAction, reserveDocumentAction, signedUrlAction } from "@/lib/documents/actions";
-import { DOCUMENT_MAX_BYTES, DOCUMENT_MIME_TYPES, type DocumentMime } from "@/lib/documents/constants";
+import { DOCUMENT_MAX_BYTES, DOCUMENT_MIME_TYPES, type DocumentMime, type DocumentScope } from "@/lib/documents/constants";
 import { createClient } from "@/lib/supabase/client";
 
 export type PanelDocument = { id: string; title: string; kind: string; createdAt: string; shareTalent: boolean; restricted: boolean; uploaderSide: string };
 
 type Props = {
   agencyId: string;
-  scope: { type: "talent"; id: string };
+  scope: { type: DocumentScope; id: string };
   documents: PanelDocument[];
   canUpload: boolean;
   /** Só o Adm reserva contrato (tem preço) e marca restrito. */
@@ -32,7 +32,7 @@ export function DocumentsPanel({ agencyId, scope, documents, canUpload, canContr
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
-  const [kind, setKind] = useState<"other" | "contract" | "report" | "media">("other");
+  const [kind, setKind] = useState<"other" | "contract" | "brief_attachment" | "report" | "media">("other");
   const [shareTalent, setShareTalent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -149,6 +149,7 @@ export function DocumentsPanel({ agencyId, scope, documents, canUpload, canContr
             <FormField label={t("kind")}>
               <Select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} disabled={pending}>
                 <option value="other">{t("kinds.other")}</option>
+                {scope.type === "deal" || scope.type === "request" ? <option value="brief_attachment">{t("kinds.brief_attachment")}</option> : null}
                 <option value="report">{t("kinds.report")}</option>
                 <option value="media">{t("kinds.media")}</option>
                 {canContract ? <option value="contract">{t("kinds.contract")}</option> : null}

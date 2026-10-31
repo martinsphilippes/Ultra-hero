@@ -34,6 +34,9 @@ import {
   Tag,
   Truck,
   Users,
+  KanbanSquare,
+  Megaphone,
+  Search,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -81,6 +84,9 @@ const ICONS: Record<string, LucideIcon> = {
   office: BriefcaseBusiness,
   team: Users,
   notifications: Bell,
+  pipeline: KanbanSquare,
+  campaigns: Megaphone,
+  catalog: Search,
 };
 
 function isActive(pathname: string, href: string, root: string) {

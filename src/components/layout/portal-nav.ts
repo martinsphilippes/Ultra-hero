@@ -66,15 +66,19 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   // Agência (0064): o menu é filtrado pelo papel no servidor (agencyNavKeys; só o Adm vê Equipe).
   agency: [
     { key: "dashboard", href: "/agencia" },
+    // Pipeline comercial (0066): briefing → consulta → confirmação; a ficha do negócio mora em /agencia/negocios
+    { key: "pipeline", href: "/agencia/pipeline" },
     { key: "casting", href: "/agencia/casting" },
     { key: "brands", href: "/agencia/marcas" },
     { key: "notifications", href: "/agencia/notificacoes" },
     { key: "settings", href: "/agencia/configuracoes" },
     { key: "team", href: "/agencia/equipe" },
   ],
-  // Marca (0064): campanhas e calendário chegam nas próximas etapas.
+  // Marca (0066): propostas de campanha e o catálogo autorizado de creators; o calendário chega na P1b.
   brand: [
     { key: "dashboard", href: "/marca" },
+    { key: "campaigns", href: "/marca/campanhas" },
+    { key: "catalog", href: "/marca/creators" },
     { key: "team", href: "/marca/equipe" },
     { key: "notifications", href: "/marca/notificacoes" },
   ],

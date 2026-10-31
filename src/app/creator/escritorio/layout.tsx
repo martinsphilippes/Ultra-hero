@@ -33,6 +33,8 @@ export default async function OfficeLayout({ children }: { children: ReactNode }
         label={t("tabs.label")}
         tabs={[
           { href: "/creator/escritorio", label: t("tabs.home"), exact: true },
+          { href: "/creator/escritorio/oportunidades", label: t("tabs.opportunities") },
+          { href: "/creator/escritorio/disponibilidade", label: t("tabs.availability") },
           { href: "/creator/escritorio/media-kit", label: t("tabs.kit") },
           { href: "/creator/escritorio/consentimento", label: t("tabs.consent") },
           { href: "/creator/escritorio/notificacoes", label: t("tabs.notifications") },

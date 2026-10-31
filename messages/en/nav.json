@@ -88,11 +88,14 @@
     "notifications": "Notices",
     "settings": "Settings",
     "team": "Team",
-    "casting": "Roster"
+    "casting": "Roster",
+    "pipeline": "Pipeline"
   },
   "brand": {
     "dashboard": "Home",
     "team": "Team",
-    "notifications": "Notices"
+    "notifications": "Notices",
+    "campaigns": "Campaigns",
+    "catalog": "Creators"
   }
 }

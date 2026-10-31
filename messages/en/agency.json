@@ -12,7 +12,15 @@
     "talentNetworks": "Talent networks",
     "talentKit": "Talent media kit",
     "talentDocuments": "Talent documents",
-    "talentHistory": "Talent history"
+    "talentHistory": "Talent history",
+    "pipeline": "Pipeline",
+    "newDeal": "New deal",
+    "deal": "Deal",
+    "dealTalents": "Deal creators",
+    "dealDeliverables": "Deal deliverables",
+    "dealMessages": "Deal conversation",
+    "dealDocuments": "Deal documents",
+    "talentAvailability": "Talent availability"
   },
   "demoBanner": {
     "tag": "Demo",
@@ -54,7 +62,10 @@
       "invites": "Pending invitations",
       "unread": "Unread notices",
       "casting": "Roster",
-      "castingActive": "{count} active"
+      "castingActive": "{count} active",
+      "deals": "Open deals",
+      "dealsHint": "{agency} waiting on the agency · {creator} on creators",
+      "confirmed": "Confirmed campaigns"
     },
     "quickTitle": "Shortcuts",
     "newBrand": "New brand",
@@ -87,7 +98,8 @@
     "selfTitle": "How the team sees you",
     "selfHint": "Your name and title in the agency lists.",
     "newTalent": "New talent",
-    "seeCasting": "See roster"
+    "seeCasting": "See roster",
+    "seePipeline": "See pipeline"
   },
   "team": {
     "title": "Team",
@@ -255,7 +267,15 @@
     "invalid_file_type": "File type not accepted.",
     "file_too_large": "File over 20 MB.",
     "file_missing": "The file did not arrive. Upload it again.",
-    "invalid_state": "This action is not valid in the current state."
+    "invalid_state": "This action is not valid in the current state.",
+    "request_incomplete": "The proposal is missing something: title, objective, start date, one network and one deliverable.",
+    "note_required": "Write the justification (at least 5 characters).",
+    "stage_gate": "This stage is only reached by its own action (proposal, confirmation or contract).",
+    "invalid_stage": "This action is not valid at the deal's current stage.",
+    "fee_missing": "Set the creator's fee first (admin only).",
+    "no_talents": "No interested or confirmed creators in this deal.",
+    "schedule_conflict": "Another deal already booked this period for one of the creators. The admin can force it with a justification.",
+    "deliverables_open": "There are open deliverables; finish or cancel them before closing as won."
   },
   "casting": {
     "title": "Roster",
@@ -324,7 +344,8 @@
       "networks": "Networks",
       "kit": "Media kit",
       "documents": "Documents",
-      "history": "History"
+      "history": "History",
+      "availability": "Availability"
     },
     "sections": {
       "data": "Talent details",
@@ -447,5 +468,215 @@
     "kind": "Type",
     "shareTalent": "Share with the talent",
     "shareTalentHint": "Shows in their office (once they have a login)."
+  },
+  "pipeline": {
+    "title": "Sales pipeline",
+    "description": "From briefing to confirmation: every deal in a stage, with an owner and creators.",
+    "new": "New deal",
+    "filterLabel": "Deal status",
+    "filterOpen": "Open",
+    "filterClosed": "Closed",
+    "filters": {
+      "owner": "Owner",
+      "all": "All",
+      "mine": "My deals",
+      "noOwner": "No owner",
+      "brand": "Brand",
+      "apply": "Filter",
+      "clear": "Clear"
+    },
+    "unavailable": "Pipeline being updated",
+    "unavailableHint": "The pipeline appears as soon as the database is updated.",
+    "emptyFiltered": "No deals match these filters.",
+    "emptyClosed": "No closed deals.",
+    "empty": "No open deals.",
+    "emptyHint": "Brand proposals land here; the agency can also open a deal.",
+    "ownerUnknown": "Owner outside the team",
+    "noOwner": "No owner",
+    "talents": "{count, plural, =0 {no creators} one {# creator} other {# creators}}",
+    "startsOn": "Starts {date}",
+    "noDate": "No date",
+    "inStage": "in this stage {when}",
+    "newTitle": "New deal",
+    "newDescription": "For a briefing received outside the portal. The brand only sees the deal once the agency confirms.",
+    "noBrands": "Add a served brand before opening a deal."
+  },
+  "deal": {
+    "created": "Deal opened.",
+    "saved": "Deal saved.",
+    "teamSaved": "Deal team saved.",
+    "moved": "Stage updated.",
+    "shortlistSaved": "Shortlist saved.",
+    "activityAdded": "Entry added.",
+    "feeSaved": "Fee set.",
+    "deliverablesSaved": "Deliverables saved.",
+    "consulted": "{count, plural, one {# creator consulted} other {# creators consulted}}.",
+    "responseRecorded": "Response recorded.",
+    "talentRemoved": "Creator removed from the deal.",
+    "confirmed": "Campaign confirmed. The brand and the creators were notified.",
+    "backToPipeline": "Pipeline",
+    "demoTag": "demo",
+    "period": "{start} – {end}",
+    "noPeriod": "No expected period",
+    "tabsLabel": "Deal sections",
+    "tabs": {
+      "overview": "Overview",
+      "talents": "Creators",
+      "deliverables": "Deliverables",
+      "messages": "Conversation",
+      "documents": "Documents"
+    },
+    "sections": {
+      "request": "Brand proposal",
+      "data": "Deal data",
+      "activities": "History and contacts",
+      "stage": "Stage",
+      "team": "Deal team"
+    },
+    "noActivities": "No entries yet.",
+    "noNote": "no note",
+    "system": {
+      "briefing_received": "The brand sent the proposal."
+    },
+    "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
+    "form": {
+      "brand": "Brand",
+      "title": "Campaign name",
+      "brief": "Summary for creators",
+      "briefHint": "What the creator sees when consulted. No values.",
+      "expectedStart": "Expected start",
+      "expectedEnd": "Expected end",
+      "owner": "Owner",
+      "ownerHint": "Who runs the deal and receives notices.",
+      "noOwner": "No owner",
+      "notes": "Internal notes",
+      "notesHint": "Agency only.",
+      "save": "Save",
+      "create": "Open deal"
+    },
+    "move": {
+      "to": "Move to",
+      "reopenTo": "Reopen at {stage}",
+      "close": "Close deal",
+      "outcome": "Outcome",
+      "forceWon": "Close as won even with open deliverables",
+      "forceWonHint": "Admin only. Recorded in the audit log.",
+      "note": "Note",
+      "noteHintRequired": "Required when going back a stage or closing without a win (at least 5 characters).",
+      "noteHint": "Optional.",
+      "apply": "Apply",
+      "pickStage": "Pick the stage.",
+      "noteRequired": "Write the note (at least 5 characters)."
+    },
+    "confirm": {
+      "title": "Confirm the campaign",
+      "hint": "Closes the terms with the brand: interested creators become confirmed, the campaign moves to contracting and everyone is notified.",
+      "ready": "{count, plural, =0 {No interested creators} one {# interested creator} other {# interested creators}}",
+      "missingFee": "{count, plural, one {# without a fee} other {# without a fee}}",
+      "action": "Confirm campaign",
+      "dialogTitle": "Confirm this campaign?",
+      "dialogHint": "The agency confirms the commercial terms. The database refuses if another deal already booked the same period for a creator.",
+      "back": "Back",
+      "note": "Note",
+      "noteHint": "Required when forcing the confirmation.",
+      "force": "Force despite a schedule conflict",
+      "forceHint": "Only with a justification; recorded in the audit log.",
+      "noteRequired": "Write the justification (at least 5 characters)."
+    },
+    "team": {
+      "hint": "Who on the team sees and works this deal (besides the owner and managers).",
+      "owner": "Owner",
+      "save": "Save team"
+    },
+    "activity": {
+      "kind": "Type",
+      "body": "Entry",
+      "bodyHint": "Call, meeting, email or note. No values.",
+      "add": "Record",
+      "required": "Write the entry."
+    },
+    "talents": {
+      "empty": "No creators in this deal yet.",
+      "select": "Select {name}",
+      "noLogin": "no login",
+      "noConsent": "no consent",
+      "noLocation": "No city",
+      "reasonsLabel": "Criteria",
+      "consultedAt": "Consulted on {date}",
+      "respondBy": "replies by {date}",
+      "answeredByAgency": "Response recorded by the agency on {date}.",
+      "answeredByCreator": "Replied through the office on {date}.",
+      "feeMissing": "no fee",
+      "termsReady": "fee set",
+      "termsPending": "awaiting fee",
+      "setFee": "Fee",
+      "recordResponse": "Record response",
+      "remove": "Remove",
+      "confirmRemove": "Remove {name} from this deal?",
+      "add": "Suggest creators",
+      "consult": "{count, plural, =0 {Consult interest} one {Consult # creator} other {Consult # creators}}",
+      "consultHint": "Tick the suggested creators to consult.",
+      "addTitle": "Suggest creators from the roster",
+      "addHint": "Sorted by criteria met (segment, region, network, availability). Those who already replied stay.",
+      "back": "Back",
+      "saveShortlist": "{count, plural, =0 {Save shortlist} one {Save shortlist (#)} other {Save shortlist (#)}}",
+      "search": "Search the roster",
+      "noCandidates": "No talent found.",
+      "matchCount": "{met} of {total} criteria"
+    },
+    "consultDialog": {
+      "title": "{count, plural, one {Consult # creator} other {Consult # creators}}",
+      "hint": "The creator gets a notice in the office with the summary, the deadline and the fee (web only). Nothing is a contract.",
+      "back": "Back",
+      "send": "Send consultation",
+      "days": "Deadline to reply",
+      "daysOption": "{count} days",
+      "message": "Message",
+      "messageHint": "Optional. Goes to the conversation with each creator."
+    },
+    "record": {
+      "title": "Record {name}'s response",
+      "hint": "For talent without a login: the answer came from outside (call, message). Kept in the audit log with the note.",
+      "response": "Response",
+      "note": "How they answered",
+      "noteHint": "Required (at least 5 characters).",
+      "document": "Document",
+      "documentHint": "Optional: a screenshot or email kept in documents.",
+      "back": "Back",
+      "save": "Record",
+      "noteRequired": "Write the note (at least 5 characters)."
+    },
+    "fee": {
+      "title": "{name}'s fee",
+      "hint": "Only the admin sees and sets it. Without a fee, the consultation does not go out.",
+      "amount": "Amount (R$)",
+      "changeAfterConsult": "The creator was already consulted: changing the fee re-sends the consultation.",
+      "invalid": "Enter an amount like 1.500,00.",
+      "back": "Back",
+      "save": "Save fee"
+    },
+    "deliverables": {
+      "intro": "What each creator delivers, with deadline and publication date. Versions and approval come in the next stage.",
+      "noTalents": "Suggest or confirm creators before planning deliverables.",
+      "empty": "No planned deliverables.",
+      "item": "Deliverable {n}",
+      "removeLabel": "Remove deliverable {n}",
+      "remove": "Remove",
+      "talent": "Creator",
+      "kind": "Type",
+      "network": "Network",
+      "title": "Title",
+      "dueAt": "Due date",
+      "publishAt": "Publication",
+      "brief": "Guidance",
+      "add": "Add deliverable",
+      "save": "Save deliverables"
+    },
+    "messages": {
+      "channels": "Channels",
+      "brandChannel": "Brand: {brand}",
+      "noLoginHint": "This talent has no login: what is written here is recorded, but they do not receive it.",
+      "brandNotVisibleHint": "Deal opened by the agency: the brand only sees (and replies) after confirmation."
+    }
   }
 }

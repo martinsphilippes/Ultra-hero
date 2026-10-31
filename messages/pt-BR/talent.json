@@ -3,14 +3,19 @@
     "eyebrow": "Escritório",
     "home": "Escritório",
     "consent": "Consentimento",
-    "kit": "Media kit"
+    "kit": "Media kit",
+    "opportunities": "Oportunidades",
+    "opportunity": "Oportunidade",
+    "availability": "Disponibilidade"
   },
   "tabs": {
     "label": "Seções do escritório",
     "home": "Início",
     "kit": "Media kit",
     "consent": "Consentimento",
-    "notifications": "Avisos"
+    "notifications": "Avisos",
+    "opportunities": "Oportunidades",
+    "availability": "Disponibilidade"
   },
   "home": {
     "unavailable": "Escritório em atualização",
@@ -36,7 +41,12 @@
     "inboxTitle": "Avisos da agência",
     "inboxAll": "Ver todos",
     "inboxEmpty": "Nenhum aviso por enquanto.",
-    "upcoming": "Oportunidades, tarefas e agenda chegam ao escritório nas próximas etapas."
+    "upcoming": "Tarefas e agenda chegam ao escritório nas próximas etapas.",
+    "opportunitiesTitle": "Oportunidades",
+    "opportunitiesAll": "Ver todas",
+    "opportunitiesPending": "{count, plural, one {# oportunidade aguarda a sua resposta.} other {# oportunidades aguardam a sua resposta.}}",
+    "opportunitiesNone": "Nenhuma oportunidade aguardando resposta.",
+    "availabilityOpen": "Declarar períodos"
   },
   "consent": {
     "title": "Termo de uso comercial",
@@ -74,9 +84,88 @@
     "not_found": "Não encontrado.",
     "unauthenticated": "Entre de novo para continuar.",
     "invalid_input": "Confira os campos e tente de novo.",
-    "generic": "Não foi possível concluir. Tente novamente."
+    "generic": "Não foi possível concluir. Tente novamente.",
+    "note_required": "Escreva o motivo.",
+    "invalid_state": "Esta oportunidade já foi respondida ou encerrada.",
+    "invalid_stage": "Esta campanha já foi encerrada."
   },
   "values": {
     "demoLockedKit": "Agência de demonstração: o link público fica desligado (só a prévia)."
+  },
+  "opportunities": {
+    "unavailable": "Oportunidades em atualização",
+    "intro": "Consultas de interesse feitas pela agência. Responder não é contrato: a confirmação comercial é da agência com a marca.",
+    "empty": "Nenhuma oportunidade ainda.",
+    "emptyHint": "Quando a agência consultar você para uma campanha, ela aparece aqui.",
+    "pendingTitle": "{count, plural, one {Aguardando sua resposta (#)} other {Aguardando sua resposta (#)}}",
+    "restTitle": "Respondidas e em andamento",
+    "startsOn": "início {date}",
+    "respondBy": "Responda até {date}",
+    "dealStatus": {
+      "open": "Em análise",
+      "confirmed": "Confirmada",
+      "running": "Em produção",
+      "won": "Concluída",
+      "lost": "Encerrada",
+      "cancelled": "Cancelada"
+    },
+    "title": "Oportunidades",
+    "youAnswered": "Você respondeu em {date}: {answer}.",
+    "briefTitle": "Sobre a campanha",
+    "fields": {
+      "period": "Período",
+      "respondBy": "Responder até",
+      "objective": "Objetivo",
+      "product": "Produto ou serviço",
+      "desiredAt": "Data e hora",
+      "duration": "Duração",
+      "format": "Formato",
+      "location": "Local",
+      "networks": "Redes",
+      "deliverables": "Entregáveis pedidos"
+    },
+    "deliverablesTitle": "Suas entregas previstas",
+    "deliverablesNone": "A agência ainda não planejou as entregas.",
+    "dueAt": "prazo {date}",
+    "feeTitle": "Cachê proposto",
+    "feeHint": "Definido pela agência para esta campanha. Não é contrato.",
+    "messagesTitle": "Conversa com a agência",
+    "responded": {
+      "interested": "Interesse registrado. A agência vai dar sequência.",
+      "declined": "Resposta registrada. Obrigado por avisar.",
+      "talk_requested": "Pedido de conversa enviado à agência."
+    },
+    "respond": {
+      "title": "Sua resposta",
+      "hint": "Diga se tem interesse, se quer conversar antes ou se não tem interesse (com o motivo).",
+      "note": "Observação",
+      "noteHint": "Obrigatória ao recusar. Ajuda a agência a propor algo melhor.",
+      "interested": "Tenho interesse",
+      "talk": "Quero conversar",
+      "declined": "Não tenho interesse",
+      "legal": "Responder não é vínculo contratual. Contrato e condições são combinados com a agência.",
+      "reasonRequired": "Conte o motivo (pelo menos 3 caracteres)."
+    }
+  },
+  "availability": {
+    "saved": "Período salvo.",
+    "deleted": "Período removido.",
+    "hint": "Períodos em que você aceita propostas e períodos bloqueados. É só isso que a marca vê; sua agenda pessoal fica fora.",
+    "empty": "Nenhum período declarado.",
+    "kinds": {
+      "available": "Disponível",
+      "blocked": "Bloqueado"
+    },
+    "deleteLabel": "Remover período de {start}",
+    "delete": "Remover",
+    "kind": "Tipo",
+    "startsOn": "De",
+    "endsOn": "Até",
+    "note": "Observação",
+    "noteHint": "Opcional (ex.: só remoto).",
+    "add": "Adicionar período",
+    "invalidRange": "Confira as datas: o fim não pode ser antes do início.",
+    "confirmDelete": "Remover este período?",
+    "periodsTitle": "Períodos declarados"
   }
 }

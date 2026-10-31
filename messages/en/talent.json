@@ -3,14 +3,19 @@
     "eyebrow": "Office",
     "home": "Office",
     "consent": "Consent",
-    "kit": "Media kit"
+    "kit": "Media kit",
+    "opportunities": "Opportunities",
+    "opportunity": "Opportunity",
+    "availability": "Availability"
   },
   "tabs": {
     "label": "Office sections",
     "home": "Home",
     "kit": "Media kit",
     "consent": "Consent",
-    "notifications": "Notices"
+    "notifications": "Notices",
+    "opportunities": "Opportunities",
+    "availability": "Availability"
   },
   "home": {
     "unavailable": "Office being updated",
@@ -36,7 +41,12 @@
     "inboxTitle": "Agency notices",
     "inboxAll": "See all",
     "inboxEmpty": "No notices yet.",
-    "upcoming": "Opportunities, tasks and calendar arrive in the office in the next stages."
+    "upcoming": "Tasks and calendar reach the office in the next stages.",
+    "opportunitiesTitle": "Opportunities",
+    "opportunitiesAll": "See all",
+    "opportunitiesPending": "{count, plural, one {# opportunity awaits your reply.} other {# opportunities await your reply.}}",
+    "opportunitiesNone": "No opportunity awaiting a reply.",
+    "availabilityOpen": "Declare periods"
   },
   "consent": {
     "title": "Commercial use terms",
@@ -74,9 +84,88 @@
     "not_found": "Not found.",
     "unauthenticated": "Sign in again to continue.",
     "invalid_input": "Check the fields and try again.",
-    "generic": "Could not complete. Please try again."
+    "generic": "Could not complete. Please try again.",
+    "note_required": "Write the reason.",
+    "invalid_state": "This opportunity was already answered or closed.",
+    "invalid_stage": "This campaign is already closed."
   },
   "values": {
     "demoLockedKit": "Demo agency: the public link stays off (preview only)."
+  },
+  "opportunities": {
+    "unavailable": "Opportunities being updated",
+    "intro": "Interest checks made by the agency. Replying is not a contract: the commercial confirmation is the agency's, with the brand.",
+    "empty": "No opportunities yet.",
+    "emptyHint": "When the agency consults you for a campaign, it shows up here.",
+    "pendingTitle": "{count, plural, one {Awaiting your reply (#)} other {Awaiting your reply (#)}}",
+    "restTitle": "Answered and in progress",
+    "startsOn": "starts {date}",
+    "respondBy": "Reply by {date}",
+    "dealStatus": {
+      "open": "Under review",
+      "confirmed": "Confirmed",
+      "running": "In production",
+      "won": "Completed",
+      "lost": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "title": "Opportunities",
+    "youAnswered": "You replied on {date}: {answer}.",
+    "briefTitle": "About the campaign",
+    "fields": {
+      "period": "Period",
+      "respondBy": "Reply by",
+      "objective": "Objective",
+      "product": "Product or service",
+      "desiredAt": "Date and time",
+      "duration": "Duration",
+      "format": "Format",
+      "location": "Location",
+      "networks": "Networks",
+      "deliverables": "Requested deliverables"
+    },
+    "deliverablesTitle": "Your planned deliverables",
+    "deliverablesNone": "The agency has not planned the deliverables yet.",
+    "dueAt": "due {date}",
+    "feeTitle": "Proposed fee",
+    "feeHint": "Set by the agency for this campaign. Not a contract.",
+    "messagesTitle": "Conversation with the agency",
+    "responded": {
+      "interested": "Interest recorded. The agency will follow up.",
+      "declined": "Reply recorded. Thanks for letting us know.",
+      "talk_requested": "Talk request sent to the agency."
+    },
+    "respond": {
+      "title": "Your reply",
+      "hint": "Say whether you are interested, want to talk first, or are not interested (with the reason).",
+      "note": "Note",
+      "noteHint": "Required when declining. Helps the agency propose something better.",
+      "interested": "I'm interested",
+      "talk": "I want to talk",
+      "declined": "Not interested",
+      "legal": "Replying is not a contractual commitment. Contract and terms are agreed with the agency.",
+      "reasonRequired": "Tell us why (at least 3 characters)."
+    }
+  },
+  "availability": {
+    "saved": "Period saved.",
+    "deleted": "Period removed.",
+    "hint": "Periods when you accept proposals and blocked periods. That is all the brand sees; your personal calendar stays out.",
+    "empty": "No declared periods.",
+    "kinds": {
+      "available": "Available",
+      "blocked": "Blocked"
+    },
+    "deleteLabel": "Remove period from {start}",
+    "delete": "Remove",
+    "kind": "Type",
+    "startsOn": "From",
+    "endsOn": "Until",
+    "note": "Note",
+    "noteHint": "Optional (e.g. remote only).",
+    "add": "Add period",
+    "invalidRange": "Check the dates: the end cannot be before the start.",
+    "confirmDelete": "Remove this period?",
+    "periodsTitle": "Declared periods"
   }
 }

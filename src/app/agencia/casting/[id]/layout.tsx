@@ -31,6 +31,7 @@ export default async function TalentLayout({ children, params }: Props) {
           { href: base, label: t("tabs.summary"), exact: true },
           { href: `${base}/redes`, label: t("tabs.networks") },
           { href: `${base}/media-kit`, label: t("tabs.kit") },
+          { href: `${base}/disponibilidade`, label: t("tabs.availability") },
           { href: `${base}/documentos`, label: t("tabs.documents") },
           { href: `${base}/historico`, label: t("tabs.history") },
         ]}
