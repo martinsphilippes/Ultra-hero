@@ -37,6 +37,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "orders", href: "/admin/orders" },
     { key: "shipments", href: "/admin/shipments" },
     { key: "feedback", href: "/admin/feedback" },
+    // Denúncias (0071): conteúdo e heróis denunciados no app; resposta em até 24 horas
+    { key: "reports", href: "/admin/denuncias" },
     { key: "metrics", href: "/admin/metrics" },
     // Indicadores (Etapa 5, 0060): por herói, atalho, conversão, profissionais, colecionáveis, ranking
     { key: "indicators", href: "/admin/indicadores" },

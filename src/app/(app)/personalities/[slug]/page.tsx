@@ -11,6 +11,7 @@ import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { HeroPageViewTracker } from "@/components/discover/personalities/HeroPageViewTracker";
 import { LibraryHighlights } from "@/components/discover/personalities/LibraryHighlights";
 import { FollowButton } from "@/components/heroes/FollowButton";
+import { ReportBlockActions } from "@/components/moderation/ReportBlockActions";
 import { ChefHighlights } from "@/components/recipes/catalog/ChefHighlights";
 import { AvatarInitials, Badge } from "@/components/ui";
 import { BackLink } from "@/components/ui/back-link";
@@ -119,6 +120,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
             />
           </div>
         ) : null}
+        {/* denunciar e bloquear (0071, diretriz 1.2 da App Store) */}
+        <ReportBlockActions creatorId={creator.id} heroName={creator.name} signedIn={follow.signedIn} path={`/personalities/${creator.slug}`} />
         <HeroBio headline={creator.headline} bio={creator.bio} />
         {/* perfil do chef: especialidades e credenciais aprovadas pelo admin (P7) */}
         <ChefHighlights creatorId={creator.id} />

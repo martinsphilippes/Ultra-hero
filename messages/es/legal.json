@@ -123,6 +123,12 @@
           }
         }
       },
+      "reports": {
+        "title": "Denuncias y bloqueo",
+        "blocks": {
+          "p1": "<strong>Tolerancia cero con el contenido abusivo.</strong> No se acepta contenido ofensivo, de acoso, de odio, engañoso sobre salud o que infrinja derechos de terceros. En cada contenido y en cada página de héroe están las opciones <strong>Denunciar</strong> y <strong>Bloquear</strong>. El equipo revisa las denuncias en un plazo de 24 horas y retira el contenido y suspende a quien lo publicó cuando hay una infracción. Quien bloquea a un héroe deja de verlo a él y lo que publica; el desbloqueo está en Perfil › Héroes."
+        }
+      },
       "ip": {
         "title": "Propiedad intelectual",
         "blocks": {
@@ -195,6 +201,7 @@
             "commerce": "<strong>Tienda (solo en el sitio):</strong> carrito, pedidos (artículos, importes mostrados y el destino elegido de una lista) y registros de interés en productos.",
             "events": "<strong>Eventos de uso:</strong> acciones en la app, como abrir un contenido, completar un programa o iniciar un pedido, con fecha, idioma y propiedades técnicas, como el identificador del contenido. Cuando has iniciado sesión, los eventos quedan vinculados a tu cuenta; para visitantes sin cuenta, se registran sin identificador. La base de datos rechaza propiedades cuyos nombres indiquen datos personales, como correo, teléfono, CPF, nombre, dirección o contraseña.",
             "feedback": "<strong>Feedback opcional:</strong> calificación, comentario de hasta 1.000 caracteres, el contenido o programa desde el que se envió y el idioma.",
+            "reports": "<strong>Denuncias y bloqueos:</strong> si denuncias, guardamos el contenido o héroe denunciado, el motivo, el detalle que escribas y la fecha; si bloqueas a un héroe, guardamos qué héroe y desde cuándo, para ocultártelo.",
             "recommendations": "<strong>Recomendaciones:</strong> la lista de contenidos recomendados para ti y un registro técnico de cada cálculo (motor usado, tiempo, cantidad de elementos, costo estimado y errores).",
             "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría.",
             "partnerTerms": "<strong>Aceptación de los Términos del Socio (solo héroes y agencias):</strong> la versión de los <partner>Términos del Socio</partner> que aceptaste al entrar por invitación, la fecha de aceptación y la fecha en que confirmaste, antes del primer envío, tener los derechos sobre las fotos y los videos, como prueba de la aceptación.",
@@ -393,6 +400,11 @@
                 "data": "Feedback",
                 "period": "Sin plazo automático",
                 "details": "No se elimina automáticamente. Deja de estar vinculado a ti si eliminas la cuenta, y puedes pedir su eliminación en {email}."
+              },
+              "reports": {
+                "data": "Denuncias y bloqueos",
+                "period": "Denuncias: sin plazo automático; bloqueos: mientras exista la cuenta",
+                "details": "Los bloqueos se eliminan junto con la cuenta. Las denuncias quedan para la moderación, sin el vínculo con quien denunció, si eliminas la cuenta."
               },
               "backups": {
                 "data": "Copias de seguridad (backups)",

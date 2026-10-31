@@ -123,6 +123,12 @@
           }
         }
       },
+      "reports": {
+        "title": "Reports and blocking",
+        "blocks": {
+          "p1": "<strong>Zero tolerance for abusive content.</strong> Offensive, harassing, hateful or misleading health content, or content that infringes third-party rights, is not accepted. Every piece of content and every hero page has <strong>Report</strong> and <strong>Block</strong> options. The team reviews reports within 24 hours and removes the content and suspends whoever published it when there is a breach. Blocking a hero hides them and what they publish from you; you can unblock in Profile › Heroes."
+        }
+      },
       "ip": {
         "title": "Intellectual property",
         "blocks": {
@@ -195,6 +201,7 @@
             "commerce": "<strong>Shop (website only):</strong> cart, orders (items, displayed amounts and the destination chosen from a list) and records of interest in products.",
             "events": "<strong>Usage events:</strong> actions in the app, such as opening a piece of content, completing a program or starting an order, with date, language and technical properties, such as the content identifier. When you are signed in, events are linked to your account; for visitors without an account, they are recorded without an identifier. The database rejects properties whose names indicate personal data, such as email, phone, CPF, name, address or password.",
             "feedback": "<strong>Optional feedback:</strong> rating, a comment of up to 1,000 characters, the content or program it was sent from and the language.",
+            "reports": "<strong>Reports and blocks:</strong> if you report, we store the reported content or hero, the reason, any detail you write and the date; if you block a hero, we store which hero and since when, to hide them from you.",
             "recommendations": "<strong>Recommendations:</strong> the list of content recommended to you and a technical record of each calculation (engine used, time, number of items, estimated cost and errors).",
             "partners": "<strong>Partners and administration:</strong> if you are invited as a partner, the email address the invitation was sent to, your partner profile data and what you submit. The main actions taken through the admin panel, such as role changes, invitations, moderation and settings, are recorded in an audit log.",
             "partnerTerms": "<strong>Acceptance of the Partner Terms (heroes and agencies only):</strong> the version of the <partner>Partner Terms</partner> you accepted when joining by invitation, the date of acceptance and the date on which you confirmed, before your first upload, that you hold the rights to the photos and videos, as proof of acceptance.",
@@ -393,6 +400,11 @@
                 "data": "Feedback",
                 "period": "No automatic period",
                 "details": "Not deleted automatically. Unlinked from you if you delete your account, and you can request its removal at {email}."
+              },
+              "reports": {
+                "data": "Reports and blocks",
+                "period": "Reports: no automatic period; blocks: while the account exists",
+                "details": "Blocks are deleted together with the account. Reports stay for moderation, no longer linked to whoever reported, if you delete your account."
               },
               "backups": {
                 "data": "Backups",

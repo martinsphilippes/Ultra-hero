@@ -3,7 +3,8 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Users } from "lucide-react";
 import { FollowedHeroesManager } from "@/components/heroes/FollowedHeroesManager";
-import { Button, EmptyState, PageHeader } from "@/components/ui";
+import { BlockedHeroesList } from "@/components/moderation/BlockedHeroesList";
+import { Button, EmptyState, PageHeader, Section } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
 import { getFollowContext } from "@/lib/heroes/follow-context";
 import { loadCompareCreatorId, loadFollowedHeroes } from "@/lib/heroes/follow-queries";
@@ -20,6 +21,8 @@ export default async function FollowedHeroesPage() {
   const user = await requireUser("/profile/herois");
   const [t, tc, follow] = await Promise.all([getTranslations("follows.manage"), getTranslations("common"), getFollowContext()]);
   const supabase = await createClient();
+  // heróis bloqueados (0071): a RPC enxerga os bloqueados, que as políticas escondem desta conta
+  const [{ data: blocked }, tm] = await Promise.all([supabase.rpc("my_blocked_heroes"), getTranslations("moderation.blockedList")]);
   const [heroes, compareId] = await Promise.all([loadFollowedHeroes(supabase, user.id), loadCompareCreatorId(supabase, user.id)]);
 
   return (
@@ -56,6 +59,9 @@ export default async function FollowedHeroesPage() {
           />
         </>
       )}
+      <Section title={tm("title")} description={tm("description")}>
+        <BlockedHeroesList heroes={(blocked ?? []).map((h) => ({ id: h.id, name: h.name, avatar_url: h.avatar_url }))} />
+      </Section>
     </div>
   );
 }

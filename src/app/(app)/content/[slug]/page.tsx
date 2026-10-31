@@ -29,6 +29,7 @@ import {
   type DisclaimerKind,
 } from "@/components/content";
 import { FeedbackWidget } from "@/components/feedback/FeedbackWidget";
+import { ReportBlockActions } from "@/components/moderation/ReportBlockActions";
 import { BackLink } from "@/components/ui/back-link";
 import { recipeCategoryOptions } from "@/components/recipes/catalog/RecipeCatalog";
 import { RecipeGate } from "@/components/recipes/RecipeGate";
@@ -571,6 +572,8 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
       <section aria-label={t("feedbackTitle")} className="pt-2 print:hidden">
         <FeedbackWidget context={`content:${content.id}`} />
       </section>
+      {/* denunciar o conteúdo e bloquear o herói (0071, diretriz 1.2 da App Store) */}
+      {content.creator ? <ReportBlockActions creatorId={content.creator.id} heroName={content.creator.name} contentId={content.id} signedIn={Boolean(user)} path={`/content/${content.slug}`} /> : null}
     </div>
   );
 }
