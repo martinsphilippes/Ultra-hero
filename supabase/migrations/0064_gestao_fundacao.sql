@@ -384,7 +384,7 @@ create policy agency_brands_select_agency on public.agency_brands for select to 
   using (agency_id = any ((select public.my_agency_ids('staff'))::uuid[]));
 drop policy if exists agency_brands_select_brand on public.agency_brands;
 create policy agency_brands_select_brand on public.agency_brands for select to authenticated
-  using (brand_id = any ((select public.my_brand_ids(false))::uuid[]));
+  using (status = 'active' and brand_id = any ((select public.my_brand_ids(false))::uuid[]));
 
 drop policy if exists brand_members_select_agency on public.brand_members;
 create policy brand_members_select_agency on public.brand_members for select to authenticated
@@ -410,7 +410,7 @@ create policy invitations_select_agency_manager on public.invitations for select
   using (brand_id is not null and agency_id = any ((select public.my_agency_ids('manager'))::uuid[]));
 drop policy if exists invitations_select_brand_owner on public.invitations;
 create policy invitations_select_brand_owner on public.invitations for select to authenticated
-  using (brand_id = any ((select public.my_brand_ids(true))::uuid[]));
+  using (brand_id = any ((select public.my_brand_ids(true))::uuid[]) and agency_id = any ((select public.my_brand_agency_ids())::uuid[]));
 -- D6: conta demo não lê convite de agência/marca (restritiva: soma com as permissivas existentes)
 drop policy if exists invitations_hide_from_demo on public.invitations;
 create policy invitations_hide_from_demo on public.invitations as restrictive for select to authenticated
@@ -567,6 +567,8 @@ begin
   if public.agency_is_demo(p_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
   if p_role is null or p_role not in ('admin', 'manager', 'staff') then raise exception 'invalid_input' using errcode = '22023'; end if;
   if char_length(btrim(coalesce(p_justification, ''))) < 5 then raise exception 'justification_required' using errcode = '22023'; end if;
+  -- trava a agência: duas trocas simultâneas não deixam a agência sem Adm
+  perform 1 from public.agencies a where a.id = p_agency for update;
   select m.role into v_current from public.agency_members m
   where m.agency_id = p_agency and m.user_id = p_user and m.revoked_at is null for update;
   if v_current is null then raise exception 'not_found' using errcode = 'P0002'; end if;
@@ -589,6 +591,7 @@ begin
   if not public.agency_can(p_agency, 'admin') then raise exception 'forbidden' using errcode = '42501'; end if;
   if public.agency_is_demo(p_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
   if char_length(btrim(coalesce(p_justification, ''))) < 5 then raise exception 'justification_required' using errcode = '22023'; end if;
+  perform 1 from public.agencies a where a.id = p_agency for update;
   select m.role into v_current from public.agency_members m
   where m.agency_id = p_agency and m.user_id = p_user and m.revoked_at is null for update;
   if v_current is null then raise exception 'not_found' using errcode = 'P0002'; end if;
@@ -631,6 +634,7 @@ begin
     into v_before from public.agencies a where a.id = p_agency for update;
   if v_before is null then raise exception 'not_found' using errcode = 'P0002'; end if;
   if not public.agency_can(p_agency, 'manager') then raise exception 'forbidden' using errcode = '42501'; end if;
+  if public.agency_is_demo(p_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
   v_tz := coalesce(nullif(btrim(p_data ->> 'timezone'), ''), v_before ->> 'timezone');
   if not exists (select 1 from pg_catalog.pg_timezone_names where name = v_tz) then raise exception 'invalid_timezone' using errcode = '22023'; end if;
   begin
@@ -726,6 +730,8 @@ begin
       if not public.is_platform_admin() then raise exception 'brand_linked_elsewhere' using errcode = 'P0001'; end if;
       -- transferência (D18): só o admin geral, arquivando o vínculo anterior na mesma transação
       update public.agency_brands set status = 'archived' where brand_id = p_brand and agency_id = v_other and status = 'active';
+      update public.invitations i set status = 'revoked', revoked_at = now()
+      where i.status = 'pending' and i.brand_id = p_brand and i.agency_id = v_other;
     end if;
     insert into public.agency_brands (agency_id, brand_id, status, account_manager_id, created_by)
     values (p_agency, p_brand, 'active', p_account_manager, auth.uid())
@@ -808,6 +814,7 @@ begin
   v_by_owner := coalesce(public.brand_member_of(p_brand) = 'owner', false);
   if not v_by_owner and not public.agency_can(v_agency, 'manager') then raise exception 'forbidden' using errcode = '42501'; end if;
   if public.agency_is_demo(v_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
+  perform 1 from public.brands b where b.id = p_brand for update;
   select bm.role into v_role from public.brand_members bm where bm.brand_id = p_brand and bm.user_id = p_user and bm.revoked_at is null for update;
   if v_role is null then raise exception 'not_found' using errcode = 'P0002'; end if;
   if v_role = 'owner' and (select count(*) from public.brand_members bm
@@ -983,6 +990,8 @@ begin
   if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   if p_meta is null or jsonb_typeof(p_meta) <> 'object' then raise exception 'invalid_input' using errcode = '22023'; end if;
   if not exists (select 1 from public.agencies a where a.id = p_agency and a.status = 'active') then raise exception 'not_found' using errcode = 'P0002'; end if;
+  -- agência de demonstração é pública: sem envio de arquivos (cota e conteúdo de terceiros)
+  if public.agency_is_demo(p_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
   v_kind := coalesce(p_meta ->> 'kind', 'other');
   v_title := btrim(coalesce(p_meta ->> 'title', ''));
   v_mime := coalesce(p_meta ->> 'mime_type', '');
@@ -1082,10 +1091,10 @@ returns void language plpgsql security definer set search_path = '' as $$
 declare v_doc record; v_brand boolean; v_talent boolean;
 begin
   if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
-  select d.id, d.agency_id, d.kind, d.scope_type, d.talent_id, d.share_brand, d.share_talent into v_doc
+  select d.id, d.agency_id, d.kind, d.restricted, d.scope_type, d.talent_id, d.share_brand, d.share_talent into v_doc
   from public.documents d where d.id = p_id for update;
   if v_doc.id is null then raise exception 'not_found' using errcode = 'P0002'; end if;
-  if not public.agency_can(v_doc.agency_id, case when v_doc.kind = 'contract' then 'admin' else 'manager' end) then
+  if not public.agency_can(v_doc.agency_id, case when v_doc.kind = 'contract' or v_doc.restricted then 'admin' else 'manager' end) then
     raise exception 'not_found' using errcode = 'P0002';
   end if;
   v_brand := coalesce(p_share_brand, false);
@@ -1205,6 +1214,10 @@ begin
   end loop;
   v_admin := (v_ids ->> 'admin')::uuid; v_staff := (v_ids ->> 'staff')::uuid; v_owner := (v_ids ->> 'brand_owner')::uuid;
 
+  -- dados da agência demo voltam ao padrão
+  update public.agencies set name = 'Agência Exemplo (demonstração)', status = 'active', timezone = 'America/Sao_Paulo',
+    relationship_alert_days = 30, contact_email = null
+  where id = p_agency;
   -- equipe fixa da agência demo (papéis voltam ao seed)
   insert into public.agency_members (id, agency_id, user_id, role, display_name, job_title)
   values (public.seed_uuid('demo:agency_member:admin'), p_agency, v_admin, 'admin', 'Adm da agência (exemplo)', 'Diretoria'),
@@ -1256,6 +1269,127 @@ begin
 end $$;
 revoke execute on function public.push_allowed(uuid, text) from public, anon, authenticated;
 grant execute on function public.push_allowed(uuid, text) to service_role;
+
+
+-- 18b) conta pública de demonstração (admin@demo e as demais): o papel admin dela é de vitrine.
+--      Não promove nem rebaixa conta real, não cria nem revoga convite, não mexe em marca atendida por
+--      agência real e não vê papéis de agência/marca de outras pessoas (revisão de segurança da etapa A).
+create or replace function public.guard_demo_role_writes()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare v_target uuid;
+begin
+  if not public.is_demo_account() then
+    if tg_op = 'DELETE' then return old; end if;
+    return new;
+  end if;
+  v_target := case when tg_op = 'DELETE' then old.user_id else new.user_id end;
+  if v_target is distinct from auth.uid()
+     and coalesce((select u.raw_app_meta_data ->> 'ultra_hero_demo' from auth.users u where u.id = v_target), '') <> 'true' then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
+end $$;
+drop trigger if exists trg_role_assignments_demo_guard on public.role_assignments;
+create trigger trg_role_assignments_demo_guard before insert or update or delete on public.role_assignments
+  for each row execute function public.guard_demo_role_writes();
+
+create or replace function public.guard_demo_invitation_writes()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if not public.is_demo_account() then return new; end if;
+  -- convite dá acesso real a quem aceita: conta demo não cria; revogar também não
+  if tg_op = 'INSERT' or (new.status = 'revoked' and old.status is distinct from 'revoked') then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  return new;
+end $$;
+drop trigger if exists trg_invitations_demo_guard on public.invitations;
+create trigger trg_invitations_demo_guard before insert or update on public.invitations
+  for each row execute function public.guard_demo_invitation_writes();
+
+-- marca atendida por agência real: conta demo não edita, não publica, não apaga, não mexe nos produtos
+create or replace function public.brand_in_real_agency(p_brand uuid)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.agency_brands ab join public.agencies a on a.id = ab.agency_id
+                 where ab.brand_id = p_brand and not a.is_demo)
+$$;
+create or replace function public.guard_demo_brand_writes()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if public.is_demo_account() and public.brand_in_real_agency(old.id) then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
+end $$;
+-- (função separada: em plpgsql o campo brand_id só existe em brand_products)
+create or replace function public.guard_demo_brand_product_writes()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if public.is_demo_account() then
+    if (tg_op <> 'DELETE' and public.brand_in_real_agency(new.brand_id))
+       or (tg_op <> 'INSERT' and public.brand_in_real_agency(old.brand_id)) then
+      raise exception 'forbidden' using errcode = '42501';
+    end if;
+  end if;
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
+end $$;
+drop trigger if exists trg_brands_demo_guard on public.brands;
+create trigger trg_brands_demo_guard before update or delete on public.brands
+  for each row execute function public.guard_demo_brand_writes();
+drop trigger if exists trg_brand_products_demo_guard on public.brand_products;
+create trigger trg_brand_products_demo_guard before insert or update or delete on public.brand_products
+  for each row execute function public.guard_demo_brand_product_writes();
+
+revoke execute on function public.guard_demo_role_writes() from public, anon, authenticated;
+revoke execute on function public.guard_demo_invitation_writes() from public, anon, authenticated;
+revoke execute on function public.guard_demo_brand_writes() from public, anon, authenticated;
+revoke execute on function public.guard_demo_brand_product_writes() from public, anon, authenticated;
+revoke execute on function public.brand_in_real_agency(uuid) from public, anon;
+grant execute on function public.brand_in_real_agency(uuid) to authenticated, service_role;
+
+-- papéis de agência e marca de outras pessoas ficam fora do alcance da conta demo (o admin@demo lê
+-- role_assignments pela política do admin)
+drop policy if exists role_assignments_hide_agency_from_demo on public.role_assignments;
+create policy role_assignments_hide_agency_from_demo on public.role_assignments as restrictive for select to authenticated
+  using (not (select public.is_demo_account()) or role::text not in ('agency', 'brand') or user_id = (select auth.uid()));
+
+-- mesmas listas do admin (0007 e 0015), sem os papéis de agência/marca para a conta demo
+create or replace function public.admin_list_users(p_search text default null, p_limit int default 50, p_offset int default 0)
+returns table (id uuid, email text, display_name text, created_at timestamptz, last_sign_in_at timestamptz, roles text[], anonymized boolean)
+language sql stable security definer set search_path = public, auth as $$
+  select u.id, u.email::text, p.display_name, u.created_at, u.last_sign_in_at,
+         coalesce((select array_agg(r.role::text order by r.role) from public.role_assignments r
+                   where r.user_id = u.id and r.revoked_at is null
+                     and (not public.is_demo_account() or r.role::text not in ('agency', 'brand') or r.user_id = auth.uid())), '{}'),
+         p.anonymized_at is not null
+  from auth.users u left join public.profiles p on p.id = u.id
+  where public.is_admin()
+    and (p_search is null or u.email ilike '%' || p_search || '%' or p.display_name ilike '%' || p_search || '%')
+  order by u.created_at desc
+  limit least(greatest(p_limit, 1), 200) offset greatest(p_offset, 0)
+$$;
+revoke execute on function public.admin_list_users(text, int, int) from public, anon;
+grant execute on function public.admin_list_users(text, int, int) to authenticated, service_role;
+
+create or replace function public.admin_get_user(p_id uuid)
+returns table (id uuid, email text, display_name text, avatar_url text, locale public.locale_code, timezone text,
+               created_at timestamptz, last_sign_in_at timestamptz, roles jsonb, anonymized boolean,
+               banned_until timestamptz)
+language sql stable security definer set search_path = public, auth as $$
+  select u.id, u.email::text, p.display_name, p.avatar_url, p.locale, p.timezone, u.created_at, u.last_sign_in_at,
+         coalesce((select jsonb_agg(jsonb_build_object('role', r.role, 'scope_type', r.scope_type, 'scope_id', r.scope_id))
+                   from public.role_assignments r where r.user_id = u.id and r.revoked_at is null
+                     and (not public.is_demo_account() or r.role::text not in ('agency', 'brand') or r.user_id = auth.uid())), '[]'::jsonb),
+         p.anonymized_at is not null,
+         u.banned_until
+  from auth.users u left join public.profiles p on p.id = u.id
+  where public.is_admin() and u.id = p_id
+$$;
+revoke execute on function public.admin_get_user(uuid) from public, anon;
+grant execute on function public.admin_get_user(uuid) to authenticated, service_role;
 
 -- 18) Storage: bucket privado agency-docs ------------------------------------------
 do $$

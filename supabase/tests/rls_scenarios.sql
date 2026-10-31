@@ -7941,6 +7941,55 @@ select tests.ok('S74 push_allowed(office) segue office_updates; só aviso do esc
   and not public.push_allowed('74000000-0000-4000-8000-0000000000a3', 'office')
   and (select count(*) from public.push_outbox where user_id = '74000000-0000-4000-8000-0000000000a4' and kind = 'office') = 1);
 
+-- 12a) revisão de segurança: conta pública de demonstração, documento restrito, agência demo, transferência
+select tests.su();
+insert into public.documents (id, agency_id, scope_type, kind, title, storage_path, mime_type, size_bytes, restricted, status, uploader_side)
+values ('74000000-0000-4000-8000-0000000000f3', public.seed_uuid('s74:agency:a'), 'agency', 'report', 'Relatório restrito',
+        public.seed_uuid('s74:agency:a')::text || '/agency/' || public.seed_uuid('s74:agency:a')::text || '/74000000-0000-4000-8000-0000000000f3.pdf',
+        'application/pdf', 10, true, 'ready', 'agency');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S74 gestor não compartilha documento restrito do Adm',
+  $q$select public.document_set_sharing('74000000-0000-4000-8000-0000000000f3', true, false)$q$, 'not_found');
+select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
+select tests.expect_error('S74 conta demo não promove conta real a admin',
+  $q$select public.admin_set_role('74000000-0000-4000-8000-0000000000a4', 'admin', true, 'escalada pela conta demo')$q$, 'forbidden');
+select tests.expect_error('S74 conta demo não tira o admin de conta real',
+  $q$select public.admin_set_role('10000000-0000-4000-8000-000000000001', 'admin', false, 'rebaixar o admin real')$q$, 'forbidden');
+select tests.expect_error('S74 conta demo não cria convite (acesso real a quem aceita)',
+  $q$select * from public.admin_create_invitation('x@test.local', 'creator', null, (select id from public.creator_profiles limit 1), 7)$q$, 'forbidden');
+select tests.expect_error('S74 conta demo não edita nem publica marca de agência real',
+  $q$select public.admin_brand_save((select v::uuid from t_s74 where k = 'brand_x'), '{"slug": "s74-pwned", "name": "Pwned", "site_url": "https://example.com/p", "status": "active"}')$q$, 'forbidden');
+select tests.expect_error('S74 conta demo não cria produto em marca de agência real',
+  $q$select public.admin_brand_product_save(null, jsonb_build_object('brand_id', (select v from t_s74 where k = 'brand_x'), 'name', 'P', 'external_url', 'https://example.com/p', 'image_url', '/brands/nike.svg'))$q$, 'forbidden');
+select tests.ok('S74 conta demo não vê papéis de agência/marca de outras pessoas (tabela e listas do admin)',
+  (select count(*) from public.role_assignments where role::text in ('agency', 'brand')) = 0
+  and not exists (select 1 from public.admin_list_users(null, 200, 0) u where u.roles && array['agency', 'brand'])
+  and not exists (select 1 from public.admin_get_user('74000000-0000-4000-8000-0000000000a1') g, jsonb_array_elements(g.roles) r
+                  where r ->> 'role' in ('agency', 'brand')));
+select tests.su();
+select tests.ok('S74 promoção pela conta demo não aconteceu',
+  not exists (select 1 from public.role_assignments where user_id = '74000000-0000-4000-8000-0000000000a4' and role::text = 'admin' and revoked_at is null)
+  and (select name from public.brands where id = (select v::uuid from t_s74 where k = 'brand_x')) = 'Marca X');
+select tests.login('74000000-0000-4000-8000-0000000000e3', 'demo-adm@test.local');
+select tests.expect_error('S74 agência demo: dados travados',
+  $q$select public.agency_settings_save(public.seed_uuid('s74:agency:d'), '{"name": "Texto público qualquer"}')$q$, 'demo_locked');
+select tests.expect_error('S74 agência demo: sem envio de arquivos',
+  $q$select public.document_reserve(public.seed_uuid('s74:agency:d'), 'agency', public.seed_uuid('s74:agency:d'), '{"kind": "other", "title": "X", "mime_type": "application/pdf", "size_bytes": 20971520}')$q$, 'demo_locked');
+-- transferência: a marca deixa de ver o vínculo e os convites da agência anterior
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s74 select 'tok_x_pend', token from public.agency_invite_brand_member(public.seed_uuid('s74:agency:a'),
+  (select v::uuid from t_s74 where k = 'brand_x'), 'pendente@test.local', 'staff');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.agency_brand_link(public.seed_uuid('s74:agency:b'), (select v::uuid from t_s74 where k = 'brand_x'), true);
+select tests.login('74000000-0000-4000-8000-0000000000c1', 'marca-x-dono@test.local');
+select tests.ok('S74 depois da transferência a marca só vê a agência atual (sem vínculo nem convites da anterior)',
+  (select count(*) from public.agency_brands where brand_id = (select v::uuid from t_s74 where k = 'brand_x') and agency_id = public.seed_uuid('s74:agency:a')) = 0
+  and (select count(*) from public.agency_brands where brand_id = (select v::uuid from t_s74 where k = 'brand_x') and agency_id = public.seed_uuid('s74:agency:b')) = 1
+  and (select count(*) from public.invitations where agency_id = public.seed_uuid('s74:agency:a')) = 0);
+select tests.su();
+select tests.ok('S74 transferência revoga os convites pendentes da agência anterior',
+  (select status from public.invitations where email = 'pendente@test.local') = 'revoked');
+
 -- 12) funções e S14 ------------------------------------------------------------------------
 select tests.ok('S74 funções novas com search_path fixo e nenhuma executável pelo visitante',
   not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
@@ -7950,7 +7999,8 @@ select tests.ok('S74 funções novas com search_path fixo e nenhuma executável 
                                 'agency_email_ok', 'agency_invite_member', 'agency_member_set_role', 'agency_member_remove', 'agency_member_update_self',
                                 'agency_settings_save', 'agency_brand_create', 'agency_brand_link', 'agency_invite_brand_member', 'brand_invite_member',
                                 'brand_member_remove', 'agency_invitation_revoke', 'document_reserve', 'document_confirm', 'document_archive',
-                                'document_set_sharing', 'agency_seed_defaults', 'admin_agency_save', 'agency_demo_seed')
+                                'document_set_sharing', 'agency_seed_defaults', 'admin_agency_save', 'agency_demo_seed',
+                                'guard_demo_role_writes', 'guard_demo_invitation_writes', 'guard_demo_brand_writes', 'guard_demo_brand_product_writes', 'brand_in_real_agency')
               and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute'))));
 select tests.ok('S74 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
   (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
