@@ -43,7 +43,9 @@
         "releaseStatus": "draft"
       },
       "ios": {
-        "bundleIdentifier": "com.groscove.ultra"
+        "bundleIdentifier": "com.groscove.ultra",
+        "ascAppId": "6829189231",
+        "appleTeamId": "8TKSL4PN42"
       }
     }
   }

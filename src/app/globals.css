@@ -265,6 +265,14 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Tela travada na horizontal: nada que passe da largura deixa a página arrastar de lado (no app das
+     lojas a WebView ficava cortada). clip, não hidden: não cria contêiner de rolagem, o sticky segue. */
+  html,
+  body {
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+  }
+
   body {
     background-color: var(--uh-bg);
     color: var(--uh-fg);
