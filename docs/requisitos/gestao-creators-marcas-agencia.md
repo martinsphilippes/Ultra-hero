@@ -1,6 +1,6 @@
 # Groscove Ultra: Gestão de Creators, Marcas e Agência
 
-Proposta técnica e funcional, **antes de qualquer código**. Status: aguardando aprovação.
+Proposta técnica e funcional. **Status: aprovada** com as recomendações da seção 13 e as decisões da seção 14.
 
 Legenda usada no documento:
 
@@ -313,3 +313,45 @@ Por etapa: RLS com cenários novos (isolamento entre marcas e entre creators, do
 3. **Quem pode estar no casting:** só heróis que já têm página pública, ou também talentos sem página pública (recomendado)?
 4. **Entrada das marcas:** só por convite da agência (recomendado no MVP) ou cadastro aberto com aprovação?
 5. **Comissão padrão** (%) e se o colaborador da agência vê valores.
+
+---
+
+## 14. Decisões aprovadas
+
+**Aprovado: seguir as recomendações da seção 13.** Ou seja:
+- portal próprio `/agencia`;
+- uma agência no MVP, com o banco preparado para mais;
+- casting aberto também a talentos sem página pública;
+- marcas entram só por convite.
+
+### 14.1 Hierarquia de acesso na agência
+
+| Nível | Quem | Pode | Não pode |
+|---|---|---|---|
+| **Adm da agência** (`admin`) | dono ou diretor | tudo: valores, comissões, financeiro, propostas com preço, configurações, equipe (convidar, promover, remover) | — |
+| **Gestor** (`manager`) | coordenação comercial | casting, marcas, pipeline inteiro, shortlist, consulta de interesse, contratos sem valores, tarefas da equipe | ver ou editar qualquer valor, comissão ou financeiro; mexer na equipe |
+| **Colaborador** (`staff`) | operação | tarefas, agenda, atividades e contatos, casting (consulta), negócios em que é responsável ou participante | ver ou editar qualquer valor, comissão ou financeiro; mover etapa de negócio que não é dele; configurações |
+
+- O **Admin geral da plataforma** (`/admin`) também vê tudo, porque é o dono do Groscove Ultra.
+- **Os valores ficam fisicamente separados** das tabelas operacionais: contrato, cachê do creator, comissão, repasse e financeiro vivem em tabelas próprias, e só o Adm da agência tem política de leitura nelas.
+- O gestor e o colaborador não recebem valores em nenhuma tela nem em nenhuma resposta do servidor. Não é só esconder no visual.
+- Exceções controladas:
+  - o creator vê **apenas o próprio cachê**;
+  - a marca vê **apenas o valor total da proposta** que recebeu.
+
+### 14.2 Formas de comissão
+
+A comissão é cobrada da marca. Ela é configurável em três níveis: padrão da agência → por marca → por negócio. Vale a mais específica.
+
+| Tipo | Como calcula | Exemplo |
+|---|---|---|
+| **Percentual** | % sobre o valor do contrato | 20% de R$ 50.000 = R$ 10.000 |
+| **Valor fixo** | valor fechado por campanha | R$ 5.000 por campanha |
+| **Híbrida** | fixo + percentual | R$ 2.000 + 10% |
+| **Escalonada** | percentual muda por faixa de valor do contrato. Modo *faixa* (o percentual da faixa vale sobre o total) ou *progressivo* (cada parte na sua faixa) | até R$ 50 mil: 20%; até R$ 200 mil: 15%; acima: 10% |
+| **Por entregável** | valor por entrega, opcionalmente por tipo | R$ 500 por post, R$ 800 por vídeo |
+| **Markup sobre o cachê** | a marca paga o cachê do creator + X% | cachê R$ 30.000 + 25% = marca paga R$ 37.500 |
+
+- Todas as formas aceitam **piso e teto** opcionais.
+- O cálculo fica registrado com a regra usada (tipo e parâmetros) para auditoria. Mudar a regra depois não altera negócios já fechados.
+- Tudo é **simulado**, sem cobrança real, até existir uma integração financeira aprovada.
