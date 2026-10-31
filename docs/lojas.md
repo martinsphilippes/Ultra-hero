@@ -16,7 +16,7 @@ pedem conta, pagamento ou assinatura de quem responde pela empresa; o resto é d
 
 | Conta | Situação | O que fazer |
 |---|---|---|
-| Expo (EAS) | a do Quantso | `cd mobile && npx eas-cli login && npx eas-cli init` → copie o `projectId` e a conta para `EAS_PROJECT_ID` e `EXPO_OWNER` em `mobile/app.config.ts` e commite |
+| Expo (EAS) | organização `groscove` | organização `groscove`: `cd mobile && npx eas-cli login && npx eas-cli init` (cria `@groscove/groscove-ultra`) → copie o `projectId` para `EAS_PROJECT_ID` em `mobile/app.config.ts` e commite |
 | Google Play Console | organização (Quantso) | criar o app "Groscove Ultra" na mesma conta; conta de organização **não** tem a regra dos 12 testadores por 14 dias |
 | Apple Developer | pessoal | **(dono)** US$ 99/ano; criar o app no App Store Connect com o bundle `com.groscove.ultra`; habilitar **Sign in with Apple** no identificador (Certificates, Identifiers & Profiles) |
 
