@@ -835,5 +835,37 @@
       "back": "Back",
       "save": "Save task"
     }
+  },
+  "heroes": {
+    "title": "Heroes",
+    "description": "The public profiles of the heroes your agency represents. The agency publishes on their behalf and keeps the image contracts, as the Partner Terms require.",
+    "listTitle": "Agency heroes ({count})",
+    "empty": "No heroes yet",
+    "emptyHint": "Create the first profile below. It becomes public on /personalities as soon as it is created.",
+    "manage": "Manage",
+    "suspended": "Suspended",
+    "demoLocked": "The demo agency does not create heroes.",
+    "createTitle": "New hero",
+    "createHint": "Only create profiles of people under contract with the agency. The profile goes public right away.",
+    "heroDescription": "You are publishing on behalf of this hero. Photo, cover and posts appear on their public page.",
+    "newPost": "New post",
+    "viewPage": "View public page",
+    "mediaTitle": "Photo and cover",
+    "avatarHint": "Shown on the hero card and page.",
+    "profileTitle": "Profile",
+    "postAs": "Publishing on behalf of {name}.",
+    "form": {
+      "name": "Name",
+      "slug": "Page address",
+      "slugHint": "The page lives at /personalities/{slug}. It cannot change later.",
+      "pillars": "Pillars",
+      "headline": "Headline",
+      "bio": "Bio",
+      "optional": "optional",
+      "create": "Create hero",
+      "save": "Save profile",
+      "created": "Hero created",
+      "saved": "Profile saved"
+    }
   }
 }

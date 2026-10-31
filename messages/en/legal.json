@@ -517,6 +517,12 @@
           "p2": "You remain the owner of what you submit. {app} does not claim ownership of your content."
         }
       },
+      "evidence": {
+        "title": "Keeping the contracts",
+        "blocks": {
+          "p1": "<strong>Whoever publishes keeps the evidence.</strong> The partner — and, when publishing on behalf of a hero, the agency — keeps the contracts and permissions behind each publication and presents them, within the requested time, whenever asked by {app}, by the hero, by rights holders or by authorities. {app} is an intermediary platform: it does not review or keep these contracts and, as provided by law (Brazilian Civil Rights Framework for the Internet, Law 12,965/2014), it removes content upon a court order or when the content breaches these Terms."
+        }
+      },
       "license": {
         "title": "License to {app}",
         "blocks": {

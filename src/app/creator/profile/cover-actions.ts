@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { heroRoleNames } from "@/lib/auth/talent-scope";
-import { getRoles, getUser } from "@/lib/auth/session";
+import { actingClient, getActingHero, type ActingHero } from "@/lib/acting-hero/server";
+import { getRoles, getUser, hasRole } from "@/lib/auth/session";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { COVER_BUCKET, COVER_MAX_UPLOAD_BYTES, toCoverError, type CoverError } from "@/lib/hero-cover/constants";
 import { publicCoverUrl, storedCoverOwner } from "@/lib/hero-cover/paths";
@@ -37,7 +38,21 @@ async function isHero(): Promise<boolean> {
   return heroProfileFor(heroRoleNames(await getRoles()), true) !== null;
 }
 
-async function revalidateCover(supabase: Supabase, userId: string) {
+// Agência (0070): a capa vai para o herói escolhido no portal da agência; o banco confere o vínculo
+// (acting_hero_id). O admin segue no fluxo próprio (o próprio perfil de herói).
+async function agencyActingHero(): Promise<ActingHero | null> {
+  if ((await hasRole("admin")) || !(await hasRole("agency"))) return null;
+  const acting = await getActingHero();
+  return acting.status === "ok" ? acting.hero : null;
+}
+
+async function revalidateCover(supabase: Supabase, userId: string, acting: ActingHero | null = null) {
+  if (acting) {
+    revalidatePath("/personalities");
+    revalidatePath(`/personalities/${acting.slug}`);
+    revalidatePath("/agencia/herois");
+    return;
+  }
   revalidatePath("/profile");
   revalidatePath("/creator");
   revalidatePath("/personalities");
@@ -55,7 +70,8 @@ const uploadSchema = z.object({
 export async function uploadHeroCover(formData: FormData): Promise<CoverResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  if (!(await isHero())) return { ok: false, error: "not_a_hero" };
+  const acting = await agencyActingHero();
+  if (!acting && !(await isHero())) return { ok: false, error: "not_a_hero" };
   const base = supabaseBaseUrl();
   if (!hasAdminClient() || !base) return { ok: false, error: "cover_not_configured" };
 
@@ -69,7 +85,7 @@ export async function uploadHeroCover(formData: FormData): Promise<CoverResult> 
   if (!check.ok) return { ok: false, error: check.error };
 
   try {
-    const supabase = await createClient();
+    const supabase = acting ? await actingClient(acting.id) : await createClient();
     // Termos do Parceiro (0068): quem envia (herói, ou a agência no admin pelo herói) confirma os direitos antes
     if (!(await hasUploadRights(supabase, user.id))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
     const { data: path, error: claimError } = await supabase.rpc("hero_cover_upload_claim", { p_bytes: bytes.length, p_mime: check.image.mime });
@@ -98,7 +114,7 @@ export async function uploadHeroCover(formData: FormData): Promise<CoverResult> 
 
     // capa anterior própria sai do ar (melhor esforço; o que sobrar, o cron apaga)
     if (typeof previous === "string" && storedCoverOwner(previous, base) === user.id) await releaseStoredCover(admin, { url: previous, baseUrl: base });
-    await revalidateCover(supabase, user.id);
+    await revalidateCover(supabase, user.id, acting);
     return { ok: true, coverUrl: url };
   } catch (error) {
     console.warn("[cover] envio falhou:", error instanceof Error ? error.message : error);
@@ -111,11 +127,12 @@ export async function uploadHeroCover(formData: FormData): Promise<CoverResult> 
 export async function removeHeroCover(): Promise<CoverResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  if (!(await isHero())) return { ok: false, error: "not_a_hero" };
+  const acting = await agencyActingHero();
+  if (!acting && !(await isHero())) return { ok: false, error: "not_a_hero" };
   const base = supabaseBaseUrl();
   if (!hasAdminClient() || !base) return { ok: false, error: "cover_not_configured" };
   try {
-    const supabase = await createClient();
+    const supabase = acting ? await actingClient(acting.id) : await createClient();
     const { data: previous, error } = await supabase.rpc("hero_cover_clear");
     if (error) return { ok: false, error: rpcFailure(error) };
     if (typeof previous === "string" && storedCoverOwner(previous, base) === user.id) {
@@ -123,7 +140,7 @@ export async function removeHeroCover(): Promise<CoverResult> {
       // objeto que ficou no bucket já está sem referência: a limpeza diária apaga
       if (!released.deleted) console.warn("[cover] objeto não apagado agora; a limpeza diária termina");
     }
-    await revalidateCover(supabase, user.id);
+    await revalidateCover(supabase, user.id, acting);
     return { ok: true, coverUrl: null };
   } catch (error) {
     console.warn("[cover] remoção falhou:", error instanceof Error ? error.message : error);

@@ -27,6 +27,7 @@ export const AVATAR_ERRORS = [
   "uploads_disabled",
   "avatar_not_configured",
   "upload_failed",
+  "upload_rights_required",
   "unauthenticated",
   "generic",
 ] as const;

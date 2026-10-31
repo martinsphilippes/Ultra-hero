@@ -167,7 +167,8 @@
         "avatar_not_configured": "O envio de foto não está disponível neste ambiente.",
         "upload_failed": "Não foi possível enviar a foto. Confira a conexão e tente de novo.",
         "unauthenticated": "Entre para continuar.",
-        "generic": "Não foi possível concluir. Tente de novo."
+        "generic": "Não foi possível concluir. Tente de novo.",
+        "upload_rights_required": "Antes do primeiro envio, confirme que você tem os direitos sobre a foto."
       }
     },
     "links": {

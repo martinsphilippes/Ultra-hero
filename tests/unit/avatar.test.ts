@@ -42,6 +42,7 @@ type Result = { data: unknown; error: { message: string; code?: string } | null 
 
 const state = vi.hoisted(() => ({
   uploadRights: true,
+  acting: { status: "none" } as { status: "none" } | { status: "ok"; hero: { id: string; slug: string; name: string; avatar_url: string | null } },
   user: null as { id: string } | null,
   roles: ["consumer", "creator"] as string[],
   hasAdmin: true,
@@ -149,9 +150,11 @@ function client(kind: "user" | "admin") {
 
 vi.mock("server-only", () => ({}));
 // Termos do Parceiro (0068): confirmação de direitos antes do envio; cada teste liga ou desliga
+// herói escolhido pela agência (0070): desligado aqui; o caminho da agência tem teste próprio
+vi.mock("@/lib/acting-hero/server", () => ({ getActingHero: async () => state.acting, actingClient: async () => client("user") }));
 vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => state.uploadRights }));
 vi.mock("next/cache", () => ({ revalidatePath: (path: string) => void state.revalidated.push(path) }));
-vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, getRoles: async () => state.roles.map((role) => ({ role })), requireRole: async () => ({ user: { id: "ad000000-0000-4000-8000-000000000001" } }) }));
+vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, getRoles: async () => state.roles.map((role) => ({ role })), hasRole: async (role: string) => state.roles.includes(role), requireRole: async () => ({ user: { id: "ad000000-0000-4000-8000-000000000001" } }) }));
 // dependências de ops-actions.ts (admin) que não importam aqui: mensagens viram a própria chave
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => Object.assign((key: string) => key, { has: () => true }) }));
@@ -198,6 +201,7 @@ beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = BASE;
   state.user = { id: ids.USER };
   state.uploadRights = true;
+  state.acting = { status: "none" };
   state.roles = ["consumer", "creator"];
   state.hasAdmin = true;
   state.profile = { avatar_url: null };
@@ -984,6 +988,15 @@ describe("uploadHeroCover / removeHeroCover", () => {
     state.roles = ["admin"];
     expect(await uploadHeroCover(form(webpVp8(1600, 900)))).toEqual({ ok: false, error: "upload_rights_required" });
     expect(state.log).toEqual([]);
+  });
+
+  it("agência (0070): sem papel de herói, envia a capa do herói escolhido; sem escolha, recusa", async () => {
+    state.roles = ["consumer", "agency"];
+    expect(await uploadHeroCover(form(webpVp8(1600, 900)))).toEqual({ ok: false, error: "not_a_hero" });
+    state.acting = { status: "ok", hero: { id: "c0000000-0000-4000-8000-000000000002", slug: "erick-jacquin", name: "Erick", avatar_url: null } };
+    state.coverSet = { data: null, error: null };
+    expect(await uploadHeroCover(form(webpVp8(1600, 900)))).toEqual({ ok: true, coverUrl: NEW_COVER });
+    expect(state.revalidated).toContain("/personalities/erick-jacquin");
   });
 
   it("reserva, grava com o service role, aplica no herói e só então apaga a capa anterior própria", async () => {

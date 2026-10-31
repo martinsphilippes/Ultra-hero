@@ -8178,6 +8178,18 @@ export type Database = {
       is_demo_account: { Args: Record<PropertyKey, never>; Returns: boolean };
       accept_invitation: { Args: { p_token: string }; Returns: Json };
       accept_partner_terms: { Args: { p_version: string }; Returns: undefined };
+      agency_act_as_hero: { Args: { p_creator: string }; Returns: Json };
+      agency_create_hero: {
+        Args: { p_agency: string; p_bio: string; p_headline: string; p_name: string; p_pillars: Database["public"]["Enums"]["pillar"][]; p_slug: string };
+        Returns: string;
+      };
+      agency_hero_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      agency_update_hero: {
+        Args: { p_bio: string; p_creator: string; p_headline: string; p_name: string; p_pillars: Database["public"]["Enums"]["pillar"][] };
+        Returns: undefined;
+      };
+      hero_avatar_clear: { Args: Record<PropertyKey, never>; Returns: string };
+      hero_avatar_set: { Args: { p_url: string }; Returns: string };
       confirm_upload_rights: { Args: { p_version: string }; Returns: undefined };
       acting_hero_id: { Args: Record<PropertyKey, never>; Returns: string };
       admin_act_as_hero: { Args: { p_creator: string }; Returns: Json };
