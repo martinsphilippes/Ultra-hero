@@ -56,6 +56,18 @@ revisor. `env:set` cria ou atualiza (o `env:create` antigo falhava se a variáve
 - [ ] **Google**: nada novo. A volta passa por `/auth/native`, já coberto por `https://<site>/**` nas
   Redirect URLs. Se o domínio mudar, atualizar a Site URL e as Redirect URLs.
 
+### Avisos do `npm ci` em `mobile/` (conferido em 31/10/2026)
+
+O `npm audit` lista vulnerabilidades, quase todas moderadas, em pacotes de **ferramenta de build**
+do Expo SDK 54 (`glob`, `minimatch`, `rimraf`, `image-size` do Metro, `@expo/cli`, codegen do React
+Native). Eles rodam só na máquina de quem compila e no EAS, sobre os nossos próprios arquivos; não
+vão para dentro do app e não recebem dado de quem usa. O conserto que o `npm audit` sugere é subir
+para o Expo SDK 58 (troca de versão maior, com revalidação do app inteiro) — e o `npm audit fix`
+sem `--force` instala um segundo React Native por baixo do primeiro, o que quebra o build nativo:
+**não rode**. Os avisos "deprecated" (`inflight`, `glob@7`, `rimraf@3`) vêm das mesmas ferramentas.
+O que foi corrigido: `vitest` 5 (o 3 tinha falhas críticas, só no ambiente de teste) e `postcss`
+8.5 por `overrides` no `package.json`. Subir o SDK do Expo fica para depois da primeira publicação.
+
 ## 4. Builds
 
 ```bash
