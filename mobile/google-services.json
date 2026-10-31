@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "870938428286",
+    "project_id": "groscove-ultra",
+    "storage_bucket": "groscove-ultra.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:870938428286:android:ad1d797f0524a5b64a292f",
+        "android_client_info": {
+          "package_name": "com.groscove.ultra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkNyZ_ynE71_XBgSEgE-P26osrXKMmF_Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
