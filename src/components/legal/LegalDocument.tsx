@@ -1,4 +1,3 @@
-import { FlaskConical } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -8,10 +7,13 @@ import { getLocale } from "@/i18n/server";
 import { LEGAL_ENTITY } from "@/lib/legal/entity";
 import { legalLinkClass, legalRichTags } from "./rich-tags";
 
-export type LegalDoc = "terms" | "privacy";
+export type LegalDoc = "terms" | "privacy" | "partner";
+
+// rota pública de cada documento (o rodapé aponta para o documento irmão)
+const DOC_HREF: Record<LegalDoc, string> = { terms: "/legal/terms", privacy: "/legal/privacy", partner: "/legal/partner-terms" };
 
 // Versão vigente dos textos. Ao alterar o conteúdo de messages/<locale>/legal.json, atualize a data.
-const LAST_UPDATED = "2026-10-30";
+const LAST_UPDATED = "2026-10-31";
 
 // Estrutura de messages/<locale>/legal.json → <doc>.sections.<id>.blocks.<id>:
 // string = parágrafo; { caption, headers, rows } = tabela; demais objetos = lista de itens.
@@ -109,16 +111,6 @@ export async function LegalDocument({ doc }: { doc: LegalDoc }) {
         })}
       />
 
-      <div role="note" aria-labelledby={`${doc}-notice`} className="flex gap-3 rounded-2xl border border-dashed border-warning/40 bg-warning-soft p-4">
-        <FlaskConical className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden="true" />
-        <div className="flex flex-col gap-1">
-          <p id={`${doc}-notice`} className="font-semibold text-fg">
-            {t("page.noticeTitle")}
-          </p>
-          <p className="type-body-sm text-fg">{t("page.noticeBody")}</p>
-        </div>
-      </div>
-
       <p className="type-body text-fg">{rich(`${doc}.intro`)}</p>
 
       <nav aria-labelledby={`${doc}-toc`} className="rounded-2xl border border-border bg-surface p-5">
@@ -147,7 +139,7 @@ export async function LegalDocument({ doc }: { doc: LegalDoc }) {
       })}
 
       <footer className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <Link href={`/legal/${other}`} className={legalLinkClass}>
+        <Link href={DOC_HREF[other]} className={legalLinkClass}>
           {t(`page.read.${other}`)}
         </Link>
         <Button asChild variant="secondary">

@@ -17,7 +17,6 @@ export type SettingsLinkKey =
   | "recipes"
   | "shoppingList"
   | "orders"
-  | "plan"
   | "account"
   | "notifications"
   | "devices"
@@ -58,10 +57,7 @@ const LINK_SECTIONS: Array<{ key: Exclude<SettingsSectionKey, "portals">; items:
   },
   {
     key: "purchases",
-    items: [
-      ["orders", "/orders"],
-      ["plan", "/profile/plan"],
-    ],
+    items: [["orders", "/orders"]],
   },
   {
     key: "account",

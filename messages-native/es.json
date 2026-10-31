@@ -6,7 +6,6 @@
   },
   "consume": {
     "content": {
-      "lockDescription": "Este contenido pertenece a un módulo premium. El catálogo muestra los ítems premium para que conozcas todo lo que existe.",
       "license": {
         "platform_demo": "plataforma"
       }
@@ -32,9 +31,6 @@
         }
       }
     },
-    "recommendations": {
-      "locked": "Requiere el módulo {module}"
-    },
     "feedback": {
       "description": "Opcional y rápido. Ayuda a mejorar la app.",
       "categories": {
@@ -46,7 +42,7 @@
     },
     "account": {
       "store": {
-        "item3": "Plan (módulos y períodos) y pedidos hechos en el sitio web."
+        "item3": "Pedidos hechos en el sitio web."
       },
       "retention": {
         "orders": "Pedidos vinculados a la cuenta: {days} días (después, anonimizados)"

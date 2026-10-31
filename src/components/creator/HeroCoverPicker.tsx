@@ -12,7 +12,9 @@ import { validateSourceFile } from "@/lib/avatar/validation";
 import type { HeroCoverState } from "@/lib/hero-cover/availability";
 import { COVER_HEIGHT, COVER_MAX_UPLOAD_BYTES, COVER_WIDTH, toCoverError, type CoverError } from "@/lib/hero-cover/constants";
 import { safeCoverSrc } from "@/lib/hero-cover/paths";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 import { HeroCoverImage } from "./HeroCoverImage";
+import { UploadRightsDialog } from "./UploadRightsDialog";
 
 type Props = {
   /** Capa salva (foto enviada, oficial, desenho antigo ou nenhuma). */
@@ -43,6 +45,7 @@ export function HeroCoverPicker({ value, state, onChange, disabled = false }: Pr
   const [preparing, setPreparing] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [error, setError] = useState<CoverError | null>(null);
+  const [rightsOpen, setRightsOpen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -118,7 +121,9 @@ export function HeroCoverPicker({ value, state, onChange, disabled = false }: Pr
         result = { ok: false, error: "upload_failed" };
       }
       if (!result.ok) {
-        setError(toCoverError(result.error));
+        // primeiro envio sem a declaração de direitos: pede a confirmação e envia de novo
+        if (result.error === UPLOAD_RIGHTS_REQUIRED) setRightsOpen(true);
+        else setError(toCoverError(result.error));
         setAnnouncement("");
         return;
       }
@@ -279,6 +284,8 @@ export function HeroCoverPicker({ value, state, onChange, disabled = false }: Pr
           </p>
         ) : null}
       </Dialog>
+
+      <UploadRightsDialog open={rightsOpen} onOpenChange={setRightsOpen} onConfirmed={confirmUpload} />
     </section>
   );
 }

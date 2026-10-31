@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, Check, ChefHat, CircleSlash, Dumbbell, FileText, LockKeyhole, Play, Repeat } from "lucide-react";
+import { BookOpen, Check, ChefHat, CircleSlash, Dumbbell, FileText, Play, Repeat } from "lucide-react";
 import { ProductActionCard } from "@/components/catalog/ProductActionCard";
 import { Badge } from "@/components/ui";
 import type { ContentCardData } from "@/lib/catalog/queries";
@@ -18,10 +18,9 @@ const TYPE_ICON = { video: Play, recipe: ChefHat, workout: Dumbbell, guide: Book
 
 export type ProgramItemView = {
   key: string;
-  content: (ContentCardData & { required_module_id: string | null }) | null;
+  content: ContentCardData | null;
   required: boolean;
   done: boolean;
-  locked: boolean;
   substituted: boolean;
   progress: number | null;
 };
@@ -34,7 +33,7 @@ export function ProgramItemList({ items, pillar, note }: { items: ProgramItemVie
     <div className="flex flex-col gap-3">
       {note ? <p className="type-body-sm text-fg-muted">{note}</p> : null}
       <ol className="flex flex-col gap-2" data-testid="program-items">
-        {items.map(({ key, content, required, done, locked, substituted, progress }) => {
+        {items.map(({ key, content, required, done, substituted, progress }) => {
           const Icon = content ? TYPE_ICON[content.type] : CircleSlash;
           const row = (
             <>
@@ -64,11 +63,6 @@ export function ProgramItemList({ items, pillar, note }: { items: ProgramItemVie
                   <Badge variant={done ? "success" : "neutral"} size="sm">
                     {done ? t("done") : t("pending")}
                   </Badge>
-                  {locked && content?.required_module ? (
-                    <Badge variant="premium" size="sm" icon={<LockKeyhole />}>
-                      {t("premiumLocked", { module: content.required_module.name })}
-                    </Badge>
-                  ) : null}
                   {substituted ? (
                     <Badge variant="warning" size="sm" icon={<Repeat />}>
                       {t("substituted")}

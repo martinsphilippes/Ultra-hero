@@ -66,7 +66,6 @@ type Version = {
 
 type Enrollment = { id: string; status: Enums<"enrollment_status">; version_id: string; enrolled_at: string; completed_at: string | null };
 type RequiredItem = FnReturns<"program_required_items">[number];
-type ItemContent = ContentCardData & { required_module_id: string | null };
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -143,17 +142,15 @@ export default async function ProgramPage({ params }: Params) {
   const contentIds = Array.from(new Set(items.map((i) => i.content_id)));
   const matchIds = Array.from(new Set(items.flatMap((i) => [i.content_id, i.original_content_id])));
 
-  const [contentRes, completionsRes, progressRes, entitledRes, certificateRes] = await Promise.all([
-    contentIds.length > 0 ? supabase.from("content").select(`${CONTENT_CARD_SELECT}, required_module_id`).in("id", contentIds) : null,
+  const [contentRes, completionsRes, progressRes, certificateRes] = await Promise.all([
+    contentIds.length > 0 ? supabase.from("content").select(CONTENT_CARD_SELECT).in("id", contentIds) : null,
     user && matchIds.length > 0 ? supabase.from("completions").select("content_id, completed_at").eq("user_id", user.id).in("content_id", matchIds) : null,
     user && contentIds.length > 0 ? supabase.from("content_progress").select("content_id, progress_pct").eq("user_id", user.id).in("content_id", contentIds) : null,
-    user ? supabase.rpc("my_entitled_modules") : null,
     enrollment?.status === "completed" ? supabase.from("certificates").select("code, issued_at, revoked_at").eq("enrollment_id", enrollment.id).maybeSingle() : null,
   ]);
-  const contentById = new Map(((contentRes?.data ?? []) as unknown as ItemContent[]).map((c) => [c.id, c]));
+  const contentById = new Map(((contentRes?.data ?? []) as unknown as ContentCardData[]).map((c) => [c.id, c]));
   const completedIds = new Set((completionsRes?.data ?? []).map((c) => c.content_id));
   const progressById = new Map((progressRes?.data ?? []).map((p) => [p.content_id, p.progress_pct]));
-  const entitled = new Set<string>(((entitledRes?.data ?? []) as string[]) ?? []);
   const certificate = certificateRes?.data ?? null;
 
   // Conclusão vale pelo conteúdo efetivo OU pelo original (mesma regra de check_program_completion).
@@ -174,7 +171,6 @@ export default async function ProgramPage({ params }: Params) {
       content,
       required: item.is_required,
       done: isDone(item),
-      locked: Boolean(content && content.access_level === "premium" && content.required_module_id && !entitled.has(content.required_module_id)),
       substituted: Boolean(item.substituted),
       progress: typeof progress === "number" ? progress : null,
     });
@@ -204,7 +200,7 @@ export default async function ProgramPage({ params }: Params) {
   // Nutricional: conteúdos de nutrição/receitas do programa e os próprios do herói + produtos de comida.
   const programContents = Array.from(new Set(items.map((i) => i.content_id)))
     .map((id) => contentById.get(id))
-    .filter((c): c is ItemContent => Boolean(c));
+    .filter((c): c is ContentCardData => Boolean(c));
   const nutrition = await loadProgramNutrition(supabase, { creatorId, programContents, userId: user?.id ?? null, nativeApp: Boolean(nativeApp), linkedProducts: programProducts });
   const enrolled = Boolean(enrollment && enrollment.status !== "abandoned");
   const cards = buildCards();

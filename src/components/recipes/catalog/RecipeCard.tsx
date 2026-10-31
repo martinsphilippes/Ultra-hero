@@ -1,4 +1,4 @@
-import { BadgeCheck, Clock, Lock, Users } from "lucide-react";
+import { BadgeCheck, Clock, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,7 +34,6 @@ export async function RecipeCard({ recipe, priority, showcaseHero = null, action
     getTranslations("catalog"),
   ]);
   const src = tileCover(recipe.cover_url, recipe.pillar);
-  const premium = recipe.access_level === "premium";
   const minutes = recipe.totalMinutes !== null ? splitMinutes(recipe.totalMinutes) : null;
   const time = minutes ? (minutes.h > 0 ? t("hours", { h: minutes.h, m: minutes.m }) : t("minutes", { m: minutes.m })) : null;
   const allergens = !recipe.allergensDeclared
@@ -62,12 +61,6 @@ export async function RecipeCard({ recipe, priority, showcaseHero = null, action
             sizes="(min-width: 1024px) 18rem, (min-width: 768px) 33vw, 50vw"
             className="object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.03] motion-reduce:transition-none"
           />
-          {premium ? (
-            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-obsidian/80 px-2 py-1 text-[0.6875rem] font-semibold text-white">
-              <Lock className="size-3.5" aria-hidden="true" />
-              {recipe.required_module?.name ?? tcat("premium")}
-            </span>
-          ) : null}
         </span>
         <span className="flex flex-col gap-1.5 px-3 pt-3">
           <Heading className="line-clamp-2 text-sm font-semibold leading-snug text-fg group-hover:underline sm:text-base">{recipe.title}</Heading>

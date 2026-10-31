@@ -53,7 +53,7 @@ function legacyEvolutionResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 308);
 }
 
-// App das lojas: comércio e planos simulados não existem lá (docs/decisions/app-nas-lojas.md).
+// App das lojas: comércio simulado não existe lá (docs/decisions/app-nas-lojas.md).
 // A trava é aqui, e não só no botão escondido: link antigo, histórico ou digitação não abrem a rota.
 function nativeAppResponse(request: NextRequest): NextResponse | null {
   if (!parseNativeApp(request.headers.get("user-agent"))) return null;

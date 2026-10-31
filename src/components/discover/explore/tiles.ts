@@ -66,13 +66,12 @@ export function spreadCreators<T extends { id: string; creator: { slug: string }
 
 export type ContentTileData = Pick<
   ContentCardData,
-  "id" | "slug" | "title" | "cover_url" | "pillar" | "type" | "access_level" | "required_module" | "creator" | "source_locale"
+  "id" | "slug" | "title" | "cover_url" | "pillar" | "type" | "access_level" | "creator" | "source_locale"
 >;
 
 // Só o que o quadro precisa (o card completo traz resumo, duração etc. que aqui não aparecem).
 export const CONTENT_TILE_SELECT =
-  "id, slug, title, cover_url, pillar, type, access_level, source_locale, " +
-  "required_module:plan_modules(code, name), creator:creator_profiles(slug, name, avatar_url)";
+  "id, slug, title, cover_url, pillar, type, access_level, source_locale, creator:creator_profiles(slug, name, avatar_url)";
 
 // ---------------------------------------------------------------- volta do conteúdo para a grade
 // Ao abrir um quadro, a profundidade da grade (páginas carregadas) e o quadro aberto ficam guardados

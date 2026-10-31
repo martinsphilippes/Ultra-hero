@@ -5059,6 +5059,28 @@ export type Database = {
         };
         Relationships: [];
       };
+      partner_terms_acceptances: {
+        Row: {
+          accepted_at: string;
+          terms_version: string;
+          upload_rights_confirmed_at: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_at?: string;
+          terms_version: string;
+          upload_rights_confirmed_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          accepted_at?: string;
+          terms_version?: string;
+          upload_rights_confirmed_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       hero_page_view_counters: {
         Row: {
           count: number;
@@ -8155,6 +8177,8 @@ export type Database = {
       is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_demo_account: { Args: Record<PropertyKey, never>; Returns: boolean };
       accept_invitation: { Args: { p_token: string }; Returns: Json };
+      accept_partner_terms: { Args: { p_version: string }; Returns: undefined };
+      confirm_upload_rights: { Args: { p_version: string }; Returns: undefined };
       acting_hero_id: { Args: Record<PropertyKey, never>; Returns: string };
       admin_act_as_hero: { Args: { p_creator: string }; Returns: Json };
       admin_advance_transport: {

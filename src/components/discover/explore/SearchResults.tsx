@@ -15,7 +15,7 @@ import { daySeed } from "./tiles";
 // (explore_feed sem texto, search_content com texto) + rolagem infinita no cliente.
 export async function SearchResults({ params }: { params: ExploreParams }) {
   const t = await getTranslations("discover.explore.search");
-  const query: SearchQuery = { q: params.q, pillar: params.pillar, type: params.type, access: params.access, difficulty: params.difficulty };
+  const query: SearchQuery = { q: params.q, pillar: params.pillar, type: params.type, difficulty: params.difficulty };
   const queryKey = JSON.stringify(query);
   const hasCriteria = Boolean(params.q) || activeFilterCount(params) > 0;
   const seed = daySeed();

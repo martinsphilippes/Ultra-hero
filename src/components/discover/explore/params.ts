@@ -9,15 +9,11 @@ export type ExploreTab = (typeof EXPLORE_TABS)[number];
 export const DIFFICULTIES = ["beginner", "intermediate", "advanced"] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
-export const ACCESS_LEVELS = ["free", "premium"] as const;
-export type Access = (typeof ACCESS_LEVELS)[number];
-
 export type ExploreParams = {
   tab: ExploreTab;
   q: string;
   pillar?: Pillar;
   type?: ContentType;
-  access?: Access;
   difficulty?: Difficulty;
 };
 
@@ -32,7 +28,6 @@ const schema = z.object({
   q: z.string().catch("").transform((s) => s.trim().slice(0, MAX_QUERY_LENGTH)),
   pillar: z.enum(PILLARS).optional().catch(undefined),
   type: z.enum(CONTENT_TYPES).optional().catch(undefined),
-  access: z.enum(ACCESS_LEVELS).optional().catch(undefined),
   difficulty: z.enum(DIFFICULTIES).optional().catch(undefined),
 });
 
@@ -43,7 +38,6 @@ export function parseExploreParams(raw: RawSearchParams): ExploreParams {
     q: first(raw.q),
     pillar: first(raw.pillar),
     type: first(raw.type),
-    access: first(raw.access),
     difficulty: first(raw.difficulty),
   });
 }
@@ -60,7 +54,7 @@ export function exploreHref(params: Partial<ExploreParams>, overrides: Overrides
   const sp = new URLSearchParams();
   if (merged.tab && merged.tab !== "conteudos") sp.set("tab", merged.tab);
   if (merged.q) sp.set("q", merged.q);
-  for (const key of ["pillar", "type", "access", "difficulty"] as const) {
+  for (const key of ["pillar", "type", "difficulty"] as const) {
     if (merged[key]) sp.set(key, merged[key] as string);
   }
   const qs = sp.toString();
@@ -68,10 +62,10 @@ export function exploreHref(params: Partial<ExploreParams>, overrides: Overrides
 }
 
 export function activeFilterCount(params: ExploreParams): number {
-  return [params.pillar, params.type, params.access, params.difficulty].filter(Boolean).length;
+  return [params.pillar, params.type, params.difficulty].filter(Boolean).length;
 }
 
 // Filtros "secundários" (fora da linha de pilares).
 export function secondaryFilterCount(params: ExploreParams): number {
-  return [params.type, params.access, params.difficulty].filter(Boolean).length;
+  return [params.type, params.difficulty].filter(Boolean).length;
 }

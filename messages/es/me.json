@@ -2,7 +2,6 @@
   "meta": {
     "evolution": "Evolución",
     "profile": "Perfil",
-    "plan": "Plan y módulos",
     "interests": "Intereses",
     "account": "Cuenta y privacidad",
     "favorites": "Favoritos",
@@ -88,7 +87,7 @@
   },
   "profile": {
     "title": "Perfil",
-    "description": "Tus datos, preferencias y plan simulado.",
+    "description": "Tus datos y preferencias.",
     "emailLabel": "Correo",
     "roles": {
       "label": "Roles",
@@ -100,15 +99,6 @@
       "agency": "Agencia",
       "brand": "Marca",
       "talent": "Talento"
-    },
-    "plan": {
-      "label": "Plan",
-      "free": "Gratuito",
-      "active": "Suscripción simulada activa",
-      "cancelled": "Cancelada (acceso hasta el fin del período)",
-      "expired": "Expirada",
-      "unknown": "No disponible",
-      "manage": "Gestionar plan"
     },
     "portals": {
       "title": "Tus portales",
@@ -181,10 +171,6 @@
       }
     },
     "links": {
-      "plan": {
-        "title": "Plan y módulos",
-        "description": "Suscripción simulada, paquetes y módulos."
-      },
       "interests": {
         "title": "Intereses",
         "description": "Temas que guían las recomendaciones."
@@ -219,7 +205,7 @@
       }
     },
     "signOut": "Cerrar sesión",
-    "demoNote": "Entorno de demostración: suscripción simulada, ningún pago real.",
+    "demoNote": "Entorno de demostración: la app es gratuita y los pedidos de la tienda son de prueba, sin pago real.",
     "evolution": {
       "title": "Evolución",
       "description": "Tu racha y el camino recorrido.",
@@ -618,68 +604,6 @@
     },
     "removeShort": "Quitar de favoritos"
   },
-  "plan": {
-    "title": "Plan y módulos",
-    "description": "Suscripción simulada para la demostración. No se realiza ningún pago.",
-    "demoNote": "Simulado: ningún pago, cobro o renovación real. Valores ilustrativos.",
-    "current": {
-      "title": "Tu suscripción simulada",
-      "status": {
-        "free": "Gratuito",
-        "active": "Activa",
-        "cancelled": "Cancelada",
-        "expired": "Expirada"
-      },
-      "freeDescription": "Estás en el nivel gratuito: contenidos abiertos de todos los pilares.",
-      "periodEnd": "El período actual termina el {date}",
-      "autoRenewOn": "Renovación simulada automática cada 30 días",
-      "autoRenewOff": "Sin renovación automática",
-      "cancelledNotice": "Suscripción cancelada. El acceso a los módulos continúa hasta el {date}.",
-      "modules": "Módulos",
-      "noModules": "Ningún módulo activo.",
-      "scheduledRemoval": "Sale el {date}",
-      "activeModule": "Activo"
-    },
-    "bundles": {
-      "title": "Paquetes",
-      "description": "Atajos a conjuntos de módulos. El valor es la suma de los módulos.",
-      "choose": "Elegir paquete",
-      "current": "Paquete actual",
-      "total": "Total {price}/mes",
-      "demoPrice": "valor demostrativo",
-      "includes": "Incluye: {modules}",
-      "freeIncludes": "Contenidos abiertos de todos los pilares."
-    },
-    "custom": {
-      "title": "Armar mi conjunto",
-      "description": "Elige módulo por módulo. Las dependencias aparecen en cada ítem.",
-      "requires": "Requiere: {modules}",
-      "apply": "Aplicar selección",
-      "total": "Total {price}/mes",
-      "selected": "{n, plural, =1 {# módulo seleccionado} other {# módulos seleccionados}}",
-      "unchanged": "Sin cambios respecto al conjunto actual.",
-      "moduleLabel": "{name}, {price} por mes"
-    },
-    "actions": {
-      "cancel": "Cancelar suscripción simulada",
-      "cancelTitle": "¿Cancelar la suscripción simulada?",
-      "cancelDescription": "El acceso a los módulos continúa hasta el fin del período actual. Después vuelves al gratuito. No se cobra ni se devuelve nada: todo es simulado.",
-      "cancelConfirm": "Cancelar suscripción",
-      "cancelled": "Suscripción simulada cancelada. Acceso mantenido hasta el fin del período.",
-      "backToFree": "Volver al gratuito",
-      "backToFreeTitle": "¿Volver al nivel gratuito?",
-      "backToFreeDescription": "Todos los módulos se programarán para eliminarse al fin del período actual. Simulado, sin cobro.",
-      "backToFreeConfirm": "Volver al gratuito",
-      "applied": "Selección aplicada. Las adiciones valen ahora; las eliminaciones, al fin del período.",
-      "downgradeHint": "Las adiciones valen de inmediato; las eliminaciones se programan para el fin del período."
-    },
-    "errors": {
-      "invalid_module": "Uno de los módulos elegidos no está disponible.",
-      "module_dependency_missing": "{module} exige también {required}.",
-      "unauthenticated": "Inicia sesión para continuar.",
-      "generic": "No se pudo actualizar la suscripción simulada. Inténtalo de nuevo."
-    }
-  },
   "interests": {
     "title": "Intereses",
     "description": "Elige temas para guiar las recomendaciones. Puedes cambiarlos cuando quieras.",
@@ -707,13 +631,13 @@
     "description": "Transparencia sobre lo que guarda la POC y cómo eliminar tu cuenta.",
     "demo": {
       "title": "Naturaleza demostrativa",
-      "body": "Groscove Ultra es una prueba de concepto pública. Las suscripciones son simuladas y los pedidos son de prueba: no hay pago, entrega ni dirección real."
+      "body": "Groscove Ultra es una prueba de concepto pública. La app es gratuita y los pedidos son de prueba: no hay pago, entrega ni dirección real."
     },
     "store": {
       "title": "Qué guardamos",
       "item1": "Nombre completo, celular, correo, nombre visible, avatar (foto que subiste, si la hay), idioma, tema y zona horaria. La contraseña generada en el registro rápido se guarda cifrada; solo tú la ves, aquí.",
       "item2": "Intereses, favoritos, listas, progreso, contenidos completados, racha, recordatorios y sus marcas.",
-      "item3": "Suscripción simulada (módulos y períodos) y pedidos de prueba con destino ficticio.",
+      "item3": "Pedidos de prueba con destino ficticio.",
       "item4": "Eventos de uso sin datos personales y feedback opcional.",
       "not": "No recopilamos dirección real, geolocalización, datos de pago ni datos de salud individuales."
     },
@@ -908,7 +832,6 @@
       "text": "{text}",
       "generic": "Sugerencia para ti"
     },
-    "locked": "Requiere el módulo {module} (suscripción simulada)",
     "notInterested": "No me interesa",
     "notInterestedFor": "No me interesa: {title}",
     "notInterestedDone": "Entendido. No sugeriremos este contenido.",

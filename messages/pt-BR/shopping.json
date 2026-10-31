@@ -69,7 +69,7 @@
     "description": "A lista de compras ainda não está disponível neste ambiente."
   },
   "errors": {
-    "forbidden": "Você ainda não pode usar a lista com esta receita. Faça a etapa de receitas ou confira o seu plano.",
+    "forbidden": "Você ainda não pode usar a lista com esta receita. Faça a etapa de receitas primeiro.",
     "shopping_list_full": "Sua lista chegou ao limite de 300 itens. Limpe os comprados ou remova itens para adicionar mais.",
     "shopping_unavailable": "A lista de compras ainda não está disponível.",
     "invalid_input": "Não foi possível ler os itens escolhidos. Recarregue a página e tente de novo.",

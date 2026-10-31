@@ -1,4 +1,4 @@
-import { Ban, BookOpen, ChefHat, Dumbbell, FileText, ImageIcon, Lock, PlayCircle } from "lucide-react";
+import { Ban, BookOpen, ChefHat, Dumbbell, FileText, ImageIcon, PlayCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { SmartTagLayer } from "@/components/brands/SmartTagLayer";
@@ -24,10 +24,9 @@ export async function FeedPost({ post, priority, follow }: Props) {
   const photo = isPhotoPost(post, supabaseBaseUrl());
   const Icon = photo ? ImageIcon : TYPE_ICON[post.type];
   const unavailable = post.access_level === null;
-  const premium = post.access_level === "premium";
   const href = `/content/${post.slug}`;
   const titleId = `post-${post.id}`;
-  const restriction = unavailable ? t("tile.unavailable") : premium ? t("tile.premium", { plan: post.required_module?.name ?? t("premium") }) : null;
+  const restriction = unavailable ? t("tile.unavailable") : null;
 
   return (
     <article aria-labelledby={titleId} className="flex flex-col" data-testid="feed-post">
@@ -74,8 +73,6 @@ export async function FeedPost({ post, priority, follow }: Props) {
         <Icon className="absolute right-3 top-3 size-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
         {unavailable ? (
           <Ban className="absolute bottom-3 left-3 size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
-        ) : premium ? (
-          <Lock className="absolute bottom-3 left-3 size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
         ) : null}
       </Link>
       {post.smart_tags?.length ? <SmartTagLayer tags={post.smart_tags} fit="cover" /> : null}

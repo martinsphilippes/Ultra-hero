@@ -21,6 +21,7 @@ type Write = { table: string; op: string; payload?: Record<string, unknown>; fil
 type Status = { state: string; durationSec: number | null; creatorId: string | null; reason: string | null };
 
 const state = vi.hoisted(() => ({
+  uploadRights: true,
   user: null as { id: string } | null,
   isCreator: true,
   isAdmin: false,
@@ -52,6 +53,8 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
+// Termos do Parceiro (0068): confirmação de direitos antes do envio; cada teste liga ou desliga
+vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => state.uploadRights }));
 vi.mock("next/cache", () => ({ revalidatePath: (path: string) => void state.revalidated.push(path) }));
 vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => Object.assign((key: string) => `${namespace}.${key}`, { has: () => true }),
@@ -193,6 +196,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 beforeEach(() => {
   state.user = { id: ids.USER };
+  state.uploadRights = true;
   state.isCreator = true;
   state.isAdmin = false;
   state.creatorId = ids.CREATOR;
@@ -227,6 +231,13 @@ const START = { fileSize: 48_000_000, fileName: "VID_20261021.mp4", durationSec:
 const PUBLISH = { contentId: ids.CONTENT, title: "  Receita de domingo  ", caption: "Arroz de forno em 3 passos.", pillar: "gastronomy" as const };
 
 describe("startVideoPost", () => {
+  it("sem a confirmação de direitos (Termos do Parceiro), não pede ticket nem cria rascunho", async () => {
+    state.uploadRights = false;
+    expect(await startVideoPost(START)).toEqual({ ok: false, error: "upload_rights_required" });
+    expect(state.tickets).toHaveLength(0);
+    expect(state.writes).toHaveLength(0);
+  });
+
   it("sem configuração do vídeo devolve video_not_configured e não cria ticket nem rascunho", async () => {
     state.configured = false;
     expect(await startVideoPost(START)).toEqual({ ok: false, error: "video_not_configured" });

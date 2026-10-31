@@ -13,14 +13,12 @@ type Props = {
   engine: "deterministic" | "openai" | "gemini";
   /** Justificativa já traduzida (uma linha). */
   reason: string;
-  /** Aviso de módulo necessário, quando o item está travado. */
-  lockedNote?: string | null;
   /** O ContentCard (Server Component) vem como filho. */
   children: ReactNode;
 };
 
-// Envolve um card recomendado: justificativa, aviso de módulo e "Não me interessa" (some ao confirmar).
-export function RecommendationItem({ contentId, title, rank, engine, reason, lockedNote, children }: Props) {
+// Envolve um card recomendado: justificativa e "Não me interessa" (some ao confirmar).
+export function RecommendationItem({ contentId, title, rank, engine, reason, children }: Props) {
   const t = useTranslations("me.recommendations");
   const { toast } = useToast();
   const [hidden, setHidden] = useState(false);
@@ -52,7 +50,6 @@ export function RecommendationItem({ contentId, title, rank, engine, reason, loc
         {children}
       </div>
       <p className="type-caption text-fg-muted">{reason}</p>
-      {lockedNote ? <p className="type-caption text-accent-text">{lockedNote}</p> : null}
       <Button
         type="button"
         variant="ghost"

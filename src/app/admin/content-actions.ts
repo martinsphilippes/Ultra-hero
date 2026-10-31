@@ -161,19 +161,18 @@ export async function setFeaturedAction(kind: "content" | "program", id: string,
 // ---------------------------------------------------------------- edição completa (ContentForm)
 type SaveContext = { id?: string | null; creatorId?: string | null };
 
-// Admin cria/edita qualquer conteúdo, inclusive regra de acesso, módulo e conclusão.
+// Admin cria/edita qualquer conteúdo, inclusive o modo de conclusão. O app é gratuito (0069): o
+// conteúdo sempre é gravado como livre, sem módulo (o banco também só aceita isso: content_free_only).
 // Valida com o MESMO esquema do formulário (parseContentForm/contentFormSchema), como o portal
 // da personalidade: capa só da própria origem, só provedores habilitados, ID de mídia extraído
-// da URL, legendas same-origin/https e corpo com a forma do tipo. Os campos só do admin
-// (access_level, required_module_id, completion_mode) também fazem parte desse esquema.
+// da URL, legendas same-origin/https e corpo com a forma do tipo. O campo só do admin
+// (completion_mode) também faz parte desse esquema.
 export async function saveContentAction(context: SaveContext, values: ContentFormValues): Promise<ActionResult & { id?: string }> {
   const ctx = z.object({ id: uuid.nullable().optional(), creatorId: uuid.nullable().optional() }).safeParse(context);
   if (!ctx.success) return fail("invalid_input");
   const parsed = parseContentForm(values);
-  if (!parsed.ok) return fail(parsed.errors.required_module_id === "moduleRequired" ? "premium_requires_module" : "invalid_input");
+  if (!parsed.ok) return fail("invalid_input");
   const v = parsed.data;
-  const accessLevel = v.access_level ?? null;
-  const requiredModule = accessLevel === "premium" ? (v.required_module_id ?? null) : null;
 
   // Receita estruturada (0027) não passa por este formulário (o corpo v1 seria recusado no banco):
   // nem criar, nem converter, nem editar a existente até o editor novo (fase 2).
@@ -202,8 +201,8 @@ export async function saveContentAction(context: SaveContext, values: ContentFor
       media_license_kind: v.media_license_kind,
       media_license_ref: v.media_license_ref || null,
       media_credit: v.media_credit || null,
-      access_level: accessLevel,
-      required_module_id: requiredModule,
+      access_level: "free" as const,
+      required_module_id: null,
       completion_mode: v.completion_mode ?? null,
     };
 

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { ReactNode } from "react";
 import { z } from "zod";
-import { ACCESS_LEVELS, DIFFICULTIES, MAX_QUERY_LENGTH } from "@/components/discover/explore/params";
+import { DIFFICULTIES, MAX_QUERY_LENGTH } from "@/components/discover/explore/params";
 import { exploreFeedPage } from "@/components/discover/explore/feed";
 import { renderContentTiles } from "@/components/discover/explore/renderTiles";
 import { MAX_OFFSET, TILE_PAGE_SIZE } from "@/components/discover/explore/tiles";
@@ -48,7 +48,6 @@ const tilesSchema = z.object({
   q: z.string().max(MAX_QUERY_LENGTH).catch(""),
   pillar: z.enum(PILLARS).optional(),
   type: z.enum(CONTENT_TYPES).optional(),
-  access: z.enum(ACCESS_LEVELS).optional(),
   difficulty: z.enum(DIFFICULTIES).optional(),
   // A semente vem do cliente para a página seguinte continuar a MESMA ordem da primeira (virada de dia no meio da rolagem não repete nem pula).
   seed: z.number().int().min(0).max(2_147_483_647),

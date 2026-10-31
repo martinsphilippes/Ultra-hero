@@ -52,7 +52,7 @@
   },
   "edit": {
     "noAccessRule": "Sin regla de acceso",
-    "accessNote": "Tú publicas y despublicas tus contenidos. La regla de acceso (gratuito o premium), el módulo y los destacados los define la administración, que también puede archivar un contenido.",
+    "accessNote": "Tú publicas y despublicas tus contenidos. Los destacados los define la administración, que también puede archivar un contenido.",
     "situation": {
       "draft": {
         "title": "Borrador",
@@ -211,7 +211,8 @@
       "not_image": "Este archivo no es una foto. Toma otra o elige una de la galería.",
       "photo_not_configured": "El envío de fotos no está disponible en este entorno.",
       "photo_disabled": "El envío de fotos está en pausa por la administración.",
-      "review_required": "Este tipo de post necesita revisión antes de publicarse. Abre el borrador en Mis contenidos."
+      "review_required": "Este tipo de post necesita revisión antes de publicarse. Abre el borrador en Mis contenidos.",
+      "upload_rights_required": "Antes del primer envío, confirma que tienes los derechos sobre la foto o el video."
     },
     "photo": {
       "draftTitle": "Post con foto",
@@ -364,7 +365,8 @@
         "not_a_hero": "Solo el héroe con el perfil activo puede cambiar la portada.",
         "upload_failed": "No se pudo subir la portada. Revisa la conexión e inténtalo de nuevo.",
         "unauthenticated": "Inicia sesión para continuar.",
-        "generic": "No se pudo completar. Inténtalo de nuevo."
+        "generic": "No se pudo completar. Inténtalo de nuevo.",
+        "upload_rights_required": "Antes del primer envío, confirma que tienes los derechos sobre la foto o el video."
       }
     },
     "socials": "Redes (texto simple)",

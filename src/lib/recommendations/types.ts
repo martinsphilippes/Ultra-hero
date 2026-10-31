@@ -14,8 +14,6 @@ export type Candidate = {
   difficulty: Difficulty | null;
   tags: string[];
   access_level: AccessLevel;
-  required_module_id: string | null;
-  required_module_name: string | null;
   is_featured: boolean;
   published_at: string | null;
 };
@@ -27,7 +25,6 @@ export type UserSignals = {
   interests: string[];
   pillarAffinity: Partial<Record<Pillar, number>>;
   difficultyLevel: Difficulty;
-  entitledModules: string[];
   completedCount: number;
 };
 

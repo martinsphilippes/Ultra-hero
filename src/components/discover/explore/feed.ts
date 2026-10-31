@@ -12,7 +12,8 @@ export type FeedPage = { items: ContentTileData[]; hasMore: boolean; nextOffset:
 export async function exploreFeedPage(query: SearchQuery, seed: number, offset: number): Promise<FeedPage> {
   const supabase = await createClient();
   const safeOffset = Math.max(0, Math.min(Math.trunc(offset) || 0, MAX_OFFSET));
-  const filters = { p_pillar: query.pillar, p_type: query.type, p_access: query.access, p_difficulty: query.difficulty };
+  // sem filtro de acesso: o app é gratuito (0069), todo conteúdo é livre
+  const filters = { p_pillar: query.pillar, p_type: query.type, p_difficulty: query.difficulty };
   const q = query.q.trim();
 
   const { data, error } = q

@@ -14,7 +14,6 @@
     "type": "Tipo",
     "status": "Estado",
     "reviewStatus": "Revisión",
-    "accessLevel": "Acceso",
     "seller": "Proveedor",
     "category": "Categoría",
     "availability": "Disponibilidad",
@@ -100,8 +99,6 @@
       "article": "Artículo"
     },
     "access": {
-      "free": "Gratuito",
-      "premium": "Premium",
       "undefined": "Sin regla (no disponible)"
     },
     "completionMode": {
@@ -126,7 +123,7 @@
     "forbidden": "No tienes permiso para esta acción.",
     "unauthenticated": "Sesión expirada. Inicia sesión de nuevo.",
     "duplicate": "Ya existe un registro con el mismo identificador (slug o código).",
-    "constraint": "Los datos violan una regla de la base (p. ej. premium exige módulo).",
+    "constraint": "Los datos violan una regla de la base.",
     "reference": "Referencia inválida: el elemento relacionado ya no existe.",
     "content_not_found": "Contenido no encontrado.",
     "invalid_decision": "Decisión inválida.",
@@ -139,7 +136,6 @@
     "already_in_review": "Este contenido ya está en revisión.",
     "content_incomplete": "Contenido incompleto: título y pilar son obligatorios.",
     "content_not_editable": "El contenido no es editable en este estado.",
-    "premium_requires_module": "El contenido premium exige un módulo.",
     "invalid_kind": "Tipo de destacado inválido.",
     "version_not_found": "Versión no encontrada.",
     "version_has_no_items": "La versión no tiene elementos. Agrega al menos un contenido antes de publicar.",
@@ -158,7 +154,6 @@
     "product_requires_image": "Un producto publicado necesita imagen.",
     "food_product_requires_food_info": "Un producto alimentario publicado exige ingredientes, alérgenos y almacenamiento.",
     "seller_not_own": "El admin solo crea o edita productos de la operación propia. Los productos de socios solo se moderan.",
-    "self_dependency": "Un módulo no puede depender de sí mismo.",
     "invalid_json": "El cuerpo debe ser un objeto JSON válido.",
     "not_found": "Registro no encontrado.",
     "publish_at_invalid": "Fecha de publicación inválida.",
@@ -204,7 +199,6 @@
       "type": "Tipo",
       "status": "Estado",
       "review": "Revisión",
-      "access": "Acceso",
       "updated": "Actualizado"
     },
     "featured": "Destacado",
@@ -235,7 +229,6 @@
       "captionsYes": "Con subtítulos",
       "captionsNo": "Sin subtítulos",
       "disclaimer": "Aviso contextual",
-      "requiredModule": "Módulo requerido",
       "completionMode": "Finalización",
       "noAccessRule": "Sin regla de acceso: el contenido aparece como “temporalmente no disponible” al público.",
       "slugLabel": "Slug",
@@ -314,7 +307,7 @@
       "createTitle": "Nuevo contenido (admin)",
       "createDescription": "Elige el héroe responsable y completa los campos. El contenido nace como borrador.",
       "editTitle": "Editar contenido",
-      "editDescription": "El admin edita cualquier campo, incluida la regla de acceso, el módulo y el modo de finalización.",
+      "editDescription": "El admin edita cualquier campo, incluido el modo de finalización. Todo el contenido es gratuito.",
       "creatorLabel": "Héroe responsable",
       "creatorHint": "Los héroes ficticios aparecen marcados en la lista.",
       "creatorRequired": "Elige un héroe antes de guardar.",
@@ -556,53 +549,6 @@
         "forbidden": "Sin permiso.",
         "generic": "No se pudo guardar. Inténtalo de nuevo."
       }
-    }
-  },
-  "plans": {
-    "title": "Planes y módulos",
-    "description": "Los módulos son la unidad de derecho de acceso; los planes son paquetes de presentación. Todo es simulado.",
-    "modules": {
-      "title": "Módulos",
-      "caption": "Lista de módulos",
-      "code": "Código",
-      "codeHint": "Inmutable después de la creación (p. ej. training_full).",
-      "name": "Nombre",
-      "description": "Descripción",
-      "price": "Precio demostrativo",
-      "priceHint": "Importe demostrativo en centavos (p. ej. 2990 = R$ 29,90). Ningún cobro real.",
-      "active": "Activo",
-      "sort": "Orden",
-      "new": "Nuevo módulo",
-      "edit": "Editar módulo",
-      "created": "Módulo creado",
-      "updated": "Módulo actualizado",
-      "empty": "No hay módulos registrados."
-    },
-    "dependencies": {
-      "title": "Dependencias entre módulos",
-      "description": "Para seleccionar un módulo el usuario debe tener los módulos requeridos. Por defecto, los módulos FULL no exigen el Base.",
-      "requires": "{name} exige:",
-      "noneRequired": "No exige ningún módulo",
-      "saved": "Dependencias guardadas",
-      "selfHint": "El propio módulo no aparece en la lista (sin autodependencia)."
-    },
-    "bundles": {
-      "title": "Planes (paquetes)",
-      "caption": "Lista de planes",
-      "code": "Código",
-      "name": "Nombre",
-      "description": "Descripción",
-      "isFree": "Plan gratuito",
-      "isFreeHint": "Un plan gratuito no incluye módulos.",
-      "active": "Activo",
-      "sort": "Orden",
-      "modules": "Módulos incluidos",
-      "new": "Nuevo plan",
-      "edit": "Editar plan",
-      "created": "Plan creado",
-      "updated": "Plan actualizado",
-      "empty": "No hay planes registrados.",
-      "noModules": "Sin módulos"
     }
   },
   "featured": {

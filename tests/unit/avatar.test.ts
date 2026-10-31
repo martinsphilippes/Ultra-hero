@@ -5,7 +5,7 @@ import { adminRemoveCreatorCover, adminRemoveCreatorPhoto, createCreator, update
 import { updateCreatorProfile } from "@/app/creator/profile/actions";
 import { removeHeroCover, uploadHeroCover } from "@/app/creator/profile/cover-actions";
 import { creatorProfilePayload, parseCreatorProfile, type CreatorProfileInput } from "@/components/creator/profile-schema";
-import { DELETE_CONFIRM_WORD } from "@/components/me/subscription";
+import { DELETE_CONFIRM_WORD } from "@/components/me/delete-account";
 import { AVATAR_ERRORS, MAX_SOURCE_BYTES, MAX_UPLOAD_BYTES, toAvatarError } from "@/lib/avatar/constants";
 import { acceptsAvatarChoice, isLegacyAvatarArt, isLocalPath, isStoredAvatarUrl, publicAvatarUrl, safeAvatarSrc, storedAvatarOwner, storedAvatarPath } from "@/lib/avatar/paths";
 import { aspectCrop, coverCrop } from "@/lib/avatar/resize";
@@ -41,6 +41,7 @@ const OLD_URL = url(ids.USER, `${ids.OLD}.jpg`);
 type Result = { data: unknown; error: { message: string; code?: string } | null };
 
 const state = vi.hoisted(() => ({
+  uploadRights: true,
   user: null as { id: string } | null,
   roles: ["consumer", "creator"] as string[],
   hasAdmin: true,
@@ -147,6 +148,8 @@ function client(kind: "user" | "admin") {
 }
 
 vi.mock("server-only", () => ({}));
+// Termos do Parceiro (0068): confirmação de direitos antes do envio; cada teste liga ou desliga
+vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => state.uploadRights }));
 vi.mock("next/cache", () => ({ revalidatePath: (path: string) => void state.revalidated.push(path) }));
 vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, getRoles: async () => state.roles.map((role) => ({ role })), requireRole: async () => ({ user: { id: "ad000000-0000-4000-8000-000000000001" } }) }));
 // dependências de ops-actions.ts (admin) que não importam aqui: mensagens viram a própria chave
@@ -194,6 +197,7 @@ function form(data: Uint8Array, type = "image/webp") {
 beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = BASE;
   state.user = { id: ids.USER };
+  state.uploadRights = true;
   state.roles = ["consumer", "creator"];
   state.hasAdmin = true;
   state.profile = { avatar_url: null };
@@ -972,6 +976,14 @@ describe("uploadHeroCover / removeHeroCover", () => {
   const OLD_COVER = coverUrl(ids.USER, `${ids.OLD}.jpg`);
   beforeEach(() => {
     state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "erick-jacquin", status: "active", avatar_url: null, cover_url: OLD_COVER };
+  });
+
+  it("sem a confirmação de direitos (Termos do Parceiro), nada é reservado nem gravado; o admin não passa pela trava", async () => {
+    state.uploadRights = false;
+    expect(await uploadHeroCover(form(webpVp8(1600, 900)))).toEqual({ ok: false, error: "upload_rights_required" });
+    expect(state.log).toEqual([]);
+    state.roles = ["admin"];
+    expect((await uploadHeroCover(form(webpVp8(1600, 900)))).ok).toBe(true);
   });
 
   it("reserva, grava com o service role, aplica no herói e só então apaga a capa anterior própria", async () => {

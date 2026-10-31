@@ -12,7 +12,9 @@ import { AvatarPrepareError, prepareFittedImage } from "@/lib/avatar/resize";
 import { POST_PHOTO_MAX_EDGE, POST_PHOTO_MAX_UPLOAD_BYTES, type PostPhotoState } from "@/lib/post-photo/constants";
 import { mediaKindOf, pickOptions, validatePhotoSource, type MediaKind } from "@/lib/post-photo/validation";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 import { cn } from "@/lib/utils";
+import { UploadRightsDialog } from "../UploadRightsDialog";
 import { CAPTION_MAX, TITLE_MAX, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "./validation";
 
 type Props = { configured: boolean; photoState: PostPhotoState; defaultPillar: Pillar };
@@ -123,6 +125,8 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
   const [pickError, setPickError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [upload, setUpload] = useState<UploadState>({ state: "idle" });
+  // primeiro envio sem a declaração de direitos (Termos do Parceiro): confirma e envia de novo
+  const [rightsOpen, setRightsOpen] = useState(false);
   const [publish, setPublish] = useState<PublishState>({ state: "idle" });
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
@@ -323,6 +327,7 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
         return;
       }
       if (!result.ok) {
+        if (result.error === UPLOAD_RIGHTS_REQUIRED) setRightsOpen(true);
         updateUpload({ state: "error", error: result.error });
         return;
       }
@@ -346,6 +351,7 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
         const result = await startVideoPost({ fileSize: picked.file.size, fileName: picked.file.name, durationSec: picked.durationSec });
         if (generation !== generationRef.current) return;
         if (!result.ok) {
+          if (result.error === UPLOAD_RIGHTS_REQUIRED) setRightsOpen(true);
           updateUpload({ state: "error", error: result.error });
           return;
         }
@@ -827,6 +833,7 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
           </div>
         }
       />
+      <UploadRightsDialog open={rightsOpen} onOpenChange={setRightsOpen} onConfirmed={() => void beginUpload()} />
     </div>
   );
 }

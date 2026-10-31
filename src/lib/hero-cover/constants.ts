@@ -26,6 +26,7 @@ export const COVER_ERRORS = [
   "cover_not_configured",
   "not_a_hero",
   "upload_failed",
+  "upload_rights_required",
   "unauthenticated",
   "generic",
 ] as const;

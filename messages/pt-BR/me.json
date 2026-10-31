@@ -2,7 +2,6 @@
   "meta": {
     "evolution": "Evolução",
     "profile": "Perfil",
-    "plan": "Plano e módulos",
     "interests": "Interesses",
     "account": "Conta e privacidade",
     "favorites": "Favoritos",
@@ -88,7 +87,7 @@
   },
   "profile": {
     "title": "Perfil",
-    "description": "Seus dados, preferências e plano simulado.",
+    "description": "Seus dados e preferências.",
     "emailLabel": "E-mail",
     "roles": {
       "label": "Papéis",
@@ -100,15 +99,6 @@
       "agency": "Agência",
       "brand": "Marca",
       "talent": "Talento"
-    },
-    "plan": {
-      "label": "Plano",
-      "free": "Gratuito",
-      "active": "Assinatura simulada ativa",
-      "cancelled": "Cancelada (acesso até o fim do período)",
-      "expired": "Expirada",
-      "unknown": "Não disponível",
-      "manage": "Gerenciar plano"
     },
     "portals": {
       "title": "Seus portais",
@@ -181,10 +171,6 @@
       }
     },
     "links": {
-      "plan": {
-        "title": "Plano e módulos",
-        "description": "Assinatura simulada, pacotes e módulos."
-      },
       "interests": {
         "title": "Interesses",
         "description": "Temas que guiam as recomendações."
@@ -219,7 +205,7 @@
       }
     },
     "signOut": "Sair da conta",
-    "demoNote": "Ambiente de demonstração: assinatura simulada, nenhum pagamento real.",
+    "demoNote": "Ambiente de demonstração: o app é gratuito e os pedidos da loja são de teste, sem pagamento real.",
     "evolution": {
       "title": "Evolução",
       "description": "Sua sequência e o caminho até aqui.",
@@ -618,68 +604,6 @@
     },
     "removeShort": "Remover dos favoritos"
   },
-  "plan": {
-    "title": "Plano e módulos",
-    "description": "Assinatura simulada para a demonstração. Nenhum pagamento é feito.",
-    "demoNote": "Simulado: nenhum pagamento, cobrança ou renovação real. Valores ilustrativos.",
-    "current": {
-      "title": "Sua assinatura simulada",
-      "status": {
-        "free": "Gratuito",
-        "active": "Ativa",
-        "cancelled": "Cancelada",
-        "expired": "Expirada"
-      },
-      "freeDescription": "Você está no nível gratuito: conteúdos abertos de todos os pilares.",
-      "periodEnd": "Período atual termina em {date}",
-      "autoRenewOn": "Renovação simulada automática a cada 30 dias",
-      "autoRenewOff": "Sem renovação automática",
-      "cancelledNotice": "Assinatura cancelada. O acesso aos módulos continua até {date}.",
-      "modules": "Módulos",
-      "noModules": "Nenhum módulo ativo.",
-      "scheduledRemoval": "Sai em {date}",
-      "activeModule": "Ativo"
-    },
-    "bundles": {
-      "title": "Pacotes",
-      "description": "Atalhos para conjuntos de módulos. O valor é a soma dos módulos.",
-      "choose": "Escolher pacote",
-      "current": "Pacote atual",
-      "total": "Total {price}/mês",
-      "demoPrice": "valor demonstrativo",
-      "includes": "Inclui: {modules}",
-      "freeIncludes": "Conteúdos abertos de todos os pilares."
-    },
-    "custom": {
-      "title": "Montar meu conjunto",
-      "description": "Escolha módulo a módulo. Dependências aparecem em cada item.",
-      "requires": "Requer: {modules}",
-      "apply": "Aplicar seleção",
-      "total": "Total {price}/mês",
-      "selected": "{n, plural, =1 {# módulo selecionado} other {# módulos selecionados}}",
-      "unchanged": "Nenhuma mudança em relação ao conjunto atual.",
-      "moduleLabel": "{name}, {price} por mês"
-    },
-    "actions": {
-      "cancel": "Cancelar assinatura simulada",
-      "cancelTitle": "Cancelar a assinatura simulada?",
-      "cancelDescription": "O acesso aos módulos continua até o fim do período atual. Depois você volta ao gratuito. Nada é cobrado ou devolvido: tudo é simulado.",
-      "cancelConfirm": "Cancelar assinatura",
-      "cancelled": "Assinatura simulada cancelada. Acesso mantido até o fim do período.",
-      "backToFree": "Voltar ao gratuito",
-      "backToFreeTitle": "Voltar ao nível gratuito?",
-      "backToFreeDescription": "Todos os módulos serão agendados para remoção no fim do período atual. Simulado, sem cobrança.",
-      "backToFreeConfirm": "Voltar ao gratuito",
-      "applied": "Seleção aplicada. Adições valem agora; remoções no fim do período.",
-      "downgradeHint": "Adições valem imediatamente; remoções são agendadas para o fim do período."
-    },
-    "errors": {
-      "invalid_module": "Um dos módulos escolhidos não está disponível.",
-      "module_dependency_missing": "{module} exige também {required}.",
-      "unauthenticated": "Entre para continuar.",
-      "generic": "Não foi possível atualizar a assinatura simulada. Tente novamente."
-    }
-  },
   "interests": {
     "title": "Interesses",
     "description": "Escolha temas para guiar as recomendações. Você pode mudar quando quiser.",
@@ -707,13 +631,13 @@
     "description": "Transparência sobre o que a POC guarda e como excluir sua conta.",
     "demo": {
       "title": "Natureza demonstrativa",
-      "body": "O Groscove Ultra é uma prova de conceito pública. Assinaturas são simuladas e pedidos são de teste: não há pagamento, entrega ou endereço real."
+      "body": "O Groscove Ultra é uma prova de conceito pública. O app é gratuito e os pedidos são de teste: não há pagamento, entrega ou endereço real."
     },
     "store": {
       "title": "O que guardamos",
       "item1": "Nome completo, celular, e-mail, nome exibido, avatar (foto enviada por você, se houver), idioma, tema e fuso horário. A senha gerada no cadastro rápido fica cifrada; só você a vê, aqui.",
       "item2": "Interesses, favoritos, listas, progresso, conclusões, sequência, lembretes e marcações.",
-      "item3": "Assinatura simulada (módulos e períodos) e pedidos de teste com destino fictício.",
+      "item3": "Pedidos de teste com destino fictício.",
       "item4": "Eventos de uso sem dados pessoais e feedback opcional.",
       "not": "Não coletamos endereço real, geolocalização, dados de pagamento nem dados de saúde individuais."
     },
@@ -908,7 +832,6 @@
       "text": "{text}",
       "generic": "Sugestão para você"
     },
-    "locked": "Requer o módulo {module} (assinatura simulada)",
     "notInterested": "Não me interessa",
     "notInterestedFor": "Não me interessa: {title}",
     "notInterestedDone": "Entendido. Não vamos sugerir este conteúdo.",

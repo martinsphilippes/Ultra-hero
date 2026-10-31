@@ -16,6 +16,7 @@ import ptAdmin from "../../messages/pt-BR/adminOps.json";
 import commonMessages from "../../messages/pt-BR/common.json";
 import creatorMessages from "../../messages/pt-BR/creator.json";
 import editorsMessages from "../../messages/pt-BR/editors.json";
+import legalMessages from "../../messages/pt-BR/legal.json";
 import meMessages from "../../messages/pt-BR/me.json";
 import enCreator from "../../messages/en/creator.json";
 import enMe from "../../messages/en/me.json";
@@ -30,6 +31,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined
 vi.mock("@/app/creator/profile/actions", () => ({ updateCreatorProfile: async () => ({ ok: true }) }));
 vi.mock("@/app/(app)/profile/actions", () => ({ updateProfile: async () => ({ ok: true }) }));
 vi.mock("@/app/(app)/profile/avatar-actions", () => ({ uploadAvatar: async () => ({ ok: true }), removeAvatar: async () => ({ ok: true }) }));
+vi.mock("@/lib/partner-terms/actions", () => ({ confirmUploadRights: async () => ({ ok: true }) }));
 vi.mock("@/app/creator/profile/cover-actions", () => ({ uploadHeroCover: async () => ({ ok: true }), removeHeroCover: async () => ({ ok: true }) }));
 
 function render(children: ReactNode) {
@@ -39,7 +41,7 @@ function render(children: ReactNode) {
     createElement(NextIntlClientProvider, {
       locale: "pt-BR",
       timeZone: "America/Sao_Paulo",
-      messages: { common: commonMessages, creator: creatorMessages, editors: editorsMessages, me: meMessages },
+      messages: { common: commonMessages, creator: creatorMessages, editors: editorsMessages, legal: legalMessages, me: meMessages },
       children,
     }),
   );
@@ -241,7 +243,7 @@ describe("mensagens novas nos 3 idiomas e as antigas fora", () => {
       for (const key of ["title", "hint", "none", "take", "gallery", "remove", "unavailable", "disabled", "limits", "previewTitle", "use"] as const) {
         expect(creator.profile.cover[key].length).toBeGreaterThan(2);
       }
-      expect(Object.keys(creator.profile.cover.errors).length).toBe(12);
+      expect(Object.keys(creator.profile.cover.errors).length).toBe(13);
       expect(creator.errors.avatar_not_saved.length).toBeGreaterThan(10);
       expect(creator.profile).not.toHaveProperty("photoInData");
       expect(creator.profile).not.toHaveProperty("avatar");

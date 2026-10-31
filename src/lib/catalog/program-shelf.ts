@@ -55,9 +55,9 @@ export function resolveShelfSteps(versionId: string, items: readonly ShelfItemRo
 }
 
 /** O mínimo do conteúdo que o estado precisa. */
-export type ShelfStepContent = { access_level: AccessLevel | null; required_module_id: string | null };
+export type ShelfStepContent = { access_level: AccessLevel | null };
 
-export type ShelfStepState = "done" | "locked" | "unavailable" | "open";
+export type ShelfStepState = "done" | "unavailable" | "open";
 
 type StateInput = {
   step: Pick<ShelfStep, "contentId" | "originalContentId">;
@@ -66,21 +66,17 @@ type StateInput = {
   /** Concluída só aparece para quem está inscrito (ativo ou concluído). */
   enrolled: boolean;
   completedIds: ReadonlySet<string>;
-  /** Módulos liberados para a pessoa (my_entitled_modules); vazio para visitante. */
-  entitledModules: ReadonlySet<string>;
 };
 
 /**
- * Estado do quadrado. Ordem: concluída > indisponível > bloqueada > aberta. Concluída vem primeiro
- * porque a conclusão vale pelo id, esteja o conteúdo no ar ou não (como a página do programa e
+ * Estado do quadrado. Ordem: concluída > indisponível > aberta. Concluída vem primeiro porque a
+ * conclusão vale pelo id, esteja o conteúdo no ar ou não (como a página do programa e
  * check_program_completion): sem isso o "n de m" do inscrito perderia uma etapa já feita.
- * O cadeado segue a mesma regra da página do programa (premium sem o módulo); para visitante, todo
- * premium tem cadeado — o mesmo que o quadro público do Explorar já mostra, nada além.
+ * O app é gratuito (0069): não há mais etapa bloqueada por plano.
  */
-export function shelfStepState({ step, content, enrolled, completedIds, entitledModules }: StateInput): ShelfStepState {
+export function shelfStepState({ step, content, enrolled, completedIds }: StateInput): ShelfStepState {
   if (enrolled && (completedIds.has(step.contentId) || completedIds.has(step.originalContentId))) return "done";
   if (!content || content.access_level === null) return "unavailable";
-  if (content.access_level === "premium" && !(content.required_module_id && entitledModules.has(content.required_module_id))) return "locked";
   return "open";
 }
 

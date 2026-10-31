@@ -12,7 +12,6 @@ export const CONTENT_TYPE_VALUES = ["video", "recipe", "workout", "guide", "arti
 export const LOCALE_VALUES = ["pt-BR", "en", "es"] as const;
 export const DIFFICULTY_VALUES = ["beginner", "intermediate", "advanced"] as const;
 export const DISCLAIMER_VALUES = ["general", "training", "nutrition", "none"] as const;
-export const ACCESS_VALUES = ["free", "premium"] as const;
 export const COMPLETION_VALUES = ["manual", "auto"] as const;
 export const MEDIA_PROVIDER_VALUES = ["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"] as const;
 /** Provedores que a POC consegue reproduzir (os demais aparecem desabilitados: "não configurado"). */
@@ -218,8 +217,6 @@ export const contentFormSchema = z
     media_license_kind: z.enum(LICENSE_KIND_VALUES).optional(),
     media_license_ref: text(300).optional(),
     media_credit: text(160).optional(),
-    access_level: z.enum(ACCESS_VALUES).nullable().optional(),
-    required_module_id: z.uuid().nullable().optional(),
     completion_mode: z.enum(COMPLETION_VALUES).nullable().optional(),
   })
   .superRefine((v, ctx) => {
@@ -230,10 +227,6 @@ export const contentFormSchema = z
     // corpo precisa ser do mesmo tipo do conteúdo (guia/artigo compartilham o editor)
     if (bodyKindFor(v.type) !== bodyKindFor(v.body.kind)) {
       ctx.addIssue({ code: "custom", message: "bodyTypeMismatch", path: ["body"] });
-    }
-    // premium exige módulo
-    if (v.access_level === "premium" && !v.required_module_id) {
-      ctx.addIssue({ code: "custom", message: "moduleRequired", path: ["required_module_id"] });
     }
     // mídia: só os provedores habilitados; referência válida por provedor
     const m = v.media;
@@ -438,8 +431,6 @@ export function toFormValues(initial?: Partial<ContentFormValues>): ContentFormV
     media_license_kind: coerceLicenseKind(initial?.media?.provider ?? "none", initial?.media_license_kind),
     media_license_ref: initial?.media_license_ref ?? "",
     media_credit: initial?.media_credit ?? "",
-    access_level: initial?.access_level ?? null,
-    required_module_id: initial?.required_module_id ?? null,
     completion_mode: initial?.completion_mode ?? null,
   };
 }

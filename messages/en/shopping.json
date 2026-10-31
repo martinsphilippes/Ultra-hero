@@ -69,7 +69,7 @@
     "description": "The shopping list is not available in this environment yet."
   },
   "errors": {
-    "forbidden": "You can't use the list with this recipe yet. Complete the recipes step or check your plan.",
+    "forbidden": "You can't use the list with this recipe yet. Complete the recipes step first.",
     "shopping_list_full": "Your list has reached the 300-item limit. Clear bought items or remove items to add more.",
     "shopping_unavailable": "The shopping list is not available yet.",
     "invalid_input": "We couldn't read the selected items. Reload the page and try again.",

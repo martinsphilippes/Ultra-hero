@@ -9,7 +9,6 @@ import { HeroProfileEditor, HeroProfileHeader } from "@/components/creator/HeroP
 import { HeroNewPost } from "@/components/creator/HeroNewPost";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
-import { parseSubscription } from "@/components/me/subscription";
 import { TodaySection } from "@/components/me/today/TodaySection";
 import { DemoAccess } from "@/components/demo/DemoAccess";
 import { PortalShortcuts } from "@/components/me/PortalShortcuts";
@@ -23,7 +22,6 @@ import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
 import { buildPortalItems, forSurface, isDemoUser } from "@/lib/settings/sections";
 import { parseNativeApp } from "@/lib/native-app/surface";
-import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
 
@@ -35,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // Perfil: no alto, "Seus portais" (agência, marca, admin, profissional e o Escritório do casting; pedido
 // do responsável: a entrada no painel fica bem em cima). Depois, o topo segue o Instagram para todas as
 // contas. Cabeçalho (foto e nome; o herói mostra o
-// perfil público com selo e bio recolhida e o Novo post; as outras contas, e-mail, papéis e plano) e um
+// perfil público com selo e bio recolhida e o Novo post; as outras contas, e-mail e papéis) e um
 // só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes em
 // /creator/profile) e "Sua conta" (nome exibido, foto, idioma e tema). Depois, "Hoje" em 3 cards (Seu
 // dia, Sua noite e Evolução) e, no fim, uma linha "Configurações". Lembretes, coleções, compras, conta,
@@ -62,15 +60,10 @@ export default async function ProfilePage({ searchParams }: Props) {
   const heroProfile = heroProfileFor(heroRoleNames(roles), creator.profile);
   // envio de capa (0042): só o herói vê; sem a 0042 ou sem service role fica "indisponível"
   const coverState = heroProfile ? await getHeroCoverState() : null;
-  const supabase = await createClient();
   const tz = isValidTimeZone(profile?.timezone) ? profile.timezone : "UTC";
   const today = localDateIn(tz);
-  const [{ data: subscriptionRaw }, evolution] = await Promise.all([
-    supabase.rpc("my_subscription"),
-    // Evolução (sequência, conteúdos concluídos e próximos passos dos programas): card do Hoje
-    loadEvolutionSummary(user.id, tz),
-  ]);
-  const subscription = parseSubscription(subscriptionRaw);
+  // Evolução (sequência, conteúdos concluídos e próximos passos dos programas): card do Hoje
+  const evolution = await loadEvolutionSummary(user.id, tz);
 
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
@@ -84,7 +77,6 @@ export default async function ProfilePage({ searchParams }: Props) {
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
-  const planKey = subscription.status === "anonymous" ? "unknown" : subscription.status;
   // perfil ativo e vinculado (my_creator_id): só aí o editor do herói grava, e o avatar é um só
   const heroActive = heroProfile !== null && creator.creatorId !== null;
   // admin com perfil de herói posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros heróis)
@@ -102,7 +94,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       avatarInHeroEditor={heroActive}
     />
   );
-  // e-mail, papéis e plano: no cabeçalho de quem não é herói; dentro de "Sua conta" para o herói
+  // e-mail e papéis: no cabeçalho de quem não é herói; dentro de "Sua conta" para o herói
   const accountSummary = (
     <div className="flex min-w-0 flex-col gap-2" data-testid="profile-account-summary">
       <p className="type-body-sm truncate text-fg-muted">
@@ -115,12 +107,6 @@ export default async function ProfilePage({ searchParams }: Props) {
             <Badge variant={role === "admin" ? "accent" : "neutral"}>{t(`roles.${role}`)}</Badge>
           </li>
         ))}
-        <li>
-          <Badge variant={subscription.status === "active" ? "premium" : subscription.status === "cancelled" ? "warning" : "free"}>
-            <span className="sr-only">{t("plan.label")}: </span>
-            {t(`plan.${planKey}`)}
-          </Badge>
-        </li>
       </ul>
     </div>
   );
@@ -161,7 +147,7 @@ export default async function ProfilePage({ searchParams }: Props) {
           />
         </div>
       ) : (
-        // topo das outras contas: foto, nome, e-mail, papéis e plano → Editar perfil
+        // topo das outras contas: foto, nome, e-mail e papéis → Editar perfil
         <div className="flex flex-col gap-4">
           <section aria-labelledby="account-name" data-testid="profile-account" className="flex items-center gap-4">
             <Avatar src={profile?.avatar_url} name={displayName} size="xl" alt="" />

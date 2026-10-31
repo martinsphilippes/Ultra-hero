@@ -15,7 +15,6 @@ import {
   displayTimeZone,
   GuideBody,
   LanguageNotice,
-  LockCard,
   ReadingTracker,
   RelatedProducts,
   TeaserCard,
@@ -48,7 +47,7 @@ import { RelatedRecipes } from "@/components/recipes/view/RelatedRecipes";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { loadRecipeLd, loadRatingState } from "@/components/recipes/view/recipe-page-data";
 import { AddToListButton, CompleteButton, FavoriteButton, NotInterestedButton } from "@/components/library";
-import { Avatar, Badge, PillarBadge, PlanBadge, Section } from "@/components/ui";
+import { Avatar, Badge, PillarBadge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { getProfile, getUser } from "@/lib/auth/session";
@@ -71,13 +70,13 @@ import { createClient } from "@/lib/supabase/server";
 import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 import { resolveVideoSource } from "@/lib/video";
 
-// Página de conteúdo: metadados públicos + corpo sob RLS. O estado (visitante, bloqueado,
+// Página de conteúdo: metadados públicos + corpo sob RLS. O estado (visitante,
 // indisponível, acessível) é derivado do que o servidor devolve — nunca inferido no cliente.
 
 // Licença: só o tipo e o crédito são públicos; media_license_ref é interna e nunca é selecionada aqui.
 const CONTENT_DETAIL_SELECT =
   "id, slug, title, summary, cover_url, pillar, type, duration_minutes, difficulty, tags, has_captions, status, access_level, completion_mode, disclaimer_kind, source_locale, published_at, publish_at, creator_id, " +
-  "media_license_kind, media_credit, required_module:plan_modules(id, code, name), creator:creator_profiles(id, slug, name, headline, avatar_url, is_fictional)";
+  "media_license_kind, media_credit, creator:creator_profiles(id, slug, name, headline, avatar_url, is_fictional)";
 
 type ContentDetail = {
   id: string;
@@ -101,7 +100,6 @@ type ContentDetail = {
   creator_id: string | null;
   media_license_kind: "platform_demo" | "own" | "licensed" | "third_party_embed";
   media_credit: string | null;
-  required_module: { id: string; code: string; name: string } | null;
   creator: { id: string; slug: string; name: string; headline: string | null; avatar_url: string | null; is_fictional: boolean } | null;
 };
 
@@ -208,17 +206,11 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
   const notInterested = Boolean(niRes?.data);
   const more = ((moreRes?.data ?? []) as unknown as ContentCardData[]).filter((c) => c.id !== content.id);
 
-  // visitante → teaser; sem direito ao módulo premium → bloqueado; sem regra de acesso
-  // (access_level null) ou sem corpo → indisponível. Nunca inferimos plano no cliente.
-  type State = "visitor" | "accessible" | "locked" | "unavailable";
+  // visitante → teaser; sem acesso (sem regra de acesso, access_level null) ou sem corpo →
+  // indisponível. O app é gratuito (0069): não há mais conteúdo bloqueado por plano.
+  type State = "visitor" | "accessible" | "unavailable";
   const canAccess = Boolean(accessRes?.data);
-  const state: State = !user
-    ? "visitor"
-    : canAccess && bodyRow
-      ? "accessible"
-      : !canAccess && content.access_level === "premium"
-        ? "locked"
-        : "unavailable";
+  const state: State = !user ? "visitor" : canAccess && bodyRow ? "accessible" : "unavailable";
 
   // Vídeo: resolve o provedor no servidor (chaves nunca chegam ao cliente).
   const video =
@@ -240,7 +232,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
   const allowManual = content.type === "video" && (video?.type === "iframe" || hideDemoPlayer);
   const readingAuto = (content.type === "guide" || content.type === "article") && mode === "auto";
 
-  // Receita só abre depois da etapa demonstrativa (vale para todos, inclusive quem tem acesso ao módulo).
+  // Receita só abre depois da etapa demonstrativa (vale para todos).
   const isRecipe = content.type === "recipe";
   const recipeGate = isRecipe ? await getRecipeGate() : null;
   const recipeBlocked = Boolean(recipeGate && !recipeGate.completed);
@@ -303,8 +295,6 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
     <RecipeGate nextPath={path} />
   ) : state === "visitor" ? (
     <TeaserCard nextPath={path} />
-  ) : state === "locked" ? (
-    <LockCard moduleName={content.required_module?.name ?? tcat("premium")} />
   ) : (
     <UnavailableCard />
   );
@@ -365,13 +355,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-obsidian/50 to-transparent" />
           <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
             <PillarBadge pillar={content.pillar} />
-            {content.access_level === null ? (
-              <Badge variant="neutral">{tcat("unavailable")}</Badge>
-            ) : content.access_level === "premium" ? (
-              <Badge variant="premium">{content.required_module?.name ?? tcat("premium")}</Badge>
-            ) : (
-              <PlanBadge plan="free" />
-            )}
+            {content.access_level === null ? <Badge variant="neutral">{tcat("unavailable")}</Badge> : null}
           </div>
           {/* vídeo para visitante: o play leva ao login e volta ao vídeo, que começa sozinho */}
           {state === "visitor" && content.type === "video" ? (
@@ -531,7 +515,6 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
 
       {/* Corpo por estado de acesso (demais tipos) */}
       {!isRecipe && state === "visitor" && <TeaserCard nextPath={path} />}
-      {!isRecipe && state === "locked" && <LockCard moduleName={content.required_module?.name ?? tcat("premium")} />}
       {!isRecipe && state === "unavailable" && <UnavailableCard />}
       {!isRecipe && state === "accessible" && (
         <div className="flex flex-col gap-6">

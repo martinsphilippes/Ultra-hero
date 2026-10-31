@@ -20,16 +20,15 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminContentEditPage({ params }: Params) {
   const { id } = await params;
   const supabase = await createClient();
-  const [t, tc, contentRes, bodyRes, modulesRes, creatorsRes] = await Promise.all([
+  const [t, tc, contentRes, bodyRes, creatorsRes] = await Promise.all([
     getTranslations("adminContent.content.form"),
     getTranslations("adminContent.common"),
     supabase
       .from("content")
-      .select("id, title, summary, pillar, type, source_locale, cover_url, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, access_level, required_module_id, completion_mode, creator_id, media_license_kind, media_license_ref, media_credit")
+      .select("id, title, summary, pillar, type, source_locale, cover_url, duration_minutes, difficulty, tags, has_captions, disclaimer_kind, completion_mode, creator_id, media_license_kind, media_license_ref, media_credit")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url").eq("content_id", id).maybeSingle(),
-    supabase.from("plan_modules").select("id, name, code").order("sort_order"),
     supabase.from("creator_profiles").select("id, name, is_fictional").order("name"),
   ]);
   const content = contentRes.data;
@@ -58,8 +57,6 @@ export default async function AdminContentEditPage({ params }: Params) {
     media_license_kind: content.media_license_kind as ContentFormValues["media_license_kind"],
     media_license_ref: content.media_license_ref ?? "",
     media_credit: content.media_credit ?? "",
-    access_level: content.access_level,
-    required_module_id: content.required_module_id,
     completion_mode: content.completion_mode,
   };
 
@@ -72,7 +69,6 @@ export default async function AdminContentEditPage({ params }: Params) {
         mode="edit"
         contentId={content.id}
         initial={initial}
-        modules={modulesRes.data ?? []}
         creators={creatorsRes.data ?? []}
         initialCreatorId={content.creator_id}
         readOnly={content.type === "recipe"}

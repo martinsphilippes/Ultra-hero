@@ -24,7 +24,7 @@ import { createClient } from "@/lib/supabase/server";
 /** Programa como vem do hub do herói, com a versão atual (para buscar as etapas). */
 export type ProgramShelfSource = ProgramCardData & { current_version_id: string | null };
 
-export type ShelfContent = ContentTileData & { duration_minutes: number | null; required_module_id: string | null };
+export type ShelfContent = ContentTileData & { duration_minutes: number | null };
 
 export type ShelfStepData = { step: ShelfStep; content: ShelfContent | null; state: ShelfStepState };
 
@@ -42,7 +42,7 @@ export type ProgramShelfData = {
   nextContentSlug: string | null;
 };
 
-const SHELF_CONTENT_SELECT = `${CONTENT_TILE_SELECT}, duration_minutes, required_module_id`;
+const SHELF_CONTENT_SELECT = `${CONTENT_TILE_SELECT}, duration_minutes`;
 
 export async function loadProgramShelves(programs: readonly ProgramShelfSource[], locale: LocaleCode): Promise<{ shelves: ProgramShelfData[]; error: boolean }> {
   if (programs.length === 0) return { shelves: [], error: false };
@@ -59,13 +59,12 @@ export async function loadProgramShelves(programs: readonly ProgramShelfSource[]
   const versionIds = Array.from(new Set([...versionOf.values()].filter((id): id is string => Boolean(id))));
   if (versionIds.length === 0) return { shelves: [], error: Boolean(enrollmentRes?.error) };
 
-  // 2) Versões, traduções, etapas, substituições e módulos liberados, em paralelo.
-  const [versionsRes, locRes, itemsRes, subsRes, entitledRes] = await Promise.all([
+  // 2) Versões, traduções, etapas e substituições, em paralelo.
+  const [versionsRes, locRes, itemsRes, subsRes] = await Promise.all([
     supabase.from("program_versions").select("id, title, summary, estimated_weeks").in("id", versionIds),
     supabase.from("program_localizations").select("version_id, title, summary").in("version_id", versionIds).eq("locale", locale).eq("status", "published"),
     supabase.from("program_items").select("version_id, content_id, position, section, is_required").in("version_id", versionIds).order("position").limit(1000),
     supabase.from("program_item_substitutions").select("version_id, original_content_id, replacement_content_id").in("version_id", versionIds),
-    user ? supabase.rpc("my_entitled_modules") : null,
   ]);
   const items = (itemsRes.data ?? []) as ShelfItemRow[];
   const substitutions = (subsRes.data ?? []) as ShelfSubstitutionRow[];
@@ -81,7 +80,6 @@ export async function loadProgramShelves(programs: readonly ProgramShelfSource[]
   ]);
   const contentById = new Map(((contentRes?.data ?? []) as unknown as ShelfContent[]).map((content) => [content.id, content]));
   const completedIds = new Set((completionsRes?.data ?? []).map((row) => row.content_id));
-  const entitledModules = new Set<string>((entitledRes?.data ?? []) as string[]);
   const versions = new Map((versionsRes.data ?? []).map((version) => [version.id, version]));
   const localized = new Map((locRes.data ?? []).map((loc) => [loc.version_id, loc]));
 
@@ -94,7 +92,7 @@ export async function loadProgramShelves(programs: readonly ProgramShelfSource[]
     const enrolled = Boolean(enrollment);
     const steps = (stepsByVersion.get(versionId) ?? []).map((step) => {
       const content = contentById.get(step.contentId) ?? null;
-      return { step, content, state: shelfStepState({ step, content, enrolled, completedIds, entitledModules }) };
+      return { step, content, state: shelfStepState({ step, content, enrolled, completedIds }) };
     });
     const states = steps.map((s) => s.state);
     const next = enrollment?.status === "active" ? nextStepIndex(steps.map((s) => s.step), states) : -1;

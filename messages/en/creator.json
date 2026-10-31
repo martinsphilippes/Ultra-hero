@@ -52,7 +52,7 @@
   },
   "edit": {
     "noAccessRule": "No access rule",
-    "accessNote": "You publish and unpublish your content. Access rule (free or premium), module and featuring are set by the administration, which can also archive content.",
+    "accessNote": "You publish and unpublish your content. Featuring is set by the administration, which can also archive content.",
     "situation": {
       "draft": {
         "title": "Draft",
@@ -211,7 +211,8 @@
       "not_image": "This file is not a photo. Take another one or pick one from your gallery.",
       "photo_not_configured": "Photo upload is not available in this environment.",
       "photo_disabled": "Photo upload is paused by the administration.",
-      "review_required": "This kind of post needs a review before going live. Open the draft in My content."
+      "review_required": "This kind of post needs a review before going live. Open the draft in My content.",
+      "upload_rights_required": "Before your first upload, confirm that you hold the rights to the photo or video."
     },
     "photo": {
       "draftTitle": "Photo post",
@@ -364,7 +365,8 @@
         "not_a_hero": "Only a hero with an active profile can change the cover.",
         "upload_failed": "The cover could not be uploaded. Check your connection and try again.",
         "unauthenticated": "Sign in to continue.",
-        "generic": "Something went wrong. Please try again."
+        "generic": "Something went wrong. Please try again.",
+        "upload_rights_required": "Before your first upload, confirm that you hold the rights to the photo or video."
       }
     },
     "socials": "Socials (plain text)",

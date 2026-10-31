@@ -15,6 +15,7 @@ import { RIGHTS_STATUSES } from "@/lib/catalog/rights";
 import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { isStoredCoverUrl, storedCoverOwner } from "@/lib/hero-cover/paths";
 import { releaseStoredCover } from "@/lib/hero-cover/server";
+import { PARTNER_TERMS_VERSION } from "@/lib/partner-terms/version";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 import { PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
@@ -213,11 +214,15 @@ export async function revokeInvitation(input: { id: string }, justification: str
 // Aceite pelo convidado (qualquer usuário autenticado; a RPC valida token, validade e e-mail).
 export type AcceptedRole = "creator" | "seller" | "professional" | "agency" | "brand";
 
-export async function acceptInvitation(input: { token: string }): Promise<Result<{ role: AcceptedRole; scopeType: string | null }>> {
-  const parsed = z.object({ token: z.string().trim().min(16).max(256) }).safeParse(input);
+// Todo convite é de parceiro: sem a caixa dos Termos do Parceiro marcada, nada é concedido (0068). O aceite
+// dos Termos é gravado antes do convite; se o convite falhar, o registro só antecipa o aceite.
+export async function acceptInvitation(input: { token: string; acceptTerms: boolean }): Promise<Result<{ role: AcceptedRole; scopeType: string | null }>> {
+  const parsed = z.object({ token: z.string().trim().min(16).max(256), acceptTerms: z.literal(true) }).safeParse(input);
   if (!parsed.success) return invalid();
   try {
     const supabase = await createClient();
+    const { error: termsError } = await supabase.rpc("accept_partner_terms", { p_version: PARTNER_TERMS_VERSION });
+    if (termsError) return fail(termsError);
     const { data, error } = await supabase.rpc("accept_invitation", { p_token: parsed.data.token });
     if (error) return fail(error);
     const row = data && typeof data === "object" && !Array.isArray(data) ? (data as { role?: string; scope_type?: string }) : {};

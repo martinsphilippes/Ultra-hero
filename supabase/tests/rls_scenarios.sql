@@ -100,10 +100,10 @@ select tests.expect_error('S1 setting() sensível não é executável pelo públ
 -- ================================================================ S2 · Consumidor gratuito
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
 select tests.ok('S2 corpo de conteúdo gratuito visível', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:r1')) = 1);
-select tests.ok('S2 corpo de conteúdo premium (Treino FULL) bloqueado', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:t7')) = 0);
-select tests.ok('S2 card premium continua visível no catálogo', (select count(*) from public.content where id = public.seed_uuid('content:t7')) = 1);
+-- app gratuito (0069): o antigo premium (t7, Treino FULL) abre como qualquer outro conteúdo
+select tests.ok('S2 corpo do antigo premium (t7) visível: todo conteúdo é livre', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:t7')) = 1);
+select tests.ok('S2 card do antigo premium continua no catálogo, livre e sem módulo', (select access_level = 'free' and required_module_id is null from public.content where id = public.seed_uuid('content:t7')));
 select tests.ok('S2 conclui conteúdo gratuito', (public.complete_content(public.seed_uuid('content:r1'), 'America/Sao_Paulo') ->> 'new')::boolean);
-select tests.expect_error('S2 não conclui conteúdo premium sem direito', $q$select public.complete_content(public.seed_uuid('content:t7'), 'America/Sao_Paulo')$q$, 'content_forbidden');
 select tests.ok('S2 streak de hoje = 1', public.compute_streak('10000000-0000-4000-8000-000000000002', 'America/Sao_Paulo') = 1);
 select tests.ok('S2 conquista "primeiro passo" concedida', exists (select 1 from public.user_achievements ua join public.achievements a on a.id = ua.achievement_id where ua.user_id = '10000000-0000-4000-8000-000000000002' and a.code = 'first_step'));
 select tests.expect_error('S2 fuso inválido rejeitado', $q$select public.complete_content(public.seed_uuid('content:r2'), 'Marte/Olympus')$q$, 'invalid_timezone');
@@ -111,34 +111,14 @@ select public.cart_set_item(public.seed_uuid('product:m2'), 1); -- usuário grat
 select tests.ok('S2 carrinho tem 1 item', (select count(*) from public.cart_items ci join public.carts c on c.id = ci.cart_id where c.user_id = '10000000-0000-4000-8000-000000000002') = 1);
 select tests.expect_error('S2 produto indisponível não entra no carrinho', $q$select public.cart_set_item(public.seed_uuid('product:a6'), 1)$q$, 'product_not_purchasable');
 
--- ================================================================ S3 · Direitos de acesso / assinatura simulada
-select tests.ok('S3 assina Treino FULL (sem exigir Base)', (public.select_modules(array[public.seed_uuid('module:training_full')]) ->> 'status') = 'active');
-select tests.ok('S3 corpo premium agora visível', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:t7')) = 1);
-select tests.ok('S3 cancelamento mantém acesso até o fim do período', (public.cancel_subscription() ->> 'status') = 'cancelled'
-  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:t7')) = 1);
+-- ================================================================ S3 · App gratuito (0069): sem plano nem conteúdo premium
+-- As tabelas e funções de assinatura ficam no banco, dormentes; o conteúdo não pode mais ser premium.
 select tests.su();
-update public.simulated_subscriptions set current_period_end = now() - interval '1 day' where user_id = '10000000-0000-4000-8000-000000000002';
-select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
-select tests.ok('S3 após o fim do período volta ao gratuito', (public.my_subscription() ->> 'status') = 'free');
-select tests.ok('S3 corpo premium bloqueado novamente', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:t7')) = 0);
--- downgrade agendado: adiciona dois módulos, remove um → só sai no fim do período
-select tests.ok('S3 upgrade imediato com 2 módulos', jsonb_array_length(public.select_modules(array[public.seed_uuid('module:base'), public.seed_uuid('module:chef_full')]) -> 'modules') = 2);
--- desde a 0027 a etapa demonstrativa vale no banco: consumer1 conclui a etapa antes (a linha sai
--- logo depois, porque o S22 confere que consumer1 não tem etapa). Desde a 0044 a g8 (Chef FULL) está
--- arquivada: o módulo que segue ativo é conferido pelo vídeo g10 (Chef FULL) e a etapa pela receita g5 (Base).
-insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('10000000-0000-4000-8000-000000000002', now());
-select tests.ok('S3 downgrade fica agendado (módulo segue ativo até o fim)', (select count(*) from jsonb_array_elements(public.select_modules(array[public.seed_uuid('module:base')]) -> 'modules') m where m ->> 'status' = 'scheduled_removal') = 1
-  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g10')) = 1
-  and (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g5')) = 1);
-delete from public.recipe_onboarding where user_id = '10000000-0000-4000-8000-000000000002';
-select tests.ok('S3 sem a etapa, o módulo ativo não abre o corpo da receita g5', (select count(*) from public.content_bodies where content_id = public.seed_uuid('content:g5')) = 0);
--- dependência configurável
-select tests.su();
-insert into public.module_dependencies (module_id, requires_module_id) values (public.seed_uuid('module:nutrition_full'), public.seed_uuid('module:base'));
-select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
-select tests.expect_error('S3 dependência configurada é exigida', $q$select public.select_modules(array[public.seed_uuid('module:nutrition_full')])$q$, 'module_dependency_missing');
-select tests.ok('S3 dependência satisfeita aceita', (public.select_modules(array[public.seed_uuid('module:base'), public.seed_uuid('module:nutrition_full')]) ->> 'status') = 'active');
-select tests.su(); delete from public.module_dependencies;
+select tests.ok('S3 nenhum conteúdo premium ou com módulo exigido', not exists (select 1 from public.content where access_level = 'premium' or required_module_id is not null));
+select tests.expect_error('S3 trava content_free_only recusa premium',
+  $q$update public.content set access_level = 'premium', required_module_id = public.seed_uuid('module:training_full') where id = public.seed_uuid('content:t7')$q$, 'content_free_only');
+select tests.expect_error('S3 trava content_free_only recusa módulo em conteúdo livre',
+  $q$update public.content set required_module_id = public.seed_uuid('module:base') where id = public.seed_uuid('content:r1')$q$, 'content_free_only');
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
 select tests.expect_error('S3 usuário não insere direito direto na tabela', $q$insert into public.subscription_modules (subscription_id, module_id) select id, public.seed_uuid('module:training_full') from public.simulated_subscriptions where user_id = '10000000-0000-4000-8000-000000000002'$q$, '42501');
 
@@ -333,16 +313,13 @@ select tests.login('10000000-0000-4000-8000-000000000003', 'consumer2@test.local
 select tests.expect_error('S9 conteúdo arquivado não pode ser consumido', $q$select public.complete_content(public.seed_uuid('content:r7'), 'America/Sao_Paulo')$q$, 'content_forbidden');
 select tests.ok('S9 conclusões antigas de r7 preservadas (consumer1 não tinha; histórico intacto)', (select count(*) from public.completions where content_id = public.seed_uuid('content:r7')) = 0);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
--- substituto do mesmo herói do programa (0052): r8 (Ronaldinho, etapa opcional da mesma versão); o
--- Ronaldinho não tem outro conteúdo grátis fora do programa, então r8 fica grátis só neste trecho
-select tests.su();
-update public.content set access_level = 'free' where id = public.seed_uuid('content:r8');
+-- substituto do mesmo herói do programa (0052): r8 (Ronaldinho, etapa opcional da mesma versão);
+-- desde a 0069 todo conteúdo é livre
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 select public.admin_substitute_program_item(public.seed_uuid('pv:p2:1'), public.seed_uuid('content:r7'), public.seed_uuid('content:r8'), 'r7 arquivado; r8 cobre o tema');
 select tests.login('10000000-0000-4000-8000-000000000003', 'consumer2@test.local');
 create temporary table t_done2 as select public.complete_content(public.seed_uuid('content:r8'), 'America/Sao_Paulo') as r;
 select tests.su();
-update public.content set access_level = 'premium' where id = public.seed_uuid('content:r8');
 select tests.ok('S9 substituição permite concluir programa pendente', (select status from public.enrollments where user_id = '10000000-0000-4000-8000-000000000003' and program_id = public.seed_uuid('program:p2')) = 'completed'
   and jsonb_array_length((select r from t_done2) -> 'programs_completed') = 1);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
@@ -667,19 +644,21 @@ select tests.ok('S19 filtro p_type (recipe) bate com a contagem direta',
   (select count(*) from t_s19_live where type = 'recipe') > 0
   and (select count(*) from public.explore_feed(null, 'recipe', null, null, 7, 100, 0)) = (select count(*) from t_s19_live where type = 'recipe')
   and (select bool_and(type = 'recipe') from public.explore_feed(null, 'recipe', null, null, 7, 100, 0)));
-select tests.ok('S19 filtro p_access (premium) bate com a contagem direta',
-  (select count(*) from t_s19_live where access_level = 'premium') > 0
-  and (select count(*) from public.explore_feed(null, null, 'premium', null, 7, 100, 0)) = (select count(*) from t_s19_live where access_level = 'premium')
-  and (select bool_and(access_level = 'premium') from public.explore_feed(null, null, 'premium', null, 7, 100, 0)));
+-- app gratuito (0069): todo conteúdo no ar é livre; o filtro p_access (o app não manda mais) segue coerente
+select tests.ok('S19 filtro p_access (free) devolve todo o feed e premium devolve vazio',
+  (select count(*) from t_s19_live where access_level = 'free') > 0
+  and (select count(*) from t_s19_live where access_level is distinct from 'free') = 0
+  and (select count(*) from public.explore_feed(null, null, 'free', null, 7, 100, 0)) = (select count(*) from t_s19_live)
+  and (select count(*) from public.explore_feed(null, null, 'premium', null, 7, 100, 0)) = 0);
 select tests.ok('S19 filtro p_difficulty (intermediate) bate com a contagem direta',
   (select count(*) from t_s19_live where difficulty = 'intermediate') > 0
   and (select count(*) from public.explore_feed(null, null, null, 'intermediate', 7, 100, 0)) = (select count(*) from t_s19_live where difficulty = 'intermediate')
   and (select bool_and(difficulty = 'intermediate') from public.explore_feed(null, null, null, 'intermediate', 7, 100, 0)));
-select tests.ok('S19 filtros combinados (training + premium + intermediate) batem com a contagem direta',
-  (select count(*) from t_s19_live where pillar = 'training' and access_level = 'premium' and difficulty = 'intermediate') > 0
-  and (select count(*) from public.explore_feed('training', null, 'premium', 'intermediate', 7, 100, 0))
-    = (select count(*) from t_s19_live where pillar = 'training' and access_level = 'premium' and difficulty = 'intermediate')
-  and (select bool_and(pillar = 'training' and access_level = 'premium' and difficulty = 'intermediate') from public.explore_feed('training', null, 'premium', 'intermediate', 7, 100, 0)));
+select tests.ok('S19 filtros combinados (training + free + intermediate) batem com a contagem direta',
+  (select count(*) from t_s19_live where pillar = 'training' and access_level = 'free' and difficulty = 'intermediate') > 0
+  and (select count(*) from public.explore_feed('training', null, 'free', 'intermediate', 7, 100, 0))
+    = (select count(*) from t_s19_live where pillar = 'training' and access_level = 'free' and difficulty = 'intermediate')
+  and (select bool_and(pillar = 'training' and access_level = 'free' and difficulty = 'intermediate') from public.explore_feed('training', null, 'free', 'intermediate', 7, 100, 0)));
 select tests.ok('S19 filtro sem conteúdo correspondente devolve vazio (advanced)',
   (select count(*) from public.explore_feed(null, null, null, 'advanced', 7, 100, 0)) = (select count(*) from t_s19_live where difficulty = 'advanced'));
 
@@ -1172,7 +1151,7 @@ select tests.ok('S22 RLS ativa nas duas tabelas e RPC do admin security definer 
 
 -- ================================================================ S23 · publicação direta pelo herói (0025)
 -- creator_publish_content: o dono publica o próprio rascunho sem fila do admin (vídeo do celular =
--- cloudflare_stream + licença 'own'); sem regra de acesso vira free, premium do admin é preservado.
+-- cloudflare_stream + licença 'own'); sem regra de acesso vira free (desde a 0069 não há premium).
 -- creator_unpublish_content: volta a rascunho editável. O admin segue arquivando depois; o fluxo de
 -- revisão antigo continua. Tudo que este cenário publica termina fora do ar (o S14 conta 40 no ar).
 select tests.su();
@@ -1187,7 +1166,7 @@ select tests.ok('S23 RPCs security definer, search_path fixo, executáveis por a
                    and not has_function_privilege('anon', p.oid, 'execute'))
    from pg_proc p where p.oid in ('public.creator_publish_content(uuid)'::regprocedure, 'public.creator_unpublish_content(uuid)'::regprocedure)));
 
--- 1) rascunhos do herói (creator1 = Lia): vídeo do celular, vídeo que o admin marca premium,
+-- 1) rascunhos do herói (creator1 = Lia): vídeo do celular, vídeo que o admin tenta marcar premium,
 --    guia sem corpo, vídeo sem mídia e guia com título em branco. Desde a 0026 o uid do Stream
 --    precisa de vínculo em stream_uploads (gravado pelo servidor no ticket): o sistema registra antes.
 insert into public.stream_uploads (uid, creator_id, expires_at)
@@ -1258,17 +1237,18 @@ select tests.ok('S23 auditoria content.creator_publish com ator herói, antes e 
             and before_data ->> 'status' = 'draft' and before_data -> 'access_level' = 'null'::jsonb
             and after_data ->> 'status' = 'published' and after_data ->> 'access_level' = 'free' and after_data ->> 'media_provider' = 'cloudflare_stream'));
 
--- 4) premium definido pelo admin é preservado
+-- 4) app gratuito (0069): nem o admin marca premium; o publicado pelo herói fica livre
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
-update public.content set access_level = 'premium', required_module_id = public.seed_uuid('module:training_full') where id = '23000000-0000-4000-8000-000000000002';
+select tests.expect_error('S23 admin não marca premium (content_free_only)',
+  $q$update public.content set access_level = 'premium', required_module_id = public.seed_uuid('module:training_full') where id = '23000000-0000-4000-8000-000000000002'$q$, 'content_free_only');
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
-select tests.expect_error('S23 outro herói não despublica nem publica o premium alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
+select tests.expect_error('S23 outro herói não publica conteúdo alheio', $q$select public.creator_publish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
 select tests.login('10000000-0000-4000-8000-000000000004', 'creator1@test.local');
 select public.creator_publish_content('23000000-0000-4000-8000-000000000002');
-select tests.ok('S23 premium do admin preservado com o mesmo módulo', (select status = 'published' and access_level = 'premium' and required_module_id = public.seed_uuid('module:training_full')
+select tests.ok('S23 publicado pelo herói fica livre e sem módulo', (select status = 'published' and access_level = 'free' and required_module_id is null
   from public.content where id = '23000000-0000-4000-8000-000000000002'));
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
-select tests.ok('S23 premium no ar não libera consumo sem o módulo', not public.can_access_content('23000000-0000-4000-8000-000000000002'));
+select tests.ok('S23 consumidor logado consome o segundo vídeo livre', public.can_access_content('23000000-0000-4000-8000-000000000002'));
 select tests.login('10000000-0000-4000-8000-000000000023', 's23hero@test.local');
 select tests.expect_error('S23 outro herói não despublica conteúdo alheio', $q$select public.creator_unpublish_content('23000000-0000-4000-8000-000000000002')$q$, 'forbidden');
 -- o admin continua governando depois: arquiva o publicado pelo herói, que não volta ao ar por conta própria
@@ -1826,10 +1806,11 @@ select tests.ok('S26 consumidor sem a etapa: can_access_content(g1) falso, 0 ing
   and (select count(*) from public.recipe_extras where content_id = public.seed_uuid('content:g1')) = 0
   and (select count(*) from public.recipe_details where content_id = public.seed_uuid('content:g1')) = 1);
 insert into public.recipe_onboarding (user_id, notice_accepted_at) values ('10000000-0000-4000-8000-000000000025', now());
-select tests.ok('S26 com a etapa: 6 ingredientes de g1 (gratuita) e 0 de g5 (premium sem módulo)',
+select tests.ok('S26 com a etapa: 6 ingredientes de g1, 5 de g5 (livre desde a 0069) e 0 de g8 (arquivada)',
   public.can_access_content(public.seed_uuid('content:g1'))
   and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g1')) = 6
-  and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g5')) = 0
+  and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g5')) = 5
+  and (select count(*) from public.recipe_ingredients where content_id = public.seed_uuid('content:g8')) = 0
   and (select count(*) from public.recipe_steps where content_id = public.seed_uuid('content:g1')) = 3
   and (select count(*) from public.recipe_extras where content_id = public.seed_uuid('content:g1')) = 1);
 select tests.ok('S26 receita que não é do consumidor: versões invisíveis', (select count(*) from public.recipe_versions) = 0);
@@ -1991,9 +1972,9 @@ select tests.expect_error('S26 visitante não lê o corpo da tradução (permiss
 select tests.expect_error('S26 visitante não executa content_localized_body', $q$select public.content_localized_body(public.seed_uuid('content:r1'), 'en')$q$, 'permission denied');
 select tests.login('10000000-0000-4000-8000-000000000025', 's25@test.local');
 select tests.expect_error('S26 consumidor também não seleciona body direto', $q$select body from public.content_localizations$q$, 'permission denied');
-select tests.ok('S26 consumidor com acesso lê o corpo traduzido pela RPC; sem acesso (g5 premium) recebe nulo',
+select tests.ok('S26 consumidor com acesso lê o corpo traduzido pela RPC; sem acesso (g8 arquivada) recebe nulo',
   (public.content_localized_body(public.seed_uuid('content:r1'), 'en') ->> 'intro') = 'secret body'
-  and public.content_localized_body(public.seed_uuid('content:g5'), 'en') is null);
+  and public.content_localized_body(public.seed_uuid('content:g8'), 'en') is null);
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
 -- o upsert (on conflict … do update set body = excluded.body) exigiria select em body: o painel de
 -- traduções passa a gravar com update e, se não houver linha, insert (nenhum dos dois lê body)
@@ -2589,8 +2570,8 @@ select tests.ok('S30 adicionar o mesmo ingrediente de novo atualiza a linha', (s
   and (select quantity = 600 from public.shopping_list_items where name = 'Peito de frango'));
 select tests.expect_error('S30 ingrediente de outra receita: ingredient_mismatch',
   $q$insert into public.shopping_list_items (content_id, ingredient_id, name) values (public.seed_uuid('content:g3'), (select id from public.recipe_ingredients where content_id = public.seed_uuid('content:g1') and position = 3), 'x')$q$, 'ingredient_mismatch');
-select tests.expect_error('S30 item de receita sem acesso (g5 premium) é recusado',
-  $q$insert into public.shopping_list_items (content_id, name) values (public.seed_uuid('content:g5'), 'Salmão')$q$, '42501');
+select tests.expect_error('S30 item de receita sem acesso (g8 arquivada) é recusado',
+  $q$insert into public.shopping_list_items (content_id, name) values (public.seed_uuid('content:g8'), 'Carne moída')$q$, '42501');
 insert into public.shopping_list_items (name) select 'Item ' || g from generate_series(1, 298) as g;
 select tests.expect_error('S30 o 301º item: shopping_list_full', $q$insert into public.shopping_list_items (name) values ('Item 301')$q$, 'shopping_list_full');
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
@@ -2695,9 +2676,8 @@ begin
   end loop;
 end $s31$;
 select tests.login('10000000-0000-4000-8000-000000000028', 's28prem@test.local');
-select public.select_modules(array[public.seed_uuid('module:base')]);
--- 0044: a g8 (Chef FULL) foi arquivada; a receita premium no ar é a g5 (Base)
-select tests.ok('S31 premium com a etapa encontra g5 por "alecrim" (ingrediente)',
+-- 0044: a g8 foi arquivada; desde a 0069 a g5 (antes premium) é livre como as outras
+select tests.ok('S31 consumidor com a etapa encontra g5 por "alecrim" (ingrediente)',
   exists (select 1 from public.recipe_catalog('alecrim', null, null, null, null, null, null, 'relevance', null, 24) where content_id = public.seed_uuid('content:g5')));
 select tests.expect_error('S31 cursor que não é do formato: invalid_cursor', $q$select * from public.recipe_catalog(null, null, null, null, null, null, null, 'recent', 'abc', 3)$q$, 'invalid_cursor');
 select tests.login('10000000-0000-4000-8000-000000000026', 's26helena@test.local');

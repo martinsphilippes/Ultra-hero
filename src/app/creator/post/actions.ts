@@ -15,6 +15,8 @@ import { creatorActionContext, type CreatorActionContext } from "../_lib/creator
 import { setDraftSlug } from "../_lib/draft-slug";
 import { checkStreamVideo, providerFailure, readVideoUploadConfigured } from "../_lib/video-post";
 import { schedulePushDispatch } from "@/lib/push/schedule";
+import { hasUploadRights } from "@/lib/partner-terms/server";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 
 // Composer de post em vídeo do herói. O ticket de upload, o vínculo uid → herói (stream_uploads,
 // gravado só pelo service role) e o rascunho nascem juntos no servidor; o banco recusa corpo e
@@ -85,6 +87,8 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
+  // Termos do Parceiro (0068): o herói confirma os direitos antes do primeiro envio; o admin age pelo seletor
+  if (!ctx.actingFor && !(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
   if (!(await readVideoUploadConfigured(supabase))) return { ok: false, error: "video_not_configured" };
 
   // Limite antes de pedir o ticket (a RLS deixa o herói contar os próprios envios); o gatilho do

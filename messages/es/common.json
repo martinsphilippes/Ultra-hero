@@ -110,10 +110,6 @@
     "nutrition": "Nutrición",
     "gastronomy": "Gastronomía"
   },
-  "plans": {
-    "free": "Gratis",
-    "premium": "Premium"
-  },
   "a11y": {
     "skipToContent": "Saltar al contenido",
     "loading": "Cargando",

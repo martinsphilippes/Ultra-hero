@@ -14,7 +14,6 @@
     "type": "Type",
     "status": "Status",
     "reviewStatus": "Review",
-    "accessLevel": "Access",
     "seller": "Seller",
     "category": "Category",
     "availability": "Availability",
@@ -100,8 +99,6 @@
       "article": "Article"
     },
     "access": {
-      "free": "Free",
-      "premium": "Premium",
       "undefined": "No rule (unavailable)"
     },
     "completionMode": {
@@ -126,7 +123,7 @@
     "forbidden": "You do not have permission for this action.",
     "unauthenticated": "Session expired. Sign in again.",
     "duplicate": "A record with the same identifier (slug or code) already exists.",
-    "constraint": "The data violates a database rule (e.g. premium requires a module).",
+    "constraint": "The data violates a database rule.",
     "reference": "Invalid reference: the related item no longer exists.",
     "content_not_found": "Content not found.",
     "invalid_decision": "Invalid decision.",
@@ -139,7 +136,6 @@
     "already_in_review": "This content is already in review.",
     "content_incomplete": "Incomplete content: title and pillar are required.",
     "content_not_editable": "Content is not editable in this state.",
-    "premium_requires_module": "Premium content requires a module.",
     "invalid_kind": "Invalid featured kind.",
     "version_not_found": "Version not found.",
     "version_has_no_items": "The version has no items. Add at least one content before publishing.",
@@ -158,7 +154,6 @@
     "product_requires_image": "A published product needs an image.",
     "food_product_requires_food_info": "A published food product requires ingredients, allergens and storage.",
     "seller_not_own": "Admin only creates or edits products of the own operation. Partner products are only moderated.",
-    "self_dependency": "A module cannot depend on itself.",
     "invalid_json": "The body must be a valid JSON object.",
     "not_found": "Record not found.",
     "publish_at_invalid": "Invalid publication date.",
@@ -204,7 +199,6 @@
       "type": "Type",
       "status": "Status",
       "review": "Review",
-      "access": "Access",
       "updated": "Updated"
     },
     "featured": "Featured",
@@ -235,7 +229,6 @@
       "captionsYes": "With captions",
       "captionsNo": "No captions",
       "disclaimer": "Contextual disclaimer",
-      "requiredModule": "Required module",
       "completionMode": "Completion",
       "noAccessRule": "No access rule: the content shows as “temporarily unavailable” to the public.",
       "slugLabel": "Slug",
@@ -314,7 +307,7 @@
       "createTitle": "New content (admin)",
       "createDescription": "Pick the hero in charge and fill in the fields. The content starts as a draft.",
       "editTitle": "Edit content",
-      "editDescription": "Admin edits any field, including access rule, module and completion mode.",
+      "editDescription": "Admin edits any field, including completion mode. All content is free.",
       "creatorLabel": "Hero in charge",
       "creatorHint": "Fictional heroes are marked in the list.",
       "creatorRequired": "Pick a hero before saving.",
@@ -556,53 +549,6 @@
         "forbidden": "Not allowed.",
         "generic": "Couldn't save. Please try again."
       }
-    }
-  },
-  "plans": {
-    "title": "Plans and modules",
-    "description": "Modules are the unit of entitlement; plans are presentation bundles. Everything is simulated.",
-    "modules": {
-      "title": "Modules",
-      "caption": "Module list",
-      "code": "Code",
-      "codeHint": "Immutable after creation (e.g. training_full).",
-      "name": "Name",
-      "description": "Description",
-      "price": "Demo price",
-      "priceHint": "Demo amount in cents (e.g. 2990 = R$ 29.90). No real charge.",
-      "active": "Active",
-      "sort": "Order",
-      "new": "New module",
-      "edit": "Edit module",
-      "created": "Module created",
-      "updated": "Module updated",
-      "empty": "No modules registered."
-    },
-    "dependencies": {
-      "title": "Module dependencies",
-      "description": "To select a module the user must hold the required modules. By default, FULL modules do not require Base.",
-      "requires": "{name} requires:",
-      "noneRequired": "Requires no module",
-      "saved": "Dependencies saved",
-      "selfHint": "The module itself is not listed (no self-dependency)."
-    },
-    "bundles": {
-      "title": "Plans (bundles)",
-      "caption": "Plan list",
-      "code": "Code",
-      "name": "Name",
-      "description": "Description",
-      "isFree": "Free plan",
-      "isFreeHint": "A free plan includes no modules.",
-      "active": "Active",
-      "sort": "Order",
-      "modules": "Included modules",
-      "new": "New plan",
-      "edit": "Edit plan",
-      "created": "Plan created",
-      "updated": "Plan updated",
-      "empty": "No plans registered.",
-      "noModules": "No modules"
     }
   },
   "featured": {

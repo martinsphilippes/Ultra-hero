@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteAccount } from "@/app/(app)/profile/actions";
 import { Button, Dialog, FormField, Input, useToast } from "@/components/ui";
-import { DELETE_CONFIRM_WORD } from "./subscription";
+import { DELETE_CONFIRM_WORD } from "./delete-account";
 
 // Exclusão self-service: exige digitar a palavra de confirmação; depois encerra a sessão e volta ao início.
 export function DeleteAccountDialog() {

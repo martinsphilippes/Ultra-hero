@@ -7,9 +7,8 @@ import { AccountSuspensionButton } from "@/components/admin-ops/AccountSuspensio
 import { isSuspended, suspensionBlock } from "@/components/admin-ops/account-status";
 import { AuditEntry } from "@/components/admin-ops/AuditEntry";
 import { RoleToggles } from "@/components/admin-ops/RoleToggles";
-import { Badge, DemoBadge, PageHeader } from "@/components/ui";
-import { StatusBadge } from "@/components/admin";
-import { formatDate, formatDateTime, formatNumber } from "@/i18n/format";
+import { Badge, PageHeader } from "@/components/ui";
+import { formatDateTime, formatNumber } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { getUser } from "@/lib/auth/session";
 import { hasAdminClient } from "@/lib/supabase/admin";
@@ -54,10 +53,9 @@ export default async function AdminUserDetailPage({ params }: { params: Params }
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const supabase = await createClient();
-  const [t, tn, ts, tco, tsu, locale, me, user] = await Promise.all([
+  const [t, tn, tco, tsu, locale, me, user] = await Promise.all([
     getTranslations("adminOps.users"),
     getTranslations("nav"),
-    getTranslations("adminCommon.status"),
     getTranslations("adminOps.common"),
     getTranslations("adminOps.users.suspension"),
     getLocale(),
@@ -66,14 +64,9 @@ export default async function AdminUserDetailPage({ params }: { params: Params }
   ]);
   if (!user) notFound();
 
-  const [profileRes, rolesRes, subRes, enrollRes, complRes, ordersRes, auditRes] = await Promise.all([
+  const [profileRes, rolesRes, enrollRes, complRes, ordersRes, auditRes] = await Promise.all([
     supabase.from("profiles").select("display_name, locale, timezone, onboarding_completed, anonymized_at").eq("id", id).maybeSingle(),
     supabase.from("role_assignments").select("id, role, scope_type, scope_id, revoked_at").eq("user_id", id).is("revoked_at", null),
-    supabase
-      .from("simulated_subscriptions")
-      .select("status, current_period_start, current_period_end, auto_renew, cancelled_at, subscription_modules(status, removal_at, plan_modules(code, name))")
-      .eq("user_id", id)
-      .maybeSingle(),
     supabase.from("enrollments").select("id", { count: "exact", head: true }).eq("user_id", id),
     supabase.from("completions").select("id", { count: "exact", head: true }).eq("user_id", id),
     supabase.from("test_orders").select("id", { count: "exact", head: true }).eq("user_id", id),
@@ -93,7 +86,6 @@ export default async function AdminUserDetailPage({ params }: { params: Params }
   const scopeNames = new Map<string, string>([...(creatorsRes.data ?? []), ...(orgsRes.data ?? [])].map((x) => [x.id, x.name]));
 
   const profile = profileRes.data;
-  const sub = subRes.data;
   const n = (v: number | null) => formatNumber(v ?? 0, locale);
   const dt = (v: string | null | undefined) => (v ? formatDateTime(v, locale) : "—");
   // Suspensão (ban no Auth): só com service role no servidor; nunca de si mesmo nem de admin ativo.
@@ -187,39 +179,6 @@ export default async function AdminUserDetailPage({ params }: { params: Params }
                 </li>
               ))}
             </ul>
-          )}
-        </section>
-
-        <section aria-labelledby="sub-title" className="rounded-2xl border border-border bg-surface p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <h2 id="sub-title" className="type-h3 text-fg">
-              {t("detail.subscription")}
-            </h2>
-            <DemoBadge size="sm" />
-          </div>
-          {!sub ? (
-            <p className="type-body-sm text-fg-muted">{t("detail.subscriptionNone")}</p>
-          ) : (
-            <div className="flex flex-col gap-3 text-sm">
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-                <Row label={t("detail.subscriptionStatus")} value={<StatusBadge status={sub.status} label={ts.has(sub.status) ? ts(sub.status) : sub.status} />} />
-                <Row label={t("detail.period")} value={`${formatDate(sub.current_period_start, locale)} – ${formatDate(sub.current_period_end, locale)}`} />
-                <Row label={t("detail.autoRenew")} value={sub.auto_renew ? "✓" : "—"} />
-              </dl>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{t("detail.modules")}</p>
-                <ul className="mt-1 flex flex-wrap gap-1.5">
-                  {(sub.subscription_modules ?? []).map((m, i) => (
-                    <li key={m.plan_modules?.code ?? i} className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-elevated px-2.5 py-1 text-xs">
-                      <span className="font-medium text-fg">{m.plan_modules?.name ?? m.plan_modules?.code}</span>
-                      {m.status === "scheduled_removal" && m.removal_at && <span className="text-warning">· {t("detail.moduleRemoval", { date: formatDate(m.removal_at, locale) })}</span>}
-                    </li>
-                  ))}
-                  {(sub.subscription_modules ?? []).length === 0 && <li className="type-caption text-fg-subtle">—</li>}
-                </ul>
-              </div>
-              <p className="type-caption text-fg-muted">{t("detail.subscriptionDemo")}</p>
-            </div>
           )}
         </section>
 

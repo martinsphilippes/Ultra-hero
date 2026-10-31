@@ -117,14 +117,17 @@ describe("parseExploreParams", () => {
     expect(params).toEqual({ tab: "conteudos", q: "" });
     expect(params.pillar).toBeUndefined();
     expect(params.type).toBeUndefined();
-    expect(params.access).toBeUndefined();
     expect(params.difficulty).toBeUndefined();
   });
 
   it("aceita todos os valores válidos", () => {
     expect(
-      parseExploreParams({ tab: "produtos", q: "frango", pillar: "nutrition", type: "recipe", access: "premium", difficulty: "advanced" }),
-    ).toEqual({ tab: "produtos", q: "frango", pillar: "nutrition", type: "recipe", access: "premium", difficulty: "advanced" });
+      parseExploreParams({ tab: "produtos", q: "frango", pillar: "nutrition", type: "recipe", difficulty: "advanced" }),
+    ).toEqual({ tab: "produtos", q: "frango", pillar: "nutrition", type: "recipe", difficulty: "advanced" });
+  });
+
+  it("app gratuito (0069): o antigo filtro de acesso da URL é ignorado", () => {
+    expect(parseExploreParams({ access: "premium" })).toEqual({ tab: "conteudos", q: "" });
   });
 
   it("valores inválidos caem no padrão sem lançar erro", () => {
@@ -142,7 +145,7 @@ describe("parseExploreParams", () => {
   it("enums diferenciam maiúsculas e não aceitam string vazia", () => {
     expect(parseExploreParams({ tab: "Programas" }).tab).toBe("conteudos");
     expect(parseExploreParams({ tab: "" }).tab).toBe("conteudos");
-    expect(parseExploreParams({ access: "" }).access).toBeUndefined();
+    expect(parseExploreParams({ difficulty: "" }).difficulty).toBeUndefined();
   });
 
   it("parâmetro repetido usa o primeiro valor (em todas as chaves)", () => {
@@ -152,10 +155,9 @@ describe("parseExploreParams", () => {
         q: ["um", "dois"],
         pillar: ["routine", "training"],
         type: ["video", "recipe"],
-        access: ["free", "premium"],
         difficulty: ["beginner", "advanced"],
       }),
-    ).toEqual({ tab: "programas", q: "um", pillar: "routine", type: "video", access: "free", difficulty: "beginner" });
+    ).toEqual({ tab: "programas", q: "um", pillar: "routine", type: "video", difficulty: "beginner" });
     expect(parseExploreParams({ tab: [], q: [] })).toEqual({ tab: "conteudos", q: "" });
   });
 
@@ -193,14 +195,14 @@ describe("exploreHref", () => {
   });
 
   it("gera as chaves em ordem estável e codifica a busca", () => {
-    const href = exploreHref({ difficulty: "beginner", access: "free", type: "video", pillar: "routine", q: "frango & batata", tab: "produtos" });
-    expect(href).toBe("/explore?tab=produtos&q=frango+%26+batata&pillar=routine&type=video&access=free&difficulty=beginner");
+    const href = exploreHref({ difficulty: "beginner", type: "video", pillar: "routine", q: "frango & batata", tab: "produtos" });
+    expect(href).toBe("/explore?tab=produtos&q=frango+%26+batata&pillar=routine&type=video&difficulty=beginner");
   });
 
   it("override null remove a chave", () => {
     const base: ExploreParams = { tab: "produtos", q: "aveia", pillar: "training", type: "video" };
     expect(exploreHref(base, { pillar: null })).toBe("/explore?tab=produtos&q=aveia&type=video");
-    expect(exploreHref(base, { q: null, pillar: null, type: null, access: null, difficulty: null })).toBe("/explore?tab=produtos");
+    expect(exploreHref(base, { q: null, pillar: null, type: null, difficulty: null })).toBe("/explore?tab=produtos");
     expect(exploreHref(base, { tab: null })).toBe("/explore?q=aveia&pillar=training&type=video");
   });
 
@@ -226,8 +228,8 @@ describe("exploreHref", () => {
     const cases: ExploreParams[] = [
       { tab: "conteudos", q: "" },
       { tab: "programas", q: "força" },
-      { tab: "produtos", q: "pão & café = 100%?", pillar: "gastronomy", type: "recipe", access: "premium", difficulty: "intermediate" },
-      { tab: "listas", q: "", access: "free" },
+      { tab: "produtos", q: "pão & café = 100%?", pillar: "gastronomy", type: "recipe", difficulty: "intermediate" },
+      { tab: "listas", q: "", type: "guide" },
       { tab: "conteudos", q: "á é í ó ú ç ã õ #tag /barra", difficulty: "beginner" },
     ];
     for (const params of cases) {
@@ -256,20 +258,20 @@ describe("activeFilterCount / secondaryFilterCount", () => {
     expect(secondaryFilterCount(params)).toBe(0);
   });
 
-  it("tipo, acesso e dificuldade contam nos dois", () => {
-    const params: ExploreParams = { tab: "conteudos", q: "", type: "guide", access: "free", difficulty: "advanced" };
-    expect(activeFilterCount(params)).toBe(3);
-    expect(secondaryFilterCount(params)).toBe(3);
+  it("tipo e dificuldade contam nos dois", () => {
+    const params: ExploreParams = { tab: "conteudos", q: "", type: "guide", difficulty: "advanced" };
+    expect(activeFilterCount(params)).toBe(2);
+    expect(secondaryFilterCount(params)).toBe(2);
   });
 
-  it("todos os filtros: 4 ativos, 3 secundários", () => {
-    const params: ExploreParams = { tab: "conteudos", q: "", pillar: "nutrition", type: "article", access: "premium", difficulty: "beginner" };
-    expect(activeFilterCount(params)).toBe(4);
-    expect(secondaryFilterCount(params)).toBe(3);
+  it("todos os filtros: 3 ativos, 2 secundários", () => {
+    const params: ExploreParams = { tab: "conteudos", q: "", pillar: "nutrition", type: "article", difficulty: "beginner" };
+    expect(activeFilterCount(params)).toBe(3);
+    expect(secondaryFilterCount(params)).toBe(2);
   });
 
   it("filtros inválidos descartados pelo parser não contam", () => {
-    const params = parseExploreParams({ pillar: "yoga", type: "podcast", access: "free" });
+    const params = parseExploreParams({ pillar: "yoga", type: "podcast", difficulty: "beginner" });
     expect(activeFilterCount(params)).toBe(1);
     expect(secondaryFilterCount(params)).toBe(1);
   });
