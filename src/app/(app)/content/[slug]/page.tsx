@@ -373,6 +373,19 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
               <PlanBadge plan="free" />
             )}
           </div>
+          {/* vídeo para visitante: o play leva ao login e volta ao vídeo, que começa sozinho */}
+          {state === "visitor" && content.type === "video" ? (
+            <Link
+              href={`/login?next=${encodeURIComponent(path)}`}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-obsidian/25 text-white focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-focus"
+              data-testid="content-visitor-play"
+            >
+              <span className="flex size-16 items-center justify-center rounded-full bg-accent shadow-lg shadow-black/40 ring-4 ring-white/20">
+                <Play className="ml-1 size-7 fill-current" aria-hidden="true" />
+              </span>
+              <span className="rounded-full bg-obsidian/70 px-3 py-1 text-sm font-semibold backdrop-blur-sm">{t("visitorPlay")}</span>
+            </Link>
+          ) : null}
           {/* Smart Tags (0062): a capa usa object-contain; as marcações seguem a foto, não o quadro */}
           {smartTags.length > 0 && content.cover_url ? (
             <SmartTagLayer tags={smartTags} fit="contain" imageSelector='[data-testid="content-cover-image"]' defaultRevealed />

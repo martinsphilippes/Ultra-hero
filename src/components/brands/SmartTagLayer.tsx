@@ -171,15 +171,16 @@ export function SmartTagLayer({ tags, fit, imageSelector = "img", defaultReveale
           setActiveId(null);
         }}
         aria-pressed={revealed}
-        aria-label={revealed ? t("tags.hide") : t("tags.show")}
         className={cn(
           "pointer-events-auto absolute bottom-2.5 right-2.5 inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded-full px-2.5 text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
           revealed ? "uh-tag-chip" : "bg-black/45 backdrop-blur-sm hover:bg-black/60",
         )}
         data-testid="smart-tag-toggle"
       >
+        {/* nome acessível vem do conteúdo (texto oculto + o número visível), sem aria-label divergente */}
+        <span className="sr-only">{revealed ? t("tags.hide") : t("tags.show")}</span>
         <Tag aria-hidden="true" className="size-4" />
-        <span aria-hidden="true" className="text-xs font-semibold type-numeric">
+        <span className="text-xs font-semibold type-numeric">
           {placed.length}
         </span>
       </button>
