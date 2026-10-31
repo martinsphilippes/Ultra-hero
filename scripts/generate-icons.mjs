@@ -1,175 +1,120 @@
-// Gera os ícones PWA (PNG) a partir da marca (losango laranja), sem dependências.
+// Gera os ícones do app (Tela de Início, PWA e favicon) a partir do símbolo da marca Groscove Ultra
+// (o "A" em triângulo de src/components/layout/brand-paths.ts), no estilo "botão": fundo escuro com
+// degradê, placa com borda laranja e brilho, e o triângulo centralizado com sombra.
 // Uso: node scripts/generate-icons.mjs
-// Saída: public/icons/groscove-192.png, groscove-512.png, groscove-maskable-512.png,
-//        src/app/apple-icon.png (180) e src/app/favicon.ico (PNG 32/16 embutidos).
-import { mkdirSync, writeFileSync } from "node:fs";
-import path from "node:path";
-import { deflateSync } from "node:zlib";
+// Saída: public/icons/groscove-v2-192.png, groscove-v2-512.png, groscove-v2-maskable-512.png,
+//        src/app/apple-icon.png (180), src/app/icon.svg e src/app/favicon.ico (PNG 32/16 embutidos).
+import { readFileSync, writeFileSync } from "node:fs";
+import sharp from "sharp";
 
-const ROOT = process.cwd();
-const ICONS_DIR = path.join(ROOT, "public", "icons");
-const APP_DIR = path.join(ROOT, "src", "app");
+const brand = readFileSync(new URL("../src/components/layout/brand-paths.ts", import.meta.url), "utf8");
+const A_PATH = brand.match(/export const LOGO_A_PATH = "([^"]+)"/)[1];
+// caixa justa do triângulo (medida no desenho), em coordenadas da logo
+const MARK = { x: 965, y: 85, w: 388, h: 261.5 };
 
-const OBSIDIAN = [11, 11, 11];
-const ORANGE = [255, 90, 31];
+const S = 1024; // tudo é desenhado em 1024 e reduzido
 
-// Mesma geometria do Logo.tsx (quadro 64x64): losango (quadrado a 45°).
-const SHAPES = [{ color: ORANGE, points: [[32, 6], [58, 32], [32, 58], [6, 32]] }];
-
-// ---------------------------------------------------------------- geometria --
-function pointInPolygon(x, y, points) {
-  let inside = false;
-  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-    const [xi, yi] = points[i];
-    const [xj, yj] = points[j];
-    const intersects = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-    if (intersects) inside = !inside;
-  }
-  return inside;
+function mark(cx, cy, width, id) {
+  const scale = width / MARK.w;
+  const h = MARK.h * scale;
+  // triângulo: o peso visual fica embaixo; sobe 3% da altura para parecer centrado
+  const x = cx - width / 2 - MARK.x * scale;
+  const y = cy - h / 2 - h * 0.03 - MARK.y * scale;
+  return `<g filter="url(#shadow-${id})"><path transform="translate(${x} ${y}) scale(${scale})" fill="url(#orange-${id})" d="${A_PATH}"/></g>`;
 }
 
-function inRoundedRect(x, y, size, radius) {
-  const r = radius;
-  const cx = x < r ? r : x > size - r ? size - r : x;
-  const cy = y < r ? r : y > size - r ? size - r : y;
-  const dx = x - cx;
-  const dy = y - cy;
-  return dx * dx + dy * dy <= r * r;
+function defs(id, markWidth) {
+  return `<defs>
+  <radialGradient id="bg-${id}" cx="30%" cy="18%" r="95%">
+    <stop offset="0" stop-color="#2A211C"/><stop offset="0.55" stop-color="#121212"/><stop offset="1" stop-color="#050505"/>
+  </radialGradient>
+  <linearGradient id="plate-${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1E1E20"/><stop offset="1" stop-color="#0A0A0A"/>
+  </linearGradient>
+  <linearGradient id="rim-${id}" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#FFB27A"/><stop offset="0.35" stop-color="#FD4F05"/><stop offset="1" stop-color="#8F2E04"/>
+  </linearGradient>
+  <linearGradient id="gloss-${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.13"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="orange-${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FF8A3D"/><stop offset="0.5" stop-color="#FD4F05"/><stop offset="1" stop-color="#D63F02"/>
+  </linearGradient>
+  <filter id="glow-${id}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${S * 0.018}"/></filter>
+  <filter id="shadow-${id}" x="-30%" y="-30%" width="160%" height="170%">
+    <feDropShadow dx="0" dy="${markWidth * 0.03}" stdDeviation="${markWidth * 0.035}" flood-color="#000" flood-opacity="0.7"/>
+    <feDropShadow dx="0" dy="0" stdDeviation="${markWidth * 0.05}" flood-color="#FD4F05" flood-opacity="0.35"/>
+  </filter>
+</defs>`;
 }
 
-// ---------------------------------------------------------------- raster -----
-// Renderiza com supersampling 4x4 para bordas suaves.
-function render({ size, maskable = false, rounded = true, markScale = 0.7 }) {
-  const ss = 4;
-  const markSize = size * markScale;
-  const offset = (size - markSize) / 2;
-  const radius = size * 0.22;
-  const rgba = Buffer.alloc(size * size * 4);
-
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      let r = 0;
-      let g = 0;
-      let b = 0;
-      let a = 0;
-      for (let j = 0; j < ss; j++) {
-        for (let i = 0; i < ss; i++) {
-          const sx = x + (i + 0.5) / ss;
-          const sy = y + (j + 0.5) / ss;
-          const inBackground = maskable || !rounded ? true : inRoundedRect(sx, sy, size, radius);
-          if (!inBackground) continue;
-          let color = OBSIDIAN;
-          const mx = ((sx - offset) / markSize) * 64;
-          const my = ((sy - offset) / markSize) * 64;
-          for (const shape of SHAPES) {
-            if (pointInPolygon(mx, my, shape.points)) color = shape.color;
-          }
-          r += color[0];
-          g += color[1];
-          b += color[2];
-          a += 255;
-        }
-      }
-      const samples = ss * ss;
-      const idx = (y * size + x) * 4;
-      const coverage = a / samples / 255;
-      // Cor pré-multiplicada desfeita: média só sobre amostras cobertas.
-      const covered = a / 255 || 1;
-      rgba[idx] = Math.round(r / covered);
-      rgba[idx + 1] = Math.round(g / covered);
-      rgba[idx + 2] = Math.round(b / covered);
-      rgba[idx + 3] = Math.round(coverage * 255);
-    }
-  }
-  return rgba;
+/** Ícone "botão": placa arredondada com borda laranja brilhante sobre o fundo escuro (cheio, sem cantos). */
+function buttonIcon() {
+  const inset = S * 0.085;
+  const size = S - inset * 2;
+  const r = size * 0.24;
+  const rim = S * 0.022;
+  const markW = S * 0.6;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">${defs("b", markW)}
+<rect width="${S}" height="${S}" fill="url(#bg-b)"/>
+<rect x="${inset}" y="${inset}" width="${size}" height="${size}" rx="${r}" fill="none" stroke="#FD4F05" stroke-width="${rim * 1.6}" opacity="0.55" filter="url(#glow-b)"/>
+<rect x="${inset}" y="${inset}" width="${size}" height="${size}" rx="${r}" fill="url(#plate-b)"/>
+<rect x="${inset + rim / 2}" y="${inset + rim / 2}" width="${size - rim}" height="${size - rim}" rx="${r - rim / 2}" fill="none" stroke="url(#rim-b)" stroke-width="${rim}"/>
+<path d="M${inset + r} ${inset + rim}H${S - inset - r}A${r - rim} ${r - rim} 0 0 1 ${S - inset - rim} ${inset + r}V${S / 2 - S * 0.04}H${inset + rim}V${inset + r}A${r - rim} ${r - rim} 0 0 1 ${inset + r} ${inset + rim}Z" fill="url(#gloss-b)"/>
+${mark(S / 2, S / 2, markW, "b")}
+</svg>`;
 }
 
-// ---------------------------------------------------------------- PNG --------
-const CRC_TABLE = new Uint32Array(256).map((_, n) => {
-  let c = n;
-  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  return c >>> 0;
-});
-
-function crc32(buffer) {
-  let crc = 0xffffffff;
-  for (const byte of buffer) crc = CRC_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
-  return (crc ^ 0xffffffff) >>> 0;
+/** Maskable (Android corta em círculo/gota): sem placa, só fundo e o símbolo na zona segura. */
+function maskableIcon() {
+  const markW = S * 0.5;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">${defs("m", markW)}
+<rect width="${S}" height="${S}" fill="url(#bg-m)"/>${mark(S / 2, S / 2, markW, "m")}</svg>`;
 }
 
-function chunk(type, data) {
-  const typeBuffer = Buffer.from(type, "ascii");
-  const length = Buffer.alloc(4);
-  length.writeUInt32BE(data.length, 0);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(Buffer.concat([typeBuffer, data])), 0);
-  return Buffer.concat([length, typeBuffer, data, crc]);
+/** Favicon e aba do navegador: pequeno demais para a placa; fundo arredondado e o símbolo grande. */
+function smallIcon() {
+  const markW = S * 0.74;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">${defs("s", markW)}
+<rect width="${S}" height="${S}" rx="${S * 0.22}" fill="url(#bg-s)"/>${mark(S / 2, S / 2, markW, "s")}</svg>`;
 }
 
-function encodePng(size, rgba) {
-  const stride = size * 4;
-  const raw = Buffer.alloc((stride + 1) * size);
-  for (let y = 0; y < size; y++) {
-    raw[y * (stride + 1)] = 0; // filtro "None"
-    rgba.copy(raw, y * (stride + 1) + 1, y * stride, (y + 1) * stride);
-  }
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8; // bit depth
-  ihdr[9] = 6; // RGBA
-  ihdr[10] = 0;
-  ihdr[11] = 0;
-  ihdr[12] = 0;
-  const signature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  return Buffer.concat([signature, chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
-}
+const png = (svg, size) => sharp(Buffer.from(svg)).resize(size, size).png({ compressionLevel: 9 }).toBuffer();
 
-// ICO contendo PNGs (suportado por todos os navegadores modernos).
-function encodeIco(entries) {
-  const header = Buffer.alloc(6);
-  header.writeUInt16LE(0, 0);
-  header.writeUInt16LE(1, 2);
-  header.writeUInt16LE(entries.length, 4);
-  const directory = [];
-  let offset = 6 + 16 * entries.length;
-  for (const { size, png } of entries) {
-    const entry = Buffer.alloc(16);
-    entry[0] = size >= 256 ? 0 : size;
-    entry[1] = size >= 256 ? 0 : size;
-    entry[2] = 0;
-    entry[3] = 0;
-    entry.writeUInt16LE(1, 4);
-    entry.writeUInt16LE(32, 6);
-    entry.writeUInt32LE(png.length, 8);
-    entry.writeUInt32LE(offset, 12);
-    offset += png.length;
-    directory.push(entry);
-  }
-  return Buffer.concat([header, ...directory, ...entries.map((e) => e.png)]);
-}
-
-// ---------------------------------------------------------------- saída ------
-mkdirSync(ICONS_DIR, { recursive: true });
-
+const button = buttonIcon();
 const outputs = [
-  { file: path.join(ICONS_DIR, "groscove-192.png"), size: 192, options: {} },
-  { file: path.join(ICONS_DIR, "groscove-512.png"), size: 512, options: {} },
-  // maskable: fundo cheio e marca dentro da zona segura (80% central)
-  { file: path.join(ICONS_DIR, "groscove-maskable-512.png"), size: 512, options: { maskable: true, markScale: 0.56 } },
+  ["public/icons/groscove-v2-192.png", button, 192],
+  ["public/icons/groscove-v2-512.png", button, 512],
+  ["public/icons/groscove-v2-maskable-512.png", maskableIcon(), 512],
   // Apple aplica a própria máscara: fundo cheio, sem cantos transparentes
-  { file: path.join(APP_DIR, "apple-icon.png"), size: 180, options: { rounded: false, markScale: 0.66 } },
+  ["src/app/apple-icon.png", button, 180],
 ];
-
-for (const { file, size, options } of outputs) {
-  const png = encodePng(size, render({ size, ...options }));
-  writeFileSync(file, png);
-  console.log(`✓ ${path.relative(ROOT, file)} (${png.length} bytes)`);
+for (const [file, svg, size] of outputs) {
+  const buf = await png(svg, size);
+  writeFileSync(file, buf);
+  console.log(`✓ ${file} (${buf.length} bytes)`);
 }
 
-const favicon = encodeIco([
-  { size: 32, png: encodePng(32, render({ size: 32, markScale: 0.8 })) },
-  { size: 16, png: encodePng(16, render({ size: 16, markScale: 0.9 })) },
-]);
-writeFileSync(path.join(APP_DIR, "favicon.ico"), favicon);
-console.log(`✓ src/app/favicon.ico (${favicon.length} bytes)`);
+writeFileSync("src/app/icon.svg", smallIcon());
+console.log("✓ src/app/icon.svg");
+
+// ICO contendo PNGs (suportado por todos os navegadores modernos)
+const entries = [];
+for (const size of [32, 16]) entries.push({ size, png: await png(smallIcon(), size) });
+const header = Buffer.alloc(6);
+header.writeUInt16LE(1, 2);
+header.writeUInt16LE(entries.length, 4);
+let offset = 6 + 16 * entries.length;
+const dir = entries.map(({ size, png: data }) => {
+  const e = Buffer.alloc(16);
+  e[0] = size;
+  e[1] = size;
+  e.writeUInt16LE(1, 4);
+  e.writeUInt16LE(32, 6);
+  e.writeUInt32LE(data.length, 8);
+  e.writeUInt32LE(offset, 12);
+  offset += data.length;
+  return e;
+});
+writeFileSync("src/app/favicon.ico", Buffer.concat([header, ...dir, ...entries.map((e) => e.png)]));
+console.log("✓ src/app/favicon.ico");

@@ -16,9 +16,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#FF5A1F",
     categories: ["health", "lifestyle", "food"],
     icons: [
-      { src: "/icons/groscove-192.png", sizes: "192x192", type: "image/png" },
-      { src: "/icons/groscove-512.png", sizes: "512x512", type: "image/png" },
-      { src: "/icons/groscove-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icons/groscove-v2-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icons/groscove-v2-512.png", sizes: "512x512", type: "image/png" },
+      { src: "/icons/groscove-v2-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

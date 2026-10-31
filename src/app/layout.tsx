@@ -62,6 +62,9 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: { capable: true, title: "Groscove Ultra", statusBarStyle: "black-translucent", startupImage: STARTUP_IMAGES },
     // Ícones: arquivos em src/app (favicon.ico, icon.svg, apple-icon.png) são detectados pelo Next.
     formatDetection: { telephone: false },
+    // O iOS só usa o nome "Groscove Ultra" e as telas de abertura no atalho da Tela de Início com esta
+    // tag antiga (o Next gera só a nova, mobile-web-app-capable).
+    other: { "apple-mobile-web-app-capable": "yes" },
   };
 }
 
