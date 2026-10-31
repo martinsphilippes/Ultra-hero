@@ -7,7 +7,9 @@ import type { Upload } from "tus-js-client";
 import { startRecipeVideoUpload } from "@/app/creator/recipes/actions";
 import { normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "@/components/creator/post/validation";
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
+import { UploadRightsDialog } from "@/components/creator/UploadRightsDialog";
 import { Button, ProgressBar } from "@/components/ui";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 
 // Mesmos parâmetros do composer de post (PostComposer): pedaços de 50 MB e novas tentativas.
 const CHUNK_SIZE = 50 * 1024 * 1024;
@@ -48,6 +50,8 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted, onFi
   const [pct, setPct] = useState<number | null>(null);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // primeiro vídeo sem a declaração de direitos (Termos do Parceiro): confirma e envia o mesmo arquivo
+  const [rightsFile, setRightsFile] = useState<File | null>(null);
 
   useEffect(() => () => void uploadRef.current?.abort(false).catch(() => undefined), []);
 
@@ -83,7 +87,8 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted, onFi
       const result = await startRecipeVideoUpload({ contentId, fileSize: file.size, fileName: file.name, durationSec });
       if (!result.ok) {
         setPct(null);
-        setError(message(result.error));
+        if (result.error === UPLOAD_RIGHTS_REQUIRED) setRightsFile(file);
+        else setError(message(result.error));
         return;
       }
       onStarted(result.uid);
@@ -146,6 +151,15 @@ export function RecipeVideoUpload({ contentId, disabled = false, onStarted, onFi
           {error}
         </p>
       )}
+      <UploadRightsDialog
+        open={rightsFile !== null}
+        onOpenChange={(open) => !open && setRightsFile(null)}
+        onConfirmed={() => {
+          const file = rightsFile;
+          setRightsFile(null);
+          if (file) void onFile(file);
+        }}
+      />
     </div>
   );
 }

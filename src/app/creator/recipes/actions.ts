@@ -20,6 +20,8 @@ import { setDraftSlug } from "../_lib/draft-slug";
 import { uniqueSlug } from "../_lib/slug";
 import { checkStreamVideo, providerFailure, readVideoUploadConfigured } from "../_lib/video-post";
 import { schedulePushDispatch } from "@/lib/push/schedule";
+import { hasUploadRights } from "@/lib/partner-terms/server";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 
 // Ações do Portal do Chef (receitas estruturadas, 0027/0028). Toda regra de dono, situação e
 // checklist mora nas RPCs; aqui validamos a entrada (o mesmo Zod do editor), traduzimos o erro
@@ -262,6 +264,8 @@ export async function startRecipeVideoUpload(input: z.input<typeof videoSchema>)
   const own = await loadOwnRecipe(ctx, contentId);
   if ("ok" in own) return own;
   if (own.status !== "draft" || own.review_status === "in_review") return { ok: false, error: "content_not_editable" };
+  // Termos do Parceiro (0068): quem envia confirma os direitos antes do primeiro vídeo
+  if (!(await hasUploadRights(ctx.supabase, ctx.userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
   if (!(await readVideoUploadConfigured(ctx.supabase))) return { ok: false, error: "video_not_configured" };
 
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();

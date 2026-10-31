@@ -87,8 +87,8 @@ export async function startVideoPost(input: { fileSize: number; fileName?: strin
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
-  // Termos do Parceiro (0068): o herói confirma os direitos antes do primeiro envio; o admin age pelo seletor
-  if (!ctx.actingFor && !(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
+  // Termos do Parceiro (0068): quem envia (herói, ou a agência no admin pelo herói) confirma os direitos antes
+  if (!(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
   if (!(await readVideoUploadConfigured(supabase))) return { ok: false, error: "video_not_configured" };
 
   // Limite antes de pedir o ticket (a RLS deixa o herói contar os próprios envios); o gatilho do
