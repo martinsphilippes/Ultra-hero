@@ -36,6 +36,8 @@ const NOT_IN_APP = [
   "consume.content.lockNote", "consume.content.creatorFictional", "consume.player.demoBadge",
   "discover.explore.products.", "discover.personalities.profile.fictional",
   "discover.personalities.profile.products", "shopping.", "recipes.showcase.ready.", "collectibles.admin.",
+  // portais de gestão (0064): só na web, bloqueados no app das lojas
+  "agency.", "brandPortal.", "adminAgency.",
 ];
 
 describe("messages-native", () => {

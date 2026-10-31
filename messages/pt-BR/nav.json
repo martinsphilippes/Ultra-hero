@@ -10,7 +10,9 @@
     "admin": "Admin",
     "creator": "Herói",
     "seller": "Fornecedor",
-    "professional": "Profissional"
+    "professional": "Profissional",
+    "agency": "Agência",
+    "brand": "Marca"
   },
   "admin": {
     "dashboard": "Painel",
@@ -36,7 +38,8 @@
     "settings": "Configurações",
     "shipments": "Remessas",
     "professionals": "Profissionais",
-    "brands": "Marcas e produtos"
+    "brands": "Marcas e produtos",
+    "agency": "Agências"
   },
   "creator": {
     "post": "Novo post",
@@ -73,7 +76,21 @@
     "admin": "Administração do Groscove Ultra",
     "creator": "Área do herói",
     "seller": "Área do fornecedor",
-    "professional": "Área do profissional"
+    "professional": "Área do profissional",
+    "agency": "Centro de trabalho da agência",
+    "brand": "Área da marca"
   },
-  "backToProfile": "Perfil"
+  "backToProfile": "Perfil",
+  "agency": {
+    "dashboard": "Início",
+    "brands": "Marcas",
+    "notifications": "Avisos",
+    "settings": "Configurações",
+    "team": "Equipe"
+  },
+  "brand": {
+    "dashboard": "Início",
+    "team": "Equipe",
+    "notifications": "Avisos"
+  }
 }

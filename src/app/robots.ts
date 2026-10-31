@@ -12,7 +12,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/creator", "/admin", "/seller", "/profile", "/api", "/*/cozinha"],
+        disallow: ["/creator", "/admin", "/seller", "/agencia", "/marca", "/kit", "/profile", "/api", "/*/cozinha"],
       },
     ],
     ...(recipesSeoIndexEnabled() ? { sitemap: `${origin}/sitemap.xml` } : {}),

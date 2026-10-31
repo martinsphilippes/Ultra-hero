@@ -63,7 +63,11 @@
     "rights_holder_required": "Informe o titular da autorização para marcar como autorizado.",
     "creator_not_found": "Herói não encontrado.",
     "product_not_found": "Produto não encontrado.",
-    "professional_profile_already_linked": "Esta conta já está ligada a outro perfil profissional."
+    "professional_profile_already_linked": "Esta conta já está ligada a outro perfil profissional.",
+    "demo_account_forbidden": "Contas de demonstração não entram em agências reais.",
+    "agency_member_elsewhere": "Esta pessoa já faz parte de outra agência.",
+    "brand_not_linked": "A marca não está mais com esta agência.",
+    "partner_suspended": "Este acesso está suspenso no momento."
   },
   "dashboard": {
     "title": "Painel",
@@ -179,7 +183,9 @@
       "creator": "Herói",
       "seller": "Fornecedor",
       "admin": "Admin",
-      "professional": "Profissional"
+      "professional": "Profissional",
+      "agency": "Agência",
+      "brand": "Marca"
     },
     "detail": {
       "title": "Detalhe do usuário",
@@ -283,7 +289,9 @@
     "revokeTitle": "Revogar convite",
     "revokeDescription": "O link deixará de funcionar imediatamente.",
     "revoked": "Convite revogado",
-    "expiredNote": "expirado"
+    "expiredNote": "expirado",
+    "roleAgency": "Agência",
+    "roleBrand": "Marca"
   },
   "invite": {
     "title": "Convite",
@@ -306,7 +314,14 @@
     "successSellerPortalOff": "Convite aceito. O portal do fornecedor está desativado por enquanto; a operação é feita pela administração.",
     "successProfessional": "Seu acesso de profissional foi liberado. Complete o perfil e os serviços.",
     "goProfessional": "Ir para o portal do profissional",
-    "grantProfessional": "Você receberá acesso ao portal do profissional."
+    "grantProfessional": "Você receberá acesso ao portal do profissional.",
+    "grantAgency": "Agência: entra na equipe da agência no nível do convite.",
+    "grantBrand": "Marca: acessa o portal da marca atendida pela agência.",
+    "successAgency": "Você agora faz parte da equipe da agência.",
+    "successBrand": "Você agora acessa o portal da marca.",
+    "goAgency": "Abrir portal da agência",
+    "goBrand": "Abrir portal da marca",
+    "inboxOnlyNote": "Os avisos ficam no sino do portal."
   },
   "creators": {
     "title": "Heróis",

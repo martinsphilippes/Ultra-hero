@@ -27,6 +27,18 @@
     "professional": {
       "label": "Professional",
       "description": "Nina Horta, nutritionist: orders and services"
+    },
+    "agency": {
+      "label": "Agency",
+      "description": "Example agency admin: team, brands and values"
+    },
+    "agencyStaff": {
+      "label": "Agency staff",
+      "description": "Agency staff: tasks and schedule, no values"
+    },
+    "brand": {
+      "label": "Brand",
+      "description": "Owner of Marca Exemplo: campaigns and approvals"
     }
   }
 }

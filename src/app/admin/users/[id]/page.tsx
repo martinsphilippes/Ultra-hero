@@ -32,6 +32,24 @@ async function getAdminUser(supabase: Awaited<ReturnType<typeof createClient>>, 
   return data?.[0] ?? null;
 }
 
+// Destino do papel com escopo: herói, fornecedor, profissional e os da gestão (0064).
+const SCOPE_LINK: Record<string, string> = {
+  creator: "admin.creators",
+  seller_org: "admin.sellers",
+  professional: "admin.professionals",
+  agency: "admin.agency",
+  brand: "admin.brands",
+  talent: "admin.agency",
+};
+
+function scopeHref(scopeType: string, scopeId: string): string {
+  if (scopeType === "creator") return `/admin/creators/${scopeId}`;
+  if (scopeType === "professional") return `/admin/professionals/${scopeId}`;
+  if (scopeType === "agency" || scopeType === "talent") return "/admin/agencia";
+  if (scopeType === "brand") return `/admin/marcas/${scopeId}`;
+  return `/admin/sellers/${scopeId}`;
+}
+
 export default async function AdminUserDetailPage({ params }: { params: Params }) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
@@ -162,8 +180,8 @@ export default async function AdminUserDetailPage({ params }: { params: Params }
                   </Badge>
                   <span className="text-fg-muted">{t("detail.scope", { scope: (r.scope_id && scopeNames.get(r.scope_id)) ?? r.scope_id ?? "—" })}</span>
                   {r.scope_id && (
-                    <Link href={r.scope_type === "creator" ? `/admin/creators/${r.scope_id}` : `/admin/sellers/${r.scope_id}`} className="text-accent-text hover:underline">
-                      {tn(r.scope_type === "creator" ? "admin.creators" : "admin.sellers")}
+                    <Link href={scopeHref(r.scope_type, r.scope_id)} className="text-accent-text hover:underline">
+                      {tn(SCOPE_LINK[r.scope_type] ?? "admin.sellers")}
                     </Link>
                   )}
                 </li>

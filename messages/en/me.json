@@ -96,7 +96,10 @@
       "creator": "Hero",
       "seller": "Seller",
       "admin": "Admin",
-      "professional": "Professional"
+      "professional": "Professional",
+      "agency": "Agency",
+      "brand": "Brand",
+      "talent": "Talent"
     },
     "plan": {
       "label": "Plan",
@@ -116,9 +119,13 @@
         "creator": "Posts, recipes and product links",
         "seller": "Products, deliveries and store profile",
         "admin": "Users, content, orders and settings",
-        "professional": "Orders, services and public profile"
+        "professional": "Orders, services and public profile",
+        "agency": "Team, brands served and notices",
+        "brand": "Brand team and agency notices"
       },
-      "professional": "Professional portal"
+      "professional": "Professional portal",
+      "agency": "Agency portal",
+      "brand": "Brand portal"
     },
     "data": {
       "displayName": "Display name",
@@ -813,6 +820,10 @@
       "auction_outbid": {
         "label": "Outbid on Collectibles",
         "description": "A notice when someone tops your bid (at most one per item every 2 minutes)."
+      },
+      "office_updates": {
+        "label": "Office notices",
+        "description": "Opportunities, tasks and deliverables from the agency that manages your career."
       }
     },
     "transactional": {

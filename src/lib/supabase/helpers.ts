@@ -22,3 +22,10 @@ export function rpcErrorCode(message: string | undefined | null): string {
   if (!message) return "unknown";
   return message.split(":")[0].trim();
 }
+
+/** Erro de banco que significa "a migração ainda não chegou aqui": tabela/coluna/função inexistente
+ *  (42P01/42703/42883) ou fora do cache da API (PGRST205 tabela, PGRST204 coluna, PGRST202 função,
+ *  PGRST200 relação de embed). As telas tratam como "módulo em atualização", sem erro 500. */
+export function isMissingSchema(error: { code?: string | null } | null | undefined): boolean {
+  return Boolean(error?.code && ["42P01", "42703", "42883", "PGRST200", "PGRST202", "PGRST204", "PGRST205"].includes(error.code));
+}

@@ -14,10 +14,20 @@ export const DEMO_ACCOUNTS = [
   { kind: "free", email: "gratuito@demo.ultrahero.app", home: "/personalities" },
   // profissional de exemplo (0058): a conta é criada pelo admin em /admin/professionals/<id>
   { kind: "professional", email: "profissional@demo.ultrahero.app", home: "/personalities" },
+  // gestão (0064): agência de demonstração (Adm e colaborador) e a marca fictícia; criadas pelo admin
+  // geral em /admin/agencia (botão "Ambiente de demonstração"), nunca por migração
+  { kind: "agency", email: "agencia@demo.ultrahero.app", home: "/personalities" },
+  { kind: "agencyStaff", email: "colaborador@demo.ultrahero.app", home: "/personalities" },
+  { kind: "brand", email: "marca@demo.ultrahero.app", home: "/personalities" },
 ] as const;
 
 /** Conta de acesso rápido do profissional de exemplo (criada pelo admin, com a senha das demais). */
 export const PROFESSIONAL_DEMO_EMAIL = "profissional@demo.ultrahero.app";
+
+/** Contas da agência de demonstração (seção 8 da spec de gestão). */
+export const AGENCY_DEMO_EMAIL = "agencia@demo.ultrahero.app";
+export const AGENCY_STAFF_DEMO_EMAIL = "colaborador@demo.ultrahero.app";
+export const BRAND_DEMO_EMAIL = "marca@demo.ultrahero.app";
 
 export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];
 
@@ -30,8 +40,16 @@ export const DEMO_ACCESS_ACCOUNTS = DEMO_ACCOUNTS.filter((a) => ACCESS_KINDS.inc
  * Contas que dependem de algo no banco: a do profissional só aparece depois que o admin cria a conta
  * (sem a 0058, ou antes disso, o botão daria erro de login).
  */
-export function readyDemoAccounts<A extends { kind: string }>(accounts: readonly A[], ready: { professional: boolean }): A[] {
-  return accounts.filter((a) => a.kind !== "professional" || ready.professional);
+export type DemoReadiness = { professional: boolean; agency?: boolean; agencyStaff?: boolean; brand?: boolean };
+
+export function readyDemoAccounts<A extends { kind: string }>(accounts: readonly A[], ready: DemoReadiness): A[] {
+  const flags: Record<string, boolean> = {
+    professional: ready.professional,
+    agency: ready.agency ?? false,
+    agencyStaff: ready.agencyStaff ?? false,
+    brand: ready.brand ?? false,
+  };
+  return accounts.filter((a) => !(a.kind in flags) || flags[a.kind]);
 }
 
 /** Telas onde o painel aparece; o erro de login volta para a mesma tela. */

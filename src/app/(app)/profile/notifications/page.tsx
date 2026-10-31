@@ -4,7 +4,7 @@ import { BellRing } from "lucide-react";
 import { NotificationPreferencesForm } from "@/components/me/NotificationPreferencesForm";
 import { DEFAULT_NOTIFICATION_PREFERENCES, NOTIFICATION_PREFERENCE_KEYS, type NotificationPreferences } from "@/components/me/notifications/constants";
 import { PageHeader } from "@/components/ui";
-import { requireUser } from "@/lib/auth/session";
+import { getRoles, requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // Mensagens transacionais não têm opt-out e aparecem só como leitura.
 export default async function NotificationsPage() {
   const user = await requireUser("/profile/notifications");
-  const [t, tc] = await Promise.all([getTranslations("me.notifications"), getTranslations("common")]);
+  const [t, tc, roles] = await Promise.all([getTranslations("me.notifications"), getTranslations("common"), getRoles()]);
   const supabase = await createClient();
   // "*": num banco sem a 0061 a coluna auction_outbid ainda não existe (fica com o padrão, desligada)
   const { data, error } = await supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle();
@@ -42,7 +42,7 @@ export default async function NotificationsPage() {
         </div>
       </section>
 
-      <NotificationPreferencesForm initial={initial} />
+      <NotificationPreferencesForm initial={initial} roles={roles.map((r) => r.role)} />
     </div>
   );
 }

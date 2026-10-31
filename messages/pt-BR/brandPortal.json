@@ -1,0 +1,51 @@
+{
+  "adminReadOnly": "Você está vendo como admin geral, só leitura.",
+  "meta": {
+    "dashboard": "Marca",
+    "team": "Equipe da marca"
+  },
+  "dashboard": {
+    "eyebrow": "Portal da marca",
+    "servedBy": "Atendida por {agency}",
+    "switchBrand": "Marca",
+    "inboxNote": "Os avisos chegam aqui, no sino do portal.",
+    "kpi": {
+      "team": "Pessoas com acesso",
+      "unread": "Avisos não lidos"
+    },
+    "seeTeam": "Ver equipe",
+    "upcomingTitle": "Chegando ao portal",
+    "upcomingHint": "A agência vai liberar estas áreas por etapas.",
+    "upcoming": {
+      "campaigns": {
+        "title": "Campanhas",
+        "body": "Briefing em 5 passos e o andamento de cada campanha."
+      },
+      "creators": {
+        "title": "Busca de creators",
+        "body": "Catálogo autorizado, com os critérios de cada sugestão."
+      },
+      "approvals": {
+        "title": "Aprovações e contratos",
+        "body": "Propostas, roteiros e entregas para aprovar."
+      },
+      "calendar": {
+        "title": "Calendário comercial",
+        "body": "Datas e oportunidades publicadas pela agência."
+      }
+    }
+  },
+  "team": {
+    "title": "Equipe da marca",
+    "descriptionOwner": "Convide quem da sua equipe acompanha as campanhas.",
+    "descriptionStaff": "Quem da marca acessa este portal.",
+    "membersTitle": "Pessoas ({count})",
+    "since": "Desde {date}",
+    "invitesTitle": "Convites pendentes",
+    "inviteExpires": "Vale até {date}",
+    "noInvites": "Nenhum convite pendente.",
+    "inviteCreated": "Convite criado. Copie o link e envie para a pessoa.",
+    "removed": "Pessoa removida.",
+    "inviteRevoked": "Convite revogado."
+  }
+}

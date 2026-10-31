@@ -3,6 +3,8 @@
 import {
   ArrowLeft,
   BadgeCheck,
+  Bell,
+  Building2,
   BarChart3,
   ChefHat,
   ClipboardList,
@@ -72,6 +74,9 @@ const ICONS: Record<string, LucideIcon> = {
   shipments: Truck,
   post: SquarePlus,
   recipes: ChefHat,
+  agency: Building2,
+  team: Users,
+  notifications: Bell,
 };
 
 function isActive(pathname: string, href: string, root: string) {
@@ -79,10 +84,10 @@ function isActive(pathname: string, href: string, root: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-type PortalNavListProps = { portal: Portal; onNavigate?: () => void };
+type PortalNavListProps = { portal: Portal; onNavigate?: () => void; navKeys?: readonly string[] };
 
 // Lista de links do portal com aria-current.
-export function PortalNavList({ portal, onNavigate }: PortalNavListProps) {
+export function PortalNavList({ portal, onNavigate, navKeys }: PortalNavListProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const root = PORTAL_ROOT[portal];
@@ -90,7 +95,7 @@ export function PortalNavList({ portal, onNavigate }: PortalNavListProps) {
   return (
     <nav aria-label={t("portalLabel")} className="flex flex-col gap-4">
       <ul className="flex flex-col gap-0.5">
-        {PORTAL_LINKS[portal].map(({ key, href }) => {
+        {PORTAL_LINKS[portal].filter(({ key }) => !navKeys || navKeys.includes(key)).map(({ key, href }) => {
           const Icon = ICONS[key] ?? LayoutDashboard;
           const active = isActive(pathname, href, root);
           return (
@@ -124,10 +129,10 @@ export function PortalNavList({ portal, onNavigate }: PortalNavListProps) {
   );
 }
 
-type PortalMobileMenuProps = { portal: Portal; children?: ReactNode };
+type PortalMobileMenuProps = { portal: Portal; children?: ReactNode; navKeys?: readonly string[] };
 
 // Botão de menu (mobile) que abre a navegação do portal em um Sheet.
-export function PortalMobileMenu({ portal, children }: PortalMobileMenuProps) {
+export function PortalMobileMenu({ portal, children, navKeys }: PortalMobileMenuProps) {
   const t = useTranslations("nav");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -142,7 +147,7 @@ export function PortalMobileMenu({ portal, children }: PortalMobileMenuProps) {
       <IconButton label={t("actions.openMenu")} icon={<Menu />} onClick={() => setOpen(true)} className="md:hidden" aria-expanded={open} />
       <Sheet open={open} onOpenChange={setOpen} side="left" title={<Logo size="sm" />} description={t(`portalDescription.${portal}`)}>
         <div className="flex flex-col gap-4 pb-4">
-          <PortalNavList portal={portal} onNavigate={() => setOpen(false)} />
+          <PortalNavList portal={portal} onNavigate={() => setOpen(false)} navKeys={navKeys} />
           {children}
         </div>
       </Sheet>

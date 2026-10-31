@@ -847,33 +847,45 @@ isOneToOne: false
                   ]
                 },"invitations": {
                   Row: {
-                    "accepted_at": string | null,"accepted_by": string | null,"created_at": string,"created_by": string | null,"creator_profile_id": string | null,"email": string,"expires_at": string,"id": string,"professional_id": string | null,"revoked_at": string | null,"role": Database["public"]['Enums']["app_role"],"seller_org_id": string | null,"status": Database["public"]['Enums']["invitation_status"],"token_hash": string
+                    "accepted_at": string | null,"accepted_by": string | null,"agency_id": string | null,"brand_id": string | null,"created_at": string,"created_by": string | null,"creator_profile_id": string | null,"email": string,"expires_at": string,"id": string,"member_role": string | null,"professional_id": string | null,"revoked_at": string | null,"role": Database["public"]["Enums"]["app_role"],"seller_org_id": string | null,"status": Database["public"]["Enums"]["invitation_status"],"token_hash": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email": string,"expires_at": string,"id"?: string,"professional_id"?: string | null,"revoked_at"?: string | null,"role": Database["public"]['Enums']["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]['Enums']["invitation_status"],"token_hash": string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"agency_id"?: string | null,"brand_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email": string,"expires_at": string,"id"?: string,"member_role"?: string | null,"professional_id"?: string | null,"revoked_at"?: string | null,"role": Database["public"]["Enums"]["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]["Enums"]["invitation_status"],"token_hash": string
                   }
                   Update: {
-                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email"?: string,"expires_at"?: string,"id"?: string,"professional_id"?: string | null,"revoked_at"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]['Enums']["invitation_status"],"token_hash"?: string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"agency_id"?: string | null,"brand_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"creator_profile_id"?: string | null,"email"?: string,"expires_at"?: string,"id"?: string,"member_role"?: string | null,"professional_id"?: string | null,"revoked_at"?: string | null,"role"?: Database["public"]["Enums"]["app_role"],"seller_org_id"?: string | null,"status"?: Database["public"]["Enums"]["invitation_status"],"token_hash"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "invitations_agency_fk"
+      columns: ["agency_id"]
+isOneToOne: false
+      referencedRelation: "agencies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invitations_brand_fk"
+      columns: ["brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "invitations_creator_profile_id_fkey"
       columns: ["creator_profile_id"]
 isOneToOne: false
       referencedRelation: "creator_profiles"
       referencedColumns: ["id"]
     },{
-      foreignKeyName: "invitations_seller_org_id_fkey"
-      columns: ["seller_org_id"]
-isOneToOne: false
-      referencedRelation: "seller_organizations"
-      referencedColumns: ["id"]
-    },{
       foreignKeyName: "invitations_professional_id_fkey"
       columns: ["professional_id"]
 isOneToOne: false
       referencedRelation: "professionals"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "invitations_seller_org_id_fkey"
+      columns: ["seller_org_id"]
+isOneToOne: false
+      referencedRelation: "seller_organizations"
       referencedColumns: ["id"]
     }
                   ]
@@ -963,14 +975,14 @@ isOneToOne: false
                   ]
                 },"notification_preferences": {
                   Row: {
-                    "achievements": boolean,"auction_outbid": boolean,"channel_email": boolean,"channel_push": boolean,"commerce_updates": boolean,"editorial_digest": boolean,"hero_posts": boolean,"streak_reminders": boolean,"updated_at": string,"user_id": string
+                    "achievements": boolean,"auction_outbid": boolean,"channel_email": boolean,"channel_push": boolean,"commerce_updates": boolean,"editorial_digest": boolean,"hero_posts": boolean,"office_updates": boolean,"streak_reminders": boolean,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "achievements"?: boolean,"auction_outbid"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id": string
+                    "achievements"?: boolean,"auction_outbid"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"office_updates"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "achievements"?: boolean,"auction_outbid"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id"?: string
+                    "achievements"?: boolean,"auction_outbid"?: boolean,"channel_email"?: boolean,"channel_push"?: boolean,"commerce_updates"?: boolean,"editorial_digest"?: boolean,"hero_posts"?: boolean,"office_updates"?: boolean,"streak_reminders"?: boolean,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -2656,12 +2668,234 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"agencies": {
+                  Row: {
+                    "contact_email": string | null,"created_at": string,"created_by": string | null,"id": string,"is_demo": boolean,"name": string,"relationship_alert_days": number,"slug": string,"status": string,"timezone": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "contact_email"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name": string,"relationship_alert_days"?: number,"slug": string,"status"?: string,"timezone"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "contact_email"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name"?: string,"relationship_alert_days"?: number,"slug"?: string,"status"?: string,"timezone"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"agency_members": {
+                  Row: {
+                    "agency_id": string,"created_at": string,"display_name": string,"id": string,"invited_by": string | null,"job_title": string | null,"revoked_at": string | null,"role": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agency_id": string,"created_at"?: string,"display_name": string,"id"?: string,"invited_by"?: string | null,"job_title"?: string | null,"revoked_at"?: string | null,"role": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "agency_id"?: string,"created_at"?: string,"display_name"?: string,"id"?: string,"invited_by"?: string | null,"job_title"?: string | null,"revoked_at"?: string | null,"role"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agency_members_agency_fk"
+      columns: ["agency_id"]
+isOneToOne: false
+      referencedRelation: "agencies"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"agency_brands": {
+                  Row: {
+                    "account_manager_id": string | null,"agency_id": string,"brand_id": string,"created_at": string,"created_by": string | null,"id": string,"is_demo": boolean,"status": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_manager_id"?: string | null,"agency_id": string,"brand_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"status"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "account_manager_id"?: string | null,"agency_id"?: string,"brand_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"status"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agency_brands_agency_fk"
+      columns: ["agency_id"]
+isOneToOne: false
+      referencedRelation: "agencies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "agency_brands_brand_fk"
+      columns: ["brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"brand_members": {
+                  Row: {
+                    "brand_id": string,"created_at": string,"display_name": string,"id": string,"invited_by": string | null,"job_title": string | null,"revoked_at": string | null,"role": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "brand_id": string,"created_at"?: string,"display_name": string,"id"?: string,"invited_by"?: string | null,"job_title"?: string | null,"revoked_at"?: string | null,"role"?: string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "brand_id"?: string,"created_at"?: string,"display_name"?: string,"id"?: string,"invited_by"?: string | null,"job_title"?: string | null,"revoked_at"?: string | null,"role"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "brand_members_brand_fk"
+      columns: ["brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inbox_notifications": {
+                  Row: {
+                    "agency_id": string | null,"created_at": string,"dedupe_key": string | null,"entity_id": string | null,"entity_type": string | null,"id": string,"kind": string,"link": string,"params": NonNullable<Json>,"read_at": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agency_id"?: string | null,"created_at"?: string,"dedupe_key"?: string | null,"entity_id"?: string | null,"entity_type"?: string | null,"id"?: string,"kind": string,"link": string,"params"?: NonNullable<Json>,"read_at"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "agency_id"?: string | null,"created_at"?: string,"dedupe_key"?: string | null,"entity_id"?: string | null,"entity_type"?: string | null,"id"?: string,"kind"?: string,"link"?: string,"params"?: NonNullable<Json>,"read_at"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inbox_notifications_agency_fk"
+      columns: ["agency_id"]
+isOneToOne: false
+      referencedRelation: "agencies"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"documents": {
+                  Row: {
+                    "agency_id": string,"archived_at": string | null,"brand_id": string | null,"created_at": string,"deal_id": string | null,"id": string,"kind": string,"mime_type": string,"request_id": string | null,"restricted": boolean,"retention_until": string | null,"scope_type": string,"share_brand": boolean,"share_talent": boolean,"size_bytes": number,"status": string,"storage_path": string,"talent_id": string | null,"title": string,"updated_at": string,"uploaded_by": string | null,"uploader_side": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agency_id": string,"archived_at"?: string | null,"brand_id"?: string | null,"created_at"?: string,"deal_id"?: string | null,"id"?: string,"kind": string,"mime_type": string,"request_id"?: string | null,"restricted"?: boolean,"retention_until"?: string | null,"scope_type": string,"share_brand"?: boolean,"share_talent"?: boolean,"size_bytes": number,"status"?: string,"storage_path": string,"talent_id"?: string | null,"title": string,"updated_at"?: string,"uploaded_by"?: string | null,"uploader_side": string
+                  }
+                  Update: {
+                    "agency_id"?: string,"archived_at"?: string | null,"brand_id"?: string | null,"created_at"?: string,"deal_id"?: string | null,"id"?: string,"kind"?: string,"mime_type"?: string,"request_id"?: string | null,"restricted"?: boolean,"retention_until"?: string | null,"scope_type"?: string,"share_brand"?: boolean,"share_talent"?: boolean,"size_bytes"?: number,"status"?: string,"storage_path"?: string,"talent_id"?: string | null,"title"?: string,"updated_at"?: string,"uploaded_by"?: string | null,"uploader_side"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "documents_agency_fk"
+      columns: ["agency_id"]
+isOneToOne: false
+      referencedRelation: "agencies"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "documents_brand_fk"
+      columns: ["brand_id"]
+isOneToOne: false
+      referencedRelation: "brands"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
+"agency_demo_seed":
+{ Args: { "p_actor": string,"p_agency": string,"p_emails": Json }; Returns: Json
+                           },
+"admin_agency_save":
+{ Args: { "p_data": Json,"p_id": string | null }; Returns: string
+                           },
+"document_set_sharing":
+{ Args: { "p_id": string,"p_share_brand": boolean,"p_share_talent": boolean }; Returns: undefined
+                           },
+"document_archive":
+{ Args: { "p_id": string,"p_reason"?: string | null }; Returns: undefined
+                           },
+"document_confirm":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"document_reserve":
+{ Args: { "p_agency": string,"p_meta": Json,"p_scope_id": string,"p_scope_type": string }; Returns: Json
+                           },
+"agency_invitation_revoke":
+{ Args: { "p_id": string,"p_justification"?: string | null }; Returns: undefined
+                           },
+"brand_member_remove":
+{ Args: { "p_brand": string,"p_user": string }; Returns: undefined
+                           },
+"brand_invite_member":
+{ Args: { "p_brand": string,"p_days"?: number | null,"p_email": string }; Returns: {
+              "invitation_id": string,"token": string
+            }[]
+                           },
+"agency_invite_brand_member":
+{ Args: { "p_agency": string,"p_brand": string,"p_days"?: number | null,"p_email": string,"p_role": string }; Returns: {
+              "invitation_id": string,"token": string
+            }[]
+                           },
+"agency_brand_link":
+{ Args: { "p_account_manager"?: string | null,"p_agency": string,"p_brand": string,"p_on": boolean }; Returns: undefined
+                           },
+"agency_brand_create":
+{ Args: { "p_agency": string,"p_data": Json }; Returns: string
+                           },
+"agency_settings_save":
+{ Args: { "p_agency": string,"p_data": Json }; Returns: undefined
+                           },
+"agency_member_update_self":
+{ Args: { "p_display_name": string,"p_job_title": string }; Returns: undefined
+                           },
+"agency_member_remove":
+{ Args: { "p_agency": string,"p_justification": string,"p_user": string }; Returns: undefined
+                           },
+"agency_member_set_role":
+{ Args: { "p_agency": string,"p_justification": string,"p_role": string,"p_user": string }; Returns: undefined
+                           },
+"agency_invite_member":
+{ Args: { "p_agency": string,"p_days"?: number | null,"p_email": string,"p_role": string }; Returns: {
+              "invitation_id": string,"token": string
+            }[]
+                           },
+"inbox_mark_read":
+{ Args: { "p_ids"?: string[] | null }; Returns: number
+                           },
+"brand_active_agency":
+{ Args: { "p_brand": string }; Returns: string
+                           },
+"my_brand_agency_ids":
+{ Args: Record<PropertyKey, never>; Returns: string[]
+                           },
+"my_agency_brand_ids":
+{ Args: { "p_active_only"?: boolean | null }; Returns: string[]
+                           },
+"my_brand_ids":
+{ Args: { "p_owner_only"?: boolean | null }; Returns: string[]
+                           },
+"brand_member_of":
+{ Args: { "p_brand": string }; Returns: string
+                           },
+"my_agency_ids":
+{ Args: { "p_min"?: string | null }; Returns: string[]
+                           },
+"is_agency_admin":
+{ Args: { "p_agency": string }; Returns: boolean
+                           },
+"agency_is_demo":
+{ Args: { "p_agency": string }; Returns: boolean
+                           },
+"agency_can":
+{ Args: { "p_agency": string,"p_min": string }; Returns: boolean
+                           },
+"agency_role_of":
+{ Args: { "p_agency": string }; Returns: string
+                           },
+"is_platform_admin":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_demo_account":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
             "accept_invitation":
 { Args: { "p_token": string }; Returns: Json
                            },
@@ -3401,7 +3635,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "access_level": "free"|"premium","actor_type": "consumer"|"creator"|"seller"|"admin"|"system","app_role": "consumer"|"creator"|"seller"|"admin"|"professional","availability": "available"|"unavailable","completion_mode": "manual"|"auto","content_status": "draft"|"published"|"archived","content_type": "video"|"recipe"|"workout"|"guide"|"article","enrollment_status": "active"|"completed"|"abandoned","fulfillment_status": "awaiting"|"preparing"|"ready_for_dispatch"|"in_transit"|"delivered"|"cancelled"|"failed","invitation_status": "pending"|"accepted"|"expired"|"revoked","link_status": "suggested"|"validated"|"suspended"|"rejected","locale_code": "pt-BR"|"en"|"es","media_provider": "none"|"embed_youtube"|"embed_vimeo"|"cloudflare_stream"|"mux"|"upload","moderation_status": "clear"|"hidden"|"suspended","order_status": "confirmed"|"in_progress"|"completed"|"partially_completed"|"cancelled"|"failed","partner_status": "pending"|"active"|"suspended","pillar": "routine"|"training"|"nutrition"|"gastronomy","product_status": "draft"|"published"|"archived","review_status": "none"|"in_review"|"returned"|"approved"|"rejected","subscription_status": "active"|"cancelled"|"expired"
+            "access_level": "free"|"premium","actor_type": "consumer"|"creator"|"seller"|"admin"|"system"|"agency"|"brand","app_role": "consumer"|"creator"|"seller"|"admin"|"professional"|"agency"|"brand","availability": "available"|"unavailable","completion_mode": "manual"|"auto","content_status": "draft"|"published"|"archived","content_type": "video"|"recipe"|"workout"|"guide"|"article","enrollment_status": "active"|"completed"|"abandoned","fulfillment_status": "awaiting"|"preparing"|"ready_for_dispatch"|"in_transit"|"delivered"|"cancelled"|"failed","invitation_status": "pending"|"accepted"|"expired"|"revoked","link_status": "suggested"|"validated"|"suspended"|"rejected","locale_code": "pt-BR"|"en"|"es","media_provider": "none"|"embed_youtube"|"embed_vimeo"|"cloudflare_stream"|"mux"|"upload","moderation_status": "clear"|"hidden"|"suspended","order_status": "confirmed"|"in_progress"|"completed"|"partially_completed"|"cancelled"|"failed","partner_status": "pending"|"active"|"suspended","pillar": "routine"|"training"|"nutrition"|"gastronomy","product_status": "draft"|"published"|"archived","review_status": "none"|"in_review"|"returned"|"approved"|"rejected","subscription_status": "active"|"cancelled"|"expired"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -3517,7 +3751,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "access_level": ["free", "premium"],"actor_type": ["consumer", "creator", "seller", "admin", "system"],"app_role": ["consumer", "creator", "seller", "admin", "professional"],"availability": ["available", "unavailable"],"completion_mode": ["manual", "auto"],"content_status": ["draft", "published", "archived"],"content_type": ["video", "recipe", "workout", "guide", "article"],"enrollment_status": ["active", "completed", "abandoned"],"fulfillment_status": ["awaiting", "preparing", "ready_for_dispatch", "in_transit", "delivered", "cancelled", "failed"],"invitation_status": ["pending", "accepted", "expired", "revoked"],"link_status": ["suggested", "validated", "suspended", "rejected"],"locale_code": ["pt-BR", "en", "es"],"media_provider": ["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"],"moderation_status": ["clear", "hidden", "suspended"],"order_status": ["confirmed", "in_progress", "completed", "partially_completed", "cancelled", "failed"],"partner_status": ["pending", "active", "suspended"],"pillar": ["routine", "training", "nutrition", "gastronomy"],"product_status": ["draft", "published", "archived"],"review_status": ["none", "in_review", "returned", "approved", "rejected"],"subscription_status": ["active", "cancelled", "expired"]
+            "access_level": ["free", "premium"],"actor_type": ["consumer", "creator", "seller", "admin", "system", "agency", "brand"],"app_role": ["consumer", "creator", "seller", "admin", "professional", "agency", "brand"],"availability": ["available", "unavailable"],"completion_mode": ["manual", "auto"],"content_status": ["draft", "published", "archived"],"content_type": ["video", "recipe", "workout", "guide", "article"],"enrollment_status": ["active", "completed", "abandoned"],"fulfillment_status": ["awaiting", "preparing", "ready_for_dispatch", "in_transit", "delivered", "cancelled", "failed"],"invitation_status": ["pending", "accepted", "expired", "revoked"],"link_status": ["suggested", "validated", "suspended", "rejected"],"locale_code": ["pt-BR", "en", "es"],"media_provider": ["none", "embed_youtube", "embed_vimeo", "cloudflare_stream", "mux", "upload"],"moderation_status": ["clear", "hidden", "suspended"],"order_status": ["confirmed", "in_progress", "completed", "partially_completed", "cancelled", "failed"],"partner_status": ["pending", "active", "suspended"],"pillar": ["routine", "training", "nutrition", "gastronomy"],"product_status": ["draft", "published", "archived"],"review_status": ["none", "in_review", "returned", "approved", "rejected"],"subscription_status": ["active", "cancelled", "expired"]
           }
         }
 } as const

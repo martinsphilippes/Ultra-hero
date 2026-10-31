@@ -63,7 +63,11 @@
     "rights_holder_required": "Enter the authorization holder to mark as authorized.",
     "creator_not_found": "Hero not found.",
     "product_not_found": "Product not found.",
-    "professional_profile_already_linked": "This account is already linked to another professional profile."
+    "professional_profile_already_linked": "This account is already linked to another professional profile.",
+    "demo_account_forbidden": "Demo accounts can't join real agencies.",
+    "agency_member_elsewhere": "This person already belongs to another agency.",
+    "brand_not_linked": "The brand is no longer with this agency.",
+    "partner_suspended": "This access is suspended right now."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -179,7 +183,9 @@
       "creator": "Hero",
       "seller": "Supplier",
       "admin": "Admin",
-      "professional": "Professional"
+      "professional": "Professional",
+      "agency": "Agency",
+      "brand": "Brand"
     },
     "detail": {
       "title": "User details",
@@ -283,7 +289,9 @@
     "revokeTitle": "Revoke invitation",
     "revokeDescription": "The link stops working immediately.",
     "revoked": "Invitation revoked",
-    "expiredNote": "expired"
+    "expiredNote": "expired",
+    "roleAgency": "Agency",
+    "roleBrand": "Brand"
   },
   "invite": {
     "title": "Invitation",
@@ -306,7 +314,14 @@
     "successSellerPortalOff": "Invitation accepted. The supplier portal is turned off for now; operations are handled by the administration.",
     "successProfessional": "Your professional access is ready. Complete your profile and services.",
     "goProfessional": "Go to the professional portal",
-    "grantProfessional": "You will get access to the professional portal."
+    "grantProfessional": "You will get access to the professional portal.",
+    "grantAgency": "Agency: joins the agency team at the invited level.",
+    "grantBrand": "Brand: accesses the portal of the brand served by the agency.",
+    "successAgency": "You are now part of the agency team.",
+    "successBrand": "You now have access to the brand portal.",
+    "goAgency": "Open agency portal",
+    "goBrand": "Open brand portal",
+    "inboxOnlyNote": "Notices stay on the portal bell."
   },
   "creators": {
     "title": "Heroes",

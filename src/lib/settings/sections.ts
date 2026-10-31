@@ -23,7 +23,7 @@ export type SettingsLinkKey =
   | "appearance";
 
 /** Portais (textos em me.profile.portals); o herói não tem portal (só posta pelo Perfil, 0045). */
-export type SettingsPortalRole = "seller" | "professional" | "admin";
+export type SettingsPortalRole = "seller" | "professional" | "agency" | "brand" | "admin";
 
 export type SettingsSectionKey = "routine" | "collections" | "purchases" | "account" | "portals";
 
@@ -76,6 +76,9 @@ const PORTALS: Array<{ role: SettingsPortalRole; href: string }> = [
   { role: "seller", href: "/seller" },
   // profissional (0058): pedidos, serviços e perfil público
   { role: "professional", href: "/profissional" },
+  // gestão (0064): portal da agência e da marca (só web: somem no app das lojas)
+  { role: "agency", href: "/agencia" },
+  { role: "brand", href: "/marca" },
   { role: "admin", href: "/admin" },
 ];
 

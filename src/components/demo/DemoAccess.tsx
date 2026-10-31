@@ -1,11 +1,21 @@
-import { KeyRound, ShieldCheck, Sparkles, Stethoscope, Store, User, UserRound } from "lucide-react";
+import { BadgeCheck, Building2, BriefcaseBusiness, KeyRound, ShieldCheck, Sparkles, Stethoscope, Store, User, UserRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { signInAsDemo } from "@/app/demo-actions";
 import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
-import { isDemoAccessEnabled, isProfessionalDemoReady } from "@/lib/demo/server";
+import { isAgencyDemoReady, isDemoAccessEnabled, isProfessionalDemoReady } from "@/lib/demo/server";
 import { getNativeApp } from "@/lib/native-app/server";
 
-const ICON: Record<DemoKind, typeof User> = { admin: ShieldCheck, creator: Sparkles, seller: Store, premium: UserRound, free: User, professional: Stethoscope };
+const ICON: Record<DemoKind, typeof User> = {
+  admin: ShieldCheck,
+  creator: Sparkles,
+  seller: Store,
+  premium: UserRound,
+  free: User,
+  professional: Stethoscope,
+  agency: Building2,
+  agencyStaff: BriefcaseBusiness,
+  brand: BadgeCheck,
+};
 
 type Props = {
   /** login: lista aberta abaixo da caixa de login; profile: recolhida no fim do Perfil (trocar de conta). */
@@ -19,7 +29,8 @@ type Props = {
 export async function DemoAccess({ from, failed }: Props) {
   if (!isDemoAccessEnabled() || (await getNativeApp())) return null;
   const t = await getTranslations("demo");
-  const accounts = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: await isProfessionalDemoReady() });
+  const [professional, agencyReady] = await Promise.all([isProfessionalDemoReady(), isAgencyDemoReady()]);
+  const accounts = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional, ...agencyReady });
 
   const list = (
     <div className="flex flex-col gap-3">

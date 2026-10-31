@@ -6,7 +6,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
 // /profissional = portal do profissional (0058); /profissionais (lista pública) não entra.
-const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profissional", "/profile", "/recipes", "/cart", "/checkout", "/orders", "/shop/compras", "/onboarding", "/configuracoes"];
+const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profissional", "/agencia", "/marca", "/profile", "/recipes", "/cart", "/checkout", "/orders", "/shop/compras", "/onboarding", "/configuracoes"];
 
 function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

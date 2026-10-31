@@ -96,7 +96,10 @@
       "creator": "Herói",
       "seller": "Fornecedor",
       "admin": "Admin",
-      "professional": "Profissional"
+      "professional": "Profissional",
+      "agency": "Agência",
+      "brand": "Marca",
+      "talent": "Talento"
     },
     "plan": {
       "label": "Plano",
@@ -116,9 +119,13 @@
         "creator": "Posts, receitas e vínculos de produtos",
         "seller": "Produtos, entregas e perfil da operação",
         "admin": "Usuários, conteúdos, pedidos e configurações",
-        "professional": "Pedidos, serviços e perfil público"
+        "professional": "Pedidos, serviços e perfil público",
+        "agency": "Equipe, marcas atendidas e avisos",
+        "brand": "Equipe da marca e avisos da agência"
       },
-      "professional": "Portal do profissional"
+      "professional": "Portal do profissional",
+      "agency": "Portal da agência",
+      "brand": "Portal da marca"
     },
     "data": {
       "displayName": "Nome exibido",
@@ -813,6 +820,10 @@
       "auction_outbid": {
         "label": "Lance superado nos Colecionáveis",
         "description": "Um aviso quando alguém cobre o seu lance (no máximo um por item a cada 2 minutos)."
+      },
+      "office_updates": {
+        "label": "Avisos do escritório",
+        "description": "Oportunidades, tarefas e entregas da agência que cuida da sua carreira."
       }
     },
     "transactional": {

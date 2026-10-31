@@ -5,12 +5,12 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "./safe-next";
 
-export type AppRole = "consumer" | "creator" | "seller" | "admin" | "professional";
+export type AppRole = "consumer" | "creator" | "seller" | "admin" | "professional" | "agency" | "brand";
 
 export type RoleAssignment = {
   user_id: string;
   role: AppRole;
-  scope_type: "global" | "seller_org" | "creator" | "professional";
+  scope_type: "global" | "seller_org" | "creator" | "professional" | "agency" | "brand" | "talent";
   scope_id: string | null;
   revoked_at: string | null;
 };
@@ -59,6 +59,12 @@ export const getRoles = cache(async (): Promise<RoleAssignment[]> => {
     .is("revoked_at", null);
   return (data as RoleAssignment[] | null) ?? [];
 });
+
+/** Creator só com escopo de talento (sem página pública de herói): o /creator leva ao escritório (Etapa B). */
+export function isTalentOnly(roles: readonly Pick<RoleAssignment, "role" | "scope_type">[]): boolean {
+  const creator = roles.filter((r) => r.role === "creator");
+  return creator.length > 0 && creator.every((r) => r.scope_type === "talent");
+}
 
 export async function hasRole(role: AppRole): Promise<boolean> {
   const roles = await getRoles();

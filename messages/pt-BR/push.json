@@ -19,5 +19,47 @@
   "auctionOutbid": {
     "title": "Seu lance foi superado",
     "body": "{item}: o lance agora é {price}. Toque para dar um novo lance."
+  },
+  "office": {
+    "message_received": {
+      "title": "Nova mensagem",
+      "body": "Mensagem nova em {deal}."
+    },
+    "opportunity_received": {
+      "title": "Nova oportunidade",
+      "body": "{brand} tem uma oportunidade para você."
+    },
+    "opportunity_updated": {
+      "title": "Oportunidade atualizada",
+      "body": "Houve uma atualização em {deal}."
+    },
+    "contract_acceptance_requested": {
+      "title": "Contrato para aceitar",
+      "body": "O contrato de {deal} aguarda o seu aceite."
+    },
+    "contract_confirmed": {
+      "title": "Contrato confirmado",
+      "body": "O contrato de {deal} foi confirmado."
+    },
+    "task_assigned": {
+      "title": "Nova tarefa",
+      "body": "Você tem uma tarefa nova em {deal}."
+    },
+    "deliverable_decided": {
+      "title": "Entrega avaliada",
+      "body": "Sua entrega de {deal} foi avaliada."
+    },
+    "calendar_event_added": {
+      "title": "Novo compromisso",
+      "body": "Compromisso em {date} na sua agenda."
+    },
+    "task_overdue": {
+      "title": "Tarefa atrasada",
+      "body": "Uma tarefa de {deal} passou do prazo."
+    },
+    "payout_updated": {
+      "title": "Repasse atualizado",
+      "body": "O repasse de {deal} mudou de situação."
+    }
   }
 }

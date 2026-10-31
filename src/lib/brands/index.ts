@@ -1,6 +1,7 @@
 // Marcas, produtos externos e Smart Tags (0062). Regras puras (sem Supabase/React): links externos,
 // tipos de relação, o que aparece para o público e o formato das linhas lidas do banco.
 import { isLabelSide, type LabelSide } from "./geometry";
+import { isMissingSchema } from "@/lib/supabase/helpers";
 
 export * from "./geometry";
 
@@ -226,6 +227,5 @@ export function parseBrandClick(body: unknown): BrandClick | null {
 // ---------------------------------------------------------------- erros de schema
 /** Banco sem a 0062 (tabela/função ausente): a vitrine some sem quebrar a página. */
 export function isMissingBrandsSchema(error: { code?: string | null; message?: string | null } | null | undefined): boolean {
-  if (!error) return false;
-  return ["42P01", "PGRST205", "PGRST200", "42883", "PGRST202", "42703", "PGRST204"].includes(error.code ?? "");
+  return isMissingSchema(error);
 }

@@ -24,3 +24,29 @@ export const isProfessionalDemoReady = cache(async (): Promise<boolean> => {
     return false;
   }
 });
+
+/**
+ * A agência de demonstração (0064) já está pronta? Cada conta só aparece no painel quando o vínculo
+ * dela existe (Adm, colaborador e dono da marca). Sem a 0064 ou sem service role: nenhuma.
+ */
+export const isAgencyDemoReady = cache(async (): Promise<{ agency: boolean; agencyStaff: boolean; brand: boolean }> => {
+  const none = { agency: false, agencyStaff: false, brand: false };
+  if (!hasAdminClient()) return none;
+  try {
+    const client = createAdminClient();
+    const { data: agency, error } = await client.from("agencies").select("id").eq("is_demo", true).eq("status", "active").limit(1).maybeSingle();
+    if (error || !agency) return none;
+    const [{ data: members }, { data: brandLinks }] = await Promise.all([
+      client.from("agency_members").select("role").eq("agency_id", agency.id).is("revoked_at", null),
+      client.from("agency_brands").select("brand_id").eq("agency_id", agency.id).eq("status", "active").eq("is_demo", true),
+    ]);
+    const brandIds = (brandLinks ?? []).map((b) => b.brand_id);
+    const { data: owners } = brandIds.length
+      ? await client.from("brand_members").select("id").in("brand_id", brandIds).eq("role", "owner").is("revoked_at", null).limit(1)
+      : { data: [] };
+    const roles = new Set((members ?? []).map((m) => m.role));
+    return { agency: roles.has("admin"), agencyStaff: roles.has("staff"), brand: (owners ?? []).length > 0 };
+  } catch {
+    return none;
+  }
+});

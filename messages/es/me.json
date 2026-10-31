@@ -96,7 +96,10 @@
       "creator": "Héroe",
       "seller": "Proveedor",
       "admin": "Admin",
-      "professional": "Profesional"
+      "professional": "Profesional",
+      "agency": "Agencia",
+      "brand": "Marca",
+      "talent": "Talento"
     },
     "plan": {
       "label": "Plan",
@@ -116,9 +119,13 @@
         "creator": "Posts, recetas y vínculos de productos",
         "seller": "Productos, entregas y perfil de la operación",
         "admin": "Usuarios, contenidos, pedidos y configuración",
-        "professional": "Pedidos, servicios y perfil público"
+        "professional": "Pedidos, servicios y perfil público",
+        "agency": "Equipo, marcas atendidas y avisos",
+        "brand": "Equipo de la marca y avisos de la agencia"
       },
-      "professional": "Portal del profesional"
+      "professional": "Portal del profesional",
+      "agency": "Portal de la agencia",
+      "brand": "Portal de la marca"
     },
     "data": {
       "displayName": "Nombre visible",
@@ -813,6 +820,10 @@
       "auction_outbid": {
         "label": "Puja superada en Coleccionables",
         "description": "Un aviso cuando alguien supera tu puja (como máximo uno por artículo cada 2 minutos)."
+      },
+      "office_updates": {
+        "label": "Avisos de la oficina",
+        "description": "Oportunidades, tareas y entregas de la agencia que cuida tu carrera."
       }
     },
     "transactional": {

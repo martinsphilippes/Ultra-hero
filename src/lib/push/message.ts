@@ -4,7 +4,7 @@ import { createTranslator, type AbstractIntlMessages } from "next-intl";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 
-export type PushKind = "hero_post" | "achievement" | "program_completed" | "streak_reminder" | "auction_outbid";
+export type PushKind = "hero_post" | "achievement" | "program_completed" | "streak_reminder" | "auction_outbid" | "office";
 
 export type PushEvent =
   | { kind: "hero_post"; hero: string; contentTitle: string | null; contentSlug: string }
@@ -12,7 +12,12 @@ export type PushEvent =
   | { kind: "program_completed"; program: string; programSlug: string }
   | { kind: "streak_reminder"; streak: number }
   // lance superado nos Colecionáveis (0061): valor atual do item e link para dar outro lance
-  | { kind: "auction_outbid"; item: string; amountCents: number; collectibleId: string };
+  | { kind: "auction_outbid"; item: string; amountCents: number; collectibleId: string }
+  // aviso do escritório do creator (0064): o texto vem do tipo do aviso, com os mesmos parâmetros do sino
+  | { kind: "office"; inboxKind: string; params: Record<string, string>; link: string };
+
+// Tokens que os textos do escritório podem usar (sempre presentes; vazio quando o aviso não traz).
+const OFFICE_TOKENS = ["name", "brand", "deal", "talent", "step", "date", "status"] as const;
 
 export type PushMessage = { title: string; body: string; url: string };
 
@@ -45,6 +50,10 @@ export function buildPushMessage(event: PushEvent, locale: Locale, messages: Abs
         t("auctionOutbid.body", { item: event.item.trim(), price: formatCurrency(event.amountCents / 100, locale) }),
         `/shop/colecionaveis/${event.collectibleId}`,
       );
+    case "office": {
+      const values = Object.fromEntries(OFFICE_TOKENS.map((k) => [k, event.params[k] ?? ""]));
+      return out(t(`office.${event.inboxKind}.title`, values), t(`office.${event.inboxKind}.body`, values), event.link);
+    }
   }
 }
 

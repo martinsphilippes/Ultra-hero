@@ -13,13 +13,22 @@ import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 import { PORTAL_ROOT, type Portal } from "./portal-nav";
 
-type PortalShellProps = { portal: Portal; children: ReactNode };
+type PortalShellProps = {
+  portal: Portal;
+  children: ReactNode;
+  /** Itens do menu permitidos para o papel (calculado no servidor). Sem a prop, todos. */
+  navKeys?: readonly string[];
+  /** Ação à direita do cabeçalho (o sino de avisos nos portais de gestão). */
+  headerAction?: ReactNode;
+  /** Selo do portal ("Agência", "Marca"); padrão: nav.portals.<portal>. */
+  badge?: string;
+};
 
 // Casca dos portais (admin/personalidade/fornecedor): sidebar fixa no desktop, Sheet no mobile.
 // Portal do herói: sem menu (nem lateral nem de três linhas). Os atalhos moram no Perfil do app;
 // aqui fica só "← Perfil" para voltar.
 // O gate de papel acontece no layout que chama este componente (server-side).
-export async function PortalShell({ portal, children }: PortalShellProps) {
+export async function PortalShell({ portal, children, navKeys, headerAction, badge }: PortalShellProps) {
   const [session, cookieStore, t, ta] = await Promise.all([
     getSessionSummary(),
     cookies(),
@@ -42,10 +51,10 @@ export async function PortalShell({ portal, children }: PortalShellProps) {
           <Logo size="sm" />
         </Link>
         <div className="flex items-center gap-2 px-2">
-          <Badge variant="accent">{t(`portals.${portal}`)}</Badge>
+          <Badge variant="accent">{badge ?? t(`portals.${portal}`)}</Badge>
           <Badge variant="demo">{ta("demo.tag")}</Badge>
         </div>
-        <PortalNavList portal={portal} />
+        <PortalNavList portal={portal} navKeys={navKeys} />
       </aside>
       )}
 
@@ -55,7 +64,7 @@ export async function PortalShell({ portal, children }: PortalShellProps) {
             <div className="flex min-w-0 items-center gap-2">
               {withMenu ? (
                 <>
-                  <PortalMobileMenu portal={portal} />
+                  <PortalMobileMenu portal={portal} navKeys={navKeys} />
                   <Link href={PORTAL_ROOT[portal]} className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus md:hidden">
                     <Logo size="sm" />
                   </Link>
@@ -73,6 +82,7 @@ export async function PortalShell({ portal, children }: PortalShellProps) {
               )}
             </div>
             <div className="flex items-center gap-0.5">
+              {headerAction}
               <ThemeToggle initialTheme={theme} />
               <LocaleSwitcher />
               <UserMenu session={session} />

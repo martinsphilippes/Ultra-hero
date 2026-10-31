@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import {
+  BadgeCheck,
+  Building2,
   Bell,
   BellRing,
   ChefHat,
@@ -50,6 +52,8 @@ const ICONS: Record<SettingsItem["key"], LucideIcon> = {
   appearance: Languages,
   seller: Store,
   professional: Stethoscope,
+  agency: Building2,
+  brand: BadgeCheck,
   admin: ShieldCheck,
 };
 

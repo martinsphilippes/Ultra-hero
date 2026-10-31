@@ -1,0 +1,119 @@
+{
+  "bell": "Notices",
+  "bellUnread": "Unread notices: {count}",
+  "title": "Notices",
+  "sheetDescription": "Notices from your agency, brand or office arrive here.",
+  "pageDescription": "Everything that happened to you in the management portals.",
+  "seeAll": "See all",
+  "markAll": "Mark all as read",
+  "listLabel": "Recent notices",
+  "empty": "No notices yet.",
+  "emptyUnread": "No unread notices.",
+  "emptyHint": "When something needs you, it shows up here and on the bell.",
+  "unreadDot": "Unread",
+  "filterLabel": "Filter notices",
+  "filterAll": "All",
+  "filterUnread": "Unread ({count})",
+  "kinds": {
+    "member_joined": {
+      "title": "New team member",
+      "body": "{name} joined the agency team."
+    },
+    "brand_member_joined": {
+      "title": "New brand member",
+      "body": "{name} now has access to the {brand} brand portal."
+    },
+    "talent_consent_given": {
+      "title": "Consent recorded",
+      "body": "{talent} authorized commercial use of their data."
+    },
+    "talent_consent_revoked": {
+      "title": "Consent revoked",
+      "body": "{talent} revoked commercial use of their data."
+    },
+    "briefing_received": {
+      "title": "New brief",
+      "body": "{brand} sent a brief: {deal}."
+    },
+    "deal_assigned": {
+      "title": "Deal assigned to you",
+      "body": "You are now responsible for {deal}."
+    },
+    "campaign_status_changed": {
+      "title": "Campaign updated",
+      "body": "{deal} has a new status."
+    },
+    "proposal_received": {
+      "title": "Proposal received",
+      "body": "The agency sent the proposal for {deal}."
+    },
+    "proposal_decided": {
+      "title": "Brand response",
+      "body": "{brand} answered the proposal for {deal}."
+    },
+    "message_received": {
+      "title": "New message",
+      "body": "New message in {deal}."
+    },
+    "opportunity_received": {
+      "title": "New opportunity",
+      "body": "{brand} has an opportunity for you."
+    },
+    "opportunity_updated": {
+      "title": "Opportunity updated",
+      "body": "There is an update on {deal}."
+    },
+    "opportunity_answered": {
+      "title": "Creator response",
+      "body": "{talent} answered the opportunity for {deal}."
+    },
+    "contract_acceptance_requested": {
+      "title": "Contract to accept",
+      "body": "The contract for {deal} is waiting for your acceptance."
+    },
+    "contract_confirmed": {
+      "title": "Contract confirmed",
+      "body": "The contract for {deal} was confirmed."
+    },
+    "task_assigned": {
+      "title": "New task",
+      "body": "You have a new task in {deal}."
+    },
+    "deliverable_submitted": {
+      "title": "Deliverable submitted",
+      "body": "{talent} submitted a deliverable for {deal}."
+    },
+    "deliverable_decided": {
+      "title": "Deliverable reviewed",
+      "body": "Your deliverable for {deal} was reviewed."
+    },
+    "deliverable_published": {
+      "title": "Content published",
+      "body": "{talent} published the content for {deal}."
+    },
+    "talent_suggestion": {
+      "title": "Campaign suggestion",
+      "body": "{talent} suggested a campaign."
+    },
+    "calendar_event_added": {
+      "title": "New appointment",
+      "body": "Appointment on {date} in your schedule."
+    },
+    "commercial_date_published": {
+      "title": "New commercial date",
+      "body": "The agency published an opportunity for {date}."
+    },
+    "relationship_alert": {
+      "title": "No contact for a while",
+      "body": "No one has talked to {talent} recently."
+    },
+    "task_overdue": {
+      "title": "Overdue task",
+      "body": "A task in {deal} is past its due date."
+    },
+    "payout_updated": {
+      "title": "Payout updated",
+      "body": "The payout for {deal} has a new status."
+    }
+  }
+}

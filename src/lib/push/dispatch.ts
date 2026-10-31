@@ -49,6 +49,7 @@ async function resolveEvents(admin: Admin, rows: OutboxRow[], locales: Map<strin
   const programIds = rows.filter((r) => r.kind === "program_completed").map((r) => str(payloadOf(r).program_id)).filter((id): id is string => Boolean(id));
   const codes = rows.filter((r) => r.kind === "achievement").map((r) => str(payloadOf(r).code)).filter((c): c is string => Boolean(c));
   const collectibleIds = rows.filter((r) => r.kind === "auction_outbid").map((r) => str(payloadOf(r).collectible_id)).filter((id): id is string => Boolean(id));
+  const noticeIds = rows.filter((r) => r.kind === "office").map((r) => str(payloadOf(r).notification_id)).filter((id): id is string => Boolean(id));
 
   const [contents, programs, achievements, collectibles] = await Promise.all([
     contentIds.length
@@ -64,6 +65,13 @@ async function resolveEvents(admin: Admin, rows: OutboxRow[], locales: Map<strin
   if (programs.error) throw new Error(`push: programs ${programs.error.message}`);
   if (achievements.error) throw new Error(`push: achievements ${achievements.error.message}`);
   if (collectibles.error) throw new Error(`push: collectibles ${collectibles.error.message}`);
+
+  // avisos do escritório (0064): o próprio aviso do sino; lido antes do envio = não empurra
+  const notices = noticeIds.length
+    ? await admin.from("inbox_notifications").select("id, user_id, kind, params, link, read_at").in("id", noticeIds)
+    : { data: [], error: null };
+  if (notices.error) throw new Error(`push: inbox ${notices.error.message}`);
+  const noticeById = new Map((notices.data ?? []).map((n) => [n.id, n]));
 
   // lance superado (0061): quem vence agora (para não avisar quem já voltou à frente)
   type CollectibleRow = { id: string; title: string; status: string; starts_at: string | null; ends_at: string | null; current_cents: number; leading_bid_id: string | null };
@@ -109,6 +117,16 @@ async function resolveEvents(admin: Admin, rows: OutboxRow[], locales: Map<strin
       const live = item && collectiblePhase(item.status, item.starts_at, item.ends_at, Date.now()) === "live";
       const leadingAgain = item?.leading_bid_id ? leaderByBid.get(item.leading_bid_id) === row.user_id : false;
       out.set(row.id, item && live && !leadingAgain ? { kind: "auction_outbid", item: item.title, amountCents: item.current_cents, collectibleId: item.id } : null);
+    } else if (row.kind === "office") {
+      const notice = noticeById.get(str(p.notification_id) ?? "");
+      const params = notice?.params && typeof notice.params === "object" && !Array.isArray(notice.params) ? (notice.params as Record<string, unknown>) : {};
+      const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => typeof v === "string" || typeof v === "number").map(([k, v]) => [k, String(v).slice(0, 120)]));
+      out.set(
+        row.id,
+        notice && !notice.read_at && notice.user_id === row.user_id && notice.link.startsWith("/creator/escritorio")
+          ? { kind: "office", inboxKind: notice.kind, params: clean, link: notice.link }
+          : null,
+      );
     } else out.set(row.id, null);
   }
   return out;

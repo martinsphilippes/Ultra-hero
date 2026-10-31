@@ -20,6 +20,7 @@ export const notificationPreferencesSchema = z
     hero_posts: z.boolean(),
     achievements: z.boolean(),
     auction_outbid: z.boolean(),
+    office_updates: z.boolean(),
     editorial_digest: z.boolean(),
     streak_reminders: z.boolean(),
     commerce_updates: z.boolean(),

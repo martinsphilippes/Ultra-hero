@@ -1,0 +1,111 @@
+import type { Metadata } from "next";
+import { BriefcaseBusiness, CalendarDays, ClipboardList, Contact, Plus, UserPlus, Wallet } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { KpiCard } from "@/components/admin-ops/KpiCard";
+import { AgencySwitcher } from "@/components/agency/AgencySwitcher";
+import { SelfForm } from "@/components/agency/SettingsForms";
+import { RoleBadge } from "@/components/agency/RoleBadge";
+import { Button, PageHeader } from "@/components/ui";
+import { agencyDashboard } from "@/lib/agency/queries";
+import { agencyCan, canSeeValues } from "@/lib/agency/roles";
+import { getAgencyContext } from "@/lib/agency/server";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("agency.meta");
+  return { title: t("dashboard") };
+}
+
+// Início da agência (Etapa A): equipe, marcas atendidas, convites pendentes e avisos; os próximos
+// módulos aparecem como "em breve" (casting, pipeline, agenda e, só para o Adm, financeiro).
+export default async function AgencyDashboardPage() {
+  const ctx = await getAgencyContext();
+  if (ctx.state !== "ok") return null;
+  const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
+  const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
+  const [t, data] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin)]);
+
+  const upcoming = [
+    { key: "casting", icon: Contact },
+    { key: "pipeline", icon: BriefcaseBusiness },
+    { key: "tasks", icon: ClipboardList },
+    { key: "agenda", icon: CalendarDays },
+    ...(canSeeValues(ctx.role, ctx.platformAdmin) ? [{ key: "finance", icon: Wallet }] : []),
+  ] as const;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow={t("eyebrow")}
+        title={ctx.agency.name}
+        description={ctx.memberName ? t("greeting", { name: ctx.memberName }) : t("adminView")}
+        actions={ctx.role ? <RoleBadge role={ctx.role} /> : null}
+      />
+      {ctx.platformAdmin && ctx.agencies.length > 1 ? (
+        <AgencySwitcher agencies={ctx.agencies.map((a) => ({ id: a.id, name: a.name, isDemo: a.isDemo }))} currentId={ctx.agency.id} />
+      ) : null}
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="agency-kpis">
+        <KpiCard label={t("kpi.team")} value={data.members} />
+        <KpiCard label={t("kpi.brands")} value={data.brands} />
+        {isAdmin ? <KpiCard label={t("kpi.invites")} value={data.pendingInvites} /> : null}
+        <KpiCard label={t("kpi.unread")} value={data.unread} />
+      </div>
+
+      <section aria-labelledby="agency-quick" className="flex flex-col gap-3">
+        <h2 id="agency-quick" className="text-sm font-semibold text-fg">
+          {t("quickTitle")}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {isManager ? (
+            <Button asChild size="sm" leadingIcon={<Plus />}>
+              <Link href="/agencia/marcas/nova">{t("newBrand")}</Link>
+            </Button>
+          ) : null}
+          {isAdmin ? (
+            <Button asChild size="sm" variant="secondary" leadingIcon={<UserPlus />}>
+              <Link href="/agencia/equipe">{t("inviteTeam")}</Link>
+            </Button>
+          ) : null}
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/agencia/marcas">{t("seeBrands")}</Link>
+          </Button>
+        </div>
+      </section>
+
+      <section aria-labelledby="agency-upcoming" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+        <div className="flex flex-col gap-1">
+          <h2 id="agency-upcoming" className="text-sm font-semibold text-fg">
+            {t("upcomingTitle")}
+          </h2>
+          <p className="type-body-sm text-fg-muted">{t("upcomingHint")}</p>
+        </div>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {upcoming.map(({ key, icon: Icon }) => (
+            <li key={key} className="flex items-start gap-3 rounded-xl border border-border bg-bg p-3">
+              <Icon className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden="true" />
+              <span className="flex flex-col gap-0.5">
+                <span className="text-sm font-semibold text-fg">{t(`upcoming.${key}.title`)}</span>
+                <span className="type-caption text-fg-muted">{t(`upcoming.${key}.body`)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {ctx.role && ctx.memberName ? (
+        <section aria-labelledby="agency-self" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+          <div className="flex flex-col gap-1">
+            <h2 id="agency-self" className="text-sm font-semibold text-fg">
+              {t("selfTitle")}
+            </h2>
+            <p className="type-body-sm text-fg-muted">{t("selfHint")}</p>
+          </div>
+          <SelfForm initialName={ctx.memberName} initialTitle={ctx.memberTitle ?? ""} />
+        </section>
+      ) : null}
+    </div>
+  );
+}

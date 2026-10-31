@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "dashboard": "Agencia",
+    "team": "Equipo de la agencia",
+    "brands": "Marcas",
+    "newBrand": "Nueva marca",
+    "brand": "Marca",
+    "settings": "Configuración de la agencia"
+  },
+  "demoBanner": {
+    "tag": "Demostración",
+    "text": "Esta es la agencia de demostración: datos ficticios, equipo fijo."
+  },
+  "module": {
+    "unavailable": {
+      "title": "Módulo en actualización",
+      "agency": "El portal de la agencia vuelve en un momento.",
+      "brand": "El portal de la marca vuelve en un momento."
+    },
+    "demo_forbidden": {
+      "title": "No disponible para cuentas de demostración",
+      "agency": "Para conocer el portal, entra con la cuenta Agencia del panel de demostración.",
+      "brand": "Para conocer el portal, entra con la cuenta Marca del panel de demostración."
+    },
+    "none": {
+      "title": "Todavía no formas parte de una agencia",
+      "agency": "Pide una invitación al Adm de tu agencia.",
+      "brand": "Pide una invitación a la agencia que atiende tu marca."
+    }
+  },
+  "roles": {
+    "admin": "Adm de la agencia",
+    "manager": "Gestor",
+    "staff": "Colaborador",
+    "owner": "Dueño de la marca",
+    "brandStaff": "Equipo de la marca"
+  },
+  "dashboard": {
+    "eyebrow": "Portal de la agencia",
+    "greeting": "Hola, {name}. Este es el centro de trabajo de tu agencia.",
+    "adminView": "Estás viendo como admin general.",
+    "switchAgency": "Agencia",
+    "demoTag": "demostración",
+    "kpi": {
+      "team": "Equipo",
+      "brands": "Marcas atendidas",
+      "invites": "Invitaciones pendientes",
+      "unread": "Avisos sin leer"
+    },
+    "quickTitle": "Atajos",
+    "newBrand": "Nueva marca",
+    "inviteTeam": "Invitar equipo",
+    "seeBrands": "Ver marcas",
+    "upcomingTitle": "Próximamente en el portal",
+    "upcomingHint": "Los próximos módulos llegan por etapas, sin quitar nada de lo que existe.",
+    "upcoming": {
+      "casting": {
+        "title": "Casting y media kit",
+        "body": "Creators, segmentos, redes declaradas y enlace de presentación."
+      },
+      "pipeline": {
+        "title": "Pipeline comercial",
+        "body": "Del brief a la propuesta, con consulta de interés a los creators."
+      },
+      "tasks": {
+        "title": "Tareas y entregas",
+        "body": "Las 12 etapas de la campaña con plazos y responsables."
+      },
+      "agenda": {
+        "title": "Agenda y calendario comercial",
+        "body": "Compromisos del equipo y fechas para ofrecer a las marcas."
+      },
+      "finance": {
+        "title": "Finanzas (solo Adm)",
+        "body": "Comisiones en 6 formatos, pagos y cobros, sin cobro real."
+      }
+    },
+    "selfTitle": "Cómo te ve el equipo",
+    "selfHint": "Tu nombre y cargo en las listas de la agencia."
+  },
+  "team": {
+    "title": "Equipo",
+    "description": "Quién trabaja en la agencia y qué puede hacer cada nivel.",
+    "demoLocked": "El equipo de la agencia de demostración es fijo.",
+    "levelsTitle": "Niveles de acceso",
+    "levels": {
+      "admin": "Todo, incluso valores, comisiones, finanzas, configuración y equipo.",
+      "manager": "Casting, marcas y pipeline; nunca ve valores.",
+      "staff": "Tareas, agenda y los negocios a su cargo; nunca ve valores."
+    },
+    "membersTitle": "Miembros ({count})",
+    "since": "Desde {date}",
+    "invitesTitle": "Invitaciones pendientes",
+    "inviteExpires": "Válida hasta {date}",
+    "noInvites": "No hay invitaciones pendientes.",
+    "noInvitesHint": "Invita con el botón de arriba; el enlace aparece una sola vez.",
+    "changeRoleFor": "Nivel de {name}",
+    "removeFor": "Quitar a {name}",
+    "leave": "Salir",
+    "remove": "Quitar",
+    "removeTitle": "¿Quitar a {name} del equipo?",
+    "roleTitle": "¿Cambiar el nivel de {name}?",
+    "roleDescription": "Nuevo nivel: {role}. El cambio queda en el historial.",
+    "removeDescription": "La persona pierde el acceso al portal y sus invitaciones dejan de valer.",
+    "removeConfirm": "Quitar",
+    "roleConfirm": "Cambiar nivel",
+    "justification": "Motivo",
+    "justificationHint": "Queda registrado en el historial de la agencia.",
+    "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona.",
+    "roleChanged": "Nivel actualizado.",
+    "removed": "Persona quitada del equipo.",
+    "inviteRevoked": "Invitación revocada."
+  },
+  "invite": {
+    "open": "Invitar",
+    "title": "Nueva invitación",
+    "createdTitle": "Invitación creada",
+    "email": "Correo",
+    "role": "Nivel de acceso",
+    "roleHint": "Solo el Adm de la agencia ve valores.",
+    "days": "Validez",
+    "daysOption": "{days} días",
+    "submit": "Generar invitación",
+    "done": "Listo",
+    "link": "Enlace de la invitación",
+    "linkWarning": "Este enlace aparece solo ahora. Cópialo y envíalo a la persona.",
+    "inboxNote": "Los avisos de los portales llegan por la campana, no por correo.",
+    "revoke": "Revocar",
+    "revokeFor": "Revocar invitación de {email}"
+  },
+  "brands": {
+    "title": "Marcas",
+    "description": "Las marcas que atiende la agencia y quién de ellas accede al portal.",
+    "new": "Nueva marca",
+    "filterLabel": "Filtrar marcas",
+    "filterActive": "Activas",
+    "filterArchived": "Archivadas",
+    "publicOn": "En la app",
+    "publicOff": "Fuera de la app",
+    "demoTag": "ejemplo",
+    "empty": "Todavía no hay marcas.",
+    "emptyArchived": "No hay marcas archivadas.",
+    "emptyHint": "Registra la primera marca o vincula una que ya está en la app.",
+    "newTitle": "Nueva marca",
+    "newDescription": "Registra una marca nueva o vincula una que ya aparece en la app.",
+    "createTitle": "Registrar marca",
+    "linkTitle": "Vincular marca de la app",
+    "form": {
+      "name": "Nombre",
+      "slug": "Dirección corta",
+      "slugHint": "Minúsculas, números y guiones.",
+      "slugDemoHint": "En la agencia de demostración, la dirección empieza con exemplo-.",
+      "site": "Sitio oficial",
+      "siteHint": "Empieza con https://",
+      "logo": "Logo (opcional)",
+      "logoHint": "Enlace https a una imagen.",
+      "privacyNote": "La marca nace fuera de la app: solo la agencia y el equipo de la marca la ven.",
+      "submit": "Registrar marca"
+    },
+    "link": {
+      "label": "Marca",
+      "hint": "Marcas públicas de la app que todavía no están con esta agencia.",
+      "none": "No hay marcas de la app disponibles para vincular.",
+      "submit": "Vincular"
+    },
+    "linkActive": "Atendida por la agencia",
+    "linkArchived": "Vínculo archivado",
+    "site": "Sitio",
+    "membersTitle": "Acceso de la marca al portal",
+    "membersHint": "Quién de la marca entra al portal de la marca.",
+    "since": "Desde {date}",
+    "noMembers": "Nadie de la marca tiene acceso todavía.",
+    "noMembersHint": "Invita al dueño de la marca; él invita a su propio equipo.",
+    "invitesTitle": "Invitaciones pendientes",
+    "inviteExpires": "Válida hasta {date}",
+    "linkTitleStatus": "Vínculo con la agencia",
+    "archiveHint": "Archivar quita el acceso de la marca al portal; el historial queda.",
+    "reactivateHint": "Reactivar devuelve el acceso a quien ya era de la marca.",
+    "archive": "Archivar vínculo",
+    "reactivate": "Reactivar vínculo",
+    "removeMember": "Quitar",
+    "removeMemberFor": "Quitar a {name} de la marca",
+    "created": "Marca registrada.",
+    "linked": "Marca vinculada a la agencia.",
+    "archived": "Vínculo archivado.",
+    "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona.",
+    "memberRemoved": "Persona quitada de la marca."
+  },
+  "settings": {
+    "title": "Configuración",
+    "description": "Datos de la agencia usados en los portales y alertas.",
+    "dataTitle": "Datos de la agencia",
+    "name": "Nombre de la agencia",
+    "timezone": "Zona horaria",
+    "alertDays": "Alerta de relación (días)",
+    "alertDaysHint": "Avisa cuando un creator pasa ese tiempo sin contacto (7 a 365).",
+    "contactEmail": "Correo de contacto",
+    "contactEmailHint": "Lo ven marcas y creators.",
+    "save": "Guardar",
+    "saved": "Configuración guardada.",
+    "selfName": "Tu nombre",
+    "selfTitle": "Tu cargo",
+    "selfSave": "Guardar",
+    "selfSaved": "Tus datos se guardaron.",
+    "soonTitle": "Próximamente aquí",
+    "soonBody": "Segmentos del casting, reglas de comisión (solo Adm) y fechas comerciales."
+  },
+  "errors": {
+    "demo_account_forbidden": "Las cuentas de demostración no entran en agencias reales.",
+    "demo_locked": "La agencia de demostración tiene equipo y vínculos fijos.",
+    "demo_brand": "Las marcas de ejemplo de la app no entran en agencias.",
+    "demo_limit": "La agencia de demostración llegó al límite de 10 marcas.",
+    "brand_linked_elsewhere": "Esta marca ya la atiende otra agencia. Solo el admin general puede transferirla.",
+    "brand_linked_to_agency": "La marca está vinculada a una agencia; archiva el vínculo antes de borrar.",
+    "brand_has_members": "La marca tiene personas con acceso al portal; quítalas antes.",
+    "brand_has_documents": "La marca tiene documentos guardados; archívalos antes.",
+    "brand_not_linked": "La marca ya no está con esta agencia.",
+    "last_agency_admin": "La agencia necesita al menos un Adm.",
+    "last_brand_owner": "La marca necesita al menos un dueño.",
+    "agency_member_elsewhere": "Esta persona ya forma parte de otra agencia.",
+    "already_member": "Esta persona ya forma parte del equipo.",
+    "justification_required": "Escribe el motivo (al menos 5 caracteres).",
+    "invitation_invalid": "Esta invitación ya no es válida.",
+    "invalid_email": "Revisa el correo.",
+    "invalid_timezone": "Zona horaria inválida.",
+    "invalid_url": "Usa una dirección que empiece con https://.",
+    "invalid_image": "El logo debe ser un enlace https a una imagen.",
+    "duplicate_slug": "Ya existe una marca con esta dirección; elige otra.",
+    "unauthenticated": "Vuelve a entrar para continuar.",
+    "forbidden": "No tienes acceso a esta acción.",
+    "not_found": "No encontramos eso aquí.",
+    "invalid_input": "Revisa los campos e inténtalo de nuevo.",
+    "generic": "No funcionó ahora. Inténtalo de nuevo."
+  }
+}

@@ -19,5 +19,47 @@
   "auctionOutbid": {
     "title": "Superaron tu puja",
     "body": "{item}: la puja ahora es {price}. Toca para hacer una nueva puja."
+  },
+  "office": {
+    "message_received": {
+      "title": "Nuevo mensaje",
+      "body": "Mensaje nuevo en {deal}."
+    },
+    "opportunity_received": {
+      "title": "Nueva oportunidad",
+      "body": "{brand} tiene una oportunidad para ti."
+    },
+    "opportunity_updated": {
+      "title": "Oportunidad actualizada",
+      "body": "Hay una actualización en {deal}."
+    },
+    "contract_acceptance_requested": {
+      "title": "Contrato para aceptar",
+      "body": "El contrato de {deal} espera tu aceptación."
+    },
+    "contract_confirmed": {
+      "title": "Contrato confirmado",
+      "body": "El contrato de {deal} fue confirmado."
+    },
+    "task_assigned": {
+      "title": "Nueva tarea",
+      "body": "Tienes una tarea nueva en {deal}."
+    },
+    "deliverable_decided": {
+      "title": "Entrega evaluada",
+      "body": "Tu entrega de {deal} fue evaluada."
+    },
+    "calendar_event_added": {
+      "title": "Nuevo compromiso",
+      "body": "Compromiso el {date} en tu agenda."
+    },
+    "task_overdue": {
+      "title": "Tarea atrasada",
+      "body": "Una tarea de {deal} pasó la fecha límite."
+    },
+    "payout_updated": {
+      "title": "Pago actualizado",
+      "body": "El pago de {deal} cambió de estado."
+    }
   }
 }

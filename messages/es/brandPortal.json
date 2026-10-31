@@ -1,0 +1,51 @@
+{
+  "adminReadOnly": "Estás viendo como admin general, solo lectura.",
+  "meta": {
+    "dashboard": "Marca",
+    "team": "Equipo de la marca"
+  },
+  "dashboard": {
+    "eyebrow": "Portal de la marca",
+    "servedBy": "Atendida por {agency}",
+    "switchBrand": "Marca",
+    "inboxNote": "Los avisos llegan aquí, a la campana del portal.",
+    "kpi": {
+      "team": "Personas con acceso",
+      "unread": "Avisos sin leer"
+    },
+    "seeTeam": "Ver equipo",
+    "upcomingTitle": "Próximamente en el portal",
+    "upcomingHint": "La agencia habilitará estas áreas por etapas.",
+    "upcoming": {
+      "campaigns": {
+        "title": "Campañas",
+        "body": "Brief en 5 pasos y el avance de cada campaña."
+      },
+      "creators": {
+        "title": "Búsqueda de creators",
+        "body": "Catálogo autorizado, con los criterios de cada sugerencia."
+      },
+      "approvals": {
+        "title": "Aprobaciones y contratos",
+        "body": "Propuestas, guiones y entregas para aprobar."
+      },
+      "calendar": {
+        "title": "Calendario comercial",
+        "body": "Fechas y oportunidades publicadas por la agencia."
+      }
+    }
+  },
+  "team": {
+    "title": "Equipo de la marca",
+    "descriptionOwner": "Invita a quien de tu equipo sigue las campañas.",
+    "descriptionStaff": "Quién de la marca accede a este portal.",
+    "membersTitle": "Personas ({count})",
+    "since": "Desde {date}",
+    "invitesTitle": "Invitaciones pendientes",
+    "inviteExpires": "Válida hasta {date}",
+    "noInvites": "No hay invitaciones pendientes.",
+    "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona.",
+    "removed": "Persona quitada.",
+    "inviteRevoked": "Invitación revocada."
+  }
+}

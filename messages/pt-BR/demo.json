@@ -27,6 +27,18 @@
     "professional": {
       "label": "Profissional",
       "description": "Nina Horta, nutricionista: pedidos e serviços"
+    },
+    "agency": {
+      "label": "Agência",
+      "description": "Adm da agência de exemplo: equipe, marcas e valores"
+    },
+    "agencyStaff": {
+      "label": "Colaborador",
+      "description": "Colaborador da agência: tarefas e agenda, sem valores"
+    },
+    "brand": {
+      "label": "Marca",
+      "description": "Dono da Marca Exemplo: campanhas e aprovações"
     }
   }
 }

@@ -63,7 +63,11 @@
     "rights_holder_required": "Indica el titular de la autorización para marcar como autorizado.",
     "creator_not_found": "Héroe no encontrado.",
     "product_not_found": "Producto no encontrado.",
-    "professional_profile_already_linked": "Esta cuenta ya está vinculada a otro perfil profesional."
+    "professional_profile_already_linked": "Esta cuenta ya está vinculada a otro perfil profesional.",
+    "demo_account_forbidden": "Las cuentas de demostración no entran en agencias reales.",
+    "agency_member_elsewhere": "Esta persona ya forma parte de otra agencia.",
+    "brand_not_linked": "La marca ya no está con esta agencia.",
+    "partner_suspended": "Este acceso está suspendido en este momento."
   },
   "dashboard": {
     "title": "Panel",
@@ -179,7 +183,9 @@
       "creator": "Héroe",
       "seller": "Proveedor",
       "admin": "Admin",
-      "professional": "Profesional"
+      "professional": "Profesional",
+      "agency": "Agencia",
+      "brand": "Marca"
     },
     "detail": {
       "title": "Detalle del usuario",
@@ -283,7 +289,9 @@
     "revokeTitle": "Revocar invitación",
     "revokeDescription": "El enlace dejará de funcionar de inmediato.",
     "revoked": "Invitación revocada",
-    "expiredNote": "expirada"
+    "expiredNote": "expirada",
+    "roleAgency": "Agencia",
+    "roleBrand": "Marca"
   },
   "invite": {
     "title": "Invitación",
@@ -306,7 +314,14 @@
     "successSellerPortalOff": "Invitación aceptada. El portal del proveedor está desactivado por ahora; la operación la hace la administración.",
     "successProfessional": "Tu acceso de profesional está listo. Completa el perfil y los servicios.",
     "goProfessional": "Ir al portal del profesional",
-    "grantProfessional": "Recibirás acceso al portal del profesional."
+    "grantProfessional": "Recibirás acceso al portal del profesional.",
+    "grantAgency": "Agencia: entra al equipo de la agencia en el nivel de la invitación.",
+    "grantBrand": "Marca: accede al portal de la marca atendida por la agencia.",
+    "successAgency": "Ahora formas parte del equipo de la agencia.",
+    "successBrand": "Ahora accedes al portal de la marca.",
+    "goAgency": "Abrir portal de la agencia",
+    "goBrand": "Abrir portal de la marca",
+    "inboxOnlyNote": "Los avisos quedan en la campana del portal."
   },
   "creators": {
     "title": "Héroes",

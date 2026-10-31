@@ -19,5 +19,47 @@
   "auctionOutbid": {
     "title": "You've been outbid",
     "body": "{item}: the bid is now {price}. Tap to place a new bid."
+  },
+  "office": {
+    "message_received": {
+      "title": "New message",
+      "body": "New message in {deal}."
+    },
+    "opportunity_received": {
+      "title": "New opportunity",
+      "body": "{brand} has an opportunity for you."
+    },
+    "opportunity_updated": {
+      "title": "Opportunity updated",
+      "body": "There is an update on {deal}."
+    },
+    "contract_acceptance_requested": {
+      "title": "Contract to accept",
+      "body": "The contract for {deal} is waiting for your acceptance."
+    },
+    "contract_confirmed": {
+      "title": "Contract confirmed",
+      "body": "The contract for {deal} was confirmed."
+    },
+    "task_assigned": {
+      "title": "New task",
+      "body": "You have a new task in {deal}."
+    },
+    "deliverable_decided": {
+      "title": "Deliverable reviewed",
+      "body": "Your deliverable for {deal} was reviewed."
+    },
+    "calendar_event_added": {
+      "title": "New appointment",
+      "body": "Appointment on {date} in your schedule."
+    },
+    "task_overdue": {
+      "title": "Overdue task",
+      "body": "A task in {deal} is past its due date."
+    },
+    "payout_updated": {
+      "title": "Payout updated",
+      "body": "The payout for {deal} has a new status."
+    }
   }
 }

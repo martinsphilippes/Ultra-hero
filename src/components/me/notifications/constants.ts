@@ -3,8 +3,12 @@
 // docs/decisions/push-notifications.md); e-mail opcional ainda não é enviado. Mensagens
 // transacionais (confirmação de cadastro, redefinição de senha) não têm opt-out e não aparecem aqui.
 
-// auction_outbid: lance superado nos Colecionáveis (0061)
-export const NOTIFICATION_TYPES = ["hero_posts", "achievements", "auction_outbid", "streak_reminders", "editorial_digest", "commerce_updates"] as const;
+// auction_outbid: lance superado nos Colecionáveis (0061); office_updates: avisos do escritório do creator
+// (0064: oportunidades, tarefas, entregas), mostrado só para quem tem papel de creator
+export const NOTIFICATION_TYPES = ["hero_posts", "achievements", "auction_outbid", "office_updates", "streak_reminders", "editorial_digest", "commerce_updates"] as const;
+
+/** Tipos que só aparecem para quem tem o papel correspondente. */
+export const ROLE_ONLY_TYPES: Partial<Record<(typeof NOTIFICATION_TYPES)[number], string>> = { office_updates: "creator" };
 export const NOTIFICATION_CHANNELS = ["channel_email", "channel_push"] as const;
 export const NOTIFICATION_PREFERENCE_KEYS = [...NOTIFICATION_TYPES, ...NOTIFICATION_CHANNELS] as const;
 
@@ -18,6 +22,7 @@ export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   hero_posts: false,
   achievements: false,
   auction_outbid: false,
+  office_updates: false,
   editorial_digest: false,
   streak_reminders: false,
   commerce_updates: false,

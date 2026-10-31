@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 // Entrada pelas contas de demonstração (painel "Contas de demonstração" do /login). Compartilhado pelos
 // specs que repetiam o mesmo trecho; cada um continua dizendo para onde espera ir depois do login.
 
-export type DemoKind = "creator" | "admin" | "premium" | "free";
+export type DemoKind = "creator" | "admin" | "premium" | "free" | "agency" | "agencyStaff" | "brand";
 
 /** Todo login chega na aba Hero. */
 export const LOGIN_LANDING = /\/personalities$/;
@@ -15,8 +15,20 @@ export const DEMO_HOME: Record<DemoKind, RegExp> = {
   admin: /\/admin$/,
   premium: /\/profile$/,
   free: /\/explore/,
+  // gestão (0064): contas criadas pelo admin geral em /admin/agencia
+  agency: /\/agencia$/,
+  agencyStaff: /\/agencia$/,
+  brand: /\/marca$/,
 };
-const DEMO_PATH: Record<DemoKind, string> = { creator: "/profile", admin: "/admin", premium: "/profile", free: "/explore" };
+const DEMO_PATH: Record<DemoKind, string> = {
+  creator: "/profile",
+  admin: "/admin",
+  premium: "/profile",
+  free: "/explore",
+  agency: "/agencia",
+  agencyStaff: "/agencia",
+  brand: "/marca",
+};
 
 type Options = {
   /** Onde a conta deve estar depois do login (padrão: DEMO_HOME); null fica na aba Hero, onde o login chega. */
@@ -31,6 +43,8 @@ export async function loginAs(page: Page, kind: DemoKind, { home = DEMO_HOME[kin
   await page.goto("/login");
   const panel = page.getByTestId("demo-access");
   test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
+  // conta opcional ainda não criada pelo admin (gestão): pula em vez de estourar o tempo
+  test.skip((await panel.locator(`[data-demo-kind="${kind}"]`).count()) === 0, `conta de demonstração ${kind} ainda não criada`);
   await panel.locator(`[data-demo-kind="${kind}"]`).click();
   await expect(page).toHaveURL(LOGIN_LANDING, { timeout: 20_000 });
   if (!home) return;

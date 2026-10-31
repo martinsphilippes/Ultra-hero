@@ -124,7 +124,8 @@ export default async function AdminShipmentsPage({ searchParams }: { searchParam
         <ul className="grid grid-cols-3 gap-2 sm:gap-3">
           {OPEN_FULFILLMENT_STATUSES.map((s) => (
             <li key={s}>
-              <Link
+              {/* <a> comum: filtro por parâmetro na mesma página (a navegação no cliente às vezes aborta) */}
+              <a
                 href={filterHref(s)}
                 aria-current={status === s ? "true" : undefined}
                 className="flex min-h-11 flex-col gap-1 rounded-xl border border-border bg-surface p-3 transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus aria-[current=true]:border-accent"
@@ -132,7 +133,7 @@ export default async function AdminShipmentsPage({ searchParams }: { searchParam
               >
                 <span className="type-caption text-fg-muted">{openLabel[s]}</span>
                 <span className="type-numeric text-2xl font-bold text-fg">{open[s]}</span>
-              </Link>
+              </a>
             </li>
           ))}
         </ul>

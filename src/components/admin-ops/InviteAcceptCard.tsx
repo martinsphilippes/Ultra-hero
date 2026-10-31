@@ -4,7 +4,7 @@ import { CircleCheck, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { acceptInvitation } from "@/app/admin/ops-actions";
+import { acceptInvitation, type AcceptedRole } from "@/app/admin/ops-actions";
 import { Button } from "@/components/ui";
 import { SELLER_PORTAL_ENABLED } from "@/lib/seller-ops/portal";
 
@@ -15,7 +15,7 @@ export function InviteAcceptCard({ token, email }: Props) {
   const t = useTranslations("adminOps.invite");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [role, setRole] = useState<"creator" | "seller" | "professional" | null>(null);
+  const [role, setRole] = useState<AcceptedRole | null>(null);
 
   function accept() {
     setError(null);
@@ -38,12 +38,27 @@ export function InviteAcceptCard({ token, email }: Props) {
         <div>
           <h2 className="type-h3 text-fg">{t("successTitle")}</h2>
           <p className="type-body-sm mt-1 text-fg-muted">
-            {role === "professional" ? t("successProfessional") : role === "creator" ? t("successCreator") : SELLER_PORTAL_ENABLED ? t("successSeller") : t("successSellerPortalOff")}
+            {role === "agency"
+              ? t("successAgency")
+              : role === "brand"
+                ? t("successBrand")
+                : role === "professional"
+                  ? t("successProfessional")
+                  : role === "creator"
+                    ? t("successCreator")
+                    : SELLER_PORTAL_ENABLED
+                      ? t("successSeller")
+                      : t("successSellerPortalOff")}
           </p>
+          {role === "agency" || role === "brand" ? <p className="type-caption mt-2 text-fg-subtle">{t("inboxOnlyNote")}</p> : null}
         </div>
         <Button asChild size="lg" block>
           {/* portal do fornecedor desligado (0053): volta ao app */}
-          {role === "professional" ? (
+          {role === "agency" ? (
+            <Link href="/agencia">{t("goAgency")}</Link>
+          ) : role === "brand" ? (
+            <Link href="/marca">{t("goBrand")}</Link>
+          ) : role === "professional" ? (
             <Link href="/profissional">{t("goProfessional")}</Link>
           ) : role === "creator" ? (
             <Link href="/profile">{t("goCreator")}</Link>

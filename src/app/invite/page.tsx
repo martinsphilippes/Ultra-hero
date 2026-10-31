@@ -44,6 +44,8 @@ export default async function InvitePage({ searchParams }: { searchParams: Searc
       <ul className="mb-4 list-disc space-y-1 pl-5 text-sm text-fg-muted">
         <li>{t("grantCreator")}</li>
         <li>{t("grantSeller")}</li>
+        <li>{t("grantAgency")}</li>
+        <li>{t("grantBrand")}</li>
       </ul>
       <InviteAcceptCard token={clean} email={user.email ?? null} />
     </AuthCard>

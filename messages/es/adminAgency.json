@@ -1,0 +1,46 @@
+{
+  "title": "Agencias",
+  "description": "Agencias del módulo de gestión, sus equipos y el entorno de demostración.",
+  "unavailable": "Módulo en actualización.",
+  "demoForbidden": "No disponible para cuentas de demostración.",
+  "listTitle": "Agencias registradas",
+  "status": {
+    "active": "Activa",
+    "suspended": "Suspendida"
+  },
+  "demoTag": "Demostración",
+  "invite": "Invitar",
+  "openPortal": "Abrir portal",
+  "teamCount": "Adm: {admins} · Gestores: {managers} · Colaboradores: {staff}",
+  "edit": "Editar datos",
+  "newTitle": "Nueva agencia",
+  "form": {
+    "name": "Nombre",
+    "slug": "Dirección corta",
+    "status": "Estado",
+    "active": "Activa",
+    "suspended": "Suspendida",
+    "email": "Correo de contacto",
+    "save": "Guardar",
+    "create": "Crear agencia"
+  },
+  "demo": {
+    "title": "Entorno de demostración",
+    "description": "Agencia y marca ficticias para el panel de acceso rápido (Agencia, Colaborador y Marca).",
+    "accounts": {
+      "agency": "Agencia (Adm)",
+      "agencyStaff": "Colaborador",
+      "brand": "Marca (dueño)"
+    },
+    "ready": "lista",
+    "missing": "falta crear",
+    "passwordMissing": "Falta la contraseña de las cuentas de demostración en el servidor.",
+    "note": "Puedes hacer clic de nuevo en cada etapa: el botón restaura los datos de ejemplo.",
+    "restore": "Restaurar demostración",
+    "create": "Crear demostración"
+  },
+  "saved": "Agencia guardada.",
+  "inviteCreated": "Invitación creada. Copia el enlace y envíalo a la persona.",
+  "transferred": "Marca transferida.",
+  "demoReady": "Entorno de demostración listo."
+}

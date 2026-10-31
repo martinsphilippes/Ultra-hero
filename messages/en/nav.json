@@ -10,7 +10,9 @@
     "admin": "Admin",
     "creator": "Hero",
     "seller": "Supplier",
-    "professional": "Professional"
+    "professional": "Professional",
+    "agency": "Agency",
+    "brand": "Brand"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -36,7 +38,8 @@
     "settings": "Settings",
     "shipments": "Shipments",
     "professionals": "Professionals",
-    "brands": "Brands and products"
+    "brands": "Brands and products",
+    "agency": "Agencies"
   },
   "creator": {
     "post": "New post",
@@ -73,7 +76,21 @@
     "admin": "Groscove Ultra administration",
     "creator": "Hero area",
     "seller": "Supplier area",
-    "professional": "Professional area"
+    "professional": "Professional area",
+    "agency": "Agency workspace",
+    "brand": "Brand area"
   },
-  "backToProfile": "Profile"
+  "backToProfile": "Profile",
+  "agency": {
+    "dashboard": "Home",
+    "brands": "Brands",
+    "notifications": "Notices",
+    "settings": "Settings",
+    "team": "Team"
+  },
+  "brand": {
+    "dashboard": "Home",
+    "team": "Team",
+    "notifications": "Notices"
+  }
 }

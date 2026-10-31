@@ -18,10 +18,11 @@ test.describe("acesso rápido às contas de demonstração", () => {
     const panel = page.getByTestId("demo-access");
     test.skip((await panel.count()) === 0, "contas de demonstração desligadas neste ambiente");
     await expect(panel.getByRole("heading", { name: "Entrar com uma conta de demonstração" })).toBeVisible();
-    // 4 contas fixas + "Profissional" quando o admin já criou o acesso rápido da Nina (0058)
+    // 4 contas fixas + as opcionais que o admin já criou: "Profissional" (0058) e as da gestão (0064)
     const buttons = panel.locator("[data-demo-kind]");
-    const hasPro = (await panel.locator('[data-demo-kind="professional"]').count()) > 0;
-    await expect(buttons).toHaveCount(hasPro ? 5 : 4);
+    let optional = 0;
+    for (const kind of ["professional", "agency", "agencyStaff", "brand"]) optional += (await panel.locator(`[data-demo-kind="${kind}"]`).count()) > 0 ? 1 : 0;
+    await expect(buttons).toHaveCount(4 + optional);
     await expect(panel.locator('[data-demo-kind="seller"]')).toHaveCount(0);
     for (const account of ACCOUNTS) {
       const button = panel.locator(`[data-demo-kind="${account.kind}"]`);

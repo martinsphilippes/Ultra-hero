@@ -1,0 +1,119 @@
+{
+  "bell": "Avisos",
+  "bellUnread": "Avisos sin leer: {count}",
+  "title": "Avisos",
+  "sheetDescription": "Los avisos de tu agencia, marca u oficina llegan aquí.",
+  "pageDescription": "Todo lo que te pasó en los portales de gestión.",
+  "seeAll": "Ver todos",
+  "markAll": "Marcar todas como leídas",
+  "listLabel": "Avisos recientes",
+  "empty": "Todavía no hay avisos.",
+  "emptyUnread": "No hay avisos sin leer.",
+  "emptyHint": "Cuando algo te necesite, aparece aquí y en la campana.",
+  "unreadDot": "Sin leer",
+  "filterLabel": "Filtrar avisos",
+  "filterAll": "Todos",
+  "filterUnread": "Sin leer ({count})",
+  "kinds": {
+    "member_joined": {
+      "title": "Nueva persona en el equipo",
+      "body": "{name} entró al equipo de la agencia."
+    },
+    "brand_member_joined": {
+      "title": "Nueva persona en la marca",
+      "body": "{name} ahora accede al portal de la marca {brand}."
+    },
+    "talent_consent_given": {
+      "title": "Consentimiento registrado",
+      "body": "{talent} autorizó el uso comercial de sus datos."
+    },
+    "talent_consent_revoked": {
+      "title": "Consentimiento revocado",
+      "body": "{talent} revocó el uso comercial de sus datos."
+    },
+    "briefing_received": {
+      "title": "Nuevo brief",
+      "body": "{brand} envió un brief: {deal}."
+    },
+    "deal_assigned": {
+      "title": "Negocio asignado a ti",
+      "body": "Ahora eres responsable de {deal}."
+    },
+    "campaign_status_changed": {
+      "title": "Campaña actualizada",
+      "body": "{deal} cambió de estado."
+    },
+    "proposal_received": {
+      "title": "Propuesta recibida",
+      "body": "La agencia envió la propuesta de {deal}."
+    },
+    "proposal_decided": {
+      "title": "Respuesta de la marca",
+      "body": "{brand} respondió a la propuesta de {deal}."
+    },
+    "message_received": {
+      "title": "Nuevo mensaje",
+      "body": "Mensaje nuevo en {deal}."
+    },
+    "opportunity_received": {
+      "title": "Nueva oportunidad",
+      "body": "{brand} tiene una oportunidad para ti."
+    },
+    "opportunity_updated": {
+      "title": "Oportunidad actualizada",
+      "body": "Hay una actualización en {deal}."
+    },
+    "opportunity_answered": {
+      "title": "Respuesta del creator",
+      "body": "{talent} respondió a la oportunidad de {deal}."
+    },
+    "contract_acceptance_requested": {
+      "title": "Contrato para aceptar",
+      "body": "El contrato de {deal} espera tu aceptación."
+    },
+    "contract_confirmed": {
+      "title": "Contrato confirmado",
+      "body": "El contrato de {deal} fue confirmado."
+    },
+    "task_assigned": {
+      "title": "Nueva tarea",
+      "body": "Tienes una tarea nueva en {deal}."
+    },
+    "deliverable_submitted": {
+      "title": "Entrega enviada",
+      "body": "{talent} envió una entrega de {deal}."
+    },
+    "deliverable_decided": {
+      "title": "Entrega evaluada",
+      "body": "Tu entrega de {deal} fue evaluada."
+    },
+    "deliverable_published": {
+      "title": "Contenido publicado",
+      "body": "{talent} publicó el contenido de {deal}."
+    },
+    "talent_suggestion": {
+      "title": "Sugerencia de campaña",
+      "body": "{talent} sugirió una campaña."
+    },
+    "calendar_event_added": {
+      "title": "Nuevo compromiso",
+      "body": "Compromiso el {date} en tu agenda."
+    },
+    "commercial_date_published": {
+      "title": "Nueva fecha comercial",
+      "body": "La agencia publicó una oportunidad para el {date}."
+    },
+    "relationship_alert": {
+      "title": "Sin contacto hace tiempo",
+      "body": "Nadie habló con {talent} en los últimos días."
+    },
+    "task_overdue": {
+      "title": "Tarea atrasada",
+      "body": "Una tarea de {deal} pasó la fecha límite."
+    },
+    "payout_updated": {
+      "title": "Pago actualizado",
+      "body": "El pago de {deal} cambió de estado."
+    }
+  }
+}

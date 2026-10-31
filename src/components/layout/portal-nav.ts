@@ -1,8 +1,15 @@
 // Links dos portais (só href + chave de tradução; ícones ficam no componente cliente).
-export type Portal = "admin" | "creator" | "seller" | "professional";
+export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand";
 
 // Raiz de cada portal (o do profissional mora em /profissional, em português como as rotas do app).
-export const PORTAL_ROOT: Record<Portal, string> = { admin: "/admin", creator: "/creator", seller: "/seller", professional: "/profissional" };
+export const PORTAL_ROOT: Record<Portal, string> = {
+  admin: "/admin",
+  creator: "/creator",
+  seller: "/seller",
+  professional: "/profissional",
+  agency: "/agencia",
+  brand: "/marca",
+};
 
 export type PortalLink = { key: string; href: string };
 
@@ -15,6 +22,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "heroCategories", href: "/admin/hero-categories" },
     { key: "sellers", href: "/admin/sellers" },
     { key: "professionals", href: "/admin/professionals" },
+    // Gestão (0064): agências, equipes, marcas atendidas e o ambiente de demonstração
+    { key: "agency", href: "/admin/agencia" },
     { key: "content", href: "/admin/content" },
     { key: "programs", href: "/admin/programs" },
     { key: "plans", href: "/admin/plans" },
@@ -51,5 +60,19 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "orders", href: "/profissional/pedidos" },
     { key: "services", href: "/profissional/servicos" },
     { key: "profile", href: "/profissional/perfil" },
+  ],
+  // Agência (0064): o menu é filtrado pelo papel no servidor (agencyNavKeys; só o Adm vê Equipe).
+  agency: [
+    { key: "dashboard", href: "/agencia" },
+    { key: "brands", href: "/agencia/marcas" },
+    { key: "notifications", href: "/agencia/notificacoes" },
+    { key: "settings", href: "/agencia/configuracoes" },
+    { key: "team", href: "/agencia/equipe" },
+  ],
+  // Marca (0064): campanhas e calendário chegam nas próximas etapas.
+  brand: [
+    { key: "dashboard", href: "/marca" },
+    { key: "team", href: "/marca/equipe" },
+    { key: "notifications", href: "/marca/notificacoes" },
   ],
 };

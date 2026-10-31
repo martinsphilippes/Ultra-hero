@@ -266,11 +266,14 @@ export async function saveNotificationPreferences(input: NotificationPreferences
     if (!user) return { ok: false, error: "unauthenticated" };
     const supabase = await createClient();
     let { error } = await supabase.from("notification_preferences").upsert({ user_id: user.id, ...parsed.data }, { onConflict: "user_id" });
-    // banco ainda sem a 0061 (coluna auction_outbid ausente, PGRST204): salva o resto
-    if (error?.code === "PGRST204" && /auction_outbid/.test(error.message)) {
-      const { auction_outbid: _skip, ...rest } = parsed.data;
-      void _skip;
-      ({ error } = await supabase.from("notification_preferences").upsert({ user_id: user.id, ...rest }, { onConflict: "user_id" }));
+    // banco ainda sem a migração da coluna (auction_outbid 0061, office_updates 0064; PGRST204): tira
+    // cada coluna nova citada no erro e salva o resto
+    const values: Record<string, boolean> = { ...parsed.data };
+    for (let attempt = 0; attempt < 2 && error?.code === "PGRST204"; attempt++) {
+      const missing = ["auction_outbid", "office_updates"].filter((key) => key in values && error!.message.includes(key));
+      if (missing.length === 0) break;
+      for (const key of missing) delete values[key];
+      ({ error } = await supabase.from("notification_preferences").upsert({ user_id: user.id, ...values }, { onConflict: "user_id" }));
     }
     if (error) return fail(error.message);
     revalidatePath("/profile/notifications");

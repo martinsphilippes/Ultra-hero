@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "dashboard": "Agency",
+    "team": "Agency team",
+    "brands": "Brands",
+    "newBrand": "New brand",
+    "brand": "Brand",
+    "settings": "Agency settings"
+  },
+  "demoBanner": {
+    "tag": "Demo",
+    "text": "This is the demo agency: fictional data, fixed team."
+  },
+  "module": {
+    "unavailable": {
+      "title": "Module being updated",
+      "agency": "The agency portal will be back in a moment.",
+      "brand": "The brand portal will be back in a moment."
+    },
+    "demo_forbidden": {
+      "title": "Not available for demo accounts",
+      "agency": "To explore the portal, sign in with the Agency account in the demo panel.",
+      "brand": "To explore the portal, sign in with the Brand account in the demo panel."
+    },
+    "none": {
+      "title": "You're not part of an agency yet",
+      "agency": "Ask your agency Admin for an invitation.",
+      "brand": "Ask the agency that serves your brand for an invitation."
+    }
+  },
+  "roles": {
+    "admin": "Agency admin",
+    "manager": "Manager",
+    "staff": "Staff",
+    "owner": "Brand owner",
+    "brandStaff": "Brand team"
+  },
+  "dashboard": {
+    "eyebrow": "Agency portal",
+    "greeting": "Hi, {name}. This is your agency's workspace.",
+    "adminView": "You are viewing as platform admin.",
+    "switchAgency": "Agency",
+    "demoTag": "demo",
+    "kpi": {
+      "team": "Team",
+      "brands": "Brands served",
+      "invites": "Pending invitations",
+      "unread": "Unread notices"
+    },
+    "quickTitle": "Shortcuts",
+    "newBrand": "New brand",
+    "inviteTeam": "Invite team",
+    "seeBrands": "See brands",
+    "upcomingTitle": "Coming to the portal",
+    "upcomingHint": "The next modules arrive in stages, without removing anything that exists.",
+    "upcoming": {
+      "casting": {
+        "title": "Casting and media kit",
+        "body": "Creators, segments, declared social accounts and a presentation link."
+      },
+      "pipeline": {
+        "title": "Sales pipeline",
+        "body": "From brief to proposal, with creator interest checks."
+      },
+      "tasks": {
+        "title": "Tasks and deliverables",
+        "body": "The 12 campaign steps with due dates and owners."
+      },
+      "agenda": {
+        "title": "Schedule and commercial calendar",
+        "body": "Team appointments and dates to offer brands."
+      },
+      "finance": {
+        "title": "Finance (Admin only)",
+        "body": "Commissions in 6 formats, payouts and receivables, no real charges."
+      }
+    },
+    "selfTitle": "How the team sees you",
+    "selfHint": "Your name and title in the agency lists."
+  },
+  "team": {
+    "title": "Team",
+    "description": "Who works at the agency and what each level can do.",
+    "demoLocked": "The demo agency team is fixed.",
+    "levelsTitle": "Access levels",
+    "levels": {
+      "admin": "Everything, including values, commissions, finance, settings and team.",
+      "manager": "Casting, brands and pipeline; never sees values.",
+      "staff": "Tasks, schedule and the deals they own; never sees values."
+    },
+    "membersTitle": "Members ({count})",
+    "since": "Since {date}",
+    "invitesTitle": "Pending invitations",
+    "inviteExpires": "Valid until {date}",
+    "noInvites": "No pending invitations.",
+    "noInvitesHint": "Invite with the button at the top; the link shows only once.",
+    "changeRoleFor": "Level of {name}",
+    "removeFor": "Remove {name}",
+    "leave": "Leave",
+    "remove": "Remove",
+    "removeTitle": "Remove {name} from the team?",
+    "roleTitle": "Change the level of {name}?",
+    "roleDescription": "New level: {role}. The change is recorded in the history.",
+    "removeDescription": "The person loses portal access and their invitations stop working.",
+    "removeConfirm": "Remove",
+    "roleConfirm": "Change level",
+    "justification": "Reason",
+    "justificationHint": "Recorded in the agency history.",
+    "inviteCreated": "Invitation created. Copy the link and send it to the person.",
+    "roleChanged": "Level updated.",
+    "removed": "Person removed from the team.",
+    "inviteRevoked": "Invitation revoked."
+  },
+  "invite": {
+    "open": "Invite",
+    "title": "New invitation",
+    "createdTitle": "Invitation created",
+    "email": "Email",
+    "role": "Access level",
+    "roleHint": "Only the agency Admin sees values.",
+    "days": "Validity",
+    "daysOption": "{days} days",
+    "submit": "Create invitation",
+    "done": "Done",
+    "link": "Invitation link",
+    "linkWarning": "This link appears only now. Copy it and send it to the person.",
+    "inboxNote": "Portal notices arrive on the bell, not by email.",
+    "revoke": "Revoke",
+    "revokeFor": "Revoke invitation for {email}"
+  },
+  "brands": {
+    "title": "Brands",
+    "description": "The brands the agency serves and who from them accesses the portal.",
+    "new": "New brand",
+    "filterLabel": "Filter brands",
+    "filterActive": "Active",
+    "filterArchived": "Archived",
+    "publicOn": "In the app",
+    "publicOff": "Outside the app",
+    "demoTag": "sample",
+    "empty": "No brands yet.",
+    "emptyArchived": "No archived brands.",
+    "emptyHint": "Add the first brand or link one that is already in the app.",
+    "newTitle": "New brand",
+    "newDescription": "Add a new brand or link one that already shows in the app.",
+    "createTitle": "Add brand",
+    "linkTitle": "Link an app brand",
+    "form": {
+      "name": "Name",
+      "slug": "Short address",
+      "slugHint": "Lowercase letters, numbers and hyphens.",
+      "slugDemoHint": "In the demo agency, the address starts with exemplo-.",
+      "site": "Official website",
+      "siteHint": "Starts with https://",
+      "logo": "Logo (optional)",
+      "logoHint": "An https link to an image.",
+      "privacyNote": "The brand starts outside the app: only the agency and the brand team see it.",
+      "submit": "Add brand"
+    },
+    "link": {
+      "label": "Brand",
+      "hint": "Public app brands not yet with this agency.",
+      "none": "No app brand available to link.",
+      "submit": "Link"
+    },
+    "linkActive": "Served by the agency",
+    "linkArchived": "Link archived",
+    "site": "Website",
+    "membersTitle": "Brand access to the portal",
+    "membersHint": "Who from the brand signs in to the brand portal.",
+    "since": "Since {date}",
+    "noMembers": "No one from the brand has access yet.",
+    "noMembersHint": "Invite the brand owner; they invite their own team.",
+    "invitesTitle": "Pending invitations",
+    "inviteExpires": "Valid until {date}",
+    "linkTitleStatus": "Link with the agency",
+    "archiveHint": "Archiving removes the brand's portal access; the history stays.",
+    "reactivateHint": "Reactivating restores access for people already on the brand.",
+    "archive": "Archive link",
+    "reactivate": "Reactivate link",
+    "removeMember": "Remove",
+    "removeMemberFor": "Remove {name} from the brand",
+    "created": "Brand added.",
+    "linked": "Brand linked to the agency.",
+    "archived": "Link archived.",
+    "inviteCreated": "Invitation created. Copy the link and send it to the person.",
+    "memberRemoved": "Person removed from the brand."
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Agency details used in the portals and alerts.",
+    "dataTitle": "Agency details",
+    "name": "Agency name",
+    "timezone": "Time zone",
+    "alertDays": "Relationship alert (days)",
+    "alertDaysHint": "Warns when a creator goes this long without contact (7 to 365).",
+    "contactEmail": "Contact email",
+    "contactEmailHint": "Shown to brands and creators.",
+    "save": "Save",
+    "saved": "Settings saved.",
+    "selfName": "Your name",
+    "selfTitle": "Your title",
+    "selfSave": "Save",
+    "selfSaved": "Your details were saved.",
+    "soonTitle": "Coming here soon",
+    "soonBody": "Casting segments, commission rules (Admin only) and commercial dates."
+  },
+  "errors": {
+    "demo_account_forbidden": "Demo accounts can't join real agencies.",
+    "demo_locked": "The demo agency has a fixed team and links.",
+    "demo_brand": "The app's sample brands can't join agencies.",
+    "demo_limit": "The demo agency reached the 10-brand limit.",
+    "brand_linked_elsewhere": "This brand is already served by another agency. Only the platform admin can transfer it.",
+    "brand_linked_to_agency": "The brand is linked to an agency; archive the link before deleting.",
+    "brand_has_members": "The brand has people with portal access; remove them first.",
+    "brand_has_documents": "The brand has stored documents; archive them first.",
+    "brand_not_linked": "The brand is no longer with this agency.",
+    "last_agency_admin": "The agency needs at least one Admin.",
+    "last_brand_owner": "The brand needs at least one owner.",
+    "agency_member_elsewhere": "This person already belongs to another agency.",
+    "already_member": "This person is already on the team.",
+    "justification_required": "Write the reason (at least 5 characters).",
+    "invitation_invalid": "This invitation is no longer valid.",
+    "invalid_email": "Check the email address.",
+    "invalid_timezone": "Invalid time zone.",
+    "invalid_url": "Use an address that starts with https://.",
+    "invalid_image": "The logo must be an https link to an image.",
+    "duplicate_slug": "A brand with this address already exists; pick another.",
+    "unauthenticated": "Sign in again to continue.",
+    "forbidden": "You don't have access to this action.",
+    "not_found": "We couldn't find that here.",
+    "invalid_input": "Check the fields and try again.",
+    "generic": "That didn't work. Try again."
+  }
+}

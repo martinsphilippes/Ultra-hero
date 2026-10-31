@@ -24,7 +24,7 @@ const PAGE_SIZE = 25;
 type InvitationRow = {
   id: string;
   email: string;
-  role: "creator" | "seller" | "admin" | "consumer" | "professional";
+  role: "creator" | "seller" | "admin" | "consumer" | "professional" | "agency" | "brand";
   status: Status;
   expires_at: string;
   created_at: string;
@@ -32,6 +32,10 @@ type InvitationRow = {
   seller_org_id: string | null;
   /** Convite de profissional (0058); ausente sem a migração. */
   professional_id?: string | null;
+  /** Convites de agência e de marca (0064); ausentes sem a migração. */
+  agency_id?: string | null;
+  brand_id?: string | null;
+  member_role?: string | null;
   creator_profiles: { name: string } | null;
   seller_organizations: { name: string } | null;
 };
@@ -60,7 +64,9 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
     return query;
   };
   // com a 0058 a lista também traz o profissional do convite; sem ela, a leitura de antes
-  const withPro = await listQuery(`${base}, professional_id`);
+  // com a 0064, também agência e marca; cada leitura cai para a anterior se a coluna ainda não existe
+  const withAgency = await listQuery(`${base}, professional_id, agency_id, brand_id, member_role`);
+  const withPro = withAgency.error ? await listQuery(`${base}, professional_id`) : withAgency;
   const [{ data, error, count }, creatorsRes, sellersRes] = await Promise.all([
     withPro.error ? listQuery(base) : Promise.resolve(withPro),
     supabase.from("creator_profiles").select("id, name, user_id").order("name"),
@@ -77,7 +83,15 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
       header: t("columns.role"),
       cell: (r) => (
         <Badge variant="info" size="sm">
-          {r.role === "professional" ? tn("portals.professional") : r.role === "creator" ? t("form.roleCreator") : t("form.roleSeller")}
+          {r.role === "agency"
+            ? t("roleAgency")
+            : r.role === "brand"
+              ? t("roleBrand")
+              : r.role === "professional"
+                ? tn("portals.professional")
+                : r.role === "creator"
+                  ? t("form.roleCreator")
+                  : t("form.roleSeller")}
         </Badge>
       ),
     },
@@ -85,7 +99,15 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
       key: "target",
       header: t("columns.target"),
       cell: (r) =>
-        r.role === "professional" && r.professional_id ? (
+        r.role === "agency" && r.agency_id ? (
+          <Link href="/admin/agencia" className="text-accent-text hover:underline">
+            {tn("admin.agency")}
+          </Link>
+        ) : r.role === "brand" && r.brand_id ? (
+          <Link href={`/admin/marcas/${r.brand_id}`} className="text-accent-text hover:underline">
+            {tn("admin.brands")}
+          </Link>
+        ) : r.role === "professional" && r.professional_id ? (
           <Link href={`/admin/professionals/${r.professional_id}`} className="text-accent-text hover:underline">
             {tn("admin.professionals")}
           </Link>

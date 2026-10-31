@@ -9,6 +9,8 @@ export type PushPrefs = {
   streak_reminders?: boolean | null;
   // ausente num banco sem a 0061: conta como desligado
   auction_outbid?: boolean | null;
+  // ausente num banco sem a 0064: conta como desligado
+  office_updates?: boolean | null;
 };
 
 const TYPE_OF_KIND: Record<PushKind, keyof PushPrefs> = {
@@ -17,6 +19,7 @@ const TYPE_OF_KIND: Record<PushKind, keyof PushPrefs> = {
   program_completed: "achievements",
   streak_reminder: "streak_reminders",
   auction_outbid: "auction_outbid",
+  office: "office_updates",
 };
 
 export function pushAllowedFor(prefs: PushPrefs | null | undefined, kind: string): boolean {

@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "dashboard": "Agência",
+    "team": "Equipe da agência",
+    "brands": "Marcas",
+    "newBrand": "Nova marca",
+    "brand": "Marca",
+    "settings": "Configurações da agência"
+  },
+  "demoBanner": {
+    "tag": "Demonstração",
+    "text": "Esta é a agência de demonstração: dados fictícios, equipe fixa."
+  },
+  "module": {
+    "unavailable": {
+      "title": "Módulo em atualização",
+      "agency": "O portal da agência volta em instantes.",
+      "brand": "O portal da marca volta em instantes."
+    },
+    "demo_forbidden": {
+      "title": "Indisponível para conta de demonstração",
+      "agency": "Para conhecer o portal, entre com a conta Agência no painel de demonstração.",
+      "brand": "Para conhecer o portal, entre com a conta Marca no painel de demonstração."
+    },
+    "none": {
+      "title": "Você ainda não faz parte de uma agência",
+      "agency": "Peça um convite ao Adm da sua agência.",
+      "brand": "Peça um convite à agência que atende a sua marca."
+    }
+  },
+  "roles": {
+    "admin": "Adm da agência",
+    "manager": "Gestor",
+    "staff": "Colaborador",
+    "owner": "Dono da marca",
+    "brandStaff": "Equipe da marca"
+  },
+  "dashboard": {
+    "eyebrow": "Portal da agência",
+    "greeting": "Olá, {name}. Este é o centro de trabalho da sua agência.",
+    "adminView": "Você está vendo como admin geral.",
+    "switchAgency": "Agência",
+    "demoTag": "demonstração",
+    "kpi": {
+      "team": "Equipe",
+      "brands": "Marcas atendidas",
+      "invites": "Convites pendentes",
+      "unread": "Avisos não lidos"
+    },
+    "quickTitle": "Atalhos",
+    "newBrand": "Nova marca",
+    "inviteTeam": "Convidar equipe",
+    "seeBrands": "Ver marcas",
+    "upcomingTitle": "Chegando ao portal",
+    "upcomingHint": "Os próximos módulos entram por etapas, sem tirar nada do que já existe.",
+    "upcoming": {
+      "casting": {
+        "title": "Casting e media kit",
+        "body": "Creators, segmentos, redes declaradas e link de apresentação."
+      },
+      "pipeline": {
+        "title": "Pipeline comercial",
+        "body": "Do briefing à proposta, com consulta de interesse aos creators."
+      },
+      "tasks": {
+        "title": "Tarefas e entregas",
+        "body": "As 12 etapas da campanha com prazos e responsáveis."
+      },
+      "agenda": {
+        "title": "Agenda e calendário comercial",
+        "body": "Compromissos da equipe e datas para oferecer às marcas."
+      },
+      "finance": {
+        "title": "Financeiro (só Adm)",
+        "body": "Comissões em 6 formatos, repasses e a receber, sem cobrança real."
+      }
+    },
+    "selfTitle": "Como você aparece para a equipe",
+    "selfHint": "Seu nome e cargo nas listas da agência."
+  },
+  "team": {
+    "title": "Equipe",
+    "description": "Quem trabalha na agência e o que cada nível pode fazer.",
+    "demoLocked": "A equipe da agência de demonstração é fixa.",
+    "levelsTitle": "Níveis de acesso",
+    "levels": {
+      "admin": "Tudo, inclusive valores, comissões, financeiro, configurações e equipe.",
+      "manager": "Casting, marcas e pipeline; nunca vê valores.",
+      "staff": "Tarefas, agenda e os negócios em que é responsável; nunca vê valores."
+    },
+    "membersTitle": "Membros ({count})",
+    "since": "Desde {date}",
+    "invitesTitle": "Convites pendentes",
+    "inviteExpires": "Vale até {date}",
+    "noInvites": "Nenhum convite pendente.",
+    "noInvitesHint": "Convide pelo botão no topo; o link aparece uma vez.",
+    "changeRoleFor": "Nível de {name}",
+    "removeFor": "Remover {name}",
+    "leave": "Sair",
+    "remove": "Remover",
+    "removeTitle": "Remover {name} da equipe?",
+    "roleTitle": "Mudar o nível de {name}?",
+    "roleDescription": "Novo nível: {role}. A mudança fica registrada no histórico.",
+    "removeDescription": "A pessoa perde o acesso ao portal e os convites dela deixam de valer.",
+    "removeConfirm": "Remover",
+    "roleConfirm": "Mudar nível",
+    "justification": "Motivo",
+    "justificationHint": "Fica registrado no histórico da agência.",
+    "inviteCreated": "Convite criado. Copie o link e envie para a pessoa.",
+    "roleChanged": "Nível atualizado.",
+    "removed": "Pessoa removida da equipe.",
+    "inviteRevoked": "Convite revogado."
+  },
+  "invite": {
+    "open": "Convidar",
+    "title": "Novo convite",
+    "createdTitle": "Convite criado",
+    "email": "E-mail",
+    "role": "Nível de acesso",
+    "roleHint": "Só o Adm da agência vê valores.",
+    "days": "Validade",
+    "daysOption": "{days} dias",
+    "submit": "Gerar convite",
+    "done": "Pronto",
+    "link": "Link do convite",
+    "linkWarning": "Este link aparece só agora. Copie e envie para a pessoa.",
+    "inboxNote": "Os avisos dos portais chegam pelo sino, não por e-mail.",
+    "revoke": "Revogar",
+    "revokeFor": "Revogar convite de {email}"
+  },
+  "brands": {
+    "title": "Marcas",
+    "description": "As marcas que a agência atende e quem delas acessa o portal.",
+    "new": "Nova marca",
+    "filterLabel": "Filtrar marcas",
+    "filterActive": "Ativas",
+    "filterArchived": "Arquivadas",
+    "publicOn": "No app",
+    "publicOff": "Fora do app",
+    "demoTag": "exemplo",
+    "empty": "Nenhuma marca ainda.",
+    "emptyArchived": "Nenhuma marca arquivada.",
+    "emptyHint": "Cadastre a primeira marca ou vincule uma que já está no app.",
+    "newTitle": "Nova marca",
+    "newDescription": "Cadastre uma marca nova ou vincule uma que já aparece no app.",
+    "createTitle": "Cadastrar marca",
+    "linkTitle": "Vincular marca do app",
+    "form": {
+      "name": "Nome",
+      "slug": "Endereço curto",
+      "slugHint": "Letras minúsculas, números e hífens.",
+      "slugDemoHint": "Na agência de demonstração, o endereço começa com exemplo-.",
+      "site": "Site oficial",
+      "siteHint": "Começa com https://",
+      "logo": "Logo (opcional)",
+      "logoHint": "Link https de uma imagem.",
+      "privacyNote": "A marca nasce fora do app: só a agência e a equipe da marca a veem.",
+      "submit": "Cadastrar marca"
+    },
+    "link": {
+      "label": "Marca",
+      "hint": "Marcas públicas do app que ainda não estão com esta agência.",
+      "none": "Nenhuma marca do app disponível para vincular.",
+      "submit": "Vincular"
+    },
+    "linkActive": "Atendida pela agência",
+    "linkArchived": "Vínculo arquivado",
+    "site": "Site",
+    "membersTitle": "Acesso da marca ao portal",
+    "membersHint": "Quem da marca entra no portal da marca.",
+    "since": "Desde {date}",
+    "noMembers": "Ninguém da marca tem acesso ainda.",
+    "noMembersHint": "Convide o dono da marca; ele convida a própria equipe.",
+    "invitesTitle": "Convites pendentes",
+    "inviteExpires": "Vale até {date}",
+    "linkTitleStatus": "Vínculo com a agência",
+    "archiveHint": "Arquivar tira o acesso da marca ao portal; o histórico fica.",
+    "reactivateHint": "Reativar devolve o acesso de quem já era da marca.",
+    "archive": "Arquivar vínculo",
+    "reactivate": "Reativar vínculo",
+    "removeMember": "Remover",
+    "removeMemberFor": "Remover {name} da marca",
+    "created": "Marca cadastrada.",
+    "linked": "Marca vinculada à agência.",
+    "archived": "Vínculo arquivado.",
+    "inviteCreated": "Convite criado. Copie o link e envie para a pessoa.",
+    "memberRemoved": "Pessoa removida da marca."
+  },
+  "settings": {
+    "title": "Configurações",
+    "description": "Dados da agência usados nos portais e nos alertas.",
+    "dataTitle": "Dados da agência",
+    "name": "Nome da agência",
+    "timezone": "Fuso horário",
+    "alertDays": "Alerta de relacionamento (dias)",
+    "alertDaysHint": "Avisa quando um creator fica esse tempo sem contato (7 a 365).",
+    "contactEmail": "E-mail de contato",
+    "contactEmailHint": "Aparece para marcas e creators.",
+    "save": "Salvar",
+    "saved": "Configurações salvas.",
+    "selfName": "Seu nome",
+    "selfTitle": "Seu cargo",
+    "selfSave": "Salvar",
+    "selfSaved": "Seus dados foram salvos.",
+    "soonTitle": "Em breve aqui",
+    "soonBody": "Segmentos do casting, regras de comissão (só Adm) e datas comerciais."
+  },
+  "errors": {
+    "demo_account_forbidden": "Contas de demonstração não entram em agências reais.",
+    "demo_locked": "A agência de demonstração tem equipe e vínculos fixos.",
+    "demo_brand": "Marcas de exemplo do app não entram em agências.",
+    "demo_limit": "A agência de demonstração chegou ao limite de 10 marcas.",
+    "brand_linked_elsewhere": "Esta marca já é atendida por outra agência. Só o admin geral pode transferir.",
+    "brand_linked_to_agency": "A marca está ligada a uma agência; arquive o vínculo antes de apagar.",
+    "brand_has_members": "A marca tem pessoas com acesso ao portal; remova-as antes.",
+    "brand_has_documents": "A marca tem documentos guardados; arquive-os antes.",
+    "brand_not_linked": "A marca não está mais com esta agência.",
+    "last_agency_admin": "A agência precisa de pelo menos um Adm.",
+    "last_brand_owner": "A marca precisa de pelo menos um dono.",
+    "agency_member_elsewhere": "Esta pessoa já faz parte de outra agência.",
+    "already_member": "Esta pessoa já faz parte da equipe.",
+    "justification_required": "Escreva o motivo (pelo menos 5 caracteres).",
+    "invitation_invalid": "Este convite não vale mais.",
+    "invalid_email": "Confira o e-mail.",
+    "invalid_timezone": "Fuso horário inválido.",
+    "invalid_url": "Use um endereço que comece com https://.",
+    "invalid_image": "O logo precisa ser um link https para uma imagem.",
+    "duplicate_slug": "Já existe uma marca com este endereço; escolha outro.",
+    "unauthenticated": "Entre de novo para continuar.",
+    "forbidden": "Você não tem acesso a esta ação.",
+    "not_found": "Não encontramos isso por aqui.",
+    "invalid_input": "Confira os campos e tente de novo.",
+    "generic": "Não deu certo agora. Tente de novo."
+  }
+}

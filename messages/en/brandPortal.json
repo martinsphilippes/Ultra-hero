@@ -1,0 +1,51 @@
+{
+  "adminReadOnly": "You are viewing as platform admin, read only.",
+  "meta": {
+    "dashboard": "Brand",
+    "team": "Brand team"
+  },
+  "dashboard": {
+    "eyebrow": "Brand portal",
+    "servedBy": "Served by {agency}",
+    "switchBrand": "Brand",
+    "inboxNote": "Notices arrive here, on the portal bell.",
+    "kpi": {
+      "team": "People with access",
+      "unread": "Unread notices"
+    },
+    "seeTeam": "See team",
+    "upcomingTitle": "Coming to the portal",
+    "upcomingHint": "The agency will open these areas in stages.",
+    "upcoming": {
+      "campaigns": {
+        "title": "Campaigns",
+        "body": "A 5-step brief and the progress of each campaign."
+      },
+      "creators": {
+        "title": "Creator search",
+        "body": "Authorized catalog, with the criteria behind each suggestion."
+      },
+      "approvals": {
+        "title": "Approvals and contracts",
+        "body": "Proposals, scripts and deliverables to approve."
+      },
+      "calendar": {
+        "title": "Commercial calendar",
+        "body": "Dates and opportunities published by the agency."
+      }
+    }
+  },
+  "team": {
+    "title": "Brand team",
+    "descriptionOwner": "Invite the people on your team who follow the campaigns.",
+    "descriptionStaff": "Who from the brand accesses this portal.",
+    "membersTitle": "People ({count})",
+    "since": "Since {date}",
+    "invitesTitle": "Pending invitations",
+    "inviteExpires": "Valid until {date}",
+    "noInvites": "No pending invitations.",
+    "inviteCreated": "Invitation created. Copy the link and send it to the person.",
+    "removed": "Person removed.",
+    "inviteRevoked": "Invitation revoked."
+  }
+}
