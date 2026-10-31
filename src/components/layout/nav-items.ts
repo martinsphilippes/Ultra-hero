@@ -1,5 +1,6 @@
-import { Compass, Home, ShoppingBag, User, Users } from "lucide-react";
+import { Compass, ShoppingBag, SquarePlay, User } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
+import { HeroRunner } from "@/components/icons/HeroRunner";
 
 // Itens da navegação principal do consumidor (módulo puro: testável sem next/navigation).
 export type NavKey = "home" | "explore" | "personalities" | "shop" | "profile";
@@ -14,9 +15,10 @@ export type NavItem = {
 
 // Exatamente 5 abas: a Evolução virou uma seção do Perfil (/profile/evolution) e Comprar leva à loja.
 export const NAV_ITEMS: readonly NavItem[] = [
-  // Hero vem primeiro (pedido do responsável): é onde todo login chega.
-  { key: "personalities", href: "/personalities", icon: Users },
-  { key: "home", href: "/inicio", icon: Home },
+  // Hero vem primeiro (pedido do responsável): é onde todo login chega. Ícones escolhidos por ele:
+  // corredor com linhas de velocidade (Hero) e play em quadrado (Social).
+  { key: "personalities", href: "/personalities", icon: HeroRunner },
+  { key: "home", href: "/inicio", icon: SquarePlay },
   { key: "explore", href: "/explore", icon: Compass },
   // Comprar: todos os produtos da loja (compras simuladas), antes do Perfil.
   { key: "shop", href: "/shop", icon: ShoppingBag, webOnly: true },
