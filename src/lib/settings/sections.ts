@@ -88,17 +88,23 @@ function nativeHidden(href: string): boolean {
   return isBlockedInNativeApp(href.split("#")[0]);
 }
 
+/** Atalhos dos portais (topo do Perfil e seção Portais das Configurações): os do papel e o Escritório
+ *  de quem está num casting. O admin geral supervisiona os portais de gestão (0064). */
+export function buildPortalItems(roles: readonly string[], sellerPortalEnabled?: boolean, opts: { hasTalent?: boolean } = {}): SettingsItem[] {
+  const withManagement = roles.includes("admin") ? [...roles, "agency", "brand"] : roles;
+  const shown = portalRolesShown(withManagement, sellerPortalEnabled);
+  const portals: SettingsItem[] = PORTALS.filter((p) => shown.includes(p.role)).map((p) => ({ kind: "portal", key: p.role, href: p.href, nativeHidden: nativeHidden(p.href) }));
+  if (opts.hasTalent) portals.unshift({ kind: "portal", key: "office", href: OFFICE_PATH, nativeHidden: nativeHidden(OFFICE_PATH) });
+  return portals;
+}
+
 /** Seções na ordem da tela; seção sem linha não aparece (Portais só com papel ou com talento no casting). */
 export function buildSettingsSections(roles: readonly string[], sellerPortalEnabled?: boolean, opts: { hasTalent?: boolean } = {}): SettingsSection[] {
   const sections: SettingsSection[] = LINK_SECTIONS.map(({ key, items }) => ({
     key,
     items: items.map(([k, href]) => ({ kind: "link" as const, key: k, href, nativeHidden: nativeHidden(href) })),
   }));
-  // o admin geral supervisiona os portais de gestão (0064): atalhos da agência e da marca também
-  const withManagement = roles.includes("admin") ? [...roles, "agency", "brand"] : roles;
-  const shown = portalRolesShown(withManagement, sellerPortalEnabled);
-  const portals: SettingsItem[] = PORTALS.filter((p) => shown.includes(p.role)).map((p) => ({ kind: "portal", key: p.role, href: p.href, nativeHidden: nativeHidden(p.href) }));
-  if (opts.hasTalent) portals.unshift({ kind: "portal", key: "office", href: OFFICE_PATH, nativeHidden: nativeHidden(OFFICE_PATH) });
+  const portals = buildPortalItems(roles, sellerPortalEnabled, opts);
   if (portals.length > 0) sections.push({ key: "portals", items: portals });
   return sections;
 }

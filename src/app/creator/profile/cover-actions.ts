@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { heroProfileFor } from "@/components/creator/hero-access";
+import { heroRoleNames } from "@/lib/auth/talent-scope";
 import { getRoles, getUser } from "@/lib/auth/session";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { COVER_BUCKET, COVER_MAX_UPLOAD_BYTES, toCoverError, type CoverError } from "@/lib/hero-cover/constants";
@@ -31,7 +32,7 @@ function rpcFailure(error: { code?: string; message?: string } | null): CoverErr
 
 // mesma regra da tela: herói (ou admin) com o perfil vinculado; o banco confere de novo (ativo e papel)
 async function isHero(): Promise<boolean> {
-  return heroProfileFor((await getRoles()).map((r) => r.role), true) !== null;
+  return heroProfileFor(heroRoleNames(await getRoles()), true) !== null;
 }
 
 async function revalidateCover(supabase: Supabase, userId: string) {

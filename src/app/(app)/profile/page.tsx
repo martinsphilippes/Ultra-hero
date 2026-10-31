@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { Briefcase, ChevronRight, Settings } from "lucide-react";
+import { ChevronRight, Settings } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -13,14 +13,16 @@ import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { parseSubscription } from "@/components/me/subscription";
 import { TodaySection } from "@/components/me/today/TodaySection";
 import { DemoAccess } from "@/components/demo/DemoAccess";
+import { PortalShortcuts } from "@/components/me/PortalShortcuts";
 import { Avatar, Badge, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, isTalentOnly, requireUser } from "@/lib/auth/session";
+import { heroRoleNames } from "@/lib/auth/talent-scope";
 import { getTalentContext } from "@/lib/talent/server";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
-import { SETTINGS_PATH } from "@/lib/settings/sections";
+import { buildPortalItems, SETTINGS_PATH } from "@/lib/settings/sections";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
@@ -56,10 +58,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     getMyCreator(),
   ]);
   // só com o papel de herói (ou admin), como no portal: a linha em creator_profiles sozinha não basta
-  const heroProfile = heroProfileFor(
-    roles.map((r) => r.role),
-    creator.profile,
-  );
+  const heroProfile = heroProfileFor(heroRoleNames(roles), creator.profile);
   // envio de capa (0042): só o herói vê; sem a 0042 ou sem service role fica "indisponível"
   const coverState = heroProfile ? await getHeroCoverState() : null;
   const supabase = await createClient();
@@ -76,6 +75,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
   const roleSet = Array.from(new Set(roles.map((r) => r.role)));
   // talento sem página (só escopo talent, D2): o selo diz "Talento"; quem está num casting tem o Escritório
+  // (nos portais do topo)
   const roleBadges = isTalentOnly(roles) ? roleSet.map((r) => (r === "creator" ? "talent" : r)) : roleSet;
   const talentCtx = roleSet.includes("creator") ? await getTalentContext() : null;
   // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio"
@@ -124,27 +124,14 @@ export default async function ProfilePage({ searchParams }: Props) {
     </div>
   );
 
-  const officeCard =
-    talentCtx?.state === "ok" ? (
-      <Link
-        href="/creator/escritorio"
-        data-testid="profile-office"
-        className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
-      >
-        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-fg">
-          <Briefcase className="size-5" />
-        </span>
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-sm font-semibold text-fg">{t("office.title")}</span>
-          <span className="type-caption text-fg-muted">{t("office.description", { agency: talentCtx.talent.agency })}</span>
-        </span>
-        <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
-      </Link>
-    ) : null;
+  // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Escritório do casting
+  const portalItems = buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok" });
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
+
+      <PortalShortcuts items={portalItems} />
 
       {heroProfile ? (
         // topo do herói: cabeçalho público → Novo post → Editar perfil
@@ -152,7 +139,6 @@ export default async function ProfilePage({ searchParams }: Props) {
           <HeroProfileHeader profile={heroProfile} />
           {/* o herói só posta no dia a dia (foto ou vídeo); o resto é da administração */}
           {heroActive ? <HeroNewPost href={newPostHref} /> : null}
-          {officeCard}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroActive}
@@ -184,7 +170,6 @@ export default async function ProfilePage({ searchParams }: Props) {
               {accountSummary}
             </div>
           </section>
-          {officeCard}
           <HeroEditorDisclosure publicHref={null} description={t("editor.description")}>
             <div id={ACCOUNT_ANCHOR} className="scroll-mt-20">
               {dataForm}

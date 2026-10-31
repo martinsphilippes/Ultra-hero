@@ -120,7 +120,7 @@
         "seller": "Productos, entregas y perfil de la operación",
         "admin": "Usuarios, contenidos, pedidos y configuración",
         "professional": "Pedidos, servicios y perfil público",
-        "agency": "Equipo, marcas atendidas y avisos",
+        "agency": "Casting, equipo, marcas atendidas y avisos",
         "brand": "Equipo de la marca y avisos de la agencia",
         "office": "Media kit, consentimiento y avisos de la agencia"
       },
@@ -243,10 +243,6 @@
     },
     "newPost": {
       "label": "Nuevo post"
-    },
-    "office": {
-      "title": "Oficina",
-      "description": "Media kit, consentimiento y avisos de {agency}"
     }
   },
   "today": {

@@ -12,6 +12,11 @@ import { DOCUMENT_MAX_BYTES, DOCUMENT_MIME_TYPES } from "./constants";
 // navegador envia o arquivo direto ao Storage (política: só a própria reserva pendente) e confirma.
 // Leitura por URL assinada de 60 s com o cliente do usuário: a RLS de documents decide.
 
+// Telas que mostram documentos (o cliente só escolhe entre estes caminhos; revisão de segurança da
+// etapa B: revalidatePath com qualquer caminho vindo do navegador esvaziava o cache de outras rotas).
+const REVALIDATE_PATHS = [/^\/agencia\/casting\/[0-9a-f-]{36}\/documentos$/];
+const revalidateSchema = z.string().max(200).refine((p) => REVALIDATE_PATHS.some((re) => re.test(p)));
+
 export type DocumentResult = { ok: true; message: string; id?: string; path?: string; url?: string } | { ok: false; error: string };
 
 const reserveSchema = z.object({
@@ -25,7 +30,7 @@ const reserveSchema = z.object({
   shareTalent: z.boolean().optional(),
   shareBrand: z.boolean().optional(),
   restricted: z.boolean().optional(),
-  revalidate: z.string().startsWith("/").max(200),
+  revalidate: revalidateSchema,
 });
 
 export async function reserveDocumentAction(input: z.input<typeof reserveSchema>): Promise<DocumentResult> {
@@ -60,7 +65,7 @@ export async function reserveDocumentAction(input: z.input<typeof reserveSchema>
 
 export async function confirmDocumentAction(input: { id: string; revalidate: string }): Promise<DocumentResult> {
   await requireUser();
-  const parsed = z.object({ id: z.uuid(), revalidate: z.string().startsWith("/").max(200) }).safeParse(input);
+  const parsed = z.object({ id: z.uuid(), revalidate: revalidateSchema }).safeParse(input);
   if (!parsed.success) return agencyFail("invalid_input");
   try {
     const supabase = await createClient();
@@ -93,7 +98,7 @@ export async function signedUrlAction(input: { id: string }): Promise<DocumentRe
 
 export async function archiveDocumentAction(input: { id: string; revalidate: string }): Promise<DocumentResult> {
   await requireUser();
-  const parsed = z.object({ id: z.uuid(), revalidate: z.string().startsWith("/").max(200) }).safeParse(input);
+  const parsed = z.object({ id: z.uuid(), revalidate: revalidateSchema }).safeParse(input);
   if (!parsed.success) return agencyFail("invalid_input");
   try {
     const supabase = await createClient();

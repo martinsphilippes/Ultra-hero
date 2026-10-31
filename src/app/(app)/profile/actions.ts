@@ -7,6 +7,7 @@ import { locales } from "@/i18n/config";
 import { trackEvent } from "@/lib/analytics/track";
 import { getRoles, getUser } from "@/lib/auth/session";
 import { heroProfileFor } from "@/components/creator/hero-access";
+import { heroRoleNames } from "@/lib/auth/talent-scope";
 import { favoriteEventProps } from "@/lib/library/favorites";
 import { listTargetSchema, targetColumn, type ListTarget } from "@/lib/library/list-items";
 import { acceptsAvatarChoice, isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
@@ -107,7 +108,7 @@ export async function updateProfile(input: { displayName: string; avatarUrl?: st
       next = parsed.data.avatarUrl ?? null;
       if (!acceptsAvatarChoice(next, previous, user.id, base)) return { ok: false, error: "invalid_input" };
       // mesma regra da tela: herói (ou admin) com o perfil ativo tem um avatar só
-      if (linked && linked.status === "active" && heroProfileFor(roles.map((r) => r.role), linked)) hero = { id: linked.id, avatar_url: linked.avatar_url };
+      if (linked && linked.status === "active" && heroProfileFor(heroRoleNames(roles), linked)) hero = { id: linked.id, avatar_url: linked.avatar_url };
     }
     const { error } = await supabase
       .from("profiles")

@@ -528,8 +528,10 @@ begin
     if exists (select 1 from public.talent_profiles t where t.creator_id = p_creator and t.id <> p_talent) then
       raise exception 'creator_already_in_casting' using errcode = 'P0001';
     end if;
-    -- D10: o dono do herói já tem talento próprio (login sem página)
-    if v_creator_user is not null and exists (select 1 from public.talent_profiles t where t.user_id = v_creator_user) then
+    -- D10: o dono do herói já tem talento (login próprio sem página ou outro herói dele num casting)
+    if v_creator_user is not null and exists (
+         select 1 from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
+         where t.id <> p_talent and (t.user_id = v_creator_user or c.user_id = v_creator_user)) then
       raise exception 'user_has_talent' using errcode = 'P0001';
     end if;
     begin
@@ -538,6 +540,12 @@ begin
     end;
   end if;
   if v_before is distinct from p_creator then
+    -- o consentimento é da pessoa: trocar ou desligar o herói zera o consentimento, tira do catálogo e
+    -- desliga o link do kit (a agência não reaproveita o "sim" de outra pessoa nem contorna a revogação)
+    update public.talent_profiles set consent_at = null, consent_version = null, consent_revoked_at = null, catalog_visible = false
+    where id = p_talent;
+    update public.media_kits set share_revoked_at = now()
+    where talent_id = p_talent and share_token_hash is not null and share_revoked_at is null;
     perform public.audit_log('talent.link_creator', 'talent', p_talent::text,
       jsonb_build_object('agency_id', v_agency, 'creator_id', v_before), jsonb_build_object('agency_id', v_agency, 'creator_id', p_creator),
       null, public.talent_audit_actor('agency', v_agency));
@@ -546,17 +554,23 @@ end $$;
 
 create or replace function public.agency_talent_archive(p_talent uuid, p_justification text)
 returns void language plpgsql security definer set search_path = '' as $$
-declare v_agency uuid;
+declare v_agency uuid; v_creator uuid; v_user uuid;
 begin
   if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   v_agency := public.talent_write_scope(p_talent, 'admin');
   if char_length(btrim(coalesce(p_justification, ''))) < 5 then raise exception 'justification_required' using errcode = '22023'; end if;
   -- (a 0066 acrescenta a trava de negócio aberto: talent_has_open_deals)
-  update public.talent_profiles set archived_at = now(), catalog_visible = false where id = p_talent;
+  select t.creator_id, t.user_id into v_creator, v_user from public.talent_profiles t where t.id = p_talent;
+  -- arquivar solta a pessoa: o herói e o login ficam livres para outro casting (os únicos e a regra de
+  -- um talento por pessoa contam linhas arquivadas); o histórico guarda quem era na auditoria
+  update public.talent_profiles set archived_at = now(), catalog_visible = false, creator_id = null, user_id = null where id = p_talent;
+  update public.role_assignments set revoked_at = now()
+  where role = 'creator' and scope_type = 'talent' and scope_id = p_talent and revoked_at is null;
   update public.media_kits set share_revoked_at = now()
   where talent_id = p_talent and share_token_hash is not null and share_revoked_at is null;
   update public.invitations set status = 'revoked', revoked_at = now() where talent_id = p_talent and status = 'pending';
-  perform public.audit_log('talent.archive', 'talent', p_talent::text, jsonb_build_object('agency_id', v_agency, 'archived', false),
+  perform public.audit_log('talent.archive', 'talent', p_talent::text,
+    jsonb_build_object('agency_id', v_agency, 'archived', false, 'creator_id', v_creator, 'user_id', v_user),
     jsonb_build_object('agency_id', v_agency, 'archived', true), btrim(p_justification), public.talent_audit_actor('agency', v_agency));
 end $$;
 
@@ -640,6 +654,11 @@ begin
   -- com login, só o próprio talento consente
   if public.talent_user_id(p_talent) is not null then raise exception 'talent_has_login' using errcode = 'P0001'; end if;
   if v_version !~ '^[0-9A-Za-z._-]{1,20}$' then raise exception 'invalid_input' using errcode = '22023'; end if;
+  -- herói ligado e fora do ar (suspenso ou pendente): o dono decide quando voltar, não a agência
+  if exists (select 1 from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id
+             where t.id = p_talent and c.status <> 'active') then
+    raise exception 'invalid_state' using errcode = 'P0001';
+  end if;
   -- termo assinado: documento pronto do mesmo talento
   if not exists (select 1 from public.documents d where d.id = p_document and d.talent_id = p_talent
                  and d.scope_type = 'talent' and d.status = 'ready') then
@@ -910,6 +929,65 @@ begin
     nullif(btrim(coalesce(p_justification, '')), ''), v_actor);
 end $$;
 
+-- 11b) equipe (0064 + convites de talento fora da revogação por e-mail: convidar ou remover alguém da
+--      equipe não derruba o convite do escritório de um talento com o mesmo e-mail)
+create or replace function public.agency_invite_member(p_agency uuid, p_email text, p_role text, p_days int default 7)
+returns table (invitation_id uuid, token text)
+language plpgsql security definer set search_path = '' as $$
+declare v_token text; v_id uuid; v_email text := lower(btrim(coalesce(p_email, '')));
+begin
+  if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
+  if not exists (select 1 from public.agencies a where a.id = p_agency) then raise exception 'not_found' using errcode = 'P0002'; end if;
+  if not public.agency_can(p_agency, 'admin') then raise exception 'forbidden' using errcode = '42501'; end if;
+  if public.agency_is_demo(p_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
+  if p_role is null or p_role not in ('admin', 'manager', 'staff') then raise exception 'invalid_input' using errcode = '22023'; end if;
+  if not public.agency_email_ok(v_email) then raise exception 'invalid_email' using errcode = '22023'; end if;
+  if exists (select 1 from public.agency_members m join auth.users u on u.id = m.user_id
+             where m.agency_id = p_agency and m.revoked_at is null and lower(u.email::text) = v_email) then
+    raise exception 'already_member' using errcode = 'P0001';
+  end if;
+  -- convite novo substitui o anterior do mesmo e-mail para a mesma agência
+  update public.invitations i set status = 'revoked', revoked_at = now()
+  where i.status = 'pending' and i.agency_id = p_agency and i.brand_id is null and i.talent_id is null and lower(i.email::text) = v_email;
+  v_token := encode(extensions.gen_random_bytes(32), 'hex');
+  insert into public.invitations (email, role, agency_id, member_role, token_hash, expires_at, created_by)
+  values (v_email, 'agency', p_agency, p_role, encode(extensions.digest(v_token, 'sha256'), 'hex'),
+          now() + make_interval(days => greatest(1, least(coalesce(p_days, 7), 30))), auth.uid())
+  returning id into v_id;
+  perform public.audit_log('agency.member_invite', 'invitation', v_id::text, null,
+    jsonb_build_object('agency_id', p_agency, 'email', v_email, 'member_role', p_role), null,
+    case when public.agency_role_of(p_agency) is null then 'admin' else 'agency' end::public.actor_type);
+  return query select v_id, v_token;
+end $$;
+
+create or replace function public.agency_member_remove(p_agency uuid, p_user uuid, p_justification text)
+returns void language plpgsql security definer set search_path = '' as $$
+declare v_current text; v_email text;
+begin
+  if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
+  if not public.agency_can(p_agency, 'admin') then raise exception 'forbidden' using errcode = '42501'; end if;
+  if public.agency_is_demo(p_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
+  if char_length(btrim(coalesce(p_justification, ''))) < 5 then raise exception 'justification_required' using errcode = '22023'; end if;
+  perform 1 from public.agencies a where a.id = p_agency for update;
+  select m.role into v_current from public.agency_members m
+  where m.agency_id = p_agency and m.user_id = p_user and m.revoked_at is null for update;
+  if v_current is null then raise exception 'not_found' using errcode = 'P0002'; end if;
+  if v_current = 'admin' and (select count(*) from public.agency_members m
+                              where m.agency_id = p_agency and m.role = 'admin' and m.revoked_at is null) <= 1 then
+    raise exception 'last_agency_admin' using errcode = 'P0001';
+  end if;
+  update public.agency_members set revoked_at = now() where agency_id = p_agency and user_id = p_user and revoked_at is null;
+  update public.role_assignments set revoked_at = now()
+  where user_id = p_user and role::text = 'agency' and scope_id = p_agency and revoked_at is null;
+  -- convites pendentes da mesma pessoa para esta agência deixam de valer
+  select lower(u.email::text) into v_email from auth.users u where u.id = p_user;
+  update public.invitations i set status = 'revoked', revoked_at = now()
+  where i.status = 'pending' and i.agency_id = p_agency and i.brand_id is null and i.talent_id is null and lower(i.email::text) = v_email;
+  perform public.audit_log('agency.member_remove', 'agency_member', p_user::text,
+    jsonb_build_object('agency_id', p_agency, 'role', v_current), jsonb_build_object('agency_id', p_agency, 'removed', true),
+    btrim(p_justification), case when public.agency_role_of(p_agency) is null then 'admin' else 'agency' end::public.actor_type);
+end $$;
+
 -- 12) aceite de convite (0058 + 0064 + ramo do talento) -------------------------------------
 create or replace function public.accept_invitation(p_token text)
 returns jsonb language plpgsql security definer set search_path = public, extensions as $$
@@ -1023,6 +1101,13 @@ begin
     on conflict (user_id, role, scope_id) do update set revoked_at = null;
     v_scope_type := 'talent'; v_scope_id := v_inv.talent_id;
   else
+    -- D10: herói que já está num casting não vira o segundo talento de quem já tem um
+    if exists (select 1 from public.talent_profiles t where t.creator_id = v_inv.creator_profile_id)
+       and exists (select 1 from public.talent_profiles t2 left join public.creator_profiles c2 on c2.id = t2.creator_id
+                   where t2.creator_id is distinct from v_inv.creator_profile_id and (t2.user_id = v_uid or c2.user_id = v_uid)) then
+      perform set_config('app.trusted', 'off', true);
+      raise exception 'user_has_talent';
+    end if;
     update public.creator_profiles set user_id = v_uid
     where id = v_inv.creator_profile_id and (user_id is null or user_id = v_uid);
     if not found then
@@ -1334,6 +1419,7 @@ begin
     'public.talent_social_save(uuid, uuid, jsonb)', 'public.talent_social_delete(uuid)',
     'public.media_kit_save(uuid, jsonb)', 'public.media_kit_share(uuid, int)', 'public.media_kit_revoke(uuid)',
     'public.talent_my_context()', 'public.agency_invitation_revoke(uuid, text)',
+    'public.agency_invite_member(uuid, text, text, int)', 'public.agency_member_remove(uuid, uuid, text)',
     'public.document_reserve(uuid, text, uuid, jsonb)', 'public.document_confirm(uuid)'] loop
     execute format('revoke execute on function %s from public, anon', f);
     execute format('grant execute on function %s to authenticated, service_role', f);

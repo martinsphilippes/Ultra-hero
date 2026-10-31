@@ -4,7 +4,7 @@ import { AGENCY_ROUTE_MIN, agencyNavKeys } from "@/lib/agency/roles";
 import { isTalentOnly } from "@/lib/auth/talent-scope";
 import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts, TALENT_DEMO_EMAIL } from "@/lib/demo/accounts";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
-import { buildSettingsSections, OFFICE_PATH } from "@/lib/settings/sections";
+import { buildPortalItems, buildSettingsSections, OFFICE_PATH } from "@/lib/settings/sections";
 
 describe("etapa B: casting no menu e travas", () => {
   it("Casting para todos os níveis; Novo talento só gestor+", () => {
@@ -46,5 +46,20 @@ describe("talento sem página pública (D2)", () => {
     const withTalent = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: true, talent: true });
     expect(withTalent.some((a) => a.kind === "talent")).toBe(true);
     expect(readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: false }).map((a) => a.kind)).toEqual(["admin", "creator", "premium", "free"]);
+  });
+});
+
+describe("portais no topo do Perfil", () => {
+  it("mesmos atalhos da seção Portais: Escritório primeiro, gestão para o admin geral, nada para o consumidor", () => {
+    expect(buildPortalItems(["consumer"])).toEqual([]);
+    expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["office"]);
+    const admin = buildPortalItems(["consumer", "admin"]);
+    expect(admin.map((p) => [p.key, p.href, p.nativeHidden])).toEqual([
+      ["agency", "/agencia", true],
+      ["brand", "/marca", true],
+      ["admin", "/admin", false],
+    ]);
+    const portals = buildSettingsSections(["consumer", "admin"]).find((s) => s.key === "portals")?.items;
+    expect(portals).toEqual(admin);
   });
 });

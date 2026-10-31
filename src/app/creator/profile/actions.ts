@@ -5,6 +5,7 @@ import { parseCreatorProfile, type CreatorProfileInput } from "@/components/crea
 import type { ActionResult } from "@/components/editors/types";
 import { getRoles, getUser } from "@/lib/auth/session";
 import { heroProfileFor } from "@/components/creator/hero-access";
+import { heroRoleNames } from "@/lib/auth/talent-scope";
 import { acceptsAvatarChoice, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { releaseStoredAvatar } from "@/lib/avatar/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
@@ -27,7 +28,7 @@ export async function updateCreatorProfile(values: CreatorProfileInput): Promise
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
   // mesma regra da tela (herói ou admin): quem perdeu o papel não edita o perfil público por POST direto
-  if (heroProfileFor((await getRoles()).map((r) => r.role), true) === null) return { ok: false, error: "forbidden" };
+  if (heroProfileFor(heroRoleNames(await getRoles()), true) === null) return { ok: false, error: "forbidden" };
   const parsed = parseCreatorProfile(values);
   if (!parsed.ok) return { ok: false, error: "invalid_input" };
   const v = parsed.data;

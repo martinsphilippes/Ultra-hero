@@ -120,7 +120,7 @@
         "seller": "Products, deliveries and store profile",
         "admin": "Users, content, orders and settings",
         "professional": "Orders, services and public profile",
-        "agency": "Team, brands served and notices",
+        "agency": "Roster, team, brands and notices",
         "brand": "Brand team and agency notices",
         "office": "Media kit, consent and agency notices"
       },
@@ -243,10 +243,6 @@
     },
     "newPost": {
       "label": "New post"
-    },
-    "office": {
-      "title": "Office",
-      "description": "Media kit, consent and notices from {agency}"
     }
   },
   "today": {

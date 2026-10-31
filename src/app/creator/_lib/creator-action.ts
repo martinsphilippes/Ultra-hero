@@ -1,6 +1,7 @@
 import "server-only";
 import { actingClient, getActingHero } from "@/lib/acting-hero/server";
-import { getUser, hasRole } from "@/lib/auth/session";
+import { getRoles, getUser, hasRole } from "@/lib/auth/session";
+import { hasHeroRole } from "@/lib/auth/talent-scope";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionFailure } from "./action-utils";
 import type { CreatorSupabase } from "./content-insert";
@@ -35,7 +36,8 @@ export async function creatorActionContext(scope: CreatorActionScope = "manage")
   }
   if (scope === "manage") return { ok: false, error: "forbidden" };
 
-  if (!(await hasRole("creator"))) return { ok: false, error: "forbidden" };
+  // papel de herói (o creator com escopo "talent" é só do escritório e não reabre o Novo post)
+  if (!hasHeroRole(await getRoles())) return { ok: false, error: "forbidden" };
   const supabase = await createClient();
   const { data: creatorId } = await supabase.rpc("my_creator_id");
   if (typeof creatorId !== "string" || !creatorId) return { ok: false, error: "creator_unavailable" };

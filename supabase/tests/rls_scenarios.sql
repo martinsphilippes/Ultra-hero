@@ -8365,6 +8365,73 @@ select tests.ok('S75 arquivado sai do catálogo',
   (select archived_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't4')));
 select tests.expect_error('S75 talento arquivado não é editado',
   $q$select public.agency_talent_save((select v::uuid from t_s75 where k = 't4'), public.seed_uuid('s74:agency:a'), '{"city": "Rio"}')$q$, 'talent_archived');
+-- 13) correções da revisão de segurança da etapa B -----------------------------------------------
+-- a) o consentimento é da pessoa: trocar ou desligar o herói zera consentimento, catálogo e link
+select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
+select public.talent_set_consent(true, '2026-10');
+insert into t_s75 values ('kit_t2', public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't2'), true);
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), null);
+select tests.su();
+select tests.ok('S75 desligar o herói zera o consentimento, tira do catálogo e desliga o link',
+  (select consent_at is null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2'))
+  and public.media_kit_resolve((select v from t_s75 where k = 'kit_t2'), false) is null);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't2'), '2026-10', (select v::uuid from t_s75 where k = 'doc_t2'));
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), public.seed_uuid('s75:creator:real'));
+select tests.su();
+select tests.ok('S75 religar o herói não reaproveita o consentimento registrado sem ele',
+  (select consent_at is null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2')));
+-- b) herói fora do ar: a agência não registra consentimento por ele
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  (public.seed_uuid('s75:creator:extra'), 's75-heroi-extra', 'Herói extra', 'active', null);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s75 values ('t5', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento cinco"}')::text);
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't5'), public.seed_uuid('s75:creator:extra'));
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('s75:creator:extra');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 herói suspenso: a agência não registra consentimento',
+  $q$select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't5'), '2026-10', gen_random_uuid())$q$, 'invalid_state');
+-- d) arquivar solta o herói: outra agência pode colocá-lo no casting
+insert into t_s75 values ('t6', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento seis"}')::text);
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't6'), public.seed_uuid('s75:creator:livre'));
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_talent_archive((select v::uuid from t_s75 where k = 't6'), 'saiu do casting');
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 'tb'), public.seed_uuid('s75:creator:livre'));
+select tests.su();
+select tests.ok('S75 arquivar solta o herói (outra agência liga) e a auditoria guarda quem era',
+  (select creator_id is null and user_id is null from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't6'))
+  and (select creator_id from public.talent_profiles where id = (select v::uuid from t_s75 where k = 'tb')) = public.seed_uuid('s75:creator:livre')
+  and exists (select 1 from public.admin_audit where action = 'talent.archive' and resource_id = (select v from t_s75 where k = 't6')
+              and before_data ->> 'creator_id' = public.seed_uuid('s75:creator:livre')::text));
+-- e) convite de herói que já está num casting para quem já tem talento: recusa (D10)
+insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at)
+values ('talento-1@test.local', 'creator', public.seed_uuid('s75:creator:livre'), encode(extensions.digest('s75-tok-livre', 'sha256'), 'hex'), now() + interval '1 day');
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select tests.expect_error('S75 D10: convite de herói do casting para quem já tem talento',
+  $q$select public.accept_invitation('s75-tok-livre')$q$, 'user_has_talent');
+-- f) convidar alguém para a equipe não revoga o convite de talento com o mesmo e-mail
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s75 values ('t8', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento oito"}')::text);
+select count(*) from public.agency_invite_talent((select v::uuid from t_s75 where k = 't8'), 'convidado@test.local');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select count(*) from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'convidado@test.local', 'staff');
+select tests.su();
+select tests.ok('S75 convite de equipe não derruba o convite de talento do mesmo e-mail',
+  exists (select 1 from public.invitations where talent_id = (select v::uuid from t_s75 where k = 't8') and status = 'pending'));
+-- g) arquivar o talento com login revoga o escritório (papel creator/talent) e solta o login
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_talent_archive((select v::uuid from t_s75 where k = 't1'), 'encerrou o contrato');
+select tests.su();
+select tests.ok('S75 arquivar o talento com login revoga o papel do escritório',
+  (select user_id is null from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't1'))
+  and not exists (select 1 from public.role_assignments where user_id = '75000000-0000-4000-8000-0000000000d1' and scope_type = 'talent' and revoked_at is null));
+select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
+select tests.ok('S75 depois de arquivado, o ex-talento não tem escritório', public.my_talent_id() is null and public.talent_my_context() is null);
+
 select tests.su();
 select tests.ok('S75 auditoria do casting com agency_id',
   (select count(distinct action) from public.admin_audit where action in ('talent.create', 'talent.update', 'talent.segments', 'talent.link_creator',
