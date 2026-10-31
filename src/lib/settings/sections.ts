@@ -92,7 +92,9 @@ export function buildSettingsSections(roles: readonly string[], sellerPortalEnab
     key,
     items: items.map(([k, href]) => ({ kind: "link" as const, key: k, href, nativeHidden: nativeHidden(href) })),
   }));
-  const shown = portalRolesShown(roles, sellerPortalEnabled);
+  // o admin geral supervisiona os portais de gestão (0064): atalhos da agência e da marca também
+  const withManagement = roles.includes("admin") ? [...roles, "agency", "brand"] : roles;
+  const shown = portalRolesShown(withManagement, sellerPortalEnabled);
   const portals: SettingsItem[] = PORTALS.filter((p) => shown.includes(p.role)).map((p) => ({ kind: "portal", key: p.role, href: p.href, nativeHidden: nativeHidden(p.href) }));
   if (portals.length > 0) sections.push({ key: "portals", items: portals });
   return sections;

@@ -38,18 +38,21 @@ describe("buildSettingsSections", () => {
     const admin = buildSettingsSections(["consumer", "admin", "professional", "seller"], false);
     const portals = admin.find((s) => s.key === "portals")!;
     expect(admin.at(-1)).toBe(portals);
+    // o admin geral também tem os atalhos da agência e da marca (gestão, 0064)
     expect(portals.items.map((i) => [i.key, i.href])).toEqual([
       ["professional", "/profissional"],
+      ["agency", "/agencia"],
+      ["brand", "/marca"],
       ["admin", "/admin"],
     ]);
     const withSeller = buildSettingsSections(["seller"], true).find((s) => s.key === "portals")!;
     expect(withSeller.items.map((i) => i.href)).toEqual(["/seller"]);
   });
 
-  it("app das lojas: compras simuladas, plano e portal do profissional somem; o resto fica", () => {
+  it("app das lojas: compras simuladas, plano e portais do profissional, da agência e da marca somem; o resto fica", () => {
     const items = buildSettingsSections(["admin", "professional"]).flatMap((s) => s.items);
     const hidden = items.filter((i) => i.nativeHidden).map((i) => i.href);
-    expect(hidden.sort()).toEqual(["/orders", "/profile/plan", "/profissional"]);
+    expect(hidden.sort()).toEqual(["/agencia", "/marca", "/orders", "/profile/plan", "/profissional"]);
   });
 
   it("Excluir conta aponta para a seção da página da conta", () => {

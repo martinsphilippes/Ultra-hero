@@ -189,3 +189,10 @@ describe("iniciais do avatar", () => {
     expect(initials("  ")).toBe("");
   });
 });
+
+describe("atalhos de portal do admin geral", () => {
+  it("admin vê Agência e Marca em Configurações → Portais, antes da Administração", () => {
+    const portals = buildSettingsSections(["consumer", "admin"]).find((s) => s.key === "portals");
+    expect(portals?.items.map((i) => i.key)).toEqual(["agency", "brand", "admin"]);
+  });
+});
