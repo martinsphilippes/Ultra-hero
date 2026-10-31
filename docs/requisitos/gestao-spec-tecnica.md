@@ -73,7 +73,10 @@ revisão", no fim, lista cada achado das três revisões independentes e o que f
    `revoke execute ... from public, anon` explicitamente: o shim local e o Supabase dão `execute` a `anon`
    por *default privileges* e isso quebraria o S14. Funções internas: `revoke ... from public, anon, authenticated` +
    `grant ... to service_role`.
-6. **Políticas** sempre `to authenticated`, com toda chamada de função embrulhada em `(select ...)`
+6. **Políticas** sempre `to authenticated`, com toda chamada de função embrulhada em `(select ...)`. Com array, a forma é
+   `x = any ((select public.f())::uuid[])`: sem o cast, `any ((select ...))` vira a forma de subconsulta e compara `uuid` com `uuid[]`
+   (erro encontrado na 0064). Expressão booleana com função que pode dar `null` (ex.: `brand_member_of(...) = 'owner'`) vai em
+   `coalesce(..., false)` antes de `if not`: `not null` não dispara a recusa (falha encontrada pelo S74)
    (regra do S14: nenhuma política avalia `auth.uid()`/`is_admin()` por linha). Uma política por público
    (`<tabela>_select_admin`, `_agency`, `_staff`, `_brand`, `_talent`) para os testes mirarem cada uma.
 7. **`updated_at`** com `public.set_updated_at()` em toda tabela que tem a coluna.
@@ -1598,58 +1601,58 @@ a conta demo com papel admin cai na coluna CON (0 linhas em tudo do módulo).
 ```sql
 -- deals (0066)
 create policy deals_select_agency on public.deals for select to authenticated
-  using (agency_id = any ((select public.my_agency_ids('manager'))));
+  using (agency_id = any ((select public.my_agency_ids('manager'))::uuid[]));
 create policy deals_select_staff on public.deals for select to authenticated
-  using (id = any ((select public.my_staff_deal_ids())));
+  using (id = any ((select public.my_staff_deal_ids())::uuid[]));
 create policy deals_select_brand on public.deals for select to authenticated
-  using (brand_visible and brand_id = any ((select public.my_brand_ids(false))));
+  using (brand_visible and brand_id = any ((select public.my_brand_ids(false))::uuid[]));
 create policy deals_select_talent on public.deals for select to authenticated
-  using (id = any ((select public.my_talent_deal_ids())));
+  using (id = any ((select public.my_talent_deal_ids())::uuid[]));
 -- + deals_select_admin do bloco 2.0
 
 -- tabela de valor com exceção do creator (0066). O creator não tem SELECT em deal_talents: a condição
 -- "já consultado" vem do helper security definer, não de um exists sob a RLS de quem lê.
 create policy deal_talent_fees_select_agency on public.deal_talent_fees for select to authenticated
-  using (agency_id = any ((select public.my_agency_ids('admin'))));
+  using (agency_id = any ((select public.my_agency_ids('admin'))::uuid[]));
 create policy deal_talent_fees_select_talent on public.deal_talent_fees for select to authenticated
-  using (deal_talent_id = any ((select public.my_talent_deal_talent_ids())));
+  using (deal_talent_id = any ((select public.my_talent_deal_talent_ids())::uuid[]));
 
 -- orçamento: a marca lê só o que ela mesma informou (origem marca); a estimativa interna do ADM fica de fora (0066)
 create policy campaign_request_budgets_select_agency on public.campaign_request_budgets for select to authenticated
-  using (agency_id = any ((select public.my_agency_ids('admin')))
+  using (agency_id = any ((select public.my_agency_ids('admin'))::uuid[])
          and exists (select 1 from public.campaign_requests r where r.id = campaign_request_budgets.request_id));
 create policy campaign_request_budgets_select_brand on public.campaign_request_budgets for select to authenticated
-  using (brand_id = any ((select public.my_brand_ids(false)))
+  using (brand_id = any ((select public.my_brand_ids(false))::uuid[])
          and exists (select 1 from public.campaign_requests r
                      where r.id = campaign_request_budgets.request_id and r.origin = 'brand'));
 
 -- entregáveis para a marca: só de creators já propostos (0066)
 create policy deliverables_select_brand on public.deliverables for select to authenticated
-  using (deal_talent_id = any ((select public.my_brand_deal_talent_ids())));
+  using (deal_talent_id = any ((select public.my_brand_deal_talent_ids())::uuid[]));
 
 -- tabela de valor com exceção da marca (0066)
 create policy deal_proposals_select_agency on public.deal_proposals for select to authenticated
-  using (agency_id = any ((select public.my_agency_ids('admin'))));
+  using (agency_id = any ((select public.my_agency_ids('admin'))::uuid[]));
 create policy deal_proposals_select_brand on public.deal_proposals for select to authenticated
-  using (status <> 'draft' and brand_id = any ((select public.my_brand_ids(false))));
+  using (status <> 'draft' and brand_id = any ((select public.my_brand_ids(false))::uuid[]));
 
 -- documents (forma final, 0066; a 0064 cria as duas primeiras sem os ramos de 'request'/'deal',
 -- porque deals, campaign_requests e my_staff_deal_ids ainda não existem, e a 0066 faz drop + create)
 create policy documents_select_agency_admin on public.documents for select to authenticated
-  using (agency_id = any ((select public.my_agency_ids('admin')))
+  using (agency_id = any ((select public.my_agency_ids('admin'))::uuid[])
          -- anexo de briefing em rascunho da marca: a agência não vê (a RLS de campaign_requests decide)
          and (scope_type <> 'request' or exists (select 1 from public.campaign_requests r where r.id = documents.request_id)));
 create policy documents_select_agency on public.documents for select to authenticated
-  using (not restricted and status <> 'archived' and agency_id = any ((select public.my_agency_ids('staff')))
+  using (not restricted and status <> 'archived' and agency_id = any ((select public.my_agency_ids('staff'))::uuid[])
          and (
            (scope_type in ('agency', 'brand', 'talent'))
-           or (scope_type = 'deal' and (agency_id = any ((select public.my_agency_ids('manager')))
-                                        or deal_id = any ((select public.my_staff_deal_ids()))))
+           or (scope_type = 'deal' and (agency_id = any ((select public.my_agency_ids('manager'))::uuid[])
+                                        or deal_id = any ((select public.my_staff_deal_ids())::uuid[])))
            -- GES+ vê pedidos não-rascunho; COL só os pedidos dos negócios dele (as duas coisas pela RLS de campaign_requests)
            or (scope_type = 'request' and exists (select 1 from public.campaign_requests r where r.id = documents.request_id))));
 create policy documents_select_brand on public.documents for select to authenticated
-  using (share_brand and status = 'ready' and brand_id = any ((select public.my_brand_ids(false)))
-         and (deal_id is null or deal_id = any ((select public.my_brand_deal_ids()))));
+  using (share_brand and status = 'ready' and brand_id = any ((select public.my_brand_ids(false))::uuid[])
+         and (deal_id is null or deal_id = any ((select public.my_brand_deal_ids())::uuid[])));
 create policy documents_select_talent on public.documents for select to authenticated
   using (share_talent and status = 'ready' and talent_id = (select public.my_talent_id()));
 -- quem enviou só enxerga a própria reserva enquanto envia (necessário para a política de insert do Storage);
@@ -1664,11 +1667,11 @@ create policy inbox_notifications_select_own on public.inbox_notifications for s
 
 -- brands: duas políticas novas (0064); a pública da 0062 não muda
 create policy brands_select_member on public.brands for select to authenticated
-  using (id = any ((select public.my_brand_ids(false))));
+  using (id = any ((select public.my_brand_ids(false))::uuid[]));
 create policy brands_select_agency on public.brands for select to authenticated
-  using (id = any ((select public.my_agency_brand_ids())));
+  using (id = any ((select public.my_agency_brand_ids())::uuid[]));
 create policy brands_select_talent on public.brands for select to authenticated     -- 0066
-  using (id = any ((select public.my_talent_brand_ids())));
+  using (id = any ((select public.my_talent_brand_ids())::uuid[]));
 ```
 
 **Exceções controladas (14.1), com o mecanismo:**

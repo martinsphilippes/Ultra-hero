@@ -7526,5 +7526,476 @@ select tests.ok('S73 reaplicar a 0063 não duplica nada',
   and (select count(*) from public.creator_brands cb join public.creator_profiles c on c.id = cb.creator_id where c.slug = 'neymar') = 5
   and (select count(*) from public.media_smart_tags) = 6);
 
+-- ================================================================ S74 · Gestão: fundação (0064)
+-- Agência com hierarquia (admin > manager > staff), marcas com equipe, convites que nunca rebaixam,
+-- isolamento entre agências e entre marcas, conta demo sem nada da agência real (D6), agência demo
+-- travada, avisos só do dono, documentos por escopo (contrato só do Adm), push do escritório opt-in.
+\ir ../migrations/0064_gestao_fundacao.sql
+select tests.su();
+delete from public.push_outbox;
+insert into auth.users (id, email, raw_app_meta_data) values
+  ('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000a5', 'novo@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000a6', 'novo2@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000c1', 'marca-x-dono@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000c2', 'marca-x-equipe@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.local', '{}'),
+  ('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local', '{"ultra_hero_demo": true}'),
+  ('74000000-0000-4000-8000-0000000000e3', 'demo-adm@test.local', '{"ultra_hero_demo": true}');
+insert into public.role_assignments (user_id, role, scope_type) values ('74000000-0000-4000-8000-0000000000e1', 'admin', 'global');
+insert into public.agencies (id, slug, name, is_demo) values
+  (public.seed_uuid('s74:agency:a'), 's74-agencia-a', 'Agência A', false),
+  (public.seed_uuid('s74:agency:b'), 's74-agencia-b', 'Agência B', false),
+  (public.seed_uuid('s74:agency:d'), 's74-agencia-d', 'Agência Demo', true);
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  (public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a1', 'admin', 'Ana Adm'),
+  (public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a2', 'manager', 'Gil Gestor'),
+  (public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a3', 'staff', 'Caio Colab'),
+  (public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a4', 'staff', 'Cris Colab'),
+  (public.seed_uuid('s74:agency:b'), '74000000-0000-4000-8000-0000000000b1', 'admin', 'Bia Adm B'),
+  (public.seed_uuid('s74:agency:d'), '74000000-0000-4000-8000-0000000000e3', 'admin', 'Adm demo');
+insert into public.role_assignments (user_id, role, scope_type, scope_id)
+select m.user_id, 'agency', 'agency', m.agency_id from public.agency_members m
+where m.agency_id in (public.seed_uuid('s74:agency:a'), public.seed_uuid('s74:agency:b'), public.seed_uuid('s74:agency:d'));
+create temp table t_s74 (k text primary key, v text);
+grant all on t_s74 to anon, authenticated, service_role;
+
+select tests.ok('S74 escopos e enums novos: agency, brand, talent; actor_type agency e brand',
+  pg_get_constraintdef((select oid from pg_constraint where conname = 'role_assignments_scope_type_check')) like '%talent%'
+  and exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = 'app_role' and e.enumlabel = 'agency')
+  and exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = 'app_role' and e.enumlabel = 'brand')
+  and exists (select 1 from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = 'actor_type' and e.enumlabel = 'agency')
+  and (select count(*) from public.agencies where slug = 'groscove') = 1);
+
+-- 1) hierarquia: só o Adm convida a equipe ------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S74 gestor não convida equipe',
+  $q$select * from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'x@test.local', 'staff')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S74 colaborador não convida equipe',
+  $q$select * from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'x@test.local', 'staff')$q$, 'forbidden');
+select tests.expect_error('S74 colaborador não troca papel',
+  $q$select public.agency_member_set_role(public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a4', 'manager', 'promoção')$q$, 'forbidden');
+
+-- 2) convite e aceite -------------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+insert into t_s74 select 'tok_novo', token from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'Novo@Test.Local', 'staff');
+select tests.expect_error('S74 papel inválido no convite',
+  $q$select * from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'y@test.local', 'owner')$q$, 'invalid_input');
+select tests.expect_error('S74 Adm não convida quem já é da equipe',
+  $q$select * from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'ag-col@test.local', 'staff')$q$, 'already_member');
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S74 aceite com outro e-mail',
+  $q$select public.accept_invitation((select v from t_s74 where k = 'tok_novo'))$q$, 'invitation_email_mismatch');
+select tests.login('74000000-0000-4000-8000-0000000000a5', 'novo@test.local');
+insert into t_s74 values ('acc_novo', public.accept_invitation((select v from t_s74 where k = 'tok_novo'))::text);
+select tests.ok('S74 aceite cria membro (staff) e papel agency com escopo da agência',
+  ((select v::jsonb from t_s74 where k = 'acc_novo') ->> 'scope_type') = 'agency'
+  and public.agency_role_of(public.seed_uuid('s74:agency:a')) = 'staff');
+select tests.su();
+select tests.ok('S74 aceite gravou role_assignments(agency) e avisou o Adm (member_joined)',
+  exists (select 1 from public.role_assignments where user_id = '74000000-0000-4000-8000-0000000000a5' and role::text = 'agency'
+          and scope_type = 'agency' and scope_id = public.seed_uuid('s74:agency:a') and revoked_at is null)
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a1' and kind = 'member_joined')
+  and not exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and kind = 'member_joined'));
+select tests.login('74000000-0000-4000-8000-0000000000a5', 'novo@test.local');
+select tests.expect_error('S74 segundo aceite do mesmo convite',
+  $q$select public.accept_invitation((select v from t_s74 where k = 'tok_novo'))$q$, 'invitation_invalid');
+-- quem já é ativo em outra agência não entra (D10)
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+insert into t_s74 select 'tok_b1', token from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'agb-adm@test.local', 'staff');
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.expect_error('S74 uma agência ativa por pessoa',
+  $q$select public.accept_invitation((select v from t_s74 where k = 'tok_b1'))$q$, 'agency_member_elsewhere');
+
+-- 3) último Adm, convite novo revoga o anterior, aceite nunca rebaixa, remoção revoga convites ----
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S74 não rebaixa o último Adm',
+  $q$select public.agency_member_set_role(public.seed_uuid('s74:agency:a'), auth.uid(), 'staff', 'sair da diretoria')$q$, 'last_agency_admin');
+select tests.expect_error('S74 não remove o último Adm',
+  $q$select public.agency_member_remove(public.seed_uuid('s74:agency:a'), auth.uid(), 'sair da agência')$q$, 'last_agency_admin');
+select tests.expect_error('S74 troca de papel exige justificativa',
+  $q$select public.agency_member_set_role(public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a3', 'manager', 'ok')$q$, 'justification_required');
+insert into t_s74 select 'tok_n2_a', token from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'novo2@test.local', 'staff');
+insert into t_s74 select 'tok_n2_b', token from public.agency_invite_member(public.seed_uuid('s74:agency:a'), 'novo2@test.local', 'manager');
+select tests.login('74000000-0000-4000-8000-0000000000a6', 'novo2@test.local');
+select tests.expect_error('S74 convite novo revoga o anterior do mesmo e-mail',
+  $q$select public.accept_invitation((select v from t_s74 where k = 'tok_n2_a'))$q$, 'invitation_invalid');
+insert into t_s74 values ('acc_n2', public.accept_invitation((select v from t_s74 where k = 'tok_n2_b'))::text);
+select tests.ok('S74 aceite do convite novo entra como gestor',
+  ((select v::jsonb from t_s74 where k = 'acc_n2') ->> 'scope_type') = 'agency'
+  and public.agency_role_of(public.seed_uuid('s74:agency:a')) = 'manager');
+select tests.su();
+insert into public.invitations (email, role, agency_id, member_role, token_hash, expires_at) values
+  ('ag-adm@test.local', 'agency', public.seed_uuid('s74:agency:a'), 'staff', encode(extensions.digest('s74-tok-adm', 'sha256'), 'hex'), now() + interval '1 day'),
+  ('novo2@test.local', 'agency', public.seed_uuid('s74:agency:a'), 'staff', encode(extensions.digest('s74-tok-n2c', 'sha256'), 'hex'), now() + interval '1 day');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.accept_invitation('s74-tok-adm');
+select tests.ok('S74 aceitar convite de colaborador sendo Adm ativo não rebaixa',
+  public.agency_role_of(public.seed_uuid('s74:agency:a')) = 'admin');
+select public.agency_member_set_role(public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a3', 'manager', 'promovido a gestor');
+select public.agency_member_set_role(public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a3', 'staff', 'volta para operação');
+select public.agency_member_remove(public.seed_uuid('s74:agency:a'), '74000000-0000-4000-8000-0000000000a6', 'saiu da equipe');
+select tests.login('74000000-0000-4000-8000-0000000000a6', 'novo2@test.local');
+select tests.expect_error('S74 remover membro revoga os convites pendentes dele',
+  $q$select public.accept_invitation('s74-tok-n2c')$q$, 'invitation_invalid');
+select tests.ok('S74 membro removido perde o acesso (papel e role_assignments revogados)',
+  public.agency_role_of(public.seed_uuid('s74:agency:a')) is null
+  and not public.agency_can(public.seed_uuid('s74:agency:a'), 'staff')
+  and (select count(*) from public.agency_members where agency_id = public.seed_uuid('s74:agency:a')) = 0);
+select tests.su();
+select tests.ok('S74 troca de papel e remoção auditadas com a agência',
+  (select count(*) from public.admin_audit where action in ('agency.member_role', 'agency.member_remove')
+     and after_data ->> 'agency_id' = public.seed_uuid('s74:agency:a')::text) = 3
+  and not exists (select 1 from public.role_assignments where user_id = '74000000-0000-4000-8000-0000000000a6' and role::text = 'agency' and revoked_at is null));
+
+-- 4) marcas: nascem inactive, equipe por convite, isolamento entre marcas -----------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s74 values ('brand_x', public.agency_brand_create(public.seed_uuid('s74:agency:a'),
+  '{"name": "Marca X", "slug": "s74-marca-x", "site_url": "https://example.com/x"}')::text);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+insert into t_s74 values ('brand_y', public.agency_brand_create(public.seed_uuid('s74:agency:a'),
+  '{"name": "Marca Y", "slug": "s74-marca-y", "site_url": "https://example.com/y"}')::text);
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S74 colaborador não cria marca',
+  $q$select public.agency_brand_create(public.seed_uuid('s74:agency:a'), '{"name": "Marca Z", "slug": "s74-marca-z", "site_url": "https://example.com/z"}')$q$, 'forbidden');
+select tests.ok('S74 colaborador lê as marcas da agência (inclusive inactive)',
+  (select count(*) from public.brands where slug in ('s74-marca-x', 's74-marca-y')) = 2);
+select tests.anon();
+select tests.ok('S74 marca criada pela agência nasce inactive e o visitante não a vê',
+  (select count(*) from public.brands where slug in ('s74-marca-x', 's74-marca-y')) = 0);
+select tests.su();
+select tests.ok('S74 marca X inactive com vínculo ativo na agência A',
+  (select status from public.brands where slug = 's74-marca-x') = 'inactive'
+  and exists (select 1 from public.agency_brands where brand_id = (select v::uuid from t_s74 where k = 'brand_x') and status = 'active'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s74 select 'tok_x_owner', token from public.agency_invite_brand_member(public.seed_uuid('s74:agency:a'),
+  (select v::uuid from t_s74 where k = 'brand_x'), 'marca-x-dono@test.local', 'owner');
+insert into t_s74 select 'tok_y_owner', token from public.agency_invite_brand_member(public.seed_uuid('s74:agency:a'),
+  (select v::uuid from t_s74 where k = 'brand_y'), 'marca-y-dono@test.local', 'owner');
+select tests.login('74000000-0000-4000-8000-0000000000c1', 'marca-x-dono@test.local');
+insert into t_s74 values ('acc_x_owner', public.accept_invitation((select v from t_s74 where k = 'tok_x_owner'))::text);
+select tests.ok('S74 dono da marca X entra pelo convite',
+  ((select v::jsonb from t_s74 where k = 'acc_x_owner') ->> 'scope_type') = 'brand'
+  and public.brand_member_of((select v::uuid from t_s74 where k = 'brand_x')) = 'owner');
+insert into t_s74 select 'tok_x_staff', token from public.brand_invite_member((select v::uuid from t_s74 where k = 'brand_x'), 'marca-x-equipe@test.local');
+select tests.login('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.local');
+select public.accept_invitation((select v from t_s74 where k = 'tok_y_owner'));
+select tests.login('74000000-0000-4000-8000-0000000000c2', 'marca-x-equipe@test.local');
+insert into t_s74 values ('acc_x_staff', public.accept_invitation((select v from t_s74 where k = 'tok_x_staff'))::text);
+select tests.ok('S74 equipe da marca X entra como staff',
+  ((select v::jsonb from t_s74 where k = 'acc_x_staff') ->> 'scope_type') = 'brand'
+  and public.brand_member_of((select v::uuid from t_s74 where k = 'brand_x')) = 'staff');
+select tests.expect_error('S74 staff da marca não convida',
+  $q$select * from public.brand_invite_member((select v::uuid from t_s74 where k = 'brand_x'), 'outro@test.local')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000c1', 'marca-x-dono@test.local');
+select tests.ok('S74 dono da X lê a X (inactive) e a equipe dela, nada da Y',
+  (select count(*) from public.brands where slug = 's74-marca-x') = 1
+  and (select count(*) from public.brands where slug = 's74-marca-y') = 0
+  and (select count(*) from public.brand_members where brand_id = (select v::uuid from t_s74 where k = 'brand_x')) = 2
+  and (select count(*) from public.brand_members where brand_id = (select v::uuid from t_s74 where k = 'brand_y')) = 0
+  and (select count(*) from public.agencies where id = public.seed_uuid('s74:agency:a')) = 1
+  and (select count(*) from public.agency_members) = 0);
+select tests.expect_error('S74 dono não remove o último dono',
+  $q$select public.brand_member_remove((select v::uuid from t_s74 where k = 'brand_x'), auth.uid())$q$, 'last_brand_owner');
+select tests.login('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.local');
+select tests.ok('S74 dono da Y não lê a equipe nem os convites da X',
+  (select count(*) from public.brand_members where brand_id = (select v::uuid from t_s74 where k = 'brand_x')) = 0
+  and (select count(*) from public.invitations where brand_id = (select v::uuid from t_s74 where k = 'brand_x')) = 0);
+select tests.expect_error('S74 dono da Y não revoga convite da X',
+  $q$select public.agency_invitation_revoke((select id from public.invitations where brand_id = (select v::uuid from t_s74 where k = 'brand_x') limit 1), 'x')$q$, 'not_found');
+select tests.expect_error('S74 dono da Y não remove membro da X',
+  $q$select public.brand_member_remove((select v::uuid from t_s74 where k = 'brand_x'), '74000000-0000-4000-8000-0000000000c2')$q$, 'forbidden');
+select tests.su();
+select tests.ok('S74 aceite de marca avisou o dono e o gestor da agência (brand_member_joined)',
+  exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000c1' and kind = 'brand_member_joined')
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and kind = 'brand_member_joined')
+  and not exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a3' and kind = 'brand_member_joined'));
+
+-- 5) isolamento entre agências e D18 (uma agência ativa por marca) ---------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_brand_link(public.seed_uuid('s74:agency:a'), (select id from public.brands where slug = 'nike'), true);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.ok('S74 agência B não lê nada da agência A',
+  (select count(*) from public.agencies where id = public.seed_uuid('s74:agency:a')) = 0
+  and (select count(*) from public.agency_members where agency_id = public.seed_uuid('s74:agency:a')) = 0
+  and (select count(*) from public.agency_brands where agency_id = public.seed_uuid('s74:agency:a')) = 0
+  and (select count(*) from public.brand_members) = 0
+  and (select count(*) from public.invitations where agency_id = public.seed_uuid('s74:agency:a')) = 0
+  and (select count(*) from public.inbox_notifications) = 0
+  and (select count(*) from public.brands where slug = 's74-marca-x') = 0);
+select tests.expect_error('S74 D18: marca já ativa em outra agência',
+  $q$select public.agency_brand_link(public.seed_uuid('s74:agency:b'), (select id from public.brands where slug = 'nike'), true)$q$, 'brand_linked_elsewhere');
+select tests.expect_error('S74 agência B não convida para a marca X da A',
+  $q$select * from public.agency_invite_brand_member(public.seed_uuid('s74:agency:b'), (select v::uuid from t_s74 where k = 'brand_x'), 'z@test.local', 'staff')$q$, 'not_found');
+select tests.expect_error('S74 agência B não remove membro da marca X',
+  $q$select public.brand_member_remove((select v::uuid from t_s74 where k = 'brand_x'), '74000000-0000-4000-8000-0000000000c2')$q$, 'forbidden');
+select tests.expect_error('S74 agência B não vincula marca inactive que não enxerga',
+  $q$select public.agency_brand_link(public.seed_uuid('s74:agency:b'), (select v::uuid from t_s74 where k = 'brand_x'), true)$q$, 'not_found');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.agency_brand_link(public.seed_uuid('s74:agency:b'), (select id from public.brands where slug = 'nike'), true);
+select tests.su();
+select tests.ok('S74 admin geral transfere a marca: vínculo antigo arquivado, um só ativo',
+  (select status from public.agency_brands where agency_id = public.seed_uuid('s74:agency:a') and brand_id = (select id from public.brands where slug = 'nike')) = 'archived'
+  and (select status from public.agency_brands where agency_id = public.seed_uuid('s74:agency:b') and brand_id = (select id from public.brands where slug = 'nike')) = 'active'
+  and (select count(*) from public.agency_brands where brand_id = (select id from public.brands where slug = 'nike') and status = 'active') = 1);
+select tests.expect_error('S74 índice único segura dois vínculos ativos da mesma marca',
+  $q$update public.agency_brands set status = 'active' where agency_id = public.seed_uuid('s74:agency:a') and brand_id = (select id from public.brands where slug = 'nike')$q$, '23505');
+
+-- 6) D19: escopo sempre da própria linha ------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+insert into t_s74 select 'inv_b', invitation_id::text from public.agency_invite_member(public.seed_uuid('s74:agency:b'), 'pessoa-b@test.local', 'staff');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S74 Adm da A não revoga convite da B',
+  $q$select public.agency_invitation_revoke((select v::uuid from t_s74 where k = 'inv_b'), 'teste')$q$, 'not_found');
+select tests.expect_error('S74 responsável da marca precisa ser da própria agência',
+  $q$select public.agency_brand_link(public.seed_uuid('s74:agency:a'), (select id from public.brands where slug = 'puma'), true, '74000000-0000-4000-8000-0000000000b1')$q$, 'not_found');
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select public.agency_invitation_revoke((select v::uuid from t_s74 where k = 'inv_b'), 'convite errado');
+select tests.su();
+select tests.ok('S74 Adm da B revoga o próprio convite',
+  (select status from public.invitations where id = (select v::uuid from t_s74 where k = 'inv_b')) = 'revoked');
+
+-- 7) D6: conta demo não vê nem age na agência real; agência demo travada -----------------
+select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
+select tests.ok('S74 conta demo com papel admin lê 0 linhas da agência real e da auditoria do módulo',
+  public.is_admin() and not public.is_platform_admin()
+  and (select count(*) from public.agencies) = 0
+  and (select count(*) from public.agency_members) = 0
+  and (select count(*) from public.agency_brands) = 0
+  and (select count(*) from public.brand_members) = 0
+  and (select count(*) from public.documents) = 0
+  and (select count(*) from public.invitations where agency_id is not null or brand_id is not null) = 0
+  and (select count(*) from public.admin_audit where coalesce(after_data ->> 'agency_id', before_data ->> 'agency_id') is not null) = 0
+  and (select count(*) from public.brands where slug in ('s74-marca-x', 's74-marca-y')) = 0
+  and (select count(*) from public.brands where slug = 'nike') = 1
+  and not public.agency_can(public.seed_uuid('s74:agency:a'), 'staff'));
+select tests.expect_error('S74 conta demo não salva agência',
+  $q$select public.admin_agency_save(null, '{"slug": "s74-x", "name": "X"}')$q$, 'forbidden');
+select tests.su();
+insert into public.invitations (email, role, agency_id, member_role, token_hash, expires_at) values
+  ('s74-demo-admin@test.local', 'agency', public.seed_uuid('s74:agency:a'), 'staff', encode(extensions.digest('s74-tok-demo', 'sha256'), 'hex'), now() + interval '1 day');
+select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
+select tests.expect_error('S74 conta demo não aceita convite de agência real',
+  $q$select public.accept_invitation('s74-tok-demo')$q$, 'demo_account_forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000e3', 'demo-adm@test.local');
+select tests.expect_error('S74 agência demo: convite travado',
+  $q$select * from public.agency_invite_member(public.seed_uuid('s74:agency:d'), 'q@test.local', 'staff')$q$, 'demo_locked');
+select tests.expect_error('S74 agência demo: troca de papel travada',
+  $q$select public.agency_member_set_role(public.seed_uuid('s74:agency:d'), auth.uid(), 'staff', 'teste de trava')$q$, 'demo_locked');
+select tests.expect_error('S74 agência demo: remoção travada',
+  $q$select public.agency_member_remove(public.seed_uuid('s74:agency:d'), auth.uid(), 'teste de trava')$q$, 'demo_locked');
+select tests.expect_error('S74 agência demo: não vincula marca existente',
+  $q$select public.agency_brand_link(public.seed_uuid('s74:agency:d'), (select id from public.brands where slug = 'puma'), true)$q$, 'demo_locked');
+insert into t_s74 values ('brand_demo', public.agency_brand_create(public.seed_uuid('s74:agency:d'),
+  '{"name": "Marca Fictícia", "slug": "ficticia", "site_url": "https://example.com/f"}')::text);
+select tests.ok('S74 agência demo cria marca só com slug exemplo-*',
+  (select slug from public.brands where id = (select v::uuid from t_s74 where k = 'brand_demo')) = 'exemplo-ficticia'
+  and (select is_demo from public.agency_brands where brand_id = (select v::uuid from t_s74 where k = 'brand_demo')));
+select tests.expect_error('S74 agência demo: convite para a marca travado',
+  $q$select * from public.agency_invite_brand_member(public.seed_uuid('s74:agency:d'), (select v::uuid from t_s74 where k = 'brand_demo'), 'q@test.local', 'owner')$q$, 'demo_locked');
+do $$ begin for i in 2..10 loop
+  perform public.agency_brand_create(public.seed_uuid('s74:agency:d'), jsonb_build_object('name', 'Ficticia ' || i, 'slug', 'ficticia-' || i, 'site_url', 'https://example.com/f'));
+end loop; end $$;
+select tests.expect_error('S74 agência demo: no máximo 10 marcas',
+  $q$select public.agency_brand_create(public.seed_uuid('s74:agency:d'), '{"name": "Ficticia 11", "slug": "ficticia-11", "site_url": "https://example.com/f"}')$q$, 'demo_limit');
+
+-- 8) admin_brand_delete com as travas do módulo ------------------------------------------
+select tests.su();
+insert into public.brands (id, slug, name, site_url, status) values
+  (public.seed_uuid('s74:brand:membro'), 's74-membro', 'Com membro', 'https://example.com/m', 'inactive'),
+  (public.seed_uuid('s74:brand:doc'), 's74-doc', 'Com documento', 'https://example.com/d', 'inactive'),
+  (public.seed_uuid('s74:brand:livre'), 's74-livre', 'Livre', 'https://example.com/l', 'active'),
+  (public.seed_uuid('s74:brand:demo'), 's74-demo', 'Demo', 'https://example.com/e', 'active');
+update public.brands set is_demo = true where id = public.seed_uuid('s74:brand:demo');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  (public.seed_uuid('s74:brand:membro'), '74000000-0000-4000-8000-0000000000a4', 'owner', 'Fulano');
+insert into public.documents (id, agency_id, scope_type, brand_id, kind, title, storage_path, mime_type, size_bytes, status, uploader_side)
+values (public.seed_uuid('s74:doc:brand'), public.seed_uuid('s74:agency:b'), 'brand', public.seed_uuid('s74:brand:doc'), 'other', 'Doc',
+        public.seed_uuid('s74:agency:b')::text || '/brand/' || public.seed_uuid('s74:brand:doc')::text || '/' || public.seed_uuid('s74:doc:brand')::text || '.pdf',
+        'application/pdf', 10, 'ready', 'agency');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S74 admin não apaga marca vinculada a agência',
+  $q$select public.admin_brand_delete((select v::uuid from t_s74 where k = 'brand_x'))$q$, 'brand_linked_to_agency');
+select tests.expect_error('S74 admin não apaga marca com membros',
+  $q$select public.admin_brand_delete(public.seed_uuid('s74:brand:membro'))$q$, 'brand_has_members');
+select tests.expect_error('S74 admin não apaga marca com documentos',
+  $q$select public.admin_brand_delete(public.seed_uuid('s74:brand:doc'))$q$, 'brand_has_documents');
+select public.admin_brand_delete(public.seed_uuid('s74:brand:livre'));
+select tests.ok('S74 marca sem vínculo, membros nem documentos continua sendo apagada',
+  not exists (select 1 from public.brands where id = public.seed_uuid('s74:brand:livre')));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S74 marca de exemplo (is_demo) não entra em agência',
+  $q$select public.agency_brand_link(public.seed_uuid('s74:agency:a'), public.seed_uuid('s74:brand:demo'), true)$q$, 'demo_brand');
+
+-- 9) avisos ------------------------------------------------------------------------------
+select tests.ok('S74 inbox_notify e companhia não são executáveis pelo usuário',
+  not has_function_privilege('authenticated', 'public.inbox_notify(uuid, text, text, jsonb, uuid, text, uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.inbox_notify_agency(uuid, text, text, text, jsonb, text, uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.inbox_notify_brand(uuid, boolean, text, text, jsonb, uuid, text, uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.agency_demo_seed(uuid, jsonb, uuid)', 'execute')
+  and not has_table_privilege('authenticated', 'public.inbox_notifications', 'update'));
+select tests.su();
+insert into t_s74 select 'a2_inbox', array_agg(id)::text from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2';
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.ok('S74 cada um lê só os próprios avisos; marcar lidas com ids de outra pessoa não muda nada',
+  (select count(*) from public.inbox_notifications where user_id <> auth.uid()) = 0
+  and public.inbox_mark_read((select v::uuid[] from t_s74 where k = 'a2_inbox')) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+insert into t_s74 values ('read_a1', public.inbox_mark_read(null)::text);
+select tests.ok('S74 Adm marca os próprios avisos como lidos',
+  (select v::int from t_s74 where k = 'read_a1') >= 1 and (select count(*) from public.inbox_notifications where read_at is null) = 0);
+select tests.su();
+select tests.ok('S74 marcar lidas como outro usuário não mudou os avisos do gestor',
+  exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and read_at is null));
+select tests.expect_error('S74 aviso nunca carrega valor (check)',
+  $q$insert into public.inbox_notifications (user_id, kind, params, link) values ('74000000-0000-4000-8000-0000000000a1', 'member_joined', '{"amount_cents": 100}', '/agencia')$q$, 'inbox_notifications_params_check');
+
+-- 10) documentos -----------------------------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S74 gestor não reserva contrato',
+  $q$select public.document_reserve(public.seed_uuid('s74:agency:a'), 'agency', public.seed_uuid('s74:agency:a'), '{"kind": "contract", "title": "Contrato", "mime_type": "application/pdf", "size_bytes": 100}')$q$, 'forbidden');
+insert into t_s74 values ('doc_ges', public.document_reserve(public.seed_uuid('s74:agency:a'), 'agency', public.seed_uuid('s74:agency:a'),
+  '{"kind": "other", "title": "Apresentação", "mime_type": "application/pdf", "size_bytes": 100}')::text);
+select tests.ok('S74 quem reservou lê a própria reserva pending',
+  (select count(*) from public.documents where id = ((select v::jsonb from t_s74 where k = 'doc_ges') ->> 'id')::uuid) = 1);
+select tests.expect_error('S74 confirmar sem o arquivo no Storage',
+  $q$select public.document_confirm(((select v::jsonb from t_s74 where k = 'doc_ges') ->> 'id')::uuid)$q$, 'file_missing');
+insert into storage.objects (bucket_id, name, owner_id, metadata)
+values ('agency-docs', (select v::jsonb from t_s74 where k = 'doc_ges') ->> 'path', auth.uid()::text, '{"mimetype":"application/pdf","size":100}');
+select public.document_confirm(((select v::jsonb from t_s74 where k = 'doc_ges') ->> 'id')::uuid);
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S74 colaborador não reserva documento da agência',
+  $q$select public.document_reserve(public.seed_uuid('s74:agency:a'), 'agency', public.seed_uuid('s74:agency:a'), '{"kind": "other", "title": "X", "mime_type": "application/pdf", "size_bytes": 100}')$q$, 'forbidden');
+select tests.expect_error('S74 envio ao Storage só com reserva própria pending',
+  $q$insert into storage.objects (bucket_id, name, owner_id, metadata) values ('agency-docs', public.seed_uuid('s74:agency:a')::text || '/agency/' || public.seed_uuid('s74:agency:a')::text || '/' || gen_random_uuid()::text || '.pdf', auth.uid()::text, '{}')$q$, '42501');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+insert into t_s74 values ('doc_contract', public.document_reserve(public.seed_uuid('s74:agency:a'), 'brand', (select v::uuid from t_s74 where k = 'brand_x'),
+  '{"kind": "contract", "title": "Contrato marca X", "mime_type": "application/pdf", "size_bytes": 2000}')::text);
+insert into storage.objects (bucket_id, name, owner_id, metadata)
+values ('agency-docs', (select v::jsonb from t_s74 where k = 'doc_contract') ->> 'path', auth.uid()::text, '{"mimetype":"application/pdf","size":2000}');
+select public.document_confirm(((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid);
+select tests.ok('S74 contrato nasce restrito e o Adm o lê',
+  (select restricted and status = 'ready' from public.documents where id = ((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid));
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.ok('S74 colaborador lê o documento comum da agência e não o contrato restrito',
+  (select count(*) from public.documents where id = ((select v::jsonb from t_s74 where k = 'doc_ges') ->> 'id')::uuid) = 1
+  and (select count(*) from public.documents where id = ((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid) = 0
+  and (select count(*) from storage.objects where name = (select v::jsonb from t_s74 where k = 'doc_contract') ->> 'path') = 0);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.ok('S74 gestor não lê o contrato (restrito)',
+  (select count(*) from public.documents where id = ((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid) = 0);
+select tests.expect_error('S74 gestor não compartilha contrato',
+  $q$select public.document_set_sharing(((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid, true, false)$q$, 'not_found');
+select tests.login('74000000-0000-4000-8000-0000000000c1', 'marca-x-dono@test.local');
+select tests.ok('S74 marca não vê contrato que não foi compartilhado',
+  (select count(*) from public.documents) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.document_set_sharing(((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid, true, true);
+select tests.ok('S74 contrato da marca vai só para a marca (nunca para o talento)',
+  (select share_brand and not share_talent from public.documents where id = ((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid));
+select tests.login('74000000-0000-4000-8000-0000000000c1', 'marca-x-dono@test.local');
+insert into t_s74 values ('doc_brand', public.document_reserve(public.seed_uuid('s74:agency:a'), 'brand', (select v::uuid from t_s74 where k = 'brand_x'),
+  '{"kind": "media", "title": "Logo", "mime_type": "image/png", "size_bytes": 500}')::text);
+insert into storage.objects (bucket_id, name, owner_id, metadata)
+values ('agency-docs', (select v::jsonb from t_s74 where k = 'doc_brand') ->> 'path', auth.uid()::text, '{"mimetype":"image/png","size":500}');
+select public.document_confirm(((select v::jsonb from t_s74 where k = 'doc_brand') ->> 'id')::uuid);
+select tests.ok('S74 dono da X lê o contrato compartilhado e o próprio envio',
+  (select count(*) from public.documents where brand_id = (select v::uuid from t_s74 where k = 'brand_x')) = 2);
+select tests.expect_error('S74 marca não reserva contrato',
+  $q$select public.document_reserve(public.seed_uuid('s74:agency:a'), 'brand', (select v::uuid from t_s74 where k = 'brand_x'), '{"kind": "contract", "title": "C", "mime_type": "application/pdf", "size_bytes": 1}')$q$, 'forbidden');
+select tests.expect_error('S74 marca não reserva para a marca Y',
+  $q$select public.document_reserve(public.seed_uuid('s74:agency:a'), 'brand', (select v::uuid from t_s74 where k = 'brand_y'), '{"kind": "media", "title": "C", "mime_type": "image/png", "size_bytes": 1}')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.local');
+select tests.ok('S74 dono da Y não lê documentos da X',
+  (select count(*) from public.documents) = 0);
+select tests.su();
+select tests.expect_error('S74 check: contrato de talento nunca vai à marca',
+  $q$insert into public.documents (id, agency_id, scope_type, talent_id, kind, title, storage_path, mime_type, size_bytes, restricted, share_brand, uploader_side)
+     values ('74000000-0000-4000-8000-0000000000f1', public.seed_uuid('s74:agency:a'), 'talent', '74000000-0000-4000-8000-0000000000f9', 'contract', 'C',
+       public.seed_uuid('s74:agency:a')::text || '/talent/74000000-0000-4000-8000-0000000000f9/74000000-0000-4000-8000-0000000000f1.pdf', 'application/pdf', 1, true, true, 'agency')$q$, 'documents_contract_share');
+select tests.expect_error('S74 check: contrato da marca nunca vai ao talento',
+  $q$update public.documents set share_talent = true where id = ((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid$q$, 'documents_contract_share');
+select tests.expect_error('S74 check: escopo talento não leva marca',
+  $q$insert into public.documents (id, agency_id, scope_type, talent_id, brand_id, kind, title, storage_path, mime_type, size_bytes, uploader_side)
+     values ('74000000-0000-4000-8000-0000000000f2', public.seed_uuid('s74:agency:a'), 'talent', '74000000-0000-4000-8000-0000000000f9', (select v::uuid from t_s74 where k = 'brand_x'), 'other', 'C',
+       public.seed_uuid('s74:agency:a')::text || '/talent/74000000-0000-4000-8000-0000000000f9/74000000-0000-4000-8000-0000000000f2.pdf', 'application/pdf', 1, 'agency')$q$, 'documents_scope_shape');
+select tests.expect_error('S74 check: contrato sempre restrito',
+  $q$update public.documents set restricted = false where id = ((select v::jsonb from t_s74 where k = 'doc_contract') ->> 'id')::uuid$q$, 'documents_contract_restricted');
+
+-- 11) push do escritório (opt-in) ---------------------------------------------------------
+insert into public.notification_preferences (user_id, channel_push, office_updates) values
+  ('74000000-0000-4000-8000-0000000000a4', true, true),
+  ('74000000-0000-4000-8000-0000000000a3', true, false)
+on conflict (user_id) do update set channel_push = excluded.channel_push, office_updates = excluded.office_updates;
+insert into public.push_tokens (token, user_id, platform) values ('ExponentPushToken[s74aaaaaaaaaaaa]', '74000000-0000-4000-8000-0000000000a4', 'ios');
+select public.inbox_notify('74000000-0000-4000-8000-0000000000a4', 'task_assigned', '/creator/escritorio/tarefas');
+select public.inbox_notify('74000000-0000-4000-8000-0000000000a4', 'task_assigned', '/agencia/tarefas');
+select public.inbox_notify('74000000-0000-4000-8000-0000000000a4', 'member_joined', '/creator/escritorio');
+select tests.ok('S74 push_allowed(office) segue office_updates; só aviso do escritório com tipo que empurra vira push',
+  public.push_allowed('74000000-0000-4000-8000-0000000000a4', 'office')
+  and not public.push_allowed('74000000-0000-4000-8000-0000000000a3', 'office')
+  and (select count(*) from public.push_outbox where user_id = '74000000-0000-4000-8000-0000000000a4' and kind = 'office') = 1);
+
+-- 12) funções e S14 ------------------------------------------------------------------------
+select tests.ok('S74 funções novas com search_path fixo e nenhuma executável pelo visitante',
+  not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+              and p.proname in ('is_demo_account', 'is_platform_admin', 'agency_role_rank', 'agency_role_of', 'agency_can', 'agency_is_demo',
+                                'is_agency_admin', 'my_agency_ids', 'brand_member_of', 'my_brand_ids', 'my_agency_brand_ids', 'my_brand_agency_ids',
+                                'brand_active_agency', 'inbox_kind_pushes', 'inbox_notify', 'inbox_notify_agency', 'inbox_notify_brand', 'inbox_mark_read',
+                                'agency_email_ok', 'agency_invite_member', 'agency_member_set_role', 'agency_member_remove', 'agency_member_update_self',
+                                'agency_settings_save', 'agency_brand_create', 'agency_brand_link', 'agency_invite_brand_member', 'brand_invite_member',
+                                'brand_member_remove', 'agency_invitation_revoke', 'document_reserve', 'document_confirm', 'document_archive',
+                                'document_set_sharing', 'agency_seed_defaults', 'admin_agency_save', 'agency_demo_seed')
+              and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute'))));
+select tests.ok('S74 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+
+-- ================================================================ S80 · Estrutura do módulo de gestão
+-- Cresce a cada etapa (0064..0069). Tabelas novas: PK só "id", RLS ligada, sem escrita direta e sem
+-- leitura anônima; nenhuma coluna de valor em tabela operacional; políticas sem função por linha;
+-- _select_admin com is_platform_admin; sem FK nos dois sentidos entre tabelas novas.
+select tests.su();
+create temp table t_s80 (t text primary key);
+insert into t_s80 values ('agencies'), ('agency_members'), ('agency_brands'), ('brand_members'), ('inbox_notifications'), ('documents');
+grant all on t_s80 to anon, authenticated, service_role;
+select tests.ok('S80 tabelas novas: PK só id, RLS ligada, sem escrita para authenticated/anon, sem select para anon',
+  (select bool_and((select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
+                    where pk.contype = 'p' and pk.conrelid = ('public.' || t)::regclass) = array['id']
+                   and (select relrowsecurity from pg_class where oid = ('public.' || t)::regclass)
+                   and not has_table_privilege('authenticated', 'public.' || t, 'insert')
+                   and not has_table_privilege('authenticated', 'public.' || t, 'update')
+                   and not has_table_privilege('authenticated', 'public.' || t, 'delete')
+                   and not has_table_privilege('anon', 'public.' || t, 'select')
+                   and not has_table_privilege('anon', 'public.' || t, 'insert'))
+   from t_s80));
+select tests.ok('S80 nenhuma coluna de valor em tabela operacional',
+  not exists (select 1 from information_schema.columns c
+              where c.table_schema = 'public' and c.table_name in (select t from t_s80)
+                and c.column_name ~ '(_cents$|amount|fee|price|budget|commission)'));
+select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_platform_admin() por linha',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80)
+     and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0
+  and (select count(*) from pg_policies where schemaname = 'public' and policyname in ('brands_select_member', 'brands_select_agency', 'brands_hide_agency_from_demo',
+         'invitations_select_agency_admin', 'invitations_select_agency_manager', 'invitations_select_brand_owner', 'invitations_hide_from_demo', 'admin_audit_hide_agency_from_demo')
+     and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0);
+select tests.ok('S80 _select_admin das tabelas novas usa is_platform_admin (nunca is_admin)',
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 5
+  and not exists (select 1 from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin'
+                  and qual !~ 'is_platform_admin'));
+select tests.ok('S80 nenhum par de tabelas novas com FK nos dois sentidos',
+  not exists (select 1 from pg_constraint f1 join pg_constraint f2 on f1.conrelid = f2.confrelid and f1.confrelid = f2.conrelid
+              where f1.contype = 'f' and f2.contype = 'f' and f1.conrelid <> f1.confrelid
+                and f1.conrelid in (select ('public.' || t)::regclass from t_s80) and f1.confrelid in (select ('public.' || t)::regclass from t_s80)));
+select tests.ok('S80 políticas não comparam o enum novo sem ::text',
+  not exists (select 1 from pg_policies where schemaname = 'public'
+              and (coalesce(qual, '') || coalesce(with_check, '')) ~ '''(agency|brand)''::app_role'));
+drop table t_s80;
+drop table t_s74;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
