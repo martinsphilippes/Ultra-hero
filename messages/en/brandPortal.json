@@ -7,7 +7,8 @@
     "creator": "Creator",
     "campaigns": "Campaigns",
     "newCampaign": "New proposal",
-    "campaign": "Campaign"
+    "campaign": "Campaign",
+    "agenda": "Calendar"
   },
   "dashboard": {
     "eyebrow": "Brand portal",
@@ -203,5 +204,15 @@
       "note": "Reason",
       "noteRequired": "Write the reason (at least 5 characters)."
     }
+  },
+  "agenda": {
+    "title": "Calendar",
+    "description": "Confirmed campaigns, publications and meetings scheduled by {agency}, plus the commercial dates it publishes.",
+    "descriptionNoAgency": "Your brand is not linked to an agency yet.",
+    "unavailable": "Calendar being updated",
+    "unavailableHint": "The calendar appears as soon as the database is updated.",
+    "empty": "Nothing this month.",
+    "emptyHint": "When a campaign is confirmed, it shows up here with its publication dates.",
+    "note": "Internal production deadlines and the creators' calendars do not show: only what matters to the brand."
   }
 }

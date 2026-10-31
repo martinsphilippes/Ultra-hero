@@ -122,5 +122,41 @@
     "budget": "Value offered by the brand",
     "budgetNotInformed": "not informed",
     "notes": "Brand notes"
+  },
+  "eventKinds": {
+    "campaign": "Campaign",
+    "deliverable": "Deliverable",
+    "consult_deadline": "Reply deadline",
+    "meeting": "Meeting",
+    "recording": "Recording",
+    "commercial_date": "Commercial date",
+    "other": "Other"
+  },
+  "agenda": {
+    "allDay": "all day",
+    "system": "automatic",
+    "manual": "manual",
+    "visibleBrand": "brand sees",
+    "visibleTalent": "creator sees",
+    "until": "until {date}",
+    "monthNav": "Month",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month"
+  },
+  "feed": {
+    "title": "Subscribe in your calendar",
+    "hint": "A private iCalendar link: Google Calendar, Apple Calendar and Outlook refresh it on their own. Only your commitments, no values.",
+    "showOnce": "Copy it now: the link is shown only once. Generating again invalidates the previous one.",
+    "download": "Download .ics file",
+    "active": "Link active since {date}.",
+    "lastFetched": "last read {date} ({count}×)",
+    "inactive": "No link generated.",
+    "create": "Generate link",
+    "rotate": "Generate new link",
+    "revoke": "Turn off link",
+    "created": "Link generated.",
+    "revoked": "Link turned off.",
+    "confirmRotate": "Generate a new link? The previous one stops working.",
+    "confirmRevoke": "Turn off the link? Subscribed calendars stop updating."
   }
 }

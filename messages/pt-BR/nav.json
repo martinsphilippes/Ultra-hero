@@ -89,13 +89,15 @@
     "settings": "Configurações",
     "team": "Equipe",
     "casting": "Casting",
-    "pipeline": "Pipeline"
+    "pipeline": "Pipeline",
+    "agenda": "Agenda"
   },
   "brand": {
     "dashboard": "Início",
     "team": "Equipe",
     "notifications": "Avisos",
     "campaigns": "Campanhas",
-    "catalog": "Creators"
+    "catalog": "Creators",
+    "agenda": "Agenda"
   }
 }

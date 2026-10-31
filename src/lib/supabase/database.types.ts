@@ -7142,11 +7142,182 @@ export type Database = {
           },
         ];
       };
+      calendar_events: {
+        Row: {
+          agency_id: string;
+          all_day: boolean;
+          brand_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string | null;
+          deal_talent_id: string | null;
+          deliverable_id: string | null;
+          description: string;
+          ends_at: string;
+          id: string;
+          kind: string;
+          location: string;
+          source: string;
+          source_key: string | null;
+          starts_at: string;
+          subtitle: string;
+          talent_id: string | null;
+          title: string;
+          updated_at: string;
+          visible_to_brand: boolean;
+          visible_to_talent: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          all_day?: boolean;
+          brand_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          deal_talent_id?: string | null;
+          deliverable_id?: string | null;
+          description?: string;
+          ends_at: string;
+          id?: string;
+          kind: string;
+          location?: string;
+          source?: string;
+          source_key?: string | null;
+          starts_at: string;
+          subtitle?: string;
+          talent_id?: string | null;
+          title: string;
+          updated_at?: string;
+          visible_to_brand?: boolean;
+          visible_to_talent?: boolean;
+        };
+        Update: {
+          agency_id?: string;
+          all_day?: boolean;
+          brand_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          deal_talent_id?: string | null;
+          deliverable_id?: string | null;
+          description?: string;
+          ends_at?: string;
+          id?: string;
+          kind?: string;
+          location?: string;
+          source?: string;
+          source_key?: string | null;
+          starts_at?: string;
+          subtitle?: string;
+          talent_id?: string | null;
+          title?: string;
+          updated_at?: string;
+          visible_to_brand?: boolean;
+          visible_to_talent?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_events_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_events_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_events_deal_talent_fk";
+            columns: ["deal_talent_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_talents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_events_deliverable_fk";
+            columns: ["deliverable_id"];
+            isOneToOne: false;
+            referencedRelation: "deliverables";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "calendar_events_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      calendar_feeds: {
+        Row: {
+          created_at: string;
+          fetch_count: number;
+          id: string;
+          last_fetched_at: string | null;
+          revoked_at: string | null;
+          rotated_at: string;
+          token_hash: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          fetch_count?: number;
+          id?: string;
+          last_fetched_at?: string | null;
+          revoked_at?: string | null;
+          rotated_at?: string;
+          token_hash: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          fetch_count?: number;
+          id?: string;
+          last_fetched_at?: string | null;
+          revoked_at?: string | null;
+          rotated_at?: string;
+          token_hash?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      agency_demo_seed_calendar: {
+        Args: { p_actor: string; p_agency: string };
+        Returns: undefined;
+      };
+      calendar_feed_resolve: { Args: { p_token: string }; Returns: Json };
+      calendar_feed_revoke: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+      calendar_feed_create: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
+      agency_event_delete: { Args: { p_id: string }; Returns: undefined };
+      agency_event_save: {
+        Args: { p_agency: string; p_data: Json; p_id: string | null };
+        Returns: string;
+      };
       my_brand_deal_ids: {
         Args: Record<PropertyKey, never>;
         Returns: string[];

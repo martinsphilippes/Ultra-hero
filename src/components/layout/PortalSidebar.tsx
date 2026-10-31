@@ -35,6 +35,7 @@ import {
   Truck,
   Users,
   KanbanSquare,
+  CalendarDays,
   Megaphone,
   Search,
   type LucideIcon,
@@ -87,6 +88,7 @@ const ICONS: Record<string, LucideIcon> = {
   pipeline: KanbanSquare,
   campaigns: Megaphone,
   catalog: Search,
+  agenda: CalendarDays,
 };
 
 function isActive(pathname: string, href: string, root: string) {

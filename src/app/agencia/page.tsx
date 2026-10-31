@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BriefcaseBusiness, CalendarDays, ClipboardList, Contact, Plus, UserPlus, Wallet } from "lucide-react";
+import { BriefcaseBusiness, ClipboardList, Contact, Plus, UserPlus, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
@@ -11,6 +11,7 @@ import { agencyDashboard } from "@/lib/agency/queries";
 import { castingCounts } from "@/lib/talent/queries";
 import { agencyCan, canSeeValues } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
+import { upcomingCount } from "@/lib/calendar/queries";
 import { dealCounts } from "@/lib/deals/queries";
 
 export const dynamic = "force-dynamic";
@@ -27,11 +28,10 @@ export default async function AgencyDashboardPage() {
   if (ctx.state !== "ok") return null;
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
-  const [t, data, casting, deals] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id), dealCounts(ctx.agency.id)]);
+  const [t, data, casting, deals, upcoming] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id), dealCounts(ctx.agency.id), upcomingCount(14, { agencyId: ctx.agency.id })]);
 
-  const upcoming = [
+  const upcomingModules = [
     { key: "tasks", icon: ClipboardList },
-    { key: "agenda", icon: CalendarDays },
     ...(canSeeValues(ctx.role, ctx.platformAdmin) ? [{ key: "finance", icon: Wallet }] : []),
   ] as const;
 
@@ -50,6 +50,7 @@ export default async function AgencyDashboardPage() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="agency-kpis">
         {deals ? <KpiCard label={t("kpi.deals")} value={deals.open} hint={t("kpi.dealsHint", { agency: deals.awaitingAgency, creator: deals.awaitingCreator })} tone={deals.awaitingAgency > 0 ? "danger" : "default"} /> : null}
         {deals ? <KpiCard label={t("kpi.confirmed")} value={deals.confirmed} /> : null}
+        {upcoming !== null ? <KpiCard label={t("kpi.upcoming")} value={upcoming} hint={t("kpi.upcomingHint")} /> : null}
         {casting ? <KpiCard label={t("kpi.casting")} value={casting.total} hint={t("kpi.castingActive", { count: casting.active })} /> : null}
         <KpiCard label={t("kpi.team")} value={data.members} />
         <KpiCard label={t("kpi.brands")} value={data.brands} />
@@ -97,7 +98,7 @@ export default async function AgencyDashboardPage() {
           <p className="type-body-sm text-fg-muted">{t("upcomingHint")}</p>
         </div>
         <ul className="grid gap-2 sm:grid-cols-2">
-          {upcoming.map(({ key, icon: Icon }) => (
+          {upcomingModules.map(({ key, icon: Icon }) => (
             <li key={key} className="flex items-start gap-3 rounded-xl border border-border bg-bg p-3">
               <Icon className="mt-0.5 size-5 shrink-0 text-accent-text" aria-hidden="true" />
               <span className="flex flex-col gap-0.5">

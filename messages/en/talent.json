@@ -6,7 +6,8 @@
     "kit": "Media kit",
     "opportunities": "Opportunities",
     "opportunity": "Opportunity",
-    "availability": "Availability"
+    "availability": "Availability",
+    "agenda": "Calendar"
   },
   "tabs": {
     "label": "Office sections",
@@ -15,7 +16,8 @@
     "consent": "Consent",
     "notifications": "Notices",
     "opportunities": "Opportunities",
-    "availability": "Availability"
+    "availability": "Availability",
+    "agenda": "Calendar"
   },
   "home": {
     "unavailable": "Office being updated",
@@ -167,5 +169,11 @@
     "invalidRange": "Check the dates: the end cannot be before the start.",
     "confirmDelete": "Remove this period?",
     "periodsTitle": "Declared periods"
+  },
+  "agenda": {
+    "unavailable": "Calendar being updated",
+    "intro": "Confirmed campaigns, reply deadlines, deliverables and recordings. Your personal calendar stays out.",
+    "empty": "Nothing this month.",
+    "emptyHint": "When the agency confirms a campaign with you, it shows up here."
   }
 }

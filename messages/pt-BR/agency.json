@@ -20,7 +20,8 @@
     "dealDeliverables": "Entregas do negócio",
     "dealMessages": "Conversa do negócio",
     "dealDocuments": "Documentos do negócio",
-    "talentAvailability": "Disponibilidade do talento"
+    "talentAvailability": "Disponibilidade do talento",
+    "agenda": "Agenda"
   },
   "demoBanner": {
     "tag": "Demonstração",
@@ -65,7 +66,9 @@
       "castingActive": "{count} ativos",
       "deals": "Negócios abertos",
       "dealsHint": "{agency} com a agência · {creator} com creators",
-      "confirmed": "Campanhas confirmadas"
+      "confirmed": "Campanhas confirmadas",
+      "upcoming": "Compromissos em 14 dias",
+      "upcomingHint": "campanhas, entregas, reuniões"
     },
     "quickTitle": "Atalhos",
     "newBrand": "Nova marca",
@@ -531,7 +534,8 @@
       "data": "Dados do negócio",
       "activities": "Histórico e contatos",
       "stage": "Etapa",
-      "team": "Equipe do negócio"
+      "team": "Equipe do negócio",
+      "events": "Agenda do negócio"
     },
     "noActivities": "Nenhum registro ainda.",
     "noNote": "sem nota",
@@ -677,6 +681,60 @@
       "brandChannel": "Marca: {brand}",
       "noLoginHint": "Este talento não tem login: o que for escrito aqui fica registrado, mas ele não recebe.",
       "brandNotVisibleHint": "Negócio aberto pela agência: a marca só vê (e responde) depois da confirmação."
+    },
+    "noEvents": "Nenhum compromisso futuro. A confirmação cria a campanha na agenda; as entregas entram pelas datas."
+  },
+  "agenda": {
+    "title": "Agenda",
+    "description": "Campanhas confirmadas, prazos, entregas e os compromissos da equipe. A marca e o creator veem só o que você marcar.",
+    "unavailable": "Agenda em atualização",
+    "unavailableHint": "A agenda aparece assim que o banco for atualizado.",
+    "filters": {
+      "talent": "Creator",
+      "brand": "Marca",
+      "kind": "Tipo",
+      "all": "Todos",
+      "apply": "Filtrar",
+      "clear": "Limpar"
+    },
+    "empty": "Nada neste mês.",
+    "emptyHint": "Confirme uma campanha ou marque uma reunião.",
+    "emptyFiltered": "Nada com estes filtros.",
+    "saved": "Compromisso salvo.",
+    "published": "Data comercial publicada: as marcas atendidas foram avisadas.",
+    "deleted": "Compromisso removido.",
+    "confirmDelete": "Remover “{title}”?",
+    "deleteLabel": "Remover {title}",
+    "delete": "Remover",
+    "form": {
+      "new": "Novo compromisso",
+      "title": "Novo compromisso",
+      "hint": "Reunião, gravação ou outro: escolha quem vê. Data comercial: a agência publica uma oportunidade para as marcas.",
+      "kind": "Tipo",
+      "eventTitle": "Título",
+      "date": "Data",
+      "endDate": "Data final",
+      "startTime": "Início",
+      "endTime": "Fim",
+      "allDay": "Dia inteiro",
+      "deal": "Negócio",
+      "dealRequiredHint": "Colaborador: só em negócios seus.",
+      "talent": "Creator",
+      "talentHint": "Para a gravação ou reunião com um creator.",
+      "brand": "Marca",
+      "brandHint": "Vazio: todas as marcas atendidas.",
+      "allBrands": "Todas as marcas atendidas",
+      "location": "Local",
+      "description": "Descrição",
+      "descriptionHint": "Quem vê o evento lê este texto. Sem valores.",
+      "visibleToBrand": "A marca vê (precisa de negócio)",
+      "visibleToTalent": "O creator vê (precisa de creator)",
+      "commercialNote": "A data comercial aparece na agenda das marcas e gera aviso no sino delas.",
+      "back": "Voltar",
+      "save": "Salvar",
+      "publish": "Publicar",
+      "titleRequired": "Dê um título.",
+      "dealRequired": "Escolha um negócio seu."
     }
   }
 }

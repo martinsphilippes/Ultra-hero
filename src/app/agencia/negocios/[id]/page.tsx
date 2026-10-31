@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
+import { EventForm } from "@/components/calendar/EventForm";
+import { EventList } from "@/components/calendar/EventList";
 import { ActivityForm, ConfirmCard, DealForm, MoveForm, TeamPicker } from "@/components/deals/DealForms";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { listTeam } from "@/lib/agency/queries";
+import { listDealEvents } from "@/lib/calendar/queries";
 import { getRequest, getRequestBudget, listActivities, listDealTalents } from "@/lib/deals/queries";
 import { loadDeal } from "./_lib";
 
@@ -22,7 +25,7 @@ type Props = { params: Promise<{ id: string }> };
 export default async function DealOverviewPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, isOwner, canEdit, isManager, isAdmin } = await loadDeal(id);
-  const [t, tc, locale, team, request, budget, activities, talents] = await Promise.all([
+  const [t, tc, locale, team, request, budget, activities, talents, events] = await Promise.all([
     getTranslations("agency.deal"),
     getTranslations("commercial"),
     getLocale() as Promise<Locale>,
@@ -31,6 +34,7 @@ export default async function DealOverviewPage({ params }: Props) {
     deal.requestId && isAdmin ? getRequestBudget(deal.requestId) : Promise.resolve(null),
     listActivities(deal.id),
     listDealTalents(deal.id),
+    listDealEvents(deal.id),
   ]);
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
   const ready = talents.filter((x) => ["interested", "proposed"].includes(x.status));
@@ -91,6 +95,15 @@ export default async function DealOverviewPage({ params }: Props) {
             <MoveForm dealId={deal.id} stage={deal.stage} role={ctx.platformAdmin ? "admin" : ctx.role} isOwner={isOwner} canClose={isManager} />
           </section>
         ) : null}
+        <section className={card} aria-labelledby="deal-events">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="deal-events" className="text-base font-semibold text-fg">
+              {t("sections.events")}
+            </h2>
+            {canEdit ? <EventForm fixedDealId={deal.id} talents={talents.filter((x) => !["declined", "removed"].includes(x.status)).map((x) => ({ id: x.talentId, name: x.talent.name }))} canPublishCommercialDate={false} /> : null}
+          </div>
+          <EventList events={events} timeZone={ctx.agency.timezone || "America/Sao_Paulo"} portal="agency" canDelete={canEdit} emptyTitle={t("noEvents")} />
+        </section>
         {isManager ? (
           <section className={card} aria-labelledby="deal-team">
             <h2 id="deal-team" className="text-base font-semibold text-fg">

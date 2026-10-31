@@ -62,6 +62,15 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Feed .ics da agenda (/api/agenda/<token>, 0067): mesmas regras do kit (fora dos buscadores, sem token no Referer)
+        source: "/api/agenda/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "Cache-Control", value: "private, no-store" },
+        ],
+      },
+      {
         // Media kit público (/kit/<token>, 0065): fora dos buscadores e sem o token no Referer, inclusive
         // na página de link indisponível (404) e sem guardar em cache compartilhado.
         source: "/kit/:path*",

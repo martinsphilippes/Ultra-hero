@@ -8796,6 +8796,213 @@ select tests.ok('S76 funções novas: search_path fixo, nenhuma para o visitante
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
 drop table t_s76;
 
+-- ================================================================ S77 · Gestão: agenda integrada e feed .ics (0067)
+-- Eventos de sistema nascem do negócio (confirmação, prazo de consulta, entregáveis) e cada lado vê só o seu;
+-- eventos manuais da agência com visibilidade escolhida; data comercial avisa as marcas; feed por token.
+\ir ../migrations/0067_gestao_agenda.sql
+select tests.su();
+create temp table t_s77 (k text primary key, v text);
+grant all on t_s77 to anon, authenticated, service_role;
+insert into auth.users (id, email, raw_app_meta_data) values
+  ('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local', '{}'),
+  ('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local', '{}');
+-- marca D atendida pela agência A; talento td1 com login e consentimento; proposta → consulta → confirmação
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+insert into t_s77 values ('brand_d', public.agency_brand_create(public.seed_uuid('s74:agency:a'), '{"name": "Marca D", "slug": "s77-marca-d", "site_url": "https://example.com/d"}')::text);
+select tests.su();
+insert into public.brand_members (brand_id, user_id, role, display_name) values ((select v::uuid from t_s77 where k = 'brand_d'), '77000000-0000-4000-8000-0000000000c1', 'owner', 'Dono da D');
+insert into public.role_assignments (user_id, role, scope_type, scope_id) values ('77000000-0000-4000-8000-0000000000c1', 'brand', 'brand', (select v::uuid from t_s77 where k = 'brand_d'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s77 values ('td1', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Creator D1", "state": "SP", "commercial_status": "active"}')::text);
+select tests.su();
+update public.talent_profiles set user_id = '77000000-0000-4000-8000-0000000000d1' where id = (select v::uuid from t_s77 where k = 'td1');
+insert into public.role_assignments (user_id, role, scope_type, scope_id) values ('77000000-0000-4000-8000-0000000000d1', 'creator', 'talent', (select v::uuid from t_s77 where k = 'td1'));
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select public.talent_set_consent(true, '2026-10');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_talent_set_catalog((select v::uuid from t_s77 where k = 'td1'), true);
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+insert into t_s77 values ('req', public.brand_request_save(null, (select v::uuid from t_s77 where k = 'brand_d'),
+  ('{"talent_id": "' || (select v from t_s77 where k = 'td1') || '", "title": "Campanha D", "objective": "launch", "period_start": "' || (current_date + 40) || '",
+     "period_end": "' || (current_date + 42) || '", "desired_time": "", "networks": ["instagram"], "deliverables": [{"kind": "reels", "quantity": 1}]}')::jsonb)::text);
+insert into t_s77 values ('deal', public.brand_request_submit((select v::uuid from t_s77 where k = 'req'))::text);
+select tests.su();
+insert into t_s77 select 'dt1', id::text from public.deal_talents where deal_id = (select v::uuid from t_s77 where k = 'deal');
+select tests.ok('S77 antes da consulta e da confirmação não há evento de sistema', (select count(*) from public.calendar_events where deal_id = (select v::uuid from t_s77 where k = 'deal')) = 0);
+
+-- 1) consulta cria o prazo (só o creator vê); resposta apaga ----------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_fee_set((select v::uuid from t_s77 where k = 'dt1'), 300000);
+select public.agency_consult_talents((select v::uuid from t_s77 where k = 'deal'), array[(select v::uuid from t_s77 where k = 'dt1')], now() + interval '5 days', null);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S77 creator vê o prazo de resposta na agenda', (select count(*) from public.calendar_events where kind = 'consult_deadline') = 1);
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S77 marca não vê o prazo de consulta', (select count(*) from public.calendar_events) = 0);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select public.talent_opportunity_respond((select v::uuid from t_s77 where k = 'dt1'), 'interested', null);
+select tests.ok('S77 resposta apaga o prazo da agenda', (select count(*) from public.calendar_events where kind = 'consult_deadline') = 0);
+
+-- 2) confirmação cria o evento da campanha (marca e creator) e avisa o creator ---------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_deliverables_save((select v::uuid from t_s77 where k = 'deal'), ('[{"deal_talent_id": "' || (select v from t_s77 where k = 'dt1') || '", "kind": "reels", "title": "Reels D",
+  "due_at": "' || (current_date + 45) || '", "publish_at": "' || (current_date + 47) || '"}]')::jsonb);
+select tests.ok('S77 entregável antes da confirmação não gera evento', (select count(*) from public.calendar_events where kind = 'deliverable') = 0);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_deal_confirm((select v::uuid from t_s77 where k = 'deal'));
+select tests.su();
+select tests.ok('S77 confirmação: 1 evento de campanha (dia inteiro, 3 dias) + 2 de entregável; aviso ao creator',
+  (select count(*) from public.calendar_events where deal_id = (select v::uuid from t_s77 where k = 'deal') and kind = 'campaign' and all_day and visible_to_brand and visible_to_talent) = 1
+  and (select count(*) from public.calendar_events where deal_id = (select v::uuid from t_s77 where k = 'deal') and kind = 'deliverable') = 2
+  and (select count(*) from public.calendar_events where source_key like 'deliverable:%:due' and not visible_to_brand and visible_to_talent) = 1
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'calendar_event_added'));
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S77 marca vê a campanha e a publicação, não o prazo interno de entrega',
+  (select count(*) from public.calendar_events) = 2 and (select count(*) from public.calendar_events where source_key like '%:due') = 0);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S77 creator vê campanha, prazo e publicação; nada de valor no evento',
+  (select count(*) from public.calendar_events) = 3 and (select string_agg(title || description || subtitle, ' ') from public.calendar_events) !~ '(R\$|cents|cachê)');
+-- mudar a data do negócio move o evento; cancelar o negócio limpa
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_deal_update((select v::uuid from t_s77 where k = 'deal'), ('{"expected_start": "' || (current_date + 50) || '", "expected_end": "' || (current_date + 50) || '"}')::jsonb);
+select tests.su();
+select tests.ok('S77 data nova do negócio move o evento da campanha',
+  (select (starts_at at time zone 'America/Sao_Paulo')::date from public.calendar_events where kind = 'campaign' and deal_id = (select v::uuid from t_s77 where k = 'deal')) = current_date + 50);
+
+-- 3) eventos manuais: gestor+ livre; colaborador só no negócio dele; visibilidade escolhida ---------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.expect_error('S77 colaborador de fora não cria reunião geral',
+  $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), null, ('{"kind": "meeting", "title": "Geral", "starts_at": "' || now() || '"}')::jsonb)$q$, 'forbidden');
+select tests.expect_error('S77 colaborador de fora não cria evento em negócio que não é dele',
+  $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), null, ('{"kind": "recording", "title": "Gravação", "deal_id": "' || (select v from t_s77 where k = 'deal') || '", "starts_at": "' || now() || '"}')::jsonb)$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s77 values ('ev_meet', public.agency_event_save(public.seed_uuid('s74:agency:a'), null,
+  ('{"kind": "meeting", "title": "Reunião com a marca D", "deal_id": "' || (select v from t_s77 where k = 'deal') || '", "starts_at": "' || (now() + interval '2 days') || '", "ends_at": "' || (now() + interval '2 days 1 hour') || '", "visible_to_brand": true}')::jsonb)::text);
+insert into t_s77 values ('ev_rec', public.agency_event_save(public.seed_uuid('s74:agency:a'), null,
+  ('{"kind": "recording", "title": "Gravação interna", "talent_id": "' || (select v from t_s77 where k = 'td1') || '", "starts_at": "' || (now() + interval '3 days') || '", "visible_to_talent": true}')::jsonb)::text);
+select tests.expect_error('S77 evento de agência B com negócio da A', $q$select public.agency_event_save(public.seed_uuid('s74:agency:b'), null, ('{"kind": "meeting", "title": "x", "deal_id": "' || (select v from t_s77 where k = 'deal') || '", "starts_at": "' || now() || '"}')::jsonb)$q$, 'not_found');
+select tests.expect_error('S77 fim antes do início', $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), null, ('{"kind": "meeting", "title": "x", "starts_at": "' || now() || '", "ends_at": "' || (now() - interval '1 hour') || '"}')::jsonb)$q$, 'invalid_input');
+select tests.expect_error('S77 evento de sistema não se edita à mão',
+  $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), (select id from public.calendar_events where kind = 'campaign' limit 1), '{"title": "x"}')$q$, 'invalid_state');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S77 marca vê a reunião marcada como visível e não a gravação interna',
+  (select count(*) from public.calendar_events where kind = 'meeting') = 1 and (select count(*) from public.calendar_events where kind = 'recording') = 0);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S77 creator vê a gravação (dele) e não a reunião da marca; recebeu aviso',
+  (select count(*) from public.calendar_events where kind = 'recording') = 1 and (select count(*) from public.calendar_events where kind = 'meeting') = 0
+  and (select count(*) from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'calendar_event_added') >= 2);
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.ok('S77 colaborador de fora não vê eventos de negócio alheio nem de creator', (select count(*) from public.calendar_events) = 0);
+
+-- 4) data comercial: gestor+ publica; marcas atendidas veem e são avisadas; marca de outra agência não -------------------
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S77 colaborador não publica data comercial',
+  $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), null, ('{"kind": "commercial_date", "title": "Dia das Mães", "starts_at": "' || (now() + interval '30 days') || '"}')::jsonb)$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s77 values ('ev_cd', public.agency_event_save(public.seed_uuid('s74:agency:a'), null, ('{"kind": "commercial_date", "title": "Dia das Mães: propostas até", "starts_at": "' || (now() + interval '30 days') || '", "all_day": true}')::jsonb)::text);
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S77 marca D vê a data comercial e recebeu o aviso',
+  (select count(*) from public.calendar_events where kind = 'commercial_date') = 1
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000c1' and kind = 'commercial_date_published'));
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.ok('S77 colaborador vê a data comercial (evento geral da agência)', (select count(*) from public.calendar_events where kind = 'commercial_date') = 1);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.ok('S77 agência B não vê eventos da A', (select count(*) from public.calendar_events) = 0);
+select tests.expect_error('S77 agência B não apaga evento da A', $q$select public.agency_event_delete((select v::uuid from t_s77 where k = 'ev_meet'))$q$, 'not_found');
+
+-- 4b) revisão P1b: colaborador não sequestra evento de gestor; sem negócio a marca não vê; brief interno fora do evento ----
+select tests.su();
+update public.deals set owner_id = '74000000-0000-4000-8000-0000000000a3', talent_brief = 'BRIEF-INTERNO cachê a negociar' where id = (select v::uuid from t_s77 where k = 'deal');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S77 colaborador não edita data comercial de gestor apontando para o negócio dele',
+  $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), (select v::uuid from t_s77 where k = 'ev_cd'), ('{"kind": "meeting", "title": "x", "deal_id": "' || (select v from t_s77 where k = 'deal') || '"}')::jsonb)$q$, 'forbidden');
+select tests.expect_error('S77 colaborador não apaga evento geral de gestor', $q$select public.agency_event_delete((select v::uuid from t_s77 where k = 'ev_cd'))$q$, 'forbidden');
+select tests.expect_error('S77 colaborador não edita a gravação interna (sem negócio) de gestor',
+  $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), (select v::uuid from t_s77 where k = 'ev_rec'), '{"title": "x"}')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S77 data comercial não vira reunião', $q$select public.agency_event_save(public.seed_uuid('s74:agency:a'), (select v::uuid from t_s77 where k = 'ev_cd'), '{"kind": "meeting"}')$q$, 'invalid_state');
+insert into t_s77 values ('ev_nodeal', public.agency_event_save(public.seed_uuid('s74:agency:a'), null,
+  ('{"kind": "recording", "title": "Gravação sem negócio", "talent_id": "' || (select v from t_s77 where k = 'td1') || '", "visible_to_brand": true, "starts_at": "' || (now() + interval '1 day') || '"}')::jsonb)::text);
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S77 evento sem negócio nunca chega à marca, mesmo marcado como visível; brief interno fora do evento da campanha',
+  (select count(*) from public.calendar_events where id = (select v::uuid from t_s77 where k = 'ev_nodeal')) = 0
+  and (select visible_to_brand from public.calendar_events where id = (select v::uuid from t_s77 where k = 'ev_meet')) = true
+  and (select count(*) from public.calendar_events where description like 'BRIEF-INTERNO%') = 0
+  and public.brand_campaign_detail((select v::uuid from t_s77 where k = 'req'))::text !~ 'BRIEF-INTERNO');
+select tests.su();
+select tests.ok('S77 flag da marca foi limpa no evento sem negócio', (select not visible_to_brand from public.calendar_events where id = (select v::uuid from t_s77 where k = 'ev_nodeal')));
+
+-- 5) feed .ics: token por pessoa, resolvido como a pessoa; revogação --------------------------------------------------------
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+insert into t_s77 values ('tok_creator', public.calendar_feed_create());
+select tests.ok('S77 creator lê só o próprio registro de feed, sem token em claro',
+  (select count(*) from public.calendar_feeds) = 1 and (select token_hash from public.calendar_feeds) <> (select v from t_s77 where k = 'tok_creator'));
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+insert into t_s77 values ('tok_brand', public.calendar_feed_create());
+select tests.expect_error('S77 feed não é resolvido por usuário autenticado', $q$select public.calendar_feed_resolve((select v from t_s77 where k = 'tok_creator'))$q$, '42501');
+select tests.su();
+select tests.ok('S77 feed do creator traz os eventos dele (campanha, entregas, gravação) e nenhum da marca',
+  jsonb_array_length(public.calendar_feed_resolve((select v from t_s77 where k = 'tok_creator')) -> 'events') = 4
+  and public.calendar_feed_resolve((select v from t_s77 where k = 'tok_creator'))::text !~ 'Reunião com a marca'
+  and (public.calendar_feed_resolve((select v from t_s77 where k = 'tok_brand')) -> 'events') @> '[{"kind": "commercial_date"}]'::jsonb
+  and jsonb_array_length(public.calendar_feed_resolve((select v from t_s77 where k = 'tok_brand')) -> 'events') = 4
+  and public.calendar_feed_resolve('0000000000000000000000000000000000000000000000000000000000000000') is null
+  and public.calendar_feed_resolve('abc') is null);
+-- paridade feed × RLS: a leitura direta como a pessoa (política) e a função por pessoa (feed) devolvem os mesmos ids
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+insert into t_s77 select 'rls_creator', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+insert into t_s77 select 'rls_brand', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+insert into t_s77 select 'rls_staff', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s77 select 'rls_admin', coalesce(array_agg(id order by id)::text, '{}') from public.calendar_events;
+select tests.su();
+select tests.ok('S77 feed e RLS concordam para creator, marca, colaborador e admin geral',
+  coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000d1')), '{}') = (select v from t_s77 where k = 'rls_creator')
+  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000c1')), '{}') = (select v from t_s77 where k = 'rls_brand')
+  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('74000000-0000-4000-8000-0000000000a3')), '{}') = (select v from t_s77 where k = 'rls_staff')
+  and coalesce((select array_agg(id order by id)::text from public.calendar_events_for_user('10000000-0000-4000-8000-000000000001')), '{}') = (select v from t_s77 where k = 'rls_admin')
+  and (select v from t_s77 where k = 'rls_brand') <> '{}' and (select v from t_s77 where k = 'rls_admin') <> '{}'
+  and (select count(*) from public.calendar_feeds) = 2);
+-- herói suspenso: a RLS (my_talent_id) não devolve nada e o feed também não
+select tests.su();
+insert into auth.users (id, email, raw_app_meta_data) values ('77000000-0000-4000-8000-0000000000d2', 's77-hero@test.local', '{}');
+insert into public.creator_profiles (id, user_id, slug, name, status) values ('77000000-0000-4000-8000-0000000000d3', '77000000-0000-4000-8000-0000000000d2', 's77-hero', 'Hero', 'suspended');
+insert into t_s77 values ('td2', public.seed_uuid('s77:talent:td2')::text);
+insert into public.talent_profiles (id, agency_id, creator_id, display_name, commercial_status, availability, catalog_visible, created_by)
+values ((select v::uuid from t_s77 where k = 'td2'), public.seed_uuid('s74:agency:a'), '77000000-0000-4000-8000-0000000000d3', 'Hero suspenso', 'active', 'available', false, '74000000-0000-4000-8000-0000000000a1');
+insert into public.calendar_events (agency_id, kind, title, starts_at, ends_at, talent_id, source, visible_to_talent)
+values (public.seed_uuid('s74:agency:a'), 'recording', 'Gravação do suspenso', now() + interval '1 day', now() + interval '1 day 1 hour', (select v::uuid from t_s77 where k = 'td2'), 'manual', true);
+select tests.login('77000000-0000-4000-8000-0000000000d2', 's77-hero@test.local');
+insert into t_s77 select 'rls_hero', count(*)::text from public.calendar_events;
+select tests.su();
+select tests.ok('S77 herói suspenso: 0 eventos pela RLS e 0 pelo feed',
+  (select v from t_s77 where k = 'rls_hero') = '0' and (select count(*) from public.calendar_events_for_user('77000000-0000-4000-8000-0000000000d2')) = 0);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select public.calendar_feed_revoke();
+select tests.su();
+select tests.ok('S77 feed revogado não resolve', public.calendar_feed_resolve((select v from t_s77 where k = 'tok_creator')) is null);
+
+-- 6) encerrar perdido limpa os eventos de sistema; manuais ficam -------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_deal_move((select v::uuid from t_s77 where k = 'deal'), 'closed', 'cancelled', 'marca desistiu');
+select tests.su();
+select tests.ok('S77 negócio cancelado: eventos de sistema somem, manuais ficam',
+  (select count(*) from public.calendar_events where deal_id = (select v::uuid from t_s77 where k = 'deal') and source = 'system') = 0
+  and (select count(*) from public.calendar_events where id = (select v::uuid from t_s77 where k = 'ev_meet')) = 1);
+select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
+select tests.ok('S77 D6: admin de demonstração lê 0 eventos e 0 feeds da agência real', (select count(*) from public.calendar_events) = 0 and (select count(*) from public.calendar_feeds) = 0);
+select tests.anon();
+select tests.expect_error('S77 visitante sem acesso à agenda', $q$select count(*) from public.calendar_events$q$, '42501');
+select tests.su();
+select tests.ok('S77 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+  not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+              and p.proname in ('fill_event_scope', 'calendar_sync_deal', 'calendar_sync_trigger', 'my_brand_served_agency_ids', 'agency_event_save', 'agency_event_delete',
+                                'calendar_feed_create', 'calendar_feed_revoke', 'calendar_feed_resolve', 'calendar_events_for_user', 'agency_demo_seed_calendar')
+              and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+drop table t_s77;
+
 -- ================================================================ S80 · Estrutura do módulo de gestão
 -- Cresce a cada etapa (0064..0069). Tabelas novas: PK só "id", RLS ligada, sem escrita direta e sem
 -- leitura anônima; nenhuma coluna de valor em tabela operacional; políticas sem função por linha;
@@ -8805,7 +9012,7 @@ create temp table t_s80 (t text primary key);
 insert into t_s80 values ('agencies'), ('agency_members'), ('agency_brands'), ('brand_members'), ('inbox_notifications'), ('documents'),
   ('talent_segments'), ('talent_profiles'), ('talent_segment_links'), ('talent_social_accounts'), ('media_kits'),
   ('talent_availability'), ('campaign_requests'), ('deals'), ('deal_team'), ('deal_talents'), ('deliverables'), ('activities'), ('deal_messages'),
-  ('campaign_request_budgets'), ('deal_talent_fees');
+  ('campaign_request_budgets'), ('deal_talent_fees'), ('calendar_events'), ('calendar_feeds');
 grant all on t_s80 to anon, authenticated, service_role;
 select tests.ok('S80 tabelas novas: PK só id, RLS ligada, sem escrita para authenticated/anon, sem select para anon',
   (select bool_and((select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
@@ -8832,7 +9039,7 @@ select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_p
          'agencies_select_talent', 'role_assignments_hide_agency_from_demo')
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0);
 select tests.ok('S80 _select_admin das tabelas novas usa is_platform_admin (nunca is_admin)',
-  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 20
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 22
   and not exists (select 1 from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin'
                   and qual !~ 'is_platform_admin'));
 select tests.ok('S80 nenhum par de tabelas novas com FK nos dois sentidos',

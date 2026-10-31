@@ -20,7 +20,8 @@
     "dealDeliverables": "Deal deliverables",
     "dealMessages": "Deal conversation",
     "dealDocuments": "Deal documents",
-    "talentAvailability": "Talent availability"
+    "talentAvailability": "Talent availability",
+    "agenda": "Calendar"
   },
   "demoBanner": {
     "tag": "Demo",
@@ -65,7 +66,9 @@
       "castingActive": "{count} active",
       "deals": "Open deals",
       "dealsHint": "{agency} waiting on the agency · {creator} on creators",
-      "confirmed": "Confirmed campaigns"
+      "confirmed": "Confirmed campaigns",
+      "upcoming": "Commitments in 14 days",
+      "upcomingHint": "campaigns, deliverables, meetings"
     },
     "quickTitle": "Shortcuts",
     "newBrand": "New brand",
@@ -531,7 +534,8 @@
       "data": "Deal data",
       "activities": "History and contacts",
       "stage": "Stage",
-      "team": "Deal team"
+      "team": "Deal team",
+      "events": "Deal calendar"
     },
     "noActivities": "No entries yet.",
     "noNote": "no note",
@@ -677,6 +681,60 @@
       "brandChannel": "Brand: {brand}",
       "noLoginHint": "This talent has no login: what is written here is recorded, but they do not receive it.",
       "brandNotVisibleHint": "Deal opened by the agency: the brand only sees (and replies) after confirmation."
+    },
+    "noEvents": "No upcoming commitments. Confirmation creates the campaign in the calendar; deliverables enter by their dates."
+  },
+  "agenda": {
+    "title": "Calendar",
+    "description": "Confirmed campaigns, deadlines, deliverables and the team's commitments. Brand and creator only see what you mark.",
+    "unavailable": "Calendar being updated",
+    "unavailableHint": "The calendar appears as soon as the database is updated.",
+    "filters": {
+      "talent": "Creator",
+      "brand": "Brand",
+      "kind": "Type",
+      "all": "All",
+      "apply": "Filter",
+      "clear": "Clear"
+    },
+    "empty": "Nothing this month.",
+    "emptyHint": "Confirm a campaign or schedule a meeting.",
+    "emptyFiltered": "Nothing matches these filters.",
+    "saved": "Commitment saved.",
+    "published": "Commercial date published: served brands were notified.",
+    "deleted": "Commitment removed.",
+    "confirmDelete": "Remove “{title}”?",
+    "deleteLabel": "Remove {title}",
+    "delete": "Remove",
+    "form": {
+      "new": "New commitment",
+      "title": "New commitment",
+      "hint": "Meeting, recording or other: choose who sees it. Commercial date: the agency publishes an opportunity for brands.",
+      "kind": "Type",
+      "eventTitle": "Title",
+      "date": "Date",
+      "endDate": "End date",
+      "startTime": "Start",
+      "endTime": "End",
+      "allDay": "All day",
+      "deal": "Deal",
+      "dealRequiredHint": "Staff: only on your own deals.",
+      "talent": "Creator",
+      "talentHint": "For a recording or meeting with a creator.",
+      "brand": "Brand",
+      "brandHint": "Empty: all served brands.",
+      "allBrands": "All served brands",
+      "location": "Location",
+      "description": "Description",
+      "descriptionHint": "Whoever sees the event reads this text. No values.",
+      "visibleToBrand": "Brand sees it (needs a deal)",
+      "visibleToTalent": "Creator sees it (needs a creator)",
+      "commercialNote": "The commercial date shows in the brands' calendar and notifies their bell.",
+      "back": "Back",
+      "save": "Save",
+      "publish": "Publish",
+      "titleRequired": "Give it a title.",
+      "dealRequired": "Pick one of your deals."
     }
   }
 }

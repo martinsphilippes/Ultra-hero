@@ -7,7 +7,8 @@
     "creator": "Creator",
     "campaigns": "Campanhas",
     "newCampaign": "Nova proposta",
-    "campaign": "Campanha"
+    "campaign": "Campanha",
+    "agenda": "Agenda"
   },
   "dashboard": {
     "eyebrow": "Portal da marca",
@@ -203,5 +204,15 @@
       "note": "Motivo",
       "noteRequired": "Escreva o motivo (pelo menos 5 caracteres)."
     }
+  },
+  "agenda": {
+    "title": "Agenda",
+    "description": "Campanhas confirmadas, publicações e reuniões marcadas por {agency}, mais as datas comerciais que ela publica.",
+    "descriptionNoAgency": "Sua marca ainda não está ligada a uma agência.",
+    "unavailable": "Agenda em atualização",
+    "unavailableHint": "A agenda aparece assim que o banco for atualizado.",
+    "empty": "Nada neste mês.",
+    "emptyHint": "Quando uma campanha for confirmada, ela entra aqui com as datas de publicação.",
+    "note": "Prazos internos de produção e a agenda dos creators não aparecem: só o que vale para a marca."
   }
 }

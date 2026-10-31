@@ -6,7 +6,8 @@
     "kit": "Media kit",
     "opportunities": "Oportunidades",
     "opportunity": "Oportunidad",
-    "availability": "Disponibilidad"
+    "availability": "Disponibilidad",
+    "agenda": "Agenda"
   },
   "tabs": {
     "label": "Secciones de la oficina",
@@ -15,7 +16,8 @@
     "consent": "Consentimiento",
     "notifications": "Avisos",
     "opportunities": "Oportunidades",
-    "availability": "Disponibilidad"
+    "availability": "Disponibilidad",
+    "agenda": "Agenda"
   },
   "home": {
     "unavailable": "Oficina en actualización",
@@ -167,5 +169,11 @@
     "invalidRange": "Revisa las fechas: el fin no puede ser antes del inicio.",
     "confirmDelete": "¿Quitar este período?",
     "periodsTitle": "Períodos declarados"
+  },
+  "agenda": {
+    "unavailable": "Agenda en actualización",
+    "intro": "Campañas confirmadas, plazos de respuesta, entregas y grabaciones. Tu agenda personal queda fuera.",
+    "empty": "Nada este mes.",
+    "emptyHint": "Cuando la agencia confirme una campaña contigo, aparece aquí."
   }
 }

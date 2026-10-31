@@ -31,23 +31,23 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "pipeline", "casting", "brands", "notifications", "settings", "team"] as const;
+export const AGENCY_NAV = ["dashboard", "pipeline", "agenda", "casting", "brands", "notifications", "settings", "team"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
  *  Configurações gestor+; Equipe só o Adm). */
 export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): AgencyNavKey[] {
-  const keys: AgencyNavKey[] = ["dashboard", "pipeline", "casting", "brands", "notifications"];
+  const keys: AgencyNavKey[] = ["dashboard", "pipeline", "agenda", "casting", "brands", "notifications"];
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
   if (agencyCan(role, "admin", platformAdmin)) keys.push("team");
   return keys;
 }
 
-export const BRAND_NAV = ["dashboard", "campaigns", "catalog", "team", "notifications"] as const;
+export const BRAND_NAV = ["dashboard", "campaigns", "catalog", "agenda", "team", "notifications"] as const;
 export type BrandNavKey = (typeof BRAND_NAV)[number];
 
 export function brandNavKeys(): BrandNavKey[] {
-  return ["dashboard", "campaigns", "catalog", "team", "notifications"];
+  return ["dashboard", "campaigns", "catalog", "agenda", "team", "notifications"];
 }
 
 /** Papel mínimo de cada rota restrita da agência (o layout do segmento redireciona para /agencia). */

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bell, CalendarDays, FileSignature, Megaphone, Search, Users } from "lucide-react";
+import { Bell, FileSignature, Megaphone, Search, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
@@ -24,10 +24,7 @@ export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
   const [t, members, unread, campaigns] = await Promise.all([getTranslations("brandPortal.dashboard"), listBrandMembers(ctx.brand.id), unreadInboxCount(), listBrandCampaigns(ctx.brand.id)]);
-  const upcoming = [
-    { key: "approvals", icon: FileSignature },
-    { key: "calendar", icon: CalendarDays },
-  ] as const;
+  const upcoming = [{ key: "approvals", icon: FileSignature }] as const;
   const inProgress = campaigns.items.filter((c) => ["received", "building", "proposal", "contracting", "running"].includes(c.status));
   const drafts = campaigns.items.filter((c) => c.status === "draft");
 

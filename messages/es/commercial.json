@@ -122,5 +122,41 @@
     "budget": "Valor ofrecido por la marca",
     "budgetNotInformed": "no informado",
     "notes": "Observaciones de la marca"
+  },
+  "eventKinds": {
+    "campaign": "Campaña",
+    "deliverable": "Entrega",
+    "consult_deadline": "Plazo de respuesta",
+    "meeting": "Reunión",
+    "recording": "Grabación",
+    "commercial_date": "Fecha comercial",
+    "other": "Otro"
+  },
+  "agenda": {
+    "allDay": "todo el día",
+    "system": "automático",
+    "manual": "manual",
+    "visibleBrand": "la marca ve",
+    "visibleTalent": "el creator ve",
+    "until": "hasta {date}",
+    "monthNav": "Mes",
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente"
+  },
+  "feed": {
+    "title": "Suscribir en tu calendario",
+    "hint": "Un enlace privado en formato iCalendar: Google Calendar, Apple Calendario y Outlook se actualizan solos. Solo tus compromisos, sin valores.",
+    "showOnce": "Cópialo ahora: el enlace aparece una sola vez. Generar de nuevo invalida el anterior.",
+    "download": "Descargar archivo .ics",
+    "active": "Enlace activo desde {date}.",
+    "lastFetched": "última lectura {date} ({count}×)",
+    "inactive": "Ningún enlace generado.",
+    "create": "Generar enlace",
+    "rotate": "Generar enlace nuevo",
+    "revoke": "Apagar enlace",
+    "created": "Enlace generado.",
+    "revoked": "Enlace apagado.",
+    "confirmRotate": "¿Generar un enlace nuevo? El anterior deja de funcionar.",
+    "confirmRevoke": "¿Apagar el enlace? Los calendarios suscritos dejan de actualizarse."
   }
 }

@@ -11,6 +11,7 @@ import { requireRole } from "@/lib/auth/session";
 import { AGENCY_DEMO_EMAIL, AGENCY_STAFF_DEMO_EMAIL, BRAND_DEMO_EMAIL, TALENT_DEMO_EMAIL } from "@/lib/demo/accounts";
 import { demoPassword } from "@/lib/demo/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
 // /admin/agencia: só o admin geral com conta real (is_platform_admin). A conta admin@demo recebe
@@ -133,6 +134,9 @@ export async function createAgencyDemoAction(): Promise<AdminAgencyResult> {
       p_actor: user.id,
     });
     if (seedError) return agencyFail(seedError);
+    // agenda de exemplo (0067): sem a migração no remoto, segue sem ela (isMissingSchema)
+    const { error: calendarError } = await client.rpc("agency_demo_seed_calendar", { p_agency: agencyId, p_actor: user.id });
+    if (calendarError && !isMissingSchema(calendarError)) return agencyFail(calendarError);
     revalidatePath("/admin/agencia");
     revalidatePath("/login");
     const t = await getTranslations("adminAgency");

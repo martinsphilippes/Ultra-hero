@@ -122,5 +122,41 @@
     "budget": "Valor oferecido pela marca",
     "budgetNotInformed": "não informado",
     "notes": "Observações da marca"
+  },
+  "eventKinds": {
+    "campaign": "Campanha",
+    "deliverable": "Entrega",
+    "consult_deadline": "Prazo de resposta",
+    "meeting": "Reunião",
+    "recording": "Gravação",
+    "commercial_date": "Data comercial",
+    "other": "Outro"
+  },
+  "agenda": {
+    "allDay": "dia inteiro",
+    "system": "automático",
+    "manual": "manual",
+    "visibleBrand": "marca vê",
+    "visibleTalent": "creator vê",
+    "until": "até {date}",
+    "monthNav": "Mês",
+    "prevMonth": "Mês anterior",
+    "nextMonth": "Próximo mês"
+  },
+  "feed": {
+    "title": "Assinar no seu calendário",
+    "hint": "Um link privado em formato iCalendar: Google Agenda, Apple Calendário e Outlook atualizam sozinhos. Só os seus compromissos, sem valores.",
+    "showOnce": "Copie agora: o link aparece uma única vez. Gerar de novo invalida o anterior.",
+    "download": "Baixar arquivo .ics",
+    "active": "Link ativo desde {date}.",
+    "lastFetched": "última leitura {date} ({count}×)",
+    "inactive": "Nenhum link gerado.",
+    "create": "Gerar link",
+    "rotate": "Gerar link novo",
+    "revoke": "Desligar link",
+    "created": "Link gerado.",
+    "revoked": "Link desligado.",
+    "confirmRotate": "Gerar um link novo? O anterior para de funcionar.",
+    "confirmRevoke": "Desligar o link? Os calendários assinados param de atualizar."
   }
 }
