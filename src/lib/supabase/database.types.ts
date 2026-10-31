@@ -5944,6 +5944,27 @@ export type Database = {
             referencedRelation: "brands";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "documents_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_request_fk";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       talent_segments: {
@@ -6284,11 +6305,990 @@ export type Database = {
           },
         ];
       };
+      talent_availability: {
+        Row: {
+          agency_id: string;
+          created_at: string;
+          created_by: string | null;
+          ends_on: string;
+          id: string;
+          kind: string;
+          note: string;
+          starts_on: string;
+          talent_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_on: string;
+          id?: string;
+          kind?: string;
+          note?: string;
+          starts_on: string;
+          talent_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          ends_on?: string;
+          id?: string;
+          kind?: string;
+          note?: string;
+          starts_on?: string;
+          talent_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "talent_availability_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "talent_availability_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      campaign_requests: {
+        Row: {
+          agency_id: string;
+          brand_id: string;
+          created_at: string;
+          created_by: string | null;
+          decided_at: string | null;
+          deliverables: NonNullable<Json>;
+          desired_at: string | null;
+          duration_minutes: number | null;
+          format: string | null;
+          id: string;
+          location: string;
+          networks: string[];
+          notes: string;
+          objective: string | null;
+          origin: string;
+          period_end: string | null;
+          period_start: string | null;
+          product: string;
+          region_note: string;
+          segment_ids: string[];
+          status: string;
+          submitted_at: string | null;
+          talent_id: string | null;
+          target_age_bands: string[];
+          target_audience: string;
+          target_states: string[];
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          brand_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          decided_at?: string | null;
+          deliverables?: NonNullable<Json>;
+          desired_at?: string | null;
+          duration_minutes?: number | null;
+          format?: string | null;
+          id?: string;
+          location?: string;
+          networks?: string[];
+          notes?: string;
+          objective?: string | null;
+          origin: string;
+          period_end?: string | null;
+          period_start?: string | null;
+          product?: string;
+          region_note?: string;
+          segment_ids?: string[];
+          status?: string;
+          submitted_at?: string | null;
+          talent_id?: string | null;
+          target_age_bands?: string[];
+          target_audience?: string;
+          target_states?: string[];
+          title?: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          brand_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          decided_at?: string | null;
+          deliverables?: NonNullable<Json>;
+          desired_at?: string | null;
+          duration_minutes?: number | null;
+          format?: string | null;
+          id?: string;
+          location?: string;
+          networks?: string[];
+          notes?: string;
+          objective?: string | null;
+          origin?: string;
+          period_end?: string | null;
+          period_start?: string | null;
+          product?: string;
+          region_note?: string;
+          segment_ids?: string[];
+          status?: string;
+          submitted_at?: string | null;
+          talent_id?: string | null;
+          target_age_bands?: string[];
+          target_audience?: string;
+          target_states?: string[];
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "campaign_requests_agency_brand_fk";
+            columns: ["agency_id", "brand_id"];
+            isOneToOne: false;
+            referencedRelation: "agency_brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "campaign_requests_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "campaign_requests_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "campaign_requests_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      deals: {
+        Row: {
+          agency_id: string;
+          brand_id: string;
+          brand_visible: boolean;
+          closed_at: string | null;
+          confirmed_at: string | null;
+          contract_confirmed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          expected_end: string | null;
+          expected_start: string | null;
+          id: string;
+          is_demo: boolean;
+          outcome: string | null;
+          owner_id: string | null;
+          request_id: string | null;
+          segment_ids: string[];
+          stage: string;
+          stage_changed_at: string;
+          talent_brief: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          brand_id: string;
+          brand_visible?: boolean;
+          closed_at?: string | null;
+          confirmed_at?: string | null;
+          contract_confirmed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          expected_end?: string | null;
+          expected_start?: string | null;
+          id?: string;
+          is_demo?: boolean;
+          outcome?: string | null;
+          owner_id?: string | null;
+          request_id?: string | null;
+          segment_ids?: string[];
+          stage?: string;
+          stage_changed_at?: string;
+          talent_brief?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          brand_id?: string;
+          brand_visible?: boolean;
+          closed_at?: string | null;
+          confirmed_at?: string | null;
+          contract_confirmed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          expected_end?: string | null;
+          expected_start?: string | null;
+          id?: string;
+          is_demo?: boolean;
+          outcome?: string | null;
+          owner_id?: string | null;
+          request_id?: string | null;
+          segment_ids?: string[];
+          stage?: string;
+          stage_changed_at?: string;
+          talent_brief?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deals_agency_brand_fk";
+            columns: ["agency_id", "brand_id"];
+            isOneToOne: false;
+            referencedRelation: "agency_brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deals_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deals_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deals_request_fk";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      deal_team: {
+        Row: {
+          added_by: string | null;
+          agency_id: string;
+          created_at: string;
+          deal_id: string;
+          id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          added_by?: string | null;
+          agency_id: string;
+          created_at?: string;
+          deal_id: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          added_by?: string | null;
+          agency_id?: string;
+          created_at?: string;
+          deal_id?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_team_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_team_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      deal_talents: {
+        Row: {
+          agency_id: string;
+          consulted_at: string | null;
+          consulted_by: string | null;
+          created_at: string;
+          deal_id: string;
+          id: string;
+          reasons: NonNullable<Json>;
+          respond_by: string | null;
+          responded_at: string | null;
+          response_channel: string | null;
+          response_note: string;
+          status: string;
+          suggested_by: string | null;
+          talent_id: string;
+          terms_ready: boolean;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          consulted_at?: string | null;
+          consulted_by?: string | null;
+          created_at?: string;
+          deal_id: string;
+          id?: string;
+          reasons?: NonNullable<Json>;
+          respond_by?: string | null;
+          responded_at?: string | null;
+          response_channel?: string | null;
+          response_note?: string;
+          status?: string;
+          suggested_by?: string | null;
+          talent_id: string;
+          terms_ready?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          consulted_at?: string | null;
+          consulted_by?: string | null;
+          created_at?: string;
+          deal_id?: string;
+          id?: string;
+          reasons?: NonNullable<Json>;
+          respond_by?: string | null;
+          responded_at?: string | null;
+          response_channel?: string | null;
+          response_note?: string;
+          status?: string;
+          suggested_by?: string | null;
+          talent_id?: string;
+          terms_ready?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_talents_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_talents_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_talents_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      deliverables: {
+        Row: {
+          agency_id: string;
+          brand_feedback: string;
+          brand_id: string;
+          brief: string;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          deal_talent_id: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          decided_side: string | null;
+          due_at: string | null;
+          id: string;
+          kind: string;
+          network: string | null;
+          proof_at: string | null;
+          proof_document_id: string | null;
+          proof_url: string | null;
+          publish_at: string | null;
+          published_at: string | null;
+          published_url: string | null;
+          revision: number;
+          status: string;
+          submission_document_id: string | null;
+          submission_note: string;
+          submission_url: string | null;
+          submitted_at: string | null;
+          talent_id: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          brand_feedback?: string;
+          brand_id: string;
+          brief?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id: string;
+          deal_talent_id: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decided_side?: string | null;
+          due_at?: string | null;
+          id?: string;
+          kind: string;
+          network?: string | null;
+          proof_at?: string | null;
+          proof_document_id?: string | null;
+          proof_url?: string | null;
+          publish_at?: string | null;
+          published_at?: string | null;
+          published_url?: string | null;
+          revision?: number;
+          status?: string;
+          submission_document_id?: string | null;
+          submission_note?: string;
+          submission_url?: string | null;
+          submitted_at?: string | null;
+          talent_id: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          brand_feedback?: string;
+          brand_id?: string;
+          brief?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string;
+          deal_talent_id?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decided_side?: string | null;
+          due_at?: string | null;
+          id?: string;
+          kind?: string;
+          network?: string | null;
+          proof_at?: string | null;
+          proof_document_id?: string | null;
+          proof_url?: string | null;
+          publish_at?: string | null;
+          published_at?: string | null;
+          published_url?: string | null;
+          revision?: number;
+          status?: string;
+          submission_document_id?: string | null;
+          submission_note?: string;
+          submission_url?: string | null;
+          submitted_at?: string | null;
+          talent_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deliverables_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deliverables_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deliverables_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deliverables_deal_talent_fk";
+            columns: ["deal_talent_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_talents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deliverables_proof_doc_fk";
+            columns: ["proof_document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deliverables_submission_doc_fk";
+            columns: ["submission_document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deliverables_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      activities: {
+        Row: {
+          agency_id: string;
+          author_id: string | null;
+          author_label: string;
+          body: string;
+          created_at: string;
+          deal_id: string | null;
+          id: string;
+          kind: string;
+          occurred_at: string;
+          reason_codes: string[];
+          subject_brand_id: string | null;
+          subject_type: string;
+          talent_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          author_id?: string | null;
+          author_label?: string;
+          body?: string;
+          created_at?: string;
+          deal_id?: string | null;
+          id?: string;
+          kind: string;
+          occurred_at?: string;
+          reason_codes?: string[];
+          subject_brand_id?: string | null;
+          subject_type: string;
+          talent_id?: string | null;
+        };
+        Update: {
+          agency_id?: string;
+          author_id?: string | null;
+          author_label?: string;
+          body?: string;
+          created_at?: string;
+          deal_id?: string | null;
+          id?: string;
+          kind?: string;
+          occurred_at?: string;
+          reason_codes?: string[];
+          subject_brand_id?: string | null;
+          subject_type?: string;
+          talent_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "activities_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "activities_brand_fk";
+            columns: ["subject_brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "activities_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "activities_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      deal_messages: {
+        Row: {
+          agency_id: string;
+          author_id: string | null;
+          author_label: string;
+          author_side: string;
+          body: string;
+          brand_id: string;
+          channel: string;
+          created_at: string;
+          deal_id: string;
+          id: string;
+          talent_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          author_id?: string | null;
+          author_label: string;
+          author_side: string;
+          body: string;
+          brand_id: string;
+          channel: string;
+          created_at?: string;
+          deal_id: string;
+          id?: string;
+          talent_id?: string | null;
+        };
+        Update: {
+          agency_id?: string;
+          author_id?: string | null;
+          author_label?: string;
+          author_side?: string;
+          body?: string;
+          brand_id?: string;
+          channel?: string;
+          created_at?: string;
+          deal_id?: string;
+          id?: string;
+          talent_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_messages_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_messages_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_messages_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_messages_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      campaign_request_budgets: {
+        Row: {
+          agency_id: string;
+          brand_id: string;
+          budget_max_cents: number | null;
+          budget_min_cents: number | null;
+          created_at: string;
+          id: string;
+          note: string;
+          request_id: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          brand_id: string;
+          budget_max_cents?: number | null;
+          budget_min_cents?: number | null;
+          created_at?: string;
+          id?: string;
+          note?: string;
+          request_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          agency_id?: string;
+          brand_id?: string;
+          budget_max_cents?: number | null;
+          budget_min_cents?: number | null;
+          created_at?: string;
+          id?: string;
+          note?: string;
+          request_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "campaign_request_budgets_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "campaign_request_budgets_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "campaign_request_budgets_request_fk";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      deal_talent_fees: {
+        Row: {
+          agency_id: string;
+          created_at: string;
+          currency: string;
+          deal_id: string;
+          deal_talent_id: string;
+          fee_cents: number;
+          id: string;
+          set_at: string;
+          set_by: string | null;
+          talent_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          created_at?: string;
+          currency?: string;
+          deal_id: string;
+          deal_talent_id: string;
+          fee_cents: number;
+          id?: string;
+          set_at?: string;
+          set_by?: string | null;
+          talent_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          created_at?: string;
+          currency?: string;
+          deal_id?: string;
+          deal_talent_id?: string;
+          fee_cents?: number;
+          id?: string;
+          set_at?: string;
+          set_by?: string | null;
+          talent_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_talent_fees_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_talent_fees_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_talent_fees_deal_talent_fk";
+            columns: ["deal_talent_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_talents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_talent_fees_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      my_brand_deal_ids: {
+        Args: Record<PropertyKey, never>;
+        Returns: string[];
+      };
+      my_staff_deal_ids: {
+        Args: Record<PropertyKey, never>;
+        Returns: string[];
+      };
+      deal_stage_can: {
+        Args: {
+          p_from: string;
+          p_is_owner: boolean;
+          p_role: string;
+          p_to: string;
+        };
+        Returns: boolean;
+      };
+      deal_brand_status: {
+        Args: { p_outcome: string; p_stage: string };
+        Returns: string;
+      };
+      talent_opportunities: {
+        Args: { p_deal_talent?: string | null };
+        Returns: Json;
+      };
+      brand_campaign_detail: { Args: { p_request: string }; Returns: Json };
+      brand_talent_detail: {
+        Args: { p_brand: string; p_talent: string };
+        Returns: Json;
+      };
+      brand_talent_search: {
+        Args: { p_brand: string; p_filters?: Json | null };
+        Returns: Json;
+      };
+      talent_availability_delete: {
+        Args: { p_id: string };
+        Returns: undefined;
+      };
+      talent_availability_save: {
+        Args: { p_data: Json; p_id: string | null; p_talent: string };
+        Returns: string;
+      };
+      agency_deal_confirm: {
+        Args: {
+          p_deal: string;
+          p_force?: boolean | null;
+          p_note?: string | null;
+        };
+        Returns: undefined;
+      };
+      agency_deal_talent_set_status: {
+        Args: { p_deal_talent: string; p_status: string };
+        Returns: undefined;
+      };
+      agency_record_talent_response: {
+        Args: {
+          p_deal_talent: string;
+          p_document?: string | null;
+          p_note: string;
+          p_response: string;
+        };
+        Returns: undefined;
+      };
+      talent_opportunity_respond: {
+        Args: {
+          p_deal_talent: string;
+          p_note?: string | null;
+          p_response: string;
+        };
+        Returns: undefined;
+      };
+      agency_consult_talents: {
+        Args: {
+          p_deal: string;
+          p_deal_talent_ids: string[];
+          p_message?: string | null;
+          p_respond_by: string;
+        };
+        Returns: number;
+      };
+      agency_deliverables_save: {
+        Args: { p_deal: string; p_items: Json };
+        Returns: undefined;
+      };
+      agency_fee_set: {
+        Args: { p_deal_talent: string; p_fee_cents: number };
+        Returns: undefined;
+      };
+      deal_message_post: {
+        Args: {
+          p_body: string;
+          p_channel: string;
+          p_deal: string;
+          p_talent: string | null;
+        };
+        Returns: string;
+      };
+      agency_activity_add: {
+        Args: {
+          p_body: string;
+          p_kind: string;
+          p_occurred_at?: string | null;
+          p_subject_id: string;
+          p_subject_type: string;
+        };
+        Returns: string;
+      };
+      agency_shortlist_set: {
+        Args: { p_deal: string; p_items: Json };
+        Returns: undefined;
+      };
+      agency_deal_move: {
+        Args: {
+          p_deal: string;
+          p_force?: boolean | null;
+          p_note?: string | null;
+          p_outcome?: string | null;
+          p_to: string;
+        };
+        Returns: undefined;
+      };
+      agency_deal_team_set: {
+        Args: { p_deal: string; p_user_ids: string[] };
+        Returns: undefined;
+      };
+      agency_deal_update: {
+        Args: { p_data: Json; p_deal: string };
+        Returns: undefined;
+      };
+      agency_deal_create: {
+        Args: { p_agency: string; p_brand: string; p_data: Json };
+        Returns: string;
+      };
+      brand_request_cancel: {
+        Args: { p_id: string; p_note: string };
+        Returns: undefined;
+      };
+      brand_request_submit: { Args: { p_id: string }; Returns: string };
+      brand_request_save: {
+        Args: { p_brand: string; p_data: Json; p_id: string | null };
+        Returns: string;
+      };
       talent_audience_ok: { Args: { p: Json }; Returns: boolean };
       my_talent_agency_id: {
         Args: Record<PropertyKey, never>;

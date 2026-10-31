@@ -8494,6 +8494,283 @@ select tests.ok('S75 funções novas: search_path fixo, nenhuma para o visitante
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
 drop table t_s75;
 
+-- ================================================================ S76 · Gestão: proposta da marca, pipeline e consulta (0066)
+-- A marca escolhe o creator no catálogo autorizado e envia a proposta; a agência recebe o negócio, consulta o
+-- creator (só com cachê definido pelo Adm), o creator responde no escritório, a agência confirma. Valores
+-- (orçamento da marca, cachê) ficam em tabelas que gestor e colaborador não leem.
+\ir ../migrations/0066_gestao_pipeline.sql
+select tests.su();
+insert into auth.users (id, email, raw_app_meta_data) values
+  ('76000000-0000-4000-8000-0000000000d1', 's76-creator@test.local', '{}'),
+  ('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local', '{}');
+create temp table t_s76 (k text primary key, v text);
+grant all on t_s76 to anon, authenticated, service_role;
+-- marca C atendida pela agência A, com dono; marca Y (S74) segue na A com o dono c3
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+insert into t_s76 values ('brand_c', public.agency_brand_create(public.seed_uuid('s74:agency:a'), '{"name": "Marca C", "slug": "s76-marca-c", "site_url": "https://example.com/c"}')::text);
+select tests.su();
+insert into public.brand_members (brand_id, user_id, role, display_name) values ((select v::uuid from t_s76 where k = 'brand_c'), '76000000-0000-4000-8000-0000000000c1', 'owner', 'Dono da C');
+insert into public.role_assignments (user_id, role, scope_type, scope_id) values ('76000000-0000-4000-8000-0000000000c1', 'brand', 'brand', (select v::uuid from t_s76 where k = 'brand_c'));
+update public.agency_brands set account_manager_id = '74000000-0000-4000-8000-0000000000a3' where brand_id = (select v::uuid from t_s76 where k = 'brand_c');
+-- talentos: tc1 (login, consentimento, no catálogo), tc2 (sem consentimento: fora do catálogo)
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s76 values ('tc1', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Creator C1", "state": "SP", "commercial_status": "active"}')::text);
+insert into t_s76 values ('tc2', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Creator C2", "state": "RJ", "commercial_status": "active"}')::text);
+select public.agency_talent_set_segments((select v::uuid from t_s76 where k = 'tc1'), (select array_agg(id) from public.talent_segments where agency_id = public.seed_uuid('s74:agency:a') and slug in ('fitness')));
+select tests.su();
+update public.talent_profiles set user_id = '76000000-0000-4000-8000-0000000000d1' where id = (select v::uuid from t_s76 where k = 'tc1');
+insert into public.role_assignments (user_id, role, scope_type, scope_id) values ('76000000-0000-4000-8000-0000000000d1', 'creator', 'talent', (select v::uuid from t_s76 where k = 'tc1'));
+select tests.login('76000000-0000-4000-8000-0000000000d1', 's76-creator@test.local');
+select public.talent_set_consent(true, '2026-10');
+select public.talent_social_save((select v::uuid from t_s76 where k = 'tc1'), null, ('{"network": "instagram", "handle": "c1", "followers": 50000, "as_of": "' || current_date || '"}')::jsonb);
+select public.media_kit_save((select v::uuid from t_s76 where k = 'tc1'), '{"visible_fields": ["headline", "segments", "networks", "followers", "location"]}');
+insert into t_s76 values ('av1', public.talent_availability_save((select v::uuid from t_s76 where k = 'tc1'), null,
+  ('{"kind": "available", "starts_on": "' || (current_date + 1) || '", "ends_on": "' || (current_date + 60) || '", "note": "livre"}')::jsonb)::text);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_talent_set_catalog((select v::uuid from t_s76 where k = 'tc1'), true);
+select public.talent_availability_save((select v::uuid from t_s76 where k = 'tc1'), null,
+  ('{"kind": "blocked", "starts_on": "' || (current_date + 10) || '", "ends_on": "' || (current_date + 12) || '"}')::jsonb);
+select tests.expect_error('S76 disponibilidade com fim antes do início',
+  $q$select public.talent_availability_save((select v::uuid from t_s76 where k = 'tc1'), null, ('{"starts_on": "' || (current_date + 5) || '", "ends_on": "' || (current_date + 1) || '"}')::jsonb)$q$, 'invalid_input');
+
+-- 1) catálogo da marca: só com consentimento + liberado; filtros só sobre campos visíveis ------------------------
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+insert into t_s76 values ('search', public.brand_talent_search((select v::uuid from t_s76 where k = 'brand_c'), '{}')::text);
+select tests.ok('S76 catálogo da marca: só o creator com consentimento e liberado; sem notas internas nem valores',
+  jsonb_array_length((select v::jsonb from t_s76 where k = 'search')) = 1
+  and ((select v::jsonb from t_s76 where k = 'search') -> 0 ->> 'name') = 'Creator C1'
+  and (select v from t_s76 where k = 'search') !~ '(internal_notes|commercial_status|fee|cents|budget)');
+select tests.ok('S76 filtro por UF: SP atende; RJ não devolve ninguém',
+  jsonb_array_length(public.brand_talent_search((select v::uuid from t_s76 where k = 'brand_c'), '{"state": "SP"}')) = 1
+  and (public.brand_talent_search((select v::uuid from t_s76 where k = 'brand_c'), '{"state": "SP"}') -> 0 -> 'matched') ? 'state'
+  and jsonb_array_length(public.brand_talent_search((select v::uuid from t_s76 where k = 'brand_c'), '{"state": "RJ"}')) = 0);
+insert into t_s76 values ('detail', public.brand_talent_detail((select v::uuid from t_s76 where k = 'brand_c'), (select v::uuid from t_s76 where k = 'tc1'))::text);
+select tests.ok('S76 detalhe do creator para a marca: períodos disponíveis e bloqueados, sem agenda privada',
+  jsonb_array_length((select v::jsonb from t_s76 where k = 'detail') -> 'availability_periods') = 1
+  and jsonb_array_length((select v::jsonb from t_s76 where k = 'detail') -> 'blocked_periods') = 1
+  and not ((select v::jsonb from t_s76 where k = 'detail') ? 'internal_notes'));
+select tests.ok('S76 creator sem consentimento não aparece no detalhe',
+  public.brand_talent_detail((select v::uuid from t_s76 where k = 'brand_c'), (select v::uuid from t_s76 where k = 'tc2')) is null);
+select tests.ok('S76 marca lê 0 talent_profiles e 0 disponibilidades direto',
+  (select count(*) from public.talent_profiles) = 0 and (select count(*) from public.talent_availability) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.local');
+select tests.expect_error('S76 D19: marca Y não busca pela marca C', $q$select public.brand_talent_search((select v::uuid from t_s76 where k = 'brand_c'), '{}')$q$, 'not_found');
+
+-- 2) proposta da marca: rascunho, valor oferecido, envio cria o negócio ----------------------------------------
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+insert into t_s76 values ('req', public.brand_request_save(null, (select v::uuid from t_s76 where k = 'brand_c'),
+  ('{"talent_id": "' || (select v from t_s76 where k = 'tc1') || '", "title": "Lançamento C", "objective": "launch", "product": "Tênis C",
+     "period_start": "' || (current_date + 20) || '", "period_end": "' || (current_date + 30) || '", "networks": ["instagram"],
+     "deliverables": [{"kind": "reels", "quantity": 2, "network": "instagram"}], "budget_max_cents": 2000000, "notes": "briefing"}')::jsonb)::text);
+select tests.expect_error('S76 entregável com chave de valor é recusado',
+  $q$select public.brand_request_save((select v::uuid from t_s76 where k = 'req'), (select v::uuid from t_s76 where k = 'brand_c'), '{"deliverables": [{"kind": "reels", "quantity": 1, "budget_cents": 100}]}')$q$, 'invalid_input');
+select tests.expect_error('S76 creator fora do catálogo não pode ser o desejado',
+  $q$select public.brand_request_save((select v::uuid from t_s76 where k = 'req'), (select v::uuid from t_s76 where k = 'brand_c'), ('{"talent_id": "' || (select v from t_s76 where k = 'tc2') || '"}')::jsonb)$q$, 'not_found');
+select tests.ok('S76 marca lê o próprio rascunho e o próprio orçamento',
+  (select count(*) from public.campaign_requests where id = (select v::uuid from t_s76 where k = 'req')) = 1
+  and (select budget_max_cents from public.campaign_request_budgets where request_id = (select v::uuid from t_s76 where k = 'req')) = 2000000);
+select tests.login('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.local');
+select tests.expect_error('S76 D19: marca Y não edita o pedido da C',
+  $q$select public.brand_request_save((select v::uuid from t_s76 where k = 'req'), (select v::uuid from t_s74 where k = 'brand_y'), '{"title": "x"}')$q$, 'not_found');
+select tests.ok('S76 marca Y lê 0 pedidos e 0 orçamentos da C', (select count(*) from public.campaign_requests) = 0 and (select count(*) from public.campaign_request_budgets) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.ok('S76 gestor não lê rascunho da marca', (select count(*) from public.campaign_requests where id = (select v::uuid from t_s76 where k = 'req')) = 0);
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+insert into t_s76 values ('req2', public.brand_request_save(null, (select v::uuid from t_s76 where k = 'brand_c'), '{"title": "Incompleta"}')::text);
+select tests.expect_error('S76 envio exige objetivo, período, rede e entregável', $q$select public.brand_request_submit((select v::uuid from t_s76 where k = 'req2'))$q$, 'request_incomplete');
+insert into t_s76 values ('deal', public.brand_request_submit((select v::uuid from t_s76 where k = 'req'))::text);
+select tests.expect_error('S76 segundo envio do mesmo pedido', $q$select public.brand_request_submit((select v::uuid from t_s76 where k = 'req'))$q$, 'invalid_state');
+select tests.ok('S76 marca vê o negócio criado (visível) e a campanha em "recebida"',
+  (select count(*) from public.deals where id = (select v::uuid from t_s76 where k = 'deal')) = 1
+  and (public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) ->> 'brand_status') = 'received'
+  and (public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) -> 'requested_talent' ->> 'name') = 'Creator C1'
+  and jsonb_array_length(public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) -> 'talents') = 0);
+select tests.su();
+select tests.ok('S76 envio: negócio em briefing_received com o colaborador responsável, creator sugerido, aviso a gestor+ e ao responsável',
+  (select stage = 'briefing_received' and owner_id = '74000000-0000-4000-8000-0000000000a3' and brand_visible from public.deals where id = (select v::uuid from t_s76 where k = 'deal'))
+  and (select status from public.deal_talents where deal_id = (select v::uuid from t_s76 where k = 'deal') and talent_id = (select v::uuid from t_s76 where k = 'tc1')) = 'suggested'
+  and (select status from public.campaign_requests where id = (select v::uuid from t_s76 where k = 'req')) = 'converted'
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and kind = 'briefing_received')
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a3' and kind = 'briefing_received')
+  and exists (select 1 from public.admin_audit where action = 'request.submit' and actor_type = 'brand'));
+
+-- 3) visibilidade na agência: gestor+ tudo; colaborador só os negócios dele; nenhum valor para gestor/colaborador --
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.ok('S76 colaborador responsável lê o negócio e o pedido; 0 orçamentos', (select count(*) from public.deals) = 1
+  and (select count(*) from public.campaign_requests) = 1 and (select count(*) from public.campaign_request_budgets) = 0);
+select public.agency_deal_move((select v::uuid from t_s76 where k = 'deal'), 'qualification');
+select tests.expect_error('S76 colaborador não troca o responsável',
+  $q$select public.agency_deal_update((select v::uuid from t_s76 where k = 'deal'), '{"owner_id": "74000000-0000-4000-8000-0000000000a4"}')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.ok('S76 colaborador sem negócio lê 0 negócios, 0 pedidos, 0 mensagens', (select count(*) from public.deals) = 0
+  and (select count(*) from public.campaign_requests) = 0 and (select count(*) from public.deal_messages) = 0);
+select tests.expect_error('S76 colaborador de fora não move o negócio', $q$select public.agency_deal_move((select v::uuid from t_s76 where k = 'deal'), 'shortlist')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.ok('S76 gestor lê o negócio e 0 orçamentos e 0 cachês', (select count(*) from public.deals where id = (select v::uuid from t_s76 where k = 'deal')) = 1
+  and (select count(*) from public.campaign_request_budgets) = 0 and (select count(*) from public.deal_talent_fees) = 0);
+select tests.expect_error('S76 porteira: aprovado só pela confirmação', $q$select public.agency_deal_move((select v::uuid from t_s76 where k = 'deal'), 'approved')$q$, 'stage_gate');
+select tests.expect_error('S76 voltar etapa exige nota', $q$select public.agency_deal_move((select v::uuid from t_s76 where k = 'deal'), 'briefing_received')$q$, 'note_required');
+select tests.expect_error('S76 fechar perdido exige nota', $q$select public.agency_deal_move((select v::uuid from t_s76 where k = 'deal'), 'closed', 'lost')$q$, 'note_required');
+select tests.ok('S76 deal_stage_can: colaborador dono avança, de fora não; gestor não atravessa porteira; produção não volta',
+  public.deal_stage_can('staff', true, 'qualification', 'shortlist') and not public.deal_stage_can('staff', false, 'qualification', 'shortlist')
+  and not public.deal_stage_can('manager', false, 'proposal_prep', 'proposal_sent') and not public.deal_stage_can('admin', false, 'production', 'shortlist')
+  and public.deal_stage_can('manager', false, 'consultation', 'shortlist'));
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.ok('S76 agência B lê 0 negócios da A', (select count(*) from public.deals) = 0 and (select count(*) from public.deal_talents) = 0);
+select tests.expect_error('S76 D19: agência B não move negócio da A', $q$select public.agency_deal_move((select v::uuid from t_s76 where k = 'deal'), 'shortlist')$q$, 'not_found');
+
+-- 4) consulta ao creator: só com cachê (Adm); creator responde no escritório ------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s76 select 'dt1', id::text from public.deal_talents where deal_id = (select v::uuid from t_s76 where k = 'deal') and talent_id = (select v::uuid from t_s76 where k = 'tc1');
+select tests.expect_error('S76 consulta sem cachê definido',
+  $q$select public.agency_consult_talents((select v::uuid from t_s76 where k = 'deal'), array[(select v::uuid from t_s76 where k = 'dt1')], now() + interval '7 days', 'Topa?')$q$, 'fee_missing');
+select tests.expect_error('S76 gestor não define cachê', $q$select public.agency_fee_set((select v::uuid from t_s76 where k = 'dt1'), 100000)$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_fee_set((select v::uuid from t_s76 where k = 'dt1'), 1000000);
+select tests.ok('S76 Adm lê o cachê e a auditoria não traz o número',
+  (select fee_cents from public.deal_talent_fees where deal_talent_id = (select v::uuid from t_s76 where k = 'dt1')) = 1000000
+  and not exists (select 1 from public.admin_audit where action = 'deal_talent.fee' and after_data::text ~ '1000000'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S76 prazo da consulta no passado',
+  $q$select public.agency_consult_talents((select v::uuid from t_s76 where k = 'deal'), array[(select v::uuid from t_s76 where k = 'dt1')], now() - interval '1 day', null)$q$, 'invalid_input');
+select public.agency_consult_talents((select v::uuid from t_s76 where k = 'deal'), array[(select v::uuid from t_s76 where k = 'dt1')], now() + interval '7 days', 'Topa a campanha?');
+select tests.su();
+select tests.ok('S76 consulta: negócio em consultation, creator consultado, aviso ao creator, mensagem registrada',
+  (select stage from public.deals where id = (select v::uuid from t_s76 where k = 'deal')) = 'consultation'
+  and (select status = 'consulted' and consulted_at is not null from public.deal_talents where id = (select v::uuid from t_s76 where k = 'dt1'))
+  and exists (select 1 from public.inbox_notifications where user_id = '76000000-0000-4000-8000-0000000000d1' and kind = 'opportunity_received')
+  and exists (select 1 from public.deal_messages where deal_id = (select v::uuid from t_s76 where k = 'deal') and channel = 'talent_agency'));
+select tests.login('76000000-0000-4000-8000-0000000000d1', 's76-creator@test.local');
+insert into t_s76 values ('opp', public.talent_opportunities()::text);
+select tests.ok('S76 creator vê a oportunidade sem critérios internos, outros creators nem valores; lê o próprio cachê pela RLS',
+  jsonb_array_length((select v::jsonb from t_s76 where k = 'opp')) = 1
+  and ((select v::jsonb from t_s76 where k = 'opp') -> 0 -> 'brand' ->> 'name') = 'Marca C'
+  and (select v from t_s76 where k = 'opp') !~ '(reasons|suggested_by|cents|budget|commission)'
+  and (select count(*) from public.deal_talents) = 0 and (select count(*) from public.deals) = 1
+  and (select count(*) from public.deal_talent_fees) = 1 and (select count(*) from public.brands where id = (select v::uuid from t_s76 where k = 'brand_c')) = 1);
+select tests.expect_error('S76 recusar sem motivo', $q$select public.talent_opportunity_respond((select v::uuid from t_s76 where k = 'dt1'), 'declined', '')$q$, 'note_required');
+select public.talent_opportunity_respond((select v::uuid from t_s76 where k = 'dt1'), 'interested', 'Topo!');
+select tests.expect_error('S76 responder duas vezes', $q$select public.talent_opportunity_respond((select v::uuid from t_s76 where k = 'dt1'), 'declined', 'mudei de ideia')$q$, 'invalid_state');
+select tests.su();
+select tests.ok('S76 resposta registrada e aviso ao responsável e gestor+',
+  (select status = 'interested' and response_channel = 'app' from public.deal_talents where id = (select v::uuid from t_s76 where k = 'dt1'))
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a3' and kind = 'opportunity_answered')
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and kind = 'opportunity_answered'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S76 agência não registra resposta de creator com login',
+  $q$select public.agency_record_talent_response((select v::uuid from t_s76 where k = 'dt1'), 'declined', 'disse por telefone')$q$, 'talent_has_login');
+-- cachê muda depois do "tenho interesse": volta a consultado e avisa
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_fee_set((select v::uuid from t_s76 where k = 'dt1'), 1100000);
+select tests.su();
+select tests.ok('S76 cachê alterado volta o creator para consultado e avisa',
+  (select status from public.deal_talents where id = (select v::uuid from t_s76 where k = 'dt1')) = 'consulted'
+  and exists (select 1 from public.inbox_notifications where user_id = '76000000-0000-4000-8000-0000000000d1' and kind = 'opportunity_updated'));
+select tests.login('76000000-0000-4000-8000-0000000000d1', 's76-creator@test.local');
+select public.talent_opportunity_respond((select v::uuid from t_s76 where k = 'dt1'), 'interested', 'Ok com o novo valor');
+
+-- 5) conversa: cada lado só o próprio canal ------------------------------------------------------------------------
+select public.deal_message_post((select v::uuid from t_s76 where k = 'deal'), 'talent_agency', (select v::uuid from t_s76 where k = 'tc1'), 'Quando gravamos?');
+select tests.expect_error('S76 creator não escreve no canal da marca',
+  $q$select public.deal_message_post((select v::uuid from t_s76 where k = 'deal'), 'brand_agency', null, 'oi marca')$q$, 'not_found');
+select tests.ok('S76 creator lê só o canal talento↔agência', (select count(*) from public.deal_messages) = (select count(*) from public.deal_messages where channel = 'talent_agency'));
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+select public.deal_message_post((select v::uuid from t_s76 where k = 'deal'), 'brand_agency', null, 'Podemos adiantar?');
+select tests.expect_error('S76 marca não escreve no canal do creator',
+  $q$select public.deal_message_post((select v::uuid from t_s76 where k = 'deal'), 'talent_agency', (select v::uuid from t_s76 where k = 'tc1'), 'oi')$q$, 'not_found');
+select tests.ok('S76 marca lê só o canal marca↔agência e 0 deal_talents', (select count(*) from public.deal_messages where channel = 'talent_agency') = 0
+  and (select count(*) from public.deal_messages where channel = 'brand_agency') = 1 and (select count(*) from public.deal_talents) = 0);
+select tests.su();
+select tests.ok('S76 mensagem da marca avisa o responsável', exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a3' and kind = 'message_received'));
+
+-- 6) entregáveis (escopo) e confirmação pelo Adm ---------------------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_deliverables_save((select v::uuid from t_s76 where k = 'deal'), ('[{"deal_talent_id": "' || (select v from t_s76 where k = 'dt1') || '", "kind": "reels", "network": "instagram", "title": "Reels 1"},
+  {"deal_talent_id": "' || (select v from t_s76 where k = 'dt1') || '", "kind": "stories", "title": "Stories"}]')::jsonb);
+select tests.expect_error('S76 confirmação é do Adm', $q$select public.agency_deal_confirm((select v::uuid from t_s76 where k = 'deal'))$q$, 'forbidden');
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+select tests.ok('S76 antes da confirmação a marca não vê creators nem entregáveis do negócio',
+  jsonb_array_length(public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) -> 'talents') = 0 and (select count(*) from public.deliverables) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_deal_confirm((select v::uuid from t_s76 where k = 'deal'));
+select tests.su();
+select tests.ok('S76 confirmação: negócio aprovado, creator proposto, marca avisada, creator avisado',
+  (select stage = 'approved' and confirmed_at is not null from public.deals where id = (select v::uuid from t_s76 where k = 'deal'))
+  and (select status from public.deal_talents where id = (select v::uuid from t_s76 where k = 'dt1')) = 'proposed'
+  and exists (select 1 from public.inbox_notifications where user_id = '76000000-0000-4000-8000-0000000000c1' and kind = 'campaign_status_changed')
+  and exists (select 1 from public.inbox_notifications where user_id = '76000000-0000-4000-8000-0000000000d1' and kind = 'opportunity_updated' and params ->> 'status' = 'confirmed'));
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+select tests.ok('S76 depois da confirmação a marca vê o creator (campos do kit) e os entregáveis; nunca valores',
+  jsonb_array_length(public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) -> 'talents') = 1
+  and (public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req')) ->> 'brand_status') = 'contracting'
+  and (select count(*) from public.deliverables) = 2
+  and public.brand_campaign_detail((select v::uuid from t_s76 where k = 'req'))::text !~ '(fee|cents|commission|internal_notes)');
+select tests.expect_error('S76 marca não cancela campanha já confirmada',
+  $q$select public.brand_request_cancel((select v::uuid from t_s76 where k = 'req'), 'mudamos de ideia')$q$, 'invalid_state');
+select public.brand_request_cancel((select v::uuid from t_s76 where k = 'req2'), 'rascunho descartado');
+select tests.login('76000000-0000-4000-8000-0000000000d1', 's76-creator@test.local');
+select tests.ok('S76 creator lê os próprios entregáveis e a oportunidade mostra "confirmada"',
+  (select count(*) from public.deliverables) = 2 and (public.talent_opportunities() -> 0 -> 'deal' ->> 'status') = 'confirmed');
+
+-- 7) conflito de agenda: segundo negócio no mesmo período do mesmo creator ---------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s76 values ('deal2', public.agency_deal_create(public.seed_uuid('s74:agency:a'), (select v::uuid from t_s76 where k = 'brand_c'),
+  ('{"title": "Campanha paralela", "expected_start": "' || (current_date + 25) || '", "expected_end": "' || (current_date + 28) || '"}')::jsonb)::text);
+select public.agency_shortlist_set((select v::uuid from t_s76 where k = 'deal2'), ('[{"talent_id": "' || (select v from t_s76 where k = 'tc1') || '"}]')::jsonb);
+insert into t_s76 select 'dt2', id::text from public.deal_talents where deal_id = (select v::uuid from t_s76 where k = 'deal2');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_fee_set((select v::uuid from t_s76 where k = 'dt2'), 500000);
+select public.agency_consult_talents((select v::uuid from t_s76 where k = 'deal2'), array[(select v::uuid from t_s76 where k = 'dt2')], now() + interval '3 days', null);
+select tests.login('76000000-0000-4000-8000-0000000000d1', 's76-creator@test.local');
+select public.talent_opportunity_respond((select v::uuid from t_s76 where k = 'dt2'), 'interested', null);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S76 mesmo creator no mesmo período: conflito de agenda', $q$select public.agency_deal_confirm((select v::uuid from t_s76 where k = 'deal2'))$q$, 'schedule_conflict');
+select tests.expect_error('S76 forçar exige justificativa', $q$select public.agency_deal_confirm((select v::uuid from t_s76 where k = 'deal2'), '', true)$q$, 'note_required');
+select public.agency_deal_confirm((select v::uuid from t_s76 where k = 'deal2'), 'marca aceitou gravar no mesmo dia', true);
+select tests.su();
+select tests.ok('S76 confirmação forçada registrada na auditoria', exists (select 1 from public.admin_audit where action = 'deal.confirm' and (after_data ->> 'forced')::boolean));
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+select tests.ok('S76 negócio de origem agência só fica visível à marca depois da confirmação',
+  (select count(*) from public.deals where id = (select v::uuid from t_s76 where k = 'deal2')) = 1);
+
+-- 8) D19 em entregáveis e documentos; conta demo ---------------------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S76 D19: entregável com par de outro negócio',
+  $q$select public.agency_deliverables_save((select v::uuid from t_s76 where k = 'deal2'), ('[{"deal_talent_id": "' || (select v from t_s76 where k = 'dt1') || '", "kind": "post"}]')::jsonb)$q$, 'not_found');
+insert into t_s76 values ('doc_deal', public.document_reserve(public.seed_uuid('s74:agency:a'), 'deal', (select v::uuid from t_s76 where k = 'deal'),
+  '{"kind": "media", "title": "Moodboard", "mime_type": "image/png", "size_bytes": 100, "share_brand": true}') ->> 'id');
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+insert into t_s76 values ('doc_req', public.document_reserve(public.seed_uuid('s74:agency:a'), 'request', (select v::uuid from t_s76 where k = 'req'),
+  '{"kind": "brief_attachment", "title": "Briefing", "mime_type": "application/pdf", "size_bytes": 100}') ->> 'id');
+select tests.expect_error('S76 marca não reserva contrato no negócio',
+  $q$select public.document_reserve(public.seed_uuid('s74:agency:a'), 'deal', (select v::uuid from t_s76 where k = 'deal'), '{"kind": "contract", "title": "C", "mime_type": "application/pdf", "size_bytes": 1}')$q$, 'forbidden');
+select tests.su();
+update public.documents set status = 'ready' where id in ((select v::uuid from t_s76 where k = 'doc_deal'), (select v::uuid from t_s76 where k = 'doc_req'));
+select tests.login('76000000-0000-4000-8000-0000000000c1', 's76-marca-c-dono@test.local');
+select tests.ok('S76 marca lê o anexo do próprio briefing e o documento compartilhado do negócio', (select count(*) from public.documents where id in ((select v::uuid from t_s76 where k = 'doc_deal'), (select v::uuid from t_s76 where k = 'doc_req'))) = 2);
+select tests.login('74000000-0000-4000-8000-0000000000c3', 'marca-y-dono@test.local');
+select tests.ok('S76 marca Y lê 0 documentos da C', (select count(*) from public.documents where agency_id = public.seed_uuid('s74:agency:a') and brand_id = (select v::uuid from t_s76 where k = 'brand_c')) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000e1', 's74-demo-admin@test.local');
+select tests.ok('S76 D6: admin de demonstração lê 0 negócios, pedidos, orçamentos e mensagens da agência real',
+  (select count(*) from public.deals) = 0 and (select count(*) from public.campaign_requests) = 0
+  and (select count(*) from public.campaign_request_budgets) = 0 and (select count(*) from public.deal_messages) = 0);
+select tests.anon();
+select tests.expect_error('S76 visitante sem acesso aos negócios', $q$select count(*) from public.deals$q$, '42501');
+select tests.su();
+select tests.ok('S76 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+  not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+              and p.proname in ('campaign_deliverables_valid', 'fill_deal_scope', 'fill_deliverable_scope', 'fill_request_scope', 'check_document_request_scope',
+                                'deal_talents_status_cascade', 'activities_touch_contact', 'my_staff_deal_ids', 'my_talent_deal_ids', 'my_talent_brand_ids',
+                                'my_talent_deal_talent_ids', 'my_brand_deal_ids', 'my_brand_deal_talent_ids', 'deal_stage_index', 'deal_brand_status', 'deal_stage_can',
+                                'deal_write_scope', 'actor_label', 'brand_request_save', 'brand_request_submit', 'brand_request_cancel', 'agency_deal_create',
+                                'agency_deal_update', 'agency_deal_team_set', 'agency_deal_move', 'agency_shortlist_set', 'agency_activity_add', 'deal_message_post',
+                                'agency_fee_set', 'agency_deliverables_save', 'agency_consult_talents', 'talent_opportunity_respond', 'agency_record_talent_response',
+                                'agency_deal_talent_set_status', 'agency_deal_confirm', 'talent_availability_save', 'talent_availability_delete', 'talent_public_card',
+                                'brand_talent_search', 'brand_talent_detail', 'brand_campaign_detail', 'talent_opportunities')
+              and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+drop table t_s76;
+
 -- ================================================================ S80 · Estrutura do módulo de gestão
 -- Cresce a cada etapa (0064..0069). Tabelas novas: PK só "id", RLS ligada, sem escrita direta e sem
 -- leitura anônima; nenhuma coluna de valor em tabela operacional; políticas sem função por linha;
@@ -8501,7 +8778,9 @@ drop table t_s75;
 select tests.su();
 create temp table t_s80 (t text primary key);
 insert into t_s80 values ('agencies'), ('agency_members'), ('agency_brands'), ('brand_members'), ('inbox_notifications'), ('documents'),
-  ('talent_segments'), ('talent_profiles'), ('talent_segment_links'), ('talent_social_accounts'), ('media_kits');
+  ('talent_segments'), ('talent_profiles'), ('talent_segment_links'), ('talent_social_accounts'), ('media_kits'),
+  ('talent_availability'), ('campaign_requests'), ('deals'), ('deal_team'), ('deal_talents'), ('deliverables'), ('activities'), ('deal_messages'),
+  ('campaign_request_budgets'), ('deal_talent_fees');
 grant all on t_s80 to anon, authenticated, service_role;
 select tests.ok('S80 tabelas novas: PK só id, RLS ligada, sem escrita para authenticated/anon, sem select para anon',
   (select bool_and((select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
@@ -8516,7 +8795,10 @@ select tests.ok('S80 tabelas novas: PK só id, RLS ligada, sem escrita para auth
 select tests.ok('S80 nenhuma coluna de valor em tabela operacional',
   not exists (select 1 from information_schema.columns c
               where c.table_schema = 'public' and c.table_name in (select t from t_s80)
-                and c.column_name ~ '(_cents$|amount|fee|price|budget|commission)'));
+                -- tabelas de valor (só Adm) ficam fora desta regra
+                and c.table_name not in ('campaign_request_budgets', 'deal_talent_fees')
+                -- "fee" só como palavra (brand_feedback não é valor)
+                and c.column_name ~ '(_cents$|amount|(^|_)fee(_|$)|price|budget|commission)'));
 select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_platform_admin() por linha',
   (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80)
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0
@@ -8525,7 +8807,7 @@ select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_p
          'agencies_select_talent', 'role_assignments_hide_agency_from_demo')
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0);
 select tests.ok('S80 _select_admin das tabelas novas usa is_platform_admin (nunca is_admin)',
-  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 10
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 20
   and not exists (select 1 from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin'
                   and qual !~ 'is_platform_admin'));
 select tests.ok('S80 nenhum par de tabelas novas com FK nos dois sentidos',

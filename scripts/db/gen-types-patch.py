@@ -126,28 +126,30 @@ def main():
     ap.add_argument("--functions", default="")
     args = ap.parse_args()
     src = open(TYPES).read()
-    tables_start = src.index("          Tables: {")
-    views_start = src.index("          Views: {")
+    tables_start = src.index("\n    Tables: {") + 1
+    views_start = src.index("\n    Views: {") + 1
     for table in [t for t in args.tables.split(",") if t]:
         entry = table_entry(args.db, table)
         tables_block = src[tables_start:views_start]
-        existing = re.search(r'"' + table + r'": \{\n                  Row:.*?\n                  \]\n                \}', tables_block, re.S)
+        existing = re.search(r'\n      ' + table + r': \{\n        Row:.*?\n        Relationships: \[.*?\n        \];\n      \};', tables_block, re.S)
         if existing:
-            tables_block = tables_block.replace(existing.group(0), entry)
+            tables_block = tables_block.replace(existing.group(0), "\n" + entry + ";")
         else:
             # entra antes do fechamento do bloco Tables
             idx = tables_block.rstrip().rfind("}")
-            tables_block = tables_block[:idx].rstrip() + "," + entry + "\n          }\n"
+            tables_block = tables_block[:idx].rstrip() + "\n" + entry + ";\n    };\n"
         src = src[:tables_start] + tables_block + src[views_start:]
-        views_start = src.index("          Views: {")
-    fn_start = src.index("          Functions: {")
+        views_start = src.index("\n    Views: {") + 1
+    fn_start = src.index("\n    Functions: {") + 1
     for fn in [f for f in args.functions.split(",") if f]:
         entries = function_entry(args.db, fn)
-        block_end = src.index("          Enums: {", fn_start)
+        block_end = src.index("\n    Enums: {", fn_start) + 1
         block = src[fn_start:block_end]
-        block = re.sub(r'"' + fn + r'":\n\{ Args: .*?\n                           \},?\n?', "", block, flags=re.S)
-        insert_at = len("          Functions: {\n")
-        block = block[:insert_at] + ",\n".join(entries) + ",\n" + block[insert_at:]
+        # entrada antiga: de uma linha ("      fn: { Args: ...; Returns: ... };") ou de várias (até "      };")
+        block = re.sub(r'\n      ' + fn + r': \{ Args: [^\n]*\};', "", block)
+        block = re.sub(r'\n      ' + fn + r': \{\n        Args:.*?\n      \};', "", block, flags=re.S)
+        insert_at = len("    Functions: {\n")
+        block = block[:insert_at] + "\n".join(e + ";" for e in entries) + "\n" + block[insert_at:]
         src = src[:fn_start] + block + src[block_end:]
     open(TYPES, "w").write(src)
 
