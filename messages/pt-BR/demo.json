@@ -39,6 +39,10 @@
     "brand": {
       "label": "Marca",
       "description": "Dono da Marca Exemplo: campanhas e aprovações"
+    },
+    "talent": {
+      "label": "Talento",
+      "description": "Escritório do creator: media kit e consentimento"
     }
   }
 }

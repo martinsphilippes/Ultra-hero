@@ -4,7 +4,9 @@ import {
   ArrowLeft,
   BadgeCheck,
   Bell,
+  BriefcaseBusiness,
   Building2,
+  Contact,
   BarChart3,
   ChefHat,
   ClipboardList,
@@ -75,6 +77,8 @@ const ICONS: Record<string, LucideIcon> = {
   post: SquarePlus,
   recipes: ChefHat,
   agency: Building2,
+  casting: Contact,
+  office: BriefcaseBusiness,
   team: Users,
   notifications: Bell,
 };

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ChevronRight, Settings } from "lucide-react";
+import { Briefcase, ChevronRight, Settings } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -15,7 +15,8 @@ import { TodaySection } from "@/components/me/today/TodaySection";
 import { DemoAccess } from "@/components/demo/DemoAccess";
 import { Avatar, Badge, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
-import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
+import { getProfile, getRoles, isTalentOnly, requireUser } from "@/lib/auth/session";
+import { getTalentContext } from "@/lib/talent/server";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
@@ -74,6 +75,9 @@ export default async function ProfilePage({ searchParams }: Props) {
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
   const roleSet = Array.from(new Set(roles.map((r) => r.role)));
+  // talento sem página (só escopo talent, D2): o selo diz "Talento"; quem está num casting tem o Escritório
+  const roleBadges = isTalentOnly(roles) ? roleSet.map((r) => (r === "creator" ? "talent" : r)) : roleSet;
+  const talentCtx = roleSet.includes("creator") ? await getTalentContext() : null;
   // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio"
   // ou, com WEARABLES_REAL_ENABLED=1, o relógio que conectaram.
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
@@ -105,7 +109,7 @@ export default async function ProfilePage({ searchParams }: Props) {
         {user.email}
       </p>
       <ul className="flex flex-wrap items-center gap-1.5" aria-label={t("roles.label")}>
-        {roleSet.map((role) => (
+        {roleBadges.map((role) => (
           <li key={role}>
             <Badge variant={role === "admin" ? "accent" : "neutral"}>{t(`roles.${role}`)}</Badge>
           </li>
@@ -120,6 +124,24 @@ export default async function ProfilePage({ searchParams }: Props) {
     </div>
   );
 
+  const officeCard =
+    talentCtx?.state === "ok" ? (
+      <Link
+        href="/creator/escritorio"
+        data-testid="profile-office"
+        className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
+      >
+        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-fg">
+          <Briefcase className="size-5" />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-sm font-semibold text-fg">{t("office.title")}</span>
+          <span className="type-caption text-fg-muted">{t("office.description", { agency: talentCtx.talent.agency })}</span>
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+      </Link>
+    ) : null;
+
   return (
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
@@ -130,6 +152,7 @@ export default async function ProfilePage({ searchParams }: Props) {
           <HeroProfileHeader profile={heroProfile} />
           {/* o herói só posta no dia a dia (foto ou vídeo); o resto é da administração */}
           {heroActive ? <HeroNewPost href={newPostHref} /> : null}
+          {officeCard}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroActive}
@@ -161,6 +184,7 @@ export default async function ProfilePage({ searchParams }: Props) {
               {accountSummary}
             </div>
           </section>
+          {officeCard}
           <HeroEditorDisclosure publicHref={null} description={t("editor.description")}>
             <div id={ACCOUNT_ANCHOR} className="scroll-mt-20">
               {dataForm}

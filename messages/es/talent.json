@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "eyebrow": "Oficina",
+    "home": "Oficina",
+    "consent": "Consentimiento",
+    "kit": "Media kit"
+  },
+  "tabs": {
+    "label": "Secciones de la oficina",
+    "home": "Inicio",
+    "kit": "Media kit",
+    "consent": "Consentimiento",
+    "notifications": "Avisos"
+  },
+  "home": {
+    "unavailable": "Oficina en actualización",
+    "none": "Todavía no formas parte de un casting",
+    "noneHint": "Cuando una agencia te incluya en su casting, la oficina aparecerá aquí.",
+    "agency": "Casting de {agency}",
+    "agencyWithManager": "Casting de {agency} · gestión: {manager}",
+    "availabilityTitle": "Tu disponibilidad",
+    "availability": {
+      "available": "Disponible",
+      "limited": "Agenda limitada",
+      "unavailable": "No disponible"
+    },
+    "availabilityHint": "La agencia actualiza la disponibilidad contigo.",
+    "kitTitle": "Media kit",
+    "kitActive": "Enlace activo hasta {date} · {count, plural, =0 {ninguna visita} one {# visita} other {# visitas}}",
+    "kitInactive": "Ningún enlace público activo.",
+    "kitOpen": "Abrir media kit",
+    "metricsTitle": "Métricas declaradas",
+    "metricsEmpty": "Todavía no hay redes declaradas. Regístralas en el media kit.",
+    "followers": "{count} seguidores",
+    "followersUnknown": "Seguidores: no informado",
+    "inboxTitle": "Avisos de la agencia",
+    "inboxAll": "Ver todos",
+    "inboxEmpty": "Ningún aviso por ahora.",
+    "upcoming": "Oportunidades, tareas y agenda llegan a la oficina en las próximas etapas."
+  },
+  "consent": {
+    "title": "Términos de uso comercial",
+    "stateOn": "Consentimiento activo",
+    "stateOff": "Sin consentimiento",
+    "stateRevoked": "Consentimiento revocado",
+    "intro": "Para que la agencia te presente a las marcas, necesitamos tu consentimiento (LGPD). Con él:",
+    "item1": "la agencia puede generar el enlace público de tu media kit, solo con los campos que elijas;",
+    "item2": "puedes aparecer en el catálogo que consultan las marcas de la agencia;",
+    "item3": "tus métricas aparecen siempre como declaradas, con la fecha de cada dato;",
+    "item4": "puedes revocarlo cuando quieras: el enlace deja de funcionar y sales del catálogo al instante.",
+    "version": "Versión de los términos: {version}",
+    "givenAt": "Aceptado el {date} (versión {version}).",
+    "revokedAt": "Revocado el {date}.",
+    "outdated": "Los términos se actualizaron. Acepta la versión nueva para mantener el enlace y el catálogo.",
+    "accept": "Aceptar los términos",
+    "revoke": "Revocar consentimiento",
+    "confirmRevoke": "¿Revocar el consentimiento? El enlace público del kit deja de funcionar y sales del catálogo.",
+    "given": "Consentimiento registrado.",
+    "revoked": "Consentimiento revocado. El enlace del kit se desactivó.",
+    "banner": "Sin tu consentimiento, la agencia no genera el enlace del kit ni te muestra en el catálogo.",
+    "bannerLink": "Ver los términos"
+  },
+  "kit": {
+    "editor": "Texto y campos visibles",
+    "preview": "Vista previa (lo que ve la marca)",
+    "networks": "Tus redes"
+  },
+  "errors": {
+    "consent_required": "Acepta los términos de uso comercial antes de generar el enlace.",
+    "demo_locked": "El enlace público está desactivado para esta agencia.",
+    "duplicate_network": "Esta red con este perfil ya está registrada.",
+    "too_many_networks": "Se alcanzó el límite de redes.",
+    "forbidden": "No tienes permiso para esta acción.",
+    "not_found": "No encontrado.",
+    "unauthenticated": "Vuelve a iniciar sesión para continuar.",
+    "invalid_input": "Revisa los campos e inténtalo de nuevo.",
+    "generic": "No se pudo completar. Inténtalo de nuevo."
+  },
+  "values": {
+    "demoLockedKit": "Agencia de demostración: el enlace público queda desactivado (solo la vista previa)."
+  }
+}

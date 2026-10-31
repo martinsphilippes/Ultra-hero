@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "eyebrow": "Office",
+    "home": "Office",
+    "consent": "Consent",
+    "kit": "Media kit"
+  },
+  "tabs": {
+    "label": "Office sections",
+    "home": "Home",
+    "kit": "Media kit",
+    "consent": "Consent",
+    "notifications": "Notices"
+  },
+  "home": {
+    "unavailable": "Office being updated",
+    "none": "You are not part of a roster yet",
+    "noneHint": "When an agency adds you to its roster, your office shows up here.",
+    "agency": "{agency} roster",
+    "agencyWithManager": "{agency} roster · managed by {manager}",
+    "availabilityTitle": "Your availability",
+    "availability": {
+      "available": "Available",
+      "limited": "Limited schedule",
+      "unavailable": "Unavailable"
+    },
+    "availabilityHint": "The agency updates your availability with you.",
+    "kitTitle": "Media kit",
+    "kitActive": "Link active until {date} · {count, plural, =0 {no visits} one {# visit} other {# visits}}",
+    "kitInactive": "No active public link.",
+    "kitOpen": "Open media kit",
+    "metricsTitle": "Declared metrics",
+    "metricsEmpty": "No networks declared yet. Add them in the media kit.",
+    "followers": "{count} followers",
+    "followersUnknown": "Followers: not provided",
+    "inboxTitle": "Agency notices",
+    "inboxAll": "See all",
+    "inboxEmpty": "No notices yet.",
+    "upcoming": "Opportunities, tasks and calendar arrive in the office in the next stages."
+  },
+  "consent": {
+    "title": "Commercial use terms",
+    "stateOn": "Consent active",
+    "stateOff": "No consent",
+    "stateRevoked": "Consent revoked",
+    "intro": "For the agency to present you to brands, we need your consent (LGPD). With it:",
+    "item1": "the agency can create the public link to your media kit, showing only the fields you choose;",
+    "item2": "you can appear in the catalog that the agency's brands browse;",
+    "item3": "your metrics always show as declared, with the date of each figure;",
+    "item4": "you can revoke at any time: the link goes offline and you leave the catalog immediately.",
+    "version": "Terms version: {version}",
+    "givenAt": "Accepted on {date} (version {version}).",
+    "revokedAt": "Revoked on {date}.",
+    "outdated": "The terms were updated. Accept the new version to keep the link and the catalog.",
+    "accept": "Accept the terms",
+    "revoke": "Revoke consent",
+    "confirmRevoke": "Revoke consent? The public kit link stops working and you leave the catalog.",
+    "given": "Consent recorded.",
+    "revoked": "Consent revoked. The kit link was turned off.",
+    "banner": "Without your consent, the agency cannot create the kit link or show you in the catalog.",
+    "bannerLink": "See the terms"
+  },
+  "kit": {
+    "editor": "Text and visible fields",
+    "preview": "Preview (what the brand sees)",
+    "networks": "Your networks"
+  },
+  "errors": {
+    "consent_required": "Accept the commercial use terms before creating the link.",
+    "demo_locked": "The public link is turned off for this agency.",
+    "duplicate_network": "This network with this handle is already registered.",
+    "too_many_networks": "Network limit reached.",
+    "forbidden": "You do not have permission for this action.",
+    "not_found": "Not found.",
+    "unauthenticated": "Sign in again to continue.",
+    "invalid_input": "Check the fields and try again.",
+    "generic": "Could not complete. Please try again."
+  },
+  "values": {
+    "demoLockedKit": "Demo agency: the public link stays off (preview only)."
+  }
+}

@@ -8,6 +8,7 @@ import { SelfForm } from "@/components/agency/SettingsForms";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { Button, PageHeader } from "@/components/ui";
 import { agencyDashboard } from "@/lib/agency/queries";
+import { castingCounts } from "@/lib/talent/queries";
 import { agencyCan, canSeeValues } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
 
@@ -18,17 +19,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("dashboard") };
 }
 
-// Início da agência (Etapa A): equipe, marcas atendidas, convites pendentes e avisos; os próximos
-// módulos aparecem como "em breve" (casting, pipeline, agenda e, só para o Adm, financeiro).
+// Início da agência: casting, equipe, marcas atendidas, convites pendentes e avisos; os próximos
+// módulos aparecem como "em breve" (pipeline, agenda e, só para o Adm, financeiro).
 export default async function AgencyDashboardPage() {
   const ctx = await getAgencyContext();
   if (ctx.state !== "ok") return null;
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
-  const [t, data] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin)]);
+  const [t, data, casting] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id)]);
 
   const upcoming = [
-    { key: "casting", icon: Contact },
     { key: "pipeline", icon: BriefcaseBusiness },
     { key: "tasks", icon: ClipboardList },
     { key: "agenda", icon: CalendarDays },
@@ -48,6 +48,7 @@ export default async function AgencyDashboardPage() {
       ) : null}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="agency-kpis">
+        {casting ? <KpiCard label={t("kpi.casting")} value={casting.total} hint={t("kpi.castingActive", { count: casting.active })} /> : null}
         <KpiCard label={t("kpi.team")} value={data.members} />
         <KpiCard label={t("kpi.brands")} value={data.brands} />
         {isAdmin ? <KpiCard label={t("kpi.invites")} value={data.pendingInvites} /> : null}
@@ -60,7 +61,12 @@ export default async function AgencyDashboardPage() {
         </h2>
         <div className="flex flex-wrap gap-2">
           {isManager ? (
-            <Button asChild size="sm" leadingIcon={<Plus />}>
+            <Button asChild size="sm" leadingIcon={<Contact />}>
+              <Link href="/agencia/casting/novo">{t("newTalent")}</Link>
+            </Button>
+          ) : null}
+          {isManager ? (
+            <Button asChild size="sm" variant="secondary" leadingIcon={<Plus />}>
               <Link href="/agencia/marcas/nova">{t("newBrand")}</Link>
             </Button>
           ) : null}
@@ -69,6 +75,9 @@ export default async function AgencyDashboardPage() {
               <Link href="/agencia/equipe">{t("inviteTeam")}</Link>
             </Button>
           ) : null}
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/agencia/casting">{t("seeCasting")}</Link>
+          </Button>
           <Button asChild size="sm" variant="secondary">
             <Link href="/agencia/marcas">{t("seeBrands")}</Link>
           </Button>

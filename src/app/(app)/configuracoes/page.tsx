@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import {
   BadgeCheck,
+  BriefcaseBusiness,
   Building2,
   Bell,
   BellRing,
@@ -28,6 +29,7 @@ import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { Button, PageHeader } from "@/components/ui";
 import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
 import { appliesOn } from "@/lib/routine/reminders";
+import { getTalentContext } from "@/lib/talent/server";
 import { buildSettingsSections, DELETE_ACCOUNT_HREF, SETTINGS_PATH, type SettingsItem } from "@/lib/settings/sections";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -53,6 +55,7 @@ const ICONS: Record<SettingsItem["key"], LucideIcon> = {
   seller: Store,
   professional: Stethoscope,
   agency: Building2,
+  office: BriefcaseBusiness,
   brand: BadgeCheck,
   admin: ShieldCheck,
 };
@@ -66,7 +69,8 @@ const rowClass =
 export default async function SettingsPage() {
   const user = await requireUser(SETTINGS_PATH);
   const [profile, roles, t, tp, tc] = await Promise.all([getProfile(), getRoles(), getTranslations("me.settings"), getTranslations("me.profile"), getTranslations("common")]);
-  const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))));
+  const talent = roles.some((r) => r.role === "creator") ? await getTalentContext() : null;
+  const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok" });
 
   // resumo da linha de Lembretes (como era no Perfil); se a leitura falhar, a linha fica sem contagem
   const supabase = await createClient();

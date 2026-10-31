@@ -258,7 +258,9 @@
         "missing_body": "The photo is not attached to this post. Discard it and upload again.",
         "not_photo": "This draft has no photo uploaded from the phone."
       }
-    }
+    },
+    "talentOnly": "Available only for heroes with a public page",
+    "talentOnlyHint": "Your access is the agency office: media kit, consent and notices."
   },
   "reviews": {
     "title": "Review history",

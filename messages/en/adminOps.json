@@ -67,7 +67,9 @@
     "demo_account_forbidden": "Demo accounts can't join real agencies.",
     "agency_member_elsewhere": "This person already belongs to another agency.",
     "brand_not_linked": "The brand is no longer with this agency.",
-    "partner_suspended": "This access is suspended right now."
+    "partner_suspended": "This access is suspended right now.",
+    "user_has_talent": "This account is already in a roster.",
+    "talent_already_linked": "This invite was already used by another account."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -291,7 +293,9 @@
     "revoked": "Invitation revoked",
     "expiredNote": "expired",
     "roleAgency": "Agency",
-    "roleBrand": "Brand"
+    "roleBrand": "Brand",
+    "roleTalent": "Talent",
+    "talentTarget": "Talent profile"
   },
   "invite": {
     "title": "Invitation",
@@ -321,7 +325,9 @@
     "successBrand": "You now have access to the brand portal.",
     "goAgency": "Open agency portal",
     "goBrand": "Open brand portal",
-    "inboxOnlyNote": "Notices stay on the portal bell."
+    "inboxOnlyNote": "Notices stay on the portal bell.",
+    "successTalent": "Done! You now have the agency office.",
+    "goOffice": "Open the office"
   },
   "creators": {
     "title": "Heroes",

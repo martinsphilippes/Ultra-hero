@@ -258,7 +258,9 @@
         "missing_body": "A foto não ficou ligada a este post. Descarte e envie de novo.",
         "not_photo": "Este rascunho não tem foto enviada pelo celular."
       }
-    }
+    },
+    "talentOnly": "Disponível só para heróis com página pública",
+    "talentOnlyHint": "Seu acesso é o escritório da agência: media kit, consentimento e avisos."
   },
   "reviews": {
     "title": "Histórico de revisões",

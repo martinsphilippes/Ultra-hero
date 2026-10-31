@@ -46,7 +46,8 @@
     "dashboard": "Painel",
     "content": "Meus conteúdos",
     "links": "Vínculos de produtos",
-    "recipes": "Minhas Receitas"
+    "recipes": "Minhas Receitas",
+    "office": "Escritório"
   },
   "seller": {
     "dashboard": "Painel",
@@ -86,7 +87,8 @@
     "brands": "Marcas",
     "notifications": "Avisos",
     "settings": "Configurações",
-    "team": "Equipe"
+    "team": "Equipe",
+    "casting": "Casting"
   },
   "brand": {
     "dashboard": "Início",

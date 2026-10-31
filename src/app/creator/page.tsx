@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { ArrowRight, FilePen, Link2 } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { ReviewTimeline, type ReviewRow } from "@/components/creator/ReviewTimeline";
 import { Avatar, Badge, Card, CardBody, PageHeader, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatRelativeTime } from "@/i18n/format";
+import { getRoles, isTalentOnly } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 import { getManagedCreator } from "./_lib/creator";
 
@@ -20,6 +22,8 @@ type StatusRow = { status: "draft" | "published" | "archived"; review_status: "n
 // Painel do herói escolhido pelo admin (Publicar como hero): contagens por status/revisão, devolvidos
 // com feedback e últimas revisões. O herói comum volta ao Perfil (só o Novo post é dele).
 export default async function CreatorHomePage() {
+  // talento sem página pública (só escopo talent, D2): o portal dele é o escritório
+  if (isTalentOnly(await getRoles())) redirect("/creator/escritorio");
   const [t, tn, tcat, locale, ctx] = await Promise.all([getTranslations("creator"), getTranslations("nav"), getTranslations("catalog"), getLocale(), getManagedCreator("dashboard")]);
   if (!ctx.creatorId || !ctx.profile) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} />;
 

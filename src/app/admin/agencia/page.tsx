@@ -7,7 +7,7 @@ import { InviteDialog } from "@/components/agency/InviteDialog";
 import { Badge, EmptyState, PageHeader, Section } from "@/components/ui";
 import { AGENCY_ROLES } from "@/lib/agency/roles";
 import { requireRole } from "@/lib/auth/session";
-import { AGENCY_DEMO_EMAIL, AGENCY_STAFF_DEMO_EMAIL, BRAND_DEMO_EMAIL } from "@/lib/demo/accounts";
+import { AGENCY_DEMO_EMAIL, AGENCY_STAFF_DEMO_EMAIL, BRAND_DEMO_EMAIL, TALENT_DEMO_EMAIL } from "@/lib/demo/accounts";
 import { isAgencyDemoReady, isDemoAccessEnabled } from "@/lib/demo/server";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
@@ -47,6 +47,7 @@ export default async function AdminAgencyPage() {
     { key: "agency", email: AGENCY_DEMO_EMAIL, ready: demoReady.agency },
     { key: "agencyStaff", email: AGENCY_STAFF_DEMO_EMAIL, ready: demoReady.agencyStaff },
     { key: "brand", email: BRAND_DEMO_EMAIL, ready: demoReady.brand },
+    { key: "talent", email: TALENT_DEMO_EMAIL, ready: demoReady.talent },
   ] as const;
   const anyReady = demoAccounts.some((a) => a.ready);
 

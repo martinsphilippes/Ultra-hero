@@ -264,7 +264,8 @@ export function DemoPlayer({
                     type="button"
                     onClick={() => seekTo(line.t)}
                     aria-current={current ? "true" : undefined}
-                    aria-label={t("jumpTo", { time: formatClock(line.t) })}
+                    // nome acessível = o texto visível ("0:20 frase"): leitor de voz e comando de voz batem
+                    title={t("jumpTo", { time: formatClock(line.t) })}
                     className={cn(
                       "flex min-h-11 w-full items-start gap-3 px-4 py-2 text-left text-sm transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus",
                       current ? "bg-accent-soft text-fg" : "text-fg-muted",

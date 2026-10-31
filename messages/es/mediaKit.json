@@ -1,0 +1,133 @@
+{
+  "source": {
+    "label": "datos del {date} · declarado por {by} el {declaredAt}",
+    "labelShort": "datos del {date} · declarado por {by}",
+    "side": {
+      "talent": "creator",
+      "agency": "agencia",
+      "integration": "integración"
+    },
+    "stale": "desactualizado"
+  },
+  "audience": {
+    "gender": "Género",
+    "age": "Rango de edad",
+    "notInformed": "no informado",
+    "genderKeys": {
+      "female": "Mujeres",
+      "male": "Hombres",
+      "other": "Otros"
+    },
+    "age55": "55 o más"
+  },
+  "view": {
+    "segments": "Segmentos",
+    "networks": "Redes",
+    "noNetworks": "Ninguna red declarada.",
+    "followers": "Seguidores",
+    "views": "Visualizaciones medias",
+    "reach": "Alcance medio",
+    "engagement": "Engagement",
+    "notInformed": "no informado",
+    "openProfile": "Abrir perfil",
+    "audience": "Audiencia declarada",
+    "brands": "Marcas que ya acompañan",
+    "contact": "Contacto comercial"
+  },
+  "networks": {
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "youtube": "YouTube",
+    "x": "X",
+    "facebook": "Facebook",
+    "kwai": "Kwai",
+    "twitch": "Twitch",
+    "linkedin": "LinkedIn",
+    "pinterest": "Pinterest",
+    "threads": "Threads",
+    "other": "Otra"
+  },
+  "social": {
+    "saved": "Red guardada.",
+    "deleted": "Red eliminada.",
+    "intro": "Números declarados, con la fecha del dato. Un campo vacío aparece como \"no informado\".",
+    "add": "Añadir red",
+    "integrationSoon": "Conexión automática con las redes: próximamente. Por ahora, todo es declarado.",
+    "empty": "Ninguna red registrada.",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Eliminar esta red?",
+    "editTitle": "Editar red",
+    "addTitle": "Nueva red",
+    "save": "Guardar red",
+    "network": "Red",
+    "handle": "Perfil",
+    "handleHint": "Sin la @.",
+    "url": "Enlace del perfil",
+    "urlHint": "Empieza con https://",
+    "engagementPct": "Engagement (%)",
+    "asOf": "Fecha del dato",
+    "asOfHint": "Día en que se vieron los números (hasta hace 2 años).",
+    "audienceTitle": "Audiencia (opcional)",
+    "audienceHint": "Porcentajes declarados; cada grupo suma como máximo 100%.",
+    "topStates": "Principales estados",
+    "topStatesHint": "Hasta 5 siglas, separadas por coma (ej.: {example}).",
+    "topCountries": "Principales países",
+    "topCountriesHint": "Hasta 5 códigos de 2 letras (ej.: BR, PT).",
+    "invalidNumber": "Revisa los números: solo dígitos (engagement entre 0 y 100).",
+    "invalidAsOf": "La fecha del dato debe estar entre hoy y hace 2 años.",
+    "invalidAudience": "Revisa la audiencia: cada grupo hasta 100%, hasta 5 estados y 5 países."
+  },
+  "editor": {
+    "saved": "Media kit guardado.",
+    "headline": "Titular",
+    "headlineHint": "Hasta 140 caracteres.",
+    "about": "Sobre",
+    "aboutHint": "{count} de 1500 caracteres.",
+    "fieldsTitle": "Campos visibles en el enlace",
+    "fieldsHint": "El nombre siempre aparece. Ningún valor (caché, precio) entra en el kit.",
+    "orphanFields": "Activa \"Redes\" para mostrar seguidores, visualizaciones, alcance, engagement y audiencia.",
+    "save": "Guardar media kit"
+  },
+  "fields": {
+    "photo": "Foto",
+    "headline": "Titular",
+    "about": "Sobre",
+    "location": "Ciudad y estado",
+    "segments": "Segmentos",
+    "networks": "Redes",
+    "followers": "Seguidores",
+    "views": "Visualizaciones medias",
+    "reach": "Alcance medio",
+    "engagement": "Engagement",
+    "audience": "Audiencia (gráficos)",
+    "brands": "Marcas que ya acompañan",
+    "agency_contact": "Contacto de la agencia"
+  },
+  "share": {
+    "created": "Enlace generado. Cópialo ahora: no vuelve a aparecer.",
+    "revoked": "Enlace desactivado.",
+    "title": "Enlace público",
+    "activeUntil": "Activo hasta {date}",
+    "views": "{count, plural, =0 {ninguna visita} one {# visita} other {# visitas}}",
+    "lastView": "última visita el {date}",
+    "inactive": "Ningún enlace activo. Genera uno para enviar a las marcas.",
+    "needsConsent": "El enlace solo se puede generar con el consentimiento de uso comercial.",
+    "goConsent": "Ver los términos",
+    "linkOnce": "Este enlace aparece solo ahora. Cópialo y guárdalo: después solo se puede generar otro.",
+    "link": "Enlace del media kit",
+    "validity": "Validez",
+    "days": "{count, plural, one {# día} other {# días}}",
+    "generate": "Generar enlace",
+    "regenerate": "Generar nuevo enlace",
+    "revoke": "Desactivar enlace",
+    "confirmRevoke": "¿Desactivar el enlace? Quien tenga la dirección deja de ver el kit."
+  },
+  "public": {
+    "eyebrow": "Media kit",
+    "declaredNote": "Métricas declaradas por el creator o por la agencia, con la fecha de cada dato.",
+    "poweredBy": "Groscove Ultra",
+    "unavailableTitle": "Este enlace no está disponible",
+    "unavailableBody": "El enlace puede haber vencido o haberse desactivado. Pide uno nuevo a quien lo envió."
+  }
+}

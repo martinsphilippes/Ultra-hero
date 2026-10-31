@@ -36,6 +36,7 @@ type InvitationRow = {
   agency_id?: string | null;
   brand_id?: string | null;
   member_role?: string | null;
+  talent_id?: string | null;
   creator_profiles: { name: string } | null;
   seller_organizations: { name: string } | null;
 };
@@ -64,8 +65,10 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
     return query;
   };
   // com a 0058 a lista também traz o profissional do convite; sem ela, a leitura de antes
-  // com a 0064, também agência e marca; cada leitura cai para a anterior se a coluna ainda não existe
-  const withAgency = await listQuery(`${base}, professional_id, agency_id, brand_id, member_role`);
+  // com a 0064, também agência e marca; com a 0065, o talento; cada leitura cai para a anterior se a
+  // coluna ainda não existe
+  const withTalent = await listQuery(`${base}, professional_id, agency_id, brand_id, member_role, talent_id`);
+  const withAgency = withTalent.error ? await listQuery(`${base}, professional_id, agency_id, brand_id, member_role`) : withTalent;
   const withPro = withAgency.error ? await listQuery(`${base}, professional_id`) : withAgency;
   const [{ data, error, count }, creatorsRes, sellersRes] = await Promise.all([
     withPro.error ? listQuery(base) : Promise.resolve(withPro),
@@ -89,7 +92,9 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
               ? t("roleBrand")
               : r.role === "professional"
                 ? tn("portals.professional")
-                : r.role === "creator"
+                : r.role === "creator" && r.talent_id
+                  ? t("roleTalent")
+                  : r.role === "creator"
                   ? t("form.roleCreator")
                   : t("form.roleSeller")}
         </Badge>
@@ -106,6 +111,10 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
         ) : r.role === "brand" && r.brand_id ? (
           <Link href={`/admin/marcas/${r.brand_id}`} className="text-accent-text hover:underline">
             {tn("admin.brands")}
+          </Link>
+        ) : r.role === "creator" && r.talent_id ? (
+          <Link href={`/agencia/casting/${r.talent_id}`} className="text-accent-text hover:underline">
+            {t("talentTarget")}
           </Link>
         ) : r.role === "professional" && r.professional_id ? (
           <Link href={`/admin/professionals/${r.professional_id}`} className="text-accent-text hover:underline">

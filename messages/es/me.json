@@ -121,11 +121,13 @@
         "admin": "Usuarios, contenidos, pedidos y configuración",
         "professional": "Pedidos, servicios y perfil público",
         "agency": "Equipo, marcas atendidas y avisos",
-        "brand": "Equipo de la marca y avisos de la agencia"
+        "brand": "Equipo de la marca y avisos de la agencia",
+        "office": "Media kit, consentimiento y avisos de la agencia"
       },
       "professional": "Portal del profesional",
       "agency": "Portal de la agencia",
-      "brand": "Portal de la marca"
+      "brand": "Portal de la marca",
+      "office": "Oficina"
     },
     "data": {
       "displayName": "Nombre visible",
@@ -241,6 +243,10 @@
     },
     "newPost": {
       "label": "Nuevo post"
+    },
+    "office": {
+      "title": "Oficina",
+      "description": "Media kit, consentimiento y avisos de {agency}"
     }
   },
   "today": {

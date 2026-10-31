@@ -19,6 +19,8 @@ export const DEMO_ACCOUNTS = [
   { kind: "agency", email: "agencia@demo.ultrahero.app", home: "/personalities" },
   { kind: "agencyStaff", email: "colaborador@demo.ultrahero.app", home: "/personalities" },
   { kind: "brand", email: "marca@demo.ultrahero.app", home: "/personalities" },
+  // casting (0065): talento sem página pública da agência de demonstração (escritório do creator)
+  { kind: "talent", email: "talento@demo.ultrahero.app", home: "/personalities" },
 ] as const;
 
 /** Conta de acesso rápido do profissional de exemplo (criada pelo admin, com a senha das demais). */
@@ -28,6 +30,7 @@ export const PROFESSIONAL_DEMO_EMAIL = "profissional@demo.ultrahero.app";
 export const AGENCY_DEMO_EMAIL = "agencia@demo.ultrahero.app";
 export const AGENCY_STAFF_DEMO_EMAIL = "colaborador@demo.ultrahero.app";
 export const BRAND_DEMO_EMAIL = "marca@demo.ultrahero.app";
+export const TALENT_DEMO_EMAIL = "talento@demo.ultrahero.app";
 
 export type DemoKind = (typeof DEMO_ACCOUNTS)[number]["kind"];
 
@@ -40,7 +43,7 @@ export const DEMO_ACCESS_ACCOUNTS = DEMO_ACCOUNTS.filter((a) => ACCESS_KINDS.inc
  * Contas que dependem de algo no banco: a do profissional só aparece depois que o admin cria a conta
  * (sem a 0058, ou antes disso, o botão daria erro de login).
  */
-export type DemoReadiness = { professional: boolean; agency?: boolean; agencyStaff?: boolean; brand?: boolean };
+export type DemoReadiness = { professional: boolean; agency?: boolean; agencyStaff?: boolean; brand?: boolean; talent?: boolean };
 
 export function readyDemoAccounts<A extends { kind: string }>(accounts: readonly A[], ready: DemoReadiness): A[] {
   const flags: Record<string, boolean> = {
@@ -48,6 +51,7 @@ export function readyDemoAccounts<A extends { kind: string }>(accounts: readonly
     agency: ready.agency ?? false,
     agencyStaff: ready.agencyStaff ?? false,
     brand: ready.brand ?? false,
+    talent: ready.talent ?? false,
   };
   return accounts.filter((a) => !(a.kind in flags) || flags[a.kind]);
 }

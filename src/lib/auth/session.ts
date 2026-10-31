@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "./safe-next";
+import { isTalentOnly } from "./talent-scope";
 
 export type AppRole = "consumer" | "creator" | "seller" | "admin" | "professional" | "agency" | "brand";
 
@@ -61,10 +62,6 @@ export const getRoles = cache(async (): Promise<RoleAssignment[]> => {
 });
 
 /** Creator só com escopo de talento (sem página pública de herói): o /creator leva ao escritório (Etapa B). */
-export function isTalentOnly(roles: readonly Pick<RoleAssignment, "role" | "scope_type">[]): boolean {
-  const creator = roles.filter((r) => r.role === "creator");
-  return creator.length > 0 && creator.every((r) => r.scope_type === "talent");
-}
 
 export async function hasRole(role: AppRole): Promise<boolean> {
   const roles = await getRoles();
@@ -119,3 +116,5 @@ export async function getSessionSummary(): Promise<SessionSummary | null> {
     roles: Array.from(new Set(roleNames)),
   };
 }
+
+export { isTalentOnly };

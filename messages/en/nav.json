@@ -46,7 +46,8 @@
     "dashboard": "Dashboard",
     "content": "My content",
     "links": "Product links",
-    "recipes": "My Recipes"
+    "recipes": "My Recipes",
+    "office": "Office"
   },
   "seller": {
     "dashboard": "Dashboard",
@@ -86,7 +87,8 @@
     "brands": "Brands",
     "notifications": "Notices",
     "settings": "Settings",
-    "team": "Team"
+    "team": "Team",
+    "casting": "Roster"
   },
   "brand": {
     "dashboard": "Home",

@@ -21,7 +21,7 @@ test.describe("acesso rápido às contas de demonstração", () => {
     // 4 contas fixas + as opcionais que o admin já criou: "Profissional" (0058) e as da gestão (0064)
     const buttons = panel.locator("[data-demo-kind]");
     let optional = 0;
-    for (const kind of ["professional", "agency", "agencyStaff", "brand"]) optional += (await panel.locator(`[data-demo-kind="${kind}"]`).count()) > 0 ? 1 : 0;
+    for (const kind of ["professional", "agency", "agencyStaff", "brand", "talent"]) optional += (await panel.locator(`[data-demo-kind="${kind}"]`).count()) > 0 ? 1 : 0;
     await expect(buttons).toHaveCount(4 + optional);
     await expect(panel.locator('[data-demo-kind="seller"]')).toHaveCount(0);
     for (const account of ACCOUNTS) {

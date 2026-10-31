@@ -8,7 +8,7 @@ import { agencyFail } from "@/lib/agency/errors";
 import { emailSchema } from "@/lib/agency/schemas";
 import { AGENCY_ROLES } from "@/lib/agency/roles";
 import { requireRole } from "@/lib/auth/session";
-import { AGENCY_DEMO_EMAIL, AGENCY_STAFF_DEMO_EMAIL, BRAND_DEMO_EMAIL } from "@/lib/demo/accounts";
+import { AGENCY_DEMO_EMAIL, AGENCY_STAFF_DEMO_EMAIL, BRAND_DEMO_EMAIL, TALENT_DEMO_EMAIL } from "@/lib/demo/accounts";
 import { demoPassword } from "@/lib/demo/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -114,6 +114,7 @@ export async function createAgencyDemoAction(): Promise<AdminAgencyResult> {
       { email: AGENCY_DEMO_EMAIL, name: "Agência (demonstração)" },
       { email: AGENCY_STAFF_DEMO_EMAIL, name: "Colaborador (demonstração)" },
       { email: BRAND_DEMO_EMAIL, name: "Marca (demonstração)" },
+      { email: TALENT_DEMO_EMAIL, name: "Talento Exemplo" },
     ];
     for (const account of accounts) {
       const { error } = await client.auth.admin.createUser({
@@ -128,7 +129,7 @@ export async function createAgencyDemoAction(): Promise<AdminAgencyResult> {
     }
     const { error: seedError } = await client.rpc("agency_demo_seed", {
       p_agency: agencyId,
-      p_emails: { admin: AGENCY_DEMO_EMAIL, staff: AGENCY_STAFF_DEMO_EMAIL, brand_owner: BRAND_DEMO_EMAIL },
+      p_emails: { admin: AGENCY_DEMO_EMAIL, staff: AGENCY_STAFF_DEMO_EMAIL, brand_owner: BRAND_DEMO_EMAIL, talent: TALENT_DEMO_EMAIL },
       p_actor: user.id,
     });
     if (seedError) return agencyFail(seedError);

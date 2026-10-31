@@ -31,12 +31,12 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "brands", "notifications", "settings", "team"] as const;
+export const AGENCY_NAV = ["dashboard", "casting", "brands", "notifications", "settings", "team"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
-/** Itens do menu da agência (a Etapa A só tem Início, Marcas, Notificações, Configurações e Equipe). */
+/** Itens do menu da agência (etapa B: + Casting para todos; Configurações gestor+; Equipe só o Adm). */
 export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): AgencyNavKey[] {
-  const keys: AgencyNavKey[] = ["dashboard", "brands", "notifications"];
+  const keys: AgencyNavKey[] = ["dashboard", "casting", "brands", "notifications"];
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
   if (agencyCan(role, "admin", platformAdmin)) keys.push("team");
   return keys;
@@ -51,6 +51,7 @@ export function brandNavKeys(): BrandNavKey[] {
 
 /** Papel mínimo de cada rota restrita da agência (o layout do segmento redireciona para /agencia). */
 export const AGENCY_ROUTE_MIN: Record<string, AgencyRole> = {
+  "/agencia/casting/novo": "manager",
   "/agencia/equipe": "admin",
   "/agencia/configuracoes": "manager",
 };

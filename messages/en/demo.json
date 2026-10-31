@@ -39,6 +39,10 @@
     "brand": {
       "label": "Brand",
       "description": "Owner of Marca Exemplo: campaigns and approvals"
+    },
+    "talent": {
+      "label": "Talent",
+      "description": "Creator office: media kit and consent"
     }
   }
 }

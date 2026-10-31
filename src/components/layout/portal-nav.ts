@@ -46,7 +46,9 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   ],
   creator: [
     // O herói só posta; conteúdos, receitas, vínculos e painel são do admin ("Publicar como hero").
+    // O escritório (0065) aparece para quem está num casting; o talento sem página não tem "Novo post".
     { key: "post", href: "/creator/post/new" },
+    { key: "office", href: "/creator/escritorio" },
   ],
   seller: [
     { key: "dashboard", href: "/seller" },
@@ -64,6 +66,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   // Agência (0064): o menu é filtrado pelo papel no servidor (agencyNavKeys; só o Adm vê Equipe).
   agency: [
     { key: "dashboard", href: "/agencia" },
+    { key: "casting", href: "/agencia/casting" },
     { key: "brands", href: "/agencia/marcas" },
     { key: "notifications", href: "/agencia/notificacoes" },
     { key: "settings", href: "/agencia/configuracoes" },

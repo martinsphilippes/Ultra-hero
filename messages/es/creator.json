@@ -258,7 +258,9 @@
         "missing_body": "La foto no quedó vinculada a este post. Descártala y envíala de nuevo.",
         "not_photo": "Este borrador no tiene una foto enviada desde el celular."
       }
-    }
+    },
+    "talentOnly": "Disponible solo para héroes con página pública",
+    "talentOnlyHint": "Tu acceso es la oficina de la agencia: media kit, consentimiento y avisos."
   },
   "reviews": {
     "title": "Historial de revisiones",

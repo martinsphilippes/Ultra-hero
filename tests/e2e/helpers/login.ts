@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 // Entrada pelas contas de demonstração (painel "Contas de demonstração" do /login). Compartilhado pelos
 // specs que repetiam o mesmo trecho; cada um continua dizendo para onde espera ir depois do login.
 
-export type DemoKind = "creator" | "admin" | "premium" | "free" | "agency" | "agencyStaff" | "brand";
+export type DemoKind = "creator" | "admin" | "premium" | "free" | "agency" | "agencyStaff" | "brand" | "talent";
 
 /** Todo login chega na aba Hero. */
 export const LOGIN_LANDING = /\/personalities$/;
@@ -19,6 +19,7 @@ export const DEMO_HOME: Record<DemoKind, RegExp> = {
   agency: /\/agencia$/,
   agencyStaff: /\/agencia$/,
   brand: /\/marca$/,
+  talent: /\/creator\/escritorio$/,
 };
 const DEMO_PATH: Record<DemoKind, string> = {
   creator: "/profile",
@@ -28,6 +29,7 @@ const DEMO_PATH: Record<DemoKind, string> = {
   agency: "/agencia",
   agencyStaff: "/agencia",
   brand: "/marca",
+  talent: "/creator/escritorio",
 };
 
 type Options = {

@@ -67,7 +67,9 @@
     "demo_account_forbidden": "Contas de demonstração não entram em agências reais.",
     "agency_member_elsewhere": "Esta pessoa já faz parte de outra agência.",
     "brand_not_linked": "A marca não está mais com esta agência.",
-    "partner_suspended": "Este acesso está suspenso no momento."
+    "partner_suspended": "Este acesso está suspenso no momento.",
+    "user_has_talent": "Esta conta já está num casting.",
+    "talent_already_linked": "Este convite já foi usado por outra conta."
   },
   "dashboard": {
     "title": "Painel",
@@ -291,7 +293,9 @@
     "revoked": "Convite revogado",
     "expiredNote": "expirado",
     "roleAgency": "Agência",
-    "roleBrand": "Marca"
+    "roleBrand": "Marca",
+    "roleTalent": "Talento",
+    "talentTarget": "Ficha do talento"
   },
   "invite": {
     "title": "Convite",
@@ -321,7 +325,9 @@
     "successBrand": "Você agora acessa o portal da marca.",
     "goAgency": "Abrir portal da agência",
     "goBrand": "Abrir portal da marca",
-    "inboxOnlyNote": "Os avisos ficam no sino do portal."
+    "inboxOnlyNote": "Os avisos ficam no sino do portal.",
+    "successTalent": "Pronto! Você agora tem o escritório da agência.",
+    "goOffice": "Abrir o escritório"
   },
   "creators": {
     "title": "Heróis",

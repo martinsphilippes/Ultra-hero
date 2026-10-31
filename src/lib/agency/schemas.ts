@@ -12,7 +12,7 @@ export const setRoleSchema = z.object({ userId: z.uuid(), role: z.enum(AGENCY_RO
 export const removeMemberSchema = z.object({ userId: z.uuid(), justification: justificationSchema });
 
 const slug = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/).max(60);
-const httpsUrl = z.string().trim().max(500).regex(/^https:\/\/[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)+(:[0-9]{2,5})?([/?#][^\s<>"]*)?$/);
+export const httpsUrl = z.string().trim().max(500).regex(/^https:\/\/[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)+(:[0-9]{2,5})?([/?#][^\s<>"]*)?$/);
 
 export const brandCreateSchema = z.object({
   name: z.string().trim().min(1).max(60),

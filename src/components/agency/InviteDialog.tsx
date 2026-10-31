@@ -4,6 +4,7 @@ import { Mail, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { inviteAgencyMemberAction } from "@/app/admin/agencia/actions";
+import { inviteTalentAction } from "@/app/agencia/casting/actions";
 import { inviteMemberAction } from "@/app/agencia/equipe/actions";
 import { inviteBrandMemberAction } from "@/app/agencia/marcas/actions";
 import { inviteStaffAction } from "@/app/marca/actions";
@@ -14,7 +15,8 @@ type Target =
   | { kind: "team" }
   | { kind: "brandMember"; brandId: string }
   | { kind: "brandStaff" }
-  | { kind: "adminAgency"; agencyId: string };
+  | { kind: "adminAgency"; agencyId: string }
+  | { kind: "talent"; talentId: string };
 
 type Props = {
   target: Target;
@@ -50,7 +52,9 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
             ? await inviteBrandMemberAction({ ...input, brandId: target.brandId })
             : target.kind === "brandStaff"
               ? await inviteStaffAction({ email: input.email, days: input.days })
-              : await inviteAgencyMemberAction({ agencyId: target.agencyId, email: input.email, role });
+              : target.kind === "talent"
+                ? await inviteTalentAction({ talentId: target.talentId, email: input.email, days: input.days })
+                : await inviteAgencyMemberAction({ agencyId: target.agencyId, email: input.email, role });
       if (!result.ok) {
         setError(result.error);
         return;

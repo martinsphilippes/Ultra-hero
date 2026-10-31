@@ -61,6 +61,16 @@ const nextConfig: NextConfig = {
           { key: "Service-Worker-Allowed", value: "/" },
         ],
       },
+      {
+        // Media kit público (/kit/<token>, 0065): fora dos buscadores e sem o token no Referer, inclusive
+        // na página de link indisponível (404) e sem guardar em cache compartilhado.
+        source: "/kit/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "Cache-Control", value: "private, no-store" },
+        ],
+      },
     ];
   },
 };

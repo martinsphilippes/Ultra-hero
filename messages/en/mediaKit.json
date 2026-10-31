@@ -1,0 +1,133 @@
+{
+  "source": {
+    "label": "data from {date} · declared by {by} on {declaredAt}",
+    "labelShort": "data from {date} · declared by {by}",
+    "side": {
+      "talent": "creator",
+      "agency": "agency",
+      "integration": "integration"
+    },
+    "stale": "outdated"
+  },
+  "audience": {
+    "gender": "Gender",
+    "age": "Age range",
+    "notInformed": "not provided",
+    "genderKeys": {
+      "female": "Women",
+      "male": "Men",
+      "other": "Other"
+    },
+    "age55": "55 or older"
+  },
+  "view": {
+    "segments": "Segments",
+    "networks": "Networks",
+    "noNetworks": "No networks declared.",
+    "followers": "Followers",
+    "views": "Average views",
+    "reach": "Average reach",
+    "engagement": "Engagement",
+    "notInformed": "not provided",
+    "openProfile": "Open profile",
+    "audience": "Declared audience",
+    "brands": "Brands already following",
+    "contact": "Business contact"
+  },
+  "networks": {
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "youtube": "YouTube",
+    "x": "X",
+    "facebook": "Facebook",
+    "kwai": "Kwai",
+    "twitch": "Twitch",
+    "linkedin": "LinkedIn",
+    "pinterest": "Pinterest",
+    "threads": "Threads",
+    "other": "Other"
+  },
+  "social": {
+    "saved": "Network saved.",
+    "deleted": "Network removed.",
+    "intro": "Declared figures, with the date of the data. Empty fields show as \"not provided\".",
+    "add": "Add network",
+    "integrationSoon": "Automatic connection with the networks: coming soon. For now, everything is declared.",
+    "empty": "No networks yet.",
+    "edit": "Edit",
+    "delete": "Remove",
+    "confirmDelete": "Remove this network?",
+    "editTitle": "Edit network",
+    "addTitle": "New network",
+    "save": "Save network",
+    "network": "Network",
+    "handle": "Handle",
+    "handleHint": "Without the @.",
+    "url": "Profile link",
+    "urlHint": "Starts with https://",
+    "engagementPct": "Engagement (%)",
+    "asOf": "Data date",
+    "asOfHint": "Day the figures were checked (up to 2 years ago).",
+    "audienceTitle": "Audience (optional)",
+    "audienceHint": "Declared percentages; each group adds up to 100% at most.",
+    "topStates": "Top states",
+    "topStatesHint": "Up to 5 codes, comma separated (e.g. {example}).",
+    "topCountries": "Top countries",
+    "topCountriesHint": "Up to 5 two-letter codes (e.g. BR, PT).",
+    "invalidNumber": "Check the numbers: digits only (engagement between 0 and 100).",
+    "invalidAsOf": "The data date must be between today and 2 years ago.",
+    "invalidAudience": "Check the audience: each group up to 100%, up to 5 states and 5 countries."
+  },
+  "editor": {
+    "saved": "Media kit saved.",
+    "headline": "Headline",
+    "headlineHint": "Up to 140 characters.",
+    "about": "About",
+    "aboutHint": "{count} of 1500 characters.",
+    "fieldsTitle": "Fields visible in the link",
+    "fieldsHint": "The name always shows. No amounts (fees, prices) go into the kit.",
+    "orphanFields": "Turn on \"Networks\" to show followers, views, reach, engagement and audience.",
+    "save": "Save media kit"
+  },
+  "fields": {
+    "photo": "Photo",
+    "headline": "Headline",
+    "about": "About",
+    "location": "City and state",
+    "segments": "Segments",
+    "networks": "Networks",
+    "followers": "Followers",
+    "views": "Average views",
+    "reach": "Average reach",
+    "engagement": "Engagement",
+    "audience": "Audience (charts)",
+    "brands": "Brands already following",
+    "agency_contact": "Agency contact"
+  },
+  "share": {
+    "created": "Link created. Copy it now: it will not show again.",
+    "revoked": "Link turned off.",
+    "title": "Public link",
+    "activeUntil": "Active until {date}",
+    "views": "{count, plural, =0 {no visits} one {# visit} other {# visits}}",
+    "lastView": "last visit on {date}",
+    "inactive": "No active link. Create one to send to brands.",
+    "needsConsent": "The link can only be created with commercial use consent.",
+    "goConsent": "See the terms",
+    "linkOnce": "This link shows only now. Copy and keep it: later you can only create another.",
+    "link": "Media kit link",
+    "validity": "Validity",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "generate": "Create link",
+    "regenerate": "Create new link",
+    "revoke": "Turn off link",
+    "confirmRevoke": "Turn off the link? Anyone with the address will no longer see the kit."
+  },
+  "public": {
+    "eyebrow": "Media kit",
+    "declaredNote": "Metrics declared by the creator or the agency, with the date of each figure.",
+    "poweredBy": "Groscove Ultra",
+    "unavailableTitle": "This link is not available",
+    "unavailableBody": "The link may have expired or been turned off. Ask whoever sent it for a new one."
+  }
+}

@@ -38,6 +38,8 @@ const NOT_IN_APP = [
   "discover.personalities.profile.products", "shopping.", "recipes.showcase.ready.", "collectibles.admin.",
   // portais de gestão (0064): só na web, bloqueados no app das lojas
   "agency.", "brandPortal.", "adminAgency.",
+  // escritório do creator (0065): o aviso da agência de demonstração é só da web
+  "talent.values.",
 ];
 
 describe("messages-native", () => {

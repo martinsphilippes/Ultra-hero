@@ -39,7 +39,7 @@ describe("portal do fornecedor desligado (a operação é do admin)", () => {
   it("painel de contas demo sem o fornecedor; a conta segue na lista completa", () => {
     expect(visibleDemoKinds(["admin", "seller", "free"], false)).toEqual(["admin", "free"]);
     expect(visibleDemoKinds(["admin", "seller"], true)).toEqual(["admin", "seller"]);
-    expect(DEMO_ACCESS_ACCOUNTS.map((a) => a.kind)).toEqual(["admin", "creator", "premium", "free", "professional", "agency", "agencyStaff", "brand"]);
+    expect(DEMO_ACCESS_ACCOUNTS.map((a) => a.kind)).toEqual(["admin", "creator", "premium", "free", "professional", "agency", "agencyStaff", "brand", "talent"]);
     expect(DEMO_ACCOUNTS.some((a) => a.kind === "seller")).toBe(true);
     expect(demoAccount("seller")).toBeNull();
     expect(demoAccount("admin")?.email).toBe("admin@demo.ultrahero.app");

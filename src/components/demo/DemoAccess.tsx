@@ -1,4 +1,4 @@
-import { BadgeCheck, Building2, BriefcaseBusiness, KeyRound, ShieldCheck, Sparkles, Stethoscope, Store, User, UserRound } from "lucide-react";
+import { BadgeCheck, Building2, BriefcaseBusiness, Contact, KeyRound, ShieldCheck, Sparkles, Stethoscope, Store, User, UserRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { signInAsDemo } from "@/app/demo-actions";
 import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts, type DemoKind, type DemoOrigin } from "@/lib/demo/accounts";
@@ -15,6 +15,7 @@ const ICON: Record<DemoKind, typeof User> = {
   agency: Building2,
   agencyStaff: BriefcaseBusiness,
   brand: BadgeCheck,
+  talent: Contact,
 };
 
 type Props = {

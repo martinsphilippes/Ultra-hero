@@ -6,6 +6,7 @@ import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { portalRolesShown } from "@/lib/seller-ops/portal";
 
 export const SETTINGS_PATH = "/configuracoes";
+export const OFFICE_PATH = "/creator/escritorio";
 
 /** Linhas comuns (textos em me.profile.links.<key>, salvo as marcadas em me.settings.rows). */
 export type SettingsLinkKey =
@@ -22,8 +23,9 @@ export type SettingsLinkKey =
   | "devices"
   | "appearance";
 
-/** Portais (textos em me.profile.portals); o herói não tem portal (só posta pelo Perfil, 0045). */
-export type SettingsPortalRole = "seller" | "professional" | "agency" | "brand" | "admin";
+/** Portais (textos em me.profile.portals); o herói não tem portal (só posta pelo Perfil, 0045).
+ *  "office" é o escritório do creator que está num casting (0065; web e app). */
+export type SettingsPortalRole = "seller" | "professional" | "office" | "agency" | "brand" | "admin";
 
 export type SettingsSectionKey = "routine" | "collections" | "purchases" | "account" | "portals";
 
@@ -86,8 +88,8 @@ function nativeHidden(href: string): boolean {
   return isBlockedInNativeApp(href.split("#")[0]);
 }
 
-/** Seções na ordem da tela; seção sem linha não aparece (Portais só com papel). */
-export function buildSettingsSections(roles: readonly string[], sellerPortalEnabled?: boolean): SettingsSection[] {
+/** Seções na ordem da tela; seção sem linha não aparece (Portais só com papel ou com talento no casting). */
+export function buildSettingsSections(roles: readonly string[], sellerPortalEnabled?: boolean, opts: { hasTalent?: boolean } = {}): SettingsSection[] {
   const sections: SettingsSection[] = LINK_SECTIONS.map(({ key, items }) => ({
     key,
     items: items.map(([k, href]) => ({ kind: "link" as const, key: k, href, nativeHidden: nativeHidden(href) })),
@@ -96,6 +98,7 @@ export function buildSettingsSections(roles: readonly string[], sellerPortalEnab
   const withManagement = roles.includes("admin") ? [...roles, "agency", "brand"] : roles;
   const shown = portalRolesShown(withManagement, sellerPortalEnabled);
   const portals: SettingsItem[] = PORTALS.filter((p) => shown.includes(p.role)).map((p) => ({ kind: "portal", key: p.role, href: p.href, nativeHidden: nativeHidden(p.href) }));
+  if (opts.hasTalent) portals.unshift({ kind: "portal", key: "office", href: OFFICE_PATH, nativeHidden: nativeHidden(OFFICE_PATH) });
   if (portals.length > 0) sections.push({ key: "portals", items: portals });
   return sections;
 }

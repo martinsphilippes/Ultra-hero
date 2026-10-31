@@ -30,7 +30,8 @@
     "accounts": {
       "agency": "Agency (Admin)",
       "agencyStaff": "Staff",
-      "brand": "Brand (owner)"
+      "brand": "Brand (owner)",
+      "talent": "Talent (no page)"
     },
     "ready": "ready",
     "missing": "not created",

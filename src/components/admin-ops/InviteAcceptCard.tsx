@@ -16,6 +16,7 @@ export function InviteAcceptCard({ token, email }: Props) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<AcceptedRole | null>(null);
+  const [scopeType, setScopeType] = useState<string | null>(null);
 
   function accept() {
     setError(null);
@@ -25,6 +26,7 @@ export function InviteAcceptCard({ token, email }: Props) {
         setError(result.error);
         return;
       }
+      setScopeType(result.scopeType);
       setRole(result.role);
     });
   }
@@ -44,7 +46,9 @@ export function InviteAcceptCard({ token, email }: Props) {
                 ? t("successBrand")
                 : role === "professional"
                   ? t("successProfessional")
-                  : role === "creator"
+                  : role === "creator" && scopeType === "talent"
+                    ? t("successTalent")
+                    : role === "creator"
                     ? t("successCreator")
                     : SELLER_PORTAL_ENABLED
                       ? t("successSeller")
@@ -60,6 +64,8 @@ export function InviteAcceptCard({ token, email }: Props) {
             <Link href="/marca">{t("goBrand")}</Link>
           ) : role === "professional" ? (
             <Link href="/profissional">{t("goProfessional")}</Link>
+          ) : role === "creator" && scopeType === "talent" ? (
+            <a href="/creator/escritorio">{t("goOffice")}</a>
           ) : role === "creator" ? (
             <Link href="/profile">{t("goCreator")}</Link>
           ) : SELLER_PORTAL_ENABLED ? (
