@@ -140,6 +140,9 @@ export async function createAgencyDemoAction(): Promise<AdminAgencyResult> {
     if (executionError && !isMissingSchema(executionError)) return agencyFail(executionError);
     const { error: calendarError } = await client.rpc("agency_demo_seed_calendar", { p_agency: agencyId, p_actor: user.id });
     if (calendarError && !isMissingSchema(calendarError)) return agencyFail(calendarError);
+    // lançamentos simulados do negócio em produção (0069): só os que ainda não existem
+    const { error: financeError } = await client.rpc("agency_finance_backfill", { p_agency: agencyId });
+    if (financeError && !isMissingSchema(financeError)) return agencyFail(financeError);
     revalidatePath("/admin/agencia");
     revalidatePath("/login");
     const t = await getTranslations("adminAgency");

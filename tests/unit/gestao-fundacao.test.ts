@@ -37,7 +37,7 @@ describe("hierarquia da agência", () => {
   it("menu por nível: Equipe só para o Adm, Configurações e Heróis para gestor+", () => {
     expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "tasks", "agenda", "casting", "brands", "notifications"]);
     expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings"]);
-    expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team"]);
+    expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
     expect(agencyNavKeys(null, true)).toContain("team");
     expect(brandNavKeys()).toEqual(["dashboard", "campaigns", "catalog", "agenda", "team", "notifications"]);
   });

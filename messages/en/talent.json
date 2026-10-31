@@ -8,7 +8,8 @@
     "opportunity": "Opportunity",
     "availability": "Availability",
     "agenda": "Calendar",
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "documents": "Documents"
   },
   "tabs": {
     "label": "Office sections",
@@ -19,7 +20,8 @@
     "opportunities": "Opportunities",
     "availability": "Availability",
     "agenda": "Calendar",
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "documents": "Documents"
   },
   "home": {
     "unavailable": "Office being updated",
@@ -55,7 +57,18 @@
     "tasksAll": "See all",
     "tasksPending": "{count, plural, one {# open task} other {# open tasks}}",
     "tasksNone": "No open task.",
-    "tasksOverdue": "{count, plural, one {# overdue} other {# overdue}}"
+    "tasksOverdue": "{count, plural, one {# overdue} other {# overdue}}",
+    "nextDeliveriesTitle": "Next deliverables",
+    "nextDeliveriesNone": "No pending deliverable.",
+    "campaignsActive": "{count, plural, one {# campaign in production} other {# campaigns in production}}",
+    "campaignsNone": "No campaign in production.",
+    "dueAt": "due by {date}",
+    "publishAt": "publish on {date}",
+    "eventsToday": "{count, plural, one {# event today} other {# events today}}",
+    "payoutsTitle": "Payouts",
+    "payoutsHint": "Status informed by the agency. Internal record, no real payment.",
+    "payoutsNone": "No payout recorded.",
+    "payoutsAppHint": "See the amounts on the website."
   },
   "consent": {
     "title": "Commercial use terms",
@@ -199,5 +212,8 @@
     "tasksEmpty": "No step of yours in this campaign.",
     "deliverablesTitle": "Your deliverables",
     "deliverablesHint": "Send each version by link; the brand approves or requests changes. Then record the publication and the proof."
+  },
+  "documents": {
+    "intro": "Briefs, approved scripts and proofs the agency shared with you. Read only."
   }
 }

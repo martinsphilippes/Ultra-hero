@@ -120,7 +120,8 @@ select tests.expect_error('S3 trava content_free_only recusa premium',
 select tests.expect_error('S3 trava content_free_only recusa módulo em conteúdo livre',
   $q$update public.content set required_module_id = public.seed_uuid('module:base') where id = public.seed_uuid('content:r1')$q$, 'content_free_only');
 select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
-select tests.expect_error('S3 usuário não insere direito direto na tabela', $q$insert into public.subscription_modules (subscription_id, module_id) select id, public.seed_uuid('module:training_full') from public.simulated_subscriptions where user_id = '10000000-0000-4000-8000-000000000002'$q$, '42501');
+-- (sem assinatura simulada, o insert precisa de uma linha concreta para a política negar)
+select tests.expect_error('S3 usuário não insere direito direto na tabela', $q$insert into public.subscription_modules (subscription_id, module_id) values (gen_random_uuid(), public.seed_uuid('module:training_full'))$q$, '42501');
 
 -- ================================================================ S4 · Convites
 select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
@@ -3997,8 +3998,8 @@ select tests.ok('S52 programa apagado leva o item junto (cascade)',
 select tests.ok('S52 todo item tem exatamente um alvo e o tipo bate com ele (itens antigos inclusive)',
   not exists (select 1 from public.list_items where num_nonnulls(content_id, product_id, program_id) <> 1
      or item_type is distinct from case when content_id is not null then 'content' when product_id is not null then 'product' else 'program' end));
-select tests.ok('S52 nenhuma função nova: a lista do S14 segue com 17 security definer para o visitante',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S52 nenhuma função nova: a lista do S14 segue com 18 security definer para o visitante',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 delete from public.custom_lists where id in ('52000000-0000-4000-8000-000000000010', '52000000-0000-4000-8000-000000000011', '52000000-0000-4000-8000-000000000012');
 delete from public.programs where id = '52000000-0000-4000-8000-000000000002';
 delete from public.products where id = '52000000-0000-4000-8000-000000000001';
@@ -4169,8 +4170,8 @@ select tests.su();
 select public.anonymize_user_data('10000000-0000-4000-8000-000000000054');
 select tests.ok('S53 anonymize_user_data apaga favoritos de conteúdo, produto e programa',
   not exists (select 1 from public.favorites where user_id = '10000000-0000-4000-8000-000000000054'));
-select tests.ok('S53 nenhuma função nova: a lista do S14 segue com 17 security definer para o visitante',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S53 nenhuma função nova: a lista do S14 segue com 18 security definer para o visitante',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 delete from public.favorites where user_id in ('10000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000055');
 delete from auth.users where id in ('10000000-0000-4000-8000-000000000053', '10000000-0000-4000-8000-000000000054', '10000000-0000-4000-8000-000000000055');
 delete from public.programs where id = '53000000-0000-4000-8000-000000000002';
@@ -4366,8 +4367,8 @@ select tests.ok('S54 funções: search_path fixo; reserva, aplicação e remoç�
   and not has_function_privilege('authenticated', 'public.hero_cover_orphan_uploads(int)', 'execute')
   and not has_function_privilege('authenticated', 'public.hero_cover_active_creator(uuid)', 'execute')
   and has_function_privilege('service_role', 'public.hero_cover_orphan_uploads(int)', 'execute'));
-select tests.ok('S54 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S54 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- limpeza: Rafael e Tiago voltam com a capa do seed e sem usuário (o usuário do Rafael já saiu)
 update public.creator_profiles c set cover_url = s.cover_url, user_id = null from t_s54_seed s where c.id = s.id;
@@ -4579,8 +4580,8 @@ select tests.ok('S55 funções: search_path fixo; reserva, descarte e gatilhos d
   and not has_function_privilege('authenticated', 'public.post_photo_usable(text, uuid)', 'execute')
   and has_function_privilege('service_role', 'public.post_photo_orphan_uploads(int)', 'execute')
   and not has_function_privilege('anon', 'public.creator_publish_content(uuid, timestamptz)', 'execute'));
-select tests.ok('S55 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S55 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- limpeza: conteúdos do cenário saem; Rafael e Tiago voltam sem usuário
 delete from public.content where id in ('55000000-0000-4000-8000-000000005501', '55000000-0000-4000-8000-000000005502',
@@ -4713,8 +4714,8 @@ select tests.ok('S56 funções: search_path fixo; definer sem anon; a do Storage
   and not has_function_privilege('anon', 'public.post_photo_upload_claim(int, text)', 'execute')
   and has_function_privilege('anon', 'public.my_creator_id()', 'execute')
   and has_function_privilege('authenticated', 'public.admin_act_as_hero(uuid)', 'execute'));
-select tests.ok('S56 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S56 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 select tests.ok('S56 nenhuma tabela pública sem RLS',
   (select count(*) from pg_class c where c.relnamespace = 'public'::regnamespace and c.relkind = 'r' and not c.relrowsecurity) = 0);
 
@@ -4796,8 +4797,8 @@ select tests.ok('S56 excluir a conta apaga a senha cifrada e o perfil com o celu
   not exists (select 1 from public.user_generated_passwords where user_id = '56000000-0000-4000-8000-000000000561')
   and not exists (select 1 from public.profiles where id = '56000000-0000-4000-8000-000000000561')
   and exists (select 1 from public.user_generated_passwords where user_id = '56000000-0000-4000-8000-000000000562'));
-select tests.ok('S56 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S56 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 delete from auth.users where id = '56000000-0000-4000-8000-000000000562';
 delete from public.quick_signup_attempts where ip_hash = repeat('a', 64);
 -- ================================================================ S0048 · Conceito do programa (0048)
@@ -4837,12 +4838,12 @@ select tests.expect_error('S0048 tradução com forma inválida é recusada',
 update public.program_versions set concept = null where id = public.seed_uuid('pv:shelf-lia-2:1');
 select tests.su();
 select tests.ok('S0048 admin pode limpar o conceito (null é válido)', (select concept is null from public.program_versions where id = public.seed_uuid('pv:shelf-lia-2:1')));
-select tests.ok('S0048 validador: invoker, search_path fixo, sem execute para o visitante; S14 segue com 17 security definer',
+select tests.ok('S0048 validador: invoker, search_path fixo, sem execute para o visitante; S14 segue com 18 security definer',
   (select not p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.program_concept_valid(jsonb)'::regprocedure)
   and not has_function_privilege('anon', 'public.program_concept_valid(jsonb)', 'execute')
   and has_function_privilege('authenticated', 'public.program_concept_valid(jsonb)', 'execute')
   and not has_function_privilege('anon', 'public.admin_create_program_version(uuid, uuid)', 'execute')
-  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 -- restaura o que o cenário mexeu
 update public.program_localizations set status = 'published' where version_id = public.seed_uuid('pv:shelf-lia-2:1') and locale = 'es';
 
@@ -4881,7 +4882,7 @@ select tests.ok('S14 nenhuma política avalia auth.uid()/is_admin() por linha',
 select tests.ok('S14 anon só executa a lista pública de security definer',
   (select string_agg(p.proname, ',' order by p.proname) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef
      and has_function_privilege('anon', p.oid, 'execute'))
-  = 'can_access_content,has_role,is_admin,is_seller_of,my_creator_id,my_entitled_modules,my_roles,my_seller_org_ids,my_subscription,product_is_purchasable,program_required_items,public_settings,quote_shipping,search_content,submit_feedback,track_event,verify_certificate');
+  = 'can_access_content,has_role,is_admin,is_blocked_creator,is_seller_of,my_creator_id,my_entitled_modules,my_roles,my_seller_org_ids,my_subscription,product_is_purchasable,program_required_items,public_settings,quote_shipping,search_content,submit_feedback,track_event,verify_certificate');
 -- receitas (0027–0029): nenhuma função nova recipe_*, creator_* ou admin_* é executável pelo visitante,
 -- salvo o catálogo público (security invoker; a RLS decide o que aparece)
 select tests.ok('S14 receitas: anon só executa recipe_catalog entre as funções recipe_*, creator_* e admin_*',
@@ -5217,8 +5218,8 @@ select tests.ok('S59 políticas: leitura pública só de SELECT; escrita só par
   (select count(*) from pg_policies where schemaname = 'public' and tablename like 'shop\_filter%' and 'anon' = any (roles) and cmd <> 'SELECT') = 0
   and (select count(*) from pg_policies where schemaname = 'public' and tablename like 'shop\_filter%' and cmd = 'ALL'
          and roles = '{authenticated}'::name[] and qual like '%is_admin()%' and with_check like '%is_admin()%') = 3);
-select tests.ok('S59 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S59 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- limpeza: o seed volta ao estado da migração
 update public.shop_filters set is_active = true where slug = 'surf';
@@ -5337,8 +5338,8 @@ select tests.ok('S60 políticas: leitura pública só de SELECT; escrita só par
   (select count(*) from pg_policies where schemaname = 'public' and tablename in ('hero_categories', 'creator_category_links') and 'anon' = any (roles) and cmd <> 'SELECT') = 0
   and (select count(*) from pg_policies where schemaname = 'public' and tablename in ('hero_categories', 'creator_category_links') and cmd = 'ALL'
          and roles = '{authenticated}'::name[] and qual like '%is_admin()%' and with_check like '%is_admin()%') = 2);
-select tests.ok('S60 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S60 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- limpeza: o seed volta ao estado da migração
 update public.hero_categories set is_active = true where slug = 'musica';
@@ -5491,8 +5492,8 @@ select tests.ok('S61 RPCs: security invoker, search_path fixo, sem execute para 
      where p.oid in ('public.admin_set_category_library_tabs(uuid, jsonb)'::regprocedure, 'public.admin_set_creator_library_overrides(uuid, jsonb)'::regprocedure))
   and not has_function_privilege('anon', 'public.admin_set_category_library_tabs(uuid, jsonb)', 'execute')
   and not has_function_privilege('anon', 'public.admin_set_creator_library_overrides(uuid, jsonb)', 'execute'));
-select tests.ok('S61 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S61 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- reaplicar a 0050 não mexe na configuração gravada
 \ir ../migrations/0050_hero_library_tabs.sql
@@ -5655,8 +5656,8 @@ select tests.ok('S62 funções: guarda e contador security invoker, auditoria se
   and not has_function_privilege('anon', 'public.recipe_action_bump(uuid, text, text, uuid)', 'execute')
   and not has_function_privilege('authenticated', 'public.recipe_action_bump(uuid, text, text, uuid)', 'execute')
   and has_function_privilege('service_role', 'public.recipe_action_bump(uuid, text, text, uuid)', 'execute'));
-select tests.ok('S62 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S62 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- reaplicar a 0051 mantém os dados
 \ir ../migrations/0051_alimentacao.sql
@@ -5765,8 +5766,8 @@ select tests.ok('S63 gatilhos: security definer, search_path fixo, sem execute p
   and exists (select 1 from pg_trigger where tgrelid = 'public.program_items'::regclass and tgname = 'trg_program_items_owner')
   and exists (select 1 from pg_trigger where tgrelid = 'public.program_item_substitutions'::regclass and tgname = 'trg_program_item_substitutions_owner')
   and exists (select 1 from pg_trigger where tgrelid = 'public.programs'::regclass and tgname = 'trg_programs_creator_change'));
-select tests.ok('S63 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S63 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 create temporary table t_s63_before as
   select (select count(*) from public.program_items) as items, (select count(*) from public.creator_products) as allocations,
          (select count(*) from public.admin_audit where action in ('program.items_hero_scope_cleanup', 'creator_product.seed_cleanup')) as audits;
@@ -5896,8 +5897,8 @@ select tests.ok('S64 gatilho de auditoria: security definer, search_path fixo, s
   and not has_function_privilege('authenticated', 'public.admin_seller_ops_audit()', 'execute')
   and exists (select 1 from pg_trigger where tgrelid = 'public.products'::regclass and tgname = 'trg_z_audit_products_admin')
   and exists (select 1 from pg_trigger where tgrelid = 'public.fulfillment_events'::regclass and tgname = 'trg_audit_fulfillment_events_admin'));
-select tests.ok('S64 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S64 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- reaplicar a 0053 não duplica gatilhos
 \ir ../migrations/0053_admin_seller_ops.sql
@@ -6017,8 +6018,8 @@ select tests.ok('S65 sem aparelho registrado nada entra na fila', (select count(
 select tests.ok('S65 funções do push: security definer com search_path fixo e nada para anon',
   (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
      from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname like any (array['push\_%', 'register_push_token'])));
-select tests.ok('S65 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S65 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 \ir ../migrations/0054_push_notifications.sql
 select tests.ok('S65 reaplicar a 0054 não perde favoritos nem preferências',
   (select count(*) from public.hero_favorites) = 1
@@ -6279,8 +6280,8 @@ select tests.ok('S66 RPCs: security definer, search_path fixo, sem execute para 
   and has_function_privilege('authenticated', 'public.place_bid(uuid, int)', 'execute')
   and not has_function_privilege('authenticated', 'public.collectible_finalize_row(uuid)', 'execute')
   and not has_function_privilege('authenticated', 'public.collectible_finalize_due()', 'execute'));
-select tests.ok('S66 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S66 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- Realtime: com a publicação da Supabase, só as duas tabelas públicas entram; reaplicar não muda o que o admin editou
 create publication supabase_realtime;
@@ -6389,8 +6390,8 @@ select tests.ok('S67 gatilhos: security definer, search_path fixo, sem execute p
                    and not has_function_privilege('anon', p.oid, 'execute') and not has_function_privilege('authenticated', p.oid, 'execute'))
    from pg_proc p where p.oid in ('public.hero_favorites_follow_sync()'::regprocedure, 'public.hero_favorites_forget_user()'::regprocedure,
                                   'public.profiles_compare_requires_follow()'::regprocedure, 'public.creator_reference_metrics_audit()'::regprocedure)));
-select tests.ok('S67 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S67 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 select tests.ok('S67 um só caminho profiles↔creator_profiles na API (sem tabela-ponte entre as duas)',
   (select count(*) from pg_constraint f where f.contype = 'f'
      and ((f.conrelid = 'public.profiles'::regclass and f.confrelid = 'public.creator_profiles'::regclass)
@@ -6699,8 +6700,8 @@ select tests.ok('S68 RPCs: security definer, search_path fixo, sem execute para 
   and not has_function_privilege('authenticated', 'public.professional_tap_bump(uuid, uuid, text, text)', 'execute')
   and not has_function_privilege('authenticated', 'public.professional_service_fields(jsonb)', 'execute')
   and not has_function_privilege('authenticated', 'public.service_orders_forget_user()', 'execute'));
-select tests.ok('S68 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S68 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 select tests.ok('S68 políticas novas não avaliam auth.uid()/is_admin()/my_professional_id() por linha',
   (select count(*) from pg_policies where schemaname = 'public'
      and tablename in ('professionals', 'professional_verifications', 'professional_services', 'professional_suggestions', 'service_cart_items', 'service_orders', 'service_order_events')
@@ -6875,8 +6876,8 @@ select tests.ok('S69 RPCs: security definer, search_path fixo, sem execute para 
   (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
                    and not has_function_privilege('anon', p.oid, 'execute') and has_function_privilege('authenticated', p.oid, 'execute'))
      from pg_proc p where p.oid in ('public.admin_program_products_save(uuid, jsonb)'::regprocedure, 'public.admin_program_professional_service_set(uuid, uuid, uuid)'::regprocedure)));
-select tests.ok('S69 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S69 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 select tests.ok('S69 políticas de program_products não avaliam auth.uid()/is_admin() por linha; RLS ligada; sem insert/update/delete para o app',
   (select count(*) from pg_policies where schemaname = 'public' and tablename = 'program_products'
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin)\(\)') = 0
@@ -7009,8 +7010,8 @@ select tests.ok('S70 RPCs do admin: security definer, search_path fixo, sem exec
   and not has_function_privilege('anon', 'public.indicators_window(int)', 'execute')
   and not has_table_privilege('anon', 'public.shortcut_open_counters', 'select')
   and not has_table_privilege('authenticated', 'public.shortcut_open_counters', 'select'));
-select tests.ok('S70 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S70 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- reaplicar a 0060 mantém o contador
 \ir ../migrations/0060_indicators.sql
@@ -7212,8 +7213,8 @@ select tests.ok('S71 funções novas ou trocadas: search_path fixo, nada para an
   and not (select prosecdef from pg_proc where oid = 'public.hero_page_view_bump(uuid)'::regprocedure)
   and has_function_privilege('service_role', 'public.hero_page_view_bump(uuid)', 'execute')
   and not has_function_privilege('authenticated', 'public.hero_page_view_bump(uuid)', 'execute'));
-select tests.ok('S71 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S71 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 select tests.ok('S71 nenhuma tabela-ponte content↔creator_profiles na chave primária (S65 segue)',
   not exists (
     select 1 from pg_constraint pk
@@ -7449,7 +7450,7 @@ select tests.ok('S72 apagar marca leva produtos, ligações e marcações; audit
   and (select before_data ->> 'name' from public.admin_audit where action = 'brand.delete' and resource_id = (select v from t_s72 where k = 'nova')) = 'Marca Teste S72');
 select public.admin_brand_delete((select v::uuid from t_s72 where k = 'brasa'));
 
--- funções: security definer com search_path fixo e sem execute para anon; S14 segue 17
+-- funções: security definer com search_path fixo e sem execute para anon; S14 segue 18 (is_blocked_creator, 0071)
 select tests.su();
 select tests.ok('S72 RPCs do admin: security definer, search_path fixo, sem execute para anon; soma só do service role',
   (select bool_and(p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') and not has_function_privilege('anon', p.oid, 'execute'))
@@ -7464,8 +7465,8 @@ select tests.ok('S72 RPCs do admin: security definer, search_path fixo, sem exec
   and not (select prosecdef from pg_proc where oid = 'public.brand_click_bump(text, uuid, text)'::regprocedure)
   and not has_table_privilege('authenticated', 'public.brands', 'insert')
   and not has_table_privilege('authenticated', 'public.media_smart_tags', 'update'));
-select tests.ok('S72 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S72 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 select tests.ok('S72 políticas novas sem auth.uid()/is_admin() por linha (S14 segue)',
   (select count(*) from pg_policies where schemaname = 'public'
      and tablename in ('brands', 'brand_products', 'creator_brands', 'content_brands', 'content_brand_products', 'program_brand_products', 'media_smart_tags')
@@ -7994,8 +7995,8 @@ select tests.ok('S74 funções novas com search_path fixo e nenhuma executável 
                                 'document_set_sharing', 'agency_seed_defaults', 'admin_agency_save', 'agency_demo_seed',
                                 'guard_demo_role_writes', 'guard_demo_invitation_writes', 'guard_demo_brand_writes', 'guard_demo_brand_product_writes', 'brand_in_real_agency')
               and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute'))));
-select tests.ok('S74 nenhuma função nova para o visitante: a lista do S14 segue com 17 security definer',
-  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+select tests.ok('S74 nenhuma função nova para o visitante: a lista do S14 segue com 18 security definer',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 
 -- ================================================================ S75 · Gestão: casting e media kit (0065)
 -- Talento com e sem página, um herói por talento, consentimento LGPD, redes declaradas (source nunca vem do
@@ -8462,7 +8463,7 @@ select tests.ok('S75 auditoria do casting com agency_id',
      'talent.archive', 'talent.consent', 'talent.catalog', 'talent.social_save', 'media_kit.save', 'media_kit.share', 'media_kit.revoke')) = 11
   and not exists (select 1 from public.admin_audit where action like 'talent.%' and coalesce(after_data ->> 'agency_id', before_data ->> 'agency_id') is null)
   and not exists (select 1 from public.admin_audit where action = 'media_kit.share' and after_data::text ~ (select v from t_s75 where k = 'kit_t1')));
-select tests.ok('S75 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+select tests.ok('S75 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 18 (is_blocked_creator, 0071)',
   not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
               and p.proname in ('talent_audience_ok', 'fill_talent_scope', 'talent_user_id', 'my_talent_id', 'my_talent_agency_id', 'talent_write_scope',
                                 'talent_actor_side', 'talent_audit_actor', 'agency_talent_save', 'agency_talent_set_segments', 'agency_talent_link_creator',
@@ -8471,7 +8472,7 @@ select tests.ok('S75 funções novas: search_path fixo, nenhuma para o visitante
                                 'media_kit_revoke', 'media_kit_resolve', 'talent_my_context', 'talent_reset_person_data',
                                 'talent_revoke_for_person_change', 'talent_hero_inactive', 'talent_login_changed', 'talent_hero_owner_changed')
               and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
-  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 drop table t_s75;
 
 -- ================================================================ S76 · Gestão: proposta da marca, pipeline e consulta (0066)
@@ -8761,7 +8762,7 @@ select tests.ok('S76 D6: admin de demonstração lê 0 negócios, pedidos, orça
 select tests.anon();
 select tests.expect_error('S76 visitante sem acesso aos negócios', $q$select count(*) from public.deals$q$, '42501');
 select tests.su();
-select tests.ok('S76 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+select tests.ok('S76 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 18 (is_blocked_creator, 0071)',
   not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
               and p.proname in ('campaign_deliverables_valid', 'fill_deal_scope', 'fill_deliverable_scope', 'fill_request_scope', 'check_document_request_scope',
                                 'deal_talents_status_cascade', 'activities_touch_contact', 'my_staff_deal_ids', 'my_talent_deal_ids', 'my_talent_brand_ids',
@@ -8773,7 +8774,7 @@ select tests.ok('S76 funções novas: search_path fixo, nenhuma para o visitante
                                 'brand_talent_search', 'brand_talent_detail', 'brand_campaign_detail', 'brand_campaigns', 'talent_brand_card_ok',
                                 'talent_brand_card', 'talent_opportunities')
               and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
-  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 drop table t_s76;
 
 -- ================================================================ S77 · Gestão: agenda integrada e feed .ics (0067)
@@ -8975,12 +8976,12 @@ select tests.ok('S77 D6: admin de demonstração lê 0 eventos e 0 feeds da agê
 select tests.anon();
 select tests.expect_error('S77 visitante sem acesso à agenda', $q$select count(*) from public.calendar_events$q$, '42501');
 select tests.su();
-select tests.ok('S77 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+select tests.ok('S77 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 18 (is_blocked_creator, 0071)',
   not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
               and p.proname in ('fill_event_scope', 'calendar_sync_deal', 'calendar_sync_trigger', 'my_brand_served_agency_ids', 'agency_event_save', 'agency_event_delete',
                                 'calendar_feed_create', 'calendar_feed_revoke', 'calendar_feed_resolve', 'calendar_events_for_user', 'agency_demo_seed_calendar')
               and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
-  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 drop table t_s77;
 
 -- ================================================================ S78 · Gestão: termos demonstrativos, tarefas e entregas (0068)
@@ -9207,15 +9208,301 @@ select tests.ok('S78 D6: admin de demonstração lê 0 termos, tarefas e versõe
 select tests.anon();
 select tests.expect_error('S78 visitante sem acesso às tarefas', $q$select count(*) from public.tasks$q$, '42501');
 select tests.su();
-select tests.ok('S78 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 17',
+select tests.ok('S78 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 18 (is_blocked_creator, 0071)',
   not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
               and p.proname in ('fill_task_scope', 'my_task_ids_staff', 'my_talent_contract_deal_ids', 'agency_terms_save', 'agency_terms_send', 'agency_terms_withdraw', 'brand_terms_accept',
                                 'talent_terms_accept', 'agency_record_acceptance', 'task_template_steps', 'agency_tasks_generate', 'task_step_set', 'agency_contract_confirm',
                                 'task_save', 'task_set_status', 'brand_task_decide', 'deliverable_actor', 'deliverable_submit', 'deliverable_decide', 'deliverable_publish',
                                 'deliverable_proof', 'agency_deliverable_close', 'deal_execution', 'agency_demo_seed_execution')
               and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
-  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
 drop table t_s78;
+
+-- ================================================================ S79 · Gestão: financeiro simulado, painéis, alertas e patrocínio (0072)
+-- Campanha F da marca D com o creator D1 (login) e o talento F (sem login, herói ligado): a contratação gera os
+-- lançamentos (a receber = comissão + repasses, com a taxa do negócio); só o Adm lê e muda a situação; o creator lê
+-- só o próprio repasse; painéis por lado; varredura de alertas com dedupe; patrocínio publicado pelo gestor.
+\ir ../migrations/0072_gestao_financeiro.sql
+select tests.su();
+create temp table t_s79 (k text primary key, v text);
+grant all on t_s79 to anon, authenticated, service_role;
+insert into t_s79 select 'brand_d', id::text from public.brands where slug = 's77-marca-d';
+insert into t_s79 select 'td1', t.id::text from public.talent_profiles t where t.user_id = '77000000-0000-4000-8000-0000000000d1';
+insert into t_s79 select 'hero', c.id::text from public.creator_profiles c where not exists (select 1 from public.talent_profiles t where t.creator_id = c.id) limit 1;
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s79 values ('tf', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Creator F", "state": "SP", "commercial_status": "active"}')::text);
+select tests.su();
+update public.talent_profiles set consent_at = now(), consent_version = '2026-10', catalog_visible = true, creator_id = (select v::uuid from t_s79 where k = 'hero')
+  where id = (select v::uuid from t_s79 where k = 'tf');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+insert into t_s79 values ('req', public.brand_request_save(null, (select v::uuid from t_s79 where k = 'brand_d'),
+  ('{"talent_id": "' || (select v from t_s79 where k = 'td1') || '", "title": "Campanha F", "objective": "content", "period_start": "' || (current_date + 50) || '",
+     "period_end": "' || (current_date + 60) || '", "networks": ["instagram"], "deliverables": [{"kind": "reels", "quantity": 1}]}')::jsonb)::text);
+insert into t_s79 values ('deal', public.brand_request_submit((select v::uuid from t_s79 where k = 'req'))::text);
+select tests.su();
+update public.deals set owner_id = '74000000-0000-4000-8000-0000000000a3' where id = (select v::uuid from t_s79 where k = 'deal');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_shortlist_set((select v::uuid from t_s79 where k = 'deal'), ('[{"talent_id": "' || (select v from t_s79 where k = 'td1') || '"}, {"talent_id": "' || (select v from t_s79 where k = 'tf') || '"}]')::jsonb);
+select tests.su();
+insert into t_s79 select 'dt1', id::text from public.deal_talents where deal_id = (select v::uuid from t_s79 where k = 'deal') and talent_id = (select v::uuid from t_s79 where k = 'td1');
+insert into t_s79 select 'dtf', id::text from public.deal_talents where deal_id = (select v::uuid from t_s79 where k = 'deal') and talent_id = (select v::uuid from t_s79 where k = 'tf');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_fee_set((select v::uuid from t_s79 where k = 'dt1'), 300000);
+select public.agency_fee_set((select v::uuid from t_s79 where k = 'dtf'), 100000);
+-- taxa de serviço do negócio: só o Adm, dentro da faixa, só antes da contratação
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S79 gestor não define a taxa de serviço do negócio', $q$select public.agency_deal_rate_set((select v::uuid from t_s79 where k = 'deal'), 2500)$q$, 'forbidden');
+select tests.expect_error('S79 gestor não define a taxa padrão da agência', $q$select public.agency_rate_set(public.seed_uuid('s74:agency:a'), 1500)$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S79 taxa fora da faixa', $q$select public.agency_deal_rate_set((select v::uuid from t_s79 where k = 'deal'), 9000)$q$, 'invalid_input');
+select public.agency_deal_rate_set((select v::uuid from t_s79 where k = 'deal'), 2500);
+select public.agency_rate_set(public.seed_uuid('s74:agency:a'), 2000);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.expect_error('S79 Adm da agência B não mexe na taxa da agência A', $q$select public.agency_rate_set(public.seed_uuid('s74:agency:a'), 1000)$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_consult_talents((select v::uuid from t_s79 where k = 'deal'), array[(select v::uuid from t_s79 where k = 'dt1'), (select v::uuid from t_s79 where k = 'dtf')], now() + interval '5 days', null);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select public.talent_opportunity_respond((select v::uuid from t_s79 where k = 'dt1'), 'interested', null);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_record_talent_response((select v::uuid from t_s79 where k = 'dtf'), 'interested', 'confirmou por telefone');
+select public.agency_deliverables_save((select v::uuid from t_s79 where k = 'deal'), ('[{"deal_talent_id": "' || (select v from t_s79 where k = 'dt1') || '", "kind": "reels", "title": "Reels F", "due_at": "' || (current_date + 55) || '", "publish_at": "' || (current_date + 58) || '"},
+  {"deal_talent_id": "' || (select v from t_s79 where k = 'dtf') || '", "kind": "stories", "title": "Stories F"}]')::jsonb);
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select public.agency_deal_confirm((select v::uuid from t_s79 where k = 'deal'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s79 values ('terms', public.agency_terms_save((select v::uuid from t_s79 where k = 'deal'), '{"summary": "Um reels e stories na coleção de inverno, publicação nas datas combinadas."}')::text);
+select public.agency_terms_send((select v::uuid from t_s79 where k = 'terms'));
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select public.brand_terms_accept((select v::uuid from t_s79 where k = 'terms'), 'De acordo.');
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select public.talent_terms_accept((select v::uuid from t_s79 where k = 'terms'), null);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_record_acceptance((select v::uuid from t_s79 where k = 'terms'), 'talent', (select v::uuid from t_s79 where k = 'dtf'), null, 'aceite recebido por e-mail');
+select tests.su();
+select tests.ok('S79 sem lançamentos antes da contratação', (select count(*) from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal')) = 0);
+
+-- 1) contratação gera os lançamentos; identidade; backfill cobre o negócio E (0068) e é idempotente -----------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_contract_confirm((select v::uuid from t_s79 where k = 'deal'));
+select tests.su();
+select tests.ok('S79 contratação: a receber = comissão + repasses, taxa do negócio (25%), tudo simulado e planejado',
+  (select count(*) from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal')) = 4
+  and (select amount_cents from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'brand_receivable') = 500000
+  and (select amount_cents from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'commission') = 100000
+  and (select sum(amount_cents) from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'talent_payout') = 400000
+  and (select bool_and(status = 'planned' and simulated and rate_bp = 2500 and currency = 'BRL') from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal'))
+  and (select due_on from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'commission') = current_date + 30
+  and (select due_on from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'talent_payout' and deal_talent_id = (select v::uuid from t_s79 where k = 'dt1'))
+      = (select coalesce(d.expected_end + 15, current_date + 45) from public.deals d where d.id = (select v::uuid from t_s79 where k = 'deal')));
+-- (chamadas em passos separados: a ordem de avaliação de um "and" não é garantida)
+insert into t_s79 values ('bf_a', public.agency_finance_backfill(public.seed_uuid('s74:agency:a'))::text);
+insert into t_s79 values ('bf_all', public.agency_finance_backfill()::text);
+select tests.ok('S79 backfill: gera os 4 lançamentos do negócio E (0068, taxa padrão 20%) e depois nada', (select v from t_s79 where k = 'bf_a') = '4' and (select v from t_s79 where k = 'bf_all') = '0'
+  and (select count(*) from public.financial_entries) = 8
+  and (select amount_cents from public.financial_entries f join public.deals d on d.id = f.deal_id where d.title = 'Campanha E' and f.kind = 'commission') = 100000
+  and (select amount_cents from public.financial_entries f join public.deals d on d.id = f.deal_id where d.title = 'Campanha E' and f.kind = 'brand_receivable') = 600000);
+select tests.ok('S79 identidade em todos os negócios: a receber = comissão + Σ repasses',
+  (select bool_and(s = 0) from (select sum(case kind when 'brand_receivable' then amount_cents else -amount_cents end) as s from public.financial_entries group by deal_id) x));
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S79 taxa do negócio não muda depois da contratação', $q$select public.agency_deal_rate_set((select v::uuid from t_s79 where k = 'deal'), 1000)$q$, 'invalid_state');
+select tests.ok('S79 Adm lê as taxas pela RPC (padrão 20%, negócio 25%, contratado)',
+  (public.agency_rates(public.seed_uuid('s74:agency:a')) ->> 'agency_rate_bp')::int = 2000
+  and (public.agency_rates(public.seed_uuid('s74:agency:a'), (select v::uuid from t_s79 where k = 'deal')) ->> 'deal_rate_bp')::int = 2500
+  and (public.agency_rates(public.seed_uuid('s74:agency:a'), (select v::uuid from t_s79 where k = 'deal')) ->> 'contracted')::boolean);
+select tests.expect_error('S79 Adm não lê taxa de negócio de outra agência', $q$select public.agency_rates(public.seed_uuid('s74:agency:b'), (select v::uuid from t_s79 where k = 'deal'))$q$, 'not_found');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S79 gestor não lê as taxas pela RPC', $q$select public.agency_rates(public.seed_uuid('s74:agency:a'))$q$, 'forbidden');
+select tests.expect_error('S79 gestor não lê a taxa da agência pela tabela', $q$select service_rate_bp from public.agencies$q$, '42501');
+select tests.expect_error('S79 gestor não lê a taxa do negócio pela tabela', $q$select service_rate_bp from public.deals$q$, '42501');
+select tests.ok('S79 gestor segue lendo a agência e o negócio sem a taxa', (select count(*) from public.agencies where name is not null) >= 1 and (select count(*) from public.deals where title = 'Campanha F') = 1);
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.expect_error('S79 marca não lê a taxa da agência', $q$select service_rate_bp from public.agencies$q$, '42501');
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.expect_error('S79 creator não lê a taxa do próprio repasse', $q$select rate_bp from public.financial_entries$q$, '42501');
+select tests.expect_error('S79 creator não lê a taxa da agência', $q$select service_rate_bp from public.agencies$q$, '42501');
+
+-- 2) leitura: só o Adm da agência; o creator só o próprio repasse; ninguém de fora ---------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.ok('S79 Adm lê os lançamentos da agência (8)', (select count(*) from public.financial_entries) = 8);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.ok('S79 gestor não lê o financeiro', (select count(*) from public.financial_entries) = 0);
+select tests.expect_error('S79 gestor não lê o resumo financeiro', $q$select public.agency_finance_summary(public.seed_uuid('s74:agency:a'))$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.ok('S79 colaborador (responsável do negócio) não lê o financeiro', (select count(*) from public.financial_entries) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.ok('S79 Adm da agência B lê 0', (select count(*) from public.financial_entries) = 0);
+select tests.expect_error('S79 agência B não lê o resumo da A', $q$select public.agency_finance_summary(public.seed_uuid('s74:agency:a'))$q$, 'not_found');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S79 marca não lê nenhum lançamento', (select count(*) from public.financial_entries) = 0);
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S79 creator lê os repasses pela RPC com o título do negócio (e nada mais)',
+  jsonb_array_length(public.talent_payouts()) = 2 and (public.talent_payouts() -> 0 ->> 'deal_title') in ('Campanha E', 'Campanha F')
+  and not exists (select 1 from jsonb_array_elements(public.talent_payouts()) x where x ? 'rate_bp' or x ? 'created_by'));
+select tests.ok('S79 creator lê só os próprios repasses (E e F), nunca comissão ou a receber',
+  (select count(*) from public.financial_entries) = 2 and (select bool_and(kind = 'talent_payout' and talent_id = (select v::uuid from t_s79 where k = 'td1')) from public.financial_entries)
+  and (select amount_cents from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal')) = 300000);
+select tests.anon();
+select tests.expect_error('S79 visitante sem acesso ao financeiro', $q$select count(*) from public.financial_entries$q$, '42501');
+
+-- 3) situação dos lançamentos (Adm): planejado → a vencer → liquidado; cancelar com nota; finais não mudam; creator avisado ---
+select tests.su();
+insert into t_s79 select 'pay1', id::text from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'talent_payout' and deal_talent_id = (select v::uuid from t_s79 where k = 'dt1');
+insert into t_s79 select 'comm', id::text from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'commission';
+insert into t_s79 select 'recv', id::text from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'brand_receivable';
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S79 gestor não muda situação de lançamento', $q$select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'pay1'), 'due')$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.expect_error('S79 agência B não enxerga o lançamento', $q$select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'pay1'), 'due')$q$, 'not_found');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S79 situação desconhecida', $q$select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'pay1'), 'paid')$q$, 'invalid_input');
+select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'pay1'), 'due');
+select tests.expect_error('S79 a vencer não volta a a vencer', $q$select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'pay1'), 'due')$q$, 'invalid_state');
+select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'pay1'), 'settled');
+select tests.expect_error('S79 liquidado é final', $q$select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'pay1'), 'cancelled', 'motivo qualquer')$q$, 'invalid_state');
+select tests.expect_error('S79 cancelar exige nota', $q$select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'comm'), 'cancelled')$q$, 'note_required');
+select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'comm'), 'cancelled', 'cortesia para a marca');
+select public.agency_entry_set_status((select v::uuid from t_s79 where k = 'recv'), 'settled');
+select tests.su();
+select tests.ok('S79 situações gravadas e creator avisado a cada mudança do repasse (sem valor no aviso)',
+  (select status = 'settled' and settled_by = '74000000-0000-4000-8000-0000000000a1' and settled_at is not null from public.financial_entries where id = (select v::uuid from t_s79 where k = 'pay1'))
+  and (select status = 'cancelled' and note = 'cortesia para a marca' from public.financial_entries where id = (select v::uuid from t_s79 where k = 'comm'))
+  and (select count(*) from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'payout_updated' and entity_id = (select v::uuid from t_s79 where k = 'pay1')) = 2
+  and not exists (select 1 from public.inbox_notifications where kind = 'payout_updated' and params::text ~ 'cents'));
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.ok('S79 resumo financeiro: abertos, liquidados e negócios',
+  (public.agency_finance_summary(public.seed_uuid('s74:agency:a')) ->> 'receivable_settled_cents')::bigint = 500000
+  and (public.agency_finance_summary(public.seed_uuid('s74:agency:a')) ->> 'receivable_open_cents')::bigint = 600000
+  and (public.agency_finance_summary(public.seed_uuid('s74:agency:a')) ->> 'payout_settled_cents')::bigint = 300000
+  and (public.agency_finance_summary(public.seed_uuid('s74:agency:a')) ->> 'payout_open_cents')::bigint = 600000
+  and (public.agency_finance_summary(public.seed_uuid('s74:agency:a')) ->> 'commission_open_cents')::bigint = 100000
+  and (public.agency_finance_summary(public.seed_uuid('s74:agency:a')) ->> 'deals')::int = 2
+  and (public.agency_finance_summary(public.seed_uuid('s74:agency:a')) ->> 'overdue_count')::int = 0);
+
+-- 4) painéis por lado ---------------------------------------------------------------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.ok('S79 colaborador: painel com os negócios dele e sem a chave finance',
+  (public.agency_dashboard(public.seed_uuid('s74:agency:a')) -> 'finance') is null
+  and (public.agency_dashboard(public.seed_uuid('s74:agency:a')) ->> 'contracts_active')::int >= 1
+  and (public.agency_dashboard(public.seed_uuid('s74:agency:a')) -> 'deals_by_stage') ? 'production');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.ok('S79 Adm: painel com finanças e indicadores',
+  (public.agency_dashboard(public.seed_uuid('s74:agency:a')) -> 'finance' ->> 'deals')::int = 2
+  and (public.agency_dashboard(public.seed_uuid('s74:agency:a')) ->> 'talents_active')::int >= 2
+  and (public.agency_dashboard(public.seed_uuid('s74:agency:a')) ->> 'brands_active')::int >= 1);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.expect_error('S79 agência B não abre o painel da A', $q$select public.agency_dashboard(public.seed_uuid('s74:agency:a'))$q$, 'not_found');
+select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
+select tests.ok('S79 marca: creators sugeridos (contratados nas campanhas abertas) sem valores, próximas datas e aprovações',
+  jsonb_array_length(public.brand_dashboard((select v::uuid from t_s79 where k = 'brand_d')) -> 'suggested') >= 2
+  and (public.brand_dashboard((select v::uuid from t_s79 where k = 'brand_d')))::text !~ '(fee_cents|amount|R\$|commission)'
+  and (public.brand_dashboard((select v::uuid from t_s79 where k = 'brand_d')) ->> 'campaigns_active')::int >= 2
+  and jsonb_typeof(public.brand_dashboard((select v::uuid from t_s79 where k = 'brand_d')) -> 'next_events') = 'array');
+select tests.expect_error('S79 marca não abre painel de outra marca', $q$select public.brand_dashboard(gen_random_uuid())$q$, 'not_found');
+select tests.login('74000000-0000-4000-8000-0000000000a4', 'ag-col2@test.local');
+select tests.expect_error('S79 quem não é da marca não abre o painel dela', $q$select public.brand_dashboard((select v::uuid from t_s79 where k = 'brand_d'))$q$, 'not_found');
+select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
+select tests.ok('S79 creator: resumo com campanhas ativas, próximas entregas e repasses só por contagem',
+  (public.talent_office_summary() ->> 'campaigns_active')::int = 2
+  and (public.talent_office_summary() -> 'payouts' ->> 'settled')::int = 1
+  and (public.talent_office_summary() -> 'payouts' ->> 'planned')::int = 1
+  and jsonb_array_length(public.talent_office_summary() -> 'deliverables_next') between 1 and 3
+  and (public.talent_office_summary())::text !~ '(cents|R\$)');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S79 quem não é creator não tem resumo do escritório', $q$select public.talent_office_summary()$q$, 'not_found');
+
+-- 5) patrocínio na área social: gestor+, contratado, herói ligado; idempotente ----------------------------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
+select tests.expect_error('S79 colaborador não publica patrocínio', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'forbidden');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S79 creator sem herói ligado não vira patrocínio', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dt1'))$q$, 'no_hero');
+select tests.expect_error('S79 marca ainda inativa na área social não vira patrocínio', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'brand_inactive');
+select tests.su();
+update public.brands set status = 'active' where id = (select v::uuid from t_s79 where k = 'brand_d');
+update public.talent_profiles set consent_revoked_at = now(), catalog_visible = false where id = (select v::uuid from t_s79 where k = 'tf');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S79 sem consentimento vigente o herói não vira patrocinado', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'consent_required');
+select tests.su();
+update public.talent_profiles set consent_revoked_at = null, catalog_visible = true where id = (select v::uuid from t_s79 where k = 'tf');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.ok('S79 gestor publica o patrocínio', public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf')));
+select tests.su();
+select tests.ok('S79 marca patrocinadora do herói, ativa', exists (select 1 from public.creator_brands cb where cb.creator_id = (select v::uuid from t_s79 where k = 'hero')
+  and cb.brand_id = (select v::uuid from t_s79 where k = 'brand_d') and cb.relationship = 'sponsor' and cb.status = 'active'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.ok('S79 publicar de novo não duplica', not public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))
+  and (select count(*) from public.creator_brands cb where cb.creator_id = (select v::uuid from t_s79 where k = 'hero') and cb.brand_id = (select v::uuid from t_s79 where k = 'brand_d')) = 1);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.expect_error('S79 agência B não publica patrocínio de negócio da A', $q$select public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))$q$, 'not_found');
+select tests.su();
+update public.creator_brands set status = 'inactive' where creator_id = (select v::uuid from t_s79 where k = 'hero') and brand_id = (select v::uuid from t_s79 where k = 'brand_d');
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s79 values ('republish', public.agency_publish_sponsorship((select v::uuid from t_s79 where k = 'dtf'))::text);
+select tests.su();
+select tests.ok('S79 vínculo desativado pelo administrador não volta a ativo pelo gestor', (select v from t_s79 where k = 'republish') = 'false'
+  and (select status from public.creator_brands where creator_id = (select v::uuid from t_s79 where k = 'hero') and brand_id = (select v::uuid from t_s79 where k = 'brand_d')) = 'inactive');
+
+-- 6) relacionamento: contato registrado atualiza last_contact_at; varredura avisa 1× por semana / 1× por dia -----------------------
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_activity_add('talent', (select v::uuid from t_s79 where k = 'tf'), 'call', 'alinhamento por telefone');
+select tests.su();
+select tests.ok('S79 ligação registrada vira último contato', (select last_contact_at is not null and last_contact_at > now() - interval '1 minute' from public.talent_profiles where id = (select v::uuid from t_s79 where k = 'tf')));
+update public.talent_profiles set last_contact_at = now() - interval '45 days' where id = (select v::uuid from t_s79 where k = 'tf');
+update public.tasks set due_at = now() - interval '1 day' where deal_id = (select v::uuid from t_s79 where k = 'deal') and template_step = 4 and talent_id = (select v::uuid from t_s79 where k = 'td1');
+insert into t_s79 values ('scan1', public.agency_relationship_scan()::text);
+select tests.ok('S79 varredura: creator sem contato avisa os gestores; tarefa vencida avisa o responsável; auditada',
+  (select v::jsonb ->> 'relationship_alerts' from t_s79 where k = 'scan1')::int >= 1
+  and exists (select 1 from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a2' and kind = 'relationship_alert' and entity_id = (select v::uuid from t_s79 where k = 'tf'))
+  and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'task_overdue' and link = '/creator/escritorio/tarefas')
+  and not exists (select 1 from public.inbox_notifications where kind in ('relationship_alert', 'task_overdue') and params::text ~ 'cents')
+  and exists (select 1 from public.admin_audit where action = 'agency.relationship_scan'));
+insert into t_s79 values ('scan2', public.agency_relationship_scan()::text);
+select tests.ok('S79 varredura repetida no mesmo dia não duplica avisos',
+  (select v::jsonb ->> 'relationship_alerts' from t_s79 where k = 'scan2')::int = 0 and (select v::jsonb ->> 'overdue_alerts' from t_s79 where k = 'scan2')::int = 0);
+-- limpeza de avisos e de documentos pendentes
+update public.inbox_notifications set read_at = now() - interval '100 days' where id = (select id from public.inbox_notifications where user_id = '74000000-0000-4000-8000-0000000000a4' limit 1);
+select tests.ok('S79 limpeza apaga avisos lidos há mais de 90 dias', public.inbox_cleanup() >= 1);
+insert into public.documents (id, agency_id, scope_type, kind, title, storage_path, mime_type, size_bytes, status, uploader_side, uploaded_by, created_at)
+  values ('79000000-0000-4000-8000-00000000d0c1', public.seed_uuid('s74:agency:a'), 'agency', 'other', 'Órfão',
+          public.seed_uuid('s74:agency:a')::text || '/agency/' || public.seed_uuid('s74:agency:a')::text || '/79000000-0000-4000-8000-00000000d0c1.pdf',
+          'application/pdf', 10, 'pending', 'agency', '74000000-0000-4000-8000-0000000000a1', now() - interval '2 days');
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.expect_error('S79 reserva de documento com mais de 24 h não se confirma mais', $q$select public.document_confirm('79000000-0000-4000-8000-00000000d0c1')$q$, 'reservation_expired');
+select tests.su();
+insert into t_s79 values ('orphan_listed', ((select storage_path from public.documents where id = '79000000-0000-4000-8000-00000000d0c1') = any (array(select public.documents_orphans(50))))::text);
+insert into t_s79 values ('orphan_purged', public.documents_orphans_purge(array[(select storage_path from public.documents where id = '79000000-0000-4000-8000-00000000d0c1')])::text);
+select tests.ok('S79 documentos pendentes há mais de 24 h são listados e apagados pelo cron',
+  (select v from t_s79 where k = 'orphan_listed') = 'true' and (select v from t_s79 where k = 'orphan_purged') = '1'
+  and not exists (select 1 from public.documents where id = '79000000-0000-4000-8000-00000000d0c1'));
+
+-- 7) histórico da agência (Adm) e cancelamento dos lançamentos abertos quando o negócio é perdido -------------------------------
+select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
+select tests.ok('S79 Adm lê o histórico da agência (contratação, taxa, patrocínio)',
+  exists (select 1 from public.agency_audit_list(public.seed_uuid('s74:agency:a'), 200) a where a.action = 'contract.confirm')
+  and exists (select 1 from public.agency_audit_list(public.seed_uuid('s74:agency:a'), 200) a where a.action = 'agency.publish_sponsorship')
+  and (select count(*) from public.agency_audit_list(public.seed_uuid('s74:agency:a'), 5)) = 5
+  and not exists (select 1 from public.agency_audit_list(public.seed_uuid('s74:agency:a'), 200) a where a.action = 'agency.create' or a.action like 'demo.%'));
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.ok('S79 gestor não lê o histórico', (select count(*) from public.agency_audit_list(public.seed_uuid('s74:agency:a'), 50)) = 0);
+select tests.login('74000000-0000-4000-8000-0000000000b1', 'agb-adm@test.local');
+select tests.ok('S79 agência B não lê o histórico da A', (select count(*) from public.agency_audit_list(public.seed_uuid('s74:agency:a'), 50)) = 0);
+select tests.su();
+update public.deals set stage = 'closed', outcome = 'cancelled', closed_at = now() where id = (select v::uuid from t_s79 where k = 'deal');
+select tests.ok('S79 negócio cancelado: lançamentos abertos cancelados, liquidados preservados',
+  (select status from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and deal_talent_id = (select v::uuid from t_s79 where k = 'dtf')) = 'cancelled'
+  and (select status from public.financial_entries where id = (select v::uuid from t_s79 where k = 'pay1')) = 'settled'
+  and (select status from public.financial_entries where id = (select v::uuid from t_s79 where k = 'recv')) = 'settled');
+select tests.ok('S79 funções novas: search_path fixo, nenhuma para o visitante; S14 segue 18 (is_blocked_creator, 0071)',
+  not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+              and p.proname in ('agency_finance_generate', 'agency_finance_backfill', 'agency_contract_confirm', 'finance_on_deal_close', 'agency_entry_set_status', 'agency_rate_set',
+                                'agency_deal_rate_set', 'agency_finance_summary', 'agency_dashboard', 'brand_dashboard', 'talent_office_summary', 'activities_touch_contact',
+                                'agency_relationship_scan', 'inbox_cleanup', 'documents_orphans', 'documents_orphans_purge', 'agency_publish_sponsorship', 'agency_audit_list',
+                                'agency_rates', 'talent_payouts', 'document_confirm')
+              and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+              and p.proname in ('agency_finance_generate', 'agency_finance_backfill', 'agency_relationship_scan', 'inbox_cleanup', 'documents_orphans', 'documents_orphans_purge')
+              and has_function_privilege('authenticated', p.oid, 'execute'))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+drop table t_s79;
 
 -- ================================================================ S80 · Estrutura do módulo de gestão
 -- Cresce a cada etapa (0064..0069). Tabelas novas: PK só "id", RLS ligada, sem escrita direta e sem
@@ -9226,7 +9513,8 @@ create temp table t_s80 (t text primary key);
 insert into t_s80 values ('agencies'), ('agency_members'), ('agency_brands'), ('brand_members'), ('inbox_notifications'), ('documents'),
   ('talent_segments'), ('talent_profiles'), ('talent_segment_links'), ('talent_social_accounts'), ('media_kits'),
   ('talent_availability'), ('campaign_requests'), ('deals'), ('deal_team'), ('deal_talents'), ('deliverables'), ('activities'), ('deal_messages'),
-  ('campaign_request_budgets'), ('deal_talent_fees'), ('calendar_events'), ('calendar_feeds'), ('deal_terms'), ('deal_acceptances'), ('tasks'), ('deliverable_versions');
+  ('campaign_request_budgets'), ('deal_talent_fees'), ('calendar_events'), ('calendar_feeds'), ('deal_terms'), ('deal_acceptances'), ('tasks'), ('deliverable_versions'),
+  ('financial_entries');
 grant all on t_s80 to anon, authenticated, service_role;
 select tests.ok('S80 tabelas novas: PK só id, RLS ligada, sem escrita para authenticated/anon, sem select para anon',
   (select bool_and((select array_agg(a.attname::text) from pg_constraint pk join pg_attribute a on a.attrelid = pk.conrelid and a.attnum = any (pk.conkey)
@@ -9242,7 +9530,7 @@ select tests.ok('S80 nenhuma coluna de valor em tabela operacional',
   not exists (select 1 from information_schema.columns c
               where c.table_schema = 'public' and c.table_name in (select t from t_s80)
                 -- tabelas de valor (só Adm) ficam fora desta regra
-                and c.table_name not in ('campaign_request_budgets', 'deal_talent_fees')
+                and c.table_name not in ('campaign_request_budgets', 'deal_talent_fees', 'financial_entries')
                 -- "fee" só como palavra (brand_feedback não é valor)
                 and c.column_name ~ '(_cents$|amount|(^|_)fee(_|$)|price|budget|commission)'));
 select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_platform_admin() por linha',
@@ -9253,7 +9541,7 @@ select tests.ok('S80 políticas das tabelas novas sem auth.uid()/is_admin()/is_p
          'agencies_select_talent', 'role_assignments_hide_agency_from_demo')
      and (coalesce(qual, '') || ' ' || coalesce(with_check, '')) ~ '(^|[^T] )(auth\.uid|is_admin|is_platform_admin|my_creator_id|is_demo_account)\(\)') = 0);
 select tests.ok('S80 _select_admin das tabelas novas usa is_platform_admin (nunca is_admin)',
-  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 26
+  (select count(*) from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin') = 27
   and not exists (select 1 from pg_policies where schemaname = 'public' and tablename in (select t from t_s80) and policyname like '%\_select\_admin'
                   and qual !~ 'is_platform_admin'));
 select tests.ok('S80 nenhum par de tabelas novas com FK nos dois sentidos',

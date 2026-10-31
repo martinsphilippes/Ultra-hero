@@ -4,6 +4,7 @@ import {
   ShortlistPanel,
   type Candidate,
 } from "@/components/deals/ShortlistPanel";
+import { SponsorshipButton } from "@/components/finance/SponsorshipButton";
 import { getRequest, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import type { Reason } from "@/lib/deals/vocab";
 import { listTalents } from "@/lib/talent/queries";
@@ -65,7 +66,8 @@ function reasonsFor(
 // Creators do negócio: elenco sugerido com critérios, consulta de interesse, respostas, cachê (Adm).
 export default async function DealTalentsPage({ params }: Props) {
   const { id } = await params;
-  const { ctx, deal, canEdit, isAdmin } = await loadDeal(id);
+  const { ctx, deal, canEdit, isAdmin, isManager } = await loadDeal(id);
+  const ts = await getTranslations("agency.sponsorship");
   const [rows, fees, request, casting] = await Promise.all([
     listDealTalents(deal.id),
     isAdmin ? listDealFees(deal.id) : Promise.resolve({}),
@@ -128,16 +130,36 @@ export default async function DealTalentsPage({ params }: Props) {
     ),
   }));
 
+  // patrocínio na área social (0069): creators contratados de um negócio em produção ou ganho, com herói ligado
+  const sponsorable = isManager && (deal.stage === "production" || (deal.stage === "closed" && deal.outcome === "won")) ? rows.filter((r) => r.status === "contracted") : [];
   return (
-    <ShortlistPanel
-      dealId={deal.id}
-      stage={deal.stage}
-      rows={rows}
-      candidates={candidates}
-      fees={fees}
-      canEdit={canEdit}
-      isAdmin={isAdmin}
-      documents={docs ?? []}
-    />
+    <div className="flex flex-col gap-5">
+      <ShortlistPanel
+        dealId={deal.id}
+        stage={deal.stage}
+        rows={rows}
+        candidates={candidates}
+        fees={fees}
+        canEdit={canEdit}
+        isAdmin={isAdmin}
+        documents={docs ?? []}
+      />
+      {sponsorable.length > 0 ? (
+        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="deal-sponsorship" data-testid="deal-sponsorship">
+          <h2 id="deal-sponsorship" className="text-base font-semibold text-fg">
+            {ts("title")}
+          </h2>
+          <p className="type-body-sm text-fg-muted">{ts("hint")}</p>
+          <ul className="flex flex-col divide-y divide-border">
+            {sponsorable.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="text-sm font-medium text-fg">{r.talent.name}</span>
+                {r.talent.hasHero ? <SponsorshipButton dealTalentId={r.id} dealId={deal.id} name={r.talent.name} /> : <span className="type-caption text-fg-muted">{ts("noHero")}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+    </div>
   );
 }

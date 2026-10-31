@@ -341,5 +341,18 @@
       "done": "Deliverable completed.",
       "cancelled": "Deliverable cancelled."
     }
+  },
+  "finance": {
+    "kinds": {
+      "brand_receivable": "Receivable from brand",
+      "commission": "Agency commission",
+      "talent_payout": "Creator payout"
+    },
+    "status": {
+      "planned": "Planned",
+      "due": "Due",
+      "settled": "Settled",
+      "cancelled": "Cancelled"
+    }
   }
 }

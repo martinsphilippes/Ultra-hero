@@ -37,6 +37,7 @@ import {
   CalendarDays,
   Megaphone,
   Search,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -88,6 +89,8 @@ const ICONS: Record<string, LucideIcon> = {
   catalog: Search,
   agenda: CalendarDays,
   tasks: ClipboardList,
+  finance: Wallet,
+  history: ScrollText,
 };
 
 function isActive(pathname: string, href: string, root: string) {

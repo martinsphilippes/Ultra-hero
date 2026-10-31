@@ -341,5 +341,18 @@
       "done": "Entrega concluída.",
       "cancelled": "Entrega cancelada."
     }
+  },
+  "finance": {
+    "kinds": {
+      "brand_receivable": "A receber da marca",
+      "commission": "Comissão da agência",
+      "talent_payout": "Repasse ao creator"
+    },
+    "status": {
+      "planned": "Planejado",
+      "due": "A vencer",
+      "settled": "Liquidado",
+      "cancelled": "Cancelado"
+    }
   }
 }

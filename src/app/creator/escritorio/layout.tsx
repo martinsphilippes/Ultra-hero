@@ -38,6 +38,7 @@ export default async function OfficeLayout({ children }: { children: ReactNode }
           { href: "/creator/escritorio/agenda", label: t("tabs.agenda") },
           { href: "/creator/escritorio/disponibilidade", label: t("tabs.availability") },
           { href: "/creator/escritorio/media-kit", label: t("tabs.kit") },
+          { href: "/creator/escritorio/documentos", label: t("tabs.documents") },
           { href: "/creator/escritorio/consentimento", label: t("tabs.consent") },
           { href: "/creator/escritorio/notificacoes", label: t("tabs.notifications") },
         ]}

@@ -42,7 +42,7 @@ export type DealTalentRow = {
   responseNote: string;
   responseChannel: string | null;
   reasons: Reason[];
-  talent: { name: string; city: string | null; state: string | null; availability: string; hasLogin: boolean; avatarUrl: string | null; consentActive: boolean };
+  talent: { name: string; city: string | null; state: string | null; availability: string; hasLogin: boolean; hasHero: boolean; avatarUrl: string | null; consentActive: boolean };
 };
 
 export type DeliverableRow = {
@@ -193,6 +193,7 @@ export async function listDealTalents(dealId: string): Promise<DealTalentRow[]> 
       state: r.talent?.state ?? null,
       availability: r.talent?.availability ?? "available",
       hasLogin: Boolean(r.talent?.user_id || r.talent?.creator_id),
+      hasHero: Boolean(r.talent?.creator_id),
       avatarUrl: r.talent?.creator?.avatar_url ?? null,
       consentActive: Boolean(r.talent?.consent_at) && !r.talent?.consent_revoked_at,
     },

@@ -7,9 +7,14 @@ import { ConsentBanner } from "@/components/talent/ConsentBanner";
 import { MetricSource } from "@/components/talent/MetricSource";
 import { Badge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
-import { formatDateTime } from "@/i18n/format";
+import { formatDateTime, formatPlainDate } from "@/i18n/format";
+import { DeliverableStatusBadge } from "@/components/deals/StatusBadges";
+import { officeSummaryData } from "@/lib/agency/dashboards";
 import { listOpportunities } from "@/lib/deals/queries";
+import { formatCents } from "@/lib/deals/schemas";
+import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { listTasks } from "@/lib/execution/queries";
+import { myPayouts } from "@/lib/finance/queries";
 import { listInbox } from "@/lib/inbox/queries";
 import { formatCount } from "@/lib/talent/media-kit";
 import { getKit, listSocial } from "@/lib/talent/queries";
@@ -37,7 +42,8 @@ export default async function OfficeHomePage() {
     listInbox({ limit: 5 }),
     listOpportunities(),
   ]);
-  const tasks = await listTasks({ talentOnly: true, open: true });
+  const [tasks, summary, payouts, tc] = await Promise.all([listTasks({ talentOnly: true, open: true }), officeSummaryData(), myPayouts(), getTranslations("commercial")]);
+  const office = summary.available ? summary.data : null;
   const myTasks = tasks.available ? tasks.items.filter((x) => x.talentId === talent.id) : [];
   const overdue = myTasks.filter((x) => x.dueAt && new Date(x.dueAt).getTime() < Date.now()).length;
   const consentOk = consentActive(talent);
@@ -81,6 +87,63 @@ export default async function OfficeHomePage() {
           <p className="text-sm text-fg">{myTasks.length > 0 ? t("tasksPending", { count: myTasks.length }) : t("tasksNone")}</p>
           {overdue > 0 ? <p className="type-caption font-medium text-danger">{t("tasksOverdue", { count: overdue })}</p> : null}
         </section>
+      ) : null}
+      {office ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className={card} aria-labelledby="office-next-deliveries" data-testid="office-next-deliveries">
+            <h2 id="office-next-deliveries" className="text-sm font-semibold text-fg">
+              {t("nextDeliveriesTitle")}
+            </h2>
+            <p className="type-caption text-fg-muted">{office.campaignsActive > 0 ? t("campaignsActive", { count: office.campaignsActive }) : t("campaignsNone")}</p>
+            {office.deliverablesNext.length === 0 ? (
+              <p className="type-body-sm text-fg-muted">{t("nextDeliveriesNone")}</p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-border">
+                {office.deliverablesNext.map((d) => (
+                  <li key={d.id}>
+                    <Link href={`/creator/escritorio/oportunidades/${d.dealTalentId}`} className="flex flex-wrap items-center gap-2 py-2 text-sm text-fg hover:underline">
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="font-medium">
+                          {d.title || tc(`deliverableKinds.${d.kind}`)} · {d.dealTitle}
+                        </span>
+                        <span className="type-caption text-fg-muted">{d.dueAt ? t("dueAt", { date: formatDateTime(d.dueAt, locale) }) : d.publishAt ? t("publishAt", { date: formatDateTime(d.publishAt, locale) }) : ""}</span>
+                      </span>
+                      <DeliverableStatusBadge status={d.status as DeliverableStatus} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {office.eventsToday > 0 ? <p className="type-caption text-fg">{t("eventsToday", { count: office.eventsToday })}</p> : null}
+          </section>
+          {payouts.available ? (
+            <section className={card} aria-labelledby="office-payouts" data-testid="office-payouts">
+              <h2 id="office-payouts" className="text-sm font-semibold text-fg">
+                {t("payoutsTitle")}
+              </h2>
+              <p className="type-caption text-fg-muted">{t("payoutsHint")}</p>
+              {payouts.items.length === 0 ? (
+                <p className="type-body-sm text-fg-muted">{t("payoutsNone")}</p>
+              ) : (
+                <ul className="flex flex-col divide-y divide-border">
+                  {payouts.items.slice(0, 5).map((p) => (
+                    <li key={p.id} className="flex flex-wrap items-center gap-2 py-2 text-sm" data-testid="office-payout">
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="font-medium text-fg">{p.dealTitle}</span>
+                        <span className="type-caption text-fg-muted">
+                          {tc(`finance.status.${p.status}`)}
+                          {p.dueOn ? ` · ${t("dueAt", { date: formatPlainDate(p.dueOn, locale) })}` : ""}
+                        </span>
+                      </span>
+                      <span className="font-mono font-semibold text-fg native:hidden">{formatCents(p.amountCents, locale)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="type-caption text-fg-muted hidden native:block">{t("payoutsAppHint")}</p>
+            </section>
+          ) : null}
+        </div>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         <section className={card} aria-labelledby="office-availability">

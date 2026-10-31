@@ -47,7 +47,13 @@
     "newCampaign": "Nueva propuesta",
     "seeCreators": "Buscar creators",
     "seeCampaigns": "Ver campañas",
-    "approvalsNote": "Términos, guiones y entregas por aprobar están dentro de cada campaña."
+    "approvalsNote": "Términos, guiones y entregas por aprobar están dentro de cada campaña.",
+    "suggestedTitle": "Creators sugeridos por la agencia",
+    "suggestedHint": "Confirmados o contratados en tus campañas abiertas, con los datos que autorizaron mostrar.",
+    "suggestedNone": "Todavía ningún creator confirmado en las campañas abiertas.",
+    "nextEventsTitle": "Próximas fechas",
+    "nextEventsNone": "Ninguna fecha publicada en los próximos días.",
+    "seeAgenda": "Ver agenda"
   },
   "team": {
     "title": "Equipo de la marca",

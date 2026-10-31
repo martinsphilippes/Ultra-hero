@@ -6,10 +6,12 @@ import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { AgencySwitcher } from "@/components/agency/AgencySwitcher";
 import { SelfForm } from "@/components/agency/SettingsForms";
 import { RoleBadge } from "@/components/agency/RoleBadge";
+import { FinanceKpis } from "@/components/finance/FinanceKpis";
 import { Button, PageHeader } from "@/components/ui";
+import { agencyDashboardData } from "@/lib/agency/dashboards";
 import { agencyDashboard } from "@/lib/agency/queries";
 import { castingCounts } from "@/lib/talent/queries";
-import { agencyCan, canSeeValues } from "@/lib/agency/roles";
+import { agencyCan } from "@/lib/agency/roles";
 import { getAgencyContext } from "@/lib/agency/server";
 import { getUser } from "@/lib/auth/session";
 import { upcomingCount } from "@/lib/calendar/queries";
@@ -31,9 +33,19 @@ export default async function AgencyDashboardPage() {
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const user = await getUser();
-  const [t, data, casting, deals, upcoming, tasks] = await Promise.all([getTranslations("agency.dashboard"), agencyDashboard(ctx.agency.id, isAdmin), castingCounts(ctx.agency.id), dealCounts(ctx.agency.id), upcomingCount(14, { agencyId: ctx.agency.id }), taskCounts(ctx.agency.id, user?.id ?? null)]);
-
-  const upcomingModules = [...(canSeeValues(ctx.role, ctx.platformAdmin) ? [{ key: "finance", icon: Wallet }] : [])] as const;
+  const [t, data, casting, deals, upcoming, tasks, panel] = await Promise.all([
+    getTranslations("agency.dashboard"),
+    agencyDashboard(ctx.agency.id, isAdmin),
+    castingCounts(ctx.agency.id),
+    dealCounts(ctx.agency.id),
+    upcomingCount(14, { agencyId: ctx.agency.id }),
+    taskCounts(ctx.agency.id, user?.id ?? null),
+    agencyDashboardData(ctx.agency.id),
+  ]);
+  // painel executivo (0069): entregas atrasadas, aprovações da marca, creators sem contato, ganhos/perdidos; finanças só Adm
+  const exec = panel.available ? panel.data : null;
+  const finance = exec?.finance ?? null;
+  const upcomingModules = [...(isAdmin && !finance && panel.available ? [{ key: "finance", icon: Wallet }] : [])] as const;
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,12 +64,27 @@ export default async function AgencyDashboardPage() {
         {deals ? <KpiCard label={t("kpi.confirmed")} value={deals.confirmed} /> : null}
         {tasks ? <KpiCard label={t("kpi.tasks")} value={tasks.open} hint={t("kpi.tasksHint", { mine: tasks.mine, overdue: tasks.overdue })} tone={tasks.overdue > 0 ? "danger" : "default"} /> : null}
         {upcoming !== null ? <KpiCard label={t("kpi.upcoming")} value={upcoming} hint={t("kpi.upcomingHint")} /> : null}
-        {casting ? <KpiCard label={t("kpi.casting")} value={casting.total} hint={t("kpi.castingActive", { count: casting.active })} /> : null}
+        {exec ? <KpiCard label={t("kpi.deliverablesOverdue")} value={exec.deliverablesOverdue} hint={t("kpi.approvalsPending", { count: exec.approvalsPending })} tone={exec.deliverablesOverdue > 0 ? "danger" : "default"} /> : null}
+        {casting ? <KpiCard label={t("kpi.casting")} value={casting.total} hint={exec ? t("kpi.noContact", { count: exec.talentsNoContact }) : t("kpi.castingActive", { count: casting.active })} tone={exec && exec.talentsNoContact > 0 ? "danger" : "default"} /> : null}
+        {exec ? <KpiCard label={t("kpi.won90")} value={exec.won90d} hint={t("kpi.lost90", { count: exec.lost90d })} /> : null}
         <KpiCard label={t("kpi.team")} value={data.members} />
         <KpiCard label={t("kpi.brands")} value={data.brands} />
         {isAdmin ? <KpiCard label={t("kpi.invites")} value={data.pendingInvites} /> : null}
         <KpiCard label={t("kpi.unread")} value={data.unread} />
       </div>
+      {finance ? (
+        <section aria-labelledby="agency-finance-home" className="flex flex-col gap-3" data-testid="agency-finance-home">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="agency-finance-home" className="text-sm font-semibold text-fg">
+              {t("financeTitle")}
+            </h2>
+            <Link href="/agencia/financeiro" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+              {t("seeFinance")}
+            </Link>
+          </div>
+          <FinanceKpis summary={finance} />
+        </section>
+      ) : null}
 
       <section aria-labelledby="agency-quick" className="flex flex-col gap-3">
         <h2 id="agency-quick" className="text-sm font-semibold text-fg">

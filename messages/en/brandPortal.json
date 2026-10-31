@@ -47,7 +47,13 @@
     "newCampaign": "New proposal",
     "seeCreators": "Find creators",
     "seeCampaigns": "See campaigns",
-    "approvalsNote": "Terms, scripts and deliverables to approve live inside each campaign."
+    "approvalsNote": "Terms, scripts and deliverables to approve live inside each campaign.",
+    "suggestedTitle": "Creators suggested by the agency",
+    "suggestedHint": "Confirmed or contracted in your open campaigns, with the data they authorised.",
+    "suggestedNone": "No creator confirmed in the open campaigns yet.",
+    "nextEventsTitle": "Upcoming dates",
+    "nextEventsNone": "No date published in the coming days.",
+    "seeAgenda": "See agenda"
   },
   "team": {
     "title": "Brand team",

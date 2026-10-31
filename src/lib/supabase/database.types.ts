@@ -5694,6 +5694,7 @@ export type Database = {
           is_demo: boolean;
           name: string;
           relationship_alert_days: number;
+          service_rate_bp: number;
           slug: string;
           status: string;
           timezone: string;
@@ -5708,6 +5709,7 @@ export type Database = {
           is_demo?: boolean;
           name: string;
           relationship_alert_days?: number;
+          service_rate_bp?: number;
           slug: string;
           status?: string;
           timezone?: string;
@@ -5721,6 +5723,7 @@ export type Database = {
           is_demo?: boolean;
           name?: string;
           relationship_alert_days?: number;
+          service_rate_bp?: number;
           slug?: string;
           status?: string;
           timezone?: string;
@@ -6573,6 +6576,7 @@ export type Database = {
           owner_id: string | null;
           request_id: string | null;
           segment_ids: string[];
+          service_rate_bp: number | null;
           stage: string;
           stage_changed_at: string;
           talent_brief: string;
@@ -6597,6 +6601,7 @@ export type Database = {
           owner_id?: string | null;
           request_id?: string | null;
           segment_ids?: string[];
+          service_rate_bp?: number | null;
           stage?: string;
           stage_changed_at?: string;
           talent_brief?: string;
@@ -6620,6 +6625,7 @@ export type Database = {
           owner_id?: string | null;
           request_id?: string | null;
           segment_ids?: string[];
+          service_rate_bp?: number | null;
           stage?: string;
           stage_changed_at?: string;
           talent_brief?: string;
@@ -7785,11 +7791,172 @@ export type Database = {
           },
         ];
       };
+      financial_entries: {
+        Row: {
+          agency_id: string;
+          amount_cents: number;
+          brand_id: string;
+          created_at: string;
+          created_by: string | null;
+          currency: string;
+          deal_id: string;
+          deal_talent_id: string | null;
+          due_on: string | null;
+          id: string;
+          kind: string;
+          note: string;
+          rate_bp: number;
+          settled_at: string | null;
+          settled_by: string | null;
+          simulated: boolean;
+          status: string;
+          talent_id: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          amount_cents: number;
+          brand_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          deal_id: string;
+          deal_talent_id?: string | null;
+          due_on?: string | null;
+          id?: string;
+          kind: string;
+          note?: string;
+          rate_bp: number;
+          settled_at?: string | null;
+          settled_by?: string | null;
+          simulated?: boolean;
+          status?: string;
+          talent_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          amount_cents?: number;
+          brand_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          currency?: string;
+          deal_id?: string;
+          deal_talent_id?: string | null;
+          due_on?: string | null;
+          id?: string;
+          kind?: string;
+          note?: string;
+          rate_bp?: number;
+          settled_at?: string | null;
+          settled_by?: string | null;
+          simulated?: boolean;
+          status?: string;
+          talent_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "financial_entries_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_entries_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_entries_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_entries_deal_talent_fk";
+            columns: ["deal_talent_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_talents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "financial_entries_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      agency_audit_list: {
+        Args: {
+          p_agency: string;
+          p_before?: string | null;
+          p_limit?: number | null;
+        };
+        Returns: {
+          id: number;
+          action: string;
+          resource_type: string;
+          resource_id: string;
+          actor_type: string;
+          justification: string;
+          created_at: string;
+        }[];
+      };
+      talent_payouts: { Args: Record<PropertyKey, never>; Returns: Json };
+      agency_rates: {
+        Args: { p_agency: string; p_deal?: string | null };
+        Returns: Json;
+      };
+      agency_publish_sponsorship: {
+        Args: { p_deal_talent: string };
+        Returns: boolean;
+      };
+      documents_orphans_purge: { Args: { p_paths: string[] }; Returns: number };
+      documents_orphans: {
+        Args: { p_limit?: number | null };
+        Returns: string[];
+      };
+      inbox_cleanup: { Args: Record<PropertyKey, never>; Returns: number };
+      agency_relationship_scan: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      talent_office_summary: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      brand_dashboard: { Args: { p_brand: string }; Returns: Json };
+      agency_dashboard: { Args: { p_agency: string }; Returns: Json };
+      agency_finance_summary: { Args: { p_agency: string }; Returns: Json };
+      agency_deal_rate_set: {
+        Args: { p_deal: string; p_rate_bp?: number | null };
+        Returns: undefined;
+      };
+      agency_rate_set: {
+        Args: { p_agency: string; p_rate_bp: number };
+        Returns: undefined;
+      };
+      agency_entry_set_status: {
+        Args: { p_entry: string; p_note?: string | null; p_status: string };
+        Returns: undefined;
+      };
+      agency_finance_backfill: {
+        Args: { p_agency?: string | null };
+        Returns: number;
+      };
       task_template_steps: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -7854,7 +8021,10 @@ export type Database = {
         Args: { p_attachment?: Json | null; p_status: string; p_task: string };
         Returns: undefined;
       };
-      task_save: { Args: { p_data: Json; p_id: string | null }; Returns: string };
+      task_save: {
+        Args: { p_data: Json; p_id: string | null };
+        Returns: string;
+      };
       agency_contract_confirm: { Args: { p_deal: string }; Returns: number };
       agency_record_acceptance: {
         Args: {

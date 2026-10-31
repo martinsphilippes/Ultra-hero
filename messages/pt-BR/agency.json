@@ -24,7 +24,9 @@
     "agenda": "Agenda",
     "dealTerms": "Termos do negócio",
     "dealTasks": "Tarefas do negócio",
-    "tasks": "Tarefas"
+    "tasks": "Tarefas",
+    "finance": "Financeiro",
+    "history": "Histórico"
   },
   "demoBanner": {
     "tag": "Demonstração",
@@ -73,7 +75,12 @@
       "upcoming": "Compromissos em 14 dias",
       "upcomingHint": "campanhas, entregas, reuniões",
       "tasks": "Tarefas abertas",
-      "tasksHint": "{mine} minhas · {overdue} atrasadas"
+      "tasksHint": "{mine} minhas · {overdue} atrasadas",
+      "deliverablesOverdue": "Entregas atrasadas",
+      "approvalsPending": "{count, plural, =0 {nenhuma aprovação pendente} one {# aprovação pendente da marca} other {# aprovações pendentes da marca}}",
+      "noContact": "{count, plural, =0 {todos com contato recente} one {# sem contato há tempo} other {# sem contato há tempo}}",
+      "won90": "Ganhos em 90 dias",
+      "lost90": "{count, plural, =0 {nenhum perdido} one {# perdido ou cancelado} other {# perdidos ou cancelados}}"
     },
     "quickTitle": "Atalhos",
     "newBrand": "Nova marca",
@@ -108,7 +115,9 @@
     "newTalent": "Novo talento",
     "seeCasting": "Ver casting",
     "seePipeline": "Ver pipeline",
-    "seeTasks": "Minhas tarefas"
+    "seeTasks": "Minhas tarefas",
+    "financeTitle": "Financeiro (simulado)",
+    "seeFinance": "Ver financeiro"
   },
   "team": {
     "title": "Equipe",
@@ -286,7 +295,11 @@
     "schedule_conflict": "Outro negócio já reservou este período para um dos creators. O Adm pode forçar com justificativa.",
     "deliverables_open": "Há entregas em aberto; conclua ou cancele antes de encerrar como ganho.",
     "terms_missing": "Envie os termos antes de confirmar a contratação.",
-    "acceptance_missing": "Faltam aceites: a marca e todos os creators confirmados precisam aceitar os termos."
+    "acceptance_missing": "Faltam aceites: a marca e todos os creators confirmados precisam aceitar os termos.",
+    "finance_identity": "Os lançamentos não fecham: a receber precisa ser igual a comissão mais repasses.",
+    "brand_inactive": "A marca ainda não está ativa na área social. Peça ao administrador da plataforma para ativá-la.",
+    "no_hero": "Este creator não tem herói ligado na área social; o patrocínio não tem onde aparecer.",
+    "reservation_expired": "A reserva deste arquivo venceu (mais de 24 h). Envie o arquivo de novo."
   },
   "casting": {
     "title": "Casting",
@@ -693,7 +706,18 @@
       "noLoginHint": "Este talento não tem login: o que for escrito aqui fica registrado, mas ele não recebe.",
       "brandNotVisibleHint": "Negócio aberto pela agência: a marca só vê (e responde) depois da confirmação."
     },
-    "noEvents": "Nenhum compromisso futuro. A confirmação cria a campanha na agenda; as entregas entram pelas datas."
+    "noEvents": "Nenhum compromisso futuro. A confirmação cria a campanha na agenda; as entregas entram pelas datas.",
+    "finance": {
+      "title": "Financeiro do negócio",
+      "fees": "Cachês",
+      "commission": "Comissão ({rate})",
+      "total": "A marca paga",
+      "missingFees": "{count, plural, one {# creator sem cachê definido} other {# creators sem cachê definido}}",
+      "rateOverride": "Taxa deste negócio (%)",
+      "rateOverrideHint": "Vazio usa a taxa padrão da agência ({rate}). Só muda antes da contratação.",
+      "rateSave": "Salvar taxa do negócio",
+      "noEntries": "Os lançamentos aparecem aqui depois da contratação."
+    }
   },
   "agenda": {
     "title": "Agenda",
@@ -866,6 +890,91 @@
       "save": "Salvar perfil",
       "created": "Herói criado",
       "saved": "Perfil salvo"
+    }
+  },
+  "finance": {
+    "title": "Financeiro",
+    "description": "A receber da marca, comissão da agência e repasses aos creators de cada negócio contratado.",
+    "unavailable": "Financeiro em atualização",
+    "unavailableHint": "O financeiro aparece assim que o banco for atualizado.",
+    "simulatedTag": "Simulado",
+    "disclaimer": "Registro interno, sem cobrança real: nenhum valor é cobrado, pago ou transferido por aqui.",
+    "filtersLabel": "Filtros do financeiro",
+    "filters": {
+      "open": "Em aberto",
+      "overdue": "Vencidos",
+      "settled": "Liquidados",
+      "cancelled": "Cancelados",
+      "all": "Todos"
+    },
+    "empty": {
+      "open": "Nenhum lançamento em aberto.",
+      "overdue": "Nenhum lançamento vencido.",
+      "settled": "Nenhum lançamento liquidado.",
+      "cancelled": "Nenhum lançamento cancelado.",
+      "all": "Nenhum lançamento ainda. Eles nascem na confirmação da contratação."
+    },
+    "kpi": {
+      "receivableOpen": "A receber",
+      "receivableSettled": "{value} recebidos",
+      "commissionOpen": "Comissão a receber",
+      "commissionSettled": "{value} recebidos",
+      "payoutOpen": "Repasses a pagar",
+      "payoutSettled": "{value} pagos",
+      "overdue": "Vencidos",
+      "openCount": "{count} em aberto em {deals, plural, one {# negócio} other {# negócios}}"
+    },
+    "dueOn": "vence em {date}",
+    "noDue": "sem vencimento",
+    "settledAt": "liquidado em {date}",
+    "rate": "taxa {rate}",
+    "changeStatus": "Mudar situação",
+    "actions": {
+      "due": "Marcar a vencer",
+      "settled": "Marcar liquidado",
+      "cancelled": "Cancelar"
+    },
+    "cancelTitle": "Cancelar lançamento",
+    "cancelHint": "O cancelamento fica na auditoria com o motivo.",
+    "cancelNote": "Motivo",
+    "noteRequired": "Escreva o motivo (pelo menos 5 caracteres).",
+    "back": "Voltar",
+    "statusSet": {
+      "due": "Lançamento marcado como a vencer.",
+      "settled": "Lançamento liquidado.",
+      "cancelled": "Lançamento cancelado."
+    },
+    "rateSaved": "Taxa de serviço salva.",
+    "rateTitle": "Taxa de serviço",
+    "rateDescription": "Percentual sobre os cachês que compõe o que a marca paga. Vale para os próximos negócios; cada negócio pode ter a sua antes da contratação.",
+    "rateLabel": "Taxa (%)",
+    "rateHint": "De 0 a 50%, com até duas casas.",
+    "rateInvalid": "Informe um percentual entre 0 e 50.",
+    "ratePreview": "Exemplo: cachês de {fees} → comissão {commission} → a marca paga {total}.",
+    "rateLocked": "Na agência de demonstração a taxa não muda.",
+    "rateSave": "Salvar taxa"
+  },
+  "sponsorship": {
+    "title": "Patrocínio na área social",
+    "hint": "Publica a marca como patrocinadora na página do herói ligado ao creator. Ação sua, nunca automática; a marca precisa estar ativa na área social.",
+    "noHero": "Sem herói ligado",
+    "publish": "Publicar patrocínio",
+    "confirm": "Publicar a marca como patrocinadora de {name} na área social?",
+    "published": "Patrocínio publicado na página do herói.",
+    "alreadyPublished": "Este patrocínio já estava publicado."
+  },
+  "history": {
+    "title": "Histórico",
+    "description": "O que foi feito na agência: contratações, cachês, termos, lançamentos, patrocínios e configurações.",
+    "unavailable": "Histórico em atualização",
+    "unavailableHint": "O histórico aparece assim que o banco for atualizado.",
+    "empty": "Nada registrado ainda.",
+    "actor": {
+      "consumer": "pessoa",
+      "creator": "creator",
+      "seller": "lojista",
+      "admin": "equipe",
+      "system": "sistema"
     }
   }
 }

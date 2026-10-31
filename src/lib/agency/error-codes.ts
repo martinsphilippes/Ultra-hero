@@ -26,6 +26,11 @@ export const AGENCY_ERROR_CODES = [
   // execução (0068)
   "terms_missing",
   "acceptance_missing",
+  // financeiro e patrocínio (0069)
+  "finance_identity",
+  "brand_inactive",
+  "no_hero",
+  "reservation_expired",
   "demo_account_forbidden",
   "demo_locked",
   "demo_brand",

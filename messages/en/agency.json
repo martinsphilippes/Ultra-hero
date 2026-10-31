@@ -24,7 +24,9 @@
     "agenda": "Calendar",
     "dealTerms": "Deal terms",
     "dealTasks": "Deal tasks",
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "finance": "Finance",
+    "history": "History"
   },
   "demoBanner": {
     "tag": "Demo",
@@ -73,7 +75,12 @@
       "upcoming": "Commitments in 14 days",
       "upcomingHint": "campaigns, deliverables, meetings",
       "tasks": "Open tasks",
-      "tasksHint": "{mine} mine · {overdue} overdue"
+      "tasksHint": "{mine} mine · {overdue} overdue",
+      "deliverablesOverdue": "Overdue deliverables",
+      "approvalsPending": "{count, plural, =0 {no approval pending} one {# approval pending from the brand} other {# approvals pending from the brand}}",
+      "noContact": "{count, plural, =0 {all recently contacted} one {# without recent contact} other {# without recent contact}}",
+      "won90": "Won in 90 days",
+      "lost90": "{count, plural, =0 {none lost} one {# lost or cancelled} other {# lost or cancelled}}"
     },
     "quickTitle": "Shortcuts",
     "newBrand": "New brand",
@@ -108,7 +115,9 @@
     "newTalent": "New talent",
     "seeCasting": "See roster",
     "seePipeline": "See pipeline",
-    "seeTasks": "My tasks"
+    "seeTasks": "My tasks",
+    "financeTitle": "Finance (simulated)",
+    "seeFinance": "See finance"
   },
   "team": {
     "title": "Team",
@@ -286,7 +295,11 @@
     "schedule_conflict": "Another deal already booked this period for one of the creators. The admin can force it with a justification.",
     "deliverables_open": "There are open deliverables; finish or cancel them before closing as won.",
     "terms_missing": "Send the terms before confirming the contract.",
-    "acceptance_missing": "Acceptances missing: the brand and every confirmed creator must accept the terms."
+    "acceptance_missing": "Acceptances missing: the brand and every confirmed creator must accept the terms.",
+    "finance_identity": "The entries do not add up: receivable must equal commission plus payouts.",
+    "brand_inactive": "The brand is not active in the social area yet. Ask the platform administrator to activate it.",
+    "no_hero": "This creator has no linked hero in the social area; the sponsorship has nowhere to appear.",
+    "reservation_expired": "This file reservation expired (over 24 h). Upload the file again."
   },
   "casting": {
     "title": "Roster",
@@ -693,7 +706,18 @@
       "noLoginHint": "This talent has no login: what is written here is recorded, but they do not receive it.",
       "brandNotVisibleHint": "Deal opened by the agency: the brand only sees (and replies) after confirmation."
     },
-    "noEvents": "No upcoming commitments. Confirmation creates the campaign in the calendar; deliverables enter by their dates."
+    "noEvents": "No upcoming commitments. Confirmation creates the campaign in the calendar; deliverables enter by their dates.",
+    "finance": {
+      "title": "Deal finance",
+      "fees": "Fees",
+      "commission": "Commission ({rate})",
+      "total": "Brand pays",
+      "missingFees": "{count, plural, one {# creator without a fee} other {# creators without a fee}}",
+      "rateOverride": "This deal's rate (%)",
+      "rateOverrideHint": "Empty uses the agency default ({rate}). Only changes before the contract.",
+      "rateSave": "Save deal rate",
+      "noEntries": "Entries appear here after the contract."
+    }
   },
   "agenda": {
     "title": "Calendar",
@@ -866,6 +890,91 @@
       "save": "Save profile",
       "created": "Hero created",
       "saved": "Profile saved"
+    }
+  },
+  "finance": {
+    "title": "Finance",
+    "description": "Receivable from the brand, agency commission and creator payouts for each contracted deal.",
+    "unavailable": "Finance being updated",
+    "unavailableHint": "Finance appears as soon as the database is updated.",
+    "simulatedTag": "Simulated",
+    "disclaimer": "Internal record, no real billing: nothing is charged, paid or transferred here.",
+    "filtersLabel": "Finance filters",
+    "filters": {
+      "open": "Open",
+      "overdue": "Overdue",
+      "settled": "Settled",
+      "cancelled": "Cancelled",
+      "all": "All"
+    },
+    "empty": {
+      "open": "No open entry.",
+      "overdue": "No overdue entry.",
+      "settled": "No settled entry.",
+      "cancelled": "No cancelled entry.",
+      "all": "No entry yet. They are created when the contract is confirmed."
+    },
+    "kpi": {
+      "receivableOpen": "Receivable",
+      "receivableSettled": "{value} received",
+      "commissionOpen": "Commission receivable",
+      "commissionSettled": "{value} received",
+      "payoutOpen": "Payouts to pay",
+      "payoutSettled": "{value} paid",
+      "overdue": "Overdue",
+      "openCount": "{count} open across {deals, plural, one {# deal} other {# deals}}"
+    },
+    "dueOn": "due {date}",
+    "noDue": "no due date",
+    "settledAt": "settled on {date}",
+    "rate": "rate {rate}",
+    "changeStatus": "Change status",
+    "actions": {
+      "due": "Mark as due",
+      "settled": "Mark as settled",
+      "cancelled": "Cancel"
+    },
+    "cancelTitle": "Cancel entry",
+    "cancelHint": "The cancellation is audited with its reason.",
+    "cancelNote": "Reason",
+    "noteRequired": "Write the reason (at least 5 characters).",
+    "back": "Back",
+    "statusSet": {
+      "due": "Entry marked as due.",
+      "settled": "Entry settled.",
+      "cancelled": "Entry cancelled."
+    },
+    "rateSaved": "Service rate saved.",
+    "rateTitle": "Service rate",
+    "rateDescription": "Percentage on top of the fees that makes up what the brand pays. Applies to upcoming deals; each deal may have its own before the contract.",
+    "rateLabel": "Rate (%)",
+    "rateHint": "From 0 to 50%, up to two decimals.",
+    "rateInvalid": "Enter a percentage between 0 and 50.",
+    "ratePreview": "Example: fees of {fees} → commission {commission} → the brand pays {total}.",
+    "rateLocked": "The demo agency's rate cannot change.",
+    "rateSave": "Save rate"
+  },
+  "sponsorship": {
+    "title": "Sponsorship in the social area",
+    "hint": "Publishes the brand as a sponsor on the page of the hero linked to the creator. Your action, never automatic; the brand must be active in the social area.",
+    "noHero": "No linked hero",
+    "publish": "Publish sponsorship",
+    "confirm": "Publish the brand as sponsor of {name} in the social area?",
+    "published": "Sponsorship published on the hero page.",
+    "alreadyPublished": "This sponsorship was already published."
+  },
+  "history": {
+    "title": "History",
+    "description": "What was done in the agency: contracts, fees, terms, entries, sponsorships and settings.",
+    "unavailable": "History being updated",
+    "unavailableHint": "History appears as soon as the database is updated.",
+    "empty": "Nothing recorded yet.",
+    "actor": {
+      "consumer": "person",
+      "creator": "creator",
+      "seller": "seller",
+      "admin": "team",
+      "system": "system"
     }
   }
 }

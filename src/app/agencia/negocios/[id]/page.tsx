@@ -4,11 +4,13 @@ import { EventForm } from "@/components/calendar/EventForm";
 import { EventList } from "@/components/calendar/EventList";
 import { ActivityForm, ConfirmCard, DealForm, MoveForm, TeamPicker } from "@/components/deals/DealForms";
 import { RequestSummary } from "@/components/deals/RequestSummary";
+import { DealFinanceCard } from "@/components/finance/DealFinanceCard";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { listTeam } from "@/lib/agency/queries";
 import { listDealEvents } from "@/lib/calendar/queries";
-import { getRequest, getRequestBudget, listActivities, listDealTalents } from "@/lib/deals/queries";
+import { getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
+import { agencyRates, dealEntries } from "@/lib/finance/queries";
 import { loadDeal } from "./_lib";
 
 export const dynamic = "force-dynamic";
@@ -36,8 +38,13 @@ export default async function DealOverviewPage({ params }: Props) {
     listDealTalents(deal.id),
     listDealEvents(deal.id),
   ]);
+  // financeiro simulado (0069), só para o Adm: taxa, prévia e lançamentos; sem a migração, a seção some
+  const [fees, rates, entries] = isAdmin
+    ? await Promise.all([listDealFees(deal.id), agencyRates(ctx.agency.id, deal.id), dealEntries(deal.id)])
+    : [{} as Record<string, number>, null, { available: false, items: [] }];
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
   const ready = talents.filter((x) => ["interested", "proposed"].includes(x.status));
+  const financeTalents = talents.filter((x) => ["interested", "proposed", "contracted"].includes(x.status));
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
@@ -86,6 +93,16 @@ export default async function DealOverviewPage({ params }: Props) {
       </div>
       <div className="flex flex-col gap-5">
         {isAdmin && canEdit ? <ConfirmCard dealId={deal.id} stage={deal.stage} readyCount={ready.length} missingFee={ready.filter((x) => !x.termsReady).length} /> : null}
+        {isAdmin && rates && entries.available ? (
+          <DealFinanceCard
+            dealId={deal.id}
+            agencyRateBp={rates.agencyRateBp}
+            dealRateBp={rates.dealRateBp}
+            contracted={rates.contracted}
+            fees={financeTalents.map((x) => ({ name: x.talent.name, feeCents: Object.hasOwn(fees, x.id) ? fees[x.id] : null }))}
+            entries={entries.items}
+          />
+        ) : null}
         {canEdit || (deal.stage === "closed" && isAdmin) ? (
           <section className={card} aria-labelledby="deal-stage">
             <h2 id="deal-stage" className="text-base font-semibold text-fg">

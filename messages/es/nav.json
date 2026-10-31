@@ -92,7 +92,9 @@
     "casting": "Casting",
     "pipeline": "Pipeline",
     "agenda": "Agenda",
-    "tasks": "Tareas"
+    "tasks": "Tareas",
+    "finance": "Finanzas",
+    "history": "Historial"
   },
   "brand": {
     "dashboard": "Inicio",

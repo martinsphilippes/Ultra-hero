@@ -24,7 +24,9 @@
     "agenda": "Agenda",
     "dealTerms": "Términos del negocio",
     "dealTasks": "Tareas del negocio",
-    "tasks": "Tareas"
+    "tasks": "Tareas",
+    "finance": "Finanzas",
+    "history": "Historial"
   },
   "demoBanner": {
     "tag": "Demostración",
@@ -73,7 +75,12 @@
       "upcoming": "Compromisos en 14 días",
       "upcomingHint": "campañas, entregas, reuniones",
       "tasks": "Tareas abiertas",
-      "tasksHint": "{mine} mías · {overdue} atrasadas"
+      "tasksHint": "{mine} mías · {overdue} atrasadas",
+      "deliverablesOverdue": "Entregas atrasadas",
+      "approvalsPending": "{count, plural, =0 {ninguna aprobación pendiente} one {# aprobación pendiente de la marca} other {# aprobaciones pendientes de la marca}}",
+      "noContact": "{count, plural, =0 {todos con contacto reciente} one {# sin contacto reciente} other {# sin contacto reciente}}",
+      "won90": "Ganados en 90 días",
+      "lost90": "{count, plural, =0 {ninguno perdido} one {# perdido o cancelado} other {# perdidos o cancelados}}"
     },
     "quickTitle": "Atajos",
     "newBrand": "Nueva marca",
@@ -108,7 +115,9 @@
     "newTalent": "Nuevo talento",
     "seeCasting": "Ver casting",
     "seePipeline": "Ver pipeline",
-    "seeTasks": "Mis tareas"
+    "seeTasks": "Mis tareas",
+    "financeTitle": "Finanzas (simuladas)",
+    "seeFinance": "Ver finanzas"
   },
   "team": {
     "title": "Equipo",
@@ -286,7 +295,11 @@
     "schedule_conflict": "Otro negocio ya reservó este período para uno de los creators. El Adm puede forzar con justificación.",
     "deliverables_open": "Hay entregas abiertas; conclúyelas o cancélalas antes de cerrar como ganado.",
     "terms_missing": "Envía los términos antes de confirmar la contratación.",
-    "acceptance_missing": "Faltan aceptaciones: la marca y todos los creators confirmados deben aceptar los términos."
+    "acceptance_missing": "Faltan aceptaciones: la marca y todos los creators confirmados deben aceptar los términos.",
+    "finance_identity": "Los asientos no cierran: por cobrar debe ser igual a comisión más pagos.",
+    "brand_inactive": "La marca todavía no está activa en el área social. Pide al administrador de la plataforma que la active.",
+    "no_hero": "Este creator no tiene héroe vinculado en el área social; el patrocinio no tiene dónde aparecer.",
+    "reservation_expired": "La reserva de este archivo venció (más de 24 h). Sube el archivo de nuevo."
   },
   "casting": {
     "title": "Casting",
@@ -693,7 +706,18 @@
       "noLoginHint": "Este talento no tiene acceso: lo escrito aquí queda registrado, pero él no lo recibe.",
       "brandNotVisibleHint": "Negocio abierto por la agencia: la marca solo ve (y responde) después de la confirmación."
     },
-    "noEvents": "Ningún compromiso futuro. La confirmación crea la campaña en la agenda; las entregas entran por sus fechas."
+    "noEvents": "Ningún compromiso futuro. La confirmación crea la campaña en la agenda; las entregas entran por sus fechas.",
+    "finance": {
+      "title": "Finanzas del negocio",
+      "fees": "Cachés",
+      "commission": "Comisión ({rate})",
+      "total": "La marca paga",
+      "missingFees": "{count, plural, one {# creator sin caché definido} other {# creators sin caché definido}}",
+      "rateOverride": "Tasa de este negocio (%)",
+      "rateOverrideHint": "Vacío usa la tasa estándar de la agencia ({rate}). Solo cambia antes de la contratación.",
+      "rateSave": "Guardar tasa del negocio",
+      "noEntries": "Los asientos aparecen aquí después de la contratación."
+    }
   },
   "agenda": {
     "title": "Agenda",
@@ -866,6 +890,91 @@
       "save": "Guardar perfil",
       "created": "Héroe creado",
       "saved": "Perfil guardado"
+    }
+  },
+  "finance": {
+    "title": "Finanzas",
+    "description": "Por cobrar a la marca, comisión de la agencia y pagos a los creators de cada negocio contratado.",
+    "unavailable": "Finanzas en actualización",
+    "unavailableHint": "Las finanzas aparecen en cuanto se actualice la base de datos.",
+    "simulatedTag": "Simulado",
+    "disclaimer": "Registro interno, sin cobro real: aquí no se cobra, paga ni transfiere nada.",
+    "filtersLabel": "Filtros de finanzas",
+    "filters": {
+      "open": "Abiertos",
+      "overdue": "Vencidos",
+      "settled": "Liquidados",
+      "cancelled": "Cancelados",
+      "all": "Todos"
+    },
+    "empty": {
+      "open": "Ningún asiento abierto.",
+      "overdue": "Ningún asiento vencido.",
+      "settled": "Ningún asiento liquidado.",
+      "cancelled": "Ningún asiento cancelado.",
+      "all": "Todavía ningún asiento. Nacen al confirmar la contratación."
+    },
+    "kpi": {
+      "receivableOpen": "Por cobrar",
+      "receivableSettled": "{value} cobrados",
+      "commissionOpen": "Comisión por cobrar",
+      "commissionSettled": "{value} cobrados",
+      "payoutOpen": "Pagos pendientes",
+      "payoutSettled": "{value} pagados",
+      "overdue": "Vencidos",
+      "openCount": "{count} abiertos en {deals, plural, one {# negocio} other {# negocios}}"
+    },
+    "dueOn": "vence el {date}",
+    "noDue": "sin vencimiento",
+    "settledAt": "liquidado el {date}",
+    "rate": "tasa {rate}",
+    "changeStatus": "Cambiar estado",
+    "actions": {
+      "due": "Marcar por vencer",
+      "settled": "Marcar liquidado",
+      "cancelled": "Cancelar"
+    },
+    "cancelTitle": "Cancelar asiento",
+    "cancelHint": "La cancelación queda en la auditoría con el motivo.",
+    "cancelNote": "Motivo",
+    "noteRequired": "Escribe el motivo (al menos 5 caracteres).",
+    "back": "Volver",
+    "statusSet": {
+      "due": "Asiento marcado por vencer.",
+      "settled": "Asiento liquidado.",
+      "cancelled": "Asiento cancelado."
+    },
+    "rateSaved": "Tasa de servicio guardada.",
+    "rateTitle": "Tasa de servicio",
+    "rateDescription": "Porcentaje sobre los cachés que compone lo que paga la marca. Vale para los próximos negocios; cada negocio puede tener la suya antes de la contratación.",
+    "rateLabel": "Tasa (%)",
+    "rateHint": "De 0 a 50%, con hasta dos decimales.",
+    "rateInvalid": "Indica un porcentaje entre 0 y 50.",
+    "ratePreview": "Ejemplo: cachés de {fees} → comisión {commission} → la marca paga {total}.",
+    "rateLocked": "En la agencia de demostración la tasa no cambia.",
+    "rateSave": "Guardar tasa"
+  },
+  "sponsorship": {
+    "title": "Patrocinio en el área social",
+    "hint": "Publica la marca como patrocinadora en la página del héroe vinculado al creator. Acción tuya, nunca automática; la marca debe estar activa en el área social.",
+    "noHero": "Sin héroe vinculado",
+    "publish": "Publicar patrocinio",
+    "confirm": "¿Publicar la marca como patrocinadora de {name} en el área social?",
+    "published": "Patrocinio publicado en la página del héroe.",
+    "alreadyPublished": "Este patrocinio ya estaba publicado."
+  },
+  "history": {
+    "title": "Historial",
+    "description": "Lo que se hizo en la agencia: contrataciones, cachés, términos, asientos, patrocinios y configuración.",
+    "unavailable": "Historial en actualización",
+    "unavailableHint": "El historial aparece en cuanto se actualice la base de datos.",
+    "empty": "Nada registrado todavía.",
+    "actor": {
+      "consumer": "persona",
+      "creator": "creator",
+      "seller": "vendedor",
+      "admin": "equipo",
+      "system": "sistema"
     }
   }
 }

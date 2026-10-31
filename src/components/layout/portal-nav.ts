@@ -80,6 +80,9 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "notifications", href: "/agencia/notificacoes" },
     { key: "settings", href: "/agencia/configuracoes" },
     { key: "team", href: "/agencia/equipe" },
+    // Financeiro simulado e histórico (0069): só o Adm
+    { key: "finance", href: "/agencia/financeiro" },
+    { key: "history", href: "/agencia/historico" },
   ],
   // Marca (0066): propostas de campanha e o catálogo autorizado de creators; o calendário chega na P1b.
   brand: [

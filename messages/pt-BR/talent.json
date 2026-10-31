@@ -8,7 +8,8 @@
     "opportunity": "Oportunidade",
     "availability": "Disponibilidade",
     "agenda": "Agenda",
-    "tasks": "Tarefas"
+    "tasks": "Tarefas",
+    "documents": "Documentos"
   },
   "tabs": {
     "label": "Seções do escritório",
@@ -19,7 +20,8 @@
     "opportunities": "Oportunidades",
     "availability": "Disponibilidade",
     "agenda": "Agenda",
-    "tasks": "Tarefas"
+    "tasks": "Tarefas",
+    "documents": "Documentos"
   },
   "home": {
     "unavailable": "Escritório em atualização",
@@ -55,7 +57,18 @@
     "tasksAll": "Ver todas",
     "tasksPending": "{count, plural, one {# tarefa aberta} other {# tarefas abertas}}",
     "tasksNone": "Nenhuma tarefa aberta.",
-    "tasksOverdue": "{count, plural, one {# atrasada} other {# atrasadas}}"
+    "tasksOverdue": "{count, plural, one {# atrasada} other {# atrasadas}}",
+    "nextDeliveriesTitle": "Próximas entregas",
+    "nextDeliveriesNone": "Nenhuma entrega pendente.",
+    "campaignsActive": "{count, plural, one {# campanha em produção} other {# campanhas em produção}}",
+    "campaignsNone": "Nenhuma campanha em produção.",
+    "dueAt": "entrega até {date}",
+    "publishAt": "publicação em {date}",
+    "eventsToday": "{count, plural, one {# compromisso hoje} other {# compromissos hoje}}",
+    "payoutsTitle": "Repasses",
+    "payoutsHint": "Situação informada pela agência. Registro interno, sem cobrança real.",
+    "payoutsNone": "Nenhum repasse registrado.",
+    "payoutsAppHint": "Veja os valores no site."
   },
   "consent": {
     "title": "Termo de uso comercial",
@@ -199,5 +212,8 @@
     "tasksEmpty": "Nenhuma etapa sua nesta campanha.",
     "deliverablesTitle": "Suas entregas",
     "deliverablesHint": "Envie cada versão por link; a marca aprova ou pede ajustes. Depois registre a publicação e o comprovante."
+  },
+  "documents": {
+    "intro": "Briefings, roteiros aprovados e comprovantes que a agência compartilhou com você. Só leitura."
   }
 }
