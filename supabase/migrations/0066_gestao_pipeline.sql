@@ -473,6 +473,19 @@ returns uuid[] language sql stable security definer set search_path = '' as $$
   select coalesce(array_agg(d.id), '{}'::uuid[]) from public.deals d
   where d.brand_visible and d.brand_id = any (public.my_brand_ids(false))
 $$;
+-- pedidos que a própria marca abriu (a marca não lê campaign_requests direto: o orçamento dela usa isto)
+create or replace function public.my_brand_request_ids()
+returns uuid[] language sql stable security definer set search_path = '' as $$
+  select coalesce(array_agg(r.id), '{}'::uuid[]) from public.campaign_requests r
+  where r.origin = 'brand' and r.brand_id = any (public.my_brand_ids(false))
+$$;
+-- pedidos que a marca pode ver: os que ela abriu e os de negócios já visíveis (documentos por pedido)
+create or replace function public.my_brand_visible_request_ids()
+returns uuid[] language sql stable security definer set search_path = '' as $$
+  select coalesce(array_agg(distinct r.id), '{}'::uuid[]) from public.campaign_requests r
+  left join public.deals d on d.request_id = r.id
+  where r.brand_id = any (public.my_brand_ids(false)) and (r.origin = 'brand' or coalesce(d.brand_visible, false))
+$$;
 -- creators que a marca pode conhecer: o que ela mesma pediu, e os propostos/contratados a partir da proposta
 create or replace function public.my_brand_deal_talent_ids()
 returns uuid[] language sql stable security definer set search_path = '' as $$
@@ -485,7 +498,7 @@ do $$
 declare f text;
 begin
   foreach f in array array['public.my_staff_deal_ids()', 'public.my_talent_deal_ids()', 'public.my_talent_brand_ids()', 'public.my_talent_deal_talent_ids()',
-                           'public.my_brand_deal_ids()', 'public.my_brand_deal_talent_ids()'] loop
+                           'public.my_brand_deal_ids()', 'public.my_brand_deal_talent_ids()', 'public.my_brand_request_ids()', 'public.my_brand_visible_request_ids()'] loop
     execute format('revoke execute on function %s from public, anon', f);
     execute format('grant execute on function %s to authenticated, service_role', f);
   end loop;
@@ -572,10 +585,9 @@ create policy campaign_requests_select_agency on public.campaign_requests for se
 drop policy if exists campaign_requests_select_staff on public.campaign_requests;
 create policy campaign_requests_select_staff on public.campaign_requests for select to authenticated
   using (exists (select 1 from public.deals d where d.request_id = campaign_requests.id and d.id = any ((select public.my_staff_deal_ids())::uuid[])));
+-- a marca não lê campaign_requests nem deals direto (revisão P1a: colunas internas como notas, owner_id,
+-- talent_brief, etapa crua): tudo pela leitura fechada brand_campaigns / brand_campaign_detail
 drop policy if exists campaign_requests_select_brand on public.campaign_requests;
-create policy campaign_requests_select_brand on public.campaign_requests for select to authenticated
-  using (brand_id = any ((select public.my_brand_ids(false))::uuid[])
-         and (origin = 'brand' or exists (select 1 from public.deals d where d.request_id = campaign_requests.id and d.brand_visible)));
 
 drop policy if exists deals_select_agency on public.deals;
 create policy deals_select_agency on public.deals for select to authenticated
@@ -583,12 +595,9 @@ create policy deals_select_agency on public.deals for select to authenticated
 drop policy if exists deals_select_staff on public.deals;
 create policy deals_select_staff on public.deals for select to authenticated
   using (id = any ((select public.my_staff_deal_ids())::uuid[]));
+-- marca e creator não leem deals direto (idem): brand_campaign_detail / talent_opportunities
 drop policy if exists deals_select_brand on public.deals;
-create policy deals_select_brand on public.deals for select to authenticated
-  using (brand_visible and brand_id = any ((select public.my_brand_ids(false))::uuid[]));
 drop policy if exists deals_select_talent on public.deals;
-create policy deals_select_talent on public.deals for select to authenticated
-  using (id = any ((select public.my_talent_deal_ids())::uuid[]));
 
 drop policy if exists deal_team_select_agency on public.deal_team;
 create policy deal_team_select_agency on public.deal_team for select to authenticated
@@ -633,8 +642,7 @@ create policy campaign_request_budgets_select_agency on public.campaign_request_
   using (agency_id = any ((select public.my_agency_ids('admin'))::uuid[]));
 drop policy if exists campaign_request_budgets_select_brand on public.campaign_request_budgets;
 create policy campaign_request_budgets_select_brand on public.campaign_request_budgets for select to authenticated
-  using (brand_id = any ((select public.my_brand_ids(false))::uuid[])
-         and exists (select 1 from public.campaign_requests r where r.id = campaign_request_budgets.request_id and r.origin = 'brand'));
+  using (brand_id = any ((select public.my_brand_ids(false))::uuid[]) and request_id = any ((select public.my_brand_request_ids())::uuid[]));
 drop policy if exists deal_talent_fees_select_agency on public.deal_talent_fees;
 create policy deal_talent_fees_select_agency on public.deal_talent_fees for select to authenticated
   using (agency_id = any ((select public.my_agency_ids('admin'))::uuid[]));
@@ -662,7 +670,8 @@ create policy documents_select_agency on public.documents for select to authenti
 drop policy if exists documents_select_brand on public.documents;
 create policy documents_select_brand on public.documents for select to authenticated
   using (share_brand and status = 'ready' and brand_id = any ((select public.my_brand_ids(false))::uuid[])
-         and (deal_id is null or deal_id = any ((select public.my_brand_deal_ids())::uuid[])));
+         and (deal_id is null or deal_id = any ((select public.my_brand_deal_ids())::uuid[]))
+         and (request_id is null or request_id = any ((select public.my_brand_visible_request_ids())::uuid[])));
 
 -- 11) RPCs: proposta da marca ------------------------------------------------------------------------------------
 create or replace function public.brand_request_save(p_id uuid, p_brand uuid, p_data jsonb)
@@ -699,8 +708,7 @@ begin
   end;
   v_deliverables := coalesce(p_data -> 'deliverables', '[]'::jsonb);
   -- o creator desejado precisa estar no catálogo autorizado da agência que atende a marca
-  if v_talent is not null and not exists (select 1 from public.talent_profiles t where t.id = v_talent and t.agency_id = v_agency
-                                          and t.catalog_visible and t.archived_at is null) then
+  if v_talent is not null and not public.talent_brand_card_ok(v_talent, v_agency) then
     raise exception 'not_found' using errcode = 'P0002';
   end if;
   if cardinality(v_segments) > 0 and exists (select 1 from unnest(v_segments) s where not exists (select 1 from public.talent_segments g where g.id = s and g.agency_id = v_agency)) then
@@ -790,7 +798,8 @@ begin
     jsonb_build_object('agency_id', r.agency_id, 'brand_id', r.brand_id, 'deal_id', v_deal, 'talent_id', r.talent_id), null, 'brand'::public.actor_type);
   perform public.inbox_notify_agency(r.agency_id, 'manager', 'briefing_received', '/agencia/negocios/' || v_deal::text,
     jsonb_build_object('brand', v_brand_name, 'deal', btrim(r.title)), 'deal', v_deal, 'briefing:' || v_deal::text);
-  if v_owner is not null and not public.agency_can(r.agency_id, 'manager') then
+  if v_owner is not null and not exists (select 1 from public.agency_members m where m.agency_id = r.agency_id and m.user_id = v_owner
+                                         and m.revoked_at is null and m.role::text in ('admin', 'manager')) then
     perform public.inbox_notify(v_owner, 'briefing_received', '/agencia/negocios/' || v_deal::text,
       jsonb_build_object('brand', v_brand_name, 'deal', btrim(r.title)), r.agency_id, 'deal', v_deal, 'briefing:' || v_deal::text || ':' || v_owner::text);
   end if;
@@ -1077,6 +1086,8 @@ begin
       raise exception 'not_found' using errcode = 'P0002';
     end if;
   end if;
+  -- canal da marca só quando a marca já vê o negócio (senão a agência avisaria a marca de algo que ela não abre)
+  if p_channel = 'brand_agency' and not d.brand_visible then raise exception 'invalid_state' using errcode = 'P0001'; end if;
   if d.stage = 'closed' then raise exception 'invalid_stage' using errcode = 'P0001'; end if;
   v_label := public.actor_label(d.agency_id, d.brand_id);
   insert into public.deal_messages (agency_id, brand_id, deal_id, channel, talent_id, author_id, author_side, author_label, body)
@@ -1412,6 +1423,24 @@ returns jsonb language sql stable security definer set search_path = '' as $$
 $$;
 revoke execute on function public.talent_public_card(uuid) from public, anon, authenticated;
 
+-- o creator pode ser mostrado à marca? (consentimento vigente, liberado, não arquivado, herói ativo) — a mesma
+-- regra do catálogo vale para a escolha na proposta e para a campanha (revisão P1a)
+create or replace function public.talent_brand_card_ok(p_talent uuid, p_agency uuid)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
+                 where t.id = p_talent and t.agency_id = p_agency and t.catalog_visible and t.archived_at is null
+                   and t.consent_at is not null and t.consent_revoked_at is null and (c.id is null or c.status = 'active'))
+$$;
+revoke execute on function public.talent_brand_card_ok(uuid, uuid) from public, anon, authenticated;
+-- cartão para a marca: completo com consentimento; sem ele (ex.: revogado depois da proposta) só nome e situação
+create or replace function public.talent_brand_card(p_talent uuid, p_agency uuid)
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select case when public.talent_brand_card_ok(p_talent, p_agency) then public.talent_public_card(p_talent)
+         else (select jsonb_build_object('id', t.id, 'name', t.display_name, 'availability', t.availability, 'has_public_page', false, 'consent_missing', true)
+               from public.talent_profiles t where t.id = p_talent and t.agency_id = p_agency) end
+$$;
+revoke execute on function public.talent_brand_card(uuid, uuid) from public, anon, authenticated;
+
 -- catálogo autorizado da agência que atende a marca (só com consentimento + liberado + não indisponível)
 create or replace function public.brand_talent_search(p_brand uuid, p_filters jsonb default '{}'::jsonb)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
@@ -1473,11 +1502,7 @@ begin
   if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
   if public.brand_member_of(p_brand) is null and not public.is_platform_admin() then raise exception 'not_found' using errcode = 'P0002'; end if;
   v_agency := public.brand_active_agency(p_brand);
-  if not exists (select 1 from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
-                 where t.id = p_talent and t.agency_id = v_agency and t.catalog_visible and t.archived_at is null
-                   and t.consent_at is not null and t.consent_revoked_at is null and (c.id is null or c.status = 'active')) then
-    return null;
-  end if;
+  if v_agency is null or not public.talent_brand_card_ok(p_talent, v_agency) then return null; end if;
   v_card := public.talent_public_card(p_talent);
   return v_card || jsonb_build_object(
     'availability_periods', (select coalesce(jsonb_agg(jsonb_build_object('starts_on', a.starts_on, 'ends_on', a.ends_on, 'note', a.note) order by a.starts_on), '[]')
@@ -1504,19 +1529,39 @@ begin
     'request', jsonb_build_object('id', r.id, 'title', r.title, 'objective', r.objective, 'product', r.product, 'target_audience', r.target_audience,
       'target_age_bands', to_jsonb(r.target_age_bands), 'target_states', to_jsonb(r.target_states), 'region_note', r.region_note,
       'period_start', r.period_start, 'period_end', r.period_end, 'desired_at', r.desired_at, 'duration_minutes', r.duration_minutes,
-      'format', r.format, 'location', r.location, 'networks', to_jsonb(r.networks), 'deliverables', r.deliverables, 'notes', r.notes,
+      'format', r.format, 'location', r.location, 'networks', to_jsonb(r.networks), 'deliverables', r.deliverables,
+      -- notas de pedido aberto pela agência são internas (a mesma máscara de talent_opportunities)
+      'notes', case when r.origin = 'brand' then r.notes else '' end,
       'status', r.status, 'submitted_at', r.submitted_at, 'created_at', r.created_at, 'talent_id', r.talent_id, 'origin', r.origin),
     'brand_status', v_brand_status,
     'deal', case when d.id is null then null else jsonb_build_object('id', d.id, 'title', d.title, 'stage_changed_at', d.stage_changed_at,
       'expected_start', d.expected_start, 'expected_end', d.expected_end, 'confirmed_at', d.confirmed_at, 'closed_at', d.closed_at, 'outcome', d.outcome) end,
     -- o creator desejado pela marca aparece sempre (ela escolheu); os demais só depois da confirmação
-    'requested_talent', case when r.talent_id is null then null else public.talent_public_card(r.talent_id) end,
+    'requested_talent', case when r.talent_id is null then null else public.talent_brand_card(r.talent_id, r.agency_id) end,
     'talents', case when d.id is null then '[]'::jsonb else (select coalesce(jsonb_agg(
-        public.talent_public_card(dt.talent_id) || jsonb_build_object('deal_talent_id', dt.id, 'status', dt.status) order by dt.created_at), '[]')
+        public.talent_brand_card(dt.talent_id, r.agency_id) || jsonb_build_object('deal_talent_id', dt.id, 'status', dt.status) order by dt.created_at), '[]')
       from public.deal_talents dt where dt.deal_id = d.id and dt.id = any (v_visible_dt)) end,
     'deliverables', case when d.id is null then '[]'::jsonb else (select coalesce(jsonb_agg(jsonb_build_object('id', x.id, 'kind', x.kind, 'network', x.network,
         'title', x.title, 'due_at', x.due_at, 'publish_at', x.publish_at, 'status', x.status, 'talent_name', t.display_name) order by x.due_at nulls last), '[]')
       from public.deliverables x join public.talent_profiles t on t.id = x.talent_id where x.deal_id = d.id and x.deal_talent_id = any (v_visible_dt)) end);
+end $$;
+
+-- campanhas da marca (lista fechada): rascunhos e propostas dela, mais negócios abertos pela agência já visíveis
+create or replace function public.brand_campaigns(p_brand uuid)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+begin
+  if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
+  if public.brand_member_of(p_brand) is null and not public.is_platform_admin() then raise exception 'not_found' using errcode = 'P0002'; end if;
+  return (select coalesce(jsonb_agg(jsonb_build_object(
+      'request_id', r.id, 'title', r.title, 'origin', r.origin, 'deal_id', d.id,
+      'brand_status', case when d.id is null then case when r.status = 'cancelled' then 'cancelled' else 'draft' end else public.deal_brand_status(d.stage, d.outcome) end,
+      'updated_at', greatest(r.updated_at, coalesce(d.stage_changed_at, r.updated_at)),
+      'period_start', coalesce(d.expected_start, r.period_start),
+      'talent_name', case when r.talent_id is null then null else (select t.display_name from public.talent_profiles t where t.id = r.talent_id) end)
+    order by greatest(r.updated_at, coalesce(d.stage_changed_at, r.updated_at)) desc), '[]'::jsonb)
+    from public.campaign_requests r
+    left join public.deals d on d.request_id = r.id
+    where r.brand_id = p_brand and (r.origin = 'brand' or (d.id is not null and d.brand_visible)));
 end $$;
 
 -- oportunidades do creator: só os próprios pares consultados; nunca critérios internos, outros creators ou valores
@@ -1846,7 +1891,7 @@ begin
     'public.agency_record_talent_response(uuid, text, text, uuid)', 'public.agency_deal_talent_set_status(uuid, text)',
     'public.agency_deal_confirm(uuid, text, boolean)', 'public.talent_availability_save(uuid, uuid, jsonb)', 'public.talent_availability_delete(uuid)',
     'public.brand_talent_search(uuid, jsonb)', 'public.brand_talent_detail(uuid, uuid)', 'public.brand_campaign_detail(uuid)',
-    'public.talent_opportunities(uuid)', 'public.document_reserve(uuid, text, uuid, jsonb)'] loop
+    'public.brand_campaigns(uuid)', 'public.talent_opportunities(uuid)', 'public.document_reserve(uuid, text, uuid, jsonb)'] loop
     execute format('revoke execute on function %s from public, anon', f);
     execute format('grant execute on function %s to authenticated, service_role', f);
   end loop;

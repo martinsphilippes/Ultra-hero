@@ -103,7 +103,8 @@
     "availabilityHint": "Períodos declarados pelo creator ou pela agência. A agenda privada nunca aparece.",
     "noPeriods": "Nenhum período declarado. Pergunte à agência na proposta.",
     "blocked": "indisponível",
-    "representedBy": "Representado por {agency}."
+    "representedBy": "Representado por {agency}.",
+    "consentMissing": "sem consentimento (kit indisponível)"
   },
   "campaigns": {
     "draftSaved": "Rascunho salvo.",

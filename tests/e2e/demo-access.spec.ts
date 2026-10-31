@@ -72,10 +72,10 @@ test.describe("acesso rápido às contas de demonstração", () => {
     await page.goto("/profile");
     const panel = page.getByTestId("demo-access");
     await expect(panel).toHaveCount(1);
-    // no fim do Perfil, depois da linha de Configurações
-    const settings = page.getByTestId("profile-settings");
+    // no fim do Perfil, depois do Hoje
+    const today = page.getByTestId("today-section");
     await panel.scrollIntoViewIfNeeded();
-    expect((await settings.boundingBox())!.y).toBeLessThan((await panel.boundingBox())!.y);
+    expect((await today.boundingBox())!.y).toBeLessThan((await panel.boundingBox())!.y);
     await expect(panel.locator('[data-demo-kind="free"]')).toBeHidden();
     await panel.locator("summary").click();
     await panel.locator('[data-demo-kind="free"]').click();

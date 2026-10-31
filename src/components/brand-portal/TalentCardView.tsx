@@ -35,6 +35,11 @@ export function TalentCardCompact({ card, href }: { card: TalentCard; href: stri
             {t("insufficientData")}
           </Badge>
         ) : null}
+        {card.consentMissing ? (
+          <Badge size="sm" variant="warning">
+            {t("consentMissing")}
+          </Badge>
+        ) : null}
         {(card.matched ?? []).map((m) => (
           <Badge key={m} size="sm" variant="info">
             {t(`matched.${m}`)}

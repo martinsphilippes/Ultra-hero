@@ -1,7 +1,7 @@
 import "server-only";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
-import { brandStatus, isDealStage, type BrandStatus, type DealOutcome, type DealStage } from "./stages";
+import { BRAND_STATUSES, isDealStage, type BrandStatus, type DealOutcome, type DealStage } from "./stages";
 import { REASON_CODES, type DealTalentStatus, type DeliverableKind, type DeliverableStatus, type Reason } from "./vocab";
 
 // Leituras do núcleo comercial (RLS decide o que cada um vê). Sem a 0066: { available: false }.
@@ -127,8 +127,8 @@ export async function listDeals(agencyId: string, filters: DealFilters = {}): Pr
   const supabase = await createClient();
   let query = supabase.from("deals").select(DEAL_SELECT).eq("agency_id", agencyId).order("stage_changed_at", { ascending: false }).limit(500);
   query = filters.closed ? query.eq("stage", "closed") : query.neq("stage", "closed");
-  if (filters.owner === "me") query = query; // filtrado depois (precisa do usuário)
-  else if (filters.owner === "none") query = query.is("owner_id", null);
+  // "me" já chega resolvido para o id do usuário pela página
+  if (filters.owner === "none") query = query.is("owner_id", null);
   else if (filters.owner && /^[0-9a-f-]{36}$/i.test(filters.owner)) query = query.eq("owner_id", filters.owner);
   if (filters.brand && /^[0-9a-f-]{36}$/i.test(filters.brand)) query = query.eq("brand_id", filters.brand);
   const { data, error } = await query;
@@ -309,32 +309,23 @@ export type BrandCampaignItem = {
   talentName: string | null;
 };
 
+/** Campanhas da marca pela leitura fechada brand_campaigns (a marca não lê deals/campaign_requests direto). */
 export async function listBrandCampaigns(brandId: string): Promise<{ available: boolean; items: BrandCampaignItem[] }> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("campaign_requests")
-    .select("id, title, status, updated_at, period_start, talent_id, deals(id, stage, outcome)")
-    .eq("brand_id", brandId)
-    .order("updated_at", { ascending: false })
-    .limit(200);
+  const { data, error } = await supabase.rpc("brand_campaigns", { p_brand: brandId });
   if (error) return { available: !isMissingSchema(error), items: [] };
-  type Row = { id: string; title: string; status: string; updated_at: string; period_start: string | null; talent_id: string | null; deals: { id: string; stage: string; outcome: string | null } | { id: string; stage: string; outcome: string | null }[] | null };
-  const rows = (data ?? []) as unknown as Row[];
-  const talentIds = Array.from(new Set(rows.map((r) => r.talent_id).filter((t): t is string => Boolean(t))));
-  // nomes dos creators desejados pelo cartão autorizado (a marca não lê talent_profiles direto)
-  const names = new Map<string, string>();
-  for (const talentId of talentIds) {
-    const { data: card } = await supabase.rpc("brand_talent_detail", { p_brand: brandId, p_talent: talentId });
-    const name = card && typeof card === "object" && !Array.isArray(card) ? (card as { name?: string }).name : undefined;
-    if (name) names.set(talentId, name);
-  }
+  if (!Array.isArray(data)) return { available: true, items: [] };
   return {
     available: true,
-    items: rows.map((r) => {
-      const deal = Array.isArray(r.deals) ? r.deals[0] : r.deals;
-      const status: BrandStatus = deal && isDealStage(deal.stage) ? brandStatus(deal.stage, (deal.outcome as DealOutcome | null) ?? null) : r.status === "cancelled" ? "cancelled" : "draft";
-      return { requestId: r.id, title: r.title || "—", status, updatedAt: r.updated_at, periodStart: r.period_start, dealId: deal?.id ?? null, talentName: r.talent_id ? (names.get(r.talent_id) ?? null) : null };
-    }),
+    items: (data as Record<string, unknown>[]).map((r) => ({
+      requestId: String(r.request_id),
+      title: String(r.title || "") || "—",
+      status: (BRAND_STATUSES as readonly string[]).includes(String(r.brand_status)) ? (r.brand_status as BrandStatus) : "draft",
+      updatedAt: String(r.updated_at ?? ""),
+      periodStart: (r.period_start as string | null) ?? null,
+      dealId: (r.deal_id as string | null) ?? null,
+      talentName: (r.talent_name as string | null) ?? null,
+    })),
   };
 }
 
@@ -366,6 +357,8 @@ export type TalentCard = {
   heroSlug?: string | null;
   matched?: string[];
   insufficientData?: boolean;
+  /** Consentimento revogado depois da proposta: só nome e situação (sem kit). */
+  consentMissing?: boolean;
   availabilityPeriods?: { startsOn: string; endsOn: string; note: string }[];
   blockedPeriods?: { startsOn: string; endsOn: string }[];
   agency?: { id: string; name: string } | null;
@@ -388,6 +381,7 @@ function toCard(raw: Record<string, unknown>): TalentCard {
     heroSlug: (raw.hero_slug as string | null | undefined) ?? null,
     matched: Array.isArray(raw.matched) ? (raw.matched as string[]) : undefined,
     insufficientData: raw.insufficient_data === true,
+    consentMissing: raw.consent_missing === true,
     availabilityPeriods: Array.isArray(raw.availability_periods)
       ? (raw.availability_periods as { starts_on: string; ends_on: string; note: string }[]).map((p) => ({ startsOn: p.starts_on, endsOn: p.ends_on, note: p.note }))
       : undefined,

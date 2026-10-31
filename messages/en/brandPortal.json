@@ -103,7 +103,8 @@
     "availabilityHint": "Periods declared by the creator or the agency. The private calendar never shows.",
     "noPeriods": "No declared periods. Ask the agency in the proposal.",
     "blocked": "unavailable",
-    "representedBy": "Represented by {agency}."
+    "representedBy": "Represented by {agency}.",
+    "consentMissing": "no consent (kit unavailable)"
   },
   "campaigns": {
     "draftSaved": "Draft saved.",

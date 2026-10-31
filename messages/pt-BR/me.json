@@ -969,10 +969,6 @@
   "settings": {
     "title": "Configurações",
     "description": "Rotina, coleções, compras, conta e app.",
-    "profileRow": {
-      "title": "Configurações",
-      "description": "Lembretes, favoritos, compras, conta e notificações."
-    },
     "sections": {
       "routine": "Sua rotina",
       "collections": "Coleções",

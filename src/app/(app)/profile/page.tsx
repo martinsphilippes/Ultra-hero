@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
-import Link from "next/link";
-import { ChevronRight, Settings } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { getMyCreator } from "@/app/creator/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -23,7 +21,7 @@ import { getTalentContext } from "@/lib/talent/server";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
-import { buildPortalItems, forSurface, isDemoUser, SETTINGS_PATH } from "@/lib/settings/sections";
+import { buildPortalItems, forSurface, isDemoUser } from "@/lib/settings/sections";
 import { parseNativeApp } from "@/lib/native-app/surface";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
@@ -50,14 +48,13 @@ type Props = { searchParams: Promise<{ demo?: string }> };
 export default async function ProfilePage({ searchParams }: Props) {
   const user = await requireUser("/profile");
   const { demo } = await searchParams;
-  const [profile, roles, locale, t, tc, tcp, ts, photoState, creator] = await Promise.all([
+  const [profile, roles, locale, t, tc, tcp, photoState, creator] = await Promise.all([
     getProfile(),
     getRoles(),
     getLocale(),
     getTranslations("me.profile"),
     getTranslations("common"),
     getTranslations("creator.profile"),
-    getTranslations("me.settings"),
     getAvatarPhotoState(),
     getMyCreator(),
   ]);
@@ -186,21 +183,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       {/* Hoje: só o que o relógio mede (nada digitado); dado real só com a chave ligada e consentimento */}
       <TodaySection localDate={today} view={watchView} evolution={evolution} />
 
-      {/* Configurações: o resto do Perfil (lembretes, coleções, compras, conta, portais, sair) */}
-      <Link
-        href={SETTINGS_PATH}
-        data-testid="profile-settings"
-        className="flex min-h-16 items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-[border-color,box-shadow] hover:border-accent/40 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-5"
-      >
-        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
-          <Settings className="size-5" />
-        </span>
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-sm font-semibold text-fg">{ts("profileRow.title")}</span>
-          <span className="type-caption text-fg-muted">{ts("profileRow.description")}</span>
-        </span>
-        <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
-      </Link>
+      {/* Configurações ficam no cabeçalho (avatar → /configuracoes): sem atalho duplicado aqui (pedido do responsável) */}
 
       <DemoAccess from="profile" failed={demo === "error"} />
     </div>

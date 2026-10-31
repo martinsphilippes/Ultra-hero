@@ -15,18 +15,15 @@ test.describe("Configurações", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test("avatar do cabeçalho → Configurações com as seções; Perfil só com cabeçalho, Hoje e a linha Configurações", async ({ page }) => {
+  test("avatar do cabeçalho → Configurações com as seções; Perfil só com cabeçalho e Hoje (sem atalho de Configurações)", async ({ page }) => {
     await loginAs(page, "free", { home: null });
 
-    // Perfil: cabeçalho + Editar perfil + Hoje + Configurações, sem as linhas antigas
+    // Perfil: cabeçalho + Editar perfil + Hoje, sem as linhas antigas nem o atalho de Configurações
     await page.goto("/profile");
     const main = page.locator("main");
     await expect(page.getByTestId("profile-account")).toBeVisible();
     await expect(page.getByTestId("today-section")).toBeVisible();
-    const row = page.getByTestId("profile-settings");
-    await expect(row).toHaveAttribute("href", "/configuracoes");
-    const [yToday, yRow] = await Promise.all([page.getByTestId("today-section"), row].map(async (l) => (await l.boundingBox())!.y));
-    expect(yToday).toBeLessThan(yRow);
+    await expect(page.getByTestId("profile-settings")).toHaveCount(0);
     for (const href of ["/profile/lembretes", "/profile/plan", "/profile/interests", "/profile/herois", "/profile/favorites", "/profile/receitas", "/profile/lista-de-compras", "/orders", "/profile/notifications", "/profile/account"]) {
       await expect(main.locator(`a[href="${href}"]`), href).toHaveCount(0);
     }

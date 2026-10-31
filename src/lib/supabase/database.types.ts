@@ -7173,6 +7173,7 @@ export type Database = {
         Returns: Json;
       };
       brand_campaign_detail: { Args: { p_request: string }; Returns: Json };
+      brand_campaigns: { Args: { p_brand: string }; Returns: Json };
       brand_talent_detail: {
         Args: { p_brand: string; p_talent: string };
         Returns: Json;

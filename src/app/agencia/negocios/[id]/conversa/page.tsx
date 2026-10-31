@@ -34,8 +34,8 @@ export default async function DealMessagesPage({ params, searchParams }: Props) 
         ))}
       </nav>
       {selected && !selected.talent.hasLogin ? <p className="rounded-xl border border-dashed border-border px-3 py-2 type-body-sm text-fg-muted">{t("noLoginHint")}</p> : null}
-      {!selected && deal.requestId === null ? <p className="rounded-xl border border-dashed border-border px-3 py-2 type-body-sm text-fg-muted">{t("brandNotVisibleHint")}</p> : null}
-      <MessageThread portal="agency" dealId={deal.id} channel={channel} talentId={selected?.talentId ?? null} messages={messages} mySide="agency" canPost={canEdit} revalidate={base} />
+      {!selected && !deal.brandVisible ? <p className="rounded-xl border border-dashed border-border px-3 py-2 type-body-sm text-fg-muted">{t("brandNotVisibleHint")}</p> : null}
+      <MessageThread portal="agency" dealId={deal.id} channel={channel} talentId={selected?.talentId ?? null} messages={messages} mySide="agency" canPost={canEdit && (Boolean(selected) || deal.brandVisible)} revalidate={base} />
     </div>
   );
 }
