@@ -31,13 +31,15 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team"] as const;
+export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
  *  Configurações gestor+; Equipe só o Adm). */
 export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): AgencyNavKey[] {
   const keys: AgencyNavKey[] = ["dashboard", "pipeline", "tasks", "agenda", "casting", "brands", "notifications"];
+  // Heróis (0070): gestor+ cria os perfis e publica em nome deles
+  if (agencyCan(role, "manager", platformAdmin)) keys.splice(1, 0, "heroes");
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
   if (agencyCan(role, "admin", platformAdmin)) keys.push("team");
   return keys;
@@ -56,6 +58,7 @@ export const AGENCY_ROUTE_MIN: Record<string, AgencyRole> = {
   "/agencia/pipeline/novo": "manager",
   "/agencia/equipe": "admin",
   "/agencia/configuracoes": "manager",
+  "/agencia/herois": "manager",
 };
 
 /** Quem mexe num negócio: gestor+ sempre; o colaborador só quando é responsável ou está na equipe dele. */

@@ -835,5 +835,37 @@
       "back": "Volver",
       "save": "Guardar tarea"
     }
+  },
+  "heroes": {
+    "title": "Héroes",
+    "description": "Los perfiles públicos de los héroes que la agencia representa. La agencia publica en su nombre y guarda los contratos de imagen, como indican los Términos del Socio.",
+    "listTitle": "Héroes de la agencia ({count})",
+    "empty": "Todavía no hay héroes",
+    "emptyHint": "Crea el primer perfil abajo. Queda público en /personalities en cuanto se crea.",
+    "manage": "Gestionar",
+    "suspended": "Suspendido",
+    "demoLocked": "La agencia de demostración no crea héroes.",
+    "createTitle": "Nuevo héroe",
+    "createHint": "Crea solo perfiles de personas con contrato con la agencia. El perfil queda público al instante.",
+    "heroDescription": "Publicas en nombre de este héroe. La foto, la portada y los posts aparecen en su página pública.",
+    "newPost": "Nuevo post",
+    "viewPage": "Ver página pública",
+    "mediaTitle": "Foto y portada",
+    "avatarHint": "Aparece en la tarjeta y en la página del héroe.",
+    "profileTitle": "Perfil",
+    "postAs": "Publicando en nombre de {name}.",
+    "form": {
+      "name": "Nombre",
+      "slug": "Dirección de la página",
+      "slugHint": "La página queda en /personalities/{slug}. No cambia después.",
+      "pillars": "Pilares",
+      "headline": "Titular",
+      "bio": "Biografía",
+      "optional": "opcional",
+      "create": "Crear héroe",
+      "save": "Guardar perfil",
+      "created": "Héroe creado",
+      "saved": "Perfil guardado"
+    }
   }
 }

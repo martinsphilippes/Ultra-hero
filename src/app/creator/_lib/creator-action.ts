@@ -13,6 +13,7 @@ import type { CreatorSupabase } from "./content-insert";
 //   * "post" (Novo post): o herói com o próprio perfil ativo (my_creator_id()), ou o admin pelo
 //     herói escolhido.
 //   * "own" (perfil de chef): só o próprio perfil, como antes; sem modo do admin.
+//   * agência (0070): no "post", o herói dela escolhido no portal da agência (o banco confere o vínculo).
 export type CreatorActionScope = "manage" | "post" | "own";
 
 export type CreatorActionContext = {
@@ -35,6 +36,13 @@ export async function creatorActionContext(scope: CreatorActionScope = "manage")
     return { ok: true, userId: user.id, creatorId: acting.hero.id, supabase: await actingClient(acting.hero.id), actingFor: acting.hero.id };
   }
   if (scope === "manage") return { ok: false, error: "forbidden" };
+
+  // agência (0070): só o Novo post (foto e vídeo), pelo herói dela escolhido no portal da agência
+  if (scope === "post" && (await hasRole("agency"))) {
+    const acting = await getActingHero();
+    if (acting.status === "ok") return { ok: true, userId: user.id, creatorId: acting.hero.id, supabase: await actingClient(acting.hero.id), actingFor: acting.hero.id };
+    if (!hasHeroRole(await getRoles())) return { ok: false, error: acting.status === "unavailable" ? "acting_unavailable" : "acting_hero_required" };
+  }
 
   // papel de herói (o creator com escopo "talent" é só do escritório e não reabre o Novo post)
   if (!hasHeroRole(await getRoles())) return { ok: false, error: "forbidden" };

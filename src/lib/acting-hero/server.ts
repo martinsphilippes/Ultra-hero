@@ -5,8 +5,9 @@ import { hasRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { ACTING_HERO_COOKIE, isUuid } from "./constants";
 
-// Herói em nome de quem o admin age. O cookie só lembra a última escolha: a cada requisição o banco
-// confere (acting_hero_id(): admin + herói ativo) com o mesmo cabeçalho que as actions vão mandar.
+// Herói em nome de quem o admin (ou a agência, só pelos heróis dela: 0070) age. O cookie só lembra a
+// última escolha: a cada requisição o banco confere (acting_hero_id(): admin ou herói da agência, ativo)
+// com o mesmo cabeçalho que as actions vão mandar.
 
 export type ActingHero = { id: string; slug: string; name: string; avatar_url: string | null };
 
@@ -22,7 +23,7 @@ export function isMissingFunction(error: { code?: string } | null | undefined): 
 }
 
 export const getActingHero = cache(async (): Promise<ActingHeroState> => {
-  if (!(await hasRole("admin"))) return { status: "none" };
+  if (!(await hasRole("admin")) && !(await hasRole("agency"))) return { status: "none" };
   const raw = (await cookies()).get(ACTING_HERO_COOKIE)?.value;
   if (!isUuid(raw)) return (await actingAvailable()) ? { status: "none" } : { status: "unavailable" };
   const id = raw.toLowerCase();

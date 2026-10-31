@@ -15,3 +15,10 @@ Decisão do responsável em 31/10/2026, antes de abrir o app nas lojas para o p�
 - Até os heróis publicarem, o catálogo fica vazio. **Não envie o app para revisão nas lojas com o catálogo vazio**: a Apple recusa apps sem conteúdo (diretriz 4.2), e o Google também pode recusar.
 - Texto novo dos Termos do Parceiro: precisa de revisão jurídica antes do primeiro convite.
 - Trocou o texto dos Termos do Parceiro de forma relevante? Atualize `PARTNER_TERMS_VERSION`. Na versão nova, a confirmação de direitos é pedida de novo.
+
+## Agência publica pelos heróis (0070, 31/10/2026)
+
+- A plataforma é intermediária. A agência se cadastra por convite, aceita os Termos do Parceiro e gerencia os heróis com quem tem contrato. Os contratos ficam com a agência, que os apresenta quando pedido (Termos do Parceiro, "Guarda dos contratos").
+- Em `/agencia/herois`, gestor ou Adm da agência cria o perfil (público na hora) e o abre. Na página do herói, troca foto e capa, edita o perfil e faz o Novo post (foto ou vídeo).
+- O banco honra o cabeçalho `x-acting-hero` para a agência só nos heróis ligados a ela (`talent_profiles.agency_id` e `creator_id`).
+- Receitas, o módulo Conteúdos, os direitos e os vínculos com produtos seguem só com o admin.

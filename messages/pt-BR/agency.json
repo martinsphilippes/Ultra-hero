@@ -835,5 +835,37 @@
       "back": "Voltar",
       "save": "Salvar tarefa"
     }
+  },
+  "heroes": {
+    "title": "Heróis",
+    "description": "Os perfis públicos dos heróis que a agência representa. A agência publica em nome deles e guarda os contratos de imagem, como dizem os Termos do Parceiro.",
+    "listTitle": "Heróis da agência ({count})",
+    "empty": "Nenhum herói ainda",
+    "emptyHint": "Crie o primeiro perfil abaixo. Ele fica público em /personalities assim que for criado.",
+    "manage": "Gerenciar",
+    "suspended": "Suspenso",
+    "demoLocked": "A agência de demonstração não cria heróis.",
+    "createTitle": "Novo herói",
+    "createHint": "Crie só perfis de quem tem contrato com a agência. O perfil fica público na hora.",
+    "heroDescription": "Você publica em nome deste herói. Foto, capa e posts aparecem na página pública dele.",
+    "newPost": "Novo post",
+    "viewPage": "Ver página pública",
+    "mediaTitle": "Foto e capa",
+    "avatarHint": "Aparece no card e na página do herói.",
+    "profileTitle": "Perfil",
+    "postAs": "Publicando em nome de {name}.",
+    "form": {
+      "name": "Nome",
+      "slug": "Endereço da página",
+      "slugHint": "A página fica em /personalities/{slug}. Não muda depois.",
+      "pillars": "Pilares",
+      "headline": "Chamada",
+      "bio": "Biografia",
+      "optional": "opcional",
+      "create": "Criar herói",
+      "save": "Salvar perfil",
+      "created": "Herói criado",
+      "saved": "Perfil salvo"
+    }
   }
 }

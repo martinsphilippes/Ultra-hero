@@ -517,6 +517,12 @@
           "p2": "Sigues siendo dueño de lo que envías. {app} no reclama la propiedad de tu contenido."
         }
       },
+      "evidence": {
+        "title": "Custodia de los contratos",
+        "blocks": {
+          "p1": "<strong>Quien publica guarda las pruebas.</strong> El socio —y, cuando publica en nombre de un héroe, la agencia— conserva los contratos y las autorizaciones que respaldan cada publicación y los presenta, en el plazo indicado, siempre que se los soliciten {app}, el propio héroe, los titulares de derechos o las autoridades. {app} es una plataforma intermediaria: no revisa ni guarda esos contratos y, conforme a la ley (Marco Civil de Internet de Brasil, Ley 12.965/2014), retira el contenido ante una orden judicial o cuando infrinja estos Términos."
+        }
+      },
       "license": {
         "title": "Licencia a {app}",
         "blocks": {

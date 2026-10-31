@@ -83,6 +83,7 @@
   "backToProfile": "Profile",
   "agency": {
     "dashboard": "Home",
+    "heroes": "Heroes",
     "brands": "Brands",
     "notifications": "Notices",
     "settings": "Settings",

@@ -517,6 +517,12 @@
           "p2": "Você continua dono do que envia. O {app} não reivindica a propriedade do seu conteúdo."
         }
       },
+      "evidence": {
+        "title": "Guarda dos contratos",
+        "blocks": {
+          "p1": "<strong>Quem publica guarda as provas.</strong> O parceiro — e, quando publica em nome de um herói, a agência — mantém os contratos e as autorizações que sustentam cada publicação e os apresenta, no prazo pedido, sempre que solicitados pelo {app}, pelo próprio herói, por titulares de direitos ou por autoridades. O {app} é uma plataforma intermediária: não revisa nem guarda esses contratos e, conforme a lei (Marco Civil da Internet, Lei nº 12.965/2014), remove o conteúdo quando houver ordem judicial ou quando ele violar estes Termos."
+        }
+      },
       "license": {
         "title": "Licença ao {app}",
         "blocks": {

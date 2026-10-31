@@ -11,6 +11,8 @@ import { toAvatarError, type AvatarError } from "@/lib/avatar/constants";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { AvatarPrepareError, prepareAvatar, type PreparedAvatar } from "@/lib/avatar/resize";
 import { validateSourceFile } from "@/lib/avatar/validation";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
+import { UploadRightsDialog } from "@/components/creator/UploadRightsDialog";
 
 type Props = {
   /** Avatar atual (foto enviada, foto oficial ou nenhum; ilustração antiga conta como nenhum). */
@@ -22,6 +24,9 @@ type Props = {
   disabled?: boolean;
   /** Texto de apoio próprio da tela (ex.: perfil de herói). */
   hint?: string;
+  /** Ações de envio e remoção (padrão: a foto da própria conta; a agência passa as do herói, 0070). */
+  uploadAction?: typeof uploadAvatar;
+  removeAction?: typeof removeAvatar;
 };
 
 type Preview = PreparedAvatar & { url: string };
@@ -30,7 +35,7 @@ type Preview = PreparedAvatar & { url: string };
 // redução no aparelho, prévia em círculo e confirmação. Uma foto só por pessoa: vale no avatar do
 // app e, se a pessoa é herói, no perfil público. Sem foto, as iniciais do nome. Um seletor de foto
 // por página: em "Editar perfil" do herói ativo ou em Dados das outras contas.
-export function AvatarPhotoPicker({ value, name, state, onChange, disabled = false, hint }: Props) {
+export function AvatarPhotoPicker({ value, name, state, onChange, disabled = false, hint, uploadAction = uploadAvatar, removeAction = removeAvatar }: Props) {
   const t = useTranslations("me.profile.photo");
   const { toast } = useToast();
   const router = useRouter();
@@ -112,6 +117,9 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
     setError(null);
   }
 
+  // Termos do Parceiro (0068): a foto de um herói pede a declaração de direitos antes do primeiro envio
+  const [rightsOpen, setRightsOpen] = useState(false);
+
   function confirmUpload() {
     if (!preview) return;
     setError(null);
@@ -122,12 +130,13 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
       form.append("file", new File([preview.blob], `avatar.${ext}`, { type: preview.mime }));
       let result: Awaited<ReturnType<typeof uploadAvatar>>;
       try {
-        result = await uploadAvatar(form);
+        result = await uploadAction(form);
       } catch {
         result = { ok: false, error: "upload_failed" };
       }
       if (!result.ok) {
-        setError(toAvatarError(result.error));
+        if (result.error === UPLOAD_RIGHTS_REQUIRED) setRightsOpen(true);
+        else setError(toAvatarError(result.error));
         setAnnouncement("");
         return;
       }
@@ -145,7 +154,7 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
       // falha de rede rejeita a promessa da action: sem o catch, o erro derrubaria a página inteira
       let result: Awaited<ReturnType<typeof removeAvatar>>;
       try {
-        result = await removeAvatar();
+        result = await removeAction();
       } catch {
         result = { ok: false, error: "generic" };
       }
@@ -278,6 +287,7 @@ export function AvatarPhotoPicker({ value, name, state, onChange, disabled = fal
           </p>
         ) : null}
       </Dialog>
+      <UploadRightsDialog open={rightsOpen} onOpenChange={setRightsOpen} onConfirmed={confirmUpload} />
     </div>
   );
 }
