@@ -123,6 +123,12 @@
           }
         }
       },
+      "reports": {
+        "title": "Denúncias e bloqueio",
+        "blocks": {
+          "p1": "<strong>Tolerância zero com conteúdo abusivo.</strong> Conteúdo ofensivo, de assédio, de ódio, enganoso sobre saúde ou que viole direitos de terceiros não é aceito. Em cada conteúdo e em cada página de herói há as opções <strong>Denunciar</strong> e <strong>Bloquear</strong>. A equipe analisa as denúncias em até 24 horas e remove o conteúdo e suspende quem publicou quando houver violação. Quem bloqueia um herói deixa de ver ele e o que ele publica; o desbloqueio fica em Perfil › Heróis."
+        }
+      },
       "ip": {
         "title": "Propriedade intelectual",
         "blocks": {
@@ -195,6 +201,7 @@
             "commerce": "<strong>Loja (só no site):</strong> carrinho, pedidos (itens, valores exibidos e o destino escolhido em uma lista) e registros de interesse em produtos.",
             "events": "<strong>Eventos de uso:</strong> ações no app, como abrir um conteúdo, concluir um programa ou iniciar um pedido, com data, idioma e propriedades técnicas, como o identificador do conteúdo. Quando você está conectado, os eventos ficam vinculados à sua conta; para visitantes sem conta, são registrados sem identificador. O banco de dados recusa propriedades cujos nomes indiquem dados pessoais, como e-mail, telefone, CPF, nome, endereço ou senha.",
             "feedback": "<strong>Feedback opcional:</strong> nota, comentário de até 1.000 caracteres, o conteúdo ou programa de onde foi enviado e o idioma.",
+            "reports": "<strong>Denúncias e bloqueios:</strong> se você denunciar, guardamos o conteúdo ou herói denunciado, o motivo, o detalhe que escrever e a data; se bloquear um herói, guardamos qual herói e desde quando, para escondê-lo de você.",
             "recommendations": "<strong>Recomendações:</strong> a lista de conteúdos recomendados para você e um registro técnico de cada cálculo (motor usado, tempo, quantidade de itens, custo estimado e erros).",
             "partners": "<strong>Parceiros e administração:</strong> se você for convidado como parceiro, o e-mail para o qual o convite foi enviado, os dados do perfil de parceiro e o que você enviar. As principais ações feitas pelo painel de administração, como mudanças de papéis, convites, moderação e configurações, ficam registradas em auditoria.",
             "partnerTerms": "<strong>Aceite dos Termos do Parceiro (só heróis e agências):</strong> a versão dos <partner>Termos do Parceiro</partner> que você aceitou ao entrar por convite, a data do aceite e a data em que você confirmou, antes do primeiro envio, ter os direitos sobre as fotos e os vídeos, como prova do aceite.",
@@ -393,6 +400,11 @@
                 "data": "Feedback",
                 "period": "Sem prazo automático",
                 "details": "Não tem exclusão automática. Deixa de ser vinculado a você se você excluir a conta, e você pode pedir a remoção pelo {email}."
+              },
+              "reports": {
+                "data": "Denúncias e bloqueios",
+                "period": "Denúncias: sem prazo automático; bloqueios: enquanto a conta existir",
+                "details": "Os bloqueios são apagados junto com a conta. As denúncias ficam para a moderação, sem o vínculo com quem denunciou, se você excluir a conta."
               },
               "backups": {
                 "data": "Cópias de segurança (backups)",

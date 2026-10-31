@@ -1,0 +1,58 @@
+{
+  "reportContent": "Report content",
+  "reportHero": "Report hero",
+  "block": "Block {name}",
+  "signInToReport": "Sign in to report or block",
+  "reportDescription": "The team reviews every report within 24 hours and removes anything that breaches the Terms of Use.",
+  "reason": "Reason",
+  "details": "Details",
+  "optional": "optional",
+  "send": "Send report",
+  "cancel": "Cancel",
+  "reported": "Report sent",
+  "reportedHint": "Thank you. The team reviews it within 24 hours.",
+  "blockTitle": "Block {name}?",
+  "blockDescription": "You will no longer see this hero or anything they publish, anywhere in the app, and you will stop following them. To unblock, go to Profile › Heroes.",
+  "blockConfirm": "Block",
+  "blocked": "{name} blocked",
+  "blockedHint": "Unblock any time in Profile › Heroes.",
+  "reasons": {
+    "offensive": "Offensive or inappropriate content",
+    "harassment": "Harassment or hate speech",
+    "misleading": "Misleading or harmful health information",
+    "rights": "Misuse of image or copyright",
+    "spam": "Spam or scam",
+    "other": "Other reason"
+  },
+  "errors": {
+    "unauthenticated": "Sign in to continue.",
+    "not_found": "This content is no longer available.",
+    "too_many_reports": "You have reached today’s report limit. Try again tomorrow.",
+    "invalid_input": "Check the details and try again.",
+    "generic": "Could not complete. Please try again."
+  },
+  "blockedList": {
+    "title": "Blocked heroes",
+    "description": "You don’t see these heroes or what they publish.",
+    "empty": "You haven’t blocked any heroes.",
+    "unblock": "Unblock",
+    "unblocked": "Hero unblocked"
+  },
+  "admin": {
+    "title": "Reports",
+    "description": "Reports of content and heroes made in the app. Respond within 24 hours: remove what breaches the Terms or dismiss.",
+    "filter": "Filter by status",
+    "status": {
+      "new": "Pending",
+      "actioned": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "empty": "No reports here.",
+    "contentLabel": "Content:",
+    "heroLabel": "Hero:",
+    "archive": "Take content down",
+    "suspend": "Suspend hero",
+    "dismiss": "Dismiss",
+    "error": "Could not complete."
+  }
+}

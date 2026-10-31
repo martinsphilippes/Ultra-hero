@@ -5059,6 +5059,56 @@ export type Database = {
         };
         Relationships: [];
       };
+      hero_blocks: {
+        Row: { created_at: string; creator_id: string; user_id: string };
+        ComputedFields: never;
+        Insert: { created_at?: string; creator_id: string; user_id: string };
+        Update: { created_at?: string; creator_id?: string; user_id?: string };
+        Relationships: [];
+      };
+      content_reports: {
+        Row: {
+          content_id: string | null;
+          created_at: string;
+          creator_id: string | null;
+          details: string;
+          id: string;
+          reason: string;
+          reporter_id: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          content_id?: string | null;
+          created_at?: string;
+          creator_id?: string | null;
+          details?: string;
+          id?: string;
+          reason: string;
+          reporter_id?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+        };
+        Update: {
+          content_id?: string | null;
+          created_at?: string;
+          creator_id?: string | null;
+          details?: string;
+          id?: string;
+          reason?: string;
+          reporter_id?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "content_reports_content_fk"; columns: ["content_id"]; isOneToOne: false; referencedRelation: "content"; referencedColumns: ["id"] },
+          { foreignKeyName: "content_reports_creator_fk"; columns: ["creator_id"]; isOneToOne: false; referencedRelation: "creator_profiles"; referencedColumns: ["id"] },
+        ];
+      };
       partner_terms_acceptances: {
         Row: {
           accepted_at: string;
@@ -8178,6 +8228,15 @@ export type Database = {
       is_demo_account: { Args: Record<PropertyKey, never>; Returns: boolean };
       accept_invitation: { Args: { p_token: string }; Returns: Json };
       accept_partner_terms: { Args: { p_version: string }; Returns: undefined };
+      admin_resolve_report: { Args: { p_archive_content: boolean; p_id: string; p_status: string; p_suspend_creator: boolean }; Returns: undefined };
+      block_hero: { Args: { p_creator: string }; Returns: undefined };
+      unblock_hero: { Args: { p_creator: string }; Returns: undefined };
+      is_blocked_creator: { Args: { p_creator: string }; Returns: boolean };
+      my_blocked_heroes: {
+        Args: Record<PropertyKey, never>;
+        Returns: { avatar_url: string | null; blocked_at: string; id: string; name: string; slug: string }[];
+      };
+      report_content: { Args: { p_content: string | null; p_creator: string | null; p_details: string; p_reason: string }; Returns: string };
       agency_act_as_hero: { Args: { p_creator: string }; Returns: Json };
       agency_create_hero: {
         Args: { p_agency: string; p_bio: string; p_headline: string; p_name: string; p_pillars: Database["public"]["Enums"]["pillar"][]; p_slug: string };

@@ -1,0 +1,58 @@
+{
+  "reportContent": "Denunciar contenido",
+  "reportHero": "Denunciar héroe",
+  "block": "Bloquear a {name}",
+  "signInToReport": "Inicia sesión para denunciar o bloquear",
+  "reportDescription": "El equipo revisa cada denuncia en un plazo de 24 horas y retira lo que infrinja los Términos de Uso.",
+  "reason": "Motivo",
+  "details": "Detalles",
+  "optional": "opcional",
+  "send": "Enviar denuncia",
+  "cancel": "Cancelar",
+  "reported": "Denuncia enviada",
+  "reportedHint": "Gracias. El equipo la revisa en un plazo de 24 horas.",
+  "blockTitle": "¿Bloquear a {name}?",
+  "blockDescription": "Dejarás de ver a este héroe y todo lo que publica, en toda la app, y dejarás de seguirlo. Para desbloquear, ve a Perfil › Héroes.",
+  "blockConfirm": "Bloquear",
+  "blocked": "{name} bloqueado",
+  "blockedHint": "Desbloquea cuando quieras en Perfil › Héroes.",
+  "reasons": {
+    "offensive": "Contenido ofensivo o inapropiado",
+    "harassment": "Acoso o discurso de odio",
+    "misleading": "Información engañosa o peligrosa para la salud",
+    "rights": "Uso indebido de imagen o derechos de autor",
+    "spam": "Spam o estafa",
+    "other": "Otro motivo"
+  },
+  "errors": {
+    "unauthenticated": "Inicia sesión para continuar.",
+    "not_found": "Este contenido ya no está disponible.",
+    "too_many_reports": "Llegaste al límite de denuncias de hoy. Inténtalo mañana.",
+    "invalid_input": "Revisa los datos e inténtalo de nuevo.",
+    "generic": "No se pudo completar. Inténtalo de nuevo."
+  },
+  "blockedList": {
+    "title": "Héroes bloqueados",
+    "description": "No ves a estos héroes ni lo que publican.",
+    "empty": "No has bloqueado a ningún héroe.",
+    "unblock": "Desbloquear",
+    "unblocked": "Héroe desbloqueado"
+  },
+  "admin": {
+    "title": "Denuncias",
+    "description": "Denuncias de contenidos y héroes hechas en la app. Responde en un plazo de 24 horas: retira lo que infrinja los Términos o descarta.",
+    "filter": "Filtrar por estado",
+    "status": {
+      "new": "Pendientes",
+      "actioned": "Resueltas",
+      "dismissed": "Descartadas"
+    },
+    "empty": "No hay denuncias aquí.",
+    "contentLabel": "Contenido:",
+    "heroLabel": "Héroe:",
+    "archive": "Retirar contenido",
+    "suspend": "Suspender héroe",
+    "dismiss": "Descartar",
+    "error": "No se pudo completar."
+  }
+}
