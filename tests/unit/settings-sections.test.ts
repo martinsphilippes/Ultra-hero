@@ -35,7 +35,7 @@ describe("buildSettingsSections", () => {
 
   it("portais só com o papel; o herói não tem portal; fornecedor só com o portal ligado", () => {
     expect(buildSettingsSections(["creator"]).some((s) => s.key === "portals")).toBe(false);
-    const admin = buildSettingsSections(["consumer", "admin", "professional", "seller"], false);
+    const admin = buildSettingsSections(["consumer", "admin", "professional", "seller"], false, { platformAdmin: true });
     const portals = admin.find((s) => s.key === "portals")!;
     expect(admin.at(-1)).toBe(portals);
     // o admin geral também tem os atalhos da agência e da marca (gestão, 0064)
@@ -50,7 +50,7 @@ describe("buildSettingsSections", () => {
   });
 
   it("app das lojas: compras simuladas, plano e portais do profissional, da agência e da marca somem; o resto fica", () => {
-    const items = buildSettingsSections(["admin", "professional"]).flatMap((s) => s.items);
+    const items = buildSettingsSections(["admin", "professional"], undefined, { platformAdmin: true }).flatMap((s) => s.items);
     const hidden = items.filter((i) => i.nativeHidden).map((i) => i.href);
     expect(hidden.sort()).toEqual(["/agencia", "/marca", "/orders", "/profile/plan", "/profissional"]);
   });

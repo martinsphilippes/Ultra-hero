@@ -412,7 +412,8 @@
         "archived": "Talent archived"
       },
       "upcoming": "Activities and deals join the timeline with the pipeline."
-    }
+    },
+    "heroUnavailable": "Linked hero is offline (suspended or pending): no public kit, new link or catalog until it is back."
   },
   "documents": {
     "uploaded": "Document uploaded.",

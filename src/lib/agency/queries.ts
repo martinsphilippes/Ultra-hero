@@ -35,13 +35,11 @@ export async function listTeam(agencyId: string): Promise<TeamMember[]> {
 /** Convites pendentes da equipe da agência (só o Adm lê, pela RLS). */
 export async function listTeamInvites(agencyId: string): Promise<PendingInvite[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("invitations")
-    .select("id, email, member_role, expires_at, created_at")
-    .eq("agency_id", agencyId)
-    .is("brand_id", null)
-    .eq("status", "pending")
-    .order("created_at", { ascending: false });
+  const team = () =>
+    supabase.from("invitations").select("id, email, member_role, expires_at, created_at").eq("agency_id", agencyId).is("brand_id", null).eq("status", "pending");
+  // convites de talento (0065) não são da equipe; sem a 0065 a coluna não existe e a leitura de antes vale
+  let { data, error } = await team().is("talent_id", null).order("created_at", { ascending: false });
+  if (error && isMissingSchema(error)) ({ data, error } = await team().order("created_at", { ascending: false }));
   if (error) return [];
   return (data ?? []).map((i) => ({ id: i.id, email: i.email, role: i.member_role ?? "", expiresAt: i.expires_at, createdAt: i.created_at }));
 }

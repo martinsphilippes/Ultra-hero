@@ -4,7 +4,9 @@ import { AGENCY_ROUTE_MIN, agencyNavKeys } from "@/lib/agency/roles";
 import { isTalentOnly } from "@/lib/auth/talent-scope";
 import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts, TALENT_DEMO_EMAIL } from "@/lib/demo/accounts";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
-import { buildPortalItems, buildSettingsSections, OFFICE_PATH } from "@/lib/settings/sections";
+import { hasHeroRole, heroRoleNames } from "@/lib/auth/talent-scope";
+import { isDocumentsRevalidatePath } from "@/lib/documents/constants";
+import { buildPortalItems, buildSettingsSections, forSurface, isDemoUser, OFFICE_PATH } from "@/lib/settings/sections";
 
 describe("etapa B: casting no menu e travas", () => {
   it("Casting para todos os níveis; Novo talento só gestor+", () => {
@@ -53,13 +55,45 @@ describe("portais no topo do Perfil", () => {
   it("mesmos atalhos da seção Portais: Escritório primeiro, gestão para o admin geral, nada para o consumidor", () => {
     expect(buildPortalItems(["consumer"])).toEqual([]);
     expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["office"]);
-    const admin = buildPortalItems(["consumer", "admin"]);
+    const admin = buildPortalItems(["consumer", "admin"], undefined, { platformAdmin: true });
     expect(admin.map((p) => [p.key, p.href, p.nativeHidden])).toEqual([
       ["agency", "/agencia", true],
       ["brand", "/marca", true],
       ["admin", "/admin", false],
     ]);
-    const portals = buildSettingsSections(["consumer", "admin"]).find((s) => s.key === "portals")?.items;
+    const portals = buildSettingsSections(["consumer", "admin"], undefined, { platformAdmin: true }).find((s) => s.key === "portals")?.items;
     expect(portals).toEqual(admin);
+    // conta pública de demonstração com papel admin: sem os atalhos de gestão
+    expect(buildPortalItems(["consumer", "admin"]).map((p) => p.key)).toEqual(["admin"]);
+  });
+
+  it("app das lojas: as linhas só da web saem da lista no servidor; o Escritório e a Administração ficam", () => {
+    const items = buildPortalItems(["consumer", "admin", "agency"], undefined, { hasTalent: true, platformAdmin: true });
+    expect(forSurface(items, true).map((p) => p.key)).toEqual(["office", "admin"]);
+    expect(forSurface(items, false).map((p) => p.key)).toEqual(["office", "agency", "brand", "admin"]);
+    expect(forSurface(buildPortalItems(["consumer", "agency"]), true)).toEqual([]);
+  });
+
+  it("conta demo pelo app_metadata (mesmo critério do banco)", () => {
+    expect(isDemoUser({ app_metadata: { ultra_hero_demo: true } })).toBe(true);
+    expect(isDemoUser({ app_metadata: { ultra_hero_demo: "true" } })).toBe(true);
+    expect(isDemoUser({ app_metadata: {} })).toBe(false);
+    expect(isDemoUser(null)).toBe(false);
+  });
+});
+
+describe("revisão de segurança da etapa B", () => {
+  it("papel creator do escritório (escopo talent) não vale para as telas do herói", () => {
+    expect(hasHeroRole([{ role: "creator", scope_type: "talent" }])).toBe(false);
+    expect(hasHeroRole([{ role: "creator", scope_type: "creator" }])).toBe(true);
+    expect(hasHeroRole([{ role: "creator", scope_type: "talent" }, { role: "creator", scope_type: "creator" }])).toBe(true);
+    expect(heroRoleNames([{ role: "consumer", scope_type: "global" }, { role: "creator", scope_type: "talent" }])).toEqual(["consumer"]);
+  });
+
+  it("revalidação dos documentos só dos caminhos da lista", () => {
+    expect(isDocumentsRevalidatePath("/agencia/casting/75000000-0000-4000-8000-0000000000d1/documentos")).toBe(true);
+    expect(isDocumentsRevalidatePath("/")).toBe(false);
+    expect(isDocumentsRevalidatePath("/agencia/casting/x/documentos/../../admin")).toBe(false);
+    expect(isDocumentsRevalidatePath("/agencia/casting/75000000-0000-4000-8000-0000000000d1/documentos?x=1")).toBe(false);
   });
 });

@@ -60,6 +60,7 @@ vi.mock("next-intl/server", () => ({
 vi.mock("@/lib/auth/session", () => ({
   getUser: async () => state.user,
   hasRole: async (role: string) => (role === "admin" ? state.isAdmin : role === "creator" && state.isCreator),
+  getRoles: async () => (state.isCreator ? [{ role: "creator", scope_type: "creator" }] : []),
 }));
 // admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
 vi.mock("@/lib/acting-hero/server", () => ({

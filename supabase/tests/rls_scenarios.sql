@@ -8374,15 +8374,48 @@ select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't2'), true);
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), null);
 select tests.su();
-select tests.ok('S75 desligar o herói zera o consentimento, tira do catálogo e desliga o link',
-  (select consent_at is null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2'))
+select tests.ok('S75 desligar o herói revoga o consentimento, tira do catálogo e desliga o link',
+  (select consent_revoked_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2'))
   and public.media_kit_resolve((select v from t_s75 where k = 'kit_t2'), false) is null);
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select public.agency_talent_record_consent((select v::uuid from t_s75 where k = 't2'), '2026-10', (select v::uuid from t_s75 where k = 'doc_t2'));
 select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't2'), public.seed_uuid('s75:creator:real'));
 select tests.su();
 select tests.ok('S75 religar o herói não reaproveita o consentimento registrado sem ele',
-  (select consent_at is null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2')));
+  (select consent_revoked_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2')));
+-- a2) herói suspenso: o kit sai do ar, a agência não gera link nem liga o catálogo, o dono ainda revoga
+select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
+select public.talent_set_consent(true, '2026-10');
+insert into t_s75 values ('kit_t2b', public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30));
+select tests.su();
+update public.creator_profiles set status = 'suspended' where id = public.seed_uuid('s75:creator:real');
+select tests.ok('S75 herói suspenso: o kit sai do ar', public.media_kit_resolve((select v from t_s75 where k = 'kit_t2b'), false) is null);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select tests.expect_error('S75 herói suspenso: a agência não gera link',
+  $q$select public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30)$q$, 'invalid_state');
+select tests.expect_error('S75 herói suspenso: a agência não liga o catálogo',
+  $q$select public.agency_talent_set_catalog((select v::uuid from t_s75 where k = 't2'), true)$q$, 'invalid_state');
+select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
+select public.talent_set_consent(false, null);
+select tests.su();
+select tests.ok('S75 herói suspenso: o dono ainda revoga o consentimento',
+  (select consent_revoked_at is not null from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2')));
+update public.creator_profiles set status = 'active' where id = public.seed_uuid('s75:creator:real');
+-- a3) o dono do herói muda (conta excluída ou trocada pelo admin): nada da pessoa anterior passa adiante
+select tests.login('75000000-0000-4000-8000-0000000000d2', 'heroi-real@test.local');
+select public.talent_set_consent(true, '2026-10');
+insert into t_s75 values ('kit_t2c', public.media_kit_share((select v::uuid from t_s75 where k = 't2'), 30));
+select public.talent_social_save((select v::uuid from t_s75 where k = 't2'), null, ('{"network": "tiktok", "handle": "heroi.real", "as_of": "' || current_date || '"}')::jsonb);
+select tests.su();
+update public.documents set share_talent = true where id = (select v::uuid from t_s75 where k = 'doc_t2');
+update public.creator_profiles set user_id = null where id = public.seed_uuid('s75:creator:real');
+select tests.ok('S75 dono do herói mudou: consentimento revogado, link desligado, redes dele apagadas, documentos não compartilhados',
+  (select consent_revoked_at is not null and not catalog_visible from public.talent_profiles where id = (select v::uuid from t_s75 where k = 't2'))
+  and public.media_kit_resolve((select v from t_s75 where k = 'kit_t2c'), false) is null
+  and not exists (select 1 from public.talent_social_accounts where talent_id = (select v::uuid from t_s75 where k = 't2') and declared_side = 'talent')
+  and exists (select 1 from public.talent_social_accounts where talent_id = (select v::uuid from t_s75 where k = 't2') and declared_side = 'integration')
+  and not (select share_talent from public.documents where id = (select v::uuid from t_s75 where k = 'doc_t2')));
+update public.creator_profiles set user_id = '75000000-0000-4000-8000-0000000000d2' where id = public.seed_uuid('s75:creator:real');
 -- b) herói fora do ar: a agência não registra consentimento por ele
 insert into public.creator_profiles (id, slug, name, status, user_id) values
   (public.seed_uuid('s75:creator:extra'), 's75-heroi-extra', 'Herói extra', 'active', null);
@@ -8413,6 +8446,17 @@ values ('talento-1@test.local', 'creator', public.seed_uuid('s75:creator:livre')
 select tests.login('75000000-0000-4000-8000-0000000000d1', 'talento-1@test.local');
 select tests.expect_error('S75 D10: convite de herói do casting para quem já tem talento',
   $q$select public.accept_invitation('s75-tok-livre')$q$, 'user_has_talent');
+-- e2) ligar um herói derruba o convite pendente do talento (senão o aceite falharia com mensagem enganosa)
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+insert into t_s75 values ('t9', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento nove"}')::text);
+select count(*) from public.agency_invite_talent((select v::uuid from t_s75 where k = 't9'), 'nove@test.local');
+select tests.su();
+insert into public.creator_profiles (id, slug, name, status, user_id) values (public.seed_uuid('s75:creator:nove'), 's75-heroi-nove', 'Herói nove', 'active', null);
+select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
+select public.agency_talent_link_creator((select v::uuid from t_s75 where k = 't9'), public.seed_uuid('s75:creator:nove'));
+select tests.su();
+select tests.ok('S75 ligar herói revoga o convite pendente do talento',
+  not exists (select 1 from public.invitations where talent_id = (select v::uuid from t_s75 where k = 't9') and status = 'pending'));
 -- f) convidar alguém para a equipe não revoga o convite de talento com o mesmo e-mail
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 insert into t_s75 values ('t8', public.agency_talent_save(null, public.seed_uuid('s74:agency:a'), '{"display_name": "Talento oito"}')::text);
@@ -8444,7 +8488,8 @@ select tests.ok('S75 funções novas: search_path fixo, nenhuma para o visitante
                                 'talent_actor_side', 'talent_audit_actor', 'agency_talent_save', 'agency_talent_set_segments', 'agency_talent_link_creator',
                                 'agency_talent_archive', 'agency_invite_talent', 'talent_consent_apply', 'talent_set_consent', 'agency_talent_record_consent',
                                 'agency_talent_set_catalog', 'talent_social_save', 'talent_social_delete', 'media_kit_save', 'media_kit_share',
-                                'media_kit_revoke', 'media_kit_resolve', 'talent_my_context')
+                                'media_kit_revoke', 'media_kit_resolve', 'talent_my_context', 'talent_reset_person_data',
+                                'talent_revoke_for_person_change', 'talent_hero_inactive', 'talent_login_changed', 'talent_hero_owner_changed')
               and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
   and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 17);
 drop table t_s75;

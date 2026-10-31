@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
 // Perfil do herói no topo da tela Perfil (/profile), no formato do Instagram: cabeçalho público (foto,
-// nome, selo, bio recolhida), Portais logo abaixo, "Editar perfil" / "Ver página pública" e o editor
+// nome, selo, bio recolhida; os Portais, quando a conta tem algum, ficam acima de tudo), "Editar perfil" / "Ver página pública" e o editor
 // recolhido na mesma tela. Um avatar só para o herói, só com foto real (sem foto, as iniciais), e a
 // capa só com foto real; nenhuma ilustração. SÓ LEITURA: o banco dos E2E é o remoto; nada é salvo aqui.
 
@@ -27,7 +27,7 @@ async function expectFocusVisible(target: Locator) {
 }
 
 test.describe("perfil do herói no topo do /profile", () => {
-  test("herói: cabeçalho antes dos Portais, editor fechado por padrão, abre e fecha com o foco certo, um avatar só", async ({ page }, testInfo) => {
+  test("herói: cabeçalho público no topo, editor fechado por padrão, abre e fecha com o foco certo, um avatar só", async ({ page }, testInfo) => {
     await loginAs(page, "creator");
     if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/profile");

@@ -88,10 +88,18 @@ function nativeHidden(href: string): boolean {
   return isBlockedInNativeApp(href.split("#")[0]);
 }
 
+export type PortalOptions = {
+  /** Está num casting (0065): atalho do Escritório. */
+  hasTalent?: boolean;
+  /** Admin geral com conta real (is_platform_admin): supervisiona agência e marca. A conta pública de
+   *  demonstração com papel admin não ganha esses atalhos (os portais dizem "indisponível" para ela). */
+  platformAdmin?: boolean;
+};
+
 /** Atalhos dos portais (topo do Perfil e seção Portais das Configurações): os do papel e o Escritório
- *  de quem está num casting. O admin geral supervisiona os portais de gestão (0064). */
-export function buildPortalItems(roles: readonly string[], sellerPortalEnabled?: boolean, opts: { hasTalent?: boolean } = {}): SettingsItem[] {
-  const withManagement = roles.includes("admin") ? [...roles, "agency", "brand"] : roles;
+ *  de quem está num casting. O admin geral de conta real supervisiona os portais de gestão (0064). */
+export function buildPortalItems(roles: readonly string[], sellerPortalEnabled?: boolean, opts: PortalOptions = {}): SettingsItem[] {
+  const withManagement = roles.includes("admin") && opts.platformAdmin ? [...roles, "agency", "brand"] : roles;
   const shown = portalRolesShown(withManagement, sellerPortalEnabled);
   const portals: SettingsItem[] = PORTALS.filter((p) => shown.includes(p.role)).map((p) => ({ kind: "portal", key: p.role, href: p.href, nativeHidden: nativeHidden(p.href) }));
   if (opts.hasTalent) portals.unshift({ kind: "portal", key: "office", href: OFFICE_PATH, nativeHidden: nativeHidden(OFFICE_PATH) });
@@ -99,7 +107,7 @@ export function buildPortalItems(roles: readonly string[], sellerPortalEnabled?:
 }
 
 /** Seções na ordem da tela; seção sem linha não aparece (Portais só com papel ou com talento no casting). */
-export function buildSettingsSections(roles: readonly string[], sellerPortalEnabled?: boolean, opts: { hasTalent?: boolean } = {}): SettingsSection[] {
+export function buildSettingsSections(roles: readonly string[], sellerPortalEnabled?: boolean, opts: PortalOptions = {}): SettingsSection[] {
   const sections: SettingsSection[] = LINK_SECTIONS.map(({ key, items }) => ({
     key,
     items: items.map(([k, href]) => ({ kind: "link" as const, key: k, href, nativeHidden: nativeHidden(href) })),
@@ -112,3 +120,14 @@ export function buildSettingsSections(roles: readonly string[], sellerPortalEnab
 /** Excluir conta: a confirmação mora na página da conta (âncora da seção). */
 export const DELETE_ACCOUNT_ANCHOR = "excluir-conta";
 export const DELETE_ACCOUNT_HREF = `/profile/account#${DELETE_ACCOUNT_ANCHOR}`;
+
+/** App das lojas: as linhas só da web saem da lista no servidor (esconder por CSS deixava a borda da
+ *  última linha visível). */
+export function forSurface<T extends { nativeHidden: boolean }>(items: readonly T[], native: boolean): T[] {
+  return native ? items.filter((i) => !i.nativeHidden) : [...items];
+}
+
+/** Conta pública de demonstração (mesmo critério de public.is_demo_account): app_metadata.ultra_hero_demo. */
+export function isDemoUser(user: { app_metadata?: Record<string, unknown> | null } | null | undefined): boolean {
+  return user?.app_metadata?.ultra_hero_demo === true || user?.app_metadata?.ultra_hero_demo === "true";
+}

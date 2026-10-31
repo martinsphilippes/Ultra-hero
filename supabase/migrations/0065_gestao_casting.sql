@@ -326,6 +326,75 @@ begin
 end $$;
 revoke execute on function public.talent_audit_actor(text, uuid) from public, anon, authenticated;
 
+-- troca da pessoa por trás do talento (herói trocado ou desligado, conta excluída, conta do herói trocada
+-- pelo admin): o que era daquela pessoa deixa de valer para a próxima. Revoga o link do kit, para de
+-- compartilhar os documentos do talento, apaga as redes que a própria pessoa declarou e os convites
+-- pendentes. O consentimento e o catálogo ficam com quem chama (o gatilho de talent_profiles muda NEW).
+create or replace function public.talent_reset_person_data(p_talent uuid)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  update public.media_kits set share_revoked_at = now()
+  where talent_id = p_talent and share_token_hash is not null and share_revoked_at is null;
+  update public.documents set share_talent = false where talent_id = p_talent and share_talent;
+  delete from public.talent_social_accounts where talent_id = p_talent and declared_side = 'talent';
+  update public.invitations set status = 'revoked', revoked_at = now() where talent_id = p_talent and status = 'pending';
+end $$;
+revoke execute on function public.talent_reset_person_data(uuid) from public, anon, authenticated;
+
+-- revoga o consentimento vigente (o histórico guarda quando foi dado e quando caiu) e tira do catálogo
+create or replace function public.talent_revoke_for_person_change(p_talent uuid)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+  update public.talent_profiles
+  set consent_revoked_at = case when consent_at is not null and consent_revoked_at is null then now() else consent_revoked_at end,
+      catalog_visible = false
+  where id = p_talent;
+end $$;
+revoke execute on function public.talent_revoke_for_person_change(uuid) from public, anon, authenticated;
+
+-- herói ligado e fora do ar (suspenso ou pendente): sem kit público, sem link novo, sem catálogo
+create or replace function public.talent_hero_inactive(p_talent uuid)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id
+                 where t.id = p_talent and c.status <> 'active')
+$$;
+revoke execute on function public.talent_hero_inactive(uuid) from public, anon, authenticated;
+
+-- login próprio do talento mudou (conta excluída: a FK põe null; arquivar também): revoga o que era dela
+create or replace function public.talent_login_changed()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if old.user_id is not null and new.user_id is distinct from old.user_id then
+    if new.consent_at is not null and new.consent_revoked_at is null then new.consent_revoked_at := now(); end if;
+    new.catalog_visible := false;
+    perform public.talent_reset_person_data(new.id);
+  end if;
+  return new;
+end $$;
+revoke execute on function public.talent_login_changed() from public, anon, authenticated;
+drop trigger if exists trg_talent_profiles_login on public.talent_profiles;
+create trigger trg_talent_profiles_login before update of user_id on public.talent_profiles
+  for each row execute function public.talent_login_changed();
+
+-- dono do herói mudou (conta excluída, troca de conta pelo admin): os talentos ligados a ele perdem o
+-- consentimento, o link e os dados da pessoa anterior
+create or replace function public.talent_hero_owner_changed()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare r record;
+begin
+  if old.user_id is not null and new.user_id is distinct from old.user_id then
+    for r in select t.id from public.talent_profiles t where t.creator_id = new.id loop
+      perform public.talent_revoke_for_person_change(r.id);
+      perform public.talent_reset_person_data(r.id);
+    end loop;
+  end if;
+  return new;
+end $$;
+revoke execute on function public.talent_hero_owner_changed() from public, anon, authenticated;
+drop trigger if exists trg_creator_profiles_talent_owner on public.creator_profiles;
+create trigger trg_creator_profiles_talent_owner after update of user_id on public.creator_profiles
+  for each row execute function public.talent_hero_owner_changed();
+
 -- 8) políticas de leitura ----------------------------------------------------------------
 -- o creator lê a agência do próprio talento (nome, contato)
 drop policy if exists agencies_select_talent on public.agencies;
@@ -525,6 +594,8 @@ begin
     if v_user is not null then raise exception 'talent_has_login' using errcode = 'P0001'; end if;
     select c.user_id into v_creator_user from public.creator_profiles c where c.id = p_creator and c.status = 'active';
     if not found then raise exception 'not_found' using errcode = 'P0002'; end if;
+    -- uma pessoa por vez (aceites e vínculos simultâneos não criam dois talentos para ela)
+    if v_creator_user is not null then perform pg_advisory_xact_lock(hashtext('talent_person:' || v_creator_user::text)); end if;
     if exists (select 1 from public.talent_profiles t where t.creator_id = p_creator and t.id <> p_talent) then
       raise exception 'creator_already_in_casting' using errcode = 'P0001';
     end if;
@@ -540,12 +611,15 @@ begin
     end;
   end if;
   if v_before is distinct from p_creator then
-    -- o consentimento é da pessoa: trocar ou desligar o herói zera o consentimento, tira do catálogo e
-    -- desliga o link do kit (a agência não reaproveita o "sim" de outra pessoa nem contorna a revogação)
-    update public.talent_profiles set consent_at = null, consent_version = null, consent_revoked_at = null, catalog_visible = false
-    where id = p_talent;
+    -- o consentimento é da pessoa: ligar, trocar ou desligar o herói revoga o consentimento, tira do
+    -- catálogo e desliga o link do kit (a agência não reaproveita o "sim" de outra pessoa nem contorna a
+    -- revogação); convites pendentes do talento caem
+    perform public.talent_revoke_for_person_change(p_talent);
     update public.media_kits set share_revoked_at = now()
     where talent_id = p_talent and share_token_hash is not null and share_revoked_at is null;
+    update public.invitations set status = 'revoked', revoked_at = now() where talent_id = p_talent and status = 'pending';
+    -- havia outra pessoa (herói trocado ou desligado): documentos e redes declaradas por ela não passam adiante
+    if v_before is not null then perform public.talent_reset_person_data(p_talent); end if;
     perform public.audit_log('talent.link_creator', 'talent', p_talent::text,
       jsonb_build_object('agency_id', v_agency, 'creator_id', v_before), jsonb_build_object('agency_id', v_agency, 'creator_id', p_creator),
       null, public.talent_audit_actor('agency', v_agency));
@@ -619,6 +693,15 @@ returns void language plpgsql security definer set search_path = '' as $$
 declare v_talent uuid := public.my_talent_id(); v_t record; v_version text := btrim(coalesce(p_version, ''));
 begin
   if auth.uid() is null then raise exception 'unauthenticated' using errcode = '42501'; end if;
+  -- dono de herói fora do ar (sem escritório) ainda pode REVOGAR; conta demo nunca mexe em agência real
+  if v_talent is null and p_on is false then
+    select t.id into v_talent from public.talent_profiles t
+    join public.creator_profiles c on c.id = t.creator_id
+    join public.agencies a on a.id = t.agency_id
+    where c.user_id = auth.uid() and c.status <> 'active' and t.archived_at is null
+      and (a.is_demo or not public.is_demo_account())
+    limit 1;
+  end if;
   if v_talent is null then raise exception 'forbidden' using errcode = '42501'; end if;
   if p_on is null or (p_on and v_version !~ '^[0-9A-Za-z._-]{1,20}$') then raise exception 'invalid_input' using errcode = '22023'; end if;
   select t.agency_id, t.manager_id, t.display_name, t.consent_at, t.consent_revoked_at into v_t
@@ -680,6 +763,7 @@ begin
   if coalesce(p_visible, false) and (v_t.consent_at is null or v_t.consent_revoked_at is not null) then
     raise exception 'consent_required' using errcode = 'P0001';
   end if;
+  if coalesce(p_visible, false) and public.talent_hero_inactive(p_talent) then raise exception 'invalid_state' using errcode = 'P0001'; end if;
   if v_t.catalog_visible = coalesce(p_visible, false) then return; end if;
   update public.talent_profiles set catalog_visible = coalesce(p_visible, false) where id = p_talent;
   perform public.audit_log('talent.catalog', 'talent', p_talent::text, jsonb_build_object('agency_id', v_agency, 'catalog_visible', v_t.catalog_visible),
@@ -809,6 +893,7 @@ begin
   -- D6: agência demo não tem kit público (a tela mostra só a prévia)
   if public.agency_is_demo(v_agency) then raise exception 'demo_locked' using errcode = 'P0001'; end if;
   if v_t.consent_at is null or v_t.consent_revoked_at is not null then raise exception 'consent_required' using errcode = 'P0001'; end if;
+  if public.talent_hero_inactive(p_talent) then raise exception 'invalid_state' using errcode = 'P0001'; end if;
   if p_days is null or p_days < 1 or p_days > 90 then raise exception 'invalid_input' using errcode = '22023'; end if;
   v_token := encode(extensions.gen_random_bytes(32), 'hex');
   v_expires := now() + make_interval(days => p_days);
@@ -850,7 +935,10 @@ begin
   if t.archived_at is not null or t.consent_at is null or t.consent_revoked_at is not null then return null; end if;
   -- agência suspensa ou de demonstração: sem kit público (D5/D6)
   if not exists (select 1 from public.agencies a where a.id = t.agency_id and a.status = 'active' and not a.is_demo) then return null; end if;
-  if t.creator_id is not null then select * into c from public.creator_profiles where id = t.creator_id and status = 'active'; end if;
+  if t.creator_id is not null then
+    select * into c from public.creator_profiles where id = t.creator_id and status = 'active';
+    if c.id is null then return null; end if;   -- herói suspenso ou pendente: o kit sai do ar junto
+  end if;
   f := k.visible_fields;
   v := jsonb_build_object('name', t.display_name, 'fields', to_jsonb(f), 'expires_at', k.share_expires_at);
   if 'photo' = any (f) then v := v || jsonb_build_object('photo_url', c.avatar_url); end if;
@@ -1083,6 +1171,7 @@ begin
       'brand', v_inv.brand_id, 'brand_member_joined_agency:' || v_inv.id::text);
     v_scope_type := 'brand'; v_scope_id := v_inv.brand_id;
   elsif v_inv.role::text = 'creator' and v_inv.talent_id is not null then
+    perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
     -- talento sem página pública (D2). D10: no máximo um talento por pessoa (próprio ou pelo herói)
     if exists (select 1 from public.talent_profiles t left join public.creator_profiles c on c.id = t.creator_id
                where t.id <> v_inv.talent_id and (t.user_id = v_uid or c.user_id = v_uid)) then
@@ -1101,6 +1190,7 @@ begin
     on conflict (user_id, role, scope_id) do update set revoked_at = null;
     v_scope_type := 'talent'; v_scope_id := v_inv.talent_id;
   else
+    perform pg_advisory_xact_lock(hashtext('talent_person:' || v_uid::text));
     -- D10: herói que já está num casting não vira o segundo talento de quem já tem um
     if exists (select 1 from public.talent_profiles t where t.creator_id = v_inv.creator_profile_id)
        and exists (select 1 from public.talent_profiles t2 left join public.creator_profiles c2 on c2.id = t2.creator_id

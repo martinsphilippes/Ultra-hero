@@ -412,7 +412,8 @@
         "archived": "Talento arquivado"
       },
       "upcoming": "Atividades e negócios entram na linha do tempo com o pipeline."
-    }
+    },
+    "heroUnavailable": "Herói ligado fora do ar (suspenso ou pendente): sem kit público, link novo ou catálogo até voltar."
   },
   "documents": {
     "uploaded": "Documento enviado.",

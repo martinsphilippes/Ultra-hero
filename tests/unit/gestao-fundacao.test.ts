@@ -191,8 +191,13 @@ describe("iniciais do avatar", () => {
 });
 
 describe("atalhos de portal do admin geral", () => {
-  it("admin vê Agência e Marca em Configurações → Portais, antes da Administração", () => {
-    const portals = buildSettingsSections(["consumer", "admin"]).find((s) => s.key === "portals");
+  it("admin geral (conta real) vê Agência e Marca em Configurações → Portais, antes da Administração", () => {
+    const portals = buildSettingsSections(["consumer", "admin"], undefined, { platformAdmin: true }).find((s) => s.key === "portals");
     expect(portals?.items.map((i) => i.key)).toEqual(["agency", "brand", "admin"]);
+  });
+
+  it("admin da conta pública de demonstração: só a Administração (agência e marca dizem \"indisponível\" para ela)", () => {
+    const portals = buildSettingsSections(["consumer", "admin"]).find((s) => s.key === "portals");
+    expect(portals?.items.map((i) => i.key)).toEqual(["admin"]);
   });
 });

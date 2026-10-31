@@ -82,15 +82,22 @@ export default async function TalentSummaryPage({ params }: Props) {
           <h2 id="talent-access" className="text-base font-semibold text-fg">
             {t("sections.access")}
           </h2>
-          {talent.hero ? (
+          {talent.creatorId ? (
+            // herói ligado; suspenso ou pendente, a página dele não é pública e o nome não vem pela RLS
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="type-body-sm text-fg">
-                {t("heroLabel")}:{" "}
-                <a href={`/personalities/${talent.hero.slug}`} className="inline-flex items-center gap-1 font-semibold text-accent-text underline-offset-2 hover:underline">
-                  {talent.hero.name}
-                  <ExternalLink className="size-3.5" aria-hidden="true" />
-                </a>
-              </p>
+              {talent.hero ? (
+                <p className="type-body-sm text-fg">
+                  {t("heroLabel")}:{" "}
+                  <a href={`/personalities/${talent.hero.slug}`} className="inline-flex items-center gap-1 font-semibold text-accent-text underline-offset-2 hover:underline">
+                    {talent.hero.name}
+                    <ExternalLink className="size-3.5" aria-hidden="true" />
+                  </a>
+                </p>
+              ) : (
+                <p className="type-body-sm text-warning" data-testid="talent-hero-unavailable">
+                  {t("heroUnavailable")}
+                </p>
+              )}
               <HeroLinkForm talentId={talent.id} heroes={[]} currentId={talent.creatorId} canEdit={canEdit} locked={locked} />
             </div>
           ) : talent.userId ? (

@@ -30,6 +30,8 @@ vi.mock("next-intl/server", () => ({ getTranslations: async () => (k: string) =>
 vi.mock("@/lib/auth/session", () => ({
   getUser: async () => ({ id: ids.USER }),
   hasRole: async (r: string) => (r === "admin" ? state.admin : r === "creator" && state.creator),
+  // papel de herói com escopo do herói (o escopo "talent" do escritório não vale para o Novo post)
+  getRoles: async () => (state.creator ? [{ role: "creator", scope_type: "creator" }] : []),
 }));
 vi.mock("@/lib/acting-hero/server", () => ({
   getActingHero: async () => state.acting,

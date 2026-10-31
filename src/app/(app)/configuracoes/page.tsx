@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -30,7 +31,8 @@ import { Button, PageHeader } from "@/components/ui";
 import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
 import { appliesOn } from "@/lib/routine/reminders";
 import { getTalentContext } from "@/lib/talent/server";
-import { buildSettingsSections, DELETE_ACCOUNT_HREF, SETTINGS_PATH, type SettingsItem } from "@/lib/settings/sections";
+import { parseNativeApp } from "@/lib/native-app/surface";
+import { buildSettingsSections, DELETE_ACCOUNT_HREF, forSurface, isDemoUser, SETTINGS_PATH, type SettingsItem } from "@/lib/settings/sections";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -70,7 +72,10 @@ export default async function SettingsPage() {
   const user = await requireUser(SETTINGS_PATH);
   const [profile, roles, t, tp, tc] = await Promise.all([getProfile(), getRoles(), getTranslations("me.settings"), getTranslations("me.profile"), getTranslations("common")]);
   const talent = roles.some((r) => r.role === "creator") ? await getTalentContext() : null;
-  const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok" });
+  const native = parseNativeApp((await headers()).get("user-agent")) !== null;
+  const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok", platformAdmin: !isDemoUser(user) })
+    .map((section) => ({ ...section, items: forSurface(section.items, native) }))
+    .filter((section) => section.items.length > 0);
 
   // resumo da linha de Lembretes (como era no Perfil); se a leitura falhar, a linha fica sem contagem
   const supabase = await createClient();

@@ -59,7 +59,8 @@ describe("seção do herói no /profile: só com o papel", () => {
 
   it("a página usa a regra para a seção e para os textos de herói em Dados", () => {
     const source = readFileSync(path.resolve(__dirname, "../../src/app/(app)/profile/page.tsx"), "utf8");
-    expect(source).toMatch(/const heroProfile = heroProfileFor\(\s*roles\.map\(\(r\) => r\.role\),\s*creator\.profile,?\s*\);/);
+    // papéis com escopo: o creator do escritório (escopo talent) não reabre o editor do herói
+    expect(source).toMatch(/const heroProfile = heroProfileFor\(heroRoleNames\(roles\), creator\.profile\);/);
     expect(source).not.toMatch(/const heroProfile = creator\.profile/);
   });
 });

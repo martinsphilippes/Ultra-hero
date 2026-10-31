@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { ChevronRight, Settings } from "lucide-react";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
@@ -22,7 +23,8 @@ import { getTalentContext } from "@/lib/talent/server";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
-import { buildPortalItems, SETTINGS_PATH } from "@/lib/settings/sections";
+import { buildPortalItems, forSurface, isDemoUser, SETTINGS_PATH } from "@/lib/settings/sections";
+import { parseNativeApp } from "@/lib/native-app/surface";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
@@ -32,12 +34,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("profile") };
 }
 
-// Perfil: o topo segue o Instagram para todas as contas. Cabeçalho (foto e nome; o herói mostra o
+// Perfil: no alto, "Seus portais" (agência, marca, admin, profissional e o Escritório do casting; pedido
+// do responsável: a entrada no painel fica bem em cima). Depois, o topo segue o Instagram para todas as
+// contas. Cabeçalho (foto e nome; o herói mostra o
 // perfil público com selo e bio recolhida e o Novo post; as outras contas, e-mail, papéis e plano) e um
 // só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes em
 // /creator/profile) e "Sua conta" (nome exibido, foto, idioma e tema). Depois, "Hoje" em 3 cards (Seu
 // dia, Sua noite e Evolução) e, no fim, uma linha "Configurações". Lembretes, coleções, compras, conta,
-// portais e Sair moram em /configuracoes (pedido do responsável), que também abre pelo avatar do topo.
+// os mesmos portais e Sair moram em /configuracoes, que também abre pelo avatar do topo.
 
 // Contas de demonstração: o atalho "trocar de conta" mora no fim do Perfil (saiu do Início; o responsável
 // remove depois). Mesma trava de hoje: sem DEMO_ACCOUNTS_PASSWORD, ou no app das lojas, nada aparece.
@@ -125,7 +129,8 @@ export default async function ProfilePage({ searchParams }: Props) {
   );
 
   // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Escritório do casting
-  const portalItems = buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok" });
+  const native = parseNativeApp((await headers()).get("user-agent")) !== null;
+  const portalItems = forSurface(buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok", platformAdmin: !isDemoUser(user) }), native);
 
   return (
     <div className="flex flex-col gap-8">

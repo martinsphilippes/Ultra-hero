@@ -6,16 +6,13 @@ import { z } from "zod";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { DOCUMENT_MAX_BYTES, DOCUMENT_MIME_TYPES } from "./constants";
+import { DOCUMENT_MAX_BYTES, DOCUMENT_MIME_TYPES, isDocumentsRevalidatePath } from "./constants";
 
 // Documentos do módulo (bucket privado agency-docs, 3.4): o banco escolhe o caminho na reserva, o
 // navegador envia o arquivo direto ao Storage (política: só a própria reserva pendente) e confirma.
 // Leitura por URL assinada de 60 s com o cliente do usuário: a RLS de documents decide.
 
-// Telas que mostram documentos (o cliente só escolhe entre estes caminhos; revisão de segurança da
-// etapa B: revalidatePath com qualquer caminho vindo do navegador esvaziava o cache de outras rotas).
-const REVALIDATE_PATHS = [/^\/agencia\/casting\/[0-9a-f-]{36}\/documentos$/];
-const revalidateSchema = z.string().max(200).refine((p) => REVALIDATE_PATHS.some((re) => re.test(p)));
+const revalidateSchema = z.string().refine(isDocumentsRevalidatePath);
 
 export type DocumentResult = { ok: true; message: string; id?: string; path?: string; url?: string } | { ok: false; error: string };
 

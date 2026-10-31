@@ -2,7 +2,6 @@ import { BadgeCheck, BriefcaseBusiness, Building2, ChevronRight, ShieldCheck, St
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { SettingsItem, SettingsPortalRole } from "@/lib/settings/sections";
-import { cn } from "@/lib/utils";
 
 const ICONS: Record<SettingsPortalRole, LucideIcon> = {
   seller: Store,
@@ -15,14 +14,13 @@ const ICONS: Record<SettingsPortalRole, LucideIcon> = {
 
 // Portais no topo do Perfil (pedido do responsável: a entrada no painel fica "bem em cima", sem
 // precisar abrir Configurações). Mesmas linhas da seção Portais; no app das lojas, os portais só da
-// web somem (native:hidden) e o middleware barra a rota.
+// web já chegam filtrados do servidor (forSurface) e o middleware barra a rota.
 export async function PortalShortcuts({ items }: { items: SettingsItem[] }) {
   const portals = items.filter((i): i is Extract<SettingsItem, { kind: "portal" }> => i.kind === "portal");
   if (portals.length === 0) return null;
   const t = await getTranslations("me.profile.portals");
-  const allNativeHidden = portals.every((p) => p.nativeHidden);
   return (
-    <nav aria-labelledby="profile-portals-title" data-testid="profile-portals" className={cn("flex flex-col gap-2", allNativeHidden && "native:hidden")}>
+    <nav aria-labelledby="profile-portals-title" data-testid="profile-portals" className="flex flex-col gap-2">
       <h2 id="profile-portals-title" className="type-overline px-1 text-fg-muted">
         {t("title")}
       </h2>
@@ -30,7 +28,7 @@ export async function PortalShortcuts({ items }: { items: SettingsItem[] }) {
         {portals.map((item) => {
           const Icon = ICONS[item.key];
           return (
-            <li key={item.key} className={cn(item.nativeHidden && "native:hidden")}>
+            <li key={item.key}>
               <Link
                 href={item.href}
                 data-testid={`profile-portal-${item.key}`}

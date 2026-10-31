@@ -127,7 +127,11 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => Object.assign((key: string) => `${namespace}.${key}`, { has: () => true }),
   getLocale: async () => "pt-BR",
 }));
-vi.mock("@/lib/auth/session", () => ({ getUser: async () => state.user, hasRole: async (role: string) => (role === "admin" ? state.isAdmin : role === "creator" && state.isCreator) }));
+vi.mock("@/lib/auth/session", () => ({
+  getUser: async () => state.user,
+  hasRole: async (role: string) => (role === "admin" ? state.isAdmin : role === "creator" && state.isCreator),
+  getRoles: async () => (state.isCreator ? [{ role: "creator", scope_type: "creator" }] : []),
+}));
 // admin agindo pelo herói escolhido (0045): o herói vem do cookie revalidado no banco
 vi.mock("@/lib/acting-hero/server", () => ({
   getActingHero: async () => ((state.creatorId ? { status: "ok", hero: { id: state.creatorId, slug: "heroi", name: "Herói", avatar_url: null } } : { status: "none" })),
