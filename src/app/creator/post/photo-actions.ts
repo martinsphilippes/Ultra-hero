@@ -10,6 +10,8 @@ import { POST_PHOTO_MAX_UPLOAD_BYTES } from "@/lib/post-photo/constants";
 import { isPostPhotoPath, publicPostPhotoUrl } from "@/lib/post-photo/paths";
 import { removePostPhoto, storePostPhoto } from "@/lib/post-photo/server";
 import { validatePostPhotoBytes } from "@/lib/post-photo/validation";
+import { hasUploadRights } from "@/lib/partner-terms/server";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 import type { LocaleCode, Pillar } from "@/lib/supabase/helpers";
@@ -59,6 +61,8 @@ export async function startPhotoPost(formData: FormData): Promise<StartResult> {
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
+  // Termos do Parceiro (0068): o herói confirma os direitos antes do primeiro envio; o admin age pelo seletor
+  if (!ctx.actingFor && !(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
   const base = supabaseBaseUrl();
   if (!hasAdminClient() || !base) return { ok: false, error: "photo_not_configured" };
 

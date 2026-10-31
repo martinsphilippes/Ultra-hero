@@ -20,12 +20,12 @@ export function parseNativeApp(userAgent: string | null | undefined): NativeApp 
   return { platform: match[2] as NativePlatform, version: match[1] };
 }
 
-// Assinaturas e compras são simuladas: nas lojas viram "demo" (Apple 2.2) e desbloqueio de conteúdo
-// digital fora da compra no app (Apple 3.1.1). No app nativo essas rotas não existem.
+// Compras são simuladas: nas lojas viram "demo" (Apple 2.2). No app nativo essas rotas não existem.
+// O app é gratuito (0069): não há plano nem assinatura; /profile/plan só redireciona ao Perfil.
 // /profissional: caixa de pedidos de serviços contratados com pagamento simulado (0058). A lista e o
 // perfil público dos profissionais (/profissionais) seguem no app, sem "Contratar".
 // /agencia e /marca: portais de gestão (0064) só na web
-const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profile/plan", "/profissional", "/agencia", "/marca"];
+const BLOCKED_PREFIXES = ["/shop", "/cart", "/checkout", "/orders", "/profissional", "/agencia", "/marca"];
 const BLOCKED_HERO_LIBRARY = /^\/personalities\/[^/]+\/produtos\/?$/;
 
 export function isBlockedInNativeApp(pathname: string, search?: URLSearchParams): boolean {

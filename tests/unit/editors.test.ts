@@ -506,12 +506,6 @@ describe("parseContentForm / contentFormSchema", () => {
     expect(contentErrors(validVideoForm({ body: validBodies.recipe }))).toEqual({ body: "bodyTypeMismatch" });
   });
 
-  it("premium exige módulo; gratuito não", () => {
-    expect(contentErrors(validVideoForm({ access_level: "premium", required_module_id: null }))).toEqual({ required_module_id: "moduleRequired" });
-    expect(contentErrors(validVideoForm({ access_level: "premium", required_module_id: MODULE }))).toEqual({});
-    expect(contentErrors(validVideoForm({ access_level: "free", required_module_id: null }))).toEqual({});
-  });
-
   it("YouTube/Vimeo exigem referência válida do próprio provedor", () => {
     const media = (provider: string, ref: string | null) => validVideoForm({ media: { provider, ref, captions_url: null } });
     expect(contentErrors(media("embed_youtube", null))).toEqual({ "media.ref": "mediaRefRequired" });
@@ -662,13 +656,13 @@ describe("saveContentAction (admin) valida com o esquema compartilhado", () => {
     expect(writesTo("content_bodies", "upsert")[0]?.body).toEqual(validBodies.guide);
   });
 
-  it("mantém os campos só do admin: acesso premium com módulo, modo de conclusão e troca de personalidade", async () => {
-    const result = await save(validVideoForm({ access_level: "premium", required_module_id: MODULE, completion_mode: "auto" }));
+  it("mantém os campos só do admin: modo de conclusão e troca de personalidade; acesso sempre livre (0069)", async () => {
+    const result = await save(validVideoForm({ completion_mode: "auto" }));
     expect(result.ok).toBe(true);
     expect(writesTo("content", "update")).toEqual([
       expect.objectContaining({
-        access_level: "premium",
-        required_module_id: MODULE,
+        access_level: "free",
+        required_module_id: null,
         completion_mode: "auto",
         creator_id: CREATOR_ID,
         cover_url: "/placeholders/content-1.svg",
@@ -676,20 +670,10 @@ describe("saveContentAction (admin) valida com o esquema compartilhado", () => {
     ]);
   });
 
-  it("acesso gratuito descarta o módulo; campos de admin ausentes viram null", async () => {
-    await save(validVideoForm({ access_level: "free", required_module_id: MODULE }));
-    await save(validVideoForm());
-    const [free, unset] = writesTo("content", "update");
-    expect(free).toMatchObject({ access_level: "free", required_module_id: null, completion_mode: null });
-    expect(unset).toMatchObject({ access_level: null, required_module_id: null, completion_mode: null });
-  });
-
-  it("premium sem módulo devolve a mensagem específica, sem tocar no banco", async () => {
-    expect(await save(validVideoForm({ access_level: "premium", required_module_id: null }))).toEqual({
-      ok: false,
-      error: "adminContent.errors.premium_requires_module",
-    });
-    expect(server.writes).toEqual([]);
+  it("app gratuito (0069): premium ou módulo vindos do cliente são ignorados; conclusão ausente vira null", async () => {
+    await save(validVideoForm({ access_level: "premium", required_module_id: MODULE }));
+    const [update] = writesTo("content", "update");
+    expect(update).toMatchObject({ access_level: "free", required_module_id: null, completion_mode: null });
   });
 
   it("criação: insere rascunho da personalidade escolhida e grava o corpo no id novo", async () => {
@@ -864,7 +848,7 @@ function seedRecipeOverrides(sql: string): Map<string, Record<string, unknown>> 
 function seededInitialValues(): { key: string; creatorId: string; initial: Partial<ContentFormValues> }[] {
   const overrides = seedRecipeOverrides(SEED_SQL);
   return seedTuples(SEED_SQL, "insert into seed_content values").map((row) => {
-    const [key, creator, pillar, type, title, summary, minutes, difficulty, tags, access, cover] = row as [
+    const [key, creator, pillar, type, title, summary, minutes, difficulty, tags, , cover] = row as [
       string, string, string, string, string, string, number, string, string, string, number,
     ];
     const disclaimer = pillar === "training" ? "training" : pillar === "nutrition" || pillar === "gastronomy" ? "nutrition" : "general";
@@ -886,8 +870,6 @@ function seededInitialValues(): { key: string; creatorId: string; initial: Parti
         disclaimer_kind: disclaimer,
         body: { ...seedBody(type, title, summary), ...overrides.get(key) },
         media: { provider: "none", ref: null, captions_url: null },
-        access_level: access === "free" ? "free" : "premium",
-        required_module_id: access === "free" ? null : seedUuid(`module:${access}`),
         completion_mode: null,
       }),
     };
@@ -907,20 +889,15 @@ describe("seed: conteúdo existente continua salvável pelo admin", () => {
     }
   });
 
-  it("IDs do seed seguem o RFC 4122 (versão 4, variante 10xx) e passam no z.uuid() estrito: conteúdo e módulo premium", () => {
-    const premium = seeded.find((s) => s.key === "t7");
-    expect(premium?.initial.required_module_id).toBe(seedUuid("module:training_full"));
+  it("IDs do seed seguem o RFC 4122 (versão 4, variante 10xx) e passam no z.uuid() estrito", () => {
+    const row = seeded.find((s) => s.key === "t7");
     const rfc4122 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
     for (const { key, creatorId } of seeded) {
       expect(seedUuid(`content:${key}`)).toMatch(rfc4122);
       expect(creatorId).toMatch(rfc4122);
     }
-    expect(premium?.initial.required_module_id).toMatch(rfc4122);
-    const parsed = parseContentForm(toFormValues(premium?.initial));
-    expect(parsed.ok && { id: parsed.data.id, module: parsed.data.required_module_id }).toEqual({
-      id: seedUuid("content:t7"),
-      module: seedUuid("module:training_full"),
-    });
+    const parsed = parseContentForm(toFormValues(row?.initial));
+    expect(parsed.ok && parsed.data.id).toBe(seedUuid("content:t7"));
   });
 
   it("as 40 linhas passam no formulário (cliente); no saveContentAction (servidor) as 32 que não são receita salvam e as 8 receitas ficam para o editor novo", async () => {
@@ -953,8 +930,8 @@ describe("seed: conteúdo existente continua salvável pelo admin", () => {
     const [update] = writesTo("content", "update");
     expect(update).toMatchObject({
       cover_url: row.initial.cover_url,
-      access_level: row.initial.access_level,
-      required_module_id: row.initial.required_module_id,
+      access_level: "free",
+      required_module_id: null,
       creator_id: row.creatorId,
     });
   });

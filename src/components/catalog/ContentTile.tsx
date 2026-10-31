@@ -1,4 +1,4 @@
-import { Ban, BookOpen, ChefHat, Dumbbell, FileText, Lock, PlayCircle, Tag } from "lucide-react";
+import { Ban, BookOpen, ChefHat, Dumbbell, FileText, PlayCircle, Tag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { tileLabel, type ContentTileData } from "@/components/discover/explore/tiles";
@@ -22,14 +22,13 @@ type Props = {
   className?: string;
 };
 
-// Quadro da grade do Explorar (estilo Instagram): só a capa, o ícone do tipo e o cadeado quando
-// restrito. Título e herói ficam para a página do conteúdo; para leitores de tela vão no sr-only.
+// Quadro da grade do Explorar (estilo Instagram): só a capa, o ícone do tipo e o aviso quando
+// indisponível. Título e herói ficam para a página do conteúdo; para leitores de tela vão no sr-only.
 export async function ContentTile({ content, priority, tagged, className }: Props) {
   const t = await getTranslations("catalog");
   const Icon = TYPE_ICON[content.type];
   const unavailable = content.access_level === null;
-  const premium = content.access_level === "premium";
-  const restriction = unavailable ? t("tile.unavailable") : premium ? t("tile.premium", { plan: content.required_module?.name ?? t("premium") }) : null;
+  const restriction = unavailable ? t("tile.unavailable") : null;
   const label = tileLabel({ title: content.title, creator: content.creator?.name, type: t(`types.${content.type}`), restriction });
 
   return (
@@ -57,8 +56,6 @@ export async function ContentTile({ content, priority, tagged, className }: Prop
       <Icon aria-hidden="true" className="absolute right-1.5 top-1.5 size-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
       {unavailable ? (
         <Ban aria-hidden="true" className="absolute bottom-1.5 left-1.5 size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
-      ) : premium ? (
-        <Lock aria-hidden="true" className="absolute bottom-1.5 left-1.5 size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
       ) : null}
       {tagged ? (
         <span aria-hidden="true" className="absolute bottom-1.5 right-1.5 flex size-5 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm" data-testid="tile-smart-tags">

@@ -22,8 +22,8 @@ describe("parseNativeApp", () => {
 });
 
 describe("isBlockedInNativeApp", () => {
-  it("bloqueia comércio e planos simulados", () => {
-    for (const path of ["/shop", "/shop/camiseta", "/cart", "/checkout", "/orders", "/orders/abc", "/profile/plan"]) {
+  it("bloqueia comércio simulado", () => {
+    for (const path of ["/shop", "/shop/camiseta", "/cart", "/checkout", "/orders", "/orders/abc"]) {
       expect(isBlockedInNativeApp(path), path).toBe(true);
     }
   });
@@ -38,7 +38,7 @@ describe("isBlockedInNativeApp", () => {
   });
 
   it("não bloqueia o resto do app, nem prefixo parecido", () => {
-    for (const path of ["/", "/personalities", "/personalities/neymar", "/personalities/neymar/receitas", "/profile", "/profile/plans-x", "/shopping", "/explore", "/profile/lista-de-compras"]) {
+    for (const path of ["/", "/personalities", "/personalities/neymar", "/personalities/neymar/receitas", "/profile", "/profile/plan", "/profile/plans-x", "/shopping", "/explore", "/profile/lista-de-compras"]) {
       expect(isBlockedInNativeApp(path), path).toBe(false);
     }
   });

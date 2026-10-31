@@ -2,7 +2,6 @@
   "meta": {
     "evolution": "Progress",
     "profile": "Profile",
-    "plan": "Plan & modules",
     "interests": "Interests",
     "account": "Account & privacy",
     "favorites": "Favorites",
@@ -88,7 +87,7 @@
   },
   "profile": {
     "title": "Profile",
-    "description": "Your data, preferences and simulated plan.",
+    "description": "Your data and preferences.",
     "emailLabel": "Email",
     "roles": {
       "label": "Roles",
@@ -100,15 +99,6 @@
       "agency": "Agency",
       "brand": "Brand",
       "talent": "Talent"
-    },
-    "plan": {
-      "label": "Plan",
-      "free": "Free",
-      "active": "Simulated subscription active",
-      "cancelled": "Cancelled (access until period end)",
-      "expired": "Expired",
-      "unknown": "Not available",
-      "manage": "Manage plan"
     },
     "portals": {
       "title": "Your portals",
@@ -181,10 +171,6 @@
       }
     },
     "links": {
-      "plan": {
-        "title": "Plan & modules",
-        "description": "Simulated subscription, bundles and modules."
-      },
       "interests": {
         "title": "Interests",
         "description": "Topics that guide recommendations."
@@ -219,7 +205,7 @@
       }
     },
     "signOut": "Sign out",
-    "demoNote": "Demo environment: simulated subscription, no real payments.",
+    "demoNote": "Demo environment: the app is free and shop orders are tests, with no real payment.",
     "evolution": {
       "title": "Progress",
       "description": "Your streak and how far you've come.",
@@ -618,68 +604,6 @@
     },
     "removeShort": "Remove from favorites"
   },
-  "plan": {
-    "title": "Plan & modules",
-    "description": "Simulated subscription for the demo. No payment is made.",
-    "demoNote": "Simulated: no real payment, charge or renewal. Illustrative prices.",
-    "current": {
-      "title": "Your simulated subscription",
-      "status": {
-        "free": "Free",
-        "active": "Active",
-        "cancelled": "Cancelled",
-        "expired": "Expired"
-      },
-      "freeDescription": "You are on the free tier: open content from every pillar.",
-      "periodEnd": "Current period ends on {date}",
-      "autoRenewOn": "Automatic simulated renewal every 30 days",
-      "autoRenewOff": "No automatic renewal",
-      "cancelledNotice": "Subscription cancelled. Module access continues until {date}.",
-      "modules": "Modules",
-      "noModules": "No active modules.",
-      "scheduledRemoval": "Leaves on {date}",
-      "activeModule": "Active"
-    },
-    "bundles": {
-      "title": "Bundles",
-      "description": "Shortcuts to sets of modules. The price is the sum of the modules.",
-      "choose": "Choose bundle",
-      "current": "Current bundle",
-      "total": "Total {price}/month",
-      "demoPrice": "illustrative price",
-      "includes": "Includes: {modules}",
-      "freeIncludes": "Open content from every pillar."
-    },
-    "custom": {
-      "title": "Build my own set",
-      "description": "Pick module by module. Dependencies are shown on each item.",
-      "requires": "Requires: {modules}",
-      "apply": "Apply selection",
-      "total": "Total {price}/month",
-      "selected": "{n, plural, =1 {# module selected} other {# modules selected}}",
-      "unchanged": "No change from the current set.",
-      "moduleLabel": "{name}, {price} per month"
-    },
-    "actions": {
-      "cancel": "Cancel simulated subscription",
-      "cancelTitle": "Cancel the simulated subscription?",
-      "cancelDescription": "Module access continues until the end of the current period. After that you return to free. Nothing is charged or refunded: it is all simulated.",
-      "cancelConfirm": "Cancel subscription",
-      "cancelled": "Simulated subscription cancelled. Access kept until the end of the period.",
-      "backToFree": "Back to free",
-      "backToFreeTitle": "Go back to the free tier?",
-      "backToFreeDescription": "All modules will be scheduled for removal at the end of the current period. Simulated, no charge.",
-      "backToFreeConfirm": "Back to free",
-      "applied": "Selection applied. Additions apply now; removals at the end of the period.",
-      "downgradeHint": "Additions apply immediately; removals are scheduled for the end of the period."
-    },
-    "errors": {
-      "invalid_module": "One of the chosen modules is not available.",
-      "module_dependency_missing": "{module} also requires {required}.",
-      "unauthenticated": "Sign in to continue.",
-      "generic": "Could not update the simulated subscription. Please try again."
-    }
-  },
   "interests": {
     "title": "Interests",
     "description": "Choose topics to guide recommendations. Change them whenever you want.",
@@ -707,13 +631,13 @@
     "description": "Transparency about what the POC stores and how to delete your account.",
     "demo": {
       "title": "Demo nature",
-      "body": "Groscove Ultra is a public proof of concept. Subscriptions are simulated and orders are tests: there is no real payment, delivery or address."
+      "body": "Groscove Ultra is a public proof of concept. The app is free and orders are tests: there is no real payment, delivery or address."
     },
     "store": {
       "title": "What we store",
       "item1": "Full name, mobile number, email, display name, avatar (a photo you uploaded, if any), language, theme and time zone. The password generated at quick sign-up is stored encrypted; only you can see it, here.",
       "item2": "Interests, favorites, lists, progress, completions, streak, reminders and check marks.",
-      "item3": "Simulated subscription (modules and periods) and test orders with a fictional destination.",
+      "item3": "Test orders with a fictional destination.",
       "item4": "Usage events without personal data and optional feedback.",
       "not": "We do not collect real addresses, geolocation, payment data or individual health data."
     },
@@ -908,7 +832,6 @@
       "text": "{text}",
       "generic": "Suggestion for you"
     },
-    "locked": "Requires the {module} module (simulated subscription)",
     "notInterested": "Not interested",
     "notInterestedFor": "Not interested: {title}",
     "notInterestedDone": "Got it. We will not suggest this content.",

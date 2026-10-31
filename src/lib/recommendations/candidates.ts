@@ -8,7 +8,7 @@ import { MAX_CANDIDATES } from "./types";
 export type Db = SupabaseClient<Database>;
 
 const CANDIDATE_SELECT =
-  "id, pillar, type, difficulty, tags, access_level, required_module_id, is_featured, published_at, required_module:plan_modules(name)";
+  "id, pillar, type, difficulty, tags, access_level, is_featured, published_at";
 
 type Row = {
   id: string;
@@ -17,16 +17,13 @@ type Row = {
   difficulty: string | null;
   tags: string[] | null;
   access_level: Candidate["access_level"] | null;
-  required_module_id: string | null;
   is_featured: boolean;
   published_at: string | null;
-  required_module: { name: string } | { name: string }[] | null;
 };
 
 const DIFFICULTIES: Difficulty[] = ["beginner", "intermediate", "advanced"];
 
 function toCandidate(row: Row): Candidate {
-  const requiredModule = Array.isArray(row.required_module) ? row.required_module[0] : row.required_module;
   return {
     content_id: row.id,
     pillar: row.pillar,
@@ -34,8 +31,6 @@ function toCandidate(row: Row): Candidate {
     difficulty: DIFFICULTIES.includes(row.difficulty as Difficulty) ? (row.difficulty as Difficulty) : null,
     tags: row.tags ?? [],
     access_level: row.access_level ?? "free",
-    required_module_id: row.required_module_id,
-    required_module_name: requiredModule?.name ?? null,
     is_featured: row.is_featured,
     published_at: row.published_at,
   };

@@ -134,12 +134,12 @@ describe("spreadCreators", () => {
 });
 
 describe("CONTENT_TILE_SELECT", () => {
-  it("seleciona só as colunas do quadro, com herói e módulo embutidos", () => {
+  it("seleciona só as colunas do quadro, com o herói embutido e sem plano/módulo (app gratuito, 0069)", () => {
     const columns = CONTENT_TILE_SELECT.split(",").map((part) => part.trim());
     for (const column of ["id", "slug", "title", "cover_url", "pillar", "type", "access_level", "source_locale"]) {
       expect(columns).toContain(column);
     }
-    expect(CONTENT_TILE_SELECT).toContain("required_module:plan_modules(code, name)");
+    expect(CONTENT_TILE_SELECT).not.toContain("plan_modules");
     expect(CONTENT_TILE_SELECT).toContain("creator:creator_profiles(slug, name, avatar_url)");
     // Campos do card completo que o quadro não mostra ficam de fora (menos bytes por página).
     for (const column of ["summary", "duration_minutes", "difficulty", "published_at", "is_featured", "has_captions"]) {

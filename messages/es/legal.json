@@ -1,11 +1,13 @@
 {
   "meta": {
     "terms": "Términos de uso",
-    "termsDescription": "Reglas de uso de la plataforma de contenido sobre entrenamiento, nutrición y gastronomía con héroes reales, incluidas la tienda y los planes del sitio en modo de prueba.",
+    "termsDescription": "Reglas de uso de la plataforma gratuita de contenido sobre entrenamiento, nutrición y gastronomía con héroes reales, incluida la tienda del sitio.",
     "privacy": "Política de privacidad",
     "privacyDescription": "Qué datos tratamos, para qué, durante cuánto tiempo, con quién los compartimos y cómo ejerces tus derechos.",
     "deletion": "Eliminar cuenta",
-    "deletionDescription": "Cómo eliminar tu cuenta y qué pasa con tus datos."
+    "deletionDescription": "Cómo eliminar tu cuenta y qué pasa con tus datos.",
+    "partner": "Términos del Socio",
+    "partnerDescription": "Reglas para héroes y agencias que publican en Groscove Ultra: derechos sobre fotos y videos, licencia de uso y moderación."
   },
   "links": {
     "nav": "Documentos legales",
@@ -17,13 +19,12 @@
   "page": {
     "eyebrow": "Documentos legales",
     "updated": "Última actualización: <time>{date}</time>",
-    "noticeTitle": "Tienda y planes del sitio en modo de prueba",
-    "noticeBody": "En el sitio, la tienda y los planes funcionan en modo de prueba: no se pide ningún medio de pago, no se cobra nada y ningún pedido se entrega. La app para iOS y Android no vende nada.",
     "toc": "En esta página",
     "home": "Volver al inicio",
     "read": {
       "terms": "Leer los Términos de uso",
-      "privacy": "Leer la Política de privacidad"
+      "privacy": "Leer la Política de privacidad",
+      "partner": "Leer los Términos del Socio"
     }
   },
   "deletion": {
@@ -39,13 +40,13 @@
   },
   "terms": {
     "title": "Términos de uso",
-    "intro": "Estos Términos explican las reglas para usar {app}, en el sitio y en la app para iOS y Android. Al crear una cuenta o usar el servicio, aceptas estas reglas. Lee también la <privacy>Política de Privacidad</privacy>, que explica cómo tratamos tus datos.",
+    "intro": "Estos Términos explican las reglas para usar {app}, en el sitio y en la app para iOS y Android. Al crear una cuenta o usar el servicio, aceptas estos Términos. Lee también la <privacy>Política de Privacidad</privacy>, que explica cómo tratamos tus datos. Los héroes y las agencias siguen además los <partner>Términos del Socio</partner>.",
     "sections": {
       "about": {
         "title": "Sobre el servicio",
         "blocks": {
           "p1": "{app} es una plataforma de contenido sobre entrenamiento, nutrición, rutina y gastronomía. Reúne héroes — atletas, chefs y otras personalidades reales —, contenidos educativos, programas guiados, recetas, recordatorios y recomendaciones de contenido.",
-          "p2": "La app para iOS y Android no vende nada ni muestra planes o tienda. En el sitio, la tienda y los planes funcionan en <strong>modo de prueba</strong>: no se pide ningún medio de pago, no se cobra nada y los pedidos de prueba no se entregan, como explican las secciones sobre planes y tienda más abajo."
+          "p2": "{app} es <strong>gratuito</strong>: no hay planes, suscripciones ni contenido de pago, en el sitio ni en la app. La app para iOS y Android no vende nada ni muestra la tienda. En el sitio, la tienda está en fase de lanzamiento: no se pide ningún medio de pago, no se cobra nada y no se entrega ningún pedido, como explica la sección sobre la tienda más abajo."
         }
       },
       "provider": {
@@ -78,31 +79,19 @@
       "personalities": {
         "title": "Héroes",
         "blocks": {
-          "p1": "Los héroes de {app} son personalidades reales que autorizaron el uso de su nombre e imagen en el servicio. Las fotos de los perfiles y de las publicaciones que no enviaron los propios héroes provienen de bancos de imágenes con licencia libre, con autor y licencia registrados.",
-          "p2": "Los contenidos de los perfiles son educativos y no sustituyen la orientación profesional individual. Los proveedores de ejemplo de la tienda de prueba del sitio son ficticios."
-        }
-      },
-      "plans": {
-        "title": "Planes y suscripciones en el sitio (modo de prueba)",
-        "blocks": {
-          "list1": {
-            "i1": "En el sitio, los planes, módulos y suscripciones funcionan en <strong>modo de prueba</strong>, y los precios que se muestran son ilustrativos. La app para iOS y Android no muestra planes ni vende suscripciones.",
-            "i2": "No se pide ningún medio de pago y no se cobra nada, ni ahora ni después.",
-            "i3": "La renovación también es de prueba: el período avanza automáticamente, sin ningún cobro.",
-            "i4": "Puedes cambiar de módulos o cancelar la suscripción de prueba cuando quieras en <plan>Plan y módulos</plan>, en el sitio.",
-            "i5": "Una suscripción de prueba no da derecho a ningún servicio de pago, reembolso, crédito ni condición especial."
-          }
+          "p1": "Los héroes de {app} son personalidades reales que mantienen su propio perfil, por invitación. Cada héroe, o la agencia que lo representa, acepta los <partner>Términos del Socio</partner> y publica sus propias fotos, videos y textos, declarando tener los derechos sobre ellos.",
+          "p2": "Los contenidos de los perfiles son educativos y no sustituyen la orientación profesional individual. Los proveedores de ejemplo de la tienda del sitio son ficticios."
         }
       },
       "commerce": {
-        "title": "Tienda del sitio y pedidos de prueba",
+        "title": "Tienda del sitio",
         "blocks": {
           "list1": {
-            "i1": "La tienda existe solo en el sitio y funciona en modo de prueba. Los productos, precios, envíos y existencias son ilustrativos.",
-            "i2": "Al finalizar una compra, creas un <strong>pedido de prueba</strong>: no hay pago, factura, preparación, envío ni entrega de ningún producto.",
-            "i3": "El destino se elige de una lista de <strong>destinos ficticios</strong>. El servicio no pide ni usa direcciones reales.",
+            "i1": "La tienda existe solo en el sitio y está en fase de lanzamiento. Los productos, precios, envíos y existencias se muestran como referencia.",
+            "i2": "Al finalizar una compra, registras un <strong>pedido sin cobro</strong>: mientras la tienda esté en fase de lanzamiento, no hay pago, factura, preparación, envío ni entrega de productos.",
+            "i3": "El destino se elige de una lista de regiones de ejemplo. El servicio no pide ni usa direcciones reales.",
             "i4": "El seguimiento del transporte es una secuencia automática de etapas, sin transporte real.",
-            "i5": "Los pedidos de prueba no generan ninguna obligación de compra, venta, cambio o devolución, ni para ti ni para los proveedores.",
+            "i5": "Estos pedidos no crean obligación de compra, venta, cambio ni devolución, ni para ti ni para los proveedores.",
             "i6": "Registrar interés en un producto es solo una señal para las métricas del servicio. No es una reserva ni una compra."
           }
         }
@@ -110,14 +99,14 @@
       "account": {
         "title": "Cuenta y uso aceptable",
         "blocks": {
-          "p1": "Para guardar progreso, favoritos, recordatorios, planes y pedidos de prueba, necesitas una cuenta. Puedes crearla con correo y contraseña, iniciar sesión con Google o, en la app para iOS, iniciar sesión con Apple. Mantén tu contraseña en secreto y cámbiala si sospechas de un uso indebido.",
+          "p1": "Para guardar progreso, favoritos, recordatorios y pedidos, necesitas una cuenta. Puedes crearla con correo y contraseña, entrar con Google o, en la app para iOS, entrar con Apple. Mantén tu contraseña en secreto y cámbiala si sospechas de un uso indebido.",
           "p2": "Al usar {app}, te comprometes a no:",
           "list1": {
             "i1": "ingresar en la app datos personales de otras personas, direcciones reales, datos de pago o datos de salud (por ejemplo, en tu nombre visible o en el feedback);",
             "i2": "intentar acceder a cuentas, datos o áreas que no son tuyas, ni eludir límites y reglas de acceso;",
             "i3": "perjudicar el funcionamiento de la app, por ejemplo con automatizaciones abusivas, sobrecarga o explotación de fallos;",
             "i4": "enviar contenido ilegal, ofensivo, discriminatorio, engañoso o que viole derechos de terceros;",
-            "i5": "presentar los contenidos de {app} como asesoramiento profesional individual, ni los planes y pedidos de prueba del sitio como una compra o un servicio real."
+            "i5": "presentar los contenidos de {app} como asesoramiento profesional individual, ni los pedidos de la tienda del sitio como compras efectivas."
           },
           "p3": "Si encuentras una falla de seguridad, avísanos por el canal de contacto indicado al final de esta página, sin explotarla."
         }
@@ -125,12 +114,12 @@
       "partners": {
         "title": "Contenido de socios",
         "blocks": {
-          "p1": "Los creadores de contenido y los proveedores participan <strong>solo por invitación</strong> del equipo de {app}. Cada socio usa su propio portal y solo ve y gestiona lo que le pertenece.",
+          "p1": "Héroes, agencias y proveedores participan <strong>solo por invitación</strong> del equipo de {app}. Al aceptar la invitación, el socio acepta los <partner>Términos del Socio</partner>. Cada socio usa su propio portal y solo ve y gestiona lo que es suyo.",
           "list1": {
             "i1": "Los contenidos enviados por creadores pasan por revisión editorial antes de publicarse.",
             "i2": "Los productos de los proveedores pueden ser ocultados o suspendidos por la moderación en cualquier momento. Los vínculos entre contenidos y productos también pueden suspenderse, incluso automáticamente cuando un producto cambia de forma relevante.",
-            "i3": "Los socios responden por la veracidad y la legalidad de lo que envían y siguen las mismas reglas de contenido educativo, sin prescripciones individuales.",
-            "i4": "Los socios solo ven lo necesario para la operación. Los proveedores, por ejemplo, ven los artículos y la zona ficticia de entrega de los pedidos de prueba, sin el nombre ni el correo de quien hizo el pedido."
+            "i3": "Los socios responden por la veracidad y la legalidad de lo que envían, declaran tener los derechos sobre fotos, videos y textos y siguen las mismas reglas de contenido educativo, sin prescripción individual.",
+            "i4": "Los socios solo ven lo necesario para la operación. Los proveedores, por ejemplo, ven los artículos y la región de entrega de los pedidos, sin el nombre ni el correo de quien hizo el pedido."
           }
         }
       },
@@ -138,7 +127,7 @@
         "title": "Propiedad intelectual",
         "blocks": {
           "p1": "La marca, el diseño, los textos, las imágenes y los contenidos de {app} pertenecen a sus respectivos titulares y están disponibles solo para uso personal y no comercial, dentro del servicio. No está permitido copiar, redistribuir, revender ni explotar comercialmente estos materiales sin autorización.",
-          "p2": "Al enviar contenidos o productos, los socios declaran tener los derechos necesarios y autorizan su exhibición en {app}.",
+          "p2": "Al enviar contenidos o productos, los socios declaran tener los derechos necesarios y conceden a {app} la licencia descrita en los <partner>Términos del Socio</partner>.",
           "p3": "Los certificados emitidos al completar programas son simbólicos y no tienen valor académico, profesional ni de certificación."
         }
       },
@@ -146,7 +135,7 @@
         "title": "Disponibilidad, cambios e interruptores de apagado",
         "blocks": {
           "p1": "{app} se ofrece en el estado en que se encuentra. Trabajamos para mantenerlo disponible y correcto, pero no garantizamos un funcionamiento continuo, la ausencia de errores ni la conservación permanente de los contenidos.",
-          "p2": "Podemos modificar, pausar o desactivar funcionalidades en cualquier momento, incluso sin previo aviso. La tienda de prueba y las recomendaciones con inteligencia artificial, por ejemplo, tienen interruptores de apagado (kill switches), que se usan para proteger a las personas y al propio servicio.",
+          "p2": "Podemos modificar, pausar o desactivar funcionalidades en cualquier momento, incluso sin previo aviso. La tienda del sitio y las recomendaciones con inteligencia artificial, por ejemplo, tienen interruptores de apagado (kill switches), que se usan para proteger a las personas y al propio servicio.",
           "p3": "Si el servicio se cierra, los datos seguirán lo que indica la <privacy>Política de Privacidad</privacy>."
         }
       },
@@ -160,7 +149,7 @@
       "limitation": {
         "title": "Limitación de responsabilidad",
         "blocks": {
-          "p1": "En la medida en que lo permita la ley aplicable, {company} no responde por decisiones tomadas únicamente con base en los contenidos educativos, por interrupciones temporales del servicio ni por expectativas de compra, entrega o suscripción relacionadas con la tienda y los planes del sitio, que funcionan en modo de prueba.",
+          "p1": "En la medida permitida por la ley aplicable, {company} no responde por decisiones tomadas solo con base en los contenidos educativos, por indisponibilidades temporales ni por expectativas de compra o entrega vinculadas a la tienda del sitio, que todavía no cobra ni entrega pedidos.",
           "p2": "Nada en estos Términos limita los derechos que la ley te otorga y que no pueden excluirse por contrato."
         }
       },
@@ -185,7 +174,7 @@
       "who": {
         "title": "Quiénes somos y qué cubre esta Política",
         "blocks": {
-          "p1": "{app} es una plataforma de contenido sobre entrenamiento, nutrición, rutina y gastronomía, con héroes reales, contenidos educativos y recetas; en el sitio también hay tienda y planes en modo de prueba. Esta Política se aplica al sitio, a la app para iOS y Android y a los portales de socios y de administración.",
+          "p1": "{app} es una plataforma gratuita de contenido sobre entrenamiento, nutrición, rutina y gastronomía, con héroes reales, contenidos educativos y recetas; en el sitio hay además una tienda en fase de lanzamiento, sin cobro. Esta Política se aplica al sitio, a la app para iOS y Android y a los portales de socios y de administración.",
           "p2": "El responsable del tratamiento de tus datos personales es {company}, inscrita en Brasil con el CNPJ {cnpj}, con domicilio en {address}. El encargado de protección de datos (DPO) es {dpo}, que atiende por el mismo canal de contacto del servicio: {email}."
         }
       },
@@ -198,23 +187,23 @@
             "preferences": "<strong>Preferencias:</strong> idioma, tema, avatar (la foto que subas; sin foto, se muestran tus iniciales) y zona horaria del dispositivo, que se usa para contar tu racha de días.",
             "profilePhoto": "<strong>Foto de perfil (opcional):</strong> si tomas o eliges una foto, se recorta en cuadrado y se reduce en tu dispositivo antes del envío, sin datos de ubicación ni otros metadatos de la cámara, y se guarda en Supabase Storage en una dirección pública que no se puede listar. Aparece en tu avatar en la app; si eres héroe, también aparece en tu página pública, que cualquier visitante ve. Para limitar envíos (hasta 20 por día) y eliminar fotos sin uso, guardamos la fecha, el tamaño y el tipo de cada envío.",
             "heroCover": "<strong>Portada del héroe (opcional, solo héroes):</strong> si eres héroe y tomas o eliges una foto de portada, se recorta en 16:9 y se reduce en tu dispositivo antes del envío, sin datos de ubicación ni otros metadatos de la cámara, y se guarda en Supabase Storage en una dirección pública que no se puede listar. Aparece en tu tarjeta en la lista de héroes, que cualquier visitante ve. Para limitar envíos (hasta 20 por día) y borrar portadas sin uso, guardamos la fecha, el tamaño y el tipo de cada envío.",
-            "notifications": "<strong>Preferencias de notificación:</strong> qué aceptas recibir (publicaciones de los héroes que sigues, logros y programas completados, recordatorios de racha, resumen editorial, pedidos de prueba) y por qué canales. Los avisos push solo se envían para los tipos que activaste, con el canal Push activado y el permiso concedido en el teléfono. Los correos opcionales aún no se envían.",
+            "notifications": "<strong>Preferencias de notificación:</strong> lo que aceptas recibir (posts de los héroes que sigues, logros y programas completados, recordatorios de racha, resumen editorial, pedidos) y por qué canales. Los avisos push solo se envían para los tipos que activaste, con el canal Push activado y el permiso concedido en el celular. Los correos opcionales todavía no se envían.",
             "pushDevice": "<strong>Dispositivo para push (solo en la app):</strong> cuando permites notificaciones en la app {app} para iOS o Android, guardamos el identificador de envío del dispositivo (token del servicio de push), la plataforma (iOS o Android) y la versión de la app, vinculados a tu cuenta, para entregar los avisos que elegiste. Al cerrar sesión en la app, el dispositivo deja de recibir los avisos de esa cuenta.",
             "heroFavorites": "<strong>Héroes que sigues:</strong> los héroes que sigues y desde cuándo, para recordar cuáles sigues y, si aceptas, avisarte de sus publicaciones nuevas.",
             "usage": "<strong>Uso del contenido:</strong> intereses, elementos marcados como “no me interesa”, favoritos, listas, progreso, contenidos completados, racha de días, logros, inscripciones en programas y certificados simbólicos (el PDF del certificado incluye tu nombre visible).",
             "routine": "<strong>Recordatorios (ítems de rutina):</strong> título, nota, hora, días de la semana y las marcas de “hecho hoy”. Desde el 23/10/2026 están en Perfil › Recordatorios, fuera de Hoy, donde los creas, editas, eliminas y marcas — los ítems que ya tenías vuelven a aparecer allí. {app} no envía avisos de ellos. Marcar un recordatorio no cuenta en la racha, que cuenta contenidos completados e inscripciones en programas; las marcas antiguas siguen guardadas, pero también dejaron de contar.",
-            "subscription": "<strong>Suscripción de prueba (solo en el sitio):</strong> módulos elegidos, períodos e historial de cambios.",
-            "commerce": "<strong>Tienda de prueba (solo en el sitio):</strong> carrito, pedidos de prueba (artículos, importes ilustrativos y el destino ficticio elegido de una lista) y registros de interés en productos.",
-            "events": "<strong>Eventos de uso:</strong> acciones en la app, como abrir un contenido, completar un programa o iniciar un pedido de prueba, con fecha, idioma y propiedades técnicas, como el identificador del contenido. Cuando tienes la sesión iniciada, los eventos quedan vinculados a tu cuenta; para visitantes sin cuenta, se registran sin identificador. La base de datos rechaza propiedades cuyos nombres indiquen datos personales, como correo, teléfono, CPF (número fiscal brasileño), nombre, dirección o contraseña.",
+            "commerce": "<strong>Tienda (solo en el sitio):</strong> carrito, pedidos (artículos, importes mostrados y el destino elegido de una lista) y registros de interés en productos.",
+            "events": "<strong>Eventos de uso:</strong> acciones en la app, como abrir un contenido, completar un programa o iniciar un pedido, con fecha, idioma y propiedades técnicas, como el identificador del contenido. Cuando has iniciado sesión, los eventos quedan vinculados a tu cuenta; para visitantes sin cuenta, se registran sin identificador. La base de datos rechaza propiedades cuyos nombres indiquen datos personales, como correo, teléfono, CPF, nombre, dirección o contraseña.",
             "feedback": "<strong>Feedback opcional:</strong> calificación, comentario de hasta 1.000 caracteres, el contenido o programa desde el que se envió y el idioma.",
             "recommendations": "<strong>Recomendaciones:</strong> la lista de contenidos recomendados para ti y un registro técnico de cada cálculo (motor usado, tiempo, cantidad de elementos, costo estimado y errores).",
             "partners": "<strong>Socios y administración:</strong> si te invitan como socio, el correo al que se envió la invitación, los datos del perfil de socio y lo que envíes. Las principales acciones realizadas desde el panel de administración, como cambios de roles, invitaciones, moderación y configuración, quedan registradas en una auditoría.",
+            "partnerTerms": "<strong>Aceptación de los Términos del Socio (solo héroes y agencias):</strong> la versión de los <partner>Términos del Socio</partner> que aceptaste al entrar por invitación, la fecha de aceptación y la fecha en que confirmaste, antes del primer envío, tener los derechos sobre las fotos y los videos, como prueba de la aceptación.",
             "recipeStep": "<strong>Etapa de recetas:</strong> la aceptación del aviso y las restricciones y alergias que marques (de una lista fija, sin texto libre). Las alergias y restricciones son datos sensibles de salud: solo las usamos para recordártelas en la página de cada receta, con tu consentimiento, y puedes cambiarlas o borrarlas cuando quieras.",
             "heroVideos": "<strong>Videos de los héroes:</strong> si eres héroe y grabas o envías un video en la app, el archivo va directo de tu dispositivo a Cloudflare Stream. La app solo guarda el identificador del video, el contenido al que pertenece y las fechas de envío y de descarte (para limitar envíos y limpiar videos abandonados).",
             "recipePhotos": "<strong>Fotos y videos de recetas:</strong> si eres héroe y subes fotos a una receta, la foto se reduce en tu dispositivo (pierde la ubicación y los datos de la cámara) y queda en un espacio privado del almacenamiento de Supabase, vinculada a la receta. Quién las ve: las fotos de la galería, todos, mientras la receta está publicada; las fotos de los pasos, solo quien puede abrir la receta; el borrador, solo tú y la administración. El video de una receta sigue la regla de los videos de los héroes.",
             "recipeHistory": "<strong>Historial de recetas vistas (opcional):</strong> desactivado por defecto. Si lo activas en <recipes>Mi colección de recetas</recipes>, guardamos solo qué receta abriste y la fecha del último acceso a cada una (nada más), para mostrarte la lista. Solo tú lo ves. Desactivarlo o usar “Borrar historial” borra todo al instante, y cada registro se borra después de 90 días.",
-            "recipeRatings": "<strong>Valoraciones de recetas:</strong> si completaste una receta, puedes darle de 1 a 5 estrellas. Guardamos la nota, la receta y la fecha, vinculadas a tu cuenta; nadie ve tu nota, solo el promedio de la receta (a partir de 3 valoraciones, sin contar las cuentas de ejemplo que mantiene el equipo). Puedes cambiar la nota cuando quieras.",
-            "shoppingList": "<strong>Lista de compras (opcional):</strong> si usas “Añadir a la lista de compras” en una receta, guardamos los elementos que elijas (nombre, cantidad, unidad, la receta de origen, si ya lo compraste y el orden), vinculados a tu cuenta, para armar tu <shopping>Lista de compras</shopping>. Solo tú la ves: ni la administración la lee. Los elementos se quedan hasta que los quites, uses “Quitar los comprados” o “Vaciar lista”, o elimines la cuenta. Comprar el kit de la receta usa el carrito de prueba del sitio, sin cobro."
+            "recipeRatings": "<strong>Valoraciones de recetas:</strong> si completaste una receta, puedes darle de 1 a 5 estrellas. Guardamos la nota, la receta y la fecha, vinculadas a tu cuenta; nadie ve tu nota, solo el promedio de la receta (a partir de 3 valoraciones). Puedes cambiar la nota cuando quieras.",
+            "shoppingList": "<strong>Lista de compras (opcional):</strong> si usas “Agregar a la lista de compras” en una receta, guardamos los artículos que elijas (nombre, cantidad, unidad, la receta de origen, si ya lo compraste y el orden), vinculados a tu cuenta, para armar tu <shopping>Lista de compras</shopping>. Solo tú la ves: ni la administración lee la lista. Los artículos quedan hasta que los quites, uses “Limpiar comprados” o “Limpiar lista”, o elimines la cuenta. Comprar el kit de la receta usa el carrito de la tienda del sitio, sin cobro."
           },
           "p2": "Los proveedores de infraestructura también registran datos técnicos de acceso, como la dirección IP, la fecha y la hora y la información del navegador, en sus propios registros operativos."
         }
@@ -223,10 +212,10 @@
         "title": "Datos que no recopilamos",
         "blocks": {
           "list1": {
-            "address": "dirección real o de entrega: los destinos de la tienda de prueba del sitio son ficticios;",
+            "address": "dirección real o de entrega: el destino de los pedidos de la tienda del sitio se elige de una lista de regiones de ejemplo;",
             "location": "geolocalización;",
             "payment": "datos de pago, como tarjetas o cuentas bancarias: la app para celular no vende nada y, en el sitio, no se cobra nada;",
-            "health": "datos de salud individuales, como peso, medidas, exámenes, diagnósticos o condiciones médicas, ni datos de relojes, anillos o pulseras: Hoy no se conecta a ningún reloj ni marca, y el reloj de ejemplo (de las cuentas de ejemplo y del botón “Ver un ejemplo”, solo en el sitio) se genera al momento en el servidor, no usa tus datos, no se guarda y no va a los eventos de uso;",
+            "health": "datos de salud individuales, como peso, medidas, exámenes, diagnósticos o condiciones médicas, ni datos de relojes, anillos o pulseras: Hoy no se conecta a ningún reloj ni marca, y el reloj de ejemplo (del botón “Ver un ejemplo”, solo en el sitio) se genera al momento en el servidor, no usa tus datos, no se guarda y no va a los eventos de uso;",
             "hydration": "registros de hidratación y descanso: Hoy dejó de aceptarlos. Los antiguos quedaban solo en tu dispositivo; el nuevo Hoy los borra del almacenamiento local del navegador una sola vez, sin leer ni enviar nada a la app;",
             "documents": "documentos de identidad y fecha de nacimiento: declaras cumplir la edad mínima de 18 años al crear la cuenta."
           },
@@ -241,7 +230,7 @@
             "personalization": "personalizar la experiencia: idioma, tema, contenidos para continuar y recomendaciones;",
             "progress": "registrar el progreso, la racha de días, los logros y los certificados simbólicos;",
             "notifications": "enviar los avisos push que elegiste, solo en la app y solo con tu permiso;",
-            "simulation": "operar la tienda y los planes del sitio en modo de prueba: carrito, pedidos y suscripciones de prueba, sin cobro;",
+            "simulation": "operar la tienda del sitio: carrito y pedidos, sin cobro;",
             "metrics": "medir el uso del servicio con métricas agregadas (por ejemplo, cuántas personas completan un contenido) y mejorar el producto con tu feedback;",
             "security": "proteger el servicio: aplicar límites de uso, investigar abusos e incidentes y registrar las acciones administrativas en una auditoría."
           }
@@ -252,7 +241,7 @@
         "blocks": {
           "p1": "Tratamos datos personales con base en los supuestos de la Ley General de Protección de Datos de Brasil (LGPD, Ley n.º 13.709/2018):",
           "list1": {
-            "service": "cuenta (incluido el inicio de sesión con Google o Apple), preferencias, progreso, recordatorios, héroes que sigues y los pedidos y suscripciones de prueba del sitio: ejecución del servicio que solicitaste;",
+            "service": "cuenta (incluido el inicio de sesión con Google o Apple), preferencias, progreso, recordatorios, héroes que sigues, los pedidos de la tienda del sitio y la aceptación de los Términos del Socio: ejecución del servicio o del contrato que aceptaste;",
             "interest": "eventos de uso y feedback: interés legítimo en evaluar y mejorar el servicio;",
             "consent": "historial de recetas vistas y avisos push: consentimiento, que das al activar el historial o al permitir notificaciones y retiras cuando quieras, desactivando el historial (lo que lo borra) o las notificaciones;",
             "sensitive": "restricciones y alergias de la etapa de recetas, que son datos personales sensibles de salud: consentimiento específico, que das al marcarlas y puedes retirar en cualquier momento rehaciendo la etapa;",
@@ -289,12 +278,12 @@
               },
               "destination": {
                 "name": "<code>uh-dest</code>",
-                "purpose": "Recuerda el destino ficticio elegido en el carrito de prueba del sitio.",
+                "purpose": "Recuerda el destino elegido en el carrito del sitio.",
                 "duration": "30 días"
               },
               "prices": {
                 "name": "<code>uh-cart-exp</code>",
-                "purpose": "Guarda los precios ilustrativos que viste al agregar artículos al carrito, para avisarte si cambian.",
+                "purpose": "Guarda los precios que viste al agregar artículos al carrito, para avisarte si cambian.",
                 "duration": "30 días"
               },
               "seller": {
@@ -319,13 +308,13 @@
             "vercel": "<strong>Vercel:</strong> alojamiento de la app y ejecución de las funciones del servidor, incluidas las rutinas automáticas diarias, como la de conservación de datos.",
             "cloudflare": "<strong>Cloudflare (Stream):</strong> recibe, procesa, almacena y entrega los videos que los héroes graban o envían en la app, y el reproductor de esos videos se carga desde Cloudflare. No recibe tu nombre ni tu correo; el video queda vinculado al contenido, no a tu cuenta.",
             "expo": "<strong>Expo (servicio de push) y los servicios de push de Apple y Google:</strong> entregan los avisos a tu teléfono. Reciben el identificador de envío del dispositivo y el texto del aviso (por ejemplo, el nombre del héroe y el título de la publicación); no reciben tu nombre ni tu correo.",
-            "ai": "<strong>OpenAI o Google (Gemini), solo si las recomendaciones con IA están activadas</strong> por la administración. En la configuración predeterminada, las recomendaciones usan un motor propio, sin IA externa. Cuando la IA está activada, el proveedor elegido solo recibe: tus intereses (etiquetas), tu afinidad por pilar, tu nivel estimado, cuántos contenidos completaste, el idioma de las justificaciones y datos del catálogo (identificadores opacos de contenido, pilar, tipo, dificultad, etiquetas, módulo requerido, si el contenido está destacado, hace cuántos días se publicó y si está disponible en tu plan). <strong>Nunca</strong> recibe tu nombre, tu correo, el identificador de tu cuenta ni textos que hayas escrito. La IA puede desactivarse en cualquier momento con un interruptor de apagado.",
+            "ai": "<strong>OpenAI o Google (Gemini), solo si las recomendaciones con IA están activadas</strong> por la administración. En la configuración predeterminada, las recomendaciones usan un motor propio, sin IA externa. Cuando la IA está activada, el proveedor elegido solo recibe: tus intereses (etiquetas), tu afinidad por pilar, tu nivel estimado, cuántos contenidos completaste, el idioma de las justificaciones y datos del catálogo (identificadores opacos de contenido, pilar, tipo, dificultad, etiquetas, si el contenido está destacado y hace cuántos días se publicó). <strong>Nunca</strong> recibe tu nombre, tu correo, el identificador de tu cuenta ni textos que hayas escrito. La IA puede desactivarse en cualquier momento con un interruptor de apagado.",
             "google": "<strong>Google (inicio de sesión):</strong> si eliges iniciar sesión con Google, Google te autentica y nos envía los datos básicos de tu perfil, según su propia política de privacidad.",
             "apple": "<strong>Apple (Sign in with Apple):</strong> en la app para iOS, si eliges iniciar sesión con Apple, Apple te autentica y nos envía tu correo o una dirección de reenvío privada y, solo en el primer inicio de sesión, tu nombre, según su política de privacidad."
           },
-          "p2": "Dentro del servicio, los socios solo ven lo necesario para la operación (por ejemplo, los artículos y la zona ficticia de los pedidos de prueba, sin tu nombre ni tu correo). Para la operación y el soporte, el equipo de {app} puede ver datos de las cuentas (como correo, nombre visible, fecha de registro y último acceso), el feedback enviado y los pedidos de prueba. Las principales acciones realizadas desde el panel de administración quedan registradas en una auditoría.",
+          "p2": "Dentro del servicio, los socios solo ven lo necesario para la operación (por ejemplo, los artículos y la región de entrega de los pedidos, sin tu nombre ni tu correo). Para la operación y el soporte, el equipo de {app} puede ver datos de las cuentas (como correo, nombre visible, fecha de registro y último acceso), el feedback enviado y los pedidos. Las principales acciones realizadas desde el panel de administración quedan registradas en una auditoría.",
           "p3": "La verificación pública de certificados solo muestra el programa, la versión, la fecha de emisión y si el certificado es válido. No muestra tu nombre.",
-          "p4": "No hay socios de pago ni de logística — la tienda y los planes del sitio funcionan en modo de prueba —, ni cesión comercial de datos."
+          "p4": "No hay socios de pago ni de logística — la tienda del sitio todavía no cobra ni entrega —, ni cesión comercial de datos."
         }
       },
       "retention": {
@@ -341,9 +330,14 @@
             },
             "rows": {
               "account": {
-                "data": "Cuenta, perfil, preferencias, intereses, favoritos, listas, progreso, logros, certificados y suscripción de prueba",
+                "data": "Cuenta, perfil, preferencias, intereses, favoritos, listas, progreso, logros y certificados",
                 "period": "Mientras exista la cuenta",
                 "details": "Se eliminan cuando eliminas la cuenta."
+              },
+              "partnerTerms": {
+                "data": "Aceptación de los Términos del Socio",
+                "period": "Mientras exista la cuenta",
+                "details": "Guarda la versión y las fechas de la aceptación y de la confirmación de derechos. Se elimina junto con la cuenta."
               },
               "quickSignup": {
                 "data": "Intentos de registro rápido (IP y correo como código irreversible, nunca el valor original)",
@@ -376,9 +370,9 @@
                 "details": "Se eliminan automáticamente al vencer el plazo. Si eliminas la cuenta antes, dejan de estar vinculados a ti de inmediato."
               },
               "orders": {
-                "data": "Pedidos de prueba vinculados a la cuenta",
+                "data": "Pedidos vinculados a la cuenta",
                 "period": "90 días desde el pedido",
-                "details": "Al vencer el plazo, se anonimizan: pierden el vínculo con la cuenta y el nombre del destino ficticio. El registro anónimo no se elimina automáticamente y puede permanecer en las métricas del servicio."
+                "details": "Al vencer el plazo, se anonimizan: pierden el vínculo con la cuenta y el nombre del destino. El registro anónimo no se elimina automáticamente y puede permanecer en las métricas del servicio."
               },
               "runs": {
                 "data": "Ejecuciones de recomendación",
@@ -437,7 +431,7 @@
               }
             }
           },
-          "p2": "<strong>Excepciones de conservación:</strong> cuando sea necesario preservar una cuenta o un pedido de prueba, por ejemplo como evidencia de una obligación legal o en la investigación de un incidente, la administración puede abrir una excepción documentada, con alcance, justificación, responsable y fecha de revisión. Mientras esté abierta, la rutina automática no anonimiza el pedido de prueba cubierto y, si la excepción cubre tu cuenta, su eliminación desde la app queda bloqueada hasta que se cierre (la app te lo indica). Las excepciones no cambian los demás plazos de la tabla, y cada una tiene una fecha de revisión obligatoria."
+          "p2": "<strong>Excepciones de retención:</strong> cuando sea necesario conservar una cuenta o un pedido, por ejemplo como evidencia de una obligación legal o en la investigación de un incidente, la administración puede abrir una excepción documentada, con alcance, justificación, responsable y fecha de revisión. Mientras esté abierta, el pedido cubierto no se anonimiza por la rutina automática y, si la excepción cubre tu cuenta, la eliminación desde la app queda bloqueada hasta su cierre (la app te avisa). Las excepciones no alteran los demás plazos de la tabla, y cada una tiene una fecha de revisión obligatoria."
         }
       },
       "rights": {
@@ -445,9 +439,8 @@
         "blocks": {
           "p1": "La Ley General de Protección de Datos de Brasil (LGPD) te garantiza, entre otros, los derechos de confirmar si tratamos tus datos, acceder a ellos, corregirlos, pedir la anonimización, el bloqueo o la eliminación de datos innecesarios, pedir la portabilidad, saber con quién los compartimos y revocar el consentimiento. La mayoría se puede ejercer directamente en la app o en el sitio:",
           "list1": {
-            "access": "<strong>Acceder:</strong> consulta tus datos en <profile>Perfil</profile> y <evolution>Evolución</evolution> y, en el sitio, en <plan>Plan y módulos</plan> y <orders>Mis pedidos de prueba</orders>. El resumen de lo que guardamos y de los plazos está en <account>Cuenta y privacidad</account>.",
+            "access": "<strong>Acceder:</strong> consulta tus datos en <profile>Perfil</profile> y <evolution>Evolución</evolution> y, en el sitio, en <orders>Mis pedidos</orders>. El resumen de lo que guardamos y de los plazos está en <account>Cuenta y privacidad</account>.",
             "correct": "<strong>Corregir:</strong> cambia tu nombre visible, avatar, idioma y tema en <profile>Perfil</profile>, el celular en Perfil › Cuenta y privacidad y tus intereses en <interests>Intereses</interests>. Para cambiar la contraseña, genera una nueva en Perfil › Cuenta y privacidad o usa <forgot>Olvidé mi contraseña</forgot>.",
-            "cancel": "<strong>Cancelar la suscripción de prueba:</strong> en <plan>Plan y módulos</plan>, en el sitio, cuando quieras.",
             "revoke": "<strong>Revocar el consentimiento:</strong> desactiva el historial de recetas vistas en <recipes>Mi colección de recetas</recipes>, desmarca restricciones y alergias rehaciendo la etapa de recetas y desactiva los avisos push en las preferencias de notificación o en los ajustes del celular.",
             "delete": "<strong>Eliminar la cuenta:</strong> en <account>Perfil › Cuenta y privacidad</account>, en la app o en el sitio, elige “Eliminar mi cuenta” y escribe la palabra de confirmación indicada. La página pública <deletion>/legal/account-deletion</deletion> explica el paso a paso.",
             "other": "<strong>Otras solicitudes y reclamaciones:</strong> escribe al encargado de protección de datos (DPO), {dpo}, a {email}. También puedes presentar una reclamación ante la Autoridad Nacional de Protección de Datos de Brasil (ANPD)."
@@ -455,8 +448,8 @@
           "p2": "Cuando eliminas la cuenta:",
           "list2": {
             "profile": "tu perfil se anonimiza y se elimina junto con la cuenta;",
-            "removed": "se eliminan los intereses, los elementos marcados como “no me interesa”, los favoritos, las listas, el progreso, los contenidos completados, la racha de días, los logros, las inscripciones en programas, los certificados, las recomendaciones, los recordatorios y sus marcas, la lista de compras, el carrito, la suscripción de prueba y los registros de interés en productos;",
-            "unlinked": "los eventos de uso, el feedback, los pedidos de prueba y las ejecuciones de recomendación dejan de estar vinculados a ti, y los pedidos de prueba también pierden el nombre del destino ficticio. Los eventos de uso y las ejecuciones de recomendación se siguen eliminando en los plazos de la tabla anterior; el feedback y los pedidos de prueba anonimizados no se eliminan automáticamente;",
+            "removed": "intereses, elementos marcados como “no me interesa”, favoritos, listas, progreso, finalizaciones, racha de días, logros, inscripciones en programas, certificados, recomendaciones, recordatorios y sus marcas, lista de compras, carrito y registros de interés en productos se eliminan;",
+            "unlinked": "los eventos de uso, el feedback, los pedidos y las ejecuciones de recomendación dejan de estar vinculados a ti, y los pedidos también pierden el nombre del destino. Los eventos de uso y las ejecuciones de recomendación se siguen eliminando en los plazos de la tabla anterior; el feedback y los pedidos anonimizados no se eliminan automáticamente;",
             "audit": "un registro de la eliminación, con el identificador interno de la cuenta y sin correo ni nombre, permanece en la auditoría hasta 365 días;",
             "partner": "si actuabas como socio, el perfil de socio y lo publicado en él dejan de estar vinculados a tu cuenta, pero no se eliminan automáticamente. El registro de la invitación, que conserva el correo invitado, también se mantiene. Solicita su eliminación en {email};",
             "session": "se cierra tu sesión en este dispositivo. La eliminación no se puede deshacer.",
@@ -472,7 +465,7 @@
             "rls": "<strong>Reglas de acceso en la propia base de datos</strong> (Row Level Security): cada persona solo lee y modifica sus propios datos, los socios solo acceden a lo que les pertenece y las operaciones sensibles pasan por funciones del servidor que verifican los permisos.",
             "keys": "<strong>Claves protegidas:</strong> las credenciales con privilegios elevados y las claves de los proveedores de IA están solo en el servidor, nunca en el navegador.",
             "passwords": "<strong>Las contraseñas</strong> las verifica el servicio de autenticación. La contraseña generada en el registro rápido se guarda cifrada (AES-256-GCM, clave solo en el servidor) en una tabla sin ningún acceso por la API; solo se abre para la propia persona, cuando la pide en Perfil › Cuenta y privacidad.",
-            "minimization": "<strong>Minimización:</strong> los eventos de uso rechazan propiedades cuyos nombres indiquen datos personales, la IA (cuando está activada) no recibe tu nombre, tu correo ni el identificador de tu cuenta y los destinos de entrega de la tienda de prueba son ficticios.",
+            "minimization": "<strong>Minimización:</strong> los eventos de uso rechazan propiedades cuyos nombres indiquen datos personales, la IA (cuando está activada) no recibe tu nombre, tu correo ni el identificador de tu cuenta y el destino de los pedidos de la tienda del sitio sale de una lista, sin dirección real.",
             "audit": "<strong>Auditoría y límites:</strong> las principales acciones administrativas quedan registradas, cada cuenta puede enviar hasta 20 mensajes de feedback por día y el uso de IA en las recomendaciones tiene un límite por hora.",
             "https": "<strong>Conexión cifrada</strong> (HTTPS) entre tu navegador o la app y el servidor, proporcionada por el alojamiento."
           },
@@ -499,5 +492,83 @@
         }
       }
     }
+  },
+  "partner": {
+    "title": "Términos del Socio",
+    "intro": "Estos Términos del Socio se aplican a héroes, agencias e integrantes de agencias que publican en {app}. Completan los <terms>Términos de Uso</terms> y la <privacy>Política de Privacidad</privacy>. Al aceptar una invitación a {app}, aceptas estos Términos.",
+    "sections": {
+      "who": {
+        "title": "Quién es socio",
+        "blocks": {
+          "p1": "Socio es quien entra en {app} por invitación del equipo para publicar o gestionar contenido: el <strong>héroe</strong> (la personalidad real dueña del perfil), la <strong>agencia</strong> que representa a héroes o marcas, las personas del equipo de la agencia y las demás personas invitadas a un portal de socio (marcas, profesionales y proveedores).",
+          "p2": "La invitación es personal y está vinculada al correo al que se envió. No compartas el acceso al portal."
+        }
+      },
+      "rights": {
+        "title": "Derechos sobre fotos, videos y textos",
+        "blocks": {
+          "p1": "Al enviar cualquier foto, video, audio o texto, declaras que:",
+          "list1": {
+            "i1": "eres titular de los derechos sobre el material o tienes autorización por escrito de todos los titulares, incluidos el fotógrafo, el productor y las personas que aparecen en él;",
+            "i2": "tienes derecho a usar el nombre, la imagen y la voz de las personas que aparecen en el material. Si eres una agencia, declaras tener un contrato con el héroe que autoriza publicar en su nombre;",
+            "i3": "el material no infringe marcas, derechos de autor, privacidad u otros derechos de terceros, ni la ley;",
+            "i4": "no envías material de bancos de imágenes, de otros perfiles o de internet sin una licencia que permita este uso."
+          },
+          "p2": "Sigues siendo dueño de lo que envías. {app} no reclama la propiedad de tu contenido."
+        }
+      },
+      "license": {
+        "title": "Licencia a {app}",
+        "blocks": {
+          "p1": "Para publicar tu contenido, concedes a {company} una licencia gratuita, no exclusiva y válida en Brasil y en el exterior para alojar, reproducir, adaptar el formato (por ejemplo, recortar, reducir o convertir videos), mostrar y distribuir el material dentro de {app} — en el sitio, en las apps para iOS y Android y en los avisos push.",
+          "p2": "La licencia cubre también el uso del material en la promoción del propio {app}, como capturas de pantalla en las tiendas de aplicaciones y en las páginas oficiales de {app}, siempre vinculado a tu perfil.",
+          "p3": "La licencia termina cuando eliminas el contenido o cierras la cuenta, salvo las copias técnicas en caché y en copias de seguridad, eliminadas en los plazos de la <privacy>Política de Privacidad</privacy>, y las piezas de promoción ya publicadas."
+        }
+      },
+      "conduct": {
+        "title": "Reglas de contenido",
+        "blocks": {
+          "list1": {
+            "i1": "El contenido es educativo y general: nada de prescripción individual, diagnóstico, dieta ni dosis de suplemento personalizada.",
+            "i2": "La publicidad y las colaboraciones pagadas deben identificarse como tales en el propio contenido.",
+            "i3": "No publiques datos personales de otras personas ni contenido ofensivo, discriminatorio, engañoso o que ponga a alguien en riesgo."
+          }
+        }
+      },
+      "moderation": {
+        "title": "Revisión y retirada",
+        "blocks": {
+          "p1": "El equipo de {app} puede revisar, pedir ajustes, ocultar o retirar contenidos y suspender portales que incumplan estos Términos o que reciban una reclamación fundamentada de terceros. Las principales acciones de moderación quedan registradas en una auditoría."
+        }
+      },
+      "liability": {
+        "title": "Responsabilidad",
+        "blocks": {
+          "p1": "Respondes por las reclamaciones de terceros sobre el material que enviaste y, dentro de los límites de la ley, resarces a {company} por los perjuicios causados por el incumplimiento de estos Términos."
+        }
+      },
+      "acceptance": {
+        "title": "Cómo registramos la aceptación",
+        "blocks": {
+          "p1": "Al aceptar la invitación, guardamos la versión de estos Términos y la fecha de aceptación. Antes de tu primer envío de foto o video, te pedimos que confirmes la declaración de derechos anterior, y también guardamos esa fecha. Si estos Términos cambian de forma relevante, te pediremos una nueva aceptación."
+        }
+      },
+      "contact": {
+        "title": "Contacto",
+        "blocks": {
+          "p1": "Dudas o reclamaciones sobre derechos de contenido: {email}."
+        }
+      }
+    }
+  },
+  "consent": {
+    "inviteLabel": "He leído y acepto los <partner>Términos del Socio</partner>, incluida la declaración de derechos sobre las fotos, los videos y los textos que envíe.",
+    "inviteRequired": "Para aceptar la invitación, marca la casilla de los Términos del Socio.",
+    "uploadTitle": "Antes de tu primer envío",
+    "uploadBody": "Las fotos y los videos son públicos en tu perfil. Confirma que tienes los derechos sobre lo que vas a publicar.",
+    "uploadLabel": "Declaro que soy titular, o tengo autorización por escrito de todos los titulares y de las personas que aparecen, de las fotos y los videos que envíe, conforme a los <partner>Términos del Socio</partner>.",
+    "uploadConfirm": "Confirmar y enviar",
+    "cancel": "Cancelar",
+    "error": "No se pudo registrar la confirmación. Inténtalo de nuevo."
   }
 }

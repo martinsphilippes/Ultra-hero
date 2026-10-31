@@ -1,5 +1,5 @@
 // Motor determinístico (fallback obrigatório): regras simples, sempre disponível, sem chamadas externas.
-// score = interesses×3 + afinidade de pilar×2 + ajuste de dificuldade + novidade + destaque − trava premium.
+// score = interesses×3 + afinidade de pilar×2 + ajuste de dificuldade + novidade + destaque.
 import type { Pillar } from "@/lib/supabase/helpers";
 import type { Candidate, Difficulty, Engine, EngineInput, EngineOutput, Reason, Recommendation, UserSignals } from "./types";
 import { MAX_PER_PILLAR_TOP } from "./types";
@@ -35,10 +35,7 @@ export function scoreCandidate(candidate: Candidate, signals: UserSignals, now =
   const fit = difficultyFit(candidate.difficulty, signals.difficultyLevel);
   const fresh = freshness(candidate.published_at, now);
   const featured = candidate.is_featured ? 0.75 : 0;
-  const locked = candidate.access_level === "premium" && candidate.required_module_id !== null && !signals.entitledModules.includes(candidate.required_module_id);
-  const lockPenalty = locked ? 0.5 : 0;
-
-  const score = interestScore + pillarScore + fit + fresh + featured - lockPenalty;
+  const score = interestScore + pillarScore + fit + fresh + featured;
 
   return { candidate, score: Math.round(score * 1000) / 1000, reason: pickReason({ candidate, matchedTags, interestScore, pillarScore, featured, fresh, fit }) };
 }

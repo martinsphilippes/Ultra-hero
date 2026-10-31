@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { BookOpen, ChefHat, Dumbbell, FileText, PlayCircle } from "lucide-react";
-import { Badge, Card, CardImage, PillarBadge, PlanBadge } from "@/components/ui";
+import { Badge, Card, CardImage, PillarBadge } from "@/components/ui";
 import type { ContentCardData } from "@/lib/catalog/queries";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,6 @@ export async function ContentCard({ content, priority, progressPct, className }:
   const [t, locale] = await Promise.all([getTranslations("catalog"), getLocale()]);
   const Icon = TYPE_ICON[content.type];
   const unavailable = content.access_level === null;
-  const premium = content.access_level === "premium";
   const foreign = content.source_locale !== locale;
 
   return (
@@ -44,13 +43,7 @@ export async function ContentCard({ content, priority, progressPct, className }:
                 <PillarBadge pillar={content.pillar} size="sm" />
                 {unavailable ? (
                   <Badge variant="neutral" size="sm">{t("unavailable")}</Badge>
-                ) : premium ? (
-                  <Badge variant="premium" size="sm" title={content.required_module?.name}>
-                    {content.required_module?.name ?? t("premium")}
-                  </Badge>
-                ) : (
-                  <PlanBadge plan="free" size="sm" />
-                )}
+                ) : null}
               </div>
               <div className="flex items-center gap-2 text-xs font-medium text-white/90">
                 <Icon className="size-4" aria-hidden="true" />

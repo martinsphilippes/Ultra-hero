@@ -30,7 +30,7 @@ export function parseActionError(error: unknown): ParsedError {
   // Códigos levantados com RAISE EXCEPTION (ex.: 'cannot_publish_missing') têm formato snake_case.
   if (/^[a-z][a-z0-9_]*$/.test(code)) return { code, detail };
   if (sqlstate && SQLSTATE_MAP[sqlstate]) return { code: SQLSTATE_MAP[sqlstate], detail: null };
-  // Violação de check com nome conhecido (ex.: content_premium_requires_module)
+  // Violação de check com nome conhecido (ex.: content_free_only)
   if (/violates check constraint/.test(message)) return { code: "constraint", detail: null };
   if (/duplicate key value/.test(message)) return { code: "duplicate", detail: null };
   if (/violates foreign key constraint/.test(message)) return { code: "reference", detail: null };

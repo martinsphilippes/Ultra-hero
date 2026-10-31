@@ -1,6 +1,6 @@
 // Contratos dos formulários compartilhados entre portais (personalidade, fornecedor) e admin.
 import type { ActionResult } from "@/components/admin/ConfirmActionDialog";
-import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
+import type { ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 
 export type { ActionResult };
 
@@ -32,19 +32,15 @@ export type ContentFormValues = {
   media_license_ref: string;
   /** Crédito exibido ao público na página do conteúdo. */
   media_credit: string;
-  /** Campos editáveis só pelo admin. */
-  access_level?: AccessLevel | null;
-  required_module_id?: string | null;
+  /** Campo editável só pelo admin (o app é gratuito, 0069: não há regra de acesso a escolher). */
   completion_mode?: "manual" | "auto" | null;
 };
 
 export type ContentFormProps = {
   mode: "create" | "edit";
   initial?: Partial<ContentFormValues>;
-  /** Admin pode definir regra de acesso/módulo/conclusão; personalidade não. */
+  /** Admin pode definir o modo de conclusão; personalidade não. */
   canEditAccess: boolean;
-  /** Opções de módulos (id, nome) para o admin. */
-  modules?: { id: string; name: string; code: string }[];
   /** Só leitura (conteúdo em revisão ou publicado para a personalidade). */
   readOnly?: boolean;
   action: (values: ContentFormValues) => Promise<ActionResult & { id?: string }>;

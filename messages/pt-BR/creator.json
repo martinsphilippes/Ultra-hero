@@ -52,7 +52,7 @@
   },
   "edit": {
     "noAccessRule": "Sem regra de acesso",
-    "accessNote": "Você publica e despublica seus conteúdos. Regra de acesso (gratuito ou premium), módulo e destaque são definidos pela administração, que também pode arquivar um conteúdo.",
+    "accessNote": "Você publica e despublica seus conteúdos. O destaque é definido pela administração, que também pode arquivar um conteúdo.",
     "situation": {
       "draft": {
         "title": "Rascunho",
@@ -211,7 +211,8 @@
       "not_image": "Esse arquivo não é uma foto. Tire outra ou escolha uma da galeria.",
       "photo_not_configured": "O envio de foto não está disponível neste ambiente.",
       "photo_disabled": "O envio de foto está pausado pela administração.",
-      "review_required": "Este tipo de post precisa de revisão antes de ir ao ar. Abra o rascunho em Meus conteúdos."
+      "review_required": "Este tipo de post precisa de revisão antes de ir ao ar. Abra o rascunho em Meus conteúdos.",
+      "upload_rights_required": "Antes do primeiro envio, confirme que você tem os direitos sobre a foto ou o vídeo."
     },
     "photo": {
       "draftTitle": "Post com foto",
@@ -364,7 +365,8 @@
         "not_a_hero": "Só o herói com o perfil ativo pode trocar a capa.",
         "upload_failed": "Não foi possível enviar a capa. Confira a conexão e tente de novo.",
         "unauthenticated": "Entre para continuar.",
-        "generic": "Não foi possível concluir. Tente de novo."
+        "generic": "Não foi possível concluir. Tente de novo.",
+        "upload_rights_required": "Antes do primeiro envio, confirme que você tem os direitos sobre a foto ou o vídeo."
       }
     },
     "socials": "Redes (texto simples)",

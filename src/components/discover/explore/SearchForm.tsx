@@ -8,7 +8,7 @@ import { exploreHref, MAX_QUERY_LENGTH, type ExploreParams } from "./params";
 // Enviar sempre leva à aba "conteúdos" (a única com busca textual), preservando os filtros.
 export async function SearchForm({ params }: { params: ExploreParams }) {
   const t = await getTranslations("discover.explore.search");
-  const hidden = (["pillar", "type", "access", "difficulty"] as const).filter((key) => params[key]);
+  const hidden = (["pillar", "type", "difficulty"] as const).filter((key) => params[key]);
 
   return (
     <form role="search" action="/explore" method="get" className="flex items-end gap-2">

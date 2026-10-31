@@ -4,7 +4,7 @@ import type { AccessLevel, ContentType, LocaleCode, Pillar } from "@/lib/supabas
 
 export const CONTENT_CARD_SELECT =
   "id, slug, title, summary, cover_url, pillar, type, duration_minutes, difficulty, access_level, is_featured, has_captions, source_locale, published_at, " +
-  "required_module:plan_modules(code, name), creator:creator_profiles(slug, name, avatar_url)";
+  "creator:creator_profiles(slug, name, avatar_url)";
 
 export type ContentCardData = {
   id: string;
@@ -21,7 +21,6 @@ export type ContentCardData = {
   has_captions: boolean;
   source_locale: LocaleCode;
   published_at: string | null;
-  required_module: { code: string; name: string } | null;
   creator: { slug: string; name: string; avatar_url: string | null } | null;
 };
 

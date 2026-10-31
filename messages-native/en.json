@@ -6,7 +6,6 @@
   },
   "consume": {
     "content": {
-      "lockDescription": "This content belongs to a premium module. The catalog shows premium items so you can see everything that exists.",
       "license": {
         "platform_demo": "platform"
       }
@@ -32,9 +31,6 @@
         }
       }
     },
-    "recommendations": {
-      "locked": "Requires the {module} module"
-    },
     "feedback": {
       "description": "Optional and quick. It helps improve the app.",
       "categories": {
@@ -46,7 +42,7 @@
     },
     "account": {
       "store": {
-        "item3": "Plan (modules and periods) and orders placed on the website."
+        "item3": "Orders placed on the website."
       },
       "retention": {
         "orders": "Orders linked to the account: {days} days (then anonymized)"

@@ -18,6 +18,10 @@ test.describe("Configurações", () => {
   test("avatar do cabeçalho → Configurações com as seções; Perfil só com cabeçalho e Hoje (sem atalho de Configurações)", async ({ page }) => {
     await loginAs(page, "free", { home: null });
 
+    // app gratuito (0069): o antigo /profile/plan só leva ao Perfil (links antigos não dão 404)
+    await page.goto("/profile/plan");
+    await expect(page).toHaveURL(/\/profile$/, { timeout: 15_000 });
+
     // Perfil: cabeçalho + Editar perfil + Hoje, sem as linhas antigas nem o atalho de Configurações
     await page.goto("/profile");
     const main = page.locator("main");
@@ -44,7 +48,7 @@ test.describe("Configurações", () => {
     const sections = [
       ["routine", "Sua rotina", ["/profile/lembretes", "/profile/herois", "/profile/interests"]],
       ["collections", "Coleções", ["/profile/favorites", "/profile/receitas", "/profile/lista-de-compras"]],
-      ["purchases", "Compras", ["/orders", "/profile/plan"]],
+      ["purchases", "Compras", ["/orders"]],
       ["account", "Conta e app", ["/profile/account", "/profile/notifications", "/profile/devices", "/profile#dados"]],
     ] as const;
     for (const [key, heading, hrefs] of sections) {

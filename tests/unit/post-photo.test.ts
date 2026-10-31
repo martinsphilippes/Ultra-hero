@@ -28,6 +28,7 @@ const URL_ = `${BASE}/storage/v1/object/public/post-photos/${PATH}`;
 type Result = { data: unknown; error: { message: string; code?: string } | null };
 
 const state = vi.hoisted(() => ({
+  uploadRights: true,
   user: null as { id: string } | null,
   isCreator: true,
   isAdmin: false,
@@ -122,6 +123,8 @@ function client(kind: "user" | "admin") {
 }
 
 vi.mock("server-only", () => ({}));
+// Termos do Parceiro (0068): confirmação de direitos antes do envio; cada teste liga ou desliga
+vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => state.uploadRights }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) => Object.assign((key: string) => `${namespace}.${key}`, { has: () => true }),
@@ -165,6 +168,7 @@ function form(data: Uint8Array, type = "image/webp") {
 beforeEach(() => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = BASE;
   state.user = { id: ids.USER };
+  state.uploadRights = true;
   state.isCreator = true;
   state.isAdmin = false;
   state.creatorId = ids.CREATOR;
@@ -253,6 +257,12 @@ describe("caminhos e post com foto", () => {
 
 // ---------------------------------------------------------------- actions
 describe("startPhotoPost", () => {
+  it("sem a confirmação de direitos (Termos do Parceiro), para antes de reservar ou gravar", async () => {
+    state.uploadRights = false;
+    expect(await startPhotoPost(form(jpeg(1600, 1200), "image/jpeg"))).toEqual({ ok: false, error: "upload_rights_required" });
+    expect(state.log).toEqual(["user:rpc:my_creator_id"]);
+  });
+
   it("reserva com o tipo dos bytes, grava no bucket (sem upsert), cria o rascunho com a foto na capa e o corpo com o caminho", async () => {
     // o navegador diz "image/png", mas os bytes são JPEG: vale o que os bytes dizem
     expect(await startPhotoPost(form(jpeg(1600, 1200), "image/png"))).toEqual({ ok: true, contentId: ids.CONTENT });

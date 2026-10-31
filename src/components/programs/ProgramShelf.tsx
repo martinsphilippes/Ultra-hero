@@ -1,4 +1,4 @@
-import { Ban, BookOpen, Check, ChefHat, Dumbbell, FileText, Lock, PlayCircle } from "lucide-react";
+import { Ban, BookOpen, Check, ChefHat, Dumbbell, FileText, PlayCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -102,8 +102,8 @@ export async function ProgramShelf({ shelf, priority = false, headingLevel = "h2
                 labels={{
                   step: t("step", { n: index + 1 }),
                   of: t("stepOfSr", { total }),
-                  state: stepStateText(data, t, tc),
-                  name: stepAccessibleName({ position: t("stepOf", { n: index + 1, total, title: data.content?.title ?? t("unavailableTitle") }), state: stepStateText(data, t, tc) }),
+                  state: stepStateText(data, t),
+                  name: stepAccessibleName({ position: t("stepOf", { n: index + 1, total, title: data.content?.title ?? t("unavailableTitle") }), state: stepStateText(data, t) }),
                   type: data.content ? tc(`types.${data.content.type}`) : null,
                   minutes: data.content?.duration_minutes ? tc("minutes", { n: data.content.duration_minutes }) : null,
                   done: t("doneBadge"),
@@ -120,10 +120,9 @@ export async function ProgramShelf({ shelf, priority = false, headingLevel = "h2
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
-/** Estado em texto para leitor de tela ("concluída", "requer plano Base"); null quando aberta. */
-function stepStateText(data: ShelfStepData, t: Translator, tc: Translator): string | null {
+/** Estado em texto para leitor de tela ("concluída", "indisponível"); null quando aberta. */
+function stepStateText(data: ShelfStepData, t: Translator): string | null {
   if (data.state === "done") return t("state.done");
-  if (data.state === "locked") return t("state.locked", { plan: data.content?.required_module?.name ?? tc("premium") });
   if (data.state === "unavailable") return t("state.unavailable");
   return null;
 }
@@ -152,7 +151,7 @@ type TileLabels = {
   step: string;
   /** "de 6:" (só leitor de tela, completa o selo) */
   of: string;
-  /** "concluída" / "requer plano Base" / "indisponível" (só leitor de tela) */
+  /** "concluída" / "indisponível" (só leitor de tela) */
   state: string | null;
   /** Nome completo, para o quadrado sem link (conteúdo fora do ar). */
   name: string;
@@ -162,7 +161,7 @@ type TileLabels = {
   unavailable: string;
 };
 
-// Quadrado da etapa: capa 1:1 na linguagem do ContentTile (ícone do tipo, cadeado), selo "Etapa N",
+// Quadrado da etapa: capa 1:1 na linguagem do ContentTile (ícone do tipo), selo "Etapa N",
 // título em até 2 linhas e tipo · duração. O nome do link vem do próprio texto visível, completado
 // por trechos só para leitor de tela: "Etapa 2 de 6: Título, concluída" (sem aria-label, para o
 // nome sempre conter o texto que aparece — WCAG 2.5.3).
@@ -197,8 +196,6 @@ function StepTile({ data, n, total, priority, labels }: { data: ShelfStepData; n
           <Check aria-hidden="true" className="size-3" strokeWidth={3} />
           {labels.done}
         </span>
-      ) : state === "locked" ? (
-        <Lock aria-hidden="true" className="absolute bottom-1.5 left-1.5 size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
       ) : null}
       {content ? (
         <span aria-hidden="true" data-focus-ring="" className="pointer-events-none absolute inset-0 rounded-lg opacity-0 ring-[3px] ring-inset ring-focus group-focus-visible:opacity-100" />

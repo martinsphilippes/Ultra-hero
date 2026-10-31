@@ -10,7 +10,7 @@ describe("buildSettingsSections", () => {
     expect(keys(buildSettingsSections(["consumer"]))).toEqual([
       ["routine", ["reminders", "heroes", "interests"]],
       ["collections", ["favorites", "recipes", "shoppingList"]],
-      ["purchases", ["orders", "plan"]],
+      ["purchases", ["orders"]],
       ["account", ["account", "notifications", "devices", "appearance"]],
     ]);
   });
@@ -19,7 +19,6 @@ describe("buildSettingsSections", () => {
     const all = hrefs(buildSettingsSections(["consumer"]));
     for (const href of [
       "/profile/lembretes",
-      "/profile/plan",
       "/profile/interests",
       "/profile/herois",
       "/profile/favorites",
@@ -49,10 +48,10 @@ describe("buildSettingsSections", () => {
     expect(withSeller.items.map((i) => i.href)).toEqual(["/seller"]);
   });
 
-  it("app das lojas: compras simuladas, plano e portais do profissional, da agência e da marca somem; o resto fica", () => {
+  it("app das lojas: compras simuladas e portais do profissional, da agência e da marca somem; o resto fica", () => {
     const items = buildSettingsSections(["admin", "professional"], undefined, { platformAdmin: true }).flatMap((s) => s.items);
     const hidden = items.filter((i) => i.nativeHidden).map((i) => i.href);
-    expect(hidden.sort()).toEqual(["/agencia", "/marca", "/orders", "/profile/plan", "/profissional"]);
+    expect(hidden.sort()).toEqual(["/agencia", "/marca", "/orders", "/profissional"]);
   });
 
   it("Excluir conta aponta para a seção da página da conta", () => {

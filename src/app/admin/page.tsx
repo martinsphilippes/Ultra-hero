@@ -115,8 +115,6 @@ async function DashboardContent({ days }: { days: number }) {
           <KpiCard label={t("kpis.contentViews")} value={n(num(m, "content_views"))} />
           <KpiCard label={t("kpis.completions")} value={n(num(m, "completions"))} />
           <KpiCard label={t("kpis.enrollments")} value={n(num(m, "enrollments"))} />
-          <KpiCard label={t("kpis.activeSubscriptions")} value={n(num(m, "active_simulated_subscriptions"))} hint={t("kpis.activeSubscriptionsHint")} tag={<DemoBadge size="sm" />} tagVariant="demo" />
-          <KpiCard label={t("kpis.subscriptionInterest")} value={n(num(m, "subscription_interest"))} />
           <KpiCard label={t("kpis.commercialInterest")} value={n(num(m, "commercial_interest"))} />
           <KpiCard label={t("kpis.cartAdds")} value={n(num(m, "cart_adds"))} />
           <KpiCard label={t("kpis.testOrders")} value={n(num(m, "test_orders"))} tag={<DemoBadge size="sm" />} />

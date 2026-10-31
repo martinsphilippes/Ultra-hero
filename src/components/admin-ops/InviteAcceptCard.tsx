@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { acceptInvitation, type AcceptedRole } from "@/app/admin/ops-actions";
-import { Button } from "@/components/ui";
+import { legalRichTags } from "@/components/legal/rich-tags";
+import { Button, Checkbox } from "@/components/ui";
 import { SELLER_PORTAL_ENABLED } from "@/lib/seller-ops/portal";
 
 type Props = { token: string; email: string | null };
@@ -13,6 +14,8 @@ type Props = { token: string; email: string | null };
 // Aceite do convite pelo usuário autenticado: a RPC decide (token, validade, e-mail) e concede o acesso.
 export function InviteAcceptCard({ token, email }: Props) {
   const t = useTranslations("adminOps.invite");
+  const tc = useTranslations("legal.consent");
+  const [terms, setTerms] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<AcceptedRole | null>(null);
@@ -20,8 +23,12 @@ export function InviteAcceptCard({ token, email }: Props) {
 
   function accept() {
     setError(null);
+    if (!terms) {
+      setError(tc("inviteRequired"));
+      return;
+    }
     startTransition(async () => {
-      const result = await acceptInvitation({ token });
+      const result = await acceptInvitation({ token, acceptTerms: true });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -86,6 +93,10 @@ export function InviteAcceptCard({ token, email }: Props) {
           {email && <p className="truncate font-medium text-fg">{t("signedInAs", { email })}</p>}
           <p className="text-fg-muted">{t("grantNote")}</p>
         </div>
+      </div>
+      {/* Termos do Parceiro (0068): aceite explícito, sem caixa pré-marcada */}
+      <div className="rounded-xl border border-border px-2 py-1">
+        <Checkbox id="invite-partner-terms" checked={terms} onChange={(event) => setTerms(event.target.checked)} label={tc.rich("inviteLabel", legalRichTags)} />
       </div>
       {error && (
         <p role="alert" className="rounded-lg border border-danger/30 bg-danger-soft p-3 text-sm text-danger">

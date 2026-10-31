@@ -14,7 +14,6 @@ export type RecipeCardData = {
   pillar: "routine" | "training" | "nutrition" | "gastronomy";
   access_level: "free" | "premium" | null;
   difficulty: RecipeDifficulty | null;
-  required_module: { code: string; name: string } | null;
   creator: { slug: string; name: string; avatar_url: string | null; is_fictional: boolean } | null;
   totalMinutes: number | null;
   servings: number | null;
@@ -27,7 +26,7 @@ export type RecipeCardData = {
 
 /** Colunas do card (content + recipe_details embutido, 1:1 pela PK). */
 export const RECIPE_CARD_SELECT =
-  "id, slug, title, cover_url, pillar, access_level, difficulty, required_module:plan_modules(code, name), " +
+  "id, slug, title, cover_url, pillar, access_level, difficulty, " +
   "creator:creator_profiles(slug, name, avatar_url, is_fictional), details:recipe_details(total_minutes, servings, diets, allergens, allergens_declared)";
 
 type Row = Omit<RecipeCardData, "totalMinutes" | "servings" | "allergensDeclared" | "allergens" | "diets" | "signer"> & {
@@ -54,7 +53,6 @@ export function toRecipeCard(row: Row): RecipeCardData {
     pillar: row.pillar,
     access_level: row.access_level,
     difficulty: row.difficulty,
-    required_module: row.required_module,
     creator: row.creator,
     totalMinutes: d?.total_minutes ?? null,
     servings: d?.servings ?? null,

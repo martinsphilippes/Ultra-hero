@@ -10,6 +10,8 @@ import { COVER_BUCKET, COVER_MAX_UPLOAD_BYTES, toCoverError, type CoverError } f
 import { publicCoverUrl, storedCoverOwner } from "@/lib/hero-cover/paths";
 import { markCoverDeleted, releaseStoredCover, storeCover } from "@/lib/hero-cover/server";
 import { validateCoverBytes } from "@/lib/hero-cover/validation";
+import { hasUploadRights } from "@/lib/partner-terms/server";
+import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
@@ -68,6 +70,9 @@ export async function uploadHeroCover(formData: FormData): Promise<CoverResult> 
 
   try {
     const supabase = await createClient();
+    // Termos do Parceiro (0068): o herói confirma os direitos antes do primeiro envio; o admin não passa por aqui
+    const isAdmin = (await getRoles()).some((r) => r.role === "admin");
+    if (!isAdmin && !(await hasUploadRights(supabase, user.id))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
     const { data: path, error: claimError } = await supabase.rpc("hero_cover_upload_claim", { p_bytes: bytes.length, p_mime: check.image.mime });
     if (claimError || typeof path !== "string") return { ok: false, error: rpcFailure(claimError) };
     // o caminho reservado começa pelo id de quem enviou; qualquer outra coisa é erro do banco

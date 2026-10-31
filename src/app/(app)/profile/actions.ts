@@ -21,10 +21,10 @@ import { createClient } from "@/lib/supabase/server";
 import { setThemeAction } from "@/lib/theme/actions";
 import { themes } from "@/lib/theme/constants";
 import { notificationPreferencesSchema, type NotificationPreferences } from "@/components/me/notifications/schema";
-import { DELETE_CONFIRM_WORD, parseSubscription, type SubscriptionInfo } from "@/components/me/subscription";
+import { DELETE_CONFIRM_WORD } from "@/components/me/delete-account";
 
-// Ações do módulo "Eu": perfil, fuso, plano simulado, interesses, favoritos e exclusão de conta.
-// Regras de acesso e preços ficam no banco (RLS + RPCs security definer); aqui só validamos entrada.
+// Ações do módulo "Eu": perfil, fuso, interesses, favoritos e exclusão de conta.
+// Regras de acesso ficam no banco (RLS + RPCs security definer); aqui só validamos entrada.
 
 export type Result<T extends object = Record<never, never>> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -146,47 +146,6 @@ export async function updateProfile(input: { displayName: string; avatarUrl?: st
   } catch (error) {
     return fail(error);
   }
-}
-
-// ---------------------------------------------------------------- plano simulado
-export async function selectModules(input: { moduleIds: string[]; source: "bundle" | "custom" | "free" }): Promise<Result<{ subscription: SubscriptionInfo }>> {
-  const parsed = z.object({ moduleIds: z.array(z.uuid()).max(20), source: z.enum(["bundle", "custom", "free"]) }).safeParse(input);
-  if (!parsed.success) return { ok: false, error: "invalid_input" };
-  try {
-    const user = await getUser();
-    if (!user) return { ok: false, error: "unauthenticated" };
-    const supabase = await createClient();
-    const { data, error } = await supabase.rpc("select_modules", { p_module_ids: parsed.data.moduleIds });
-    if (error) return { ok: false, error: error.message };
-    const subscription = parseSubscription(data);
-    await trackEvent("plan.select", { modules: parsed.data.moduleIds.length, source: parsed.data.source, status: subscription.status, simulated: true });
-    revalidatePath("/profile/plan");
-    revalidatePath("/profile");
-    return { ok: true, subscription };
-  } catch (error) {
-    return fail(error);
-  }
-}
-
-export async function cancelSubscription(): Promise<Result<{ subscription: SubscriptionInfo }>> {
-  try {
-    const user = await getUser();
-    if (!user) return { ok: false, error: "unauthenticated" };
-    const supabase = await createClient();
-    const { data, error } = await supabase.rpc("cancel_subscription");
-    if (error) return fail(error.message);
-    const subscription = parseSubscription(data);
-    await trackEvent("plan.cancel", { status: subscription.status, simulated: true });
-    revalidatePath("/profile/plan");
-    revalidatePath("/profile");
-    return { ok: true, subscription };
-  } catch (error) {
-    return fail(error);
-  }
-}
-
-export async function trackPlanView(): Promise<void> {
-  await trackEvent("plan.view", { simulated: true });
 }
 
 // ---------------------------------------------------------------- interesses

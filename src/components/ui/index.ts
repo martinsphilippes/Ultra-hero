@@ -1,6 +1,6 @@
 // Barril do design system. Importe de "@/components/ui".
 export { Avatar, AvatarInitials } from "./avatar";
-export { Badge, Chip, DemoBadge, PillarBadge, PlanBadge, badgeVariants, type BadgeVariant, type Pillar } from "./badge";
+export { Badge, Chip, DemoBadge, PillarBadge, badgeVariants, type BadgeVariant, type Pillar } from "./badge";
 export { Button, buttonBase, buttonSizes, buttonVariants, type ButtonSize, type ButtonVariant } from "./button";
 export { Card, CardBody, CardDescription, CardFooter, CardImage, CardTitle } from "./card";
 export { Checkbox } from "./checkbox";

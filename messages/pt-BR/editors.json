@@ -17,8 +17,8 @@
       "guide": "Texto"
     },
     "bodyDescription": "Conteúdo educativo. Evite prescrições individuais e promessas de resultado.",
-    "access": "Regra de acesso (admin)",
-    "accessDescription": "Define quem pode consumir. Sem regra, o conteúdo fica \"temporariamente indisponível\" mesmo publicado.",
+    "access": "Conclusão (admin)",
+    "accessDescription": "O app é gratuito: todo conteúdo publicado fica aberto a quem entrou. Aqui só se escolhe como a conclusão é registrada.",
     "license": "Licença e crédito da mídia",
     "licenseDescription": "De onde vem a mídia e quem deve ser creditado. Vídeos incorporados do YouTube ou Vimeo exigem a licença \"incorporação de terceiros\"."
   },
@@ -71,7 +71,6 @@
     "mediaRefRequired": "Informe o ID ou a URL do vídeo.",
     "providerNotConfigured": "Este provedor não está configurado neste ambiente.",
     "invalidUrl": "Use um caminho da plataforma ou uma URL https.",
-    "moduleRequired": "Conteúdo premium exige um módulo.",
     "bodyTypeMismatch": "O corpo não corresponde ao tipo escolhido.",
     "invalid": "Valor inválido.",
     "licenseMismatch": "Licença incoerente com o provedor de mídia.",
@@ -135,15 +134,6 @@
     "captionsHint": "Caminho da plataforma ou URL https de um arquivo .vtt."
   },
   "access": {
-    "level": "Nível de acesso",
-    "levelHint": "Sem regra = indisponível ao público.",
-    "levelNone": "Sem regra definida",
-    "levelFree": "Gratuito",
-    "levelPremium": "Premium (módulo)",
-    "module": "Módulo exigido",
-    "moduleHint": "Só se aplica a conteúdo premium.",
-    "moduleHintPremium": "Obrigatório para conteúdo premium.",
-    "moduleNone": "Nenhum",
     "completion": "Modo de conclusão",
     "completionHint": "Vazio usa o padrão do tipo.",
     "completionDefault": "Padrão do tipo",

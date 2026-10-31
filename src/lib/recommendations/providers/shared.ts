@@ -50,7 +50,6 @@ export function buildPrompt(candidates: Candidate[], signals: UserSignals, limit
     `Return exactly the JSON schema requested: up to ${limit} items, best first, ONLY ids that appear in the candidate list.`,
     `Each "reason" is ONE short sentence (max ${MAX_REASON_CHARS} characters) in ${language}, explaining why the item fits the user's declared interests or recent activity.`,
     "Never give health, diet, medical or training prescriptions; never use imperative advice; never mention the user by name.",
-    "Prefer items the user can open now (locked=false); if you include locked=true items, say they belong to a module.",
     "Favor variety across pillars (at most 3 per pillar in the top 8).",
   ].join(" ");
 
@@ -60,8 +59,6 @@ export function buildPrompt(candidates: Candidate[], signals: UserSignals, limit
     type: c.type,
     difficulty: c.difficulty,
     tags: c.tags,
-    locked: c.access_level === "premium" && c.required_module_id !== null && !signals.entitledModules.includes(c.required_module_id),
-    module: c.required_module_name,
     featured: c.is_featured,
     fresh_days: c.published_at ? Math.max(0, Math.round((now - new Date(c.published_at).getTime()) / 86_400_000)) : null,
   }));

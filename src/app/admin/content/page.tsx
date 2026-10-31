@@ -17,7 +17,6 @@ import { createClient } from "@/lib/supabase/server";
 
 const REVIEW_STATES = ["none", "in_review", "returned", "approved", "rejected"] as const;
 const CONTENT_STATES = ["draft", "published", "archived"] as const;
-const ACCESS_FILTERS = ["free", "premium", "none"] as const;
 const LIMIT = 100;
 
 type Row = {
@@ -28,7 +27,6 @@ type Row = {
   type: Enums<"content_type">;
   status: Enums<"content_status">;
   review_status: Enums<"review_status">;
-  access_level: Enums<"access_level"> | null;
   is_featured: boolean;
   publish_at: string | null;
   updated_at: string;
@@ -57,11 +55,10 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
   const pillar = pickEnum(params, "pillar", PILLARS);
   const type = pickEnum(params, "type", CONTENT_TYPES);
   const creator = pickUuid(params, "creator");
-  const access = pickEnum(params, "access", ACCESS_FILTERS);
 
   let query = supabase
     .from("content")
-    .select("id, slug, title, pillar, type, status, review_status, access_level, is_featured, publish_at, updated_at, creator:creator_profiles(name)")
+    .select("id, slug, title, pillar, type, status, review_status, is_featured, publish_at, updated_at, creator:creator_profiles(name)")
     .order("updated_at", { ascending: false })
     .limit(LIMIT);
   if (q) query = query.ilike("title", `%${escapeLike(q)}%`);
@@ -70,8 +67,6 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
   if (pillar) query = query.eq("pillar", pillar);
   if (type) query = query.eq("type", type);
   if (creator) query = query.eq("creator_id", creator);
-  if (access === "none") query = query.is("access_level", null);
-  else if (access) query = query.eq("access_level", access);
 
   const [listRes, creatorsRes, ...countRes] = await Promise.all([
     query,
@@ -90,17 +85,6 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
     { name: "pillar", label: tc("pillar"), type: "select", value: pillar ?? "", options: PILLARS.map((p) => ({ value: p, label: tp(p) })) },
     { name: "type", label: tc("type"), type: "select", value: type ?? "", options: CONTENT_TYPES.map((v) => ({ value: v, label: tc(`types.${v}`) })) },
     { name: "creator", label: tc("creator"), type: "select", value: creator ?? "", options: creators.map((c) => ({ value: c.id, label: c.name })) },
-    {
-      name: "access",
-      label: tc("accessLevel"),
-      type: "select",
-      value: access ?? "",
-      options: [
-        { value: "free", label: tc("access.free") },
-        { value: "premium", label: tc("access.premium") },
-        { value: "none", label: tc("access.undefined") },
-      ],
-    },
   ];
 
   const columns: Column<Row>[] = [
@@ -133,21 +117,6 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
       ),
     },
     { key: "review", header: t("table.review"), cell: (row) => <StatusBadge status={row.review_status} label={ts(`status.${row.review_status}`)} /> },
-    {
-      key: "access",
-      header: t("table.access"),
-      hideOnMobile: true,
-      cell: (row) =>
-        row.access_level ? (
-          <Badge variant={row.access_level} size="sm">
-            {tc(`access.${row.access_level}`)}
-          </Badge>
-        ) : (
-          <Badge variant="warning" size="sm">
-            {tc("access.undefined")}
-          </Badge>
-        ),
-    },
     { key: "updated", header: t("table.updated"), hideOnMobile: true, cell: (row) => <span className="type-numeric text-fg-muted">{formatDate(row.updated_at, locale as Locale)}</span> },
   ];
 
@@ -185,7 +154,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams:
         ))}
       </ul>
 
-      <FilterBar action="/admin/content" fields={fields} active={hasAnyFilter(params, ["q", "status", "review", "pillar", "type", "creator", "access"])} />
+      <FilterBar action="/admin/content" fields={fields} active={hasAnyFilter(params, ["q", "status", "review", "pillar", "type", "creator"])} />
 
       <div className="flex flex-col gap-2">
         <p className="type-caption text-fg-muted" aria-live="polite">

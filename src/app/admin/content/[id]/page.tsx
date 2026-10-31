@@ -50,7 +50,6 @@ type Content = {
   created_at: string;
   updated_at: string;
   creator: { id: string; name: string; is_fictional: boolean } | null;
-  required_module: { code: string; name: string } | null;
 };
 
 type Body = { body: unknown; media_provider: Enums<"media_provider">; media_ref: string | null; captions_url: string | null; updated_at: string };
@@ -59,7 +58,7 @@ type Review = { id: string; round: number; submitted_at: string; decision: Enums
 const CONTENT_SELECT =
   "id, slug, title, summary, cover_url, pillar, type, source_locale, duration_minutes, difficulty, tags, has_captions, status, review_status, access_level, completion_mode, is_featured, featured_rank, disclaimer_kind, published_at, publish_at, archived_at, " +
   "media_license_kind, media_license_ref, media_credit, creator_link_origin, created_at, updated_at, " +
-  "creator:creator_profiles(id, name, is_fictional), required_module:plan_modules(code, name)";
+  "creator:creator_profiles(id, name, is_fictional)";
 
 async function loadContent(id: string): Promise<Content | null> {
   const supabase = await createClient();
@@ -197,11 +196,8 @@ export default async function AdminContentDetailPage({ params }: Params) {
             </Badge>
           )}
           <StatusBadge status={content.review_status} label={ts(content.review_status)} />
-          {content.access_level ? (
-            <Badge variant={content.access_level} size="sm">
-              {tc(`access.${content.access_level}`)}
-            </Badge>
-          ) : (
+          {/* o app é gratuito (0069): só o conteúdo ainda sem regra (rascunho antigo) ganha aviso */}
+          {!content.access_level && (
             <Badge variant="warning" size="sm">
               {tc("access.undefined")}
             </Badge>
@@ -234,7 +230,6 @@ export default async function AdminContentDetailPage({ params }: Params) {
                 { label: tc("sourceLocale"), value: tc(`localeName.${content.source_locale}`) },
                 { label: t("detail.duration"), value: content.duration_minutes ? t("detail.minutes", { n: content.duration_minutes }) : tc("none") },
                 { label: t("detail.difficulty"), value: content.difficulty ? tc(`difficulty.${content.difficulty}`) : tc("none") },
-                { label: t("detail.requiredModule"), value: content.required_module ? `${content.required_module.name} (${content.required_module.code})` : tc("none") },
                 { label: t("detail.completionMode"), value: content.completion_mode ? tc(`completionMode.${content.completion_mode}`) : tc("completionMode.inherit") },
                 { label: t("detail.captions"), value: content.has_captions ? t("detail.captionsYes") : t("detail.captionsNo") },
                 { label: t("detail.disclaimer"), value: content.disclaimer_kind ?? tc("none") },

@@ -1,7 +1,7 @@
 // Blocos da página de conteúdo.
 export { DisclaimerBanner, type DisclaimerKind } from "./DisclaimerBanner";
 export { LanguageNotice } from "./LanguageNotice";
-export { TeaserCard, LockCard, UnavailableCard } from "./AccessStates";
+export { TeaserCard, UnavailableCard } from "./AccessStates";
 export { ViewTracker } from "./ViewTracker";
 export { ProductInterestTracker } from "./ProductInterestTracker";
 export { WorkoutBody } from "./WorkoutBody";

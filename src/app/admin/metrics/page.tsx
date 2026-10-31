@@ -70,7 +70,6 @@ export default async function AdminMetricsPage({ searchParams }: { searchParams:
     { key: "signups", value: num(m, "signups") },
     { key: "activated", value: num(m, "activated_users_distinct") },
     { key: "enrollments", value: num(m, "enrollments") },
-    { key: "subscriptionInterest", value: num(m, "subscription_interest") },
     { key: "commercialInterest", value: num(m, "commercial_interest") },
     { key: "testOrders", value: num(m, "test_orders") },
   ];

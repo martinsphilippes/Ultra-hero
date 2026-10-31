@@ -23,7 +23,7 @@ Princípio central: **o cliente nunca decide permissão, preço ou direito de ac
 | Portal da personalidade (herói) | `/creator/*` (inclui `/creator/post/new` e Minhas Receitas em `/creator/recipes/*`) | papel `creator` por convite; consumidor que abre `/creator` volta ao início, visitante vai ao login |
 | Portal do fornecedor | `/seller/*` | **desligado** (`SELLER_PORTAL_ENABLED = false`, 0053): admin é levado a `/admin/sellers`, as demais contas veem um aviso e as server actions do portal recusam. Ligado, volta a exigir papel `seller` por convite (escopo = organização) |
 | Administração | `/admin/*` (inclui a operação dos fornecedores: `/admin/sellers/[id]` com abas Visão geral, Produtos — criar/editar/publicar/arquivar com o `ProductForm` do fornecedor —, Remessas e Organização; `/admin/shipments` com todas as remessas) | papel `admin` (global) |
-| Sistema | `/api/cron/{transport,retention,renewals}`, `/api/certificates/[code]` | cron (CRON_SECRET) / dono do certificado |
+| Sistema | `/api/cron/{transport,retention}`, `/api/certificates/[code]` | cron (CRON_SECRET) / dono do certificado |
 
 ## 3. Identidade e papéis
 

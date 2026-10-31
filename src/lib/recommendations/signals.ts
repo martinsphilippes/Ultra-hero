@@ -15,18 +15,17 @@ function one(ref: ContentRef) {
 }
 
 export function visitorSignals(locale: UiLocale): UserSignals {
-  return { userId: null, locale, interests: [], pillarAffinity: {}, difficultyLevel: "beginner", entitledModules: [], completedCount: 0 };
+  return { userId: null, locale, interests: [], pillarAffinity: {}, difficultyLevel: "beginner", completedCount: 0 };
 }
 
 export async function loadSignals(db: Db, userId: string, fallbackLocale: UiLocale = "pt-BR"): Promise<UserSignals> {
   const since = new Date(Date.now() - WINDOW_DAYS * 86_400_000).toISOString();
-  const [profile, interests, recent, total, progress, entitled] = await Promise.all([
+  const [profile, interests, recent, total, progress] = await Promise.all([
     db.from("profiles").select("locale").eq("id", userId).maybeSingle(),
     db.from("user_interests").select("tag").eq("user_id", userId),
     db.from("completions").select("completed_at, content:content(pillar, difficulty)").eq("user_id", userId).gte("completed_at", since).order("completed_at", { ascending: false }).limit(60),
     db.from("completions").select("id", { count: "exact", head: true }).eq("user_id", userId),
     db.from("content_progress").select("updated_at, content:content(pillar)").eq("user_id", userId).gte("updated_at", since).order("updated_at", { ascending: false }).limit(60),
-    db.rpc("user_entitled_modules", { p_user: userId }),
   ]);
 
   const pillarAffinity: Partial<Record<Pillar, number>> = {};
@@ -57,7 +56,6 @@ export async function loadSignals(db: Db, userId: string, fallbackLocale: UiLoca
     interests: (interests.data ?? []).map((row) => row.tag),
     pillarAffinity,
     difficultyLevel,
-    entitledModules: Array.isArray(entitled.data) ? (entitled.data as string[]) : [],
     completedCount: total.count ?? 0,
   };
 }

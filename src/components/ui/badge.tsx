@@ -12,8 +12,6 @@ export type BadgeVariant =
   | "danger"
   | "info"
   | "demo"
-  | "free"
-  | "premium"
   | Pillar;
 
 export const badgeVariants: Record<BadgeVariant, string> = {
@@ -24,8 +22,6 @@ export const badgeVariants: Record<BadgeVariant, string> = {
   danger: "bg-danger-soft text-danger border-danger/30",
   info: "bg-info-soft text-info border-info/30",
   demo: "bg-warning-soft text-warning border-warning/40 border-dashed",
-  free: "bg-surface-hover text-fg border-border-strong",
-  premium: "bg-accent text-accent-fg border-transparent",
   routine: "bg-pillar-routine-soft text-pillar-routine border-pillar-routine/30",
   training: "bg-pillar-training-soft text-pillar-training border-pillar-training/30",
   nutrition: "bg-pillar-nutrition-soft text-pillar-nutrition border-pillar-nutrition/30",
@@ -43,7 +39,7 @@ type BadgeProps = ComponentProps<"span"> & {
   icon?: ReactNode;
 };
 
-// Etiqueta não interativa (pilar, plano, status…).
+// Etiqueta não interativa (pilar, status…).
 export function Badge({ variant = "neutral", size = "md", icon, className, children, ...props }: BadgeProps) {
   return (
     <span
@@ -72,16 +68,6 @@ export function PillarBadge({ pillar, tone = "neutral", ...props }: Omit<BadgePr
   return (
     <Badge variant={tone === "pillar" ? pillar : "neutral"} {...props}>
       {t(pillar)}
-    </Badge>
-  );
-}
-
-// Etiqueta de plano (gratuito/premium) traduzida.
-export function PlanBadge({ plan, ...props }: Omit<BadgeProps, "variant" | "children"> & { plan: "free" | "premium" }) {
-  const t = useTranslations("common.plans");
-  return (
-    <Badge variant={plan} {...props}>
-      {t(plan)}
     </Badge>
   );
 }

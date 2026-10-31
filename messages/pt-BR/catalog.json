@@ -16,14 +16,12 @@
   "weeks": "{n, plural, =1 {1 semana} other {# semanas}}",
   "by": "por {name}",
   "program": "Programa",
-  "premium": "Premium",
   "unavailable": "Temporariamente indisponível",
   "fictional": "Personagem fictício",
   "priceDemo": "preço ilustrativo",
   "productUnavailable": "Indisponível",
   "progress": "Progresso",
   "tile": {
-    "premium": "Requer plano {plan}",
     "unavailable": "Indisponível"
   },
   "programShelf": {
@@ -41,7 +39,6 @@
     "stepOf": "Etapa {n} de {total}: {title}",
     "state": {
       "done": "concluída",
-      "locked": "requer plano {plan}",
       "unavailable": "indisponível"
     },
     "doneBadge": "Concluída",

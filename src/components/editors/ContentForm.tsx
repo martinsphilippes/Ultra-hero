@@ -40,7 +40,7 @@ type FormState = Omit<ContentFormValues, "body"> & { body: ContentBody };
 
 const EMPTY_MEDIA: ContentFormValues["media"] = { provider: "none", ref: null, captions_url: null };
 
-export function ContentForm({ mode, initial, canEditAccess, modules = [], readOnly = false, action }: ContentFormProps) {
+export function ContentForm({ mode, initial, canEditAccess, readOnly = false, action }: ContentFormProps) {
   const t = useTranslations("editors");
   const tc = useTranslations("common");
   const tv = useValidationMessage();
@@ -233,7 +233,7 @@ export function ContentForm({ mode, initial, canEditAccess, modules = [], readOn
 
         {canEditAccess && (
           <FormSection legend={t("sections.access")} description={t("sections.accessDescription")}>
-            <AccessFields values={values} onChange={(p) => patch(p)} modules={modules} errors={errors} />
+            <AccessFields values={values} onChange={(p) => patch(p)} errors={errors} />
           </FormSection>
         )}
       </fieldset>

@@ -16,14 +16,12 @@
   "weeks": "{n, plural, =1 {1 week} other {# weeks}}",
   "by": "by {name}",
   "program": "Program",
-  "premium": "Premium",
   "unavailable": "Temporarily unavailable",
   "fictional": "Fictional character",
   "priceDemo": "illustrative price",
   "productUnavailable": "Unavailable",
   "progress": "Progress",
   "tile": {
-    "premium": "Requires the {plan} plan",
     "unavailable": "Unavailable"
   },
   "programShelf": {
@@ -41,7 +39,6 @@
     "stepOf": "Step {n} of {total}: {title}",
     "state": {
       "done": "completed",
-      "locked": "requires the {plan} plan",
       "unavailable": "unavailable"
     },
     "doneBadge": "Done",

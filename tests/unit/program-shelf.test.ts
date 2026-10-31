@@ -70,32 +70,28 @@ describe("resolveShelfSteps", () => {
 
 describe("shelfStepState", () => {
   const step = { contentId: "c1", originalContentId: "c0" };
-  const free = { access_level: "free" as const, required_module_id: null };
-  const premium = { access_level: "premium" as const, required_module_id: "m-base" };
+  const free = { access_level: "free" as const };
   const none = new Set<string>();
 
   it("conteúdo escondido pela RLS ou sem nível de acesso fica indisponível", () => {
-    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: none, entitledModules: none })).toBe("unavailable");
-    expect(shelfStepState({ step, content: null, enrolled: false, completedIds: new Set(["c1"]), entitledModules: none })).toBe("unavailable");
-    expect(shelfStepState({ step, content: { access_level: null, required_module_id: null }, enrolled: false, completedIds: none, entitledModules: none })).toBe("unavailable");
+    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: none })).toBe("unavailable");
+    expect(shelfStepState({ step, content: null, enrolled: false, completedIds: new Set(["c1"]) })).toBe("unavailable");
+    expect(shelfStepState({ step, content: { access_level: null }, enrolled: false, completedIds: none })).toBe("unavailable");
   });
 
   it("inscrito que já concluiu uma etapa que saiu do ar continua com ela concluída (= página do programa)", () => {
-    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: new Set(["c1"]), entitledModules: none })).toBe("done");
-    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: new Set(["c0"]), entitledModules: none })).toBe("done");
+    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: new Set(["c1"]) })).toBe("done");
+    expect(shelfStepState({ step, content: null, enrolled: true, completedIds: new Set(["c0"]) })).toBe("done");
   });
 
   it("concluída só para inscrito, pelo conteúdo efetivo ou pelo original", () => {
-    expect(shelfStepState({ step, content: free, enrolled: true, completedIds: new Set(["c1"]), entitledModules: none })).toBe("done");
-    expect(shelfStepState({ step, content: free, enrolled: true, completedIds: new Set(["c0"]), entitledModules: none })).toBe("done");
-    expect(shelfStepState({ step, content: free, enrolled: false, completedIds: new Set(["c1"]), entitledModules: none })).toBe("open");
+    expect(shelfStepState({ step, content: free, enrolled: true, completedIds: new Set(["c1"]) })).toBe("done");
+    expect(shelfStepState({ step, content: free, enrolled: true, completedIds: new Set(["c0"]) })).toBe("done");
+    expect(shelfStepState({ step, content: free, enrolled: false, completedIds: new Set(["c1"]) })).toBe("open");
   });
 
-  it("premium sem o módulo tem cadeado; com o módulo, abre; concluída vence o cadeado", () => {
-    expect(shelfStepState({ step, content: premium, enrolled: false, completedIds: none, entitledModules: none })).toBe("locked");
-    expect(shelfStepState({ step, content: premium, enrolled: false, completedIds: none, entitledModules: new Set(["m-base"]) })).toBe("open");
-    expect(shelfStepState({ step, content: { access_level: "premium", required_module_id: null }, enrolled: false, completedIds: none, entitledModules: new Set(["m-base"]) })).toBe("locked");
-    expect(shelfStepState({ step, content: premium, enrolled: true, completedIds: new Set(["c1"]), entitledModules: none })).toBe("done");
+  it("app gratuito (0069): conteúdo no ar sempre abre (nenhum cadeado por plano)", () => {
+    expect(shelfStepState({ step, content: free, enrolled: false, completedIds: none })).toBe("open");
   });
 });
 
@@ -121,7 +117,7 @@ describe("progresso e próxima etapa", () => {
   const steps = [{ isRequired: true }, { isRequired: true }, { isRequired: false }, { isRequired: true }];
 
   it("conta só as obrigatórias, como a página do programa", () => {
-    const states: ShelfStepState[] = ["done", "open", "done", "locked"];
+    const states: ShelfStepState[] = ["done", "open", "done", "unavailable"];
     expect(shelfProgress(steps, states)).toEqual({ done: 1, total: 3 });
   });
 
@@ -130,7 +126,7 @@ describe("progresso e próxima etapa", () => {
     const ids = ["r1", "r4", "r2", "r9"];
     const done = new Set(["r1", "r4"]);
     const states = ids.map((id) =>
-      shelfStepState({ step: { contentId: id, originalContentId: id }, content: id === "r4" ? null : { access_level: "free", required_module_id: null }, enrolled: true, completedIds: done, entitledModules: new Set() }),
+      shelfStepState({ step: { contentId: id, originalContentId: id }, content: id === "r4" ? null : { access_level: "free" }, enrolled: true, completedIds: done }),
     );
     expect(states).toEqual(["done", "done", "open", "open"]);
     expect(shelfProgress(ids.map(() => ({ isRequired: true })), states)).toEqual({ done: 2, total: 4 });
@@ -141,9 +137,9 @@ describe("progresso e próxima etapa", () => {
   });
 
   it("Continuar leva à primeira obrigatória aberta; senão à primeira opcional aberta; senão nenhuma", () => {
-    expect(nextStepIndex(steps, ["done", "locked", "open", "open"])).toBe(3);
+    expect(nextStepIndex(steps, ["done", "unavailable", "open", "open"])).toBe(3);
     expect(nextStepIndex(steps, ["done", "done", "open", "done"])).toBe(2);
-    expect(nextStepIndex(steps, ["done", "done", "done", "locked"])).toBe(-1);
+    expect(nextStepIndex(steps, ["done", "done", "done", "unavailable"])).toBe(-1);
   });
 });
 

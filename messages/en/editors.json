@@ -17,8 +17,8 @@
       "guide": "Text"
     },
     "bodyDescription": "Educational content. Avoid individual prescriptions and promises of results.",
-    "access": "Access rule (admin)",
-    "accessDescription": "Defines who can consume it. Without a rule, the content stays \"temporarily unavailable\" even when published.",
+    "access": "Completion (admin)",
+    "accessDescription": "The app is free: all published content is open to signed-in users. Here you only choose how completion is recorded.",
     "license": "Media license and credit",
     "licenseDescription": "Where the media comes from and who must be credited. Videos embedded from YouTube or Vimeo require the \"third-party embed\" license."
   },
@@ -71,7 +71,6 @@
     "mediaRefRequired": "Enter the video ID or URL.",
     "providerNotConfigured": "This provider is not configured in this environment.",
     "invalidUrl": "Use a platform path or an https URL.",
-    "moduleRequired": "Premium content requires a module.",
     "bodyTypeMismatch": "The body does not match the chosen type.",
     "invalid": "Invalid value.",
     "licenseMismatch": "License inconsistent with the media provider.",
@@ -135,15 +134,6 @@
     "captionsHint": "Platform path or https URL of a .vtt file."
   },
   "access": {
-    "level": "Access level",
-    "levelHint": "No rule = unavailable to the public.",
-    "levelNone": "No rule set",
-    "levelFree": "Free",
-    "levelPremium": "Premium (module)",
-    "module": "Required module",
-    "moduleHint": "Only applies to premium content.",
-    "moduleHintPremium": "Required for premium content.",
-    "moduleNone": "None",
     "completion": "Completion mode",
     "completionHint": "Empty uses the type default.",
     "completionDefault": "Type default",

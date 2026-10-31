@@ -25,8 +25,6 @@ function candidate(overrides: Partial<Candidate> & { content_id: string }): Cand
     difficulty: null,
     tags: [],
     access_level: "free",
-    required_module_id: null,
-    required_module_name: null,
     is_featured: false,
     published_at: null,
     ...overrides,
@@ -40,7 +38,6 @@ function signals(overrides: Partial<UserSignals> = {}): UserSignals {
     interests: [],
     pillarAffinity: {},
     difficultyLevel: "beginner",
-    entitledModules: [],
     completedCount: 0,
     ...overrides,
   };
@@ -150,15 +147,8 @@ describe("scoreCandidate", () => {
     expect(result.reason).toEqual({ key: "featured" });
   });
 
-  it("penaliza em 0,5 o item premium de módulo que o usuário não tem", () => {
-    const locked = candidate({ content_id: "p", access_level: "premium", required_module_id: "mod-1" });
-    expect(scoreCandidate(locked, signals(), NOW).score).toBe(0);
-    expect(scoreCandidate(locked, signals({ entitledModules: ["mod-1"] }), NOW).score).toBe(0.5);
-  });
-
-  it("não penaliza premium sem módulo exigido nem item gratuito", () => {
-    expect(scoreCandidate(candidate({ content_id: "p", access_level: "premium", required_module_id: null }), signals(), NOW).score).toBe(0.5);
-    expect(scoreCandidate(candidate({ content_id: "f", access_level: "free", required_module_id: "mod-1" }), signals(), NOW).score).toBe(0.5);
+  it("app gratuito (0069): nenhuma penalidade por plano ou módulo", () => {
+    expect(scoreCandidate(candidate({ content_id: "f", access_level: "free" }), signals(), NOW).score).toBe(0.5);
   });
 
   it("interesse tem prioridade sobre pilar na justificativa, mas os pontos se somam", () => {
@@ -926,20 +916,20 @@ describe("buildPrompt", () => {
     expect(payload.candidates.map((c) => c.id)).toEqual(many.slice(0, MAX_LLM_CANDIDATES).map((c) => c.content_id));
   });
 
-  it("marca itens bloqueados por módulo e calcula dias desde a publicação", () => {
-    const list = [
-      candidate({ content_id: "locked", access_level: "premium", required_module_id: "mod-1", required_module_name: "Força", published_at: daysAgo(3) }),
-      candidate({ content_id: "owned", access_level: "premium", required_module_id: "mod-2", published_at: daysAgo(-2) }),
-      candidate({ content_id: "free" }),
-    ];
-    const payload = JSON.parse(buildPrompt(list, signals({ entitledModules: ["mod-2"] }), 8, NOW).user) as {
-      candidates: Array<{ id: string; locked: boolean; module: string | null; fresh_days: number | null }>;
-    };
-    expect(payload.candidates.map(({ id, locked, module, fresh_days }) => ({ id, locked, module, fresh_days }))).toEqual([
-      { id: "locked", locked: true, module: "Força", fresh_days: 3 },
-      { id: "owned", locked: false, module: null, fresh_days: 0 },
-      { id: "free", locked: false, module: null, fresh_days: null },
+  it("não envia plano, módulo nem trava ao LLM e calcula dias desde a publicação", () => {
+    const list = [candidate({ content_id: "a", published_at: daysAgo(3) }), candidate({ content_id: "b", published_at: daysAgo(-2) }), candidate({ content_id: "c" })];
+    const prompt = buildPrompt(list, signals(), 8, NOW);
+    const payload = JSON.parse(prompt.user) as { candidates: Array<Record<string, unknown>> };
+    expect(payload.candidates.map(({ id, fresh_days }) => ({ id, fresh_days }))).toEqual([
+      { id: "a", fresh_days: 3 },
+      { id: "b", fresh_days: 0 },
+      { id: "c", fresh_days: null },
     ]);
+    for (const c of payload.candidates) {
+      expect(c).not.toHaveProperty("locked");
+      expect(c).not.toHaveProperty("module");
+    }
+    expect(prompt.system).not.toMatch(/locked|module/i);
   });
 
   it.each([
