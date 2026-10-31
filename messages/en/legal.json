@@ -566,7 +566,7 @@
     "inviteRequired": "To accept the invitation, tick the Partner Terms box.",
     "uploadTitle": "Before your first upload",
     "uploadBody": "Photos and videos are public on your profile. Confirm that you hold the rights to what you are about to publish.",
-    "uploadLabel": "I declare that I own, or have written permission from every rights holder and every person who appears in, the photos and videos I submit, as set out in the <partner>Partner Terms</partner>.",
+    "uploadLabel": "I declare that I own the photos and videos I submit, or that I have written permission from every rights holder and every person who appears in them — including, when I publish on behalf of a hero, a contract with them authorizing it — as set out in the <partner>Partner Terms</partner>.",
     "uploadConfirm": "Confirm and upload",
     "cancel": "Cancel",
     "error": "Could not record the confirmation. Please try again."

@@ -978,12 +978,12 @@ describe("uploadHeroCover / removeHeroCover", () => {
     state.hero = { id: "c0000000-0000-4000-8000-000000000002", slug: "erick-jacquin", status: "active", avatar_url: null, cover_url: OLD_COVER };
   });
 
-  it("sem a confirmação de direitos (Termos do Parceiro), nada é reservado nem gravado; o admin não passa pela trava", async () => {
+  it("sem a confirmação de direitos (Termos do Parceiro), nada é reservado nem gravado, nem para o admin que publica pelo herói", async () => {
     state.uploadRights = false;
     expect(await uploadHeroCover(form(webpVp8(1600, 900)))).toEqual({ ok: false, error: "upload_rights_required" });
-    expect(state.log).toEqual([]);
     state.roles = ["admin"];
-    expect((await uploadHeroCover(form(webpVp8(1600, 900)))).ok).toBe(true);
+    expect(await uploadHeroCover(form(webpVp8(1600, 900)))).toEqual({ ok: false, error: "upload_rights_required" });
+    expect(state.log).toEqual([]);
   });
 
   it("reserva, grava com o service role, aplica no herói e só então apaga a capa anterior própria", async () => {

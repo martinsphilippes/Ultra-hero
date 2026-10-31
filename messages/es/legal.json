@@ -566,7 +566,7 @@
     "inviteRequired": "Para aceptar la invitación, marca la casilla de los Términos del Socio.",
     "uploadTitle": "Antes de tu primer envío",
     "uploadBody": "Las fotos y los videos son públicos en tu perfil. Confirma que tienes los derechos sobre lo que vas a publicar.",
-    "uploadLabel": "Declaro que soy titular, o tengo autorización por escrito de todos los titulares y de las personas que aparecen, de las fotos y los videos que envíe, conforme a los <partner>Términos del Socio</partner>.",
+    "uploadLabel": "Declaro que soy titular de las fotos y los videos que envíe, o que tengo autorización por escrito de todos los titulares y de las personas que aparecen —incluido, cuando publico en nombre de un héroe, un contrato con él que autoriza esa publicación—, conforme a los <partner>Términos del Socio</partner>.",
     "uploadConfirm": "Confirmar y enviar",
     "cancel": "Cancelar",
     "error": "No se pudo registrar la confirmación. Inténtalo de nuevo."

@@ -61,8 +61,8 @@ export async function startPhotoPost(formData: FormData): Promise<StartResult> {
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
-  // Termos do Parceiro (0068): o herói confirma os direitos antes do primeiro envio; o admin age pelo seletor
-  if (!ctx.actingFor && !(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
+  // Termos do Parceiro (0068): quem envia (herói, ou a agência no admin pelo herói) confirma os direitos antes
+  if (!(await hasUploadRights(supabase, userId))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
   const base = supabaseBaseUrl();
   if (!hasAdminClient() || !base) return { ok: false, error: "photo_not_configured" };
 

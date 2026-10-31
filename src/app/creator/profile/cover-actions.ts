@@ -70,9 +70,8 @@ export async function uploadHeroCover(formData: FormData): Promise<CoverResult> 
 
   try {
     const supabase = await createClient();
-    // Termos do Parceiro (0068): o herói confirma os direitos antes do primeiro envio; o admin não passa por aqui
-    const isAdmin = (await getRoles()).some((r) => r.role === "admin");
-    if (!isAdmin && !(await hasUploadRights(supabase, user.id))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
+    // Termos do Parceiro (0068): quem envia (herói, ou a agência no admin pelo herói) confirma os direitos antes
+    if (!(await hasUploadRights(supabase, user.id))) return { ok: false, error: UPLOAD_RIGHTS_REQUIRED };
     const { data: path, error: claimError } = await supabase.rpc("hero_cover_upload_claim", { p_bytes: bytes.length, p_mime: check.image.mime });
     if (claimError || typeof path !== "string") return { ok: false, error: rpcFailure(claimError) };
     // o caminho reservado começa pelo id de quem enviou; qualquer outra coisa é erro do banco

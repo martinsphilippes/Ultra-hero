@@ -566,7 +566,7 @@
     "inviteRequired": "Para aceitar o convite, marque a caixa dos Termos do Parceiro.",
     "uploadTitle": "Antes do seu primeiro envio",
     "uploadBody": "Fotos e vídeos ficam públicos no seu perfil. Confirme que você tem os direitos sobre o que vai publicar.",
-    "uploadLabel": "Declaro que sou titular, ou tenho autorização por escrito de todos os titulares e das pessoas que aparecem, das fotos e dos vídeos que eu enviar, conforme os <partner>Termos do Parceiro</partner>.",
+    "uploadLabel": "Declaro que sou titular das fotos e dos vídeos que eu enviar, ou que tenho autorização por escrito de todos os titulares e das pessoas que aparecem — inclusive, quando publico em nome de um herói, contrato com ele que autoriza essa publicação —, conforme os <partner>Termos do Parceiro</partner>.",
     "uploadConfirm": "Confirmar e enviar",
     "cancel": "Cancelar",
     "error": "Não foi possível registrar a confirmação. Tente de novo."
