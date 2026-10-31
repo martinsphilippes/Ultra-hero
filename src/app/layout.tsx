@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
+import { STARTUP_IMAGES } from "@/lib/pwa/startup-images";
 import { AppIntro } from "@/components/layout/AppIntro";
 import { AppearanceSync } from "@/components/layout/AppearanceSync";
 import { NavHistory } from "@/components/layout/NavHistory";
@@ -58,7 +59,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t("description"),
     applicationName: "Groscove Ultra",
     manifest: "/manifest.webmanifest",
-    appleWebApp: { capable: true, title: "Groscove Ultra", statusBarStyle: "black-translucent" },
+    appleWebApp: { capable: true, title: "Groscove Ultra", statusBarStyle: "black-translucent", startupImage: STARTUP_IMAGES },
     // Ícones: arquivos em src/app (favicon.ico, icon.svg, apple-icon.png) são detectados pelo Next.
     formatDetection: { telephone: false },
   };

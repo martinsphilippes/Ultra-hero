@@ -1,6 +1,6 @@
 // Gera os ícones PWA (PNG) a partir da marca (losango laranja), sem dependências.
 // Uso: node scripts/generate-icons.mjs
-// Saída: public/icons/icon-192.png, icon-512.png, icon-maskable-512.png,
+// Saída: public/icons/groscove-192.png, groscove-512.png, groscove-maskable-512.png,
 //        src/app/apple-icon.png (180) e src/app/favicon.ico (PNG 32/16 embutidos).
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -153,10 +153,10 @@ function encodeIco(entries) {
 mkdirSync(ICONS_DIR, { recursive: true });
 
 const outputs = [
-  { file: path.join(ICONS_DIR, "icon-192.png"), size: 192, options: {} },
-  { file: path.join(ICONS_DIR, "icon-512.png"), size: 512, options: {} },
+  { file: path.join(ICONS_DIR, "groscove-192.png"), size: 192, options: {} },
+  { file: path.join(ICONS_DIR, "groscove-512.png"), size: 512, options: {} },
   // maskable: fundo cheio e marca dentro da zona segura (80% central)
-  { file: path.join(ICONS_DIR, "icon-maskable-512.png"), size: 512, options: { maskable: true, markScale: 0.56 } },
+  { file: path.join(ICONS_DIR, "groscove-maskable-512.png"), size: 512, options: { maskable: true, markScale: 0.56 } },
   // Apple aplica a própria máscara: fundo cheio, sem cantos transparentes
   { file: path.join(APP_DIR, "apple-icon.png"), size: 180, options: { rounded: false, markScale: 0.66 } },
 ];
