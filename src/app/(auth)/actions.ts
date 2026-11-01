@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { generatePassword } from "@/lib/auth/generated-password";
+import { acceptMyInvitations, hasPendingInvitation } from "@/lib/auth/invite-first-access";
 import { getOrigin } from "@/lib/auth/origin";
 import { HONEYPOT_FIELD, QUICK_SIGNUP_PENDING_COOKIE, quickSignupSchema } from "@/lib/auth/quick-signup";
 import { clientIp, forgetGeneratedPassword, hashForRateLimit, isMissingSchema, recordQuickSignupAttempt, storeGeneratedPassword } from "@/lib/auth/quick-signup-server";
@@ -77,9 +78,62 @@ export async function loginAction(_prev: AuthActionState, formData: FormData): P
   const next = safeNext(formData.get("next"), LOGIN_HOME);
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { status: "error", error: mapAuthError(error) };
+  if (error) {
+    // e-mail convidado sem conta: o primeiro acesso cria a conta com a senha digitada (0077)
+    if (error.code === "invalid_credentials") {
+      const firstAccess = await inviteFirstAccess(parsed.data.email, parsed.data.password);
+      if (firstAccess) return firstAccess;
+    }
+    return { status: "error", error: mapAuthError(error) };
+  }
 
-  redirect(next);
+  // convites pendentes do e-mail da conta entram junto com o login
+  redirect(afterInvites(next, await acceptMyInvitations(supabase)));
+}
+
+// Depois de aceitar convite(s), abre a área deles (agência, marca…) em vez da tela padrão. Vindo do link
+// do convite, a página do convite diria "já usado": também vai direto para a área.
+function afterInvites(next: string, home: string | null): string {
+  if (!home) return next;
+  return next === LOGIN_HOME || next === "/invite" || next.startsWith("/invite?") ? home : next;
+}
+
+/**
+ * Primeiro acesso do convidado: só quando há convite pendente e válido para o e-mail e ainda não existe
+ * conta. A senha digitada vira a senha da conta (mínimo de 8). Devolve nulo para seguir com o erro
+ * normal de login (sem convite, ou a conta já existe e a senha está errada); senão o erro do campo ou
+ * o redirecionamento para a área do convite.
+ */
+async function inviteFirstAccess(email: string, password: string): Promise<AuthActionState | null> {
+  if (!hasAdminClient()) return null;
+  const admin = createAdminClient();
+  if (!(await hasPendingInvitation(admin, email))) return null;
+  const strong = passwordSchema.safeParse(password);
+  if (!strong.success) return { status: "error", fieldErrors: { password: strong.error.issues[0]?.message ?? "passwordTooShort" } };
+
+  // mesmo limite do cadastro rápido (por IP e por e-mail, HMAC)
+  const ip = clientIp(await headers());
+  const attempt = await recordQuickSignupAttempt(admin, hashForRateLimit("ip", ip), hashForRateLimit("email", email));
+  if (attempt === "limited") return { status: "error", error: "tooManyRequests" };
+
+  const { error: createError } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    app_metadata: { invite_first_access: true },
+  });
+  if (createError) {
+    const msg = createError.message ?? "";
+    // já existe conta com o e-mail: é senha errada mesmo
+    if (createError.code === "email_exists" || createError.code === "user_already_exists" || /already (been )?registered|already exists/i.test(msg)) return null;
+    return { status: "error", error: "unknown" };
+  }
+
+  const supabase = await createClient();
+  const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  if (signInError) return { status: "error", error: mapAuthError(signInError) };
+  const home = await acceptMyInvitations(supabase);
+  redirect(home ?? LOGIN_HOME);
 }
 
 // Cadastro rápido (tela inicial): nome completo, e-mail e celular. O servidor gera a senha, cria a conta
@@ -136,6 +190,8 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
   await supabase.auth.signOut({ scope: "local" });
   const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
   const signedIn = !signInError;
+  // convidado que preferiu o cadastro rápido: os convites do e-mail já entram (0077)
+  if (signedIn) await acceptMyInvitations(supabase);
   if (signedIn) {
     // segura a tela "Sua senha": sem isto, o /login (que agora vê a sessão) mandaria direto para o app
     (await cookies()).set(QUICK_SIGNUP_PENDING_COOKIE, "1", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 15 * 60 });

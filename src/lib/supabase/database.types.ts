@@ -8446,6 +8446,7 @@ isOneToOne: false
       is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_demo_account: { Args: Record<PropertyKey, never>; Returns: boolean };
       accept_invitation: { Args: { p_token: string }; Returns: Json };
+      accept_my_invitations: { Args: Record<PropertyKey, never>; Returns: Json };
       accept_partner_terms: { Args: { p_version: string }; Returns: undefined };
       admin_resolve_report: { Args: { p_archive_content: boolean; p_id: string; p_status: string; p_suspend_creator: boolean }; Returns: undefined };
       block_hero: { Args: { p_creator: string }; Returns: undefined };

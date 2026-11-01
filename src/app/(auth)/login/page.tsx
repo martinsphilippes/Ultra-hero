@@ -42,7 +42,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   // Veio do link de convite (/invite?token=…): o cadastro segue liberado para o e-mail convidado.
   const fromInvitation = next === "/invite" || next.startsWith("/invite?");
   // Pedido explícito (?mode=password) ou sessão expirada: abre "Já tenho senha".
-  const passwordOpen = mode === "password" || queryError === "sessionRequired";
+  // Veio do link do convite: abre direto (o convidado cria a senha ali no primeiro acesso).
+  const passwordOpen = mode === "password" || queryError === "sessionRequired" || fromInvitation;
 
   const alternatives = (
     <div className="flex flex-col gap-5">

@@ -35,6 +35,10 @@ export function LoginForm({ next }: LoginFormProps) {
         <PasswordInput name="password" autoComplete="current-password" />
       </FormField>
 
+      <p className="type-caption text-fg-muted" data-testid="invite-first-access-hint">
+        {t("login.inviteHint")}
+      </p>
+
       <div className="-mt-1 flex justify-end">
         <Link href="/forgot-password" className="inline-flex min-h-11 items-center rounded-md text-sm font-medium text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
           {t("login.forgotPassword")}

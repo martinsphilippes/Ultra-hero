@@ -9825,5 +9825,60 @@ delete from public.programs where id in ('83000000-0000-4000-8000-000000008311',
 update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael');
 delete from auth.users where id in ('83000000-0000-4000-8000-000000000831', '83000000-0000-4000-8000-000000000832');
 
+-- ================================================================ S84 · Primeiro acesso do convidado pelo e-mail (0077)
+-- A conta com o e-mail convidado aceita os convites pendentes ao entrar, sem o link. Convite vencido, de
+-- outro e-mail ou já aceito não conta. A função interna não abre para ninguém; o aceite pelo link segue igual.
+select tests.su();
+insert into auth.users (id, email) values
+  ('84000000-0000-4000-8000-000000000841', 's84-convidado@test.local'),
+  ('84000000-0000-4000-8000-000000000842', 's84-outro@test.local');
+insert into public.agencies (id, slug, name) values
+  ('84000000-0000-4000-8000-000000008401', 's84-agencia', 'Agência S84'),
+  ('84000000-0000-4000-8000-000000008402', 's84-agencia-velha', 'Agência S84 velha');
+insert into public.invitations (id, email, role, agency_id, member_role, token_hash, expires_at) values
+  ('84000000-0000-4000-8000-000000008411', 'S84-Convidado@test.local', 'agency', '84000000-0000-4000-8000-000000008401', 'admin', encode(extensions.digest('s84-tok-a', 'sha256'), 'hex'), now() + interval '7 days'),
+  ('84000000-0000-4000-8000-000000008412', 's84-convidado@test.local', 'agency', '84000000-0000-4000-8000-000000008402', 'admin', encode(extensions.digest('s84-tok-b', 'sha256'), 'hex'), now() - interval '1 minute');
+select tests.ok('S84 estrutura: núcleo fechado, aceite por e-mail só para authenticated',
+  not has_function_privilege('authenticated', 'public.accept_invitation_core(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.accept_invitation_core(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.accept_my_invitations()', 'execute')
+  and has_function_privilege('authenticated', 'public.accept_my_invitations()', 'execute')
+  and not has_function_privilege('anon', 'public.accept_invitation(text)', 'execute'));
+
+select tests.anon();
+select tests.expect_error('S84 visitante não aceita convite', $q$select public.accept_my_invitations()$q$, 'permission denied');
+
+select tests.login('84000000-0000-4000-8000-000000000842', 's84-outro@test.local');
+select tests.ok('S84 outro e-mail: nada a aceitar', jsonb_array_length(public.accept_my_invitations()) = 0);
+select tests.expect_error('S84 conta comum não chama o núcleo', $q$select public.accept_invitation_core('84000000-0000-4000-8000-000000008411')$q$, 'permission denied');
+select tests.ok('S84 outro e-mail não virou membro', public.agency_role_of('84000000-0000-4000-8000-000000008401') is null);
+
+select tests.login('84000000-0000-4000-8000-000000000841', 's84-convidado@test.local');
+select tests.ok('S84 convidado entra: só o convite válido é aceito (maiúsculas no e-mail não importam)',
+  (select (public.accept_my_invitations() -> 0 ->> 'scope_type')) = 'agency');
+select tests.ok('S84 convidado vira Adm da agência', public.agency_role_of('84000000-0000-4000-8000-000000008401') = 'admin');
+select tests.ok('S84 segunda entrada não repete nada', jsonb_array_length(public.accept_my_invitations()) = 0);
+select tests.su();
+select tests.ok('S84 convite aceito e o vencido intocado',
+  (select status::text from public.invitations where id = '84000000-0000-4000-8000-000000008411') = 'accepted'
+  and (select accepted_by from public.invitations where id = '84000000-0000-4000-8000-000000008411') = '84000000-0000-4000-8000-000000000841'
+  and (select status::text from public.invitations where id = '84000000-0000-4000-8000-000000008412') = 'pending');
+
+-- o aceite pelo link continua igual
+insert into public.invitations (id, email, role, agency_id, member_role, token_hash, expires_at) values
+  ('84000000-0000-4000-8000-000000008413', 's84-outro@test.local', 'agency', '84000000-0000-4000-8000-000000008402', 'staff', encode(extensions.digest('s84-tok-c', 'sha256'), 'hex'), now() + interval '1 day');
+select tests.login('84000000-0000-4000-8000-000000000841', 's84-convidado@test.local');
+select tests.expect_error('S84 link de outro e-mail: invitation_email_mismatch', $q$select public.accept_invitation('s84-tok-c')$q$, 'invitation_email_mismatch');
+select tests.expect_error('S84 token inexistente: invitation_invalid', $q$select public.accept_invitation('s84-nao-existe')$q$, 'invitation_invalid');
+select tests.login('84000000-0000-4000-8000-000000000842', 's84-outro@test.local');
+select tests.ok('S84 aceite pelo link funciona', (public.accept_invitation('s84-tok-c') ->> 'scope_type') = 'agency');
+
+select tests.su();
+delete from public.invitations where id::text like '84000000-%';
+delete from public.agency_members where agency_id in ('84000000-0000-4000-8000-000000008401', '84000000-0000-4000-8000-000000008402');
+delete from public.role_assignments where user_id in ('84000000-0000-4000-8000-000000000841', '84000000-0000-4000-8000-000000000842');
+delete from public.agencies where id in ('84000000-0000-4000-8000-000000008401', '84000000-0000-4000-8000-000000008402');
+delete from auth.users where id in ('84000000-0000-4000-8000-000000000841', '84000000-0000-4000-8000-000000000842');
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

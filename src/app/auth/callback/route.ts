@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isOAuthSignupRefused, isOAuthUserBanned, readExperimentOpen } from "@/lib/auth/experiment";
 import { getOriginFromRequest } from "@/lib/auth/origin";
 import { forgetGeneratedPassword, rotateGeneratedPassword } from "@/lib/auth/quick-signup-server";
+import { acceptMyInvitations } from "@/lib/auth/invite-first-access";
 import { LOGIN_HOME, safeNext } from "@/lib/auth/safe-next";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -35,7 +36,10 @@ export async function GET(request: NextRequest) {
   }
 
   await secureQuickSignupOnGoogle(supabase);
-  return NextResponse.redirect(`${origin}${next}`);
+  // convites pendentes do e-mail (0077): o Google já provou que a pessoa é dona dele
+  const home = await acceptMyInvitations(supabase);
+  const target = home && (next === LOGIN_HOME || next === "/invite" || next.startsWith("/invite?")) ? home : next;
+  return NextResponse.redirect(`${origin}${target}`);
 }
 
 // Conta do cadastro rápido (e-mail nunca verificado) que agora entrou com o Google do mesmo e-mail:
