@@ -9127,7 +9127,7 @@ export type Database = {
       professional_tap_bump: {
         Args: {
           p_action: string;
-          p_creator?: string;
+          p_creator: string | null;
           p_professional: string;
           p_source: string;
         };

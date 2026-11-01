@@ -23,7 +23,8 @@ export async function POST(request: Request) {
     // sem a 0058 a função não existe: o erro é ignorado
     await createAdminClient().rpc("professional_tap_bump", {
       p_professional: tap.professionalId,
-      p_creator: tap.creatorId ?? undefined,
+      // p_creator não tem valor padrão no banco: sem herói vai como null explícito (undefined some do JSON e dá 404)
+      p_creator: tap.creatorId,
       p_source: tap.source,
       p_action: tap.action,
     });
