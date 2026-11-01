@@ -296,5 +296,28 @@
     "list_item_unavailable": "Este item não está disponível para listas no momento.",
     "favorite_unsupported": "Ainda não dá para favoritar este item. Tente mais tarde.",
     "favorite_item_unavailable": "Este item não está disponível para favoritar no momento."
+  },
+  "blocks": {
+    "workout": {
+      "title": "Treino do post",
+      "progress": "{done} de {total} passos feitos",
+      "allDone": "Treino completo. Mandou bem!",
+      "errors": {
+        "unauthenticated": "Entre para marcar os passos.",
+        "forbidden": "Você não tem acesso a este treino.",
+        "generic": "Não foi possível salvar a marcação. Tente de novo."
+      }
+    },
+    "nutrition": {
+      "title": "Nutrição",
+      "recipe": "Receita",
+      "product": "Produto",
+      "openRecipe": "Abrir receita",
+      "openProduct": "Ver na loja"
+    },
+    "menu": {
+      "title": "Cardápio do chef",
+      "openRecipe": "Abrir receita"
+    }
   }
 }

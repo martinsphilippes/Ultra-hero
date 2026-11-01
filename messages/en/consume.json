@@ -296,5 +296,28 @@
     "list_item_unavailable": "This item is not available for lists right now.",
     "favorite_unsupported": "This item cannot be added to favorites yet. Please try again later.",
     "favorite_item_unavailable": "This item is not available for favorites right now."
+  },
+  "blocks": {
+    "workout": {
+      "title": "Post workout",
+      "progress": "{done} of {total} steps done",
+      "allDone": "Workout complete. Well done!",
+      "errors": {
+        "unauthenticated": "Sign in to check off steps.",
+        "forbidden": "You do not have access to this workout.",
+        "generic": "Could not save the check. Try again."
+      }
+    },
+    "nutrition": {
+      "title": "Nutrition",
+      "recipe": "Recipe",
+      "product": "Product",
+      "openRecipe": "Open recipe",
+      "openProduct": "See in store"
+    },
+    "menu": {
+      "title": "Chef's menu",
+      "openRecipe": "Open recipe"
+    }
   }
 }

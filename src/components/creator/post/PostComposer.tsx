@@ -11,13 +11,23 @@ import { Button, Chip, Dialog, FormField, Input, ProgressBar, Textarea, useToast
 import { AvatarPrepareError, prepareFittedImage } from "@/lib/avatar/resize";
 import { POST_PHOTO_MAX_EDGE, POST_PHOTO_MAX_UPLOAD_BYTES, type PostPhotoState } from "@/lib/post-photo/constants";
 import { mediaKindOf, pickOptions, validatePhotoSource, type MediaKind } from "@/lib/post-photo/validation";
+import { draftToBlock, emptyDrafts, type BlockDrafts } from "@/lib/post-blocks/schema";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 import { cn } from "@/lib/utils";
 import { UploadRightsDialog } from "../UploadRightsDialog";
+import { PillarBlockEditor, type PillarBlockOptions } from "./PillarBlockEditor";
 import { CAPTION_MAX, TITLE_MAX, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "./validation";
 
-type Props = { configured: boolean; photoState: PostPhotoState; defaultPillar: Pillar };
+type Props = {
+  configured: boolean;
+  photoState: PostPhotoState;
+  defaultPillar: Pillar;
+  /** Receitas e produtos que o bloco de nutrição/cardápio pode apontar (0075). */
+  blockOptions: PillarBlockOptions;
+  /** Atalhos de cadastro quando a lista está vazia. */
+  blockHrefs: { newRecipe: string; links: string };
+};
 type PickSource = "photoCamera" | "videoCamera" | "gallery";
 
 type Step = "pick" | "compose" | "done";
@@ -86,7 +96,7 @@ function leavingLink(event: MouseEvent): boolean {
 // Composer de post do herói, pensado para o celular: escolher → enviar e escrever → publicado.
 // Vídeo: o envio (tus, direto para o Cloudflare) roda em segundo plano enquanto a pessoa escreve.
 // Foto (0043): reduzida no aparelho e enviada pelo servidor ao bucket post-photos; não depende do Stream.
-export function PostComposer({ configured, photoState, defaultPillar }: Props) {
+export function PostComposer({ configured, photoState, defaultPillar, blockOptions, blockHrefs }: Props) {
   const t = useTranslations("creator.post");
   const te = useTranslations("creator.post.errors");
   const tpe = useTranslations("creator.post.photo.errors");
@@ -131,6 +141,9 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [pillar, setPillar] = useState<Pillar>(defaultPillar);
+  // bloco do pilar (0075): um rascunho por pilar, para trocar de pilar e voltar sem perder o texto
+  const [drafts, setDrafts] = useState<BlockDrafts>(() => emptyDrafts());
+  const [blockError, setBlockError] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
   const [contentId, setContentId] = useState<string | null>(null);
   const [discardOpen, setDiscardOpen] = useState(false);
@@ -525,6 +538,8 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
     setTitle("");
     setCaption("");
     setPillar(defaultPillar);
+    setDrafts(emptyDrafts());
+    setBlockError(null);
     setSlug(null);
     setContentId(null);
     setPickError(null);
@@ -574,8 +589,15 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
   async function doPublish() {
     if (!contentId || !canPublish) return;
     const id = contentId;
+    // bloco do pilar: rascunho vazio sai sem bloco; preenchido pela metade avisa antes de publicar
+    const blockResult = draftToBlock(pillar, drafts);
+    if (!blockResult.ok) {
+      setBlockError(t(`blocks.errors.${blockResult.error}`));
+      return;
+    }
+    setBlockError(null);
     // Texto congelado no toque: os campos ficam desabilitados enquanto publica/processa.
-    const payload = { contentId: id, title: trimmedTitle, caption: caption.trim(), pillar };
+    const payload = { contentId: id, title: trimmedTitle, caption: caption.trim(), pillar, block: blockResult.block };
     stopPolling();
     setPublish({ state: "publishing" });
     setAnnouncement(t("sr.publishing"));
@@ -788,12 +810,22 @@ export function PostComposer({ configured, photoState, defaultPillar }: Props) {
             <legend className="mb-2 text-sm font-semibold text-fg">{t("pillarLabel")}</legend>
             <div className="flex flex-wrap gap-2">
               {PILLARS.map((p) => (
-                <Chip key={p} selected={pillar === p} onClick={() => setPillar(p)} className="min-h-12 px-5 text-base disabled:opacity-55">
+                <Chip
+                  key={p}
+                  selected={pillar === p}
+                  onClick={() => {
+                    setPillar(p);
+                    setBlockError(null);
+                  }}
+                  className="min-h-12 px-5 text-base disabled:opacity-55"
+                >
                   {tp(p)}
                 </Chip>
               ))}
             </div>
           </fieldset>
+          {/* o pilar abre os campos dele (0075): Rotina não abre nada */}
+          <PillarBlockEditor pillar={pillar} drafts={drafts} onChange={setDrafts} options={blockOptions} hrefs={blockHrefs} error={blockError} disabled={publishing} />
         </fieldset>
 
         {publish.state === "processing" && <p className="type-caption text-fg-muted">{t("processingHint")}</p>}

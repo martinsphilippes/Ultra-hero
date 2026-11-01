@@ -5,9 +5,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { CAPTION_MAX, MAX_POST_BYTES, MAX_POST_SECONDS, SERVER_MAX_POST_SECONDS, TITLE_MAX, durationMinutes } from "@/components/creator/post/validation";
 import { LOCALE_VALUES, PILLAR_VALUES } from "@/components/editors/content/schema";
+import { postBlockSchema, type PostBlock } from "@/lib/post-blocks/schema";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
-import { rpcErrorCode, type LocaleCode, type Pillar } from "@/lib/supabase/helpers";
+import { isMissingSchema, rpcErrorCode, type LocaleCode, type Pillar } from "@/lib/supabase/helpers";
 import { getStreamProvider, thumbnailPath } from "@/lib/video";
 import { failFrom, type ActionFailure } from "../_lib/action-utils";
 import { insertCreatorContent } from "../_lib/content-insert";
@@ -40,6 +41,8 @@ const publishSchema = z.object({
   title: z.string().trim().min(1).max(TITLE_MAX),
   caption: z.string().trim().max(CAPTION_MAX).optional().default(""),
   pillar: z.enum(PILLAR_VALUES),
+  // bloco do pilar (0075): treino, nutrição ou cardápio; ausente = post só com foto/vídeo e texto
+  block: postBlockSchema.nullable().optional(),
 });
 
 const idSchema = z.object({ contentId: z.uuid() });
@@ -175,10 +178,13 @@ async function loadOwnContent(ctx: CreatorActionContext, contentId: string): Pro
   return data as OwnDraft;
 }
 
-export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar }): Promise<PublishResult> {
+export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar; block?: PostBlock | null }): Promise<PublishResult> {
   const parsed = publishSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.path[0] === "title") ? "missing_title" : "invalid_input" };
-  const { contentId, title, caption, pillar } = parsed.data;
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]?.path[0];
+    return { ok: false, error: first === "title" ? "missing_title" : first === "block" ? "invalid_block" : "invalid_input" };
+  }
+  const { contentId, title, caption, pillar, block } = parsed.data;
 
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
@@ -193,6 +199,13 @@ export async function publishVideoPost(input: { contentId: string; title: string
   // Texto salvo antes da checagem do vídeo: se a pessoa sair enquanto processa, nada se perde.
   const { error: updateError } = await supabase.from("content").update({ title, summary: caption || null, pillar }).eq("id", contentId);
   if (updateError) return failFrom(updateError);
+
+  // bloco do pilar (0075): o banco confere dono, forma e referências (receita do herói, produto no ar).
+  // Sem bloco, apaga o que uma tentativa anterior de publicar (com outro pilar) possa ter deixado.
+  const { error: blockError } = block
+    ? await supabase.rpc("post_block_set", { p_content: contentId, p_kind: block.kind, p_data: block.data })
+    : await supabase.rpc("post_block_set", { p_content: contentId, p_kind: null, p_data: null });
+  if (blockError && !isMissingSchema(blockError)) return failFrom(blockError);
 
   const { data: body } = await supabase.from("content_bodies").select("media_provider, media_ref").eq("content_id", contentId).maybeSingle();
   if (!body || body.media_provider !== "cloudflare_stream") return { ok: false, error: "missing_media" };

@@ -7894,11 +7894,59 @@ export type Database = {
           },
         ];
       };
+"post_blocks": {
+                  Row: {
+                    "content_id": string,"created_at": string,"data": NonNullable<Json>,"kind": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "content_id": string,"created_at"?: string,"data": NonNullable<Json>,"kind": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "content_id"?: string,"created_at"?: string,"data"?: NonNullable<Json>,"kind"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "post_blocks_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                };
+"post_step_checks": {
+                  Row: {
+                    "checked_at": string,"content_id": string,"step_index": number,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "checked_at"?: string,"content_id": string,"step_index": number,"user_id": string
+                  }
+                  Update: {
+                    "checked_at"?: string,"content_id"?: string,"step_index"?: number,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "post_step_checks_content_id_fkey"
+      columns: ["content_id"]
+isOneToOne: false
+      referencedRelation: "content"
+      referencedColumns: ["id"]
+    }
+                  ]
+                };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+"post_block_uuid_ok":
+{ Args: { "p": Json }; Returns: boolean
+                           };
+      post_block_data_ok: { Args: { p_data: Json; p_kind: string }; Returns: boolean };
+      post_step_toggle: { Args: { p_content: string; p_done?: boolean | null; p_step: number }; Returns: number };
+      post_block_set: { Args: { p_content: string; p_data: Json | null; p_kind: string | null }; Returns: undefined };
       collectible_photo_upload_claim: { Args: { p_bytes: number; p_mime: string }; Returns: string };
       agency_audit_list: {
         Args: {

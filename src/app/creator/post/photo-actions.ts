@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { CAPTION_MAX, TITLE_MAX } from "@/components/creator/post/validation";
 import { LOCALE_VALUES, PILLAR_VALUES } from "@/components/editors/content/schema";
+import { postBlockSchema, type PostBlock } from "@/lib/post-blocks/schema";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { POST_PHOTO_MAX_UPLOAD_BYTES } from "@/lib/post-photo/constants";
 import { isPostPhotoPath, publicPostPhotoUrl } from "@/lib/post-photo/paths";
@@ -14,7 +15,7 @@ import { hasUploadRights } from "@/lib/partner-terms/server";
 import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
-import type { LocaleCode, Pillar } from "@/lib/supabase/helpers";
+import { isMissingSchema, type LocaleCode, type Pillar } from "@/lib/supabase/helpers";
 import { failFrom, type ActionFailure } from "../_lib/action-utils";
 import { insertCreatorContent } from "../_lib/content-insert";
 import { creatorActionContext } from "../_lib/creator-action";
@@ -40,6 +41,8 @@ const publishSchema = z.object({
   title: z.string().trim().min(1).max(TITLE_MAX),
   caption: z.string().trim().max(CAPTION_MAX).optional().default(""),
   pillar: z.enum(PILLAR_VALUES),
+  // bloco do pilar (0075): treino, nutrição ou cardápio; ausente = post só com foto/vídeo e texto
+  block: postBlockSchema.nullable().optional(),
 });
 
 const idSchema = z.object({ contentId: z.uuid() });
@@ -134,10 +137,13 @@ export async function startPhotoPost(formData: FormData): Promise<StartResult> {
   return { ok: true, contentId: inserted.id };
 }
 
-export async function publishPhotoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar }): Promise<PublishResult> {
+export async function publishPhotoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar; block?: PostBlock | null }): Promise<PublishResult> {
   const parsed = publishSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.path[0] === "title") ? "missing_title" : "invalid_input" };
-  const { contentId, title, caption, pillar } = parsed.data;
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]?.path[0];
+    return { ok: false, error: first === "title" ? "missing_title" : first === "block" ? "invalid_block" : "invalid_input" };
+  }
+  const { contentId, title, caption, pillar, block } = parsed.data;
 
   const ctx = await creatorActionContext("post");
   if (!ctx.ok) return ctx;
@@ -155,6 +161,13 @@ export async function publishPhotoPost(input: { contentId: string; title: string
 
   const { error: updateError } = await supabase.from("content").update({ title, summary: caption || null, pillar }).eq("id", contentId);
   if (updateError) return failFrom(updateError);
+
+  // bloco do pilar (0075): o banco confere dono, forma e referências (receita do herói, produto no ar).
+  // Sem bloco, apaga o que uma tentativa anterior de publicar (com outro pilar) possa ter deixado.
+  const { error: blockError } = block
+    ? await supabase.rpc("post_block_set", { p_content: contentId, p_kind: block.kind, p_data: block.data })
+    : await supabase.rpc("post_block_set", { p_content: contentId, p_kind: null, p_data: null });
+  if (blockError && !isMissingSchema(blockError)) return failFrom(blockError);
 
   // Só rascunho que nunca foi ao ar troca de slug: depois disso o link já pode ter circulado.
   if (content.published_at === null) {

@@ -212,7 +212,9 @@
       "photo_not_configured": "Photo upload is not available in this environment.",
       "photo_disabled": "Photo upload is paused by the administration.",
       "review_required": "This kind of post needs a review before going live. Open the draft in My content.",
-      "upload_rights_required": "Before your first upload, confirm that you hold the rights to the photo or video."
+      "upload_rights_required": "Before your first upload, confirm that you hold the rights to the photo or video.",
+      "invalid_block": "The pillar fields are not valid. Check and try again.",
+      "invalid_reference": "A chosen recipe or product is no longer available. Remove it and choose another."
     },
     "photo": {
       "draftTitle": "Photo post",
@@ -261,7 +263,62 @@
       }
     },
     "talentOnly": "Available only for heroes with a public page",
-    "talentOnlyHint": "Your access is the agency office: media kit, consent and notices."
+    "talentOnlyHint": "Your access is the agency office: media kit, consent and notices.",
+    "blocks": {
+      "counter": "{count}/{max}",
+      "errors": {
+        "workout_steps": "Write at least one workout step.",
+        "workout_step_text": "Each step needs a text.",
+        "nutrition_items": "Choose at least one recipe, product or dish.",
+        "menu_name": "Each menu option needs a name.",
+        "invalid_block": "Check the pillar fields and try again."
+      },
+      "workout": {
+        "title": "Post workout",
+        "hint": "Explain the workout and list the steps. Whoever opens the post checks off each step they did.",
+        "description": "Explanation",
+        "descriptionPlaceholder": "E.g.: light warm-up, then 3 rounds of the circuit.",
+        "steps": "Steps (to do)",
+        "stepN": "Step {n}",
+        "stepPlaceholder": "E.g.: 10 squats",
+        "removeStep": "Remove step {n}",
+        "addStep": "Add step"
+      },
+      "nutrition": {
+        "title": "Post nutrition",
+        "hint": "Point to one of your recipes, a store product, or describe a dish. Whoever opens the post gets direct access.",
+        "chosen": "Chosen items",
+        "recipe": "Recipe",
+        "product": "Product",
+        "dish": "Dish",
+        "remove": "Remove {name}",
+        "pickRecipe": "Registered recipe",
+        "pickProduct": "Store product",
+        "choose": "Choose…",
+        "noRecipes": "You have no published recipe yet.",
+        "createRecipe": "Register a recipe",
+        "noProducts": "No product available in the store.",
+        "requestProduct": "See product links",
+        "full": "Up to {max} items per post.",
+        "dishTitle": "Or describe a dish",
+        "dishName": "Dish name",
+        "dishDescription": "Description",
+        "dishAdd": "Add dish"
+      },
+      "menu": {
+        "title": "Chef's menu",
+        "hint": "1 to 5 options. Each one can point to one of your recipes.",
+        "optionN": "Option {n}",
+        "removeOption": "Remove option {n}",
+        "name": "Name",
+        "namePlaceholder": "E.g.: Mushroom risotto",
+        "description": "Description",
+        "recipe": "Linked recipe",
+        "noRecipe": "No recipe",
+        "noRecipes": "You have no published recipe yet.",
+        "addOption": "Add option"
+      }
+    }
   },
   "reviews": {
     "title": "Review history",

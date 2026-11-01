@@ -6,6 +6,7 @@ import { PostComposer } from "@/components/creator/post/PostComposer";
 import { PageHeader } from "@/components/ui";
 import { actingClient, getActingHero } from "@/lib/acting-hero/server";
 import { requireAgency } from "@/lib/agency/server";
+import { loadComposerOptions } from "@/lib/post-blocks/queries";
 import { getPostPhotoState } from "@/lib/post-photo/availability";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 
@@ -24,13 +25,18 @@ export default async function AgencyHeroPostPage({ params }: { params: Promise<{
   const acting = await getActingHero();
   if (acting.status !== "ok" || acting.hero.id !== id) redirect("/agencia/herois");
   const [t, th, supabase, photoState] = await Promise.all([getTranslations("creator.post"), getTranslations("agency.heroes"), actingClient(id), getPostPhotoState()]);
-  const [{ data: hero }, configured] = await Promise.all([supabase.from("creator_profiles").select("pillars").eq("id", id).maybeSingle(), readVideoUploadConfigured(supabase)]);
+  const [{ data: hero }, configured, blockOptions] = await Promise.all([
+    supabase.from("creator_profiles").select("pillars").eq("id", id).maybeSingle(),
+    readVideoUploadConfigured(supabase),
+    loadComposerOptions(supabase, id),
+  ]);
   const first = hero?.pillars?.[0];
   const defaultPillar: Pillar = first && PILLARS.includes(first) ? first : "routine";
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={th("postAs", { name: acting.hero.name })} backHref={`/agencia/herois/${id}`} backLabel={acting.hero.name} />
-      <PostComposer configured={configured} photoState={photoState} defaultPillar={defaultPillar} />
+      {/* receitas e vínculos de produto não são da agência (0045): o atalho leva à página do herói */}
+      <PostComposer configured={configured} photoState={photoState} defaultPillar={defaultPillar} blockOptions={blockOptions} blockHrefs={{ newRecipe: `/agencia/herois/${id}`, links: `/agencia/herois/${id}` }} />
     </div>
   );
 }

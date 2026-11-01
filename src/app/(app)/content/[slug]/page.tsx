@@ -58,6 +58,8 @@ import { loadLocalizedBody } from "@/lib/catalog/localized-body";
 import { CONTENT_CARD_SELECT, liveContentFilter, type ContentCardData } from "@/lib/catalog/queries";
 import { cookModeHref } from "@/lib/recipes/cook-mode";
 import { getRecipeGate } from "@/lib/recipes/gate";
+import { PostBlocks } from "@/components/content/PostBlocks";
+import { loadBlockReferences, loadPostBlocks, loadStepChecks } from "@/lib/post-blocks/queries";
 import { isPhotoPost } from "@/lib/post-photo/paths";
 import { isLive, isRecipeMediaUrl } from "@/lib/recipes/media";
 import { recipesSeoIndexEnabled } from "@/lib/recipes/jsonld";
@@ -196,6 +198,13 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
   // o corpo traduzido só vale junto da tradução publicada (a RPC também devolve rascunho ao admin)
   const body: unknown = (localization ? locBody : null) ?? bodyRow?.body ?? null;
   const showLanguageNotice = wantsLocalization && !localization;
+
+  // blocos por pilar (0075): só para quem pode consumir; a RLS repete a regra
+  const blocks = user && bodyRow && (content.type === "article" || content.type === "video") ? await loadPostBlocks(supabase, content.id) : [];
+  const [stepChecks, blockRefs] = await Promise.all([
+    blocks.some((b) => b.kind === "workout") ? loadStepChecks(supabase, content.id) : [],
+    loadBlockReferences(supabase, blocks),
+  ]);
 
   const mode: "manual" | "auto" = content.completion_mode ?? settingsRes.data?.default_completion_mode ?? "manual";
   const threshold = settingsRes.data?.auto_threshold_pct ?? 90;
@@ -526,6 +535,7 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
           {content.type === "workout" && <WorkoutBody workout={parseWorkoutBody(body)} />}
           {/* post com foto: a foto do topo é o corpo (e o alvo da leitura); a legenda é o resumo */}
           {(content.type === "guide" || content.type === "article") && !photoPost && <GuideBody guide={parseGuideBody(body)} id="content-body" />}
+          {blocks.length > 0 ? <PostBlocks contentId={content.id} blocks={blocks} checked={stepChecks} references={blockRefs} /> : null}
         </div>
       )}
 

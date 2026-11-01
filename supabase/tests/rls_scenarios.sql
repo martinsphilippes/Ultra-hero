@@ -9625,5 +9625,116 @@ delete from public.post_photo_uploads where user_id = '10000000-0000-4000-8000-0
 delete from public.collectibles where id = (select v::uuid from t_s81 where k = 'item');
 drop table t_s81;
 
+-- ================================================================ S82 · Blocos por pilar no Novo post (0075)
+-- O herói (ou o admin por ele) grava o bloco do post pela RPC: forma e tamanhos conferidos; receita só do
+-- próprio herói e publicada; produto só no ar. Quem pode consumir o post lê o bloco e marca os passos do
+-- treino para si (ninguém lê a marcação de outra pessoa). Visitante e conta comum: nada. S14 não muda.
+select tests.su();
+create temp table t_s82 (k text primary key, v text);
+grant all on t_s82 to anon, authenticated, service_role;
+insert into auth.users (id, email) values
+  ('82000000-0000-4000-8000-000000000821', 's82hero@test.local'),
+  ('82000000-0000-4000-8000-000000000822', 's82fan@test.local'),
+  ('82000000-0000-4000-8000-000000000823', 's82other@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('82000000-0000-4000-8000-000000000821', 'creator', 'global');
+update public.creator_profiles set user_id = '82000000-0000-4000-8000-000000000821' where id = public.seed_uuid('creator:rafael');
+-- access_level 'free': regra de acesso do app (sem regra o conteúdo fica indisponível a todos)
+insert into public.content (id, slug, creator_id, pillar, type, title, status, published_at, media_license_kind, access_level) values
+  ('82000000-0000-4000-8000-000000008201', 's82-post-treino', public.seed_uuid('creator:rafael'), 'training', 'article', 'Treino do dia S82', 'published', now(), 'own', 'free'),
+  ('82000000-0000-4000-8000-000000008202', 's82-receita-rafael', public.seed_uuid('creator:rafael'), 'nutrition', 'recipe', 'Receita S82', 'published', now(), 'own', 'free'),
+  ('82000000-0000-4000-8000-000000008203', 's82-receita-tiago', public.seed_uuid('creator:tiago'), 'nutrition', 'recipe', 'Receita de outro S82', 'published', now(), 'own', 'free'),
+  ('82000000-0000-4000-8000-000000008204', 's82-receita-rascunho', public.seed_uuid('creator:rafael'), 'nutrition', 'recipe', 'Receita rascunho S82', 'draft', null, 'own', 'free'),
+  ('82000000-0000-4000-8000-000000008205', 's82-post-rotina', public.seed_uuid('creator:rafael'), 'routine', 'article', 'Rotina S82 (sem bloco)', 'published', now(), 'own', 'free');
+insert into public.content_bodies (content_id, body) values ('82000000-0000-4000-8000-000000008201', '{"kind":"article","format":"photo"}');
+insert into t_s82 values ('product', public.seed_uuid('product:ue-water-citrus')::text);
+select tests.ok('S82 estrutura: RLS ligada, só leitura para authenticated, sem execute para anon nas funções novas',
+  (select relrowsecurity from pg_class where oid = 'public.post_blocks'::regclass)
+  and (select relrowsecurity from pg_class where oid = 'public.post_step_checks'::regclass)
+  and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'post_blocks') = 'SELECT:authenticated'
+  and (select string_agg(cmd || ':' || array_to_string(roles, ','), ';') from pg_policies where schemaname = 'public' and tablename = 'post_step_checks') = 'SELECT:authenticated'
+  and not has_table_privilege('authenticated', 'public.post_blocks', 'insert, update, delete')
+  and not has_table_privilege('authenticated', 'public.post_step_checks', 'insert, update, delete')
+  and not has_function_privilege('anon', 'public.post_block_set(uuid, text, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.post_step_toggle(uuid, int, boolean)', 'execute')
+  and (select p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.post_block_set(uuid, text, jsonb)'::regprocedure)
+  and (select p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.post_step_toggle(uuid, int, boolean)'::regprocedure));
+
+-- visitante e conta comum
+select tests.anon();
+select tests.expect_error('S82 visitante não grava bloco', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"","steps":[{"text":"a"}]}')$q$, 'permission denied');
+select tests.expect_error('S82 visitante não marca passo', $q$select public.post_step_toggle('82000000-0000-4000-8000-000000008201', 0, true)$q$, 'permission denied');
+select tests.login('82000000-0000-4000-8000-000000000823', 's82other@test.local');
+select tests.expect_error('S82 conta comum não grava bloco no post de outro: forbidden', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"","steps":[{"text":"a"}]}')$q$, 'forbidden');
+
+-- herói: forma e referências
+select tests.login('82000000-0000-4000-8000-000000000821', 's82hero@test.local');
+select tests.expect_error('S82 tipo de bloco desconhecido', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'poema', '{}')$q$, 'invalid_block');
+select tests.expect_error('S82 treino sem passo: invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"x","steps":[]}')$q$, 'invalid_block');
+select tests.expect_error('S82 treino com passo em branco: invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"x","steps":[{"text":"  "}]}')$q$, 'invalid_block');
+select tests.expect_error('S82 treino com 21 passos: invalid_block',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', jsonb_build_object('description', '', 'steps', (select jsonb_agg(jsonb_build_object('text', 'p' || g)) from generate_series(1, 21) g)))$q$, 'invalid_block');
+select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"Aquecer 5 min","steps":[{"text":"10 agachamentos"},{"text":"1 min de prancha"},{"text":"20 polichinelos"}]}');
+select tests.ok('S82 herói grava o treino e lê o próprio bloco',
+  (select jsonb_array_length(data -> 'steps') from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201' and kind = 'workout') = 3);
+select tests.expect_error('S82 treino sem chaves (nulo não passa): invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{}')$q$, 'invalid_block');
+select tests.expect_error('S82 passo sem texto: invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"","steps":[{}]}')$q$, 'invalid_block');
+select tests.expect_error('S82 nutrição com receita de outro herói: invalid_reference',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"recipe","content_id":"82000000-0000-4000-8000-000000008203"}]}')$q$, 'invalid_reference');
+select tests.expect_error('S82 nutrição com receita própria em rascunho: invalid_reference',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"recipe","content_id":"82000000-0000-4000-8000-000000008204"}]}')$q$, 'invalid_reference');
+select tests.expect_error('S82 nutrição com produto inexistente: invalid_reference',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"product","product_id":"82000000-0000-4000-8000-000000009999"}]}')$q$, 'invalid_reference');
+select tests.expect_error('S82 nutrição com item de tipo desconhecido: invalid_block',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"bebida","name":"x"}]}')$q$, 'invalid_block');
+select tests.expect_error('S82 nutrição com prato sem nome: invalid_block',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition', '{"items":[{"kind":"dish"}]}')$q$, 'invalid_block');
+select tests.expect_error('S82 cardápio com opção sem nome: invalid_block',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'menu', '{"options":[{"description":"x","recipe_id":null}]}')$q$, 'invalid_block');
+select tests.expect_error('S82 cardápio apontando para receita de outro herói: invalid_reference',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', 'menu', '{"options":[{"name":"Risoto","description":"","recipe_id":"82000000-0000-4000-8000-000000008203"}]}')$q$, 'invalid_reference');
+select tests.expect_error('S82 herói não grava bloco em post de outro herói: forbidden',
+  $q$select public.post_block_set('82000000-0000-4000-8000-000000008203', 'menu', '{"options":[{"name":"x","description":"","recipe_id":null}]}')$q$, 'forbidden');
+select tests.ok('S82 o treino continua sendo o único bloco', (select count(*) from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201') = 1);
+
+-- seguidor: lê o bloco, marca os passos para si
+select tests.login('82000000-0000-4000-8000-000000000822', 's82fan@test.local');
+select tests.ok('S82 seguidor lê o bloco do post no ar', (select count(*) from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201' and kind = 'workout') = 1);
+select tests.ok('S82 marca o passo 1: 1 feito', public.post_step_toggle('82000000-0000-4000-8000-000000008201', 0, true) = 1);
+select tests.ok('S82 marca o passo 3 e repete o 1: 2 feitos (sem duplicar)',
+  public.post_step_toggle('82000000-0000-4000-8000-000000008201', 2, true) = 2 and public.post_step_toggle('82000000-0000-4000-8000-000000008201', 0, true) = 2);
+select tests.expect_error('S82 passo fora da lista: invalid_step', $q$select public.post_step_toggle('82000000-0000-4000-8000-000000008201', 3, true)$q$, 'invalid_step');
+select tests.expect_error('S82 post sem treino: not_found', $q$select public.post_step_toggle('82000000-0000-4000-8000-000000008205', 0, true)$q$, 'not_found');
+select tests.expect_error('S82 receita sem o aceite das receitas: forbidden (regra única de acesso)', $q$select public.post_step_toggle('82000000-0000-4000-8000-000000008202', 0, true)$q$, 'forbidden');
+select tests.ok('S82 desmarca o passo 1: 1 feito', public.post_step_toggle('82000000-0000-4000-8000-000000008201', 0, false) = 1);
+select tests.ok('S82 seguidor lê só as próprias marcações', (select count(*) from public.post_step_checks) = 1);
+select tests.login('82000000-0000-4000-8000-000000000823', 's82other@test.local');
+select tests.ok('S82 outra pessoa não vê a marcação do seguidor', (select count(*) from public.post_step_checks) = 0);
+
+-- herói troca o pilar: um bloco por post, marcações antigas somem; nulos apagam
+select tests.login('82000000-0000-4000-8000-000000000821', 's82hero@test.local');
+select public.post_block_set('82000000-0000-4000-8000-000000008201', 'nutrition',
+  ('{"items":[{"kind":"recipe","content_id":"82000000-0000-4000-8000-000000008202"},{"kind":"product","product_id":"' || (select v from t_s82 where k = 'product') || '"},{"kind":"dish","name":"Salada","description":"folhas e grãos"}]}')::jsonb);
+select tests.su();
+select tests.ok('S82 nutrição gravada substitui o treino (um bloco por post) e apaga as marcações',
+  (select string_agg(kind, ',') from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201') = 'nutrition'
+  and (select count(*) from public.post_step_checks where content_id = '82000000-0000-4000-8000-000000008201') = 0);
+select tests.login('82000000-0000-4000-8000-000000000821', 's82hero@test.local');
+select public.post_block_set('82000000-0000-4000-8000-000000008201', 'menu', '{"options":[{"name":"Risoto","description":"de cogumelos","recipe_id":"82000000-0000-4000-8000-000000008202"},{"name":"Sopa","description":"","recipe_id":null}]}');
+select tests.ok('S82 cardápio gravado substitui a nutrição',
+  (select string_agg(kind, ',') from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201') = 'menu');
+select public.post_block_set('82000000-0000-4000-8000-000000008201', 'menu', null);
+select tests.ok('S82 p_data nulo apaga o bloco', (select count(*) from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201') = 0);
+select public.post_block_set('82000000-0000-4000-8000-000000008201', 'workout', '{"description":"","steps":[{"text":"novo passo"}]}');
+select public.post_block_set('82000000-0000-4000-8000-000000008201', null, null);
+select tests.ok('S82 p_kind nulo apaga todos os blocos (post volta para Rotina)', (select count(*) from public.post_blocks where content_id = '82000000-0000-4000-8000-000000008201') = 0);
+select tests.expect_error('S82 p_kind nulo com dados: invalid_block', $q$select public.post_block_set('82000000-0000-4000-8000-000000008201', null, '{"x":1}')$q$, 'invalid_block');
+
+-- limpeza: nada do S82 fica
+select tests.su();
+delete from public.content where id in ('82000000-0000-4000-8000-000000008201', '82000000-0000-4000-8000-000000008202', '82000000-0000-4000-8000-000000008203', '82000000-0000-4000-8000-000000008204', '82000000-0000-4000-8000-000000008205');
+update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael');
+delete from auth.users where id in ('82000000-0000-4000-8000-000000000821', '82000000-0000-4000-8000-000000000822', '82000000-0000-4000-8000-000000000823');
+drop table t_s82;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

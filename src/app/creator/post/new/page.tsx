@@ -5,6 +5,7 @@ import { PostComposer } from "@/components/creator/post/PostComposer";
 import { Briefcase } from "lucide-react";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { getRoles, isTalentOnly } from "@/lib/auth/session";
+import { loadComposerOptions } from "@/lib/post-blocks/queries";
 import { getPostPhotoState } from "@/lib/post-photo/availability";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
 import { getPostingCreator } from "../../_lib/creator";
@@ -41,14 +42,14 @@ export default async function NewPostPage() {
   if (!ctx.creatorId || !ctx.profile) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("title")} />;
 
   const supabase = ctx.supabase;
-  const [configured, photoState] = await Promise.all([readVideoUploadConfigured(supabase), getPostPhotoState()]);
+  const [configured, photoState, blockOptions] = await Promise.all([readVideoUploadConfigured(supabase), getPostPhotoState(), loadComposerOptions(supabase, ctx.creatorId)]);
   const first = ctx.profile.pillars?.[0];
   const defaultPillar: Pillar = first && PILLARS.includes(first) ? first : "routine";
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tn("portals.creator")} backHref={ctx.acting ? "/creator" : "/profile"} backLabel={ctx.acting ? tn("creator.dashboard") : tn("backToProfile")} />
-      <PostComposer configured={configured} photoState={photoState} defaultPillar={defaultPillar} />
+      <PostComposer configured={configured} photoState={photoState} defaultPillar={defaultPillar} blockOptions={blockOptions} blockHrefs={{ newRecipe: "/creator/recipes/new", links: "/creator/links" }} />
     </div>
   );
 }

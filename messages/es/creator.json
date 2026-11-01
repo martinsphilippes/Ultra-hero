@@ -212,7 +212,9 @@
       "photo_not_configured": "El envío de fotos no está disponible en este entorno.",
       "photo_disabled": "El envío de fotos está en pausa por la administración.",
       "review_required": "Este tipo de post necesita revisión antes de publicarse. Abre el borrador en Mis contenidos.",
-      "upload_rights_required": "Antes del primer envío, confirma que tienes los derechos sobre la foto o el video."
+      "upload_rights_required": "Antes del primer envío, confirma que tienes los derechos sobre la foto o el video.",
+      "invalid_block": "Los campos del pilar no son válidos. Revisa e intenta de nuevo.",
+      "invalid_reference": "Una receta o producto elegido ya no está disponible. Quítalo y elige otro."
     },
     "photo": {
       "draftTitle": "Post con foto",
@@ -261,7 +263,62 @@
       }
     },
     "talentOnly": "Disponible solo para héroes con página pública",
-    "talentOnlyHint": "Tu acceso es la oficina de la agencia: media kit, consentimiento y avisos."
+    "talentOnlyHint": "Tu acceso es la oficina de la agencia: media kit, consentimiento y avisos.",
+    "blocks": {
+      "counter": "{count}/{max}",
+      "errors": {
+        "workout_steps": "Escribe al menos un paso del entrenamiento.",
+        "workout_step_text": "Cada paso necesita un texto.",
+        "nutrition_items": "Elige al menos una receta, un producto o un plato.",
+        "menu_name": "Cada opción del menú necesita un nombre.",
+        "invalid_block": "Revisa los campos del pilar e intenta de nuevo."
+      },
+      "workout": {
+        "title": "Entrenamiento del post",
+        "hint": "Explica el entrenamiento y lista los pasos. Quien abra el post marca cada paso que hizo.",
+        "description": "Explicación",
+        "descriptionPlaceholder": "Ej.: calentamiento ligero, luego 3 vueltas del circuito.",
+        "steps": "Pasos (por hacer)",
+        "stepN": "Paso {n}",
+        "stepPlaceholder": "Ej.: 10 sentadillas",
+        "removeStep": "Quitar paso {n}",
+        "addStep": "Agregar paso"
+      },
+      "nutrition": {
+        "title": "Nutrición del post",
+        "hint": "Indica una receta tuya, un producto de la tienda o describe un plato. Quien abra el post tiene acceso directo.",
+        "chosen": "Elementos elegidos",
+        "recipe": "Receta",
+        "product": "Producto",
+        "dish": "Plato",
+        "remove": "Quitar {name}",
+        "pickRecipe": "Receta registrada",
+        "pickProduct": "Producto de la tienda",
+        "choose": "Elegir…",
+        "noRecipes": "Todavía no tienes una receta publicada.",
+        "createRecipe": "Registrar receta",
+        "noProducts": "Ningún producto disponible en la tienda.",
+        "requestProduct": "Ver vínculos de productos",
+        "full": "Hasta {max} elementos por post.",
+        "dishTitle": "O describe un plato",
+        "dishName": "Nombre del plato",
+        "dishDescription": "Descripción",
+        "dishAdd": "Agregar plato"
+      },
+      "menu": {
+        "title": "Menú del chef",
+        "hint": "De 1 a 5 opciones. Cada una puede apuntar a una receta tuya.",
+        "optionN": "Opción {n}",
+        "removeOption": "Quitar opción {n}",
+        "name": "Nombre",
+        "namePlaceholder": "Ej.: Risotto de hongos",
+        "description": "Descripción",
+        "recipe": "Receta vinculada",
+        "noRecipe": "Sin receta",
+        "noRecipes": "Todavía no tienes una receta publicada.",
+        "addOption": "Agregar opción"
+      }
+    }
   },
   "reviews": {
     "title": "Historial de revisiones",

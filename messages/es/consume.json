@@ -296,5 +296,28 @@
     "list_item_unavailable": "Este elemento no está disponible para listas en este momento.",
     "favorite_unsupported": "Todavía no se puede marcar este elemento como favorito. Inténtalo más tarde.",
     "favorite_item_unavailable": "Este elemento no está disponible para favoritos en este momento."
+  },
+  "blocks": {
+    "workout": {
+      "title": "Entrenamiento del post",
+      "progress": "{done} de {total} pasos hechos",
+      "allDone": "Entrenamiento completo. ¡Bien hecho!",
+      "errors": {
+        "unauthenticated": "Inicia sesión para marcar los pasos.",
+        "forbidden": "No tienes acceso a este entrenamiento.",
+        "generic": "No se pudo guardar la marca. Intenta de nuevo."
+      }
+    },
+    "nutrition": {
+      "title": "Nutrición",
+      "recipe": "Receta",
+      "product": "Producto",
+      "openRecipe": "Abrir receta",
+      "openProduct": "Ver en la tienda"
+    },
+    "menu": {
+      "title": "Menú del chef",
+      "openRecipe": "Abrir receta"
+    }
   }
 }
