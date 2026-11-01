@@ -38,10 +38,10 @@ async function isHero(): Promise<boolean> {
   return heroProfileFor(heroRoleNames(await getRoles()), true) !== null;
 }
 
-// Agência (0070): a capa vai para o herói escolhido no portal da agência; o banco confere o vínculo
-// (acting_hero_id). O admin segue no fluxo próprio (o próprio perfil de herói).
+// Agência (0070) e admin geral no portal da agência (0072): a capa vai para o herói escolhido; o banco
+// confere o vínculo (acting_hero_id). Sem herói escolhido, o próprio perfil de herói, como antes.
 async function agencyActingHero(): Promise<ActingHero | null> {
-  if ((await hasRole("admin")) || !(await hasRole("agency"))) return null;
+  if (!(await hasRole("agency")) && !(await hasRole("admin"))) return null;
   const acting = await getActingHero();
   return acting.status === "ok" ? acting.hero : null;
 }
