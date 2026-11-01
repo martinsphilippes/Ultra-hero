@@ -7,7 +7,7 @@ import { loginAs } from "./helpers/login";
 // Perfil do herói e foram para o topo do início do admin; ao tocar, o admin escolhe o herói. O herói fica
 // só com o "Novo post". Escolher um herói grava uma linha de auditoria (hero_act.select); nada mais é gravado.
 
-const CARDS: HeroCard[] = ["post", "newContent", "content", "recipes", "links", "dashboard"];
+const CARDS: HeroCard[] = ["post", "newContent", "dashboard"];
 
 test.describe("admin: Publicar como hero", () => {
   test("6 atalhos no topo do início do admin, alvos de 44 px; o seletor lista os heróis ativos e é acessível", async ({ page }) => {
@@ -31,7 +31,7 @@ test.describe("admin: Publicar como hero", () => {
       return;
     }
     await page.waitForLoadState("networkidle");
-    await section.getByTestId("hero-action-recipes").click();
+    await section.getByTestId("hero-action-dashboard").click();
     const dialog = page.getByRole("dialog", { name: "Escolha o hero" });
     await expect(dialog).toBeVisible();
     const options = dialog.getByTestId("hero-picker-option");

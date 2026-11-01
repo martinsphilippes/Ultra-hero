@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { chooseActingHero } from "@/app/admin/hero-actions";
-import { ACTING_HERO_COOKIE, ACTING_HERO_HEADER, HERO_CARDS, heroCardForPath, heroCardHref, heroPickerHref, isHeroCard } from "@/lib/acting-hero/constants";
+import { ACTING_HERO_COOKIE, ACTING_HERO_HEADER, HERO_CARDS, HERO_SHORTCUTS, heroCardForPath, heroCardHref, heroPickerHref, isHeroCard } from "@/lib/acting-hero/constants";
 import { getActingHero } from "@/lib/acting-hero/server";
 
 // "Publicar como hero" (0045): para onde cada atalho leva, como o herói escolhido é lido (cookie só
@@ -61,8 +61,9 @@ beforeEach(() => {
 });
 
 describe("atalhos", () => {
-  it("6 atalhos; conteúdos no módulo do admin com o herói; post, receitas, vínculos e painel no portal", () => {
+  it("6 destinos (Trocar hero volta à mesma tela), 3 atalhos no painel: Novo post, Novo conteúdo e Painel", () => {
     expect(HERO_CARDS).toEqual(["post", "newContent", "content", "recipes", "links", "dashboard"]);
+    expect(HERO_SHORTCUTS).toEqual(["post", "newContent", "dashboard"]);
     expect(HERO_CARDS.map((c) => heroCardHref(c, HERO))).toEqual([
       "/creator/post/new",
       `/admin/content/new?creator=${HERO}`,

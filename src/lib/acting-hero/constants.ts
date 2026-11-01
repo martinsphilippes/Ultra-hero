@@ -9,6 +9,12 @@ export const ACTING_HERO_MAX_AGE = 60 * 60 * 24 * 30;
 
 export const HERO_CARDS = ["post", "newContent", "content", "recipes", "links", "dashboard"] as const;
 export type HeroCard = (typeof HERO_CARDS)[number];
+/**
+ * Atalhos mostrados em "Publicar como hero" (decisão do responsável, 01/11/2026): só Novo post, Novo
+ * conteúdo e Painel. Conteúdos, receitas e vínculos continuam alcançáveis pelo Painel e pelo menu do
+ * portal; os demais valores de HeroCard seguem válidos para "Trocar hero" voltar à mesma tela.
+ */
+export const HERO_SHORTCUTS = ["post", "newContent", "dashboard"] as const satisfies readonly HeroCard[];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

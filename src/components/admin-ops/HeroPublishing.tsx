@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import { chooseActingHero } from "@/app/admin/hero-actions";
 import { Avatar, Badge, Sheet, Spinner } from "@/components/ui";
-import { HERO_CARDS, type HeroCard } from "@/lib/acting-hero/constants";
+import { HERO_SHORTCUTS, type HeroCard } from "@/lib/acting-hero/constants";
 
 export type PickerHero = { id: string; slug: string; name: string; avatar_url: string | null };
 
@@ -29,9 +29,9 @@ const ICONS: Record<HeroCard, LucideIcon> = {
   dashboard: LayoutDashboard,
 };
 
-// "Publicar como hero" no topo do início do admin: os 6 atalhos que eram do herói (mesmo visual) e,
+// "Publicar como hero" no topo do início do admin: três atalhos (Novo post, Novo conteúdo, Painel) e,
 // ao tocar, o seletor do herói (bottom sheet no celular, painel lateral no desktop). Sempre pergunta;
-// o último herói aparece primeiro, marcado como atual.
+// o último herói aparece primeiro, marcado como atual. Conteúdos, receitas e vínculos ficam no Painel.
 export function HeroPublishing({ heroes, current, initialCard, available }: Props) {
   const t = useTranslations("adminOps.heroPublishing");
   const router = useRouter();
@@ -80,8 +80,8 @@ export function HeroPublishing({ heroes, current, initialCard, available }: Prop
           <span className="truncate">{t("current", { name: current.name })}</span>
         </p>
       ) : null}
-      <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6" aria-label={t("cardsLabel")}>
-        {HERO_CARDS.map((key) => {
+      <ul className="grid grid-cols-3 gap-2" aria-label={t("cardsLabel")}>
+        {HERO_SHORTCUTS.map((key) => {
           const Icon = ICONS[key];
           return (
             <li key={key}>
