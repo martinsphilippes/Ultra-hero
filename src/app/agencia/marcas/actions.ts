@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getOrigin } from "@/lib/auth/origin";
+import { sendInviteEmail } from "@/lib/email/invite";
 import { agencyFail } from "@/lib/agency/errors";
 import { brandCreateSchema, brandInviteSchema } from "@/lib/agency/schemas";
 import { requireAgency } from "@/lib/agency/server";
@@ -11,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Marcas da agência: gestor+ cria (nasce fora do app, D7), vincula marca existente e convida a equipe.
 
-export type BrandResult = { ok: true; message: string; id?: string; link?: string } | { ok: false; error: string };
+export type BrandResult = { ok: true; message: string; id?: string; link?: string; emailed?: boolean } | { ok: false; error: string };
 
 export async function createBrandAction(input: { name: string; slug: string; siteUrl: string; logoUrl?: string }): Promise<BrandResult> {
   const ctx = await requireAgency("manager");
@@ -65,8 +66,10 @@ export async function inviteBrandMemberAction(input: { brandId: string; email: s
     const row = data?.[0];
     if (!row) return agencyFail("generic");
     revalidatePath(`/agencia/marcas/${parsed.data.brandId}`);
-    const t = await getTranslations("agency.brands");
-    return { ok: true, message: t("inviteCreated"), link: `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}` };
+    const [t, tr, { data: brand }] = await Promise.all([getTranslations("agency.brands"), getTranslations("agency.roles"), supabase.from("brands").select("name").eq("id", parsed.data.brandId).maybeSingle()]);
+    const link = `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}`;
+    const emailed = await sendInviteEmail({ to: parsed.data.email, link, scopeName: brand?.name ?? ctx.agency.name, roleLabel: tr(parsed.data.role === "staff" ? "brandStaff" : parsed.data.role), days: parsed.data.days });
+    return { ok: true, message: t("inviteCreated"), link, emailed };
   } catch (error) {
     return agencyFail(error);
   }

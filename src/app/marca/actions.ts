@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getOrigin } from "@/lib/auth/origin";
+import { sendInviteEmail } from "@/lib/email/invite";
 import { agencyFail } from "@/lib/agency/errors";
 import { daysSchema, emailSchema } from "@/lib/agency/schemas";
 import { BRAND_COOKIE, getBrandContext, requireBrand } from "@/lib/brand-portal/server";
@@ -16,7 +17,7 @@ import { createClient } from "@/lib/supabase/server";
 // (0066): salvar rascunho, enviar à agência e cancelar; o valor oferecido vai à tabela de valor
 // (campaign_request_budgets), que só a própria marca e o Adm da agência leem.
 
-export type BrandPortalResult = { ok: true; message: string; link?: string; id?: string } | { ok: false; error: string };
+export type BrandPortalResult = { ok: true; message: string; link?: string; emailed?: boolean; id?: string } | { ok: false; error: string };
 
 export async function saveRequestAction(input: BrandRequestInput): Promise<BrandPortalResult> {
   const ctx = await requireBrand();
@@ -107,8 +108,10 @@ export async function inviteStaffAction(input: { email: string; days?: number })
     const row = data?.[0];
     if (!row) return agencyFail("generic");
     revalidatePath("/marca/equipe");
-    const t = await getTranslations("brandPortal.team");
-    return { ok: true, message: t("inviteCreated"), link: `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}` };
+    const [t, tr] = await Promise.all([getTranslations("brandPortal.team"), getTranslations("agency.roles")]);
+    const link = `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}`;
+    const emailed = await sendInviteEmail({ to: parsed.data.email, link, scopeName: ctx.brand.name, roleLabel: tr("brandStaff"), days: parsed.data.days });
+    return { ok: true, message: t("inviteCreated"), link, emailed };
   } catch (error) {
     return agencyFail(error);
   }

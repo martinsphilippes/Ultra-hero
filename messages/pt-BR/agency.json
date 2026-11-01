@@ -167,7 +167,9 @@
     "linkWarning": "Este link aparece só agora. Copie e envie para a pessoa.",
     "inboxNote": "Os avisos dos portais chegam pelo sino, não por e-mail.",
     "revoke": "Revogar",
-    "revokeFor": "Revogar convite de {email}"
+    "revokeFor": "Revogar convite de {email}",
+    "emailed": "Convite enviado por e-mail para {email}. O link abaixo é o mesmo, caso precise reenviar.",
+    "notEmailed": "Este link aparece só agora. Copie e envie para a pessoa (o envio automático por e-mail não está configurado)."
   },
   "brands": {
     "title": "Marcas",
@@ -458,7 +460,8 @@
       },
       "upcoming": "Atividades e negócios entram na linha do tempo com o pipeline."
     },
-    "heroUnavailable": "Herói ligado fora do ar (suspenso ou pendente): sem kit público, link novo ou catálogo até voltar."
+    "heroUnavailable": "Herói ligado fora do ar (suspenso ou pendente): sem kit público, link novo ou catálogo até voltar.",
+    "inviteTalentRole": "Talento"
   },
   "documents": {
     "uploaded": "Documento enviado.",

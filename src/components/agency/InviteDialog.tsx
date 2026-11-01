@@ -40,6 +40,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
   const [days, setDays] = useState("7");
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
+  const [emailed, setEmailed] = useState(false);
   const [pending, start] = useTransition();
 
   function submit(event: FormEvent) {
@@ -62,6 +63,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
         return;
       }
       setLink(result.link ?? null);
+      setEmailed(Boolean(result.emailed));
     });
   }
 
@@ -69,6 +71,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
     if (pending) return;
     setOpen(false);
     setLink(null);
+    setEmailed(false);
     setEmail("");
     setError(null);
   }
@@ -104,10 +107,17 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
       >
         {link ? (
           <div className="flex flex-col gap-3">
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning-soft p-3 text-sm text-warning">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              {t("linkWarning")}
-            </p>
+            {emailed ? (
+              <p role="status" className="flex items-start gap-2 rounded-lg border border-success/40 bg-success-soft p-3 text-sm text-fg" data-testid="invite-emailed">
+                <Mail className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
+                {t("emailed", { email: email.trim() })}
+              </p>
+            ) : (
+              <p role="alert" className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning-soft p-3 text-sm text-warning">
+                <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {t("notEmailed")}
+              </p>
+            )}
             <FormField label={t("link")}>
               <Input readOnly value={link} onFocus={(e) => e.currentTarget.select()} className="font-mono text-xs" data-testid="invite-link" />
             </FormField>

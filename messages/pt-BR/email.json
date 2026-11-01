@@ -1,0 +1,11 @@
+{
+  "invite": {
+    "subject": "Convite para o Groscove Ultra: {scope}",
+    "greeting": "Olá!",
+    "body": "Você foi convidado para entrar no Groscove Ultra como {role} em {scope}.",
+    "cta": "Aceitar o convite",
+    "expires": "O link vale por {days} dias e só funciona com este e-mail.",
+    "ignore": "Se não esperava este convite, ignore esta mensagem.",
+    "signature": "Groscove Ultra · a ponte entre marcas e heróis"
+  }
+}

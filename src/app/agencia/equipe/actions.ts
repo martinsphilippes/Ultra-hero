@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getOrigin } from "@/lib/auth/origin";
+import { sendInviteEmail } from "@/lib/email/invite";
 import { agencyFail } from "@/lib/agency/errors";
 import { inviteMemberSchema, removeMemberSchema, setRoleSchema } from "@/lib/agency/schemas";
 import { requireAgency } from "@/lib/agency/server";
@@ -11,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Equipe da agência: só o Adm convida, troca papel e remove (a RPC confere de novo e audita).
 
-export type TeamResult = { ok: true; message: string; link?: string } | { ok: false; error: string };
+export type TeamResult = { ok: true; message: string; link?: string; emailed?: boolean } | { ok: false; error: string };
 
 export async function inviteMemberAction(input: { email: string; role: string; days?: number }): Promise<TeamResult> {
   const ctx = await requireAgency("admin");
@@ -29,8 +30,10 @@ export async function inviteMemberAction(input: { email: string; role: string; d
     const row = data?.[0];
     if (!row) return agencyFail("generic");
     revalidatePath("/agencia/equipe");
-    const t = await getTranslations("agency.team");
-    return { ok: true, message: t("inviteCreated"), link: `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}` };
+    const [t, tr] = await Promise.all([getTranslations("agency.team"), getTranslations("agency.roles")]);
+    const link = `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}`;
+    const emailed = await sendInviteEmail({ to: parsed.data.email, link, scopeName: ctx.agency.name, roleLabel: tr(parsed.data.role), days: parsed.data.days });
+    return { ok: true, message: t("inviteCreated"), link, emailed };
   } catch (error) {
     return agencyFail(error);
   }

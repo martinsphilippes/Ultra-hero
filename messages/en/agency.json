@@ -167,7 +167,9 @@
     "linkWarning": "This link appears only now. Copy it and send it to the person.",
     "inboxNote": "Portal notices arrive on the bell, not by email.",
     "revoke": "Revoke",
-    "revokeFor": "Revoke invitation for {email}"
+    "revokeFor": "Revoke invitation for {email}",
+    "emailed": "Invitation e-mailed to {email}. The link below is the same one, in case you need to resend it.",
+    "notEmailed": "This link appears only now. Copy it and send it to the person (automatic e-mail sending is not configured)."
   },
   "brands": {
     "title": "Brands",
@@ -458,7 +460,8 @@
       },
       "upcoming": "Activities and deals join the timeline with the pipeline."
     },
-    "heroUnavailable": "Linked hero is offline (suspended or pending): no public kit, new link or catalog until it is back."
+    "heroUnavailable": "Linked hero is offline (suspended or pending): no public kit, new link or catalog until it is back.",
+    "inviteTalentRole": "Talent"
   },
   "documents": {
     "uploaded": "Document uploaded.",

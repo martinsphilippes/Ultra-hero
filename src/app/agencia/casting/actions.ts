@@ -7,6 +7,7 @@ import { agencyFail } from "@/lib/agency/errors";
 import { daysSchema, emailSchema, justificationSchema } from "@/lib/agency/schemas";
 import { requireAgency } from "@/lib/agency/server";
 import { getOrigin } from "@/lib/auth/origin";
+import { sendInviteEmail } from "@/lib/email/invite";
 import { createClient } from "@/lib/supabase/server";
 import { talentSchema, type TalentInput } from "@/lib/talent/schemas";
 import { CONSENT_VERSION } from "@/lib/talent/vocab";
@@ -14,7 +15,7 @@ import { CONSENT_VERSION } from "@/lib/talent/vocab";
 // Casting da agência (6.2 e 7.1): o papel é conferido pela RPC (gestor+ grava; colaborador só lê;
 // arquivar é do Adm). Redes e kit usam as ações comuns de src/lib/talent/actions.ts.
 
-export type CastingResult = { ok: true; message: string; id?: string; link?: string } | { ok: false; error: string };
+export type CastingResult = { ok: true; message: string; id?: string; link?: string; emailed?: boolean } | { ok: false; error: string };
 
 const uuid = z.uuid();
 
@@ -133,8 +134,10 @@ export async function inviteTalentAction(input: { talentId: string; email: strin
     const row = data?.[0];
     if (!row) return agencyFail("generic");
     revalidateTalent(parsed.data.talentId);
-    const t = await getTranslations("agency.casting");
-    return { ok: true, message: t("inviteCreated"), link: `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}` };
+    const [t, { data: talent }] = await Promise.all([getTranslations("agency.casting"), supabase.from("talent_profiles").select("display_name").eq("id", parsed.data.talentId).maybeSingle()]);
+    const link = `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}`;
+    const emailed = await sendInviteEmail({ to: parsed.data.email, link, scopeName: talent?.display_name ?? "Groscove Ultra", roleLabel: t("inviteTalentRole"), days: parsed.data.days });
+    return { ok: true, message: t("inviteCreated"), link, emailed };
   } catch (error) {
     return agencyFail(error);
   }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getOrigin } from "@/lib/auth/origin";
+import { sendInviteEmail } from "@/lib/email/invite";
 import { agencyFail } from "@/lib/agency/errors";
 import { emailSchema } from "@/lib/agency/schemas";
 import { AGENCY_ROLES } from "@/lib/agency/roles";
@@ -17,7 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 // /admin/agencia: só o admin geral com conta real (is_platform_admin). A conta admin@demo recebe
 // "forbidden" aqui e nas RPCs (D6).
 
-export type AdminAgencyResult = { ok: true; message: string; id?: string; link?: string } | { ok: false; error: string };
+export type AdminAgencyResult = { ok: true; message: string; id?: string; link?: string; emailed?: boolean } | { ok: false; error: string };
 
 async function platformAdmin() {
   const { user } = await requireRole("admin", "/admin/agencia");
@@ -66,8 +67,11 @@ export async function inviteAgencyMemberAction(input: { agencyId: string; email:
     const row = data?.[0];
     if (!row) return agencyFail("generic");
     revalidatePath("/admin/agencia");
-    const t = await getTranslations("adminAgency");
-    return { ok: true, message: t("inviteCreated"), link: `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}` };
+    const [t, tr, { data: agency }] = await Promise.all([getTranslations("adminAgency"), getTranslations("agency.roles"), supabase.from("agencies").select("name").eq("id", parsed.data.agencyId).maybeSingle()]);
+    const link = `${await getOrigin()}/invite?token=${encodeURIComponent(row.token)}`;
+    // e-mail automático quando o provedor está configurado; o link segue na tela de todo jeito
+    const emailed = await sendInviteEmail({ to: parsed.data.email, link, scopeName: agency?.name ?? "Groscove Ultra", roleLabel: tr(parsed.data.role), days: 7 });
+    return { ok: true, message: t("inviteCreated"), link, emailed };
   } catch (error) {
     return agencyFail(error);
   }
