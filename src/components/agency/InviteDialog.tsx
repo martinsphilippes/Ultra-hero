@@ -2,7 +2,7 @@
 
 import { Mail, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { inviteAgencyMemberAction } from "@/app/admin/agencia/actions";
 import { inviteTalentAction } from "@/app/agencia/casting/actions";
 import { inviteMemberAction } from "@/app/agencia/equipe/actions";
@@ -32,6 +32,8 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
   const t = useTranslations("agency.invite");
   const tr = useTranslations("agency.roles");
   const tc = useTranslations("common.actions");
+  // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
+  const formId = useId();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(roles[roles.length - 1] ?? "staff");
@@ -93,7 +95,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
               <Button type="button" variant="ghost" onClick={close} disabled={pending}>
                 {tc("cancel")}
               </Button>
-              <Button type="submit" form="agency-invite-form" loading={pending}>
+              <Button type="submit" form={formId} loading={pending}>
                 {t("submit")}
               </Button>
             </>
@@ -113,7 +115,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
             <p className="type-caption text-fg-muted">{t("inboxNote")}</p>
           </div>
         ) : (
-          <form id="agency-invite-form" onSubmit={submit} className="flex flex-col gap-4" noValidate>
+          <form id={formId} onSubmit={submit} className="flex flex-col gap-4" noValidate>
             <FormField label={t("email")} required>
               <Input type="email" autoComplete="off" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={pending} />
             </FormField>

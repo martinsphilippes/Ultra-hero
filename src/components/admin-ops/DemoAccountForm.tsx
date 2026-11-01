@@ -3,7 +3,7 @@
 import { KeyRound, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { createDemoAccount } from "@/app/admin/ops-actions";
 import { Button, Dialog, FormField, Input, Select } from "@/components/ui";
 import { CopyButton } from "./CopyButton";
@@ -16,6 +16,8 @@ export function DemoAccountForm({ creators, sellers }: Props) {
   const t = useTranslations("adminOps.settings.demoAccounts");
   const tc = useTranslations("common.actions");
   const router = useRouter();
+  // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
+  const formId = useId();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"seller" | "creator">("seller");
@@ -70,7 +72,7 @@ export function DemoAccountForm({ creators, sellers }: Props) {
               <Button type="button" variant="ghost" onClick={close} disabled={pending}>
                 {tc("cancel")}
               </Button>
-              <Button type="submit" form="demo-account-form" loading={pending}>
+              <Button type="submit" form={formId} loading={pending}>
                 {t("submit")}
               </Button>
             </>
@@ -92,7 +94,7 @@ export function DemoAccountForm({ creators, sellers }: Props) {
             <CopyButton value={created.password} />
           </div>
         ) : (
-          <form id="demo-account-form" onSubmit={submit} className="flex flex-col gap-4" noValidate>
+          <form id={formId} onSubmit={submit} className="flex flex-col gap-4" noValidate>
             <FormField label={t("email")} required>
               <Input type="email" inputMode="email" autoComplete="off" value={email} disabled={pending} onChange={(e) => setEmail(e.target.value)} />
             </FormField>

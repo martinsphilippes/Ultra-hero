@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { createRetentionException, type RetentionExceptionValues } from "@/app/admin/ops-actions";
 import { Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 
@@ -19,6 +19,8 @@ export function RetentionExceptionForm() {
   const tc = useTranslations("common.actions");
   const router = useRouter();
   const { toast } = useToast();
+  // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
+  const formId = useId();
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<RetentionExceptionValues>({ scopeType: "user", scopeId: "", reason: "", ownerId: "", reviewAt: defaultReviewDate() });
   const [error, setError] = useState<string | null>(null);
@@ -61,13 +63,13 @@ export function RetentionExceptionForm() {
             <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
               {tc("cancel")}
             </Button>
-            <Button type="submit" form="retention-exception-form" loading={pending}>
+            <Button type="submit" form={formId} loading={pending}>
               {tc("save")}
             </Button>
           </>
         }
       >
-        <form id="retention-exception-form" onSubmit={submit} className="flex flex-col gap-4" noValidate>
+        <form id={formId} onSubmit={submit} className="flex flex-col gap-4" noValidate>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label={t("scopeType")} required>
               <Select value={values.scopeType} disabled={pending} onChange={(e) => set("scopeType", e.target.value as "user" | "test_order")}>

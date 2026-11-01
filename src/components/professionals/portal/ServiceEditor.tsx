@@ -3,7 +3,7 @@
 import { Pencil, Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { Badge, Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
@@ -50,6 +50,8 @@ export function ServiceEditor({ services, onSave, admin = false }: Props) {
   const [editing, setEditing] = useState<ServiceView | "new" | null>(null);
   const [draft, setDraft] = useState<Draft>(toDraft(null));
   const [error, setError] = useState<string | null>(null);
+  // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
+  const formId = useId();
   const [pending, startTransition] = useTransition();
   const canAdd = admin || services.length < MAX_SERVICES_PER_PROFESSIONAL;
 
@@ -138,13 +140,13 @@ export function ServiceEditor({ services, onSave, admin = false }: Props) {
             <Button type="button" variant="ghost" onClick={() => setEditing(null)} disabled={pending}>
               {t("form.cancel")}
             </Button>
-            <Button type="submit" form="service-form" loading={pending}>
+            <Button type="submit" form={formId} loading={pending}>
               {t("form.save")}
             </Button>
           </>
         }
       >
-        <form id="service-form" onSubmit={submit} className="flex flex-col gap-4" noValidate>
+        <form id={formId} onSubmit={submit} className="flex flex-col gap-4" noValidate>
           <FormField label={t("form.title")} required>
             <Input value={draft.title} onChange={(e) => set("title", e.target.value)} maxLength={120} disabled={pending} />
           </FormField>

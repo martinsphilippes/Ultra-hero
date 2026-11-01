@@ -3,7 +3,7 @@
 import { Archive, Link2, Save, ShieldCheck, Unlink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { archiveTalentAction, linkCreatorAction, recordConsentAction, saveTalentAction, setCatalogAction, setSegmentsAction } from "@/app/agencia/casting/actions";
 import { Button, Checkbox, Dialog, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import { AVAILABILITIES, COMMERCIAL_STATUSES, UFS, type Availability, type CommercialStatus } from "@/lib/talent/vocab";
@@ -259,6 +259,8 @@ export function ArchiveTalentButton({ talentId }: { talentId: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  // id único por instância (o botão do rodapé aponta pelo atributo form)
+  const formId = useId();
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -290,13 +292,13 @@ export function ArchiveTalentButton({ talentId }: { talentId: string }) {
             <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
               {tc("cancel")}
             </Button>
-            <Button type="submit" form="archive-talent" variant="danger" loading={pending}>
+            <Button type="submit" form={formId} variant="danger" loading={pending}>
               {t("confirm")}
             </Button>
           </>
         }
       >
-        <form id="archive-talent" onSubmit={submit} className="flex flex-col gap-3" noValidate>
+        <form id={formId} onSubmit={submit} className="flex flex-col gap-3" noValidate>
           <FormField label={t("reason")} hint={t("reasonHint")} required>
             <Textarea value={reason} maxLength={500} rows={3} onChange={(e) => setReason(e.target.value)} disabled={pending} />
           </FormField>

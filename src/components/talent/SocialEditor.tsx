@@ -2,7 +2,7 @@
 
 import { AtSign, Pencil, Plus, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { Badge, Button, Dialog, FormField, Input, Select, useToast } from "@/components/ui";
 import { deleteSocialAction, saveSocialAction } from "@/lib/talent/actions";
 import { formatBp, formatCount } from "@/lib/talent/media-kit";
@@ -112,6 +112,8 @@ export function SocialEditor({ portal, talentId, accounts, canEdit }: Props) {
   const { toast } = useToast();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
+  const formId = useId();
   const [pending, start] = useTransition();
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((d) => (d ? { ...d, [key]: value } : d));
@@ -222,14 +224,14 @@ export function SocialEditor({ portal, talentId, accounts, canEdit }: Props) {
             <Button type="button" variant="ghost" onClick={() => setDraft(null)} disabled={pending}>
               {tc("cancel")}
             </Button>
-            <Button type="submit" form="social-form" loading={pending}>
+            <Button type="submit" form={formId} loading={pending}>
               {t("save")}
             </Button>
           </>
         }
       >
         {draft ? (
-          <form id="social-form" onSubmit={submit} className="flex flex-col gap-4" noValidate>
+          <form id={formId} onSubmit={submit} className="flex flex-col gap-4" noValidate>
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField label={t("network")} required>
                 <Select value={draft.network} onChange={(e) => set("network", e.target.value as Network)} disabled={pending}>

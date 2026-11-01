@@ -2,7 +2,7 @@
 
 import { Mail, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { createInvitation } from "@/app/admin/ops-actions";
 import { Button, Dialog, FormField, Input, Select } from "@/components/ui";
 import { CopyButton } from "./CopyButton";
@@ -26,6 +26,8 @@ type Props = {
 export function InvitationForm({ creators, sellers, initialRole = "creator", initialCreatorId = "", initialSellerId = "", defaultOpen = false, triggerLabel }: Props) {
   const t = useTranslations("adminOps.invitations");
   const tc = useTranslations("common.actions");
+  // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
+  const formId = useId();
   const [open, setOpen] = useState(defaultOpen);
   const [role, setRole] = useState<"creator" | "seller">(initialRole);
   const [email, setEmail] = useState("");
@@ -87,7 +89,7 @@ export function InvitationForm({ creators, sellers, initialRole = "creator", ini
               <Button type="button" variant="ghost" onClick={close} disabled={pending}>
                 {tc("cancel")}
               </Button>
-              <Button type="submit" form="invitation-form" loading={pending}>
+              <Button type="submit" form={formId} loading={pending}>
                 {t("form.submit")}
               </Button>
             </>
@@ -106,7 +108,7 @@ export function InvitationForm({ creators, sellers, initialRole = "creator", ini
             <CopyButton value={link} />
           </div>
         ) : (
-          <form id="invitation-form" onSubmit={submit} className="flex flex-col gap-4" noValidate>
+          <form id={formId} onSubmit={submit} className="flex flex-col gap-4" noValidate>
             <FormField label={t("form.email")} required>
               <Input type="email" autoComplete="off" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={pending} />
             </FormField>
