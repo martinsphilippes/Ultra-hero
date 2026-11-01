@@ -44,11 +44,6 @@ export default async function AdminBrandPage({ params }: Params) {
           <Badge variant={brand.status === "active" ? "success" : "neutral"} size="sm">
             {t(`status.${brand.status}`)}
           </Badge>
-          {brand.is_demo ? (
-            <Badge variant="demo" size="sm">
-              {t("demo")}
-            </Badge>
-          ) : null}
           <span className="type-caption text-fg-muted">{t(`relationship.${brand.default_relationship}`)}</span>
         </div>
       </PageHeader>
@@ -76,11 +71,6 @@ export default async function AdminBrandPage({ params }: Params) {
                             {product.status === "inactive" ? (
                               <Badge variant="neutral" size="sm">
                                 {t("productStatus.inactive")}
-                              </Badge>
-                            ) : null}
-                            {product.is_demo ? (
-                              <Badge variant="demo" size="sm">
-                                {t("demo")}
                               </Badge>
                             ) : null}
                           </span>

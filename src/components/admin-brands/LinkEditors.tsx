@@ -41,11 +41,6 @@ function BrandList({ value, onChange, options, max, disabled, testId }: BrandLis
             <li key={item.id} className="flex flex-col gap-2 rounded-xl border border-border bg-bg p-3 sm:flex-row sm:items-center">
               <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-sm font-medium text-fg">
                 {i + 1}. {label}
-                {brand?.is_demo ? (
-                  <Badge variant="demo" size="sm">
-                    {t("demo")}
-                  </Badge>
-                ) : null}
                 {brand?.status === "inactive" ? (
                   <Badge variant="neutral" size="sm">
                     {t("status.inactive")}
@@ -90,7 +85,6 @@ function BrandList({ value, onChange, options, max, disabled, testId }: BrandLis
             .map((o) => (
               <option key={o.id} value={o.id}>
                 {o.name}
-                {o.is_demo ? ` · ${t("demo")}` : ""}
               </option>
             ))}
         </Select>
@@ -133,11 +127,6 @@ function ProductList({ value, onChange, options, max, withNote, disabled, testId
               <div className="flex flex-wrap items-center gap-2">
                 <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-sm font-medium text-fg">
                   {i + 1}. {label}
-                  {product?.is_demo ? (
-                    <Badge variant="demo" size="sm">
-                      {t("demo")}
-                    </Badge>
-                  ) : null}
                   {product?.status === "inactive" ? (
                     <Badge variant="neutral" size="sm">
                       {t("productStatus.inactive")}

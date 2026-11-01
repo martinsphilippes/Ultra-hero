@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteBrandAction, deleteBrandProductAction, saveBrandAction, saveBrandProductAction } from "@/app/admin/marcas/actions";
 import { ConfirmActionDialog } from "@/components/admin";
-import { Button, Checkbox, FormField, Input, Select, Textarea } from "@/components/ui";
+import { Button, FormField, Input, Select, Textarea } from "@/components/ui";
 import { PRODUCT_DESCRIPTION_MAX, slugify } from "@/lib/brands/admin";
 import type { AdminBrand, AdminProduct } from "@/lib/brands/admin-queries";
 import { RELATIONSHIPS } from "@/lib/brands";
@@ -28,7 +28,6 @@ export function BrandForm({ brand }: BrandFormProps) {
   const [logo, setLogo] = useState(brand?.logo_url ?? "");
   const [rel, setRel] = useState<string>(brand?.default_relationship ?? "mentioned");
   const [status, setStatus] = useState<string>(brand?.status ?? "active");
-  const [demo, setDemo] = useState(brand?.is_demo ?? false);
 
   return (
     <form
@@ -37,7 +36,7 @@ export function BrandForm({ brand }: BrandFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         run(
-          () => saveBrandAction(brand?.id ?? null, { name, slug: slug || slugify(name), site_url: site, logo_url: logo, default_relationship: rel, status, is_demo: demo }),
+          () => saveBrandAction(brand?.id ?? null, { name, slug: slug || slugify(name), site_url: site, logo_url: logo, default_relationship: rel, status, is_demo: false }),
           (result) => {
             if (!brand && "id" in result && result.id) router.push(`/admin/marcas/${result.id}`);
           },
@@ -94,7 +93,6 @@ export function BrandForm({ brand }: BrandFormProps) {
           </Select>
         </FormField>
       </div>
-      <Checkbox label={t("form.isDemo")} checked={demo} disabled={pending} onChange={(e) => setDemo(e.target.checked)} />
       <div className="flex flex-wrap items-center gap-2">
         <Button type="submit" loading={pending} leadingIcon={<Save />} data-testid="admin-brand-save">
           {brand ? t("form.save") : t("form.create")}
@@ -136,7 +134,6 @@ export function ProductForm({ brandId, product, onDone }: ProductFormProps) {
   const [image, setImage] = useState(product?.image_url ?? "");
   const [price, setPrice] = useState(centsToInput(product?.price_cents));
   const [status, setStatus] = useState<string>(product?.status ?? "active");
-  const [demo, setDemo] = useState(product?.is_demo ?? false);
 
   return (
     <form
@@ -145,7 +142,7 @@ export function ProductForm({ brandId, product, onDone }: ProductFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         run(
-          () => saveBrandProductAction(product?.id ?? null, { brand_id: brandId, name, description, external_url: url, image_url: image, price, status, is_demo: demo }),
+          () => saveBrandProductAction(product?.id ?? null, { brand_id: brandId, name, description, external_url: url, image_url: image, price, status, is_demo: false }),
           () => {
             if (!product) {
               setName("");
@@ -185,7 +182,6 @@ export function ProductForm({ brandId, product, onDone }: ProductFormProps) {
           </Select>
         </FormField>
       </div>
-      <Checkbox label={t("product.isDemo")} checked={demo} disabled={pending} onChange={(e) => setDemo(e.target.checked)} />
       <div className="flex flex-wrap items-center gap-2">
         <Button type="submit" loading={pending} leadingIcon={<Save />} data-testid="admin-brand-product-save">
           {product ? t("product.save") : t("product.create")}

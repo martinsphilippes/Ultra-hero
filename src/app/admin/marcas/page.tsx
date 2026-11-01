@@ -30,9 +30,6 @@ export default async function AdminBrandsPage() {
         </div>
       ) : (
         <>
-          <p role="note" className="rounded-xl border border-dashed border-warning/40 bg-warning-soft/40 px-4 py-3 text-sm text-fg">
-            {t("demoNotice")}
-          </p>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="flex min-w-0 flex-col gap-3">
               {list.brands.length === 0 ? (
@@ -54,11 +51,6 @@ export default async function AdminBrandsPage() {
                             <Badge variant={brand.status === "active" ? "success" : "neutral"} size="sm">
                               {t(`status.${brand.status}`)}
                             </Badge>
-                            {brand.is_demo ? (
-                              <Badge variant="demo" size="sm">
-                                {t("demo")}
-                              </Badge>
-                            ) : null}
                           </span>
                           <span className="type-caption text-fg-muted">
                             {t(`relationship.${brand.default_relationship}`)} · {t("productsCount", { count: brand.products })}
