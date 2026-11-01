@@ -103,15 +103,7 @@ export async function TodayHub({ view, evolution, hideWatch = false, compare = t
       {parts?.source}
       <ScreenCards cards={cards} testIdPrefix="today-hub" label={t("hub.label")} mode="inline" />
       {parts?.notes}
-      {/* sem relógio: o "Conectar relógio" mora nas telas; o link de privacidade fica à vista */}
-      {watchState === "connect" || watchState === "syncing" ? (
-        <p className="type-caption text-fg-muted">
-          <Link href="/profile/today/about" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-            {t("aboutLink")}
-            <ChevronRight className="size-4" aria-hidden="true" />
-          </Link>
-        </p>
-      ) : null}
+      {/* "Sobre seus dados" fica só dentro do card do relógio (ConnectWatchCard/WatchToday): sem repetir aqui */}
     </div>
   );
 }
