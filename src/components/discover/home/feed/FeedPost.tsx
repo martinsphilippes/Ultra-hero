@@ -7,7 +7,7 @@ import { FollowButton } from "@/components/heroes/FollowButton";
 import { Avatar } from "@/components/ui";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { isPhotoPost } from "@/lib/post-photo/paths";
-import type { FeedPostData } from "./posts";
+import { feedPostKind, type FeedPostData } from "./posts";
 
 const TYPE_ICON = { video: PlayCircle, recipe: ChefHat, workout: Dumbbell, guide: BookOpen, article: FileText } as const;
 
@@ -20,8 +20,9 @@ type Props = { post: FeedPostData; priority?: boolean; follow?: FeedFollow };
 // 4:5 (de borda a borda no celular) e legenda com tipo, título e resumo. Capa e título abrem o post.
 export async function FeedPost({ post, priority, follow }: Props) {
   const t = await getTranslations("catalog");
-  // post com foto do composer (0043): artigo cuja capa é a foto; aparece como "Foto"
-  const photo = isPhotoPost(post, supabaseBaseUrl());
+  // post com foto do composer (0043): artigo cuja capa é a foto e cujo corpo é a foto; aparece como "Foto"
+  // (artigo com texto e capa enviada pelo editor segue "Artigo"; sem o corpo lido, vale a capa)
+  const photo = isPhotoPost(feedPostKind(post), supabaseBaseUrl());
   const Icon = photo ? ImageIcon : TYPE_ICON[post.type];
   const unavailable = post.access_level === null;
   const href = `/content/${post.slug}`;

@@ -13,6 +13,8 @@ import type { PickResult } from "@/components/admin-content/SearchPicker";
 import { parseContentForm } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { getUser, hasRole } from "@/lib/auth/session";
+import { supabaseBaseUrl } from "@/lib/avatar/paths";
+import { storedPostPhotoPath } from "@/lib/post-photo/paths";
 import { createClient } from "@/lib/supabase/server";
 import { schedulePushDispatch } from "@/lib/push/schedule";
 
@@ -184,6 +186,15 @@ export async function saveContentAction(context: SaveContext, values: ContentFor
     if (ctx.data.id) {
       const { data: current } = await supabase.from("content").select("type").eq("id", ctx.data.id).maybeSingle();
       if (current?.type === "recipe") return fail("recipe_editor_pending");
+    }
+    // Capa enviada do celular (post-photos): a foto precisa existir ainda. Sem referência por mais de
+    // 1 h a limpeza diária apaga o objeto; se o editor ficou aberto esse tempo, pede outra foto em vez
+    // de gravar uma URL quebrada. O admin lê post_photo_uploads pela política da 0043.
+    const coverPath = storedPostPhotoPath(v.cover_url, supabaseBaseUrl());
+    if (coverPath) {
+      const { data: upload, error: uploadError } = await supabase.from("post_photo_uploads").select("id").eq("path", coverPath).is("deleted_at", null).maybeSingle();
+      if (uploadError) return fail(uploadError);
+      if (!upload) return fail("cover_missing");
     }
     const t = await getTranslations("adminContent.content.form");
     const fields = {

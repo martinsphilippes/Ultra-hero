@@ -43,6 +43,8 @@ export type ContentFormProps = {
   canEditAccess: boolean;
   /** Só leitura (conteúdo em revisão ou publicado para a personalidade). */
   readOnly?: boolean;
+  /** Capa enviada do celular: estado do envio (servidor) e herói em nome de quem a foto é reservada. */
+  cover: { state: "ready" | "disabled" | "not_configured"; creatorId: string | null };
   action: (values: ContentFormValues) => Promise<ActionResult & { id?: string }>;
 };
 

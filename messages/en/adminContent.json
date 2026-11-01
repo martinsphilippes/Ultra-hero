@@ -120,6 +120,7 @@
   "errors": {
     "generic": "The action could not be completed. Try again.",
     "invalid_input": "Invalid data. Review the fields and try again.",
+    "cover_missing": "The uploaded cover is no longer available (it went unused for over 1 hour and was deleted). Upload the photo again.",
     "forbidden": "You do not have permission for this action.",
     "unauthenticated": "Session expired. Sign in again.",
     "duplicate": "A record with the same identifier (slug or code) already exists.",

@@ -4,6 +4,7 @@ import { AdminContentEditor } from "@/components/admin-content/AdminContentEdito
 import { pickUuid, type SearchParams } from "@/components/admin-content/lib/search-params";
 import { ActingHeroForCreator } from "@/components/admin-ops/ActingHeroForCreator";
 import { PageHeader } from "@/components/ui";
+import { getPostPhotoState } from "@/lib/post-photo/availability";
 import { createClient } from "@/lib/supabase/server";
 
 // Criação de conteúdo pelo admin escolhendo o herói responsável.
@@ -17,17 +18,18 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminContentNewPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const preselected = pickUuid(await searchParams, "creator");
   const supabase = await createClient();
-  const [t, tc, creatorsRes] = await Promise.all([
+  const [t, tc, creatorsRes, coverState] = await Promise.all([
     getTranslations("adminContent.content.form"),
     getTranslations("adminContent.common"),
     supabase.from("creator_profiles").select("id, name, is_fictional").eq("status", "active").order("name"),
+    getPostPhotoState(),
   ]);
 
   return (
     <div className="flex flex-col gap-6">
       <ActingHeroForCreator creatorId={preselected} />
       <PageHeader title={t("createTitle")} description={t("createDescription")} backHref="/admin/content" backLabel={tc("backToList")} />
-      <AdminContentEditor mode="create" creators={creatorsRes.data ?? []} initialCreatorId={preselected && (creatorsRes.data ?? []).some((c) => c.id === preselected) ? preselected : null} />
+      <AdminContentEditor mode="create" creators={creatorsRes.data ?? []} initialCreatorId={preselected && (creatorsRes.data ?? []).some((c) => c.id === preselected) ? preselected : null} coverState={coverState} />
     </div>
   );
 }

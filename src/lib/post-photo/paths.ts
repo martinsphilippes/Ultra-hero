@@ -19,9 +19,12 @@ export function isPostPhotoPath(ref: string | null | undefined): ref is string {
 }
 
 /**
- * Post com foto (0043): artigo cuja capa é uma foto do bucket post-photos deste projeto. O banco só
- * aceita essa capa vinda do próprio herói (content_post_photo_cover_guard).
+ * Post com foto (0043): artigo cuja capa é uma foto do bucket post-photos deste projeto e cujo corpo
+ * é a própria foto (media_provider 'upload'). Quando o corpo é conhecido, ele decide: um artigo com
+ * texto e capa enviada pelo editor (foto do celular) não é post com foto. Sem o corpo (feed, visitante),
+ * vale a capa. O banco só aceita essa capa vinda do próprio herói (content_post_photo_cover_guard).
  */
-export function isPhotoPost(content: { type: string; cover_url: string | null | undefined }, baseUrl: string | null | undefined): boolean {
-  return content.type === "article" && storedPostPhotoPath(content.cover_url, baseUrl) !== null;
+export function isPhotoPost(content: { type: string; cover_url: string | null | undefined; media_provider?: string | null }, baseUrl: string | null | undefined): boolean {
+  if (content.type !== "article" || storedPostPhotoPath(content.cover_url, baseUrl) === null) return false;
+  return content.media_provider === undefined || content.media_provider === "upload";
 }

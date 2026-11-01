@@ -300,8 +300,10 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
     <UnavailableCard />
   );
 
-  // post com foto (0043): artigo cuja capa é a foto enviada pelo herói; a foto vai grande no topo
-  const photoPost = isPhotoPost(content, supabaseBaseUrl());
+  // post com foto (0043): artigo cuja capa é a foto enviada pelo herói e cujo corpo é a própria foto; a
+  // foto vai grande no topo. Com o corpo carregado, o provedor decide (artigo com texto e capa do
+  // celular mantém o texto); sem corpo (visitante), vale a capa.
+  const photoPost = isPhotoPost(bodyRow ? { ...content, media_provider: bodyRow.media_provider } : content, supabaseBaseUrl());
   const TypeIcon = photoPost ? ImageIcon : TYPE_ICON[content.type];
   // vídeo que toca: o player ocupa o topo no lugar da capa (a capa vira o pôster dele)
   const playerOnTop = !isRecipe && state === "accessible" && content.type === "video" && video !== null && isPlayableVideo(video) && !hideDemoPlayer;

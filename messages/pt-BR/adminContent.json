@@ -120,6 +120,7 @@
   "errors": {
     "generic": "Não foi possível concluir a ação. Tente novamente.",
     "invalid_input": "Dados inválidos. Revise os campos e tente novamente.",
+    "cover_missing": "A capa enviada não está mais disponível (ficou sem uso por mais de 1 hora e foi apagada). Envie a foto de novo.",
     "forbidden": "Você não tem permissão para esta ação.",
     "unauthenticated": "Sessão expirada. Entre novamente.",
     "duplicate": "Já existe um registro com o mesmo identificador (slug ou código).",

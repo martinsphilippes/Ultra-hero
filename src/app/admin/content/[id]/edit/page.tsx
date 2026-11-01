@@ -5,6 +5,7 @@ import { AdminContentEditor } from "@/components/admin-content/AdminContentEdito
 import type { ContentFormValues } from "@/components/editors/types";
 import { RecipeLegacyNotice } from "@/components/recipes/RecipeLegacyNotice";
 import { PageHeader } from "@/components/ui";
+import { getPostPhotoState } from "@/lib/post-photo/availability";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminContentEditPage({ params }: Params) {
   const { id } = await params;
   const supabase = await createClient();
-  const [t, tc, contentRes, bodyRes, creatorsRes] = await Promise.all([
+  const [t, tc, contentRes, bodyRes, creatorsRes, coverState] = await Promise.all([
     getTranslations("adminContent.content.form"),
     getTranslations("adminContent.common"),
     supabase
@@ -30,6 +31,7 @@ export default async function AdminContentEditPage({ params }: Params) {
       .maybeSingle(),
     supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url").eq("content_id", id).maybeSingle(),
     supabase.from("creator_profiles").select("id, name, is_fictional").order("name"),
+    getPostPhotoState(),
   ]);
   const content = contentRes.data;
   if (!content) notFound();
@@ -72,6 +74,7 @@ export default async function AdminContentEditPage({ params }: Params) {
         creators={creatorsRes.data ?? []}
         initialCreatorId={content.creator_id}
         readOnly={content.type === "recipe"}
+        coverState={coverState}
       />
     </div>
   );

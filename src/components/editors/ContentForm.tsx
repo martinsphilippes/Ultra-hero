@@ -40,7 +40,7 @@ type FormState = Omit<ContentFormValues, "body"> & { body: ContentBody };
 
 const EMPTY_MEDIA: ContentFormValues["media"] = { provider: "none", ref: null, captions_url: null };
 
-export function ContentForm({ mode, initial, canEditAccess, readOnly = false, action }: ContentFormProps) {
+export function ContentForm({ mode, initial, canEditAccess, readOnly = false, cover, action }: ContentFormProps) {
   const t = useTranslations("editors");
   const tc = useTranslations("common");
   const tv = useValidationMessage();
@@ -214,7 +214,7 @@ export function ContentForm({ mode, initial, canEditAccess, readOnly = false, ac
         <HealthClaimNotice terms={claims} />
 
         <FormSection legend={t("sections.cover")} description={t("sections.coverDescription")}>
-          <CoverPicker pillar={values.pillar} value={values.cover_url} onChange={(cover_url) => patch({ cover_url })} error={tv(errors.cover_url)} />
+          <CoverPicker value={values.cover_url} onChange={(cover_url) => patch({ cover_url })} error={tv(errors.cover_url)} state={cover.state} creatorId={cover.creatorId} disabled={readOnly || pending} />
         </FormSection>
 
         {values.type === "video" && (

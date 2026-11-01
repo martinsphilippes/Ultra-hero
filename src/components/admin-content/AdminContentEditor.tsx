@@ -18,10 +18,12 @@ type Props = {
   initialCreatorId: string | null;
   /** Receita estruturada (0027): só leitura até o editor de receitas. */
   readOnly?: boolean;
+  /** Envio da capa pelo celular (kill switch e service role), lido no servidor. */
+  coverState: "ready" | "disabled" | "not_configured";
 };
 
 // Envolve o ContentForm compartilhado com a escolha da personalidade (campo só do admin).
-export function AdminContentEditor({ mode, contentId, initial, creators, initialCreatorId, readOnly = false }: Props) {
+export function AdminContentEditor({ mode, contentId, initial, creators, initialCreatorId, readOnly = false, coverState }: Props) {
   const t = useTranslations("adminContent.content.form");
   const tc = useTranslations("adminContent.common");
   const router = useRouter();
@@ -60,7 +62,8 @@ export function AdminContentEditor({ mode, contentId, initial, creators, initial
           ))}
         </Select>
       </FormField>
-      <ContentForm mode={mode} initial={initial} canEditAccess action={action} readOnly={readOnly} />
+      {/* a capa é reservada em nome do herói escolhido acima (post_photo_upload_claim pelo admin, 0045) */}
+      <ContentForm mode={mode} initial={initial} canEditAccess action={action} readOnly={readOnly} cover={{ state: coverState, creatorId: creatorId || null }} />
     </div>
   );
 }

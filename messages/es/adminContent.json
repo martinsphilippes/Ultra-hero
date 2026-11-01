@@ -120,6 +120,7 @@
   "errors": {
     "generic": "No se pudo completar la acción. Inténtalo de nuevo.",
     "invalid_input": "Datos inválidos. Revisa los campos e inténtalo de nuevo.",
+    "cover_missing": "La portada enviada ya no está disponible (quedó sin uso por más de 1 hora y se eliminó). Envía la foto de nuevo.",
     "forbidden": "No tienes permiso para esta acción.",
     "unauthenticated": "Sesión expirada. Inicia sesión de nuevo.",
     "duplicate": "Ya existe un registro con el mismo identificador (slug o código).",
