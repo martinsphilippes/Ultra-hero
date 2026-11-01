@@ -73,7 +73,7 @@ export async function saveServiceAction(id: string | null, input: ServiceValues)
   try {
     await signedIn();
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("professional_save_service", { p_id: parsedId.data ?? undefined, p_data: v });
+    const { data, error } = await supabase.rpc("professional_save_service", { p_id: parsedId.data, p_data: v });
     if (error || !data) return fail(error ?? "generic");
     revalidatePath("/profissional", "layout");
     const t = await getTranslations("professionals.portal.services");

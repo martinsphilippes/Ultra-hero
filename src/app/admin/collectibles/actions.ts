@@ -100,7 +100,7 @@ export async function saveCollectibleAction(id: string | null, input: Collectibl
       if (stored.some((p) => !found.has(p))) return fail("photo_missing");
     }
     const { data, error } = await supabase.rpc("admin_collectible_save", {
-      p_id: parsedId.data ?? undefined,
+      p_id: parsedId.data,
       p_data: { ...parsed.data, bid_increments_cents: increments },
     });
     if (error || !data) return fail(error ?? "generic");

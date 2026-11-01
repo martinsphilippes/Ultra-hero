@@ -40,7 +40,8 @@ function client(kind: "user" | "admin") {
         return state.claim;
       }
       if (fn === "admin_collectible_save") {
-        state.log.push(`  photos=${JSON.stringify((args?.p_data as { photos: string[] }).photos)}`);
+        // p_id sem default no banco: na criação precisa ir como null explícito (ausente dá PGRST202, 404)
+        state.log.push(`  p_id=${"p_id" in (args ?? {}) ? JSON.stringify(args?.p_id) : "ausente"} photos=${JSON.stringify((args?.p_data as { photos: string[] }).photos)}`);
         return state.save;
       }
       return { data: null, error: null };
@@ -186,7 +187,7 @@ describe("saveCollectibleAction com fotos do celular", () => {
     expect(state.log).toEqual([
       `user:select:post_photo_uploads:[["in:path",["${PATH}"]],["is:deleted_at",null]]`,
       "user:rpc:admin_collectible_save",
-      `  photos=${JSON.stringify([URL_, "/collectibles/ball.svg"])}`,
+      `  p_id=null photos=${JSON.stringify([URL_, "/collectibles/ball.svg"])}`,
     ]);
   });
 

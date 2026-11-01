@@ -61,7 +61,7 @@ export async function saveProfessionalAdmin(id: string | null, input: AdminProfi
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("admin_professional_save", {
-      p_id: parsedId.data ?? undefined,
+      p_id: parsedId.data,
       p_data: { ...parsed.data, cities: splitCities(parsed.data.cities) },
     });
     if (error || !data) return fail(error ?? "generic");
@@ -103,7 +103,7 @@ export async function saveProfessionalServiceAdmin(professionalId: string, id: s
   if (!validServiceShape({ kind: v.kind, mode: v.mode, durationMinutes: v.duration_minutes, planWeeks: v.kind === "plan" ? v.plan_weeks : null })) return fail("invalid_service");
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("admin_professional_service_save", { p_id: ids.data.id ?? undefined, p_professional: ids.data.professionalId, p_data: v });
+    const { data, error } = await supabase.rpc("admin_professional_service_save", { p_id: ids.data.id, p_professional: ids.data.professionalId, p_data: v });
     if (error || !data) return fail(error ?? "generic");
     revalidate(ids.data.professionalId);
     const t = await getTranslations("professionals.portal.services");

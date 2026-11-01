@@ -8436,7 +8436,7 @@ export type Database = {
         Returns: Json;
       };
       admin_collectible_save: {
-        Args: { p_data: Json; p_id?: string };
+        Args: { p_data: Json; p_id: string | null };
         Returns: string;
       };
       admin_collectible_set_contact: {
@@ -9020,7 +9020,7 @@ export type Database = {
       my_professional_id: { Args: Record<PropertyKey, never>; Returns: string };
       professional_save_profile: { Args: { p_data: Json }; Returns: undefined };
       professional_save_service: {
-        Args: { p_data: Json; p_id?: string };
+        Args: { p_data: Json; p_id: string | null };
         Returns: string;
       };
       service_order_can: {
@@ -9046,7 +9046,7 @@ export type Database = {
         Returns: Json;
       };
       admin_professional_save: {
-        Args: { p_data: Json; p_id?: string };
+        Args: { p_data: Json; p_id: string | null };
         Returns: string;
       };
       admin_professional_set_status: {
@@ -9059,7 +9059,7 @@ export type Database = {
         Returns: undefined;
       };
       admin_professional_service_save: {
-        Args: { p_data: Json; p_id?: string; p_professional?: string };
+        Args: { p_data: Json; p_id: string | null; p_professional: string };
         Returns: string;
       };
       admin_professional_suggestion_set: {
