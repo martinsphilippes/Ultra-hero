@@ -1,5 +1,7 @@
 // Contratos dos formulários compartilhados entre portais (personalidade, fornecedor) e admin.
 import type { ActionResult } from "@/components/admin/ConfirmActionDialog";
+import type { ComposerOptions } from "@/lib/post-blocks/queries";
+import type { BlockDrafts, PillarBlock, ProgramBlock } from "@/lib/post-blocks/schema";
 import type { ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
 
 export type { ActionResult };
@@ -34,6 +36,27 @@ export type ContentFormValues = {
   media_credit: string;
   /** Campo editável só pelo admin (o app é gratuito, 0069: não há regra de acesso a escolher). */
   completion_mode?: "manual" | "auto" | null;
+  /** Blocos do conteúdo estruturado (0075/0076) e produtos vinculados; ausente = o formulário não os edita. */
+  blocks?: ContentBlocksPayload;
+};
+
+/** O que o formulário manda gravar junto do conteúdo: bloco do pilar, programa e produtos vinculados. */
+export type ContentBlocksPayload = {
+  pillar: PillarBlock | null;
+  program: ProgramBlock | null;
+  /** IDs dos produtos que ficam vinculados (validados); os demais vínculos validados saem. */
+  products: string[];
+};
+
+/** Estado inicial e opções dos blocos no formulário (admin). */
+export type ContentBlocksProps = {
+  drafts: BlockDrafts;
+  products: string[];
+  options: ComposerOptions;
+  /** Carregamento das opções em andamento (troca de herói). */
+  loading?: boolean;
+  /** Atalhos: cadastro de receita, vínculos e novo programa. */
+  hrefs: { newRecipe: string; links: string; newProgram: string };
 };
 
 export type ContentFormProps = {
@@ -45,6 +68,8 @@ export type ContentFormProps = {
   readOnly?: boolean;
   /** Capa enviada do celular: estado do envio (servidor) e herói em nome de quem a foto é reservada. */
   cover: { state: "ready" | "disabled" | "not_configured"; creatorId: string | null };
+  /** Blocos (pilar, programa) e produtos vinculados; sem a prop, o formulário fica como antes. */
+  blocks?: ContentBlocksProps;
   action: (values: ContentFormValues) => Promise<ActionResult & { id?: string }>;
 };
 

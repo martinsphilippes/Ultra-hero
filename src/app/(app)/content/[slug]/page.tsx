@@ -199,8 +199,9 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
   const body: unknown = (localization ? locBody : null) ?? bodyRow?.body ?? null;
   const showLanguageNotice = wantsLocalization && !localization;
 
-  // blocos por pilar (0075): só para quem pode consumir; a RLS repete a regra
-  const blocks = user && bodyRow && (content.type === "article" || content.type === "video") ? await loadPostBlocks(supabase, content.id) : [];
+  // blocos por pilar e programa (0075/0076): só para quem pode consumir; a RLS repete a regra. Receita
+  // tem página própria (RecipeView) e não entra.
+  const blocks = user && bodyRow && content.type !== "recipe" ? await loadPostBlocks(supabase, content.id) : [];
   const [stepChecks, blockRefs] = await Promise.all([
     blocks.some((b) => b.kind === "workout") ? loadStepChecks(supabase, content.id) : [],
     loadBlockReferences(supabase, blocks),

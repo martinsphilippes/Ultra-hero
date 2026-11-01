@@ -178,7 +178,9 @@
     "recipe_not_found": "Recipe not found.",
     "chef_unavailable": "Choose an active hero to sign.",
     "showcase_unavailable": "Available after migration 0051 is applied to the database.",
-    "invalid_status": "Invalid status."
+    "invalid_status": "Invalid status.",
+    "invalid_reference": "A chosen recipe, product or program does not belong to this hero or is not published. Check the blocks and save again.",
+    "invalid_block": "The content blocks are incomplete. Check the pillar and program fields."
   },
   "content": {
     "title": "Content",
@@ -313,7 +315,8 @@
       "creatorHint": "Fictional heroes are marked in the list.",
       "creatorRequired": "Pick a hero before saving.",
       "created": "Content created as draft",
-      "updated": "Content updated"
+      "updated": "Content updated",
+      "linkRemovedNote": "Removed in the content editor"
     },
     "typeSettings": {
       "title": "Completion defaults by type",

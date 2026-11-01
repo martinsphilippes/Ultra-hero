@@ -318,6 +318,12 @@
     "menu": {
       "title": "Chef's menu",
       "openRecipe": "Open recipe"
+    },
+    "program": {
+      "title": "Hero's program",
+      "tag": "Program",
+      "weeks": "Program · {n} weeks",
+      "open": "Open program"
     }
   }
 }

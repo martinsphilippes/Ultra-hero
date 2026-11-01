@@ -4,8 +4,11 @@ import type { Pillar } from "@/lib/supabase/helpers";
 // Blocos por pilar do Novo post (0075): lógica pura, compartilhada por composer, actions, página do
 // conteúdo e testes. Rotina não tem bloco; Treino → passos marcáveis por pessoa; Nutrição → receita,
 // produto ou prato; Gastronomia → cardápio do chef. O banco repete os limites (post_block_data_ok).
+// Programa (0076): segundo slot, independente do pilar — aponta para um programa publicado do herói.
 
-export const BLOCK_KINDS = ["workout", "nutrition", "menu"] as const;
+export const PILLAR_BLOCK_KINDS = ["workout", "nutrition", "menu"] as const;
+export const BLOCK_KINDS = [...PILLAR_BLOCK_KINDS, "program"] as const;
+export type PillarBlockKind = (typeof PILLAR_BLOCK_KINDS)[number];
 export type BlockKind = (typeof BLOCK_KINDS)[number];
 
 export const WORKOUT_STEPS_MAX = 20;
@@ -15,9 +18,10 @@ export const BLOCK_DESCRIPTION_MAX = 2000;
 export const BLOCK_STEP_MAX = 200;
 export const BLOCK_NAME_MAX = 80;
 export const BLOCK_NOTE_MAX = 300;
+export const PROGRAM_NOTE_MAX = 300;
 
 /** Bloco que cada pilar abre no composer (Rotina: nenhum). */
-export const PILLAR_BLOCK: Record<Pillar, BlockKind | null> = { routine: null, training: "workout", nutrition: "nutrition", gastronomy: "menu" };
+export const PILLAR_BLOCK: Record<Pillar, PillarBlockKind | null> = { routine: null, training: "workout", nutrition: "nutrition", gastronomy: "menu" };
 
 const text = (max: number) => z.string().trim().max(max);
 const uuid = z.uuid();
@@ -38,16 +42,25 @@ export const menuSchema = z.object({
   options: z.array(z.object({ name: text(BLOCK_NAME_MAX).min(1), description: text(BLOCK_NOTE_MAX), recipe_id: uuid.nullable() })).min(1).max(MENU_OPTIONS_MAX),
 });
 
-export const postBlockSchema = z.discriminatedUnion("kind", [
+export const programSchema = z.object({ program_id: uuid, note: text(PROGRAM_NOTE_MAX) });
+
+/** Blocos do pilar (um por conteúdo). */
+export const pillarBlockSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("workout"), data: workoutSchema }),
   z.object({ kind: z.literal("nutrition"), data: nutritionSchema }),
   z.object({ kind: z.literal("menu"), data: menuSchema }),
 ]);
+export const programBlockSchema = z.object({ kind: z.literal("program"), data: programSchema });
+/** Qualquer bloco gravado em post_blocks. */
+export const postBlockSchema = z.discriminatedUnion("kind", [...pillarBlockSchema.options, programBlockSchema]);
 
 export type WorkoutData = z.infer<typeof workoutSchema>;
 export type NutritionItem = z.infer<typeof nutritionItemSchema>;
 export type NutritionData = z.infer<typeof nutritionSchema>;
 export type MenuData = z.infer<typeof menuSchema>;
+export type ProgramData = z.infer<typeof programSchema>;
+export type PillarBlock = z.infer<typeof pillarBlockSchema>;
+export type ProgramBlock = z.infer<typeof programBlockSchema>;
 export type PostBlock = z.infer<typeof postBlockSchema>;
 
 /** Rascunho do composer: cada pilar guarda o seu, para trocar de pilar e voltar sem perder o texto. */
@@ -55,20 +68,39 @@ export type BlockDrafts = {
   workout: { description: string; steps: string[] };
   nutrition: { items: NutritionItem[] };
   menu: { options: { name: string; description: string; recipe_id: string | null }[] };
+  /** Programa do herói (0076): slot à parte, sem programa escolhido = sem bloco. */
+  program: { program_id: string | null; note: string };
 };
 
 export function emptyDrafts(): BlockDrafts {
-  return { workout: { description: "", steps: [""] }, nutrition: { items: [] }, menu: { options: [{ name: "", description: "", recipe_id: null }] } };
+  return {
+    workout: { description: "", steps: [""] },
+    nutrition: { items: [] },
+    menu: { options: [{ name: "", description: "", recipe_id: null }] },
+    program: { program_id: null, note: "" },
+  };
+}
+
+/** Blocos já gravados → rascunhos (edição no admin). Os que não existem ficam vazios. */
+export function draftsFromBlocks(blocks: readonly PostBlock[]): BlockDrafts {
+  const drafts = emptyDrafts();
+  for (const block of blocks) {
+    if (block.kind === "workout") drafts.workout = { description: block.data.description, steps: block.data.steps.map((s) => s.text) };
+    else if (block.kind === "nutrition") drafts.nutrition = { items: block.data.items };
+    else if (block.kind === "menu") drafts.menu = { options: block.data.options };
+    else drafts.program = { program_id: block.data.program_id, note: block.data.note };
+  }
+  return drafts;
 }
 
 /** O rascunho tem alguma coisa escrita? (vazio = o post sai sem bloco, como na Rotina) */
-export function draftIsEmpty(kind: BlockKind, drafts: BlockDrafts): boolean {
+export function draftIsEmpty(kind: PillarBlockKind, drafts: BlockDrafts): boolean {
   if (kind === "workout") return drafts.workout.description.trim() === "" && drafts.workout.steps.every((s) => s.trim() === "");
   if (kind === "nutrition") return drafts.nutrition.items.length === 0;
   return drafts.menu.options.every((o) => o.name.trim() === "" && o.description.trim() === "" && o.recipe_id === null);
 }
 
-export type DraftResult = { ok: true; block: PostBlock | null } | { ok: false; error: "workout_steps" | "workout_step_text" | "nutrition_items" | "menu_name" | "invalid_block" };
+export type DraftResult = { ok: true; block: PillarBlock | null } | { ok: false; error: "workout_steps" | "workout_step_text" | "nutrition_items" | "menu_name" | "invalid_block" };
 
 /**
  * Bloco a publicar para o pilar: Rotina ou rascunho vazio → nenhum; senão valida. Passos e opções
@@ -91,6 +123,13 @@ export function draftToBlock(pillar: Pillar, drafts: BlockDrafts): DraftResult {
   if (options.some((o) => o.name.trim() === "")) return { ok: false, error: "menu_name" };
   const parsed = menuSchema.safeParse({ options });
   return parsed.success ? { ok: true, block: { kind, data: parsed.data } } : { ok: false, error: "invalid_block" };
+}
+
+/** Bloco de programa a gravar: sem programa escolhido → nenhum (a nota sozinha não vale). */
+export function programDraftToBlock(drafts: BlockDrafts): { ok: true; block: ProgramBlock | null } | { ok: false; error: "invalid_block" } {
+  if (!drafts.program.program_id) return { ok: true, block: null };
+  const parsed = programSchema.safeParse({ program_id: drafts.program.program_id, note: drafts.program.note });
+  return parsed.success ? { ok: true, block: { kind: "program", data: parsed.data } } : { ok: false, error: "invalid_block" };
 }
 
 /** Linha do banco → bloco tipado (linha corrompida ou de outro tipo é ignorada). */

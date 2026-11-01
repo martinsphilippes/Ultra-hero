@@ -15,6 +15,7 @@ import type { ContentFormValues } from "@/components/editors/types";
 import { getUser, hasRole } from "@/lib/auth/session";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { storedPostPhotoPath } from "@/lib/post-photo/paths";
+import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { schedulePushDispatch } from "@/lib/push/schedule";
 
@@ -255,12 +256,64 @@ export async function saveContentAction(context: SaveContext, values: ContentFor
     );
     if (bodyError) return fail(bodyError);
 
+    // Blocos (0075/0076) e produtos vinculados: só quando o formulário os editou. Conteúdo criado e
+    // gravado; se um bloco falhar (referência inválida), o conteúdo fica e a mensagem explica.
+    if (v.blocks) {
+      const blocksResult = await saveContentBlocks(supabase, userId, contentId, v.blocks);
+      if (!blocksResult.ok) return { ...blocksResult, id: contentId };
+    }
+
     revalidatePath("/admin/content");
     revalidatePath(`/admin/content/${contentId}`);
     return { ok: true, id: contentId, message: ctx.data.id ? t("updated") : t("created") };
   } catch (error) {
     return fail(error);
   }
+}
+
+type BlocksPayload = NonNullable<ContentFormValues["blocks"]>;
+
+// Bloco do pilar (gravar um apaga os outros do pilar; nenhum apaga os três) e programa (slot à parte),
+// pela RPC post_block_set: dono, forma e referências conferidos no banco. Produtos: os escolhidos ficam
+// validados (vínculo criado ou revalidado); os validados que saíram da lista vão a "rejeitado", com nota.
+// Banco sem a 0075/0076: os blocos são ignorados em silêncio (o conteúdo em si já foi gravado).
+async function saveContentBlocks(supabase: Awaited<ReturnType<typeof createClient>>, userId: string, contentId: string, blocks: BlocksPayload): Promise<ActionResult> {
+  const pillarCall = blocks.pillar
+    ? await supabase.rpc("post_block_set", { p_content: contentId, p_kind: blocks.pillar.kind, p_data: blocks.pillar.data })
+    : await supabase.rpc("post_block_set", { p_content: contentId, p_kind: null, p_data: null });
+  if (pillarCall.error) {
+    if (isMissingSchema(pillarCall.error)) return { ok: true };
+    return fail(pillarCall.error);
+  }
+  const programCall = blocks.program
+    ? await supabase.rpc("post_block_set", { p_content: contentId, p_kind: "program", p_data: blocks.program.data })
+    : await supabase.rpc("post_block_set", { p_content: contentId, p_kind: "program", p_data: null });
+  if (programCall.error) return fail(programCall.error);
+
+  const { data: links, error: linksError } = await supabase.from("content_product_links").select("id, product_id, status").eq("content_id", contentId);
+  if (linksError) return fail(linksError);
+  const chosen = new Set(blocks.products);
+  const t = await getTranslations("adminContent.content.form");
+  for (const link of links ?? []) {
+    if (link.status === "validated" && !chosen.has(link.product_id)) {
+      const { error } = await supabase.rpc("admin_set_link_status", { p_link: link.id, p_status: "rejected", p_note: t("linkRemovedNote") });
+      if (error) return fail(error);
+    }
+  }
+  const validated = new Set((links ?? []).filter((l) => l.status === "validated").map((l) => l.product_id));
+  for (const productId of blocks.products) {
+    if (validated.has(productId)) continue;
+    const { data: link, error } = await supabase
+      .from("content_product_links")
+      .upsert({ content_id: contentId, product_id: productId, status: "suggested", suggested_by: userId }, { onConflict: "content_id,product_id" })
+      .select("id")
+      .single();
+    if (error || !link) return fail(error ?? "generic");
+    const { error: rpcError } = await supabase.rpc("admin_set_link_status", { p_link: link.id, p_status: "validated" });
+    if (rpcError) return fail(rpcError);
+  }
+  revalidatePath("/admin/links");
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------- padrões de conclusão por tipo

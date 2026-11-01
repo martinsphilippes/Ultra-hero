@@ -318,6 +318,12 @@
     "menu": {
       "title": "Cardápio do chef",
       "openRecipe": "Abrir receita"
+    },
+    "program": {
+      "title": "Programa do herói",
+      "tag": "Programa",
+      "weeks": "Programa · {n} semanas",
+      "open": "Abrir programa"
     }
   }
 }

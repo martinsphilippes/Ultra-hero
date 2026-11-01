@@ -317,6 +317,19 @@
         "noRecipe": "Sin receta",
         "noRecipes": "Todavía no tienes una receta publicada.",
         "addOption": "Agregar opción"
+      },
+      "program": {
+        "title": "Programa del héroe",
+        "hint": "Un programa publicado del héroe entra en el contenido como atajo. Quien lo abra ve la tarjeta y va directo al programa.",
+        "pick": "Programa",
+        "none": "Sin programa",
+        "noPrograms": "Este héroe todavía no tiene programa publicado.",
+        "createProgram": "Crear programa",
+        "unavailable": "Programa fuera del aire (quítalo o cámbialo)",
+        "weeks": "{n} semanas",
+        "note": "Llamada",
+        "notePlaceholder": "Ej.: Empieza por la semana 1 y sigue a tu ritmo.",
+        "counter": "{count}/{max}"
       }
     }
   },

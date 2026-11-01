@@ -3,6 +3,7 @@
 // do namespace "editors.validation" — a UI traduz; o servidor só precisa do ok/erro.
 import { z } from "zod";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
+import { pillarBlockSchema, programBlockSchema } from "@/lib/post-blocks/schema";
 import { isPostPhotoPath, storedPostPhotoPath } from "@/lib/post-photo/paths";
 import type { ContentFormValues } from "../types";
 import { parseMediaRef } from "./media";
@@ -21,6 +22,14 @@ export const ENABLED_MEDIA_PROVIDERS = ["none", "embed_youtube", "embed_vimeo"] 
 export const STREAM_UID = /^[0-9a-f]{32}$/;
 /** Licença da mídia (RF-008). Espelha o check de public.content.media_license_kind. */
 export const LICENSE_KIND_VALUES = ["platform_demo", "own", "licensed", "third_party_embed"] as const;
+
+/** Produtos vinculados pelo formulário (a página do conteúdo mostra até 6). */
+export const LINKED_PRODUCTS_MAX = 6;
+export const contentBlocksSchema = z.object({
+  pillar: pillarBlockSchema.nullable(),
+  program: programBlockSchema.nullable(),
+  products: z.array(z.uuid()).max(LINKED_PRODUCTS_MAX),
+});
 
 export type ContentTypeValue = (typeof CONTENT_TYPE_VALUES)[number];
 export type LicenseKindValue = (typeof LICENSE_KIND_VALUES)[number];
@@ -218,6 +227,8 @@ export const contentFormSchema = z
     media_license_ref: text(300).optional(),
     media_credit: text(160).optional(),
     completion_mode: z.enum(COMPLETION_VALUES).nullable().optional(),
+    // blocos e produtos vinculados (0075/0076): só quando o formulário os edita
+    blocks: contentBlocksSchema.optional(),
   })
   .superRefine((v, ctx) => {
     // licença coerente com o provedor (o banco também recusa: media_license_mismatch)

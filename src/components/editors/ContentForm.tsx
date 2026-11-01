@@ -3,7 +3,10 @@
 import { Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { Button, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
+import { PillarBlockEditor } from "@/components/creator/post/PillarBlockEditor";
+import { ProgramBlockEditor } from "@/components/creator/post/ProgramBlockEditor";
+import { Button, FormField, Input, Select, Spinner, Switch, Textarea, useToast } from "@/components/ui";
+import { PILLAR_BLOCK, draftToBlock, emptyDrafts, programDraftToBlock, type BlockDrafts } from "@/lib/post-blocks/schema";
 import { AccessFields } from "./content/AccessFields";
 import { CoverPicker } from "./content/CoverPicker";
 import { ChipInput, FormSection, NumberField, useValidationMessage } from "./content/fields";
@@ -11,6 +14,7 @@ import { GuideEditor } from "./content/GuideEditor";
 import { collectText, findHealthClaims } from "./content/health-claims";
 import { HealthClaimNotice } from "./content/HealthClaimNotice";
 import { LicenseFields } from "./content/LicenseFields";
+import { LinkedProductsField } from "./content/LinkedProductsField";
 import { MediaEditor } from "./content/MediaEditor";
 import { RecipeEditor } from "./content/RecipeEditor";
 import {
@@ -35,19 +39,26 @@ import type { ContentFormProps, ContentFormValues } from "./types";
 // Formulário de conteúdo compartilhado (portal da personalidade e admin).
 // Validação Zod no cliente (feedback imediato) e no servidor (fonte de verdade);
 // regras de acesso só aparecem para o admin; readOnly desabilita tudo.
+// Com a prop `blocks` (admin, 0075/0076) o conteúdo vira estruturado: o pilar abre o bloco dele (treino,
+// nutrição, cardápio), um programa do herói entra como bloco à parte e produtos ficam vinculados.
 
 type FormState = Omit<ContentFormValues, "body"> & { body: ContentBody };
 
 const EMPTY_MEDIA: ContentFormValues["media"] = { provider: "none", ref: null, captions_url: null };
 
-export function ContentForm({ mode, initial, canEditAccess, readOnly = false, cover, action }: ContentFormProps) {
+export function ContentForm({ mode, initial, canEditAccess, readOnly = false, cover, blocks, action }: ContentFormProps) {
   const t = useTranslations("editors");
   const tc = useTranslations("common");
+  const tb = useTranslations("creator.post.blocks");
   const tv = useValidationMessage();
   const { toast } = useToast();
   const [values, setValues] = useState<FormState>(() => toFormValues(initial) as FormState);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  // blocos (0075/0076): rascunho por pilar + programa, e os produtos vinculados; só com a prop `blocks`
+  const [drafts, setDrafts] = useState<BlockDrafts>(() => blocks?.drafts ?? emptyDrafts());
+  const [productIds, setProductIds] = useState<string[]>(() => blocks?.products ?? []);
+  const [blockError, setBlockError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -88,13 +99,27 @@ export function ContentForm({ mode, initial, canEditAccess, readOnly = false, co
       return t("errors.protected_column", { column });
     }
     const key = code.split(":")[0].trim();
-    return t.has(`errors.${key}`) ? t(`errors.${key}`) : t("errors.generic");
+    if (t.has(`errors.${key}`)) return t(`errors.${key}`);
+    // a action do admin já devolve a frase traduzida (failWith): mostra como veio em vez do genérico
+    return /\s/.test(code) ? code : t("errors.generic");
   }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (readOnly || pending) return;
     const candidate: ContentFormValues = { ...values, media: values.type === "video" ? values.media : EMPTY_MEDIA };
+    if (blocks && values.type !== "recipe") {
+      // bloco do pilar (vazio = nenhum) e programa (sem escolha = nenhum); erro de forma para o campo
+      const pillarResult = draftToBlock(values.pillar, drafts);
+      const programResult = programDraftToBlock(drafts);
+      if (!pillarResult.ok || !programResult.ok) {
+        setBlockError(tb(`errors.${!pillarResult.ok ? pillarResult.error : "invalid_block"}`));
+        setServerError(null);
+        return;
+      }
+      candidate.blocks = { pillar: pillarResult.block, program: programResult.block, products: productIds };
+    }
+    setBlockError(null);
     const parsed = parseContentForm(candidate);
     if (!parsed.ok) {
       setErrors(parsed.errors);
@@ -230,6 +255,30 @@ export function ContentForm({ mode, initial, canEditAccess, readOnly = false, co
         <FormSection legend={t(`sections.body.${bodyKindFor(values.type)}`)} description={t("sections.bodyDescription")}>
           {bodyEditor}
         </FormSection>
+
+        {blocks && values.type !== "recipe" && (
+          <>
+            <FormSection legend={t("sections.blocks")} description={t("sections.blocksDescription")}>
+              {blocks.loading ? (
+                <p className="flex items-center gap-2 type-caption text-fg-muted">
+                  <Spinner size="sm" label={t("sections.blocksLoading")} />
+                  {t("sections.blocksLoading")}
+                </p>
+              ) : null}
+              {PILLAR_BLOCK[values.pillar] ? (
+                <PillarBlockEditor pillar={values.pillar} drafts={drafts} onChange={setDrafts} options={blocks.options} hrefs={blocks.hrefs} error={blockError} disabled={readOnly || pending} />
+              ) : (
+                <p className="type-caption text-fg-muted" data-testid="block-routine-note">
+                  {t("sections.blocksRoutine")}
+                </p>
+              )}
+              <ProgramBlockEditor drafts={drafts} onChange={setDrafts} programs={blocks.options.programs} newProgramHref={blocks.hrefs.newProgram} disabled={readOnly || pending} />
+            </FormSection>
+            <FormSection legend={t("sections.products")} description={t("sections.productsDescription")}>
+              <LinkedProductsField value={productIds} onChange={setProductIds} products={blocks.options.products} disabled={readOnly || pending} />
+            </FormSection>
+          </>
+        )}
 
         {canEditAccess && (
           <FormSection legend={t("sections.access")} description={t("sections.accessDescription")}>

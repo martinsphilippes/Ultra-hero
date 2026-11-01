@@ -1,8 +1,8 @@
-import { ChefHat, Salad, ShoppingBag } from "lucide-react";
+import { ChefHat, Layers, Salad, ShoppingBag } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
-import type { ProductOption, RecipeOption } from "@/lib/post-blocks/queries";
+import type { BlockReferences } from "@/lib/post-blocks/queries";
 import type { PostBlock } from "@/lib/post-blocks/schema";
 import { StepChecklist } from "./StepChecklist";
 
@@ -10,17 +10,40 @@ type Props = {
   contentId: string;
   blocks: PostBlock[];
   checked: number[];
-  references: { recipes: Map<string, RecipeOption>; products: Map<string, ProductOption> };
+  references: BlockReferences;
 };
 
-// Blocos por pilar de um post (0075), embaixo da foto ou do vídeo: treino com passos marcáveis por
-// pessoa, receitas/produtos/pratos da nutrição e o cardápio do chef. Só para quem pode consumir.
+// Blocos de um conteúdo (0075/0076), embaixo da foto, do vídeo ou do texto: treino com passos marcáveis
+// por pessoa, receitas/produtos/pratos da nutrição, cardápio do chef e o programa do herói. Só para
+// quem pode consumir. O bloco do pilar vem antes do programa.
 export async function PostBlocks({ contentId, blocks, checked, references }: Props) {
   if (blocks.length === 0) return null;
   const t = await getTranslations("consume.blocks");
+  const ordered = blocks.slice().sort((a, b) => Number(a.kind === "program") - Number(b.kind === "program"));
   return (
     <div className="flex flex-col gap-6" data-testid="post-blocks">
-      {blocks.map((block) => {
+      {ordered.map((block) => {
+        if (block.kind === "program") {
+          const program = references.programs.get(block.data.program_id);
+          if (!program) return null;
+          return (
+            <section key="program" aria-labelledby="post-program" className="flex flex-col gap-3" data-testid="post-block-program">
+              <h2 id="post-program" className="flex items-center gap-2 text-sm font-semibold text-fg">
+                <Layers className="size-4 text-accent-text" aria-hidden="true" />
+                {t("program.title")}
+              </h2>
+              {block.data.note ? <p className="type-body-sm text-fg-muted">{block.data.note}</p> : null}
+              <RefCard
+                href={`/programs/${program.slug}`}
+                image={program.cover_url}
+                title={program.title}
+                tag={program.estimated_weeks ? t("program.weeks", { n: program.estimated_weeks }) : t("program.tag")}
+                cta={t("program.open")}
+                icon={<Layers className="size-4" aria-hidden="true" />}
+              />
+            </section>
+          );
+        }
         if (block.kind === "workout") {
           return <StepChecklist key="workout" contentId={contentId} description={block.data.description} steps={block.data.steps.map((s) => s.text)} initialChecked={checked} />;
         }

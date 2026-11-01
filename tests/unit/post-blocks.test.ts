@@ -4,25 +4,33 @@ import {
   MENU_OPTIONS_MAX,
   NUTRITION_ITEMS_MAX,
   PILLAR_BLOCK,
+  PILLAR_BLOCK_KINDS,
+  PROGRAM_NOTE_MAX,
   WORKOUT_STEPS_MAX,
   draftIsEmpty,
   draftToBlock,
+  draftsFromBlocks,
   emptyDrafts,
   parsePostBlock,
+  pillarBlockSchema,
   postBlockSchema,
+  programDraftToBlock,
   workoutProgress,
 } from "@/lib/post-blocks/schema";
 
-// Blocos por pilar do Novo post (0075): lógica pura compartilhada por composer, actions e página.
-// As regras do banco (dono, forma, referências, marcação por pessoa) são testadas de verdade no S82.
+// Blocos por pilar do Novo post (0075) e programa (0076): lógica pura compartilhada por composer,
+// formulário do admin, actions e página. As regras do banco (dono, forma, referências, dois slots,
+// marcação por pessoa) são testadas de verdade no S82 e no S83.
 
 const R1 = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
 const P1 = "5d1f5c2e-3b8a-4c7d-9e0f-1a2b3c4d5e6f";
+const G1 = "0f8fad5b-d9cb-469f-a165-70867728950e";
 
 describe("pilar → bloco", () => {
-  it("Rotina não abre bloco; Treino, Nutrição e Gastronomia abrem o seu", () => {
+  it("Rotina não abre bloco; Treino, Nutrição e Gastronomia abrem o seu; programa é slot à parte", () => {
     expect(PILLAR_BLOCK).toEqual({ routine: null, training: "workout", nutrition: "nutrition", gastronomy: "menu" });
-    expect(BLOCK_KINDS).toEqual(["workout", "nutrition", "menu"]);
+    expect(PILLAR_BLOCK_KINDS).toEqual(["workout", "nutrition", "menu"]);
+    expect(BLOCK_KINDS).toEqual(["workout", "nutrition", "menu", "program"]);
   });
 
   it("rascunho vazio (ou Rotina) publica sem bloco", () => {
@@ -65,10 +73,45 @@ describe("pilar → bloco", () => {
   });
 });
 
+describe("programa (0076)", () => {
+  it("sem programa escolhido não há bloco (a nota sozinha não vale); com programa, id e nota aparada", () => {
+    const drafts = emptyDrafts();
+    expect(programDraftToBlock(drafts)).toEqual({ ok: true, block: null });
+    drafts.program = { program_id: null, note: "só a nota" };
+    expect(programDraftToBlock(drafts)).toEqual({ ok: true, block: null });
+    drafts.program = { program_id: G1, note: "  Comece pela semana 1  " };
+    expect(programDraftToBlock(drafts)).toEqual({ ok: true, block: { kind: "program", data: { program_id: G1, note: "Comece pela semana 1" } } });
+    drafts.program = { program_id: "nao-uuid", note: "" };
+    expect(programDraftToBlock(drafts)).toEqual({ ok: false, error: "invalid_block" });
+    drafts.program = { program_id: G1, note: "n".repeat(PROGRAM_NOTE_MAX + 1) };
+    expect(programDraftToBlock(drafts)).toEqual({ ok: false, error: "invalid_block" });
+  });
+
+  it("o post rápido só aceita bloco do pilar; o conteúdo estruturado aceita também o programa", () => {
+    const program = { kind: "program", data: { program_id: G1, note: "" } };
+    expect(pillarBlockSchema.safeParse(program).success).toBe(false);
+    expect(postBlockSchema.safeParse(program).success).toBe(true);
+    expect(postBlockSchema.safeParse({ kind: "program", data: { program_id: G1 } }).success).toBe(false);
+  });
+
+  it("blocos gravados viram rascunhos para edição; os ausentes ficam vazios", () => {
+    const drafts = draftsFromBlocks([
+      { kind: "workout", data: { description: "Semana 1", steps: [{ text: "Correr" }, { text: "Alongar" }] } },
+      { kind: "program", data: { program_id: G1, note: "Siga o programa" } },
+    ]);
+    expect(drafts.workout).toEqual({ description: "Semana 1", steps: ["Correr", "Alongar"] });
+    expect(drafts.program).toEqual({ program_id: G1, note: "Siga o programa" });
+    expect(drafts.nutrition).toEqual({ items: [] });
+    expect(drafts.menu.options).toHaveLength(1);
+    expect(draftsFromBlocks([])).toEqual(emptyDrafts());
+  });
+});
+
 describe("linha do banco e progresso", () => {
   it("parsePostBlock aceita o que o banco guarda e ignora lixo", () => {
     expect(parsePostBlock({ kind: "workout", data: { description: "", steps: [{ text: "a" }] } })).toEqual({ kind: "workout", data: { description: "", steps: [{ text: "a" }] } });
     expect(parsePostBlock({ kind: "menu", data: { options: [{ name: "x", description: "", recipe_id: null }] } })?.kind).toBe("menu");
+    expect(parsePostBlock({ kind: "program", data: { program_id: G1, note: "" } })?.kind).toBe("program");
     expect(parsePostBlock({ kind: "workout", data: { steps: [] } })).toBeNull();
     expect(parsePostBlock({ kind: "outro", data: {} })).toBeNull();
     expect(postBlockSchema.safeParse({ kind: "nutrition", data: { items: [{ kind: "recipe", content_id: "nao-uuid" }] } }).success).toBe(false);

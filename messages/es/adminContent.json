@@ -178,7 +178,9 @@
     "recipe_not_found": "Receta no encontrada.",
     "chef_unavailable": "Elige un héroe activo para firmar.",
     "showcase_unavailable": "Disponible después de aplicar la migración 0051 en la base de datos.",
-    "invalid_status": "Estado inválido."
+    "invalid_status": "Estado inválido.",
+    "invalid_reference": "Alguna receta, producto o programa elegido no es de este héroe o no está publicado. Revisa los bloques y guarda de nuevo.",
+    "invalid_block": "Los bloques del contenido están incompletos. Revisa los campos del pilar y del programa."
   },
   "content": {
     "title": "Contenidos",
@@ -313,7 +315,8 @@
       "creatorHint": "Los héroes ficticios aparecen marcados en la lista.",
       "creatorRequired": "Elige un héroe antes de guardar.",
       "created": "Contenido creado como borrador",
-      "updated": "Contenido actualizado"
+      "updated": "Contenido actualizado",
+      "linkRemovedNote": "Quitado en el editor de contenido"
     },
     "typeSettings": {
       "title": "Valores de finalización por tipo",

@@ -9736,5 +9736,94 @@ update public.creator_profiles set user_id = null where id = public.seed_uuid('c
 delete from auth.users where id in ('82000000-0000-4000-8000-000000000821', '82000000-0000-4000-8000-000000000822', '82000000-0000-4000-8000-000000000823');
 drop table t_s82;
 
+-- ================================================================ S83 · Programa como bloco do conteúdo (0076)
+-- O programa é um segundo slot: convive com o bloco do pilar, aponta só para programa publicado (com
+-- versão atual) do mesmo herói. Gravar o bloco do pilar preserva o programa; gravar o programa preserva o
+-- pilar e as marcações do treino; p_kind nulo apaga tudo. Quem consome o conteúdo lê os dois blocos.
+select tests.su();
+insert into auth.users (id, email) values
+  ('83000000-0000-4000-8000-000000000831', 's83hero@test.local'),
+  ('83000000-0000-4000-8000-000000000832', 's83fan@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('83000000-0000-4000-8000-000000000831', 'creator', 'global');
+update public.creator_profiles set user_id = '83000000-0000-4000-8000-000000000831' where id = public.seed_uuid('creator:rafael');
+insert into public.content (id, slug, creator_id, pillar, type, title, status, published_at, media_license_kind, access_level) values
+  ('83000000-0000-4000-8000-000000008301', 's83-conteudo', public.seed_uuid('creator:rafael'), 'training', 'article', 'Conteúdo estruturado S83', 'published', now(), 'own', 'free');
+insert into public.content_bodies (content_id, body) values ('83000000-0000-4000-8000-000000008301', '{"kind":"article","sections":[]}');
+insert into public.programs (id, slug, creator_id, pillar, status) values
+  ('83000000-0000-4000-8000-000000008311', 's83-programa-rafael', public.seed_uuid('creator:rafael'), 'training', 'published'),
+  ('83000000-0000-4000-8000-000000008312', 's83-programa-tiago', public.seed_uuid('creator:tiago'), 'training', 'published'),
+  ('83000000-0000-4000-8000-000000008313', 's83-programa-rascunho', public.seed_uuid('creator:rafael'), 'training', 'draft'),
+  ('83000000-0000-4000-8000-000000008314', 's83-programa-sem-versao', public.seed_uuid('creator:rafael'), 'training', 'published');
+insert into public.program_versions (id, program_id, version_no, title, status, published_at) values
+  ('83000000-0000-4000-8000-000000008321', '83000000-0000-4000-8000-000000008311', 1, 'Programa S83', 'published', now()),
+  ('83000000-0000-4000-8000-000000008322', '83000000-0000-4000-8000-000000008312', 1, 'Programa de outro S83', 'published', now()),
+  ('83000000-0000-4000-8000-000000008323', '83000000-0000-4000-8000-000000008313', 1, 'Rascunho S83', 'draft', null);
+update public.programs set current_version_id = '83000000-0000-4000-8000-000000008321' where id = '83000000-0000-4000-8000-000000008311';
+update public.programs set current_version_id = '83000000-0000-4000-8000-000000008322' where id = '83000000-0000-4000-8000-000000008312';
+update public.programs set current_version_id = '83000000-0000-4000-8000-000000008323' where id = '83000000-0000-4000-8000-000000008313';
+select tests.ok('S83 estrutura: o tipo program entra na restrição da tabela e nada abre para anon',
+  (select pg_get_constraintdef(oid) from pg_constraint where conrelid = 'public.post_blocks'::regclass and conname = 'post_blocks_kind_check') like '%''program''%'
+  and not has_function_privilege('anon', 'public.post_block_set(uuid, text, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.post_block_data_ok(text, jsonb)', 'execute'));
+
+-- herói: forma e referências do programa
+select tests.login('83000000-0000-4000-8000-000000000831', 's83hero@test.local');
+select tests.expect_error('S83 programa sem id: invalid_block', $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"note":"x"}')$q$, 'invalid_block');
+select tests.expect_error('S83 programa sem nota (chave ausente): invalid_block', $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311"}')$q$, 'invalid_block');
+select tests.expect_error('S83 nota longa demais: invalid_block',
+  $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', jsonb_build_object('program_id', '83000000-0000-4000-8000-000000008311', 'note', repeat('n', 301)))$q$, 'invalid_block');
+select tests.expect_error('S83 programa de outro herói: invalid_reference',
+  $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008312","note":""}')$q$, 'invalid_reference');
+select tests.expect_error('S83 programa em rascunho: invalid_reference',
+  $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008313","note":""}')$q$, 'invalid_reference');
+select tests.expect_error('S83 programa publicado sem versão atual: invalid_reference',
+  $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008314","note":""}')$q$, 'invalid_reference');
+select tests.expect_error('S83 programa inexistente: invalid_reference',
+  $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000009999","note":""}')$q$, 'invalid_reference');
+
+-- dois slots: treino + programa
+select public.post_block_set('83000000-0000-4000-8000-000000008301', 'workout', '{"description":"Semana 1","steps":[{"text":"Corrida leve"},{"text":"Alongar"}]}');
+select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":"Siga o programa completo"}');
+select tests.ok('S83 treino e programa convivem (dois blocos)',
+  (select string_agg(kind, ',' order by kind) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 'program,workout');
+
+-- seguidor marca um passo; o programa regravado não apaga a marcação, o pilar regravado apaga
+select tests.login('83000000-0000-4000-8000-000000000832', 's83fan@test.local');
+select tests.ok('S83 seguidor lê os dois blocos', (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 2);
+select tests.ok('S83 seguidor marca o passo 1', public.post_step_toggle('83000000-0000-4000-8000-000000008301', 0, true) = 1);
+select tests.expect_error('S83 seguidor não grava programa no conteúdo do herói: forbidden',
+  $q$select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":""}')$q$, 'forbidden');
+select tests.login('83000000-0000-4000-8000-000000000831', 's83hero@test.local');
+select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":"nota nova"}');
+select tests.su();
+select tests.ok('S83 regravar o programa preserva o treino e a marcação',
+  (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 2
+  and (select data ->> 'note' from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301' and kind = 'program') = 'nota nova'
+  and (select count(*) from public.post_step_checks where content_id = '83000000-0000-4000-8000-000000008301') = 1);
+select tests.login('83000000-0000-4000-8000-000000000831', 's83hero@test.local');
+select public.post_block_set('83000000-0000-4000-8000-000000008301', 'menu', '{"options":[{"name":"Sopa","description":"","recipe_id":null}]}');
+select tests.su();
+select tests.ok('S83 cardápio substitui o treino (apaga a marcação) e preserva o programa',
+  (select string_agg(kind, ',' order by kind) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 'menu,program'
+  and (select count(*) from public.post_step_checks where content_id = '83000000-0000-4000-8000-000000008301') = 0);
+select tests.login('83000000-0000-4000-8000-000000000831', 's83hero@test.local');
+select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', null);
+select tests.ok('S83 p_data nulo apaga só o programa', (select string_agg(kind, ',') from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 'menu');
+select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":""}');
+select public.post_block_set('83000000-0000-4000-8000-000000008301', null, null);
+select tests.ok('S83 p_kind nulo apaga os dois slots', (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301') = 0);
+
+-- admin grava pelo herói (Novo conteúdo do admin)
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select public.post_block_set('83000000-0000-4000-8000-000000008301', 'program', '{"program_id":"83000000-0000-4000-8000-000000008311","note":""}');
+select tests.ok('S83 admin grava o programa no conteúdo do herói', (select count(*) from public.post_blocks where content_id = '83000000-0000-4000-8000-000000008301' and kind = 'program') = 1);
+
+-- limpeza: nada do S83 fica
+select tests.su();
+delete from public.content where id = '83000000-0000-4000-8000-000000008301';
+delete from public.programs where id in ('83000000-0000-4000-8000-000000008311', '83000000-0000-4000-8000-000000008312', '83000000-0000-4000-8000-000000008313', '83000000-0000-4000-8000-000000008314');
+update public.creator_profiles set user_id = null where id = public.seed_uuid('creator:rafael');
+delete from auth.users where id in ('83000000-0000-4000-8000-000000000831', '83000000-0000-4000-8000-000000000832');
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { CAPTION_MAX, MAX_POST_BYTES, MAX_POST_SECONDS, SERVER_MAX_POST_SECONDS, TITLE_MAX, durationMinutes } from "@/components/creator/post/validation";
 import { LOCALE_VALUES, PILLAR_VALUES } from "@/components/editors/content/schema";
-import { postBlockSchema, type PostBlock } from "@/lib/post-blocks/schema";
+import { pillarBlockSchema, type PillarBlock } from "@/lib/post-blocks/schema";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
 import { isMissingSchema, rpcErrorCode, type LocaleCode, type Pillar } from "@/lib/supabase/helpers";
@@ -42,7 +42,7 @@ const publishSchema = z.object({
   caption: z.string().trim().max(CAPTION_MAX).optional().default(""),
   pillar: z.enum(PILLAR_VALUES),
   // bloco do pilar (0075): treino, nutrição ou cardápio; ausente = post só com foto/vídeo e texto
-  block: postBlockSchema.nullable().optional(),
+  block: pillarBlockSchema.nullable().optional(),
 });
 
 const idSchema = z.object({ contentId: z.uuid() });
@@ -178,7 +178,7 @@ async function loadOwnContent(ctx: CreatorActionContext, contentId: string): Pro
   return data as OwnDraft;
 }
 
-export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar; block?: PostBlock | null }): Promise<PublishResult> {
+export async function publishVideoPost(input: { contentId: string; title: string; caption?: string; pillar: Pillar; block?: PillarBlock | null }): Promise<PublishResult> {
   const parsed = publishSchema.safeParse(input);
   if (!parsed.success) {
     const first = parsed.error.issues[0]?.path[0];

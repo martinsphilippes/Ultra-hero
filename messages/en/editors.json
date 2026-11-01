@@ -20,7 +20,13 @@
     "access": "Completion (admin)",
     "accessDescription": "The app is free: all published content is open to signed-in users. Here you only choose how completion is recorded.",
     "license": "Media license and credit",
-    "licenseDescription": "Where the media comes from and who must be credited. Videos embedded from YouTube or Vimeo require the \"third-party embed\" license."
+    "licenseDescription": "Where the media comes from and who must be credited. Videos embedded from YouTube or Vimeo require the \"third-party embed\" license.",
+    "blocks": "Content blocks",
+    "blocksDescription": "The pillar sets the block: a workout with checkable steps, nutrition with a recipe, product or dish, or the chef's menu. The program is a separate block.",
+    "blocksLoading": "Loading the hero's recipes, products and programs…",
+    "blocksRoutine": "Routine opens no block: the content goes out with text, photo or video only. Change the pillar to open workout, nutrition or menu.",
+    "products": "Linked products",
+    "productsDescription": "Store products shown under \"Related products\" on the content page. The link is validated right away."
   },
   "fields": {
     "title": "Title",
@@ -292,5 +298,15 @@
     "creditHint": "Shown on the content page, e.g. channel, photographer or author.",
     "ref": "License reference (internal)",
     "refHint": "Contract number, URL or identifier. Never shown to the public."
+  },
+  "linkedProducts": {
+    "chosen": "Linked products",
+    "remove": "Remove {name}",
+    "empty": "No linked product.",
+    "pick": "Add product",
+    "noProducts": "No published product in the store.",
+    "max": "Up to {max} products per content.",
+    "choose": "Choose…",
+    "unavailable": "Unavailable product"
   }
 }

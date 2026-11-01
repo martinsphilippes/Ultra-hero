@@ -5,6 +5,8 @@ import { AdminContentEditor } from "@/components/admin-content/AdminContentEdito
 import type { ContentFormValues } from "@/components/editors/types";
 import { RecipeLegacyNotice } from "@/components/recipes/RecipeLegacyNotice";
 import { PageHeader } from "@/components/ui";
+import { loadPostBlocks } from "@/lib/post-blocks/queries";
+import { draftsFromBlocks } from "@/lib/post-blocks/schema";
 import { getPostPhotoState } from "@/lib/post-photo/availability";
 import type { Enums } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminContentEditPage({ params }: Params) {
   const { id } = await params;
   const supabase = await createClient();
-  const [t, tc, contentRes, bodyRes, creatorsRes, coverState] = await Promise.all([
+  const [t, tc, contentRes, bodyRes, creatorsRes, coverState, blocks, linksRes] = await Promise.all([
     getTranslations("adminContent.content.form"),
     getTranslations("adminContent.common"),
     supabase
@@ -32,6 +34,9 @@ export default async function AdminContentEditPage({ params }: Params) {
     supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url").eq("content_id", id).maybeSingle(),
     supabase.from("creator_profiles").select("id, name, is_fictional").order("name"),
     getPostPhotoState(),
+    // blocos (0075/0076) e produtos vinculados validados, para o formulário editar
+    loadPostBlocks(supabase, id),
+    supabase.from("content_product_links").select("product_id").eq("content_id", id).eq("status", "validated"),
   ]);
   const content = contentRes.data;
   if (!content) notFound();
@@ -75,6 +80,7 @@ export default async function AdminContentEditPage({ params }: Params) {
         initialCreatorId={content.creator_id}
         readOnly={content.type === "recipe"}
         coverState={coverState}
+        initialBlocks={{ drafts: draftsFromBlocks(blocks), products: (linksRes.data ?? []).map((l) => l.product_id) }}
       />
     </div>
   );

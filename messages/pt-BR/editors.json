@@ -20,7 +20,13 @@
     "access": "Conclusão (admin)",
     "accessDescription": "O app é gratuito: todo conteúdo publicado fica aberto a quem entrou. Aqui só se escolhe como a conclusão é registrada.",
     "license": "Licença e crédito da mídia",
-    "licenseDescription": "De onde vem a mídia e quem deve ser creditado. Vídeos incorporados do YouTube ou Vimeo exigem a licença \"incorporação de terceiros\"."
+    "licenseDescription": "De onde vem a mídia e quem deve ser creditado. Vídeos incorporados do YouTube ou Vimeo exigem a licença \"incorporação de terceiros\".",
+    "blocks": "Blocos do conteúdo",
+    "blocksDescription": "O pilar define o bloco: treino com passos marcáveis, nutrição com receita, produto ou prato, ou o cardápio do chef. O programa é um bloco à parte.",
+    "blocksLoading": "Carregando receitas, produtos e programas do herói…",
+    "blocksRoutine": "Rotina não abre bloco: o conteúdo sai só com texto, foto ou vídeo. Troque o pilar para abrir treino, nutrição ou cardápio.",
+    "products": "Produtos vinculados",
+    "productsDescription": "Produtos da loja que aparecem em \"Produtos relacionados\" na página do conteúdo. O vínculo já sai validado."
   },
   "fields": {
     "title": "Título",
@@ -292,5 +298,15 @@
     "creditHint": "Exibido na página do conteúdo, ex.: canal, fotógrafo ou autor.",
     "ref": "Referência da licença (interna)",
     "refHint": "Número de contrato, URL ou identificador. Nunca aparece ao público."
+  },
+  "linkedProducts": {
+    "chosen": "Produtos vinculados",
+    "remove": "Remover {name}",
+    "empty": "Nenhum produto vinculado.",
+    "pick": "Adicionar produto",
+    "noProducts": "Nenhum produto publicado na loja.",
+    "max": "Até {max} produtos por conteúdo.",
+    "choose": "Escolher…",
+    "unavailable": "Produto indisponível"
   }
 }

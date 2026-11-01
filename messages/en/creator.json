@@ -317,6 +317,19 @@
         "noRecipe": "No recipe",
         "noRecipes": "You have no published recipe yet.",
         "addOption": "Add option"
+      },
+      "program": {
+        "title": "Hero's program",
+        "hint": "A published program of the hero goes into the content as a shortcut. Whoever opens it sees the card and goes straight to the program.",
+        "pick": "Program",
+        "none": "No program",
+        "noPrograms": "This hero has no published program yet.",
+        "createProgram": "Create program",
+        "unavailable": "Program offline (remove or replace)",
+        "weeks": "{n} weeks",
+        "note": "Call to action",
+        "notePlaceholder": "E.g.: Start with week 1 and go at your own pace.",
+        "counter": "{count}/{max}"
       }
     }
   },
