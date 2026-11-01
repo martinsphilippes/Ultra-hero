@@ -10,6 +10,7 @@ import type { ContentFormValues } from "@/components/editors/types";
 import { FormField, Select, useToast } from "@/components/ui";
 import type { ComposerOptions } from "@/lib/post-blocks/queries";
 import { emptyDrafts, type BlockDrafts } from "@/lib/post-blocks/schema";
+import { ContentKindPicker, type ContentKind } from "./ContentKindPicker";
 
 type CreatorOption = { id: string; name: string; is_fictional: boolean };
 
@@ -41,6 +42,8 @@ export function AdminContentEditor({ mode, contentId, initial, creators, initial
   const [creatorError, setCreatorError] = useState<string | null>(null);
   const [options, setOptions] = useState<ComposerOptions>(NO_OPTIONS);
   const [optionsLoading, setOptionsLoading] = useState(false);
+  // o que vai ser criado (só na criação): estruturado fica aqui; post, receita e programa têm editor próprio
+  const [kind, setKind] = useState<ContentKind>("structured");
 
   // troca de herói: recarrega receitas, produtos e programas dele (resposta antiga é descartada)
   useEffect(() => {
@@ -96,16 +99,19 @@ export function AdminContentEditor({ mode, contentId, initial, creators, initial
           ))}
         </Select>
       </FormField>
+      {mode === "create" ? <ContentKindPicker value={kind} onChange={setKind} creatorId={creatorId || null} /> : null}
       {/* a capa é reservada em nome do herói escolhido acima (post_photo_upload_claim pelo admin, 0045) */}
-      <ContentForm
-        mode={mode}
-        initial={initial}
-        canEditAccess
-        action={action}
-        readOnly={readOnly}
-        cover={{ state: coverState, creatorId: creatorId || null }}
-        blocks={{ drafts: initialBlocks?.drafts ?? emptyDrafts(), products: initialBlocks?.products ?? [], options, loading: optionsLoading, hrefs: BLOCK_HREFS }}
-      />
+      {mode === "edit" || kind === "structured" ? (
+        <ContentForm
+          mode={mode}
+          initial={initial}
+          canEditAccess
+          action={action}
+          readOnly={readOnly}
+          cover={{ state: coverState, creatorId: creatorId || null }}
+          blocks={{ drafts: initialBlocks?.drafts ?? emptyDrafts(), products: initialBlocks?.products ?? [], options, loading: optionsLoading, hrefs: BLOCK_HREFS }}
+        />
+      ) : null}
     </div>
   );
 }

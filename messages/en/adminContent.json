@@ -378,6 +378,32 @@
         "readyRemoved": "“Buy ready-made” product removed.",
         "saved": "Saved."
       }
+    },
+    "kind": {
+      "label": "What are you creating?",
+      "chooseHeroFirst": "Choose the responsible hero before continuing.",
+      "structured": {
+        "title": "Structured content",
+        "description": "Text or video with pillar blocks (workout, nutrition, menu), the hero's program and linked products. Fill in below."
+      },
+      "post": {
+        "title": "Quick post",
+        "description": "Phone photo or video with title and caption; the pillar opens its fields.",
+        "next": "The post is published on behalf of the chosen hero, in the phone editor.",
+        "cta": "Open New post"
+      },
+      "recipe": {
+        "title": "Recipe",
+        "description": "Full recipe in steps: ingredients, steps, nutrition, photo and products.",
+        "next": "The recipe starts as a draft of the chosen hero, in the recipe editor.",
+        "cta": "Open the recipe editor"
+      },
+      "program": {
+        "title": "Program",
+        "description": "Collection of steps (already published content) with versions, weeks and certificate.",
+        "next": "The program is created as a draft with the chosen hero.",
+        "cta": "Open New program"
+      }
     }
   },
   "programs": {

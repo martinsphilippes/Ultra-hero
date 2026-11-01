@@ -11,7 +11,7 @@ type CreatorOption = { id: string; name: string };
 const PILLAR_KEYS = PILLARS;
 
 // ---------------------------------------------------------------- criar programa + 1ª versão
-export function ProgramCreateForm({ creators }: { creators: CreatorOption[] }) {
+export function ProgramCreateForm({ creators, initialCreatorId = null }: { creators: CreatorOption[]; initialCreatorId?: string | null }) {
   const t = useTranslations("adminContent.programs.create");
   const tc = useTranslations("adminContent.common");
   const tp = useTranslations("common.pillars");
@@ -19,7 +19,7 @@ export function ProgramCreateForm({ creators }: { creators: CreatorOption[] }) {
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({ slug: "", creator_id: "", pillar: "routine" as Pillar, cover_url: "", title: "", summary: "", estimated_weeks: "" });
+  const [form, setForm] = useState({ slug: "", creator_id: initialCreatorId ?? "", pillar: "routine" as Pillar, cover_url: "", title: "", summary: "", estimated_weeks: "" });
 
   function submit() {
     setError(null);

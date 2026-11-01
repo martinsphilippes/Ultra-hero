@@ -378,6 +378,32 @@
         "readyRemoved": "Produto “Comprar pronto” removido.",
         "saved": "Salvo."
       }
+    },
+    "kind": {
+      "label": "O que você vai criar?",
+      "chooseHeroFirst": "Escolha o herói responsável antes de continuar.",
+      "structured": {
+        "title": "Conteúdo estruturado",
+        "description": "Texto ou vídeo com blocos do pilar (treino, nutrição, cardápio), programa do herói e produtos vinculados. Preencha abaixo."
+      },
+      "post": {
+        "title": "Post rápido",
+        "description": "Foto ou vídeo do celular com título e legenda; o pilar abre os campos dele.",
+        "next": "O post é publicado em nome do herói escolhido, no editor do celular.",
+        "cta": "Abrir o Novo post"
+      },
+      "recipe": {
+        "title": "Receita",
+        "description": "Receita completa em etapas: ingredientes, passos, nutrição, foto e produtos.",
+        "next": "A receita nasce como rascunho do herói escolhido, no editor de receitas.",
+        "cta": "Abrir o editor de receitas"
+      },
+      "program": {
+        "title": "Programa",
+        "description": "Coleção de etapas (conteúdos já publicados) com versões, semanas e certificado.",
+        "next": "O programa é criado como rascunho já com o herói escolhido.",
+        "cta": "Abrir o Novo programa"
+      }
     }
   },
   "programs": {
