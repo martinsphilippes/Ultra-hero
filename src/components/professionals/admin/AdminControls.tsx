@@ -1,10 +1,10 @@
 "use client";
 
-import { KeyRound, Mail, Plus, TriangleAlert, X } from "lucide-react";
+import { Mail, Plus, TriangleAlert, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
-import { createProfessionalDemoLogin, inviteProfessional, setProfessionalStatus, setProfessionalSuggestion } from "@/app/admin/professionals/actions";
+import { inviteProfessional, setProfessionalStatus, setProfessionalSuggestion } from "@/app/admin/professionals/actions";
 import { CopyButton } from "@/components/admin-ops/CopyButton";
 import { Button, Checkbox, FormField, IconButton, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { ProfessionalStatus } from "@/lib/professionals/rules";
@@ -128,28 +128,6 @@ export function InviteForm({ professionalId, linked }: { professionalId: string;
           </Button>
         </form>
       )}
-    </section>
-  );
-}
-
-/** Conta de acesso rápido do profissional de exemplo (painel da tela de login). */
-export function DemoLoginButton({ professionalId }: { professionalId: string }) {
-  const t = useTranslations("professionals.admin.demoLogin");
-  const { pending, error, run } = useRun();
-  return (
-    <section aria-labelledby="pro-demo-title" className="flex flex-col gap-2 rounded-2xl border border-dashed border-border bg-surface p-4" data-testid="admin-pro-demo-login">
-      <h2 id="pro-demo-title" className="text-base font-semibold text-fg">
-        {t("title")}
-      </h2>
-      <p className="type-body-sm text-fg-muted">{t("description")}</p>
-      {error ? (
-        <p role="alert" className="type-body-sm text-danger">
-          {error}
-        </p>
-      ) : null}
-      <Button type="button" variant="secondary" leadingIcon={<KeyRound />} onClick={() => run(() => createProfessionalDemoLogin({ professionalId }))} loading={pending} className="self-start">
-        {t("button")}
-      </Button>
     </section>
   );
 }

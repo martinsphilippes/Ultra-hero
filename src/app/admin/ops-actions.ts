@@ -1,6 +1,5 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
@@ -8,7 +7,6 @@ import { z } from "zod";
 import { BAN_FOREVER, BAN_NONE, restoreBanDuration, suspensionBlock } from "@/components/admin-ops/account-status";
 import type { FeedbackStatus } from "@/components/feedback/constants";
 import { feedbackTriageSchema, type FeedbackTriageInput } from "@/components/feedback/schema";
-import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { requireRole } from "@/lib/auth/session";
 import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { RIGHTS_STATUSES } from "@/lib/catalog/rights";
@@ -22,7 +20,7 @@ import { PILLARS, rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
 // Ações administrativas de operação (usuários, convites, parceiros, feedback,
-// configurações, retenção e contas demo). Tudo exige admin; as escritas críticas
+// configurações e retenção). Tudo exige admin; as escritas críticas
 // passam por RPCs auditadas. Erros voltam já traduzidos para o cliente exibir.
 
 export type Result<T extends object = Record<never, never>> = ({ ok: true; message?: string } & T) | { ok: false; error: string };
@@ -342,7 +340,7 @@ export async function updateCreator(id: string, input: CreatorFormValues): Promi
   }
 }
 
-// Tira do ar a foto enviada pelo herói (conta demo pública, foto imprópria). Service role: apaga o
+// Tira do ar a foto enviada pelo herói (foto imprópria). Service role: apaga o
 // objeto e limpa a referência no perfil público e no perfil do usuário; fica na auditoria.
 export async function adminRemoveCreatorPhoto(input: { id: string }, justification: string): Promise<Result> {
   const actor = await admin();
@@ -765,86 +763,6 @@ export async function closeRetentionException(input: { id: string }, justificati
     revalidatePath("/admin/settings");
     const t = await getTranslations("adminOps.settings.retention");
     return { ok: true, message: t("closedToast") };
-  } catch (error) {
-    return fail(error);
-  }
-}
-
-// ---------------------------------------------------------------- contas demo (service role)
-const demoAccountSchema = z
-  .object({
-    email: z.email().max(254),
-    role: z.enum(["seller", "creator"]),
-    orgId: z.uuid().optional().or(z.literal("")),
-    profileId: z.uuid().optional().or(z.literal("")),
-  })
-  .refine((v) => (v.role === "seller" ? Boolean(v.orgId) : Boolean(v.profileId)));
-
-// Senha aleatória de 16 caracteres (alfabeto sem ambiguidades). Nunca é registrada em log.
-function generatePassword(): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
-  const bytes = randomBytes(16);
-  let out = "";
-  for (let i = 0; i < 16; i++) out += alphabet[bytes[i] % alphabet.length];
-  return out;
-}
-
-export async function createDemoAccount(input: { email: string; role: "seller" | "creator"; orgId?: string; profileId?: string }): Promise<Result<{ userId: string; password: string }>> {
-  const actor = await admin();
-  if (!hasAdminClient()) return fail("no_service_role");
-  const parsed = demoAccountSchema.safeParse(input);
-  if (!parsed.success) return invalid();
-  const v = parsed.data;
-  try {
-    const client = createAdminClient();
-    const password = generatePassword();
-    const { data: created, error: createError } = await client.auth.admin.createUser({
-      email: v.email.toLowerCase(),
-      password,
-      email_confirm: true,
-      // Marcador gravável só pela service role: libera a conta demo mesmo com o cadastro público fechado (0015).
-      app_metadata: { ultra_hero_demo: true },
-    });
-    if (createError || !created.user) {
-      const msg = createError?.message ?? "";
-      if (/already|exists|registered/i.test(msg)) return fail("user_exists");
-      // Cadastro fechado (experiment.open): o banco só aceita convidados/bootstrap, inclusive aqui.
-      if (isSignupRefusedByDatabase(createError) && !(await readExperimentOpen(await createClient()))) return fail("experiment_closed");
-      return fail("generic");
-    }
-    const userId = created.user.id;
-
-    if (v.role === "seller") {
-      const orgId = v.orgId as string;
-      const { error: mErr } = await client.from("seller_memberships").upsert({ org_id: orgId, user_id: userId, role: "owner", revoked_at: null }, { onConflict: "org_id,user_id" });
-      if (mErr) return fail(mErr);
-      const { error: rErr } = await client
-        .from("role_assignments")
-        .upsert({ user_id: userId, role: "seller", scope_type: "seller_org", scope_id: orgId, granted_by: actor.id, revoked_at: null }, { onConflict: "user_id,role,scope_id" });
-      if (rErr) return fail(rErr);
-    } else {
-      const profileId = v.profileId as string;
-      const { data: linked, error: lErr } = await client.from("creator_profiles").update({ user_id: userId }).eq("id", profileId).is("user_id", null).select("id").maybeSingle();
-      if (lErr) return fail(lErr);
-      if (!linked) return fail("creator_profile_already_linked");
-      const { error: rErr } = await client
-        .from("role_assignments")
-        .upsert({ user_id: userId, role: "creator", scope_type: "creator", scope_id: profileId, granted_by: actor.id, revoked_at: null }, { onConflict: "user_id,role,scope_id" });
-      if (rErr) return fail(rErr);
-    }
-
-    // Auditoria via RPC (service role tem grant); a senha nunca entra aqui.
-    await client.rpc("audit_log", {
-      p_action: "demo_account.create",
-      p_resource_type: "user",
-      p_resource_id: userId,
-      p_after: { email: v.email.toLowerCase(), role: v.role, scope_id: v.role === "seller" ? v.orgId : v.profileId, created_by: actor.id },
-      p_actor_type: "admin",
-    });
-
-    revalidatePath("/admin/users");
-    revalidatePath("/admin/settings");
-    return { ok: true, userId, password };
   } catch (error) {
     return fail(error);
   }

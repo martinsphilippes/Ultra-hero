@@ -8,7 +8,6 @@ import { AppleButton } from "@/components/auth/AppleButton";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { QuickSignupForm } from "@/components/auth/QuickSignupForm";
-import { DemoAccess } from "@/components/demo/DemoAccess";
 import { legalRichTags } from "@/components/legal/rich-tags";
 import { Divider } from "@/components/ui/divider";
 import { readExperimentOpen } from "@/lib/auth/experiment";
@@ -20,17 +19,16 @@ import { isAuthQueryError } from "@/lib/auth/types";
 import { getNativeApp } from "@/lib/native-app/server";
 import { createClient } from "@/lib/supabase/server";
 
-type SearchParams = Promise<{ next?: string; error?: string; demo?: string; mode?: string }>;
+type SearchParams = Promise<{ next?: string; error?: string; mode?: string }>;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("auth.quick");
   return { title: t("title") };
 }
 
-// Tela inicial: cadastro rápido (nome, e-mail, celular) → senha gerada; Google; "Já tenho senha";
-// contas de demonstração.
+// Tela inicial: cadastro rápido (nome, e-mail, celular) → senha gerada; Google; "Já tenho senha".
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
-  const { next: rawNext, error, demo, mode } = await searchParams;
+  const { next: rawNext, error, mode } = await searchParams;
   const next = safeNext(rawNext, LOGIN_HOME);
 
   // Já autenticado: não faz sentido ver a entrada, salvo logo depois do cadastro rápido (a tela
@@ -87,8 +85,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           <QuickSignupForm next={next} alternatives={alternatives} resumeSignedIn={Boolean(user && pendingSignup)} />
         </div>
       </AuthCard>
-      {/* Contas de demonstração, uma por tipo de acesso: um toque e a pessoa entra. */}
-      <DemoAccess from="login" failed={demo === "error"} />
     </div>
   );
 }

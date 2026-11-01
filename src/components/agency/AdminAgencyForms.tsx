@@ -1,9 +1,9 @@
 "use client";
 
-import { Plus, RefreshCcw, Save } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { createAgencyDemoAction, saveAgencyAction } from "@/app/admin/agencia/actions";
+import { saveAgencyAction } from "@/app/admin/agencia/actions";
 import { Button, FormField, Input, Select, useToast } from "@/components/ui";
 import { slugFromName } from "@/lib/agency/schemas";
 
@@ -75,39 +75,3 @@ export function AgencyForm({ initial }: { initial?: Agency }) {
 }
 
 // Ambiente de demonstração: cria ou restaura a agência demo e as contas de acesso rápido.
-export function AgencyDemoButton({ ready }: { ready: boolean }) {
-  const t = useTranslations("adminAgency.demo");
-  const { toast } = useToast();
-  const [pending, start] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <div className="flex flex-col items-start gap-2">
-      <Button
-        type="button"
-        size="sm"
-        variant={ready ? "secondary" : "primary"}
-        leadingIcon={ready ? <RefreshCcw /> : <Plus />}
-        loading={pending}
-        data-testid="agency-demo-setup"
-        onClick={() =>
-          start(async () => {
-            setError(null);
-            const result = await createAgencyDemoAction();
-            if (!result.ok) setError(result.error);
-            else {
-              toast({ title: result.message, variant: "success" });
-              window.location.reload();
-            }
-          })
-        }
-      >
-        {ready ? t("restore") : t("create")}
-      </Button>
-      {error ? (
-        <p role="alert" className="type-caption text-danger">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
-}

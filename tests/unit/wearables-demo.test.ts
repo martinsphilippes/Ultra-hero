@@ -3,8 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { comparisonOf, indexCardKind, sectionAvailable, usualRange } from "@/components/me/today/watch-helpers";
 import { metricDef, modelMeasures, type MetricCode } from "@/lib/wearables/catalog";
-import { isDemoUser, localNow, resolveWatchView } from "@/lib/wearables/context";
-import { DEMO_PERSONAS, dayIndexOf, demoPersonaFor, generateWatchDay, HISTORY_DAYS, ymdOf, type DemoPersonaKey, type WatchSnapshot } from "@/lib/wearables/demo";
+import { localNow, resolveWatchView } from "@/lib/wearables/context";
+import { DEMO_PERSONAS, dayIndexOf, generateWatchDay, HISTORY_DAYS, ymdOf, type DemoPersonaKey, type WatchSnapshot } from "@/lib/wearables/demo";
 import { pearson } from "@/lib/wearables/derived";
 
 // Gerador determinístico do "relógio simulado" (§9.9): mesma conta + data → mesmos números, só o
@@ -202,23 +202,12 @@ describe("gerador do relógio simulado", () => {
 });
 
 describe("quem vê qual Hoje", () => {
-  it("persona só para conta demo (marcador em app_metadata), pelo e-mail fixo ou pelo papel", () => {
-    expect(demoPersonaFor({ isDemo: false, email: "premium@demo.ultrahero.app", roles: [] })).toBeNull();
-    expect(demoPersonaFor({ isDemo: true, email: "premium@demo.ultrahero.app", roles: ["consumer"] })).toBe("premium");
-    expect(demoPersonaFor({ isDemo: true, email: "GRATUITO@demo.ultrahero.app", roles: [] })).toBe("free");
-    expect(demoPersonaFor({ isDemo: true, email: "heroi@demo.ultrahero.app", roles: ["creator"] })).toBe("creator");
-    expect(demoPersonaFor({ isDemo: true, email: "outra@exemplo.com", roles: ["seller"] })).toBe("seller");
+  it("modelos de relógio das personas simuladas", () => {
     expect(DEMO_PERSONAS.premium.model).toBe("apple_s12");
     expect(DEMO_PERSONAS.free.model).toBe("garmin_vivo");
     expect(DEMO_PERSONAS.creator.model).toBe("garmin_fenix");
     expect(DEMO_PERSONAS.seller.model).toBe("galaxy");
     expect(DEMO_PERSONAS.admin.model).toBe("apple_se3");
-  });
-
-  it("marcador em user_metadata (editável pela pessoa) não vale", () => {
-    expect(isDemoUser({ app_metadata: { ultra_hero_demo: true } })).toBe(true);
-    expect(isDemoUser({ app_metadata: { ultra_hero_demo: "true" } })).toBe(false);
-    expect(isDemoUser({ app_metadata: {}, ...({ user_metadata: { ultra_hero_demo: true } } as object) })).toBe(false);
   });
 
   it("conta real vê 'Conectar relógio'; com ?exemplo=1, o exemplo separado", () => {
@@ -228,8 +217,9 @@ describe("quem vê qual Hoje", () => {
     const example = resolveWatchView({ user: real, roles: ["consumer"], timeZone: "America/Sao_Paulo", example: true, now });
     expect(example.kind).toBe("example");
     if (example.kind === "example") expect(example.snapshot.date).toBe("2026-10-22");
-    const demo = resolveWatchView({ user: { email: "premium@demo.ultrahero.app", app_metadata: { ultra_hero_demo: true } }, roles: ["consumer"], timeZone: "America/Sao_Paulo", example: true, now });
-    expect(demo.kind).toBe("demo");
+    // o antigo marcador de conta demo não muda mais nada
+    const marked = resolveWatchView({ user: { email: "x@exemplo.com", app_metadata: { ultra_hero_demo: true } }, roles: ["consumer"], timeZone: "America/Sao_Paulo", example: false, now });
+    expect(marked.kind).toBe("connect");
   });
 
   it("data e hora no fuso da pessoa", () => {

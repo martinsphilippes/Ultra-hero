@@ -1,17 +1,14 @@
-import { KeyRound } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { DataTable, type Column } from "@/components/admin";
-import { DemoAccountForm } from "@/components/admin-ops/DemoAccountForm";
 import { OpsPanel } from "@/components/admin-ops/OpsPanel";
 import { RetentionExceptionForm } from "@/components/admin-ops/RetentionExceptionForm";
 import { SettingsEditor, type SettingRow } from "@/components/admin-ops/SettingsEditor";
 import { CloseExceptionButton } from "@/components/admin-ops/StatusActions";
-import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, PageHeader } from "@/components/ui";
 import { formatDate, formatDateTime } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
-import { hasAdminClient } from "@/lib/supabase/admin";
 import type { Tables } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,25 +19,21 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type ExceptionRow = Tables<"retention_exceptions">;
 
-// Configurações: editor tipado de app_settings, operações sob demanda, exceções de retenção e contas demo.
+// Configurações: editor tipado de app_settings, operações sob demanda e exceções de retenção.
 export default async function AdminSettingsPage() {
   const supabase = await createClient();
-  const [t, tn, locale, settingsRes, exceptionsRes, creatorsRes, sellersRes] = await Promise.all([
+  const [t, tn, locale, settingsRes, exceptionsRes] = await Promise.all([
     getTranslations("adminOps.settings"),
     getTranslations("nav"),
     getLocale(),
     supabase.from("app_settings").select("key, value, description, updated_at").order("key"),
     supabase.from("retention_exceptions").select("*").order("closed_at", { ascending: true, nullsFirst: true }).order("review_at"),
-    supabase.from("creator_profiles").select("id, name, user_id").order("name"),
-    supabase.from("seller_organizations").select("id, name").eq("status", "active").order("name"),
   ]);
   if (settingsRes.error) throw new Error(settingsRes.error.message);
   const settings = (settingsRes.data ?? []) as SettingRow[];
   const updatedAtLabels = Object.fromEntries(settings.map((s) => [s.key, s.updated_at ? formatDateTime(s.updated_at, locale) : "—"]));
   const transportDefault = settings.find((s) => s.key === "transport.minutes_per_step")?.value;
   const exceptions = (exceptionsRes.data ?? []) as ExceptionRow[];
-  const creators = (creatorsRes.data ?? []).map((c) => ({ id: c.id, name: c.name, linked: Boolean(c.user_id) }));
-  const sellers = (sellersRes.data ?? []).map((s) => ({ id: s.id, name: s.name }));
 
   const columns: Column<ExceptionRow>[] = [
     {
@@ -108,34 +101,6 @@ export default async function AdminSettingsPage() {
           <RetentionExceptionForm />
         </div>
         <DataTable columns={columns} rows={exceptions} rowKey={(e) => e.id} caption={t("retention.tableCaption")} emptyTitle={t("retention.empty")} emptyDescription={t("retention.emptyDescription")} />
-      </section>
-
-      <section aria-labelledby="demo-title" className="flex flex-col gap-3">
-        <div>
-          <h2 id="demo-title" className="type-h2 text-fg">
-            {t("demoAccounts.title")}
-          </h2>
-          <p className="type-caption text-fg-muted">{t("demoAccounts.description")}</p>
-        </div>
-        {hasAdminClient() ? (
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <DemoAccountForm creators={creators} sellers={sellers} />
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-border-strong bg-surface/60">
-            <EmptyState
-              size="sm"
-              icon={<KeyRound />}
-              title={t("demoAccounts.unavailable")}
-              description={t("demoAccounts.unavailableDescription")}
-              action={
-                <Button asChild variant="secondary" size="sm">
-                  <Link href="/admin/invitations">{t("demoAccounts.goInvitations")}</Link>
-                </Button>
-              }
-            />
-          </div>
-        )}
       </section>
     </div>
   );

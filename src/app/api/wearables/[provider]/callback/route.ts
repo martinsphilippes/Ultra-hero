@@ -10,7 +10,6 @@ import { openConnection, receiveEvent, setConnectionStatus, storeCredentials } f
 import { isHealthProvider } from "@/lib/health/types";
 import { myConsent } from "@/lib/health/user";
 import { createClient } from "@/lib/supabase/server";
-import { isDemoUser } from "@/lib/wearables/context";
 
 // Volta do OAuth (§9.3): confere state (+ PKCE) contra o cookie e a pessoa logada, troca o código,
 // lê SÓ o id da pessoa na marca, cifra os tokens e ativa a conexão (papel health_ingest). Nada de
@@ -29,7 +28,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const user = await getUser();
   if (!user) return back("state");
-  if (isDemoUser(user)) return back("demo");
   const search = request.nextUrl.searchParams;
   const check = verifyOAuthState({ cookie: request.cookies.get(OAUTH_COOKIE)?.value, state: search.get("state"), provider, userId: user.id, key: stateKey() });
   if (!check.ok) return back("state");

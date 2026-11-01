@@ -42,28 +42,6 @@ export const DEMO_PERSONAS: Record<DemoPersonaKey, Persona> = {
   example: { key: "example", model: "apple_s12", deviceName: "Apple Watch Series 12", rhr0: 58, hrv0: 47, sleepNeedMin: 450, steps0: 7800, vo2: 42, wakeMin: 400, trainingDays: [1, 3, 6], sports: ["run", "walk", "strength"], workoutStartMin: 1100, episodeOffset: 5, moveGoalKcal: 500 },
 };
 
-export const DEMO_EMAIL_KIND: Record<string, Exclude<DemoPersonaKey, "example">> = {
-  "admin@demo.ultrahero.app": "admin",
-  "heroi@demo.ultrahero.app": "creator",
-  "fornecedor@demo.ultrahero.app": "seller",
-  "premium@demo.ultrahero.app": "premium",
-  "gratuito@demo.ultrahero.app": "free",
-};
-
-/**
- * Persona da conta: só para contas demo (marcador em app_metadata, gravável só pelo servidor).
- * Contas demo criadas pelo admin (fora da lista fixa) usam a persona do papel.
- */
-export function demoPersonaFor(input: { isDemo: boolean; email: string | null | undefined; roles: readonly string[] }): Exclude<DemoPersonaKey, "example"> | null {
-  if (!input.isDemo) return null;
-  const byEmail = input.email ? DEMO_EMAIL_KIND[input.email.toLowerCase()] : undefined;
-  if (byEmail) return byEmail;
-  if (input.roles.includes("admin")) return "admin";
-  if (input.roles.includes("creator")) return "creator";
-  if (input.roles.includes("seller")) return "seller";
-  return "free";
-}
-
 // ---------------------------------------------------------------- aleatoriedade determinística
 export function fnv1a32(text: string): number {
   let hash = 0x811c9dc5;

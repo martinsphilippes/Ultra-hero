@@ -9,9 +9,8 @@ import { DELETE_ACCOUNT_ANCHOR } from "@/lib/settings/sections";
 import { DemoBadge, PageHeader } from "@/components/ui";
 import { isPasswordVaultConfigured } from "@/lib/auth/password-crypto";
 import { formatE164ForDisplay } from "@/lib/auth/phone";
-import { hasGeneratedPassword, isDemoUser } from "@/lib/auth/quick-signup-server";
+import { hasGeneratedPassword } from "@/lib/auth/quick-signup-server";
 import { requireUser } from "@/lib/auth/session";
-import { DEMO_ACCOUNTS } from "@/lib/demo/accounts";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -125,7 +124,6 @@ type SessionUser = Awaited<ReturnType<typeof requireUser>>;
 
 // Estado do cartão "Sua senha". Sem service role, sem chave ou sem a 0046: "indisponível".
 async function passwordState(user: SessionUser): Promise<{ mode: PasswordCardMode; canGenerate: boolean }> {
-  if (isDemoUser(user, DEMO_ACCOUNTS.map((a) => a.email))) return { mode: "demo", canGenerate: false };
   const providers = new Set((user.identities ?? []).map((identity) => identity.provider));
   const fallback: PasswordCardMode = providers.has("google") && !providers.has("email") ? "google" : "own";
   // quem só usa o Google continua vendo "Você entra com o Google", mesmo sem o cofre

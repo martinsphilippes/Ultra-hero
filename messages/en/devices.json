@@ -5,7 +5,6 @@
   "back": "Back to Profile",
   "off": "Connecting watches is not available yet. Meanwhile, see the example in Today.",
   "paused": "Connecting new watches is paused. You can still disconnect, delete your data and withdraw your consent.",
-  "demo": "Demo accounts use the simulated watch and do not connect real watches.",
   "unavailable": "Watch data is not available in this environment.",
   "brandsTitle": "Brands",
   "connect": "Connect",
@@ -68,20 +67,49 @@
     "wellness": "Watch data, for wellness. Not a diagnosis and no substitute for medical advice."
   },
   "categories": {
-    "readiness": { "name": "Daily index", "desc": "Body Battery, Readiness, Recovery, Nightly Recharge and the day's strain." },
-    "sleep": { "name": "Sleep", "desc": "Duration, stages, times and the brand's sleep score." },
-    "heart": { "name": "Heart", "desc": "Resting HR, HRV, VO₂ max and the day's heart rate." },
-    "activity": { "name": "Activity", "desc": "Steps, distance, active calories, floors and intensity minutes." },
-    "workout": { "name": "Workouts", "desc": "Workouts started or detected by the device, of every type, without GPS routes." },
-    "breathing": { "name": "Breathing and oxygen", "desc": "Breathing and SpO₂ measured during sleep." },
-    "temperature": { "name": "Temperature", "desc": "Skin temperature during sleep, compared with your usual." },
-    "stress": { "name": "Stress", "desc": "Stress level and time measured by the device." },
-    "environment": { "name": "Environment", "desc": "Noise and daylight." },
-    "safety": { "name": "Safety", "desc": "Falls detected by the watch." }
+    "readiness": {
+      "name": "Daily index",
+      "desc": "Body Battery, Readiness, Recovery, Nightly Recharge and the day's strain."
+    },
+    "sleep": {
+      "name": "Sleep",
+      "desc": "Duration, stages, times and the brand's sleep score."
+    },
+    "heart": {
+      "name": "Heart",
+      "desc": "Resting HR, HRV, VO₂ max and the day's heart rate."
+    },
+    "activity": {
+      "name": "Activity",
+      "desc": "Steps, distance, active calories, floors and intensity minutes."
+    },
+    "workout": {
+      "name": "Workouts",
+      "desc": "Workouts started or detected by the device, of every type, without GPS routes."
+    },
+    "breathing": {
+      "name": "Breathing and oxygen",
+      "desc": "Breathing and SpO₂ measured during sleep."
+    },
+    "temperature": {
+      "name": "Temperature",
+      "desc": "Skin temperature during sleep, compared with your usual."
+    },
+    "stress": {
+      "name": "Stress",
+      "desc": "Stress level and time measured by the device."
+    },
+    "environment": {
+      "name": "Environment",
+      "desc": "Noise and daylight."
+    },
+    "safety": {
+      "name": "Safety",
+      "desc": "Falls detected by the watch."
+    }
   },
   "errors": {
     "generic": "Something went wrong. Try again in a moment.",
-    "demo": "Demo accounts do not connect real watches.",
     "reauth": "Sign in again to authorize.",
     "age": "Confirm the age statement to continue.",
     "categories": "Tick at least one category.",

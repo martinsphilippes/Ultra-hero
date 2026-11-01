@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { PORTAL_LINKS, PORTAL_ROOT } from "@/components/layout/portal-nav";
-import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts } from "@/lib/demo/accounts";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import {
   canTransition,
@@ -179,10 +178,5 @@ describe("portal e conta de acesso rápido", () => {
     expect(PORTAL_ROOT.professional).toBe("/profissional");
     expect(PORTAL_LINKS.professional.map((l) => l.href)).toEqual(["/profissional", "/profissional/pedidos", "/profissional/servicos", "/profissional/perfil"]);
     expect(PORTAL_LINKS.admin.find((l) => l.key === "professionals")?.href).toBe("/admin/professionals");
-  });
-
-  it("o profissional só aparece no painel depois que a conta existe", () => {
-    expect(readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: false }).map((a) => a.kind)).toEqual(["admin", "creator", "premium", "free"]);
-    expect(readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: true }).map((a) => a.kind)).toContain("professional");
   });
 });

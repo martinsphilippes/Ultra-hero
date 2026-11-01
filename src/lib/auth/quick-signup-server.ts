@@ -129,10 +129,3 @@ export async function rotateGeneratedPassword(
   if (!stored) await forgetGeneratedPassword(admin, userId);
   return { password, stored };
 }
-
-/** Conta de demonstração: senha compartilhada, nunca trocada pelo app. */
-export function isDemoUser(user: { email?: string | null; app_metadata?: Record<string, unknown> | null }, demoEmails: readonly string[]): boolean {
-  if (user.app_metadata?.ultra_hero_demo === true) return true;
-  const email = user.email?.toLowerCase();
-  return Boolean(email && demoEmails.includes(email));
-}

@@ -2,11 +2,10 @@ import { describe, expect, it } from "vitest";
 import { agencyErrorCode } from "@/lib/agency/error-codes";
 import { AGENCY_ROUTE_MIN, agencyNavKeys } from "@/lib/agency/roles";
 import { isTalentOnly } from "@/lib/auth/talent-scope";
-import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts, TALENT_DEMO_EMAIL } from "@/lib/demo/accounts";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { hasHeroRole, heroRoleNames } from "@/lib/auth/talent-scope";
 import { isDocumentsRevalidatePath } from "@/lib/documents/constants";
-import { buildPortalItems, buildSettingsSections, forSurface, isDemoUser, OFFICE_PATH } from "@/lib/settings/sections";
+import { buildPortalItems, buildSettingsSections, forSurface, OFFICE_PATH } from "@/lib/settings/sections";
 
 describe("etapa B: casting no menu e travas", () => {
   it("Casting para todos os níveis; Novo talento só gestor+", () => {
@@ -40,15 +39,6 @@ describe("talento sem página pública (D2)", () => {
     expect(office).toMatchObject({ kind: "portal", href: OFFICE_PATH, nativeHidden: false });
     expect(buildSettingsSections(["consumer", "creator"]).find((s) => s.key === "portals")).toBeUndefined();
   });
-
-  it("conta talento@ só aparece no painel quando o seed da etapa B rodou", () => {
-    expect(DEMO_ACCESS_ACCOUNTS.some((a) => a.kind === "talent" && a.email === TALENT_DEMO_EMAIL)).toBe(true);
-    const without = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: true, agency: true, agencyStaff: true, brand: true });
-    expect(without.some((a) => a.kind === "talent")).toBe(false);
-    const withTalent = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: true, talent: true });
-    expect(withTalent.some((a) => a.kind === "talent")).toBe(true);
-    expect(readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: false }).map((a) => a.kind)).toEqual(["admin", "creator", "premium", "free"]);
-  });
 });
 
 describe("portais no topo do Perfil", () => {
@@ -63,7 +53,7 @@ describe("portais no topo do Perfil", () => {
     ]);
     const portals = buildSettingsSections(["consumer", "admin"], undefined, { platformAdmin: true }).find((s) => s.key === "portals")?.items;
     expect(portals).toEqual(admin);
-    // conta pública de demonstração com papel admin: sem os atalhos de gestão
+    // sem o marcador de admin geral: sem os atalhos de gestão
     expect(buildPortalItems(["consumer", "admin"]).map((p) => p.key)).toEqual(["admin"]);
   });
 
@@ -72,13 +62,6 @@ describe("portais no topo do Perfil", () => {
     expect(forSurface(items, true).map((p) => p.key)).toEqual(["office", "admin"]);
     expect(forSurface(items, false).map((p) => p.key)).toEqual(["office", "agency", "brand", "admin"]);
     expect(forSurface(buildPortalItems(["consumer", "agency"]), true)).toEqual([]);
-  });
-
-  it("conta demo pelo app_metadata (mesmo critério do banco)", () => {
-    expect(isDemoUser({ app_metadata: { ultra_hero_demo: true } })).toBe(true);
-    expect(isDemoUser({ app_metadata: { ultra_hero_demo: "true" } })).toBe(true);
-    expect(isDemoUser({ app_metadata: {} })).toBe(false);
-    expect(isDemoUser(null)).toBe(false);
   });
 });
 

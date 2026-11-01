@@ -12,11 +12,6 @@ export function sellerPortalAccess(isAdmin: boolean, enabled: boolean = SELLER_P
   return isAdmin ? "admin" : "closed";
 }
 
-/** Contas de demonstração mostradas no painel de acesso rápido: sem o portal, a do fornecedor sai. */
-export function visibleDemoKinds<K extends string>(kinds: readonly K[], enabled: boolean = SELLER_PORTAL_ENABLED): K[] {
-  return kinds.filter((k) => enabled || k !== "seller");
-}
-
 /** Papéis com atalho de portal no Perfil (o fornecedor só quando o portal está ligado). */
 export function portalRolesShown<R extends string>(roles: readonly R[], enabled: boolean = SELLER_PORTAL_ENABLED): R[] {
   return roles.filter((r) => enabled || r !== "seller");

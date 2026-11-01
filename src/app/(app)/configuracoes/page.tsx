@@ -31,7 +31,7 @@ import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
 import { appliesOn } from "@/lib/routine/reminders";
 import { getTalentContext } from "@/lib/talent/server";
 import { parseNativeApp } from "@/lib/native-app/surface";
-import { buildSettingsSections, DELETE_ACCOUNT_HREF, forSurface, isDemoUser, SETTINGS_PATH, type SettingsItem } from "@/lib/settings/sections";
+import { buildSettingsSections, DELETE_ACCOUNT_HREF, forSurface, SETTINGS_PATH, type SettingsItem } from "@/lib/settings/sections";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +71,7 @@ export default async function SettingsPage() {
   const [profile, roles, t, tp, tc] = await Promise.all([getProfile(), getRoles(), getTranslations("me.settings"), getTranslations("me.profile"), getTranslations("common")]);
   const talent = roles.some((r) => r.role === "creator") ? await getTalentContext() : null;
   const native = parseNativeApp((await headers()).get("user-agent")) !== null;
-  const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok", platformAdmin: !isDemoUser(user) })
+  const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok", platformAdmin: true })
     .map((section) => ({ ...section, items: forSurface(section.items, native) }))
     .filter((section) => section.items.length > 0);
 

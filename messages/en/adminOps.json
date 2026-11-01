@@ -739,24 +739,6 @@
       "emptyDescription": "Create an exception only with a documented justification.",
       "scopeUser": "User",
       "scopeTestOrder": "Test order"
-    },
-    "demoAccounts": {
-      "title": "Demo accounts",
-      "description": "Creates an already confirmed account linked to an organization or hero. The password is shown only once.",
-      "unavailable": "Service key not configured",
-      "unavailableDescription": "Without SUPABASE_SERVICE_ROLE_KEY on the server, accounts cannot be created. Use Invitations: the user creates the account and accepts the link.",
-      "goInvitations": "Go to Invitations",
-      "email": "E-mail",
-      "role": "Role",
-      "roleSeller": "Supplier",
-      "roleCreator": "Hero",
-      "org": "Organization",
-      "profile": "Hero profile",
-      "submit": "Create demo account",
-      "createdTitle": "Account created",
-      "createdWarning": "Write down the password now: it will not be shown or stored as text.",
-      "password": "Temporary password",
-      "done": "Done"
     }
   },
   "shipments": {

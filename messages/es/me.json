@@ -238,11 +238,6 @@
     "description": "Medido por tu reloj: tu noche y tu día hasta ahora. Nada que escribir.",
     "descriptionConnect": "Pronto: tu día medido por el reloj. Nada que escribir.",
     "descriptionConnectAvailable": "Tu día medido por el reloj que conectes. Nada para escribir.",
-    "demo": {
-      "title": "Datos de demostración",
-      "body": "Simulan un {device}. Nada aquí es de una persona real y nada se guarda: los números se generan al momento.",
-      "tag": "Demo"
-    },
     "example": {
       "title": "Ejemplo",
       "body": "Un reloj simulado ({device}) para que veas cómo funcionará Hoy. No es tu perfil, no usa tus datos y nada se guarda.",
@@ -659,7 +654,6 @@
       "storedDescription": "Creada automáticamente cuando entraste. Solo tú la ves: se guarda cifrada y solo se abre cuando tocas Mostrar.",
       "googleDescription": "Entras con Google. Si también quieres entrar con correo y contraseña, crea una contraseña aquí.",
       "ownDescription": "Usas una contraseña elegida por ti, que no guardamos. Si quieres, genera una nueva contraseña (quedará guardada aquí).",
-      "demoDescription": "Cuenta de demostración: la contraseña es compartida y no se puede ver ni cambiar aquí.",
       "unavailableDescription": "La consulta de contraseña no está disponible en este momento. Si olvidaste la contraseña, usa “Olvidé mi contraseña” en la pantalla de entrada o entra con Google.",
       "show": "Mostrar",
       "hide": "Ocultar",
@@ -677,7 +671,6 @@
       "errors": {
         "unauthenticated": "Inicia sesión para continuar.",
         "unavailable": "La consulta de contraseña no está disponible en este momento.",
-        "demo": "Las cuentas de demostración no cambian la contraseña.",
         "none": "No hay contraseña generada guardada para esta cuenta.",
         "generic": "No se pudo completar. Inténtalo de nuevo."
       }

@@ -3,18 +3,16 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
-import { DemoLoginButton, InviteForm, StatusForm, SuggestionsEditor } from "@/components/professionals/admin/AdminControls";
+import { InviteForm, StatusForm, SuggestionsEditor } from "@/components/professionals/admin/AdminControls";
 import { OrderCardLink } from "@/components/professionals/portal/OrderCardLink";
 import { OrderDetail } from "@/components/professionals/portal/OrderDetail";
 import { ProfileForm } from "@/components/professionals/portal/ProfileForm";
 import { ServiceEditor } from "@/components/professionals/portal/ServiceEditor";
 import { RegistryLine, VerifiedBadge } from "@/components/professionals/ProfessionalBits";
 import { Avatar, Badge, PageHeader } from "@/components/ui";
-import { isDemoAccessEnabled } from "@/lib/demo/server";
 import { adminProfessionalOrders, getAdminProfessional, professionalSuggestions, suggestionOptions } from "@/lib/professionals/admin";
 import { professionalServices } from "@/lib/professionals/queries";
 import { durationParts, isUuid, responseStats } from "@/lib/professionals/rules";
-import { hasAdminClient } from "@/lib/supabase/admin";
 import { cn } from "@/lib/utils";
 import { saveProfessionalAdmin, saveProfessionalServiceAdmin } from "../actions";
 
@@ -136,7 +134,6 @@ async function Overview({ pro: p }: { pro: AdminPro }) {
       </div>
       <StatusForm id={p.id} status={p.status} verified={p.registryVerified} note={p.verificationNote} />
       <InviteForm professionalId={p.id} linked={p.userId !== null} />
-      {p.isDemo && !p.userId && isDemoAccessEnabled() && hasAdminClient() ? <DemoLoginButton professionalId={p.id} /> : null}
     </div>
   );
 }

@@ -13,8 +13,8 @@ import { comparisonOf, indexCardKind, point, sectionAvailable, stressLevel, valu
 
 type Props = {
   snapshot: WatchSnapshot;
-  /** demo = conta de demonstração; example = prévia "Ver um exemplo"; real = relógio conectado (schema health). */
-  mode: "demo" | "example" | "real";
+  /** example = prévia "Ver um exemplo"; real = relógio conectado (schema health). */
+  mode: "example" | "real";
   /** Só no modo real: última sincronização (no fuso do perfil) e se passou de 6 h (RN-11). */
   lastSync?: { date: string; at: number } | null;
   stale?: boolean;
@@ -47,7 +47,7 @@ export async function buildWatchToday({ snapshot, mode, lastSync = null, stale =
   const info = MODEL_INFO[snapshot.model];
   // dado real não leva selo "Demo"/"Exemplo"; os textos de fonte não dizem "(simulado)"
   const real = mode === "real";
-  const tag = real ? null : mode === "demo" ? t("demo.tag") : t("example.tag");
+  const tag = real ? null : t("example.tag");
   const tx = (key: "source" | "sourceAt" | "sourceOn") => (real ? `real.${key}` : key);
   const device = snapshot.deviceName;
   const clock = (min: number) => formatClock(min, locale);
@@ -476,14 +476,14 @@ function TodayCard({
 }
 
 /** Rótulo fixo e bem visível: dados simulados, não são de ninguém e não ficam guardados. */
-export async function WatchDemoLabel({ mode, device, compact = false }: { mode: "demo" | "example"; device: string; /** Versão menor (abaixo dos cards do Hoje). */ compact?: boolean }) {
+export async function WatchDemoLabel({ device, compact = false }: { mode: "example"; device: string; /** Versão menor (abaixo dos cards do Hoje). */ compact?: boolean }) {
   const t = await getTranslations("me.today");
   return (
     <div role="note" className={cn("flex items-start gap-3 rounded-2xl border border-dashed border-warning/60 bg-warning-soft", compact ? "px-4 py-3" : "p-4")} data-testid="watch-demo-label">
       <FlaskConical className={cn("mt-0.5 shrink-0 text-warning", compact ? "size-4" : "size-5")} aria-hidden="true" />
       <div className="flex flex-col gap-0.5">
-        <p className={compact ? "type-body-sm font-semibold text-fg" : "type-h3 text-fg"}>{mode === "demo" ? t("demo.title") : t("example.title")}</p>
-        <p className={compact ? "type-caption text-fg" : "type-body-sm text-fg"}>{mode === "demo" ? t("demo.body", { device }) : t("example.body", { device })}</p>
+        <p className={compact ? "type-body-sm font-semibold text-fg" : "type-h3 text-fg"}>{t("example.title")}</p>
+        <p className={compact ? "type-caption text-fg" : "type-body-sm text-fg"}>{t("example.body", { device })}</p>
       </div>
     </div>
   );

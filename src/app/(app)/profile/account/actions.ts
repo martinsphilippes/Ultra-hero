@@ -2,19 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { phoneOnlySchema } from "@/lib/auth/quick-signup";
-import { isDemoUser, isMissingSchema, readGeneratedPassword, rotateGeneratedPassword } from "@/lib/auth/quick-signup-server";
+import { isMissingSchema, readGeneratedPassword, rotateGeneratedPassword } from "@/lib/auth/quick-signup-server";
 import { isPasswordVaultConfigured } from "@/lib/auth/password-crypto";
 import { getUser } from "@/lib/auth/session";
-import { DEMO_ACCOUNTS } from "@/lib/demo/accounts";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 // Perfil › Conta: senha gerada (ver, gerar outra) e celular. A senha só sai daqui para a PRÓPRIA
 // pessoa da sessão; nunca vai para log, analytics ou URL.
 
-type Fail = { ok: false; error: "unauthenticated" | "unavailable" | "demo" | "none" | "invalidPhone" | "generic" };
+type Fail = { ok: false; error: "unauthenticated" | "unavailable" | "none" | "invalidPhone" | "generic" };
 
-const DEMO_EMAILS = DEMO_ACCOUNTS.map((a) => a.email);
 
 export async function revealMyPassword(): Promise<{ ok: true; password: string } | Fail> {
   const user = await getUser();
@@ -28,8 +26,6 @@ export async function revealMyPassword(): Promise<{ ok: true; password: string }
 export async function regenerateMyPassword(): Promise<{ ok: true; password: string; stored: boolean } | Fail> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  // contas de demonstração: a senha é compartilhada (trocar derrubaria o acesso de todo mundo)
-  if (isDemoUser(user, DEMO_EMAILS)) return { ok: false, error: "demo" };
   if (!hasAdminClient() || !isPasswordVaultConfigured()) return { ok: false, error: "unavailable" };
   const rotated = await rotateGeneratedPassword(createAdminClient(), user.id);
   if (!rotated) return { ok: false, error: "generic" };

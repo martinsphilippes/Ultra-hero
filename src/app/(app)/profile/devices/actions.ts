@@ -13,16 +13,14 @@ import { HEALTH_CATEGORIES, HEALTH_PROVIDERS } from "@/lib/health/types";
 import { myConsent } from "@/lib/health/user";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
-import { isDemoUser } from "@/lib/wearables/context";
 
-// Ações de "Relógios e anéis". As regras ficam no banco (RPCs security definer da 0038: demo,
+// Ações de "Relógios e anéis". As regras ficam no banco (RPCs security definer da 0038:
 // versão vigente, idade, categorias, apagar na hora); aqui validamos a entrada, exigimos login
 // recente para conceder/ampliar (§15.9) e tentamos a revogação na marca logo depois de apagar.
 
 export type Result<T extends object = Record<never, never>> = ({ ok: true } & T) | { ok: false; error: string };
 
 const ERRORS: Record<string, string> = {
-  demo_account_cannot_connect: "demo",
   health_disabled: "unavailable",
   reauth_required: "reauth",
   health_age_not_confirmed: "age",
@@ -65,7 +63,6 @@ export async function grantHealthConsent(input: unknown): Promise<Result<{ next:
   if (!providerReady(provider)) return { ok: false, error: "unavailable" };
   const user = await getUser();
   if (!user) return { ok: false, error: "reauth" };
-  if (isDemoUser(user)) return { ok: false, error: "demo" };
   if (!recentlyAuthenticated(user.last_sign_in_at)) return { ok: false, error: "reauth" };
   const supabase = await createClient();
   const current = await myConsent(supabase);

@@ -46,12 +46,6 @@
       },
       "retention": {
         "orders": "Pedidos vinculados a la cuenta: {days} días (después, anonimizados)"
-      },
-      "password": {
-        "demoDescription": "La contraseña de esta cuenta la gestiona el equipo y no se puede ver ni cambiar aquí.",
-        "errors": {
-          "demo": "La contraseña de esta cuenta no se puede cambiar aquí."
-        }
       }
     },
     "today": {
@@ -80,12 +74,6 @@
         "title": "Abre las recetas con la etapa inicial",
         "description": "Las tarjetas están abiertas a todos. Para ver ingredientes, preparación y el modo cocina, completa la etapa inicial ({total} pasos rápidos)."
       }
-    }
-  },
-  "devices": {
-    "demo": "Esta cuenta no conecta relojes.",
-    "errors": {
-      "demo": "Esta cuenta no conecta relojes."
     }
   },
   "discover": {

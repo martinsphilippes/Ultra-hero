@@ -5,7 +5,6 @@
   "back": "Volver al Perfil",
   "off": "La conexión con relojes aún no está disponible. Mientras tanto, mira el ejemplo en el Hoy.",
   "paused": "La conexión de nuevos relojes está en pausa. Puedes seguir desconectando, borrando los datos y retirando el consentimiento.",
-  "demo": "Las cuentas de demostración usan el reloj simulado y no conectan relojes reales.",
   "unavailable": "Los datos de reloj no están disponibles en este entorno.",
   "brandsTitle": "Marcas",
   "connect": "Conectar",
@@ -68,20 +67,49 @@
     "wellness": "Datos del reloj, para bienestar. No es diagnóstico y no sustituye la evaluación médica."
   },
   "categories": {
-    "readiness": { "name": "Índice del día", "desc": "Body Battery, Readiness, Recovery, Nightly Recharge y el esfuerzo del día." },
-    "sleep": { "name": "Sueño", "desc": "Duración, fases, horarios y la nota de sueño de la marca." },
-    "heart": { "name": "Corazón", "desc": "FC en reposo, VFC, VO₂máx y frecuencia cardiaca del día." },
-    "activity": { "name": "Actividad", "desc": "Pasos, distancia, calorías activas, pisos y minutos de intensidad." },
-    "workout": { "name": "Entrenamientos", "desc": "Entrenamientos iniciados o detectados por el dispositivo, de todos los tipos, sin ruta GPS." },
-    "breathing": { "name": "Respiración y oxigenación", "desc": "Respiración y SpO₂ medidas durante el sueño." },
-    "temperature": { "name": "Temperatura", "desc": "Temperatura de la piel durante el sueño, comparada con lo habitual en ti." },
-    "stress": { "name": "Estrés", "desc": "Nivel y tiempo de estrés medidos por el dispositivo." },
-    "environment": { "name": "Ambiente", "desc": "Ruido y luz del día." },
-    "safety": { "name": "Seguridad", "desc": "Caídas detectadas por el reloj." }
+    "readiness": {
+      "name": "Índice del día",
+      "desc": "Body Battery, Readiness, Recovery, Nightly Recharge y el esfuerzo del día."
+    },
+    "sleep": {
+      "name": "Sueño",
+      "desc": "Duración, fases, horarios y la nota de sueño de la marca."
+    },
+    "heart": {
+      "name": "Corazón",
+      "desc": "FC en reposo, VFC, VO₂máx y frecuencia cardiaca del día."
+    },
+    "activity": {
+      "name": "Actividad",
+      "desc": "Pasos, distancia, calorías activas, pisos y minutos de intensidad."
+    },
+    "workout": {
+      "name": "Entrenamientos",
+      "desc": "Entrenamientos iniciados o detectados por el dispositivo, de todos los tipos, sin ruta GPS."
+    },
+    "breathing": {
+      "name": "Respiración y oxigenación",
+      "desc": "Respiración y SpO₂ medidas durante el sueño."
+    },
+    "temperature": {
+      "name": "Temperatura",
+      "desc": "Temperatura de la piel durante el sueño, comparada con lo habitual en ti."
+    },
+    "stress": {
+      "name": "Estrés",
+      "desc": "Nivel y tiempo de estrés medidos por el dispositivo."
+    },
+    "environment": {
+      "name": "Ambiente",
+      "desc": "Ruido y luz del día."
+    },
+    "safety": {
+      "name": "Seguridad",
+      "desc": "Caídas detectadas por el reloj."
+    }
   },
   "errors": {
     "generic": "No funcionó. Inténtalo de nuevo en unos instantes.",
-    "demo": "Las cuentas de demostración no conectan relojes reales.",
     "reauth": "Vuelve a entrar en tu cuenta para autorizar.",
     "age": "Confirma la declaración de edad para continuar.",
     "categories": "Marca al menos una categoría.",

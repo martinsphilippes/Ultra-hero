@@ -46,12 +46,6 @@
       },
       "retention": {
         "orders": "Pedidos vinculados à conta: {days} dias (depois, anonimizados)"
-      },
-      "password": {
-        "demoDescription": "A senha desta conta é gerenciada pela equipe e não pode ser vista nem trocada aqui.",
-        "errors": {
-          "demo": "A senha desta conta não pode ser trocada aqui."
-        }
       }
     },
     "today": {
@@ -80,12 +74,6 @@
         "title": "Abra as receitas com a etapa inicial",
         "description": "Os cards ficam abertos a todos. Para ver ingredientes, preparo e o Modo Cozinha, conclua a etapa inicial ({total} passos rápidos)."
       }
-    }
-  },
-  "devices": {
-    "demo": "Esta conta não conecta relógios.",
-    "errors": {
-      "demo": "Esta conta não conecta relógios."
     }
   },
   "discover": {

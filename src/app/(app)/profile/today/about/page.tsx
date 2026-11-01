@@ -30,12 +30,12 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
   const real = view.kind === "real";
   // conectado (com dado ou ainda sincronizando): consentimento gravado, a gestão aparece
   const connected = real || own.kind === "syncing";
-  // "não lê nenhum relógio" só vale para conta demo ou com a chave desligada
+  // "não lê nenhum relógio" só vale com a chave desligada
   const intro = real
     ? tt("real.aboutIntro", { device: snapshot.deviceName })
     : own.kind === "syncing"
       ? tt("real.aboutIntro", { device: own.deviceName })
-      : view.kind !== "demo" && wearablesRealEnabled()
+      : wearablesRealEnabled()
         ? t("introAvailable")
         : t("intro");
   // relógio real: só o que o adaptador da marca grava (e os índices calculados a partir disso)
@@ -57,7 +57,7 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
           </h2>
           {real ? null : (
             <Badge variant="demo" size="sm">
-              {view.kind === "demo" ? tt("demo.tag") : tt("example.tag")}
+              {tt("example.tag")}
             </Badge>
           )}
         </div>

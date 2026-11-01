@@ -1,14 +1,13 @@
 {
   "title": "Agências",
-  "description": "Agências do módulo de gestão, suas equipes e o ambiente de demonstração.",
+  "description": "Agências do módulo de gestão e suas equipes.",
   "unavailable": "Módulo em atualização.",
-  "demoForbidden": "Indisponível para conta de demonstração.",
+  "forbidden": "Só a administração geral da plataforma gerencia agências.",
   "listTitle": "Agências cadastradas",
   "status": {
     "active": "Ativa",
     "suspended": "Suspensa"
   },
-  "demoTag": "Demonstração",
   "invite": "Convidar",
   "openPortal": "Abrir portal",
   "teamCount": "Adm: {admins} · Gestores: {managers} · Colaboradores: {staff}",
@@ -24,25 +23,7 @@
     "save": "Salvar",
     "create": "Criar agência"
   },
-  "demo": {
-    "title": "Ambiente de demonstração",
-    "description": "Agência e marca fictícias para o painel de acesso rápido (Agência, Colaborador e Marca).",
-    "accounts": {
-      "agency": "Agência (Adm)",
-      "agencyStaff": "Colaborador",
-      "brand": "Marca (dono)",
-      "talent": "Talento (sem página)"
-    },
-    "ready": "pronta",
-    "missing": "falta criar",
-    "passwordMissing": "Sem a senha das contas de demonstração no servidor.",
-    "note": "Pode clicar de novo a cada etapa nova: o botão restaura os dados de exemplo.",
-    "restore": "Restaurar demonstração",
-    "create": "Criar demonstração",
-    "off": "O período de demonstração terminou: contas de teste e a restauração estão desligadas. O portal segue só com agências, marcas e creators reais."
-  },
   "saved": "Agência salva.",
   "inviteCreated": "Convite criado. Copie o link e envie para a pessoa.",
-  "transferred": "Marca transferida.",
-  "demoReady": "Ambiente de demonstração pronto."
+  "transferred": "Marca transferida."
 }

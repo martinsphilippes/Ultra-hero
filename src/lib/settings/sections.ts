@@ -122,8 +122,3 @@ export const DELETE_ACCOUNT_HREF = `/profile/account#${DELETE_ACCOUNT_ANCHOR}`;
 export function forSurface<T extends { nativeHidden: boolean }>(items: readonly T[], native: boolean): T[] {
   return native ? items.filter((i) => !i.nativeHidden) : [...items];
 }
-
-/** Conta pública de demonstração (mesmo critério de public.is_demo_account): app_metadata.ultra_hero_demo. */
-export function isDemoUser(user: { app_metadata?: Record<string, unknown> | null } | null | undefined): boolean {
-  return user?.app_metadata?.ultra_hero_demo === true || user?.app_metadata?.ultra_hero_demo === "true";
-}

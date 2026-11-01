@@ -333,12 +333,6 @@
       "cancel": "Cancelar pela equipe",
       "noteOnly": "Recado da equipe",
       "stats": "Respondidos: {answered} · aguardando: {waiting}"
-    },
-    "demoLogin": {
-      "title": "Conta de acesso rápido",
-      "description": "Cria a conta de acesso rápido do profissional, com a mesma senha das outras contas do painel, e liga a este perfil de exemplo. Ela passa a aparecer no painel da tela de login.",
-      "button": "Criar conta de acesso rápido",
-      "done": "Conta criada e ligada ao perfil."
     }
   }
 }

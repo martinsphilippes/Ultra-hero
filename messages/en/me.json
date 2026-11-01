@@ -238,11 +238,6 @@
     "description": "Measured by your watch: your night and your day so far. Nothing to type.",
     "descriptionConnect": "Coming soon: your day measured by your watch. Nothing to type.",
     "descriptionConnectAvailable": "Your day measured by the watch you connect. Nothing to type.",
-    "demo": {
-      "title": "Demo data",
-      "body": "They simulate a {device}. Nothing here belongs to a real person, and nothing is stored: the numbers are generated on the spot.",
-      "tag": "Demo"
-    },
     "example": {
       "title": "Example",
       "body": "A simulated watch ({device}) so you can see how Today will work. It is not your profile, uses none of your data and nothing is stored.",
@@ -659,7 +654,6 @@
       "storedDescription": "Created automatically when you signed up. Only you can see it: it is stored encrypted and only opened when you tap Show.",
       "googleDescription": "You sign in with Google. If you also want to sign in with email and password, create a password here.",
       "ownDescription": "You use a password you chose, which we do not store. If you like, generate a new password (it will be kept here).",
-      "demoDescription": "Demo account: the password is shared and cannot be viewed or changed here.",
       "unavailableDescription": "Password lookup is unavailable right now. If you forgot your password, use “Forgot my password” on the sign-in screen or sign in with Google.",
       "show": "Show",
       "hide": "Hide",
@@ -677,7 +671,6 @@
       "errors": {
         "unauthenticated": "Sign in to continue.",
         "unavailable": "Password lookup is unavailable right now.",
-        "demo": "Demo accounts cannot change their password.",
         "none": "There is no generated password stored for this account.",
         "generic": "Could not complete. Please try again."
       }

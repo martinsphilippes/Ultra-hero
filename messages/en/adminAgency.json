@@ -1,14 +1,13 @@
 {
   "title": "Agencies",
-  "description": "Management module agencies, their teams and the demo environment.",
+  "description": "Management module agencies and their teams.",
   "unavailable": "Module being updated.",
-  "demoForbidden": "Not available for demo accounts.",
+  "forbidden": "Only the platform administration manages agencies.",
   "listTitle": "Registered agencies",
   "status": {
     "active": "Active",
     "suspended": "Suspended"
   },
-  "demoTag": "Demo",
   "invite": "Invite",
   "openPortal": "Open portal",
   "teamCount": "Admin: {admins} · Managers: {managers} · Staff: {staff}",
@@ -24,25 +23,7 @@
     "save": "Save",
     "create": "Create agency"
   },
-  "demo": {
-    "title": "Demo environment",
-    "description": "Fictional agency and brand for the quick access panel (Agency, Staff and Brand).",
-    "accounts": {
-      "agency": "Agency (Admin)",
-      "agencyStaff": "Staff",
-      "brand": "Brand (owner)",
-      "talent": "Talent (no page)"
-    },
-    "ready": "ready",
-    "missing": "not created",
-    "passwordMissing": "The demo accounts password is not set on the server.",
-    "note": "You can click again at each new stage: the button restores the sample data.",
-    "restore": "Restore demo",
-    "create": "Create demo",
-    "off": "The demo period is over: test accounts and the restore are switched off. The portal now runs only with real agencies, brands and creators."
-  },
   "saved": "Agency saved.",
   "inviteCreated": "Invitation created. Copy the link and send it to the person.",
-  "transferred": "Brand transferred.",
-  "demoReady": "Demo environment ready."
+  "transferred": "Brand transferred."
 }

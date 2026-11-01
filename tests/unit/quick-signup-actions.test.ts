@@ -4,7 +4,7 @@ import { openPassword } from "@/lib/auth/password-crypto";
 
 // Server actions do cadastro rápido e do cartão "Sua senha" com Supabase falso: o que é criado, o
 // que é guardado (cifrado), quando a sessão é aberta e o que NUNCA acontece (entrar com e-mail
-// existente, senha em log, conta demo trocando a senha).
+// existente, senha em log).
 
 type Op = { table: string; op: string; args: unknown[]; filters: [string, unknown][] };
 
@@ -284,14 +284,6 @@ describe("Perfil › Conta: Sua senha", () => {
     expect(openPassword(state.storedRow!.ciphertext, me.id, 1)).toBe(result.password);
     expect(state.signOutScopes).toEqual(["others"]);
     expect(logs.join("\n")).not.toContain(result.password);
-  });
-
-  it("conta demo nunca troca a senha compartilhada", async () => {
-    state.user = { ...me, email: "premium@demo.ultrahero.app" };
-    expect(await regenerateMyPassword()).toEqual({ ok: false, error: "demo" });
-    state.user = { ...me, app_metadata: { ultra_hero_demo: true } };
-    expect(await regenerateMyPassword()).toEqual({ ok: false, error: "demo" });
-    expect(state.updateUserCalls).toEqual([]);
   });
 
   it("sem chave: indisponível (não troca a senha para não perdê-la)", async () => {

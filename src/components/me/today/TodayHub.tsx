@@ -28,10 +28,10 @@ export async function TodayHub({ view, evolution, hideWatch = false, compare = t
   const [t, tp, tsync] = await Promise.all([getTranslations("me.today"), getTranslations("me.profile.evolution"), getTranslations("me.today.syncing")]);
   const watchState: WatchCardsState = hideWatch ? "hidden" : view.kind === "connect" ? "connect" : view.kind === "syncing" ? "syncing" : "metrics";
   const parts: WatchTodayParts | null =
-    watchState === "metrics" && (view.kind === "demo" || view.kind === "example" || view.kind === "real")
+    watchState === "metrics" && (view.kind === "example" || view.kind === "real")
       ? await buildWatchToday(view.kind === "real" ? { snapshot: view.snapshot, mode: "real", lastSync: view.lastSync, stale: view.stale } : { snapshot: view.snapshot, mode: view.kind })
       : null;
-  const comparison = compare ? await heroComparisonScreen(view.kind === "demo" || view.kind === "real" ? view.snapshot : null) : null;
+  const comparison = compare ? await heroComparisonScreen(view.kind === "real" ? view.snapshot : null) : null;
 
   // ---------------------------------------------------------------- Seu dia / Sua noite
   const watchScreen = (title: string): Screen[] => {

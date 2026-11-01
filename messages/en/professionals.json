@@ -333,12 +333,6 @@
       "cancel": "Cancel as team",
       "noteOnly": "Team message",
       "stats": "Replied: {answered} · waiting: {waiting}"
-    },
-    "demoLogin": {
-      "title": "Quick access account",
-      "description": "Creates the professional quick access account, with the same password as the other panel accounts, and links it to this sample profile. It then shows up in the panel on the sign-in screen.",
-      "button": "Create quick access account",
-      "done": "Account created and linked to the profile."
     }
   }
 }

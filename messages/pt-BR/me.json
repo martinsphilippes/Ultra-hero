@@ -238,11 +238,6 @@
     "description": "Medido pelo seu relógio: sua noite e seu dia até agora. Nada para digitar.",
     "descriptionConnect": "Em breve: seu dia medido pelo relógio. Nada para digitar.",
     "descriptionConnectAvailable": "Seu dia medido pelo relógio que você conectar. Nada para digitar.",
-    "demo": {
-      "title": "Dados de demonstração",
-      "body": "Simulam um {device}. Nada aqui é de uma pessoa real, e nada fica guardado: os números são gerados na hora.",
-      "tag": "Demo"
-    },
     "example": {
       "title": "Exemplo",
       "body": "Um relógio simulado ({device}) para você ver como o Hoje vai funcionar. Não é o seu perfil, não usa dados seus e nada fica guardado.",
@@ -659,7 +654,6 @@
       "storedDescription": "Criada automaticamente quando você entrou. Só você vê: ela fica cifrada e só é aberta quando você toca em Mostrar.",
       "googleDescription": "Você entra com o Google. Se quiser também entrar com e-mail e senha, crie uma senha aqui.",
       "ownDescription": "Você usa uma senha escolhida por você, que não guardamos. Se quiser, gere uma nova senha (ela fica guardada aqui).",
-      "demoDescription": "Conta de demonstração: a senha é compartilhada e não pode ser vista nem trocada aqui.",
       "unavailableDescription": "A consulta de senha está indisponível no momento. Se esqueceu a senha, use “Esqueci minha senha” na tela de entrada ou entre pelo Google.",
       "show": "Mostrar",
       "hide": "Ocultar",
@@ -677,7 +671,6 @@
       "errors": {
         "unauthenticated": "Entre para continuar.",
         "unavailable": "Consulta de senha indisponível no momento.",
-        "demo": "Contas de demonstração não trocam a senha.",
         "none": "Não há senha gerada guardada para esta conta.",
         "generic": "Não foi possível concluir. Tente novamente."
       }

@@ -5,11 +5,8 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/session";
-import { demoPassword } from "@/lib/demo/server";
-import { PROFESSIONAL_DEMO_EMAIL } from "@/lib/demo/accounts";
 import { PROFESSIONAL_STATUSES, validServiceShape } from "@/lib/professionals/rules";
 import { adminProfileSchema, serviceSchema, splitCities, type AdminProfileValues, type ServiceValues } from "@/lib/professionals/schemas";
-import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 // Profissionais no admin (0058): perfil, aprovação (registro conferido + nota), serviços e preços,
@@ -162,52 +159,6 @@ export async function inviteProfessional(input: { professionalId: string; email:
     revalidatePath("/admin/invitations");
     const t = await getTranslations("professionals.admin.invite");
     return { ok: true, link: `${await siteOrigin()}/invite?token=${encodeURIComponent(row.token)}`, message: t("linkTitle") };
-  } catch (error) {
-    return fail(error);
-  }
-}
-
-/**
- * Conta de acesso rápido do profissional de exemplo (painel de contas da tela de login): cria
- * PROFESSIONAL_DEMO_EMAIL com a senha das contas de acesso rápido (DEMO_ACCOUNTS_PASSWORD, só no
- * servidor), liga ao perfil e grava o papel. Só para perfil de exemplo (is_demo) sem conta.
- */
-export async function createProfessionalDemoLogin(input: { professionalId: string }): Promise<Result> {
-  const actor = await admin();
-  const parsed = z.object({ professionalId: z.uuid() }).safeParse(input);
-  if (!parsed.success) return fail("invalid_input");
-  const password = demoPassword();
-  if (!hasAdminClient() || !password) return fail("forbidden");
-  try {
-    const client = createAdminClient();
-    const { data: pro } = await client.from("professionals").select("id, user_id, is_demo, status").eq("id", parsed.data.professionalId).maybeSingle();
-    if (!pro || !pro.is_demo) return fail("not_found");
-    if (pro.user_id) return fail("professional_already_linked");
-    const { data: created, error: createError } = await client.auth.admin.createUser({
-      email: PROFESSIONAL_DEMO_EMAIL,
-      password,
-      email_confirm: true,
-      app_metadata: { ultra_hero_demo: true },
-      user_metadata: { full_name: "Profissional" },
-    });
-    if (createError || !created.user) return fail("professional_already_linked");
-    const userId = created.user.id;
-    const { error: linkError } = await client.from("professionals").update({ user_id: userId }).eq("id", pro.id).is("user_id", null);
-    if (linkError) return fail(linkError);
-    const { error: roleError } = await client
-      .from("role_assignments")
-      .upsert({ user_id: userId, role: "professional", scope_type: "professional", scope_id: pro.id, granted_by: actor.id, revoked_at: null }, { onConflict: "user_id,role,scope_id" });
-    if (roleError) return fail(roleError);
-    await client.rpc("audit_log", {
-      p_action: "demo_account.create",
-      p_resource_type: "user",
-      p_resource_id: userId,
-      p_after: { email: PROFESSIONAL_DEMO_EMAIL, role: "professional", scope_id: pro.id, created_by: actor.id },
-      p_actor_type: "admin",
-    });
-    revalidate(pro.id);
-    const t = await getTranslations("professionals.admin.demoLogin");
-    return { ok: true, message: t("done") };
   } catch (error) {
     return fail(error);
   }

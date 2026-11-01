@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 import { agencyErrorCode } from "@/lib/agency/error-codes";
 import { agencyCan, agencyNavKeys, brandNavKeys, canSeeValues, invitableAgencyRoles, isAgencyRole, isBrandRole } from "@/lib/agency/roles";
 import { brandCreateSchema, inviteMemberSchema, setRoleSchema, settingsSchema, slugFromName } from "@/lib/agency/schemas";
-import { DEMO_ACCESS_ACCOUNTS, readyDemoAccounts } from "@/lib/demo/accounts";
 import { INBOX_KINDS, inboxKindPushes, inboxParams, isInboxKind, safeInboxLink } from "@/lib/inbox/kinds";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { pushAllowedFor } from "@/lib/push/consent";
@@ -165,13 +164,6 @@ describe("integração com o app", () => {
     expect(portals?.items.every((i) => i.nativeHidden)).toBe(true);
   });
 
-  it("contas demo da gestão só aparecem quando prontas", () => {
-    const off = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: false }).map((a) => a.kind);
-    expect(off).not.toContain("agency");
-    const on = readyDemoAccounts(DEMO_ACCESS_ACCOUNTS, { professional: false, agency: true, agencyStaff: true, brand: false }).map((a) => a.kind);
-    expect(on).toEqual(["admin", "creator", "premium", "free", "agency", "agencyStaff"]);
-  });
-
   it("migração ausente vira 'indisponível' (sem erro 500)", () => {
     for (const code of ["42P01", "42703", "42883", "PGRST200", "PGRST202", "PGRST204", "PGRST205"]) expect(isMissingSchema({ code })).toBe(true);
     expect(isMissingSchema({ code: "42501" })).toBe(false);
@@ -196,7 +188,7 @@ describe("atalhos de portal do admin geral", () => {
     expect(portals?.items.map((i) => i.key)).toEqual(["agency", "brand", "admin"]);
   });
 
-  it("admin da conta pública de demonstração: só a Administração (agência e marca dizem \"indisponível\" para ela)", () => {
+  it("admin sem o marcador de admin geral: só a Administração", () => {
     const portals = buildSettingsSections(["consumer", "admin"]).find((s) => s.key === "portals");
     expect(portals?.items.map((i) => i.key)).toEqual(["admin"]);
   });

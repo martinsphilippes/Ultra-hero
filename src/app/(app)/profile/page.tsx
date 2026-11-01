@@ -10,7 +10,6 @@ import { HeroNewPost } from "@/components/creator/HeroNewPost";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { TodaySection } from "@/components/me/today/TodaySection";
-import { DemoAccess } from "@/components/demo/DemoAccess";
 import { PortalShortcuts } from "@/components/me/PortalShortcuts";
 import { Avatar, Badge, DemoBadge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -20,7 +19,7 @@ import { getTalentContext } from "@/lib/talent/server";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import { loadEvolutionSummary } from "@/lib/routine/evolution-summary";
-import { buildPortalItems, forSurface, isDemoUser } from "@/lib/settings/sections";
+import { buildPortalItems, forSurface } from "@/lib/settings/sections";
 import { parseNativeApp } from "@/lib/native-app/surface";
 import { resolveTheme } from "@/lib/theme/constants";
 import { resolveTodayView } from "@/lib/health/view";
@@ -39,13 +38,8 @@ export async function generateMetadata(): Promise<Metadata> {
 // dia, Sua noite e Evolução) e, no fim, uma linha "Configurações". Lembretes, coleções, compras, conta,
 // os mesmos portais e Sair moram em /configuracoes, que também abre pelo avatar do topo.
 
-// Contas de demonstração: o atalho "trocar de conta" mora no fim do Perfil (saiu do Início; o responsável
-// remove depois). Mesma trava de hoje: sem DEMO_ACCOUNTS_PASSWORD, ou no app das lojas, nada aparece.
-type Props = { searchParams: Promise<{ demo?: string }> };
-
-export default async function ProfilePage({ searchParams }: Props) {
+export default async function ProfilePage() {
   const user = await requireUser("/profile");
-  const { demo } = await searchParams;
   const [profile, roles, locale, t, tc, tcp, photoState, creator] = await Promise.all([
     getProfile(),
     getRoles(),
@@ -72,8 +66,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   // (nos portais do topo)
   const roleBadges = isTalentOnly(roles) ? roleSet.map((r) => (r === "creator" ? "talent" : r)) : roleSet;
   const talentCtx = roleSet.includes("creator") ? await getTalentContext() : null;
-  // Relógio simulado só para contas demo (marcador do servidor); contas reais veem "Conectar relógio"
-  // ou, com WEARABLES_REAL_ENABLED=1, o relógio que conectaram.
+  // "Conectar relógio" ou, com WEARABLES_REAL_ENABLED=1, o relógio que a pessoa conectou.
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
   const theme = resolveTheme(profile?.theme);
@@ -113,7 +106,7 @@ export default async function ProfilePage({ searchParams }: Props) {
 
   // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Escritório do casting
   const native = parseNativeApp((await headers()).get("user-agent")) !== null;
-  const portalItems = forSurface(buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok", platformAdmin: !isDemoUser(user) }), native);
+  const portalItems = forSurface(buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok", platformAdmin: true }), native);
 
   return (
     <div className="flex flex-col gap-8">
@@ -170,8 +163,6 @@ export default async function ProfilePage({ searchParams }: Props) {
       <TodaySection localDate={today} view={watchView} evolution={evolution} />
 
       {/* Configurações ficam no cabeçalho (avatar → /configuracoes): sem atalho duplicado aqui (pedido do responsável) */}
-
-      <DemoAccess from="profile" failed={demo === "error"} />
     </div>
   );
 }

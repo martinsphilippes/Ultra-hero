@@ -7,7 +7,6 @@ import { PROVIDERS, providerScopes } from "@/lib/health/providers";
 import { isHealthProvider } from "@/lib/health/types";
 import { myConsent } from "@/lib/health/user";
 import { createClient } from "@/lib/supabase/server";
-import { isDemoUser } from "@/lib/wearables/context";
 
 // Início do OAuth (§6.1 A, §9.3): exige sessão, conta real, consentimento vigente e a marca ligada
 // (WEARABLES_REAL_ENABLED=1 + credenciais). state + PKCE vão num cookie httpOnly assinado; os
@@ -22,7 +21,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const user = await getUser();
   if (!user) return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(`/profile/devices/connect/${provider}`)}`, request.url), 303);
-  if (isDemoUser(user)) return back("demo");
   const consent = await myConsent(await createClient());
   if (consent === "unavailable") return back("unavailable");
   if (!consent || consent.outdated) return NextResponse.redirect(new URL(`/profile/devices/connect/${provider}`, request.url), 303);

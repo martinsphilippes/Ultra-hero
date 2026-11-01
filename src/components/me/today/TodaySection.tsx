@@ -14,14 +14,14 @@ type Props = {
 };
 
 // "Hoje — Seu dia, em foco" no Perfil: 3 cards (Seu dia, Sua noite, Evolução) que abrem telas.
-// Seu dia/Sua noite: só o que o relógio mede sozinho (nada para digitar). Conta demo → relógio
-// simulado da persona; conta real → "Conectar relógio" com "Ver um exemplo" ou, com
+// Seu dia/Sua noite: só o que o relógio mede sozinho (nada para digitar). "Conectar relógio" com
+// "Ver um exemplo" ou, com
 // WEARABLES_REAL_ENABLED=1 e relógio conectado, os dados reais ("Sincronizando…" até o 1º).
 // Evolução: sequência, "Continue seus programas" e "Você vs Hero".
 export async function TodaySection({ localDate, view, evolution }: Props) {
   // App das lojas: sem relógio simulado (dados de saúde inventados sem o aviso de demonstração
   // confundiriam); lá ficam só os cards do relógio real/conectar e a Evolução.
-  const hideWatch = (view.kind === "demo" || view.kind === "example") && Boolean(await getNativeApp());
+  const hideWatch = view.kind === "example" && Boolean(await getNativeApp());
   const [t, locale] = await Promise.all([getTranslations("me.today"), getLocale()]);
   const dateLabel = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(ymdToDate(localDate));
 

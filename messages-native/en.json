@@ -46,12 +46,6 @@
       },
       "retention": {
         "orders": "Orders linked to the account: {days} days (then anonymized)"
-      },
-      "password": {
-        "demoDescription": "This account's password is managed by the team and cannot be viewed or changed here.",
-        "errors": {
-          "demo": "This account's password cannot be changed here."
-        }
       }
     },
     "today": {
@@ -80,12 +74,6 @@
         "title": "Unlock the recipes with the getting-started step",
         "description": "Cards are open to everyone. To see ingredients, method and cooking mode, complete the getting-started step ({total} quick steps)."
       }
-    }
-  },
-  "devices": {
-    "demo": "This account does not connect watches.",
-    "errors": {
-      "demo": "This account does not connect watches."
     }
   },
   "discover": {

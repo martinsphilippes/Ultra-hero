@@ -185,8 +185,8 @@ export default async function EvolutionPage() {
         ))}
       </ul>
 
-      {/* Você vs Hero (0056): relógio da própria pessoa (demo ou real) + uso do app */}
-      <HeroComparison watch={watchView.kind === "demo" || watchView.kind === "real" ? watchView.snapshot : null} />
+      {/* Você vs Hero (0056): relógio da própria pessoa + uso do app */}
+      <HeroComparison watch={watchView.kind === "real" ? watchView.snapshot : null} />
 
       {/* Meus programas */}
       <section aria-labelledby="programs-title" className="flex flex-col gap-3">

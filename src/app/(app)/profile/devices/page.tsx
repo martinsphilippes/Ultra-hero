@@ -11,34 +11,32 @@ import { isHealthProvider } from "@/lib/health/types";
 import { myConnections, myConsent } from "@/lib/health/user";
 import { createClient } from "@/lib/supabase/server";
 import { CONNECT_BRANDS } from "@/lib/wearables/catalog";
-import { isDemoUser } from "@/lib/wearables/context";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("devices");
   return { title: t("metaTitle") };
 }
 
-const ERROR_KEYS = new Set(["generic", "demo", "unavailable", "denied", "state", "provider", "inUse", "noConsent"]);
+const ERROR_KEYS = new Set(["generic", "unavailable", "denied", "state", "provider", "inUse", "noConsent"]);
 const linkClass = "inline-flex min-h-11 w-fit items-center gap-1 text-sm font-semibold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
-// Relógios e anéis (RF-07): conectar (só contas reais, só marcas ligadas no ambiente), ver o estado,
-// desconectar e apagar, retirar categorias ou o consentimento inteiro. Contas demo continuam com o
-// relógio simulado e não veem o fluxo. Com a chave desligada, tudo segue "Em breve" — mas quem já
+// Relógios e anéis (RF-07): conectar (só marcas ligadas no ambiente), ver o estado, desconectar e
+// apagar, retirar categorias ou o consentimento inteiro. Com a chave desligada, tudo segue "Em breve" — mas quem já
 // consentiu ou conectou continua podendo desconectar e retirar (a retirada nunca é bloqueada, art. 8º §5º).
 export default async function DevicesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const user = await requireUser("/profile/devices");
+  await requireUser("/profile/devices");
   const [t, tw, locale, search] = await Promise.all([getTranslations("devices"), getTranslations("wearables"), getLocale(), searchParams]);
   const errorKey = typeof search.erro === "string" && ERROR_KEYS.has(search.erro) ? search.erro : null;
   const header = <PageHeader title={t("title")} description={t("description")} backHref="/profile" backLabel={t("back")} />;
   const dateFmt = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
-  // sem "Conecte um relógio…": aqui não há o que conectar (demo ou chave desligada)
-  const off = (state: "demo" | "off") => (
+  // sem "Conecte um relógio…": aqui não há o que conectar (chave desligada)
+  const off = (state: "off") => (
     <div className="flex flex-col gap-6" data-testid="devices-page" data-state={state}>
       <PageHeader title={t("title")} backHref="/profile" backLabel={t("back")} />
       <p role="note" className="flex items-start gap-2 rounded-2xl border border-border bg-surface p-5 type-body-sm text-fg">
         <Info className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
-        {state === "demo" ? t("demo") : t("off")}
+        {t("off")}
       </p>
       <Link href="/profile" className={linkClass}>
         {t("back")}
@@ -46,7 +44,6 @@ export default async function DevicesPage({ searchParams }: { searchParams: Prom
       </Link>
     </div>
   );
-  if (isDemoUser(user)) return off("demo");
 
   const enabled = wearablesRealEnabled();
   const supabase = await createClient();

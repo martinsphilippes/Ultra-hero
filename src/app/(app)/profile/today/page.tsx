@@ -28,7 +28,7 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
   const [view, t, evolution] = await Promise.all([loadWatchView(next, example), getTranslations("me.today"), loadEvolutionSummary(user.id, tz)]);
 
   // app das lojas: sem relógio simulado (TodaySection)
-  if ((view.kind === "demo" || view.kind === "example") && (await getNativeApp())) redirect("/profile");
+  if (view.kind === "example" && (await getNativeApp())) redirect("/profile");
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,7 +38,7 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
         description={view.kind === "connect" ? ((view.providers?.length ?? 0) > 0 ? t("descriptionConnectAvailable") : t("descriptionConnect")) : t("description")}
         backHref="/profile"
         backLabel={t("example.back")}
-        actions={view.kind === "demo" || view.kind === "example" ? <DemoBadge /> : null}
+        actions={view.kind === "example" ? <DemoBadge /> : null}
       />
       <TodayHub view={view} evolution={evolution} compare={view.kind !== "example"} />
     </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Info } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ConsentForm } from "@/components/me/devices/ConsentForm";
 import { Button, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth/session";
@@ -12,7 +12,6 @@ import { BRAND_NAMES } from "@/lib/health/snapshot";
 import { isHealthProvider } from "@/lib/health/types";
 import { consentText, myConsent } from "@/lib/health/user";
 import { createClient } from "@/lib/supabase/server";
-import { isDemoUser } from "@/lib/wearables/context";
 import { reauthenticate } from "../../actions";
 
 type Params = { provider: string };
@@ -25,13 +24,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 // Tela de consentimento por categoria (RF-08, LGPD art. 11): o texto mostrado é o ARQUIVADO no
 // servidor (versão e hash calculado lá), a idade mínima vem da configuração do banco (Q7) e o
-// aceite exige login recente. Conta demo nunca chega aqui; marca desligada responde 404.
+// aceite exige login recente. marca desligada responde 404.
 export default async function ConnectProviderPage({ params }: { params: Promise<Params> }) {
   const { provider } = await params;
   if (!isHealthProvider(provider)) notFound();
   const path = `/profile/devices/connect/${provider}`;
   const user = await requireUser(path);
-  if (isDemoUser(user)) redirect("/profile/devices?erro=demo");
   if (!providerReady(provider)) notFound();
 
   const [t, locale] = await Promise.all([getTranslations("devices"), getLocale()]);

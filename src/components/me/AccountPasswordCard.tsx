@@ -6,8 +6,8 @@ import { useState, useTransition } from "react";
 import { regenerateMyPassword, revealMyPassword } from "@/app/(app)/profile/account/actions";
 import { Button, Dialog, useToast } from "@/components/ui";
 
-/** stored: há senha gerada guardada; google: só Google; own: senha escolhida pela pessoa; demo; unavailable. */
-export type PasswordCardMode = "stored" | "google" | "own" | "demo" | "unavailable";
+/** stored: há senha gerada guardada; google: só Google; own: senha escolhida pela pessoa; unavailable. */
+export type PasswordCardMode = "stored" | "google" | "own" | "unavailable";
 
 type Props = { mode: PasswordCardMode; canGenerate: boolean };
 
@@ -65,7 +65,7 @@ export function AccountPasswordCard({ mode: initialMode, canGenerate }: Props) {
   }
 
   const description =
-    mode === "stored" ? t("storedDescription") : mode === "google" ? t("googleDescription") : mode === "own" ? t("ownDescription") : mode === "demo" ? t("demoDescription") : t("unavailableDescription");
+    mode === "stored" ? t("storedDescription") : mode === "google" ? t("googleDescription") : mode === "own" ? t("ownDescription") : t("unavailableDescription");
 
   return (
     <section aria-labelledby="password-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5" data-testid="account-password">
@@ -97,7 +97,7 @@ export function AccountPasswordCard({ mode: initialMode, canGenerate }: Props) {
             {t("copy")}
           </Button>
         ) : null}
-        {canGenerate && mode !== "demo" && mode !== "unavailable" ? (
+        {canGenerate && mode !== "unavailable" ? (
           <Button type="button" variant="ghost" onClick={() => setConfirmOpen(true)} leadingIcon={<RefreshCw />}>
             {mode === "google" ? t("create") : t("generate")}
           </Button>

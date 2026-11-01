@@ -739,24 +739,6 @@
       "emptyDescription": "Crie uma exceção apenas com justificativa documentada.",
       "scopeUser": "Usuário",
       "scopeTestOrder": "Pedido de teste"
-    },
-    "demoAccounts": {
-      "title": "Contas de demonstração",
-      "description": "Cria uma conta já confirmada e vinculada a uma organização ou a um herói. A senha é exibida uma única vez.",
-      "unavailable": "Chave de serviço não configurada",
-      "unavailableDescription": "Sem SUPABASE_SERVICE_ROLE_KEY no servidor não é possível criar contas. Use Convites: o usuário cria a conta e aceita o link.",
-      "goInvitations": "Ir para Convites",
-      "email": "E-mail",
-      "role": "Papel",
-      "roleSeller": "Fornecedor",
-      "roleCreator": "Herói",
-      "org": "Organização",
-      "profile": "Perfil de herói",
-      "submit": "Criar conta demo",
-      "createdTitle": "Conta criada",
-      "createdWarning": "Anote a senha agora: ela não será exibida nem armazenada em texto.",
-      "password": "Senha temporária",
-      "done": "Concluir"
     }
   },
   "shipments": {
