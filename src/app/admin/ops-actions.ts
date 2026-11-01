@@ -454,7 +454,9 @@ export async function setCreatorStatus(input: { id: string; status: "active" | "
 }
 
 // ---------------------------------------------------------------- produtos do herói (alocação direta)
-export const CREATOR_PRODUCT_STATUSES = ["validated", "suspended", "rejected"] as const;
+// Sem export: arquivo "use server" só exporta funções async (o Next recusa o módulo inteiro, erro E352,
+// e todas as actions daqui quebram, inclusive o aceite de convite).
+const CREATOR_PRODUCT_STATUSES = ["validated", "suspended", "rejected"] as const;
 export type CreatorProductStatus = (typeof CREATOR_PRODUCT_STATUSES)[number];
 
 // Define a alocação produto↔herói pela RPC auditada (upsert). A página pública do herói é
