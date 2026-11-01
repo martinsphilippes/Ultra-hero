@@ -7899,6 +7899,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      collectible_photo_upload_claim: { Args: { p_bytes: number; p_mime: string }; Returns: string };
       agency_audit_list: {
         Args: {
           p_agency: string;

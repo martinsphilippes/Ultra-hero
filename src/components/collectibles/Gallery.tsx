@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { FALLBACK_PHOTO } from "@/lib/collectibles/rules";
 import { cn } from "@/lib/utils";
 import "./collectibles.css";
 
@@ -13,7 +14,7 @@ const unoptimized = (src: string) => !src.startsWith("/") || src.endsWith(".svg"
 // Galeria grande: desliza com o dedo (scroll-snap) e miniaturas de 44px+ para pular de foto.
 export function Gallery({ photos, title }: Props) {
   const t = useTranslations("collectibles.gallery");
-  const list = photos.length > 0 ? photos : ["/collectibles/ball.svg"];
+  const list = photos.length > 0 ? photos : [FALLBACK_PHOTO];
   const track = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 

@@ -31,6 +31,19 @@ export async function removePostPhoto(admin: Admin, path: string): Promise<boole
   return true;
 }
 
+/** Tira as URLs apagadas de collectibles.photos (um item por vez: a lista é um array pequeno, até 8). */
+async function releaseCollectiblePhotos(admin: Admin, urls: string[]): Promise<{ message: string } | null> {
+  const { data: items, error } = await admin.from("collectibles").select("id, photos").overlaps("photos", urls);
+  if (error) return error;
+  const gone = new Set(urls);
+  for (const item of items ?? []) {
+    const photos = (item.photos ?? []).filter((p: string) => !gone.has(p));
+    const { error: updateError } = await admin.from("collectibles").update({ photos }).eq("id", item.id);
+    if (updateError) return updateError;
+  }
+  return null;
+}
+
 export type PostPhotoCleanupResult = { post_photos_deleted: number; post_photos_errors: number; post_photos_rows_purged: number };
 
 /** Registro de envio já apagado sai depois de 2 dias (a cota olha só a última hora). */
@@ -55,7 +68,10 @@ export async function cleanupPostPhotoUploads(admin: Admin, baseUrl: string | nu
     const { error: bodyError } = coverError
       ? { error: coverError }
       : await admin.from("content_bodies").update({ media_provider: "none", media_ref: null }).eq("media_provider", "upload").in("media_ref", paths);
-    if (bodyError) {
+    // fotos de colecionável (0074): a função de órfãos já as preserva (até de conta excluída); isto é só
+    // rede de segurança para a lista do item nunca apontar para um objeto apagado
+    const collectibleError = bodyError ? bodyError : await releaseCollectiblePhotos(admin, urls);
+    if (collectibleError) {
       result.post_photos_errors = paths.length;
     } else {
       const { error: removeError } = await admin.storage.from(POST_PHOTO_BUCKET).remove(paths);

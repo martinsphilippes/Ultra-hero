@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { FALLBACK_PHOTO } from "./rules";
 import type { Database } from "@/lib/supabase/database.types";
 import { collectiblePhase, type CollectiblePhase } from "./rules";
 
@@ -104,7 +105,7 @@ export function phaseOf(item: Pick<CollectibleView, "status" | "startsAt" | "end
 
 /** Foto de capa (a 1ª) ou a imagem neutra padrão. */
 export function coverPhoto(item: Pick<CollectibleView, "photos">): string {
-  return item.photos[0] ?? "/collectibles/ball.svg";
+  return item.photos[0] ?? FALLBACK_PHOTO;
 }
 
 export type CollectiblesList = { available: boolean; live: CollectibleView[]; upcoming: CollectibleView[]; ended: CollectibleView[] };

@@ -15,6 +15,7 @@ import { formatCurrency, formatDateTime } from "@/i18n/format";
 import { fetchCollectibleViews, PHASE_BADGE } from "@/lib/collectibles/admin";
 import { EMPTY_MINE, fetchCollectible, finalizeIfDue, phaseOf } from "@/lib/collectibles/queries";
 import { isContactStatus } from "@/lib/collectibles/rules";
+import { getPostPhotoState } from "@/lib/post-photo/availability";
 import { createClient } from "@/lib/supabase/server";
 
 // Detalhe do colecionável no admin: lançar/agendar/cancelar, lances chegando ao vivo, indicadores
@@ -39,7 +40,7 @@ export default async function AdminCollectiblePage({ params }: Props) {
   if (!loaded) notFound();
   if (await finalizeIfDue(supabase, loaded.item, true)) loaded = (await fetchCollectible(supabase, id)) ?? loaded;
   const { item } = loaded;
-  const [{ data: heroes }, { data: audit }, views, { data: result }] = await Promise.all([
+  const [{ data: heroes }, { data: audit }, views, { data: result }, photoState] = await Promise.all([
     supabase.from("creator_profiles").select("id, name").order("name"),
     supabase
       .from("admin_audit")
@@ -54,6 +55,7 @@ export default async function AdminCollectiblePage({ params }: Props) {
       .select("outcome, winner_user_id, final_cents, contact_status, contact_updated_at")
       .eq("collectible_id", id)
       .maybeSingle(),
+    getPostPhotoState(),
   ]);
   // vencedor: nome e e-mail pela RPC só de admin (admin_get_user), para a equipe entrar em contato
   const winner = result?.winner_user_id
@@ -153,6 +155,7 @@ export default async function AdminCollectiblePage({ params }: Props) {
           id={id}
           heroes={heroes ?? []}
           locked={locked}
+          photoState={photoState}
           initial={{
             title: item.title,
             description: item.description,

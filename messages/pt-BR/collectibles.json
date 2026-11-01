@@ -230,7 +230,6 @@
       "noHero": "Sem herói",
       "description": "Descrição",
       "photos": "Fotos",
-      "photosHint": "Um endereço por linha (até 8): caminho do app (/collectibles/…) ou https://. Não use logotipos nem imagens de marcas.",
       "authenticity": "Autenticidade",
       "authenticityHint": "Certificado, número de série, como a assinatura foi registrada.",
       "rulesTitle": "Lance",
@@ -258,7 +257,7 @@
         "price": "Informe um valor a partir de R$ 1,00.",
         "increments": "Use de 1 a 4 valores positivos e diferentes.",
         "duration": "A duração vai de 5 minutos a 30 dias.",
-        "photos": "Até 8 endereços, cada um começando com / ou https://."
+        "photos": "Até 8 fotos."
       }
     },
     "launch": {
@@ -293,7 +292,46 @@
       "invalid_input": "Confira os campos destacados.",
       "generic": "Não foi possível salvar. Tente de novo.",
       "no_winner": "Este item não tem vencedor.",
-      "invalid_contact_status": "Situação de contato inválida."
+      "invalid_contact_status": "Situação de contato inválida.",
+      "photo_missing": "Uma das fotos não está mais disponível (ficou sem uso por mais de 1 hora e foi apagada). Remova-a e envie de novo."
+    },
+    "photos": {
+      "label": "Fotos (até 8). A primeira é a capa do item.",
+      "listLabel": "Fotos do item",
+      "none": "Sem fotos. Tire uma foto ou escolha uma do celular.",
+      "photoAlt": "Foto {n} do item",
+      "coverTag": "Capa",
+      "remove": "Remover foto {n}",
+      "take": "Tirar foto",
+      "gallery": "Escolher do celular",
+      "previewTitle": "Prévia da foto",
+      "previewDescription": "Confira a foto antes de enviar. Não use logotipos nem imagens de marcas.",
+      "previewAlt": "Prévia da nova foto",
+      "use": "Usar esta foto",
+      "cancel": "Cancelar",
+      "preparing": "Preparando a foto…",
+      "uploading": "Enviando a foto…",
+      "uploaded": "Foto enviada. Ela fica gravada ao salvar o item.",
+      "removed": "Foto removida. Salve o item para confirmar.",
+      "limits": "{count} de {max} fotos. Foto de até 30 MB, reduzida no seu aparelho, sem dados de localização. Até 30 envios por hora.",
+      "unavailable": "O envio de fotos não está disponível neste ambiente.",
+      "disabled": "O envio de fotos está pausado pela administração. Tente mais tarde.",
+      "errors": {
+        "max_photos": "O item já tem 8 fotos. Remova uma para enviar outra.",
+        "not_image": "Esse arquivo não é uma foto. Escolha uma foto JPG, PNG ou WebP.",
+        "empty_file": "O arquivo está vazio. Escolha outra foto.",
+        "file_too_large": "A foto é grande demais. Escolha uma de até 30 MB.",
+        "decode_failed": "Não foi possível abrir essa foto neste navegador (HEIC às vezes não abre). Tente uma foto JPG ou PNG.",
+        "invalid_dimensions": "A foto não chegou no formato esperado. Tente de novo.",
+        "too_many_uploads": "Limite de 30 envios por hora atingido. Tente mais tarde.",
+        "uploads_disabled": "O envio de fotos está pausado pela administração. Tente mais tarde.",
+        "photo_not_configured": "O envio de fotos não está disponível neste ambiente.",
+        "forbidden": "Só a administração envia fotos por aqui.",
+        "upload_failed": "Não foi possível enviar a foto. Confira a conexão e tente de novo.",
+        "unauthenticated": "Entre para continuar.",
+        "upload_rights_required": "Antes do primeiro envio, confirme que você tem os direitos sobre a foto.",
+        "generic": "Não foi possível concluir. Tente de novo."
+      }
     }
   },
   "alert": {

@@ -9089,7 +9089,8 @@ select tests.ok('S78 contratação: produção, creators contratados, termos ace
   and (select v from t_s78 where k = 'tasks') = '19' and (select count(*) from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal')) = 19
   and (select count(*) from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step = 4 and side = 'talent' and assignee_id = '77000000-0000-4000-8000-0000000000d1') = 1
   and (select count(*) from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal') and template_step in (1, 2, 3, 11, 12) and talent_id is null) = 5
-  and (select bool_and(due_at >= ((current_date + 1)::timestamp + interval '18 hours') at time zone 'America/Sao_Paulo') from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal'))
+  -- "amanhã" no fuso de São Paulo (current_date é UTC: entre 21h e 0h de Brasília o dia já virou lá)
+  and (select bool_and(due_at >= (((now() at time zone 'America/Sao_Paulo')::date + 1)::timestamp + interval '18 hours') at time zone 'America/Sao_Paulo') from public.tasks where deal_id = (select v::uuid from t_s78 where k = 'deal'))
   and (select status from public.deliverables where deal_id = (select v::uuid from t_s78 where k = 'deal') and title = 'Reels E') = 'in_production'
   and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000c1' and kind = 'contract_confirmed')
   and exists (select 1 from public.inbox_notifications where user_id = '77000000-0000-4000-8000-0000000000d1' and kind = 'task_assigned')
@@ -9291,9 +9292,10 @@ select tests.ok('S79 contratação: a receber = comissão + repasses, taxa do ne
   and (select amount_cents from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'commission') = 100000
   and (select sum(amount_cents) from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'talent_payout') = 400000
   and (select bool_and(status = 'planned' and simulated and rate_bp = 2500 and currency = 'BRL') from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal'))
-  and (select due_on from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'commission') = current_date + 30
+  -- vencimentos contam do dia da contratação no fuso da agência (São Paulo), não do current_date em UTC
+  and (select due_on from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'commission') = (now() at time zone 'America/Sao_Paulo')::date + 30
   and (select due_on from public.financial_entries where deal_id = (select v::uuid from t_s79 where k = 'deal') and kind = 'talent_payout' and deal_talent_id = (select v::uuid from t_s79 where k = 'dt1'))
-      = (select coalesce(d.expected_end + 15, current_date + 45) from public.deals d where d.id = (select v::uuid from t_s79 where k = 'deal')));
+      = (select coalesce(d.expected_end + 15, (now() at time zone 'America/Sao_Paulo')::date + 45) from public.deals d where d.id = (select v::uuid from t_s79 where k = 'deal')));
 -- (chamadas em passos separados: a ordem de avaliação de um "and" não é garantida)
 insert into t_s79 values ('bf_a', public.agency_finance_backfill(public.seed_uuid('s74:agency:a'))::text);
 insert into t_s79 values ('bf_all', public.agency_finance_backfill()::text);
@@ -9553,6 +9555,75 @@ select tests.ok('S80 políticas não comparam o enum novo sem ::text',
               and (coalesce(qual, '') || coalesce(with_check, '')) ~ '''(agency|brand)''::app_role'));
 drop table t_s80;
 drop table t_s74;
+
+-- ================================================================ S81 · Fotos do colecionável pelo admin (0074)
+-- O admin reserva o envio da foto sem herói (mesma tabela, kill switch e cota da foto do post); visitante
+-- e conta comum não; a foto usada por um colecionável não entra na limpeza diária; a lista do S14 não muda.
+select tests.su();
+create temp table t_s81 (k text primary key, v text);
+grant all on t_s81 to anon, authenticated, service_role;
+insert into auth.users (id, email) values ('81000000-0000-4000-8000-000000000801', 's81plain@test.local');
+select tests.anon();
+select tests.expect_error('S81 visitante não reserva foto de colecionável', $q$select public.collectible_photo_upload_claim(1000, 'image/webp')$q$, 'permission denied');
+select tests.login('81000000-0000-4000-8000-000000000801', 's81plain@test.local');
+select tests.expect_error('S81 conta comum: forbidden', $q$select public.collectible_photo_upload_claim(1000, 'image/webp')$q$, 'forbidden');
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S81 tipo fora da lista: not_image', $q$select public.collectible_photo_upload_claim(1000, 'image/png')$q$, 'not_image');
+select tests.expect_error('S81 arquivo vazio: empty_file', $q$select public.collectible_photo_upload_claim(0, 'image/webp')$q$, 'empty_file');
+select tests.expect_error('S81 acima de 3,5 MiB: file_too_large', $q$select public.collectible_photo_upload_claim(3670017, 'image/jpeg')$q$, 'file_too_large');
+insert into t_s81 values ('path', public.collectible_photo_upload_claim(900000, 'image/webp'));
+select tests.ok('S81 reserva devolve <admin>/<uuid>.webp na mesma tabela da foto do post',
+  (select v ~ '^10000000-0000-4000-8000-000000000001/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$' from t_s81 where k = 'path')
+  and (select count(*) from public.post_photo_uploads where path = (select v from t_s81 where k = 'path') and user_id = auth.uid() and bytes = 900000 and mime = 'image/webp') = 1);
+insert into t_s81 values ('url', 'https://proj.supabase.co/storage/v1/object/public/post-photos/' || (select v from t_s81 where k = 'path'));
+insert into t_s81 select 'item', public.admin_collectible_save(null, jsonb_build_object('title', 'Camisa assinada [S81]', 'description', 'foto do celular',
+  'photos', jsonb_build_array((select v from t_s81 where k = 'url')), 'start_price_cents', 5000, 'bid_increments_cents', jsonb_build_array(1000),
+  'duration_minutes', 1440))::text;
+select tests.ok('S81 a URL pública da foto entra em collectibles.photos',
+  (select photos = array[(select v from t_s81 where k = 'url')] from public.collectibles where id = (select v::uuid from t_s81 where k = 'item')));
+
+-- limpeza diária: em uso no colecionável não é órfã; sem a referência (e com mais de 1 h) é
+select tests.su();
+update public.post_photo_uploads set created_at = now() - interval '2 hours' where path = (select v from t_s81 where k = 'path');
+select tests.ok('S81 foto usada por um colecionável não entra nos órfãos',
+  not exists (select 1 from public.post_photo_orphan_uploads(1000) p where p = (select v from t_s81 where k = 'path')));
+-- a foto é da plataforma: a conta do admin que enviou pode sair, a foto do item fica
+update public.post_photo_uploads set user_id = null where path = (select v from t_s81 where k = 'path');
+select tests.ok('S81 conta de quem enviou excluída: a foto em uso no colecionável continua fora dos órfãos',
+  not exists (select 1 from public.post_photo_orphan_uploads(1000) p where p = (select v from t_s81 where k = 'path')));
+update public.collectibles set photos = '{}' where id = (select v::uuid from t_s81 where k = 'item');
+select tests.ok('S81 sem a referência, a foto vira órfã',
+  exists (select 1 from public.post_photo_orphan_uploads(1000) p where p = (select v from t_s81 where k = 'path')));
+
+-- kill switch compartilhado com a foto do post
+update public.app_settings set value = 'false'::jsonb where key = 'post_photos.uploads_enabled';
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.expect_error('S81 kill switch desligado: uploads_disabled', $q$select public.collectible_photo_upload_claim(1000, 'image/webp')$q$, 'uploads_disabled');
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'post_photos.uploads_enabled';
+
+-- cota: 30 por hora por conta (a reserva do admin conta junto com a foto do post)
+insert into public.post_photo_uploads (user_id, path, bytes, mime)
+select '10000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001/' || gen_random_uuid() || '.jpg', 1000, 'image/jpeg'
+from generate_series(1, 29 - (select count(*)::int from public.post_photo_uploads where user_id = '10000000-0000-4000-8000-000000000001' and created_at > now() - interval '1 hour'));
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+insert into t_s81 values ('thirtieth', public.collectible_photo_upload_claim(1000, 'image/jpeg'));
+select tests.ok('S81 o 30º envio da hora passa (.jpg)', (select v like '%.jpg' from t_s81 where k = 'thirtieth'));
+select tests.expect_error('S81 o 31º envio da hora: too_many_uploads', $q$select public.collectible_photo_upload_claim(1000, 'image/jpeg')$q$, 'too_many_uploads');
+
+-- estrutura: definer com search_path fixo, sem execute para anon/PUBLIC (lista do S14 inalterada), órfãos só service role
+select tests.ok('S81 collectible_photo_upload_claim: security definer, search_path fixo, só authenticated/service_role',
+  (select p.prosecdef and p.proconfig @> array['search_path=public'] from pg_proc p where p.oid = 'public.collectible_photo_upload_claim(int, text)'::regprocedure)
+  and not has_function_privilege('anon', 'public.collectible_photo_upload_claim(int, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.collectible_photo_upload_claim(int, text)', 'execute')
+  and not has_function_privilege('anon', 'public.post_photo_orphan_uploads(int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.post_photo_orphan_uploads(int)', 'execute'));
+
+-- limpeza: nada do S81 fica (cota do admin e o item de teste)
+select tests.su();
+delete from public.post_photo_uploads where user_id = '10000000-0000-4000-8000-000000000001' or path = (select v from t_s81 where k = 'path');
+delete from public.collectibles where id = (select v::uuid from t_s81 where k = 'item');
+drop table t_s81;
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

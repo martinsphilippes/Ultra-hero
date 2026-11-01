@@ -188,3 +188,6 @@ export type ContactStatus = (typeof CONTACT_STATUSES)[number];
 export function isContactStatus(value: unknown): value is ContactStatus {
   return typeof value === "string" && (CONTACT_STATUSES as readonly string[]).includes(value);
 }
+
+/** Item sem foto: desenho neutro de produto (as imagens de demonstração em /collectibles saíram no lançamento). */
+export const FALLBACK_PHOTO = "/placeholders/product-1.svg";

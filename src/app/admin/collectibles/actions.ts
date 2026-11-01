@@ -5,7 +5,9 @@ import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import type { ActionResult } from "@/components/admin";
 import { getUser, hasRole } from "@/lib/auth/session";
+import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { CONTACT_STATUSES, normalizeIncrements, type ContactStatus } from "@/lib/collectibles/rules";
+import { storedPostPhotoPath } from "@/lib/post-photo/paths";
 import { createClient } from "@/lib/supabase/server";
 
 // Colecionáveis no admin: criar/editar, lançar (agora ou agendado), cancelar e marcar o contato com
@@ -18,6 +20,7 @@ const ERROR_CODES = [
   "collectible_locked",
   "invalid_increment",
   "invalid_photo",
+  "photo_missing",
   "invalid_creator",
   "invalid_start",
   "reason_required",
@@ -85,6 +88,17 @@ export async function saveCollectibleAction(id: string | null, input: Collectibl
   try {
     await requireAdmin();
     const supabase = await createClient();
+    // Fotos enviadas do celular (0074): o objeto precisa existir ainda. Sem referência por mais de 1 h a
+    // limpeza diária apaga; se o formulário ficou aberto esse tempo, pede outra foto em vez de gravar uma
+    // URL quebrada. O admin lê post_photo_uploads pela política da 0043.
+    const base = supabaseBaseUrl();
+    const stored = parsed.data.photos.map((url) => storedPostPhotoPath(url, base)).filter((p): p is string => p !== null);
+    if (stored.length > 0) {
+      const { data: uploads, error: uploadsError } = await supabase.from("post_photo_uploads").select("path").in("path", stored).is("deleted_at", null);
+      if (uploadsError) return fail(uploadsError);
+      const found = new Set((uploads ?? []).map((u) => u.path));
+      if (stored.some((p) => !found.has(p))) return fail("photo_missing");
+    }
     const { data, error } = await supabase.rpc("admin_collectible_save", {
       p_id: parsedId.data ?? undefined,
       p_data: { ...parsed.data, bid_increments_cents: increments },

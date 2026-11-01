@@ -230,7 +230,6 @@
       "noHero": "No hero",
       "description": "Description",
       "photos": "Photos",
-      "photosHint": "One address per line (up to 8): app path (/collectibles/…) or https://. Don't use logos or brand images.",
       "authenticity": "Authenticity",
       "authenticityHint": "Certificate, serial number, how the signature was recorded.",
       "rulesTitle": "Bidding",
@@ -258,7 +257,7 @@
         "price": "Enter an amount of at least R$ 1.00.",
         "increments": "Use 1 to 4 positive, different amounts.",
         "duration": "Duration goes from 5 minutes to 30 days.",
-        "photos": "Up to 8 addresses, each starting with / or https://."
+        "photos": "Up to 8 photos."
       }
     },
     "launch": {
@@ -293,7 +292,46 @@
       "invalid_input": "Check the highlighted fields.",
       "generic": "We couldn't save. Try again.",
       "no_winner": "This item has no winner.",
-      "invalid_contact_status": "Invalid contact status."
+      "invalid_contact_status": "Invalid contact status.",
+      "photo_missing": "One of the photos is no longer available (it went unused for over 1 hour and was deleted). Remove it and upload again."
+    },
+    "photos": {
+      "label": "Photos (up to 8). The first one is the item's cover.",
+      "listLabel": "Item photos",
+      "none": "No photos. Take a photo or pick one from your phone.",
+      "photoAlt": "Item photo {n}",
+      "coverTag": "Cover",
+      "remove": "Remove photo {n}",
+      "take": "Take photo",
+      "gallery": "Choose from phone",
+      "previewTitle": "Photo preview",
+      "previewDescription": "Check the photo before uploading. Don't use logos or brand images.",
+      "previewAlt": "Preview of the new photo",
+      "use": "Use this photo",
+      "cancel": "Cancel",
+      "preparing": "Preparing the photo…",
+      "uploading": "Uploading the photo…",
+      "uploaded": "Photo uploaded. It is stored when you save the item.",
+      "removed": "Photo removed. Save the item to confirm.",
+      "limits": "{count} of {max} photos. Photo up to 30 MB, resized on your device, without location data. Up to 30 uploads per hour.",
+      "unavailable": "Photo upload is not available in this environment.",
+      "disabled": "Photo uploads are paused by the administration. Try again later.",
+      "errors": {
+        "max_photos": "The item already has 8 photos. Remove one to upload another.",
+        "not_image": "That file is not a photo. Choose a JPG, PNG or WebP photo.",
+        "empty_file": "The file is empty. Choose another photo.",
+        "file_too_large": "The photo is too large. Choose one up to 30 MB.",
+        "decode_failed": "This browser could not open that photo (HEIC sometimes fails). Try a JPG or PNG photo.",
+        "invalid_dimensions": "The photo did not arrive in the expected format. Try again.",
+        "too_many_uploads": "Limit of 30 uploads per hour reached. Try again later.",
+        "uploads_disabled": "Photo uploads are paused by the administration. Try again later.",
+        "photo_not_configured": "Photo upload is not available in this environment.",
+        "forbidden": "Only the administration uploads photos here.",
+        "upload_failed": "The photo could not be uploaded. Check your connection and try again.",
+        "unauthenticated": "Sign in to continue.",
+        "upload_rights_required": "Before the first upload, confirm that you hold the rights to the photo.",
+        "generic": "Could not complete. Try again."
+      }
     }
   },
   "alert": {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveCollectibleAction, type CollectibleFormValues } from "@/app/admin/collectibles/actions";
 import { Button, FormField, IconButton, Input, Select, Textarea, useToast } from "@/components/ui";
+import type { PostPhotoState } from "@/lib/post-photo/constants";
 import {
   centsToInput,
   DEFAULT_INCREMENTS_CENTS,
@@ -16,6 +17,7 @@ import {
   parseMoneyToCents,
   type DurationUnit,
 } from "@/lib/collectibles/rules";
+import { COLLECTIBLE_PHOTOS_MAX, CollectiblePhotosPicker } from "./CollectiblePhotosPicker";
 
 export type HeroOption = { id: string; name: string };
 
@@ -25,11 +27,14 @@ type Props = {
   heroes: HeroOption[];
   /** Já começou (ou tem lance): preço, incrementos e duração travados. */
   locked: boolean;
+  /** Envio de foto pelo celular (kill switch e service role), lido no servidor. */
+  photoState: PostPhotoState;
 };
 
-// Formulário do colecionável (celular primeiro): textos, herói, fotos (endereços, uma por linha),
-// autenticidade, preço inicial, 1 a 4 botões de incremento e duração.
-export function CollectibleForm({ id, initial, heroes, locked }: Props) {
+// Formulário do colecionável (celular primeiro): textos, herói, fotos tiradas ou escolhidas no celular
+// (até 8, enviadas na hora; a lista de URLs é gravada ao salvar), autenticidade, preço inicial, 1 a 4
+// botões de incremento e duração.
+export function CollectibleForm({ id, initial, heroes, locked, photoState }: Props) {
   const t = useTranslations("collectibles.admin.form");
   const router = useRouter();
   const { toast } = useToast();
@@ -39,7 +44,7 @@ export function CollectibleForm({ id, initial, heroes, locked }: Props) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [creatorId, setCreatorId] = useState(initial?.creator_id ?? "");
-  const [photos, setPhotos] = useState((initial?.photos ?? []).join("\n"));
+  const [photos, setPhotos] = useState<string[]>(initial?.photos ?? []);
   const [authenticity, setAuthenticity] = useState(initial?.authenticity_note ?? "");
   const [price, setPrice] = useState(initial ? centsToInput(initial.start_price_cents) : "");
   const [increments, setIncrements] = useState<string[]>((initial?.bid_increments_cents ?? [...DEFAULT_INCREMENTS_CENTS]).map(centsToInput));
@@ -58,11 +63,8 @@ export function CollectibleForm({ id, initial, heroes, locked }: Props) {
     if (!normalized) next.increments = t("errors.increments");
     const minutes = durationToMinutes(Number(durationAmount.replace(",", ".")), durationUnit);
     if (minutes === null) next.duration = t("errors.duration");
-    const photoList = photos
-      .split(/\n+/)
-      .map((p) => p.trim())
-      .filter(Boolean);
-    if (photoList.length > 8 || photoList.some((p) => !(p.startsWith("/") || p.startsWith("https://")))) next.photos = t("errors.photos");
+    const photoList = photos.map((p) => p.trim()).filter(Boolean);
+    if (photoList.length > COLLECTIBLE_PHOTOS_MAX || photoList.some((p) => !(p.startsWith("/") || p.startsWith("https://")))) next.photos = t("errors.photos");
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -106,9 +108,7 @@ export function CollectibleForm({ id, initial, heroes, locked }: Props) {
       <FormField label={t("description")}>
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={4000} rows={4} />
       </FormField>
-      <FormField label={t("photos")} hint={t("photosHint")} error={errors.photos}>
-        <Textarea value={photos} onChange={(e) => setPhotos(e.target.value)} rows={3} placeholder="/collectibles/ball.svg" spellCheck={false} />
-      </FormField>
+      <CollectiblePhotosPicker photos={photos} onChange={setPhotos} state={photoState} disabled={pending} error={errors.photos} />
       <FormField label={t("authenticity")} hint={t("authenticityHint")}>
         <Textarea value={authenticity} onChange={(e) => setAuthenticity(e.target.value)} maxLength={2000} rows={3} />
       </FormField>

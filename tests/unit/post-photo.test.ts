@@ -44,6 +44,8 @@ const state = vi.hoisted(() => ({
   bodyError: null as { message: string; code?: string } | null,
   uploadError: null as { message: string } | null,
   removeError: null as { message: string } | null,
+  /** Colecionáveis que ainda apontam para a foto (0074): a limpeza tira a URL da lista. */
+  collectibles: [] as { id: string; photos: string[] }[],
   log: [] as string[],
   writes: [] as { client: string; table: string; op: string; payload?: unknown; filters: [string, string, unknown][] }[],
 }));
@@ -75,6 +77,7 @@ function client(kind: "user" | "admin") {
         }
         const resolve = (): Result => {
           if (op === "select") {
+            if (table === "collectibles") return { data: state.collectibles, error: null };
             const row = table === "content" ? state.content : table === "content_bodies" ? state.body : table === "creator_profiles" ? { pillars: ["nutrition"] } : null;
             return { data: row, error: null };
           }
@@ -84,7 +87,7 @@ function client(kind: "user" | "admin") {
           return { data: null, error: null };
         };
         const chain: Record<string, unknown> = {};
-        for (const method of ["eq", "is", "in", "not", "lt", "gte"]) {
+        for (const method of ["eq", "is", "in", "not", "lt", "gte", "overlaps"]) {
           chain[method] = (column: string, ...rest: unknown[]) => {
             entry.filters.push([method, column, rest.length > 1 ? rest : rest[0]]);
             return chain;
@@ -183,6 +186,7 @@ beforeEach(() => {
   state.bodyError = null;
   state.uploadError = null;
   state.removeError = null;
+  state.collectibles = [];
   state.log = [];
   state.writes = [];
   vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -454,6 +458,16 @@ describe("cleanupPostPhotoUploads", () => {
     ]);
     expect(state.writes[0]).toMatchObject({ payload: { cover_url: null }, filters: [["in", "cover_url", [URL_]]] });
     expect(state.writes[1]).toMatchObject({ payload: { media_provider: "none", media_ref: null } });
+  });
+
+  it("foto de colecionável (0074, conta excluída): a URL sai da lista do item antes de apagar o objeto", async () => {
+    state.orphans = { data: [PATH], error: null };
+    state.collectibles = [{ id: ids.CONTENT, photos: ["/collectibles/ball.svg", URL_] }];
+    const result = await cleanupPostPhotoUploads(client("admin") as never, BASE, new Date("2026-10-29T03:00:00Z"));
+    expect(result).toEqual({ post_photos_deleted: 1, post_photos_errors: 0, post_photos_rows_purged: 0 });
+    const item = state.writes.find((w) => w.table === "collectibles");
+    expect(item).toMatchObject({ op: "update", payload: { photos: ["/collectibles/ball.svg"] }, filters: [["eq", "id", ids.CONTENT]] });
+    expect(state.log.indexOf("admin:update:collectibles")).toBeLessThan(state.log.indexOf(`admin:storage:remove:post-photos/${PATH}`));
   });
 
   it("Storage falha: não marca (tenta de novo amanhã); sem base do Supabase não apaga nada", async () => {
