@@ -146,6 +146,14 @@
     "budget_exceeded": {
       "title": "Verba estourada",
       "body": "A contratação de {deal} passou da verba reservada."
+    },
+    "usage_rights_expiring": {
+      "title": "{status, select, today {Direito de uso vence hoje} other {Direito de uso vencendo}}",
+      "body": "{status, select, today {O direito de uso do conteúdo de {talent} em {deal} vence hoje ({date}).} other {O direito de uso do conteúdo de {talent} em {deal} vence em {step} dias ({date}).}}"
+    },
+    "deliverable_comment": {
+      "title": "Comentário na entrega",
+      "body": "{status, select, brand {A marca comentou a entrega de {deal}.} other {A agência comentou a entrega de {deal}.}}"
     }
   }
 }

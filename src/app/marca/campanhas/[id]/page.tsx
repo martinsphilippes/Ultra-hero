@@ -17,9 +17,13 @@ import { ApprovalPanel } from "@/components/selection/ApprovalPanel";
 import { RatingPanel } from "@/components/selection/RatingPanel";
 import { TermsPanel } from "@/components/execution/TermsPanel";
 import { BudgetPanel } from "@/components/finance/BudgetPanel";
-import { PageHeader } from "@/components/ui";
+import { MusicPanel } from "@/components/media/MusicPanel";
+import { TrackingPanel } from "@/components/media/TrackingPanel";
+import { buttonBase, buttonSizes, buttonVariants, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
+import { getOrigin } from "@/lib/auth/origin";
+import { getUser } from "@/lib/auth/session";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { briefDefined, briefToDraft } from "@/lib/brief/brief";
 import { getBrandCampaign, getRequestBudget, listMessages } from "@/lib/deals/queries";
@@ -28,8 +32,12 @@ import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
 import { brandBudgetSummary } from "@/lib/finance/queries";
+import { getDealMedia } from "@/lib/media/queries";
+import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { draftEditable } from "@/lib/selection/logic";
 import { createClient } from "@/lib/supabase/server";
+import { localDay } from "@/lib/today/logic";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +75,7 @@ export default async function BrandCampaignPage({ params }: Props) {
   const stepIndex = BRAND_STATUSES.indexOf(detail.brandStatus);
   const steps = BRAND_STATUSES.filter((s) => s !== "cancelled");
   const inExecution = deal !== null && ["contracting", "running", "done"].includes(detail.brandStatus);
-  const [messages, docs, exec, budgetPanel] = await Promise.all([
+  const [messages, docs, exec, budgetPanel, media, tm, origin, user] = await Promise.all([
     deal ? listMessages(deal.id, "brand_agency") : Promise.resolve([]),
     (async () => {
       const supabase = await createClient();
@@ -77,7 +85,17 @@ export default async function BrandCampaignPage({ params }: Props) {
     inExecution && deal ? getDealExecution(deal.id) : Promise.resolve({ available: true, data: null }),
     // 0082: verba da campanha (enviada; rascunho e cancelada não têm painel)
     detail.brandStatus !== "cancelled" ? brandBudgetSummary(request.id) : Promise.resolve({ available: true, data: null }),
+    // 0083: métricas, comentários no segundo, links/cupons com cliques, vendas e músicas
+    inExecution && deal ? getDealMedia(deal.id, { sales: true }) : Promise.resolve(null),
+    getTranslations("media"),
+    getOrigin(),
+    getUser(),
   ]);
+  const mediaData = media?.available ? media.data : null;
+  const today = localDay(new Date(), "America/Sao_Paulo");
+  const linkRows = detail.talents
+    .filter((x) => x.status === "proposed" || x.status === "contracted")
+    .map((x) => ({ dealTalentId: x.dealTalentId, talentName: x.name, link: mediaData?.links.find((l) => l.dealTalentId === x.dealTalentId) ?? null }));
   const budgetSummary = budgetPanel.available ? budgetPanel.data : null;
   const execution = exec.available ? exec.data : null;
   const liveTerms = execution?.terms.filter((x) => x.status !== "draft") ?? [];
@@ -151,6 +169,11 @@ export default async function BrandCampaignPage({ params }: Props) {
         actions={
           canEdit ? (
             <span className="flex flex-wrap gap-2">
+              {inExecution ? (
+                <Link href={`/marca/campanhas/${request.id}/relatorio`} className={cn(buttonBase, buttonVariants.secondary, buttonSizes.sm)} data-testid="campaign-report">
+                  {tm("report.open")}
+                </Link>
+              ) : null}
               <CampaignTools requestId={request.id} title={request.title} canDuplicate={Boolean(ctx.agency)} />
               {preConfirmation && detail.brandStatus !== "cancelled" ? <CancelCampaignButton requestId={request.id} /> : null}
             </span>
@@ -250,7 +273,16 @@ export default async function BrandCampaignPage({ params }: Props) {
               {t("sections.deliverables")}
             </h2>
             {deal && execution && execution.deliverables.length > 0 ? (
-              <DeliverablesBoard portal="brand" dealId={deal.id} requestId={request.id} deliverables={execution.deliverables} brief={execution.brief} canAct={canEdit && detail.brandStatus !== "cancelled"} emptyText={t("deliverablesNone")} />
+              <DeliverablesBoard
+                portal="brand"
+                dealId={deal.id}
+                requestId={request.id}
+                deliverables={execution.deliverables}
+                brief={execution.brief}
+                canAct={canEdit && detail.brandStatus !== "cancelled"}
+                emptyText={t("deliverablesNone")}
+                media={mediaData ? { readings: mediaData.metrics, comments: mediaData.comments, youtubeConfigured: youTubeConfigured(), today } : null}
+              />
             ) : detail.deliverables.length === 0 ? (
               <p className="type-body-sm text-fg-muted">{t("deliverablesNone")}</p>
             ) : (
@@ -270,6 +302,37 @@ export default async function BrandCampaignPage({ params }: Props) {
               </ul>
             )}
           </section>
+          {deal && mediaData && linkRows.length > 0 ? (
+            <section className={card} aria-labelledby="camp-links" data-testid="campaign-links">
+              <div className="flex flex-col gap-1">
+                <h2 id="camp-links" className="text-base font-semibold text-fg">
+                  {tm("links.brandTitle")}
+                </h2>
+                <p className="type-caption text-fg-muted">{tm("links.brandHint")}</p>
+              </div>
+              <TrackingPanel
+                portal="brand"
+                origin={origin}
+                dealId={deal.id}
+                requestId={request.id}
+                rows={linkRows}
+                sales={mediaData.sales}
+                showSales
+                canSell={canEdit && detail.brandStatus !== "cancelled"}
+                myUserId={user?.id ?? null}
+                isOwner={ctx.role === "owner"}
+                today={today}
+              />
+            </section>
+          ) : null}
+          {deal && mediaData && mediaData.music.length > 0 ? (
+            <section className={card} aria-labelledby="camp-music" data-testid="campaign-music">
+              <h2 id="camp-music" className="text-base font-semibold text-fg">
+                {tm("music.title")}
+              </h2>
+              <MusicPanel tracks={mediaData.music} canEdit={false} dealId={deal.id} requestId={request.id} today={today} />
+            </section>
+          ) : null}
           {deal && execution && ratable.some((d) => ["published", "proof_submitted", "done"].includes(d.status)) ? (
             <section className={card} aria-labelledby="camp-ratings" data-testid="campaign-ratings">
               <h2 id="camp-ratings" className="text-base font-semibold text-fg">

@@ -23,6 +23,8 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   invoice_reviewed: FileCheck2,
   payout_scheduled: Wallet,
   budget_exceeded: Wallet,
+  usage_rights_expiring: CalendarDays,
+  deliverable_comment: MessageSquare,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

@@ -146,6 +146,14 @@
     "budget_exceeded": {
       "title": "Presupuesto excedido",
       "body": "La contratación de {deal} superó el presupuesto reservado."
+    },
+    "usage_rights_expiring": {
+      "title": "{status, select, today {El derecho de uso vence hoy} other {Derecho de uso por vencer}}",
+      "body": "{status, select, today {El derecho de uso del contenido de {talent} en {deal} vence hoy ({date}).} other {El derecho de uso del contenido de {talent} en {deal} vence en {step} días ({date}).}}"
+    },
+    "deliverable_comment": {
+      "title": "Comentario en la entrega",
+      "body": "{status, select, brand {La marca comentó una entrega de {deal}.} other {La agencia comentó una entrega de {deal}.}}"
     }
   }
 }

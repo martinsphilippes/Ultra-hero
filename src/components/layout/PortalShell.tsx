@@ -45,7 +45,7 @@ export async function PortalShell({ portal, children, navKeys, headerAction, bad
       {withMenu && (
       <aside
         aria-label={ta("a11y.portalNavigation")}
-        className="sticky top-0 hidden h-dvh w-sidebar shrink-0 flex-col gap-6 overflow-y-auto border-r border-border bg-surface px-4 py-5 md:flex"
+        className="sticky top-0 hidden h-dvh w-sidebar shrink-0 flex-col gap-6 overflow-y-auto border-r border-border bg-surface px-4 py-5 md:flex print:hidden"
       >
         <Link href={PORTAL_ROOT[portal]} className="rounded-lg px-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
           <Logo size="sm" />
@@ -59,7 +59,7 @@ export async function PortalShell({ portal, children, navKeys, headerAction, bad
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="uh-header uh-chrome sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top">
+        <header className="uh-header uh-chrome sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
           <div className="flex h-topbar items-center justify-between gap-3 px-gutter">
             <div className="flex min-w-0 items-center gap-2">
               {withMenu ? (

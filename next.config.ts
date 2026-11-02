@@ -71,6 +71,14 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Link rastreável da campanha (/r/<código>, 0083): fora dos buscadores e nunca em cache (cada clique conta)
+        source: "/r/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Cache-Control", value: "no-store" },
+        ],
+      },
+      {
         // Media kit público (/kit/<token>, 0065): fora dos buscadores e sem o token no Referer, inclusive
         // na página de link indisponível (404) e sem guardar em cache compartilhado.
         source: "/kit/:path*",

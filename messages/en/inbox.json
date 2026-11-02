@@ -146,6 +146,14 @@
     "budget_exceeded": {
       "title": "Budget exceeded",
       "body": "The hiring for {deal} went above the reserved budget."
+    },
+    "usage_rights_expiring": {
+      "title": "{status, select, today {Usage rights expire today} other {Usage rights expiring}}",
+      "body": "{status, select, today {Usage rights for content by {talent} in {deal} expire today ({date}).} other {Usage rights for content by {talent} in {deal} expire in {step} days ({date}).}}"
+    },
+    "deliverable_comment": {
+      "title": "Comment on a deliverable",
+      "body": "{status, select, brand {The brand commented on a deliverable of {deal}.} other {The agency commented on a deliverable of {deal}.}}"
     }
   }
 }

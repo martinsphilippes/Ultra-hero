@@ -39,6 +39,8 @@ export const AGENCY_ERROR_CODES = [
   // verba, nota fiscal e pagamento (0082)
   "invoice_open",
   "invalid_date",
+  // biblioteca, métricas, vendas e músicas (0083)
+  "coupon_taken",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

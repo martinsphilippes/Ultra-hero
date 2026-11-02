@@ -36,6 +36,9 @@ export const INBOX_KINDS = [
   "invoice_reviewed",
   "payout_scheduled",
   "budget_exceeded",
+  // biblioteca (vencimento do direito de uso) e comentário no segundo (0083)
+  "usage_rights_expiring",
+  "deliverable_comment",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

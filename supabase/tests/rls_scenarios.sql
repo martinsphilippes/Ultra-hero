@@ -11112,5 +11112,258 @@ delete from public.agencies where id = '89000000-0000-4000-8000-000000008901';
 delete from auth.users where id::text like '89000000-0000-4000-8000-00000000089%';
 drop table t_s89;
 
+-- ================================================================ S90 · Biblioteca, métricas, vendas, músicas e comentário no segundo (0083)
+-- Biblioteca da marca com vencimento do direito de uso (publicação + prazo dos termos da 0079) e aviso 15/7/0 pelo
+-- cron (uma vez por faixa); métricas informadas pelo influenciador/agência (a marca só lê); link rastreável e cupom
+-- por influenciador (clique só pelo service role, sem security definer — S14 segue 18); vendas pela marca (a
+-- agência só o Adm lê); músicas liberadas (agência cadastra, influenciador confirmado lê); comentários com o segundo
+-- do vídeo (marca e agência escrevem, o influenciador lê e é avisado). Visitante e usuário comum não leem nada.
+\ir ../migrations/0083_biblioteca_metricas_vendas.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('90000000-0000-4000-8000-000000000901', 's90-adm@test.local'),
+  ('90000000-0000-4000-8000-000000000902', 's90-gestor@test.local'),
+  ('90000000-0000-4000-8000-000000000903', 's90-colab@test.local'),
+  ('90000000-0000-4000-8000-000000000904', 's90-creator-1@test.local'),
+  ('90000000-0000-4000-8000-000000000905', 's90-creator-2@test.local'),
+  ('90000000-0000-4000-8000-000000000906', 's90-diretor@test.local'),
+  ('90000000-0000-4000-8000-000000000907', 's90-analista@test.local'),
+  ('90000000-0000-4000-8000-000000000908', 's90-outra-marca@test.local'),
+  ('90000000-0000-4000-8000-000000000909', 's90-comum@test.local');
+insert into public.agencies (id, slug, name) values ('90000000-0000-4000-8000-000000009001', 's90-agencia', 'Agência S90');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('90000000-0000-4000-8000-000000009001', '90000000-0000-4000-8000-000000000901', 'admin', 'Ana Adm S90'),
+  ('90000000-0000-4000-8000-000000009001', '90000000-0000-4000-8000-000000000902', 'manager', 'Gil Gestor S90'),
+  ('90000000-0000-4000-8000-000000009001', '90000000-0000-4000-8000-000000000903', 'staff', 'Cris Colab S90');
+insert into public.brands (id, slug, name, site_url) values
+  ('90000000-0000-4000-8000-000000009011', 's90-marca-alfa', 'Marca Alfa S90', 'https://alfa.s90.test'),
+  ('90000000-0000-4000-8000-000000009012', 's90-marca-beta', 'Marca Beta S90', 'https://beta.s90.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('90000000-0000-4000-8000-000000009001', '90000000-0000-4000-8000-000000009011'),
+  ('90000000-0000-4000-8000-000000009001', '90000000-0000-4000-8000-000000009012');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('90000000-0000-4000-8000-000000009011', '90000000-0000-4000-8000-000000000906', 'owner', 'Dora Diretora S90'),
+  ('90000000-0000-4000-8000-000000009011', '90000000-0000-4000-8000-000000000907', 'staff', 'Ari Analista S90'),
+  ('90000000-0000-4000-8000-000000009012', '90000000-0000-4000-8000-000000000908', 'owner', 'Bia Beta S90');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('90000000-0000-4000-8000-000000009021', '90000000-0000-4000-8000-000000009001', 'Creator Um S90', '90000000-0000-4000-8000-000000000904'),
+  ('90000000-0000-4000-8000-000000009022', '90000000-0000-4000-8000-000000009001', 'Creator Dois S90', '90000000-0000-4000-8000-000000000905');
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables) values
+  ('90000000-0000-4000-8000-000000009031', '90000000-0000-4000-8000-000000009001', '90000000-0000-4000-8000-000000009011', 'brand', 'Campanha Inverno S90', 'converted', now() - interval '60 days', '[]');
+insert into public.deals (id, agency_id, brand_id, title, stage, outcome, brand_visible, expected_start, expected_end, owner_id, contract_confirmed_at) values
+  ('90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009001', '90000000-0000-4000-8000-000000009011', 'Negócio Inverno S90', 'production', null, true,
+   current_date - 40, current_date + 10, '90000000-0000-4000-8000-000000000902', now() - interval '40 days');
+update public.deals set request_id = '90000000-0000-4000-8000-000000009031' where id = '90000000-0000-4000-8000-000000009041';
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('90000000-0000-4000-8000-000000009051', '90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009021', 'contracted', now() - interval '50 days', true),
+  ('90000000-0000-4000-8000-000000009052', '90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009022', 'contracted', now() - interval '50 days', true);
+-- termos aceitos: redes sociais por 1 mês; publicação 1 mês antes de (hoje + 5) → vence em 2 a 5 dias (faixa 7)
+insert into public.deal_terms (deal_id, version, status, summary, sent_at, usage_channels, usage_months, boost_allowed) values
+  ('90000000-0000-4000-8000-000000009041', 1, 'accepted', 'Termos S90', now() - interval '45 days', '{social}', 1, true);
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, network, title, status, due_at, publish_at, published_url, published_at) values
+  ('90000000-0000-4000-8000-000000009061', '90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009051', 'video', 'youtube', 'Vídeo Um S90', 'published',
+   now() - interval '35 days', now() - interval '30 days', 'https://www.youtube.com/watch?v=abcdefghijk',
+   (((current_date + 5) - interval '1 month')::date + time '12:00') at time zone 'America/Sao_Paulo'),
+  ('90000000-0000-4000-8000-000000009062', '90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009052', 'reels', 'instagram', 'Reels Dois S90', 'approved',
+   now() - interval '3 days', now() + interval '3 days', null, null);
+insert into public.deliverable_versions (id, deal_id, deliverable_id, deal_talent_id, talent_id, revision, kind, url, submitted_side) values
+  ('90000000-0000-4000-8000-000000009071', '90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009061', '90000000-0000-4000-8000-000000009051',
+   '90000000-0000-4000-8000-000000009021', 1, 'submission', 'https://vimeo.com/123456', 'talent');
+create temp table t_s90 (k text primary key, v text);
+grant all on t_s90 to anon, authenticated, service_role;
+
+select tests.ok('S90 estrutura: tabelas com RLS, nada para visitante, sem escrita direta, clique só service role e sem security definer',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.deliverable_metrics'::regclass, 'public.campaign_tracking_links'::regclass,
+     'public.campaign_sales'::regclass, 'public.campaign_music_tracks'::regclass, 'public.deliverable_comments'::regclass))
+  and not has_table_privilege('anon', 'public.campaign_tracking_links', 'select') and not has_table_privilege('anon', 'public.deliverable_metrics', 'select')
+  and not has_table_privilege('authenticated', 'public.deliverable_metrics', 'insert') and not has_table_privilege('authenticated', 'public.campaign_tracking_links', 'update')
+  and not has_table_privilege('authenticated', 'public.campaign_sales', 'insert') and not has_table_privilege('authenticated', 'public.deliverable_comments', 'insert')
+  and not has_function_privilege('anon', 'public.tracking_link_click(text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.tracking_link_click(text)', 'execute')
+  and has_function_privilege('service_role', 'public.tracking_link_click(text)', 'execute')
+  and not (select prosecdef from pg_proc where oid = 'public.tracking_link_click(text)'::regprocedure)
+  and not has_function_privilege('authenticated', 'public.usage_rights_expiry_scan()', 'execute')
+  and not has_function_privilege('authenticated', 'public.deliverable_usage(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.brand_library(uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.deliverable_metrics_record(uuid, date, jsonb)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+                  and p.proname in ('deliverable_usage', 'brand_library', 'usage_rights_expiry_scan', 'deliverable_metrics_record', 'agency_tracking_link_save',
+                                    'tracking_link_click', 'brand_sales_record', 'brand_sales_delete', 'agency_music_save', 'agency_music_delete',
+                                    'deliverable_comment_add', 'deliverable_comment_delete')
+                  and p.proconfig is null)
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace
+       and p.proname in ('brand_library', 'deliverable_metrics_record', 'agency_tracking_link_save', 'tracking_link_click', 'brand_sales_record', 'deliverable_comment_add')) = 6);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S90 visitante não lê links', $q$select count(*) from public.campaign_tracking_links$q$, 'permission denied');
+select tests.expect_error('S90 visitante não lê vendas', $q$select count(*) from public.campaign_sales$q$, 'permission denied');
+select tests.expect_error('S90 visitante não lê a biblioteca', $q$select public.brand_library('90000000-0000-4000-8000-000000009011')$q$, 'permission denied');
+select tests.expect_error('S90 visitante não registra clique direto', $q$select public.tracking_link_click('abcdef12')$q$, 'permission denied');
+
+-- diretor: biblioteca com vencimento
+select tests.login('90000000-0000-4000-8000-000000000906', 's90-diretor@test.local');
+insert into t_s90 values ('lib', public.brand_library('90000000-0000-4000-8000-000000009011')::text);
+select tests.ok('S90 biblioteca: aprovado e publicado, com influenciador, campanha e direitos dos termos',
+  jsonb_array_length((select v::jsonb from t_s90 where k = 'lib') -> 'items') = 2
+  and ((select v::jsonb from t_s90 where k = 'lib') -> 'items' -> 0) @> '{"title": "Vídeo Um S90", "talent_name": "Creator Um S90", "campaign": "Campanha Inverno S90", "published": true, "url": "https://www.youtube.com/watch?v=abcdefghijk"}'
+  and ((select v::jsonb from t_s90 where k = 'lib') -> 'items' -> 0 -> 'rights') @> '{"channels": ["social"], "usage_months": 1, "boost": true}'
+  and ((select v::jsonb from t_s90 where k = 'lib') -> 'items' -> 0 ->> 'days_left')::int between 2 and 5);
+select tests.ok('S90 biblioteca: sem publicação o prazo ainda não começou',
+  ((select v::jsonb from t_s90 where k = 'lib') -> 'items' -> 1) @> '{"title": "Reels Dois S90", "status": "approved", "published": false, "expires_on": null, "days_left": null}');
+select tests.ok('S90 marca lê o entregável mas não grava métricas', (select count(*) from public.deliverable_metrics) = 0);
+select tests.expect_error('S90 marca não informa métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": 10}')$q$, 'not_found');
+
+-- aviso de vencimento pelo cron (service role)
+select tests.su();
+insert into t_s90 values ('scan1', public.usage_rights_expiry_scan()::text);
+insert into t_s90 values ('scan2', public.usage_rights_expiry_scan()::text);
+select tests.ok('S90 cron avisa diretor e analista (faixa 7) e não repete',
+  (select v::int from t_s90 where k = 'scan1') >= 2
+  and (select count(*) from public.inbox_notifications where kind = 'usage_rights_expiring' and entity_id = '90000000-0000-4000-8000-000000009061') = 2
+  and exists (select 1 from public.inbox_notifications where kind = 'usage_rights_expiring' and user_id = '90000000-0000-4000-8000-000000000906'
+              and link = '/marca/biblioteca' and params @> '{"deal": "Campanha Inverno S90", "talent": "Creator Um S90", "status": "soon"}'
+              and (params ->> 'step')::int between 2 and 5 and dedupe_key like 'rights:%:7:%')
+  and exists (select 1 from public.inbox_notifications where kind = 'usage_rights_expiring' and user_id = '90000000-0000-4000-8000-000000000907')
+  and not exists (select 1 from public.inbox_notifications where kind = 'usage_rights_expiring' and user_id::text like '90000000-0000-4000-8000-00000000090_' and user_id not in ('90000000-0000-4000-8000-000000000906', '90000000-0000-4000-8000-000000000907')));
+
+-- outra marca e usuário comum
+select tests.login('90000000-0000-4000-8000-000000000908', 's90-outra-marca@test.local');
+select tests.expect_error('S90 outra marca não lê a biblioteca da Alfa', $q$select public.brand_library('90000000-0000-4000-8000-000000009011')$q$, 'not_found');
+select tests.ok('S90 biblioteca da outra marca vem vazia', jsonb_array_length(public.brand_library('90000000-0000-4000-8000-000000009012') -> 'items') = 0);
+select tests.login('90000000-0000-4000-8000-000000000909', 's90-comum@test.local');
+select tests.expect_error('S90 usuário comum não lê biblioteca', $q$select public.brand_library('90000000-0000-4000-8000-000000009011')$q$, 'not_found');
+
+-- creator 1: métricas do próprio entregável publicado
+select tests.login('90000000-0000-4000-8000-000000000904', 's90-creator-1@test.local');
+select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date - 1, '{"views": 1000, "likes": 80, "reach": 900}');
+select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date - 1, '{"views": 1200, "likes": "90", "comments": null}');
+select tests.ok('S90 creator informa métricas; o mesmo dia substitui',
+  (select count(*) from public.deliverable_metrics) = 1
+  and (select views = 1200 and likes = 90 and reach is null and entered_side = 'talent' and source = 'manual' from public.deliverable_metrics));
+select tests.expect_error('S90 data futura recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date + 1, '{"views": 1}')$q$, 'invalid_date');
+select tests.expect_error('S90 data antes da publicação recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date - 60, '{"views": 1}')$q$, 'invalid_date');
+select tests.expect_error('S90 métrica desconhecida recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"followers": 1}')$q$, 'invalid_input');
+select tests.expect_error('S90 número negativo recusado', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": -5}')$q$, 'invalid_input');
+select tests.expect_error('S90 sem nenhum número recusado', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": null}')$q$, 'invalid_input');
+select tests.expect_error('S90 creator não informa métricas do outro', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009062', current_date, '{"views": 1}')$q$, 'not_found');
+select tests.login('90000000-0000-4000-8000-000000000905', 's90-creator-2@test.local');
+select tests.expect_error('S90 entregável não publicado não recebe métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009062', current_date, '{"views": 1}')$q$, 'invalid_state');
+select tests.ok('S90 creator 2 não lê as métricas do creator 1', (select count(*) from public.deliverable_metrics) = 0);
+
+-- agência: colaborador fora do negócio e gestor
+select tests.login('90000000-0000-4000-8000-000000000903', 's90-colab@test.local');
+select tests.expect_error('S90 colaborador fora do negócio não informa métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": 1}')$q$, 'forbidden');
+select tests.expect_error('S90 colaborador fora do negócio não cria link', $q$select public.agency_tracking_link_save('90000000-0000-4000-8000-000000009051', null, 'X')$q$, 'forbidden');
+select tests.login('90000000-0000-4000-8000-000000000902', 's90-gestor@test.local');
+select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": 1500, "shares": 12}');
+select tests.ok('S90 gestor informa métricas de outro dia (histórico)', (select count(*) from public.deliverable_metrics) = 2
+  and exists (select 1 from public.deliverable_metrics where measured_on = current_date and entered_side = 'agency'));
+insert into t_s90 values ('l1', public.agency_tracking_link_save('90000000-0000-4000-8000-000000009051', null, ' alfa10 ')::text);
+select tests.ok('S90 link criado com o site da marca, código curto e cupom em maiúsculas',
+  exists (select 1 from public.campaign_tracking_links where id = (select v::uuid from t_s90 where k = 'l1')
+          and destination_url = 'https://alfa.s90.test' and coupon = 'ALFA10' and code ~ '^[a-z0-9]{8}$' and clicks = 0));
+select tests.expect_error('S90 cupom repetido no negócio', $q$select public.agency_tracking_link_save('90000000-0000-4000-8000-000000009052', 'https://alfa.s90.test/promo', 'Alfa10')$q$, 'coupon_taken');
+select tests.expect_error('S90 destino sem https recusado', $q$select public.agency_tracking_link_save('90000000-0000-4000-8000-000000009052', 'http://alfa.s90.test', 'DOIS')$q$, 'invalid_url');
+select tests.expect_error('S90 cupom com espaço recusado', $q$select public.agency_tracking_link_save('90000000-0000-4000-8000-000000009052', null, 'DOIS 5')$q$, 'invalid_input');
+insert into t_s90 values ('l2', public.agency_tracking_link_save('90000000-0000-4000-8000-000000009052', 'https://alfa.s90.test/promo?utm_source=s90', 'DOIS5')::text);
+select public.agency_tracking_link_save('90000000-0000-4000-8000-000000009052', 'https://alfa.s90.test/promo2', 'DOIS5');
+select tests.ok('S90 editar mantém o código e troca o destino',
+  (select count(*) from public.campaign_tracking_links where deal_id = '90000000-0000-4000-8000-000000009041') = 2
+  and (select destination_url from public.campaign_tracking_links where id = (select v::uuid from t_s90 where k = 'l2')) = 'https://alfa.s90.test/promo2');
+insert into t_s90 values ('code1', (select code from public.campaign_tracking_links where id = (select v::uuid from t_s90 where k = 'l1')));
+-- músicas
+insert into t_s90 values ('m1', public.agency_music_save(null, '90000000-0000-4000-8000-000000009041',
+  '{"title": "Trilha Inverno", "artist": "Banda S90", "source": "Licença Epidemic #123", "url": "https://music.s90.test/t1", "networks": ["instagram", "tiktok"], "valid_until": "2099-12-31"}')::text);
+select tests.expect_error('S90 música sem título recusada', $q$select public.agency_music_save(null, '90000000-0000-4000-8000-000000009041', '{"title": " "}')$q$, 'invalid_input');
+select tests.expect_error('S90 música com link http recusada', $q$select public.agency_music_save(null, '90000000-0000-4000-8000-000000009041', '{"title": "X", "url": "http://x.test"}')$q$, 'invalid_url');
+select tests.expect_error('S90 rede desconhecida recusada', $q$select public.agency_music_save(null, '90000000-0000-4000-8000-000000009041', '{"title": "X", "networks": ["orkut"]}')$q$, 'invalid_input');
+select tests.ok('S90 gestor não lê vendas (receita é do Adm)', (select count(*) from public.campaign_sales) = 0);
+
+-- clique: só o servidor (service role)
+select tests.login('90000000-0000-4000-8000-000000000904', 's90-creator-1@test.local');
+select tests.expect_error('S90 usuário logado não registra clique', $q$select public.tracking_link_click('abcdef12')$q$, 'permission denied');
+select tests.su();
+insert into t_s90 values ('click1', public.tracking_link_click(upper((select v from t_s90 where k = 'code1'))));
+insert into t_s90 values ('click2', public.tracking_link_click((select v from t_s90 where k = 'code1')));
+insert into t_s90 values ('click3', coalesce(public.tracking_link_click('zzzzzz99'), 'none'));
+select tests.ok('S90 clique pelo servidor conta e devolve o destino https; código desconhecido não',
+  (select v from t_s90 where k = 'click1') = 'https://alfa.s90.test' and (select v from t_s90 where k = 'click2') = 'https://alfa.s90.test'
+  and (select v from t_s90 where k = 'click3') = 'none'
+  and (select clicks = 2 and last_click_at is not null from public.campaign_tracking_links where id = (select v::uuid from t_s90 where k = 'l1')));
+insert into t_s90 values ('v1', '90000000-0000-4000-8000-000000009071');
+
+-- creators: o próprio link e as músicas
+select tests.login('90000000-0000-4000-8000-000000000904', 's90-creator-1@test.local');
+select tests.ok('S90 creator lê só o próprio link (com cliques) e as músicas liberadas',
+  (select count(*) from public.campaign_tracking_links) = 1 and (select clicks from public.campaign_tracking_links) = 2
+  and (select count(*) from public.campaign_music_tracks) = 1 and (select networks from public.campaign_music_tracks) = '{instagram,tiktok}');
+select tests.expect_error('S90 creator não cria link', $q$select public.agency_tracking_link_save('90000000-0000-4000-8000-000000009051', null, 'Y')$q$, 'not_found');
+select tests.expect_error('S90 creator não cadastra música', $q$select public.agency_music_save(null, '90000000-0000-4000-8000-000000009041', '{"title": "X"}')$q$, 'not_found');
+select tests.ok('S90 creator não lê vendas', (select count(*) from public.campaign_sales) = 0);
+
+-- marca: vendas por cupom
+select tests.login('90000000-0000-4000-8000-000000000907', 's90-analista@test.local');
+select tests.ok('S90 analista lê os dois links e as métricas', (select count(*) from public.campaign_tracking_links) = 2 and (select count(*) from public.deliverable_metrics) = 2);
+insert into t_s90 values ('s1', public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 12, 359880, current_date - 1, 'Semana 1')::text);
+select tests.expect_error('S90 venda zerada recusada', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 0, 0, current_date, null)$q$, 'invalid_input');
+select tests.expect_error('S90 venda com data futura recusada', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 1, 100, current_date + 2, null)$q$, 'invalid_date');
+select tests.login('90000000-0000-4000-8000-000000000906', 's90-diretor@test.local');
+insert into t_s90 values ('s2', public.brand_sales_record((select v::uuid from t_s90 where k = 'l2'), 3, 89970, current_date, null)::text);
+select tests.ok('S90 diretor lê as vendas com cupom', (select count(*) from public.campaign_sales) = 2
+  and (select coupon from public.campaign_sales where id = (select v::uuid from t_s90 where k = 's1')) = 'ALFA10'
+  and (select sum(revenue_cents) from public.campaign_sales) = 449850);
+select tests.login('90000000-0000-4000-8000-000000000907', 's90-analista@test.local');
+select tests.expect_error('S90 analista não apaga a venda do diretor', $q$select public.brand_sales_delete((select v::uuid from t_s90 where k = 's2'))$q$, 'forbidden');
+select tests.login('90000000-0000-4000-8000-000000000908', 's90-outra-marca@test.local');
+select tests.expect_error('S90 outra marca não informa venda', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 1, 100, current_date, null)$q$, 'not_found');
+select tests.ok('S90 outra marca não lê links, vendas, métricas, músicas nem comentários',
+  (select count(*) from public.campaign_tracking_links) = 0 and (select count(*) from public.campaign_sales) = 0
+  and (select count(*) from public.deliverable_metrics) = 0 and (select count(*) from public.campaign_music_tracks) = 0
+  and (select count(*) from public.deliverable_comments) = 0);
+select tests.login('90000000-0000-4000-8000-000000000901', 's90-adm@test.local');
+select tests.ok('S90 Adm da agência lê as vendas', (select count(*) from public.campaign_sales) = 2);
+select tests.login('90000000-0000-4000-8000-000000000906', 's90-diretor@test.local');
+select public.brand_sales_delete((select v::uuid from t_s90 where k = 's1'));
+select tests.ok('S90 diretor apaga a venda da equipe', (select count(*) from public.campaign_sales) = 1);
+select tests.ok('S90 marca lê as músicas da campanha', (select count(*) from public.campaign_music_tracks) = 1);
+
+-- comentários no segundo
+insert into t_s90 values ('c1', public.deliverable_comment_add((select v::uuid from t_s90 where k = 'v1'), 'Aos 1:15 tire o logo do concorrente', 75)::text);
+select tests.expect_error('S90 comentário vazio recusado', $q$select public.deliverable_comment_add((select v::uuid from t_s90 where k = 'v1'), '  ', null)$q$, 'invalid_input');
+select tests.expect_error('S90 tempo negativo recusado', $q$select public.deliverable_comment_add((select v::uuid from t_s90 where k = 'v1'), 'Ok', -1)$q$, 'invalid_input');
+select tests.login('90000000-0000-4000-8000-000000000902', 's90-gestor@test.local');
+insert into t_s90 values ('c2', public.deliverable_comment_add((select v::uuid from t_s90 where k = 'v1'), 'Combinado, ajusto com o creator', null)::text);
+select tests.login('90000000-0000-4000-8000-000000000904', 's90-creator-1@test.local');
+select tests.ok('S90 creator lê os comentários (com o segundo e quem escreveu) e recebe aviso',
+  (select count(*) from public.deliverable_comments) = 2
+  and exists (select 1 from public.deliverable_comments where at_seconds = 75 and author_side = 'brand' and author_label = 'Dora Diretora S90')
+  and (select count(*) from public.inbox_notifications where kind = 'deliverable_comment' and link = '/creator/escritorio/oportunidades/90000000-0000-4000-8000-000000009051') = 2);
+select tests.expect_error('S90 creator não comenta', $q$select public.deliverable_comment_add((select v::uuid from t_s90 where k = 'v1'), 'Oi', null)$q$, 'not_found');
+select tests.login('90000000-0000-4000-8000-000000000905', 's90-creator-2@test.local');
+select tests.ok('S90 creator 2 não lê comentários do outro', (select count(*) from public.deliverable_comments) = 0);
+select tests.login('90000000-0000-4000-8000-000000000902', 's90-gestor@test.local');
+select tests.ok('S90 responsável do negócio é avisado do comentário da marca',
+  exists (select 1 from public.inbox_notifications where kind = 'deliverable_comment' and link = '/agencia/negocios/90000000-0000-4000-8000-000000009041/entregas'));
+select tests.expect_error('S90 só quem escreveu apaga', $q$select public.deliverable_comment_delete((select v::uuid from t_s90 where k = 'c1'))$q$, 'not_found');
+select public.deliverable_comment_delete((select v::uuid from t_s90 where k = 'c2'));
+select public.agency_music_delete((select v::uuid from t_s90 where k = 'm1'));
+select tests.ok('S90 gestor apaga o próprio comentário e a música', (select count(*) from public.deliverable_comments) = 1 and (select count(*) from public.campaign_music_tracks) = 0);
+
+select tests.su();
+delete from public.campaign_sales where agency_id = '90000000-0000-4000-8000-000000009001';
+delete from public.deals where agency_id = '90000000-0000-4000-8000-000000009001';
+delete from public.campaign_requests where brand_id in ('90000000-0000-4000-8000-000000009011', '90000000-0000-4000-8000-000000009012');
+delete from public.talent_profiles where id::text like '90000000-%';
+delete from public.brand_members where brand_id in ('90000000-0000-4000-8000-000000009011', '90000000-0000-4000-8000-000000009012');
+delete from public.agency_brands where agency_id = '90000000-0000-4000-8000-000000009001';
+delete from public.brands where id in ('90000000-0000-4000-8000-000000009011', '90000000-0000-4000-8000-000000009012');
+delete from public.inbox_notifications where user_id::text like '90000000-0000-4000-8000-00000000090%';
+delete from public.agency_members where agency_id = '90000000-0000-4000-8000-000000009001';
+delete from public.agencies where id = '90000000-0000-4000-8000-000000009001';
+delete from auth.users where id::text like '90000000-0000-4000-8000-00000000090%';
+drop table t_s90;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

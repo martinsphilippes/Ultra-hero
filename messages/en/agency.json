@@ -310,7 +310,8 @@
     "awaiting_approval": "This draft is waiting for the director. Withdraw the request to edit.",
     "already_rated": "This deliverable was already rated.",
     "invoice_open": "There is already a sent or approved invoice for this payment.",
-    "invalid_date": "Pick a date from today up to one year ahead."
+    "invalid_date": "Pick a date from today up to one year ahead.",
+    "coupon_taken": "This coupon already belongs to another creator in this campaign."
   },
   "casting": {
     "title": "Roster",

@@ -310,7 +310,8 @@
     "awaiting_approval": "Este rascunho espera o diretor. Retire o pedido para editar.",
     "already_rated": "Esta entrega já foi avaliada.",
     "invoice_open": "Já existe uma nota enviada ou aprovada para este pagamento.",
-    "invalid_date": "Escolha uma data de hoje até um ano à frente."
+    "invalid_date": "Escolha uma data de hoje até um ano à frente.",
+    "coupon_taken": "Esse cupom já é de outro influenciador nesta campanha."
   },
   "casting": {
     "title": "Casting",

@@ -90,6 +90,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     // Ações por etapa (0078): cada entregável de cada creator, de Enviada a Publicada
     { key: "board", href: "/marca/acoes" },
     { key: "campaigns", href: "/marca/campanhas" },
+    // Biblioteca (0083): conteúdos aprovados/publicados, direitos de uso e vencimento
+    { key: "library", href: "/marca/biblioteca" },
     { key: "catalog", href: "/marca/creators" },
     { key: "agenda", href: "/marca/agenda" },
     { key: "team", href: "/marca/equipe" },

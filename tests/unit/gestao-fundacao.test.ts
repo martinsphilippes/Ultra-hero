@@ -38,7 +38,7 @@ describe("hierarquia da agência", () => {
     expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings"]);
     expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
     expect(agencyNavKeys(null, true)).toContain("team");
-    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "catalog", "agenda", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "team", "notifications"]);
   });
 
   it("só o Adm convida a equipe, em qualquer nível", () => {
@@ -103,9 +103,9 @@ describe("erros das RPCs", () => {
 });
 
 describe("avisos", () => {
-  it("33 tipos, iguais ao check do banco (recriado na 0082 com verba, nota fiscal e pagamento)", () => {
-    expect(INBOX_KINDS).toHaveLength(33);
-    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0082_verba_ganhos_nota_fiscal.sql"), "utf8");
+  it("35 tipos, iguais ao check do banco (recriado na 0083 com vencimento do direito de uso e comentário no segundo)", () => {
+    expect(INBOX_KINDS).toHaveLength(35);
+    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0083_biblioteca_metricas_vendas.sql"), "utf8");
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(isInboxKind("member_joined")).toBe(true);
     expect(isInboxKind("auction_outbid")).toBe(false);

@@ -7,6 +7,8 @@ import { DeliverableStatusBadge, TalentStatusBadge } from "@/components/deals/St
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
 import { TaskList } from "@/components/execution/TaskList";
 import { TermsPanel } from "@/components/execution/TermsPanel";
+import { MusicPanel } from "@/components/media/MusicPanel";
+import { TrackingPanel } from "@/components/media/TrackingPanel";
 import { ConflictAlert } from "@/components/offer/ConflictAlert";
 import { CounterofferPanel } from "@/components/offer/CounterofferPanel";
 import { RightsView } from "@/components/offer/RightsView";
@@ -14,10 +16,13 @@ import { OpportunityRespond } from "@/components/talent/OpportunityRespond";
 import { Avatar, Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatDuration, formatPlainDate } from "@/i18n/format";
+import { getOrigin } from "@/lib/auth/origin";
 import { listMessages, listOpportunities, myFee } from "@/lib/deals/queries";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
+import { getDealMedia } from "@/lib/media/queries";
+import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { proposedDateRange } from "@/lib/offer/counteroffer";
 import { getTalentOfferState } from "@/lib/offer/queries";
 import { localDay } from "@/lib/today/logic";
@@ -44,14 +49,19 @@ export default async function OpportunityPage({ params }: Props) {
   const o = list.items[0];
   if (!o) notFound();
   const contracted = ["proposed", "contracted"].includes(o.status);
-  const [fee, messages, exec, tx, to, offerRes] = await Promise.all([
+  const [fee, messages, exec, tx, to, offerRes, media, tm, origin] = await Promise.all([
     myFee(o.id),
     listMessages(o.deal.id, "talent_agency", ctx.talent.id),
     contracted ? getDealExecution(o.deal.id) : Promise.resolve({ available: true, data: null }),
     getTranslations("talent.execution"),
     getTranslations("offer"),
     getTalentOfferState(o.id),
+    // 0083: métricas/comentários das entregas, o link/cupom dele e as músicas liberadas
+    contracted ? getDealMedia(o.deal.id) : Promise.resolve(null),
+    getTranslations("media"),
+    getOrigin(),
   ]);
+  const mediaData = media?.available ? media.data : null;
   const offer = offerRes.data;
   const execution = exec.available ? exec.data : null;
   const myTasks = (execution?.tasks ?? []).filter((x) => x.side === "talent" && x.talentId === ctx.talent.id);
@@ -69,6 +79,8 @@ export default async function OpportunityPage({ params }: Props) {
   const liveTerms = execution?.terms.find((x) => x.status === "sent" || x.status === "accepted") ?? null;
   const tz = offer?.timezone ?? "America/Sao_Paulo";
   const now = new Date();
+  const today = localDay(now, tz);
+  const myLink = mediaData?.links.find((l) => l.dealTalentId === o.id) ?? null;
   const range = proposedDateRange(now, tz);
   const plannedDeliverables = o.deliverables.filter((d) => ["planned", "in_production"].includes(d.status));
   const deliverableLabel = (d: (typeof o.deliverables)[number]) => [tc(`deliverableKinds.${d.kind}`), d.network ? tn(d.network) : null, d.title || null].filter(Boolean).join(" · ");
@@ -205,18 +217,42 @@ export default async function OpportunityPage({ params }: Props) {
                   {tx("tasksTitle")}
                 </h3>
                 <TaskList portal="office" tasks={myTasks} dealId={o.deal.id} dealTalentId={o.id} canEdit={!closed} emptyText={tx("tasksEmpty")} />
+                {mediaData && mediaData.music.length > 0 ? (
+                  <div className="flex flex-col gap-2 border-t border-border pt-3" data-testid="opportunity-music">
+                    <h4 className="text-sm font-semibold text-fg">{tm("music.talentTitle")}</h4>
+                    <p className="type-caption text-fg-muted">{tm("music.talentHint")}</p>
+                    <MusicPanel tracks={mediaData.music} canEdit={false} dealId={o.deal.id} today={today} />
+                  </div>
+                ) : null}
               </section>
               <section className={card} aria-labelledby="opp-execution" data-testid="opportunity-execution">
                 <h3 id="opp-execution" className="text-base font-semibold text-fg">
                   {tx("deliverablesTitle")}
                 </h3>
                 <p className="type-caption text-fg-muted">{tx("deliverablesHint")}</p>
-                <DeliverablesBoard portal="office" dealId={o.deal.id} dealTalentId={o.id} deliverables={myDeliverables} brief={execution.brief} canAct={!closed} emptyText={t("deliverablesNone")} />
+                <DeliverablesBoard
+                  portal="office"
+                  dealId={o.deal.id}
+                  dealTalentId={o.id}
+                  deliverables={myDeliverables}
+                  brief={execution.brief}
+                  canAct={!closed}
+                  emptyText={t("deliverablesNone")}
+                  media={mediaData ? { readings: mediaData.metrics, comments: mediaData.comments, youtubeConfigured: youTubeConfigured(), today } : null}
+                />
               </section>
             </>
           ) : null}
         </div>
         <div className="flex flex-col gap-5">
+          {myLink ? (
+            <section className={card} aria-labelledby="opp-link" data-testid="opportunity-link">
+              <h3 id="opp-link" className="text-base font-semibold text-fg">
+                {tm("links.talentTitle")}
+              </h3>
+              <TrackingPanel portal="office" origin={origin} dealId={o.deal.id} rows={[{ dealTalentId: o.id, talentName: "", link: myLink }]} today={today} />
+            </section>
+          ) : null}
           <section className={card} aria-labelledby="opp-messages">
             <h3 id="opp-messages" className="text-base font-semibold text-fg">
               {t("messagesTitle")}

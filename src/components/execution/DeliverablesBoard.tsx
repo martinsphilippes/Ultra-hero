@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { ChecklistFieldset, ChecklistRecord } from "@/components/brief/Checklist";
 import { DeliverableStatusBadge } from "@/components/deals/StatusBadges";
+import { DeliverableMedia, type DeliverableMediaData } from "@/components/media/DeliverableMedia";
 import { Badge, Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
@@ -26,13 +27,15 @@ type Props = {
   emptyText: string;
   /** Briefing estruturado (0080): dá os itens dos checklists do influenciador (enviar) e da marca (aprovar). */
   brief?: Brief;
+  /** Métricas e comentários no segundo (0083): leituras e comentários do negócio inteiro (filtrados por entregável aqui). */
+  media?: DeliverableMediaData | null;
 };
 
 type Mode = "submit" | "decide" | "publish" | "proof" | "close";
 
 // Entregas com versões: cada envio é uma versão nova (nunca herda aprovação); a marca aprova ou pede ajustes com
 // feedback; publicar registra a URL; comprovar fecha o ciclo; a agência conclui ou cancela. Sem valores.
-export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText, brief = EMPTY_BRIEF }: Props) {
+export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText, brief = EMPTY_BRIEF, media = null }: Props) {
   const t = useTranslations("commercial.deliverables");
   const tk = useTranslations("commercial.deliverableKinds");
   const tn = useTranslations("mediaKit.networks");
@@ -109,6 +112,17 @@ export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, del
                   </Button>
                 ) : null}
               </div>
+            ) : null}
+            {media ? (
+              <DeliverableMedia
+                portal={portal}
+                deliverable={d}
+                data={{ ...media, readings: media.readings.filter((r) => r.deliverableId === d.id), comments: media.comments.filter((c) => c.deliverableId === d.id) }}
+                dealId={dealId}
+                requestId={requestId}
+                dealTalentId={dealTalentId ?? d.dealTalentId}
+                canAct={canAct}
+              />
             ) : null}
           </article>
         );
