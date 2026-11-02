@@ -258,7 +258,8 @@ export default function App() {
       // iOS: a própria web aplica env(safe-area-inset-*) (viewport-fit=cover)
       contentInsetAdjustmentBehavior="never"
       automaticallyAdjustContentInsets={false}
-      decelerationRate="normal"
+      // Sem decelerationRate: no Android a lib repassa "normal" cru ao campo Double do componente
+      // nativo (Fabric) e o app fecha ao abrir (ClassCastException). No iOS "normal" já é o padrão.
       webviewDebuggingEnabled={__DEV__}
       originWhitelist={["https://*", "http://*", "about:*"]}
     />
