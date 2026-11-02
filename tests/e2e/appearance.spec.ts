@@ -25,7 +25,7 @@ test.describe("Aparência", () => {
   });
 
   test("troca os 5 templates na hora, sem recarregar, com o painel aberto e o ativo destacado; a escolha persiste", async ({ page, browser }) => {
-    await page.goto("/inicio");
+    await page.goto("/personalities");
     await page.waitForLoadState("networkidle");
     await expect(html(page)).toHaveAttribute("data-template", "original");
     expect(await bodyBg(page)).toBe(LIGHT_BG.original);
@@ -108,9 +108,9 @@ test.describe("Aparência", () => {
     await search.fill("mobilidade");
     await page.evaluate(() => ((window as unknown as { __uhMarker: number }).__uhMarker = 7));
 
-    // escolhe na Início, em outra aba do mesmo aparelho; a aba do Explorar acompanha sem recarregar
+    // escolhe na aba Hero, em outra aba do mesmo aparelho; a aba do Explorar acompanha sem recarregar
     const home = await page.context().newPage();
-    await home.goto("/inicio");
+    await home.goto("/personalities");
     await home.getByTestId("appearance-button").click();
     await home.getByTestId("appearance-option-performance").click();
     await expect(html(home)).toHaveAttribute("data-template", "performance");

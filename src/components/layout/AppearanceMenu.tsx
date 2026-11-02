@@ -11,7 +11,7 @@ import { BRAND_ORANGE, LOGO_A_PATH, MARK_VIEWBOX } from "@/components/layout/bra
 import { applyTemplate, currentTemplate, templates, type Template } from "@/lib/theme/template";
 import { cn } from "@/lib/utils";
 
-// Botão "Aparência" (só na Início) + painel com os 5 templates visuais. Trocar só muda o atributo
+// Botão "Aparência" (só na aba Hero, /personalities; pedido do responsável) + painel com os 5 templates visuais. Trocar só muda o atributo
 // data-template do <html>: nada recarrega nem remonta, então tela, formulários e rolagem ficam como estão.
 export function AppearanceMenu() {
   const pathname = usePathname();
@@ -24,7 +24,7 @@ export function AppearanceMenu() {
   // O painel vai para o <body>: dentro do cabeçalho herdaria as cores da barra (ex.: bloco escuro do Urban).
   useEffect(() => setMounted(true), []);
 
-  if (pathname !== "/inicio") return null;
+  if (pathname !== "/personalities") return null;
 
   const openPanel = () => {
     // Lê o que está de fato aplicado (o script inicial pode ter usado o localStorage).
