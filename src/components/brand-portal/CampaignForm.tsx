@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
+import { BriefFields } from "@/components/brief/BriefFields";
 import { Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { briefValid, draftToBrief, EMPTY_BRIEF_DRAFT, type BriefDraft } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
 import { DELIVERABLE_KINDS, FORMATS, OBJECTIVES } from "@/lib/deals/vocab";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 
-export type CampaignFormValues = Omit<BrandRequestInput, "budgetMaxCents"> & { budgetText: string };
+export type CampaignFormValues = Omit<BrandRequestInput, "budgetMaxCents" | "brief"> & { budgetText: string; briefDraft: BriefDraft };
 
 export const EMPTY_CAMPAIGN: CampaignFormValues = {
   id: null,
@@ -33,6 +35,7 @@ export const EMPTY_CAMPAIGN: CampaignFormValues = {
   notes: "",
   budgetText: "",
   budgetNote: "",
+  briefDraft: EMPTY_BRIEF_DRAFT,
 };
 
 type Props = { initial: CampaignFormValues; creatorName: string | null; canEdit: boolean };
@@ -44,6 +47,7 @@ export function CampaignForm({ initial, creatorName, canEdit }: Props) {
   const t = useTranslations("brandPortal.campaigns.form");
   const tc = useTranslations("commercial");
   const tn = useTranslations("mediaKit.networks");
+  const tb = useTranslations("brief");
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
@@ -60,9 +64,15 @@ export function CampaignForm({ initial, creatorName, canEdit }: Props) {
       setError(t("budgetInvalid"));
       return null;
     }
+    const brief = draftToBrief(v.briefDraft);
+    if (!briefValid(brief)) {
+      setError(t("briefInvalid"));
+      return null;
+    }
     const rest: Partial<CampaignFormValues> = { ...v };
     delete rest.budgetText;
-    return { ...(rest as Omit<CampaignFormValues, "budgetText">), budgetMaxCents: cents };
+    delete rest.briefDraft;
+    return { ...(rest as Omit<CampaignFormValues, "budgetText" | "briefDraft">), budgetMaxCents: cents, brief };
   }
 
   const complete = v.title.trim().length >= 3 && v.objective !== "" && v.periodStart !== "" && v.networks.length > 0 && v.deliverables.length > 0;
@@ -253,6 +263,14 @@ export function CampaignForm({ initial, creatorName, canEdit }: Props) {
             </Button>
           ) : null}
         </div>
+      </section>
+
+      <section className={block} aria-labelledby="cf-brief">
+        <h2 id="cf-brief" className="text-base font-semibold text-fg">
+          {tb("title")}
+        </h2>
+        <p className="type-caption text-fg-muted">{tb("hint")}</p>
+        <BriefFields value={v.briefDraft} onChange={(next) => set("briefDraft", next)} disabled={disabled} />
       </section>
 
       <section className={block} aria-labelledby="cf-budget">

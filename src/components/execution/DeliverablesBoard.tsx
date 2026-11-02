@@ -3,10 +3,12 @@
 import { ExternalLink, Send, ThumbsDown, ThumbsUp, Upload } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
+import { ChecklistFieldset, ChecklistRecord } from "@/components/brief/Checklist";
 import { DeliverableStatusBadge } from "@/components/deals/StatusBadges";
 import { Badge, Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
+import { checkedKeys, checkItems, EMPTY_BRIEF, missingChecks, type Brief } from "@/lib/brief/brief";
 import { closeDeliverableAction, decideDeliverableAction, proofDeliverableAction, publishDeliverableAction, submitDeliverableAction } from "@/lib/execution/actions";
 import type { ExecDeliverable } from "@/lib/execution/queries";
 import { deliverableNextAction } from "@/lib/execution/vocab";
@@ -22,13 +24,15 @@ type Props = {
   /** Documentos do negócio que podem ser anexados (envio/comprovação) em vez de um link. */
   documents?: { id: string; title: string }[];
   emptyText: string;
+  /** Briefing estruturado (0080): dá os itens dos checklists do influenciador (enviar) e da marca (aprovar). */
+  brief?: Brief;
 };
 
 type Mode = "submit" | "decide" | "publish" | "proof" | "close";
 
 // Entregas com versões: cada envio é uma versão nova (nunca herda aprovação); a marca aprova ou pede ajustes com
 // feedback; publicar registra a URL; comprovar fecha o ciclo; a agência conclui ou cancela. Sem valores.
-export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText }: Props) {
+export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText, brief = EMPTY_BRIEF }: Props) {
   const t = useTranslations("commercial.deliverables");
   const tk = useTranslations("commercial.deliverableKinds");
   const tn = useTranslations("mediaKit.networks");
@@ -82,12 +86,14 @@ export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, del
                       {v.documentId ? ` · ${t("withDocument")}` : ""}
                     </span>
                     {v.note ? <span>“{v.note}”</span> : null}
+                    {v.talentChecklist && v.talentChecklist.length > 0 ? <ChecklistRecord side="talent" keys={v.talentChecklist} /> : null}
                     {v.decision ? (
                       <span className={v.decision === "approved" ? "text-success" : "text-warning"}>
                         {t(`decision.${v.decision}`)} · {v.decidedAt ? formatDateTime(v.decidedAt, locale) : ""} · {t(`decidedBy.${v.decidedSide ?? "brand"}`)}
                         {v.feedback ? ` — “${v.feedback}”` : ""}
                       </span>
                     ) : null}
+                    {v.brandChecklist && v.brandChecklist.length > 0 ? <ChecklistRecord side="brand" keys={v.brandChecklist} /> : null}
                   </li>
                 ))}
               </ol>
@@ -107,12 +113,12 @@ export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, del
           </article>
         );
       })}
-      {dialog ? <ActionDialog portal={portal} mode={dialog.mode} item={dialog.item} dealId={dealId} requestId={requestId} dealTalentId={dealTalentId} documents={documents} onClose={() => setDialog(null)} /> : null}
+      {dialog ? <ActionDialog portal={portal} mode={dialog.mode} item={dialog.item} dealId={dealId} requestId={requestId} dealTalentId={dealTalentId} documents={documents} brief={brief} onClose={() => setDialog(null)} /> : null}
     </div>
   );
 }
 
-function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, documents, onClose }: { portal: Portal; mode: Mode; item: ExecDeliverable; dealId: string; requestId?: string | null; dealTalentId?: string | null; documents: { id: string; title: string }[]; onClose: () => void }) {
+function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, documents, brief, onClose }: { portal: Portal; mode: Mode; item: ExecDeliverable; dealId: string; requestId?: string | null; dealTalentId?: string | null; documents: { id: string; title: string }[]; brief: Brief; onClose: () => void }) {
   const t = useTranslations("commercial.deliverables");
   const { toast } = useToast();
   const [url, setUrl] = useState("");
@@ -122,6 +128,19 @@ function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, doc
   const [pending, start] = useTransition();
   const ref = { deliverableId: item.id, dealId, requestId, dealTalentId };
   const actPortal = portal === "office" ? "office" : "agency";
+  // checklist (0080): o influenciador ao enviar; a marca ao decidir (aprovar exige todos)
+  const checkSide = mode === "submit" && portal === "office" ? "talent" : mode === "decide" && portal === "brand" ? "brand" : null;
+  const items = checkSide ? checkItems(brief, checkSide) : [];
+  const [checked, setChecked] = useState<Set<string>>(() => new Set());
+  const allChecked = missingChecks(items, checked).length === 0;
+  const toggle = (key: string, on: boolean) =>
+    setChecked((cur) => {
+      const next = new Set(cur);
+      if (on) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  const tb = useTranslations("brief.checklist");
 
   function run(decision?: "approved" | "changes_requested" | "done" | "cancelled") {
     setError(null);
@@ -132,12 +151,15 @@ function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, doc
     if (mode === "decide" && decision === "changes_requested" && note.trim().length < 5) return setError(t("feedbackRequired"));
     if (mode === "decide" && portal === "agency" && note.trim().length < 5) return setError(t("feedbackRequired"));
     if (mode === "close" && decision === "cancelled" && note.trim().length < 5) return setError(t("feedbackRequired"));
+    if (checkSide === "talent" && !allChecked) return setError(tb("missing", { count: missingChecks(items, checked).length }));
+    if (checkSide === "brand" && decision === "approved" && !allChecked) return setError(tb("missing", { count: missingChecks(items, checked).length }));
+    const checks = checkSide ? checkedKeys(items, checked) : undefined;
     start(async () => {
       let result;
-      if (mode === "submit") result = await submitDeliverableAction(actPortal, { ...ref, url: u, documentId, note: note.trim() });
+      if (mode === "submit") result = await submitDeliverableAction(actPortal, { ...ref, url: u, documentId, note: note.trim(), checks });
       else if (mode === "proof") result = await proofDeliverableAction(actPortal, { ...ref, url: u, documentId, note: "" });
       else if (mode === "publish") result = await publishDeliverableAction(actPortal, { ...ref, url: u });
-      else if (mode === "decide") result = await decideDeliverableAction(portal === "brand" ? "brand" : "agency", { ...ref, decision: decision === "changes_requested" ? "changes_requested" : "approved", feedback: note.trim() });
+      else if (mode === "decide") result = await decideDeliverableAction(portal === "brand" ? "brand" : "agency", { ...ref, decision: decision === "changes_requested" ? "changes_requested" : "approved", feedback: note.trim(), checks });
       else result = await closeDeliverableAction({ ...ref, status: decision === "cancelled" ? "cancelled" : "done", note: note.trim() });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
@@ -179,6 +201,7 @@ function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, doc
             </Select>
           </FormField>
         ) : null}
+        {checkSide && items.length > 0 ? <ChecklistFieldset side={checkSide} items={items} checked={checked} onToggle={toggle} disabled={pending} /> : null}
         {mode !== "publish" && mode !== "proof" ? (
           <FormField label={mode === "submit" ? t("note") : t("feedbackLabel")} hint={mode === "decide" ? t("feedbackHint") : undefined}>
             <Textarea value={note} maxLength={1000} rows={3} onChange={(e) => setNote(e.target.value)} disabled={pending} />
@@ -198,7 +221,7 @@ function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, doc
               <Button type="button" variant="secondary" leadingIcon={<ThumbsDown />} onClick={() => run("changes_requested")} disabled={pending}>
                 {t("requestChanges")}
               </Button>
-              <Button type="button" leadingIcon={<ThumbsUp />} onClick={() => run("approved")} loading={pending} data-testid="deliverable-approve">
+              <Button type="button" leadingIcon={<ThumbsUp />} onClick={() => run("approved")} loading={pending} disabled={checkSide === "brand" && !allChecked} data-testid="deliverable-approve">
                 {t("approve")}
               </Button>
             </>
@@ -214,7 +237,7 @@ function ActionDialog({ portal, mode, item, dealId, requestId, dealTalentId, doc
               ) : null}
             </>
           ) : (
-            <Button type="submit" loading={pending} data-testid="deliverable-send">
+            <Button type="submit" loading={pending} disabled={checkSide === "talent" && !allChecked} data-testid="deliverable-send">
               {t(`actions.${mode}`)}
             </Button>
           )}

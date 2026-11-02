@@ -58,8 +58,10 @@ export const taskSaveSchema = z.object({
 export type TaskSaveInput = z.input<typeof taskSaveSchema>;
 export const taskStatusSchema = z.object({ taskId: uuid, status: z.enum(TASK_STATUSES), url: optionalUrl, documentId: z.union([z.literal(""), uuid]) });
 export const taskDecideSchema = z.object({ taskId: uuid, decision: z.enum(["approve", "changes"]), feedback: z.string().trim().max(1000) });
-export const submitSchema = z.object({ deliverableId: uuid, url: optionalUrl, documentId: z.union([z.literal(""), uuid]), note: z.string().trim().max(1000) });
-export const decideSchema = z.object({ deliverableId: uuid, decision: z.enum(["approved", "changes_requested"]), feedback: z.string().trim().max(1000) });
+// checklists (0080): chaves dos itens marcados; o banco confere a lista do briefing
+const checksSchema = z.array(z.string().max(700)).max(80);
+export const submitSchema = z.object({ deliverableId: uuid, url: optionalUrl, documentId: z.union([z.literal(""), uuid]), note: z.string().trim().max(1000), checks: checksSchema.optional() });
+export const decideSchema = z.object({ deliverableId: uuid, decision: z.enum(["approved", "changes_requested"]), feedback: z.string().trim().max(1000), checks: checksSchema.optional() });
 export const publishSchema = z.object({ deliverableId: uuid, url: httpsUrl });
 export const closeSchema = z.object({ deliverableId: uuid, status: z.enum(["done", "cancelled"]), note: z.string().trim().max(500) });
 

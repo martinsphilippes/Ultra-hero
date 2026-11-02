@@ -3,6 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { EventForm } from "@/components/calendar/EventForm";
 import { EventList } from "@/components/calendar/EventList";
 import { ActivityForm, ConfirmCard, DealForm, MoveForm, TeamPicker } from "@/components/deals/DealForms";
+import { BriefView } from "@/components/brief/BriefView";
+import { DealBriefCard } from "@/components/brief/DealBriefCard";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { DealFinanceCard } from "@/components/finance/DealFinanceCard";
 import type { Locale } from "@/i18n/config";
@@ -23,13 +25,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { params: Promise<{ id: string }> };
 
-// Visão geral: briefing da marca (com o valor oferecido só para o Adm), dados do negócio, etapa,
+// Visão geral: briefing da marca (com o valor oferecido só para o Adm), briefing estruturado (0080; editável por
+// quem mexe no negócio), dados do negócio, etapa,
 // confirmação (Adm), equipe e linha do tempo de contatos.
 export default async function DealOverviewPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, isOwner, canEdit, isManager, isAdmin } = await loadDeal(id);
-  const [t, tc, locale, team, request, budget, activities, talents, events] = await Promise.all([
+  const [t, tc, tb, locale, team, request, budget, activities, talents, events] = await Promise.all([
     getTranslations("agency.deal"),
+    getTranslations("brief"),
     getTranslations("commercial"),
     getLocale() as Promise<Locale>,
     listTeam(ctx.agency.id),
@@ -56,6 +60,14 @@ export default async function DealOverviewPage({ params }: Props) {
               {t("sections.request")}
             </h2>
             <RequestSummary request={request} budget={budget} />
+          </section>
+        ) : null}
+        {request ? (
+          <section className={card} aria-labelledby="deal-brief" data-testid="deal-brief">
+            <h2 id="deal-brief" className="text-base font-semibold text-fg">
+              {tb("title")}
+            </h2>
+            {canEdit ? <DealBriefCard dealId={deal.id} brief={request.brief} /> : <BriefView brief={request.brief} showEmpty />}
           </section>
         ) : null}
         <section className={card} aria-labelledby="deal-data">

@@ -204,7 +204,8 @@
       "confirmHint": "La agencia recibe el briefing y empieza a consultar a los creators. Sigues el avance aquí y puedes cancelar mientras no haya confirmación.",
       "back": "Volver",
       "budgetInvalid": "Indica el valor como 15.000,00.",
-      "incomplete": "Falta algo: título, objetivo, fecha de inicio, una red y un entregable."
+      "incomplete": "Falta algo: título, objetivo, fecha de inicio, una red y un entregable.",
+      "briefInvalid": "Revisa el briefing: hashtags con #, @ válidos y enlaces https."
     },
     "cancel": {
       "action": "Cancelar propuesta",

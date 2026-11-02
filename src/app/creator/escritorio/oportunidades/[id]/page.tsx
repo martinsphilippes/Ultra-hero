@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { BriefView } from "@/components/brief/BriefView";
 import { MessageThread } from "@/components/deals/MessageThread";
 import { DeliverableStatusBadge, TalentStatusBadge } from "@/components/deals/StatusBadges";
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
@@ -195,6 +196,7 @@ export default async function OpportunityPage({ params }: Props) {
               ) : null}
             </dl>
             {r?.notes ? <p className="whitespace-pre-wrap type-body-sm text-fg-muted">{r.notes}</p> : null}
+            {r ? <BriefView brief={r.brief} /> : null}
           </section>
           {execution && (execution.stage === "production" || execution.stage === "closed") ? (
             <>
@@ -209,7 +211,7 @@ export default async function OpportunityPage({ params }: Props) {
                   {tx("deliverablesTitle")}
                 </h3>
                 <p className="type-caption text-fg-muted">{tx("deliverablesHint")}</p>
-                <DeliverablesBoard portal="office" dealId={o.deal.id} dealTalentId={o.id} deliverables={myDeliverables} canAct={!closed} emptyText={t("deliverablesNone")} />
+                <DeliverablesBoard portal="office" dealId={o.deal.id} dealTalentId={o.id} deliverables={myDeliverables} brief={execution.brief} canAct={!closed} emptyText={t("deliverablesNone")} />
               </section>
             </>
           ) : null}

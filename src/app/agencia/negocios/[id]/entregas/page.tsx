@@ -43,7 +43,7 @@ export default async function DealDeliverablesPage({ params }: Props) {
         <section className="flex flex-col gap-3" data-testid="deal-execution">
           <h2 className="text-base font-semibold text-fg">{te("title")}</h2>
           <p className="type-body-sm text-fg-muted">{te("intro")}</p>
-          <DeliverablesBoard portal="agency" dealId={deal.id} requestId={deal.requestId} deliverables={exec.data?.deliverables ?? []} canAct={canEdit} documents={docs} emptyText={te("empty")} />
+          <DeliverablesBoard portal="agency" dealId={deal.id} requestId={deal.requestId} deliverables={exec.data?.deliverables ?? []} brief={exec.data?.brief} canAct={canEdit} documents={docs} emptyText={te("empty")} />
         </section>
       ) : null}
       <section className="flex flex-col gap-3">

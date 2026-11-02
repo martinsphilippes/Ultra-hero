@@ -1,4 +1,5 @@
 import "server-only";
+import { toBrief, type Brief } from "@/lib/brief/brief";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { BRAND_STATUSES, isDealStage, type BrandStatus, type DealOutcome, type DealStage } from "./stages";
@@ -79,6 +80,8 @@ export type RequestRow = {
   networks: string[];
   deliverables: { kind: string; quantity: number; network?: string | null }[];
   notes: string;
+  /** briefing estruturado (0080) */
+  brief: Brief;
   status: string;
   origin: "brand" | "agency";
   talentId: string | null;
@@ -273,6 +276,7 @@ function toRequest(r: Record<string, unknown>): RequestRow {
     networks: (r.networks as string[]) ?? [],
     deliverables: Array.isArray(r.deliverables) ? (r.deliverables as RequestRow["deliverables"]) : [],
     notes: String(r.notes ?? ""),
+    brief: toBrief(r.brief),
     status: String(r.status ?? "draft"),
     origin: (r.origin as "brand" | "agency") ?? "brand",
     talentId: (r.talent_id as string | null) ?? null,
@@ -282,7 +286,7 @@ function toRequest(r: Record<string, unknown>): RequestRow {
   };
 }
 
-const REQUEST_SELECT = "id, title, objective, product, target_audience, target_age_bands, target_states, region_note, period_start, period_end, desired_at, duration_minutes, format, location, networks, deliverables, notes, status, origin, talent_id, submitted_at, created_at, updated_at";
+const REQUEST_SELECT = "id, title, objective, product, target_audience, target_age_bands, target_states, region_note, period_start, period_end, desired_at, duration_minutes, format, location, networks, deliverables, notes, brief, status, origin, talent_id, submitted_at, created_at, updated_at";
 
 export async function getRequest(id: string): Promise<RequestRow | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
@@ -442,7 +446,7 @@ export type Opportunity = {
   responseNote: string;
   termsReady: boolean;
   deal: { id: string; title: string; talentBrief: string; expectedStart: string | null; expectedEnd: string | null; status: string; confirmedAt: string | null };
-  request: { objective: string | null; product: string; desiredAt: string | null; durationMinutes: number | null; format: string | null; location: string; networks: string[]; deliverables: RequestRow["deliverables"]; notes: string } | null;
+  request: { objective: string | null; product: string; desiredAt: string | null; durationMinutes: number | null; format: string | null; location: string; networks: string[]; deliverables: RequestRow["deliverables"]; notes: string; brief: Brief } | null;
   brand: { id: string; name: string; logoUrl: string | null };
   deliverables: { id: string; kind: string; network: string | null; title: string; brief: string; dueAt: string | null; publishAt: string | null; status: string }[];
 };
@@ -468,7 +472,7 @@ export async function listOpportunities(dealTalentId?: string): Promise<{ availa
         termsReady: Boolean(o.terms_ready),
         deal: { id: String(deal.id), title: String(deal.title), talentBrief: String(deal.talent_brief ?? ""), expectedStart: (deal.expected_start as string | null) ?? null, expectedEnd: (deal.expected_end as string | null) ?? null, status: String(deal.status), confirmedAt: (deal.confirmed_at as string | null) ?? null },
         request: req
-          ? { objective: (req.objective as string | null) ?? null, product: String(req.product ?? ""), desiredAt: (req.desired_at as string | null) ?? null, durationMinutes: (req.duration_minutes as number | null) ?? null, format: (req.format as string | null) ?? null, location: String(req.location ?? ""), networks: (req.networks as string[]) ?? [], deliverables: Array.isArray(req.deliverables) ? (req.deliverables as RequestRow["deliverables"]) : [], notes: String(req.notes ?? "") }
+          ? { objective: (req.objective as string | null) ?? null, product: String(req.product ?? ""), desiredAt: (req.desired_at as string | null) ?? null, durationMinutes: (req.duration_minutes as number | null) ?? null, format: (req.format as string | null) ?? null, location: String(req.location ?? ""), networks: (req.networks as string[]) ?? [], deliverables: Array.isArray(req.deliverables) ? (req.deliverables as RequestRow["deliverables"]) : [], notes: String(req.notes ?? ""), brief: toBrief(req.brief) }
           : null,
         brand: { id: String(brand.id), name: String(brand.name), logoUrl: (brand.logo_url as string | null) ?? null },
         deliverables: Array.isArray(o.deliverables)

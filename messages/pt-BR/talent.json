@@ -112,7 +112,8 @@
     "invalid_stage": "Esta campanha já foi encerrada.",
     "file_missing": "Anexe o arquivo (link ou documento) para concluir.",
     "invalid_url": "Informe um link https válido.",
-    "counteroffer_open": "Você já tem uma contraproposta aguardando a agência."
+    "counteroffer_open": "Você já tem uma contraproposta aguardando a agência.",
+    "checklist_incomplete": "Confira todos os itens do checklist antes de enviar."
   },
   "values": {
     "demoLockedKit": "Agência de demonstração: o link público fica desligado (só a prévia)."

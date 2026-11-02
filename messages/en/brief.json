@@ -1,0 +1,92 @@
+{
+  "title": "Content brief",
+  "hint": "What the creator must include in the post. Separate with spaces, commas or lines.",
+  "saved": "Brief saved.",
+  "save": "Save brief",
+  "agencyHint": "The creator sees this brief next to the deliverables and checks each item before sending.",
+  "invalid": "Not added: {items}",
+  "empty": "No structured brief.",
+  "fields": {
+    "hashtags": "Required hashtags",
+    "hashtagsHint": "E.g.: #ad #summer",
+    "mentions": "@ to tag",
+    "mentionsHint": "E.g.: @yourbrand",
+    "links": "Links",
+    "linksHint": "One per line, starting with https://",
+    "coupon": "Coupon",
+    "couponHint": "No spaces. E.g.: SUMMER10",
+    "references": "References",
+    "referencesHint": "Links to examples the brand likes (https://)",
+    "donts": "Don'ts",
+    "dontsHint": "E.g.: don't talk about price, don't show competitors",
+    "checks": "Extra checklist items",
+    "checksHint": "One per line. The brand checks them before approving."
+  },
+  "view": {
+    "hashtags": "Hashtags",
+    "mentions": "Tag",
+    "links": "Links",
+    "coupon": "Coupon",
+    "references": "References",
+    "donts": "Don'ts",
+    "checks": "Extra checklist items"
+  },
+  "checklist": {
+    "talentTitle": "Before sending, check",
+    "talentHint": "Tick each item. You can only send with everything checked.",
+    "brandTitle": "Advertising checklist",
+    "brandHint": "To approve, check every item. Requesting changes doesn't need it.",
+    "missing": "{count, plural, one {# item left} other {# items left}}",
+    "allDone": "All checked",
+    "brand": {
+      "ad_label": "#ad or “advertising” visible",
+      "brand_mention": "Brand @mentioned",
+      "link_coupon": "Correct link and coupon (when there are any)",
+      "no_health_claims": "No forbidden health claims",
+      "follows_brief": "Follows the brief"
+    },
+    "talent": {
+      "ad_label": "I added #ad or “advertising” visibly",
+      "brand_mention": "I tagged the brand",
+      "follows_brief": "I followed the brief"
+    },
+    "hashtag": "I used {value}",
+    "mention": "I tagged {value}",
+    "link": "I added the link {value}",
+    "coupon": "I added the coupon {value}",
+    "donts": "I did nothing from the “don'ts” list",
+    "recordedTalent": "{count, plural, one {Creator checked # item} other {Creator checked # items}}",
+    "recordedBrand": "{count, plural, one {Brand checked # advertising item} other {Brand checked # advertising items}}",
+    "show": "See items"
+  },
+  "templates": {
+    "title": "Start from a template",
+    "hint": "Templates keep objective, audience, deliverables and brief. No title, dates, creator or amount.",
+    "use": "Use",
+    "delete": "Delete",
+    "deleteConfirm": "Delete the template “{name}”?",
+    "saved": "Template saved.",
+    "deleted": "Template deleted.",
+    "used": "Draft created from the template.",
+    "saveAs": "Save as template",
+    "dialogTitle": "Save as template",
+    "dialogHint": "Keeps objective, audience, deliverables and brief. No title, dates, creator or amount.",
+    "nameLabel": "Template name",
+    "nameHint": "With the same name, the old template is replaced.",
+    "nameInvalid": "Use 3 to 80 characters.",
+    "save": "Save template",
+    "back": "Back",
+    "deliverables": "{count, plural, =0 {no deliverables} one {# deliverable} other {# deliverables}}",
+    "withBrief": "with brief",
+    "limit": "Up to {count} templates per brand."
+  },
+  "duplicate": {
+    "action": "Duplicate campaign",
+    "titlePattern": "Copy of {title}",
+    "done": "Copy created. Adjust it and send whenever you want.",
+    "confirmTitle": "Duplicate campaign?",
+    "confirmHint": "Creates a new draft with brief, deliverables and audience. No dates, amount or status.",
+    "confirm": "Duplicate",
+    "back": "Back"
+  }
+}

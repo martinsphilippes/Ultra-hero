@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DocumentsPanel } from "@/components/agency/DocumentsPanel";
 import { CampaignForm } from "@/components/brand-portal/CampaignForm";
+import { BriefView } from "@/components/brief/BriefView";
+import { CampaignTools } from "@/components/brief/CampaignTools";
 import { CancelCampaignButton } from "@/components/brand-portal/CancelCampaignButton";
 import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
 import { MessageThread } from "@/components/deals/MessageThread";
@@ -16,6 +18,7 @@ import { PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { getBrandContext } from "@/lib/brand-portal/server";
+import { briefDefined, briefToDraft } from "@/lib/brief/brief";
 import { getBrandCampaign, getRequestBudget, listMessages } from "@/lib/deals/queries";
 import { BRAND_STATUSES } from "@/lib/deals/stages";
 import { formatCents } from "@/lib/deals/schemas";
@@ -38,7 +41,7 @@ export default async function BrandCampaignPage({ params }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
   const { id } = await params;
-  const [t, tc, locale, detail, budget] = await Promise.all([getTranslations("brandPortal.campaigns"), getTranslations("commercial"), getLocale() as Promise<Locale>, getBrandCampaign(id), getRequestBudget(id)]);
+  const [t, tc, tb, locale, detail, budget] = await Promise.all([getTranslations("brandPortal.campaigns"), getTranslations("commercial"), getTranslations("brief"), getLocale() as Promise<Locale>, getBrandCampaign(id), getRequestBudget(id)]);
   if (!detail) notFound();
   const { request, deal } = detail;
   const isDraft = request.status === "draft";
@@ -65,7 +68,13 @@ export default async function BrandCampaignPage({ params }: Props) {
   if (editable) {
     return (
       <div className="flex flex-col gap-5">
-        <PageHeader title={request.title || t("untitled")} description={<BrandStatusBadge status="draft" size="md" />} backHref="/marca/campanhas" backLabel={t("title")} actions={<CancelCampaignButton requestId={request.id} />} />
+        <PageHeader title={request.title || t("untitled")} description={<BrandStatusBadge status="draft" size="md" />} backHref="/marca/campanhas" backLabel={t("title")} actions={
+            <span className="flex flex-wrap gap-2">
+              <CampaignTools requestId={request.id} title={request.title} />
+              <CancelCampaignButton requestId={request.id} />
+            </span>
+          }
+        />
         <CampaignForm
           initial={{
             id: request.id,
@@ -88,6 +97,7 @@ export default async function BrandCampaignPage({ params }: Props) {
             notes: request.notes,
             budgetText: budget?.max !== null && budget?.max !== undefined ? formatCents(budget.max, "pt-BR").replace(/[^\d,.]/g, "") : "",
             budgetNote: budget?.note ?? "",
+            briefDraft: briefToDraft(request.brief),
           }}
           creatorName={detail.requestedTalent?.name ?? null}
           canEdit
@@ -108,7 +118,14 @@ export default async function BrandCampaignPage({ params }: Props) {
             {request.submittedAt ? <span className="text-fg-muted">{t("submittedAt", { date: formatDateTime(request.submittedAt, locale) })}</span> : null}
           </span>
         }
-        actions={canEdit && preConfirmation && detail.brandStatus !== "cancelled" ? <CancelCampaignButton requestId={request.id} /> : null}
+        actions={
+          canEdit ? (
+            <span className="flex flex-wrap gap-2">
+              <CampaignTools requestId={request.id} title={request.title} canDuplicate={Boolean(ctx.agency)} />
+              {preConfirmation && detail.brandStatus !== "cancelled" ? <CancelCampaignButton requestId={request.id} /> : null}
+            </span>
+          ) : null
+        }
       />
       {detail.brandStatus !== "cancelled" ? (
         <ol className="flex flex-wrap gap-2" aria-label={t("stepsLabel")} data-testid="campaign-steps">
@@ -127,6 +144,14 @@ export default async function BrandCampaignPage({ params }: Props) {
             </h2>
             <RequestSummary request={request} budget={budget} />
           </section>
+          {briefDefined(request.brief) ? (
+            <section className={card} aria-labelledby="camp-brief" data-testid="campaign-brief">
+              <h2 id="camp-brief" className="text-base font-semibold text-fg">
+                {tb("title")}
+              </h2>
+              <BriefView brief={request.brief} />
+            </section>
+          ) : null}
           {deal && execution && liveTerms.length > 0 ? (
             <section className={card} aria-labelledby="camp-terms" data-testid="campaign-terms">
               <h2 id="camp-terms" className="text-base font-semibold text-fg">
@@ -182,7 +207,7 @@ export default async function BrandCampaignPage({ params }: Props) {
               {t("sections.deliverables")}
             </h2>
             {deal && execution && execution.deliverables.length > 0 ? (
-              <DeliverablesBoard portal="brand" dealId={deal.id} requestId={request.id} deliverables={execution.deliverables} canAct={canEdit && detail.brandStatus !== "cancelled"} emptyText={t("deliverablesNone")} />
+              <DeliverablesBoard portal="brand" dealId={deal.id} requestId={request.id} deliverables={execution.deliverables} brief={execution.brief} canAct={canEdit && detail.brandStatus !== "cancelled"} emptyText={t("deliverablesNone")} />
             ) : detail.deliverables.length === 0 ? (
               <p className="type-body-sm text-fg-muted">{t("deliverablesNone")}</p>
             ) : (

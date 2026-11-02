@@ -303,7 +303,9 @@
     "no_hero": "This creator has no linked hero in the social area; the sponsorship has nowhere to appear.",
     "reservation_expired": "This file reservation expired (over 24 h). Upload the file again.",
     "exclusivity_conflict": "This creator has an active exclusivity that covers the deal. Confirm to consult anyway.",
-    "counteroffer_open": "There is already a counteroffer waiting for a reply."
+    "counteroffer_open": "There is already a counteroffer waiting for a reply.",
+    "checklist_incomplete": "Check every checklist item before continuing.",
+    "limit_reached": "Limit reached. Delete an old item and try again."
   },
   "casting": {
     "title": "Roster",
@@ -575,7 +577,8 @@
       "counteroffer_date_accepted": "Date counteroffer accepted ({param}).",
       "counteroffer_date_rejected": "Date counteroffer declined ({param}).",
       "contract_confirmed": "Hiring confirmed.",
-      "deal_created": "Deal created."
+      "deal_created": "Deal created.",
+      "brief_updated": "Brief updated."
     },
     "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
     "form": {

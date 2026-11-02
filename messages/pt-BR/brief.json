@@ -1,0 +1,92 @@
+{
+  "title": "Briefing do conteúdo",
+  "hint": "O que o influenciador precisa colocar no post. Separe por espaço, vírgula ou linha.",
+  "saved": "Briefing salvo.",
+  "save": "Salvar briefing",
+  "agencyHint": "O influenciador vê este briefing junto das entregas e confere cada item antes de enviar.",
+  "invalid": "Não entrou: {items}",
+  "empty": "Sem briefing estruturado.",
+  "fields": {
+    "hashtags": "Hashtags obrigatórias",
+    "hashtagsHint": "Ex.: #publi #verao",
+    "mentions": "@ para marcar",
+    "mentionsHint": "Ex.: @suamarca",
+    "links": "Links",
+    "linksHint": "Um por linha, começando com https://",
+    "coupon": "Cupom",
+    "couponHint": "Sem espaço. Ex.: VERAO10",
+    "references": "Referências",
+    "referencesHint": "Links de exemplos que a marca gosta (https://)",
+    "donts": "O que não fazer",
+    "dontsHint": "Ex.: não falar de preço, não mostrar concorrentes",
+    "checks": "Itens extras do checklist",
+    "checksHint": "Um por linha. A marca confere antes de aprovar."
+  },
+  "view": {
+    "hashtags": "Hashtags",
+    "mentions": "Marcar",
+    "links": "Links",
+    "coupon": "Cupom",
+    "references": "Referências",
+    "donts": "O que não fazer",
+    "checks": "Itens extras do checklist"
+  },
+  "checklist": {
+    "talentTitle": "Antes de enviar, confira",
+    "talentHint": "Marque cada item. Só dá para enviar com tudo conferido.",
+    "brandTitle": "Checklist de publicidade",
+    "brandHint": "Para aprovar, confira todos os itens. Para pedir ajuste, não precisa.",
+    "missing": "{count, plural, one {Falta # item} other {Faltam # itens}}",
+    "allDone": "Tudo conferido",
+    "brand": {
+      "ad_label": "#publi ou “publicidade” visível",
+      "brand_mention": "Marca @mencionada",
+      "link_coupon": "Link e cupom corretos (quando houver)",
+      "no_health_claims": "Sem alegação de saúde proibida",
+      "follows_brief": "Respeita o briefing"
+    },
+    "talent": {
+      "ad_label": "Coloquei #publi ou “publicidade” visível",
+      "brand_mention": "Marquei a marca",
+      "follows_brief": "Segui o briefing"
+    },
+    "hashtag": "Usei {value}",
+    "mention": "Marquei {value}",
+    "link": "Coloquei o link {value}",
+    "coupon": "Coloquei o cupom {value}",
+    "donts": "Não fiz nada da lista “o que não fazer”",
+    "recordedTalent": "{count, plural, one {Influenciador conferiu # item} other {Influenciador conferiu # itens}}",
+    "recordedBrand": "{count, plural, one {Marca conferiu # item de publicidade} other {Marca conferiu # itens de publicidade}}",
+    "show": "Ver itens"
+  },
+  "templates": {
+    "title": "Começar de um modelo",
+    "hint": "Modelos guardam objetivo, público, entregáveis e briefing. Sem título, datas, influenciador e valor.",
+    "use": "Usar",
+    "delete": "Apagar",
+    "deleteConfirm": "Apagar o modelo “{name}”?",
+    "saved": "Modelo salvo.",
+    "deleted": "Modelo apagado.",
+    "used": "Rascunho criado a partir do modelo.",
+    "saveAs": "Salvar como modelo",
+    "dialogTitle": "Salvar como modelo",
+    "dialogHint": "Guarda objetivo, público, entregáveis e briefing. Sem título, datas, influenciador e valor.",
+    "nameLabel": "Nome do modelo",
+    "nameHint": "Com o mesmo nome, o modelo antigo é substituído.",
+    "nameInvalid": "Use de 3 a 80 caracteres.",
+    "save": "Salvar modelo",
+    "back": "Voltar",
+    "deliverables": "{count, plural, =0 {sem entregáveis} one {# entregável} other {# entregáveis}}",
+    "withBrief": "com briefing",
+    "limit": "Até {count} modelos por marca."
+  },
+  "duplicate": {
+    "action": "Duplicar campanha",
+    "titlePattern": "Cópia de {title}",
+    "done": "Cópia criada. Ajuste e envie quando quiser.",
+    "confirmTitle": "Duplicar campanha?",
+    "confirmHint": "Cria um rascunho novo com briefing, entregáveis e público. Sem datas, valor e situação.",
+    "confirm": "Duplicar",
+    "back": "Voltar"
+  }
+}

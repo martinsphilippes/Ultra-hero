@@ -214,7 +214,10 @@ export async function submitDeliverableAction(portal: "agency" | "office", input
   if (!d.url && !d.documentId) return fail(portal, "file_missing");
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("deliverable_submit", { p_deliverable: d.deliverableId, p_url: d.url || undefined, p_document: d.documentId || undefined, p_note: d.note || undefined });
+    // com checklist (o creator sempre manda; a agência pelo creator sem login pode não mandar)
+    const { data, error } = d.checks
+      ? await supabase.rpc("deliverable_submit_checked", { p_deliverable: d.deliverableId, p_url: d.url || "", p_document: d.documentId || null, p_note: d.note || "", p_checks: d.checks })
+      : await supabase.rpc("deliverable_submit", { p_deliverable: d.deliverableId, p_url: d.url || undefined, p_document: d.documentId || undefined, p_note: d.note || undefined });
     if (error) return fail(portal, error);
     revalidateDeal(portal, input.dealId, input.requestId, input.dealTalentId);
     const t = await getTranslations("commercial.deliverables");
@@ -232,7 +235,10 @@ export async function decideDeliverableAction(portal: "agency" | "brand", input:
   const d = parsed.data;
   try {
     const supabase = await createClient();
-    const { error } = await supabase.rpc("deliverable_decide", { p_deliverable: d.deliverableId, p_decision: d.decision, p_feedback: d.feedback || undefined });
+    // a marca aprova com o checklist de publicidade (o banco exige todos os itens); ajustes e agência podem ir sem
+    const { error } = d.checks
+      ? await supabase.rpc("deliverable_decide_checked", { p_deliverable: d.deliverableId, p_decision: d.decision, p_feedback: d.feedback || "", p_checks: d.checks })
+      : await supabase.rpc("deliverable_decide", { p_deliverable: d.deliverableId, p_decision: d.decision, p_feedback: d.feedback || undefined });
     if (error) return agencyFail(error);
     revalidateDeal(portal, input.dealId, input.requestId, input.dealTalentId);
     const t = await getTranslations("commercial.deliverables");

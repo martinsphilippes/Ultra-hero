@@ -9,6 +9,7 @@ import { sendInviteEmail } from "@/lib/email/invite";
 import { agencyFail } from "@/lib/agency/errors";
 import { daysSchema, emailSchema } from "@/lib/agency/schemas";
 import { BRAND_COOKIE, getBrandContext, requireBrand } from "@/lib/brand-portal/server";
+import { briefPayload } from "@/lib/brief/brief";
 import { brandRequestSchema, toZonedIso, type BrandRequestInput } from "@/lib/deals/schemas";
 import { defaultTimeZone } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
@@ -48,6 +49,7 @@ export async function saveRequestAction(input: BrandRequestInput): Promise<Brand
         networks: d.networks,
         deliverables: d.deliverables,
         notes: d.notes,
+        brief: briefPayload(d.brief),
         budget_max_cents: d.budgetMaxCents === null ? "" : String(d.budgetMaxCents),
         budget_note: d.budgetNote,
       },

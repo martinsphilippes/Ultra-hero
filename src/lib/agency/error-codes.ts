@@ -29,6 +29,9 @@ export const AGENCY_ERROR_CODES = [
   // oferta e contraproposta (0079)
   "exclusivity_conflict",
   "counteroffer_open",
+  // briefing, checklists e modelos (0080)
+  "checklist_incomplete",
+  "limit_reached",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

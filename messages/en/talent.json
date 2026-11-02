@@ -112,7 +112,8 @@
     "invalid_stage": "This campaign is already closed.",
     "file_missing": "Attach the file (link or document) to complete.",
     "invalid_url": "Enter a valid https link.",
-    "counteroffer_open": "You already have a counteroffer waiting for the agency."
+    "counteroffer_open": "You already have a counteroffer waiting for the agency.",
+    "checklist_incomplete": "Check every checklist item before sending."
   },
   "values": {
     "demoLockedKit": "Demo agency: the public link stays off (preview only)."

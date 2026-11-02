@@ -204,7 +204,8 @@
       "confirmHint": "The agency receives the briefing and starts consulting the creators. You follow the progress here and can cancel until there is a confirmation.",
       "back": "Back",
       "budgetInvalid": "Enter the value like 15.000,00.",
-      "incomplete": "Something is missing: title, objective, start date, one network and one deliverable."
+      "incomplete": "Something is missing: title, objective, start date, one network and one deliverable.",
+      "briefInvalid": "Check the brief: hashtags with #, valid @ handles and https links."
     },
     "cancel": {
       "action": "Cancel proposal",

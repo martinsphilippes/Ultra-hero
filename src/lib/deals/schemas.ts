@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { briefSchema, EMPTY_BRIEF } from "@/lib/brief/brief";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 import { ACTIVITY_KINDS, AVAILABILITY_KINDS, DELIVERABLE_KINDS, FORMATS, OBJECTIVES, TALENT_RESPONSES } from "./vocab";
 
@@ -75,6 +76,8 @@ export const brandRequestSchema = z.object({
   networks: z.array(z.enum(NETWORKS)).max(11),
   deliverables: requestDeliverablesSchema,
   notes: z.string().trim().max(2000),
+  /** Briefing estruturado (0080); sem ele, vazio. */
+  brief: briefSchema.default({ ...EMPTY_BRIEF }),
   /** Valor oferecido em centavos (null = não informado). */
   budgetMaxCents: z.number().int().min(0).max(10_000_000_000).nullable(),
   budgetNote: z.string().trim().max(300),

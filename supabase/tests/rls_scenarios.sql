@@ -10313,5 +10313,236 @@ delete from public.agencies where id = '86000000-0000-4000-8000-000000008601';
 delete from auth.users where id::text like '86000000-0000-4000-8000-00000000086%';
 drop table t_s86;
 
+-- ================================================================ S87 · Briefing estruturado, checklists, modelos e duplicar campanha (0080)
+-- Briefing estruturado no pedido (validado no banco; a agência ajusta depois do envio); checklist do creator para
+-- enviar e checklist de publicidade da marca para aprovar (validados no banco, gravados na versão; as RPCs antigas
+-- mantêm a assinatura e recusam o creator e a aprovação da marca sem checklist); modelos da marca (RLS por marca,
+-- nome único, limite) e duplicar campanha (rascunho sem datas, valor e situação). Visitante, outra marca e colaborador de fora.
+\ir ../migrations/0080_briefing_checklists_modelos.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('87000000-0000-4000-8000-000000000871', 's87-adm@test.local'),
+  ('87000000-0000-4000-8000-000000000872', 's87-gestor@test.local'),
+  ('87000000-0000-4000-8000-000000000873', 's87-colab@test.local'),
+  ('87000000-0000-4000-8000-000000000874', 's87-creator@test.local'),
+  ('87000000-0000-4000-8000-000000000875', 's87-marca-dono@test.local'),
+  ('87000000-0000-4000-8000-000000000876', 's87-marca-equipe@test.local'),
+  ('87000000-0000-4000-8000-000000000877', 's87-outra-marca@test.local'),
+  ('87000000-0000-4000-8000-000000000879', 's87-colab-fora@test.local');
+insert into public.agencies (id, slug, name) values ('87000000-0000-4000-8000-000000008701', 's87-agencia', 'Agência S87');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000000871', 'admin', 'Ana Adm S87'),
+  ('87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000000872', 'manager', 'Gil Gestor S87'),
+  ('87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000000873', 'staff', 'Caio Colab S87'),
+  ('87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000000879', 'staff', 'Rui Fora S87');
+insert into public.brands (id, slug, name, site_url) values
+  ('87000000-0000-4000-8000-000000008711', 's87-marca-alfa', 'Marca Alfa S87', 'https://alfa.s87.test'),
+  ('87000000-0000-4000-8000-000000008712', 's87-marca-beta', 'Marca Beta S87', 'https://beta.s87.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000008711'),
+  ('87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000008712');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000000875', 'owner', 'Dona Alfa'),
+  ('87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000000876', 'staff', 'Analista Alfa'),
+  ('87000000-0000-4000-8000-000000008712', '87000000-0000-4000-8000-000000000877', 'owner', 'Dono Beta');
+insert into public.talent_segments (id, agency_id, slug, name) values
+  ('87000000-0000-4000-8000-000000008791', '87000000-0000-4000-8000-000000008701', 's87-beleza', 'Beleza S87');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
+  ('87000000-0000-4000-8000-000000008721', '87000000-0000-4000-8000-000000008701', 'Creator S87', '87000000-0000-4000-8000-000000000874', true, now() - interval '30 days');
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, objective, product, networks, deliverables, segment_ids, talent_id,
+                                      period_start, period_end, target_age_bands, notes, brief) values
+  ('87000000-0000-4000-8000-000000008731', '87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000008711', 'brand', 'Verão Alfa S87', 'converted', now() - interval '20 days',
+   'awareness', 'Protetor solar', array['instagram'], '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', array['87000000-0000-4000-8000-000000008791']::uuid[],
+   '87000000-0000-4000-8000-000000008721', current_date - 10, current_date + 20, array['18-24'], 'Tom leve.',
+   '{"hashtags": ["#publi", "#AlfaVerão"], "mentions": ["@alfa.s87"], "links": ["https://alfa.s87.test/promo"], "coupon": "ALFA10", "references": ["https://alfa.s87.test/ref"], "donts": "Não falar de preço.", "checks": ["Mostrar o rótulo"]}'),
+  ('87000000-0000-4000-8000-000000008732', '87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000008711', 'agency', 'Interno S87', 'converted', now() - interval '5 days',
+   null, '', '{}', '[]', '{}', null, null, null, '{}', 'Nota interna', '{}');
+insert into public.deals (id, agency_id, brand_id, request_id, title, stage, brand_visible, owner_id, expected_start, expected_end) values
+  ('87000000-0000-4000-8000-000000008741', '87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000008731', 'Verão Alfa S87', 'production', true,
+   '87000000-0000-4000-8000-000000000873', current_date - 10, current_date + 20),
+  ('87000000-0000-4000-8000-000000008742', '87000000-0000-4000-8000-000000008701', '87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000008732', 'Interno S87', 'qualification', false,
+   null, null, null);
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('87000000-0000-4000-8000-000000008751', '87000000-0000-4000-8000-000000008741', '87000000-0000-4000-8000-000000008721', 'contracted', now() - interval '15 days', true);
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, network, title, status, due_at) values
+  ('87000000-0000-4000-8000-000000008761', '87000000-0000-4000-8000-000000008741', '87000000-0000-4000-8000-000000008751', 'reels', 'instagram', 'Reels Alfa S87', 'in_production', now() + interval '5 days'),
+  ('87000000-0000-4000-8000-000000008762', '87000000-0000-4000-8000-000000008741', '87000000-0000-4000-8000-000000008751', 'stories', 'instagram', 'Stories Alfa S87', 'in_production', now() + interval '6 days');
+create temp table t_s87 (k text primary key, v jsonb);
+grant all on t_s87 to anon, authenticated, service_role;
+
+select tests.ok('S87 estrutura: modelos com RLS, nada para visitante, internas fechadas, assinaturas antigas sem sobrecarga; S14 segue 18',
+  (select relrowsecurity from pg_class where oid = 'public.brand_brief_templates'::regclass)
+  and not has_table_privilege('anon', 'public.brand_brief_templates', 'select')
+  and not has_table_privilege('authenticated', 'public.brand_brief_templates', 'insert')
+  and not has_table_privilege('authenticated', 'public.brand_brief_templates', 'update')
+  and not has_function_privilege('authenticated', 'public.deal_brief(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brief_checks_marked(text[], jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.campaign_request_reusable(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_readable_request(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.reusable_for_agency(jsonb, uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.deliverable_submit_checked(uuid, text, uuid, text, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.brand_template_save(uuid, text)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_brief_save(uuid, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.deliverable_decide_checked(uuid, text, text, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.brand_request_duplicate(uuid, text)', 'execute')
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('deliverable_submit', 'deliverable_decide', 'brand_request_save', 'deal_execution',
+         'brand_campaign_detail', 'talent_opportunities')) = 6
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+                  and p.proname in ('campaign_brief_valid', 'brief_check_items', 'brief_checks_marked', 'deal_brief', 'agency_brief_save', 'deliverable_submit_checked',
+                                    'deliverable_decide_checked', 'campaign_request_reusable', 'brand_readable_request', 'reusable_for_agency', 'brand_template_save',
+                                    'brand_template_delete', 'brand_request_from_template', 'brand_request_duplicate')
+                  and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+select tests.ok('S87 briefing válido e inválidos (chave estranha, hashtag sem #, @ com espaço, link http, repetido, cupom com espaço, item curto)',
+  public.campaign_brief_valid('{"hashtags": ["#a"], "mentions": ["@b.c"], "links": ["https://x.test"], "coupon": "", "references": [], "donts": "", "checks": ["Item ok"]}')
+  and public.campaign_brief_valid('{}')
+  and not public.campaign_brief_valid('{"outra": 1}')
+  and not public.campaign_brief_valid('{"hashtags": ["publi"]}')
+  and not public.campaign_brief_valid('{"mentions": ["@a b"]}')
+  and not public.campaign_brief_valid('{"links": ["http://x.test"]}')
+  and not public.campaign_brief_valid('{"hashtags": ["#A", "#a"]}')
+  and not public.campaign_brief_valid('{"coupon": "AB 10"}')
+  and not public.campaign_brief_valid('{"checks": ["ok"]}')
+  and not public.campaign_brief_valid('[]'));
+select tests.ok('S87 itens do checklist: marca (5 padrão + extra) e creator (3 padrão + hashtags, @, link, cupom, "não fazer", extra)',
+  public.brief_check_items((select brief from public.campaign_requests where id = '87000000-0000-4000-8000-000000008731'), 'brand')
+    = array['ad_label', 'brand_mention', 'link_coupon', 'no_health_claims', 'follows_brief', 'extra:Mostrar o rótulo']
+  and public.brief_check_items((select brief from public.campaign_requests where id = '87000000-0000-4000-8000-000000008731'), 'talent')
+    = array['ad_label', 'brand_mention', 'follows_brief', 'hashtag:#publi', 'hashtag:#AlfaVerão', 'mention:@alfa.s87', 'link:https://alfa.s87.test/promo', 'coupon:ALFA10', 'donts', 'extra:Mostrar o rótulo']
+  and public.brief_check_items('{}', 'talent') = array['ad_label', 'brand_mention', 'follows_brief']);
+insert into t_s87 values ('talent_all', to_jsonb(public.brief_check_items((select brief from public.campaign_requests where id = '87000000-0000-4000-8000-000000008731'), 'talent')));
+insert into t_s87 values ('brand_all', to_jsonb(public.brief_check_items((select brief from public.campaign_requests where id = '87000000-0000-4000-8000-000000008731'), 'brand')));
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S87 visitante não lê modelos', $q$select count(*) from public.brand_brief_templates$q$, 'permission denied');
+select tests.expect_error('S87 visitante não duplica campanha', $q$select public.brand_request_duplicate('87000000-0000-4000-8000-000000008731', null)$q$, 'permission denied');
+
+-- creator: lê o briefing e só envia com o checklist completo
+select tests.login('87000000-0000-4000-8000-000000000874', 's87-creator@test.local');
+select tests.ok('S87 creator lê o briefing estruturado na oportunidade e na execução',
+  (public.talent_opportunities('87000000-0000-4000-8000-000000008751') -> 0 -> 'request' -> 'brief' ->> 'coupon') = 'ALFA10'
+  and (public.deal_execution('87000000-0000-4000-8000-000000008741') -> 'brief' -> 'hashtags') = '["#publi", "#AlfaVerão"]');
+select tests.expect_error('S87 RPC antiga: creator sem checklist é recusado',
+  $q$select public.deliverable_submit('87000000-0000-4000-8000-000000008761', 'https://example.com/v1', null, 'Primeira')$q$, 'checklist_incomplete');
+select tests.expect_error('S87 checklist do creator incompleto é recusado',
+  $q$select public.deliverable_submit_checked('87000000-0000-4000-8000-000000008761', 'https://example.com/v1', null, 'Primeira', '["ad_label", "brand_mention", "follows_brief"]')$q$, 'checklist_incomplete');
+select tests.expect_error('S87 checklist que não é lista é recusado',
+  $q$select public.deliverable_submit_checked('87000000-0000-4000-8000-000000008761', 'https://example.com/v1', null, 'Primeira', '{"ad_label": true}')$q$, 'invalid_input');
+select public.deliverable_submit_checked('87000000-0000-4000-8000-000000008761', 'https://example.com/v1', null, 'Primeira',
+  (select v from t_s87 where k = 'talent_all') || '["item-inventado"]'::jsonb);
+select tests.ok('S87 envio com checklist completo: versão grava só os itens da lista, na ordem',
+  (select talent_checklist = (select v from t_s87 where k = 'talent_all') and submitted_side = 'talent'
+   from public.deliverable_versions where deliverable_id = '87000000-0000-4000-8000-000000008761' and revision = 1)
+  and (public.deal_execution('87000000-0000-4000-8000-000000008741') -> 'deliverables' -> 0 -> 'versions' -> 0 -> 'talent_checklist') = (select v from t_s87 where k = 'talent_all'));
+
+-- marca: aprovar exige o checklist de publicidade completo; pedir ajustes não
+select tests.login('87000000-0000-4000-8000-000000000876', 's87-marca-equipe@test.local');
+select tests.ok('S87 marca lê o briefing na campanha', (public.brand_campaign_detail('87000000-0000-4000-8000-000000008731') -> 'request' -> 'brief' -> 'checks') = '["Mostrar o rótulo"]');
+select tests.expect_error('S87 RPC antiga: marca não aprova sem checklist',
+  $q$select public.deliverable_decide('87000000-0000-4000-8000-000000008761', 'approved', null)$q$, 'checklist_incomplete');
+select tests.expect_error('S87 marca não aprova com checklist faltando o item extra',
+  $q$select public.deliverable_decide_checked('87000000-0000-4000-8000-000000008761', 'approved', null, '["ad_label", "brand_mention", "link_coupon", "no_health_claims", "follows_brief"]')$q$, 'checklist_incomplete');
+select public.deliverable_decide('87000000-0000-4000-8000-000000008761', 'changes_requested', 'Faltou o cupom na legenda.');
+select tests.ok('S87 pedir ajustes sem checklist funciona (versão sem checklist da marca)',
+  (select status from public.deliverables where id = '87000000-0000-4000-8000-000000008761') = 'changes_requested'
+  and (select brand_checklist is null from public.deliverable_versions where deliverable_id = '87000000-0000-4000-8000-000000008761' and revision = 1));
+select tests.login('87000000-0000-4000-8000-000000000874', 's87-creator@test.local');
+select public.deliverable_submit_checked('87000000-0000-4000-8000-000000008761', 'https://example.com/v2', null, 'Cupom incluído', (select v from t_s87 where k = 'talent_all'));
+select tests.login('87000000-0000-4000-8000-000000000877', 's87-outra-marca@test.local');
+select tests.expect_error('S87 outra marca não decide', $q$select public.deliverable_decide_checked('87000000-0000-4000-8000-000000008761', 'approved', null, '[]')$q$, 'not_found');
+select tests.login('87000000-0000-4000-8000-000000000875', 's87-marca-dono@test.local');
+select public.deliverable_decide_checked('87000000-0000-4000-8000-000000008761', 'approved', null, (select v from t_s87 where k = 'brand_all'));
+select tests.ok('S87 aprovação da marca com checklist completo fica registrada na versão 2',
+  (select status = 'approved' and decided_side = 'brand' from public.deliverables where id = '87000000-0000-4000-8000-000000008761')
+  and (select decision = 'approved' and brand_checklist = (select v from t_s87 where k = 'brand_all')
+       from public.deliverable_versions where deliverable_id = '87000000-0000-4000-8000-000000008761' and revision = 2)
+  and (public.deal_execution('87000000-0000-4000-8000-000000008741') -> 'deliverables' -> 0 -> 'versions' -> 1 -> 'brand_checklist') = (select v from t_s87 where k = 'brand_all'));
+
+-- agência: envia pelo creator e registra decisão sem checklist; ajusta o briefing
+select tests.login('87000000-0000-4000-8000-000000000873', 's87-colab@test.local');
+select public.deliverable_submit('87000000-0000-4000-8000-000000008762', 'https://example.com/stories', null, 'Recebido pelo WhatsApp');
+select public.deliverable_decide('87000000-0000-4000-8000-000000008762', 'approved', 'A marca aprovou por e-mail');
+select tests.ok('S87 agência envia e registra decisão sem checklist (RPCs antigas)',
+  (select status = 'approved' and decided_side = 'agency' from public.deliverables where id = '87000000-0000-4000-8000-000000008762')
+  and (select submitted_side = 'agency' and talent_checklist is null and brand_checklist is null
+       from public.deliverable_versions where deliverable_id = '87000000-0000-4000-8000-000000008762' and revision = 1));
+select tests.expect_error('S87 briefing inválido é recusado', $q$select public.agency_brief_save('87000000-0000-4000-8000-000000008741', '{"hashtags": ["sem-cerquilha"]}')$q$, 'invalid_input');
+select public.agency_brief_save('87000000-0000-4000-8000-000000008741',
+  '{"hashtags": ["#publi"], "mentions": ["@alfa.s87"], "coupon": "ALFA15", "donts": "", "checks": ["Mostrar o rótulo", "Falar do FPS 50"]}');
+select tests.ok('S87 responsável ajusta o briefing: grava, vira atividade e muda os itens do checklist',
+  (select brief ->> 'coupon' from public.campaign_requests where id = '87000000-0000-4000-8000-000000008731') = 'ALFA15'
+  and exists (select 1 from public.activities where deal_id = '87000000-0000-4000-8000-000000008741' and kind = 'system' and body = 'brief_updated')
+  and public.brief_check_items(public.deal_execution('87000000-0000-4000-8000-000000008741') -> 'brief', 'brand') @> array['extra:Falar do FPS 50']);
+select tests.login('87000000-0000-4000-8000-000000000879', 's87-colab-fora@test.local');
+select tests.expect_error('S87 colaborador de fora do negócio não ajusta o briefing', $q$select public.agency_brief_save('87000000-0000-4000-8000-000000008741', '{}')$q$, 'forbidden');
+select tests.login('87000000-0000-4000-8000-000000000876', 's87-marca-equipe@test.local');
+select tests.expect_error('S87 marca não usa a RPC da agência', $q$select public.agency_brief_save('87000000-0000-4000-8000-000000008741', '{}')$q$, 'not_found');
+select tests.expect_error('S87 rascunho com briefing inválido é recusado',
+  $q$select public.brand_request_save(null, '87000000-0000-4000-8000-000000008711', '{"title": "Teste", "brief": {"links": ["ftp://x"]}}')$q$, 'invalid_input');
+
+-- modelos da marca
+select tests.expect_error('S87 nome de modelo curto é recusado', $q$select public.brand_template_save('87000000-0000-4000-8000-000000008731', 'ab')$q$, 'invalid_input');
+insert into t_s87 values ('tpl', to_jsonb(public.brand_template_save('87000000-0000-4000-8000-000000008731', 'Verão padrão')));
+select tests.ok('S87 salvar com o mesmo nome (outra caixa) substitui o modelo',
+  public.brand_template_save('87000000-0000-4000-8000-000000008731', 'VERÃO PADRÃO') = (select (v #>> '{}')::uuid from t_s87 where k = 'tpl')
+  and (select count(*) from public.brand_brief_templates) = 1);
+select tests.ok('S87 o modelo guarda briefing, entregáveis e público; sem título, datas, creator e valor',
+  (select data -> 'brief' ->> 'coupon' = 'ALFA15' and data -> 'deliverables' = '[{"kind": "reels", "quantity": 1, "network": "instagram"}]'
+     and data -> 'target_age_bands' = '["18-24"]' and not (data ? 'title') and not (data ? 'period_start') and not (data ? 'talent_id') and data::text !~ 'cents'
+   from public.brand_brief_templates where id = (select (v #>> '{}')::uuid from t_s87 where k = 'tpl')));
+select tests.expect_error('S87 modelo de pedido interno da agência (não visível) é recusado',
+  $q$select public.brand_template_save('87000000-0000-4000-8000-000000008732', 'Interno')$q$, 'not_found');
+insert into t_s87 values ('from_tpl', to_jsonb(public.brand_request_from_template((select (v #>> '{}')::uuid from t_s87 where k = 'tpl'), 'Inverno Alfa')));
+select tests.su();
+select tests.ok('S87 rascunho a partir do modelo: título novo, briefing e segmentos copiados, sem datas e sem creator',
+  (select status = 'draft' and origin = 'brand' and title = 'Inverno Alfa' and brief ->> 'coupon' = 'ALFA15' and period_start is null and talent_id is null
+     and segment_ids = array['87000000-0000-4000-8000-000000008791']::uuid[] and networks = array['instagram'] and objective = 'awareness'
+   from public.campaign_requests where id = (select (v #>> '{}')::uuid from t_s87 where k = 'from_tpl')));
+select tests.login('87000000-0000-4000-8000-000000000876', 's87-marca-equipe@test.local');
+insert into t_s87 values ('dup', to_jsonb(public.brand_request_duplicate('87000000-0000-4000-8000-000000008731', 'Cópia de Verão Alfa S87')));
+select tests.su();
+select tests.ok('S87 duplicar: rascunho novo com briefing, entregáveis, público e o creator do catálogo; sem datas, valor e situação',
+  (select status = 'draft' and submitted_at is null and title = 'Cópia de Verão Alfa S87' and period_start is null and period_end is null and desired_at is null
+     and talent_id = '87000000-0000-4000-8000-000000008721' and target_age_bands = array['18-24'] and notes = 'Tom leve.'
+     and deliverables = '[{"kind": "reels", "quantity": 1, "network": "instagram"}]' and brief ->> 'coupon' = 'ALFA15'
+   from public.campaign_requests where id = (select (v #>> '{}')::uuid from t_s87 where k = 'dup'))
+  and not exists (select 1 from public.campaign_request_budgets where request_id = (select (v #>> '{}')::uuid from t_s87 where k = 'dup')));
+select tests.login('87000000-0000-4000-8000-000000000876', 's87-marca-equipe@test.local');
+select tests.ok('S87 a cópia aparece para a marca como rascunho', (public.brand_campaign_detail((select (v #>> '{}')::uuid from t_s87 where k = 'dup')) ->> 'brand_status') = 'draft');
+select tests.expect_error('S87 não duplica pedido interno da agência', $q$select public.brand_request_duplicate('87000000-0000-4000-8000-000000008732', null)$q$, 'not_found');
+
+-- outra marca: não lê, não usa, não apaga
+select tests.login('87000000-0000-4000-8000-000000000877', 's87-outra-marca@test.local');
+select tests.ok('S87 outra marca lê 0 modelos', (select count(*) from public.brand_brief_templates) = 0);
+select tests.expect_error('S87 outra marca não usa o modelo', $q$select public.brand_request_from_template((select (v #>> '{}')::uuid from t_s87 where k = 'tpl'), null)$q$, 'not_found');
+select tests.expect_error('S87 outra marca não apaga o modelo', $q$select public.brand_template_delete((select (v #>> '{}')::uuid from t_s87 where k = 'tpl'))$q$, 'not_found');
+select tests.expect_error('S87 outra marca não duplica campanha alheia', $q$select public.brand_request_duplicate('87000000-0000-4000-8000-000000008731', null)$q$, 'not_found');
+select tests.login('87000000-0000-4000-8000-000000000872', 's87-gestor@test.local');
+select tests.ok('S87 agência não lê modelos da marca', (select count(*) from public.brand_brief_templates) = 0);
+
+-- limite de 30 modelos por marca; apagar
+select tests.su();
+insert into public.brand_brief_templates (brand_id, name) select '87000000-0000-4000-8000-000000008711', 'Modelo S87 ' || g from generate_series(1, 29) g;
+select tests.login('87000000-0000-4000-8000-000000000875', 's87-marca-dono@test.local');
+select tests.expect_error('S87 limite de 30 modelos por marca', $q$select public.brand_template_save('87000000-0000-4000-8000-000000008731', 'Mais um modelo')$q$, 'limit_reached');
+select public.brand_template_delete((select (v #>> '{}')::uuid from t_s87 where k = 'tpl'));
+select tests.ok('S87 dono apaga o modelo', (select count(*) from public.brand_brief_templates) = 29);
+
+select tests.su();
+delete from public.brand_brief_templates where brand_id in ('87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000008712');
+delete from public.deals where id::text like '87000000-%';
+delete from public.campaign_requests where brand_id in ('87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000008712');
+delete from public.talent_profiles where id::text like '87000000-%';
+delete from public.talent_segments where id::text like '87000000-%';
+delete from public.brand_members where brand_id in ('87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000008712');
+delete from public.agency_brands where agency_id = '87000000-0000-4000-8000-000000008701';
+delete from public.brands where id in ('87000000-0000-4000-8000-000000008711', '87000000-0000-4000-8000-000000008712');
+delete from public.inbox_notifications where agency_id = '87000000-0000-4000-8000-000000008701';
+delete from public.agency_members where agency_id = '87000000-0000-4000-8000-000000008701';
+delete from public.agencies where id = '87000000-0000-4000-8000-000000008701';
+delete from auth.users where id::text like '87000000-0000-4000-8000-00000000087%';
+drop table t_s87;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

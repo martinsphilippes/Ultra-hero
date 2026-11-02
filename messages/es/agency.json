@@ -303,7 +303,9 @@
     "no_hero": "Este creator no tiene héroe vinculado en el área social; el patrocinio no tiene dónde aparecer.",
     "reservation_expired": "La reserva de este archivo venció (más de 24 h). Sube el archivo de nuevo.",
     "exclusivity_conflict": "Este creador tiene una exclusividad vigente que alcanza el negocio. Confirma para consultar de todos modos.",
-    "counteroffer_open": "Ya hay una contrapropuesta esperando respuesta."
+    "counteroffer_open": "Ya hay una contrapropuesta esperando respuesta.",
+    "checklist_incomplete": "Revisa todos los ítems del checklist antes de continuar.",
+    "limit_reached": "Límite alcanzado. Elimina un ítem antiguo e inténtalo de nuevo."
   },
   "casting": {
     "title": "Casting",
@@ -575,7 +577,8 @@
       "counteroffer_date_accepted": "Contrapropuesta de fecha aceptada ({param}).",
       "counteroffer_date_rejected": "Contrapropuesta de fecha rechazada ({param}).",
       "contract_confirmed": "Contratación confirmada.",
-      "deal_created": "Negocio creado."
+      "deal_created": "Negocio creado.",
+      "brief_updated": "Briefing actualizado."
     },
     "stageHint": "Mover de etapa es manual; volver pide una nota. Propuesta, confirmación y contrato tienen acción propia.",
     "form": {

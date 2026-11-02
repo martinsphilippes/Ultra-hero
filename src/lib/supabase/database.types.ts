@@ -6439,6 +6439,7 @@ export type Database = {
         Row: {
           agency_id: string;
           brand_id: string;
+          brief: NonNullable<Json>;
           created_at: string;
           created_by: string | null;
           decided_at: string | null;
@@ -6470,6 +6471,7 @@ export type Database = {
         Insert: {
           agency_id: string;
           brand_id: string;
+          brief?: Json;
           created_at?: string;
           created_by?: string | null;
           decided_at?: string | null;
@@ -6500,6 +6502,7 @@ export type Database = {
         Update: {
           agency_id?: string;
           brand_id?: string;
+          brief?: Json;
           created_at?: string;
           created_by?: string | null;
           decided_at?: string | null;
@@ -7010,6 +7013,55 @@ export type Database = {
             columns: ["talent_id"];
             isOneToOne: false;
             referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      brand_brief_templates: {
+        Row: {
+          brand_id: string;
+          created_at: string;
+          created_by: string | null;
+          data: NonNullable<Json>;
+          id: string;
+          name: string;
+          source_request_id: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          brand_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          data?: Json;
+          id?: string;
+          name: string;
+          source_request_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          brand_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          data?: Json;
+          id?: string;
+          name?: string;
+          source_request_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "brand_brief_templates_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "brand_brief_templates_request_fk";
+            columns: ["source_request_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_requests";
             referencedColumns: ["id"];
           },
         ];
@@ -7815,6 +7867,7 @@ export type Database = {
         Row: {
           agency_id: string;
           brand_id: string;
+          brand_checklist: Json | null;
           deal_id: string;
           deal_talent_id: string;
           decided_at: string | null;
@@ -7832,12 +7885,14 @@ export type Database = {
           submitted_by: string | null;
           submitted_side: string;
           talent_id: string;
+          talent_checklist: Json | null;
           url: string | null;
         };
         ComputedFields: never;
         Insert: {
           agency_id: string;
           brand_id: string;
+          brand_checklist?: Json | null;
           deal_id: string;
           deal_talent_id: string;
           decided_at?: string | null;
@@ -7855,11 +7910,13 @@ export type Database = {
           submitted_by?: string | null;
           submitted_side: string;
           talent_id: string;
+          talent_checklist?: Json | null;
           url?: string | null;
         };
         Update: {
           agency_id?: string;
           brand_id?: string;
+          brand_checklist?: Json | null;
           deal_id?: string;
           deal_talent_id?: string;
           decided_at?: string | null;
@@ -7877,6 +7934,7 @@ export type Database = {
           submitted_by?: string | null;
           submitted_side?: string;
           talent_id?: string;
+          talent_checklist?: Json | null;
           url?: string | null;
         };
         Relationships: [
@@ -8131,6 +8189,15 @@ isOneToOne: false
       brand_workboard: { Args: { p_brand: string }; Returns: Json };
       talent_today: { Args: Record<PropertyKey, never>; Returns: Json };
       talent_offer_state: { Args: { p_deal_talent: string }; Returns: Json };
+      campaign_brief_valid: { Args: { p: Json }; Returns: boolean };
+      brief_check_items: { Args: { p_brief: Json; p_side: string }; Returns: string[] };
+      agency_brief_save: { Args: { p_deal: string; p_brief: Json }; Returns: undefined };
+      deliverable_submit_checked: { Args: { p_deliverable: string; p_url: string; p_document: string | null; p_note: string; p_checks: Json }; Returns: string };
+      deliverable_decide_checked: { Args: { p_deliverable: string; p_decision: string; p_feedback: string; p_checks: Json }; Returns: undefined };
+      brand_template_save: { Args: { p_request: string; p_name: string }; Returns: string };
+      brand_template_delete: { Args: { p_id: string }; Returns: undefined };
+      brand_request_from_template: { Args: { p_template: string; p_title?: string }; Returns: string };
+      brand_request_duplicate: { Args: { p_request: string; p_title?: string }; Returns: string };
       agency_offer_state: { Args: { p_deal: string; p_talent_ids?: string[] }; Returns: Json };
       talent_counteroffer_create: { Args: { p_deal_talent: string; p_kind: string; p_data: Json }; Returns: string };
       talent_counteroffer_withdraw: { Args: { p_id: string }; Returns: undefined };

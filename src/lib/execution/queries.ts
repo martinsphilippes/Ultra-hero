@@ -1,4 +1,5 @@
 import "server-only";
+import { toBrief, type Brief } from "@/lib/brief/brief";
 import { toRights, type Rights } from "@/lib/offer/rights";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
@@ -40,6 +41,9 @@ export type DeliverableVersion = {
   feedback: string;
   decidedSide: "brand" | "agency" | null;
   decidedAt: string | null;
+  /** checklists conferidos (0080): itens marcados pelo creator ao enviar e pela marca ao decidir */
+  talentChecklist: string[] | null;
+  brandChecklist: string[] | null;
 };
 export type ExecDeliverable = {
   id: string;
@@ -67,9 +71,10 @@ export type ExecDeliverable = {
   proofAt: string | null;
   versions: DeliverableVersion[];
 };
-export type DealExecution = { side: "agency" | "brand" | "talent"; stage: string; contractConfirmedAt: string | null; terms: Terms[]; tasks: Task[]; deliverables: ExecDeliverable[] };
+export type DealExecution = { side: "agency" | "brand" | "talent"; stage: string; contractConfirmedAt: string | null; terms: Terms[]; tasks: Task[]; deliverables: ExecDeliverable[]; brief: Brief };
 
 const str = (v: unknown) => (v === null || v === undefined ? null : String(v));
+const keyList = (v: unknown): string[] | null => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : null);
 
 function toTask(k: Record<string, unknown>): Task {
   return {
@@ -103,6 +108,7 @@ export async function getDealExecution(dealId: string): Promise<{ available: boo
       side: raw.side as DealExecution["side"],
       stage: String(raw.stage),
       contractConfirmedAt: str(raw.contract_confirmed_at),
+      brief: toBrief(raw.brief),
       terms: Array.isArray(raw.terms)
         ? (raw.terms as Record<string, unknown>[]).map((t) => ({
             id: String(t.id),
@@ -159,6 +165,8 @@ export async function getDealExecution(dealId: string): Promise<{ available: boo
                   feedback: String(v.feedback ?? ""),
                   decidedSide: (v.decided_side as DeliverableVersion["decidedSide"]) ?? null,
                   decidedAt: str(v.decided_at),
+                  talentChecklist: keyList(v.talent_checklist),
+                  brandChecklist: keyList(v.brand_checklist),
                 }))
               : [],
           }))
