@@ -114,6 +114,22 @@
     "payout_updated": {
       "title": "Pago actualizado",
       "body": "El pago de {deal} cambió de estado."
+    },
+    "internal_approval_requested": {
+      "title": "Campaña para aprobar",
+      "body": "{name} pidió aprobación de {campaign}."
+    },
+    "internal_approval_decided": {
+      "title": "Aprobación interna",
+      "body": "El director decidió sobre {campaign}."
+    },
+    "shortlist_sent": {
+      "title": "Preselección para decidir",
+      "body": "{name} envió la lista {list}."
+    },
+    "shortlist_decided": {
+      "title": "Preselección decidida",
+      "body": "El director decidió la lista {list}."
     }
   }
 }

@@ -305,7 +305,10 @@
     "exclusivity_conflict": "Este creator tem exclusividade vigente que pega o negócio. Confirme para consultar mesmo assim.",
     "counteroffer_open": "Já existe uma contraproposta aguardando resposta.",
     "checklist_incomplete": "Confira todos os itens do checklist antes de continuar.",
-    "limit_reached": "Limite atingido. Apague um item antigo e tente de novo."
+    "limit_reached": "Limite atingido. Apague um item antigo e tente de novo.",
+    "approval_required": "Só o diretor da marca envia à agência. Peça a aprovação.",
+    "awaiting_approval": "Este rascunho espera o diretor. Retire o pedido para editar.",
+    "already_rated": "Esta entrega já foi avaliada."
   },
   "casting": {
     "title": "Casting",

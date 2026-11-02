@@ -30,7 +30,8 @@ export default async function NewCampaignPage({ searchParams }: Props) {
     <div className="flex flex-col gap-5">
       <PageHeader title={t("newTitle")} description={t("newDescription", { agency: ctx.agency.name })} backHref="/marca/campanhas" backLabel={t("title")} />
       {!creator && templates.items.length > 0 ? <TemplatePicker templates={templates.items} /> : null}
-      <CampaignForm initial={{ ...EMPTY_CAMPAIGN, talentId: creator?.id ?? "" }} creatorName={creator?.name ?? null} canEdit />
+      {/* 0081: só o diretor envia à agência; a equipe pede aprovação interna */}
+      <CampaignForm initial={{ ...EMPTY_CAMPAIGN, talentId: creator?.id ?? "" }} creatorName={creator?.name ?? null} canEdit submitMode={ctx.role === "owner" ? "submit" : "ask"} />
     </div>
   );
 }

@@ -305,7 +305,10 @@
     "exclusivity_conflict": "This creator has an active exclusivity that covers the deal. Confirm to consult anyway.",
     "counteroffer_open": "There is already a counteroffer waiting for a reply.",
     "checklist_incomplete": "Check every checklist item before continuing.",
-    "limit_reached": "Limit reached. Delete an old item and try again."
+    "limit_reached": "Limit reached. Delete an old item and try again.",
+    "approval_required": "Only the brand director sends to the agency. Ask for approval.",
+    "awaiting_approval": "This draft is waiting for the director. Withdraw the request to edit.",
+    "already_rated": "This deliverable was already rated."
   },
   "casting": {
     "title": "Roster",

@@ -37,6 +37,9 @@ export async function TodayPanel<K extends string>({ portal, items, kinds, local
   };
   const extra = (i: TodayItem<K>) => {
     if (i.kind === "terms" && i.status === "owner_only") return t("brand.termsOwnerOnly");
+    // 0081: aprovação interna e pré-seleção dizem o que a pessoa faz agora
+    if (i.kind === "internalApproval") return t(i.status === "returned" ? "brand.internalReturned" : "brand.internalPending");
+    if (i.kind === "shortlist") return t(i.status === "decided" ? "brand.shortlistDecided" : "brand.shortlistSent");
     if (i.status === "approved") return t("approvedToPublish");
     if (i.kind === "offer" && (i.status === "counter_open" || i.status === "counter_accepted" || i.status === "counter_rejected")) return t(`talent.${i.status}`);
     return null;

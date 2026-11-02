@@ -9,6 +9,7 @@ import { BriefFields } from "@/components/brief/BriefFields";
 import { Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief, EMPTY_BRIEF_DRAFT, type BriefDraft } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
+import { askApprovalAction } from "@/lib/selection/actions";
 import { DELIVERABLE_KINDS, FORMATS, OBJECTIVES } from "@/lib/deals/vocab";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 
@@ -38,13 +39,19 @@ export const EMPTY_CAMPAIGN: CampaignFormValues = {
   briefDraft: EMPTY_BRIEF_DRAFT,
 };
 
-type Props = { initial: CampaignFormValues; creatorName: string | null; canEdit: boolean };
+/**
+ * submitMode (0081): "submit" = o diretor envia à agência; "ask" = a equipe pede aprovação interna ao diretor;
+ * "none" = sem botão de envio (o diretor decide um pedido aguardando pelo painel de aprovação).
+ */
+type Props = { initial: CampaignFormValues; creatorName: string | null; canEdit: boolean; submitMode?: "submit" | "ask" | "none" };
 
 // Proposta de campanha da marca em 5 blocos (objetivo, público, período e formato, entregáveis, valor e
 // observações). "Salvar rascunho" e "Enviar à agência" são ações explícitas; enviar exige título,
 // objetivo, data de início, pelo menos uma rede e um entregável (a RPC confere de novo).
-export function CampaignForm({ initial, creatorName, canEdit }: Props) {
+export function CampaignForm({ initial, creatorName, canEdit, submitMode = "submit" }: Props) {
   const t = useTranslations("brandPortal.campaigns.form");
+  const ta = useTranslations("selection.approval");
+  const asking = submitMode === "ask";
   const tc = useTranslations("commercial");
   const tn = useTranslations("mediaKit.networks");
   const tb = useTranslations("brief");
@@ -93,13 +100,15 @@ export function CampaignForm({ initial, creatorName, canEdit }: Props) {
         else setV((cur) => ({ ...cur, id }));
         return;
       }
-      const sent = await submitRequestAction({ id });
+      const sent = asking ? await askApprovalAction({ id, note: "" }) : await submitRequestAction({ id });
       if (!sent.ok) {
         setConfirming(false);
         return setError(sent.error);
       }
       toast({ title: sent.message, variant: "success" });
+      setConfirming(false);
       router.push(`/marca/campanhas/${id}`);
+      router.refresh();
     });
   }
 
@@ -300,24 +309,26 @@ export function CampaignForm({ initial, creatorName, canEdit }: Props) {
           <Button type="submit" variant="secondary" leadingIcon={<Save />} loading={pending} data-testid="campaign-save">
             {t("saveDraft")}
           </Button>
-          <Button type="button" leadingIcon={<Send />} onClick={() => setConfirming(true)} disabled={pending} data-testid="campaign-submit">
-            {t("submit")}
-          </Button>
+          {submitMode !== "none" ? (
+            <Button type="button" leadingIcon={<Send />} onClick={() => setConfirming(true)} disabled={pending} data-testid="campaign-submit">
+              {asking ? ta("ask") : t("submit")}
+            </Button>
+          ) : null}
           {!complete ? <span className="self-center type-caption text-fg-muted">{t("incompleteHint")}</span> : null}
         </div>
       ) : null}
       <Dialog
         open={confirming}
         onOpenChange={setConfirming}
-        title={t("confirmTitle")}
-        description={t("confirmHint")}
+        title={asking ? ta("askTitle") : t("confirmTitle")}
+        description={asking ? ta("askHint") : t("confirmHint")}
         footer={
           <>
             <Button type="button" variant="secondary" onClick={() => setConfirming(false)} disabled={pending}>
               {t("back")}
             </Button>
             <Button type="button" onClick={() => save(true)} loading={pending} leadingIcon={<Send />} data-testid="campaign-submit-confirm">
-              {t("submit")}
+              {asking ? ta("ask") : t("submit")}
             </Button>
           </>
         }

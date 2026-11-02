@@ -10544,5 +10544,326 @@ delete from public.agencies where id = '87000000-0000-4000-8000-000000008701';
 delete from auth.users where id::text like '87000000-0000-4000-8000-00000000087%';
 drop table t_s87;
 
+-- ================================================================ S88 · Pré-seleção, comparação, aprovação pelo diretor e nota do influenciador (0081)
+-- Aprovação interna (a equipe pede, só o diretor envia/aprova/devolve; quem aprovou fica registrado), pré-seleção
+-- (lista da marca, decisão por creator, vira campanha e leva os aprovados), comparação de 2 a 4 creators do catálogo
+-- e avaliação por entregável (uma por entrega; a marca lê as próprias, a agência todas do elenco). Visitante, outra
+-- marca, creator e agência de fora ficam de fora. Assinaturas recriadas sem sobrecarga; S14 segue 18.
+\ir ../migrations/0081_preselecao_aprovacao_notas.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('88000000-0000-4000-8000-000000000881', 's88-gestor@test.local'),
+  ('88000000-0000-4000-8000-000000000882', 's88-colab@test.local'),
+  ('88000000-0000-4000-8000-000000000883', 's88-diretor@test.local'),
+  ('88000000-0000-4000-8000-000000000884', 's88-analista@test.local'),
+  ('88000000-0000-4000-8000-000000000885', 's88-outra-marca@test.local'),
+  ('88000000-0000-4000-8000-000000000886', 's88-creator@test.local'),
+  ('88000000-0000-4000-8000-000000000887', 's88-agencia-fora@test.local');
+insert into public.agencies (id, slug, name) values
+  ('88000000-0000-4000-8000-000000008801', 's88-agencia', 'Agência S88'),
+  ('88000000-0000-4000-8000-000000008802', 's88-agencia-fora', 'Agência Fora S88');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000000881', 'manager', 'Gil Gestor S88'),
+  ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000000882', 'staff', 'Caio Colab S88'),
+  ('88000000-0000-4000-8000-000000008802', '88000000-0000-4000-8000-000000000887', 'admin', 'Fora S88');
+insert into public.brands (id, slug, name, site_url) values
+  ('88000000-0000-4000-8000-000000008811', 's88-marca-alfa', 'Marca Alfa S88', 'https://alfa.s88.test'),
+  ('88000000-0000-4000-8000-000000008812', 's88-marca-beta', 'Marca Beta S88', 'https://beta.s88.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008811'),
+  ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008812');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000000883', 'owner', 'Diretora Alfa'),
+  ('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000000884', 'staff', 'Analista Alfa'),
+  ('88000000-0000-4000-8000-000000008812', '88000000-0000-4000-8000-000000000885', 'owner', 'Dono Beta');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
+  ('88000000-0000-4000-8000-000000008821', '88000000-0000-4000-8000-000000008801', 'Creator A S88', '88000000-0000-4000-8000-000000000886', true, now() - interval '30 days'),
+  ('88000000-0000-4000-8000-000000008822', '88000000-0000-4000-8000-000000008801', 'Creator B S88', null, true, now() - interval '30 days'),
+  ('88000000-0000-4000-8000-000000008823', '88000000-0000-4000-8000-000000008801', 'Creator C S88', null, true, now() - interval '30 days'),
+  ('88000000-0000-4000-8000-000000008824', '88000000-0000-4000-8000-000000008801', 'Creator Oculto S88', null, false, now() - interval '30 days');
+insert into public.talent_availability (agency_id, talent_id, kind, starts_on, ends_on, note) values
+  ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008821', 'available', current_date + 5, current_date + 20, 'Livre S88'),
+  ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008821', 'blocked', current_date + 50, current_date + 90, 'Viagem particular S88'),
+  ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008823', 'available', current_date + 100, current_date + 120, 'Longe S88');
+-- campanha já em produção com a Creator A (para a nota) e um negócio onde a Creator B só foi sugerida
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, objective, networks, deliverables, period_start) values
+  ('88000000-0000-4000-8000-000000008831', '88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008811', 'brand', 'Verão Alfa S88', 'converted', now() - interval '20 days',
+   'awareness', array['instagram'], '[{"kind": "reels", "quantity": 2, "network": "instagram"}]', current_date - 15);
+insert into public.deals (id, agency_id, brand_id, request_id, title, stage, brand_visible, expected_start, expected_end) values
+  ('88000000-0000-4000-8000-000000008841', '88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008831', 'Verão Alfa S88', 'production', true,
+   current_date - 15, current_date + 10);
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('88000000-0000-4000-8000-000000008851', '88000000-0000-4000-8000-000000008841', '88000000-0000-4000-8000-000000008821', 'contracted', now() - interval '15 days', true),
+  ('88000000-0000-4000-8000-000000008852', '88000000-0000-4000-8000-000000008841', '88000000-0000-4000-8000-000000008822', 'suggested', null, false);
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, network, title, status, due_at, publish_at, published_at) values
+  ('88000000-0000-4000-8000-000000008861', '88000000-0000-4000-8000-000000008841', '88000000-0000-4000-8000-000000008851', 'reels', 'instagram', 'Reels 1 S88', 'published',
+   now() - interval '3 days', now() - interval '2 days', now() - interval '2 days'),
+  ('88000000-0000-4000-8000-000000008862', '88000000-0000-4000-8000-000000008841', '88000000-0000-4000-8000-000000008851', 'reels', 'instagram', 'Reels 2 S88', 'in_production',
+   now() + interval '3 days', null, null),
+  ('88000000-0000-4000-8000-000000008863', '88000000-0000-4000-8000-000000008841', '88000000-0000-4000-8000-000000008852', 'post', 'instagram', 'Post B S88', 'published',
+   now() - interval '3 days', null, now() - interval '1 day');
+create temp table t_s88 (k text primary key, v text);
+grant all on t_s88 to anon, authenticated, service_role;
+
+select tests.ok('S88 estrutura: 3 tabelas com RLS e só leitura, auxiliares fechadas, nada para visitante, sem sobrecarga; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.brand_shortlists'::regclass, 'public.brand_shortlist_items'::regclass, 'public.talent_ratings'::regclass))
+  and not has_table_privilege('anon', 'public.brand_shortlists', 'select')
+  and not has_table_privilege('anon', 'public.talent_ratings', 'select')
+  and not has_table_privilege('authenticated', 'public.brand_shortlists', 'insert')
+  and not has_table_privilege('authenticated', 'public.brand_shortlist_items', 'update')
+  and not has_table_privilege('authenticated', 'public.talent_ratings', 'insert')
+  and not has_function_privilege('authenticated', 'public.brand_rating_summary(uuid, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_visible_deal_talent(uuid, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_shortlist_lock(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.campaign_request_complete(public.campaign_requests)', 'execute')
+  and has_function_privilege('authenticated', 'public.brand_request_ask_approval(uuid, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.brand_talent_compare(uuid, uuid[])', 'execute')
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('brand_request_save', 'brand_request_submit', 'brand_workboard',
+         'brand_campaigns', 'brand_campaign_detail')) = 5
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+                  and p.proname in ('brand_rating_summary', 'brand_visible_deal_talent', 'brand_deliverable_rate', 'brand_talent_ratings', 'brand_talent_history',
+                                    'agency_talent_ratings', 'brand_talent_compare', 'brand_shortlist_lock', 'brand_shortlist_save', 'brand_shortlist_item_set',
+                                    'brand_shortlist_item_remove', 'brand_shortlist_send', 'brand_shortlist_decide', 'brand_shortlist_delete',
+                                    'brand_shortlist_to_campaign', 'brand_shortlists_list', 'brand_shortlist_detail', 'campaign_request_complete',
+                                    'brand_request_ask_approval', 'brand_request_approval_decide')
+                  and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S88 visitante não lê pré-seleções', $q$select count(*) from public.brand_shortlists$q$, 'permission denied');
+select tests.expect_error('S88 visitante não lê notas', $q$select count(*) from public.talent_ratings$q$, 'permission denied');
+select tests.expect_error('S88 visitante não compara', $q$select public.brand_talent_compare('88000000-0000-4000-8000-000000008811', array['88000000-0000-4000-8000-000000008821', '88000000-0000-4000-8000-000000008822']::uuid[])$q$, 'permission denied');
+
+-- aprovação interna: a analista monta e pede; só a diretora envia
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+insert into t_s88 values ('req', public.brand_request_save(null, '88000000-0000-4000-8000-000000008811', '{"title": "Inverno Alfa S88"}')::text);
+select tests.expect_error('S88 analista não envia direto à agência', $q$select public.brand_request_submit((select v::uuid from t_s88 where k = 'req'))$q$, 'approval_required');
+select tests.expect_error('S88 pedir aprovação exige o rascunho completo', $q$select public.brand_request_ask_approval((select v::uuid from t_s88 where k = 'req'), null)$q$, 'request_incomplete');
+select public.brand_request_save((select v::uuid from t_s88 where k = 'req'), '88000000-0000-4000-8000-000000008811',
+  jsonb_build_object('objective', 'launch', 'period_start', (current_date + 30)::text, 'networks', '["instagram"]'::jsonb,
+                     'deliverables', '[{"kind": "post", "quantity": 1, "network": "instagram"}]'::jsonb));
+select public.brand_request_ask_approval((select v::uuid from t_s88 where k = 'req'), 'Pode olhar hoje?');
+select tests.ok('S88 analista vê o próprio pedido aguardando',
+  (public.brand_campaign_detail((select v::uuid from t_s88 where k = 'req')) -> 'approval' ->> 'requested_by_me')::boolean
+  and (public.brand_campaign_detail((select v::uuid from t_s88 where k = 'req')) -> 'approval' ->> 'status') = 'pending');
+select tests.su();
+select tests.ok('S88 pedido gravado com quem pediu, quando e a nota',
+  (select approval_status = 'pending' and approval_requested_label = 'Analista Alfa' and approval_requested_at is not null and approval_request_note = 'Pode olhar hoje?'
+   from public.campaign_requests where id = (select v::uuid from t_s88 where k = 'req')));
+select tests.su();
+select tests.ok('S88 aviso internal_approval_requested só para a diretora',
+  (select count(*) from public.inbox_notifications where kind = 'internal_approval_requested' and entity_id = (select v::uuid from t_s88 where k = 'req')
+     and user_id = '88000000-0000-4000-8000-000000000883') = 1
+  and (select count(*) from public.inbox_notifications where kind = 'internal_approval_requested' and entity_id = (select v::uuid from t_s88 where k = 'req')) = 1);
+select tests.login('88000000-0000-4000-8000-000000000881', 's88-gestor@test.local');
+select tests.ok('S88 agência não vê o rascunho aguardando o diretor', (select count(*) from public.campaign_requests where id = (select v::uuid from t_s88 where k = 'req')) = 0);
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select tests.expect_error('S88 analista não edita enquanto espera o diretor',
+  $q$select public.brand_request_save((select v::uuid from t_s88 where k = 'req'), '88000000-0000-4000-8000-000000008811', '{"title": "Mudou S88"}')$q$, 'awaiting_approval');
+select tests.expect_error('S88 analista não aprova o próprio pedido', $q$select public.brand_request_approval_decide((select v::uuid from t_s88 where k = 'req'), 'approve', null)$q$, 'forbidden');
+select tests.expect_error('S88 pedir de novo enquanto espera', $q$select public.brand_request_ask_approval((select v::uuid from t_s88 where k = 'req'), null)$q$, 'invalid_state');
+select tests.login('88000000-0000-4000-8000-000000000885', 's88-outra-marca@test.local');
+select tests.expect_error('S88 outra marca não decide', $q$select public.brand_request_approval_decide((select v::uuid from t_s88 where k = 'req'), 'approve', null)$q$, 'not_found');
+select tests.login('88000000-0000-4000-8000-000000000883', 's88-diretor@test.local');
+select tests.expect_error('S88 devolver exige nota', $q$select public.brand_request_approval_decide((select v::uuid from t_s88 where k = 'req'), 'return', 'ok')$q$, 'note_required');
+select public.brand_request_approval_decide((select v::uuid from t_s88 where k = 'req'), 'return', 'Trocar a data de início.');
+select tests.su();
+select tests.ok('S88 diretora devolve com nota: fica registrado e a analista é avisada',
+  (select approval_status = 'returned' and approval_decided_label = 'Diretora Alfa' and approval_decision_note = 'Trocar a data de início.' and status = 'draft'
+   from public.campaign_requests where id = (select v::uuid from t_s88 where k = 'req'))
+  and exists (select 1 from public.inbox_notifications where kind = 'internal_approval_decided' and user_id = '88000000-0000-4000-8000-000000000884'));
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select public.brand_request_save((select v::uuid from t_s88 where k = 'req'), '88000000-0000-4000-8000-000000008811', jsonb_build_object('period_start', (current_date + 40)::text));
+select public.brand_request_ask_approval((select v::uuid from t_s88 where k = 'req'), null);
+select public.brand_request_approval_decide((select v::uuid from t_s88 where k = 'req'), 'withdraw', null);
+select tests.su();
+select tests.ok('S88 analista retira o pedido e volta a editar', (select approval_status from public.campaign_requests where id = (select v::uuid from t_s88 where k = 'req')) = 'none');
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select public.brand_request_ask_approval((select v::uuid from t_s88 where k = 'req'), null);
+select tests.ok('S88 painel da analista: o pedido aguardando é dela',
+  (select c ->> 'approval_status' = 'pending' and (c ->> 'approval_requested_by_me')::boolean
+   from jsonb_array_elements(public.brand_workboard('88000000-0000-4000-8000-000000008811') -> 'campaigns') c
+   where c ->> 'request_id' = (select v from t_s88 where k = 'req')));
+select tests.login('88000000-0000-4000-8000-000000000883', 's88-diretor@test.local');
+select tests.ok('S88 painel da diretora: pedido aguardando, não é dela',
+  (select c ->> 'approval_status' = 'pending' and not (c ->> 'approval_requested_by_me')::boolean
+   from jsonb_array_elements(public.brand_workboard('88000000-0000-4000-8000-000000008811') -> 'campaigns') c
+   where c ->> 'request_id' = (select v from t_s88 where k = 'req')));
+insert into t_s88 values ('deal', public.brand_request_approval_decide((select v::uuid from t_s88 where k = 'req'), 'approve', 'Aprovado.')::text);
+select tests.su();
+select tests.ok('S88 diretora aprova: vai à agência, com quem aprovou e quando',
+  (select status = 'converted' and approval_status = 'approved' and approval_decided_by = '88000000-0000-4000-8000-000000000883'
+     and approval_decided_label = 'Diretora Alfa' and approval_decided_at is not null and approval_requested_label = 'Analista Alfa'
+   from public.campaign_requests where id = (select v::uuid from t_s88 where k = 'req'))
+  and (select v from t_s88 where k = 'deal') is not null);
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select tests.ok('S88 a campanha mostra quem aprovou e quando',
+  (public.brand_campaign_detail((select v::uuid from t_s88 where k = 'req')) -> 'approval' ->> 'decided_label') = 'Diretora Alfa'
+  and (public.brand_campaign_detail((select v::uuid from t_s88 where k = 'req')) -> 'approval' ->> 'decided_at') is not null);
+select tests.login('88000000-0000-4000-8000-000000000881', 's88-gestor@test.local');
+select tests.ok('S88 a agência recebe o negócio aprovado', (select count(*) from public.deals where id = (select v::uuid from t_s88 where k = 'deal')) = 1);
+-- diretora envia direto: aprovação dela registrada
+select tests.login('88000000-0000-4000-8000-000000000883', 's88-diretor@test.local');
+insert into t_s88 values ('req2', public.brand_request_save(null, '88000000-0000-4000-8000-000000008811',
+  jsonb_build_object('title', 'Direto S88', 'objective', 'content', 'period_start', (current_date + 10)::text, 'networks', '["tiktok"]'::jsonb,
+                     'deliverables', '[{"kind": "video", "quantity": 1, "network": "tiktok"}]'::jsonb))::text);
+select public.brand_request_submit((select v::uuid from t_s88 where k = 'req2'));
+select tests.su();
+select tests.ok('S88 diretora envia direto e fica como quem aprovou',
+  (select approval_status = 'approved' and approval_decided_label = 'Diretora Alfa' and approval_requested_at is null
+   from public.campaign_requests where id = (select v::uuid from t_s88 where k = 'req2')));
+
+-- pré-seleção
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+insert into t_s88 values ('list', public.brand_shortlist_save(null, '88000000-0000-4000-8000-000000008811', 'Lista Primavera S88', 'Foco em beleza')::text);
+select tests.expect_error('S88 creator fora do catálogo não entra na lista',
+  $q$select public.brand_shortlist_item_set((select v::uuid from t_s88 where k = 'list'), '88000000-0000-4000-8000-000000008824', 'Bom alcance')$q$, 'not_found');
+select tests.expect_error('S88 motivo curto é recusado',
+  $q$select public.brand_shortlist_item_set((select v::uuid from t_s88 where k = 'list'), '88000000-0000-4000-8000-000000008821', 'ok')$q$, 'invalid_input');
+select public.brand_shortlist_item_set((select v::uuid from t_s88 where k = 'list'), '88000000-0000-4000-8000-000000008821', 'Já entregou bem para nós');
+select public.brand_shortlist_item_set((select v::uuid from t_s88 where k = 'list'), '88000000-0000-4000-8000-000000008822', 'Público jovem');
+select public.brand_shortlist_item_set((select v::uuid from t_s88 where k = 'list'), '88000000-0000-4000-8000-000000008823', 'Nicho certo');
+select public.brand_shortlist_item_set((select v::uuid from t_s88 where k = 'list'), '88000000-0000-4000-8000-000000008823', 'Nicho certo e boa agenda');
+select tests.ok('S88 lista com 3 creators e o motivo atualizado (sem duplicar)',
+  (select count(*) from public.brand_shortlist_items where shortlist_id = (select v::uuid from t_s88 where k = 'list')) = 3
+  and (public.brand_shortlist_detail((select v::uuid from t_s88 where k = 'list')) -> 'items' -> 2 ->> 'reason') = 'Nicho certo e boa agenda'
+  and (public.brand_shortlist_detail((select v::uuid from t_s88 where k = 'list')) -> 'items' -> 0 -> 'card' ->> 'name') = 'Creator A S88');
+select tests.login('88000000-0000-4000-8000-000000000883', 's88-diretor@test.local');
+select tests.expect_error('S88 diretora não decide lista em montagem',
+  $q$select public.brand_shortlist_decide((select id from public.brand_shortlist_items where talent_id = '88000000-0000-4000-8000-000000008821' and shortlist_id = (select v::uuid from t_s88 where k = 'list')), 'approved', null)$q$, 'invalid_state');
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select public.brand_shortlist_send((select v::uuid from t_s88 where k = 'list'));
+select tests.expect_error('S88 lista enviada não muda',
+  $q$select public.brand_shortlist_item_set((select v::uuid from t_s88 where k = 'list'), '88000000-0000-4000-8000-000000008822', 'Outro motivo')$q$, 'invalid_state');
+select tests.expect_error('S88 analista não decide a lista', $q$select public.brand_shortlist_decide((select id from public.brand_shortlist_items where talent_id = '88000000-0000-4000-8000-000000008821'), 'approved', null)$q$, 'forbidden');
+select tests.expect_error('S88 lista enviada não é apagada', $q$select public.brand_shortlist_delete((select v::uuid from t_s88 where k = 'list'))$q$, 'invalid_state');
+select tests.su();
+select tests.ok('S88 envio avisa a diretora', exists (select 1 from public.inbox_notifications where kind = 'shortlist_sent' and user_id = '88000000-0000-4000-8000-000000000883'
+  and entity_type = 'shortlist' and entity_id = (select v::uuid from t_s88 where k = 'list')));
+select tests.login('88000000-0000-4000-8000-000000000883', 's88-diretor@test.local');
+select tests.ok('S88 painel da diretora mostra a lista com 3 pendentes',
+  (select (s ->> 'pending')::int = 3 from jsonb_array_elements(public.brand_workboard('88000000-0000-4000-8000-000000008811') -> 'shortlists') s
+   where s ->> 'id' = (select v from t_s88 where k = 'list')));
+select public.brand_shortlist_decide((select id from public.brand_shortlist_items where talent_id = '88000000-0000-4000-8000-000000008821' and shortlist_id = (select v::uuid from t_s88 where k = 'list')), 'approved', null);
+select public.brand_shortlist_decide((select id from public.brand_shortlist_items where talent_id = '88000000-0000-4000-8000-000000008822' and shortlist_id = (select v::uuid from t_s88 where k = 'list')), 'rejected', 'Fora do público');
+select tests.expect_error('S88 decisão inválida', $q$select public.brand_shortlist_decide((select id from public.brand_shortlist_items where talent_id = '88000000-0000-4000-8000-000000008823'), 'talvez', null)$q$, 'invalid_input');
+select tests.ok('S88 com um pendente, a lista segue enviada', (select status from public.brand_shortlists where id = (select v::uuid from t_s88 where k = 'list')) = 'sent');
+select public.brand_shortlist_decide((select id from public.brand_shortlist_items where talent_id = '88000000-0000-4000-8000-000000008823' and shortlist_id = (select v::uuid from t_s88 where k = 'list')), 'approved', null);
+select tests.ok('S88 tudo decidido: lista decidida, cada decisão com quem e quando',
+  (select status = 'decided' and decided_at is not null from public.brand_shortlists where id = (select v::uuid from t_s88 where k = 'list'))
+  and (select bool_and(decided_label = 'Diretora Alfa' and decided_at is not null) from public.brand_shortlist_items where shortlist_id = (select v::uuid from t_s88 where k = 'list'))
+  and (select decision_note from public.brand_shortlist_items where shortlist_id = (select v::uuid from t_s88 where k = 'list') and talent_id = '88000000-0000-4000-8000-000000008822') = 'Fora do público');
+select tests.su();
+select tests.ok('S88 quem montou é avisado da decisão', exists (select 1 from public.inbox_notifications where kind = 'shortlist_decided' and user_id = '88000000-0000-4000-8000-000000000884'));
+select tests.login('88000000-0000-4000-8000-000000000885', 's88-outra-marca@test.local');
+select tests.ok('S88 outra marca lê 0 listas e 0 itens', (select count(*) from public.brand_shortlists) = 0 and (select count(*) from public.brand_shortlist_items) = 0);
+select tests.expect_error('S88 outra marca não abre a lista', $q$select public.brand_shortlist_detail((select v::uuid from t_s88 where k = 'list'))$q$, 'not_found');
+select tests.expect_error('S88 outra marca não transforma a lista em campanha', $q$select public.brand_shortlist_to_campaign((select v::uuid from t_s88 where k = 'list'), null)$q$, 'not_found');
+select tests.login('88000000-0000-4000-8000-000000000881', 's88-gestor@test.local');
+select tests.ok('S88 agência não lê a pré-seleção interna da marca', (select count(*) from public.brand_shortlists) = 0 and (select count(*) from public.brand_shortlist_items) = 0);
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+insert into t_s88 values ('req3', public.brand_shortlist_to_campaign((select v::uuid from t_s88 where k = 'list'), 'Primavera S88')::text);
+select tests.ok('S88 aprovados viram rascunho: primeiro aprovado como creator escolhido e a lista ligada',
+  (public.brand_campaign_detail((select v::uuid from t_s88 where k = 'req3')) -> 'shortlist' -> 'approved') = '["Creator A S88", "Creator C S88"]'
+  and (public.brand_campaign_detail((select v::uuid from t_s88 where k = 'req3')) -> 'request' ->> 'talent_id') = '88000000-0000-4000-8000-000000008821');
+select tests.su();
+select tests.ok('S88 rascunho gravado com a lista ligada',
+  (select status = 'draft' and title = 'Primavera S88' and shortlist_id = (select v::uuid from t_s88 where k = 'list')
+   from public.campaign_requests where id = (select v::uuid from t_s88 where k = 'req3')));
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select tests.expect_error('S88 a mesma lista não vira duas campanhas', $q$select public.brand_shortlist_to_campaign((select v::uuid from t_s88 where k = 'list'), null)$q$, 'invalid_state');
+select public.brand_request_save((select v::uuid from t_s88 where k = 'req3'), '88000000-0000-4000-8000-000000008811',
+  jsonb_build_object('objective', 'awareness', 'period_start', (current_date + 20)::text, 'networks', '["instagram"]'::jsonb,
+                     'deliverables', '[{"kind": "post", "quantity": 1, "network": "instagram"}]'::jsonb));
+select public.brand_request_ask_approval((select v::uuid from t_s88 where k = 'req3'), null);
+select tests.login('88000000-0000-4000-8000-000000000883', 's88-diretor@test.local');
+insert into t_s88 values ('deal3', public.brand_request_approval_decide((select v::uuid from t_s88 where k = 'req3'), 'approve', null)::text);
+select tests.su();
+select tests.ok('S88 no envio, os aprovados entram sugeridos (escolha da marca) e o recusado não',
+  (select array_agg(talent_id order by talent_id) from public.deal_talents where deal_id = (select v::uuid from t_s88 where k = 'deal3'))
+    = array['88000000-0000-4000-8000-000000008821', '88000000-0000-4000-8000-000000008823']::uuid[]
+  and (select bool_and(status = 'suggested' and reasons -> 0 ->> 'code' = 'brand_choice') from public.deal_talents where deal_id = (select v::uuid from t_s88 where k = 'deal3')));
+
+-- comparar
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select tests.expect_error('S88 comparar exige ao menos 2', $q$select public.brand_talent_compare('88000000-0000-4000-8000-000000008811', array['88000000-0000-4000-8000-000000008821']::uuid[])$q$, 'invalid_input');
+select tests.expect_error('S88 comparar aceita no máximo 4',
+  $q$select public.brand_talent_compare('88000000-0000-4000-8000-000000008811', array['88000000-0000-4000-8000-000000008821', '88000000-0000-4000-8000-000000008822',
+    '88000000-0000-4000-8000-000000008823', '88000000-0000-4000-8000-000000008824', '88000000-0000-4000-8000-000000008831']::uuid[])$q$, 'invalid_input');
+insert into t_s88 values ('cmp', public.brand_talent_compare('88000000-0000-4000-8000-000000008811',
+  array['88000000-0000-4000-8000-000000008823', '88000000-0000-4000-8000-000000008824', '88000000-0000-4000-8000-000000008821']::uuid[])::text);
+select tests.ok('S88 comparação: só quem está no catálogo, na ordem pedida, com 60 dias de agenda declarada (sem nota de bloqueio) e sem valor',
+  jsonb_array_length((select v::jsonb from t_s88 where k = 'cmp')) = 2
+  and ((select v::jsonb from t_s88 where k = 'cmp') -> 0 ->> 'name') = 'Creator C S88'
+  and jsonb_array_length((select v::jsonb from t_s88 where k = 'cmp') -> 0 -> 'periods') = 0
+  and jsonb_array_length((select v::jsonb from t_s88 where k = 'cmp') -> 1 -> 'periods') = 2
+  and ((select v::jsonb from t_s88 where k = 'cmp') -> 1 -> 'periods' -> 1 ->> 'ends_on')::date = current_date + 59
+  and ((select v::jsonb from t_s88 where k = 'cmp') -> 1 -> 'periods' -> 1 ->> 'note') = ''
+  and ((select v::jsonb from t_s88 where k = 'cmp') -> 1 -> 'rating' ->> 'campaigns')::int = 1
+  and (select v from t_s88 where k = 'cmp') !~ '(cents|fee|Oculto|Viagem)');
+select tests.login('88000000-0000-4000-8000-000000000885', 's88-outra-marca@test.local');
+select tests.expect_error('S88 outra marca não compara pela marca Alfa',
+  $q$select public.brand_talent_compare('88000000-0000-4000-8000-000000008811', array['88000000-0000-4000-8000-000000008821', '88000000-0000-4000-8000-000000008823']::uuid[])$q$, 'not_found');
+
+-- nota do influenciador
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+select tests.expect_error('S88 entrega ainda em produção não é avaliada', $q$select public.brand_deliverable_rate('88000000-0000-4000-8000-000000008862', true, 5, null)$q$, 'invalid_state');
+select tests.expect_error('S88 qualidade fora de 1–5', $q$select public.brand_deliverable_rate('88000000-0000-4000-8000-000000008861', true, 6, null)$q$, 'invalid_input');
+select tests.expect_error('S88 creator só sugerido (não mostrado à marca) não é avaliado', $q$select public.brand_deliverable_rate('88000000-0000-4000-8000-000000008863', true, 4, null)$q$, 'not_found');
+select public.brand_deliverable_rate('88000000-0000-4000-8000-000000008861', false, 4, 'Ótimo vídeo, atrasou um dia.');
+select tests.expect_error('S88 uma avaliação por entregável', $q$select public.brand_deliverable_rate('88000000-0000-4000-8000-000000008861', true, 5, null)$q$, 'already_rated');
+select tests.ok('S88 marca lê a própria nota: média, histórico, painel e campanha',
+  (select count(*) from public.talent_ratings) = 1
+  and (public.brand_talent_ratings('88000000-0000-4000-8000-000000008811') -> '88000000-0000-4000-8000-000000008821' ->> 'avg')::numeric = 4
+  and (public.brand_talent_ratings('88000000-0000-4000-8000-000000008811') -> '88000000-0000-4000-8000-000000008821' ->> 'on_time')::int = 0
+  and jsonb_array_length(public.brand_talent_history('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008821') -> 'ratings') = 1
+  and (public.brand_talent_history('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008821') -> 'ratings' -> 0 ->> 'rated_label') = 'Analista Alfa'
+  and jsonb_array_length(public.brand_talent_history('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008821') -> 'campaigns') = 1
+  and (select (x ->> 'rated')::boolean from jsonb_array_elements(public.brand_workboard('88000000-0000-4000-8000-000000008811') -> 'deliverables') x
+       where x ->> 'id' = '88000000-0000-4000-8000-000000008861')
+  and (public.brand_campaign_detail('88000000-0000-4000-8000-000000008831') -> 'ratings' -> 0 ->> 'quality')::int = 4);
+select tests.login('88000000-0000-4000-8000-000000000885', 's88-outra-marca@test.local');
+select tests.ok('S88 outra marca lê 0 notas e não vê a média da Alfa',
+  (select count(*) from public.talent_ratings) = 0
+  and not (public.brand_talent_ratings('88000000-0000-4000-8000-000000008812') ? '88000000-0000-4000-8000-000000008821'));
+select tests.expect_error('S88 outra marca não avalia', $q$select public.brand_deliverable_rate('88000000-0000-4000-8000-000000008862', true, 5, null)$q$, 'not_found');
+select tests.expect_error('S88 outra marca não lê o histórico da Alfa', $q$select public.brand_talent_history('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008821')$q$, 'not_found');
+select tests.login('88000000-0000-4000-8000-000000000882', 's88-colab@test.local');
+select tests.ok('S88 colaborador da agência vê a nota do elenco (média e quem avaliou)',
+  (select count(*) from public.talent_ratings) = 1
+  and (public.agency_talent_ratings('88000000-0000-4000-8000-000000008821') -> 'summary' ->> 'avg')::numeric = 4
+  and (public.agency_talent_ratings('88000000-0000-4000-8000-000000008821') -> 'items' -> 0 ->> 'brand_name') = 'Marca Alfa S88');
+select tests.expect_error('S88 colaborador não avalia pela marca', $q$select public.brand_deliverable_rate('88000000-0000-4000-8000-000000008862', true, 5, null)$q$, 'not_found');
+select tests.login('88000000-0000-4000-8000-000000000887', 's88-agencia-fora@test.local');
+select tests.ok('S88 agência de fora lê 0 notas', (select count(*) from public.talent_ratings) = 0);
+select tests.expect_error('S88 agência de fora não lê as notas do creator', $q$select public.agency_talent_ratings('88000000-0000-4000-8000-000000008821')$q$, 'not_found');
+select tests.login('88000000-0000-4000-8000-000000000886', 's88-creator@test.local');
+select tests.ok('S88 creator não lê as notas', (select count(*) from public.talent_ratings) = 0);
+select tests.expect_error('S88 creator não lê pela RPC da agência', $q$select public.agency_talent_ratings('88000000-0000-4000-8000-000000008821')$q$, 'not_found');
+
+-- rascunho de lista: apagar e limite
+select tests.login('88000000-0000-4000-8000-000000000884', 's88-analista@test.local');
+insert into t_s88 values ('list2', public.brand_shortlist_save(null, '88000000-0000-4000-8000-000000008811', 'Rascunho S88', null)::text);
+select tests.expect_error('S88 enviar lista vazia', $q$select public.brand_shortlist_send((select v::uuid from t_s88 where k = 'list2'))$q$, 'invalid_input');
+select public.brand_shortlist_delete((select v::uuid from t_s88 where k = 'list2'));
+select tests.ok('S88 rascunho de lista apagado', (select count(*) from public.brand_shortlists where id = (select v::uuid from t_s88 where k = 'list2')) = 0
+  and jsonb_array_length(public.brand_shortlists_list('88000000-0000-4000-8000-000000008811')) = 1);
+
+select tests.su();
+delete from public.talent_ratings where brand_id in ('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008812');
+delete from public.deals where agency_id = '88000000-0000-4000-8000-000000008801';
+delete from public.campaign_requests where brand_id in ('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008812');
+delete from public.brand_shortlists where brand_id in ('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008812');
+delete from public.talent_profiles where id::text like '88000000-%';
+delete from public.brand_members where brand_id in ('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008812');
+delete from public.agency_brands where agency_id = '88000000-0000-4000-8000-000000008801';
+delete from public.brands where id in ('88000000-0000-4000-8000-000000008811', '88000000-0000-4000-8000-000000008812');
+delete from public.inbox_notifications where user_id::text like '88000000-0000-4000-8000-00000000088%';
+delete from public.agency_members where agency_id in ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008802');
+delete from public.agencies where id in ('88000000-0000-4000-8000-000000008801', '88000000-0000-4000-8000-000000008802');
+delete from auth.users where id::text like '88000000-0000-4000-8000-00000000088%';
+drop table t_s88;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

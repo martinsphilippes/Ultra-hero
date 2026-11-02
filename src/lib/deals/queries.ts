@@ -312,6 +312,8 @@ export type BrandCampaignItem = {
   periodStart: string | null;
   dealId: string | null;
   talentName: string | null;
+  /** aprovação interna (0081) */
+  approvalStatus: "none" | "pending" | "returned" | "approved";
 };
 
 /** Campanhas da marca pela leitura fechada brand_campaigns (a marca não lê deals/campaign_requests direto). */
@@ -330,6 +332,7 @@ export async function listBrandCampaigns(brandId: string): Promise<{ available: 
       periodStart: (r.period_start as string | null) ?? null,
       dealId: (r.deal_id as string | null) ?? null,
       talentName: (r.talent_name as string | null) ?? null,
+      approvalStatus: r.approval_status === "pending" || r.approval_status === "returned" || r.approval_status === "approved" ? r.approval_status : "none",
     })),
   };
 }
@@ -341,7 +344,47 @@ export type BrandCampaignDetail = {
   requestedTalent: TalentCard | null;
   talents: (TalentCard & { dealTalentId: string; status: string })[];
   deliverables: { id: string; kind: string; network: string | null; title: string; dueAt: string | null; publishAt: string | null; status: string; talentName: string }[];
+  /** aprovação interna (0081; só pedidos da marca) */
+  approval: CampaignApproval | null;
+  /** pré-seleção que originou o rascunho (0081): os aprovados vão sugeridos no envio */
+  shortlist: { id: string; title: string; approved: string[] } | null;
+  /** avaliações das entregas desta campanha (0081) */
+  ratings: DeliverableRating[];
 };
+
+export type CampaignApproval = {
+  status: "none" | "pending" | "returned" | "approved";
+  requestedLabel: string;
+  requestedAt: string | null;
+  requestNote: string;
+  requestedByMe: boolean;
+  decidedLabel: string;
+  decidedAt: string | null;
+  decisionNote: string;
+};
+export type DeliverableRating = { deliverableId: string; onTime: boolean; quality: number; comment: string; ratedLabel: string; createdAt: string };
+
+function toApproval(raw: unknown): CampaignApproval | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const a = raw as Record<string, unknown>;
+  const status = a.status === "pending" || a.status === "returned" || a.status === "approved" ? a.status : "none";
+  return {
+    status,
+    requestedLabel: String(a.requested_label ?? ""),
+    requestedAt: (a.requested_at as string | null) ?? null,
+    requestNote: String(a.request_note ?? ""),
+    requestedByMe: a.requested_by_me === true,
+    decidedLabel: String(a.decided_label ?? ""),
+    decidedAt: (a.decided_at as string | null) ?? null,
+    decisionNote: String(a.decision_note ?? ""),
+  };
+}
+
+function toShortlistRef(raw: unknown): BrandCampaignDetail["shortlist"] {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const s = raw as Record<string, unknown>;
+  return { id: String(s.id), title: String(s.title ?? ""), approved: Array.isArray(s.approved) ? s.approved.map(String) : [] };
+}
 
 export type TalentCard = {
   id: string;
@@ -369,7 +412,7 @@ export type TalentCard = {
   agency?: { id: string; name: string } | null;
 };
 
-function toCard(raw: Record<string, unknown>): TalentCard {
+export function toCard(raw: Record<string, unknown>): TalentCard {
   return {
     id: String(raw.id),
     name: String(raw.name ?? ""),
@@ -432,6 +475,11 @@ export async function getBrandCampaign(requestId: string): Promise<BrandCampaign
     talents: Array.isArray(raw.talents) ? (raw.talents as Record<string, unknown>[]).map((t) => ({ ...toCard(t), dealTalentId: String(t.deal_talent_id), status: String(t.status) })) : [],
     deliverables: Array.isArray(raw.deliverables)
       ? (raw.deliverables as Record<string, unknown>[]).map((d) => ({ id: String(d.id), kind: String(d.kind), network: (d.network as string | null) ?? null, title: String(d.title ?? ""), dueAt: (d.due_at as string | null) ?? null, publishAt: (d.publish_at as string | null) ?? null, status: String(d.status), talentName: String(d.talent_name ?? "") }))
+      : [],
+    approval: toApproval(raw.approval),
+    shortlist: toShortlistRef(raw.shortlist),
+    ratings: Array.isArray(raw.ratings)
+      ? (raw.ratings as Record<string, unknown>[]).map((g) => ({ deliverableId: String(g.deliverable_id), onTime: g.on_time === true, quality: Number(g.quality) || 0, comment: String(g.comment ?? ""), ratedLabel: String(g.rated_label ?? ""), createdAt: String(g.created_at ?? "") }))
       : [],
   };
 }

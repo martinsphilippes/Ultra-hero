@@ -114,6 +114,22 @@
     "payout_updated": {
       "title": "Repasse atualizado",
       "body": "O repasse de {deal} mudou de situação."
+    },
+    "internal_approval_requested": {
+      "title": "Campanha para aprovar",
+      "body": "{name} pediu aprovação de {campaign}."
+    },
+    "internal_approval_decided": {
+      "title": "Aprovação interna",
+      "body": "O diretor decidiu sobre {campaign}."
+    },
+    "shortlist_sent": {
+      "title": "Pré-seleção para decidir",
+      "body": "{name} enviou a lista {list}."
+    },
+    "shortlist_decided": {
+      "title": "Pré-seleção decidida",
+      "body": "O diretor decidiu a lista {list}."
     }
   }
 }

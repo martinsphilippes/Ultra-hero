@@ -27,7 +27,10 @@
       "terms": "Accept terms",
       "message": "Reply to the agency",
       "deadline": "Delivery deadline",
-      "draft": "Stalled draft"
+      "draft": "Stalled draft",
+      "internalApproval": "Internal approval",
+      "shortlist": "Shortlist",
+      "rating": "Rate creator"
     },
     "kindsShort": {
       "approval": "Approvals",
@@ -35,8 +38,15 @@
       "terms": "Terms",
       "message": "Messages",
       "deadline": "Deadlines",
-      "draft": "Drafts"
-    }
+      "draft": "Drafts",
+      "internalApproval": "Internal approvals",
+      "shortlist": "Shortlists",
+      "rating": "Ratings"
+    },
+    "internalPending": "Waiting for your approval",
+    "internalReturned": "Sent back: adjust and ask again",
+    "shortlistSent": "Approve or decline each creator",
+    "shortlistDecided": "Decided: create the campaign with the approved"
   },
   "talent": {
     "title": "Today",

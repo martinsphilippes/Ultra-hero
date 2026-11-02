@@ -114,7 +114,9 @@
     "noPeriods": "No declared periods. Ask the agency in the proposal.",
     "blocked": "unavailable",
     "representedBy": "Represented by {agency}.",
-    "consentMissing": "no consent (kit unavailable)"
+    "consentMissing": "no consent (kit unavailable)",
+    "shortlistsLink": "Shortlist",
+    "compareHint": "Mark 2 to 4 creators to compare side by side."
   },
   "campaigns": {
     "draftSaved": "Draft saved.",

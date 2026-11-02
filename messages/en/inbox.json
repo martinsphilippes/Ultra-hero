@@ -114,6 +114,22 @@
     "payout_updated": {
       "title": "Payout updated",
       "body": "The payout for {deal} has a new status."
+    },
+    "internal_approval_requested": {
+      "title": "Campaign to approve",
+      "body": "{name} asked for approval of {campaign}."
+    },
+    "internal_approval_decided": {
+      "title": "Internal approval",
+      "body": "The director decided on {campaign}."
+    },
+    "shortlist_sent": {
+      "title": "Shortlist to decide",
+      "body": "{name} sent the list {list}."
+    },
+    "shortlist_decided": {
+      "title": "Shortlist decided",
+      "body": "The director decided the list {list}."
     }
   }
 }

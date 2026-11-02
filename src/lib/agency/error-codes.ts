@@ -32,6 +32,10 @@ export const AGENCY_ERROR_CODES = [
   // briefing, checklists e modelos (0080)
   "checklist_incomplete",
   "limit_reached",
+  // pré-seleção, aprovação interna e nota (0081)
+  "approval_required",
+  "awaiting_approval",
+  "already_rated",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

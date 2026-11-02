@@ -30,6 +30,12 @@ export function toBrandWorkboard(data: unknown): BrandWorkboard | null {
       updatedAt: text(c.updated_at),
       requestedTalentName: str(c.requested_talent_name),
       requestedCount: num(c.requested_count),
+      approvalStatus: ["pending", "returned", "approved"].includes(String(c.approval_status)) ? String(c.approval_status) : "none",
+      approvalRequestedByMe: c.approval_requested_by_me === true,
+      approvalRequestedAt: str(c.approval_requested_at),
+      approvalRequestedLabel: text(c.approval_requested_label),
+      approvalDecidedAt: str(c.approval_decided_at),
+      approvalDecisionNote: text(c.approval_decision_note),
     })),
     talents: arr(k.talents).map((t) => ({ dealTalentId: text(t.deal_talent_id), requestId: text(t.request_id), talentName: text(t.talent_name), status: text(t.status) })),
     deliverables: arr(k.deliverables).map((d) => ({
@@ -44,10 +50,25 @@ export function toBrandWorkboard(data: unknown): BrandWorkboard | null {
       publishAt: str(d.publish_at),
       submittedAt: str(d.submitted_at),
       talentName: text(d.talent_name),
+      closedAt: str(d.closed_at),
+      rated: d.rated === true,
     })),
     scriptApprovals: arr(k.script_approvals).map((s) => ({ taskId: text(s.task_id), requestId: text(s.request_id), dealTitle: text(s.deal_title), talentName: str(s.talent_name), dueAt: str(s.due_at), since: str(s.since) })),
     termsPending: arr(k.terms_pending).map((m) => ({ termsId: text(m.terms_id), requestId: text(m.request_id), dealTitle: text(m.deal_title), version: num(m.version), sentAt: str(m.sent_at), validUntil: str(m.valid_until) })),
     threads: arr(k.threads).map((m) => ({ dealId: text(m.deal_id), requestId: text(m.request_id), dealTitle: text(m.deal_title), lastAt: text(m.last_at), authorLabel: text(m.author_label), excerpt: text(m.excerpt) })),
+    shortlists: arr(k.shortlists)
+      .filter((x) => x.status === "sent" || x.status === "decided")
+      .map((x) => ({
+        id: text(x.id),
+        title: text(x.title),
+        status: x.status as "sent" | "decided",
+        sentAt: str(x.sent_at),
+        decidedAt: str(x.decided_at),
+        createdByMe: x.created_by_me === true,
+        createdLabel: text(x.created_label),
+        pending: num(x.pending),
+        approved: num(x.approved),
+      })),
   };
 }
 

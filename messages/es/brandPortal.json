@@ -114,7 +114,9 @@
     "noPeriods": "Ningún período declarado. Pregunta a la agencia en la propuesta.",
     "blocked": "no disponible",
     "representedBy": "Representado por {agency}.",
-    "consentMissing": "sin consentimiento (kit no disponible)"
+    "consentMissing": "sin consentimiento (kit no disponible)",
+    "shortlistsLink": "Preselección",
+    "compareHint": "Marca de 2 a 4 creadores para comparar lado a lado."
   },
   "campaigns": {
     "draftSaved": "Borrador guardado.",

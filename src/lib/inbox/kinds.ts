@@ -26,6 +26,11 @@ export const INBOX_KINDS = [
   "relationship_alert",
   "task_overdue",
   "payout_updated",
+  // aprovação interna e pré-seleção da marca (0081)
+  "internal_approval_requested",
+  "internal_approval_decided",
+  "shortlist_sent",
+  "shortlist_decided",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

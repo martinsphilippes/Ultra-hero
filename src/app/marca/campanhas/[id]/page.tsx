@@ -13,6 +13,8 @@ import { RequestSummary } from "@/components/deals/RequestSummary";
 import { BrandStatusBadge, DeliverableStatusBadge } from "@/components/deals/StatusBadges";
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
 import { TaskList } from "@/components/execution/TaskList";
+import { ApprovalPanel } from "@/components/selection/ApprovalPanel";
+import { RatingPanel } from "@/components/selection/RatingPanel";
 import { TermsPanel } from "@/components/execution/TermsPanel";
 import { PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -24,6 +26,7 @@ import { BRAND_STATUSES } from "@/lib/deals/stages";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
+import { draftEditable } from "@/lib/selection/logic";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -41,12 +44,23 @@ export default async function BrandCampaignPage({ params }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
   const { id } = await params;
-  const [t, tc, tb, locale, detail, budget] = await Promise.all([getTranslations("brandPortal.campaigns"), getTranslations("commercial"), getTranslations("brief"), getLocale() as Promise<Locale>, getBrandCampaign(id), getRequestBudget(id)]);
+  const [t, tc, tb, ts, locale, detail, budget] = await Promise.all([
+    getTranslations("brandPortal.campaigns"),
+    getTranslations("commercial"),
+    getTranslations("brief"),
+    getTranslations("selection"),
+    getLocale() as Promise<Locale>,
+    getBrandCampaign(id),
+    getRequestBudget(id),
+  ]);
   if (!detail) notFound();
   const { request, deal } = detail;
   const isDraft = request.status === "draft";
   const canEdit = Boolean(ctx.role);
-  const editable = isDraft && canEdit;
+  // 0081: a equipe não edita o rascunho que espera o diretor; só o diretor envia à agência (a equipe pede aprovação)
+  const approval = detail.approval ?? { status: "none" as const, requestedLabel: "", requestedAt: null, requestNote: "", requestedByMe: false, decidedLabel: "", decidedAt: null, decisionNote: "" };
+  const editable = isDraft && canEdit && draftEditable(ctx.role, approval.status);
+  const submitMode = ctx.role === "owner" ? (approval.status === "pending" ? "none" : "submit") : "ask";
   const stepIndex = BRAND_STATUSES.indexOf(detail.brandStatus);
   const steps = BRAND_STATUSES.filter((s) => s !== "cancelled");
   const inExecution = deal !== null && ["contracting", "running", "done"].includes(detail.brandStatus);
@@ -64,6 +78,13 @@ export default async function BrandCampaignPage({ params }: Props) {
   const brandTasks = execution?.tasks.filter((x) => x.side === "brand") ?? [];
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
   const preConfirmation = ["received", "building", "proposal"].includes(detail.brandStatus) || isDraft;
+  const shortlistNote = detail.shortlist ? (
+    <p className="rounded-xl border border-accent/30 bg-accent-soft px-3 py-2 type-body-sm text-fg" data-testid="campaign-shortlist">
+      {ts("shortlists.fromShortlist", { title: detail.shortlist.title, names: detail.shortlist.approved.join(", ") || "—" })}{" "}
+      {isDraft ? <span className="text-fg-muted">{ts("shortlists.fromShortlistHint")}</span> : null}
+    </p>
+  ) : null;
+  const ratable = (execution?.deliverables ?? []).map((d) => ({ id: d.id, title: d.title, kind: d.kind, talentName: d.talentName, status: d.status, dueAt: d.dueAt, publishAt: d.publishAt, publishedAt: d.publishedAt, proofAt: d.proofAt }));
 
   if (editable) {
     return (
@@ -75,7 +96,10 @@ export default async function BrandCampaignPage({ params }: Props) {
             </span>
           }
         />
+        {request.origin === "brand" ? <ApprovalPanel requestId={request.id} role={ctx.role} approval={approval} isDraft /> : null}
+        {shortlistNote}
         <CampaignForm
+          submitMode={submitMode}
           initial={{
             id: request.id,
             talentId: request.talentId ?? "",
@@ -127,6 +151,8 @@ export default async function BrandCampaignPage({ params }: Props) {
           ) : null
         }
       />
+      {request.origin === "brand" && detail.brandStatus !== "cancelled" ? <ApprovalPanel requestId={request.id} role={ctx.role} approval={approval} isDraft={isDraft} /> : null}
+      {shortlistNote}
       {detail.brandStatus !== "cancelled" ? (
         <ol className="flex flex-wrap gap-2" aria-label={t("stepsLabel")} data-testid="campaign-steps">
           {steps.map((s, i) => (
@@ -227,6 +253,15 @@ export default async function BrandCampaignPage({ params }: Props) {
               </ul>
             )}
           </section>
+          {deal && execution && ratable.some((d) => ["published", "proof_submitted", "done"].includes(d.status)) ? (
+            <section className={card} aria-labelledby="camp-ratings" data-testid="campaign-ratings">
+              <h2 id="camp-ratings" className="text-base font-semibold text-fg">
+                {ts("rating.title")}
+              </h2>
+              <p className="type-caption text-fg-muted">{ts("rating.hint")}</p>
+              <RatingPanel requestId={request.id} deliverables={ratable} ratings={detail.ratings} canAct={canEdit} />
+            </section>
+          ) : null}
           {ctx.agency ? (
             <section className={card} aria-labelledby="camp-docs">
               <h2 id="camp-docs" className="text-base font-semibold text-fg">

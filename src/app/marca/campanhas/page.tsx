@@ -3,7 +3,7 @@ import { Megaphone, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { BrandStatusBadge } from "@/components/deals/StatusBadges";
-import { Button, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { getBrandContext } from "@/lib/brand-portal/server";
@@ -16,11 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("campaigns") };
 }
 
-// Campanhas da marca: rascunhos, propostas enviadas e o andamento (situação em 8 etapas, sem valores).
+// Campanhas da marca: rascunhos (com a aprovação interna, 0081), propostas enviadas e o andamento (situação em 8
+// etapas, sem valores).
 export default async function BrandCampaignsPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
-  const [t, locale, list] = await Promise.all([getTranslations("brandPortal.campaigns"), getLocale() as Promise<Locale>, listBrandCampaigns(ctx.brand.id)]);
+  const [t, ta, locale, list] = await Promise.all([getTranslations("brandPortal.campaigns"), getTranslations("selection.approval.badge"), getLocale() as Promise<Locale>, listBrandCampaigns(ctx.brand.id)]);
   const canCreate = Boolean(ctx.role) && Boolean(ctx.agency);
 
   if (!list.available) {
@@ -73,6 +74,12 @@ export default async function BrandCampaignsPage() {
                     {t("updatedAt", { date: formatDateTime(c.updatedAt, locale) })}
                   </span>
                 </span>
+                {/* 0081: rascunho aguardando o diretor ou devolvido aparece com a situação interna */}
+                {c.status === "draft" && (c.approvalStatus === "pending" || c.approvalStatus === "returned") ? (
+                  <Badge size="md" variant={c.approvalStatus === "pending" ? "warning" : "danger"} data-testid="campaign-approval-badge">
+                    {ta(c.approvalStatus)}
+                  </Badge>
+                ) : null}
                 <BrandStatusBadge status={c.status} size="md" />
               </Link>
             </li>

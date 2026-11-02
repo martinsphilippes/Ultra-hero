@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Search, Users } from "lucide-react";
+import { ListChecks, Search, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
+import Link from "next/link";
+import { CatalogGrid } from "@/components/selection/CatalogGrid";
 import { Button, EmptyState, Input, PageHeader, Select } from "@/components/ui";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { searchTalentsForBrand } from "@/lib/deals/queries";
+import { brandRatings } from "@/lib/selection/queries";
 import { AVAILABILITIES, NETWORKS, UFS } from "@/lib/talent/vocab";
 
 export const dynamic = "force-dynamic";
@@ -19,14 +21,15 @@ type Props = { searchParams: Promise<{ q?: string; segmento?: string; uf?: strin
 const pick = (value: string | undefined, allowed: readonly string[]) => (value && allowed.includes(value) ? value : undefined);
 
 // Catálogo autorizado (6.3): só creators com consentimento vigente e liberados pela agência; cada cartão
-// mostra o que o kit libera, com os critérios atendidos e "dados insuficientes" quando falta base.
+// mostra o que o kit libera, com os critérios atendidos e "dados insuficientes" quando falta base. 0081: nota média
+// da marca em cada cartão, "Comparar" (2 a 4) e o atalho para a pré-seleção.
 export default async function BrandCreatorsPage({ searchParams }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
   const sp = await searchParams;
   const minFollowers = sp.seguidores && /^\d{1,9}$/.test(sp.seguidores) ? Number(sp.seguidores) : undefined;
   const filters = { q: sp.q?.slice(0, 60), segment: sp.segmento && /^[0-9a-f-]{36}$/i.test(sp.segmento) ? sp.segmento : undefined, state: pick(sp.uf, UFS), network: pick(sp.rede, NETWORKS), minFollowers, availability: pick(sp.disponibilidade, AVAILABILITIES.filter((a) => a !== "unavailable")) };
-  const [t, tn, list] = await Promise.all([getTranslations("brandPortal.creators"), getTranslations("mediaKit.networks"), searchTalentsForBrand(ctx.brand.id, filters)]);
+  const [t, tn, list, ratings] = await Promise.all([getTranslations("brandPortal.creators"), getTranslations("mediaKit.networks"), searchTalentsForBrand(ctx.brand.id, filters), brandRatings(ctx.brand.id)]);
   const filtered = Boolean(filters.q || filters.segment || filters.state || filters.network || filters.minFollowers || filters.availability);
   // segmentos para o filtro: os que aparecem nos cartões (a marca não lê a lista interna da agência)
   const segments = new Map<string, string>();
@@ -42,7 +45,17 @@ export default async function BrandCreatorsPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title={t("title")} description={ctx.agency ? t("description", { agency: ctx.agency.name }) : t("descriptionNoAgency")} />
+      <PageHeader
+        title={t("title")}
+        description={ctx.agency ? t("description", { agency: ctx.agency.name }) : t("descriptionNoAgency")}
+        actions={
+          <Button asChild size="sm" variant="secondary" leadingIcon={<ListChecks />}>
+            <Link href="/marca/creators/pre-selecao" data-testid="shortlists-link">
+              {t("shortlistsLink")}
+            </Link>
+          </Button>
+        }
+      />
       <form method="get" action="/marca/creators" className="grid gap-3 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_6rem_1fr_1fr_1fr_auto]" data-testid="catalog-filters">
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
           {t("filters.search")}
@@ -106,15 +119,12 @@ export default async function BrandCreatorsPage({ searchParams }: Props) {
           ) : null}
         </div>
       </form>
-      <p className="type-caption text-fg-muted">{t("sourceNote")}</p>
+      <p className="type-caption text-fg-muted">
+        {t("sourceNote")} {list.items.length > 1 ? t("compareHint") : null}
+      </p>
       {list.items.length > 0 ? (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="catalog-list">
-          {list.items.map((card) => (
-            <li key={card.id}>
-              <TalentCardCompact card={card} href={`/marca/creators/${card.id}`} />
-            </li>
-          ))}
-        </ul>
+        // nota média da marca e "Comparar" (0081)
+        <CatalogGrid cards={list.items} ratings={ratings} />
       ) : (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState icon={<Users />} title={filtered ? t("emptyFiltered") : t("empty")} description={filtered ? undefined : t("emptyHint")} />

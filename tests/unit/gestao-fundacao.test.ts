@@ -103,9 +103,9 @@ describe("erros das RPCs", () => {
 });
 
 describe("avisos", () => {
-  it("25 tipos, iguais ao check do banco", () => {
-    expect(INBOX_KINDS).toHaveLength(25);
-    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0064_gestao_fundacao.sql"), "utf8");
+  it("29 tipos, iguais ao check do banco (recriado na 0081 com os avisos da marca)", () => {
+    expect(INBOX_KINDS).toHaveLength(29);
+    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0081_preselecao_aprovacao_notas.sql"), "utf8");
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(isInboxKind("member_joined")).toBe(true);
     expect(isInboxKind("auction_outbid")).toBe(false);

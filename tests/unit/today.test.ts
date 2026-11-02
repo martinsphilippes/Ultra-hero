@@ -153,7 +153,7 @@ describe("ordem do Hoje", () => {
   });
   it("conta por tipo (todos os tipos presentes, zero quando não há)", () => {
     const c = countByKind([item("a", "terms", "waiting", null), item("b", "terms", "today", null)] as TodayItem<(typeof BRAND_TODAY_KINDS)[number]>[], BRAND_TODAY_KINDS);
-    expect(c).toEqual({ approval: 0, script: 0, terms: 2, message: 0, deadline: 0, draft: 0 });
+    expect(c).toEqual({ approval: 0, internalApproval: 0, shortlist: 0, script: 0, terms: 2, message: 0, deadline: 0, rating: 0, draft: 0 });
   });
 });
 

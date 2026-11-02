@@ -27,7 +27,10 @@
       "terms": "Aceitar termos",
       "message": "Responder a agência",
       "deadline": "Prazo de entrega",
-      "draft": "Rascunho parado"
+      "draft": "Rascunho parado",
+      "internalApproval": "Aprovação interna",
+      "shortlist": "Pré-seleção",
+      "rating": "Avaliar creator"
     },
     "kindsShort": {
       "approval": "Aprovações",
@@ -35,8 +38,15 @@
       "terms": "Termos",
       "message": "Mensagens",
       "deadline": "Prazos",
-      "draft": "Rascunhos"
-    }
+      "draft": "Rascunhos",
+      "internalApproval": "Aprovações internas",
+      "shortlist": "Pré-seleções",
+      "rating": "Avaliações"
+    },
+    "internalPending": "Aguardando a sua aprovação",
+    "internalReturned": "Devolvida: ajuste e peça de novo",
+    "shortlistSent": "Aprove ou recuse cada creator",
+    "shortlistDecided": "Decidida: crie a campanha com os aprovados"
   },
   "talent": {
     "title": "Hoje",

@@ -20,6 +20,9 @@ export type BoardStage = (typeof BOARD_STAGES)[number];
 
 export const SOON_DAYS = 3;
 export const STALE_DRAFT_DAYS = 3;
+/** Entrega fechada há mais que isso sem avaliação sai do "Hoje" (continua avaliável na campanha). */
+export const RATING_WINDOW_DAYS = 30;
+const RATABLE = new Set<DeliverableStatus>(["published", "proof_submitted", "done"]);
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // ---------------------------------------------------------------- dados que chegam do banco (já normalizados)
@@ -33,6 +36,13 @@ export type WbCampaign = {
   updatedAt: string;
   requestedTalentName: string | null;
   requestedCount: number;
+  /** aprovação interna (0081): none | pending | returned | approved */
+  approvalStatus?: string;
+  approvalRequestedByMe?: boolean;
+  approvalRequestedAt?: string | null;
+  approvalRequestedLabel?: string;
+  approvalDecidedAt?: string | null;
+  approvalDecisionNote?: string;
 };
 export type WbTalent = { dealTalentId: string; requestId: string; talentName: string; status: string };
 export type WbDeliverable = {
@@ -47,10 +57,15 @@ export type WbDeliverable = {
   publishAt: string | null;
   submittedAt: string | null;
   talentName: string;
+  /** 0081: quando a entrega fechou (comprovada/publicada) e se a marca já avaliou */
+  closedAt?: string | null;
+  rated?: boolean;
 };
 export type WbScript = { taskId: string; requestId: string; dealTitle: string; talentName: string | null; dueAt: string | null; since: string | null };
 export type WbTerms = { termsId: string; requestId: string; dealTitle: string; version: number; sentAt: string | null; validUntil: string | null };
 export type WbThread = { dealId: string; requestId: string; dealTitle: string; lastAt: string; authorLabel: string; excerpt: string };
+/** Pré-seleção enviada ao diretor ou já decidida, ainda sem campanha (0081). */
+export type WbShortlist = { id: string; title: string; status: "sent" | "decided"; sentAt: string | null; decidedAt: string | null; createdByMe: boolean; createdLabel: string; pending: number; approved: number };
 
 export type BrandWorkboard = {
   role: "owner" | "staff" | null;
@@ -61,6 +76,7 @@ export type BrandWorkboard = {
   scriptApprovals: WbScript[];
   termsPending: WbTerms[];
   threads: WbThread[];
+  shortlists?: WbShortlist[];
 };
 
 // ---------------------------------------------------------------- painel por etapa (marca)
@@ -210,7 +226,8 @@ export function urgencyOfDay(day: string | null, now: Date, timeZone: string, so
 }
 
 // ---------------------------------------------------------------- itens do "Hoje"
-export const BRAND_TODAY_KINDS = ["approval", "script", "terms", "message", "deadline", "draft"] as const;
+// 0081: aprovação interna (diretor aprova / analista ajusta o devolvido), pré-seleção e avaliar entrega fechada
+export const BRAND_TODAY_KINDS = ["approval", "internalApproval", "shortlist", "script", "terms", "message", "deadline", "rating", "draft"] as const;
 export type BrandTodayKind = (typeof BRAND_TODAY_KINDS)[number];
 export const TALENT_TODAY_KINDS = ["adjustment", "scriptAdjustment", "terms", "offer", "deliverable", "task"] as const;
 export type TalentTodayKind = (typeof TALENT_TODAY_KINDS)[number];
@@ -303,8 +320,38 @@ export function buildBrandToday(wb: BrandWorkboard, now: Date, opts: { staleDraf
     items.push({ ...base, key: `message:${th.dealId}`, kind: "message", urgency: "waiting", deadline: null, since: th.lastAt,
       href: campaignHref(th.requestId, "camp-messages"), title: titleOf.get(th.requestId) || th.dealTitle, context: th.authorLabel, note: th.excerpt || null });
   }
+  // 0081: só quem tem papel na marca age (o admin da plataforma só lê)
+  if (wb.role) {
+    for (const c of wb.campaigns) {
+      if (c.requestStatus !== "draft") continue;
+      if (wb.role === "owner" && c.approvalStatus === "pending") {
+        items.push({ ...base, key: `internalApproval:${c.requestId}`, kind: "internalApproval", urgency: "waiting", deadline: null, since: c.approvalRequestedAt ?? c.updatedAt,
+          href: campaignHref(c.requestId, "camp-approval"), title: c.title, context: c.approvalRequestedLabel ?? "", status: "pending" });
+      } else if (wb.role === "staff" && c.approvalStatus === "returned" && c.approvalRequestedByMe) {
+        items.push({ ...base, key: `internalApproval:${c.requestId}`, kind: "internalApproval", urgency: "waiting", deadline: null, since: c.approvalDecidedAt ?? c.updatedAt,
+          href: campaignHref(c.requestId, "camp-approval"), title: c.title, context: "", note: c.approvalDecisionNote || null, status: "returned" });
+      }
+    }
+    for (const s of wb.shortlists ?? []) {
+      const href = `/marca/creators/pre-selecao/${s.id}`;
+      if (wb.role === "owner" && s.status === "sent" && s.pending > 0) {
+        items.push({ ...base, key: `shortlist:${s.id}`, kind: "shortlist", urgency: "waiting", deadline: null, since: s.sentAt, href, title: s.title, context: s.createdLabel, status: "sent" });
+      } else if (s.status === "decided" && s.createdByMe && s.approved > 0) {
+        items.push({ ...base, key: `shortlist:${s.id}`, kind: "shortlist", urgency: "waiting", deadline: null, since: s.decidedAt, href, title: s.title, context: "", status: "decided" });
+      }
+    }
+    for (const d of wb.deliverables) {
+      if (!RATABLE.has(d.status) || d.rated !== false || !d.closedAt) continue;
+      const closed = Date.parse(d.closedAt);
+      if (Number.isNaN(closed) || now.getTime() - closed > RATING_WINDOW_DAYS * DAY_MS) continue;
+      items.push({ ...base, key: `rating:${d.id}`, kind: "rating", urgency: "waiting", deadline: null, since: d.closedAt,
+        href: campaignHref(d.requestId, "camp-ratings"), title: d.title || d.kind, context: join(titleOf.get(d.requestId), d.talentName) });
+    }
+  }
   for (const c of wb.campaigns) {
     if (c.requestStatus !== "draft" || c.brandStatus !== "draft") continue;
+    // aguardando o diretor não é rascunho parado (para o diretor ele já aparece como aprovação interna)
+    if (c.approvalStatus === "pending") continue;
     const age = now.getTime() - Date.parse(c.updatedAt);
     if (!(age >= stale * DAY_MS)) continue;
     items.push({ ...base, key: `draft:${c.requestId}`, kind: "draft", urgency: "waiting", deadline: null, since: c.updatedAt,
