@@ -35,6 +35,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: "groscove-ultra",
   ...(EXPO_OWNER ? { owner: EXPO_OWNER } : {}),
   scheme: "gchero",
+  // Fixo: o react-dom da web (pasta pai) faz o Expo incluir "web" só na máquina local, o que muda o
+  // fingerprint e deixa `eas update` sem build que o receba.
+  platforms: ["ios", "android"],
   // versão que a pessoa vê; o número do build vem do EAS (appVersionSource remote)
   version: "1.0.0",
   // a web é responsiva: sem trava de orientação (a Play reclamou dela no Quantso; Android 16 ignora)
