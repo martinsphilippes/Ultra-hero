@@ -7,6 +7,7 @@ import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { BrandSwitcher } from "@/components/agency/BrandSwitcher";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
+import { BudgetOverview } from "@/components/finance/BudgetOverview";
 import { TodayPanel } from "@/components/today/TodayPanel";
 import { Button, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -16,6 +17,7 @@ import { listBrandMembers } from "@/lib/agency/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { listBrandCampaigns } from "@/lib/deals/queries";
 import { listTasks } from "@/lib/execution/queries";
+import { brandBudgetOverview } from "@/lib/finance/queries";
 import { unreadInboxCount } from "@/lib/inbox/queries";
 import { BOARD_STAGES, BRAND_TODAY_KINDS, boardCounts, buildBrandBoard, buildBrandToday } from "@/lib/today/logic";
 import { getBrandWorkboard } from "@/lib/today/queries";
@@ -32,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
-  const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard] = await Promise.all([
+  const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard, budgets] = await Promise.all([
     getTranslations("brandPortal.dashboard"),
     getTranslations("commercial"),
     getTranslations("today.board"),
@@ -43,11 +45,14 @@ export default async function BrandDashboardPage() {
     listTasks({ open: true }),
     brandDashboardData(ctx.brand.id),
     getBrandWorkboard(ctx.brand.id),
+    brandBudgetOverview(ctx.brand.id),
   ]);
   // "Depende de mim hoje" e o resumo do painel por etapa (0078): a mesma leitura fechada alimenta os dois
   const wb = workboard.available ? workboard.data : null;
   const now = new Date();
-  const todayItems = wb ? buildBrandToday(wb, now) : [];
+  // 0082: verba estourada entra no "Hoje" (visão geral da verba; sem a migração, fica de fora)
+  const budgetOverview = budgets.available ? budgets.data : null;
+  const todayItems = wb ? buildBrandToday(wb, now, { budgets: budgetOverview?.items ?? [] }) : [];
   const stageCounts = wb ? boardCounts(buildBrandBoard(wb)) : null;
   // aprovações pendentes: roteiros e entregas aguardando a marca (painel 0069; antes dele, só os roteiros pela RLS)
   const dash = panel.available ? panel.data : null;
@@ -88,6 +93,7 @@ export default async function BrandDashboardPage() {
           </ul>
         </section>
       ) : null}
+      {budgetOverview ? <BudgetOverview overview={budgetOverview} locale={locale} /> : null}
       <p className="flex items-start gap-2 rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="brand-inbox-note">
         <Bell className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
         {t("inboxNote")}

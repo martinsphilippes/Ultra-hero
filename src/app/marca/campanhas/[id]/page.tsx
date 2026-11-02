@@ -16,6 +16,7 @@ import { TaskList } from "@/components/execution/TaskList";
 import { ApprovalPanel } from "@/components/selection/ApprovalPanel";
 import { RatingPanel } from "@/components/selection/RatingPanel";
 import { TermsPanel } from "@/components/execution/TermsPanel";
+import { BudgetPanel } from "@/components/finance/BudgetPanel";
 import { PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
@@ -26,6 +27,7 @@ import { BRAND_STATUSES } from "@/lib/deals/stages";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
+import { brandBudgetSummary } from "@/lib/finance/queries";
 import { draftEditable } from "@/lib/selection/logic";
 import { createClient } from "@/lib/supabase/server";
 
@@ -44,11 +46,12 @@ export default async function BrandCampaignPage({ params }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
   const { id } = await params;
-  const [t, tc, tb, ts, locale, detail, budget] = await Promise.all([
+  const [t, tc, tb, ts, tbud, locale, detail, budget] = await Promise.all([
     getTranslations("brandPortal.campaigns"),
     getTranslations("commercial"),
     getTranslations("brief"),
     getTranslations("selection"),
+    getTranslations("brandPortal.budget"),
     getLocale() as Promise<Locale>,
     getBrandCampaign(id),
     getRequestBudget(id),
@@ -64,7 +67,7 @@ export default async function BrandCampaignPage({ params }: Props) {
   const stepIndex = BRAND_STATUSES.indexOf(detail.brandStatus);
   const steps = BRAND_STATUSES.filter((s) => s !== "cancelled");
   const inExecution = deal !== null && ["contracting", "running", "done"].includes(detail.brandStatus);
-  const [messages, docs, exec] = await Promise.all([
+  const [messages, docs, exec, budgetPanel] = await Promise.all([
     deal ? listMessages(deal.id, "brand_agency") : Promise.resolve([]),
     (async () => {
       const supabase = await createClient();
@@ -72,7 +75,10 @@ export default async function BrandCampaignPage({ params }: Props) {
       return (data ?? []).map((d) => ({ id: d.id, title: d.title, kind: d.kind, createdAt: d.created_at, shareTalent: d.share_talent, restricted: d.restricted, uploaderSide: d.uploader_side }));
     })(),
     inExecution && deal ? getDealExecution(deal.id) : Promise.resolve({ available: true, data: null }),
+    // 0082: verba da campanha (enviada; rascunho e cancelada não têm painel)
+    detail.brandStatus !== "cancelled" ? brandBudgetSummary(request.id) : Promise.resolve({ available: true, data: null }),
   ]);
+  const budgetSummary = budgetPanel.available ? budgetPanel.data : null;
   const execution = exec.available ? exec.data : null;
   const liveTerms = execution?.terms.filter((x) => x.status !== "draft") ?? [];
   const brandTasks = execution?.tasks.filter((x) => x.side === "brand") ?? [];
@@ -205,6 +211,17 @@ export default async function BrandCampaignPage({ params }: Props) {
           ) : null}
         </div>
         <div className="flex flex-col gap-5">
+          {budgetSummary ? (
+            <section id="camp-budget" className={`${card} scroll-mt-20`} aria-labelledby="camp-budget-title">
+              <div className="flex flex-col gap-1">
+                <h2 id="camp-budget-title" className="text-base font-semibold text-fg">
+                  {tbud("title")}
+                </h2>
+                <p className="type-caption text-fg-muted">{tbud("hint")}</p>
+              </div>
+              <BudgetPanel summary={budgetSummary} />
+            </section>
+          ) : null}
           <section className={card} aria-labelledby="camp-talents">
             <h2 id="camp-talents" className="text-base font-semibold text-fg">
               {t("sections.talents")}

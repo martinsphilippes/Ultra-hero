@@ -1,6 +1,8 @@
 import "server-only";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import { toBudgetOverview, toBudgetSummary, type BudgetOverview, type BudgetSummary } from "./budget";
+import { latestInvoice, toEarnings, type Earning, type PayoutInvoice } from "./earnings";
 import { isEntryKind, isEntryStatus, type EntryFilter, type EntryKind, type EntryStatus } from "./vocab";
 
 // Financeiro simulado (0069): lançamentos pela RLS (só o Adm da agência lê; o creator lê o próprio repasse) e o
@@ -21,6 +23,9 @@ export type Entry = {
   settledAt: string | null;
   note: string;
   createdAt: string;
+  /** 0082: data agendada do pagamento (repasse) e a nota fiscal mais recente */
+  scheduledOn: string | null;
+  invoice: PayoutInvoice | null;
 };
 
 export type FinanceSummary = {
@@ -35,10 +40,13 @@ export type FinanceSummary = {
   deals: number;
 };
 
-const ENTRY_SELECT = "id, deal_id, talent_id, deal_talent_id, kind, amount_cents, status, due_on, settled_at, note, created_at, deal:deals!financial_entries_deal_fk(title), brand:brands!financial_entries_brand_fk(name), talent:talent_profiles!financial_entries_talent_fk(display_name)";
+const ENTRY_SELECT_BASE = "id, deal_id, talent_id, deal_talent_id, kind, amount_cents, status, due_on, settled_at, note, created_at, deal:deals!financial_entries_deal_fk(title), brand:brands!financial_entries_brand_fk(name), talent:talent_profiles!financial_entries_talent_fk(display_name)";
+// 0082: data agendada e notas fiscais (o Adm lê pela RLS); sem a migração, a leitura volta à forma da 0072
+const ENTRY_SELECT = `${ENTRY_SELECT_BASE}, scheduled_on, invoices:payout_invoices!payout_invoices_entry_fk(id, status, review_note, document_id, created_at, reviewed_at)`;
 type Row = {
   id: string; deal_id: string; talent_id: string | null; deal_talent_id: string | null; kind: string; amount_cents: number; status: string; due_on: string | null; settled_at: string | null; note: string; created_at: string;
   deal: { title: string } | null; brand: { name: string } | null; talent: { display_name: string } | null;
+  scheduled_on?: string | null; invoices?: unknown;
 };
 const toEntry = (r: Row): Entry => ({
   id: r.id,
@@ -55,48 +63,65 @@ const toEntry = (r: Row): Entry => ({
   settledAt: r.settled_at,
   note: r.note ?? "",
   createdAt: r.created_at,
+  scheduledOn: r.scheduled_on ?? null,
+  invoice: latestInvoice(r.invoices),
 });
 
 export async function listEntries(agencyId: string, filter: EntryFilter = "open"): Promise<{ available: boolean; items: Entry[] }> {
   const supabase = await createClient();
-  let query = supabase.from("financial_entries").select(ENTRY_SELECT).eq("agency_id", agencyId).order("due_on", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }).limit(500);
-  if (filter === "open") query = query.in("status", ["planned", "due"]);
-  if (filter === "overdue") query = query.in("status", ["planned", "due"]).lt("due_on", new Date().toISOString().slice(0, 10));
-  if (filter === "settled") query = query.eq("status", "settled");
-  if (filter === "cancelled") query = query.eq("status", "cancelled");
-  const { data, error } = await query;
+  const run = async (select: string) => {
+    let query = supabase.from("financial_entries").select(select).eq("agency_id", agencyId).order("due_on", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }).limit(500);
+    if (filter === "open") query = query.in("status", ["planned", "due"]);
+    if (filter === "overdue") query = query.in("status", ["planned", "due"]).lt("due_on", new Date().toISOString().slice(0, 10));
+    if (filter === "settled") query = query.eq("status", "settled");
+    if (filter === "cancelled") query = query.eq("status", "cancelled");
+    // notas para conferir: repasses abertos cuja última nota foi enviada (filtrado abaixo)
+    if (filter === "invoices") query = query.eq("kind", "talent_payout").in("status", ["planned", "due"]);
+    return query;
+  };
+  let { data, error } = await run(ENTRY_SELECT);
+  if (error && isMissingSchema(error)) ({ data, error } = await run(ENTRY_SELECT_BASE));
   if (error) return { available: !isMissingSchema(error), items: [] };
-  return { available: true, items: ((data ?? []) as unknown as Row[]).map(toEntry) };
+  const items = ((data ?? []) as unknown as Row[]).map(toEntry);
+  return { available: true, items: filter === "invoices" ? items.filter((e) => e.invoice?.status === "submitted") : items };
 }
 
 /** Lançamentos de um negócio (Adm, pela RLS). */
 export async function dealEntries(dealId: string): Promise<{ available: boolean; items: Entry[] }> {
   if (!/^[0-9a-f-]{36}$/i.test(dealId)) return { available: true, items: [] };
   const supabase = await createClient();
-  const { data, error } = await supabase.from("financial_entries").select(ENTRY_SELECT).eq("deal_id", dealId).order("kind").order("created_at");
+  const run = (select: string) => supabase.from("financial_entries").select(select).eq("deal_id", dealId).order("kind").order("created_at");
+  let { data, error } = await run(ENTRY_SELECT);
+  if (error && isMissingSchema(error)) ({ data, error } = await run(ENTRY_SELECT_BASE));
   if (error) return { available: !isMissingSchema(error), items: [] };
   return { available: true, items: ((data ?? []) as unknown as Row[]).map(toEntry) };
 }
 
-/** Repasses do próprio creator, pela RPC talent_payouts (título do negócio incluído; o app esconde o valor). */
-export type Payout = { id: string; dealTitle: string; dealTalentId: string; status: EntryStatus; amountCents: number; dueOn: string | null; settledAt: string | null };
+/** Repasses do próprio creator, pela RPC talent_payouts (0072 + 0082: marca, agendamento, entrega feita e nota).
+ *  O app nativo esconde o valor (native:hidden); a web mostra. */
+export type Payout = Earning;
 export async function myPayouts(): Promise<{ available: boolean; items: Payout[] }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("talent_payouts");
   if (error) return { available: !isMissingSchema(error), items: [] };
-  if (!Array.isArray(data)) return { available: true, items: [] };
-  return {
-    available: true,
-    items: (data as Record<string, unknown>[]).map((p) => ({
-      id: String(p.id),
-      dealTitle: String(p.deal_title ?? ""),
-      dealTalentId: String(p.deal_talent_id),
-      status: isEntryStatus(p.status) ? p.status : "planned",
-      amountCents: Number(p.amount_cents ?? 0),
-      dueOn: p.due_on === null || p.due_on === undefined ? null : String(p.due_on),
-      settledAt: p.settled_at === null || p.settled_at === undefined ? null : String(p.settled_at),
-    })),
-  };
+  return { available: true, items: toEarnings(data) };
+}
+
+/** Painel da verba de uma campanha (0082): reservado, comprometido, pago, por influenciador. null sem acesso. */
+export async function brandBudgetSummary(requestId: string): Promise<{ available: boolean; data: BudgetSummary | null }> {
+  if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { available: true, data: null };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("brand_budget_summary", { p_request: requestId });
+  if (error) return { available: !isMissingSchema(error), data: null };
+  return { available: true, data: toBudgetSummary(data) };
+}
+
+/** Visão geral da verba da marca (0082). */
+export async function brandBudgetOverview(brandId: string): Promise<{ available: boolean; data: BudgetOverview | null }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("brand_budget_overview", { p_brand: brandId });
+  if (error) return { available: !isMissingSchema(error), data: null };
+  return { available: true, data: toBudgetOverview(data) };
 }
 
 const num = (v: unknown) => (typeof v === "number" ? v : Number(v ?? 0) || 0);

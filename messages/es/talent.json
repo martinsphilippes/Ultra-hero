@@ -9,7 +9,8 @@
     "availability": "Disponibilidad",
     "agenda": "Agenda",
     "tasks": "Tareas",
-    "documents": "Documentos"
+    "documents": "Documentos",
+    "earnings": "Ganancias"
   },
   "tabs": {
     "label": "Secciones de la oficina",
@@ -21,7 +22,8 @@
     "availability": "Disponibilidad",
     "agenda": "Agenda",
     "tasks": "Tareas",
-    "documents": "Documentos"
+    "documents": "Documentos",
+    "earnings": "Ganancias"
   },
   "home": {
     "unavailable": "Oficina en actualización",
@@ -68,7 +70,8 @@
     "payoutsTitle": "Pagos",
     "payoutsHint": "Estado informado por la agencia. Registro interno, sin cobro real.",
     "payoutsNone": "Ningún pago registrado.",
-    "payoutsAppHint": "Mira los importes en el sitio."
+    "payoutsAppHint": "Mira los importes en el sitio.",
+    "payoutsAll": "Ver ganancias"
   },
   "consent": {
     "title": "Términos de uso comercial",
@@ -217,5 +220,47 @@
   },
   "documents": {
     "intro": "Briefings, guiones aprobados y comprobantes que la agencia compartió contigo. Solo lectura."
+  },
+  "earnings": {
+    "title": "Ganancias",
+    "description": "Lo que tienes por cobrar, lo que viene y lo que ya se pagó. Envía aquí la factura de cada pago.",
+    "unavailable": "Ganancias en actualización",
+    "unavailableHint": "Las ganancias aparecen cuando se actualice la base de datos.",
+    "simulated": "Registro interno de la agencia: nada se cobra ni se transfiere aquí.",
+    "appHint": "Los valores aparecen en el sitio.",
+    "groups": {
+      "receivable": "Por cobrar",
+      "forecast": "Previsión",
+      "paid": "Pagados"
+    },
+    "groupHints": {
+      "receivable": "Entregado, falta pagar",
+      "forecast": "Contratado, en producción",
+      "paid": "Ya pagados"
+    },
+    "count": "{count, plural, one {# pago} other {# pagos}}",
+    "empty": "Ningún pago aún. Aparecen cuando la agencia confirma una contratación.",
+    "listLabel": "Pagos",
+    "expected": "Previsto para {date}",
+    "scheduledFor": "Programado para {date}",
+    "paidAt": "Pagado el {date}",
+    "noDate": "Sin fecha prevista",
+    "inProduction": "Aún en producción: la factura puede ir después de la entrega",
+    "rejectedNote": "Factura rechazada: “{note}”",
+    "sendInvoice": "Enviar factura",
+    "sendAnother": "Enviar otra factura",
+    "viewInvoice": "Ver factura",
+    "file": "Archivo de la factura (PDF o imagen)",
+    "fileHint": "Hasta 20 MB. Solo tú y el administrador de la agencia la ven.",
+    "pickFile": "Elige el archivo de la factura.",
+    "badType": "Envía PDF, JPG, PNG o WEBP.",
+    "tooLarge": "El archivo supera 20 MB.",
+    "uploadFailed": "No se pudo enviar el archivo. Inténtalo de nuevo.",
+    "openFailed": "No se pudo abrir la factura.",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "invoiceTitle": "Factura · {deal}",
+    "invoiceDocTitle": "Factura · {deal}",
+    "invoiceSent": "Factura enviada. La agencia la revisará."
   }
 }

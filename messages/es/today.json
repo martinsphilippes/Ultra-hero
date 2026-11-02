@@ -30,7 +30,8 @@
       "draft": "Borrador detenido",
       "internalApproval": "Aprobación interna",
       "shortlist": "Preselección",
-      "rating": "Evaluar creador"
+      "rating": "Evaluar creador",
+      "budget": "Presupuesto excedido"
     },
     "kindsShort": {
       "approval": "Aprobaciones",
@@ -41,12 +42,15 @@
       "draft": "Borradores",
       "internalApproval": "Aprobaciones internas",
       "shortlist": "Preselecciones",
-      "rating": "Evaluaciones"
+      "rating": "Evaluaciones",
+      "budget": "Presupuesto"
     },
     "internalPending": "Esperando tu aprobación",
     "internalReturned": "Devuelta: ajusta y pide de nuevo",
     "shortlistSent": "Aprueba o rechaza cada creador",
-    "shortlistDecided": "Decidida: crea la campaña con los aprobados"
+    "shortlistDecided": "Decidida: crea la campaña con los aprobados",
+    "budgetOver": "Lo comprometido superó el presupuesto de la campaña",
+    "budgetTalentsOver": "Un creador superó su presupuesto"
   },
   "talent": {
     "title": "Hoy",
@@ -58,7 +62,9 @@
       "terms": "Aceptar términos",
       "offer": "Responder oferta",
       "deliverable": "Entrega próxima",
-      "task": "Tarea"
+      "task": "Tarea",
+      "invoice": "Enviar factura",
+      "payment": "Pago programado"
     },
     "kindsShort": {
       "adjustment": "Ajustes",
@@ -66,11 +72,16 @@
       "terms": "Términos",
       "offer": "Ofertas",
       "deliverable": "Entregas",
-      "task": "Tareas"
+      "task": "Tareas",
+      "invoice": "Facturas",
+      "payment": "Pagos"
     },
     "counter_open": "Contrapropuesta esperando a la agencia",
     "counter_accepted": "Contrapropuesta aceptada",
-    "counter_rejected": "Contrapropuesta rechazada"
+    "counter_rejected": "Contrapropuesta rechazada",
+    "invoiceMissing": "Entregado: envía la factura para cobrar",
+    "invoiceRejected": "Factura rechazada: envía otra",
+    "paymentScheduled": "La agencia programó el pago"
   },
   "board": {
     "title": "Acciones por etapa",
@@ -99,5 +110,7 @@
       "awaiting": "Versión enviada esperando tu aprobación.",
       "published": "Publicado o comprobado."
     }
-  }
+  },
+  "payOn": "Pago: {date}",
+  "payDue": "Previsto para {date}"
 }

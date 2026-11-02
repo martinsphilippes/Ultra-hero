@@ -227,9 +227,10 @@ export function urgencyOfDay(day: string | null, now: Date, timeZone: string, so
 
 // ---------------------------------------------------------------- itens do "Hoje"
 // 0081: aprovação interna (diretor aprova / analista ajusta o devolvido), pré-seleção e avaliar entrega fechada
-export const BRAND_TODAY_KINDS = ["approval", "internalApproval", "shortlist", "script", "terms", "message", "deadline", "rating", "draft"] as const;
+// 0082: verba estourada (marca); nota fiscal pendente e pagamento agendado (creator)
+export const BRAND_TODAY_KINDS = ["approval", "internalApproval", "shortlist", "script", "terms", "budget", "message", "deadline", "rating", "draft"] as const;
 export type BrandTodayKind = (typeof BRAND_TODAY_KINDS)[number];
-export const TALENT_TODAY_KINDS = ["adjustment", "scriptAdjustment", "terms", "offer", "deliverable", "task"] as const;
+export const TALENT_TODAY_KINDS = ["adjustment", "scriptAdjustment", "terms", "offer", "deliverable", "task", "invoice", "payment"] as const;
 export type TalentTodayKind = (typeof TALENT_TODAY_KINDS)[number];
 
 export type TodayItem<K extends string = string> = {
@@ -285,8 +286,11 @@ export function countByKind<K extends string>(items: TodayItem<K>[], kinds: read
 const join = (...parts: (string | null | undefined)[]) => parts.filter((p) => p && p.trim()).join(" · ");
 const pick = (u: Urgency | "later"): Urgency => (u === "later" ? "waiting" : u);
 
+/** Verba de uma campanha para o "Hoje" (0082, vem de brand_budget_overview): só o que precisa de atenção entra. */
+export type TodayBudget = { requestId: string; title: string; over: boolean; talentsOver: number };
+
 /** "Depende de mim hoje" da marca. */
-export function buildBrandToday(wb: BrandWorkboard, now: Date, opts: { staleDraftDays?: number; soonDays?: number } = {}): TodayItem<BrandTodayKind>[] {
+export function buildBrandToday(wb: BrandWorkboard, now: Date, opts: { staleDraftDays?: number; soonDays?: number; budgets?: TodayBudget[] } = {}): TodayItem<BrandTodayKind>[] {
   const tz = wb.timezone;
   const soon = opts.soonDays ?? SOON_DAYS;
   const stale = opts.staleDraftDays ?? STALE_DRAFT_DAYS;
@@ -348,6 +352,14 @@ export function buildBrandToday(wb: BrandWorkboard, now: Date, opts: { staleDraf
         href: campaignHref(d.requestId, "camp-ratings"), title: d.title || d.kind, context: join(titleOf.get(d.requestId), d.talentName) });
     }
   }
+  // 0082: verba estourada (da campanha ou de algum influenciador); só quem tem papel na marca vê como pendência
+  if (wb.role) {
+    for (const b of opts.budgets ?? []) {
+      if (!b.over && b.talentsOver <= 0) continue;
+      items.push({ ...base, key: `budget:${b.requestId}`, kind: "budget", urgency: "waiting", deadline: null, since: null,
+        href: campaignHref(b.requestId, "camp-budget"), title: b.title || titleOf.get(b.requestId) || "", context: "", status: b.over ? "over" : "talents_over" });
+    }
+  }
   for (const c of wb.campaigns) {
     if (c.requestStatus !== "draft" || c.brandStatus !== "draft") continue;
     // aguardando o diretor não é rascunho parado (para o diretor ele já aparece como aprovação interna)
@@ -369,7 +381,12 @@ export type TdDeliverable = {
   dueAt: string | null; publishAt: string | null; brandFeedback: string; decidedAt: string | null; dealTitle: string; brandName: string;
 };
 export type TdTerms = { termsId: string; dealTalentId: string; version: number; sentAt: string | null; validUntil: string | null; dealTitle: string; brandName: string };
-export type TalentTodayData = { timezone: string; tasks: TdTask[]; offers: TdOffer[]; deliverables: TdDeliverable[]; terms: TdTerms[] };
+/** Repasse aberto (0082, sem valor): entrega feita, situação da última nota e data agendada. */
+export type TdPayout = {
+  id: string; dealTalentId: string; dealTitle: string; brandName: string; status: string; dueOn: string | null; scheduledOn: string | null;
+  delivered: boolean; invoiceStatus: "submitted" | "approved" | "rejected" | null; invoiceNote: string;
+};
+export type TalentTodayData = { timezone: string; tasks: TdTask[]; offers: TdOffer[]; deliverables: TdDeliverable[]; terms: TdTerms[]; payouts?: TdPayout[] };
 
 const oppHref = (dealTalentId: string, anchor?: string) => `/creator/escritorio/oportunidades/${dealTalentId}${anchor ? `#${anchor}` : ""}`;
 /** Passos do modelo que repetem o que o entregável já mostra (enviar conteúdo, publicar, comprovar). */
@@ -419,6 +436,20 @@ export function buildTalentToday(data: TalentTodayData, now: Date, opts: { soonD
   for (const m of data.terms) {
     items.push({ ...base, key: `terms:${m.termsId}:${m.dealTalentId}`, kind: "terms", urgency: pick(urgencyOfDay(m.validUntil, now, tz, soon)), deadline: m.validUntil, since: m.sentAt,
       href: oppHref(m.dealTalentId, "opp-terms"), title: m.dealTitle, context: m.brandName });
+  }
+  // 0082: entregou e falta a nota (ou foi recusada) → enviar nota; pagamento agendado para os próximos dias → aviso
+  for (const p of data.payouts ?? []) {
+    if (p.status !== "planned" && p.status !== "due") continue;
+    const href = `/creator/escritorio/ganhos#pay-${p.id}`;
+    if (p.scheduledOn) {
+      const u = urgencyOfDay(p.scheduledOn, now, tz, soon);
+      if (u === "later" || u === "waiting") continue;
+      items.push({ ...base, key: `payment:${p.id}`, kind: "payment", urgency: u, deadline: p.scheduledOn, since: null, href, title: p.dealTitle, context: p.brandName, status: "scheduled" });
+      continue;
+    }
+    if (!p.delivered || p.invoiceStatus === "submitted" || p.invoiceStatus === "approved") continue;
+    items.push({ ...base, key: `invoice:${p.id}`, kind: "invoice", urgency: pick(urgencyOfDay(p.dueOn, now, tz, soon)), deadline: p.dueOn, since: null, href,
+      title: p.dealTitle, context: p.brandName, note: p.invoiceStatus === "rejected" && p.invoiceNote ? p.invoiceNote : null, status: p.invoiceStatus === "rejected" ? "rejected" : "missing" });
   }
   return sortToday(items, TALENT_TODAY_KINDS);
 }

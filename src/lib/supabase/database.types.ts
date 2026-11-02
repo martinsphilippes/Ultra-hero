@@ -7244,6 +7244,147 @@ export type Database = {
           },
         ];
       };
+      payout_invoices: {
+        Row: {
+          agency_id: string;
+          created_at: string;
+          deal_id: string;
+          document_id: string;
+          entry_id: string;
+          id: string;
+          review_note: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: string;
+          submitted_by: string | null;
+          talent_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          created_at?: string;
+          deal_id: string;
+          document_id: string;
+          entry_id: string;
+          id?: string;
+          review_note?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+          submitted_by?: string | null;
+          talent_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          created_at?: string;
+          deal_id?: string;
+          document_id?: string;
+          entry_id?: string;
+          id?: string;
+          review_note?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
+          submitted_by?: string | null;
+          talent_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payout_invoices_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payout_invoices_entry_fk";
+            columns: ["entry_id"];
+            isOneToOne: false;
+            referencedRelation: "financial_entries";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payout_invoices_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payout_invoices_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payout_invoices_document_fk";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      brand_budgets: {
+        Row: {
+          brand_id: string;
+          created_at: string;
+          deal_talent_id: string | null;
+          id: string;
+          request_id: string;
+          total_cents: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          brand_id: string;
+          created_at?: string;
+          deal_talent_id?: string | null;
+          id?: string;
+          request_id: string;
+          total_cents: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          brand_id?: string;
+          created_at?: string;
+          deal_talent_id?: string | null;
+          id?: string;
+          request_id?: string;
+          total_cents?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "brand_budgets_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "brand_budgets_request_fk";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "brand_budgets_deal_talent_fk";
+            columns: ["deal_talent_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_talents";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       talent_ratings: {
         Row: {
           agency_id: string;
@@ -8274,6 +8415,7 @@ export type Database = {
           kind: string;
           note: string;
           rate_bp: number;
+          scheduled_on: string | null;
           settled_at: string | null;
           settled_by: string | null;
           simulated: boolean;
@@ -8296,6 +8438,7 @@ export type Database = {
           kind: string;
           note?: string;
           rate_bp: number;
+          scheduled_on?: string | null;
           settled_at?: string | null;
           settled_by?: string | null;
           simulated?: boolean;
@@ -8317,6 +8460,7 @@ export type Database = {
           kind?: string;
           note?: string;
           rate_bp?: number;
+          scheduled_on?: string | null;
           settled_at?: string | null;
           settled_by?: string | null;
           simulated?: boolean;
@@ -8458,6 +8602,12 @@ isOneToOne: false
       brand_dashboard: { Args: { p_brand: string }; Returns: Json };
       brand_workboard: { Args: { p_brand: string }; Returns: Json };
       talent_today: { Args: Record<PropertyKey, never>; Returns: Json };
+      brand_budget_summary: { Args: { p_request: string }; Returns: Json };
+      brand_budget_overview: { Args: { p_brand: string }; Returns: Json };
+      brand_budget_set: { Args: { p_request: string; p_deal_talent: string | null; p_total_cents: number | null }; Returns: undefined };
+      payout_invoice_attach: { Args: { p_entry: string; p_document: string }; Returns: string };
+      agency_invoice_review: { Args: { p_invoice: string; p_decision: string; p_note?: string | null; p_pay_on?: string | null }; Returns: undefined };
+      agency_payout_schedule: { Args: { p_entry: string; p_pay_on: string | null }; Returns: undefined };
       talent_offer_state: { Args: { p_deal_talent: string }; Returns: Json };
       campaign_brief_valid: { Args: { p: Json }; Returns: boolean };
       brief_check_items: { Args: { p_brief: Json; p_side: string }; Returns: string[] };

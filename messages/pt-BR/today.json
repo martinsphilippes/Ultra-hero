@@ -30,7 +30,8 @@
       "draft": "Rascunho parado",
       "internalApproval": "Aprovação interna",
       "shortlist": "Pré-seleção",
-      "rating": "Avaliar creator"
+      "rating": "Avaliar creator",
+      "budget": "Verba estourada"
     },
     "kindsShort": {
       "approval": "Aprovações",
@@ -41,12 +42,15 @@
       "draft": "Rascunhos",
       "internalApproval": "Aprovações internas",
       "shortlist": "Pré-seleções",
-      "rating": "Avaliações"
+      "rating": "Avaliações",
+      "budget": "Verba"
     },
     "internalPending": "Aguardando a sua aprovação",
     "internalReturned": "Devolvida: ajuste e peça de novo",
     "shortlistSent": "Aprove ou recuse cada creator",
-    "shortlistDecided": "Decidida: crie a campanha com os aprovados"
+    "shortlistDecided": "Decidida: crie a campanha com os aprovados",
+    "budgetOver": "O comprometido passou da verba da campanha",
+    "budgetTalentsOver": "Um influenciador passou da verba dele"
   },
   "talent": {
     "title": "Hoje",
@@ -58,7 +62,9 @@
       "terms": "Aceitar termos",
       "offer": "Responder oferta",
       "deliverable": "Entrega próxima",
-      "task": "Tarefa"
+      "task": "Tarefa",
+      "invoice": "Enviar nota fiscal",
+      "payment": "Pagamento agendado"
     },
     "kindsShort": {
       "adjustment": "Ajustes",
@@ -66,11 +72,16 @@
       "terms": "Termos",
       "offer": "Ofertas",
       "deliverable": "Entregas",
-      "task": "Tarefas"
+      "task": "Tarefas",
+      "invoice": "Notas",
+      "payment": "Pagamentos"
     },
     "counter_open": "Contraproposta aguardando a agência",
     "counter_accepted": "Contraproposta aceita",
-    "counter_rejected": "Contraproposta recusada"
+    "counter_rejected": "Contraproposta recusada",
+    "invoiceMissing": "Entrega feita: envie a nota para receber",
+    "invoiceRejected": "Nota recusada: envie outra",
+    "paymentScheduled": "A agência agendou o pagamento"
   },
   "board": {
     "title": "Ações por etapa",
@@ -99,5 +110,7 @@
       "awaiting": "Versão enviada esperando a sua aprovação.",
       "published": "Publicado ou comprovado."
     }
-  }
+  },
+  "payOn": "Pagamento: {date}",
+  "payDue": "Previsto para {date}"
 }

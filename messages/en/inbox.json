@@ -130,6 +130,22 @@
     "shortlist_decided": {
       "title": "Shortlist decided",
       "body": "The director decided the list {list}."
+    },
+    "invoice_submitted": {
+      "title": "Invoice received",
+      "body": "{talent} sent the invoice for {deal}. Review it and schedule the payment."
+    },
+    "invoice_reviewed": {
+      "title": "{status, select, approve {Invoice approved} other {Invoice rejected}}",
+      "body": "{status, select, approve {The agency approved the invoice for {deal}.} other {The agency rejected the invoice for {deal}. See why and send a new one.}}"
+    },
+    "payout_scheduled": {
+      "title": "Payment scheduled",
+      "body": "The agency scheduled the payment for {deal}. See the date in Earnings."
+    },
+    "budget_exceeded": {
+      "title": "Budget exceeded",
+      "body": "The hiring for {deal} went above the reserved budget."
     }
   }
 }

@@ -30,7 +30,8 @@
       "draft": "Stalled draft",
       "internalApproval": "Internal approval",
       "shortlist": "Shortlist",
-      "rating": "Rate creator"
+      "rating": "Rate creator",
+      "budget": "Budget exceeded"
     },
     "kindsShort": {
       "approval": "Approvals",
@@ -41,12 +42,15 @@
       "draft": "Drafts",
       "internalApproval": "Internal approvals",
       "shortlist": "Shortlists",
-      "rating": "Ratings"
+      "rating": "Ratings",
+      "budget": "Budget"
     },
     "internalPending": "Waiting for your approval",
     "internalReturned": "Sent back: adjust and ask again",
     "shortlistSent": "Approve or decline each creator",
-    "shortlistDecided": "Decided: create the campaign with the approved"
+    "shortlistDecided": "Decided: create the campaign with the approved",
+    "budgetOver": "Committed is above the campaign budget",
+    "budgetTalentsOver": "A creator is above their budget"
   },
   "talent": {
     "title": "Today",
@@ -58,7 +62,9 @@
       "terms": "Accept terms",
       "offer": "Reply to offer",
       "deliverable": "Upcoming delivery",
-      "task": "Task"
+      "task": "Task",
+      "invoice": "Send invoice",
+      "payment": "Payment scheduled"
     },
     "kindsShort": {
       "adjustment": "Changes",
@@ -66,11 +72,16 @@
       "terms": "Terms",
       "offer": "Offers",
       "deliverable": "Deliveries",
-      "task": "Tasks"
+      "task": "Tasks",
+      "invoice": "Invoices",
+      "payment": "Payments"
     },
     "counter_open": "Counteroffer waiting for the agency",
     "counter_accepted": "Counteroffer accepted",
-    "counter_rejected": "Counteroffer declined"
+    "counter_rejected": "Counteroffer declined",
+    "invoiceMissing": "Delivered: send the invoice to get paid",
+    "invoiceRejected": "Invoice rejected: send a new one",
+    "paymentScheduled": "The agency scheduled the payment"
   },
   "board": {
     "title": "Actions by stage",
@@ -99,5 +110,7 @@
       "awaiting": "A version was sent and is waiting for your approval.",
       "published": "Published or proven."
     }
-  }
+  },
+  "payOn": "Payment: {date}",
+  "payDue": "Expected by {date}"
 }

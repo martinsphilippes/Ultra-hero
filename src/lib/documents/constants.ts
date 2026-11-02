@@ -5,7 +5,8 @@ export const DOCUMENT_MAX_BYTES = 20 * 1024 * 1024;
 
 // Telas que mostram documentos: o cliente só escolhe entre estes caminhos para revalidar (revisão de
 // segurança da etapa B: revalidatePath com qualquer caminho esvaziava o cache de outras rotas).
-const REVALIDATE_PATHS = [/^\/agencia\/casting\/[0-9a-f-]{36}\/documentos$/, /^\/agencia\/negocios\/[0-9a-f-]{36}\/documentos$/, /^\/marca\/campanhas\/[0-9a-f-]{36}$/];
+// 0082: ganhos do influenciador (nota fiscal enviada pelo armazenamento de documentos)
+const REVALIDATE_PATHS = [/^\/agencia\/casting\/[0-9a-f-]{36}\/documentos$/, /^\/agencia\/negocios\/[0-9a-f-]{36}\/documentos$/, /^\/marca\/campanhas\/[0-9a-f-]{36}$/, /^\/creator\/escritorio\/ganhos$/];
 
 /** Escopos que a tela de documentos aceita (a RPC document_reserve confere o vínculo e o papel). */
 export const DOCUMENT_SCOPES = ["agency", "brand", "talent", "request", "deal"] as const;

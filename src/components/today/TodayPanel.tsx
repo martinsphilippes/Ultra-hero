@@ -30,6 +30,8 @@ export async function TodayPanel<K extends string>({ portal, items, kinds, local
   const deadlineText = (i: TodayItem<K>) => {
     if (i.deadline) {
       const date = /^\d{4}-\d{2}-\d{2}$/.test(i.deadline) ? formatPlainDate(i.deadline, locale) : formatDateTime(i.deadline, locale, timezone);
+      if (i.kind === "payment") return t("payOn", { date });
+      if (i.kind === "invoice") return t("payDue", { date });
       return i.kind === "offer" ? t("respondBy", { date }) : t("deadline", { date });
     }
     if (i.since) return t("waitingSince", { ago: formatRelativeTime(i.since, locale, now) });
@@ -40,6 +42,10 @@ export async function TodayPanel<K extends string>({ portal, items, kinds, local
     // 0081: aprovação interna e pré-seleção dizem o que a pessoa faz agora
     if (i.kind === "internalApproval") return t(i.status === "returned" ? "brand.internalReturned" : "brand.internalPending");
     if (i.kind === "shortlist") return t(i.status === "decided" ? "brand.shortlistDecided" : "brand.shortlistSent");
+    // 0082: verba estourada (marca) e nota fiscal (creator)
+    if (i.kind === "budget") return t(i.status === "over" ? "brand.budgetOver" : "brand.budgetTalentsOver");
+    if (i.kind === "invoice") return t(i.status === "rejected" ? "talent.invoiceRejected" : "talent.invoiceMissing");
+    if (i.kind === "payment") return t("talent.paymentScheduled");
     if (i.status === "approved") return t("approvedToPublish");
     if (i.kind === "offer" && (i.status === "counter_open" || i.status === "counter_accepted" || i.status === "counter_rejected")) return t(`talent.${i.status}`);
     return null;

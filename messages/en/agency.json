@@ -308,7 +308,9 @@
     "limit_reached": "Limit reached. Delete an old item and try again.",
     "approval_required": "Only the brand director sends to the agency. Ask for approval.",
     "awaiting_approval": "This draft is waiting for the director. Withdraw the request to edit.",
-    "already_rated": "This deliverable was already rated."
+    "already_rated": "This deliverable was already rated.",
+    "invoice_open": "There is already a sent or approved invoice for this payment.",
+    "invalid_date": "Pick a date from today up to one year ahead."
   },
   "casting": {
     "title": "Roster",
@@ -923,14 +925,16 @@
       "overdue": "Overdue",
       "settled": "Settled",
       "cancelled": "Cancelled",
-      "all": "All"
+      "all": "All",
+      "invoices": "Invoices to review"
     },
     "empty": {
       "open": "No open entry.",
       "overdue": "No overdue entry.",
       "settled": "No settled entry.",
       "cancelled": "No cancelled entry.",
-      "all": "No entry yet. They are created when the contract is confirmed."
+      "all": "No entry yet. They are created when the contract is confirmed.",
+      "invoices": "No invoice waiting for review."
     },
     "kpi": {
       "receivableOpen": "Receivable",
@@ -970,7 +974,34 @@
     "rateInvalid": "Enter a percentage between 0 and 50.",
     "ratePreview": "Example: fees of {fees} → commission {commission} → the brand pays {total}.",
     "rateLocked": "The demo agency's rate cannot change.",
-    "rateSave": "Save rate"
+    "rateSave": "Save rate",
+    "scheduledOn": "payment scheduled for {date}",
+    "invoiceLabel": "Invoice",
+    "invoiceStatus": {
+      "none": "no invoice",
+      "submitted": "invoice sent, review it",
+      "approved": "invoice approved",
+      "rejected": "invoice rejected"
+    },
+    "openInvoice": "View invoice",
+    "approveInvoice": "Approve invoice",
+    "rejectInvoice": "Reject invoice",
+    "schedule": "Schedule payment",
+    "reschedule": "Change date",
+    "unschedule": "Remove schedule",
+    "reviewTitle": "Review invoice",
+    "reviewHint": "Approving can already schedule the payment. Rejecting asks for a reason the creator will see.",
+    "reviewNote": "Reason or note",
+    "payOnLabel": "Payment date",
+    "payOnHint": "From today up to one year ahead. Blank: schedule later.",
+    "payOnInvalid": "Pick a date from today up to one year ahead.",
+    "scheduleTitle": "Schedule payment",
+    "scheduleHint": "The creator gets a notice with the date. Paying without an invoice is possible (individual paid by RPA).",
+    "scheduleSave": "Schedule",
+    "invoiceApproved": "Invoice approved.",
+    "invoiceRejected": "Invoice rejected. The creator was notified.",
+    "scheduled": "Payment scheduled. The creator was notified.",
+    "unscheduled": "Schedule removed."
   },
   "sponsorship": {
     "title": "Sponsorship in the social area",

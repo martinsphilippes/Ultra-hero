@@ -130,6 +130,22 @@
     "shortlist_decided": {
       "title": "Preselección decidida",
       "body": "El director decidió la lista {list}."
+    },
+    "invoice_submitted": {
+      "title": "Factura recibida",
+      "body": "{talent} envió la factura de {deal}. Revísala y programa el pago."
+    },
+    "invoice_reviewed": {
+      "title": "{status, select, approve {Factura aprobada} other {Factura rechazada}}",
+      "body": "{status, select, approve {La agencia aprobó la factura de {deal}.} other {La agencia rechazó la factura de {deal}. Mira el motivo y envía otra.}}"
+    },
+    "payout_scheduled": {
+      "title": "Pago programado",
+      "body": "La agencia programó el pago de {deal}. Mira la fecha en Ganancias."
+    },
+    "budget_exceeded": {
+      "title": "Presupuesto excedido",
+      "body": "La contratación de {deal} superó el presupuesto reservado."
     }
   }
 }

@@ -130,6 +130,22 @@
     "shortlist_decided": {
       "title": "Pré-seleção decidida",
       "body": "O diretor decidiu a lista {list}."
+    },
+    "invoice_submitted": {
+      "title": "Nota fiscal recebida",
+      "body": "{talent} enviou a nota de {deal}. Confira e agende o pagamento."
+    },
+    "invoice_reviewed": {
+      "title": "{status, select, approve {Nota fiscal aprovada} other {Nota fiscal recusada}}",
+      "body": "{status, select, approve {A agência aprovou a nota de {deal}.} other {A agência recusou a nota de {deal}. Veja o motivo e envie outra.}}"
+    },
+    "payout_scheduled": {
+      "title": "Pagamento agendado",
+      "body": "A agência agendou o pagamento de {deal}. Veja a data em Ganhos."
+    },
+    "budget_exceeded": {
+      "title": "Verba estourada",
+      "body": "A contratação de {deal} passou da verba reservada."
     }
   }
 }

@@ -308,7 +308,9 @@
     "limit_reached": "Limite atingido. Apague um item antigo e tente de novo.",
     "approval_required": "Só o diretor da marca envia à agência. Peça a aprovação.",
     "awaiting_approval": "Este rascunho espera o diretor. Retire o pedido para editar.",
-    "already_rated": "Esta entrega já foi avaliada."
+    "already_rated": "Esta entrega já foi avaliada.",
+    "invoice_open": "Já existe uma nota enviada ou aprovada para este pagamento.",
+    "invalid_date": "Escolha uma data de hoje até um ano à frente."
   },
   "casting": {
     "title": "Casting",
@@ -923,14 +925,16 @@
       "overdue": "Vencidos",
       "settled": "Liquidados",
       "cancelled": "Cancelados",
-      "all": "Todos"
+      "all": "Todos",
+      "invoices": "Notas para conferir"
     },
     "empty": {
       "open": "Nenhum lançamento em aberto.",
       "overdue": "Nenhum lançamento vencido.",
       "settled": "Nenhum lançamento liquidado.",
       "cancelled": "Nenhum lançamento cancelado.",
-      "all": "Nenhum lançamento ainda. Eles nascem na confirmação da contratação."
+      "all": "Nenhum lançamento ainda. Eles nascem na confirmação da contratação.",
+      "invoices": "Nenhuma nota fiscal esperando conferência."
     },
     "kpi": {
       "receivableOpen": "A receber",
@@ -970,7 +974,34 @@
     "rateInvalid": "Informe um percentual entre 0 e 50.",
     "ratePreview": "Exemplo: cachês de {fees} → comissão {commission} → a marca paga {total}.",
     "rateLocked": "Na agência de demonstração a taxa não muda.",
-    "rateSave": "Salvar taxa"
+    "rateSave": "Salvar taxa",
+    "scheduledOn": "pagamento agendado para {date}",
+    "invoiceLabel": "Nota fiscal",
+    "invoiceStatus": {
+      "none": "sem nota",
+      "submitted": "nota enviada, conferir",
+      "approved": "nota aprovada",
+      "rejected": "nota recusada"
+    },
+    "openInvoice": "Ver nota",
+    "approveInvoice": "Aprovar nota",
+    "rejectInvoice": "Recusar nota",
+    "schedule": "Agendar pagamento",
+    "reschedule": "Mudar data",
+    "unschedule": "Tirar agendamento",
+    "reviewTitle": "Conferir nota fiscal",
+    "reviewHint": "Aprovar pode já agendar o pagamento. Recusar pede o motivo, que o influenciador vê.",
+    "reviewNote": "Motivo ou observação",
+    "payOnLabel": "Data do pagamento",
+    "payOnHint": "De hoje até um ano à frente. Em branco: agenda depois.",
+    "payOnInvalid": "Escolha uma data de hoje até um ano à frente.",
+    "scheduleTitle": "Agendar pagamento",
+    "scheduleHint": "O influenciador recebe um aviso com a data. Pagar sem nota é possível (pessoa física por RPA).",
+    "scheduleSave": "Agendar",
+    "invoiceApproved": "Nota aprovada.",
+    "invoiceRejected": "Nota recusada. O influenciador foi avisado.",
+    "scheduled": "Pagamento agendado. O influenciador foi avisado.",
+    "unscheduled": "Agendamento retirado."
   },
   "sponsorship": {
     "title": "Patrocínio na área social",

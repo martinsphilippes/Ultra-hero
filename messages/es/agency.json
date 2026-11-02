@@ -308,7 +308,9 @@
     "limit_reached": "Límite alcanzado. Elimina un ítem antiguo e inténtalo de nuevo.",
     "approval_required": "Solo el director de la marca envía a la agencia. Pide la aprobación.",
     "awaiting_approval": "Este borrador espera al director. Retira el pedido para editar.",
-    "already_rated": "Esta entrega ya fue evaluada."
+    "already_rated": "Esta entrega ya fue evaluada.",
+    "invoice_open": "Ya hay una factura enviada o aprobada para este pago.",
+    "invalid_date": "Elige una fecha desde hoy hasta un año adelante."
   },
   "casting": {
     "title": "Casting",
@@ -923,14 +925,16 @@
       "overdue": "Vencidos",
       "settled": "Liquidados",
       "cancelled": "Cancelados",
-      "all": "Todos"
+      "all": "Todos",
+      "invoices": "Facturas por revisar"
     },
     "empty": {
       "open": "Ningún asiento abierto.",
       "overdue": "Ningún asiento vencido.",
       "settled": "Ningún asiento liquidado.",
       "cancelled": "Ningún asiento cancelado.",
-      "all": "Todavía ningún asiento. Nacen al confirmar la contratación."
+      "all": "Todavía ningún asiento. Nacen al confirmar la contratación.",
+      "invoices": "Ninguna factura esperando revisión."
     },
     "kpi": {
       "receivableOpen": "Por cobrar",
@@ -970,7 +974,34 @@
     "rateInvalid": "Indica un porcentaje entre 0 y 50.",
     "ratePreview": "Ejemplo: cachés de {fees} → comisión {commission} → la marca paga {total}.",
     "rateLocked": "En la agencia de demostración la tasa no cambia.",
-    "rateSave": "Guardar tasa"
+    "rateSave": "Guardar tasa",
+    "scheduledOn": "pago programado para {date}",
+    "invoiceLabel": "Factura",
+    "invoiceStatus": {
+      "none": "sin factura",
+      "submitted": "factura enviada, revisar",
+      "approved": "factura aprobada",
+      "rejected": "factura rechazada"
+    },
+    "openInvoice": "Ver factura",
+    "approveInvoice": "Aprobar factura",
+    "rejectInvoice": "Rechazar factura",
+    "schedule": "Programar pago",
+    "reschedule": "Cambiar fecha",
+    "unschedule": "Quitar programación",
+    "reviewTitle": "Revisar factura",
+    "reviewHint": "Aprobar puede ya programar el pago. Rechazar pide el motivo, que el creador verá.",
+    "reviewNote": "Motivo u observación",
+    "payOnLabel": "Fecha del pago",
+    "payOnHint": "Desde hoy hasta un año adelante. En blanco: programa después.",
+    "payOnInvalid": "Elige una fecha desde hoy hasta un año adelante.",
+    "scheduleTitle": "Programar pago",
+    "scheduleHint": "El creador recibe un aviso con la fecha. Pagar sin factura es posible (persona física por RPA).",
+    "scheduleSave": "Programar",
+    "invoiceApproved": "Factura aprobada.",
+    "invoiceRejected": "Factura rechazada. Se avisó al creador.",
+    "scheduled": "Pago programado. Se avisó al creador.",
+    "unscheduled": "Programación quitada."
   },
   "sponsorship": {
     "title": "Patrocinio en el área social",

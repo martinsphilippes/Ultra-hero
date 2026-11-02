@@ -36,6 +36,9 @@ export const AGENCY_ERROR_CODES = [
   "approval_required",
   "awaiting_approval",
   "already_rated",
+  // verba, nota fiscal e pagamento (0082)
+  "invoice_open",
+  "invalid_date",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

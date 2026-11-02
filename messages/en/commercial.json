@@ -353,6 +353,14 @@
       "due": "Due",
       "settled": "Settled",
       "cancelled": "Cancelled"
+    },
+    "payStep": {
+      "awaiting_invoice": "Awaiting invoice",
+      "invoice_sent": "Invoice sent",
+      "invoice_approved": "Invoice approved",
+      "scheduled": "Scheduled",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
     }
   }
 }

@@ -31,6 +31,11 @@ export const INBOX_KINDS = [
   "internal_approval_decided",
   "shortlist_sent",
   "shortlist_decided",
+  // verba, nota fiscal e pagamento (0082)
+  "invoice_submitted",
+  "invoice_reviewed",
+  "payout_scheduled",
+  "budget_exceeded",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 

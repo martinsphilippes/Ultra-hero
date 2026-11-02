@@ -19,6 +19,10 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   calendar_event_added: CalendarDays,
   commercial_date_published: CalendarDays,
   payout_updated: Wallet,
+  invoice_submitted: FileCheck2,
+  invoice_reviewed: FileCheck2,
+  payout_scheduled: Wallet,
+  budget_exceeded: Wallet,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

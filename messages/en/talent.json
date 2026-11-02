@@ -9,7 +9,8 @@
     "availability": "Availability",
     "agenda": "Calendar",
     "tasks": "Tasks",
-    "documents": "Documents"
+    "documents": "Documents",
+    "earnings": "Earnings"
   },
   "tabs": {
     "label": "Office sections",
@@ -21,7 +22,8 @@
     "availability": "Availability",
     "agenda": "Calendar",
     "tasks": "Tasks",
-    "documents": "Documents"
+    "documents": "Documents",
+    "earnings": "Earnings"
   },
   "home": {
     "unavailable": "Office being updated",
@@ -68,7 +70,8 @@
     "payoutsTitle": "Payouts",
     "payoutsHint": "Status informed by the agency. Internal record, no real payment.",
     "payoutsNone": "No payout recorded.",
-    "payoutsAppHint": "See the amounts on the website."
+    "payoutsAppHint": "See the amounts on the website.",
+    "payoutsAll": "See earnings"
   },
   "consent": {
     "title": "Commercial use terms",
@@ -217,5 +220,47 @@
   },
   "documents": {
     "intro": "Briefs, approved scripts and proofs the agency shared with you. Read only."
+  },
+  "earnings": {
+    "title": "Earnings",
+    "description": "What you have to receive, what is coming and what was paid. Send the invoice for each payment here.",
+    "unavailable": "Earnings being updated",
+    "unavailableHint": "Earnings show up once the database is updated.",
+    "simulated": "Agency internal record: nothing is charged or transferred here.",
+    "appHint": "Amounts show on the website.",
+    "groups": {
+      "receivable": "To receive",
+      "forecast": "Forecast",
+      "paid": "Paid"
+    },
+    "groupHints": {
+      "receivable": "Delivered, not paid yet",
+      "forecast": "Hired, in production",
+      "paid": "Already paid"
+    },
+    "count": "{count, plural, one {# payment} other {# payments}}",
+    "empty": "No payments yet. They show up when the agency confirms a hiring.",
+    "listLabel": "Payments",
+    "expected": "Expected by {date}",
+    "scheduledFor": "Scheduled for {date}",
+    "paidAt": "Paid on {date}",
+    "noDate": "No expected date",
+    "inProduction": "Still in production: the invoice can go after delivery",
+    "rejectedNote": "Invoice rejected: “{note}”",
+    "sendInvoice": "Send invoice",
+    "sendAnother": "Send another invoice",
+    "viewInvoice": "View invoice",
+    "file": "Invoice file (PDF or image)",
+    "fileHint": "Up to 20 MB. Only you and the agency admin can see it.",
+    "pickFile": "Pick the invoice file.",
+    "badType": "Send PDF, JPG, PNG or WEBP.",
+    "tooLarge": "The file is over 20 MB.",
+    "uploadFailed": "Could not upload the file. Try again.",
+    "openFailed": "Could not open the invoice.",
+    "submit": "Send",
+    "cancel": "Cancel",
+    "invoiceTitle": "Invoice · {deal}",
+    "invoiceDocTitle": "Invoice · {deal}",
+    "invoiceSent": "Invoice sent. The agency will review it."
   }
 }

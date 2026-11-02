@@ -353,6 +353,14 @@
       "due": "Por vencer",
       "settled": "Liquidado",
       "cancelled": "Cancelado"
+    },
+    "payStep": {
+      "awaiting_invoice": "Esperando factura",
+      "invoice_sent": "Factura enviada",
+      "invoice_approved": "Factura aprobada",
+      "scheduled": "Programado",
+      "paid": "Pagado",
+      "cancelled": "Cancelado"
     }
   }
 }

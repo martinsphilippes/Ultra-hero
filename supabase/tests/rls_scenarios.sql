@@ -10865,5 +10865,252 @@ delete from public.agencies where id in ('88000000-0000-4000-8000-000000008801',
 delete from auth.users where id::text like '88000000-0000-4000-8000-00000000088%';
 drop table t_s88;
 
+-- ================================================================ S89 · Verba da marca, ganhos do influenciador, nota fiscal e pagamento (0082)
+-- Verba reservada pela marca (só o dono define; a equipe lê; a agência e outra marca não leem), comprometido pelo
+-- modelo V = F + C sem cachê nem comissão separados, pago pelo lançamento da marca, aviso de verba estourada só
+-- aos donos. Ganhos e "Hoje" do creator; nota fiscal ligada ao repasse (restrita ao Adm), uma aberta por vez,
+-- aprovar/recusar e agendar só o Adm; pagamento pela RPC da 0072. Visitante e usuário comum não leem nada.
+\ir ../migrations/0082_verba_ganhos_nota_fiscal.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('89000000-0000-4000-8000-000000000891', 's89-adm@test.local'),
+  ('89000000-0000-4000-8000-000000000892', 's89-gestor@test.local'),
+  ('89000000-0000-4000-8000-000000000893', 's89-creator-1@test.local'),
+  ('89000000-0000-4000-8000-000000000894', 's89-creator-2@test.local'),
+  ('89000000-0000-4000-8000-000000000895', 's89-diretor@test.local'),
+  ('89000000-0000-4000-8000-000000000896', 's89-analista@test.local'),
+  ('89000000-0000-4000-8000-000000000897', 's89-outra-marca@test.local'),
+  ('89000000-0000-4000-8000-000000000898', 's89-comum@test.local');
+insert into public.agencies (id, slug, name) values ('89000000-0000-4000-8000-000000008901', 's89-agencia', 'Agência S89');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('89000000-0000-4000-8000-000000008901', '89000000-0000-4000-8000-000000000891', 'admin', 'Ana Adm S89'),
+  ('89000000-0000-4000-8000-000000008901', '89000000-0000-4000-8000-000000000892', 'manager', 'Gil Gestor S89');
+insert into public.brands (id, slug, name, site_url) values
+  ('89000000-0000-4000-8000-000000008911', 's89-marca-alfa', 'Marca Alfa S89', 'https://alfa.s89.test'),
+  ('89000000-0000-4000-8000-000000008912', 's89-marca-beta', 'Marca Beta S89', 'https://beta.s89.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('89000000-0000-4000-8000-000000008901', '89000000-0000-4000-8000-000000008911'),
+  ('89000000-0000-4000-8000-000000008901', '89000000-0000-4000-8000-000000008912');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000000895', 'owner', 'Dora Diretora'),
+  ('89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000000896', 'staff', 'Ari Analista'),
+  ('89000000-0000-4000-8000-000000008912', '89000000-0000-4000-8000-000000000897', 'owner', 'Bia Beta');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('89000000-0000-4000-8000-000000008921', '89000000-0000-4000-8000-000000008901', 'Creator Um S89', '89000000-0000-4000-8000-000000000893'),
+  ('89000000-0000-4000-8000-000000008922', '89000000-0000-4000-8000-000000008901', 'Creator Dois S89', '89000000-0000-4000-8000-000000000894');
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables) values
+  ('89000000-0000-4000-8000-000000008931', '89000000-0000-4000-8000-000000008901', '89000000-0000-4000-8000-000000008911', 'brand', 'Campanha Verão S89', 'converted', now() - interval '20 days', '[]');
+insert into public.campaign_request_budgets (agency_id, brand_id, request_id, budget_min_cents, budget_max_cents) values
+  ('89000000-0000-4000-8000-000000008901', '89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000008931', 200000, 300000);
+insert into public.deals (id, agency_id, brand_id, title, stage, outcome, brand_visible, expected_start, expected_end, service_rate_bp, contract_confirmed_at) values
+  ('89000000-0000-4000-8000-000000008941', '89000000-0000-4000-8000-000000008901', '89000000-0000-4000-8000-000000008911', 'Negócio Verão S89', 'production', null, true, current_date - 10, current_date + 10, 2000, now() - interval '10 days');
+update public.deals set request_id = '89000000-0000-4000-8000-000000008931' where id = '89000000-0000-4000-8000-000000008941';
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('89000000-0000-4000-8000-000000008951', '89000000-0000-4000-8000-000000008941', '89000000-0000-4000-8000-000000008921', 'contracted', now() - interval '15 days', true),
+  ('89000000-0000-4000-8000-000000008952', '89000000-0000-4000-8000-000000008941', '89000000-0000-4000-8000-000000008922', 'contracted', now() - interval '15 days', true);
+insert into public.deal_talent_fees (deal_id, deal_talent_id, talent_id, fee_cents) values
+  ('89000000-0000-4000-8000-000000008941', '89000000-0000-4000-8000-000000008951', '89000000-0000-4000-8000-000000008921', 100000),
+  ('89000000-0000-4000-8000-000000008941', '89000000-0000-4000-8000-000000008952', '89000000-0000-4000-8000-000000008922', 150000);
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, title, status, due_at, publish_at) values
+  ('89000000-0000-4000-8000-000000008961', '89000000-0000-4000-8000-000000008941', '89000000-0000-4000-8000-000000008951', 'reels', 'Reels Um S89', 'published', now() - interval '3 days', now() - interval '2 days'),
+  ('89000000-0000-4000-8000-000000008962', '89000000-0000-4000-8000-000000008941', '89000000-0000-4000-8000-000000008952', 'reels', 'Reels Dois S89', 'in_production', now() + interval '5 days', now() + interval '7 days');
+-- verba própria menor que o total (300.000 = 250.000 de cachês + 20%): a contratação gera os lançamentos e o aviso
+insert into public.brand_budgets (brand_id, request_id, total_cents) values ('89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000008931', 280000);
+select public.agency_finance_generate('89000000-0000-4000-8000-000000008941');
+create temp table t_s89 (k text primary key, v text);
+grant all on t_s89 to anon, authenticated, service_role;
+insert into t_s89 values
+  ('pay1', (select id::text from public.financial_entries where deal_talent_id = '89000000-0000-4000-8000-000000008951' and kind = 'talent_payout')),
+  ('pay2', (select id::text from public.financial_entries where deal_talent_id = '89000000-0000-4000-8000-000000008952' and kind = 'talent_payout')),
+  ('recv', (select id::text from public.financial_entries where deal_id = '89000000-0000-4000-8000-000000008941' and kind = 'brand_receivable'));
+
+select tests.ok('S89 estrutura: tabelas com RLS, nada para visitante, sem escrita direta, conta interna fechada, RPCs só para authenticated',
+  (select relrowsecurity from pg_class where oid = 'public.brand_budgets'::regclass)
+  and (select relrowsecurity from pg_class where oid = 'public.payout_invoices'::regclass)
+  and not has_table_privilege('anon', 'public.brand_budgets', 'select') and not has_table_privilege('anon', 'public.payout_invoices', 'select')
+  and not has_table_privilege('authenticated', 'public.brand_budgets', 'insert') and not has_table_privilege('authenticated', 'public.payout_invoices', 'update')
+  and has_column_privilege('authenticated', 'public.financial_entries', 'scheduled_on', 'select')
+  and not has_column_privilege('authenticated', 'public.financial_entries', 'rate_bp', 'select')
+  and not has_function_privilege('authenticated', 'public.brand_budget_compute(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.finance_budget_watch()', 'execute')
+  and not has_function_privilege('anon', 'public.brand_budget_summary(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.payout_invoice_attach(uuid, uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_invoice_review(uuid, text, text, date)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_payout_schedule(uuid, date)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+                  and p.proname in ('brand_budget_compute', 'brand_budget_summary', 'brand_budget_overview', 'brand_budget_set', 'finance_budget_watch',
+                                    'payout_invoice_attach', 'agency_invoice_review', 'agency_payout_schedule', 'talent_payouts', 'talent_today')
+                  and p.proconfig is null)
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('talent_payouts', 'talent_today', 'brand_budget_set')) = 3);
+select tests.ok('S89 contratação com verba estourada avisa só os donos da marca (sem valor no aviso)',
+  (select count(*) from public.inbox_notifications where kind = 'budget_exceeded' and entity_id = '89000000-0000-4000-8000-000000008931') = 1
+  and exists (select 1 from public.inbox_notifications where kind = 'budget_exceeded' and user_id = '89000000-0000-4000-8000-000000000895'
+              and link = '/marca/campanhas/89000000-0000-4000-8000-000000008931#camp-budget' and params = '{"deal": "Campanha Verão S89"}'));
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S89 visitante não lê verbas', $q$select count(*) from public.brand_budgets$q$, 'permission denied');
+select tests.expect_error('S89 visitante não lê notas fiscais', $q$select count(*) from public.payout_invoices$q$, 'permission denied');
+select tests.expect_error('S89 visitante não lê o painel da verba', $q$select public.brand_budget_summary('89000000-0000-4000-8000-000000008931')$q$, 'permission denied');
+
+-- diretor da marca: painel da campanha
+select tests.login('89000000-0000-4000-8000-000000000895', 's89-diretor@test.local');
+insert into t_s89 values ('sum1', public.brand_budget_summary('89000000-0000-4000-8000-000000008931')::text);
+select tests.ok('S89 diretor vê reservado (próprio), comprometido V = F + C, nada pago, estouro e pode editar',
+  (select v::jsonb from t_s89 where k = 'sum1') @> '{"reserved_cents": 280000, "reserved_source": "set", "offered_cents": 300000, "committed_cents": 300000, "paid_cents": 0, "over": true, "can_edit": true, "remaining_cents": -20000}');
+select tests.ok('S89 por influenciador: o que a marca paga por cada um, sem cachê nem comissão separados',
+  jsonb_array_length((select v::jsonb from t_s89 where k = 'sum1') -> 'talents') = 2
+  and ((select v::jsonb from t_s89 where k = 'sum1') -> 'talents' -> 0) @> '{"talent_name": "Creator Um S89", "committed_cents": 120000, "paid_cents": 0, "over": false}'
+  and ((select v::jsonb from t_s89 where k = 'sum1') -> 'talents' -> 1) @> '{"talent_name": "Creator Dois S89", "committed_cents": 180000}'
+  and not ((select v::jsonb from t_s89 where k = 'sum1') -> 'talents' -> 0 ?| array['fee_cents', 'commission_cents', 'rate_bp'])
+  and not ((select v::jsonb from t_s89 where k = 'sum1') ?| array['fee_cents', 'commission_cents', 'rate_bp']));
+select public.brand_budget_set('89000000-0000-4000-8000-000000008931', '89000000-0000-4000-8000-000000008951', 100000);
+select public.brand_budget_set('89000000-0000-4000-8000-000000008931', null, 350000);
+select tests.ok('S89 verba por influenciador estourada e da campanha folgada',
+  public.brand_budget_summary('89000000-0000-4000-8000-000000008931') @> '{"reserved_cents": 350000, "over": false, "talents_over": 1, "remaining_cents": 50000}'
+  and (public.brand_budget_summary('89000000-0000-4000-8000-000000008931') -> 'talents' -> 0) @> '{"reserved_cents": 100000, "over": true}');
+select public.brand_budget_set('89000000-0000-4000-8000-000000008931', null, null);
+select tests.ok('S89 limpar a verba volta ao máximo informado à agência',
+  public.brand_budget_summary('89000000-0000-4000-8000-000000008931') @> '{"reserved_cents": 300000, "reserved_source": "offered", "over": false}'
+  and (select count(*) from public.brand_budgets) = 1);
+select tests.expect_error('S89 verba negativa é recusada', $q$select public.brand_budget_set('89000000-0000-4000-8000-000000008931', null, -1)$q$, 'invalid_input');
+select tests.expect_error('S89 influenciador de fora da campanha é recusado', $q$select public.brand_budget_set('89000000-0000-4000-8000-000000008931', '89000000-0000-4000-8000-000000009999', 1000)$q$, 'not_found');
+insert into t_s89 values ('ov', public.brand_budget_overview('89000000-0000-4000-8000-000000008911')::text);
+select tests.ok('S89 visão geral: a campanha com totais e o estouro por influenciador contado',
+  (select v::jsonb from t_s89 where k = 'ov') @> '{"reserved_cents": 300000, "committed_cents": 300000, "paid_cents": 0, "over_count": 1}'
+  and jsonb_array_length((select v::jsonb from t_s89 where k = 'ov') -> 'items') = 1
+  and not ((select v::jsonb from t_s89 where k = 'ov') -> 'items' -> 0 ? 'talents'));
+select tests.ok('S89 diretor não lê lançamentos nem notas', (select count(*) from public.financial_entries) = 0 and (select count(*) from public.payout_invoices) = 0);
+
+-- analista: lê, não define
+select tests.login('89000000-0000-4000-8000-000000000896', 's89-analista@test.local');
+select tests.ok('S89 analista lê o painel e as verbas, sem poder editar',
+  public.brand_budget_summary('89000000-0000-4000-8000-000000008931') @> '{"can_edit": false, "committed_cents": 300000}' and (select count(*) from public.brand_budgets) = 1);
+select tests.expect_error('S89 analista não define a verba', $q$select public.brand_budget_set('89000000-0000-4000-8000-000000008931', null, 1000)$q$, 'forbidden');
+select tests.ok('S89 analista não recebe o aviso de verba estourada', (select count(*) from public.inbox_notifications where kind = 'budget_exceeded') = 0);
+
+-- outra marca, agência e usuário comum
+select tests.login('89000000-0000-4000-8000-000000000897', 's89-outra-marca@test.local');
+select tests.expect_error('S89 outra marca não lê o painel', $q$select public.brand_budget_summary('89000000-0000-4000-8000-000000008931')$q$, 'not_found');
+select tests.expect_error('S89 outra marca não define a verba', $q$select public.brand_budget_set('89000000-0000-4000-8000-000000008931', null, 1000)$q$, 'not_found');
+select tests.ok('S89 outra marca não lê as verbas e a visão geral dela fica vazia',
+  (select count(*) from public.brand_budgets) = 0 and jsonb_array_length(public.brand_budget_overview('89000000-0000-4000-8000-000000008912') -> 'items') = 0);
+select tests.expect_error('S89 outra marca não lê a visão geral da Alfa', $q$select public.brand_budget_overview('89000000-0000-4000-8000-000000008911')$q$, 'not_found');
+select tests.login('89000000-0000-4000-8000-000000000891', 's89-adm@test.local');
+select tests.ok('S89 a verba da marca é interna: nem o Adm da agência lê', (select count(*) from public.brand_budgets) = 0);
+select tests.expect_error('S89 Adm da agência não lê o painel da marca', $q$select public.brand_budget_summary('89000000-0000-4000-8000-000000008931')$q$, 'not_found');
+select tests.login('89000000-0000-4000-8000-000000000898', 's89-comum@test.local');
+select tests.expect_error('S89 usuário comum não lê o painel', $q$select public.brand_budget_summary('89000000-0000-4000-8000-000000008931')$q$, 'not_found');
+select tests.ok('S89 usuário comum não tem ganhos', public.talent_payouts() = '[]'::jsonb);
+
+-- creator 1: ganhos e "Hoje"
+select tests.login('89000000-0000-4000-8000-000000000893', 's89-creator-1@test.local');
+select tests.ok('S89 ganhos do creator: só o dele, com marca, entrega feita e sem nota',
+  jsonb_array_length(public.talent_payouts()) = 1
+  and (public.talent_payouts() -> 0) @> '{"amount_cents": 100000, "brand_name": "Marca Alfa S89", "delivered": true, "status": "planned", "invoice": null, "scheduled_on": null}');
+select tests.ok('S89 "Hoje" do creator traz o repasse aberto sem valor',
+  jsonb_array_length(public.talent_today() -> 'payouts') = 1
+  and (public.talent_today() -> 'payouts' -> 0) @> '{"delivered": true, "invoice_status": null, "brand_name": "Marca Alfa S89"}'
+  and not ((public.talent_today() -> 'payouts' -> 0) ? 'amount_cents'));
+insert into t_s89 values ('doc1', public.document_reserve('89000000-0000-4000-8000-000000008901', 'deal', '89000000-0000-4000-8000-000000008941',
+  '{"kind": "other", "title": "Nota fiscal Verão", "mime_type": "application/pdf", "size_bytes": 1200}') ->> 'id');
+insert into t_s89 values ('doc2', public.document_reserve('89000000-0000-4000-8000-000000008901', 'deal', '89000000-0000-4000-8000-000000008941',
+  '{"kind": "other", "title": "Nota fiscal Verão 2", "mime_type": "image/png", "size_bytes": 900}') ->> 'id');
+select tests.su();
+update public.documents set status = 'ready' where id in ((select v::uuid from t_s89 where k = 'doc1'), (select v::uuid from t_s89 where k = 'doc2'));
+select tests.login('89000000-0000-4000-8000-000000000894', 's89-creator-2@test.local');
+select tests.expect_error('S89 creator 2 não liga nota ao repasse de outro', $q$select public.payout_invoice_attach((select v::uuid from t_s89 where k = 'pay1'), (select v::uuid from t_s89 where k = 'doc1'))$q$, 'not_found');
+select tests.expect_error('S89 creator 2 não usa o documento de outro', $q$select public.payout_invoice_attach((select v::uuid from t_s89 where k = 'pay2'), (select v::uuid from t_s89 where k = 'doc1'))$q$, 'not_found');
+select tests.login('89000000-0000-4000-8000-000000000893', 's89-creator-1@test.local');
+select tests.expect_error('S89 nota não vai para o lançamento da marca', $q$select public.payout_invoice_attach((select v::uuid from t_s89 where k = 'recv'), (select v::uuid from t_s89 where k = 'doc1'))$q$, 'not_found');
+insert into t_s89 values ('inv1', public.payout_invoice_attach((select v::uuid from t_s89 where k = 'pay1'), (select v::uuid from t_s89 where k = 'doc1'))::text);
+select tests.ok('S89 nota enviada: aparece nos ganhos e o creator ainda lê o documento',
+  (public.talent_payouts() -> 0 -> 'invoice') @> '{"status": "submitted"}'
+  and (select count(*) from public.payout_invoices) = 1
+  and exists (select 1 from public.documents where id = (select v::uuid from t_s89 where k = 'doc1')));
+select tests.expect_error('S89 uma nota aberta por vez', $q$select public.payout_invoice_attach((select v::uuid from t_s89 where k = 'pay1'), (select v::uuid from t_s89 where k = 'doc2'))$q$, 'invoice_open');
+select tests.expect_error('S89 creator não decide a própria nota', $q$select public.agency_invoice_review((select v::uuid from t_s89 where k = 'inv1'), 'approve', null, null)$q$, 'not_found');
+select tests.su();
+select tests.ok('S89 documento da nota virou restrito e o aviso foi só para o Adm',
+  (select restricted and not share_brand from public.documents where id = (select v::uuid from t_s89 where k = 'doc1'))
+  and exists (select 1 from public.inbox_notifications where kind = 'invoice_submitted' and user_id = '89000000-0000-4000-8000-000000000891' and link = '/agencia/financeiro?f=invoices')
+  and not exists (select 1 from public.inbox_notifications where kind = 'invoice_submitted' and user_id = '89000000-0000-4000-8000-000000000892'));
+
+-- gestor: não vê a nota, não decide, não agenda
+select tests.login('89000000-0000-4000-8000-000000000892', 's89-gestor@test.local');
+select tests.ok('S89 gestor não lê a nota nem o documento dela (tem valor)',
+  (select count(*) from public.payout_invoices) = 0 and not exists (select 1 from public.documents where id = (select v::uuid from t_s89 where k = 'doc1')));
+select tests.expect_error('S89 gestor não decide nota', $q$select public.agency_invoice_review((select v::uuid from t_s89 where k = 'inv1'), 'approve', null, null)$q$, 'forbidden');
+select tests.expect_error('S89 gestor não agenda pagamento', $q$select public.agency_payout_schedule((select v::uuid from t_s89 where k = 'pay1'), current_date + 3)$q$, 'forbidden');
+select tests.login('89000000-0000-4000-8000-000000000895', 's89-diretor@test.local');
+select tests.ok('S89 marca não lê o documento da nota', not exists (select 1 from public.documents where id = (select v::uuid from t_s89 where k = 'doc1')));
+
+-- Adm: recusa, nova nota, aprova agendando, agenda e paga
+select tests.login('89000000-0000-4000-8000-000000000891', 's89-adm@test.local');
+select tests.ok('S89 Adm lê a nota e o documento',
+  (select count(*) from public.payout_invoices) = 1 and exists (select 1 from public.documents where id = (select v::uuid from t_s89 where k = 'doc1')));
+select tests.expect_error('S89 recusar exige motivo', $q$select public.agency_invoice_review((select v::uuid from t_s89 where k = 'inv1'), 'reject', 'ruim', null)$q$, 'note_required');
+select tests.expect_error('S89 decisão desconhecida', $q$select public.agency_invoice_review((select v::uuid from t_s89 where k = 'inv1'), 'maybe', null, null)$q$, 'invalid_input');
+select public.agency_invoice_review((select v::uuid from t_s89 where k = 'inv1'), 'reject', 'CNPJ do tomador errado', null);
+select tests.expect_error('S89 nota já decidida não muda', $q$select public.agency_invoice_review((select v::uuid from t_s89 where k = 'inv1'), 'approve', null, null)$q$, 'invalid_state');
+select tests.expect_error('S89 data no passado é recusada', $q$select public.agency_payout_schedule((select v::uuid from t_s89 where k = 'pay1'), current_date - 2)$q$, 'invalid_date');
+select tests.expect_error('S89 só repasse se agenda', $q$select public.agency_payout_schedule((select v::uuid from t_s89 where k = 'recv'), current_date + 3)$q$, 'invalid_input');
+
+select tests.login('89000000-0000-4000-8000-000000000893', 's89-creator-1@test.local');
+select tests.ok('S89 creator vê a recusa com o motivo, no "Hoje" também',
+  (public.talent_payouts() -> 0 -> 'invoice') @> '{"status": "rejected", "review_note": "CNPJ do tomador errado"}'
+  and (public.talent_today() -> 'payouts' -> 0) @> '{"invoice_status": "rejected", "invoice_note": "CNPJ do tomador errado"}'
+  and exists (select 1 from public.inbox_notifications where kind = 'invoice_reviewed' and params @> '{"status": "reject"}'));
+select tests.expect_error('S89 documento já usado não serve de novo', $q$select public.payout_invoice_attach((select v::uuid from t_s89 where k = 'pay1'), (select v::uuid from t_s89 where k = 'doc1'))$q$, 'invalid_state');
+insert into t_s89 values ('inv2', public.payout_invoice_attach((select v::uuid from t_s89 where k = 'pay1'), (select v::uuid from t_s89 where k = 'doc2'))::text);
+select tests.ok('S89 creator lê o histórico das duas notas', (select count(*) from public.payout_invoices) = 2);
+
+select tests.login('89000000-0000-4000-8000-000000000891', 's89-adm@test.local');
+select public.agency_invoice_review((select v::uuid from t_s89 where k = 'inv2'), 'approve', 'Ok', current_date + 5);
+select tests.ok('S89 aprovar com data agenda o pagamento (planejado vira a vencer)',
+  (select status = 'due' and scheduled_on = current_date + 5 from public.financial_entries where id = (select v::uuid from t_s89 where k = 'pay1'))
+  and (select status from public.payout_invoices where id = (select v::uuid from t_s89 where k = 'inv2')) = 'approved');
+select public.agency_payout_schedule((select v::uuid from t_s89 where k = 'pay2'), current_date + 9);
+select tests.ok('S89 agendar sem nota é possível (pessoa física por RPA)',
+  (select scheduled_on from public.financial_entries where id = (select v::uuid from t_s89 where k = 'pay2')) = current_date + 9);
+
+select tests.login('89000000-0000-4000-8000-000000000893', 's89-creator-1@test.local');
+select tests.ok('S89 creator vê o agendamento nos ganhos', (public.talent_payouts() -> 0) @> jsonb_build_object('status', 'due', 'scheduled_on', (current_date + 5)::text));
+select tests.ok('S89 creator vê o agendamento no "Hoje"', (public.talent_today() -> 'payouts' -> 0) @> jsonb_build_object('invoice_status', 'approved', 'scheduled_on', (current_date + 5)::text));
+select tests.ok('S89 creator recebe o aviso com a data',
+  exists (select 1 from public.inbox_notifications where kind = 'payout_scheduled' and params ->> 'date' = (current_date + 5)::text and link = '/creator/escritorio/ganhos'));
+
+select tests.login('89000000-0000-4000-8000-000000000891', 's89-adm@test.local');
+select public.agency_entry_set_status((select v::uuid from t_s89 where k = 'pay1'), 'settled', null);
+select public.agency_entry_set_status((select v::uuid from t_s89 where k = 'recv'), 'settled', null);
+select tests.expect_error('S89 repasse pago não se reagenda', $q$select public.agency_payout_schedule((select v::uuid from t_s89 where k = 'pay1'), current_date + 3)$q$, 'invalid_state');
+
+select tests.login('89000000-0000-4000-8000-000000000893', 's89-creator-1@test.local');
+select tests.ok('S89 pago some do "Hoje" e aparece pago nos ganhos',
+  jsonb_array_length(public.talent_today() -> 'payouts') = 0 and (public.talent_payouts() -> 0 ->> 'status') = 'settled');
+select tests.expect_error('S89 não se envia nota para repasse pago', $q$select public.payout_invoice_attach((select v::uuid from t_s89 where k = 'pay1'), (select v::uuid from t_s89 where k = 'doc2'))$q$, 'invalid_state');
+select tests.login('89000000-0000-4000-8000-000000000895', 's89-diretor@test.local');
+select tests.ok('S89 marca vê o pago pelo lançamento dela liquidado (total e por influenciador)',
+  public.brand_budget_summary('89000000-0000-4000-8000-000000008931') @> '{"paid_cents": 300000, "open_cents": 0, "payment_status": "settled"}'
+  and (public.brand_budget_summary('89000000-0000-4000-8000-000000008931') -> 'talents' -> 1) @> '{"paid_cents": 180000}');
+
+select tests.su();
+delete from public.payout_invoices where agency_id = '89000000-0000-4000-8000-000000008901';
+delete from public.documents where agency_id = '89000000-0000-4000-8000-000000008901';
+delete from public.financial_entries where agency_id = '89000000-0000-4000-8000-000000008901';
+delete from public.brand_budgets where brand_id in ('89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000008912');
+delete from public.deals where agency_id = '89000000-0000-4000-8000-000000008901';
+delete from public.campaign_requests where brand_id in ('89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000008912');
+delete from public.talent_profiles where id::text like '89000000-%';
+delete from public.brand_members where brand_id in ('89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000008912');
+delete from public.agency_brands where agency_id = '89000000-0000-4000-8000-000000008901';
+delete from public.brands where id in ('89000000-0000-4000-8000-000000008911', '89000000-0000-4000-8000-000000008912');
+delete from public.inbox_notifications where user_id::text like '89000000-0000-4000-8000-00000000089%';
+delete from public.agency_members where agency_id = '89000000-0000-4000-8000-000000008901';
+delete from public.agencies where id = '89000000-0000-4000-8000-000000008901';
+delete from auth.users where id::text like '89000000-0000-4000-8000-00000000089%';
+drop table t_s89;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

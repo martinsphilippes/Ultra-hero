@@ -114,5 +114,18 @@ export function toTalentToday(data: unknown): TalentTodayData | null {
       brandName: text(d.brand_name),
     })),
     terms: arr(k.terms).map((m) => ({ termsId: text(m.terms_id), dealTalentId: text(m.deal_talent_id), version: num(m.version), sentAt: str(m.sent_at), validUntil: str(m.valid_until), dealTitle: text(m.deal_title), brandName: text(m.brand_name) })),
+    // 0082: repasses abertos (sem valor)
+    payouts: arr(k.payouts).map((p) => ({
+      id: text(p.id),
+      dealTalentId: text(p.deal_talent_id),
+      dealTitle: text(p.deal_title),
+      brandName: text(p.brand_name),
+      status: text(p.status),
+      dueOn: str(p.due_on),
+      scheduledOn: str(p.scheduled_on),
+      delivered: p.delivered === true,
+      invoiceStatus: p.invoice_status === "submitted" || p.invoice_status === "approved" || p.invoice_status === "rejected" ? p.invoice_status : null,
+      invoiceNote: text(p.invoice_note),
+    })),
   };
 }

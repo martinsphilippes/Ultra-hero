@@ -9,7 +9,8 @@
     "availability": "Disponibilidade",
     "agenda": "Agenda",
     "tasks": "Tarefas",
-    "documents": "Documentos"
+    "documents": "Documentos",
+    "earnings": "Ganhos"
   },
   "tabs": {
     "label": "Seções do escritório",
@@ -21,7 +22,8 @@
     "availability": "Disponibilidade",
     "agenda": "Agenda",
     "tasks": "Tarefas",
-    "documents": "Documentos"
+    "documents": "Documentos",
+    "earnings": "Ganhos"
   },
   "home": {
     "unavailable": "Escritório em atualização",
@@ -68,7 +70,8 @@
     "payoutsTitle": "Repasses",
     "payoutsHint": "Situação informada pela agência. Registro interno, sem cobrança real.",
     "payoutsNone": "Nenhum repasse registrado.",
-    "payoutsAppHint": "Veja os valores no site."
+    "payoutsAppHint": "Veja os valores no site.",
+    "payoutsAll": "Ver ganhos"
   },
   "consent": {
     "title": "Termo de uso comercial",
@@ -217,5 +220,47 @@
   },
   "documents": {
     "intro": "Briefings, roteiros aprovados e comprovantes que a agência compartilhou com você. Só leitura."
+  },
+  "earnings": {
+    "title": "Ganhos",
+    "description": "O que você tem a receber, o que vem por aí e o que já foi pago. Envie a nota fiscal de cada pagamento aqui.",
+    "unavailable": "Ganhos em atualização",
+    "unavailableHint": "Os ganhos aparecem assim que o banco for atualizado.",
+    "simulated": "Registro interno da agência: nada é cobrado nem transferido por aqui.",
+    "appHint": "Os valores aparecem no site.",
+    "groups": {
+      "receivable": "A receber",
+      "forecast": "Previsão",
+      "paid": "Pagos"
+    },
+    "groupHints": {
+      "receivable": "Entregue, falta pagar",
+      "forecast": "Contratado, em produção",
+      "paid": "Já pagos"
+    },
+    "count": "{count, plural, one {# pagamento} other {# pagamentos}}",
+    "empty": "Nenhum pagamento ainda. Eles aparecem quando a agência confirma uma contratação.",
+    "listLabel": "Pagamentos",
+    "expected": "Previsto para {date}",
+    "scheduledFor": "Agendado para {date}",
+    "paidAt": "Pago em {date}",
+    "noDate": "Sem data prevista",
+    "inProduction": "Ainda em produção: a nota pode ir depois da entrega",
+    "rejectedNote": "Nota recusada: “{note}”",
+    "sendInvoice": "Enviar nota fiscal",
+    "sendAnother": "Enviar outra nota",
+    "viewInvoice": "Ver nota",
+    "file": "Arquivo da nota (PDF ou imagem)",
+    "fileHint": "Até 20 MB. Só você e o administrador da agência veem.",
+    "pickFile": "Escolha o arquivo da nota.",
+    "badType": "Envie PDF, JPG, PNG ou WEBP.",
+    "tooLarge": "O arquivo passa de 20 MB.",
+    "uploadFailed": "Não deu para enviar o arquivo. Tente de novo.",
+    "openFailed": "Não deu para abrir a nota.",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "invoiceTitle": "Nota fiscal · {deal}",
+    "invoiceDocTitle": "Nota fiscal · {deal}",
+    "invoiceSent": "Nota enviada. A agência vai conferir."
   }
 }

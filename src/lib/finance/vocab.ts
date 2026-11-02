@@ -6,7 +6,8 @@ export const ENTRY_KINDS = ["brand_receivable", "commission", "talent_payout"] a
 export type EntryKind = (typeof ENTRY_KINDS)[number];
 export const ENTRY_STATUSES = ["planned", "due", "settled", "cancelled"] as const;
 export type EntryStatus = (typeof ENTRY_STATUSES)[number];
-export const ENTRY_FILTERS = ["open", "overdue", "settled", "cancelled", "all"] as const;
+// "invoices" (0082): repasses com nota fiscal enviada esperando o Adm
+export const ENTRY_FILTERS = ["open", "invoices", "overdue", "settled", "cancelled", "all"] as const;
 export type EntryFilter = (typeof ENTRY_FILTERS)[number];
 export const MAX_RATE_BP = 5000;
 
@@ -49,3 +50,9 @@ export const entryStatusSchema = z.object({ entryId: uuid, status: z.enum(["due"
 export const rateSchema = z.object({ rateBp: z.number().int().min(0).max(MAX_RATE_BP) });
 export const dealRateSchema = z.object({ dealId: uuid, rateBp: z.number().int().min(0).max(MAX_RATE_BP).nullable() });
 export const sponsorshipSchema = z.object({ dealTalentId: uuid, dealId: uuid });
+// 0082: verba da marca, nota fiscal e agendamento
+const isoDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+export const budgetSetSchema = z.object({ requestId: uuid, dealTalentId: uuid.nullable(), totalCents: z.number().int().min(0).max(10_000_000_000).nullable() });
+export const invoiceAttachSchema = z.object({ entryId: uuid, documentId: uuid });
+export const invoiceReviewSchema = z.object({ invoiceId: uuid, decision: z.enum(["approve", "reject"]), note: z.string().trim().max(500), payOn: isoDay.nullable() });
+export const payoutScheduleSchema = z.object({ entryId: uuid, payOn: isoDay.nullable() });

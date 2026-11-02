@@ -15,6 +15,7 @@ import { listOpportunities } from "@/lib/deals/queries";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { listTasks } from "@/lib/execution/queries";
+import { payStep } from "@/lib/finance/earnings";
 import { myPayouts } from "@/lib/finance/queries";
 import { listInbox } from "@/lib/inbox/queries";
 import { formatCount } from "@/lib/talent/media-kit";
@@ -45,7 +46,14 @@ export default async function OfficeHomePage() {
     listInbox({ limit: 5 }),
     listOpportunities(),
   ]);
-  const [tasks, summary, payouts, tc, todayData] = await Promise.all([listTasks({ talentOnly: true, open: true }), officeSummaryData(), myPayouts(), getTranslations("commercial"), getTalentToday()]);
+  const [tasks, summary, payouts, tc, todayData, te] = await Promise.all([
+    listTasks({ talentOnly: true, open: true }),
+    officeSummaryData(),
+    myPayouts(),
+    getTranslations("commercial"),
+    getTalentToday(),
+    getTranslations("talent.earnings"),
+  ]);
   // "Hoje" (0078): o que depende do creator, do mais urgente para o menos, com link direto
   const today = todayData.available ? todayData.data : null;
   const now = new Date();
@@ -138,8 +146,8 @@ export default async function OfficeHomePage() {
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="font-medium text-fg">{p.dealTitle}</span>
                         <span className="type-caption text-fg-muted">
-                          {tc(`finance.status.${p.status}`)}
-                          {p.dueOn ? ` · ${t("dueAt", { date: formatPlainDate(p.dueOn, locale) })}` : ""}
+                          {tc(`finance.payStep.${payStep(p)}`)}
+                          {(p.scheduledOn ?? p.dueOn) ? ` · ${te("expected", { date: formatPlainDate((p.scheduledOn ?? p.dueOn) as string, locale) })}` : ""}
                         </span>
                       </span>
                       <span className="font-mono font-semibold text-fg native:hidden">{formatCents(p.amountCents, locale)}</span>
@@ -148,6 +156,9 @@ export default async function OfficeHomePage() {
                 </ul>
               )}
               <p className="type-caption text-fg-muted hidden native:block">{t("payoutsAppHint")}</p>
+              <Link href="/creator/escritorio/ganhos" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+                {t("payoutsAll")}
+              </Link>
             </section>
           ) : null}
         </div>
