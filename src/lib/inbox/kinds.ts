@@ -39,6 +39,8 @@ export const INBOX_KINDS = [
   // biblioteca (vencimento do direito de uso) e comentário no segundo (0083)
   "usage_rights_expiring",
   "deliverable_comment",
+  // prazo de tarefa chegando em 24 h, pelo cron (0084)
+  "task_due_soon",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
@@ -62,6 +64,30 @@ export function isInboxKind(value: unknown): value is InboxKind {
 /** O aviso vira push? Só os tipos do escritório e só com link do escritório (mesma regra do banco). */
 export function inboxKindPushes(kind: string, link: string): boolean {
   return (PUSH_KINDS as readonly string[]).includes(kind) && link.startsWith("/creator/escritorio");
+}
+
+/**
+ * O aviso também vai por e-mail? Espelha public.inbox_kind_emails (0084): oferta nova e ajuste pedido para o
+ * influenciador, contraproposta respondida, entrega aguardando a marca, termos para assinar e prazo em 24 h.
+ */
+export function inboxKindEmails(kind: string, link: string, params: Record<string, unknown> = {}): boolean {
+  const status = typeof params.status === "string" ? params.status : "";
+  const office = link.startsWith("/creator/escritorio");
+  switch (kind) {
+    case "opportunity_received":
+      return office;
+    case "opportunity_updated":
+      return office && (status === "counter_accepted" || status === "counter_rejected");
+    case "deliverable_decided":
+      return office && status === "changes_requested";
+    case "deliverable_submitted":
+      return link.startsWith("/marca/");
+    case "contract_acceptance_requested":
+    case "task_due_soon":
+      return true;
+    default:
+      return false;
+  }
 }
 
 /** Parâmetros do texto do aviso: só texto curto (nomes, datas, códigos). Valor nunca (D16). */

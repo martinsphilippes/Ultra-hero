@@ -240,7 +240,8 @@ describe("integração com o resto da gestão", () => {
 
   it("a migração recria o check de avisos com TODOS os tipos e não abre função para o visitante", () => {
     const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0083_biblioteca_metricas_vendas.sql"), "utf8");
-    for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
+    // task_due_soon chegou depois, na 0084
+    for (const kind of INBOX_KINDS.filter((k) => k !== "task_due_soon")) expect(sql).toContain(`'${kind}'`);
     expect(sql).not.toMatch(/grant execute[^;]*to[^;]*\banon\b/i);
     expect(sql).toMatch(/revoke execute on function public\.tracking_link_click\(text\) from public, anon, authenticated/);
   });

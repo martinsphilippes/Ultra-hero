@@ -1,3 +1,5 @@
+import { getOriginFromRequest } from "@/lib/auth/origin";
+import { drainEmailOutbox } from "@/lib/email/outbox";
 import { collectYouTubeMetrics } from "@/lib/media/youtube-collect";
 import { drainPushOutbox } from "@/lib/push/dispatch";
 import { runCronJob } from "../_lib/cron";
@@ -7,6 +9,8 @@ import { cleanupAgencyDocOrphans } from "../_lib/agency-docs";
 // limpeza de avisos antigos e de documentos pendentes, e o envio das notificações push que isso gerou.
 // 0083: aviso de vencimento do direito de uso (15, 7 e 0 dias) e a coleta das métricas do YouTube pela API
 // oficial (só com YOUTUBE_API_KEY; sem ela o resultado diz "not_configured" e nada é inventado).
+// 0084: aviso de prazo chegando (tarefa que vence nas próximas 24 h) e o envio da fila de e-mail dos avisos (só com
+// RESEND_API_KEY e EMAIL_FROM; sem eles o resultado diz "not_configured" e a fila só é limpa).
 // Cada passo que depende da 0069 pula com "not_migrated" enquanto a migração não chega ao banco.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -37,6 +41,13 @@ async function handler(request: Request) {
     } else {
       out.rights_notified = Number(rights.data ?? 0);
     }
+    const dueSoon = await admin.rpc("task_due_soon_scan");
+    if (dueSoon.error) {
+      if (!NOT_MIGRATED.has(dueSoon.error.code ?? "")) throw new Error(dueSoon.error.message);
+      out.due_soon_skipped = "not_migrated";
+    } else {
+      out.due_soon_notified = Number(dueSoon.data ?? 0);
+    }
     try {
       Object.assign(out, await collectYouTubeMetrics(admin));
     } catch (error) {
@@ -46,6 +57,13 @@ async function handler(request: Request) {
       Object.assign(out, await cleanupAgencyDocOrphans(admin));
     } catch (error) {
       out.docs_orphans_error = error instanceof Error ? error.message : String(error);
+    }
+    try {
+      out.email = dueSoon.error ? "not_migrated" : await drainEmailOutbox(admin, getOriginFromRequest(request), 20_000);
+      const emailCleanup = await admin.rpc("email_outbox_cleanup");
+      if (!emailCleanup.error) out.email_deleted = Number(emailCleanup.data ?? 0);
+    } catch (error) {
+      out.email_error = error instanceof Error ? error.message : String(error);
     }
     try {
       const push = await drainPushOutbox(admin, 20_000);

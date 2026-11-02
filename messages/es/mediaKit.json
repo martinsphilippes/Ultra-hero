@@ -102,7 +102,9 @@
     "engagement": "Engagement",
     "audience": "Audiencia (gráficos)",
     "brands": "Marcas que ya acompañan",
-    "agency_contact": "Contacto de la agencia"
+    "agency_contact": "Contacto de la agencia",
+    "stats": "Números del trabajo (automático)",
+    "portfolio": "Portafolio (campañas y marcas)"
   },
   "share": {
     "created": "Enlace generado. Cópialo ahora: no vuelve a aparecer.",
@@ -129,5 +131,35 @@
     "poweredBy": "Groscove Ultra",
     "unavailableTitle": "Este enlace no está disponible",
     "unavailableBody": "El enlace puede haber vencido o haberse desactivado. Pide uno nuevo a quien lo envió."
+  },
+  "auto": {
+    "title": "Números del trabajo",
+    "campaigns": "Campañas concluidas",
+    "published": "Entregas publicadas",
+    "onTime": "Entrega a tiempo",
+    "onTimeBase": "{count, plural, one {de # entrega} other {de # entregas}}",
+    "rating": "Nota media",
+    "ratingCount": "{count, plural, one {# evaluación} other {# evaluaciones}}",
+    "appFollowers": "Seguidores en la app",
+    "networksUpdated": "Redes actualizadas el {date}",
+    "networksNever": "Redes aún sin actualizar",
+    "computedAt": "calculado el {date}",
+    "portfolio": "Portafolio",
+    "portfolioEmpty": "Aún no hay entregas publicadas para mostrar.",
+    "portfolioHint": "Campañas hechas, marca y lo publicado, con enlace y métricas. Se actualiza solo.",
+    "openPost": "Abrir publicación",
+    "unavailable": "Los números automáticos aún no están disponibles.",
+    "inKit": "El portafolio aparece en el enlace de tu media kit.",
+    "notInKit": "Para mostrarlo en el enlace del media kit, activa \"Portafolio\" en los campos visibles.",
+    "openKit": "Abrir media kit",
+    "metrics": {
+      "views": "Visualizaciones",
+      "reach": "Alcance",
+      "likes": "Me gusta",
+      "comments": "Comentarios",
+      "shares": "Compartidos",
+      "saves": "Guardados",
+      "clicks": "Clics"
+    }
   }
 }

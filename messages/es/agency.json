@@ -311,7 +311,12 @@
     "already_rated": "Esta entrega ya fue evaluada.",
     "invoice_open": "Ya hay una factura enviada o aprobada para este pago.",
     "invalid_date": "Elige una fecha desde hoy hasta un año adelante.",
-    "coupon_taken": "Este cupón ya es de otro influencer en esta campaña."
+    "coupon_taken": "Este cupón ya es de otro influencer en esta campaña.",
+    "signature_required": "Para aceptar, firma con tu nombre completo y CPF/CNPJ.",
+    "already_signed": "Estos términos ya fueron firmados.",
+    "terms_changed": "Los términos cambiaron mientras leías. Ábrelos de nuevo y revisa.",
+    "invalid_tax_id": "CPF o CNPJ inválido. Revisa los números.",
+    "name_required": "Escribe tu nombre completo (nombre y apellido)."
   },
   "casting": {
     "title": "Casting",

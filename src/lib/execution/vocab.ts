@@ -41,7 +41,6 @@ export const rightsSchema = z.object({
   exclusivityMonths: z.number().int().min(1).max(MAX_EXCLUSIVITY_MONTHS).nullable(),
 });
 export const termsSchema = z.object({ dealId: uuid, summary: z.string().trim().min(20).max(4000), usageRights: z.string().trim().max(1000), exclusivity: z.string().trim().max(1000), validUntil: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]), rights: rightsSchema.optional() });
-export const acceptSchema = z.object({ termsId: uuid, note: z.string().trim().max(500) });
 export const recordAcceptanceSchema = z.object({ termsId: uuid, party: z.enum(["brand", "talent"]), dealTalentId: z.union([z.literal(""), uuid]), documentId: z.union([z.literal(""), uuid]), note: z.string().trim().min(5).max(500) });
 export const taskSaveSchema = z.object({
   id: uuid.nullable(),

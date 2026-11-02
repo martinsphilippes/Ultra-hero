@@ -10,9 +10,10 @@ export const GENDER_KEYS = ["female", "male", "other"] as const;
 export type GenderKey = (typeof GENDER_KEYS)[number];
 
 /** Campos que o talento ou a agência escolhem mostrar no kit (o nome é sempre visível). */
-export const KIT_FIELDS = ["photo", "headline", "about", "location", "segments", "networks", "followers", "views", "reach", "engagement", "audience", "brands", "agency_contact"] as const;
+// 0084: "stats" (números calculados na hora) e "portfolio" (campanhas e entregas publicadas; opt-in, expõe marcas)
+export const KIT_FIELDS = ["photo", "headline", "about", "location", "segments", "networks", "followers", "views", "reach", "engagement", "audience", "brands", "agency_contact", "stats", "portfolio"] as const;
 export type KitField = (typeof KIT_FIELDS)[number];
-export const DEFAULT_KIT_FIELDS: KitField[] = ["headline", "about", "segments", "networks", "followers"];
+export const DEFAULT_KIT_FIELDS: KitField[] = ["headline", "about", "segments", "networks", "followers", "stats"];
 
 /** Campos que só fazem sentido com "networks" ligado (são colunas das redes). */
 export const NETWORK_METRIC_FIELDS: KitField[] = ["followers", "views", "reach", "engagement", "audience"];

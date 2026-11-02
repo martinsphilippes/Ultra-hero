@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { KitView } from "@/components/talent/KitView";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { toKitStats, toPortfolio } from "@/lib/talent/kit-auto";
 import type { ResolvedKit } from "@/lib/talent/media-kit";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,9 @@ export default async function PublicKitPage({ params }: Props) {
   const count = (await cookies()).get("uh-e2e")?.value !== "1";
   const { data, error } = await createAdminClient().rpc("media_kit_resolve", { p_token: token, p_count: count });
   if (error || !data || typeof data !== "object" || Array.isArray(data)) notFound();
-  const kit = data as unknown as ResolvedKit;
+  const raw = data as Record<string, unknown>;
+  // 0084: números e portfólio vêm calculados na hora; normalizados aqui (só https, só números)
+  const kit = { ...(data as unknown as ResolvedKit), stats: "stats" in raw ? toKitStats(raw.stats) : undefined, portfolio: "portfolio" in raw ? toPortfolio(raw.portfolio) : undefined };
   const t = await getTranslations("mediaKit.public");
   return (
     <main id="main" className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:py-12" data-testid="public-kit">

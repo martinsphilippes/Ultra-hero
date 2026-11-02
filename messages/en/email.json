@@ -7,5 +7,42 @@
     "expires": "The link is valid for {days} days and only works with this e-mail.",
     "ignore": "If you were not expecting this invitation, ignore this message.",
     "signature": "Groscove Ultra · the bridge between brands and heroes"
+  },
+  "work": {
+    "greeting": "Hello!",
+    "prefs": "You get this e-mail because e-mail notices are on in Groscove Ultra. To turn them off, go to Profile → Notifications.",
+    "signature": "Groscove Ultra · the bridge between brands and heroes",
+    "kinds": {
+      "opportunity_received": {
+        "subject": "New opportunity: {brand}",
+        "body": "{brand} has an opportunity for you in {deal}. See the offer and reply in the app.",
+        "cta": "See opportunity"
+      },
+      "opportunity_updated": {
+        "subject": "{status, select, counter_accepted {Counteroffer accepted} other {Counteroffer declined}}: {deal}",
+        "body": "{status, select, counter_accepted {The agency accepted your counteroffer in {deal}.} other {The agency answered your counteroffer in {deal} and did not accept it. See why in the app.}}",
+        "cta": "See answer"
+      },
+      "deliverable_decided": {
+        "subject": "Changes requested: {deal}",
+        "body": "Changes were requested on your deliverable for {deal}. See the comment and send the new version.",
+        "cta": "See changes"
+      },
+      "deliverable_submitted": {
+        "subject": "Deliverable waiting for you: {deal}",
+        "body": "{talent} sent a deliverable for {deal}. It is waiting for your approval.",
+        "cta": "See deliverable"
+      },
+      "contract_acceptance_requested": {
+        "subject": "Terms to sign: {deal}",
+        "body": "The terms for {deal} are ready. Read and sign in the app with your full name and CPF/CNPJ.",
+        "cta": "Read and sign"
+      },
+      "task_due_soon": {
+        "subject": "Deadline coming up: {deal}",
+        "body": "A task in {deal} is due in less than 24 hours ({date}).",
+        "cta": "See task"
+      }
+    }
   }
 }

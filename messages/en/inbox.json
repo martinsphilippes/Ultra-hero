@@ -154,6 +154,10 @@
     "deliverable_comment": {
       "title": "Comment on a deliverable",
       "body": "{status, select, brand {The brand commented on a deliverable of {deal}.} other {The agency commented on a deliverable of {deal}.}}"
+    },
+    "task_due_soon": {
+      "title": "Deadline coming up",
+      "body": "A task in {deal} is due in less than 24 hours."
     }
   }
 }

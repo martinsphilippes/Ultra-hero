@@ -1,6 +1,7 @@
 import "server-only";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import { toKitStats, toPortfolio, type KitStats, type PortfolioItem } from "./kit-auto";
 import type { KitSource, SocialRow } from "./media-kit";
 import { DEFAULT_KIT_FIELDS, type Availability, type CommercialStatus } from "./vocab";
 
@@ -224,6 +225,16 @@ export async function heroPublicExtras(creator: { id?: string | null; userId?: s
   return { photoUrl: hero.avatar_url, brands };
 }
 
+/** Números do kit calculados na hora e portfólio (0084, talent_kit_insights): o próprio talento ou a agência dele. */
+export async function getKitInsights(talentId: string): Promise<{ available: boolean; stats: KitStats | null; portfolio: PortfolioItem[] }> {
+  if (!/^[0-9a-f-]{36}$/i.test(talentId)) return { available: true, stats: null, portfolio: [] };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("talent_kit_insights", { p_talent: talentId });
+  if (error || !data || typeof data !== "object" || Array.isArray(data)) return { available: !(error && isMissingSchema(error)), stats: null, portfolio: [] };
+  const raw = data as Record<string, unknown>;
+  return { available: true, stats: toKitStats(raw.stats), portfolio: toPortfolio(raw.portfolio) };
+}
+
 /** Tudo o que a prévia do kit precisa (o mesmo que o /kit devolveria com o link ativo). */
 export async function kitSource(input: {
   talentId: string;
@@ -237,7 +248,7 @@ export async function kitSource(input: {
   kit: MediaKitRow;
   networks: SocialRow[];
 }): Promise<KitSource> {
-  const [segments, extras] = await Promise.all([talentSegmentNames(input.talentId), heroPublicExtras({ id: input.creatorId, userId: input.heroUserId })]);
+  const [segments, extras, insights] = await Promise.all([talentSegmentNames(input.talentId), heroPublicExtras({ id: input.creatorId, userId: input.heroUserId }), getKitInsights(input.talentId)]);
   return {
     name: input.name,
     photoUrl: extras.photoUrl,
@@ -251,6 +262,8 @@ export async function kitSource(input: {
     brands: extras.brands,
     agencyName: input.agencyName,
     agencyEmail: input.agencyEmail,
+    stats: insights.stats,
+    portfolio: insights.portfolio,
   };
 }
 

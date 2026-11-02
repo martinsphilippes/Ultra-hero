@@ -9036,7 +9036,7 @@ select tests.ok('S78 segundo salvar edita o mesmo rascunho', public.agency_terms
 select tests.expect_error('S78 confirmar contrato sem termos enviados', $q$select public.agency_contract_confirm((select v::uuid from t_s78 where k = 'deal'))$q$, 'terms_missing');
 select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
 select tests.ok('S78 marca não vê rascunho de termos', (select count(*) from public.deal_terms) = 0 and jsonb_array_length(public.deal_execution((select v::uuid from t_s78 where k = 'deal')) -> 'terms') = 0);
-select tests.expect_error('S78 marca não aceita rascunho', $q$select public.brand_terms_accept((select v::uuid from t_s78 where k = 'terms'))$q$, 'not_found');
+select tests.expect_error('S78 marca não aceita rascunho', $q$select public.brand_terms_sign((select v::uuid from t_s78 where k = 'terms'), 'Dona da Marca S78', '529.982.247-25')$q$, 'not_found');
 select tests.login('74000000-0000-4000-8000-0000000000a3', 'ag-col@test.local');
 select tests.expect_error('S78 colaborador não envia termos', $q$select public.agency_terms_send((select v::uuid from t_s78 where k = 'terms'))$q$, 'forbidden');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
@@ -9062,16 +9062,17 @@ select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 -- 2) aceites: marca no app (só o dono), creator no app, talento sem login pela agência; contratação confirmada -------------
 select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
 select tests.ok('S78 marca lê os termos enviados (sem valores)', (select count(*) from public.deal_terms) = 1 and (select string_agg(summary || usage_rights || exclusivity, ' ') from public.deal_terms) !~ '(R\$|cents)');
-select public.brand_terms_accept((select v::uuid from t_s78 where k = 'terms'), 'De acordo.');
-select tests.ok('S78 aceite da marca idempotente', (select count(*) from public.deal_acceptances where party = 'brand') = 1);
-select public.brand_terms_accept((select v::uuid from t_s78 where k = 'terms'));
+-- 0084: o aceite da marca e do creator é a assinatura eletrônica (nome + CPF/CNPJ); o "concordo" antigo recusa
+select public.brand_terms_sign((select v::uuid from t_s78 where k = 'terms'), 'Dona da Marca S78', '11.222.333/0001-81');
+select tests.ok('S78 aceite da marca registrado', (select count(*) from public.deal_acceptances where party = 'brand') = 1);
+select tests.expect_error('S78 marca não assina duas vezes', $q$select public.brand_terms_sign((select v::uuid from t_s78 where k = 'terms'), 'Dona da Marca S78', '11.222.333/0001-81')$q$, 'already_signed');
 select tests.ok('S78 aceite da marca segue único', (select count(*) from public.deal_acceptances where party = 'brand') = 1);
 select tests.login('74000000-0000-4000-8000-0000000000a1', 'ag-adm@test.local');
 select tests.expect_error('S78 contrato só com todos os creators confirmados aceitos', $q$select public.agency_contract_confirm((select v::uuid from t_s78 where k = 'deal'))$q$, 'acceptance_missing');
 select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
 select tests.ok('S78 creator confirmado lê os termos e o aceite da marca pela leitura fechada', (select count(*) from public.deal_terms) = 1
   and (public.deal_execution((select v::uuid from t_s78 where k = 'deal')) -> 'terms' -> 0 -> 'acceptances') @> '[{"party": "brand"}]'::jsonb);
-select public.talent_terms_accept((select v::uuid from t_s78 where k = 'terms'), 'Topo.');
+select public.talent_terms_sign((select v::uuid from t_s78 where k = 'terms'), 'Creator Teste S78', '529.982.247-25');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select tests.expect_error('S78 agência não registra aceite de creator com login',
   $q$select public.agency_record_acceptance((select v::uuid from t_s78 where k = 'terms'), 'talent', (select v::uuid from t_s78 where k = 'dt1'), null, 'assinou por e-mail')$q$, 'talent_has_login');
@@ -9274,9 +9275,9 @@ select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 insert into t_s79 values ('terms', public.agency_terms_save((select v::uuid from t_s79 where k = 'deal'), '{"summary": "Um reels e stories na coleção de inverno, publicação nas datas combinadas."}')::text);
 select public.agency_terms_send((select v::uuid from t_s79 where k = 'terms'));
 select tests.login('77000000-0000-4000-8000-0000000000c1', 's77-marca-dono@test.local');
-select public.brand_terms_accept((select v::uuid from t_s79 where k = 'terms'), 'De acordo.');
+select public.brand_terms_sign((select v::uuid from t_s79 where k = 'terms'), 'Dona da Marca S79', '11.222.333/0001-81');
 select tests.login('77000000-0000-4000-8000-0000000000d1', 's77-creator@test.local');
-select public.talent_terms_accept((select v::uuid from t_s79 where k = 'terms'), null);
+select public.talent_terms_sign((select v::uuid from t_s79 where k = 'terms'), 'Creator Teste S79', '529.982.247-25');
 select tests.login('74000000-0000-4000-8000-0000000000a2', 'ag-ges@test.local');
 select public.agency_record_acceptance((select v::uuid from t_s79 where k = 'terms'), 'talent', (select v::uuid from t_s79 where k = 'dtf'), null, 'aceite recebido por e-mail');
 select tests.su();
@@ -10039,12 +10040,12 @@ select tests.ok('S85 creator 2: o entregável atrasado e a tarefa dele, sem cons
 
 -- aceites tiram os termos do "Hoje" de cada lado
 select tests.login('85000000-0000-4000-8000-000000000851', 's85-marca-a-dono@test.local');
-select public.brand_terms_accept('85000000-0000-4000-8000-000000008571', null);
+select public.brand_terms_sign('85000000-0000-4000-8000-000000008571', 'Dona da Marca S85', '11.222.333/0001-81');
 select tests.ok('S85 depois do aceite da marca, os termos saem do Hoje dela',
   jsonb_array_length(public.brand_workboard('85000000-0000-4000-8000-000000008511') -> 'terms_pending') = 0);
 select tests.login('85000000-0000-4000-8000-000000000854', 's85-creator-1@test.local');
 select tests.ok('S85 o creator ainda vê os termos (o aceite dele é separado)', jsonb_array_length(public.talent_today() -> 'terms') = 1);
-select public.talent_terms_accept('85000000-0000-4000-8000-000000008571', null);
+select public.talent_terms_sign('85000000-0000-4000-8000-000000008571', 'Creator Um S85', '529.982.247-25');
 select tests.ok('S85 depois do aceite do creator, os termos saem do Hoje dele', jsonb_array_length(public.talent_today() -> 'terms') = 0);
 
 select tests.su();
@@ -11364,6 +11365,297 @@ delete from public.agency_members where agency_id = '90000000-0000-4000-8000-000
 delete from public.agencies where id = '90000000-0000-4000-8000-000000009001';
 delete from auth.users where id::text like '90000000-0000-4000-8000-00000000090%';
 drop table t_s90;
+
+-- ================================================================ S91 · Assinatura eletrônica, e-mails, media kit automático e portfólio (0084)
+-- Assinatura simples dos termos (nome + CPF/CNPJ validados, e-mail da conta, IP, navegador e SHA-256 do texto exato):
+-- o "concordo" antigo recusa; marca só o dono; versão nova exige nova assinatura; comprovante para quem assinou, a
+-- agência e a marca (só a dela). Avisos que valem e-mail entram na fila (preferência respeitada); prazo em 24 h pelo
+-- cron. Media kit com números calculados na hora e portfólio (entregas publicadas com link e métricas).
+\ir ../migrations/0084_assinatura_emails_kit_portfolio.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('91000000-0000-4000-8000-000000000901', 's91-adm@test.local'),
+  ('91000000-0000-4000-8000-000000000902', 's91-gestor@test.local'),
+  ('91000000-0000-4000-8000-000000000903', 's91-colab@test.local'),
+  ('91000000-0000-4000-8000-000000000904', 's91-creator-1@test.local'),
+  ('91000000-0000-4000-8000-000000000905', 's91-creator-2@test.local'),
+  ('91000000-0000-4000-8000-000000000906', 's91-dono@test.local'),
+  ('91000000-0000-4000-8000-000000000907', 's91-equipe@test.local'),
+  ('91000000-0000-4000-8000-000000000908', 's91-outra-marca@test.local'),
+  ('91000000-0000-4000-8000-000000000909', 's91-comum@test.local');
+insert into public.notification_preferences (user_id, channel_email) values ('91000000-0000-4000-8000-000000000905', false);
+insert into public.agencies (id, slug, name) values ('91000000-0000-4000-8000-000000009101', 's91-agencia', 'Agência S91');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000000901', 'admin', 'Ana Adm S91'),
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000000902', 'manager', 'Gil Gestor S91'),
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000000903', 'staff', 'Cris Colab S91');
+insert into public.brands (id, slug, name, site_url) values
+  ('91000000-0000-4000-8000-000000009111', 's91-marca-alfa', 'Marca Alfa S91', 'https://alfa.s91.test'),
+  ('91000000-0000-4000-8000-000000009112', 's91-marca-beta', 'Marca Beta S91', 'https://beta.s91.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009111'),
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009112');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('91000000-0000-4000-8000-000000009111', '91000000-0000-4000-8000-000000000906', 'owner', 'Dora Dona S91'),
+  ('91000000-0000-4000-8000-000000009111', '91000000-0000-4000-8000-000000000907', 'staff', 'Edu Equipe S91'),
+  ('91000000-0000-4000-8000-000000009112', '91000000-0000-4000-8000-000000000908', 'owner', 'Bia Beta S91');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, consent_at) values
+  ('91000000-0000-4000-8000-000000009121', '91000000-0000-4000-8000-000000009101', 'Creator Um S91', '91000000-0000-4000-8000-000000000904', now()),
+  ('91000000-0000-4000-8000-000000009122', '91000000-0000-4000-8000-000000009101', 'Creator Dois S91', '91000000-0000-4000-8000-000000000905', null);
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables) values
+  ('91000000-0000-4000-8000-000000009131', '91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009111', 'brand', 'Campanha Verão S91', 'converted', now() - interval '20 days', '[]'),
+  ('91000000-0000-4000-8000-000000009132', '91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009111', 'brand', 'Campanha Outono S91', 'converted', now() - interval '90 days', '[]');
+-- negócio 1: aprovado, dois creators confirmados (termos e assinatura); negócio 2: fechado como ganho (kit e portfólio)
+insert into public.deals (id, agency_id, brand_id, title, stage, outcome, brand_visible, expected_start, expected_end, owner_id) values
+  ('91000000-0000-4000-8000-000000009141', '91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009111', 'Negócio Verão S91', 'approved', null, true,
+   current_date + 5, current_date + 40, '91000000-0000-4000-8000-000000000902'),
+  ('91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009111', 'Negócio Outono S91', 'closed', 'won', true,
+   current_date - 80, current_date - 20, '91000000-0000-4000-8000-000000000902');
+update public.deals set request_id = '91000000-0000-4000-8000-000000009131' where id = '91000000-0000-4000-8000-000000009141';
+update public.deals set request_id = '91000000-0000-4000-8000-000000009132' where id = '91000000-0000-4000-8000-000000009142';
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('91000000-0000-4000-8000-000000009151', '91000000-0000-4000-8000-000000009141', '91000000-0000-4000-8000-000000009121', 'proposed', now() - interval '10 days', true),
+  ('91000000-0000-4000-8000-000000009152', '91000000-0000-4000-8000-000000009141', '91000000-0000-4000-8000-000000009122', 'proposed', now() - interval '10 days', true),
+  ('91000000-0000-4000-8000-000000009153', '91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009121', 'contracted', now() - interval '85 days', true);
+-- entregas do negócio 2: uma publicada no prazo (versão antes do prazo) e uma publicada atrasada
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, network, title, status, due_at, publish_at, published_url, published_at) values
+  ('91000000-0000-4000-8000-000000009161', '91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009153', 'reels', 'instagram', 'Reels Outono S91', 'done',
+   now() - interval '60 days', now() - interval '58 days', 'https://www.instagram.com/p/s91reels', now() - interval '58 days'),
+  ('91000000-0000-4000-8000-000000009162', '91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009153', 'video', 'youtube', 'Vídeo Outono S91', 'published',
+   now() - interval '50 days', now() - interval '45 days', 'https://www.youtube.com/watch?v=s91video000', now() - interval '45 days');
+insert into public.deliverable_versions (deal_id, deliverable_id, deal_talent_id, talent_id, revision, kind, url, submitted_side, submitted_at) values
+  ('91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009161', '91000000-0000-4000-8000-000000009153', '91000000-0000-4000-8000-000000009121', 1, 'submission',
+   'https://vimeo.com/91001', 'talent', now() - interval '62 days'),
+  ('91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009162', '91000000-0000-4000-8000-000000009153', '91000000-0000-4000-8000-000000009121', 1, 'submission',
+   'https://vimeo.com/91002', 'talent', now() - interval '48 days');
+insert into public.deliverable_metrics (deal_id, deliverable_id, deal_talent_id, talent_id, source, measured_on, views, likes, entered_side) values
+  ('91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009161', '91000000-0000-4000-8000-000000009153', '91000000-0000-4000-8000-000000009121', 'manual', current_date - 50, 1000, 100, 'talent'),
+  ('91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009161', '91000000-0000-4000-8000-000000009153', '91000000-0000-4000-8000-000000009121', 'manual', current_date - 40, 1500, null, 'agency'),
+  ('91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009162', '91000000-0000-4000-8000-000000009153', '91000000-0000-4000-8000-000000009121', 'manual', current_date - 40, 500, 20, 'talent');
+insert into public.talent_ratings (agency_id, brand_id, deal_id, deal_talent_id, talent_id, deliverable_id, on_time, quality) values
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009111', '91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009153',
+   '91000000-0000-4000-8000-000000009121', '91000000-0000-4000-8000-000000009161', true, 5),
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009111', '91000000-0000-4000-8000-000000009142', '91000000-0000-4000-8000-000000009153',
+   '91000000-0000-4000-8000-000000009121', '91000000-0000-4000-8000-000000009162', false, 4);
+create temp table t_s91 (k text primary key, v text);
+grant all on t_s91 to anon, authenticated, service_role;
+
+select tests.ok('S91 estrutura: tabelas com RLS, fila de e-mail só do service role, internas fechadas, S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.deal_signatures'::regclass, 'public.email_outbox'::regclass))
+  and not has_table_privilege('anon', 'public.deal_signatures', 'select') and not has_table_privilege('authenticated', 'public.deal_signatures', 'insert')
+  and not has_table_privilege('authenticated', 'public.email_outbox', 'select') and not has_table_privilege('anon', 'public.email_outbox', 'select')
+  and not has_function_privilege('authenticated', 'public.terms_signature_create(uuid, text, uuid, text, text, text, text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_terms_signable_text(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.email_outbox_claim(int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.task_due_soon_scan()', 'execute')
+  and not has_function_privilege('authenticated', 'public.talent_kit_stats(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.talent_kit_portfolio(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.brand_terms_sign(uuid, text, text, text, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.talent_kit_insights(uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.talent_terms_sign(uuid, text, text, text, text, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.terms_signature_receipt(uuid)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+                  and p.proname in ('br_tax_id_normalize', 'br_tax_id_kind', 'deal_terms_signable_text', 'text_sha256_hex', 'terms_reader_side', 'terms_sign_preview',
+                                    'terms_signature_create', 'brand_terms_sign', 'talent_terms_sign', 'terms_signatures', 'terms_signature_receipt',
+                                    'inbox_kind_emails', 'email_allowed', 'email_on_inbox_notification', 'email_outbox_claim', 'email_outbox_cleanup',
+                                    'task_due_soon_scan', 'deliverable_metric_current', 'talent_kit_stats', 'talent_kit_portfolio', 'talent_kit_insights')
+                  and p.proconfig is null));
+select tests.ok('S91 CPF e CNPJ (inclusive alfanumérico) validados pelos dígitos',
+  public.br_tax_id_kind('529.982.247-25') = 'cpf' and public.br_tax_id_kind('11.222.333/0001-81') = 'cnpj' and public.br_tax_id_kind('12.ABC.345/01DE-35') = 'cnpj'
+  and public.br_tax_id_kind('529.982.247-24') is null and public.br_tax_id_kind('111.111.111-11') is null and public.br_tax_id_kind('123') is null
+  and public.br_tax_id_normalize(' 529.982.247-25 ') = '52998224725');
+select tests.ok('S91 quais avisos valem e-mail',
+  public.inbox_kind_emails('opportunity_received', '/creator/escritorio/oportunidades/x', '{}')
+  and not public.inbox_kind_emails('opportunity_received', '/agencia/negocios/x', '{}')
+  and public.inbox_kind_emails('deliverable_decided', '/creator/escritorio/oportunidades/x', '{"status": "changes_requested"}')
+  and not public.inbox_kind_emails('deliverable_decided', '/creator/escritorio/oportunidades/x', '{"status": "approved"}')
+  and public.inbox_kind_emails('deliverable_submitted', '/marca/campanhas/x', '{}') and not public.inbox_kind_emails('deliverable_submitted', '/agencia/negocios/x/entregas', '{}')
+  and public.inbox_kind_emails('opportunity_updated', '/creator/escritorio/oportunidades/x', '{"status": "counter_rejected"}')
+  and not public.inbox_kind_emails('opportunity_updated', '/creator/escritorio/oportunidades/x', '{"status": "deal_lost"}')
+  and public.inbox_kind_emails('contract_acceptance_requested', '/marca/campanhas/x', '{}') and public.inbox_kind_emails('task_due_soon', '/creator/escritorio/tarefas', '{}')
+  and not public.inbox_kind_emails('message_received', '/creator/escritorio', '{}'));
+
+-- termos: gestor salva e envia (marca e creators avisados; e-mail na fila, menos de quem desligou)
+select tests.login('91000000-0000-4000-8000-000000000902', 's91-gestor@test.local');
+insert into t_s91 values ('terms', public.agency_terms_save('91000000-0000-4000-8000-000000009141',
+  '{"summary": "Dois reels e três stories na campanha de verão, com publicação nas datas combinadas.", "valid_until": "2099-12-31",
+    "rights": {"channels": ["social", "website"], "usage_months": 6, "perpetual": false, "boost": true, "exclusive": false}}')::text);
+select public.agency_terms_send((select v::uuid from t_s91 where k = 'terms'));
+select tests.su();
+select tests.ok('S91 termos para assinar entram na fila de e-mail (dono e creator 1); creator 2 desligou o e-mail; a equipe da marca não assina',
+  exists (select 1 from public.email_outbox o join public.inbox_notifications n on n.id = o.notification_id
+          where o.user_id = '91000000-0000-4000-8000-000000000906' and n.kind = 'contract_acceptance_requested')
+  and exists (select 1 from public.email_outbox o join public.inbox_notifications n on n.id = o.notification_id
+              where o.user_id = '91000000-0000-4000-8000-000000000904' and n.kind = 'contract_acceptance_requested')
+  and exists (select 1 from public.inbox_notifications where user_id = '91000000-0000-4000-8000-000000000905' and kind = 'contract_acceptance_requested')
+  and not exists (select 1 from public.email_outbox where user_id = '91000000-0000-4000-8000-000000000905')
+  and not exists (select 1 from public.email_outbox where user_id = '91000000-0000-4000-8000-000000000907'));
+
+-- visitante e usuário comum
+select tests.anon();
+select tests.expect_error('S91 visitante não lê assinaturas', $q$select count(*) from public.deal_signatures$q$, 'permission denied');
+select tests.expect_error('S91 visitante não assina', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Fulano de Tal', '52998224725')$q$, 'permission denied');
+select tests.expect_error('S91 visitante não lê o kit interno', $q$select public.talent_kit_insights('91000000-0000-4000-8000-000000009121')$q$, 'permission denied');
+select tests.login('91000000-0000-4000-8000-000000000909', 's91-comum@test.local');
+select tests.expect_error('S91 usuário comum não vê o texto dos termos', $q$select public.terms_sign_preview((select v::uuid from t_s91 where k = 'terms'))$q$, 'not_found');
+select tests.expect_error('S91 usuário comum não assina', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Fulano de Tal', '52998224725')$q$, 'not_found');
+select tests.ok('S91 usuário comum não lê assinaturas', (select count(*) from public.deal_signatures) = 0);
+
+-- marca: o "concordo" antigo recusa; a equipe não assina; o dono assina com nome e documento válidos
+select tests.login('91000000-0000-4000-8000-000000000907', 's91-equipe@test.local');
+select tests.expect_error('S91 equipe da marca não assina', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Edu Equipe', '52998224725')$q$, 'not_found');
+select tests.login('91000000-0000-4000-8000-000000000906', 's91-dono@test.local');
+select tests.expect_error('S91 "concordo" antigo exige assinatura', $q$select public.brand_terms_accept((select v::uuid from t_s91 where k = 'terms'), 'De acordo')$q$, 'signature_required');
+insert into t_s91 values ('preview', public.terms_sign_preview((select v::uuid from t_s91 where k = 'terms'))::text);
+select tests.ok('S91 prévia: texto canônico com marca, campanha, direitos e o hash SHA-256 dele',
+  ((select v::jsonb from t_s91 where k = 'preview') ->> 'text') like '%Marca: Marca Alfa S91%'
+  and ((select v::jsonb from t_s91 where k = 'preview') ->> 'text') like '%Campanha: Campanha Verão S91%'
+  and ((select v::jsonb from t_s91 where k = 'preview') ->> 'text') like '%Canais: redes sociais, site%'
+  and ((select v::jsonb from t_s91 where k = 'preview') ->> 'text') like '%Prazo: 6 meses%'
+  and ((select v::jsonb from t_s91 where k = 'preview') ->> 'sha256') = encode(sha256(convert_to((select v::jsonb from t_s91 where k = 'preview') ->> 'text', 'UTF8')), 'hex')
+  and ((select v::jsonb from t_s91 where k = 'preview') ->> 'version')::int = 1);
+select tests.expect_error('S91 documento inválido recusado', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Dora Dona da Silva', '529.982.247-24')$q$, 'invalid_tax_id');
+select tests.expect_error('S91 só o primeiro nome recusado', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Dora', '52998224725')$q$, 'name_required');
+select tests.expect_error('S91 termos mudaram desde a leitura', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Dora Dona da Silva', '52998224725', repeat('0', 64))$q$, 'terms_changed');
+insert into t_s91 values ('sig_brand', public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), '  Dora   Dona da Silva ', '11.222.333/0001-81',
+  (select v::jsonb ->> 'sha256' from t_s91 where k = 'preview'), '200.10.20.30', 'Mozilla/5.0 (iPhone) S91')::text);
+select tests.expect_error('S91 dono não assina duas vezes', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Dora Dona da Silva', '52998224725')$q$, 'already_signed');
+select tests.ok('S91 assinatura da marca gravada com nome, CNPJ, e-mail da conta, IP, navegador e hash do texto exato',
+  exists (select 1 from public.deal_signatures s where s.id = (select v::uuid from t_s91 where k = 'sig_brand')
+          and s.party = 'brand' and s.signer_name = 'Dora Dona da Silva' and s.signer_tax_id = '11222333000181' and s.signer_tax_kind = 'cnpj'
+          and s.signer_email = 's91-dono@test.local' and s.signer_ip = '200.10.20.30' and s.signer_user_agent = 'Mozilla/5.0 (iPhone) S91'
+          and s.text_sha256 = (select v::jsonb ->> 'sha256' from t_s91 where k = 'preview') and s.terms_version = 1)
+  and exists (select 1 from public.deal_acceptances a where a.terms_id = (select v::uuid from t_s91 where k = 'terms') and a.party = 'brand' and a.method = 'e_signature'));
+insert into t_s91 values ('rec_brand', public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand'))::text);
+select tests.ok('S91 comprovante para quem assinou: dados, hash e integridade conferida',
+  ((select v::jsonb from t_s91 where k = 'rec_brand') @> '{"side": "brand", "party": "brand", "tax_kind": "cnpj", "intact": true, "terms_version": 1, "brand": "Marca Alfa S91"}')
+  and ((select v::jsonb from t_s91 where k = 'rec_brand') ->> 'text') = ((select v::jsonb from t_s91 where k = 'preview') ->> 'text'));
+select tests.login('91000000-0000-4000-8000-000000000907', 's91-equipe@test.local');
+select tests.ok('S91 equipe da marca lê o comprovante da marca', (public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand')) ->> 'signer_name') = 'Dora Dona da Silva'
+  and (select count(*) from public.deal_signatures) = 1);
+select tests.login('91000000-0000-4000-8000-000000000908', 's91-outra-marca@test.local');
+select tests.expect_error('S91 outra marca não lê o comprovante', $q$select public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand'))$q$, 'not_found');
+select tests.expect_error('S91 outra marca não lista assinaturas do negócio', $q$select public.terms_signatures('91000000-0000-4000-8000-000000009141')$q$, 'not_found');
+
+-- creators: assinam os próprios termos; IP inválido não é gravado; um não vê o documento do outro
+select tests.login('91000000-0000-4000-8000-000000000904', 's91-creator-1@test.local');
+select tests.expect_error('S91 "concordo" antigo do creator exige assinatura', $q$select public.talent_terms_accept((select v::uuid from t_s91 where k = 'terms'), null)$q$, 'signature_required');
+insert into t_s91 values ('sig_c1', public.talent_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Creator Um da Silva', '529.982.247-25', null, 'não é ip', 'App S91')::text);
+select tests.ok('S91 creator assina com CPF; IP inválido fica vazio', exists (select 1 from public.deal_signatures s where s.id = (select v::uuid from t_s91 where k = 'sig_c1')
+  and s.party = 'talent' and s.signer_tax_kind = 'cpf' and s.signer_ip is null and s.deal_talent_id = '91000000-0000-4000-8000-000000009151'));
+select tests.ok('S91 creator lê só a própria assinatura', (select count(*) from public.deal_signatures) = 1
+  and jsonb_array_length(public.terms_signatures('91000000-0000-4000-8000-000000009141')) = 1);
+select tests.expect_error('S91 creator não lê o comprovante da marca', $q$select public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand'))$q$, 'not_found');
+select tests.login('91000000-0000-4000-8000-000000000905', 's91-creator-2@test.local');
+select tests.expect_error('S91 creator 2 não lê o comprovante do creator 1', $q$select public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_c1'))$q$, 'not_found');
+select tests.ok('S91 creator 2 não lê assinaturas de ninguém', (select count(*) from public.deal_signatures) = 0
+  and jsonb_array_length(public.terms_signatures('91000000-0000-4000-8000-000000009141')) = 0);
+select tests.login('91000000-0000-4000-8000-000000000906', 's91-dono@test.local');
+select tests.ok('S91 marca não lê o CPF do creator (só a assinatura dela)', (select count(*) from public.deal_signatures) = 1
+  and jsonb_array_length(public.terms_signatures('91000000-0000-4000-8000-000000009141')) = 1);
+select tests.expect_error('S91 marca não lê o comprovante do creator', $q$select public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_c1'))$q$, 'not_found');
+
+-- agência: gestor lê tudo; colaborador fora do negócio não
+select tests.login('91000000-0000-4000-8000-000000000903', 's91-colab@test.local');
+select tests.expect_error('S91 colaborador fora do negócio não lê comprovante', $q$select public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_c1'))$q$, 'not_found');
+select tests.ok('S91 colaborador fora do negócio não lê assinaturas', (select count(*) from public.deal_signatures) = 0);
+select tests.login('91000000-0000-4000-8000-000000000902', 's91-gestor@test.local');
+select tests.ok('S91 gestor lê as duas assinaturas e o comprovante do creator',
+  (select count(*) from public.deal_signatures) = 2 and jsonb_array_length(public.terms_signatures('91000000-0000-4000-8000-000000009141')) = 2
+  and (public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_c1')) @> '{"side": "agency", "party": "talent", "talent": "Creator Um S91", "tax_id": "52998224725"}'));
+-- versão nova: a anterior é substituída e a marca precisa assinar de novo
+insert into t_s91 values ('terms2', public.agency_terms_save('91000000-0000-4000-8000-000000009141',
+  '{"summary": "Dois reels e quatro stories na campanha de verão, com publicação nas datas combinadas."}')::text);
+select public.agency_terms_send((select v::uuid from t_s91 where k = 'terms2'));
+select tests.login('91000000-0000-4000-8000-000000000906', 's91-dono@test.local');
+select tests.expect_error('S91 versão substituída não se assina', $q$select public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms'), 'Dora Dona da Silva', '52998224725')$q$, 'invalid_state');
+insert into t_s91 values ('sig_brand2', public.brand_terms_sign((select v::uuid from t_s91 where k = 'terms2'), 'Dora Dona da Silva', '52998224725')::text);
+select tests.ok('S91 versão nova assinada à parte; o comprovante da versão 1 continua (substituída)',
+  (select count(*) from public.deal_acceptances where party = 'brand' and deal_id = '91000000-0000-4000-8000-000000009141') = 2
+  and (public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand')) ->> 'terms_status') = 'superseded'
+  and (public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand2')) ->> 'terms_version') = '2'
+  and (public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand2')) ->> 'sha256')
+      <> (public.terms_signature_receipt((select v::uuid from t_s91 where k = 'sig_brand')) ->> 'sha256'));
+
+-- e-mail: o service role pega o lote (com e-mail e idioma); aviso lido é pulado
+select tests.su();
+update public.profiles set locale = 'es' where id = '91000000-0000-4000-8000-000000000904';
+update public.inbox_notifications set read_at = now() where user_id = '91000000-0000-4000-8000-000000000906' and kind = 'contract_acceptance_requested'
+  and entity_id = (select v::uuid from t_s91 where k = 'terms');
+-- a fila tem avisos dos cenários anteriores (mesma transação): só os deste cenário contam aqui
+update public.email_outbox set skipped_at = now(), outcome = 'test_skip' where user_id::text not like '91000000-%' and sent_at is null and skipped_at is null;
+create temp table t_s91_claim as select * from public.email_outbox_claim(200) c where c.user_id::text like '91000000-%';
+select tests.ok('S91 lote de e-mail: destinatário, idioma, tipo e link; aviso lido (versão 1) pulado, o da versão 2 sai; nada pego duas vezes',
+  exists (select 1 from t_s91_claim where email = 's91-creator-1@test.local' and kind = 'contract_acceptance_requested' and link like '/creator/escritorio/oportunidades/%')
+  and (select count(*) from t_s91_claim where user_id = '91000000-0000-4000-8000-000000000906') = 1
+  and exists (select 1 from public.email_outbox o join public.inbox_notifications n on n.id = o.notification_id
+              where o.user_id = '91000000-0000-4000-8000-000000000906' and n.entity_id = (select v::uuid from t_s91 where k = 'terms') and o.outcome = 'skipped_read')
+  and not exists (select 1 from public.email_outbox_claim(200) c where c.user_id::text like '91000000-%'));
+select tests.ok('S91 idioma do perfil vai junto', (select locale from t_s91_claim where email = 's91-creator-1@test.local' limit 1) = 'es');
+drop table t_s91_claim;
+
+-- prazo chegando: tarefa do creator vencendo em 5 h (cron), uma vez só
+insert into public.tasks (agency_id, scope_type, deal_id, talent_id, side, title, status, due_at) values
+  ('91000000-0000-4000-8000-000000009101', 'deal', '91000000-0000-4000-8000-000000009141', '91000000-0000-4000-8000-000000009121', 'talent', 'Gravar reels S91', 'todo', now() + interval '5 hours'),
+  ('91000000-0000-4000-8000-000000009101', 'deal', '91000000-0000-4000-8000-000000009141', '91000000-0000-4000-8000-000000009121', 'talent', 'Tarefa longe S91', 'todo', now() + interval '3 days');
+insert into t_s91 values ('due1', public.task_due_soon_scan()::text);
+insert into t_s91 values ('due2', public.task_due_soon_scan()::text);
+select tests.ok('S91 cron avisa o prazo em 24 h ao creator (sino + fila de e-mail) e não repete',
+  (select v::int from t_s91 where k = 'due1') >= 1 and (select v::int from t_s91 where k = 'due2') = 0
+  and (select count(*) from public.inbox_notifications where kind = 'task_due_soon' and user_id = '91000000-0000-4000-8000-000000000904') = 1
+  and exists (select 1 from public.inbox_notifications n join public.email_outbox o on o.notification_id = n.id
+              where n.kind = 'task_due_soon' and n.user_id = '91000000-0000-4000-8000-000000000904' and n.link = '/creator/escritorio/tarefas'
+                and n.params ? 'date' and n.params ->> 'deal' = 'Negócio Verão S91'));
+
+-- media kit automático e portfólio
+select tests.login('91000000-0000-4000-8000-000000000904', 's91-creator-1@test.local');
+insert into t_s91 values ('ins', public.talent_kit_insights('91000000-0000-4000-8000-000000009121')::text);
+select tests.ok('S91 números do kit calculados na hora: campanhas, entregas, prazo, nota, métricas atuais',
+  ((select v::jsonb from t_s91 where k = 'ins') -> 'stats') @> '{"completed_campaigns": 1, "published_deliverables": 2, "on_time_base": 2, "on_time_count": 1, "rating_avg": 4.5, "rating_count": 2}'
+  and ((select v::jsonb from t_s91 where k = 'ins') -> 'stats' -> 'metrics') = '{"views": 2000, "likes": 120}'::jsonb
+  and ((select v::jsonb from t_s91 where k = 'ins') -> 'stats' -> 'app_followers') = 'null'::jsonb
+  and ((select v::jsonb from t_s91 where k = 'ins') -> 'stats') ? 'computed_at');
+select tests.ok('S91 portfólio: campanha, marca e entregas publicadas com link e métricas',
+  jsonb_array_length((select v::jsonb from t_s91 where k = 'ins') -> 'portfolio') = 1
+  and ((select v::jsonb from t_s91 where k = 'ins') -> 'portfolio' -> 0) @> '{"campaign": "Campanha Outono S91", "brand": "Marca Alfa S91"}'
+  and jsonb_array_length((select v::jsonb from t_s91 where k = 'ins') -> 'portfolio' -> 0 -> 'deliverables') = 2
+  and ((select v::jsonb from t_s91 where k = 'ins') -> 'portfolio' -> 0 -> 'deliverables') @> '[{"url": "https://www.instagram.com/p/s91reels", "metrics": {"views": 1500, "likes": 100}}]'
+  and (select v from t_s91 where k = 'ins') !~ '(cents|fee|amount|budget)');
+select tests.login('91000000-0000-4000-8000-000000000905', 's91-creator-2@test.local');
+select tests.expect_error('S91 outro creator não lê o kit interno', $q$select public.talent_kit_insights('91000000-0000-4000-8000-000000009121')$q$, 'not_found');
+select tests.login('91000000-0000-4000-8000-000000000906', 's91-dono@test.local');
+select tests.expect_error('S91 marca não lê o kit interno', $q$select public.talent_kit_insights('91000000-0000-4000-8000-000000009121')$q$, 'not_found');
+select tests.login('91000000-0000-4000-8000-000000000903', 's91-colab@test.local');
+select tests.ok('S91 colaborador da agência lê o kit interno do elenco', (public.talent_kit_insights('91000000-0000-4000-8000-000000009121') -> 'stats' ->> 'completed_campaigns') = '1');
+-- link público com números e portfólio só quando marcados
+select tests.su();
+insert into public.media_kits (agency_id, talent_id, visible_fields, share_token_hash, share_expires_at) values
+  ('91000000-0000-4000-8000-000000009101', '91000000-0000-4000-8000-000000009121', '{headline,stats}',
+   encode(extensions.digest(repeat('9a', 32), 'sha256'), 'hex'), now() + interval '7 days');
+insert into t_s91 values ('kit1', public.media_kit_resolve(repeat('9a', 32), false)::text);
+update public.media_kits set visible_fields = '{headline,stats,portfolio}' where talent_id = '91000000-0000-4000-8000-000000009121';
+insert into t_s91 values ('kit2', public.media_kit_resolve(repeat('9a', 32), false)::text);
+select tests.ok('S91 /kit mostra os números quando marcados e o portfólio só quando marcado (opt-in)',
+  ((select v::jsonb from t_s91 where k = 'kit1') -> 'stats' ->> 'published_deliverables') = '2' and not ((select v::jsonb from t_s91 where k = 'kit1') ? 'portfolio')
+  and jsonb_array_length((select v::jsonb from t_s91 where k = 'kit2') -> 'portfolio') = 1
+  and (select v from t_s91 where k = 'kit2') !~ '(cents|fee|amount|budget|contact_email)');
+select tests.expect_error('S91 campo desconhecido no kit recusado', $q$update public.media_kits set visible_fields = '{headline,valores}' where talent_id = '91000000-0000-4000-8000-000000009121'$q$, 'media_kits_fields_check');
+
+select tests.su();
+delete from public.media_kits where agency_id = '91000000-0000-4000-8000-000000009101';
+delete from public.deals where agency_id = '91000000-0000-4000-8000-000000009101';
+delete from public.campaign_requests where brand_id in ('91000000-0000-4000-8000-000000009111', '91000000-0000-4000-8000-000000009112');
+delete from public.talent_profiles where id::text like '91000000-%';
+delete from public.brand_members where brand_id in ('91000000-0000-4000-8000-000000009111', '91000000-0000-4000-8000-000000009112');
+delete from public.agency_brands where agency_id = '91000000-0000-4000-8000-000000009101';
+delete from public.brands where id in ('91000000-0000-4000-8000-000000009111', '91000000-0000-4000-8000-000000009112');
+delete from public.inbox_notifications where user_id::text like '91000000-0000-4000-8000-00000000090%';
+delete from public.notification_preferences where user_id::text like '91000000-0000-4000-8000-00000000090%';
+delete from public.agency_members where agency_id = '91000000-0000-4000-8000-000000009101';
+delete from public.agencies where id = '91000000-0000-4000-8000-000000009101';
+delete from auth.users where id::text like '91000000-0000-4000-8000-00000000090%';
+drop table t_s91;
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

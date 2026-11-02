@@ -8,7 +8,8 @@ import { isDeliverableStatus, isTaskStatus, type DeliverableStatus, type TaskSta
 // Execução da campanha (0068): termos, tarefas e entregas com versões, pela leitura fechada deal_execution
 // (o banco decide o lado: agência, marca ou creator, e filtra o que cada um vê). Tarefas da pessoa: RLS.
 
-export type Acceptance = { party: "brand" | "talent"; dealTalentId: string | null; method: "in_app" | "recorded_by_agency"; acceptedAt: string; talentName: string | null };
+// 0084: aceite por assinatura eletrônica (method e_signature); signatureId leva ao comprovante quando quem lê pode vê-lo
+export type Acceptance = { party: "brand" | "talent"; dealTalentId: string | null; method: "in_app" | "recorded_by_agency" | "e_signature"; acceptedAt: string; talentName: string | null; signatureId: string | null };
 export type Terms = { id: string; version: number; status: TermsStatus; summary: string; usageRights: string; exclusivity: string; validUntil: string | null; sentAt: string | null; acceptances: Acceptance[]; rights: Rights };
 export type Task = {
   id: string;
@@ -95,6 +96,16 @@ function toTask(k: Record<string, unknown>): Task {
   };
 }
 
+/** Assinaturas que quem lê pode ver (0084), por "termos:parte:deal_talent". Sem a migração: vazio. */
+async function signatureIndex(dealId: string): Promise<Map<string, string>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("terms_signatures", { p_deal: dealId });
+  const out = new Map<string, string>();
+  if (error || !Array.isArray(data)) return out;
+  for (const row of data as Record<string, unknown>[]) out.set(`${String(row.terms_id)}:${String(row.party)}:${str(row.deal_talent_id) ?? ""}`, String(row.id));
+  return out;
+}
+
 export async function getDealExecution(dealId: string): Promise<{ available: boolean; data: DealExecution | null }> {
   if (!/^[0-9a-f-]{36}$/i.test(dealId)) return { available: true, data: null };
   const supabase = await createClient();
@@ -102,6 +113,7 @@ export async function getDealExecution(dealId: string): Promise<{ available: boo
   if (error) return { available: !isMissingSchema(error), data: null };
   if (!data || typeof data !== "object" || Array.isArray(data)) return { available: true, data: null };
   const raw = data as Record<string, unknown>;
+  const signatures = Array.isArray(raw.terms) && raw.terms.length > 0 ? await signatureIndex(dealId) : new Map<string, string>();
   return {
     available: true,
     data: {
@@ -121,7 +133,14 @@ export async function getDealExecution(dealId: string): Promise<{ available: boo
             sentAt: str(t.sent_at),
             rights: toRights(t.rights),
             acceptances: Array.isArray(t.acceptances)
-              ? (t.acceptances as Record<string, unknown>[]).map((a) => ({ party: a.party as Acceptance["party"], dealTalentId: str(a.deal_talent_id), method: a.method as Acceptance["method"], acceptedAt: String(a.accepted_at), talentName: str(a.talent_name) }))
+              ? (t.acceptances as Record<string, unknown>[]).map((a) => ({
+                  party: a.party as Acceptance["party"],
+                  dealTalentId: str(a.deal_talent_id),
+                  method: a.method as Acceptance["method"],
+                  acceptedAt: String(a.accepted_at),
+                  talentName: str(a.talent_name),
+                  signatureId: signatures.get(`${String(t.id)}:${String(a.party)}:${str(a.deal_talent_id) ?? ""}`) ?? null,
+                }))
               : [],
           }))
         : [],

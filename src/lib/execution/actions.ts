@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
+import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireAgency } from "@/lib/agency/server";
 import { requireUser } from "@/lib/auth/session";
@@ -11,7 +12,7 @@ import { toZonedIso } from "@/lib/deals/schemas";
 import { rightsPayload } from "@/lib/offer/rights";
 import { createClient } from "@/lib/supabase/server";
 import { talentFail } from "@/lib/talent/errors";
-import { acceptSchema, closeSchema, decideSchema, publishSchema, recordAcceptanceSchema, submitSchema, taskDecideSchema, taskSaveSchema, taskStatusSchema, termsSchema, type TaskSaveInput } from "./vocab";
+import { closeSchema, decideSchema, publishSchema, recordAcceptanceSchema, submitSchema, taskDecideSchema, taskSaveSchema, taskStatusSchema, termsSchema, type TaskSaveInput } from "./vocab";
 
 // Execução (0068): termos, contratação, tarefas e entregas. O servidor valida a forma e chama as RPCs; o banco
 // decide o lado (agência, marca ou creator) e as transições. Nada aqui carrega valor.
@@ -57,6 +58,8 @@ export async function sendTermsAction(input: { termsId: string; dealId: string }
     const supabase = await createClient();
     const { error } = await supabase.rpc("agency_terms_send", { p_terms: parsed.data.termsId });
     if (error) return agencyFail(error);
+    // termos para assinar: marca (dono) e influenciadores também por e-mail (0084)
+    await dispatchWorkEmails();
     revalidateDeal("agency", parsed.data.dealId);
     const t = await getTranslations("agency.terms");
     return { ok: true, message: t("sent") };
@@ -115,27 +118,7 @@ export async function confirmContractAction(input: { dealId: string }): Promise<
   }
 }
 
-/** Aceite demonstrativo da marca (só o dono) ou do creator confirmado. */
-export async function acceptTermsAction(portal: "brand" | "office", input: z.input<typeof acceptSchema> & { dealId: string; requestId?: string | null; dealTalentId?: string | null }): Promise<ExecResult> {
-  if (portal === "brand") {
-    const ctx = await requireBrand();
-    if (ctx.role !== "owner") return agencyFail("forbidden");
-  } else {
-    await requireUser("/creator/escritorio/oportunidades");
-  }
-  const parsed = acceptSchema.safeParse(input);
-  if (!parsed.success) return fail(portal, "invalid_input");
-  try {
-    const supabase = await createClient();
-    const { error } = portal === "brand" ? await supabase.rpc("brand_terms_accept", { p_terms: parsed.data.termsId, p_note: parsed.data.note || undefined }) : await supabase.rpc("talent_terms_accept", { p_terms: parsed.data.termsId, p_note: parsed.data.note || undefined });
-    if (error) return fail(portal, error);
-    revalidateDeal(portal, input.dealId, input.requestId, input.dealTalentId);
-    const t = await getTranslations("commercial.terms");
-    return { ok: true, message: t("accepted") };
-  } catch (error) {
-    return fail(portal, error);
-  }
-}
+// 0084: o aceite da marca e do influenciador é a assinatura eletrônica (src/lib/signature/actions.ts).
 
 // ---------------------------------------------------------------- tarefas
 export async function saveTaskAction(input: TaskSaveInput): Promise<ExecResult> {
@@ -219,6 +202,8 @@ export async function submitDeliverableAction(portal: "agency" | "office", input
       ? await supabase.rpc("deliverable_submit_checked", { p_deliverable: d.deliverableId, p_url: d.url || "", p_document: d.documentId || null, p_note: d.note || "", p_checks: d.checks })
       : await supabase.rpc("deliverable_submit", { p_deliverable: d.deliverableId, p_url: d.url || undefined, p_document: d.documentId || undefined, p_note: d.note || undefined });
     if (error) return fail(portal, error);
+    // entrega aguardando a marca: também por e-mail (0084)
+    await dispatchWorkEmails();
     revalidateDeal(portal, input.dealId, input.requestId, input.dealTalentId);
     const t = await getTranslations("commercial.deliverables");
     return { ok: true, message: t("submitted"), id: data ?? undefined };
@@ -240,6 +225,8 @@ export async function decideDeliverableAction(portal: "agency" | "brand", input:
       ? await supabase.rpc("deliverable_decide_checked", { p_deliverable: d.deliverableId, p_decision: d.decision, p_feedback: d.feedback || "", p_checks: d.checks })
       : await supabase.rpc("deliverable_decide", { p_deliverable: d.deliverableId, p_decision: d.decision, p_feedback: d.feedback || undefined });
     if (error) return agencyFail(error);
+    // ajuste pedido: o influenciador também recebe por e-mail (0084)
+    if (d.decision === "changes_requested") await dispatchWorkEmails();
     revalidateDeal(portal, input.dealId, input.requestId, input.dealTalentId);
     const t = await getTranslations("commercial.deliverables");
     return { ok: true, message: t(`decided.${d.decision}`) };

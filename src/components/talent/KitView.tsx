@@ -3,6 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Avatar, Badge } from "@/components/ui";
 import { formatBp, formatCount, pickAudience, type ResolvedKit } from "@/lib/talent/media-kit";
 import { AudienceBars } from "./AudienceBars";
+import { KitStatsView, PortfolioList } from "./KitAutoSections";
 import { MetricSource } from "./MetricSource";
 
 // Media kit renderizado: a prévia do editor e a página pública /kit usam este mesmo componente com o
@@ -115,6 +116,10 @@ export function KitView({ kit, headingLevel = 1 }: { kit: ResolvedKit; headingLe
           </ul>
         </section>
       ) : null}
+
+      {kit.stats ? <KitStatsView stats={kit.stats} as={Sub} /> : null}
+
+      {kit.portfolio ? <PortfolioList items={kit.portfolio} as={Sub} /> : null}
 
       {kit.agency ? (
         <footer className="flex flex-col gap-1 rounded-2xl border border-border bg-surface-hover p-4 text-sm">

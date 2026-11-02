@@ -1,16 +1,18 @@
 "use client";
 
-import { CheckCircle2, FileSignature, Send, ShieldCheck, Undo2 } from "lucide-react";
+import { CheckCircle2, FileSignature, ReceiptText, Send, ShieldCheck, Undo2 } from "lucide-react";
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { RightsEditor } from "@/components/offer/RightsEditor";
 import { RightsView } from "@/components/offer/RightsView";
-import { acceptTermsAction, confirmContractAction, recordAcceptanceAction, saveTermsAction, sendTermsAction, withdrawTermsAction } from "@/lib/execution/actions";
+import { confirmContractAction, recordAcceptanceAction, saveTermsAction, sendTermsAction, withdrawTermsAction } from "@/lib/execution/actions";
 import type { Terms } from "@/lib/execution/queries";
 import { EMPTY_RIGHTS, rightsIssue } from "@/lib/offer/rights";
+import { SignDialog } from "@/components/signature/SignDialog";
 
 type Portal = "agency" | "brand" | "office";
 type Props = {
@@ -33,8 +35,9 @@ type Props = {
 
 const STATUS_VARIANT = { draft: "neutral", sent: "warning", accepted: "success", superseded: "neutral", withdrawn: "neutral" } as const;
 
-// Termos demonstrativos: resumo de condições por versão, envio, aceites por parte e contratação confirmada.
-// O aceite NÃO é assinatura eletrônica: fica registrado quem aceitou, quando e por onde (no app ou pela agência).
+// Termos: resumo de condições por versão, envio, aceites por parte e contratação confirmada. 0084: a marca (dono) e o
+// influenciador aceitam por assinatura eletrônica simples (nome + CPF/CNPJ, hash do texto exato) com comprovante; a
+// agência ainda registra aceite recebido por fora (com nota).
 export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, terms, canEdit = false, isManager = false, talents = [], canAccept = false, segments = [] }: Props) {
   const t = useTranslations("commercial.terms");
   const tr = useTranslations("offer.rights");
@@ -50,6 +53,7 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
   const [acceptOpen, setAcceptOpen] = useState(false);
   const canWrite = portal === "agency" && canEdit && isManager && ["approved", "contracting"].includes(stage);
 
+  const receiptBase = portal === "brand" ? "/marca/assinaturas" : portal === "office" ? "/creator/escritorio/assinaturas" : "/agencia/assinaturas";
   const myAccepted = live ? live.acceptances.some((a) => (portal === "brand" ? a.party === "brand" : a.party === "talent" && a.dealTalentId === dealTalentId)) : false;
   const pendingTalents = live ? talents.filter((x) => !live.acceptances.some((a) => a.party === "talent" && a.dealTalentId === x.dealTalentId)) : [];
   const brandAccepted = live ? live.acceptances.some((a) => a.party === "brand") : false;
@@ -119,6 +123,12 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
             <li key={i} className="flex flex-wrap items-center gap-2 type-caption text-fg">
               <ShieldCheck className="size-3.5 text-success" aria-hidden="true" />
               {a.party === "brand" ? t("brandAccepted") : t("talentAccepted", { name: a.talentName ?? "" })} · {formatDateTime(a.acceptedAt, locale)} · {t(`method.${a.method}`)}
+              {a.signatureId ? (
+                <Link href={`${receiptBase}/${a.signatureId}`} className="inline-flex min-h-8 items-center gap-1 font-medium text-accent-text underline-offset-2 hover:underline" data-testid="terms-receipt-link">
+                  <ReceiptText className="size-3.5" aria-hidden="true" />
+                  {t("receipt")}
+                </Link>
+              ) : null}
             </li>
           ))}
           {portal === "agency" && x === live
@@ -145,7 +155,7 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
             {t("youAccepted")}
           </p>
         ) : (
-          <Button type="button" leadingIcon={<ShieldCheck />} onClick={() => setAcceptOpen(true)} className="w-fit" data-testid="terms-accept">
+          <Button type="button" leadingIcon={<ShieldCheck />} onClick={() => setAcceptOpen(true)} className="w-full sm:w-fit" size="lg" data-testid="terms-accept">
             {t("accept")}
           </Button>
         )
@@ -195,7 +205,7 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
           <div className="mt-3 flex flex-col gap-3">{history.map((x) => block(x, t("version", { n: x.version })))}</div>
         </details>
       ) : null}
-      {acceptOpen && live ? <AcceptDialog portal={portal === "brand" ? "brand" : "office"} termsId={live.id} dealId={dealId} requestId={requestId} dealTalentId={dealTalentId} onClose={() => setAcceptOpen(false)} /> : null}
+      {acceptOpen && live ? <SignDialog portal={portal === "brand" ? "brand" : "office"} termsId={live.id} dealId={dealId} requestId={requestId} dealTalentId={dealTalentId} receiptBase={receiptBase} onClose={() => setAcceptOpen(false)} /> : null}
       {recording && live ? <RecordDialog termsId={live.id} dealId={dealId} brandPending={!brandAccepted} talents={pendingTalents.filter((p) => !p.hasLogin)} onClose={() => setRecording(false)} /> : null}
       <Dialog
         open={confirming}
@@ -264,55 +274,6 @@ function TermsForm({ dealId, initial, draftId, segments }: { dealId: string; ini
         {ta("saveDraft")}
       </Button>
     </form>
-  );
-}
-
-function AcceptDialog({ portal, termsId, dealId, requestId, dealTalentId, onClose }: { portal: "brand" | "office"; termsId: string; dealId: string; requestId?: string | null; dealTalentId?: string | null; onClose: () => void }) {
-  const t = useTranslations("commercial.terms");
-  const { toast } = useToast();
-  const [note, setNote] = useState("");
-  const [agree, setAgree] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
-  function run() {
-    setError(null);
-    if (!agree) return setError(t("agreeRequired"));
-    start(async () => {
-      const result = await acceptTermsAction(portal, { termsId, note: note.trim(), dealId, requestId, dealTalentId });
-      if (!result.ok) return setError(result.error);
-      toast({ title: result.message, variant: "success" });
-      onClose();
-    });
-  }
-  return (
-    <Dialog
-      open
-      onOpenChange={(o) => (!o ? onClose() : null)}
-      title={t("acceptTitle")}
-      description={t("acceptHint")}
-      footer={
-        <>
-          <Button type="button" variant="secondary" onClick={onClose} disabled={pending}>
-            {t("back")}
-          </Button>
-          <Button type="button" onClick={run} loading={pending} leadingIcon={<ShieldCheck />} data-testid="terms-accept-run">
-            {t("accept")}
-          </Button>
-        </>
-      }
-    >
-      <div className="flex flex-col gap-3">
-        <Checkbox label={t("agree")} checked={agree} onChange={(e) => setAgree(e.target.checked)} disabled={pending} />
-        <FormField label={t("note")} hint={t("noteHint")}>
-          <Textarea value={note} maxLength={500} rows={2} onChange={(e) => setNote(e.target.value)} disabled={pending} />
-        </FormField>
-        {error ? (
-          <p role="alert" className="type-body-sm text-danger">
-            {error}
-          </p>
-        ) : null}
-      </div>
-    </Dialog>
   );
 }
 

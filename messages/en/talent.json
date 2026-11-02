@@ -23,7 +23,8 @@
     "agenda": "Calendar",
     "tasks": "Tasks",
     "documents": "Documents",
-    "earnings": "Earnings"
+    "earnings": "Earnings",
+    "portfolio": "Portfolio"
   },
   "home": {
     "unavailable": "Office being updated",
@@ -116,7 +117,12 @@
     "file_missing": "Attach the file (link or document) to complete.",
     "invalid_url": "Enter a valid https link.",
     "counteroffer_open": "You already have a counteroffer waiting for the agency.",
-    "checklist_incomplete": "Check every checklist item before sending."
+    "checklist_incomplete": "Check every checklist item before sending.",
+    "signature_required": "To accept, sign with your full name and tax ID (CPF/CNPJ).",
+    "already_signed": "These terms have already been signed.",
+    "terms_changed": "The terms changed while you were reading. Open them again and check.",
+    "invalid_tax_id": "Invalid CPF or CNPJ. Check the numbers.",
+    "name_required": "Type your full name (first and last name)."
   },
   "values": {
     "demoLockedKit": "Demo agency: the public link stays off (preview only)."

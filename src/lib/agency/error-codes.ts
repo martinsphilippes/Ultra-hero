@@ -41,6 +41,12 @@ export const AGENCY_ERROR_CODES = [
   "invalid_date",
   // biblioteca, métricas, vendas e músicas (0083)
   "coupon_taken",
+  // assinatura eletrônica dos termos (0084)
+  "signature_required",
+  "already_signed",
+  "terms_changed",
+  "invalid_tax_id",
+  "name_required",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

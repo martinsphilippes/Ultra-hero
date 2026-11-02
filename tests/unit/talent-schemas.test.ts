@@ -9,7 +9,7 @@ describe("listas fechadas iguais aos checks da 0065", () => {
   it("redes, faixas, campos do kit e UFs", () => {
     expect(NETWORKS).toEqual(["instagram", "tiktok", "youtube", "x", "facebook", "kwai", "twitch", "linkedin", "pinterest", "threads", "other"]);
     expect(AGE_BANDS).toEqual(["13-17", "18-24", "25-34", "35-44", "45-54", "55+"]);
-    expect(KIT_FIELDS).toHaveLength(13);
+    expect(KIT_FIELDS).toHaveLength(15);
     expect(UFS).toHaveLength(27);
   });
 });

@@ -7,5 +7,42 @@
     "expires": "El enlace vale por {days} días y solo funciona con este correo.",
     "ignore": "Si no esperabas esta invitación, ignora este mensaje.",
     "signature": "Groscove Ultra · el puente entre marcas y héroes"
+  },
+  "work": {
+    "greeting": "¡Hola!",
+    "prefs": "Recibes este e-mail porque tienes los avisos por e-mail activados en Groscove Ultra. Para desactivarlos, ve a Perfil → Notificaciones.",
+    "signature": "Groscove Ultra · el puente entre marcas y héroes",
+    "kinds": {
+      "opportunity_received": {
+        "subject": "Nueva oportunidad: {brand}",
+        "body": "{brand} tiene una oportunidad para ti en {deal}. Mira la oferta y responde en la app.",
+        "cta": "Ver oportunidad"
+      },
+      "opportunity_updated": {
+        "subject": "{status, select, counter_accepted {Contrapropuesta aceptada} other {Contrapropuesta rechazada}}: {deal}",
+        "body": "{status, select, counter_accepted {La agencia aceptó tu contrapropuesta en {deal}.} other {La agencia respondió tu contrapropuesta en {deal} y no la aceptó. Mira el motivo en la app.}}",
+        "cta": "Ver respuesta"
+      },
+      "deliverable_decided": {
+        "subject": "Ajuste pedido: {deal}",
+        "body": "Pidieron un ajuste en tu entrega de {deal}. Mira el comentario y envía la nueva versión.",
+        "cta": "Ver ajuste"
+      },
+      "deliverable_submitted": {
+        "subject": "Entrega esperándote: {deal}",
+        "body": "{talent} envió una entrega de {deal}. Está esperando tu aprobación.",
+        "cta": "Ver entrega"
+      },
+      "contract_acceptance_requested": {
+        "subject": "Términos para firmar: {deal}",
+        "body": "Los términos de {deal} están listos. Lee y firma en la app con tu nombre completo y CPF/CNPJ.",
+        "cta": "Leer y firmar"
+      },
+      "task_due_soon": {
+        "subject": "Plazo cerca: {deal}",
+        "body": "Una tarea de {deal} vence en menos de 24 horas ({date}).",
+        "cta": "Ver tarea"
+      }
+    }
   }
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
+import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireAgency } from "@/lib/agency/server";
 import { requireUser } from "@/lib/auth/session";
@@ -64,6 +65,8 @@ export async function decideCounterofferAction(input: z.input<typeof counterDeci
     const supabase = await createClient();
     const { error } = await supabase.rpc("agency_counteroffer_decide", { p_id: d.counterofferId, p_decision: d.decision, p_note: d.note || undefined });
     if (error) return agencyFail(error);
+    // contraproposta respondida: o influenciador também recebe por e-mail (0084)
+    await dispatchWorkEmails();
     if (uuid.safeParse(input.dealTalentId).success) revalidateOffer(input.dealTalentId, d.dealId);
     else revalidatePath(`/agencia/negocios/${d.dealId}`, "layout");
     const t = await getTranslations("offer.review");

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
+import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireAgency } from "@/lib/agency/server";
 import { activitySchema, confirmSchema, consultSchema, dealCreateSchema, dealMoveSchema, dealUpdateSchema, deliverablesSchema, feeSchema, recordResponseSchema } from "@/lib/deals/schemas";
@@ -192,6 +193,8 @@ export async function consultTalentsAction(input: z.input<typeof consultSchema>)
     const args = { p_deal: d.dealId, p_deal_talent_ids: d.dealTalentIds, p_respond_by: respondBy, p_message: d.message || undefined };
     const { data, error } = d.confirmConflicts ? await supabase.rpc("agency_consult_talents_confirmed", args) : await supabase.rpc("agency_consult_talents", args);
     if (error) return agencyFail(error);
+    // oferta nova para o influenciador também por e-mail (0084), depois da resposta
+    await dispatchWorkEmails();
     revalidateDeal(d.dealId);
     const t = await getTranslations("agency.deal");
     return { ok: true, message: t("consulted", { count: data ?? 0 }), count: data ?? 0 };

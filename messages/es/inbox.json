@@ -154,6 +154,10 @@
     "deliverable_comment": {
       "title": "Comentario en la entrega",
       "body": "{status, select, brand {La marca comentó una entrega de {deal}.} other {La agencia comentó una entrega de {deal}.}}"
+    },
+    "task_due_soon": {
+      "title": "Plazo cerca",
+      "body": "Una tarea de {deal} vence en menos de 24 horas."
     }
   }
 }

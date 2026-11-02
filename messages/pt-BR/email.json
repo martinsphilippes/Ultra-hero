@@ -7,5 +7,42 @@
     "expires": "O link vale por {days} dias e só funciona com este e-mail.",
     "ignore": "Se não esperava este convite, ignore esta mensagem.",
     "signature": "Groscove Ultra · a ponte entre marcas e heróis"
+  },
+  "work": {
+    "greeting": "Olá!",
+    "prefs": "Você recebe este e-mail porque tem os avisos por e-mail ligados no Groscove Ultra. Para desligar, vá em Perfil → Notificações.",
+    "signature": "Groscove Ultra · a ponte entre marcas e heróis",
+    "kinds": {
+      "opportunity_received": {
+        "subject": "Nova oportunidade: {brand}",
+        "body": "{brand} tem uma oportunidade para você em {deal}. Veja a oferta e responda pelo app.",
+        "cta": "Ver oportunidade"
+      },
+      "opportunity_updated": {
+        "subject": "{status, select, counter_accepted {Contraproposta aceita} other {Contraproposta recusada}}: {deal}",
+        "body": "{status, select, counter_accepted {A agência aceitou a sua contraproposta em {deal}.} other {A agência respondeu a sua contraproposta em {deal} e não aceitou. Veja o motivo no app.}}",
+        "cta": "Ver resposta"
+      },
+      "deliverable_decided": {
+        "subject": "Ajuste pedido: {deal}",
+        "body": "Pediram um ajuste na sua entrega de {deal}. Veja o comentário e envie a nova versão.",
+        "cta": "Ver ajuste"
+      },
+      "deliverable_submitted": {
+        "subject": "Entrega aguardando você: {deal}",
+        "body": "{talent} enviou uma entrega de {deal}. Ela aguarda a sua aprovação.",
+        "cta": "Ver entrega"
+      },
+      "contract_acceptance_requested": {
+        "subject": "Termos para assinar: {deal}",
+        "body": "Os termos de {deal} estão prontos. Leia e assine pelo app com nome completo e CPF/CNPJ.",
+        "cta": "Ler e assinar"
+      },
+      "task_due_soon": {
+        "subject": "Prazo chegando: {deal}",
+        "body": "Uma tarefa de {deal} vence em menos de 24 horas ({date}).",
+        "cta": "Ver tarefa"
+      }
+    }
   }
 }

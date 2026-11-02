@@ -23,7 +23,8 @@
     "agenda": "Agenda",
     "tasks": "Tarefas",
     "documents": "Documentos",
-    "earnings": "Ganhos"
+    "earnings": "Ganhos",
+    "portfolio": "Portfólio"
   },
   "home": {
     "unavailable": "Escritório em atualização",
@@ -116,7 +117,12 @@
     "file_missing": "Anexe o arquivo (link ou documento) para concluir.",
     "invalid_url": "Informe um link https válido.",
     "counteroffer_open": "Você já tem uma contraproposta aguardando a agência.",
-    "checklist_incomplete": "Confira todos os itens do checklist antes de enviar."
+    "checklist_incomplete": "Confira todos os itens do checklist antes de enviar.",
+    "signature_required": "Para aceitar, assine com nome completo e CPF/CNPJ.",
+    "already_signed": "Estes termos já foram assinados.",
+    "terms_changed": "Os termos mudaram enquanto você lia. Abra de novo e confira.",
+    "invalid_tax_id": "CPF ou CNPJ inválido. Confira os números.",
+    "name_required": "Digite o nome completo (nome e sobrenome)."
   },
   "values": {
     "demoLockedKit": "Agência de demonstração: o link público fica desligado (só a prévia)."

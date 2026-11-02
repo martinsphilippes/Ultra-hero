@@ -102,7 +102,9 @@
     "engagement": "Engagement",
     "audience": "Audience (charts)",
     "brands": "Brands already following",
-    "agency_contact": "Agency contact"
+    "agency_contact": "Agency contact",
+    "stats": "Work numbers (automatic)",
+    "portfolio": "Portfolio (campaigns and brands)"
   },
   "share": {
     "created": "Link created. Copy it now: it will not show again.",
@@ -129,5 +131,35 @@
     "poweredBy": "Groscove Ultra",
     "unavailableTitle": "This link is not available",
     "unavailableBody": "The link may have expired or been turned off. Ask whoever sent it for a new one."
+  },
+  "auto": {
+    "title": "Work numbers",
+    "campaigns": "Completed campaigns",
+    "published": "Published deliverables",
+    "onTime": "On-time delivery",
+    "onTimeBase": "{count, plural, one {of # deliverable} other {of # deliverables}}",
+    "rating": "Average rating",
+    "ratingCount": "{count, plural, one {# rating} other {# ratings}}",
+    "appFollowers": "Followers in the app",
+    "networksUpdated": "Networks updated on {date}",
+    "networksNever": "Networks not updated yet",
+    "computedAt": "calculated on {date}",
+    "portfolio": "Portfolio",
+    "portfolioEmpty": "No published deliverables to show yet.",
+    "portfolioHint": "Campaigns done, brand and what was published, with link and metrics. Updates on its own.",
+    "openPost": "Open post",
+    "unavailable": "Automatic numbers are not available yet.",
+    "inKit": "The portfolio shows on your media kit link.",
+    "notInKit": "To show it on the media kit link, turn on \"Portfolio\" in the visible fields.",
+    "openKit": "Open media kit",
+    "metrics": {
+      "views": "Views",
+      "reach": "Reach",
+      "likes": "Likes",
+      "comments": "Comments",
+      "shares": "Shares",
+      "saves": "Saves",
+      "clicks": "Clicks"
+    }
   }
 }

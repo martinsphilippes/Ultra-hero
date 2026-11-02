@@ -7385,6 +7385,143 @@ export type Database = {
           },
         ];
       };
+      deal_signatures: {
+        Row: {
+          acceptance_id: string;
+          agency_id: string;
+          brand_id: string;
+          deal_id: string;
+          deal_talent_id: string | null;
+          id: string;
+          party: string;
+          signed_at: string;
+          signed_text: string;
+          signer_email: string;
+          signer_ip: string | null;
+          signer_name: string;
+          signer_tax_id: string;
+          signer_tax_kind: string;
+          signer_user_agent: string;
+          signer_user_id: string | null;
+          talent_id: string | null;
+          terms_id: string;
+          terms_version: number;
+          text_sha256: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          acceptance_id: string;
+          agency_id: string;
+          brand_id: string;
+          deal_id: string;
+          deal_talent_id?: string | null;
+          id?: string;
+          party: string;
+          signed_at?: string;
+          signed_text: string;
+          signer_email?: string;
+          signer_ip?: string | null;
+          signer_name: string;
+          signer_tax_id: string;
+          signer_tax_kind: string;
+          signer_user_agent?: string;
+          signer_user_id?: string | null;
+          talent_id?: string | null;
+          terms_id: string;
+          terms_version: number;
+          text_sha256: string;
+        };
+        Update: {
+          acceptance_id?: string;
+          agency_id?: string;
+          brand_id?: string;
+          deal_id?: string;
+          deal_talent_id?: string | null;
+          id?: string;
+          party?: string;
+          signed_at?: string;
+          signed_text?: string;
+          signer_email?: string;
+          signer_ip?: string | null;
+          signer_name?: string;
+          signer_tax_id?: string;
+          signer_tax_kind?: string;
+          signer_user_agent?: string;
+          signer_user_id?: string | null;
+          talent_id?: string | null;
+          terms_id?: string;
+          terms_version?: number;
+          text_sha256?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_signatures_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_signatures_terms_fk";
+            columns: ["terms_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_terms";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_signatures_acceptance_fk";
+            columns: ["acceptance_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_acceptances";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      email_outbox: {
+        Row: {
+          attempts: number;
+          claimed_at: string | null;
+          created_at: string;
+          id: number;
+          notification_id: string;
+          outcome: string | null;
+          sent_at: string | null;
+          skipped_at: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          attempts?: number;
+          claimed_at?: string | null;
+          created_at?: string;
+          id?: number;
+          notification_id: string;
+          outcome?: string | null;
+          sent_at?: string | null;
+          skipped_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          attempts?: number;
+          claimed_at?: string | null;
+          created_at?: string;
+          id?: number;
+          notification_id?: string;
+          outcome?: string | null;
+          sent_at?: string | null;
+          skipped_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_notification_fk";
+            columns: ["notification_id"];
+            isOneToOne: false;
+            referencedRelation: "inbox_notifications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       deliverable_metrics: {
         Row: {
           agency_id: string;
@@ -8968,6 +9105,22 @@ isOneToOne: false
       brand_budget_set: { Args: { p_request: string; p_deal_talent: string | null; p_total_cents: number | null }; Returns: undefined };
       payout_invoice_attach: { Args: { p_entry: string; p_document: string }; Returns: string };
       brand_library: { Args: { p_brand: string }; Returns: Json };
+      br_tax_id_normalize: { Args: { p: string }; Returns: string };
+      br_tax_id_kind: { Args: { p: string }; Returns: string | null };
+      text_sha256_hex: { Args: { p: string }; Returns: string };
+      terms_sign_preview: { Args: { p_terms: string }; Returns: Json };
+      brand_terms_sign: { Args: { p_terms: string; p_full_name: string; p_tax_id: string; p_expected_hash?: string | null; p_ip?: string | null; p_user_agent?: string | null }; Returns: string };
+      talent_terms_sign: { Args: { p_terms: string; p_full_name: string; p_tax_id: string; p_expected_hash?: string | null; p_ip?: string | null; p_user_agent?: string | null }; Returns: string };
+      terms_signatures: { Args: { p_deal: string }; Returns: Json };
+      terms_signature_receipt: { Args: { p_id: string }; Returns: Json };
+      inbox_kind_emails: { Args: { p_kind: string; p_link: string; p_params: Json }; Returns: boolean };
+      email_outbox_claim: {
+        Args: { p_limit?: number | null };
+        Returns: { id: number; user_id: string; email: string; locale: string; kind: string; params: Json; link: string; created_at: string }[];
+      };
+      email_outbox_cleanup: { Args: Record<PropertyKey, never>; Returns: number };
+      task_due_soon_scan: { Args: Record<PropertyKey, never>; Returns: number };
+      talent_kit_insights: { Args: { p_talent: string }; Returns: Json };
       usage_rights_expiry_scan: { Args: Record<PropertyKey, never>; Returns: number };
       deliverable_metrics_record: { Args: { p_deliverable: string; p_measured_on: string; p_data: Json }; Returns: string };
       agency_tracking_link_save: { Args: { p_deal_talent: string; p_destination: string | null; p_coupon: string }; Returns: string };

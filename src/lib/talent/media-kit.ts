@@ -1,3 +1,4 @@
+import type { KitStats, PortfolioItem } from "./kit-auto";
 import type { Audience } from "./schemas";
 import { AGE_BANDS, GENDER_KEYS, isKitField, STALE_METRIC_DAYS, type KitField, type Network } from "./vocab";
 
@@ -36,6 +37,9 @@ export type ResolvedKit = {
   brands?: { name: string; logo_url: string | null }[];
   agency?: string;
   agency_email?: string | null;
+  /** 0084: números calculados na hora e portfólio (só quando marcados) */
+  stats?: KitStats | null;
+  portfolio?: PortfolioItem[];
 };
 
 /** Rede completa (como o banco guarda), antes do filtro de campos. */
@@ -67,6 +71,9 @@ export type KitSource = {
   brands: { name: string; logo_url: string | null }[];
   agencyName: string;
   agencyEmail: string | null;
+  /** 0084 (talent_kit_insights): ausente = sem dados (banco sem a migração) */
+  stats?: KitStats | null;
+  portfolio?: PortfolioItem[];
 };
 
 function nonEmptyAudience(value: unknown): Audience | null {
@@ -114,6 +121,8 @@ export function buildKit(source: KitSource, expiresAt: string | null = null): Re
     kit.agency = source.agencyName;
     kit.agency_email = source.agencyEmail;
   }
+  if (has("stats") && source.stats) kit.stats = source.stats;
+  if (has("portfolio") && source.portfolio) kit.portfolio = source.portfolio;
   return kit;
 }
 
