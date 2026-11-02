@@ -8,6 +8,7 @@ import { requireAgency } from "@/lib/agency/server";
 import { requireUser } from "@/lib/auth/session";
 import { requireBrand } from "@/lib/brand-portal/server";
 import { toZonedIso } from "@/lib/deals/schemas";
+import { rightsPayload } from "@/lib/offer/rights";
 import { createClient } from "@/lib/supabase/server";
 import { talentFail } from "@/lib/talent/errors";
 import { acceptSchema, closeSchema, decideSchema, publishSchema, recordAcceptanceSchema, submitSchema, taskDecideSchema, taskSaveSchema, taskStatusSchema, termsSchema, type TaskSaveInput } from "./vocab";
@@ -38,7 +39,7 @@ export async function saveTermsAction(input: z.input<typeof termsSchema>): Promi
   const d = parsed.data;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("agency_terms_save", { p_deal: d.dealId, p_data: { summary: d.summary, usage_rights: d.usageRights, exclusivity: d.exclusivity, valid_until: d.validUntil } });
+    const { data, error } = await supabase.rpc("agency_terms_save", { p_deal: d.dealId, p_data: { summary: d.summary, usage_rights: d.usageRights, exclusivity: d.exclusivity, valid_until: d.validUntil, ...(d.rights ? { rights: rightsPayload(d.rights) } : {}) } });
     if (error) return agencyFail(error);
     revalidateDeal("agency", d.dealId);
     const t = await getTranslations("agency.terms");

@@ -111,7 +111,8 @@
     "invalid_state": "This opportunity was already answered or closed.",
     "invalid_stage": "This campaign is already closed.",
     "file_missing": "Attach the file (link or document) to complete.",
-    "invalid_url": "Enter a valid https link."
+    "invalid_url": "Enter a valid https link.",
+    "counteroffer_open": "You already have a counteroffer waiting for the agency."
   },
   "values": {
     "demoLockedKit": "Demo agency: the public link stays off (preview only)."
@@ -161,12 +162,12 @@
     },
     "respond": {
       "title": "Your reply",
-      "hint": "Say whether you are interested, want to talk first, or are not interested (with the reason).",
+      "hint": "Accept, decline (with the reason), ask for a call or make a date or amount counteroffer.",
       "note": "Note",
       "noteHint": "Required when declining. Helps the agency propose something better.",
-      "interested": "I'm interested",
+      "interested": "Accept",
       "talk": "I want to talk",
-      "declined": "Not interested",
+      "declined": "Decline",
       "legal": "Replying is not a contractual commitment. Contract and terms are agreed with the agency.",
       "reasonRequired": "Tell us why (at least 3 characters)."
     }

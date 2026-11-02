@@ -1,4 +1,5 @@
 import "server-only";
+import { toRights, type Rights } from "@/lib/offer/rights";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { isDeliverableStatus, isTaskStatus, type DeliverableStatus, type TaskStatus, type TermsStatus } from "./vocab";
@@ -7,7 +8,7 @@ import { isDeliverableStatus, isTaskStatus, type DeliverableStatus, type TaskSta
 // (o banco decide o lado: agência, marca ou creator, e filtra o que cada um vê). Tarefas da pessoa: RLS.
 
 export type Acceptance = { party: "brand" | "talent"; dealTalentId: string | null; method: "in_app" | "recorded_by_agency"; acceptedAt: string; talentName: string | null };
-export type Terms = { id: string; version: number; status: TermsStatus; summary: string; usageRights: string; exclusivity: string; validUntil: string | null; sentAt: string | null; acceptances: Acceptance[] };
+export type Terms = { id: string; version: number; status: TermsStatus; summary: string; usageRights: string; exclusivity: string; validUntil: string | null; sentAt: string | null; acceptances: Acceptance[]; rights: Rights };
 export type Task = {
   id: string;
   step: number | null;
@@ -112,6 +113,7 @@ export async function getDealExecution(dealId: string): Promise<{ available: boo
             exclusivity: String(t.exclusivity ?? ""),
             validUntil: str(t.valid_until),
             sentAt: str(t.sent_at),
+            rights: toRights(t.rights),
             acceptances: Array.isArray(t.acceptances)
               ? (t.acceptances as Record<string, unknown>[]).map((a) => ({ party: a.party as Acceptance["party"], dealTalentId: str(a.deal_talent_id), method: a.method as Acceptance["method"], acceptedAt: String(a.accepted_at), talentName: str(a.talent_name) }))
               : [],

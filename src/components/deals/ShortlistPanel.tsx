@@ -1,9 +1,11 @@
 "use client";
 
-import { Check, Minus, Plus, Send, UserMinus, Wallet } from "lucide-react";
+import { Check, Minus, Plus, Send, ShieldAlert, UserMinus, Wallet } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { consultTalentsAction, recordResponseAction, removeDealTalentAction, setFeeAction, setShortlistAction } from "@/app/agencia/negocios/actions";
+import { ConflictAlert } from "@/components/offer/ConflictAlert";
+import { CounterofferReview } from "@/components/offer/CounterofferReview";
 import { Avatar, Badge, Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
@@ -11,6 +13,7 @@ import type { DealTalentRow } from "@/lib/deals/queries";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
 import { isPreConfirmation, type DealStage } from "@/lib/deals/stages";
 import { CONSULT_DAYS, TALENT_RESPONSES, type TalentResponse } from "@/lib/deals/vocab";
+import type { Conflict, Counteroffer } from "@/lib/offer/counteroffer";
 import { TalentStatusBadge } from "./StatusBadges";
 
 export type Candidate = { id: string; name: string; avatarUrl: string | null; city: string | null; state: string | null; availability: string; hasLogin: boolean; reasons: DealTalentRow["reasons"] };
@@ -25,12 +28,18 @@ type Props = {
   canEdit: boolean;
   isAdmin: boolean;
   documents: { id: string; title: string }[];
+  /** Exclusividade vigente por talento (0079): alerta, não bloqueia; consultar exige confirmação. */
+  conflicts?: Record<string, Conflict[]>;
+  /** Contrapropostas por creator do negócio (valor só chega para o Adm). */
+  counteroffers?: Record<string, Counteroffer[]>;
+  canDecideFee?: boolean;
+  canDecideDate?: boolean;
 };
 
 // Elenco do negócio: sugeridos com os critérios atendidos, consulta de interesse (só com cachê definido),
 // resposta do creator (pelo escritório) ou registrada pela agência (talento sem login), cachê (só Adm) e
 // remoção. O cachê é a única coisa com valor nesta tela e só aparece para quem o banco devolve.
-export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit, isAdmin, documents }: Props) {
+export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit, isAdmin, documents, conflicts = {}, counteroffers = {}, canDecideFee = false, canDecideDate = false }: Props) {
   const t = useTranslations("agency.deal.talents");
   const tr = useTranslations("commercial.reasons");
   const locale = useLocale() as Locale;
@@ -99,6 +108,8 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
                       {row.respondBy && !row.respondedAt ? ` · ${t("respondBy", { date: formatDateTime(row.respondBy, locale) })}` : ""}
                     </span>
                   ) : null}
+                  {conflicts[row.talentId] && !["removed", "declined"].includes(row.status) ? <ConflictAlert conflicts={conflicts[row.talentId] ?? []} side="agency" compact /> : null}
+                  {counteroffers[row.id] ? <CounterofferReview dealId={dealId} dealTalentId={row.id} counteroffers={counteroffers[row.id] ?? []} canDecideFee={canDecideFee && canEdit} canDecideDate={canDecideDate && canEdit} /> : null}
                   {row.respondedAt ? (
                     <p className="type-body-sm text-fg">
                       {t(row.responseChannel === "agency_record" ? "answeredByAgency" : "answeredByCreator", { date: formatDateTime(row.respondedAt, locale) })}
@@ -158,16 +169,24 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
         </div>
       ) : null}
 
-      <AddTalentsDialog open={adding} onOpenChange={setAdding} dealId={dealId} candidates={candidates} current={rows.filter((r) => r.status !== "removed").map((r) => ({ talentId: r.talentId, reasons: r.reasons, keep: r.status !== "suggested" }))} />
-      <ConsultDialog open={consulting} onOpenChange={setConsulting} dealId={dealId} dealTalentIds={picked} onDone={() => setPicked([])} />
+      <AddTalentsDialog open={adding} onOpenChange={setAdding} dealId={dealId} candidates={candidates} conflicts={conflicts} current={rows.filter((r) => r.status !== "removed").map((r) => ({ talentId: r.talentId, reasons: r.reasons, keep: r.status !== "suggested" }))} />
+      <ConsultDialog
+        open={consulting}
+        onOpenChange={setConsulting}
+        dealId={dealId}
+        dealTalentIds={picked}
+        conflicted={rows.filter((r) => picked.includes(r.id) && (conflicts[r.talentId]?.length ?? 0) > 0).length}
+        onDone={() => setPicked([])}
+      />
       {recording ? <RecordResponseDialog row={recording} dealId={dealId} documents={documents} onClose={() => setRecording(null)} /> : null}
       {feeFor ? <FeeDialog row={feeFor} dealId={dealId} current={fees[feeFor.id]} onClose={() => setFeeFor(null)} /> : null}
     </div>
   );
 }
 
-function AddTalentsDialog({ open, onOpenChange, dealId, candidates, current }: { open: boolean; onOpenChange: (o: boolean) => void; dealId: string; candidates: Candidate[]; current: { talentId: string; reasons: DealTalentRow["reasons"]; keep: boolean }[] }) {
+function AddTalentsDialog({ open, onOpenChange, dealId, candidates, current, conflicts }: { open: boolean; onOpenChange: (o: boolean) => void; dealId: string; candidates: Candidate[]; current: { talentId: string; reasons: DealTalentRow["reasons"]; keep: boolean }[]; conflicts: Record<string, Conflict[]> }) {
   const t = useTranslations("agency.deal.talents");
+  const tx = useTranslations("offer.conflict");
   const tr = useTranslations("commercial.reasons");
   const { toast } = useToast();
   const [q, setQ] = useState("");
@@ -232,6 +251,14 @@ function AddTalentsDialog({ open, onOpenChange, dealId, candidates, current }: {
                     ))}
                     {c.reasons.length > 0 ? <span className="type-caption text-fg-muted">{t("matchCount", { met: met.length, total: c.reasons.length })}</span> : null}
                   </span>
+                  {conflicts[c.id] ? (
+                    <span className="flex flex-col gap-0.5" data-testid="candidate-conflict">
+                      <Badge size="sm" variant="warning" icon={<ShieldAlert />} className="w-fit">
+                        {tx("badge")}
+                      </Badge>
+                      <span className="type-caption text-fg-muted">{(conflicts[c.id] ?? []).map((x) => x.brandName).join(", ")}</span>
+                    </span>
+                  ) : null}
                 </span>
               </li>
             );
@@ -247,8 +274,10 @@ function AddTalentsDialog({ open, onOpenChange, dealId, candidates, current }: {
   );
 }
 
-function ConsultDialog({ open, onOpenChange, dealId, dealTalentIds, onDone }: { open: boolean; onOpenChange: (o: boolean) => void; dealId: string; dealTalentIds: string[]; onDone: () => void }) {
+function ConsultDialog({ open, onOpenChange, dealId, dealTalentIds, conflicted, onDone }: { open: boolean; onOpenChange: (o: boolean) => void; dealId: string; dealTalentIds: string[]; conflicted: number; onDone: () => void }) {
   const t = useTranslations("agency.deal.consultDialog");
+  const tx = useTranslations("offer.conflict");
+  const [confirmConflicts, setConfirmConflicts] = useState(false);
   const { toast } = useToast();
   const [days, setDays] = useState<number>(7);
   const [message, setMessage] = useState("");
@@ -257,11 +286,13 @@ function ConsultDialog({ open, onOpenChange, dealId, dealTalentIds, onDone }: { 
 
   function send() {
     setError(null);
+    if (conflicted > 0 && !confirmConflicts) return setError(tx("consultConfirmRequired"));
     start(async () => {
-      const result = await consultTalentsAction({ dealId, dealTalentIds, days, message: message.trim() });
+      const result = await consultTalentsAction({ dealId, dealTalentIds, days, message: message.trim(), confirmConflicts: conflicted > 0 && confirmConflicts });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
       setMessage("");
+      setConfirmConflicts(false);
       onDone();
       onOpenChange(false);
     });
@@ -297,6 +328,15 @@ function ConsultDialog({ open, onOpenChange, dealId, dealTalentIds, onDone }: { 
         <FormField label={t("message")} hint={t("messageHint")}>
           <Textarea value={message} maxLength={2000} rows={4} onChange={(e) => setMessage(e.target.value)} disabled={pending} />
         </FormField>
+        {conflicted > 0 ? (
+          <div className="flex flex-col gap-2 rounded-xl border border-warning/40 bg-warning-soft/40 px-3 py-2" data-testid="consult-conflict">
+            <p className="flex items-start gap-1.5 type-body-sm text-fg">
+              <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+              {tx("consultWarn", { count: conflicted })}
+            </p>
+            <Checkbox label={tx("consultConfirm")} checked={confirmConflicts} onChange={(e) => setConfirmConflicts(e.target.checked)} disabled={pending} data-testid="consult-conflict-confirm" />
+          </div>
+        ) : null}
         {error ? (
           <p role="alert" className="type-body-sm text-danger">
             {error}

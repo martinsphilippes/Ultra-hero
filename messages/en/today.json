@@ -57,7 +57,10 @@
       "offer": "Offers",
       "deliverable": "Deliveries",
       "task": "Tasks"
-    }
+    },
+    "counter_open": "Counteroffer waiting for the agency",
+    "counter_accepted": "Counteroffer accepted",
+    "counter_rejected": "Counteroffer declined"
   },
   "board": {
     "title": "Actions by stage",

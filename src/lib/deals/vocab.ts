@@ -31,3 +31,9 @@ export const CONSULT_DAYS = [3, 7, 14] as const;
 export const REASON_CODES = ["segment", "region", "audience_age", "network", "availability", "brand_choice"] as const;
 export type ReasonCode = (typeof REASON_CODES)[number];
 export type Reason = { code: ReasonCode; met: boolean; detail: string[] };
+
+/** Atividade "system": o corpo é um código, opcionalmente "código|parâmetro" (0079: nomes de creators). */
+export function splitSystemBody(body: string): { code: string; param: string } {
+  const i = body.indexOf("|");
+  return i === -1 ? { code: body, param: "" } : { code: body.slice(0, i), param: body.slice(i + 1) };
+}

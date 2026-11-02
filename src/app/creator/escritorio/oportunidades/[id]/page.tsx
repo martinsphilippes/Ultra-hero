@@ -6,6 +6,9 @@ import { DeliverableStatusBadge, TalentStatusBadge } from "@/components/deals/St
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
 import { TaskList } from "@/components/execution/TaskList";
 import { TermsPanel } from "@/components/execution/TermsPanel";
+import { ConflictAlert } from "@/components/offer/ConflictAlert";
+import { CounterofferPanel } from "@/components/offer/CounterofferPanel";
+import { RightsView } from "@/components/offer/RightsView";
 import { OpportunityRespond } from "@/components/talent/OpportunityRespond";
 import { Avatar, Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -14,6 +17,9 @@ import { listMessages, listOpportunities, myFee } from "@/lib/deals/queries";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
+import { proposedDateRange } from "@/lib/offer/counteroffer";
+import { getTalentOfferState } from "@/lib/offer/queries";
+import { localDay } from "@/lib/today/logic";
 import { getTalentContext } from "@/lib/talent/server";
 
 export const dynamic = "force-dynamic";
@@ -25,8 +31,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { params: Promise<{ id: string }> };
 
-// Detalhe da oportunidade: marca, briefing (sem critérios internos), entregas previstas, cachê (só na web,
-// e só depois de consultado), resposta e conversa com a agência.
+// Detalhe da oportunidade: a oferta numa tela só (o quê, quando, quanto — só na web —, direitos e prazo de
+// resposta), alerta de exclusividade, resposta (aceitar, recusar, conversar), contraproposta de data ou valor,
+// briefing, termos, execução e conversa com a agência.
 export default async function OpportunityPage({ params }: Props) {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
@@ -36,7 +43,15 @@ export default async function OpportunityPage({ params }: Props) {
   const o = list.items[0];
   if (!o) notFound();
   const contracted = ["proposed", "contracted"].includes(o.status);
-  const [fee, messages, exec, tx] = await Promise.all([myFee(o.id), listMessages(o.deal.id, "talent_agency", ctx.talent.id), contracted ? getDealExecution(o.deal.id) : Promise.resolve({ available: true, data: null }), getTranslations("talent.execution")]);
+  const [fee, messages, exec, tx, to, offerRes] = await Promise.all([
+    myFee(o.id),
+    listMessages(o.deal.id, "talent_agency", ctx.talent.id),
+    contracted ? getDealExecution(o.deal.id) : Promise.resolve({ available: true, data: null }),
+    getTranslations("talent.execution"),
+    getTranslations("offer"),
+    getTalentOfferState(o.id),
+  ]);
+  const offer = offerRes.data;
   const execution = exec.available ? exec.data : null;
   const myTasks = (execution?.tasks ?? []).filter((x) => x.side === "talent" && x.talentId === ctx.talent.id);
   const myDeliverables = (execution?.deliverables ?? []).filter((d) => d.dealTalentId === o.id);
@@ -50,6 +65,18 @@ export default async function OpportunityPage({ params }: Props) {
     ) : null;
   const r = o.request;
   const closed = ["won", "lost", "cancelled"].includes(o.deal.status) || o.status === "removed";
+  const liveTerms = execution?.terms.find((x) => x.status === "sent" || x.status === "accepted") ?? null;
+  const tz = offer?.timezone ?? "America/Sao_Paulo";
+  const now = new Date();
+  const range = proposedDateRange(now, tz);
+  const plannedDeliverables = o.deliverables.filter((d) => ["planned", "in_production"].includes(d.status));
+  const deliverableLabel = (d: (typeof o.deliverables)[number]) => [tc(`deliverableKinds.${d.kind}`), d.network ? tn(d.network) : null, d.title || null].filter(Boolean).join(" · ");
+  const refDate = (d: (typeof o.deliverables)[number]) => {
+    const at = d.publishAt ?? d.dueAt;
+    return at ? localDay(new Date(at), tz) : null;
+  };
+  const dates = o.deliverables.map((d) => d.publishAt ?? d.dueAt).filter((x): x is string => Boolean(x)).sort();
+  const period = o.deal.expectedStart ? `${formatPlainDate(o.deal.expectedStart, locale)}${o.deal.expectedEnd && o.deal.expectedEnd !== o.deal.expectedStart ? ` – ${formatPlainDate(o.deal.expectedEnd, locale)}` : ""}` : null;
 
   return (
     <div className="flex flex-col gap-5" data-testid="opportunity-detail">
@@ -67,7 +94,71 @@ export default async function OpportunityPage({ params }: Props) {
           </span>
         }
       />
+      {offer && offer.conflicts.length > 0 && !closed ? <ConflictAlert conflicts={offer.conflicts} side="talent" /> : null}
+      <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="opp-offer" data-testid="offer-card">
+        <h2 id="opp-offer" className="text-base font-semibold text-fg">
+          {to("card.title")}
+        </h2>
+        {o.respondBy && !o.respondedAt && !closed ? (
+          <p className="w-fit rounded-full bg-warning-soft/50 px-3 py-1 text-sm font-medium text-fg">{to("card.respondBy", { date: formatDateTime(o.respondBy, locale) })}</p>
+        ) : null}
+        <dl className="grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <dt className="type-caption text-fg-muted">{to("card.what")}</dt>
+            <dd className="text-sm text-fg">
+              {o.deliverables.length > 0 ? (
+                <ul className="flex flex-col gap-0.5">
+                  {o.deliverables.map((d) => (
+                    <li key={d.id} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span>
+                        {deliverableLabel(d)}
+                        {d.publishAt ?? d.dueAt ? <span className="text-fg-muted"> · {formatPlainDate(localDay(new Date((d.publishAt ?? d.dueAt) as string), tz), locale)}</span> : null}
+                      </span>
+                      {d.status !== "planned" ? <DeliverableStatusBadge status={d.status as DeliverableStatus} /> : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : r && r.deliverables.length > 0 ? (
+                r.deliverables.map((d) => `${d.quantity}× ${tc(`deliverableKinds.${d.kind}`)}${d.network ? ` (${tn(d.network)})` : ""}`).join(", ")
+              ) : (
+                <span className="text-fg-muted">{to("card.noDeliverables")}</span>
+              )}
+            </dd>
+          </div>
+          <div className="flex flex-col gap-1">
+            <dt className="type-caption text-fg-muted">{to("card.when")}</dt>
+            <dd className="text-sm text-fg">
+              {period ?? (dates.length > 0 ? `${formatPlainDate(localDay(new Date(dates[0] as string), tz), locale)}${dates.length > 1 ? ` – ${formatPlainDate(localDay(new Date(dates[dates.length - 1] as string), tz), locale)}` : ""}` : <span className="text-fg-muted">{to("card.noDates")}</span>)}
+            </dd>
+          </div>
+          <div className="flex flex-col gap-1">
+            <dt className="type-caption text-fg-muted">{to("card.howMuch")}</dt>
+            <dd className="text-sm text-fg" data-testid="opportunity-fee">
+              <span className="font-mono text-lg font-semibold native:hidden">{fee !== null ? formatCents(fee, locale) : <span className="font-sans text-sm font-normal text-fg-muted">{to("card.noFee")}</span>}</span>
+              <span className="hidden type-caption text-fg-muted native:inline">{to("card.feeOnWeb")}</span>
+              {fee !== null ? <span className="block type-caption text-fg-muted native:hidden">{t("feeHint")}</span> : null}
+            </dd>
+          </div>
+          <div className="flex flex-col gap-1 sm:col-span-2">
+            <dt className="type-caption text-fg-muted">{to("card.rights")}</dt>
+            <dd>{liveTerms ? <RightsView rights={liveTerms.rights} /> : <span className="type-caption text-fg-muted">{to("card.rightsPending")}</span>}</dd>
+          </div>
+        </dl>
+      </section>
       {!closed ? <OpportunityRespond dealTalentId={o.id} status={o.status} /> : null}
+      {offer && !closed ? (
+        <CounterofferPanel
+          dealTalentId={o.id}
+          counteroffers={offer.counteroffers}
+          canFee={offer.canFee}
+          canDate={offer.canDate}
+          currentFeeCents={fee}
+          deliverables={plannedDeliverables.map((d) => ({ id: d.id, label: deliverableLabel(d), refDate: refDate(d) }))}
+          expectedStart={o.deal.expectedStart}
+          dateMin={range.min}
+          dateMax={range.max}
+        />
+      ) : null}
       {execution && execution.terms.length > 0 ? (
         <section className={card} aria-labelledby="opp-terms" data-testid="opportunity-terms">
           <h3 id="opp-terms" className="text-base font-semibold text-fg">
@@ -90,8 +181,6 @@ export default async function OpportunityPage({ params }: Props) {
             </h3>
             {o.deal.talentBrief ? <p className="whitespace-pre-wrap text-sm text-fg">{o.deal.talentBrief}</p> : null}
             <dl className="grid gap-3 sm:grid-cols-2">
-              {row(t("fields.period"), o.deal.expectedStart ? `${formatPlainDate(o.deal.expectedStart, locale)}${o.deal.expectedEnd && o.deal.expectedEnd !== o.deal.expectedStart ? ` – ${formatPlainDate(o.deal.expectedEnd, locale)}` : ""}` : null)}
-              {row(t("fields.respondBy"), o.respondBy && !o.respondedAt ? formatDateTime(o.respondBy, locale) : null)}
               {r ? (
                 <>
                   {row(t("fields.objective"), r.objective ? tc(`objectives.${r.objective}`) : null)}
@@ -124,46 +213,8 @@ export default async function OpportunityPage({ params }: Props) {
               </section>
             </>
           ) : null}
-          {!(execution && myDeliverables.length > 0) ? (
-            <section className={card} aria-labelledby="opp-deliverables">
-              <h3 id="opp-deliverables" className="text-base font-semibold text-fg">
-                {t("deliverablesTitle")}
-              </h3>
-              {o.deliverables.length === 0 ? (
-                <p className="type-body-sm text-fg-muted">{t("deliverablesNone")}</p>
-              ) : (
-                <ul className="flex flex-col divide-y divide-border">
-                  {o.deliverables.map((d) => (
-                    <li key={d.id} className="flex flex-wrap items-center gap-2 py-2">
-                      <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="text-sm font-medium text-fg">
-                          {tc(`deliverableKinds.${d.kind}`)}
-                          {d.network ? ` · ${tn(d.network)}` : ""}
-                          {d.title ? ` · ${d.title}` : ""}
-                        </span>
-                        <span className="type-caption text-fg-muted">
-                          {d.dueAt ? t("dueAt", { date: formatPlainDate(d.dueAt.slice(0, 10), locale) }) : ""}
-                          {d.brief ? ` · ${d.brief}` : ""}
-                        </span>
-                      </span>
-                      <DeliverableStatusBadge status={d.status as DeliverableStatus} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ) : null}
         </div>
         <div className="flex flex-col gap-5">
-          {fee !== null ? (
-            <section className={`${card} native:hidden`} aria-labelledby="opp-fee" data-testid="opportunity-fee">
-              <h3 id="opp-fee" className="text-base font-semibold text-fg">
-                {t("feeTitle")}
-              </h3>
-              <p className="font-mono text-xl font-semibold text-fg">{formatCents(fee, locale)}</p>
-              <p className="type-caption text-fg-muted">{t("feeHint")}</p>
-            </section>
-          ) : null}
           <section className={card} aria-labelledby="opp-messages">
             <h3 id="opp-messages" className="text-base font-semibold text-fg">
               {t("messagesTitle")}

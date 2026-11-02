@@ -301,7 +301,9 @@
     "finance_identity": "Los asientos no cierran: por cobrar debe ser igual a comisión más pagos.",
     "brand_inactive": "La marca todavía no está activa en el área social. Pide al administrador de la plataforma que la active.",
     "no_hero": "Este creator no tiene héroe vinculado en el área social; el patrocinio no tiene dónde aparecer.",
-    "reservation_expired": "La reserva de este archivo venció (más de 24 h). Sube el archivo de nuevo."
+    "reservation_expired": "La reserva de este archivo venció (más de 24 h). Sube el archivo de nuevo.",
+    "exclusivity_conflict": "Este creador tiene una exclusividad vigente que alcanza el negocio. Confirma para consultar de todos modos.",
+    "counteroffer_open": "Ya hay una contrapropuesta esperando respuesta."
   },
   "casting": {
     "title": "Casting",
@@ -566,7 +568,14 @@
     "noActivities": "Todavía no hay registros.",
     "noNote": "sin nota",
     "system": {
-      "briefing_received": "La marca envió la propuesta."
+      "briefing_received": "La marca envió la propuesta.",
+      "exclusivity_confirmed": "Consulta confirmada pese a la exclusividad vigente: {param}.",
+      "counteroffer_fee_accepted": "Contrapropuesta de valor aceptada ({param}).",
+      "counteroffer_fee_rejected": "Contrapropuesta de valor rechazada ({param}).",
+      "counteroffer_date_accepted": "Contrapropuesta de fecha aceptada ({param}).",
+      "counteroffer_date_rejected": "Contrapropuesta de fecha rechazada ({param}).",
+      "contract_confirmed": "Contratación confirmada.",
+      "deal_created": "Negocio creado."
     },
     "stageHint": "Mover de etapa es manual; volver pide una nota. Propuesta, confirmación y contrato tienen acción propia.",
     "form": {
@@ -796,8 +805,8 @@
     "summary": "Condiciones",
     "summaryHint": "Entregas, plazos, derechos de uso y lo acordado. Sin importes aquí.",
     "summaryShort": "Describe las condiciones con al menos 20 caracteres.",
-    "usageRights": "Derechos de uso",
-    "exclusivity": "Exclusividad",
+    "usageRights": "Observaciones sobre el uso",
+    "exclusivity": "Observaciones sobre la exclusividad",
     "validUntil": "Válidos hasta",
     "validUntilHint": "Opcional.",
     "saveDraft": "Guardar borrador",

@@ -315,7 +315,8 @@ export function buildBrandToday(wb: BrandWorkboard, now: Date, opts: { staleDraf
 
 // ---------------------------------------------------------------- "Hoje" do creator
 export type TdTask = { id: string; step: number | null; title: string; status: string; dueAt: string | null; feedback: string; dealId: string | null; dealTitle: string | null; brandName: string | null; dealTalentId: string | null };
-export type TdOffer = { dealTalentId: string; status: string; respondBy: string | null; consultedAt: string | null; dealTitle: string; brandName: string };
+/** counterStatus: última contraproposta do creator nesta consulta (0079), se houver (retirada não conta). */
+export type TdOffer = { dealTalentId: string; status: string; respondBy: string | null; consultedAt: string | null; dealTitle: string; brandName: string; counterStatus?: "open" | "accepted" | "rejected" | null };
 export type TdDeliverable = {
   id: string; dealTalentId: string; dealId: string; kind: string; network: string | null; title: string; status: DeliverableStatus;
   dueAt: string | null; publishAt: string | null; brandFeedback: string; decidedAt: string | null; dealTitle: string; brandName: string;
@@ -364,8 +365,9 @@ export function buildTalentToday(data: TalentTodayData, now: Date, opts: { soonD
       title: k.title, context: join(k.brandName, k.dealTitle), status: k.status, step: k.step });
   }
   for (const o of data.offers) {
+    // com contraproposta, o status vira counter_<situação> (a tela mostra "aguardando a agência", "aceita", "recusada")
     items.push({ ...base, key: `offer:${o.dealTalentId}`, kind: "offer", urgency: pick(urgencyOf(o.respondBy, now, tz, soon)), deadline: o.respondBy, since: o.consultedAt,
-      href: oppHref(o.dealTalentId), title: o.dealTitle, context: o.brandName, status: o.status });
+      href: oppHref(o.dealTalentId), title: o.dealTitle, context: o.brandName, status: o.counterStatus ? `counter_${o.counterStatus}` : o.status });
   }
   for (const m of data.terms) {
     items.push({ ...base, key: `terms:${m.termsId}:${m.dealTalentId}`, kind: "terms", urgency: pick(urgencyOfDay(m.validUntil, now, tz, soon)), deadline: m.validUntil, since: m.sentAt,

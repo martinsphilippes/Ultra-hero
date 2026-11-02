@@ -38,6 +38,7 @@ export async function TodayPanel<K extends string>({ portal, items, kinds, local
   const extra = (i: TodayItem<K>) => {
     if (i.kind === "terms" && i.status === "owner_only") return t("brand.termsOwnerOnly");
     if (i.status === "approved") return t("approvedToPublish");
+    if (i.kind === "offer" && (i.status === "counter_open" || i.status === "counter_accepted" || i.status === "counter_rejected")) return t(`talent.${i.status}`);
     return null;
   };
   const title = (i: TodayItem<K>) => (i.kind === "task" && i.step !== null ? tc(`taskSteps.${i.step}`) : i.title) || t("untitled");

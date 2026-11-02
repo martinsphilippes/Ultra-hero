@@ -301,7 +301,9 @@
     "finance_identity": "The entries do not add up: receivable must equal commission plus payouts.",
     "brand_inactive": "The brand is not active in the social area yet. Ask the platform administrator to activate it.",
     "no_hero": "This creator has no linked hero in the social area; the sponsorship has nowhere to appear.",
-    "reservation_expired": "This file reservation expired (over 24 h). Upload the file again."
+    "reservation_expired": "This file reservation expired (over 24 h). Upload the file again.",
+    "exclusivity_conflict": "This creator has an active exclusivity that covers the deal. Confirm to consult anyway.",
+    "counteroffer_open": "There is already a counteroffer waiting for a reply."
   },
   "casting": {
     "title": "Roster",
@@ -566,7 +568,14 @@
     "noActivities": "No entries yet.",
     "noNote": "no note",
     "system": {
-      "briefing_received": "The brand sent the proposal."
+      "briefing_received": "The brand sent the proposal.",
+      "exclusivity_confirmed": "Consultation confirmed despite active exclusivity: {param}.",
+      "counteroffer_fee_accepted": "Amount counteroffer accepted ({param}).",
+      "counteroffer_fee_rejected": "Amount counteroffer declined ({param}).",
+      "counteroffer_date_accepted": "Date counteroffer accepted ({param}).",
+      "counteroffer_date_rejected": "Date counteroffer declined ({param}).",
+      "contract_confirmed": "Hiring confirmed.",
+      "deal_created": "Deal created."
     },
     "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
     "form": {
@@ -796,8 +805,8 @@
     "summary": "Conditions",
     "summaryHint": "Deliverables, deadlines, usage rights and what was agreed. No amounts here.",
     "summaryShort": "Describe the conditions with at least 20 characters.",
-    "usageRights": "Usage rights",
-    "exclusivity": "Exclusivity",
+    "usageRights": "Notes on usage",
+    "exclusivity": "Notes on exclusivity",
     "validUntil": "Valid until",
     "validUntilHint": "Optional.",
     "saveDraft": "Save draft",

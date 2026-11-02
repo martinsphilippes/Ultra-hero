@@ -188,7 +188,9 @@ export async function consultTalentsAction(input: z.input<typeof consultSchema>)
   try {
     const supabase = await createClient();
     const respondBy = new Date(Date.now() + d.days * 86_400_000).toISOString();
-    const { data, error } = await supabase.rpc("agency_consult_talents", { p_deal: d.dealId, p_deal_talent_ids: d.dealTalentIds, p_respond_by: respondBy, p_message: d.message || undefined });
+    // exclusividade vigente (0079): sem confirmação o banco recusa (exclusivity_conflict); com ela, registra em activities
+    const args = { p_deal: d.dealId, p_deal_talent_ids: d.dealTalentIds, p_respond_by: respondBy, p_message: d.message || undefined };
+    const { data, error } = d.confirmConflicts ? await supabase.rpc("agency_consult_talents_confirmed", args) : await supabase.rpc("agency_consult_talents", args);
     if (error) return agencyFail(error);
     revalidateDeal(d.dealId);
     const t = await getTranslations("agency.deal");

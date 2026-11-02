@@ -10059,5 +10059,259 @@ delete from public.agencies where id = '85000000-0000-4000-8000-000000008501';
 delete from auth.users where id::text like '85000000-0000-4000-8000-00000000085%';
 drop table t_s85;
 
+-- ================================================================ S86 · Oferta, contraproposta, direitos e exclusividade (0079)
+-- Direitos de uso estruturados nos termos (agência grava, marca e creator leem os enviados); conflito de exclusividade
+-- (consulta recusa sem confirmação; confirmação vira atividade); contraproposta de valor (só o Adm lê o valor e
+-- decide) e de data (gestor+), uma aberta por vez, com histórico e avisos sem valor. Visitante e marca de fora.
+\ir ../migrations/0079_oferta_contraproposta_direitos.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('86000000-0000-4000-8000-000000000861', 's86-adm@test.local'),
+  ('86000000-0000-4000-8000-000000000862', 's86-gestor@test.local'),
+  ('86000000-0000-4000-8000-000000000863', 's86-colab@test.local'),
+  ('86000000-0000-4000-8000-000000000864', 's86-creator-1@test.local'),
+  ('86000000-0000-4000-8000-000000000865', 's86-creator-2@test.local'),
+  ('86000000-0000-4000-8000-000000000866', 's86-marca-a@test.local'),
+  ('86000000-0000-4000-8000-000000000867', 's86-comum@test.local');
+insert into public.agencies (id, slug, name) values ('86000000-0000-4000-8000-000000008601', 's86-agencia', 'Agência S86');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000000861', 'admin', 'Ana Adm S86'),
+  ('86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000000862', 'manager', 'Gil Gestor S86'),
+  ('86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000000863', 'staff', 'Caio Colab S86');
+insert into public.brands (id, slug, name, site_url) values
+  ('86000000-0000-4000-8000-000000008611', 's86-marca-alfa', 'Marca Álfa S86', 'https://alfa.s86.test'),
+  ('86000000-0000-4000-8000-000000008612', 's86-marca-beta', 'Marca Beta S86', 'https://beta.s86.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000008611'),
+  ('86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000008612');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('86000000-0000-4000-8000-000000008611', '86000000-0000-4000-8000-000000000866', 'owner', 'Dona Alfa');
+insert into public.talent_segments (id, agency_id, slug, name) values
+  ('86000000-0000-4000-8000-000000008691', '86000000-0000-4000-8000-000000008601', 's86-beleza', 'Beleza S86'),
+  ('86000000-0000-4000-8000-000000008692', '86000000-0000-4000-8000-000000008601', 's86-games', 'Games S86');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('86000000-0000-4000-8000-000000008621', '86000000-0000-4000-8000-000000008601', 'Creator Um S86', '86000000-0000-4000-8000-000000000864'),
+  ('86000000-0000-4000-8000-000000008622', '86000000-0000-4000-8000-000000008601', 'Creator Dois S86', '86000000-0000-4000-8000-000000000865');
+-- X: Beta em produção, creator 1 aceitou exclusividade de beleza (3 meses, Alfa citada como concorrente)
+-- W: Beta encerrado há muito, exclusividade do creator 2 já vencida
+-- Y: Alfa em elenco, beleza (creators 1 e 2 sugeridos, cachê definido); Z: Alfa aprovado, para os termos
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables) values
+  ('86000000-0000-4000-8000-000000008631', '86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000008611', 'brand', 'Campanha Z Alfa', 'converted', now() - interval '6 days', '[]');
+insert into public.deals (id, agency_id, brand_id, title, stage, outcome, brand_visible, segment_ids, expected_start, expected_end, owner_id) values
+  ('86000000-0000-4000-8000-000000008641', '86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000008612', 'Negócio X Beta', 'production', null, true, array['86000000-0000-4000-8000-000000008691']::uuid[], current_date - 5, current_date + 10, null),
+  ('86000000-0000-4000-8000-000000008644', '86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000008612', 'Negócio W Beta', 'closed', 'won', true, array['86000000-0000-4000-8000-000000008691']::uuid[], current_date - 300, current_date - 270, null),
+  ('86000000-0000-4000-8000-000000008642', '86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000008611', 'Negócio Y Alfa', 'shortlist', null, true, array['86000000-0000-4000-8000-000000008691']::uuid[], current_date + 20, current_date + 40, '86000000-0000-4000-8000-000000000863'),
+  ('86000000-0000-4000-8000-000000008643', '86000000-0000-4000-8000-000000008601', '86000000-0000-4000-8000-000000008611', 'Negócio Z Alfa', 'approved', null, true, '{}', null, null, null);
+update public.deals set request_id = '86000000-0000-4000-8000-000000008631' where id = '86000000-0000-4000-8000-000000008643';
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('86000000-0000-4000-8000-000000008651', '86000000-0000-4000-8000-000000008641', '86000000-0000-4000-8000-000000008621', 'contracted', now() - interval '20 days', true),
+  ('86000000-0000-4000-8000-000000008654', '86000000-0000-4000-8000-000000008644', '86000000-0000-4000-8000-000000008622', 'contracted', now() - interval '300 days', true),
+  ('86000000-0000-4000-8000-000000008652', '86000000-0000-4000-8000-000000008642', '86000000-0000-4000-8000-000000008621', 'suggested', null, true),
+  ('86000000-0000-4000-8000-000000008653', '86000000-0000-4000-8000-000000008642', '86000000-0000-4000-8000-000000008622', 'suggested', null, true),
+  ('86000000-0000-4000-8000-000000008655', '86000000-0000-4000-8000-000000008643', '86000000-0000-4000-8000-000000008622', 'proposed', now() - interval '3 days', true);
+insert into public.deal_talent_fees (deal_id, deal_talent_id, talent_id, fee_cents) values
+  ('86000000-0000-4000-8000-000000008642', '86000000-0000-4000-8000-000000008652', '86000000-0000-4000-8000-000000008621', 150000),
+  ('86000000-0000-4000-8000-000000008642', '86000000-0000-4000-8000-000000008653', '86000000-0000-4000-8000-000000008622', 90000);
+insert into public.deal_terms (id, deal_id, version, status, summary, sent_at, exclusive, exclusivity_months, competitor_brands) values
+  ('86000000-0000-4000-8000-000000008671', '86000000-0000-4000-8000-000000008641', 1, 'accepted', 'Dois reels de beleza com exclusividade por três meses.', now() - interval '15 days', true, 3, array['marca alfa s86']),
+  ('86000000-0000-4000-8000-000000008674', '86000000-0000-4000-8000-000000008644', 1, 'accepted', 'Um vídeo de beleza com exclusividade por três meses.', now() - interval '290 days', true, 3, '{}');
+insert into public.deal_acceptances (deal_id, terms_id, party, deal_talent_id, talent_id, method, accepted_at) values
+  ('86000000-0000-4000-8000-000000008641', '86000000-0000-4000-8000-000000008671', 'talent', '86000000-0000-4000-8000-000000008651', '86000000-0000-4000-8000-000000008621', 'in_app', now() - interval '14 days'),
+  ('86000000-0000-4000-8000-000000008644', '86000000-0000-4000-8000-000000008674', 'talent', '86000000-0000-4000-8000-000000008654', '86000000-0000-4000-8000-000000008622', 'in_app', now() - interval '290 days');
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, title, status, due_at, publish_at) values
+  ('86000000-0000-4000-8000-000000008661', '86000000-0000-4000-8000-000000008642', '86000000-0000-4000-8000-000000008652', 'reels', 'Reels Alfa S86', 'planned', now() + interval '25 days', now() + interval '27 days');
+create temp table t_s86 (k text primary key, v jsonb);
+grant all on t_s86 to anon, authenticated, service_role;
+
+select tests.ok('S86 estrutura: tabela com RLS, nada para visitante, funções internas fechadas, RPCs só para authenticated',
+  (select relrowsecurity from pg_class where oid = 'public.deal_counteroffers'::regclass)
+  and not has_table_privilege('anon', 'public.deal_counteroffers', 'select')
+  and not has_table_privilege('authenticated', 'public.deal_counteroffers', 'insert')
+  and not has_function_privilege('authenticated', 'public.exclusivity_conflicts(uuid, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.consult_talents_run(uuid, uuid[], timestamptz, text, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_terms_rights(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.talent_counteroffer_create(uuid, text, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_offer_state(uuid, uuid[])', 'execute')
+  and not has_function_privilege('anon', 'public.agency_consult_talents_confirmed(uuid, uuid[], timestamptz, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_counteroffer_decide(uuid, text, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.talent_offer_state(uuid)', 'execute'));
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S86 visitante não lê contrapropostas', $q$select count(*) from public.deal_counteroffers$q$, 'permission denied');
+select tests.expect_error('S86 visitante não propõe', $q$select public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'fee', '{"fee_cents": 1}')$q$, 'permission denied');
+
+-- direitos estruturados (gestor, negócio Z aprovado)
+select tests.login('86000000-0000-4000-8000-000000000862', 's86-gestor@test.local');
+select tests.expect_error('S86 exclusividade sem prazo é recusada',
+  $q$select public.agency_terms_save('86000000-0000-4000-8000-000000008643', '{"summary": "Um reels e três stories, aprovação em dois dias.", "rights": {"exclusive": true}}')$q$, 'invalid_input');
+select tests.expect_error('S86 canal desconhecido é recusado',
+  $q$select public.agency_terms_save('86000000-0000-4000-8000-000000008643', '{"summary": "Um reels e três stories, aprovação em dois dias.", "rights": {"channels": ["radio"]}}')$q$, 'invalid_input');
+select tests.expect_error('S86 segmento de outra agência é recusado',
+  $q$select public.agency_terms_save('86000000-0000-4000-8000-000000008643', '{"summary": "Um reels e três stories, aprovação em dois dias.", "rights": {"exclusive": true, "exclusivity_months": 2, "segment_ids": ["86000000-0000-4000-8000-000000009999"]}}')$q$, 'invalid_input');
+insert into t_s86 values ('terms', to_jsonb(public.agency_terms_save('86000000-0000-4000-8000-000000008643',
+  '{"summary": "Um reels e três stories, aprovação em dois dias.", "rights": {"channels": ["social", "paid_media", "social"], "usage_months": 6, "boost": true,
+    "exclusive": true, "exclusivity_months": 4, "category": "Cosméticos", "segment_ids": ["86000000-0000-4000-8000-000000008691"], "competitors": ["Marca Beta S86", " marca beta s86 ", "Outra S86"]}}')));
+select tests.ok('S86 rascunho grava canais sem repetir, prazo, impulsionamento e exclusividade com concorrentes sem duplicar',
+  (select usage_channels = array['paid_media', 'social'] and usage_months = 6 and boost_allowed and exclusive and exclusivity_months = 4
+     and exclusivity_category = 'Cosméticos' and competitor_brands = array['Marca Beta S86', 'Outra S86']
+   from public.deal_terms where id = (select (v #>> '{}')::uuid from t_s86 where k = 'terms')));
+select public.agency_terms_save('86000000-0000-4000-8000-000000008643', '{"summary": "Um reels e três stories, aprovação em dois dias.", "rights": {"channels": ["social"], "usage_months": 12, "perpetual": true}}');
+select tests.ok('S86 perpétuo zera o prazo e sem exclusividade os campos dela ficam vazios',
+  (select usage_perpetual and usage_months is null and not exclusive and exclusivity_months is null and competitor_brands = '{}' and exclusivity_category = ''
+   from public.deal_terms where id = (select (v #>> '{}')::uuid from t_s86 where k = 'terms')));
+select public.agency_terms_save('86000000-0000-4000-8000-000000008643', '{"summary": "Um reels e três stories, aprovação em dois dias.", "rights": {"channels": ["social", "website"], "usage_months": 6,
+    "exclusive": true, "exclusivity_months": 2, "segment_ids": ["86000000-0000-4000-8000-000000008691"], "competitors": ["Marca Beta S86"]}}');
+select public.agency_terms_save('86000000-0000-4000-8000-000000008643', '{"summary": "Um reels e três stories, aprovação em dois dias e uso orgânico."}');
+select tests.ok('S86 salvar sem "rights" mantém os direitos do rascunho',
+  (select usage_channels = array['social', 'website'] and exclusive and exclusivity_months = 2 from public.deal_terms where id = (select (v #>> '{}')::uuid from t_s86 where k = 'terms')));
+select public.agency_terms_send((select (v #>> '{}')::uuid from t_s86 where k = 'terms'));
+
+-- a marca lê os direitos dos termos enviados, com o nome do segmento
+select tests.login('86000000-0000-4000-8000-000000000866', 's86-marca-a@test.local');
+select tests.ok('S86 marca lê os direitos estruturados (canais, prazo, exclusividade com segmento e concorrente)',
+  (public.deal_execution('86000000-0000-4000-8000-000000008643') -> 'terms' -> 0 -> 'rights') @> '{"channels": ["social", "website"], "usage_months": 6, "exclusive": true, "exclusivity_months": 2, "segments": ["Beleza S86"], "competitors": ["Marca Beta S86"]}');
+select tests.ok('S86 marca não lê contrapropostas', (select count(*) from public.deal_counteroffers) = 0);
+
+-- conflito de exclusividade (negócio Y da Alfa, beleza): creator 1 pega (segmento e concorrente); creator 2 venceu
+select tests.login('86000000-0000-4000-8000-000000000863', 's86-colab@test.local');
+insert into t_s86 values ('state_staff', public.agency_offer_state('86000000-0000-4000-8000-000000008642', array['86000000-0000-4000-8000-000000008622']::uuid[]));
+select tests.ok('S86 colaborador do negócio vê o conflito só do creator 1 (segmento + concorrente), com marca e vigência',
+  jsonb_array_length((select v from t_s86 where k = 'state_staff') -> 'conflicts') = 1
+  and ((select v from t_s86 where k = 'state_staff') -> 'conflicts' -> 0 ->> 'talent_id') = '86000000-0000-4000-8000-000000008621'
+  and ((select v from t_s86 where k = 'state_staff') -> 'conflicts' -> 0 -> 'items' -> 0) @> '{"brand_name": "Marca Beta S86", "competitor": true, "segments": ["Beleza S86"]}'
+  and ((select v from t_s86 where k = 'state_staff') -> 'conflicts' -> 0 -> 'items' -> 0 ->> 'until')::date = current_date + 10 + interval '3 months'
+  and not ((select v from t_s86 where k = 'state_staff') ->> 'can_decide_date')::boolean);
+select tests.login('86000000-0000-4000-8000-000000000862', 's86-gestor@test.local');
+select tests.expect_error('S86 consultar creator com exclusividade vigente exige confirmação',
+  $q$select public.agency_consult_talents('86000000-0000-4000-8000-000000008642', array['86000000-0000-4000-8000-000000008652', '86000000-0000-4000-8000-000000008653']::uuid[], now() + interval '5 days', null)$q$, 'exclusivity_conflict');
+select tests.ok('S86 recusada sem confirmação: ninguém foi consultado',
+  (select count(*) from public.deal_talents where deal_id = '86000000-0000-4000-8000-000000008642' and status = 'consulted') = 0);
+select tests.ok('S86 consulta confirmada mesmo assim: 2 consultados',
+  public.agency_consult_talents_confirmed('86000000-0000-4000-8000-000000008642', array['86000000-0000-4000-8000-000000008652', '86000000-0000-4000-8000-000000008653']::uuid[], now() + interval '5 days', null) = 2);
+select tests.ok('S86 a confirmação fica em activities com o nome do creator em conflito',
+  exists (select 1 from public.activities where deal_id = '86000000-0000-4000-8000-000000008642' and kind = 'system' and body = 'exclusivity_confirmed|Creator Um S86'));
+
+-- creator 1: a oferta mostra o conflito e o que pode propor
+select tests.login('86000000-0000-4000-8000-000000000864', 's86-creator-1@test.local');
+insert into t_s86 values ('c1', public.talent_offer_state('86000000-0000-4000-8000-000000008652'));
+select tests.ok('S86 creator 1 vê o alerta de exclusividade na oferta e pode propor valor e data',
+  jsonb_array_length((select v from t_s86 where k = 'c1') -> 'conflicts') = 1
+  and ((select v from t_s86 where k = 'c1') ->> 'can_fee')::boolean and ((select v from t_s86 where k = 'c1') ->> 'can_date')::boolean
+  and jsonb_array_length((select v from t_s86 where k = 'c1') -> 'counteroffers') = 0);
+select tests.expect_error('S86 creator não lê a oferta de outro', $q$select public.talent_offer_state('86000000-0000-4000-8000-000000008653')$q$, 'not_found');
+select tests.expect_error('S86 outro valor exige justificativa',
+  $q$select public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'fee', '{"fee_cents": 200000}')$q$, 'note_required');
+select tests.expect_error('S86 mesmo valor do cachê é recusado',
+  $q$select public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'fee', '{"fee_cents": 150000, "reason": "Mesmo valor"}')$q$, 'invalid_input');
+insert into t_s86 values ('co_fee', to_jsonb(public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'fee', '{"fee_cents": 200000, "reason": "Dois reels pedem mais edição."}')));
+select tests.expect_error('S86 só uma contraproposta aberta por vez',
+  $q$select public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'date', jsonb_build_object('proposed_date', current_date + 30))$q$, 'counteroffer_open');
+select tests.ok('S86 creator lê a contraproposta dele com o valor', (select fee_cents = 200000 and previous_fee_cents = 150000 from public.deal_counteroffers where deal_talent_id = '86000000-0000-4000-8000-000000008652'));
+
+-- creator 2 não propõe pela oferta do outro nem lê a dele
+select tests.login('86000000-0000-4000-8000-000000000865', 's86-creator-2@test.local');
+select tests.expect_error('S86 creator 2 não propõe na oferta do creator 1',
+  $q$select public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'fee', '{"fee_cents": 1000, "reason": "Teste"}')$q$, 'not_found');
+select tests.ok('S86 creator 2 lê 0 contrapropostas do creator 1', (select count(*) from public.deal_counteroffers) = 0);
+select tests.ok('S86 creator 2: exclusividade vencida não gera alerta', jsonb_array_length(public.talent_offer_state('86000000-0000-4000-8000-000000008653') -> 'conflicts') = 0);
+
+-- agência: valor só para o Adm
+select tests.login('86000000-0000-4000-8000-000000000862', 's86-gestor@test.local');
+select tests.ok('S86 gestor não lê a linha de valor (RLS) e a leitura da oferta traz a contraproposta sem o número',
+  (select count(*) from public.deal_counteroffers) = 0
+  and (public.agency_offer_state('86000000-0000-4000-8000-000000008642') -> 'counteroffers' -> 0) @> '{"kind": "fee", "status": "open", "fee_cents": null}'
+  and not (public.agency_offer_state('86000000-0000-4000-8000-000000008642') ->> 'can_decide_fee')::boolean);
+select tests.ok('S86 gestor não recebeu aviso da contraproposta de valor',
+  not exists (select 1 from public.inbox_notifications where user_id = '86000000-0000-4000-8000-000000000862' and params ->> 'status' = 'counter_fee'));
+select tests.expect_error('S86 gestor não decide valor',
+  $q$select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_fee'), 'accepted', null)$q$, 'forbidden');
+select tests.login('86000000-0000-4000-8000-000000000861', 's86-adm@test.local');
+select tests.ok('S86 Adm lê o valor e recebeu o aviso (sem valor nos parâmetros)',
+  (public.agency_offer_state('86000000-0000-4000-8000-000000008642') -> 'counteroffers' -> 0 ->> 'fee_cents')::bigint = 200000
+  and (select count(*) from public.deal_counteroffers) = 1
+  and exists (select 1 from public.inbox_notifications where user_id = '86000000-0000-4000-8000-000000000861' and kind = 'opportunity_answered' and params ->> 'status' = 'counter_fee'
+              and params::text !~ '(200000|cents)'));
+select tests.expect_error('S86 recusar exige nota',
+  $q$select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_fee'), 'rejected', '')$q$, 'note_required');
+select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_fee'), 'accepted', null);
+select tests.ok('S86 aceitar o valor grava o cachê novo e registra o interesse do creator',
+  (select fee_cents from public.deal_talent_fees where deal_talent_id = '86000000-0000-4000-8000-000000008652') = 200000
+  and (select status = 'interested' and response_channel = 'app' from public.deal_talents where id = '86000000-0000-4000-8000-000000008652')
+  and (select status = 'accepted' and decided_by = '86000000-0000-4000-8000-000000000861' from public.deal_counteroffers where id = (select (v #>> '{}')::uuid from t_s86 where k = 'co_fee'))
+  and exists (select 1 from public.activities where deal_id = '86000000-0000-4000-8000-000000008642' and body = 'counteroffer_fee_accepted|Creator Um S86'));
+select tests.login('86000000-0000-4000-8000-000000000864', 's86-creator-1@test.local');
+select tests.ok('S86 o creator foi avisado do resultado',
+  exists (select 1 from public.inbox_notifications where user_id = '86000000-0000-4000-8000-000000000864' and kind = 'opportunity_updated' and params ->> 'status' = 'counter_accepted'));
+select tests.login('86000000-0000-4000-8000-000000000861', 's86-adm@test.local');
+select tests.expect_error('S86 decidir de novo não vale',
+  $q$select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_fee'), 'rejected', 'Mudou')$q$, 'invalid_state');
+
+-- outra data (entregável): recusa com nota, retirada, aceite que desloca o cronograma
+select tests.login('86000000-0000-4000-8000-000000000864', 's86-creator-1@test.local');
+insert into t_s86 values ('co_d1', to_jsonb(public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'date',
+  jsonb_build_object('proposed_date', current_date + 30, 'deliverable_id', '86000000-0000-4000-8000-000000008661', 'reason', 'Viagem na semana'))));
+select tests.login('86000000-0000-4000-8000-000000000863', 's86-colab@test.local');
+select tests.expect_error('S86 colaborador não decide data (gestor+)',
+  $q$select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_d1'), 'accepted', null)$q$, 'forbidden');
+select tests.ok('S86 colaborador dono do negócio lê a contraproposta de data e foi avisado',
+  (select count(*) from public.deal_counteroffers where kind = 'date') = 1
+  and exists (select 1 from public.inbox_notifications where user_id = '86000000-0000-4000-8000-000000000863' and params ->> 'status' = 'counter_date'));
+select tests.login('86000000-0000-4000-8000-000000000862', 's86-gestor@test.local');
+select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_d1'), 'rejected', 'A marca precisa nessa semana.');
+select tests.login('86000000-0000-4000-8000-000000000864', 's86-creator-1@test.local');
+select tests.ok('S86 creator vê a recusa com a nota no histórico',
+  (public.talent_offer_state('86000000-0000-4000-8000-000000008652') -> 'counteroffers') @> '[{"kind": "date", "status": "rejected", "decision_note": "A marca precisa nessa semana."}]'
+  and jsonb_array_length(public.talent_offer_state('86000000-0000-4000-8000-000000008652') -> 'counteroffers') = 2);
+insert into t_s86 values ('co_d2', to_jsonb(public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'date',
+  jsonb_build_object('proposed_date', current_date + 29, 'deliverable_id', '86000000-0000-4000-8000-000000008661'))));
+select public.talent_counteroffer_withdraw((select (v #>> '{}')::uuid from t_s86 where k = 'co_d2'));
+select tests.ok('S86 creator retira a contraproposta aberta', (select status from public.deal_counteroffers where id = (select (v #>> '{}')::uuid from t_s86 where k = 'co_d2')) = 'withdrawn');
+select tests.su();
+insert into t_s86 values ('pub_before', to_jsonb((select publish_at from public.deliverables where id = '86000000-0000-4000-8000-000000008661')));
+insert into t_s86 values ('ref_plus4', to_jsonb(public.deliverable_ref_date('86000000-0000-4000-8000-000000008661') + 4));
+select tests.login('86000000-0000-4000-8000-000000000864', 's86-creator-1@test.local');
+insert into t_s86 values ('co_d3', to_jsonb(public.talent_counteroffer_create('86000000-0000-4000-8000-000000008652', 'date',
+  jsonb_build_object('proposed_date', (select v #>> '{}' from t_s86 where k = 'ref_plus4'), 'deliverable_id', '86000000-0000-4000-8000-000000008661'))));
+select tests.login('86000000-0000-4000-8000-000000000862', 's86-gestor@test.local');
+select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_d3'), 'accepted', 'Combinado.');
+select tests.su();
+select tests.ok('S86 aceitar a data desloca publicação (e prazo) do entregável em 4 dias',
+  (select publish_at from public.deliverables where id = '86000000-0000-4000-8000-000000008661') = ((select v #>> '{}' from t_s86 where k = 'pub_before')::timestamptz + interval '4 days'));
+
+-- "Hoje" do creator 2: a consulta pendente mostra a contraproposta aberta
+select tests.login('86000000-0000-4000-8000-000000000865', 's86-creator-2@test.local');
+select public.talent_counteroffer_create('86000000-0000-4000-8000-000000008653', 'date', jsonb_build_object('proposed_date', current_date + 21, 'reason', 'Agenda cheia antes'));
+select tests.ok('S86 Hoje do creator 2: a oferta aparece com a contraproposta aberta',
+  (public.talent_today() -> 'offers') @> '[{"deal_talent_id": "86000000-0000-4000-8000-000000008653", "counter_status": "open"}]');
+-- depois da aprovação do negócio, outro valor não vale mais
+select tests.su();
+update public.deal_counteroffers set status = 'withdrawn' where deal_talent_id = '86000000-0000-4000-8000-000000008653' and status = 'open';
+update public.deals set stage = 'approved' where id = '86000000-0000-4000-8000-000000008642';
+select tests.login('86000000-0000-4000-8000-000000000865', 's86-creator-2@test.local');
+select tests.expect_error('S86 outro valor depois da aprovação não vale',
+  $q$select public.talent_counteroffer_create('86000000-0000-4000-8000-000000008653', 'fee', '{"fee_cents": 120000, "reason": "Tarde demais"}')$q$, 'invalid_state');
+
+-- conta comum e marca não decidem
+select tests.login('86000000-0000-4000-8000-000000000867', 's86-comum@test.local');
+select tests.expect_error('S86 conta comum não lê a oferta da agência', $q$select public.agency_offer_state('86000000-0000-4000-8000-000000008642')$q$, 'not_found');
+select tests.login('86000000-0000-4000-8000-000000000866', 's86-marca-a@test.local');
+select tests.expect_error('S86 marca não decide contraproposta',
+  $q$select public.agency_counteroffer_decide((select (v #>> '{}')::uuid from t_s86 where k = 'co_fee'), 'accepted', null)$q$, 'not_found');
+
+select tests.su();
+delete from public.deals where id::text like '86000000-%';
+delete from public.campaign_requests where id::text like '86000000-%';
+delete from public.talent_profiles where id::text like '86000000-%';
+delete from public.talent_segments where id::text like '86000000-%';
+delete from public.brand_members where brand_id in ('86000000-0000-4000-8000-000000008611', '86000000-0000-4000-8000-000000008612');
+delete from public.agency_brands where agency_id = '86000000-0000-4000-8000-000000008601';
+delete from public.brands where id in ('86000000-0000-4000-8000-000000008611', '86000000-0000-4000-8000-000000008612');
+delete from public.inbox_notifications where agency_id = '86000000-0000-4000-8000-000000008601';
+delete from public.agency_members where agency_id = '86000000-0000-4000-8000-000000008601';
+delete from public.agencies where id = '86000000-0000-4000-8000-000000008601';
+delete from auth.users where id::text like '86000000-0000-4000-8000-00000000086%';
+drop table t_s86;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

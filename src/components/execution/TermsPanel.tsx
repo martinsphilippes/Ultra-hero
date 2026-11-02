@@ -6,8 +6,11 @@ import { useState, useTransition, type FormEvent } from "react";
 import { Badge, Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
+import { RightsEditor } from "@/components/offer/RightsEditor";
+import { RightsView } from "@/components/offer/RightsView";
 import { acceptTermsAction, confirmContractAction, recordAcceptanceAction, saveTermsAction, sendTermsAction, withdrawTermsAction } from "@/lib/execution/actions";
 import type { Terms } from "@/lib/execution/queries";
+import { EMPTY_RIGHTS, rightsIssue } from "@/lib/offer/rights";
 
 type Portal = "agency" | "brand" | "office";
 type Props = {
@@ -24,14 +27,17 @@ type Props = {
   talents?: { dealTalentId: string; name: string; hasLogin: boolean }[];
   /** Marca: só o dono aceita. */
   canAccept?: boolean;
+  /** Agência: segmentos do casting (exclusividade por segmento). */
+  segments?: { id: string; name: string }[];
 };
 
 const STATUS_VARIANT = { draft: "neutral", sent: "warning", accepted: "success", superseded: "neutral", withdrawn: "neutral" } as const;
 
 // Termos demonstrativos: resumo de condições por versão, envio, aceites por parte e contratação confirmada.
 // O aceite NÃO é assinatura eletrônica: fica registrado quem aceitou, quando e por onde (no app ou pela agência).
-export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, terms, canEdit = false, isManager = false, talents = [], canAccept = false }: Props) {
+export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, terms, canEdit = false, isManager = false, talents = [], canAccept = false, segments = [] }: Props) {
   const t = useTranslations("commercial.terms");
+  const tr = useTranslations("offer.rights");
   const ta = useTranslations("agency.terms");
   const locale = useLocale() as Locale;
   const { toast } = useToast();
@@ -86,6 +92,12 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
         <div>
           <dt className="type-caption text-fg-muted">{t("summary")}</dt>
           <dd className="whitespace-pre-wrap">{x.summary || "—"}</dd>
+        </div>
+        <div className="flex flex-col gap-1 rounded-xl bg-surface-hover/40 p-3" data-testid="terms-rights">
+          <dt className="text-xs font-semibold text-fg">{tr("title")}</dt>
+          <dd>
+            <RightsView rights={x.rights} />
+          </dd>
         </div>
         {x.usageRights ? (
           <div>
@@ -142,7 +154,7 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
       {portal === "agency" ? (
         <>
           {draft ? block(draft, t("draftLabel", { n: draft.version })) : null}
-          {canWrite ? <TermsForm dealId={dealId} initial={draft ?? live ?? null} draftId={draft?.id ?? null} /> : null}
+          {canWrite ? <TermsForm dealId={dealId} initial={draft ?? live ?? null} draftId={draft?.id ?? null} segments={segments} /> : null}
           {canWrite && isManager && draft ? (
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" leadingIcon={<Send />} onClick={() => send(draft.id)} loading={pending} data-testid="terms-send">
@@ -205,8 +217,10 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
   );
 }
 
-function TermsForm({ dealId, initial, draftId }: { dealId: string; initial: Terms | null; draftId: string | null }) {
+function TermsForm({ dealId, initial, draftId, segments }: { dealId: string; initial: Terms | null; draftId: string | null; segments: { id: string; name: string }[] }) {
   const ta = useTranslations("agency.terms");
+  const te = useTranslations("offer.editor");
+  const [rights, setRights] = useState(initial?.rights ?? EMPTY_RIGHTS);
   const { toast } = useToast();
   const [v, setV] = useState({ summary: initial?.summary ?? "", usageRights: initial?.usageRights ?? "", exclusivity: initial?.exclusivity ?? "", validUntil: initial?.validUntil ?? "" });
   const [error, setError] = useState<string | null>(null);
@@ -215,8 +229,10 @@ function TermsForm({ dealId, initial, draftId }: { dealId: string; initial: Term
     event.preventDefault();
     setError(null);
     if (v.summary.trim().length < 20) return setError(ta("summaryShort"));
+    const issue = rightsIssue(rights);
+    if (issue) return setError(te(`issues.${issue}`));
     start(async () => {
-      const result = await saveTermsAction({ dealId, ...v });
+      const result = await saveTermsAction({ dealId, ...v, rights: { ...rights, category: rights.category.trim() } });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
     });
@@ -227,6 +243,7 @@ function TermsForm({ dealId, initial, draftId }: { dealId: string; initial: Term
       <FormField label={ta("summary")} hint={ta("summaryHint")} required>
         <Textarea value={v.summary} maxLength={4000} rows={5} onChange={(e) => setV({ ...v, summary: e.target.value })} disabled={pending} />
       </FormField>
+      <RightsEditor value={rights} onChange={setRights} segments={segments} disabled={pending} />
       <div className="grid gap-3 sm:grid-cols-2">
         <FormField label={ta("usageRights")}>
           <Textarea value={v.usageRights} maxLength={1000} rows={2} onChange={(e) => setV({ ...v, usageRights: e.target.value })} disabled={pending} />

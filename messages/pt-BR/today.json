@@ -57,7 +57,10 @@
       "offer": "Ofertas",
       "deliverable": "Entregas",
       "task": "Tarefas"
-    }
+    },
+    "counter_open": "Contraproposta aguardando a agência",
+    "counter_accepted": "Contraproposta aceita",
+    "counter_rejected": "Contraproposta recusada"
   },
   "board": {
     "title": "Ações por etapa",

@@ -111,7 +111,8 @@
     "invalid_state": "Esta oportunidade já foi respondida ou encerrada.",
     "invalid_stage": "Esta campanha já foi encerrada.",
     "file_missing": "Anexe o arquivo (link ou documento) para concluir.",
-    "invalid_url": "Informe um link https válido."
+    "invalid_url": "Informe um link https válido.",
+    "counteroffer_open": "Você já tem uma contraproposta aguardando a agência."
   },
   "values": {
     "demoLockedKit": "Agência de demonstração: o link público fica desligado (só a prévia)."
@@ -161,12 +162,12 @@
     },
     "respond": {
       "title": "Sua resposta",
-      "hint": "Diga se tem interesse, se quer conversar antes ou se não tem interesse (com o motivo).",
+      "hint": "Aceite, recuse (com o motivo), peça uma conversa ou faça uma contraproposta de data ou de valor.",
       "note": "Observação",
       "noteHint": "Obrigatória ao recusar. Ajuda a agência a propor algo melhor.",
-      "interested": "Tenho interesse",
+      "interested": "Aceitar",
       "talk": "Quero conversar",
-      "declined": "Não tenho interesse",
+      "declined": "Recusar",
       "legal": "Responder não é vínculo contratual. Contrato e condições são combinados com a agência.",
       "reasonRequired": "Conte o motivo (pelo menos 3 caracteres)."
     }

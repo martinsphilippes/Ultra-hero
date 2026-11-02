@@ -7,6 +7,8 @@ import {
 import { SponsorshipButton } from "@/components/finance/SponsorshipButton";
 import { getRequest, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import type { Reason } from "@/lib/deals/vocab";
+import { groupByDealTalent } from "@/lib/offer/counteroffer";
+import { getAgencyOfferState } from "@/lib/offer/queries";
 import { listTalents } from "@/lib/talent/queries";
 import { createClient } from "@/lib/supabase/server";
 import { loadDeal } from "../_lib";
@@ -102,6 +104,9 @@ export default async function DealTalentsPage({ params }: Props) {
         : Promise.resolve({ data: [] as { id: string; title: string }[] }),
     ]);
   const segmentNames = new Map((segmentRows ?? []).map((s) => [s.id, s.name]));
+  // contrapropostas e exclusividade vigente (0079): dos creators do negócio e dos candidatos do casting
+  const offerState = await getAgencyOfferState(deal.id, casting.items.map((c) => c.id));
+  const offer = offerState.data;
   const networksByTalent = new Map<string, Set<string>>();
   for (const n of networkRows ?? []) {
     if (!networksByTalent.has(n.talent_id))
@@ -143,6 +148,10 @@ export default async function DealTalentsPage({ params }: Props) {
         canEdit={canEdit}
         isAdmin={isAdmin}
         documents={docs ?? []}
+        conflicts={offer?.conflicts ?? {}}
+        counteroffers={groupByDealTalent(offer?.counteroffers ?? [])}
+        canDecideFee={offer?.canDecideFee ?? false}
+        canDecideDate={offer?.canDecideDate ?? false}
       />
       {sponsorable.length > 0 ? (
         <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="deal-sponsorship" data-testid="deal-sponsorship">

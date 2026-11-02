@@ -121,7 +121,7 @@ export const deliverableItemSchema = z.object({
 export const deliverablesSchema = z.object({ dealId: uuid, items: z.array(deliverableItemSchema).max(60) });
 export type DeliverableItemInput = z.input<typeof deliverableItemSchema>;
 
-export const consultSchema = z.object({ dealId: uuid, dealTalentIds: z.array(uuid).min(1).max(30), days: z.number().int().min(1).max(30), message: z.string().trim().max(2000) });
+export const consultSchema = z.object({ dealId: uuid, dealTalentIds: z.array(uuid).min(1).max(30), days: z.number().int().min(1).max(30), message: z.string().trim().max(2000), confirmConflicts: z.boolean().optional() });
 export const respondSchema = z.object({ dealTalentId: uuid, response: z.enum(TALENT_RESPONSES), note: z.string().trim().max(500) });
 export const recordResponseSchema = z.object({ dealTalentId: uuid, response: z.enum(TALENT_RESPONSES), note: z.string().trim().min(5).max(500) });
 export const feeSchema = z.object({ dealTalentId: uuid, feeCents: z.number().int().min(0).max(10_000_000_000) });

@@ -26,6 +26,9 @@ export const AGENCY_ERROR_CODES = [
   // execução (0068)
   "terms_missing",
   "acceptance_missing",
+  // oferta e contraproposta (0079)
+  "exclusivity_conflict",
+  "counteroffer_open",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

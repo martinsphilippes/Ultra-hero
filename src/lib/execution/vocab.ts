@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DELIVERABLE_STATUSES, type DeliverableStatus } from "@/lib/deals/vocab";
+import { MAX_COMPETITORS, MAX_EXCLUSIVITY_MONTHS, MAX_EXCLUSIVITY_SEGMENTS, MAX_USAGE_MONTHS, USAGE_CHANNELS } from "@/lib/offer/rights";
 
 // Execução (0068): listas fechadas iguais aos checks do banco e formas dos formulários.
 export const TASK_STATUSES = ["todo", "doing", "blocked", "done", "cancelled"] as const;
@@ -26,7 +27,20 @@ const uuid = z.uuid();
 const httpsUrl = z.string().trim().url().max(500).refine((u) => u.startsWith("https://"), "https");
 const optionalUrl = z.union([z.literal(""), httpsUrl]);
 
-export const termsSchema = z.object({ dealId: uuid, summary: z.string().trim().min(20).max(4000), usageRights: z.string().trim().max(1000), exclusivity: z.string().trim().max(1000), validUntil: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]) });
+// direitos estruturados (0079): o banco confere de novo canais, prazos e segmentos
+export const rightsSchema = z.object({
+  channels: z.array(z.enum(USAGE_CHANNELS)).max(USAGE_CHANNELS.length),
+  usageMonths: z.number().int().min(1).max(MAX_USAGE_MONTHS).nullable(),
+  perpetual: z.boolean(),
+  boost: z.boolean(),
+  exclusive: z.boolean(),
+  segmentIds: z.array(uuid).max(MAX_EXCLUSIVITY_SEGMENTS),
+  segments: z.array(z.string()).max(50),
+  category: z.string().trim().max(120),
+  competitors: z.array(z.string().trim().min(2).max(80)).max(MAX_COMPETITORS),
+  exclusivityMonths: z.number().int().min(1).max(MAX_EXCLUSIVITY_MONTHS).nullable(),
+});
+export const termsSchema = z.object({ dealId: uuid, summary: z.string().trim().min(20).max(4000), usageRights: z.string().trim().max(1000), exclusivity: z.string().trim().max(1000), validUntil: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]), rights: rightsSchema.optional() });
 export const acceptSchema = z.object({ termsId: uuid, note: z.string().trim().max(500) });
 export const recordAcceptanceSchema = z.object({ termsId: uuid, party: z.enum(["brand", "talent"]), dealTalentId: z.union([z.literal(""), uuid]), documentId: z.union([z.literal(""), uuid]), note: z.string().trim().min(5).max(500) });
 export const taskSaveSchema = z.object({

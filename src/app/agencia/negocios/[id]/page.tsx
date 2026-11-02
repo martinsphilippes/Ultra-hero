@@ -10,6 +10,7 @@ import { formatDateTime } from "@/i18n/format";
 import { listTeam } from "@/lib/agency/queries";
 import { listDealEvents } from "@/lib/calendar/queries";
 import { getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
+import { splitSystemBody } from "@/lib/deals/vocab";
 import { agencyRates, dealEntries } from "@/lib/finance/queries";
 import { loadDeal } from "./_lib";
 
@@ -84,7 +85,7 @@ export default async function DealOverviewPage({ params }: Props) {
                   <span className="type-caption text-fg-muted">
                     {formatDateTime(a.occurredAt, locale)} · {tc(`activityKinds.${a.kind}`)} · {a.authorLabel}
                   </span>
-                  <span className="text-sm text-fg">{a.kind === "system" ? t(`system.${a.body}`) : a.body || t("noNote")}</span>
+                  <span className="text-sm text-fg">{a.kind === "system" ? t(`system.${splitSystemBody(a.body).code}`, { param: splitSystemBody(a.body).param }) : a.body || t("noNote")}</span>
                 </li>
               ))}
             </ol>

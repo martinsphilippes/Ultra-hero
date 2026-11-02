@@ -68,7 +68,15 @@ export function toTalentToday(data: unknown): TalentTodayData | null {
       brandName: str(t.brand_name),
       dealTalentId: str(t.deal_talent_id),
     })),
-    offers: arr(k.offers).map((o) => ({ dealTalentId: text(o.deal_talent_id), status: text(o.status), respondBy: str(o.respond_by), consultedAt: str(o.consulted_at), dealTitle: text(o.deal_title), brandName: text(o.brand_name) })),
+    offers: arr(k.offers).map((o) => ({
+      dealTalentId: text(o.deal_talent_id),
+      status: text(o.status),
+      respondBy: str(o.respond_by),
+      consultedAt: str(o.consulted_at),
+      dealTitle: text(o.deal_title),
+      brandName: text(o.brand_name),
+      counterStatus: o.counter_status === "open" || o.counter_status === "accepted" || o.counter_status === "rejected" ? o.counter_status : null,
+    })),
     deliverables: arr(k.deliverables).map((d) => ({
       id: text(d.id),
       dealTalentId: text(d.deal_talent_id),

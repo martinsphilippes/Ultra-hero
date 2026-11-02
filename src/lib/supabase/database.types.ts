@@ -7014,6 +7014,119 @@ export type Database = {
           },
         ];
       };
+      deal_counteroffers: {
+        Row: {
+          agency_id: string;
+          brand_id: string;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          deal_talent_id: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          decision_note: string;
+          deliverable_id: string | null;
+          fee_cents: number | null;
+          id: string;
+          kind: string;
+          previous_date: string | null;
+          previous_fee_cents: number | null;
+          proposed_date: string | null;
+          reason: string;
+          status: string;
+          talent_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          brand_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id: string;
+          deal_talent_id: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string;
+          deliverable_id?: string | null;
+          fee_cents?: number | null;
+          id?: string;
+          kind: string;
+          previous_date?: string | null;
+          previous_fee_cents?: number | null;
+          proposed_date?: string | null;
+          reason?: string;
+          status?: string;
+          talent_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          brand_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string;
+          deal_talent_id?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string;
+          deliverable_id?: string | null;
+          fee_cents?: number | null;
+          id?: string;
+          kind?: string;
+          previous_date?: string | null;
+          previous_fee_cents?: number | null;
+          proposed_date?: string | null;
+          reason?: string;
+          status?: string;
+          talent_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_counteroffers_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_counteroffers_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_counteroffers_deal_fk";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_counteroffers_deal_talent_fk";
+            columns: ["deal_talent_id"];
+            isOneToOne: false;
+            referencedRelation: "deal_talents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_counteroffers_deliverable_fk";
+            columns: ["deliverable_id"];
+            isOneToOne: false;
+            referencedRelation: "deliverables";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_counteroffers_talent_fk";
+            columns: ["talent_id"];
+            isOneToOne: false;
+            referencedRelation: "talent_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       deal_messages: {
         Row: {
           agency_id: string;
@@ -7376,6 +7489,15 @@ export type Database = {
       deal_terms: {
         Row: {
           agency_id: string;
+          boost_allowed: boolean;
+          competitor_brands: string[];
+          exclusive: boolean;
+          exclusivity_category: string;
+          exclusivity_months: number | null;
+          exclusivity_segment_ids: string[];
+          usage_channels: string[];
+          usage_months: number | null;
+          usage_perpetual: boolean;
           brand_id: string;
           created_at: string;
           created_by: string | null;
@@ -7394,6 +7516,15 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           agency_id: string;
+          boost_allowed?: boolean;
+          competitor_brands?: string[];
+          exclusive?: boolean;
+          exclusivity_category?: string;
+          exclusivity_months?: number | null;
+          exclusivity_segment_ids?: string[];
+          usage_channels?: string[];
+          usage_months?: number | null;
+          usage_perpetual?: boolean;
           brand_id: string;
           created_at?: string;
           created_by?: string | null;
@@ -7411,6 +7542,15 @@ export type Database = {
         };
         Update: {
           agency_id?: string;
+          boost_allowed?: boolean;
+          competitor_brands?: string[];
+          exclusive?: boolean;
+          exclusivity_category?: string;
+          exclusivity_months?: number | null;
+          exclusivity_segment_ids?: string[];
+          usage_channels?: string[];
+          usage_months?: number | null;
+          usage_perpetual?: boolean;
           brand_id?: string;
           created_at?: string;
           created_by?: string | null;
@@ -7990,6 +8130,13 @@ isOneToOne: false
       brand_dashboard: { Args: { p_brand: string }; Returns: Json };
       brand_workboard: { Args: { p_brand: string }; Returns: Json };
       talent_today: { Args: Record<PropertyKey, never>; Returns: Json };
+      talent_offer_state: { Args: { p_deal_talent: string }; Returns: Json };
+      agency_offer_state: { Args: { p_deal: string; p_talent_ids?: string[] }; Returns: Json };
+      talent_counteroffer_create: { Args: { p_deal_talent: string; p_kind: string; p_data: Json }; Returns: string };
+      talent_counteroffer_withdraw: { Args: { p_id: string }; Returns: undefined };
+      agency_counteroffer_decide: { Args: { p_id: string; p_decision: string; p_note?: string }; Returns: undefined };
+      agency_consult_talents_confirmed: { Args: { p_deal: string; p_deal_talent_ids: string[]; p_respond_by: string; p_message?: string }; Returns: number };
+      deal_terms_names_ok: { Args: { p: string[] }; Returns: boolean };
       agency_dashboard: { Args: { p_agency: string }; Returns: Json };
       agency_finance_summary: { Args: { p_agency: string }; Returns: Json };
       agency_deal_rate_set: {
