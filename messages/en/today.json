@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "board": "Actions by stage"
+  },
+  "count": "{count, plural, =0 {nothing pending} one {# pending item} other {# pending items}}",
+  "byKind": "Pending items by type",
+  "more": "Show {count} more",
+  "deadline": "Due: {date}",
+  "respondBy": "Reply by {date}",
+  "waitingSince": "Waiting · {ago}",
+  "approvedToPublish": "Approved, not published yet",
+  "untitled": "Untitled",
+  "urgency": {
+    "overdue": "Overdue",
+    "today": "Today",
+    "soon": "Next days",
+    "waiting": "Waiting"
+  },
+  "brand": {
+    "title": "Waiting on me today",
+    "hint": "What needs a decision from the brand, most urgent first.",
+    "empty": "Nothing is waiting on the brand right now.",
+    "termsOwnerOnly": "Only the brand owner can accept",
+    "kinds": {
+      "approval": "Approve delivery",
+      "script": "Approve script",
+      "terms": "Accept terms",
+      "message": "Reply to the agency",
+      "deadline": "Delivery deadline",
+      "draft": "Stalled draft"
+    },
+    "kindsShort": {
+      "approval": "Approvals",
+      "script": "Scripts",
+      "terms": "Terms",
+      "message": "Messages",
+      "deadline": "Deadlines",
+      "draft": "Drafts"
+    }
+  },
+  "talent": {
+    "title": "Today",
+    "hint": "What depends on you, most urgent first.",
+    "empty": "Nothing pending with you right now.",
+    "kinds": {
+      "adjustment": "Changes requested",
+      "scriptAdjustment": "Script changes",
+      "terms": "Accept terms",
+      "offer": "Reply to offer",
+      "deliverable": "Upcoming delivery",
+      "task": "Task"
+    },
+    "kindsShort": {
+      "adjustment": "Changes",
+      "scriptAdjustment": "Scripts",
+      "terms": "Terms",
+      "offer": "Offers",
+      "deliverable": "Deliveries",
+      "task": "Tasks"
+    }
+  },
+  "board": {
+    "title": "Actions by stage",
+    "description": "Every deliverable from every creator, across all campaigns.",
+    "seeBoard": "Open board",
+    "tabsLabel": "Stages",
+    "unavailable": "The board is not available yet.",
+    "empty": "Nothing in this stage.",
+    "emptyAll": "No actions yet. Send a proposal to get started.",
+    "untitled": "Untitled campaign",
+    "requested": "{count, plural, one {# deliverable requested} other {# deliverables requested}}",
+    "sentAt": "Sent on {date}",
+    "dateLabel": "Due: {date}",
+    "noDeliverables": "Deliverables not defined yet",
+    "stages": {
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "creating": "In creation",
+      "awaiting": "Awaiting approval",
+      "published": "Published"
+    },
+    "stageHints": {
+      "sent": "Proposal sent, waiting on the agency and the creator.",
+      "accepted": "The creator accepted; production has not started.",
+      "creating": "In production, with changes requested or approved to publish.",
+      "awaiting": "A version was sent and is waiting for your approval.",
+      "published": "Published or proven."
+    }
+  }
+}

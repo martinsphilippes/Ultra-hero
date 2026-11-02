@@ -9880,5 +9880,184 @@ delete from public.role_assignments where user_id in ('84000000-0000-4000-8000-0
 delete from public.agencies where id in ('84000000-0000-4000-8000-000000008401', '84000000-0000-4000-8000-000000008402');
 delete from auth.users where id in ('84000000-0000-4000-8000-000000000841', '84000000-0000-4000-8000-000000000842');
 
+-- ================================================================ S85 · "Hoje" e painel de ações por etapa (0078)
+-- Marca A (dono e equipe) vê só as campanhas, creators e entregáveis dela que já lhe foram mostrados; a marca B
+-- não lê a A (e vice-versa); o creator vê só os próprios pendentes; visitante e conta comum ficam de fora.
+-- Nenhum valor sai das duas leituras.
+\ir ../migrations/0078_hoje_painel_etapas.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('85000000-0000-4000-8000-000000000851', 's85-marca-a-dono@test.local'),
+  ('85000000-0000-4000-8000-000000000852', 's85-marca-a-equipe@test.local'),
+  ('85000000-0000-4000-8000-000000000853', 's85-marca-b-dono@test.local'),
+  ('85000000-0000-4000-8000-000000000854', 's85-creator-1@test.local'),
+  ('85000000-0000-4000-8000-000000000855', 's85-creator-2@test.local'),
+  ('85000000-0000-4000-8000-000000000856', 's85-comum@test.local');
+insert into public.agencies (id, slug, name) values ('85000000-0000-4000-8000-000000008501', 's85-agencia', 'Agência S85');
+insert into public.brands (id, slug, name, site_url) values
+  ('85000000-0000-4000-8000-000000008511', 's85-marca-a', 'Marca A S85', 'https://a.s85.test'),
+  ('85000000-0000-4000-8000-000000008512', 's85-marca-b', 'Marca B S85', 'https://b.s85.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511'),
+  ('85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008512');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000000851', 'owner', 'Dono A'),
+  ('85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000000852', 'staff', 'Equipe A'),
+  ('85000000-0000-4000-8000-000000008512', '85000000-0000-4000-8000-000000000853', 'owner', 'Dono B');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('85000000-0000-4000-8000-000000008521', '85000000-0000-4000-8000-000000008501', 'Creator Um S85', '85000000-0000-4000-8000-000000000854'),
+  ('85000000-0000-4000-8000-000000008522', '85000000-0000-4000-8000-000000008501', 'Creator Dois S85', '85000000-0000-4000-8000-000000000855');
+-- pedidos: A1 em produção, A2 enviado (sem creator visível), A3 rascunho parado, A4 em contratação (termos),
+-- A5 aberto pela agência e ainda invisível à marca, B1 da marca B em produção
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables, updated_at) values
+  ('85000000-0000-4000-8000-000000008531', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', 'brand', 'Campanha A1', 'converted', now() - interval '20 days', '[{"kind": "reels", "quantity": 2}]', now() - interval '20 days'),
+  ('85000000-0000-4000-8000-000000008532', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', 'brand', 'Campanha A2', 'converted', now() - interval '1 day', '[{"kind": "post", "quantity": 1}, {"kind": "stories", "quantity": 3}]', now() - interval '1 day'),
+  ('85000000-0000-4000-8000-000000008533', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', 'brand', 'Campanha A3', 'draft', null, '[]', now() - interval '10 days'),
+  ('85000000-0000-4000-8000-000000008534', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', 'brand', 'Campanha A4', 'converted', now() - interval '5 days', '[]', now() - interval '5 days'),
+  ('85000000-0000-4000-8000-000000008536', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', 'agency', 'Campanha A5 interna', 'converted', now() - interval '2 days', '[]', now() - interval '2 days'),
+  ('85000000-0000-4000-8000-000000008535', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008512', 'brand', 'Campanha B1', 'converted', now() - interval '9 days', '[]', now() - interval '9 days');
+insert into public.deals (id, agency_id, brand_id, request_id, title, stage, brand_visible) values
+  ('85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000008531', 'Negócio A1', 'production', true),
+  ('85000000-0000-4000-8000-000000008542', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000008532', 'Negócio A2', 'consultation', true),
+  ('85000000-0000-4000-8000-000000008543', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000008534', 'Negócio A4', 'contracting', true),
+  ('85000000-0000-4000-8000-000000008546', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000008536', 'Negócio A5 interno', 'production', false),
+  ('85000000-0000-4000-8000-000000008545', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008512', '85000000-0000-4000-8000-000000008535', 'Negócio B1', 'production', true);
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, respond_by) values
+  ('85000000-0000-4000-8000-000000008551', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008521', 'contracted', now() - interval '19 days', null),
+  ('85000000-0000-4000-8000-000000008552', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008522', 'contracted', now() - interval '19 days', null),
+  ('85000000-0000-4000-8000-000000008553', '85000000-0000-4000-8000-000000008542', '85000000-0000-4000-8000-000000008521', 'consulted', now() - interval '1 hour', now() + interval '1 day'),
+  ('85000000-0000-4000-8000-000000008554', '85000000-0000-4000-8000-000000008543', '85000000-0000-4000-8000-000000008521', 'proposed', now() - interval '4 days', null),
+  ('85000000-0000-4000-8000-000000008556', '85000000-0000-4000-8000-000000008546', '85000000-0000-4000-8000-000000008522', 'contracted', now() - interval '2 days', null),
+  ('85000000-0000-4000-8000-000000008555', '85000000-0000-4000-8000-000000008545', '85000000-0000-4000-8000-000000008522', 'contracted', now() - interval '8 days', null);
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, title, status, due_at, publish_at, submitted_at) values
+  ('85000000-0000-4000-8000-000000008561', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008551', 'reels', 'Reels 1', 'submitted', now() + interval '5 days', null, now() - interval '3 hours'),
+  ('85000000-0000-4000-8000-000000008562', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008551', 'reels', 'Reels 2', 'changes_requested', null, now() + interval '1 day', now() - interval '2 days'),
+  ('85000000-0000-4000-8000-000000008563', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008552', 'post', 'Post publicado', 'published', null, null, now() - interval '9 days'),
+  ('85000000-0000-4000-8000-000000008564', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008552', 'stories', 'Stories atrasado', 'in_production', now() - interval '1 day', null, null),
+  ('85000000-0000-4000-8000-000000008566', '85000000-0000-4000-8000-000000008546', '85000000-0000-4000-8000-000000008556', 'post', 'Post interno', 'submitted', null, null, now()),
+  ('85000000-0000-4000-8000-000000008565', '85000000-0000-4000-8000-000000008545', '85000000-0000-4000-8000-000000008555', 'video', 'Vídeo B', 'submitted', null, null, now());
+update public.deliverables set brand_feedback = 'Trocar a trilha, por favor.' where id = '85000000-0000-4000-8000-000000008562';
+insert into public.deal_terms (id, deal_id, version, status, summary, sent_at) values
+  ('85000000-0000-4000-8000-000000008571', '85000000-0000-4000-8000-000000008543', 1, 'sent', 'Um reels com aprovação em dois dias úteis e uso orgânico.', now() - interval '2 days');
+insert into public.deal_messages (deal_id, channel, author_side, author_label, body, created_at, talent_id) values
+  ('85000000-0000-4000-8000-000000008541', 'brand_agency', 'brand', 'Dono A', 'Tudo certo por aqui?', now() - interval '2 days', null),
+  ('85000000-0000-4000-8000-000000008541', 'brand_agency', 'agency', 'Agência S85', 'Pode confirmar a data de publicação?', now() - interval '1 day', null),
+  ('85000000-0000-4000-8000-000000008543', 'brand_agency', 'agency', 'Agência S85', 'Termos enviados.', now() - interval '2 days', null),
+  ('85000000-0000-4000-8000-000000008543', 'brand_agency', 'brand', 'Dono A', 'Vamos ler.', now() - interval '1 day', null),
+  ('85000000-0000-4000-8000-000000008541', 'talent_agency', 'agency', 'Agência S85', 'Lembrete do roteiro.', now(), '85000000-0000-4000-8000-000000008521');
+insert into public.tasks (id, agency_id, deal_id, talent_id, template_step, title, side, status, due_at, attachment_url) values
+  ('85000000-0000-4000-8000-000000008581', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008521', null, 'Gravar bastidores S85', 'talent', 'todo', now() - interval '2 hours', null),
+  ('85000000-0000-4000-8000-000000008582', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008521', 4, '', 'talent', 'done', now() - interval '3 days', 'https://docs.s85.test/roteiro'),
+  ('85000000-0000-4000-8000-000000008583', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008521', 5, '', 'brand', 'todo', now() + interval '1 day', 'https://docs.s85.test/roteiro'),
+  ('85000000-0000-4000-8000-000000008584', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008541', '85000000-0000-4000-8000-000000008521', null, 'Tarefa distante S85', 'talent', 'todo', now() + interval '20 days', null),
+  ('85000000-0000-4000-8000-000000008585', '85000000-0000-4000-8000-000000008501', '85000000-0000-4000-8000-000000008545', '85000000-0000-4000-8000-000000008522', null, 'Tarefa da marca B S85', 'talent', 'todo', now() - interval '1 hour', null);
+
+select tests.ok('S85 estrutura: as duas leituras não abrem para visitante, abrem para authenticated',
+  not has_function_privilege('anon', 'public.brand_workboard(uuid)', 'execute') and not has_function_privilege('anon', 'public.talent_today()', 'execute')
+  and has_function_privilege('authenticated', 'public.brand_workboard(uuid)', 'execute') and has_function_privilege('authenticated', 'public.talent_today()', 'execute')
+  and (select prosecdef from pg_proc where oid = 'public.brand_workboard(uuid)'::regprocedure)
+  and (select provolatile = 's' from pg_proc where oid = 'public.talent_today()'::regprocedure));
+
+-- visitante bloqueado
+select tests.anon();
+select tests.expect_error('S85 visitante não lê o painel da marca', $q$select public.brand_workboard('85000000-0000-4000-8000-000000008511')$q$, 'permission denied');
+select tests.expect_error('S85 visitante não lê o Hoje do creator', $q$select public.talent_today()$q$, 'permission denied');
+
+-- conta comum: nem marca nem creator
+select tests.login('85000000-0000-4000-8000-000000000856', 's85-comum@test.local');
+select tests.expect_error('S85 conta comum não lê a marca A', $q$select public.brand_workboard('85000000-0000-4000-8000-000000008511')$q$, 'not_found');
+select tests.expect_error('S85 conta comum não tem Hoje de creator', $q$select public.talent_today()$q$, 'not_found');
+
+-- dono da marca A: só a marca A, só o que já lhe foi mostrado
+select tests.login('85000000-0000-4000-8000-000000000851', 's85-marca-a-dono@test.local');
+create temp table t_s85 (k text primary key, v jsonb);
+grant all on t_s85 to anon, authenticated, service_role;
+insert into t_s85 values ('a_owner', public.brand_workboard('85000000-0000-4000-8000-000000008511'));
+select tests.ok('S85 marca A: 4 campanhas (a da agência ainda invisível fica de fora), papel dono, fuso da agência',
+  jsonb_array_length((select v from t_s85 where k = 'a_owner') -> 'campaigns') = 4
+  and not ((select v from t_s85 where k = 'a_owner') -> 'campaigns') @> '[{"title": "Campanha A5 interna"}]'
+  and ((select v from t_s85 where k = 'a_owner') ->> 'role') = 'owner'
+  and ((select v from t_s85 where k = 'a_owner') ->> 'timezone') = 'America/Sao_Paulo');
+select tests.ok('S85 marca A: creators só propostos/contratados (o consultado não aparece) e 4 entregáveis dela',
+  jsonb_array_length((select v from t_s85 where k = 'a_owner') -> 'talents') = 3
+  and not ((select v from t_s85 where k = 'a_owner') -> 'talents') @> '[{"status": "consulted"}]'
+  and jsonb_array_length((select v from t_s85 where k = 'a_owner') -> 'deliverables') = 4
+  and not ((select v from t_s85 where k = 'a_owner') -> 'deliverables') @> '[{"title": "Vídeo B"}]'
+  and not ((select v from t_s85 where k = 'a_owner') -> 'deliverables') @> '[{"title": "Post interno"}]');
+select tests.ok('S85 marca A: roteiro aguardando, termos sem aceite, conversa sem resposta (só a do A1)',
+  jsonb_array_length((select v from t_s85 where k = 'a_owner') -> 'script_approvals') = 1
+  and jsonb_array_length((select v from t_s85 where k = 'a_owner') -> 'terms_pending') = 1
+  and jsonb_array_length((select v from t_s85 where k = 'a_owner') -> 'threads') = 1
+  and ((select v from t_s85 where k = 'a_owner') -> 'threads' -> 0 ->> 'deal_title') = 'Negócio A1'
+  and ((select v from t_s85 where k = 'a_owner') -> 'campaigns') @> '[{"title": "Campanha A3", "brand_status": "draft"}]'
+  and ((select v from t_s85 where k = 'a_owner') -> 'campaigns') @> '[{"title": "Campanha A2", "brand_status": "building", "requested_count": 4}]');
+select tests.ok('S85 marca A: nada de valor, etapa interna, nota interna ou conversa com o creator',
+  (select v::text from t_s85 where k = 'a_owner') !~* '(cents|"fee"|fee_|budget|internal|talent_brief|"stage"|Lembrete do roteiro)');
+select tests.expect_error('S85 dono da marca A não lê a marca B', $q$select public.brand_workboard('85000000-0000-4000-8000-000000008512')$q$, 'not_found');
+
+-- equipe da marca A: o mesmo painel, papel equipe
+select tests.login('85000000-0000-4000-8000-000000000852', 's85-marca-a-equipe@test.local');
+select tests.ok('S85 equipe da marca A vê o mesmo painel com papel equipe',
+  (public.brand_workboard('85000000-0000-4000-8000-000000008511') ->> 'role') = 'staff'
+  and jsonb_array_length(public.brand_workboard('85000000-0000-4000-8000-000000008511') -> 'deliverables') = 4);
+
+-- marca B: só a dela; zero da A
+select tests.login('85000000-0000-4000-8000-000000000853', 's85-marca-b-dono@test.local');
+select tests.expect_error('S85 outra marca lê 0 da marca A', $q$select public.brand_workboard('85000000-0000-4000-8000-000000008511')$q$, 'not_found');
+select tests.ok('S85 marca B: 1 campanha, 1 entregável aguardando aprovação, nada da A',
+  jsonb_array_length(public.brand_workboard('85000000-0000-4000-8000-000000008512') -> 'campaigns') = 1
+  and jsonb_array_length(public.brand_workboard('85000000-0000-4000-8000-000000008512') -> 'deliverables') = 1
+  and (public.brand_workboard('85000000-0000-4000-8000-000000008512') -> 'deliverables' -> 0 ->> 'status') = 'submitted'
+  and jsonb_array_length(public.brand_workboard('85000000-0000-4000-8000-000000008512') -> 'threads') = 0
+  and public.brand_workboard('85000000-0000-4000-8000-000000008512')::text !~ '(Campanha A|Negócio A)');
+
+-- creator 1: só os pendentes dele
+select tests.login('85000000-0000-4000-8000-000000000854', 's85-creator-1@test.local');
+insert into t_s85 values ('c1', public.talent_today());
+select tests.ok('S85 creator 1: consulta pendente com prazo, tarefa atrasada (a distante não), ajuste pedido e termos dele',
+  jsonb_array_length((select v from t_s85 where k = 'c1') -> 'offers') = 1
+  and ((select v from t_s85 where k = 'c1') -> 'offers' -> 0 ->> 'respond_by') is not null
+  and jsonb_array_length((select v from t_s85 where k = 'c1') -> 'tasks') = 1
+  and ((select v from t_s85 where k = 'c1') -> 'tasks' -> 0 ->> 'title') = 'Gravar bastidores S85'
+  and jsonb_array_length((select v from t_s85 where k = 'c1') -> 'deliverables') = 1
+  and ((select v from t_s85 where k = 'c1') -> 'deliverables' -> 0 ->> 'status') = 'changes_requested'
+  and ((select v from t_s85 where k = 'c1') -> 'deliverables' -> 0 ->> 'brand_feedback') = 'Trocar a trilha, por favor.'
+  and jsonb_array_length((select v from t_s85 where k = 'c1') -> 'terms') = 1);
+select tests.ok('S85 creator 1: nada do creator 2 nem valores',
+  (select v::text from t_s85 where k = 'c1') !~* '(Stories atrasado|Vídeo B|Tarefa da marca B|cents|"fee"|fee_)');
+select tests.expect_error('S85 creator não lê o painel da marca', $q$select public.brand_workboard('85000000-0000-4000-8000-000000008511')$q$, 'not_found');
+
+-- creator 2: só os dele (o entregável já enviado não pede nada dele agora)
+select tests.login('85000000-0000-4000-8000-000000000855', 's85-creator-2@test.local');
+select tests.ok('S85 creator 2: o entregável atrasado e a tarefa dele, sem consultas nem termos',
+  jsonb_array_length(public.talent_today() -> 'deliverables') = 1
+  and (public.talent_today() -> 'deliverables') @> '[{"title": "Stories atrasado"}]'
+  and jsonb_array_length(public.talent_today() -> 'tasks') = 1
+  and jsonb_array_length(public.talent_today() -> 'offers') = 0
+  and jsonb_array_length(public.talent_today() -> 'terms') = 0
+  and public.talent_today()::text !~ '(Reels 2|Gravar bastidores)');
+
+-- aceites tiram os termos do "Hoje" de cada lado
+select tests.login('85000000-0000-4000-8000-000000000851', 's85-marca-a-dono@test.local');
+select public.brand_terms_accept('85000000-0000-4000-8000-000000008571', null);
+select tests.ok('S85 depois do aceite da marca, os termos saem do Hoje dela',
+  jsonb_array_length(public.brand_workboard('85000000-0000-4000-8000-000000008511') -> 'terms_pending') = 0);
+select tests.login('85000000-0000-4000-8000-000000000854', 's85-creator-1@test.local');
+select tests.ok('S85 o creator ainda vê os termos (o aceite dele é separado)', jsonb_array_length(public.talent_today() -> 'terms') = 1);
+select public.talent_terms_accept('85000000-0000-4000-8000-000000008571', null);
+select tests.ok('S85 depois do aceite do creator, os termos saem do Hoje dele', jsonb_array_length(public.talent_today() -> 'terms') = 0);
+
+select tests.su();
+delete from public.deals where id::text like '85000000-%';
+delete from public.campaign_requests where id::text like '85000000-%';
+delete from public.talent_profiles where id::text like '85000000-%';
+delete from public.brand_members where brand_id in ('85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000008512');
+delete from public.agency_brands where agency_id = '85000000-0000-4000-8000-000000008501';
+delete from public.brands where id in ('85000000-0000-4000-8000-000000008511', '85000000-0000-4000-8000-000000008512');
+delete from public.inbox_notifications where agency_id = '85000000-0000-4000-8000-000000008501';
+delete from public.agencies where id = '85000000-0000-4000-8000-000000008501';
+delete from auth.users where id::text like '85000000-0000-4000-8000-00000000085%';
+drop table t_s85;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

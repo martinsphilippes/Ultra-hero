@@ -46,11 +46,12 @@ export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): A
   return keys;
 }
 
-export const BRAND_NAV = ["dashboard", "campaigns", "catalog", "agenda", "team", "notifications"] as const;
+export const BRAND_NAV = ["dashboard", "board", "campaigns", "catalog", "agenda", "team", "notifications"] as const;
 export type BrandNavKey = (typeof BRAND_NAV)[number];
 
 export function brandNavKeys(): BrandNavKey[] {
-  return ["dashboard", "campaigns", "catalog", "agenda", "team", "notifications"];
+  // Ações por etapa (0078): painel de todas as ações das campanhas, logo depois do Início
+  return ["dashboard", "board", "campaigns", "catalog", "agenda", "team", "notifications"];
 }
 
 /** Papel mínimo de cada rota restrita da agência (o layout do segmento redireciona para /agencia). */

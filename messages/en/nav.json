@@ -98,6 +98,7 @@
   },
   "brand": {
     "dashboard": "Home",
+    "board": "Actions",
     "team": "Team",
     "notifications": "Notices",
     "campaigns": "Campaigns",

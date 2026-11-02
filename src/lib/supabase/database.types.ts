@@ -7988,6 +7988,8 @@ isOneToOne: false
         Returns: Json;
       };
       brand_dashboard: { Args: { p_brand: string }; Returns: Json };
+      brand_workboard: { Args: { p_brand: string }; Returns: Json };
+      talent_today: { Args: Record<PropertyKey, never>; Returns: Json };
       agency_dashboard: { Args: { p_agency: string }; Returns: Json };
       agency_finance_summary: { Args: { p_agency: string }; Returns: Json };
       agency_deal_rate_set: {

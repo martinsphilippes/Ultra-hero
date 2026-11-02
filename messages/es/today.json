@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "board": "Acciones por etapa"
+  },
+  "count": "{count, plural, =0 {nada pendiente} one {# pendiente} other {# pendientes}}",
+  "byKind": "Pendientes por tipo",
+  "more": "Ver {count} más",
+  "deadline": "Plazo: {date}",
+  "respondBy": "Responder hasta {date}",
+  "waitingSince": "Esperando · {ago}",
+  "approvedToPublish": "Aprobado, falta publicar",
+  "untitled": "Sin título",
+  "urgency": {
+    "overdue": "Atrasado",
+    "today": "Hoy",
+    "soon": "Próximos días",
+    "waiting": "En espera"
+  },
+  "brand": {
+    "title": "Depende de mí hoy",
+    "hint": "Lo que espera una decisión de la marca, de lo más urgente a lo menos.",
+    "empty": "Nada espera a la marca ahora.",
+    "termsOwnerOnly": "Solo el dueño de la marca acepta",
+    "kinds": {
+      "approval": "Aprobar entrega",
+      "script": "Aprobar guion",
+      "terms": "Aceptar términos",
+      "message": "Responder a la agencia",
+      "deadline": "Plazo de entrega",
+      "draft": "Borrador detenido"
+    },
+    "kindsShort": {
+      "approval": "Aprobaciones",
+      "script": "Guiones",
+      "terms": "Términos",
+      "message": "Mensajes",
+      "deadline": "Plazos",
+      "draft": "Borradores"
+    }
+  },
+  "talent": {
+    "title": "Hoy",
+    "hint": "Lo que depende de ti, de lo más urgente a lo menos.",
+    "empty": "Nada pendiente contigo ahora.",
+    "kinds": {
+      "adjustment": "Ajuste pedido",
+      "scriptAdjustment": "Ajuste en el guion",
+      "terms": "Aceptar términos",
+      "offer": "Responder oferta",
+      "deliverable": "Entrega próxima",
+      "task": "Tarea"
+    },
+    "kindsShort": {
+      "adjustment": "Ajustes",
+      "scriptAdjustment": "Guiones",
+      "terms": "Términos",
+      "offer": "Ofertas",
+      "deliverable": "Entregas",
+      "task": "Tareas"
+    }
+  },
+  "board": {
+    "title": "Acciones por etapa",
+    "description": "Cada entregable de cada creador, en todas las campañas.",
+    "seeBoard": "Ver panel",
+    "tabsLabel": "Etapas",
+    "unavailable": "El panel aún no está disponible.",
+    "empty": "Nada en esta etapa.",
+    "emptyAll": "Aún no hay acciones. Envía una propuesta para empezar.",
+    "untitled": "Campaña sin título",
+    "requested": "{count, plural, one {# entregable pedido} other {# entregables pedidos}}",
+    "sentAt": "Enviada el {date}",
+    "dateLabel": "Plazo: {date}",
+    "noDeliverables": "Entregables aún no definidos",
+    "stages": {
+      "sent": "Enviada",
+      "accepted": "Aceptada",
+      "creating": "En creación",
+      "awaiting": "Esperando aprobación",
+      "published": "Publicada"
+    },
+    "stageHints": {
+      "sent": "Propuesta enviada, esperando a la agencia y al creador.",
+      "accepted": "El creador aceptó; la producción aún no empezó.",
+      "creating": "En producción, con ajuste pedido o aprobado para publicar.",
+      "awaiting": "Versión enviada esperando tu aprobación.",
+      "published": "Publicado o comprobado."
+    }
+  }
+}

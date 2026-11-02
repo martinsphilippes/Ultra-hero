@@ -38,7 +38,7 @@ describe("hierarquia da agência", () => {
     expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings"]);
     expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
     expect(agencyNavKeys(null, true)).toContain("team");
-    expect(brandNavKeys()).toEqual(["dashboard", "campaigns", "catalog", "agenda", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "catalog", "agenda", "team", "notifications"]);
   });
 
   it("só o Adm convida a equipe, em qualquer nível", () => {

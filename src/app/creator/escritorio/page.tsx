@@ -5,6 +5,7 @@ import Link from "next/link";
 import { InboxItemView } from "@/components/inbox/InboxItemView";
 import { ConsentBanner } from "@/components/talent/ConsentBanner";
 import { MetricSource } from "@/components/talent/MetricSource";
+import { TodayPanel } from "@/components/today/TodayPanel";
 import { Badge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
@@ -19,6 +20,8 @@ import { listInbox } from "@/lib/inbox/queries";
 import { formatCount } from "@/lib/talent/media-kit";
 import { getKit, listSocial } from "@/lib/talent/queries";
 import { consentActive, getTalentContext } from "@/lib/talent/server";
+import { TALENT_TODAY_KINDS, buildTalentToday } from "@/lib/today/logic";
+import { getTalentToday } from "@/lib/today/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +45,10 @@ export default async function OfficeHomePage() {
     listInbox({ limit: 5 }),
     listOpportunities(),
   ]);
-  const [tasks, summary, payouts, tc] = await Promise.all([listTasks({ talentOnly: true, open: true }), officeSummaryData(), myPayouts(), getTranslations("commercial")]);
+  const [tasks, summary, payouts, tc, todayData] = await Promise.all([listTasks({ talentOnly: true, open: true }), officeSummaryData(), myPayouts(), getTranslations("commercial"), getTalentToday()]);
+  // "Hoje" (0078): o que depende do creator, do mais urgente para o menos, com link direto
+  const today = todayData.available ? todayData.data : null;
+  const now = new Date();
   const office = summary.available ? summary.data : null;
   const myTasks = tasks.available ? tasks.items.filter((x) => x.talentId === talent.id) : [];
   const overdue = myTasks.filter((x) => x.dueAt && new Date(x.dueAt).getTime() < Date.now()).length;
@@ -53,6 +59,7 @@ export default async function OfficeHomePage() {
   return (
     <div className="flex flex-col gap-5">
       {!consentOk ? <ConsentBanner /> : null}
+      {today ? <TodayPanel portal="talent" items={buildTalentToday(today, now)} kinds={TALENT_TODAY_KINDS} locale={locale} timezone={today.timezone} now={now} /> : null}
       {opportunities.available ? (
         <section className={card} aria-labelledby="office-opportunities" data-testid="office-opportunities">
           <div className="flex items-center justify-between gap-2">

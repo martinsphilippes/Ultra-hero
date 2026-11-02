@@ -98,6 +98,7 @@
   },
   "brand": {
     "dashboard": "Inicio",
+    "board": "Acciones",
     "team": "Equipo",
     "notifications": "Avisos",
     "campaigns": "Campañas",

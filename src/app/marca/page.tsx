@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bell, FileSignature, Megaphone, Search, Users } from "lucide-react";
+import { ArrowRight, Bell, FileSignature, Megaphone, Search, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
@@ -7,6 +7,7 @@ import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { BrandSwitcher } from "@/components/agency/BrandSwitcher";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
+import { TodayPanel } from "@/components/today/TodayPanel";
 import { Button, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
@@ -16,6 +17,8 @@ import { getBrandContext } from "@/lib/brand-portal/server";
 import { listBrandCampaigns } from "@/lib/deals/queries";
 import { listTasks } from "@/lib/execution/queries";
 import { unreadInboxCount } from "@/lib/inbox/queries";
+import { BOARD_STAGES, BRAND_TODAY_KINDS, boardCounts, buildBrandBoard, buildBrandToday } from "@/lib/today/logic";
+import { getBrandWorkboard } from "@/lib/today/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -29,16 +32,23 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
-  const [t, tc, locale, members, unread, campaigns, approvals, panel] = await Promise.all([
+  const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard] = await Promise.all([
     getTranslations("brandPortal.dashboard"),
     getTranslations("commercial"),
+    getTranslations("today.board"),
     getLocale() as Promise<Locale>,
     listBrandMembers(ctx.brand.id),
     unreadInboxCount(),
     listBrandCampaigns(ctx.brand.id),
     listTasks({ open: true }),
     brandDashboardData(ctx.brand.id),
+    getBrandWorkboard(ctx.brand.id),
   ]);
+  // "Depende de mim hoje" e o resumo do painel por etapa (0078): a mesma leitura fechada alimenta os dois
+  const wb = workboard.available ? workboard.data : null;
+  const now = new Date();
+  const todayItems = wb ? buildBrandToday(wb, now) : [];
+  const stageCounts = wb ? boardCounts(buildBrandBoard(wb)) : null;
   // aprovações pendentes: roteiros e entregas aguardando a marca (painel 0069; antes dele, só os roteiros pela RLS)
   const dash = panel.available ? panel.data : null;
   const pendingApprovals = dash ? dash.approvalsPending : approvals.available ? approvals.items.filter((x) => x.side === "brand" && x.attachmentUrl !== null).length : null;
@@ -54,6 +64,30 @@ export default async function BrandDashboardPage() {
         actions={ctx.role ? <RoleBadge role={ctx.role === "owner" ? "owner" : "brandStaff"} /> : null}
       />
       {ctx.brands.length > 1 ? <BrandSwitcher brands={ctx.brands.map((b) => ({ id: b.id, name: b.name }))} currentId={ctx.brand.id} /> : null}
+      {wb ? <TodayPanel portal="brand" items={todayItems} kinds={BRAND_TODAY_KINDS} locale={locale} timezone={wb.timezone} now={now} /> : null}
+      {stageCounts ? (
+        <section aria-labelledby="brand-stage-summary" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" data-testid="brand-stage-summary">
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="brand-stage-summary" className="text-sm font-semibold text-fg">
+              {tb("title")}
+            </h2>
+            <Link href="/marca/acoes" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-text underline-offset-2 hover:underline">
+              {tb("seeBoard")}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {BOARD_STAGES.map((s) => (
+              <li key={s}>
+                <Link href="/marca/acoes" className="flex min-h-14 flex-col justify-center rounded-xl border border-border px-3 py-2 transition-colors hover:bg-surface-hover">
+                  <span className="font-mono text-lg font-semibold text-fg">{stageCounts[s]}</span>
+                  <span className="type-caption text-fg-muted">{tb(`stages.${s}`)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <p className="flex items-start gap-2 rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="brand-inbox-note">
         <Bell className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
         {t("inboxNote")}

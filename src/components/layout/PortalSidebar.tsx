@@ -85,6 +85,7 @@ const ICONS: Record<string, LucideIcon> = {
   team: Users,
   notifications: Bell,
   pipeline: KanbanSquare,
+  board: KanbanSquare,
   campaigns: Megaphone,
   catalog: Search,
   agenda: CalendarDays,

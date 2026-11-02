@@ -87,6 +87,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   // Marca (0066): propostas de campanha e o catálogo autorizado de creators; o calendário chega na P1b.
   brand: [
     { key: "dashboard", href: "/marca" },
+    // Ações por etapa (0078): cada entregável de cada creator, de Enviada a Publicada
+    { key: "board", href: "/marca/acoes" },
     { key: "campaigns", href: "/marca/campanhas" },
     { key: "catalog", href: "/marca/creators" },
     { key: "agenda", href: "/marca/agenda" },

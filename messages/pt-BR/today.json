@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "board": "Ações por etapa"
+  },
+  "count": "{count, plural, =0 {nada pendente} one {# pendência} other {# pendências}}",
+  "byKind": "Pendências por tipo",
+  "more": "Ver mais {count}",
+  "deadline": "Prazo: {date}",
+  "respondBy": "Responder até {date}",
+  "waitingSince": "Esperando · {ago}",
+  "approvedToPublish": "Aprovado, falta publicar",
+  "untitled": "Sem título",
+  "urgency": {
+    "overdue": "Atrasado",
+    "today": "Hoje",
+    "soon": "Próximos dias",
+    "waiting": "Aguardando"
+  },
+  "brand": {
+    "title": "Depende de mim hoje",
+    "hint": "O que espera uma decisão da marca, do mais urgente para o menos.",
+    "empty": "Nada esperando pela marca agora.",
+    "termsOwnerOnly": "Só o dono da marca aceita",
+    "kinds": {
+      "approval": "Aprovar entrega",
+      "script": "Aprovar roteiro",
+      "terms": "Aceitar termos",
+      "message": "Responder a agência",
+      "deadline": "Prazo de entrega",
+      "draft": "Rascunho parado"
+    },
+    "kindsShort": {
+      "approval": "Aprovações",
+      "script": "Roteiros",
+      "terms": "Termos",
+      "message": "Mensagens",
+      "deadline": "Prazos",
+      "draft": "Rascunhos"
+    }
+  },
+  "talent": {
+    "title": "Hoje",
+    "hint": "O que depende de você, do mais urgente para o menos.",
+    "empty": "Nada pendente com você agora.",
+    "kinds": {
+      "adjustment": "Ajuste pedido",
+      "scriptAdjustment": "Ajuste no roteiro",
+      "terms": "Aceitar termos",
+      "offer": "Responder oferta",
+      "deliverable": "Entrega próxima",
+      "task": "Tarefa"
+    },
+    "kindsShort": {
+      "adjustment": "Ajustes",
+      "scriptAdjustment": "Roteiros",
+      "terms": "Termos",
+      "offer": "Ofertas",
+      "deliverable": "Entregas",
+      "task": "Tarefas"
+    }
+  },
+  "board": {
+    "title": "Ações por etapa",
+    "description": "Cada entregável de cada creator, em todas as campanhas.",
+    "seeBoard": "Ver painel",
+    "tabsLabel": "Etapas",
+    "unavailable": "O painel ainda não está disponível.",
+    "empty": "Nada nesta etapa.",
+    "emptyAll": "Nenhuma ação ainda. Envie uma proposta para começar.",
+    "untitled": "Campanha sem título",
+    "requested": "{count, plural, one {# entregável pedido} other {# entregáveis pedidos}}",
+    "sentAt": "Enviada em {date}",
+    "dateLabel": "Prazo: {date}",
+    "noDeliverables": "Entregáveis ainda não definidos",
+    "stages": {
+      "sent": "Enviada",
+      "accepted": "Aceita",
+      "creating": "Em criação",
+      "awaiting": "Aguardando aprovação",
+      "published": "Publicada"
+    },
+    "stageHints": {
+      "sent": "Proposta enviada, aguardando a agência e o creator.",
+      "accepted": "Creator aceitou; a produção ainda não começou.",
+      "creating": "Em produção, com ajuste pedido ou aprovado para publicar.",
+      "awaiting": "Versão enviada esperando a sua aprovação.",
+      "published": "Publicado ou comprovado."
+    }
+  }
+}
