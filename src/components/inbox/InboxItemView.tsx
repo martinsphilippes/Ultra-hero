@@ -1,5 +1,9 @@
+"use client";
+
 import { Bell, Briefcase, CalendarDays, FileCheck2, Handshake, Megaphone, MessageSquare, UserPlus, Wallet, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import type { MouseEvent } from "react";
+import { markReadAction } from "@/lib/inbox/actions";
 import type { Locale } from "@/i18n/config";
 import { formatRelativeTime } from "@/i18n/format";
 import type { InboxItem } from "@/lib/inbox/queries";
@@ -58,9 +62,22 @@ export function InboxItemView({ item, now }: Props) {
   const Icon = ICON[item.kind] ?? Bell;
   const values = inboxValues(item.params);
   const unread = !item.readAt;
+
+  // Ao abrir o aviso ele conta como lido: marca antes de navegar (com limite de tempo para nunca prender o clique).
+  // Ctrl/Cmd/botão do meio abrem em outra aba: o link segue o padrão e a marcação acontece em paralelo.
+  function open(event: MouseEvent<HTMLAnchorElement>) {
+    if (!unread) return;
+    const marking = markReadAction({ ids: [item.id] }).catch(() => null);
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const go = () => window.location.assign(item.link);
+    void Promise.race([marking, new Promise((resolve) => window.setTimeout(resolve, 1500))]).then(go, go);
+  }
+
   return (
     <a
       href={item.link}
+      onClick={open}
       className={cn(
         "flex min-h-14 items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus",
         unread && "bg-accent-soft/40",
