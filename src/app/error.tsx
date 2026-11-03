@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
+import { recoverFromStaleBuild } from "@/lib/stale-build";
 
 type ErrorPageProps = { error: Error & { digest?: string }; reset: () => void };
 
@@ -14,6 +15,8 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
   useEffect(() => {
     console.error(error);
+    // aba numa versão antiga do app depois de uma publicação: recarrega uma vez (src/lib/stale-build.ts)
+    recoverFromStaleBuild(error);
   }, [error]);
 
   return (

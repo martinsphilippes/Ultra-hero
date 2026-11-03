@@ -14,6 +14,7 @@ import type { DealTalentRow } from "@/lib/deals/queries";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
 import { centsToBrl } from "@/lib/money/brl-input";
 import { isPreConfirmation, type DealStage } from "@/lib/deals/stages";
+import { recoverFromStaleBuild } from "@/lib/stale-build";
 import { CONSULT_DAYS, TALENT_RESPONSES, type TalentResponse } from "@/lib/deals/vocab";
 import type { Conflict, Counteroffer } from "@/lib/offer/counteroffer";
 import { SuggestHeroesDialog, type Candidate } from "./SuggestHeroesDialog";
@@ -200,6 +201,7 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
 function ConsultDialog({ open, onOpenChange, dealId, dealTalentIds, conflicted, onDone }: { open: boolean; onOpenChange: (o: boolean) => void; dealId: string; dealTalentIds: string[]; conflicted: number; onDone: () => void }) {
   const t = useTranslations("agency.deal.consultDialog");
   const tx = useTranslations("offer.conflict");
+  const te = useTranslations("errors");
   const [confirmConflicts, setConfirmConflicts] = useState(false);
   const { toast } = useToast();
   const [days, setDays] = useState<number>(7);
@@ -211,7 +213,15 @@ function ConsultDialog({ open, onOpenChange, dealId, dealTalentIds, conflicted, 
     setError(null);
     if (conflicted > 0 && !confirmConflicts) return setError(tx("consultConfirmRequired"));
     start(async () => {
-      const result = await consultTalentsAction({ dealId, dealTalentIds, days, message: message.trim(), confirmConflicts: conflicted > 0 && confirmConflicts });
+      let result: Awaited<ReturnType<typeof consultTalentsAction>>;
+      try {
+        result = await consultTalentsAction({ dealId, dealTalentIds, days, message: message.trim(), confirmConflicts: conflicted > 0 && confirmConflicts });
+      } catch (e) {
+        // a action pode ter gravado no servidor (versão nova publicada com a aba aberta): recarrega em vez de
+        // derrubar a tela no limite de erro; fora disso, mensagem genérica no próprio diálogo
+        if (recoverFromStaleBuild(e)) return;
+        return setError(te("generic.description"));
+      }
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
       setMessage("");

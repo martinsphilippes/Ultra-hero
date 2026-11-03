@@ -534,6 +534,7 @@
     "badType": "Use PDF, JPG, PNG or WebP.",
     "tooLarge": "File over 20 MB.",
     "uploadFailed": "Could not upload the file. Try again.",
+    "upload": "Upload document",
     "openFailed": "Could not open the document.",
     "confirmArchive": "Archive this document?",
     "empty": "No documents.",
