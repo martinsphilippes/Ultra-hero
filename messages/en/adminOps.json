@@ -323,7 +323,10 @@
     "goBrand": "Open brand portal",
     "inboxOnlyNote": "Notices stay on the portal bell.",
     "successTalent": "Done! You now have the agency office.",
-    "goOffice": "Open the office"
+    "goOffice": "Open the office",
+    "alreadyHint": "Already signed in on the login screen with this e-mail? Then the invitation was already accepted and your access is ready.",
+    "openPortals": "Open my portals",
+    "grantGeneric": "This invitation's access (agency, brand, creator, hero, supplier or professional) shows right after you accept."
   },
   "creators": {
     "title": "Heroes",

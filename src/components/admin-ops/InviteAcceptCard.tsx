@@ -1,8 +1,8 @@
 "use client";
 
 import { CircleCheck, Mail } from "lucide-react";
-import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { acceptInvitation, type AcceptedRole } from "@/app/admin/ops-actions";
 import { legalRichTags } from "@/components/legal/rich-tags";
@@ -122,13 +122,18 @@ export function InviteAcceptCard({ token, email }: Props) {
         <p role="alert" className="rounded-lg border border-danger/30 bg-danger-soft p-3 text-sm text-danger">
           <span className="font-semibold">{t("errorTitle")}: </span>
           {error}
+          <span className="mt-2 block text-fg-muted">{t("alreadyHint")}</span>
+          <a href="/configuracoes" className="mt-1 inline-block font-semibold text-fg underline underline-offset-2">
+            {t("openPortals")}
+          </a>
         </p>
       )}
       <Button type="button" size="lg" block onClick={accept} loading={pending}>
         {pending ? t("accepting") : t("accept")}
       </Button>
+      {/* direto para /personalities: "/" é só um redirect do next.config */}
       <Button asChild variant="ghost" block>
-        <Link href="/">{t("goHome")}</Link>
+        <Link href="/personalities">{t("goHome")}</Link>
       </Button>
     </div>
   );

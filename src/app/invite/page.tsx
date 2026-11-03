@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { InviteAcceptCard } from "@/components/admin-ops/InviteAcceptCard";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { Button, EmptyState } from "@/components/ui";
@@ -31,7 +31,7 @@ export default async function InvitePage({ searchParams }: { searchParams: Searc
           description={t("missingTokenDescription")}
           action={
             <Button asChild variant="secondary">
-              <Link href="/">{t("goHome")}</Link>
+              <Link href="/personalities">{t("goHome")}</Link>
             </Button>
           }
         />
@@ -41,12 +41,7 @@ export default async function InvitePage({ searchParams }: { searchParams: Searc
 
   return (
     <AuthCard title={t("title")} subtitle={t("subtitle")}>
-      <ul className="mb-4 list-disc space-y-1 pl-5 text-sm text-fg-muted">
-        <li>{t("grantCreator")}</li>
-        <li>{t("grantSeller")}</li>
-        <li>{t("grantAgency")}</li>
-        <li>{t("grantBrand")}</li>
-      </ul>
+      <p className="mb-4 text-sm text-fg-muted">{t("grantGeneric")}</p>
       <InviteAcceptCard token={clean} email={user.email ?? null} />
     </AuthCard>
   );
