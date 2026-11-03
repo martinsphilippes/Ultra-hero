@@ -1,6 +1,6 @@
 {
   "common": {
-    "demoNotice": "Entorno de demostración: ningún importe, pago o entrega es real.",
+    "demoNotice": "El pago aún no está activado: no se cobra ningún importe ni se entrega nada.",
     "search": "Buscar por título",
     "searchPlaceholder": "Escribe parte del título…",
     "filters": "Filtros",
@@ -66,9 +66,9 @@
     "retry": "Intentar de nuevo",
     "saved": "Cambios guardados",
     "done": "Hecho",
-    "price": "Precio (demo)",
-    "priceHint": "Importe demostrativo en centavos. Ningún cobro real.",
-    "demoCurrency": "Importes ilustrativos en BRL (demo)",
+    "price": "Precio",
+    "priceHint": "Importe en centavos. Ningún cobro real.",
+    "demoCurrency": "Importes en BRL",
     "dateFrom": "Desde",
     "dateTo": "Hasta",
     "id": "ID",
@@ -107,7 +107,7 @@
       "inherit": "Predeterminado del tipo"
     },
     "license": {
-      "platform_demo": "Demostración de la plataforma",
+      "platform_demo": "Material de la plataforma",
       "own": "Medio propio",
       "licensed": "Con licencia",
       "third_party_embed": "Inserción de terceros"
@@ -635,7 +635,7 @@
       "title": "Título",
       "seller": "Proveedor",
       "category": "Categoría",
-      "price": "Precio (demo)",
+      "price": "Precio",
       "status": "Estado",
       "availability": "Disponibilidad",
       "moderation": "Moderación",
@@ -661,14 +661,14 @@
       "reason": "Motivo",
       "partnerReadOnly": "Producto de socio: el admin lo edita en la pestaña Productos de la organización (el portal del proveedor está desactivado).",
       "ownEditable": "Producto de la operación propia: el admin puede editarlo.",
-      "stock": "Stock demo",
+      "stock": "Stock",
       "type": "Tipo",
       "productType": {
         "physical": "Físico",
         "kit": "Kit",
         "digital": "Digital"
       },
-      "openPublic": "Ver en la tienda (demo)",
+      "openPublic": "Ver en la tienda",
       "editInOrg": "Editar en la organización"
     },
     "moderation": {
@@ -686,7 +686,7 @@
     },
     "form": {
       "createTitle": "Nuevo producto (operación propia)",
-      "createDescription": "Producto demostrativo de la operación propia. Precios ilustrativos; ninguna venta real.",
+      "createDescription": "Producto de la operación propia. Ninguna venta se cobra mientras el pago no esté activado.",
       "editTitle": "Editar producto",
       "created": "Producto creado",
       "updated": "Producto actualizado",
@@ -744,7 +744,7 @@
   },
   "orders": {
     "title": "Pedidos de prueba",
-    "description": "Pedidos demostrativos de todos los usuarios. No se cobró ningún importe real.",
+    "description": "Pedidos de todos los usuarios. No se cobró ningún importe.",
     "banner": "Pedidos de prueba — ningún importe real. Destinos ficticios, sin dirección, sin entrega.",
     "table": {
       "caption": "Lista de pedidos de prueba",
@@ -753,7 +753,7 @@
       "status": "Estado",
       "sellers": "Proveedores",
       "items": "Artículos",
-      "total": "Total (demo)",
+      "total": "Total",
       "retention": "Retención",
       "anonymized": "Anonimizado"
     },
@@ -763,7 +763,7 @@
     "totals": {
       "title": "Totales de los pedidos listados",
       "count": "{n, plural, =1 {1 pedido} other {# pedidos}}",
-      "sum": "Suma (demo): {amount}",
+      "sum": "Suma: {amount}",
       "realRevenue": "Ingreso real: {amount}"
     },
     "detail": {
@@ -780,8 +780,8 @@
       "lineTotal": "Subtotal",
       "productVersion": "Versión del producto en el pedido: {n}",
       "subtotal": "Subtotal",
-      "shipping": "Envío (demo)",
-      "total": "Total (demo)",
+      "shipping": "Envío",
+      "total": "Total",
       "fulfillments": "Envíos",
       "fulfillment": "Envío · {seller}",
       "eta": "Plazo simulado: {n, plural, =1 {1 día} other {# días}}",

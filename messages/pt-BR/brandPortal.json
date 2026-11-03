@@ -278,6 +278,7 @@
     "overviewEmpty": "Nenhuma campanha com verba ou contratação ainda.",
     "overCount": "{count, plural, one {# campanha passou da verba} other {# campanhas passaram da verba}}",
     "talentsOver": "{count, plural, one {# creator acima da verba} other {# creators acima da verba}}",
-    "seeCampaign": "Ver campanha"
+    "seeCampaign": "Ver campanha",
+    "lockedHint": "Verba definida fica travada. Para mudar, use “Pedir alteração de verba”: a agência avalia e o dono confirma."
   }
 }

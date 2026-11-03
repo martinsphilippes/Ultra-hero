@@ -6,7 +6,7 @@ import { CollectibleCard } from "@/components/collectibles/CollectibleCard";
 import { LiveBadge } from "@/components/collectibles/LiveBadge";
 import { ShopSegment } from "@/components/collectibles/ShopSegment";
 import { getNativeApp } from "@/lib/native-app/server";
-import { DemoBadge, EmptyState, PageHeader } from "@/components/ui";
+import { EmptyState, PageHeader } from "@/components/ui";
 import { fetchCollectiblesList, type CollectibleView } from "@/lib/collectibles/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,7 +27,7 @@ export default async function CollectiblesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title={t("list.title")} description={t("list.description")} eyebrow={<DemoBadge />} />
+      <PageHeader title={t("list.title")} description={t("list.description")} />
       {/* no app das lojas a Loja não existe: sem o seletor */}
       {nativeApp ? null : <ShopSegment current="collectibles" />}
 

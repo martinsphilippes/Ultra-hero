@@ -1,5 +1,5 @@
 {
-  "demo": "Demo",
+  "demo": "Sample",
   "segment": {
     "label": "Shop tab sections",
     "shop": "Shop",
@@ -31,7 +31,7 @@
   },
   "detail": {
     "back": "Collectibles",
-    "demoItem": "Demo item",
+    "demoItem": "Sample item",
     "signedBy": "Signed by {name}",
     "about": "About the item",
     "authenticity": "Authenticity",
@@ -169,7 +169,7 @@
     "new": "New collectible",
     "newDescription": "The item starts as a draft. Launching or scheduling is on the detail page.",
     "empty": "No collectibles yet.",
-    "demo": "Demo",
+    "demo": "Sample",
     "phase": {
       "draft": "Draft",
       "scheduled": "Scheduled",

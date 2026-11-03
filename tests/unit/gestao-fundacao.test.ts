@@ -38,7 +38,7 @@ describe("hierarquia da agência", () => {
     expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "casting", "brands", "notifications", "settings"]);
     expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
     expect(agencyNavKeys(null, true)).toContain("team");
-    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"]);
   });
 
   it("só o Adm convida a equipe, em qualquer nível", () => {
@@ -103,9 +103,9 @@ describe("erros das RPCs", () => {
 });
 
 describe("avisos", () => {
-  it("45 tipos, iguais ao check do banco (recriado na 0089 com a chamada da marca)", () => {
-    expect(INBOX_KINDS).toHaveLength(45);
-    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0089_chamada_da_marca.sql"), "utf8");
+  it("50 tipos, iguais ao check do banco (recriado na 0090 com o pedido de verba e os pagamentos da marca)", () => {
+    expect(INBOX_KINDS).toHaveLength(50);
+    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0090_verba_alteracao_pagamentos_marca.sql"), "utf8");
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(isInboxKind("member_joined")).toBe(true);
     expect(isInboxKind("auction_outbid")).toBe(false);

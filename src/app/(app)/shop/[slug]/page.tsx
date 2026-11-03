@@ -7,11 +7,11 @@ import { PackageX, Store } from "lucide-react";
 import { ContentCard } from "@/components/catalog";
 import { AddToCartForm } from "@/components/commerce/AddToCartForm";
 import { CommerceEventTracker } from "@/components/commerce/CommerceEventTracker";
-import { DemoNotice } from "@/components/commerce/DemoNotice";
+import { PaymentNotice } from "@/components/commerce/PaymentNotice";
 import { FoodInfoBlock, parseFoodInfo } from "@/components/commerce/FoodInfoBlock";
 import { OfficialStoreLink } from "@/components/commerce/OfficialStoreLink";
 import { AddToListButton, FavoriteButton } from "@/components/library";
-import { Badge, DemoBadge, Section } from "@/components/ui";
+import { Badge, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import { getUser } from "@/lib/auth/session";
@@ -118,7 +118,7 @@ export default async function ProductPage({ params }: Params) {
           <Image src={product.image_url} alt="" fill priority unoptimized={product.image_url.endsWith(".svg")} sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
           <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
             {product.category ? <Badge variant="neutral" className="bg-black/40 text-white border-white/30">{localizedLabel(product.category.name, uiLocale)}</Badge> : <span />}
-            {unavailable ? <Badge variant="warning">{tcat("productUnavailable")}</Badge> : <DemoBadge />}
+            {unavailable ? <Badge variant="warning">{tcat("productUnavailable")}</Badge> : null}
           </div>
         </div>
 
@@ -143,7 +143,7 @@ export default async function ProductPage({ params }: Params) {
                   {t("sellerLabel")} <span className="font-semibold text-fg">{product.seller.name}</span> · {t(`sellerKind.${product.seller.kind}`)}
                 </span>
                 {product.seller.is_fictional ? (
-                  <Badge variant="demo" size="sm">
+                  <Badge variant="neutral" size="sm">
                     {t("fictionalSeller")}
                   </Badge>
                 ) : null}
@@ -183,7 +183,7 @@ export default async function ProductPage({ params }: Params) {
             <OfficialStoreLink attributes={product.attributes} className="w-fit" />
           </div>
 
-          <DemoNotice>{td("notice")}</DemoNotice>
+          <PaymentNotice />
 
           <section aria-labelledby="product-description" className="flex flex-col gap-2">
             <h2 id="product-description" className="type-h3 text-fg">

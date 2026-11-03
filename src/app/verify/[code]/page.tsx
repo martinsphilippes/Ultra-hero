@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Award, CircleX, ShieldCheck } from "lucide-react";
-import { Badge, Button, PageHeader } from "@/components/ui";
+import { Button, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { createClient } from "@/lib/supabase/server";
@@ -67,9 +67,6 @@ export default async function VerifyPage({ params }: Params) {
             </div>
           </dl>
         )}
-        <Badge variant="demo" className="w-fit">
-          {tc("demo.tag")}
-        </Badge>
         <p className="type-caption text-fg-muted">{t("symbolic")}</p>
       </section>
       <div>

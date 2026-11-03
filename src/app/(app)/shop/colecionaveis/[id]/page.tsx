@@ -6,7 +6,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { notFound } from "next/navigation";
 import { AuctionRoom } from "@/components/collectibles/AuctionRoom";
 import { Gallery } from "@/components/collectibles/Gallery";
-import { AvatarInitials, DemoBadge } from "@/components/ui";
+import { AvatarInitials } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import { trackEvent } from "@/lib/analytics/track";
 import { getUser, hasRole } from "@/lib/auth/session";
@@ -54,7 +54,6 @@ export default async function CollectiblePage({ params }: Props) {
       <div className="flex flex-col gap-4">
         <header className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <DemoBadge />
             {item.isDemo ? <span className="font-mono text-[0.6875rem] uppercase tracking-wider text-warning">{t("detail.demoItem")}</span> : null}
           </div>
           <h1 className="text-2xl font-bold leading-tight text-fg">{item.title}</h1>

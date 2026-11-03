@@ -108,7 +108,8 @@
     "library": "Biblioteca",
     "catalog": "Creators",
     "agenda": "Agenda",
-    "sponsorships": "Patrocínios"
+    "sponsorships": "Patrocínios",
+    "payments": "Pagamentos"
   },
   "office": {
     "dashboard": "Início",

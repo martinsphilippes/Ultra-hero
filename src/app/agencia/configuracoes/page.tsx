@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { AgencySettingsForm } from "@/components/agency/SettingsForms";
+import { PaymentSettingsForm } from "@/components/finance/PaymentSettingsForm";
 import { RateForm } from "@/components/finance/RateForm";
 import { PageHeader } from "@/components/ui";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
-import { agencyRates } from "@/lib/finance/queries";
+import { agencyPaymentSettings, agencyRates } from "@/lib/finance/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +15,18 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("settings") };
 }
 
-// Configurações da agência: dados básicos (gestor+) e a taxa de serviço do financeiro simulado (só Adm).
+// Configurações da agência: dados básicos (gestor+), a taxa de serviço do financeiro simulado e (0090) os dados de
+// pagamento que a marca vê em "Pagamentos" (só Adm).
 export default async function AgencySettingsPage() {
   const ctx = await requireAgency("manager");
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
-  const [t, tf, rate] = await Promise.all([getTranslations("agency.settings"), getTranslations("agency.finance"), isAdmin ? agencyRates(ctx.agency.id) : Promise.resolve(null)]);
+  const [t, tf, tp, rate, payment] = await Promise.all([
+    getTranslations("agency.settings"),
+    getTranslations("agency.finance"),
+    getTranslations("payments.settings"),
+    isAdmin ? agencyRates(ctx.agency.id) : Promise.resolve(null),
+    isAdmin ? agencyPaymentSettings(ctx.agency.id) : Promise.resolve(null),
+  ]);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={t("title")} description={t("description")} />
@@ -39,6 +47,17 @@ export default async function AgencySettingsPage() {
             <p className="type-body-sm text-fg-muted">{tf("rateDescription")}</p>
           </div>
           <RateForm initialBp={rate.agencyRateBp} locked={ctx.agency.isDemo} />
+        </section>
+      ) : null}
+      {isAdmin && payment?.available ? (
+        <section id="agency-payment" aria-labelledby="agency-payment-title" className="flex scroll-mt-20 flex-col gap-3 rounded-2xl border border-border bg-surface p-4" data-testid="agency-payment">
+          <div className="flex flex-col gap-1">
+            <h2 id="agency-payment-title" className="type-h3 text-fg">
+              {tp("title")}
+            </h2>
+            <p className="type-body-sm text-fg-muted">{tp("description")}</p>
+          </div>
+          <PaymentSettingsForm initial={payment.data} locked={ctx.agency.isDemo} />
         </section>
       ) : null}
     </div>

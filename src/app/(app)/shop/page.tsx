@@ -6,7 +6,7 @@ import { ShopSegment } from "@/components/collectibles/ShopSegment";
 import { ShopGrid } from "@/components/commerce/shop/ShopGrid";
 import { ShopTile } from "@/components/commerce/shop/ShopTile";
 import { ChipLink } from "@/components/discover/ChipLink";
-import { Button, DemoBadge, EmptyState, PageHeader } from "@/components/ui";
+import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { getUser } from "@/lib/auth/session";
 import { localizedLabel } from "@/lib/catalog/queries";
 import { SHOP_FILTER_PARAM, shopHref } from "@/lib/shop/filters";
@@ -37,7 +37,6 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
       <PageHeader
         title={t("title")}
         description={t("description")}
-        eyebrow={<DemoBadge />}
         actions={
           user ? (
             <>

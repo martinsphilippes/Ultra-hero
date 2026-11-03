@@ -9,7 +9,7 @@
     "cover": "Capa",
     "coverDescription": "Tire uma foto na hora ou escolha uma foto ou um vídeo que já esteja no celular. De um vídeo, um quadro vira a capa.",
     "media": "Mídia do vídeo",
-    "mediaDescription": "Nesta demonstração, vídeos são incorporados do YouTube ou Vimeo. Sem mídia, o player simulado usa a transcrição.",
+    "mediaDescription": "Por enquanto, vídeos são incorporados do YouTube ou Vimeo. Sem mídia, o player simulado usa a transcrição.",
     "body": {
       "video": "Conteúdo do vídeo",
       "recipe": "Receita",
@@ -283,13 +283,13 @@
   "license": {
     "kind": "Tipo de licença",
     "kinds": {
-      "platform_demo": "Demonstração da plataforma",
+      "platform_demo": "Material da plataforma",
       "own": "Mídia própria",
       "licensed": "Licenciada",
       "third_party_embed": "Incorporação de terceiros"
     },
     "kindHint": {
-      "platform_demo": "Material ilustrativo criado para a demonstração; sem mídia real.",
+      "platform_demo": "Material ilustrativo criado pela plataforma; sem mídia real.",
       "own": "Produzida pela plataforma ou pelo herói, com direitos próprios.",
       "licensed": "Mídia hospedada aqui com licença de terceiros registrada na referência.",
       "third_party_embed": "Vídeo incorporado do provedor; os direitos são do canal de origem."

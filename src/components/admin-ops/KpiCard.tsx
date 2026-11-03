@@ -6,23 +6,24 @@ type Props = {
   label: ReactNode;
   value: ReactNode;
   hint?: ReactNode;
-  /** Etiqueta curta (ex.: "Demonstração"). */
+  /** Etiqueta curta (ex.: "Teste"). */
   tag?: ReactNode;
+  /** "demo" é só um apelido antigo de "neutral" (a variante tracejada de demonstração saiu da interface). */
   tagVariant?: "demo" | "neutral" | "warning" | "info";
   tone?: "default" | "muted" | "danger";
   className?: string;
 };
 
 // Cartão de indicador: rótulo, valor grande e dica opcional. Server-safe.
-export function KpiCard({ label, value, hint, tag, tagVariant = "demo", tone = "default", className }: Props) {
+export function KpiCard({ label, value, hint, tag, tagVariant = "neutral", tone = "default", className }: Props) {
   return (
     <div className={cn("flex min-h-24 flex-col justify-between gap-2 rounded-xl border border-border bg-surface p-4", className)}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{label}</p>
-        {/* texto vira selo; um selo pronto (ex.: DemoBadge) entra como está, sem moldura dupla */}
+        {/* texto vira selo; um selo pronto (ex.: um Badge) entra como está, sem moldura dupla */}
         {tag &&
           (typeof tag === "string" ? (
-            <Badge variant={tagVariant} size="sm">
+            <Badge variant={tagVariant === "demo" ? "neutral" : tagVariant} size="sm">
               {tag}
             </Badge>
           ) : (

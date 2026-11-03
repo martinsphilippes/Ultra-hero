@@ -68,11 +68,11 @@
       "seeAll": "See all programs"
     },
     "products": {
-      "title": "Demo products",
+      "title": "Products",
       "description": "Illustrative showcase: no real purchase, delivery or charge.",
       "emptyTitle": "No products available",
-      "emptyDescription": "The demo showcase is empty right now.",
-      "goToShop": "Visit the demo shop"
+      "emptyDescription": "The showcase is empty right now.",
+      "goToShop": "Visit the shop"
     },
     "lists": {
       "title": "Your lists",
@@ -137,9 +137,9 @@
     "emptyDescription": "Try another category or see all of them.",
     "profile": {
       "back": "Heroes",
-      "fictional": "Fictional character",
+      "fictional": "Illustrative profile",
       "rightsTitle": "About this profile",
-      "rightsDefault": "Fictional profile created for the demo. Illustrative photos; no contract or endorsement.",
+      "rightsDefault": "Illustrative profile created by the platform. Illustrative photos; no contract or endorsement.",
       "pillarsLabel": "Pillars",
       "coverAlt": "Cover of {name}",
       "stats": {
@@ -152,7 +152,7 @@
       "productsNote": "This hero's products and products linked to their content. Purchases here are simulated: no real purchase, charge or delivery.",
       "productsEmptyTitle": "No products available",
       "productsEmptyDescription": "This hero's products are not available right now.",
-      "productsGoToShop": "Go to the demo shop",
+      "productsGoToShop": "Go to the shop",
       "rightsPendingBadge": "Rights under validation",
       "rightsPending": "Authorization for name and likeness is under validation; until then the profile is treated as fictional.",
       "rightsAuthorized": "Use of name and likeness authorized by {holder}.",

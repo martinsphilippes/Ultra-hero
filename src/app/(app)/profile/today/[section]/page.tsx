@@ -9,7 +9,7 @@ import { WatchDemoLabel } from "@/components/me/today/WatchToday";
 import { HeroComparison } from "@/components/heroes/HeroComparison";
 import { metricsForTodaySection } from "@/lib/heroes/compare";
 import { indexCardKind, sectionAvailable, sectionPoints, trendCodes, usualRange } from "@/components/me/today/watch-helpers";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { isDetailSection, metricDef, MODEL_INFO, type MetricCode } from "@/lib/wearables/catalog";
 import type { MetricPoint, WatchSnapshot } from "@/lib/wearables/demo";
 import { getNativeApp } from "@/lib/native-app/server";
@@ -60,7 +60,7 @@ export default async function TodayDetailPage({ params, searchParams }: { params
 
   return (
     <div className="flex flex-col gap-6" data-testid="today-detail" data-section={section}>
-      <PageHeader title={tw(`sections.${section}`)} eyebrow={t("title")} backHref={backHref} backLabel={t("detail.back")} actions={real ? null : <DemoBadge />} />
+      <PageHeader title={tw(`sections.${section}`)} eyebrow={t("title")} backHref={backHref} backLabel={t("detail.back")} />
       {view.kind === "real" ? null : <WatchDemoLabel mode={view.kind} device={device} />}
 
       {section === "readiness" ? <ReadinessSummary snapshot={snapshot} /> : null}

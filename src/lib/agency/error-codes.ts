@@ -63,6 +63,16 @@ export const AGENCY_ERROR_CODES = [
   // chamada da marca (0089)
   "call_incomplete",
   "amount_required",
+  // pedido de alteração de verba e pagamentos da marca (0090)
+  "budget_locked",
+  "change_open",
+  "reason_required",
+  "no_change",
+  "installments_sum",
+  "payment_open",
+  "invalid_pix_key",
+  "invalid_bank",
+  "payment_method_required",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

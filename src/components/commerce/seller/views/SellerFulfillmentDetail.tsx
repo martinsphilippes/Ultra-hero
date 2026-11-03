@@ -105,7 +105,7 @@ export async function SellerFulfillmentDetail({ fulfillment, actionsTitle, actio
         </h2>
         <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-fg">
           {zoneLabel}
-          <Badge variant="demo" size="sm" icon={<MapPinOff />}>
+          <Badge variant="neutral" size="sm" icon={<MapPinOff />}>
             {tc("label")}
           </Badge>
         </p>

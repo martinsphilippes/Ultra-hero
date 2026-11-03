@@ -64,7 +64,7 @@ export default async function AgencyBrandsPage({ searchParams }: Props) {
                       {b.brand.status === "active" ? t("publicOn") : t("publicOff")}
                     </Badge>
                     {b.isDemo ? (
-                      <Badge variant="demo" size="sm">
+                      <Badge variant="neutral" size="sm">
                         {t("demoTag")}
                       </Badge>
                     ) : null}

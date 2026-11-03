@@ -331,7 +331,16 @@
     "already_negotiating": "Tu marca ya tiene una propuesta en curso en esta oportunidad.",
     "has_agreement": "Hay un patrocinio acordado: no se puede cancelar. Ciérrala para confirmar las marcas con acuerdo.",
     "call_incomplete": "Completa la convocatoria antes de publicar: entregas, redes, plazo y agencias.",
-    "amount_required": "Indica el valor total antes de enviar."
+    "amount_required": "Indica el valor total antes de enviar.",
+    "budget_locked": "El presupuesto ya está definido. Para cambiarlo, usa “Pedir cambio de presupuesto”.",
+    "change_open": "Ya hay una solicitud de cambio de presupuesto abierta en esta campaña.",
+    "reason_required": "Explica el motivo (al menos 5 letras).",
+    "no_change": "El valor es igual al actual. Nada que pedir.",
+    "installments_sum": "Las cuotas deben sumar exactamente el total.",
+    "payment_open": "Este pago ya fue informado y espera a la agencia.",
+    "invalid_pix_key": "Clave PIX inválida para el tipo elegido.",
+    "invalid_bank": "Revisa banco, sucursal y cuenta.",
+    "payment_method_required": "Indica una clave PIX o los datos bancarios."
   },
   "casting": {
     "title": "Casting",
@@ -968,7 +977,8 @@
       "settled": "Liquidados",
       "cancelled": "Cancelados",
       "all": "Todos",
-      "invoices": "Facturas por revisar"
+      "invoices": "Facturas por revisar",
+      "payments": "Pagos de la marca"
     },
     "empty": {
       "open": "Ningún asiento abierto.",

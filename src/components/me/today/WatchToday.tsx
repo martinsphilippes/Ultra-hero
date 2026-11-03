@@ -387,7 +387,7 @@ export async function buildWatchToday({ snapshot, mode, lastSync = null, stale =
           {tag ? (
             <>
               {" "}
-              <Badge variant="demo" size="sm" className="align-middle">
+              <Badge variant="neutral" size="sm" className="align-middle native:hidden">
                 {tag}
               </Badge>
             </>
@@ -458,7 +458,7 @@ function TodayCard({
   return (
     <div data-testid={testId} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
       {tag ? (
-        <Badge variant="demo" size="sm" className="self-start">
+        <Badge variant="neutral" size="sm" className="self-start native:hidden">
           {tag}
         </Badge>
       ) : null}

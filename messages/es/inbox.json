@@ -194,6 +194,26 @@
     "brand_call_review": {
       "title": "Convocatoria para aprobar",
       "body": "{status, select, requested {{name} pidió publicar {title}.} returned {El dueño devolvió {title} para ajustes.} approved {El dueño publicó {title}.} other {Novedad en {title}.}}"
+    },
+    "budget_change": {
+      "title": "Cambio de presupuesto",
+      "body": "{status, select, review {Tu equipo pidió cambiar el presupuesto de {deal}: revísalo y envíalo a la agencia.} returned {El dueño devolvió la solicitud de presupuesto de {deal}.} sent {El dueño envió a la agencia la solicitud de presupuesto de {deal}.} requested {La marca pidió cambiar el presupuesto de {deal}.} withdrawn {La marca retiró la solicitud de presupuesto de {deal}.} declined {La agencia rechazó la solicitud de presupuesto de {deal}. El presupuesto actual sigue vigente.} proposed {La agencia aceptó revisar el presupuesto de {deal} y propuso un reajuste: el dueño confirma o rechaza.} confirmed {La marca confirmó el nuevo presupuesto de {deal}. Mira las tareas del reajuste.} rejected {La marca rechazó el reajuste de {deal}.} other {Novedad en la solicitud de presupuesto de {deal}.}}"
+    },
+    "payment_reported": {
+      "title": "Pago informado",
+      "body": "{brand} informó un pago de {deal}. Revísalo y confirma la recepción."
+    },
+    "payment_reviewed": {
+      "title": "{status, select, confirmed {Pago confirmado} other {Pago no confirmado}}",
+      "body": "{status, select, confirmed {La agencia confirmó la recepción del pago de {deal}.} other {La agencia no confirmó el pago de {deal}. Mira el motivo e infórmalo de nuevo.}}"
+    },
+    "payment_due": {
+      "title": "{status, select, late {Pago vencido} today {El pago vence hoy} other {Pago por vencer}}",
+      "body": "{status, select, late {El pago de {deal} está vencido.} today {El pago de {deal} vence hoy.} other {El pago de {deal} vence en hasta 3 días.}}"
+    },
+    "payment_plan": {
+      "title": "Cuotas del pago",
+      "body": "La agencia dividió el pago de {deal} en {step} cuota(s). Mira los vencimientos."
     }
   }
 }

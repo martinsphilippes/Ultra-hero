@@ -30,8 +30,8 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
       headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/agencia/notificacoes" /> : null}
     >
       {ctx.agency.isDemo ? (
-        <p className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-warning/40 bg-warning-soft/40 px-3 py-2 type-body-sm text-fg-muted" data-testid="agency-demo-banner">
-          <Badge variant="demo" size="sm">
+        <p className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="agency-demo-banner">
+          <Badge variant="neutral" size="sm">
             {t("demoBanner.tag")}
           </Badge>
           {t("demoBanner.text")}

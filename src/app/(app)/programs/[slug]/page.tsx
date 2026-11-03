@@ -86,12 +86,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function ProgramPage({ params }: Params) {
   const { slug } = await params;
-  const [program, user, locale, t, tcat, nativeApp] = await Promise.all([
+  const [program, user, locale, t, nativeApp] = await Promise.all([
     loadProgram(slug),
     getUser(),
     getLocale(),
     getTranslations("consume.program"),
-    getTranslations("catalog"),
     getNativeApp(),
   ]);
   if (!program) notFound();
@@ -376,11 +375,6 @@ export default async function ProgramPage({ params }: Params) {
                 <span className="text-sm font-semibold text-fg">{t("by", { name: program.creator.name })}</span>
                 <span className="flex items-center gap-2 type-caption text-fg-muted">
                   {program.creator.headline}
-                  {program.creator.is_fictional && (
-                    <Badge variant="demo" size="sm">
-                      {tcat("fictional")}
-                    </Badge>
-                  )}
                 </span>
               </span>
             </Link>

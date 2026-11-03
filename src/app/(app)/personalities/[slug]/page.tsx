@@ -91,7 +91,7 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 className="truncate text-xl font-semibold text-fg">{creator.name}</h1>
-              {showsFictionalBadge(rights) && <Badge variant="demo" size="sm">{t("fictional")}</Badge>}
+              {showsFictionalBadge(rights) && <Badge variant="neutral" size="sm" className="native:hidden">{t("fictional")}</Badge>}
               {rights === "pending" && <Badge variant="info" size="sm">{t("rightsPendingBadge")}</Badge>}
             </div>
             <ul className="flex gap-5" aria-label={t("statsLabel")} data-testid="hero-stats">

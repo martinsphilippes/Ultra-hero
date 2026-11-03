@@ -82,6 +82,31 @@
         "subject": "Pedido de marca decidido: {title}",
         "body": "{status, select, won {Sua proposta venceu em {title}. A marca recebe a campanha pronta.} lost {A marca escolheu outra proposta em {title}.} chosen {Você foi escolhido para {title} ({brand}). A sua agência cuida do resto.} cancelled {A marca cancelou {title}.} other {A marca encerrou {title}.}}",
         "cta": "Ver detalhes"
+      },
+      "budget_change": {
+        "subject": "{status, select, requested {Pedido de alteração de verba} declined {Pedido de verba recusado} proposed {Realinhamento proposto} confirmed {Nova verba confirmada} other {Realinhamento recusado}}: {deal}",
+        "body": "{status, select, requested {A marca pediu para mudar a verba de {deal}. Só o Adm da agência vê os valores e decide.} declined {A agência recusou o pedido de verba de {deal}. A verba atual continua valendo.} proposed {A agência aceitou rever a verba de {deal} e propôs um realinhamento. O dono da marca confirma ou recusa pelo app.} confirmed {A marca confirmou a nova verba de {deal}. As tarefas do realinhamento já estão no negócio.} other {A marca recusou o realinhamento de {deal}. Veja o motivo no app.}}",
+        "cta": "Ver pedido"
+      },
+      "payment_reported": {
+        "subject": "Pagamento informado: {deal}",
+        "body": "{brand} informou um pagamento de {deal}. Abra o comprovante e confirme o recebimento.",
+        "cta": "Conferir pagamento"
+      },
+      "payment_reviewed": {
+        "subject": "{status, select, confirmed {Pagamento confirmado} other {Pagamento não confirmado}}: {deal}",
+        "body": "{status, select, confirmed {A agência confirmou o recebimento do pagamento de {deal}.} other {A agência não confirmou o pagamento de {deal}. Veja o motivo e informe de novo.}}",
+        "cta": "Ver pagamentos"
+      },
+      "payment_due": {
+        "subject": "{status, select, late {Pagamento vencido} today {Pagamento vence hoje} other {Pagamento a vencer}}: {deal}",
+        "body": "{status, select, late {O pagamento de {deal} venceu em {date}.} today {O pagamento de {deal} vence hoje ({date}).} other {O pagamento de {deal} vence em {date}.}} Tudo é registro no app: nada é cobrado automaticamente.",
+        "cta": "Ver pagamentos"
+      },
+      "payment_plan": {
+        "subject": "Parcelas do pagamento: {deal}",
+        "body": "A agência dividiu o pagamento de {deal} em {step} parcela(s). Veja os valores e os vencimentos no app.",
+        "cta": "Ver pagamentos"
       }
     }
   }

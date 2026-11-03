@@ -228,7 +228,7 @@ describe("coleta do YouTube", () => {
 
 describe("integração com o resto da gestão", () => {
   it("menu da marca ganha a Biblioteca depois de Campanhas", () => {
-    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"]);
   });
 
   it("avisos novos e erro de cupom repetido", () => {
@@ -240,8 +240,9 @@ describe("integração com o resto da gestão", () => {
 
   it("a migração recria o check de avisos com TODOS os tipos e não abre função para o visitante", () => {
     const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0083_biblioteca_metricas_vendas.sql"), "utf8");
-    // task_due_soon chegou depois, na 0084; os avisos do patrocínio, na 0085; os da chamada da marca, na 0089
-    for (const kind of INBOX_KINDS.filter((k) => k !== "task_due_soon" && !k.startsWith("sponsorship_") && !k.startsWith("brand_call_"))) expect(sql).toContain(`'${kind}'`);
+    // task_due_soon chegou depois, na 0084; os avisos do patrocínio, na 0085; os da chamada da marca, na 0089; verba e pagamentos, na 0090
+    for (const kind of INBOX_KINDS.filter((k) => k !== "task_due_soon" && !k.startsWith("sponsorship_") && !k.startsWith("brand_call_") && k !== "budget_change" && !k.startsWith("payment_")))
+      expect(sql).toContain(`'${kind}'`);
     expect(sql).not.toMatch(/grant execute[^;]*to[^;]*\banon\b/i);
     expect(sql).toMatch(/revoke execute on function public\.tracking_link_click\(text\) from public, anon, authenticated/);
   });

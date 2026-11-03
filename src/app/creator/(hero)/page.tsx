@@ -64,7 +64,7 @@ export default async function CreatorHomePage() {
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-semibold text-fg">{ctx.profile.name}</span>
             <span className="flex flex-wrap items-center gap-1.5">
-              {ctx.profile.is_fictional && <Badge variant="demo" size="sm">{tcat("fictional")}</Badge>}
+              {ctx.profile.is_fictional && <Badge variant="neutral" size="sm" className="native:hidden">{tcat("fictional")}</Badge>}
               {ctx.profile.headline && <span className="type-caption truncate text-fg-muted">{ctx.profile.headline}</span>}
             </span>
           </div>

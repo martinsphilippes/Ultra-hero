@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type CreatorRow = Pick<Tables<"creator_profiles">, "id" | "slug" | "name" | "pillars" | "status" | "user_id" | "is_fictional" | "avatar_url" | "sort_order" | "rights_status">;
 type RightsStatus = "fictional" | "pending" | "authorized";
-const RIGHTS_VARIANT: Record<RightsStatus, "demo" | "info" | "success"> = { fictional: "demo", pending: "info", authorized: "success" };
+const RIGHTS_VARIANT: Record<RightsStatus, "neutral" | "info" | "success"> = { fictional: "neutral", pending: "info", authorized: "success" };
 
 // Personalidades: lista com status, pilares, vínculo e ações auditadas.
 export default async function AdminCreatorsPage() {
@@ -75,7 +75,7 @@ export default async function AdminCreatorsPage() {
       header: t("columns.fictional"),
       hideOnMobile: true,
       cell: (c) => (
-        <Badge variant={c.is_fictional ? "demo" : "danger"} size="sm">
+        <Badge variant={c.is_fictional ? "neutral" : "danger"} size="sm">
           {c.is_fictional ? tc("fictional") : tc("no")}
         </Badge>
       ),

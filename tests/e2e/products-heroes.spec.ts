@@ -47,7 +47,7 @@ test.describe("produtos do herói", () => {
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos");
       await expect(productCards(page)).toHaveCount(0);
       await expect(page.getByText("Nenhum produto disponível")).toBeVisible();
-      await expect(page.getByRole("link", { name: "Ver a loja de demonstração" })).toHaveAttribute("href", "/shop");
+      await expect(page.getByRole("link", { name: "Ver a loja" })).toHaveAttribute("href", "/shop");
     }
   });
 

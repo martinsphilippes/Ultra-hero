@@ -68,11 +68,11 @@
       "seeAll": "Ver todos os programas"
     },
     "products": {
-      "title": "Produtos de demonstração",
+      "title": "Produtos",
       "description": "Vitrine ilustrativa: nenhuma compra, entrega ou cobrança real.",
       "emptyTitle": "Nenhum produto disponível",
-      "emptyDescription": "A vitrine de demonstração está vazia no momento.",
-      "goToShop": "Ver a loja de demonstração"
+      "emptyDescription": "A vitrine está vazia no momento.",
+      "goToShop": "Ver a loja"
     },
     "lists": {
       "title": "Suas listas",
@@ -137,9 +137,9 @@
     "emptyDescription": "Experimente outra categoria ou veja todos.",
     "profile": {
       "back": "Heróis",
-      "fictional": "Personagem fictício",
+      "fictional": "Perfil ilustrativo",
       "rightsTitle": "Sobre este perfil",
-      "rightsDefault": "Perfil fictício criado para a demonstração. Fotos ilustrativas; sem contrato ou endosso.",
+      "rightsDefault": "Perfil ilustrativo criado pela plataforma. Fotos ilustrativas; sem contrato ou endosso.",
       "pillarsLabel": "Pilares",
       "coverAlt": "Capa de {name}",
       "stats": {
@@ -152,7 +152,7 @@
       "productsNote": "Produtos deste herói e produtos ligados aos seus conteúdos. As compras aqui são simuladas: nenhuma compra, cobrança ou entrega real.",
       "productsEmptyTitle": "Nenhum produto disponível",
       "productsEmptyDescription": "Os produtos deste herói não estão disponíveis no momento.",
-      "productsGoToShop": "Ver a loja de demonstração",
+      "productsGoToShop": "Ver a loja",
       "rightsPendingBadge": "Direitos em validação",
       "rightsPending": "Autorização de uso de nome e imagem em validação; até lá, o perfil é tratado como fictício.",
       "rightsAuthorized": "Uso de nome e imagem autorizado por {holder}.",

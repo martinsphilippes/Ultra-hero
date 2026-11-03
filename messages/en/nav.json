@@ -108,7 +108,8 @@
     "library": "Library",
     "catalog": "Creators",
     "agenda": "Calendar",
-    "sponsorships": "Sponsorships"
+    "sponsorships": "Sponsorships",
+    "payments": "Payments"
   },
   "office": {
     "dashboard": "Home",

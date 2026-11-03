@@ -13,7 +13,7 @@
       "title": "Publicar como hero indisponível",
       "description": "O banco deste ambiente ainda não tem a atualização que permite à administração publicar pelos heróis (0045)."
     },
-    "help": "Dúvidas? Fale com a equipe editorial do Groscove Ultra. Lembre-se: o ambiente é de demonstração."
+    "help": "Dúvidas? Fale com a equipe editorial do Groscove Ultra."
   },
   "dashboard": {
     "title": "Olá, {name}",
@@ -346,7 +346,7 @@
     "noFeedback": "Sem comentários da equipe."
   },
   "links": {
-    "description": "Sugira produtos da loja de demonstração relacionados aos seus conteúdos. Preços ilustrativos; nenhuma compra real.",
+    "description": "Sugira produtos da loja relacionados aos seus conteúdos. Pagamento ainda não ativado: nenhuma compra é cobrada.",
     "howTitle": "Como funciona",
     "how1": "Você sugere; a administração valida ou rejeita. Só vínculos validados aparecem ao público.",
     "how2": "Se o fornecedor fizer uma mudança significativa no produto (título, categoria, tipo, atributos ou ficha alimentar), o vínculo validado é suspenso automaticamente até nova validação.",

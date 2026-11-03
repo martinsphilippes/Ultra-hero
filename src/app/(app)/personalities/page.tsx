@@ -7,7 +7,7 @@ import { FollowButton } from "@/components/heroes/FollowButton";
 import { ChipLink, ChipRow } from "@/components/discover/ChipLink";
 import { CARD_GRID } from "@/components/discover/grid";
 import { InlineError } from "@/components/discover/InlineError";
-import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
+import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { CREATOR_CARD_SELECT, localizedLabel, type CreatorCardData } from "@/lib/catalog/queries";
 import {
   categoriesByCreator,
@@ -34,11 +34,10 @@ export async function generateMetadata(): Promise<Metadata> {
 // documento: no roteador do Next, trocar só a query na mesma rota abortava o payload (tela parada).
 export default async function PersonalitiesPage({ searchParams }: Props) {
   const supabase = await createClient();
-  const [raw, locale, t, tcat, { data, error }, categoryData, follow] = await Promise.all([
+  const [raw, locale, t, { data, error }, categoryData, follow] = await Promise.all([
     searchParams,
     getLocale(),
     getTranslations("discover.personalities"),
-    getTranslations("catalog"),
     supabase.from("creator_profiles").select(CREATOR_CARD_SELECT).eq("status", "active").order("sort_order").order("name"),
     fetchHeroCategories(supabase),
     getFollowContext(),
@@ -59,11 +58,6 @@ export default async function PersonalitiesPage({ searchParams }: Props) {
         title={t("title")}
         description={t("description")}
         eyebrow={t("eyebrow")}
-        actions={
-          <Badge variant="demo" className="hidden sm:inline-flex">
-            {tcat("fictional")}
-          </Badge>
-        }
       >
         <ChipRow label={t("filterLabel")}>
           <span className="contents" data-testid="hero-category-chips" data-available={categoryData.available ? "true" : "false"}>

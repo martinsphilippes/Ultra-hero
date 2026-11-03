@@ -176,11 +176,6 @@ export async function RecipeView({
               <Avatar src={header.creator.avatar_url} name={header.creator.name} alt="" size="md" />
               <span className="flex items-center gap-2 text-sm font-semibold text-fg">
                 {tcat("by", { name: header.creator.name })}
-                {header.creator.is_fictional && (
-                  <Badge variant="demo" size="sm">
-                    {tcat("fictional")}
-                  </Badge>
-                )}
               </span>
             </Link>
           )}

@@ -109,8 +109,9 @@ describe("avisos por e-mail (espelho de public.inbox_kind_emails)", () => {
 describe("migração 0084", () => {
   const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0084_assinatura_emails_kit_portfolio.sql"), "utf8");
   it("recria o check de avisos com TODOS os tipos e não abre nada para o visitante", () => {
-    // os avisos do patrocínio chegaram depois, na 0085; os da chamada da marca, na 0089
-    for (const kind of INBOX_KINDS.filter((k) => !k.startsWith("sponsorship_") && !k.startsWith("brand_call_"))) expect(sql).toContain(`'${kind}'`);
+    // os avisos do patrocínio chegaram depois, na 0085; os da chamada da marca, na 0089; verba e pagamentos, na 0090
+    for (const kind of INBOX_KINDS.filter((k) => !k.startsWith("sponsorship_") && !k.startsWith("brand_call_") && k !== "budget_change" && !k.startsWith("payment_")))
+      expect(sql).toContain(`'${kind}'`);
     expect(sql).not.toMatch(/grant execute[^;]*to[^;]*\banon\b/i);
     expect(sql).toMatch(/revoke execute on function public\.terms_signature_create\([^)]*\) from public, anon, authenticated/);
     expect(sql).toMatch(/revoke execute on function public\.email_outbox_claim\(int\) from public, anon, authenticated/);

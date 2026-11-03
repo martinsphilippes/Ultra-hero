@@ -132,7 +132,8 @@ test.describe("marcas e produtos (admin)", () => {
     const missing = (await page.getByTestId("admin-brands-unavailable").count()) > 0;
     if (!missing) {
       await expect(page.getByTestId("admin-brand-form")).toBeVisible();
-      await expect(page.getByText("Itens com o selo Demonstração são fictícios")).toBeVisible();
+      // sem selo de demonstração (decisão do responsável, 11/2026)
+      await expect(page.getByText(/demonstração/i)).toHaveCount(0);
     }
     await noHorizontalScroll(page);
   });

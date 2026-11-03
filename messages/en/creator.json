@@ -13,7 +13,7 @@
       "title": "Publish as hero unavailable",
       "description": "The database in this environment does not have the update that lets the admin team publish for heroes yet (0045)."
     },
-    "help": "Questions? Contact the Groscove Ultra editorial team. Remember: this is a demo environment."
+    "help": "Questions? Contact the Groscove Ultra editorial team."
   },
   "dashboard": {
     "title": "Hello, {name}",
@@ -346,7 +346,7 @@
     "noFeedback": "No comments from the team."
   },
   "links": {
-    "description": "Suggest demo-store products related to your content. Illustrative prices; no real purchases.",
+    "description": "Suggest shop products related to your content. Payments are not active yet: no purchase is charged.",
     "howTitle": "How it works",
     "how1": "You suggest; the administration validates or rejects. Only validated links are shown to the public.",
     "how2": "If the supplier makes a significant change to the product (title, category, type, attributes or food information), the validated link is suspended automatically until revalidated.",

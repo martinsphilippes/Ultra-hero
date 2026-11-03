@@ -1,5 +1,5 @@
 {
-  "demo": "Demostración",
+  "demo": "Ejemplo",
   "segment": {
     "label": "Secciones de la pestaña Comprar",
     "shop": "Tienda",
@@ -31,7 +31,7 @@
   },
   "detail": {
     "back": "Coleccionables",
-    "demoItem": "Objeto de demostración",
+    "demoItem": "Objeto de ejemplo",
     "signedBy": "Firmado por {name}",
     "about": "Sobre el objeto",
     "authenticity": "Autenticidad",
@@ -169,7 +169,7 @@
     "new": "Nuevo coleccionable",
     "newDescription": "El objeto nace en borrador. Lanzar o programar está en el detalle.",
     "empty": "Aún no hay coleccionables.",
-    "demo": "Demostración",
+    "demo": "Ejemplo",
     "phase": {
       "draft": "Borrador",
       "scheduled": "Programado",

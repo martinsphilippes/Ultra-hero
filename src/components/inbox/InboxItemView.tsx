@@ -35,6 +35,11 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   brand_call_negotiation: Megaphone,
   brand_call_decided: Megaphone,
   brand_call_review: Megaphone,
+  budget_change: Wallet,
+  payment_reported: Wallet,
+  payment_reviewed: Wallet,
+  payment_due: Wallet,
+  payment_plan: Wallet,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

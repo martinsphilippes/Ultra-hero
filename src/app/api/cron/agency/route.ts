@@ -12,6 +12,7 @@ import { cleanupAgencyDocOrphans } from "../_lib/agency-docs";
 // 0084: aviso de prazo chegando (tarefa que vence nas próximas 24 h) e o envio da fila de e-mail dos avisos (só com
 // RESEND_API_KEY e EMAIL_FROM; sem eles o resultado diz "not_configured" e a fila só é limpa).
 // 0085: oportunidade de patrocínio com o prazo de resposta vencido passa a "encerrada" (a agência ainda escolhe).
+// 0090: aviso de vencimento das parcelas que a marca deve à agência (registro simulado, nada é cobrado).
 // Cada passo que depende da 0069 pula com "not_migrated" enquanto a migração não chega ao banco.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -63,6 +64,14 @@ async function handler(request: Request) {
       out.brand_calls_skipped = "not_migrated";
     } else {
       out.brand_calls_closed = Number(brandCalls.data ?? 0);
+    }
+    // 0090: vencimento das parcelas da marca (3 dias antes, no dia e 3 dias depois)
+    const payments = await admin.rpc("brand_payment_due_scan");
+    if (payments.error) {
+      if (!NOT_MIGRATED.has(payments.error.code ?? "")) throw new Error(payments.error.message);
+      out.payments_skipped = "not_migrated";
+    } else {
+      out.payments_notified = Number(payments.data ?? 0);
     }
     try {
       Object.assign(out, await collectYouTubeMetrics(admin));

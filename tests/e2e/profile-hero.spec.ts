@@ -43,7 +43,7 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(header).toBeVisible();
     await expect(header).toHaveAttribute("id", "perfil-publico");
     await expect(header.getByRole("heading", { level: 2 })).toBeVisible();
-    await expect(header.getByText("Personagem fictício", { exact: true })).toHaveCount(0);
+    await expect(header.getByText("Perfil ilustrativo", { exact: true })).toHaveCount(0);
     await expect(header.getByTestId("hero-bio")).toBeVisible();
     await expect(main.getByRole("heading", { level: 1, name: "Perfil" })).toBeVisible();
     // nenhum link antes do Novo post (o herói só posta; o resto do portal é da administração, 0045)

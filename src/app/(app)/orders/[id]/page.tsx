@@ -6,9 +6,10 @@ import { PartyPopper, Truck } from "lucide-react";
 import { StatusBadge } from "@/components/admin";
 import { CancelOrderButton } from "@/components/commerce/CancelOrderButton";
 import { DemoNotice } from "@/components/commerce/DemoNotice";
+import { PaymentNotice } from "@/components/commerce/PaymentNotice";
 import { OrderTimeline, type FulfillmentEvent } from "@/components/commerce/OrderTimeline";
 import { advanceTransportSimulation } from "@/components/commerce/server/queries";
-import { Badge, DemoBadge, PageHeader } from "@/components/ui";
+import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate, formatDateTime } from "@/i18n/format";
 import { requireUser } from "@/lib/auth/session";
@@ -98,7 +99,6 @@ export default async function OrderDetailPage({ params, searchParams }: Params) 
             {t("date")} <time dateTime={order.confirmed_at}>{formatDateTime(order.confirmed_at, uiLocale)}</time>
           </>
         }
-        eyebrow={<DemoBadge />}
         backHref="/orders"
         backLabel={t("detail.backToOrders")}
         actions={<StatusBadge status={order.status} label={ts.has(order.status) ? ts(order.status) : order.status} size="md" />}
@@ -114,7 +114,7 @@ export default async function OrderDetailPage({ params, searchParams }: Params) 
           </span>
         </DemoNotice>
       ) : null}
-      <DemoNotice>{t("banner")}</DemoNotice>
+      <PaymentNotice />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
         <section aria-labelledby="order-fulfillments" className="flex flex-col gap-4">
@@ -175,7 +175,7 @@ export default async function OrderDetailPage({ params, searchParams }: Params) 
                   {t("detail.zone", { zone: zoneLabel })}
                 </Badge>
               ) : null}
-              <Badge variant="demo" size="sm">
+              <Badge variant="neutral" size="sm">
                 {tc("destination.label")}
               </Badge>
             </p>

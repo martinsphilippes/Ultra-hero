@@ -11,7 +11,6 @@ export type BadgeVariant =
   | "warning"
   | "danger"
   | "info"
-  | "demo"
   | Pillar;
 
 export const badgeVariants: Record<BadgeVariant, string> = {
@@ -21,7 +20,6 @@ export const badgeVariants: Record<BadgeVariant, string> = {
   warning: "bg-warning-soft text-warning border-warning/30",
   danger: "bg-danger-soft text-danger border-danger/30",
   info: "bg-info-soft text-info border-info/30",
-  demo: "bg-warning-soft text-warning border-warning/40 border-dashed",
   routine: "bg-pillar-routine-soft text-pillar-routine border-pillar-routine/30",
   training: "bg-pillar-training-soft text-pillar-training border-pillar-training/30",
   nutrition: "bg-pillar-nutrition-soft text-pillar-nutrition border-pillar-nutrition/30",
@@ -45,8 +43,6 @@ export function Badge({ variant = "neutral", size = "md", icon, className, child
     <span
       className={cn(
         `uh-badge uh-badge--${variant}`,
-        // selos de demonstração/fictício não aparecem no app das lojas (docs/decisions/app-nas-lojas.md)
-        variant === "demo" && "native:hidden",
         "inline-flex shrink-0 items-center rounded-(--uh-badge-radius) border font-mono font-medium uppercase leading-none tracking-wider whitespace-nowrap",
         badgeVariants[variant],
         sizes[size],
@@ -68,16 +64,6 @@ export function PillarBadge({ pillar, tone = "neutral", ...props }: Omit<BadgePr
   return (
     <Badge variant={tone === "pillar" ? pillar : "neutral"} {...props}>
       {t(pillar)}
-    </Badge>
-  );
-}
-
-// Etiqueta "Demonstração" para tudo que simula comércio. Some no app das lojas, onde não há comércio.
-export function DemoBadge({ className, ...props }: Omit<BadgeProps, "variant" | "children">) {
-  const t = useTranslations("common.demo");
-  return (
-    <Badge variant="demo" className={className} {...props}>
-      {t("tag")}
     </Badge>
   );
 }

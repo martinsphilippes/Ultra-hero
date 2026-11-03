@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, useTransition, type FormEvent } from "react";
 import { StatusBadge } from "@/components/admin";
-import { Button, DemoBadge, EntitySelect, FormField, Input, MoneyInput, NumberInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, EntitySelect, FormField, Input, MoneyInput, NumberInput, Select, Textarea, useToast } from "@/components/ui";
 import { localizedLabel } from "@/lib/catalog/queries";
 import { AttributesEditor, attributesToRows, rowsToAttributes, type AttributeRow } from "./product/AttributesEditor";
 import { ChipsInput } from "./product/ChipsInput";
@@ -163,7 +163,7 @@ export function ProductForm({ mode, initial, sellerOrgs, categories, moderation,
         </FormField>
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-semibold text-fg" id={`${id}-image_url-label`}>
-            {t("fields.image")} <DemoBadge size="sm" className="ml-1 align-middle" />
+            {t("fields.image")}
           </p>
           <ImagePicker options={PRODUCT_IMAGES} value={draft.image_url} onChange={(v) => set("image_url", v)} label={t("fields.image")} optionLabel={(n) => t("fields.imageOption", { n })} disabled={pending} invalid={Boolean(errors.image_url)} aria-describedby={`${id}-image-hint`} />
           <p id={`${id}-image-hint`} className={errors.image_url ? "type-caption font-medium text-danger" : "type-caption text-fg-muted"} role={errors.image_url ? "alert" : undefined}>

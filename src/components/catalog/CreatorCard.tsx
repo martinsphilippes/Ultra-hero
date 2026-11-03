@@ -40,7 +40,7 @@ export async function CreatorCard({ creator, categories = [], priority, classNam
                 {c.label}
               </Badge>
             ))}
-            {fictional ? <Badge variant="demo" size="sm">{t("fictional")}</Badge> : null}
+            {fictional ? <Badge variant="neutral" size="sm" className="native:hidden">{t("fictional")}</Badge> : null}
           </div>
         </div>
       </Link>

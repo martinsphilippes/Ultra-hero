@@ -1,5 +1,5 @@
 {
-  "demo": "Demonstração",
+  "demo": "Exemplo",
   "segment": {
     "label": "Seções da aba Comprar",
     "shop": "Loja",
@@ -31,7 +31,7 @@
   },
   "detail": {
     "back": "Colecionáveis",
-    "demoItem": "Item de demonstração",
+    "demoItem": "Item de exemplo",
     "signedBy": "Assinado por {name}",
     "about": "Sobre o item",
     "authenticity": "Autenticidade",
@@ -169,7 +169,7 @@
     "new": "Novo colecionável",
     "newDescription": "O item nasce em rascunho. Lançar ou agendar fica no detalhe.",
     "empty": "Nenhum colecionável ainda.",
-    "demo": "Demonstração",
+    "demo": "Exemplo",
     "phase": {
       "draft": "Rascunho",
       "scheduled": "Agendado",

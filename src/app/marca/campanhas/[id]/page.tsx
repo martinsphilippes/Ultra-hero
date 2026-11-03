@@ -16,6 +16,7 @@ import { TaskList } from "@/components/execution/TaskList";
 import { ApprovalPanel } from "@/components/selection/ApprovalPanel";
 import { RatingPanel } from "@/components/selection/RatingPanel";
 import { TermsPanel } from "@/components/execution/TermsPanel";
+import { BrandBudgetChange } from "@/components/finance/BrandBudgetChange";
 import { BudgetPanel } from "@/components/finance/BudgetPanel";
 import { MusicPanel } from "@/components/media/MusicPanel";
 import { TrackingPanel } from "@/components/media/TrackingPanel";
@@ -31,7 +32,7 @@ import { BRAND_STATUSES } from "@/lib/deals/stages";
 import { centsToBrl } from "@/lib/money/brl-input";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
-import { brandBudgetSummary } from "@/lib/finance/queries";
+import { brandBudgetChanges, brandBudgetSummary } from "@/lib/finance/queries";
 import { getDealMedia } from "@/lib/media/queries";
 import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { draftEditable } from "@/lib/selection/logic";
@@ -78,7 +79,7 @@ export default async function BrandCampaignPage({ params }: Props) {
   const stepIndex = BRAND_STATUSES.indexOf(detail.brandStatus);
   const steps = BRAND_STATUSES.filter((s) => s !== "cancelled");
   const inExecution = deal !== null && ["contracting", "running", "done"].includes(detail.brandStatus);
-  const [messages, docs, exec, budgetPanel, media, tm, origin, user, sponsorships, brandCalls, tbc] = await Promise.all([
+  const [messages, docs, exec, budgetPanel, media, tm, origin, user, sponsorships, brandCalls, tbc, changes] = await Promise.all([
     deal ? listMessages(deal.id, "brand_agency") : Promise.resolve([]),
     (async () => {
       const supabase = await createClient();
@@ -98,6 +99,8 @@ export default async function BrandCampaignPage({ params }: Props) {
     // 0089: a campanha nasceu de um acordo de chamada da marca?
     request.origin === "brand" ? listBrandCalls(ctx.brand.id) : Promise.resolve({ available: false, items: [] }),
     getTranslations("brandCall.brand"),
+    // 0090: pedido de alteração de verba (só com a campanha já enviada; rascunho segue livre)
+    !isDraft && detail.brandStatus !== "cancelled" ? brandBudgetChanges(request.id) : Promise.resolve(null),
   ]);
   const mediaData = media?.available ? media.data : null;
   const today = localDay(new Date(), "America/Sao_Paulo");
@@ -274,6 +277,16 @@ export default async function BrandCampaignPage({ params }: Props) {
                 <p className="type-caption text-fg-muted">{tbud("hint")}</p>
               </div>
               <BudgetPanel summary={budgetSummary} />
+              {changes ? (
+                <BrandBudgetChange
+                  requestId={request.id}
+                  role={changes.role}
+                  canRequest={changes.canRequest}
+                  currentCents={budgetSummary.reservedCents}
+                  talents={budgetSummary.talents.map((x) => ({ dealTalentId: x.dealTalentId, talentName: x.talentName, reservedCents: x.reservedCents }))}
+                  items={changes.items}
+                />
+              ) : null}
             </section>
           ) : null}
           <section className={card} aria-labelledby="camp-talents">

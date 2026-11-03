@@ -29,7 +29,7 @@ test.describe("receitas do herói", () => {
     await page.goto("/content/molho-de-ervas-em-5-minutos-g3");
     const gate = page.getByTestId("recipe-gate");
     await expect(gate).toBeVisible();
-    await expect(gate.getByText("Etapa demonstrativa pendente.")).toBeVisible();
+    await expect(gate.getByText("Etapa de boas-vindas pendente.")).toBeVisible();
     await expect(gate.getByRole("list", { name: /4 passos/ }).getByRole("listitem")).toHaveCount(4);
     await expect(gate.getByRole("link", { name: "Voltar para Hoje" })).toHaveAttribute("href", "/profile");
     await expect(page.getByRole("heading", { level: 1, name: "Molho de ervas em 5 minutos" })).toBeVisible();

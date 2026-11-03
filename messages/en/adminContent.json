@@ -1,6 +1,6 @@
 {
   "common": {
-    "demoNotice": "Demo environment: no amount, payment or delivery is real.",
+    "demoNotice": "Payments are not active yet: no amount is charged and nothing is delivered.",
     "search": "Search by title",
     "searchPlaceholder": "Type part of the title…",
     "filters": "Filters",
@@ -66,9 +66,9 @@
     "retry": "Try again",
     "saved": "Changes saved",
     "done": "Done",
-    "price": "Price (demo)",
-    "priceHint": "Demo amount in cents. No real charge.",
-    "demoCurrency": "Illustrative amounts in BRL (demo)",
+    "price": "Price",
+    "priceHint": "Amount in cents. No real charge.",
+    "demoCurrency": "Amounts in BRL",
     "dateFrom": "From",
     "dateTo": "To",
     "id": "ID",
@@ -107,7 +107,7 @@
       "inherit": "Type default"
     },
     "license": {
-      "platform_demo": "Platform demo",
+      "platform_demo": "Platform material",
       "own": "Own media",
       "licensed": "Licensed",
       "third_party_embed": "Third-party embed"
@@ -635,7 +635,7 @@
       "title": "Title",
       "seller": "Seller",
       "category": "Category",
-      "price": "Price (demo)",
+      "price": "Price",
       "status": "Status",
       "availability": "Availability",
       "moderation": "Moderation",
@@ -661,14 +661,14 @@
       "reason": "Reason",
       "partnerReadOnly": "Partner product: the admin edits it in the organization's Products tab (the supplier portal is turned off).",
       "ownEditable": "Own-operation product: the admin can edit it.",
-      "stock": "Demo stock",
+      "stock": "Stock",
       "type": "Type",
       "productType": {
         "physical": "Physical",
         "kit": "Kit",
         "digital": "Digital"
       },
-      "openPublic": "View in shop (demo)",
+      "openPublic": "View in shop",
       "editInOrg": "Edit in the organization"
     },
     "moderation": {
@@ -686,7 +686,7 @@
     },
     "form": {
       "createTitle": "New product (own operation)",
-      "createDescription": "Demo product of the own operation. Illustrative prices; no real sale.",
+      "createDescription": "Product from the own operation. No sale is charged while payments are not active.",
       "editTitle": "Edit product",
       "created": "Product created",
       "updated": "Product updated",
@@ -744,7 +744,7 @@
   },
   "orders": {
     "title": "Test orders",
-    "description": "Demo orders from all users. No real amount was charged.",
+    "description": "Orders from all users. No amount was charged.",
     "banner": "Test orders — no real amount. Fictional destinations, no address, no delivery.",
     "table": {
       "caption": "Test order list",
@@ -753,7 +753,7 @@
       "status": "Status",
       "sellers": "Sellers",
       "items": "Items",
-      "total": "Total (demo)",
+      "total": "Total",
       "retention": "Retention",
       "anonymized": "Anonymized"
     },
@@ -763,7 +763,7 @@
     "totals": {
       "title": "Totals of the listed orders",
       "count": "{n, plural, =1 {1 order} other {# orders}}",
-      "sum": "Sum (demo): {amount}",
+      "sum": "Sum: {amount}",
       "realRevenue": "Real revenue: {amount}"
     },
     "detail": {
@@ -780,8 +780,8 @@
       "lineTotal": "Line total",
       "productVersion": "Product version at order time: {n}",
       "subtotal": "Subtotal",
-      "shipping": "Shipping (demo)",
-      "total": "Total (demo)",
+      "shipping": "Shipping",
+      "total": "Total",
       "fulfillments": "Fulfillments",
       "fulfillment": "Fulfillment · {seller}",
       "eta": "Simulated ETA: {n, plural, =1 {1 day} other {# days}}",

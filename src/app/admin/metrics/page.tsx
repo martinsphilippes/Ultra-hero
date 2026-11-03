@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { parsePeriod } from "@/components/admin-ops/period";
 import { PeriodSelector } from "@/components/admin-ops/PeriodSelector";
-import { Button, DemoBadge, ErrorState, PageHeader, ProgressBar } from "@/components/ui";
+import { Button, ErrorState, PageHeader, ProgressBar } from "@/components/ui";
 import { formatCurrency, formatDate, formatNumber, formatPercent } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { createClient } from "@/lib/supabase/server";
@@ -79,7 +79,6 @@ export default async function AdminMetricsPage({ searchParams }: { searchParams:
     <div className="flex flex-col gap-8">
       {header}
       <p className="flex flex-wrap items-center gap-2 rounded-xl border border-warning/40 bg-warning-soft p-3 text-sm text-warning">
-        <DemoBadge size="sm" />
         {t("disclaimer")}
       </p>
 
@@ -111,7 +110,7 @@ export default async function AdminMetricsPage({ searchParams }: { searchParams:
       </section>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <KpiCard label={t("funnel.testOrders")} value={formatCurrency(num(m, "test_orders_total_cents_demo") / 100, locale)} tag={<DemoBadge size="sm" />} />
+        <KpiCard label={t("funnel.testOrders")} value={formatCurrency(num(m, "test_orders_total_cents_demo") / 100, locale)} />
         <KpiCard label={tk("realRevenue")} value={formatCurrency(0, locale)} hint={tk("realRevenueValue")} tone="muted" />
         <KpiCard label={t("recommendations.runs")} value={n(num(m, "recommendation_runs"))} />
         <KpiCard label={t("recommendations.fallback")} value={formatPercent(num(m, "recommendation_fallback_share"), locale)} />

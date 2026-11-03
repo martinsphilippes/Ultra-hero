@@ -13,7 +13,7 @@
       "title": "Publicar como héroe no disponible",
       "description": "La base de datos de este entorno aún no tiene la actualización que permite a la administración publicar para los héroes (0045)."
     },
-    "help": "¿Dudas? Habla con el equipo editorial de Groscove Ultra. Recuerda: el entorno es de demostración."
+    "help": "¿Dudas? Habla con el equipo editorial de Groscove Ultra."
   },
   "dashboard": {
     "title": "Hola, {name}",
@@ -346,7 +346,7 @@
     "noFeedback": "Sin comentarios del equipo."
   },
   "links": {
-    "description": "Sugiere productos de la tienda de demostración relacionados con tus contenidos. Precios ilustrativos; ninguna compra real.",
+    "description": "Sugiere productos de la tienda relacionados con tus contenidos. El pago aún no está activado: no se cobra ninguna compra.",
     "howTitle": "Cómo funciona",
     "how1": "Tú sugieres; la administración valida o rechaza. Solo los vínculos validados se muestran al público.",
     "how2": "Si el proveedor hace un cambio significativo en el producto (título, categoría, tipo, atributos o ficha alimentaria), el vínculo validado se suspende automáticamente hasta una nueva validación.",

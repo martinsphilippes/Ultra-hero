@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Badge, Card, CardImage, DemoBadge } from "@/components/ui";
+import { Badge, Card, CardImage } from "@/components/ui";
 import { formatCurrency } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
 import { localizedLabel, type ProductCardData } from "@/lib/catalog/queries";
@@ -31,7 +31,7 @@ export async function ProductCard({ product, priority, className, unavailable: f
           overlay={
             <div className="flex items-start justify-between gap-2">
               {product.category ? <Badge variant="neutral" size="sm" className="bg-black/40 text-white border-white/30">{localizedLabel(product.category.name, locale)}</Badge> : <span />}
-              {unavailable ? <Badge variant="warning" size="sm">{t("productUnavailable")}</Badge> : <DemoBadge size="sm" />}
+              {unavailable ? <Badge variant="warning" size="sm">{t("productUnavailable")}</Badge> : null}
             </div>
           }
         />

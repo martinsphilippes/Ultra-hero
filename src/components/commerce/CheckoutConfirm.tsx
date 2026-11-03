@@ -67,7 +67,7 @@ export function CheckoutConfirm({ destinationId, expected, services = [], needsD
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start gap-3 rounded-2xl border border-info/30 bg-info-soft p-4 text-fg" role="note">
+      <div className="flex items-start gap-3 rounded-2xl border border-info/30 bg-info-soft p-4 text-fg" role="note" data-testid="payment-notice">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-info" aria-hidden="true" />
         <div className="flex flex-col gap-1">
           <p className="font-semibold">{t("statement")}</p>

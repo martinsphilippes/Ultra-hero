@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
-import { Badge, DemoBadge } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { formatCurrency, formatDate, formatNumber, formatPercent } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import {
@@ -195,7 +195,6 @@ export async function ConversionSection({ data }: { data: ConversionData }) {
         description={t("conversion.shopDescription")}
         empty={sf.productViews + sf.cartAdds + sf.checkouts + sf.testOrders === 0}
         emptyLabel={empty}
-        action={<DemoBadge size="sm" />}
       >
         <Funnel
           label={t("conversion.shopTitle")}
@@ -254,7 +253,7 @@ export async function ProfessionalsSection({ data }: { data: ProfessionalsData }
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <KpiCard label={t("professionals.kpis.orders")} value={n(tot.orders)} />
         <KpiCard label={t("professionals.kpis.completed")} value={n(tot.byStatus.completed)} />
-        <KpiCard label={t("professionals.kpis.revenue")} value={money(tot.revenueCents)} hint={t("professionals.revenueHint")} tag={<DemoBadge size="sm" />} />
+        <KpiCard label={t("professionals.kpis.revenue")} value={money(tot.revenueCents)} hint={t("professionals.revenueHint")} />
         <KpiCard label={t("professionals.kpis.medianResponse")} value={duration(tot.medianResponseMinutes)} />
         <KpiCard className="col-span-2 md:col-span-1" label={t("professionals.kpis.taps")} value={n(tot.tapsContratar)} hint={t("professionals.tapsHint", { count: n(tot.tapsVerPerfil) })} />
       </div>
@@ -319,7 +318,7 @@ export async function CollectiblesSection({ data }: { data: CollectiblesData }) 
         <KpiCard label={t("collectibles.kpis.bids")} value={n(data.bids)} />
         <KpiCard label={t("collectibles.kpis.views")} value={n(data.views)} />
         <KpiCard label={t("collectibles.kpis.won")} value={n(data.won)} hint={t("collectibles.noBidsHint", { count: n(data.noBids) })} />
-        <KpiCard label={t("collectibles.kpis.finalValue")} value={money(data.finalCents)} tag={<DemoBadge size="sm" />} />
+        <KpiCard label={t("collectibles.kpis.finalValue")} value={money(data.finalCents)} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -340,7 +339,6 @@ export async function CollectiblesSection({ data }: { data: CollectiblesData }) 
                   <p className="truncate font-semibold text-fg">{i.title}</p>
                   <p className="type-caption text-fg-muted">{i.hero ? t("collectibles.itemHint", { hero: i.hero, status: t(`collectibles.status.${statusKey(i.status)}`) }) : t(`collectibles.status.${statusKey(i.status)}`)}</p>
                 </div>
-                {i.isDemo ? <DemoBadge size="sm" /> : null}
               </div>
               <StatGrid
                 stats={[

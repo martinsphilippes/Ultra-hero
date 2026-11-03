@@ -331,7 +331,16 @@
     "already_negotiating": "Your brand already has a proposal in progress for this opportunity.",
     "has_agreement": "There is an agreed sponsorship: it can't be cancelled. Close it to confirm the brands with a deal.",
     "call_incomplete": "Complete the call before publishing: deliverables, networks, deadline and agencies.",
-    "amount_required": "Enter the total amount before sending."
+    "amount_required": "Enter the total amount before sending.",
+    "budget_locked": "The budget is already set. To change it, use “Request budget change”.",
+    "change_open": "There is already an open budget change request for this campaign.",
+    "reason_required": "Explain the reason (at least 5 letters).",
+    "no_change": "The amount is the same as now. Nothing to request.",
+    "installments_sum": "Installments must add up exactly to the total.",
+    "payment_open": "This payment was already reported and is waiting for the agency.",
+    "invalid_pix_key": "Invalid PIX key for the chosen type.",
+    "invalid_bank": "Check bank, branch and account.",
+    "payment_method_required": "Enter a PIX key or the bank details."
   },
   "casting": {
     "title": "Roster",
@@ -968,7 +977,8 @@
       "settled": "Settled",
       "cancelled": "Cancelled",
       "all": "All",
-      "invoices": "Invoices to review"
+      "invoices": "Invoices to review",
+      "payments": "Brand payments"
     },
     "empty": {
       "open": "No open entry.",

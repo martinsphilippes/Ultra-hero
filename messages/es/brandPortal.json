@@ -278,6 +278,7 @@
     "overviewEmpty": "Ninguna campaña con presupuesto o contratación aún.",
     "overCount": "{count, plural, one {# campaña superó el presupuesto} other {# campañas superaron el presupuesto}}",
     "talentsOver": "{count, plural, one {# creator sobre el presupuesto} other {# creators sobre el presupuesto}}",
-    "seeCampaign": "Ver campaña"
+    "seeCampaign": "Ver campaña",
+    "lockedHint": "El presupuesto definido queda bloqueado. Para cambiarlo, usa “Pedir cambio de presupuesto”: la agencia lo evalúa y el dueño confirma."
   }
 }

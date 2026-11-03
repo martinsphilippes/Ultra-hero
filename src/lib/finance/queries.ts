@@ -2,6 +2,8 @@ import "server-only";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { toBudgetOverview, toBudgetSummary, type BudgetOverview, type BudgetSummary } from "./budget";
+import { toAgencyChanges, toBrandChanges, type AgencyChanges, type BrandChanges } from "./budget-change";
+import { toAgencyPayments, toBrandPayments, toPaymentSettings, type AgencyPaymentsData, type BrandPaymentsData, type PaymentSettings } from "./payments";
 import { latestInvoice, toEarnings, type Earning, type PayoutInvoice } from "./earnings";
 import { isEntryKind, isEntryStatus, type EntryFilter, type EntryKind, type EntryStatus } from "./vocab";
 
@@ -156,4 +158,48 @@ export async function agencyRates(agencyId: string, dealId?: string | null): Pro
   if (error || !data || typeof data !== "object" || Array.isArray(data)) return null;
   const k = data as Record<string, unknown>;
   return { agencyRateBp: num(k.agency_rate_bp), dealRateBp: k.deal_rate_bp === null || k.deal_rate_bp === undefined ? null : num(k.deal_rate_bp), contracted: Boolean(k.contracted) };
+}
+
+// ---------------------------------------------------------------- 0090: pedido de alteração de verba e pagamentos da marca
+
+/** Pedidos de alteração de verba de uma campanha (marca: com valores; pode pedir?). */
+export async function brandBudgetChanges(requestId: string): Promise<BrandChanges | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(requestId)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("brand_budget_changes", { p_request: requestId });
+  if (error) return null;
+  return toBrandChanges(data);
+}
+
+/** Pedidos de um negócio para a agência (Adm com valores; gestor/equipe do negócio só a situação). */
+export async function agencyBudgetChanges(dealId: string): Promise<AgencyChanges | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(dealId)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("agency_budget_changes", { p_deal: dealId });
+  if (error) return null;
+  return toAgencyChanges(data);
+}
+
+/** O que a marca deve às agências, com parcelas, informes e os dados de pagamento. */
+export async function brandPayments(brandId: string): Promise<{ available: boolean; data: BrandPaymentsData | null }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("brand_payments", { p_brand: brandId });
+  if (error) return { available: !isMissingSchema(error), data: null };
+  return { available: true, data: toBrandPayments(data) };
+}
+
+/** Pagamentos das marcas para o Adm da agência. */
+export async function agencyBrandPayments(agencyId: string): Promise<{ available: boolean; data: AgencyPaymentsData | null }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("agency_brand_payments", { p_agency: agencyId });
+  if (error) return { available: !isMissingSchema(error), data: null };
+  return { available: true, data: toAgencyPayments(data) };
+}
+
+/** Dados de pagamento da agência (só o Adm lê, pela RLS). */
+export async function agencyPaymentSettings(agencyId: string): Promise<{ available: boolean; data: PaymentSettings | null }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("agency_payment_settings").select("*").eq("agency_id", agencyId).maybeSingle();
+  if (error) return { available: !isMissingSchema(error), data: null };
+  return { available: true, data: toPaymentSettings(data) };
 }

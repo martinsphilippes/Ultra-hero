@@ -101,6 +101,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "agenda", href: "/marca/agenda" },
     // Oportunidades de patrocínio (0085): "Quero patrocinar" ou "Não tenho interesse"
     { key: "sponsorships", href: "/marca/oportunidades" },
+    // Pagamentos (0090): o que a marca deve à agência (registro simulado)
+    { key: "payments", href: "/marca/pagamentos" },
     { key: "team", href: "/marca/equipe" },
     { key: "notifications", href: "/marca/notificacoes" },
   ],

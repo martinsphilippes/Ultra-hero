@@ -89,7 +89,7 @@ export default async function AdminCollectiblesPage() {
                         {t(`phase.${phase}`)}
                       </Badge>
                       {row.is_demo ? (
-                        <Badge variant="demo" size="sm">
+                        <Badge variant="neutral" size="sm">
                           {t("demo")}
                         </Badge>
                       ) : null}

@@ -10,10 +10,10 @@
     "completedOn": "Completed on {date}",
     "completedBadge": "Completed",
     "summaryLabel": "Summary",
-    "creatorFictional": "Fictional character",
+    "creatorFictional": "Illustrative profile",
     "aboutCreator": "About the hero",
     "moreFromCreator": "More from {name}",
-    "relatedProducts": "Related products · demo",
+    "relatedProducts": "Related products",
     "relatedProductsNote": "Links validated by the editorial team. Illustrative prices; no real purchase.",
     "tags": "Topics",
     "metaDuration": "{n} min",
@@ -24,7 +24,7 @@
     "notFoundDescription": "This content may have been archived or the address changed.",
     "licenseLabel": "Credit/license",
     "license": {
-      "platform_demo": "platform demo",
+      "platform_demo": "platform material",
       "own": "own media",
       "licensed": "licensed media",
       "third_party_embed": "third-party embed"
@@ -92,13 +92,13 @@
     }
   },
   "disclaimer": {
-    "general": "Educational demo content. It does not replace individual professional guidance.",
+    "general": "Educational content. It does not replace individual professional guidance.",
     "training": "Educational training content. Not an individual prescription: respect your limits and see a qualified professional in case of pain, injury or a health condition.",
     "nutrition": "Educational nutrition content. Not an individual nutrition prescription: needs vary; consult a qualified professional for personal guidance.",
     "label": "Notice"
   },
   "player": {
-    "label": "Demo player: {title}",
+    "label": "Simulated player: {title}",
     "demoBadge": "Simulated player",
     "demoNote": "This player simulates a video timeline. There is no real media; the text below plays the role of captions.",
     "play": "Play",
@@ -269,14 +269,14 @@
   },
   "certificate": {
     "title": "Symbolic certificate of completion",
-    "subtitle": "Groscove Ultra · demo environment",
+    "subtitle": "Groscove Ultra · symbolic certificate",
     "awardedTo": "Awarded to",
     "forCompleting": "for completing the program",
     "version": "Version {n}",
     "completedOn": "Completed on {date}",
     "code": "Code {code}",
     "verify": "Verify at {url}",
-    "disclaimer": "This certificate is symbolic. It has no professional, academic or legal validity; it only recognizes the completion of educational content in a demo environment.",
+    "disclaimer": "This certificate is symbolic. It has no professional, academic or legal validity; it only recognizes the completion of educational content on Groscove Ultra.",
     "revoked": "REVOKED",
     "participant": "Participant"
   },

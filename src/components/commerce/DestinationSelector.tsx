@@ -47,7 +47,7 @@ export function DestinationSelector({ destinations, selectedId, compact = false 
         <label htmlFor={id} className="text-sm font-semibold text-fg">
           {t("label")}
         </label>
-        <Badge variant="demo" size="sm" icon={<MapPinOff />}>
+        <Badge variant="neutral" size="sm" icon={<MapPinOff />}>
           {td("fictional")}
         </Badge>
       </div>

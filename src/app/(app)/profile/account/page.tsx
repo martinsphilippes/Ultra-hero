@@ -6,7 +6,7 @@ import { AccountPasswordCard, type PasswordCardMode } from "@/components/me/Acco
 import { AccountPhoneForm } from "@/components/me/AccountPhoneForm";
 import { DeleteAccountDialog } from "@/components/me/DeleteAccountDialog";
 import { DELETE_ACCOUNT_ANCHOR } from "@/lib/settings/sections";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { isPasswordVaultConfigured } from "@/lib/auth/password-crypto";
 import { formatE164ForDisplay } from "@/lib/auth/phone";
 import { hasGeneratedPassword } from "@/lib/auth/quick-signup-server";
@@ -73,7 +73,7 @@ export default async function AccountPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} backHref="/profile" backLabel={tc("actions.back")} actions={<DemoBadge />} />
+      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} backHref="/profile" backLabel={tc("actions.back")} />
 
       <div className="grid gap-4 md:grid-cols-2">
         {blocks.map(({ key, icon: Icon, title, body }) => (

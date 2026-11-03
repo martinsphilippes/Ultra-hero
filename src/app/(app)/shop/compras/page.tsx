@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { MyBidsList } from "@/components/collectibles/MyBidsList";
-import { DemoNotice } from "@/components/commerce/DemoNotice";
+import { PaymentNotice } from "@/components/commerce/PaymentNotice";
 import { OrdersList } from "@/components/commerce/OrdersList";
 import { ServiceOrdersList } from "@/components/professionals/ServiceOrdersList";
 import { advanceTransportSimulation } from "@/components/commerce/server/queries";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { BackLink } from "@/components/ui/back-link";
 import { requireUser } from "@/lib/auth/session";
 import { fetchMyBids } from "@/lib/collectibles/queries";
@@ -29,7 +29,7 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
   const user = await requireUser("/shop/compras");
   const params = await searchParams;
   await advanceTransportSimulation();
-  const [t, to, tp, supabase] = await Promise.all([getTranslations("collectibles.purchases"), getTranslations("commerce.orders"), getTranslations("professionals.orders"), createClient()]);
+  const [t, tp, supabase] = await Promise.all([getTranslations("collectibles.purchases"), getTranslations("professionals.orders"), createClient()]);
   const [myBids, services] = await Promise.all([fetchMyBids(supabase), myServiceOrders(user.id)]);
   const tab = myBids.available && params.aba === "lances" ? "bids" : services.available && params.aba === "servicos" ? "services" : "orders";
 
@@ -42,7 +42,7 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
   return (
     <div className="flex flex-col gap-5">
       <BackLink href="/shop">{t("back")}</BackLink>
-      <PageHeader title={t("title")} description={t("description")} eyebrow={<DemoBadge />} />
+      <PageHeader title={t("title")} description={t("description")} />
       {tabs.length > 1 ? (
         <nav aria-label={t("tabsLabel")}>
           <ul className={cn("grid gap-1 rounded-2xl border border-border bg-surface-elevated p-1 sm:w-fit sm:min-w-[24rem]", tabs.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
@@ -71,7 +71,7 @@ export default async function MyPurchasesPage({ searchParams }: Props) {
 
       {tab === "orders" ? (
         <section aria-label={t("tabs.orders")} className="flex flex-col gap-4" data-testid="purchases-orders">
-          <DemoNotice>{to("banner")}</DemoNotice>
+          <PaymentNotice />
           <OrdersList userId={user.id} />
         </section>
       ) : tab === "services" ? (

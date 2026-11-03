@@ -98,7 +98,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
   ]);
   if (error) throw new Error(error.message);
   if (!creator) notFound();
-  const rightsVariant = creator.rights_status === "authorized" ? "success" : creator.rights_status === "pending" ? "info" : "demo";
+  const rightsVariant = creator.rights_status === "authorized" ? "success" : creator.rights_status === "pending" ? "info" : "neutral";
 
   // Validados primeiro (na ordem da vitrine), depois o resto em ordem de título.
   const allocations = new Map(((allocationsRes.data ?? []) as AllocationRow[]).map((a) => [a.product_id, a]));
@@ -153,7 +153,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         }
       />
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface-elevated p-3 text-sm">
-        {creator.is_fictional && <Badge variant="demo">{tc("fictional")}</Badge>}
+        {creator.is_fictional && <Badge variant="neutral">{tc("fictional")}</Badge>}
         <Badge variant={rightsVariant}>{t(`rights.${creator.rights_status as "fictional" | "pending" | "authorized"}`)}</Badge>
         {creator.user_id ? (
           <Link href={`/admin/users/${creator.user_id}`} className="font-mono text-xs text-accent-text hover:underline">

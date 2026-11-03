@@ -194,6 +194,26 @@
     "brand_call_review": {
       "title": "Call to approve",
       "body": "{status, select, requested {{name} asked to publish {title}.} returned {The owner sent {title} back for changes.} approved {The owner published {title}.} other {News on {title}.}}"
+    },
+    "budget_change": {
+      "title": "Budget change",
+      "body": "{status, select, review {Your team asked to change the budget of {deal}: review it and send it to the agency.} returned {The owner returned the budget request for {deal}.} sent {The owner sent the budget request for {deal} to the agency.} requested {The brand asked to change the budget of {deal}.} withdrawn {The brand withdrew the budget request for {deal}.} declined {The agency declined the budget request for {deal}. The current budget stays.} proposed {The agency agreed to review the budget of {deal} and proposed a realignment: the owner confirms or declines.} confirmed {The brand confirmed the new budget of {deal}. See the realignment tasks.} rejected {The brand declined the realignment of {deal}.} other {News on the budget request for {deal}.}}"
+    },
+    "payment_reported": {
+      "title": "Payment reported",
+      "body": "{brand} reported a payment for {deal}. Check it and confirm receipt."
+    },
+    "payment_reviewed": {
+      "title": "{status, select, confirmed {Payment confirmed} other {Payment not confirmed}}",
+      "body": "{status, select, confirmed {The agency confirmed receiving the payment for {deal}.} other {The agency did not confirm the payment for {deal}. See why and report it again.}}"
+    },
+    "payment_due": {
+      "title": "{status, select, late {Payment overdue} today {Payment due today} other {Payment due soon}}",
+      "body": "{status, select, late {The payment for {deal} is overdue.} today {The payment for {deal} is due today.} other {The payment for {deal} is due within 3 days.}}"
+    },
+    "payment_plan": {
+      "title": "Payment installments",
+      "body": "The agency split the payment for {deal} into {step} installment(s). See the due dates."
     }
   }
 }

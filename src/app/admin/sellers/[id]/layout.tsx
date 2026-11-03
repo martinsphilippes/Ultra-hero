@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/admin";
 import { SellerStatusButton } from "@/components/admin-ops/StatusActions";
 import { SellerHubTabs } from "@/components/admin-ops/SellerHubTabs";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { getAdminSellerOrg } from "./_lib/org";
 
 type Props = { children: ReactNode; params: Promise<{ id: string }> };
@@ -23,7 +23,6 @@ export default async function SellerHubLayout({ children, params }: Props) {
         title={
           <span className="inline-flex flex-wrap items-center gap-2">
             {org.name}
-            <DemoBadge />
           </span>
         }
         description={th("description")}

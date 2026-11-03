@@ -7,7 +7,7 @@ import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { DeleteLinkButton } from "@/components/creator/DeleteLinkButton";
 import { LinkSuggestForm } from "@/components/creator/LinkSuggestForm";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import type { Enums } from "@/lib/supabase/helpers";
@@ -95,7 +95,7 @@ export default async function CreatorLinksPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={tn("creator.links")} description={t("links.description")} eyebrow={tn("portals.creator")} actions={<DemoBadge size="md" />} />
+      <PageHeader title={tn("creator.links")} description={t("links.description")} eyebrow={tn("portals.creator")} />
 
       <aside role="note" aria-label={t("links.howTitle")} className="flex items-start gap-3 rounded-xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-fg">
         <Info className="mt-0.5 size-4 shrink-0 text-info" aria-hidden="true" />

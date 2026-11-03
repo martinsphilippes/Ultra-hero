@@ -32,7 +32,7 @@ export async function HeroProfileHeader({ profile }: { profile: CreatorProfile }
           </h2>
           <span className="flex flex-wrap items-center gap-1.5">
             {profile.is_fictional && (
-              <Badge variant="demo" size="sm">
+              <Badge variant="neutral" size="sm" className="native:hidden">
                 {tcat("fictional")}
               </Badge>
             )}

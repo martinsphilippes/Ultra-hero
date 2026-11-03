@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, useTransition } from "react";
 import { searchProducts, suggestLink, type ProductHit } from "@/app/creator/(hero)/links/actions";
-import { Button, DemoBadge, FormField, Input, Select, Spinner, Textarea, useToast } from "@/components/ui";
+import { Button, FormField, Input, Select, Spinner, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import { cn } from "@/lib/utils";
@@ -88,7 +88,6 @@ export function LinkSuggestForm({ contents }: { contents: ContentOption[] }) {
         <h2 id={`${baseId}-title`} className="type-h3 text-fg">
           {t("formTitle")}
         </h2>
-        <DemoBadge />
       </div>
 
       <FormField label={t("content")} hint={hasContents ? t("contentHint") : t("noContents")} required>

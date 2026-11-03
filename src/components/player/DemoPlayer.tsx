@@ -191,7 +191,7 @@ export function DemoPlayer({
         {poster && <Image src={poster} alt="" fill unoptimized={poster.endsWith(".svg")} sizes="(min-width: 1024px) 60vw, 100vw" className="pointer-events-none object-cover opacity-50" />}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-obsidian/90 via-obsidian/30 to-transparent" />
         <div className="pointer-events-none absolute left-3 top-3">
-          <Badge variant="demo" size="sm">
+          <Badge variant="neutral" size="sm" className="native:hidden">
             {t("demoBadge")}
           </Badge>
         </div>

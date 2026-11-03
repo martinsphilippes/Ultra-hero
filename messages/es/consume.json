@@ -10,10 +10,10 @@
     "completedOn": "Completado el {date}",
     "completedBadge": "Completado",
     "summaryLabel": "Resumen",
-    "creatorFictional": "Personaje ficticio",
+    "creatorFictional": "Perfil ilustrativo",
     "aboutCreator": "Sobre el héroe",
     "moreFromCreator": "Más de {name}",
-    "relatedProducts": "Productos relacionados · demostración",
+    "relatedProducts": "Productos relacionados",
     "relatedProductsNote": "Vínculos validados por el equipo editorial. Precios ilustrativos; ninguna compra real.",
     "tags": "Temas",
     "metaDuration": "{n} min",
@@ -24,7 +24,7 @@
     "notFoundDescription": "Este contenido puede haber sido archivado o la dirección cambió.",
     "licenseLabel": "Crédito/licencia",
     "license": {
-      "platform_demo": "demostración de la plataforma",
+      "platform_demo": "material de la plataforma",
       "own": "medio propio",
       "licensed": "medio con licencia",
       "third_party_embed": "inserción de terceros"
@@ -92,13 +92,13 @@
     }
   },
   "disclaimer": {
-    "general": "Contenido educativo y de demostración. No sustituye la orientación profesional individual.",
+    "general": "Contenido educativo. No sustituye la orientación profesional individual.",
     "training": "Contenido educativo sobre entrenamiento. No es una prescripción individual: respeta tus límites y consulta a un profesional habilitado en caso de dolor, lesión o condición de salud.",
     "nutrition": "Contenido educativo sobre alimentación. No es una prescripción nutricional individual: las necesidades varían; consulta a un profesional habilitado para orientación personal.",
     "label": "Aviso"
   },
   "player": {
-    "label": "Reproductor de demostración: {title}",
+    "label": "Reproductor simulado: {title}",
     "demoBadge": "Reproductor simulado",
     "demoNote": "Este reproductor simula la línea de tiempo de un video. No hay medio real; el texto de abajo hace de subtítulos.",
     "play": "Reproducir",
@@ -269,14 +269,14 @@
   },
   "certificate": {
     "title": "Certificado simbólico de finalización",
-    "subtitle": "Groscove Ultra · entorno de demostración",
+    "subtitle": "Groscove Ultra · certificado simbólico",
     "awardedTo": "Otorgado a",
     "forCompleting": "por completar el programa",
     "version": "Versión {n}",
     "completedOn": "Completado el {date}",
     "code": "Código {code}",
     "verify": "Verifica en {url}",
-    "disclaimer": "Este certificado es simbólico. No tiene validez profesional, académica ni legal; solo reconoce la finalización de contenidos educativos en un entorno de demostración.",
+    "disclaimer": "Este certificado es simbólico. No tiene validez profesional, académica ni legal; solo reconoce la finalización de contenidos educativos en Groscove Ultra.",
     "revoked": "REVOCADO",
     "participant": "Participante"
   },

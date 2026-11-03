@@ -31,6 +31,10 @@ export type BudgetSummary = {
   paymentStatus: string | null;
   talents: BudgetTalent[];
   canEdit: boolean;
+  /** 0090: campanha já enviada — verba definida só muda pelo pedido de alteração */
+  locked: boolean;
+  /** 0090: situação do pedido de alteração aberto (pending_owner | open | proposed) */
+  changeStatus: string | null;
 };
 
 export type BudgetOverview = {
@@ -76,6 +80,8 @@ export function toBudgetSummary(raw: unknown): BudgetSummary | null {
       over: t.over === true,
     })),
     canEdit: k.can_edit === true,
+    locked: k.locked === true,
+    changeStatus: str(k.change_status),
   };
 }
 

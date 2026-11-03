@@ -53,6 +53,12 @@ export const INBOX_KINDS = [
   "brand_call_negotiation",
   "brand_call_decided",
   "brand_call_review",
+  // pedido de alteração de verba e pagamentos da marca (0090)
+  "budget_change",
+  "payment_reported",
+  "payment_reviewed",
+  "payment_due",
+  "payment_plan",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
@@ -112,6 +118,14 @@ export function inboxKindEmails(kind: string, link: string, params: Record<strin
     case "brand_call_negotiation":
       return status === "proposed" || status === "countered" || status === "agreed" || status === "declined";
     case "brand_call_decided":
+      return true;
+    // 0090: passos do pedido de verba entre as partes (os internos da marca ficam só no sino) e pagamentos
+    case "budget_change":
+      return status === "requested" || status === "declined" || status === "proposed" || status === "confirmed" || status === "rejected";
+    case "payment_reported":
+    case "payment_reviewed":
+    case "payment_due":
+    case "payment_plan":
       return true;
     default:
       return false;

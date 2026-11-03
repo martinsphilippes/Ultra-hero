@@ -4,23 +4,23 @@
     "eyebrow": "Recipes",
     "description": "Your current access does not allow opening recipes.",
     "badge": "Step 0 of {total} · pending",
-    "cardTitle": "Demo step pending.",
-    "cardDescription": "There is no professional review. Complete the demo step to open the demo content only.",
-    "stepsLabel": "{total} demo steps",
+    "cardTitle": "Welcome step pending.",
+    "cardDescription": "There is no professional review. Complete the welcome step to open the recipes.",
+    "stepsLabel": "{total} welcome steps",
     "steps": {
       "notice": "Accept the notice",
       "diet": "Restrictions and allergies",
       "interests": "Interests",
       "confirm": "Confirm"
     },
-    "start": "Start the demo step",
+    "start": "Start the welcome step",
     "backToToday": "Back to Today"
   },
   "onboarding": {
-    "metaTitle": "Recipe demo step",
+    "metaTitle": "Recipe welcome step",
     "eyebrow": "Recipes",
-    "title": "Demo step",
-    "description": "Four quick steps to open the demo recipes.",
+    "title": "Welcome step",
+    "description": "Four quick steps to open the recipes.",
     "cancel": "Back",
     "progress": "Step {step} of {total}",
     "back": "Back",
@@ -28,7 +28,7 @@
     "finish": "Finish and open recipes",
     "notice": {
       "title": "Accept the notice",
-      "description": "Groscove Ultra recipes are demo content.",
+      "description": "Groscove Ultra recipes are educational content.",
       "item1": "There is no review by a dietitian or any other health professional.",
       "item2": "Recipes don't replace professional advice or treat health conditions.",
       "item3": "Always check the ingredients, especially if you have an allergy or restriction.",
@@ -960,8 +960,8 @@
       "dietsLabel": "Diets declared by the chef"
     },
     "invite": {
-      "title": "Unlock the recipes with the demo step",
-      "description": "Cards are open to everyone. To see ingredients, method and cooking mode, complete the demo step ({total} quick steps).",
+      "title": "Unlock the recipes with the welcome step",
+      "description": "Cards are open to everyone. To see ingredients, method and cooking mode, complete the welcome step ({total} quick steps).",
       "action": "Start the step",
       "visitorAction": "Sign in and start the step"
     }

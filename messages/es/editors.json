@@ -9,7 +9,7 @@
     "cover": "Portada",
     "coverDescription": "Toma una foto ahora o elige una foto o un video que ya esté en el celular. De un video, un cuadro se vuelve la portada.",
     "media": "Medio del video",
-    "mediaDescription": "En esta demostración, los videos se incrustan desde YouTube o Vimeo. Sin medio, el reproductor simulado usa la transcripción.",
+    "mediaDescription": "Por ahora, los videos se incrustan desde YouTube o Vimeo. Sin medio, el reproductor simulado usa la transcripción.",
     "body": {
       "video": "Contenido del video",
       "recipe": "Receta",
@@ -283,13 +283,13 @@
   "license": {
     "kind": "Tipo de licencia",
     "kinds": {
-      "platform_demo": "Demostración de la plataforma",
+      "platform_demo": "Material de la plataforma",
       "own": "Medio propio",
       "licensed": "Con licencia",
       "third_party_embed": "Inserción de terceros"
     },
     "kindHint": {
-      "platform_demo": "Material ilustrativo creado para la demostración; sin medio real.",
+      "platform_demo": "Material ilustrativo creado por la plataforma; sin medio real.",
       "own": "Producido por la plataforma o por el héroe, con derechos propios.",
       "licensed": "Medio alojado aquí con licencia de terceros registrada en la referencia.",
       "third_party_embed": "Video insertado del proveedor; los derechos son del canal de origen."

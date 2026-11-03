@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil } from "lucide-react";
+import { Lock, Pencil } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { Badge, Button, Dialog, FormField, MoneyInput, ProgressBar, useToast, type BadgeVariant } from "@/components/ui";
@@ -10,12 +10,15 @@ import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
 import { centsToBrl } from "@/lib/money/brl-input";
 import { setBrandBudgetAction } from "@/lib/finance/actions";
 import { budgetTone, budgetUsedPercent, type BudgetSummary, type BudgetTone } from "@/lib/finance/budget";
+import { budgetRowLocked } from "@/lib/finance/budget-change";
 
 const TONE_VARIANT: Record<BudgetTone, BadgeVariant> = { none: "neutral", ok: "success", near: "warning", over: "danger" };
 const TONE_BAR = { none: "accent", ok: "success", near: "warning", over: "danger" } as const;
 
 // Verba da campanha (0082): reservado, comprometido (o que a marca paga pelos contratados), pago e saldo, com a
 // conta por influenciador. Só o dono da marca define a verba (o banco confere); valores simulados.
+// 0090: depois de enviada a campanha, a verba definida fica travada (só a 1ª definição é livre); mudar é pelo pedido de
+// alteração (BrandBudgetChange, logo abaixo no mesmo cartão).
 export function BudgetPanel({ summary }: { summary: BudgetSummary }) {
   const t = useTranslations("brandPortal.budget");
   const locale = useLocale() as Locale;
@@ -23,6 +26,8 @@ export function BudgetPanel({ summary }: { summary: BudgetSummary }) {
   const tone = budgetTone(summary.reservedCents, summary.committedCents);
   const used = budgetUsedPercent(summary.reservedCents, summary.committedCents);
   const money = (c: number | null) => (c === null ? "—" : formatCents(c, locale));
+  const campaignLocked = budgetRowLocked(summary.locked, summary.reservedSource === "set" ? summary.reservedCents : null);
+  const anyLocked = campaignLocked || summary.talents.some((x) => budgetRowLocked(summary.locked, x.reservedCents));
 
   const tile = (label: string, value: string, extra?: string, danger = false) => (
     <div className="flex min-h-16 flex-col justify-center rounded-xl border border-border px-3 py-2">
@@ -41,7 +46,7 @@ export function BudgetPanel({ summary }: { summary: BudgetSummary }) {
         <span className="type-caption text-fg-muted">
           {summary.reservedSource === "offered" ? t("sourceOffered") : summary.reservedSource === "set" ? t("sourceSet") : t("none")}
         </span>
-        {summary.canEdit ? (
+        {summary.canEdit && !campaignLocked ? (
           <Button
             type="button"
             size="sm"
@@ -88,7 +93,7 @@ export function BudgetPanel({ summary }: { summary: BudgetSummary }) {
                   </Badge>
                 ) : null}
                 <span className={`font-mono text-sm font-semibold ${x.over ? "text-danger" : "text-fg"}`}>{money(x.committedCents)}</span>
-                {summary.canEdit ? (
+                {summary.canEdit && !budgetRowLocked(summary.locked, x.reservedCents) ? (
                   <Button
                     type="button"
                     size="sm"
@@ -105,6 +110,12 @@ export function BudgetPanel({ summary }: { summary: BudgetSummary }) {
           ))}
         </ul>
       )}
+      {anyLocked ? (
+        <p className="flex items-center gap-1.5 type-caption text-fg-muted" data-testid="budget-locked">
+          <Lock className="size-3.5 shrink-0" aria-hidden="true" />
+          {t("lockedHint")}
+        </p>
+      ) : null}
       {!summary.canEdit ? <p className="type-caption text-fg-muted">{t("ownerOnly")}</p> : null}
       {editing ? <BudgetDialog requestId={summary.requestId} target={editing} onClose={() => setEditing(null)} /> : null}
     </div>

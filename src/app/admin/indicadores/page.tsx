@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { PeriodSelector } from "@/components/admin-ops/PeriodSelector";
 import { SectionTabs } from "@/components/admin-indicators/SectionTabs";
 import { CollectiblesSection, ConversionSection, HeroesSection, ProfessionalsSection, RankingSection, ShortcutsSection } from "@/components/admin-indicators/sections";
-import { Button, DemoBadge, EmptyState, ErrorState, PageHeader } from "@/components/ui";
+import { Button, EmptyState, ErrorState, PageHeader } from "@/components/ui";
 import { INDICATOR_PERIODS, indicatorsExportHref, parseIndicatorPeriod, parseIndicatorSection, type SectionData } from "@/lib/indicators";
 import { loadIndicatorSection } from "@/lib/indicators/load";
 
@@ -50,7 +50,6 @@ export default async function AdminIndicatorsPage({ searchParams }: { searchPara
           {t("privacy")}
         </li>
         <li className="flex items-center gap-2 rounded-xl border border-warning/40 bg-warning-soft px-3 py-2 text-warning">
-          <DemoBadge size="sm" />
           {t("simulatedNote")}
         </li>
       </ul>

@@ -21,7 +21,7 @@ export async function SellerHeader({ ctx }: { ctx: SellerContext }) {
               <Building2 className="size-3.5" aria-hidden="true" />
               {ctx.org.slug}
               {ctx.org.is_fictional ? (
-                <Badge variant="demo" size="sm">
+                <Badge variant="neutral" size="sm">
                   {t("fictional")}
                 </Badge>
               ) : null}

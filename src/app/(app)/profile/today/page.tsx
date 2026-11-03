@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { LegacyTodayCleanup } from "@/components/me/today/LegacyTodayCleanup";
 import { TodayHub } from "@/components/me/today/TodayHub";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { redirect } from "next/navigation";
 import { isValidTimeZone } from "@/components/me/dates";
 import { getProfile, requireUser } from "@/lib/auth/session";
@@ -38,7 +38,6 @@ export default async function TodayPage({ searchParams }: { searchParams: Promis
         description={view.kind === "connect" ? ((view.providers?.length ?? 0) > 0 ? t("descriptionConnectAvailable") : t("descriptionConnect")) : t("description")}
         backHref="/profile"
         backLabel={t("example.back")}
-        actions={view.kind === "example" ? <DemoBadge /> : null}
       />
       <TodayHub view={view} evolution={evolution} compare={view.kind !== "example"} />
     </div>

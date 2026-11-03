@@ -48,14 +48,15 @@ export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): A
   return keys;
 }
 
-export const BRAND_NAV = ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"] as const;
+export const BRAND_NAV = ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"] as const;
 export type BrandNavKey = (typeof BRAND_NAV)[number];
 
 export function brandNavKeys(): BrandNavKey[] {
   // Ações por etapa (0078): painel de todas as ações das campanhas, logo depois do Início
   // Biblioteca (0083): conteúdos aprovados com o vencimento do direito de uso, logo depois de Campanhas
   // Oportunidades de patrocínio (0085): logo depois da Agenda
-  return ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"];
+  // Pagamentos (0090): o que a marca deve à agência e "Informar pagamento", logo depois de Patrocínios
+  return ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"];
 }
 
 /** Papel mínimo de cada rota restrita da agência (o layout do segmento redireciona para /agencia). */

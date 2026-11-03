@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { SellerStatusButton } from "@/components/admin-ops/StatusActions";
-import { Badge, Button, DemoBadge, PageHeader } from "@/components/ui";
+import { Badge, Button, PageHeader } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -67,7 +67,6 @@ export default async function AdminSellersPage() {
         title={
           <span className="inline-flex items-center gap-2">
             {t("title")}
-            <DemoBadge />
           </span>
         }
         description={t("description")}

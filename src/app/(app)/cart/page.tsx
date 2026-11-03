@@ -4,11 +4,10 @@ import Link from "next/link";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 import { CartIssuesBanner } from "@/components/commerce/CartIssuesBanner";
 import { CartItemRow } from "@/components/commerce/CartItemRow";
-import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { DestinationSelector } from "@/components/commerce/DestinationSelector";
 import { loadCartSnapshot } from "@/components/commerce/server/queries";
 import { ServiceCartSection } from "@/components/professionals/ServiceCartSection";
-import { Button, DemoBadge, EmptyState, PageHeader } from "@/components/ui";
+import { Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import { requireUser } from "@/lib/auth/session";
@@ -25,11 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CartPage() {
   await requireUser("/cart");
-  const [snapshot, services, t, td, tp, locale] = await Promise.all([
+  const [snapshot, services, t, tp, locale] = await Promise.all([
     loadCartSnapshot(),
     loadServiceCartView(),
     getTranslations("commerce.cart"),
-    getTranslations("commerce.demo"),
     getTranslations("professionals.cart"),
     getLocale(),
   ]);
@@ -48,8 +46,7 @@ export default async function CartPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t("title")} description={t("description")} eyebrow={<DemoBadge />} backHref="/shop" backLabel={t("continueShopping")} />
-      <DemoNotice>{td("notice")}</DemoNotice>
+      <PageHeader title={t("title")} description={t("description")} backHref="/shop" backLabel={t("continueShopping")} />
 
       {!hasProducts && !hasServices ? (
         <div className="rounded-2xl border border-border bg-surface">

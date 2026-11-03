@@ -125,7 +125,7 @@ describe("erros, menus e travas", () => {
   it("Pipeline para todos os níveis; Novo negócio só gestor+; marca ganha Campanhas e Creators", () => {
     expect(agencyNavKeys("staff")).toContain("pipeline");
     expect(AGENCY_ROUTE_MIN["/agencia/pipeline/novo"]).toBe("manager");
-    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "payments", "team", "notifications"]);
   });
 
   it("quem mexe no negócio: gestor+ sempre; colaborador só responsável/equipe", () => {

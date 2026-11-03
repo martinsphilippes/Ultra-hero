@@ -4,23 +4,23 @@
     "eyebrow": "Receitas",
     "description": "O acesso atual não permite abrir receitas.",
     "badge": "Etapa 0 de {total} · etapa pendente",
-    "cardTitle": "Etapa demonstrativa pendente.",
-    "cardDescription": "Não há revisão profissional. Conclua a etapa demonstrativa para abrir apenas o conteúdo de demonstração.",
-    "stepsLabel": "{total} passos da etapa demonstrativa",
+    "cardTitle": "Etapa de boas-vindas pendente.",
+    "cardDescription": "Não há revisão profissional. Conclua a etapa de boas-vindas para abrir as receitas.",
+    "stepsLabel": "{total} passos da etapa de boas-vindas",
     "steps": {
       "notice": "Aceitar o aviso",
       "diet": "Restrições e alergias",
       "interests": "Interesses",
       "confirm": "Confirmar"
     },
-    "start": "Ver etapa demonstrativa",
+    "start": "Ver etapa de boas-vindas",
     "backToToday": "Voltar para Hoje"
   },
   "onboarding": {
-    "metaTitle": "Etapa demonstrativa de receitas",
+    "metaTitle": "Etapa de boas-vindas das receitas",
     "eyebrow": "Receitas",
-    "title": "Etapa demonstrativa",
-    "description": "Quatro passos rápidos para abrir as receitas de demonstração.",
+    "title": "Etapa de boas-vindas",
+    "description": "Quatro passos rápidos para abrir as receitas.",
     "cancel": "Voltar",
     "progress": "Passo {step} de {total}",
     "back": "Voltar",
@@ -28,7 +28,7 @@
     "finish": "Concluir e abrir receitas",
     "notice": {
       "title": "Aceite o aviso",
-      "description": "As receitas do Groscove Ultra são conteúdo de demonstração.",
+      "description": "As receitas do Groscove Ultra são conteúdo educativo.",
       "item1": "Não há revisão de nutricionista ou de outro profissional de saúde.",
       "item2": "As receitas não substituem orientação profissional nem tratam condições de saúde.",
       "item3": "Confira sempre os ingredientes, principalmente se você tem alergia ou restrição.",
@@ -960,8 +960,8 @@
       "dietsLabel": "Dietas declaradas pelo chef"
     },
     "invite": {
-      "title": "Abra as receitas com a etapa demonstrativa",
-      "description": "Os cards ficam abertos a todos. Para ver ingredientes, preparo e o Modo Cozinha, conclua a etapa demonstrativa ({total} passos rápidos).",
+      "title": "Abra as receitas com a etapa de boas-vindas",
+      "description": "Os cards ficam abertos a todos. Para ver ingredientes, preparo e o Modo Cozinha, conclua a etapa de boas-vindas ({total} passos rápidos).",
       "action": "Fazer a etapa",
       "visitorAction": "Entrar e fazer a etapa"
     }

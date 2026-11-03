@@ -9,7 +9,7 @@
     "cover": "Cover",
     "coverDescription": "Take a photo now or choose a photo or video already on your phone. From a video, a frame becomes the cover.",
     "media": "Video media",
-    "mediaDescription": "In this demo, videos are embedded from YouTube or Vimeo. Without media, the simulated player uses the transcript.",
+    "mediaDescription": "For now, videos are embedded from YouTube or Vimeo. Without media, the simulated player uses the transcript.",
     "body": {
       "video": "Video content",
       "recipe": "Recipe",
@@ -283,13 +283,13 @@
   "license": {
     "kind": "License type",
     "kinds": {
-      "platform_demo": "Platform demo",
+      "platform_demo": "Platform material",
       "own": "Own media",
       "licensed": "Licensed",
       "third_party_embed": "Third-party embed"
     },
     "kindHint": {
-      "platform_demo": "Illustrative material created for the demo; no real media.",
+      "platform_demo": "Illustrative material created by the platform; no real media.",
       "own": "Produced by the platform or the hero, with own rights.",
       "licensed": "Media hosted here under a third-party license recorded in the reference.",
       "third_party_embed": "Video embedded from the provider; rights belong to the source channel."

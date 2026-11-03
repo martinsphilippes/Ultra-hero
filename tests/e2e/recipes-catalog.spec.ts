@@ -274,7 +274,7 @@ test.describe("perfil público do chef", () => {
 
   test("perfil do Érick Jacquin (pessoa real, 0044) sem selo de fictício e com especialidades e credenciais quando aprovadas", async ({ page }) => {
     await page.goto("/personalities/erick-jacquin");
-    await expect(page.getByText("Personagem fictício")).toHaveCount(0);
+    await expect(page.getByText("Perfil ilustrativo")).toHaveCount(0);
     const highlights = page.getByTestId("chef-highlights");
     test.skip((await highlights.count()) === 0, "o Érick Jacquin ainda não tem especialidades nem credenciais aprovadas no remoto");
     const credentials = page.getByTestId("chef-credentials");

@@ -24,6 +24,12 @@ export const WORK_EMAIL_KINDS = [
   "brand_call_interest",
   "brand_call_negotiation",
   "brand_call_decided",
+  // pedido de alteração de verba e pagamentos da marca (0090)
+  "budget_change",
+  "payment_reported",
+  "payment_reviewed",
+  "payment_due",
+  "payment_plan",
 ] as const;
 export type WorkEmailKind = (typeof WORK_EMAIL_KINDS)[number];
 

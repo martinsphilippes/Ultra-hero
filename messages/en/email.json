@@ -82,6 +82,31 @@
         "subject": "Brand request decided: {title}",
         "body": "{status, select, won {Your proposal won on {title}. The brand gets the campaign ready.} lost {The brand chose another proposal on {title}.} chosen {You were chosen for {title} ({brand}). Your agency handles the rest.} cancelled {The brand cancelled {title}.} other {The brand closed {title}.}}",
         "cta": "See details"
+      },
+      "budget_change": {
+        "subject": "{status, select, requested {Budget change request} declined {Budget request declined} proposed {Realignment proposed} confirmed {New budget confirmed} other {Realignment declined}}: {deal}",
+        "body": "{status, select, requested {The brand asked to change the budget of {deal}. Only the agency Admin sees the amounts and decides.} declined {The agency declined the budget request for {deal}. The current budget stays.} proposed {The agency agreed to review the budget of {deal} and proposed a realignment. The brand owner confirms or declines in the app.} confirmed {The brand confirmed the new budget of {deal}. The realignment tasks are already in the deal.} other {The brand declined the realignment of {deal}. See why in the app.}}",
+        "cta": "See request"
+      },
+      "payment_reported": {
+        "subject": "Payment reported: {deal}",
+        "body": "{brand} reported a payment for {deal}. Open the receipt and confirm it was received.",
+        "cta": "Check payment"
+      },
+      "payment_reviewed": {
+        "subject": "{status, select, confirmed {Payment confirmed} other {Payment not confirmed}}: {deal}",
+        "body": "{status, select, confirmed {The agency confirmed receiving the payment for {deal}.} other {The agency did not confirm the payment for {deal}. See why and report it again.}}",
+        "cta": "See payments"
+      },
+      "payment_due": {
+        "subject": "{status, select, late {Payment overdue} today {Payment due today} other {Payment due soon}}: {deal}",
+        "body": "{status, select, late {The payment for {deal} was due on {date}.} today {The payment for {deal} is due today ({date}).} other {The payment for {deal} is due on {date}.}} This is a record in the app: nothing is charged automatically.",
+        "cta": "See payments"
+      },
+      "payment_plan": {
+        "subject": "Payment installments: {deal}",
+        "body": "The agency split the payment for {deal} into {step} installment(s). See amounts and due dates in the app.",
+        "cta": "See payments"
       }
     }
   }

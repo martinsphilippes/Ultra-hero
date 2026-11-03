@@ -278,6 +278,7 @@
     "overviewEmpty": "No campaign with budget or hiring yet.",
     "overCount": "{count, plural, one {# campaign is over budget} other {# campaigns are over budget}}",
     "talentsOver": "{count, plural, one {# creator over budget} other {# creators over budget}}",
-    "seeCampaign": "See campaign"
+    "seeCampaign": "See campaign",
+    "lockedHint": "A set budget is locked. To change it, use “Request budget change”: the agency reviews it and the owner confirms."
   }
 }

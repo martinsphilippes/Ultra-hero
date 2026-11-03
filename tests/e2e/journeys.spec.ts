@@ -140,6 +140,18 @@ test.describe("visitante", () => {
     await expect(page.getByText(/ambiente de demonstração/i)).toHaveCount(0);
   });
 
+  // Decisão do responsável (11/2026): nenhuma etiqueta "Demonstração" na loja; a página do produto traz
+  // um único aviso discreto de pagamento ainda não ativado.
+  test("loja sem etiqueta de demonstração e produto com o aviso de pagamento não ativado", async ({ page }) => {
+    await page.goto("/shop");
+    await expect(page.getByText(/demonstração/i)).toHaveCount(0);
+    const product = page.locator('a[href^="/shop/"]:not([href^="/shop/colecionaveis"]):not([href^="/shop/compras"])').first();
+    test.skip((await product.count()) === 0, "loja sem produtos neste ambiente");
+    await product.click();
+    await expect(page.getByTestId("payment-notice")).toHaveText("Pagamento ainda não ativado: seu pedido é registrado sem cobrança.");
+    await expect(page.getByText(/demonstração/i)).toHaveCount(0);
+  });
+
   // RB-05/RB-06 (0044): os heróis são pessoas reais com uso autorizado (nota de direitos com o titular,
   // sem selo de fictício) e todo conteúdo expõe crédito/licença.
   test("perfil de personalidade mostra a nota de direitos como autorizado e o conteúdo mostra crédito/licença", async ({ page }) => {
@@ -147,7 +159,7 @@ test.describe("visitante", () => {
     const notice = page.getByRole("complementary", { name: /sobre este perfil|about this profile/i });
     await expect(notice).toBeVisible();
     await expect(notice).toContainText(/autorizado por Anitta|authorized by Anitta/i);
-    await expect(page.getByText(/personagem fictício|fictional character/i)).toHaveCount(0);
+    await expect(page.getByText(/perfil ilustrativo|illustrative profile/i)).toHaveCount(0);
 
     // Receitas ficam atrás da etapa demonstrativa: o crédito/licença é conferido num conteúdo do Dia a dia.
     await page.goto("/personalities/anitta/dia-a-dia");

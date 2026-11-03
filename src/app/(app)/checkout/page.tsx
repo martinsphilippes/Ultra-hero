@@ -9,7 +9,7 @@ import { DemoNotice } from "@/components/commerce/DemoNotice";
 import { DestinationSelector } from "@/components/commerce/DestinationSelector";
 import { loadCartSnapshot } from "@/components/commerce/server/queries";
 import { ServiceCartSection } from "@/components/professionals/ServiceCartSection";
-import { Badge, Button, DemoBadge, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import { requireUser } from "@/lib/auth/session";
@@ -59,7 +59,7 @@ export default async function CheckoutPage() {
   return (
     <div className="flex flex-col gap-6">
       <CommerceEventTracker event="checkout.start" properties={{ items: snapshot.lines.length, sellers: snapshot.sellerCount, subtotal_cents_demo: snapshot.subtotalCents }} />
-      <PageHeader title={t("title")} description={t("description")} eyebrow={<DemoBadge />} backHref="/cart" backLabel={t("backToCart")} />
+      <PageHeader title={t("title")} description={t("description")} backHref="/cart" backLabel={t("backToCart")} />
 
       {!commerceEnabled ? (
         <DemoNotice tone="warning" live="alert">
@@ -125,7 +125,7 @@ export default async function CheckoutPage() {
                   <Badge variant="neutral" size="sm">
                     {tc(`destination.zone.${snapshot.destination.zone}`)}
                   </Badge>
-                  <Badge variant="demo" size="sm">
+                  <Badge variant="neutral" size="sm">
                     {td("fictional")}
                   </Badge>
                 </div>

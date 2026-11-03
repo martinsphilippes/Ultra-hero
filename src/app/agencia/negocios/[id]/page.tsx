@@ -6,6 +6,7 @@ import { ActivityForm, ConfirmCard, DealForm, MoveForm, TeamPicker } from "@/com
 import { BriefView } from "@/components/brief/BriefView";
 import { DealBriefCard } from "@/components/brief/DealBriefCard";
 import { RequestSummary } from "@/components/deals/RequestSummary";
+import { AgencyBudgetChange } from "@/components/finance/AgencyBudgetChange";
 import { DealFinanceCard } from "@/components/finance/DealFinanceCard";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
@@ -14,7 +15,8 @@ import { zonedDayKey } from "@/lib/calendar/grid";
 import { listDealEvents } from "@/lib/calendar/queries";
 import { getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import { splitSystemBody } from "@/lib/deals/vocab";
-import { agencyRates, dealEntries } from "@/lib/finance/queries";
+import { agencyBudgetChanges, agencyRates, dealEntries } from "@/lib/finance/queries";
+import { requestDeliverablesSchema } from "@/lib/deals/schemas";
 import { loadDeal } from "./_lib";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +35,7 @@ export default async function DealOverviewPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, isOwner, canEdit, isManager, isAdmin } = await loadDeal(id);
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
-  const [t, tc, tb, locale, team, request, budget, activities, talents, events] = await Promise.all([
+  const [t, tc, tb, locale, team, request, budget, activities, talents, events, changes, tpay] = await Promise.all([
     getTranslations("agency.deal"),
     getTranslations("brief"),
     getTranslations("commercial"),
@@ -44,6 +46,9 @@ export default async function DealOverviewPage({ params }: Props) {
     listActivities(deal.id),
     listDealTalents(deal.id),
     listDealEvents(deal.id),
+    // 0090: pedido de alteração de verba (Adm com valores; gestor e equipe do negócio só a situação)
+    agencyBudgetChanges(deal.id),
+    getTranslations("payments.change"),
   ]);
   // financeiro simulado (0069), só para o Adm: taxa, prévia e lançamentos; sem a migração, a seção some
   const [fees, rates, entries] = isAdmin
@@ -62,6 +67,22 @@ export default async function DealOverviewPage({ params }: Props) {
               {t("sections.request")}
             </h2>
             <RequestSummary request={request} budget={budget} />
+          </section>
+        ) : null}
+        {changes && changes.items.length > 0 ? (
+          <section id="budget-change" className={`${card} scroll-mt-20`} aria-labelledby="deal-budget-change">
+            <h2 id="deal-budget-change" className="text-base font-semibold text-fg">
+              {tpay("title")}
+            </h2>
+            <AgencyBudgetChange
+              dealId={deal.id}
+              canDecide={changes.canDecide}
+              items={changes.items}
+              talents={talents.filter((x) => ["proposed", "contracted"].includes(x.status)).map((x) => ({ dealTalentId: x.id, name: x.talent.name }))}
+              deliverables={requestDeliverablesSchema.safeParse(request?.deliverables ?? []).data ?? []}
+              periodStart={request?.periodStart ?? deal.expectedStart ?? null}
+              periodEnd={request?.periodEnd ?? deal.expectedEnd ?? null}
+            />
           </section>
         ) : null}
         {request ? (

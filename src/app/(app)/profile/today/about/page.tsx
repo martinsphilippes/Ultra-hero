@@ -56,7 +56,7 @@ export default async function TodayAboutPage({ searchParams }: { searchParams: P
             {t("modelTitle", { device: snapshot.deviceName })}
           </h2>
           {real ? null : (
-            <Badge variant="demo" size="sm">
+            <Badge variant="neutral" size="sm" className="native:hidden">
               {tt("example.tag")}
             </Badge>
           )}

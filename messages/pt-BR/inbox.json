@@ -194,6 +194,26 @@
     "brand_call_review": {
       "title": "Chamada para aprovar",
       "body": "{status, select, requested {{name} pediu para publicar {title}.} returned {O dono devolveu {title} para ajustes.} approved {O dono publicou {title}.} other {Novidade em {title}.}}"
+    },
+    "budget_change": {
+      "title": "Alteração de verba",
+      "body": "{status, select, review {A equipe pediu para mudar a verba de {deal}: revise e envie à agência.} returned {O dono devolveu o pedido de verba de {deal}.} sent {O dono enviou à agência o pedido de verba de {deal}.} requested {A marca pediu para mudar a verba de {deal}.} withdrawn {A marca retirou o pedido de verba de {deal}.} declined {A agência recusou o pedido de verba de {deal}. A verba atual continua valendo.} proposed {A agência aceitou rever a verba de {deal} e propôs um realinhamento: o dono confirma ou recusa.} confirmed {Nova verba de {deal} confirmada pela marca. Veja as tarefas do realinhamento.} rejected {A marca recusou o realinhamento de {deal}.} other {Novidade no pedido de verba de {deal}.}}"
+    },
+    "payment_reported": {
+      "title": "Pagamento informado",
+      "body": "{brand} informou um pagamento de {deal}. Confira e confirme o recebimento."
+    },
+    "payment_reviewed": {
+      "title": "{status, select, confirmed {Pagamento confirmado} other {Pagamento recusado}}",
+      "body": "{status, select, confirmed {A agência confirmou o recebimento do pagamento de {deal}.} other {A agência não confirmou o pagamento de {deal}. Veja o motivo e informe de novo.}}"
+    },
+    "payment_due": {
+      "title": "{status, select, late {Pagamento vencido} today {Pagamento vence hoje} other {Pagamento a vencer}}",
+      "body": "{status, select, late {O pagamento de {deal} está vencido.} today {O pagamento de {deal} vence hoje.} other {O pagamento de {deal} vence em até 3 dias.}}"
+    },
+    "payment_plan": {
+      "title": "Parcelas do pagamento",
+      "body": "A agência dividiu o pagamento de {deal} em {step} parcela(s). Veja os vencimentos."
     }
   }
 }

@@ -12,7 +12,7 @@ import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { TodaySection } from "@/components/me/today/TodaySection";
 import { PortalShortcuts } from "@/components/me/PortalShortcuts";
-import { Avatar, Badge, DemoBadge, PageHeader } from "@/components/ui";
+import { Avatar, Badge, PageHeader } from "@/components/ui";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProfile, getRoles, isTalentOnly, requireUser } from "@/lib/auth/session";
 import { heroRoleNames } from "@/lib/auth/talent-scope";
@@ -111,7 +111,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} actions={<DemoBadge />} />
+      <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} />
 
       <PortalShortcuts items={portalItems} />
 

@@ -13010,5 +13010,388 @@ delete from public.agencies where id::text like '96000000-0000-4000-8000-0000000
 delete from auth.users where id::text like '96000000-0000-4000-8000-0000000009%';
 drop table t_s96;
 
+-- ================================================================ S97 · Pedido de alteração de verba e pagamentos da marca (0090)
+-- Verba travada depois da 1ª definição (rascunho segue livre); pedido com aprovação interna (equipe monta, dono envia),
+-- um aberto por campanha; agência: só o Adm decide e lê valores, gestor/colaborador do negócio veem só a situação;
+-- dono confirma o realinhamento (aplica verba, valor oferecido, período e entregas; o resto vira tarefa, nada
+-- contratado é apagado). Pagamentos: dados da agência (só Adm), parcelas somando o total, marca (dono e equipe)
+-- informa com comprovante restrito, só o Adm confirma/recusa, liquidação pela regra da 0072, aviso de vencimento.
+-- Outra marca, creator, gestor e colaborador não leem nada; S14 segue 18.
+\ir ../migrations/0090_verba_alteracao_pagamentos_marca.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('97000000-0000-4000-8000-000000000971', 's97-adm@test.local'),
+  ('97000000-0000-4000-8000-000000000972', 's97-gestor@test.local'),
+  ('97000000-0000-4000-8000-000000000973', 's97-colab@test.local'),
+  ('97000000-0000-4000-8000-000000000974', 's97-creator@test.local'),
+  ('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local'),
+  ('97000000-0000-4000-8000-000000000976', 's97-equipe-alfa@test.local'),
+  ('97000000-0000-4000-8000-000000000977', 's97-dono-beta@test.local'),
+  ('97000000-0000-4000-8000-000000000978', 's97-comum@test.local');
+insert into public.agencies (id, slug, name) values ('97000000-0000-4000-8000-000000009701', 's97-agencia', 'Agência S97');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000000971', 'admin', 'Ana Adm S97'),
+  ('97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000000972', 'manager', 'Gil Gestor S97'),
+  ('97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000000973', 'staff', 'Caio Colab S97');
+insert into public.brands (id, slug, name, site_url) values
+  ('97000000-0000-4000-8000-000000009711', 's97-marca-alfa', 'Marca Alfa S97', 'https://alfa.s97.test'),
+  ('97000000-0000-4000-8000-000000009712', 's97-marca-beta', 'Marca Beta S97', 'https://beta.s97.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009711'),
+  ('97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009712');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('97000000-0000-4000-8000-000000009711', '97000000-0000-4000-8000-000000000975', 'owner', 'Dona Alfa'),
+  ('97000000-0000-4000-8000-000000009711', '97000000-0000-4000-8000-000000000976', 'staff', 'Equipe Alfa'),
+  ('97000000-0000-4000-8000-000000009712', '97000000-0000-4000-8000-000000000977', 'owner', 'Dono Beta');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('97000000-0000-4000-8000-000000009721', '97000000-0000-4000-8000-000000009701', 'Creator Um S97', '97000000-0000-4000-8000-000000000974'),
+  ('97000000-0000-4000-8000-000000009722', '97000000-0000-4000-8000-000000009701', 'Creator Dois S97', null);
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables, period_start, period_end) values
+  ('97000000-0000-4000-8000-000000009731', '97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009711', 'brand', 'Campanha Verão S97', 'converted', now() - interval '20 days',
+   '[{"kind": "reels", "quantity": 2, "network": "instagram"}]', current_date + 5, current_date + 30),
+  ('97000000-0000-4000-8000-000000009732', '97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009711', 'brand', 'Rascunho S97', 'draft', null, '[]', null, null);
+insert into public.campaign_request_budgets (agency_id, brand_id, request_id, budget_min_cents, budget_max_cents) values
+  ('97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009711', '97000000-0000-4000-8000-000000009731', 200000, 300000);
+insert into public.deals (id, agency_id, brand_id, title, stage, outcome, brand_visible, expected_start, expected_end, service_rate_bp, contract_confirmed_at, owner_id) values
+  ('97000000-0000-4000-8000-000000009741', '97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009711', 'Negócio Verão S97', 'production', null, true,
+   current_date + 5, current_date + 30, 2000, now() - interval '10 days', '97000000-0000-4000-8000-000000000972'),
+  ('97000000-0000-4000-8000-000000009742', '97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009711', 'Negócio Inverno S97', 'production', null, true,
+   current_date, current_date + 20, 2000, now() - interval '30 days', null),
+  ('97000000-0000-4000-8000-000000009743', '97000000-0000-4000-8000-000000009701', '97000000-0000-4000-8000-000000009712', 'Negócio Beta S97', 'production', null, true,
+   current_date, current_date + 20, 2000, now() - interval '30 days', null);
+update public.deals set request_id = '97000000-0000-4000-8000-000000009731' where id = '97000000-0000-4000-8000-000000009741';
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('97000000-0000-4000-8000-000000009751', '97000000-0000-4000-8000-000000009741', '97000000-0000-4000-8000-000000009721', 'contracted', now() - interval '15 days', true),
+  ('97000000-0000-4000-8000-000000009752', '97000000-0000-4000-8000-000000009741', '97000000-0000-4000-8000-000000009722', 'contracted', now() - interval '15 days', true),
+  ('97000000-0000-4000-8000-000000009753', '97000000-0000-4000-8000-000000009742', '97000000-0000-4000-8000-000000009722', 'contracted', now() - interval '25 days', true),
+  ('97000000-0000-4000-8000-000000009754', '97000000-0000-4000-8000-000000009743', '97000000-0000-4000-8000-000000009722', 'contracted', now() - interval '25 days', true);
+insert into public.deal_talent_fees (deal_id, deal_talent_id, talent_id, fee_cents) values
+  ('97000000-0000-4000-8000-000000009741', '97000000-0000-4000-8000-000000009751', '97000000-0000-4000-8000-000000009721', 100000),
+  ('97000000-0000-4000-8000-000000009741', '97000000-0000-4000-8000-000000009752', '97000000-0000-4000-8000-000000009722', 150000),
+  ('97000000-0000-4000-8000-000000009742', '97000000-0000-4000-8000-000000009753', '97000000-0000-4000-8000-000000009722', 50000),
+  ('97000000-0000-4000-8000-000000009743', '97000000-0000-4000-8000-000000009754', '97000000-0000-4000-8000-000000009722', 50000);
+select public.agency_finance_generate('97000000-0000-4000-8000-000000009741');
+select public.agency_finance_generate('97000000-0000-4000-8000-000000009742');
+select public.agency_finance_generate('97000000-0000-4000-8000-000000009743');
+create temp table t_s97 (k text primary key, v text);
+grant all on t_s97 to anon, authenticated, service_role;
+insert into t_s97 values
+  ('recv', (select id::text from public.financial_entries where deal_id = '97000000-0000-4000-8000-000000009741' and kind = 'brand_receivable')),
+  ('recv2', (select id::text from public.financial_entries where deal_id = '97000000-0000-4000-8000-000000009742' and kind = 'brand_receivable'));
+
+select tests.ok('S97 estrutura: 5 tabelas com RLS e só leitura, internas fechadas, nada para visitante, sem sobrecarga; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.budget_change_requests'::regclass, 'public.budget_change_events'::regclass,
+     'public.agency_payment_settings'::regclass, 'public.brand_payment_installments'::regclass, 'public.brand_payment_reports'::regclass))
+  and not has_table_privilege('anon', 'public.budget_change_requests', 'select') and not has_table_privilege('anon', 'public.brand_payment_reports', 'select')
+  and not has_table_privilege('authenticated', 'public.budget_change_requests', 'insert') and not has_table_privilege('authenticated', 'public.brand_payment_installments', 'update')
+  and not has_table_privilege('authenticated', 'public.agency_payment_settings', 'insert')
+  and not has_function_privilege('authenticated', 'public.budget_change_json(uuid, boolean, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.budget_change_task(uuid, text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_receivable_json(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_payment_due_scan()', 'execute')
+  and not has_function_privilege('anon', 'public.brand_payments(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.brand_budget_change_create(uuid, bigint, text, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_payment_review(uuid, text, text)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null
+                  and p.proname in ('brand_budget_change_create', 'brand_budget_change_review', 'agency_budget_change_decide', 'brand_budget_change_answer',
+                                    'brand_budget_changes', 'agency_budget_changes', 'agency_payment_settings_save', 'agency_receivable_split', 'brand_payment_report',
+                                    'agency_payment_review', 'brand_payments', 'agency_brand_payments', 'brand_payment_due_scan', 'pix_key_normalize', 'budget_change_plan_valid'))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace
+       and p.proname in ('brand_budget_set', 'brand_budget_summary', 'inbox_kind_emails', 'brand_budget_change_create', 'agency_budget_change_decide', 'brand_payment_report')) = 6);
+select tests.ok('S97 todo "a receber" nasce com 1 parcela do valor todo e o vencimento do lançamento',
+  (select count(*) = 1 and bool_and(i.amount_cents = f.amount_cents and i.due_on = f.due_on and i.status = 'open')
+   from public.brand_payment_installments i join public.financial_entries f on f.id = i.entry_id where i.entry_id = (select v::uuid from t_s97 where k = 'recv'))
+  and (select amount_cents from public.financial_entries where id = (select v::uuid from t_s97 where k = 'recv')) = 300000);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S97 visitante não lê pedidos de verba', $q$select count(*) from public.budget_change_requests$q$, 'permission denied');
+select tests.expect_error('S97 visitante não lê pagamentos', $q$select public.brand_payments('97000000-0000-4000-8000-000000009711')$q$, 'permission denied');
+
+-- ---------------------------------------------------------------- A) verba travada e pedido de alteração
+select tests.login('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local');
+select public.brand_budget_set('97000000-0000-4000-8000-000000009731', null, 300000);
+select public.brand_budget_set('97000000-0000-4000-8000-000000009731', '97000000-0000-4000-8000-000000009751', 120000);
+select tests.expect_error('S97 verba da campanha definida não muda pelo lápis', $q$select public.brand_budget_set('97000000-0000-4000-8000-000000009731', null, 350000)$q$, 'budget_locked');
+select tests.expect_error('S97 verba definida não é limpa', $q$select public.brand_budget_set('97000000-0000-4000-8000-000000009731', null, null)$q$, 'budget_locked');
+select tests.expect_error('S97 verba por creator também travada', $q$select public.brand_budget_set('97000000-0000-4000-8000-000000009731', '97000000-0000-4000-8000-000000009751', 1)$q$, 'budget_locked');
+select public.brand_budget_set('97000000-0000-4000-8000-000000009731', null, 300000);
+select public.brand_budget_set('97000000-0000-4000-8000-000000009732', null, 100000);
+select public.brand_budget_set('97000000-0000-4000-8000-000000009732', null, 150000);
+select tests.ok('S97 mesmo valor passa; rascunho continua livre; painel diz travada',
+  (select total_cents from public.brand_budgets where request_id = '97000000-0000-4000-8000-000000009732' and deal_talent_id is null) = 150000
+  and public.brand_budget_summary('97000000-0000-4000-8000-000000009731') @> '{"locked": true, "reserved_cents": 300000, "can_edit": true}'
+  and public.brand_budget_summary('97000000-0000-4000-8000-000000009731') -> 'change_status' = 'null'::jsonb);
+select tests.expect_error('S97 motivo curto é recusado',
+  $q$select public.brand_budget_change_create('97000000-0000-4000-8000-000000009731', 350000, 'oi', '[]')$q$, 'reason_required');
+select tests.expect_error('S97 mesmo valor sem mudança por creator é recusado',
+  $q$select public.brand_budget_change_create('97000000-0000-4000-8000-000000009731', 300000, 'Mesmo valor de antes', '[]')$q$, 'no_change');
+select tests.expect_error('S97 rascunho não tem pedido (é livre)',
+  $q$select public.brand_budget_change_create('97000000-0000-4000-8000-000000009732', 350000, 'Motivo qualquer', '[]')$q$, 'invalid_state');
+
+-- equipe monta, espera o dono
+select tests.login('97000000-0000-4000-8000-000000000976', 's97-equipe-alfa@test.local');
+insert into t_s97 values ('bc1', public.brand_budget_change_create('97000000-0000-4000-8000-000000009731', 350000, 'Precisamos de mais alcance no Sul',
+  '[{"deal_talent_id": "97000000-0000-4000-8000-000000009751", "cents": 140000}]')::text);
+select tests.ok('S97 pedido da equipe espera o dono (pending_owner) e avisa só o dono',
+  (select v::jsonb ->> 'status' from t_s97 where k = 'bc1') = 'pending_owner');
+select tests.expect_error('S97 um pedido aberto por campanha',
+  $q$select public.brand_budget_change_create('97000000-0000-4000-8000-000000009731', 360000, 'Outro pedido aberto', '[]')$q$, 'change_open');
+select tests.expect_error('S97 equipe não envia à agência',
+  $q$select public.brand_budget_change_review((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'send', null)$q$, 'forbidden');
+select tests.ok('S97 equipe lê o pedido e o histórico interno', (select count(*) from public.budget_change_requests) = 1 and (select count(*) from public.budget_change_events) = 1
+  and jsonb_array_length(public.brand_budget_changes('97000000-0000-4000-8000-000000009731') -> 'items') = 1
+  and not (public.brand_budget_changes('97000000-0000-4000-8000-000000009731') ->> 'can_request')::boolean);
+
+select tests.login('97000000-0000-4000-8000-000000000971', 's97-adm@test.local');
+select tests.ok('S97 Adm não vê o pedido ainda não enviado', (select count(*) from public.budget_change_requests) = 0
+  and jsonb_array_length(public.agency_budget_changes('97000000-0000-4000-8000-000000009741') -> 'items') = 0);
+select tests.expect_error('S97 Adm não decide pedido não enviado',
+  $q$select public.agency_budget_change_decide((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'decline', 'Não dá agora', null, null)$q$, 'not_found');
+
+select tests.login('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local');
+select tests.ok('S97 dono recebeu o pedido para revisar (sem valor)', exists (select 1 from public.inbox_notifications where kind = 'budget_change' and params ->> 'status' = 'review'
+  and params::text not like '%350000%'));
+select tests.expect_error('S97 devolver exige nota', $q$select public.brand_budget_change_review((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'return', 'x')$q$, 'note_required');
+select tests.ok('S97 dono envia', public.brand_budget_change_review((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'send', null) = 'open');
+select tests.ok('S97 painel mostra o pedido aberto e a verba antiga', public.brand_budget_summary('97000000-0000-4000-8000-000000009731') @> '{"change_status": "open", "reserved_cents": 300000}');
+
+-- outra marca, creator, comum
+select tests.login('97000000-0000-4000-8000-000000000977', 's97-dono-beta@test.local');
+select tests.ok('S97 outra marca: 0 pedidos e 0 histórico', (select count(*) from public.budget_change_requests) = 0 and (select count(*) from public.budget_change_events) = 0);
+select tests.expect_error('S97 outra marca não lê os pedidos da Alfa', $q$select public.brand_budget_changes('97000000-0000-4000-8000-000000009731')$q$, 'not_found');
+select tests.expect_error('S97 outra marca não pede pela Alfa', $q$select public.brand_budget_change_create('97000000-0000-4000-8000-000000009731', 1, 'Motivo qualquer', '[]')$q$, 'not_found');
+select tests.expect_error('S97 outra marca não confirma', $q$select public.brand_budget_change_answer((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'confirm', null)$q$, 'not_found');
+select tests.login('97000000-0000-4000-8000-000000000974', 's97-creator@test.local');
+select tests.ok('S97 creator: nada de pedidos', (select count(*) from public.budget_change_requests) = 0 and (select count(*) from public.budget_change_events) = 0);
+select tests.expect_error('S97 creator não lê pelo negócio', $q$select public.agency_budget_changes('97000000-0000-4000-8000-000000009741')$q$, 'not_found');
+
+-- gestor e colaborador: situação sem valores
+select tests.login('97000000-0000-4000-8000-000000000972', 's97-gestor@test.local');
+insert into t_s97 values ('ges', public.agency_budget_changes('97000000-0000-4000-8000-000000009741')::text);
+select tests.ok('S97 gestor vê a situação sem valores, motivo nem notas e não decide',
+  (select count(*) from public.budget_change_requests) = 0
+  and (select v::jsonb from t_s97 where k = 'ges') @> '{"can_decide": false}'
+  and ((select v::jsonb from t_s97 where k = 'ges') -> 'items' -> 0) @> '{"status": "open"}'
+  and not (((select v::jsonb from t_s97 where k = 'ges') -> 'items' -> 0) ?| array['requested_cents', 'reason', 'before_offered_cents', 'talent_cents', 'plan'])
+  and (select v from t_s97 where k = 'ges') not like '%350000%' and (select v from t_s97 where k = 'ges') not like '%Sul%');
+select tests.expect_error('S97 gestor não decide', $q$select public.agency_budget_change_decide((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'decline', 'Não dá agora', null, null)$q$, 'forbidden');
+select tests.login('97000000-0000-4000-8000-000000000973', 's97-colab@test.local');
+select tests.expect_error('S97 colaborador fora do negócio não vê', $q$select public.agency_budget_changes('97000000-0000-4000-8000-000000009741')$q$, 'not_found');
+select tests.ok('S97 colaborador: 0 linhas', (select count(*) from public.budget_change_requests) = 0);
+
+-- Adm: decide
+select tests.login('97000000-0000-4000-8000-000000000971', 's97-adm@test.local');
+insert into t_s97 values ('adm', public.agency_budget_changes('97000000-0000-4000-8000-000000009741')::text);
+select tests.ok('S97 Adm lê valores (sem a reserva interna da marca) e o histórico sem os passos internos',
+  (select v::jsonb from t_s97 where k = 'adm') @> '{"can_decide": true}'
+  and ((select v::jsonb from t_s97 where k = 'adm') -> 'items' -> 0) @> '{"requested_cents": 350000, "before_offered_cents": 300000, "status": "open"}'
+  and not (((select v::jsonb from t_s97 where k = 'adm') -> 'items' -> 0) ? 'before_reserved_cents')
+  and jsonb_array_length(((select v::jsonb from t_s97 where k = 'adm') -> 'items' -> 0) -> 'events') = 1
+  and (select count(*) from public.budget_change_events) = 1
+  and exists (select 1 from public.inbox_notifications where kind = 'budget_change' and params ->> 'status' = 'requested'));
+select tests.expect_error('S97 recusar exige nota', $q$select public.agency_budget_change_decide((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'decline', 'não', null, null)$q$, 'note_required');
+select tests.expect_error('S97 plano inválido é recusado',
+  $q$select public.agency_budget_change_decide((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'propose', '', '{"creators": [{"action": "remove", "name": "Sem id"}]}', null)$q$, 'invalid_input');
+select tests.expect_error('S97 creator de outro negócio no plano é recusado',
+  $q$select public.agency_budget_change_decide((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'propose', '', '{"creators": [{"deal_talent_id": "97000000-0000-4000-8000-000000009753", "action": "remove", "name": "X"}]}', null)$q$, 'not_found');
+insert into t_s97 values ('plan', jsonb_build_object(
+  'creators', jsonb_build_array(jsonb_build_object('deal_talent_id', '97000000-0000-4000-8000-000000009751', 'name', 'Creator Um S97', 'action', 'keep'),
+                                jsonb_build_object('deal_talent_id', '97000000-0000-4000-8000-000000009752', 'name', 'Creator Dois S97', 'action', 'remove', 'note', 'Sai do Sul'),
+                                jsonb_build_object('deal_talent_id', null, 'name', 'Nova Creator Sul', 'action', 'add', 'note', 'Porto Alegre')),
+  'deliverables', '[{"kind": "reels", "quantity": 3, "network": "instagram"}, {"kind": "stories", "quantity": 6, "network": "instagram"}]'::jsonb,
+  'period_start', (current_date + 10)::text, 'period_end', (current_date + 40)::text,
+  'schedule_note', 'Gravação na 2ª semana', 'perks', jsonb_build_array('Post fixado por 30 dias'), 'note', 'Fechamos assim')::text);
+select tests.ok('S97 Adm aceita e propõe realinhamento com outro valor',
+  public.agency_budget_change_decide((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'propose', 'Topamos com ajuste', (select v::jsonb from t_s97 where k = 'plan'), 330000) = 'proposed');
+
+-- marca: equipe não confirma; dono confirma
+select tests.login('97000000-0000-4000-8000-000000000976', 's97-equipe-alfa@test.local');
+select tests.expect_error('S97 equipe não confirma o realinhamento', $q$select public.brand_budget_change_answer((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'confirm', null)$q$, 'forbidden');
+select tests.ok('S97 enquanto aberto vale a verba antiga', public.brand_budget_summary('97000000-0000-4000-8000-000000009731') @> '{"reserved_cents": 300000, "change_status": "proposed"}');
+select tests.login('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local');
+select tests.ok('S97 dono confirma', public.brand_budget_change_answer((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1'), 'confirm', 'Combinado') = 'confirmed');
+select tests.ok('S97 confirmação aplica verba (contraproposta), verba por creator e libera novo pedido',
+  public.brand_budget_summary('97000000-0000-4000-8000-000000009731') @> '{"reserved_cents": 330000, "reserved_source": "set"}'
+  and (select total_cents from public.brand_budgets where deal_talent_id = '97000000-0000-4000-8000-000000009751') = 140000
+  and (public.brand_budget_changes('97000000-0000-4000-8000-000000009731') ->> 'can_request')::boolean
+  and (public.brand_budget_changes('97000000-0000-4000-8000-000000009731') -> 'items' -> 0) @> '{"status": "confirmed", "final_cents": 330000, "before_reserved_cents": 300000}');
+select tests.su();
+select tests.ok('S97 aplica valor oferecido, período e entregas pedidas; nada contratado muda',
+  (select budget_max_cents = 330000 and budget_min_cents = 200000 from public.campaign_request_budgets where request_id = '97000000-0000-4000-8000-000000009731')
+  and (select period_start = current_date + 10 and period_end = current_date + 40 and jsonb_array_length(deliverables) = 2 from public.campaign_requests where id = '97000000-0000-4000-8000-000000009731')
+  and (select expected_start = current_date + 10 and expected_end = current_date + 40 from public.deals where id = '97000000-0000-4000-8000-000000009741')
+  and (select count(*) from public.deal_talents where deal_id = '97000000-0000-4000-8000-000000009741' and status = 'contracted') = 2
+  and (select amount_cents from public.financial_entries where id = (select v::uuid from t_s97 where k = 'recv')) = 300000);
+select tests.ok('S97 o resto vira tarefas da agência para o responsável, sem valor no texto',
+  (select count(*) from public.tasks where deal_id = '97000000-0000-4000-8000-000000009741' and title like 'Realinhamento da verba:%' and side = 'agency'
+     and assignee_id = '97000000-0000-4000-8000-000000000972' and status = 'todo') = 5
+  and not exists (select 1 from public.tasks where deal_id = '97000000-0000-4000-8000-000000009741' and (description like '%330%' or description like '%3.300%'))
+  and exists (select 1 from public.tasks where deal_id = '97000000-0000-4000-8000-000000009741' and description like '%Remover: Creator Dois S97%'));
+select tests.ok('S97 histórico completo (criado, enviado, proposto, confirmado) e avisos para a outra parte em cada passo',
+  (select count(*) from public.budget_change_events where change_id = (select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc1')) = 4
+  and exists (select 1 from public.inbox_notifications where kind = 'budget_change' and user_id = '97000000-0000-4000-8000-000000000976' and params ->> 'status' = 'proposed')
+  and exists (select 1 from public.inbox_notifications where kind = 'budget_change' and user_id = '97000000-0000-4000-8000-000000000972' and params ->> 'status' = 'confirmed')
+  and not exists (select 1 from public.inbox_notifications where kind = 'budget_change' and user_id = '97000000-0000-4000-8000-000000000972' and params ->> 'status' = 'requested')
+  and exists (select 1 from public.admin_audit where action = 'budget_change.confirmed'));
+
+-- retirar e recusa da agência
+select tests.login('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local');
+insert into t_s97 values ('bc2', public.brand_budget_change_create('97000000-0000-4000-8000-000000009731', 400000, 'Teste de retirada', '[]')::text);
+select tests.ok('S97 dono envia direto e retira antes da resposta', (select v::jsonb ->> 'status' from t_s97 where k = 'bc2') = 'open'
+  and public.brand_budget_change_review((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc2'), 'withdraw', null) = 'withdrawn');
+insert into t_s97 values ('bc3', public.brand_budget_change_create('97000000-0000-4000-8000-000000009731', 250000, 'Corte de orçamento', '[]')::text);
+select tests.login('97000000-0000-4000-8000-000000000971', 's97-adm@test.local');
+select tests.ok('S97 Adm recusa com nota: verba antiga segue',
+  public.agency_budget_change_decide((select (v::jsonb ->> 'id')::uuid from t_s97 where k = 'bc3'), 'decline', 'Contrato já assinado', null, null) = 'agency_declined');
+select tests.login('97000000-0000-4000-8000-000000000976', 's97-equipe-alfa@test.local');
+select tests.ok('S97 marca avisada da recusa e verba igual',
+  public.brand_budget_summary('97000000-0000-4000-8000-000000009731') @> '{"reserved_cents": 330000}'
+  and exists (select 1 from public.inbox_notifications where kind = 'budget_change' and params ->> 'status' = 'declined'));
+select tests.ok('S97 e-mail: passos entre as partes sim, internos não',
+  public.inbox_kind_emails('budget_change', '/x', '{"status": "proposed"}') and public.inbox_kind_emails('budget_change', '/x', '{"status": "requested"}')
+  and not public.inbox_kind_emails('budget_change', '/x', '{"status": "review"}') and not public.inbox_kind_emails('budget_change', '/x', '{"status": "returned"}')
+  and public.inbox_kind_emails('payment_due', '/x', '{}'));
+
+-- ---------------------------------------------------------------- B) pagamentos
+select tests.login('97000000-0000-4000-8000-000000000972', 's97-gestor@test.local');
+select tests.expect_error('S97 gestor não grava dados de pagamento',
+  $q$select public.agency_payment_settings_save('97000000-0000-4000-8000-000000009701', '{"pix_key_type": "email", "pix_key": "a@b.co", "holder_name": "Agência S97", "holder_tax_id": "11222333000181"}')$q$, 'forbidden');
+select tests.login('97000000-0000-4000-8000-000000000971', 's97-adm@test.local');
+select tests.expect_error('S97 chave PIX inválida',
+  $q$select public.agency_payment_settings_save('97000000-0000-4000-8000-000000009701', '{"pix_key_type": "cpf", "pix_key": "111.111.111-11", "holder_name": "Agência S97", "holder_tax_id": "11222333000181"}')$q$, 'invalid_pix_key');
+select tests.expect_error('S97 CNPJ do favorecido inválido',
+  $q$select public.agency_payment_settings_save('97000000-0000-4000-8000-000000009701', '{"pix_key_type": "email", "pix_key": "a@b.co", "holder_name": "Agência S97", "holder_tax_id": "11222333000100"}')$q$, 'invalid_tax_id');
+select tests.expect_error('S97 sem PIX nem banco',
+  $q$select public.agency_payment_settings_save('97000000-0000-4000-8000-000000009701', '{"holder_name": "Agência S97", "holder_tax_id": "11222333000181"}')$q$, 'payment_method_required');
+select public.agency_payment_settings_save('97000000-0000-4000-8000-000000009701', '{"pix_key_type": "email", "pix_key": " Financeiro@Agencia.S97.test ", "holder_name": "Agência  S97 Ltda",
+  "holder_tax_id": "11.222.333/0001-81", "bank_name": "Banco S97", "bank_branch": "0001", "bank_account": "12345-6", "instructions": "Mande o comprovante"}');
+select tests.ok('S97 dados salvos e normalizados (e-mail minúsculo, CNPJ só dígitos, conta corrente)',
+  (select pix_key = 'financeiro@agencia.s97.test' and holder_tax_id = '11222333000181' and holder_name = 'Agência S97 Ltda' and bank_account_type = 'checking'
+   from public.agency_payment_settings where agency_id = '97000000-0000-4000-8000-000000009701')
+  and public.pix_key_normalize('phone', '(11) 98765-4321') = '+5511987654321' and public.pix_key_normalize('phone', '+55 11 98765-4321') = '+5511987654321'
+  and public.pix_key_normalize('random', '123E4567-E89B-12D3-A456-426614174000') = '123e4567-e89b-12d3-a456-426614174000'
+  and public.pix_key_normalize('cnpj', '11.222.333/0001-81') = '11222333000181' and public.pix_key_normalize('email', 'sem-arroba') is null);
+select tests.expect_error('S97 parcelas precisam somar o total',
+  $q$select public.agency_receivable_split((select v::uuid from t_s97 where k = 'recv'), jsonb_build_array(jsonb_build_object('label', 'Assinatura', 'amount_cents', 150000, 'due_on', current_date + 5), jsonb_build_object('label', 'Entrega', 'amount_cents', 149999, 'due_on', current_date + 40)))$q$, 'installments_sum');
+insert into t_s97 values ('split', public.agency_receivable_split((select v::uuid from t_s97 where k = 'recv'), jsonb_build_array(
+    jsonb_build_object('label', 'Assinatura', 'amount_cents', 150000, 'due_on', current_date + 5),
+    jsonb_build_object('label', 'Entrega', 'amount_cents', 150000, 'due_on', current_date + 40)))::text);
+select tests.ok('S97 Adm divide 50% assinatura / 50% entrega',
+  (select v from t_s97 where k = 'split') = '2'
+  and (select count(*) from public.brand_payment_installments where entry_id = (select v::uuid from t_s97 where k = 'recv')) = 2
+  and (select sum(amount_cents) from public.brand_payment_installments where entry_id = (select v::uuid from t_s97 where k = 'recv')) = 300000
+  and (select due_on from public.financial_entries where id = (select v::uuid from t_s97 where k = 'recv')) = current_date + 5);
+insert into t_s97 values
+  ('i1', (select id::text from public.brand_payment_installments where entry_id = (select v::uuid from t_s97 where k = 'recv') and seq = 1)),
+  ('i2', (select id::text from public.brand_payment_installments where entry_id = (select v::uuid from t_s97 where k = 'recv') and seq = 2));
+
+select tests.login('97000000-0000-4000-8000-000000000972', 's97-gestor@test.local');
+select tests.ok('S97 gestor: 0 dados de pagamento, parcelas e informes', (select count(*) from public.agency_payment_settings) = 0
+  and (select count(*) from public.brand_payment_installments) = 0 and (select count(*) from public.brand_payment_reports) = 0);
+select tests.expect_error('S97 gestor não lê a lista de pagamentos', $q$select public.agency_brand_payments('97000000-0000-4000-8000-000000009701')$q$, 'forbidden');
+select tests.expect_error('S97 gestor não divide parcelas', $q$select public.agency_receivable_split((select v::uuid from t_s97 where k = 'recv'), '[]')$q$, 'forbidden');
+
+-- marca: vê o que deve e os dados da agência
+select tests.login('97000000-0000-4000-8000-000000000976', 's97-equipe-alfa@test.local');
+insert into t_s97 values ('bp', public.brand_payments('97000000-0000-4000-8000-000000009711')::text);
+select tests.ok('S97 equipe da marca vê o que deve (2 negócios), parcelas e os dados de pagamento da agência',
+  jsonb_array_length((select v::jsonb from t_s97 where k = 'bp') -> 'items') = 2
+  and ((select v::jsonb from t_s97 where k = 'bp') -> 'agencies' -> 0 -> 'settings') @> '{"pix_key": "financeiro@agencia.s97.test", "holder_tax_id": "11222333000181"}'
+  and exists (select 1 from jsonb_array_elements((select v::jsonb from t_s97 where k = 'bp') -> 'items') x
+              where x @> '{"title": "Campanha Verão S97", "total_cents": 300000, "origin": "campaign"}' and jsonb_array_length(x -> 'installments') = 2)
+  and (select count(*) from public.brand_payment_installments) = 3 and (select count(*) from public.agency_payment_settings) = 0);
+select tests.expect_error('S97 data no futuro é recusada',
+  $q$select public.brand_payment_report((select v::uuid from t_s97 where k = 'i1'), current_date + 2, 150000, null, null)$q$, 'invalid_date');
+insert into t_s97 values ('r1', public.brand_payment_report((select v::uuid from t_s97 where k = 'i1'), current_date, 150000, null, 'PIX feito')::text);
+select tests.expect_error('S97 um informe aberto por parcela',
+  $q$select public.brand_payment_report((select v::uuid from t_s97 where k = 'i1'), current_date, 150000, null, null)$q$, 'payment_open');
+-- comprovante pelo armazenamento de documentos (escopo do negócio), enviado por quem informa
+select tests.login('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local');
+insert into t_s97 values ('doc', (public.document_reserve('97000000-0000-4000-8000-000000009701', 'deal', '97000000-0000-4000-8000-000000009741',
+  '{"kind": "other", "title": "Comprovante S97", "mime_type": "application/pdf", "size_bytes": 1000}') ->> 'id'));
+select tests.su();
+update public.documents set status = 'ready' where id = (select v::uuid from t_s97 where k = 'doc');
+select tests.login('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local');
+insert into t_s97 values ('r2', public.brand_payment_report((select v::uuid from t_s97 where k = 'i2'), current_date - 1, 150000, (select v::uuid from t_s97 where k = 'doc'), null)::text);
+select tests.ok('S97 comprovante fica restrito: a marca ainda lê', (select restricted from public.documents where id = (select v::uuid from t_s97 where k = 'doc'))
+  and (select count(*) from public.brand_payment_reports) = 2);
+select tests.login('97000000-0000-4000-8000-000000000977', 's97-dono-beta@test.local');
+select tests.ok('S97 outra marca: 0 parcelas e 0 informes, e a lista dela só tem o dela',
+  (select count(*) from public.brand_payment_installments where brand_id = '97000000-0000-4000-8000-000000009711') = 0
+  and (select count(*) from public.brand_payment_reports) = 0
+  and jsonb_array_length(public.brand_payments('97000000-0000-4000-8000-000000009712') -> 'items') = 1);
+select tests.expect_error('S97 outra marca não lê os pagamentos da Alfa', $q$select public.brand_payments('97000000-0000-4000-8000-000000009711')$q$, 'not_found');
+select tests.expect_error('S97 outra marca não informa parcela da Alfa',
+  $q$select public.brand_payment_report((select v::uuid from t_s97 where k = 'i1'), current_date, 1, null, null)$q$, 'not_found');
+select tests.login('97000000-0000-4000-8000-000000000972', 's97-gestor@test.local');
+select tests.ok('S97 gestor não lê o comprovante', (select count(*) from public.documents where id = (select v::uuid from t_s97 where k = 'doc')) = 0);
+select tests.expect_error('S97 gestor não confirma', $q$select public.agency_payment_review((select v::uuid from t_s97 where k = 'r1'), 'confirm', null)$q$, 'forbidden');
+select tests.login('97000000-0000-4000-8000-000000000974', 's97-creator@test.local');
+select tests.ok('S97 creator: nada de pagamentos da marca', (select count(*) from public.brand_payment_installments) = 0 and (select count(*) from public.brand_payment_reports) = 0
+  and (select count(*) from public.agency_payment_settings) = 0 and (select count(*) from public.documents where id = (select v::uuid from t_s97 where k = 'doc')) = 0);
+select tests.expect_error('S97 creator não lê pagamentos', $q$select public.brand_payments('97000000-0000-4000-8000-000000009711')$q$, 'not_found');
+select tests.login('97000000-0000-4000-8000-000000000976', 's97-equipe-alfa@test.local');
+select tests.expect_error('S97 marca não confirma o próprio pagamento', $q$select public.agency_payment_review((select v::uuid from t_s97 where k = 'r1'), 'confirm', null)$q$, 'not_found');
+
+-- Adm confere
+select tests.login('97000000-0000-4000-8000-000000000971', 's97-adm@test.local');
+select tests.ok('S97 Adm vê informes e abre o comprovante', (select count(*) from public.brand_payment_reports where status = 'reported') = 2
+  and (select count(*) from public.documents where id = (select v::uuid from t_s97 where k = 'doc')) = 1
+  and exists (select 1 from public.inbox_notifications where kind = 'payment_reported' and params ->> 'brand' = 'Marca Alfa S97')
+  and jsonb_array_length(public.agency_brand_payments('97000000-0000-4000-8000-000000009701') -> 'items') = 3);
+select tests.expect_error('S97 dividir com informe aberto é recusado',
+  $q$select public.agency_receivable_split((select v::uuid from t_s97 where k = 'recv'), jsonb_build_array(jsonb_build_object('amount_cents', 300000, 'due_on', current_date + 5)))$q$, 'invalid_state');
+select tests.expect_error('S97 recusar exige nota', $q$select public.agency_payment_review((select v::uuid from t_s97 where k = 'r1'), 'reject', 'não')$q$, 'note_required');
+select tests.ok('S97 Adm recusa com nota', public.agency_payment_review((select v::uuid from t_s97 where k = 'r1'), 'reject', 'Não caiu na conta') = 'rejected');
+select tests.login('97000000-0000-4000-8000-000000000976', 's97-equipe-alfa@test.local');
+select tests.ok('S97 marca avisada da recusa e informa de novo',
+  exists (select 1 from public.inbox_notifications where kind = 'payment_reviewed' and params ->> 'status' = 'rejected')
+  and public.brand_payment_report((select v::uuid from t_s97 where k = 'i1'), current_date, 150000, null, 'Agora foi') is not null);
+select tests.login('97000000-0000-4000-8000-000000000971', 's97-adm@test.local');
+insert into t_s97 values ('rv1', public.agency_payment_review((select id from public.brand_payment_reports where installment_id = (select v::uuid from t_s97 where k = 'i1') and status = 'reported'), 'confirm', null));
+select tests.ok('S97 confirmar a 1ª parcela não liquida o lançamento',
+  (select v from t_s97 where k = 'rv1') = 'confirmed'
+  and (select status from public.financial_entries where id = (select v::uuid from t_s97 where k = 'recv')) in ('planned', 'due')
+  and (select status from public.brand_payment_installments where id = (select v::uuid from t_s97 where k = 'i1')) = 'paid');
+insert into t_s97 values ('rv2', public.agency_payment_review((select v::uuid from t_s97 where k = 'r2'), 'confirm', null));
+select tests.ok('S97 confirmar a última parcela liquida o lançamento pela regra da 0072',
+  (select v from t_s97 where k = 'rv2') = 'confirmed'
+  and (select status = 'settled' and settled_by = '97000000-0000-4000-8000-000000000971' from public.financial_entries where id = (select v::uuid from t_s97 where k = 'recv')));
+select tests.login('97000000-0000-4000-8000-000000000975', 's97-dono-alfa@test.local');
+select tests.ok('S97 marca vê tudo pago', (select bool_and(i ->> 'status' = 'paid') from jsonb_array_elements(public.brand_payments('97000000-0000-4000-8000-000000009711') -> 'items') x,
+  jsonb_array_elements(x -> 'installments') i where x ->> 'entry_id' = (select v from t_s97 where k = 'recv')));
+
+-- cron de vencimento
+select tests.su();
+select tests.ok('S97 liquidação auditada pela regra da 0072', exists (select 1 from public.admin_audit where action = 'finance.entry_status' and resource_id = (select v from t_s97 where k = 'recv')));
+update public.brand_payment_installments set due_on = current_date + 60 where deal_id = '97000000-0000-4000-8000-000000009743';
+update public.brand_payment_installments set due_on = current_date + 2 where entry_id = (select v::uuid from t_s97 where k = 'recv2');
+insert into t_s97 values ('scan1', public.brand_payment_due_scan()::text);
+insert into t_s97 values ('scan2', public.brand_payment_due_scan()::text);
+select tests.ok('S97 cron avisa 3 dias antes a marca (dono e equipe) e o Adm, uma vez por faixa',
+  (select v from t_s97 where k = 'scan1') = '3' and (select v from t_s97 where k = 'scan2') = '0'
+  and (select count(*) from public.inbox_notifications where kind = 'payment_due' and params ->> 'status' = 'soon') = 3
+  and not exists (select 1 from public.inbox_notifications where kind = 'payment_due' and user_id = '97000000-0000-4000-8000-000000000972'));
+update public.brand_payment_installments set due_on = current_date - 3 where entry_id = (select v::uuid from t_s97 where k = 'recv2');
+insert into t_s97 values ('scan3', public.brand_payment_due_scan()::text);
+select tests.ok('S97 cron avisa 3 dias depois', (select v from t_s97 where k = 'scan3') = '3'
+  and (select count(*) from public.inbox_notifications where kind = 'payment_due' and params ->> 'status' = 'late') = 3);
+
+select tests.su();
+delete from public.deals where agency_id = '97000000-0000-4000-8000-000000009701';
+delete from public.documents where agency_id = '97000000-0000-4000-8000-000000009701';
+delete from public.campaign_requests where agency_id = '97000000-0000-4000-8000-000000009701';
+delete from public.talent_profiles where id::text like '97000000-%';
+delete from public.brand_members where brand_id::text like '97000000-0000-4000-8000-00000000971%';
+delete from public.agency_brands where agency_id = '97000000-0000-4000-8000-000000009701';
+delete from public.brands where id::text like '97000000-0000-4000-8000-00000000971%';
+delete from public.inbox_notifications where user_id::text like '97000000-0000-4000-8000-0000000009%';
+delete from public.agency_members where agency_id = '97000000-0000-4000-8000-000000009701';
+delete from public.agencies where id = '97000000-0000-4000-8000-000000009701';
+delete from auth.users where id::text like '97000000-0000-4000-8000-0000000009%';
+drop table t_s97;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

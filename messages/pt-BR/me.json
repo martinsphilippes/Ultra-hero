@@ -194,7 +194,7 @@
       },
       "orders": {
         "title": "Pedidos de teste",
-        "description": "Compras demonstrativas, sem cobrança real."
+        "description": "Compras sem cobrança enquanto o pagamento não estiver ativado."
       },
       "notifications": {
         "title": "Notificações",
@@ -206,7 +206,7 @@
       }
     },
     "signOut": "Sair da conta",
-    "demoNote": "Ambiente de demonstração: o app é gratuito e os pedidos da loja são de teste, sem pagamento real.",
+    "demoNote": "O app é gratuito. Pagamento ainda não ativado: pedidos da loja são registrados sem cobrança.",
     "evolution": {
       "title": "Evolução",
       "description": "Sua sequência e o caminho até aqui.",
@@ -626,7 +626,7 @@
     "title": "Conta e privacidade",
     "description": "Transparência sobre o que a POC guarda e como excluir sua conta.",
     "demo": {
-      "title": "Natureza demonstrativa",
+      "title": "Como o app funciona hoje",
       "body": "O Groscove Ultra é uma prova de conceito pública. O app é gratuito e os pedidos são de teste: não há pagamento, entrega ou endereço real."
     },
     "store": {
@@ -735,7 +735,7 @@
       },
       "commerce_updates": {
         "label": "Pedidos de teste",
-        "description": "Mudanças de status dos pedidos demonstrativos."
+        "description": "Mudanças de status dos seus pedidos."
       },
       "auction_outbid": {
         "label": "Lance superado nos Colecionáveis",
@@ -839,7 +839,7 @@
   "feedback": {
     "button": "Feedback",
     "title": "Deixe seu feedback",
-    "description": "Opcional e rápido. Ajuda a melhorar a demonstração.",
+    "description": "Opcional e rápido. Ajuda a melhorar o app.",
     "rating": "Nota",
     "ratingOption": "{n} de 5",
     "ratingLabels": {
@@ -880,7 +880,7 @@
     "version": "Versão {n}",
     "issued": "Emitido em {date}",
     "code": "Código {code}",
-    "symbolic": "Certificado simbólico: reconhece a conclusão de conteúdos educativos em um ambiente de demonstração. Sem validade profissional, acadêmica ou legal.",
+    "symbolic": "Certificado simbólico: reconhece a conclusão de conteúdos educativos no Groscove Ultra. Sem validade profissional, acadêmica ou legal.",
     "home": "Ir para o Groscove Ultra"
   },
   "settings": {

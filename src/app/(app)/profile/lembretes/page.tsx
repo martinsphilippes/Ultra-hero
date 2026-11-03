@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Info } from "lucide-react";
 import { isValidTimeZone, localDateIn, ymdToDate } from "@/components/me/dates";
 import { RemindersList, type ReminderListItem } from "@/components/me/reminders/RemindersList";
-import { DemoBadge, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { getProfile, requireUser } from "@/lib/auth/session";
 import { shortTime, splitReminders, type ReminderRow } from "@/lib/routine/reminders";
 import { createClient } from "@/lib/supabase/server";
@@ -53,7 +53,6 @@ export default async function RemindersPage() {
         eyebrow={<time dateTime={today} data-testid="reminders-date">{dateLabel}</time>}
         backHref="/profile"
         backLabel={tc("actions.back")}
-        actions={<DemoBadge />}
       />
 
       <p className="flex items-start gap-2 rounded-xl border border-border bg-surface px-4 py-3 type-body-sm text-fg-muted" data-testid="reminders-info">

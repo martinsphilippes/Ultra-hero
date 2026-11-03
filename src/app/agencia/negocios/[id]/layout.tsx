@@ -25,7 +25,7 @@ export default async function DealLayout({ children, params }: Props) {
             <StageBadge stage={deal.stage} outcome={deal.outcome} size="md" />
             <span className="text-fg">{deal.brand.name}</span>
             {deal.isDemo ? (
-              <Badge variant="demo" size="sm">
+              <Badge variant="neutral" size="sm">
                 {t("demoTag")}
               </Badge>
             ) : null}

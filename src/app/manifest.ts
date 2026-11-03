@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Groscove Ultra",
     short_name: "Groscove Ultra",
-    description: "Rotina, treino, nutrição e gastronomia em um só lugar. Ambiente de demonstração.",
+    description: "Rotina, treino, nutrição e gastronomia em um só lugar.",
     lang: "pt-BR",
     dir: "ltr",
     start_url: "/personalities",

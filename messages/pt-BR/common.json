@@ -2,7 +2,7 @@
   "app": {
     "name": "Groscove Ultra",
     "tagline": "Rotina, treino, nutrição e gastronomia em um só lugar.",
-    "description": "Groscove Ultra: conteúdos, hábitos, treinos, nutrição e gastronomia com heróis, programas e evolução. Ambiente de demonstração."
+    "description": "Groscove Ultra: conteúdos, hábitos, treinos, nutrição e gastronomia com heróis, programas e evolução."
   },
   "actions": {
     "save": "Salvar",
@@ -53,10 +53,6 @@
     "success": "Tudo certo",
     "notFound": "Não encontrado",
     "comingSoon": "Em breve"
-  },
-  "demo": {
-    "banner": "Ambiente de demonstração: nenhum pagamento, entrega ou cobrança real.",
-    "tag": "Demonstração"
   },
   "languages": {
     "label": "Idioma",
@@ -150,5 +146,6 @@
     "hour": "Hora",
     "minute": "Minutos",
     "done": "Pronto"
-  }
+  },
+  "paymentsInactive": "Pagamento ainda não ativado: seu pedido é registrado sem cobrança."
 }

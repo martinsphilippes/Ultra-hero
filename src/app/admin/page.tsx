@@ -8,7 +8,7 @@ import { KpiCard } from "@/components/admin-ops/KpiCard";
 import { MiniBarChart, type DailyPoint } from "@/components/admin-ops/MiniBarChart";
 import { parsePeriod } from "@/components/admin-ops/period";
 import { PeriodSelector } from "@/components/admin-ops/PeriodSelector";
-import { Badge, Button, DemoBadge, ErrorState, PageHeader, Skeleton, VisuallyHidden } from "@/components/ui";
+import { Badge, Button, ErrorState, PageHeader, Skeleton, VisuallyHidden } from "@/components/ui";
 import { formatCurrency, formatNumber, formatPercent } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
 import { isHeroCard, type HeroCard } from "@/lib/acting-hero/constants";
@@ -117,8 +117,8 @@ async function DashboardContent({ days }: { days: number }) {
           <KpiCard label={t("kpis.enrollments")} value={n(num(m, "enrollments"))} />
           <KpiCard label={t("kpis.commercialInterest")} value={n(num(m, "commercial_interest"))} />
           <KpiCard label={t("kpis.cartAdds")} value={n(num(m, "cart_adds"))} />
-          <KpiCard label={t("kpis.testOrders")} value={n(num(m, "test_orders"))} tag={<DemoBadge size="sm" />} />
-          <KpiCard label={t("kpis.testOrdersTotal")} value={formatCurrency(num(m, "test_orders_total_cents_demo") / 100, locale)} tag={<DemoBadge size="sm" />} />
+          <KpiCard label={t("kpis.testOrders")} value={n(num(m, "test_orders"))} />
+          <KpiCard label={t("kpis.testOrdersTotal")} value={formatCurrency(num(m, "test_orders_total_cents_demo") / 100, locale)} />
           <KpiCard label={t("kpis.realRevenue")} value={formatCurrency(0, locale)} hint={t("kpis.realRevenueValue")} tone="muted" />
           <KpiCard label={t("kpis.recommendationRuns")} value={n(num(m, "recommendation_runs"))} hint={t("kpis.fallbackShare", { share: formatPercent(num(m, "recommendation_fallback_share"), locale) })} />
           <KpiCard label={t("kpis.feedback")} value={n(num(m, "feedback"))} />

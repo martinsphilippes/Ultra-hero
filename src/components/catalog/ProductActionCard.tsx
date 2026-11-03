@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { OfficialStoreLink } from "@/components/commerce/OfficialStoreLink";
 import { QuickAddToCart } from "@/components/commerce/QuickAddToCart";
 import { ProductInterestTracker } from "@/components/content/ProductInterestTracker";
-import { Badge, Card, CardImage, DemoBadge } from "@/components/ui";
+import { Badge, Card, CardImage } from "@/components/ui";
 import { formatCurrency } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
 import type { CreatorProductContent } from "@/lib/catalog/creator-products";
@@ -53,7 +53,7 @@ export async function ProductActionCard({ product, usedIn, purchasable, maxQuant
         overlay={
           <div className="flex items-start justify-between gap-2">
             {product.category ? <Badge variant="neutral" size="sm" className="bg-black/40 text-white border-white/30">{localizedLabel(product.category.name, locale)}</Badge> : <span />}
-            {unavailable ? <Badge variant="warning" size="sm">{t("productUnavailable")}</Badge> : <DemoBadge size="sm" />}
+            {unavailable ? <Badge variant="warning" size="sm">{t("productUnavailable")}</Badge> : null}
           </div>
         }
       />

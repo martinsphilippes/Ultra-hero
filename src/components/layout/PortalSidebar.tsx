@@ -99,6 +99,7 @@ const ICONS: Record<string, LucideIcon> = {
   sponsorships: Handshake,
   tasks: ClipboardList,
   finance: Wallet,
+  payments: Wallet,
   history: ScrollText,
   // escritório do creator (0087)
   opportunities: Sparkles,

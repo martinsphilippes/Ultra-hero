@@ -430,11 +430,6 @@ export default async function ContentPage({ params, searchParams }: PageProps) {
                 <span className="text-sm font-semibold text-fg">{tcat("by", { name: content.creator.name })}</span>
                 <span className="flex items-center gap-2 type-caption text-fg-muted">
                   {content.creator.headline}
-                  {content.creator.is_fictional && (
-                    <Badge variant="demo" size="sm">
-                      {t("creatorFictional")}
-                    </Badge>
-                  )}
                 </span>
               </span>
             </Link>
