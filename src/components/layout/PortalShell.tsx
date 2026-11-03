@@ -52,7 +52,6 @@ export async function PortalShell({ portal, children, navKeys, headerAction, bad
         </Link>
         <div className="flex items-center gap-2 px-2">
           <Badge variant="accent">{badge ?? t(`portals.${portal}`)}</Badge>
-          <Badge variant="demo">{ta("demo.tag")}</Badge>
         </div>
         <PortalNavList portal={portal} navKeys={navKeys} />
       </aside>
