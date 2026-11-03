@@ -8,35 +8,8 @@ import { archiveTalentAction, linkCreatorAction, recordConsentAction, saveTalent
 import { Button, Checkbox, Dialog, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import { AVAILABILITIES, COMMERCIAL_STATUSES, UFS, type Availability, type CommercialStatus } from "@/lib/talent/vocab";
 
-export type TalentFormValues = {
-  id: string | null;
-  displayName: string;
-  city: string;
-  state: string;
-  managerId: string;
-  commercialStatus: CommercialStatus;
-  availability: Availability;
-  availabilityNote: string;
-  contactEmail: string;
-  contactPhone: string;
-  internalNotes: string;
-  lastContactAt: string;
-};
-
-export const EMPTY_TALENT: TalentFormValues = {
-  id: null,
-  displayName: "",
-  city: "",
-  state: "",
-  managerId: "",
-  commercialStatus: "prospect",
-  availability: "available",
-  availabilityNote: "",
-  contactEmail: "",
-  contactPhone: "",
-  internalNotes: "",
-  lastContactAt: "",
-};
+export { EMPTY_TALENT, type TalentFormValues } from "@/lib/talent/form-values";
+import type { TalentFormValues } from "@/lib/talent/form-values";
 
 // Ficha do talento (gestor+): dados de contato e notas internas nunca vão ao kit nem ao creator
 // (talent_my_context não devolve esses campos). Sem valores aqui.

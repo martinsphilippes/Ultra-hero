@@ -11,7 +11,8 @@ import { credentialsState, type CredentialsRequest } from "@/lib/recipes/credent
 import { createClient } from "@/lib/supabase/server";
 import { ChefProfileForm } from "./ChefProfileForm";
 import { CreatorProfileForm } from "./CreatorProfileForm";
-import { HERO_ANCHOR, HeroEditorDisclosure } from "./HeroEditorDisclosure";
+import { HERO_ANCHOR } from "@/lib/creator/hero-anchors";
+import { HeroEditorDisclosure } from "./HeroEditorDisclosure";
 import { socialsFrom } from "./profile-schema";
 
 // Topo do /profile para o herói, no formato do Instagram: cabeçalho público (foto, nome, selo e bio

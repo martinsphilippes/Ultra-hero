@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { EMPTY_TALENT, TalentForm } from "@/components/agency/CastingForms";
+import { TalentForm } from "@/components/agency/CastingForms";
+import { EMPTY_TALENT } from "@/lib/talent/form-values";
 import { PageHeader } from "@/components/ui";
 import { requireAgency } from "@/lib/agency/server";
 import { listManagers } from "@/lib/talent/queries";

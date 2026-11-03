@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { CampaignForm, EMPTY_CAMPAIGN } from "@/components/brand-portal/CampaignForm";
+import { CampaignForm } from "@/components/brand-portal/CampaignForm";
+import { EMPTY_CAMPAIGN } from "@/lib/brand-portal/campaign-form";
 import { TemplatePicker } from "@/components/brief/TemplatePicker";
 import { PageHeader } from "@/components/ui";
 import { getBrandContext } from "@/lib/brand-portal/server";

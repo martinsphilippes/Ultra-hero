@@ -1,6 +1,7 @@
 "use client";
 
 import { Pencil, X } from "lucide-react";
+import { ACCOUNT_ANCHOR, HERO_ANCHOR, HERO_EDITOR_ID } from "@/lib/creator/hero-anchors";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -11,12 +12,6 @@ import { Button } from "@/components/ui";
 // antigo /creator/profile redireciona para lá), pelo atalho em Dados e sozinho quando um formulário
 // de dentro mostra erro (erro escondido ninguém corrige).
 
-/** Âncora do topo do herói (cabeçalho público); o endereço com ela abre o editor. */
-export const HERO_ANCHOR = "perfil-publico";
-/** Região recolhível do editor (aria-controls do botão). */
-export const HERO_EDITOR_ID = "editar-perfil";
-/** Parte "Sua conta" dentro do editor (antes a seção Dados); o endereço com ela também abre o editor. */
-export const ACCOUNT_ANCHOR = "dados";
 const OPEN_EVENT = "hero-editor:open";
 
 type EditorApi = { reveal: () => void };
@@ -143,3 +138,5 @@ export function HeroEditorDisclosure({ publicHref, description, children }: Prop
     </div>
   );
 }
+
+export { ACCOUNT_ANCHOR, HERO_ANCHOR, HERO_EDITOR_ID };

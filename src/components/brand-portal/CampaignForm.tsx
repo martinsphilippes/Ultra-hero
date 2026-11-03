@@ -7,37 +7,16 @@ import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
 import { BriefFields } from "@/components/brief/BriefFields";
 import { Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
-import { briefValid, draftToBrief, EMPTY_BRIEF_DRAFT, type BriefDraft } from "@/lib/brief/brief";
+import { briefValid, draftToBrief } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
 import { askApprovalAction } from "@/lib/selection/actions";
 import { DELIVERABLE_KINDS, FORMATS, OBJECTIVES } from "@/lib/deals/vocab";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 
-export type CampaignFormValues = Omit<BrandRequestInput, "budgetMaxCents" | "brief"> & { budgetText: string; briefDraft: BriefDraft };
-
-export const EMPTY_CAMPAIGN: CampaignFormValues = {
-  id: null,
-  talentId: "",
-  title: "",
-  objective: "",
-  product: "",
-  targetAudience: "",
-  targetAgeBands: [],
-  targetStates: [],
-  regionNote: "",
-  periodStart: "",
-  periodEnd: "",
-  desiredTime: "",
-  durationMinutes: "",
-  format: "",
-  location: "",
-  networks: [],
-  deliverables: [],
-  notes: "",
-  budgetText: "",
-  budgetNote: "",
-  briefDraft: EMPTY_BRIEF_DRAFT,
-};
+// Valores vazios ficam num módulo comum (campaign-form.ts): uma página do servidor que importasse a
+// constante deste arquivo "use client" receberia só uma referência de cliente, sem os campos.
+export { EMPTY_CAMPAIGN, type CampaignFormValues } from "@/lib/brand-portal/campaign-form";
+import type { CampaignFormValues } from "@/lib/brand-portal/campaign-form";
 
 /**
  * submitMode (0081): "submit" = o diretor envia à agência; "ask" = a equipe pede aprovação interna ao diretor;
