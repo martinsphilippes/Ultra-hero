@@ -111,7 +111,7 @@
     "name_required": "Escribe tu nombre completo (nombre y apellido)."
   },
   "values": {
-    "demoLockedKit": "Agencia de demostración: el enlace público queda desactivado (solo la vista previa)."
+    "demoLockedKit": "Agencia de ejemplo: el enlace público queda desactivado (solo la vista previa)."
   },
   "opportunities": {
     "unavailable": "Oportunidades en actualización",

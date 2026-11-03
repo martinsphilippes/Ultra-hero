@@ -146,12 +146,12 @@
     "period": "{start} a {end}",
     "generatedAt": "gerado em {date}",
     "summary": "Resumo",
-    "summaryLine": "{talents, plural, =0 {Nenhum influenciador} one {# influenciador} other {# influenciadores}} · {deliverables, plural, =0 {nenhum entregável} one {# entregável} other {# entregáveis}} · {published} publicados",
+    "summaryLine": "{talents, plural, =0 {Nenhum creator} one {# creator} other {# creators}} · {deliverables, plural, =0 {nenhum entregável} one {# entregável} other {# entregáveis}} · {published} publicados",
     "noMetrics": "Sem métricas informadas ainda.",
-    "talents": "Influenciadores",
+    "talents": "Creators",
     "none": "Nada por aqui.",
     "cols": {
-      "talent": "Influenciador",
+      "talent": "Creator",
       "deliverables": "Entregáveis",
       "deliverable": "Entregável",
       "status": "Situação"

@@ -6,12 +6,12 @@
     "cta": "Accept the invitation",
     "expires": "The link is valid for {days} days and only works with this e-mail.",
     "ignore": "If you were not expecting this invitation, ignore this message.",
-    "signature": "Groscove Ultra · the bridge between brands and heroes"
+    "signature": "Groscove Ultra · the bridge between brands and creators"
   },
   "work": {
     "greeting": "Hello!",
     "prefs": "You get this e-mail because e-mail notices are on in Groscove Ultra. To turn them off, go to Profile → Notifications.",
-    "signature": "Groscove Ultra · the bridge between brands and heroes",
+    "signature": "Groscove Ultra · the bridge between brands and creators",
     "kinds": {
       "opportunity_received": {
         "subject": "New opportunity: {brand}",

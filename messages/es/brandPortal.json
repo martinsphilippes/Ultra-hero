@@ -118,7 +118,7 @@
     "representedBy": "Representado por {agency}.",
     "consentMissing": "sin consentimiento (kit no disponible)",
     "shortlistsLink": "Preselección",
-    "compareHint": "Marca de 2 a 4 creadores para comparar lado a lado."
+    "compareHint": "Marca de 2 a 4 creators para comparar lado a lado."
   },
   "campaigns": {
     "draftSaved": "Borrador guardado.",
@@ -252,17 +252,17 @@
     },
     "committedHint": "Lo que la marca paga por los contratados (sin separar cachet y tasa).",
     "paymentDue": "Pago a la agencia previsto para {date}",
-    "byTalent": "Por creador",
+    "byTalent": "Por creator",
     "talentProposed": "En propuesta",
     "talentContracted": "Contratado",
-    "noTalents": "Ningún creador propuesto aún.",
+    "noTalents": "Ningún creator propuesto aún.",
     "edit": "Definir presupuesto",
     "editTalent": "Definir presupuesto de {name}",
     "editTitle": "Presupuesto de la campaña",
     "editTalentTitle": "Presupuesto · {name}",
     "amount": "Valor (R$)",
     "amountHint": "Ej.: 15.000,00. En blanco vuelve a lo informado a la agencia.",
-    "amountTalentHint": "Ej.: 5.000,00. En blanco quita el presupuesto de este creador.",
+    "amountTalentHint": "Ej.: 5.000,00. En blanco quita el presupuesto de este creator.",
     "amountInvalid": "Valor inválido. Usa el formato 15.000,00.",
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -273,7 +273,7 @@
     "overviewHint": "Reservado, comprometido y pagado en todas las campañas enviadas.",
     "overviewEmpty": "Ninguna campaña con presupuesto o contratación aún.",
     "overCount": "{count, plural, one {# campaña superó el presupuesto} other {# campañas superaron el presupuesto}}",
-    "talentsOver": "{count, plural, one {# creador sobre el presupuesto} other {# creadores sobre el presupuesto}}",
+    "talentsOver": "{count, plural, one {# creator sobre el presupuesto} other {# creators sobre el presupuesto}}",
     "seeCampaign": "Ver campaña"
   }
 }

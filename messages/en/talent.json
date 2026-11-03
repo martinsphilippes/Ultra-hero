@@ -111,7 +111,7 @@
     "name_required": "Type your full name (first and last name)."
   },
   "values": {
-    "demoLockedKit": "Demo agency: the public link stays off (preview only)."
+    "demoLockedKit": "Example agency: the public link stays off (preview only)."
   },
   "opportunities": {
     "unavailable": "Opportunities being updated",

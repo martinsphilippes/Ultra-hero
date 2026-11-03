@@ -63,7 +63,7 @@ export default async function ProfilePage() {
   const meta = user.user_metadata as Record<string, unknown> | undefined;
   const displayName = profile?.display_name || (typeof meta?.full_name === "string" ? meta.full_name : null) || user.email?.split("@")[0] || "";
   const roleSet = Array.from(new Set(roles.map((r) => r.role)));
-  // talento sem página (só escopo talent, D2): o selo diz "Talento"; quem está num casting tem o Escritório
+  // talento sem página (só escopo talent, D2): o selo diz "Creator" (nomenclatura única da gestão; "herói" só para a página pública); quem está num casting tem o Escritório
   // (nos portais do topo)
   const roleBadges = isTalentOnly(roles) ? roleSet.map((r) => (r === "creator" ? "talent" : r)) : roleSet;
   const talentCtx = roleSet.includes("creator") ? await getTalentContext() : null;

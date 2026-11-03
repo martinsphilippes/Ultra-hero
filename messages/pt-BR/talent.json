@@ -111,7 +111,7 @@
     "name_required": "Digite o nome completo (nome e sobrenome)."
   },
   "values": {
-    "demoLockedKit": "Agência de demonstração: o link público fica desligado (só a prévia)."
+    "demoLockedKit": "Agência de exemplo: o link público fica desligado (só a prévia)."
   },
   "opportunities": {
     "unavailable": "Oportunidades em atualização",

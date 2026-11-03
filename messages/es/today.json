@@ -30,7 +30,7 @@
       "draft": "Borrador detenido",
       "internalApproval": "Aprobación interna",
       "shortlist": "Preselección",
-      "rating": "Evaluar creador",
+      "rating": "Evaluar creator",
       "budget": "Presupuesto excedido",
       "sponsorship": "Oportunidad de patrocinio"
     },
@@ -49,10 +49,10 @@
     },
     "internalPending": "Esperando tu aprobación",
     "internalReturned": "Devuelta: ajusta y pide de nuevo",
-    "shortlistSent": "Aprueba o rechaza cada creador",
+    "shortlistSent": "Aprueba o rechaza cada creator",
     "shortlistDecided": "Decidida: crea la campaña con los aprobados",
     "budgetOver": "Lo comprometido superó el presupuesto de la campaña",
-    "budgetTalentsOver": "Un creador superó su presupuesto",
+    "budgetTalentsOver": "Un creator superó su presupuesto",
     "sponsorshipHint": "Patrocinar o no te interesa"
   },
   "talent": {
@@ -88,7 +88,7 @@
   },
   "board": {
     "title": "Acciones por etapa",
-    "description": "Cada entregable de cada creador, en todas las campañas.",
+    "description": "Cada entregable de cada creator, en todas las campañas.",
     "seeBoard": "Ver panel",
     "tabsLabel": "Etapas",
     "unavailable": "El panel aún no está disponible.",
@@ -107,8 +107,8 @@
       "published": "Publicada"
     },
     "stageHints": {
-      "sent": "Propuesta enviada, esperando a la agencia y al creador.",
-      "accepted": "El creador aceptó; la producción aún no empezó.",
+      "sent": "Propuesta enviada, esperando a la agencia y al creator.",
+      "accepted": "El creator aceptó; la producción aún no empezó.",
       "creating": "En producción, con ajuste pedido o aprobado para publicar.",
       "awaiting": "Versión enviada esperando tu aprobación.",
       "published": "Publicado o comprobado."

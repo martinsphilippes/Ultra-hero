@@ -1,9 +1,9 @@
 {
   "title": "Briefing del contenido",
-  "hint": "Lo que el influencer debe poner en el post. Separa con espacio, coma o línea.",
+  "hint": "Lo que el creator debe poner en el post. Separa con espacio, coma o línea.",
   "saved": "Briefing guardado.",
   "save": "Guardar briefing",
-  "agencyHint": "El influencer ve este briefing junto a las entregas y revisa cada ítem antes de enviar.",
+  "agencyHint": "El creator ve este briefing junto a las entregas y revisa cada ítem antes de enviar.",
   "invalid": "No se agregó: {items}",
   "empty": "Sin briefing estructurado.",
   "fields": {
@@ -55,13 +55,13 @@
     "link": "Puse el enlace {value}",
     "coupon": "Puse el cupón {value}",
     "donts": "No hice nada de la lista “qué no hacer”",
-    "recordedTalent": "{count, plural, one {El influencer revisó # ítem} other {El influencer revisó # ítems}}",
+    "recordedTalent": "{count, plural, one {El creator revisó # ítem} other {El creator revisó # ítems}}",
     "recordedBrand": "{count, plural, one {La marca revisó # ítem de publicidad} other {La marca revisó # ítems de publicidad}}",
     "show": "Ver ítems"
   },
   "templates": {
     "title": "Empezar desde una plantilla",
-    "hint": "Las plantillas guardan objetivo, público, entregables y briefing. Sin título, fechas, influencer ni valor.",
+    "hint": "Las plantillas guardan objetivo, público, entregables y briefing. Sin título, fechas, creator ni valor.",
     "use": "Usar",
     "delete": "Eliminar",
     "deleteConfirm": "¿Eliminar la plantilla “{name}”?",
@@ -70,7 +70,7 @@
     "used": "Borrador creado desde la plantilla.",
     "saveAs": "Guardar como plantilla",
     "dialogTitle": "Guardar como plantilla",
-    "dialogHint": "Guarda objetivo, público, entregables y briefing. Sin título, fechas, influencer ni valor.",
+    "dialogHint": "Guarda objetivo, público, entregables y briefing. Sin título, fechas, creator ni valor.",
     "nameLabel": "Nombre de la plantilla",
     "nameHint": "Con el mismo nombre, la plantilla anterior se reemplaza.",
     "nameInvalid": "Usa de 3 a 80 caracteres.",

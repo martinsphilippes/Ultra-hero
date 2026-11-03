@@ -9,7 +9,7 @@
     "cancelled": "Cancelada"
   },
   "facts": {
-    "talent": "Creador",
+    "talent": "Creator",
     "when": "Cuándo",
     "allDay": "todo el día",
     "where": "Dónde",
@@ -20,10 +20,10 @@
   },
   "agency": {
     "title": "Oportunidades de patrocinio",
-    "description": "Muestra a las marcas una situación de un creador del elenco (una carrera, un show, un directo) para que alguna la patrocine.",
+    "description": "Muestra a las marcas una situación de un creator del elenco (una carrera, un show, un directo) para que alguna la patrocine.",
     "new": "Nueva oportunidad",
     "empty": "Aún no hay oportunidades.",
-    "emptyHint": "Elige el creador, la fecha y lo que recibe la marca. Las marcas reciben el aviso al instante.",
+    "emptyHint": "Elige el creator, la fecha y lo que recibe la marca. Las marcas reciben el aviso al instante.",
     "unavailable": "Oportunidades en actualización",
     "unavailableHint": "Inténtalo de nuevo en unos minutos.",
     "counts": "{interested} quisieron · {declined} rechazaron · {pending} sin respuesta",
@@ -35,7 +35,7 @@
     "published": "Oportunidad publicada. Se avisó a las marcas.",
     "back": "Volver a las oportunidades",
     "newTitle": "Nueva oportunidad de patrocinio",
-    "newHint": "Aparece en la agenda de la agencia, del creador y de las marcas elegidas, sin valores.",
+    "newHint": "Aparece en la agenda de la agencia, del creator y de las marcas elegidas, sin valores.",
     "edit": "Editar oportunidad",
     "fromAgenda": "Oportunidad de patrocinio",
     "brandsTitle": "Respuestas de las marcas",
@@ -60,11 +60,11 @@
     "openDeal": "Abrir negocio",
     "decidedBy": "Decidida por {name} el {date}",
     "form": {
-      "talent": "Creador",
-      "talentHint": "Solo creadores del elenco con consentimiento vigente.",
-      "talentLocked": "Ya hay respuestas: el creador no cambia.",
-      "talentRequired": "Elige el creador.",
-      "noTalents": "Ningún creador con consentimiento vigente en el elenco.",
+      "talent": "Creator",
+      "talentHint": "Solo creators del elenco con consentimiento vigente.",
+      "talentLocked": "Ya hay respuestas: el creator no cambia.",
+      "talentRequired": "Elige el creator.",
+      "noTalents": "Ningún creator con consentimiento vigente en el elenco.",
       "title": "Título",
       "titlePlaceholder": "Ej.: Maratón de Río con transmisión en directo",
       "titleRequired": "Usa un título de al menos 3 letras.",
@@ -115,7 +115,7 @@
       "confirmCancel": "Sale de la agenda, las marcas que respondieron reciben el aviso y sus borradores se cancelan.",
       "back": "Volver",
       "done": {
-        "sponsor": "Patrocinio confirmado. Marcas y creador avisados.",
+        "sponsor": "Patrocinio confirmado. Marcas y creator avisados.",
         "close": "Oportunidad cerrada.",
         "cancel": "Oportunidad cancelada."
       }
@@ -123,8 +123,8 @@
   },
   "brand": {
     "title": "Oportunidades de patrocinio",
-    "description": "Situaciones de los creadores de {agency} que tu marca puede patrocinar.",
-    "descriptionNoAgency": "Situaciones de creadores que tu marca puede patrocinar.",
+    "description": "Situaciones de los creators de {agency} que tu marca puede patrocinar.",
+    "descriptionNoAgency": "Situaciones de creators que tu marca puede patrocinar.",
     "empty": "No hay oportunidades ahora.",
     "emptyHint": "Cuando la agencia ofrezca una situación para patrocinar, aparecerá aquí y en la campana.",
     "unavailable": "Oportunidades en actualización",

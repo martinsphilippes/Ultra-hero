@@ -193,7 +193,7 @@
       "recorded_by_agency": "registrado por la agencia",
       "e_signature": "firma electrónica"
     },
-    "disclaimer": "La marca y el influenciador aceptan estos términos con firma electrónica simple (nombre completo y CPF/CNPJ), con comprobante. Cada versión nueva necesita una nueva firma.",
+    "disclaimer": "La marca y el creator aceptan estos términos con firma electrónica simple (nombre completo y CPF/CNPJ), con comprobante. Cada versión nueva necesita una nueva firma.",
     "version": "Términos v{n}",
     "draftLabel": "Borrador v{n}",
     "history": "{count, plural, one {# versión anterior} other {# versiones anteriores}}",
@@ -407,7 +407,7 @@
     "dataTitle": "Datos de la firma",
     "party": "Parte",
     "partyBrand": "Marca {brand}",
-    "partyTalent": "Influenciador {name}",
+    "partyTalent": "Creator {name}",
     "signerName": "Nombre",
     "cpf": "CPF",
     "cnpj": "CNPJ",

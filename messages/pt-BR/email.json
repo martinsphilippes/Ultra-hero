@@ -6,12 +6,12 @@
     "cta": "Aceitar o convite",
     "expires": "O link vale por {days} dias e só funciona com este e-mail.",
     "ignore": "Se não esperava este convite, ignore esta mensagem.",
-    "signature": "Groscove Ultra · a ponte entre marcas e heróis"
+    "signature": "Groscove Ultra · a ponte entre marcas e creators"
   },
   "work": {
     "greeting": "Olá!",
     "prefs": "Você recebe este e-mail porque tem os avisos por e-mail ligados no Groscove Ultra. Para desligar, vá em Perfil → Notificações.",
-    "signature": "Groscove Ultra · a ponte entre marcas e heróis",
+    "signature": "Groscove Ultra · a ponte entre marcas e creators",
     "kinds": {
       "opportunity_received": {
         "subject": "Nova oportunidade: {brand}",

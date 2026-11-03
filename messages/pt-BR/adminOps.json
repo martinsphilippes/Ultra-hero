@@ -64,7 +64,7 @@
     "creator_not_found": "Herói não encontrado.",
     "product_not_found": "Produto não encontrado.",
     "professional_profile_already_linked": "Esta conta já está ligada a outro perfil profissional.",
-    "demo_account_forbidden": "Contas de demonstração não entram em agências reais.",
+    "demo_account_forbidden": "Contas de exemplo não entram em agências reais.",
     "agency_member_elsewhere": "Esta pessoa já faz parte de outra agência.",
     "brand_not_linked": "A marca não está mais com esta agência.",
     "partner_suspended": "Este acesso está suspenso no momento.",
@@ -283,8 +283,8 @@
     "expiredNote": "expirado",
     "roleAgency": "Agência",
     "roleBrand": "Marca",
-    "roleTalent": "Talento",
-    "talentTarget": "Ficha do talento"
+    "roleTalent": "Creator",
+    "talentTarget": "Ficha do creator"
   },
   "invite": {
     "title": "Convite",
