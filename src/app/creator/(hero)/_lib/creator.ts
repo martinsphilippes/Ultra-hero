@@ -23,6 +23,8 @@ export type CreatorContext = {
   creatorId: string | null;
   profile: CreatorProfile | null;
   reason: "ok" | CreatorUnavailableReason;
+  /** 0091: papel na equipe do herói (o membro posta, mas não edita perfil, foto nem capa). */
+  teamRole?: "owner" | "member" | null;
 };
 
 /** Contexto das telas do portal com o cliente certo (com o cabeçalho do herói no modo do admin). */
@@ -34,17 +36,22 @@ export const getMyCreator = cache(async (): Promise<CreatorContext> => {
   const user = await getUser();
   if (!user) return { userId: null, creatorId: null, profile: null, reason: "unlinked" };
   const supabase = await createClient();
-  const [{ data: creatorId }, { data: profile }] = await Promise.all([
-    supabase.rpc("my_creator_id"),
-    supabase.from("creator_profiles").select(PROFILE_SELECT).eq("user_id", user.id).maybeSingle(),
-  ]);
-  const typedProfile = (profile as CreatorProfile | null) ?? null;
+  // 0091: o herói pode ser da pessoa (titular) ou de uma equipe em que ela está (membro); my_creator_id já
+  // considera os dois (só ativo). Sem herói ativo, o da equipe (pendente/inativo) explica o motivo.
+  const [{ data: creatorId }, { data: team }] = await Promise.all([supabase.rpc("my_creator_id"), supabase.rpc("my_hero_team")]);
   const id = typeof creatorId === "string" && creatorId ? creatorId : null;
+  const teamHero = team && typeof team === "object" && !Array.isArray(team) ? (team as { creator_id?: string; role?: string }) : null;
+  const profileId = id ?? teamHero?.creator_id ?? null;
+  const { data: profile } = profileId
+    ? await supabase.from("creator_profiles").select(PROFILE_SELECT).eq("id", profileId).maybeSingle()
+    : await supabase.from("creator_profiles").select(PROFILE_SELECT).eq("user_id", user.id).maybeSingle();
+  const typedProfile = (profile as CreatorProfile | null) ?? null;
   return {
     userId: user.id,
     creatorId: id,
     profile: typedProfile,
     reason: id ? "ok" : typedProfile ? "inactive" : "unlinked",
+    teamRole: teamHero?.role === "member" ? "member" : typedProfile ? "owner" : null,
   };
 });
 

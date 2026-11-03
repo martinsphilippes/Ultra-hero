@@ -69,7 +69,14 @@
     "brand_not_linked": "The brand is no longer with this agency.",
     "partner_suspended": "This access is suspended right now.",
     "user_has_talent": "This account is already in a roster.",
-    "talent_already_linked": "This invite was already used by another account."
+    "talent_already_linked": "This invite was already used by another account.",
+    "admin_invite_max_48h": "An Admin invite is valid for 48 hours at most.",
+    "admin_confirm_required": "Confirm the person will have full control of Ultra.",
+    "creator_role_required": "The person needs the creator role.",
+    "has_hero": "You already have a hero.",
+    "owner_must_transfer": "The lead can't leave the team without transferring it first.",
+    "onboarding_not_found": "There is no open first access for this.",
+    "invalid_cnpj": "Invalid CNPJ."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -238,7 +245,7 @@
   },
   "invitations": {
     "title": "Invitations",
-    "description": "Hero and supplier invitations. The link is shown only once.",
+    "description": "Invites for every role. The link is shown only once.",
     "create": "New invitation",
     "createTitle": "Create invitation",
     "form": {
@@ -275,7 +282,7 @@
       "created": "Created"
     },
     "empty": "No invitations",
-    "emptyDescription": "Create an invitation for a hero or supplier.",
+    "emptyDescription": "Create an invite for any role.",
     "revoke": "Revoke",
     "revokeTitle": "Revoke invitation",
     "revokeDescription": "The link stops working immediately.",

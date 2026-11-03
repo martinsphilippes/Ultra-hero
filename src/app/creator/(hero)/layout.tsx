@@ -13,7 +13,8 @@ export default async function CreatorLayout({ children }: { children: ReactNode 
   const { roles } = await requireRole("creator", "/creator");
   if (!(await hasRole("admin"))) {
     const talent = await getTalentContext();
-    const navKeys = isTalentOnly(roles) ? ["office"] : talent.state === "ok" ? ["post", "office"] : ["post"];
+    // 0091: Equipe do herói (titular, membros; sem herói, "Criar meu herói") para todo creator
+    const navKeys = isTalentOnly(roles) ? ["office", "team"] : talent.state === "ok" ? ["post", "office", "team"] : ["post", "team"];
     return (
       <PortalShell portal="creator" navKeys={navKeys}>
         {children}

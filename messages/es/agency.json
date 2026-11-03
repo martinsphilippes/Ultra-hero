@@ -340,7 +340,19 @@
     "payment_open": "Este pago ya fue informado y espera a la agencia.",
     "invalid_pix_key": "Clave PIX inválida para el tipo elegido.",
     "invalid_bank": "Revisa banco, sucursal y cuenta.",
-    "payment_method_required": "Indica una clave PIX o los datos bancarios."
+    "payment_method_required": "Indica una clave PIX o los datos bancarios.",
+    "invalid_role": "Rol inválido.",
+    "admin_invite_max_48h": "La invitación de Admin vale como máximo 48 horas.",
+    "admin_confirm_required": "Confirma que la persona tendrá control total de Ultra.",
+    "creator_role_required": "La persona necesita el rol de creator.",
+    "has_hero": "Ya tienes un héroe.",
+    "owner_must_transfer": "El titular no sale del equipo sin antes transferir la titularidad.",
+    "onboarding_not_found": "No hay un primer acceso abierto para esto.",
+    "invalid_cnpj": "CNPJ inválido.",
+    "creator_profile_already_linked": "Este héroe ya tiene otro titular.",
+    "professional_profile_already_linked": "Ya tienes un perfil profesional.",
+    "invitation_email_mismatch": "Esta invitación es de otro correo.",
+    "invitation_expired": "Esta invitación venció."
   },
   "casting": {
     "title": "Casting",

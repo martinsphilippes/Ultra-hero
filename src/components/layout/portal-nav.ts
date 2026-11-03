@@ -53,6 +53,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     // O escritório (0065) aparece para quem está num casting; o talento sem página não tem "Novo post".
     { key: "post", href: "/creator/post/new" },
     { key: "office", href: "/creator/escritorio" },
+    // Equipe do herói (0091): titular e membros; sem herói, "Criar meu herói"
+    { key: "team", href: "/creator/equipe" },
   ],
   seller: [
     { key: "dashboard", href: "/seller" },

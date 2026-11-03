@@ -15,5 +15,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OfficeConsentPage() {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
+  // 0091: membro da equipe do herói não fala pela imagem do titular
+  if (ctx.talent.isTeamMember) {
+    const t = await getTranslations("invites.team");
+    return <p className="rounded-xl border border-border bg-surface px-4 py-3 type-body-sm text-fg-muted" data-testid="consent-team-member">{t("consentOwnerOnly")}</p>;
+  }
   return <ConsentCard consentAt={ctx.talent.consentAt} consentRevokedAt={ctx.talent.consentRevokedAt} consentVersion={ctx.talent.consentVersion} currentVersion={CONSENT_VERSION} />;
 }

@@ -3,6 +3,7 @@ import { BadgeCheck, Plus } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
+import { AgencyInviteDialog } from "@/components/invites/AgencyInviteDialog";
 import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import { listAgencyBrands } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
@@ -31,9 +32,13 @@ export default async function AgencyBrandsPage({ searchParams }: Props) {
         description={t("description")}
         actions={
           canEdit ? (
-            <Button asChild size="sm" leadingIcon={<Plus />}>
-              <Link href="/agencia/marcas/nova">{t("new")}</Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {/* 0091: marca nova (passo a passo do dono) ou pedido de vínculo para o dono de marca existente */}
+              {ctx.agency.isDemo ? null : <AgencyInviteDialog mode="brand" />}
+              <Button asChild size="sm" leadingIcon={<Plus />}>
+                <Link href="/agencia/marcas/nova">{t("new")}</Link>
+              </Button>
+            </div>
           ) : null
         }
       />

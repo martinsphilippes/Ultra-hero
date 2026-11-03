@@ -69,7 +69,14 @@
     "brand_not_linked": "A marca não está mais com esta agência.",
     "partner_suspended": "Este acesso está suspenso no momento.",
     "user_has_talent": "Esta conta já está num casting.",
-    "talent_already_linked": "Este convite já foi usado por outra conta."
+    "talent_already_linked": "Este convite já foi usado por outra conta.",
+    "admin_invite_max_48h": "Convite de Admin vale no máximo 48 horas.",
+    "admin_confirm_required": "Confirme que a pessoa terá controle total do Ultra.",
+    "creator_role_required": "A pessoa precisa ter o papel de creator.",
+    "has_hero": "Você já tem um herói.",
+    "owner_must_transfer": "O titular não sai da equipe sem antes transferir a titularidade.",
+    "onboarding_not_found": "Não há primeiro acesso em aberto para isso.",
+    "invalid_cnpj": "CNPJ inválido."
   },
   "dashboard": {
     "title": "Painel",
@@ -238,7 +245,7 @@
   },
   "invitations": {
     "title": "Convites",
-    "description": "Convites de heróis e fornecedores. O link é exibido uma única vez.",
+    "description": "Convites de todos os papéis. O link é exibido uma única vez.",
     "create": "Novo convite",
     "createTitle": "Criar convite",
     "form": {
@@ -275,7 +282,7 @@
       "created": "Criado em"
     },
     "empty": "Nenhum convite",
-    "emptyDescription": "Crie um convite para um herói ou fornecedor.",
+    "emptyDescription": "Crie um convite para qualquer papel.",
     "revoke": "Revogar",
     "revokeTitle": "Revogar convite",
     "revokeDescription": "O link deixará de funcionar imediatamente.",

@@ -69,7 +69,14 @@
     "brand_not_linked": "La marca ya no está con esta agencia.",
     "partner_suspended": "Este acceso está suspendido en este momento.",
     "user_has_talent": "Esta cuenta ya está en un casting.",
-    "talent_already_linked": "Esta invitación ya fue usada por otra cuenta."
+    "talent_already_linked": "Esta invitación ya fue usada por otra cuenta.",
+    "admin_invite_max_48h": "La invitación de Admin vale como máximo 48 horas.",
+    "admin_confirm_required": "Confirma que la persona tendrá control total de Ultra.",
+    "creator_role_required": "La persona necesita el rol de creator.",
+    "has_hero": "Ya tienes un héroe.",
+    "owner_must_transfer": "El titular no sale del equipo sin antes transferir la titularidad.",
+    "onboarding_not_found": "No hay un primer acceso abierto para esto.",
+    "invalid_cnpj": "CNPJ inválido."
   },
   "dashboard": {
     "title": "Panel",
@@ -238,7 +245,7 @@
   },
   "invitations": {
     "title": "Invitaciones",
-    "description": "Invitaciones de héroes y proveedores. El enlace se muestra una sola vez.",
+    "description": "Invitaciones de todos los roles. El enlace se muestra una sola vez.",
     "create": "Nueva invitación",
     "createTitle": "Crear invitación",
     "form": {
@@ -275,7 +282,7 @@
       "created": "Creada"
     },
     "empty": "Sin invitaciones",
-    "emptyDescription": "Crea una invitación para un héroe o proveedor.",
+    "emptyDescription": "Crea una invitación para cualquier rol.",
     "revoke": "Revocar",
     "revokeTitle": "Revocar invitación",
     "revokeDescription": "El enlace dejará de funcionar de inmediato.",

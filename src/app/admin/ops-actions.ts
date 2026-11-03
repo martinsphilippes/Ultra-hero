@@ -7,6 +7,7 @@ import { z } from "zod";
 import { BAN_FOREVER, BAN_NONE, restoreBanDuration, suspensionBlock } from "@/components/admin-ops/account-status";
 import type { FeedbackStatus } from "@/components/feedback/constants";
 import { feedbackTriageSchema, type FeedbackTriageInput } from "@/components/feedback/schema";
+import { portalHomeForAccepted, type AcceptedInvitation } from "@/lib/auth/invite-home";
 import { requireRole } from "@/lib/auth/session";
 import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { RIGHTS_STATUSES } from "@/lib/catalog/rights";
@@ -210,11 +211,12 @@ export async function revokeInvitation(input: { id: string }, justification: str
 }
 
 // Aceite pelo convidado (qualquer usuário autenticado; a RPC valida token, validade e e-mail).
-export type AcceptedRole = "creator" | "seller" | "professional" | "agency" | "brand";
+// 0091: + admin e consumidor; "onboarding" quando a empresa ainda vai nascer no passo a passo.
+export type AcceptedRole = "creator" | "seller" | "professional" | "agency" | "brand" | "admin" | "consumer";
 
 // Todo convite é de parceiro: sem a caixa dos Termos do Parceiro marcada, nada é concedido (0068). O aceite
 // dos Termos é gravado antes do convite; se o convite falhar, o registro só antecipa o aceite.
-export async function acceptInvitation(input: { token: string; acceptTerms: boolean }): Promise<Result<{ role: AcceptedRole; scopeType: string | null }>> {
+export async function acceptInvitation(input: { token: string; acceptTerms: boolean }): Promise<Result<{ role: AcceptedRole; scopeType: string | null; home: string | null }>> {
   const parsed = z.object({ token: z.string().trim().min(16).max(256), acceptTerms: z.literal(true) }).safeParse(input);
   if (!parsed.success) return invalid();
   try {
@@ -223,14 +225,15 @@ export async function acceptInvitation(input: { token: string; acceptTerms: bool
     if (termsError) return fail(termsError);
     const { data, error } = await supabase.rpc("accept_invitation", { p_token: parsed.data.token });
     if (error) return fail(error);
-    const row = data && typeof data === "object" && !Array.isArray(data) ? (data as { role?: string; scope_type?: string; talent_id?: string }) : {};
+    const row = data && typeof data === "object" && !Array.isArray(data) ? (data as AcceptedInvitation) : {};
     const role = row.role;
-    // professional: convite de profissional (0058); agency e brand: gestão (0064)
-    if (role !== "creator" && role !== "seller" && role !== "professional" && role !== "agency" && role !== "brand") return fail("generic");
+    // professional: convite de profissional (0058); agency e brand: gestão (0064); admin e consumer: 0091
+    const roles: AcceptedRole[] = ["creator", "seller", "professional", "agency", "brand", "admin", "consumer"];
+    if (!roles.includes(role as AcceptedRole)) return fail("generic");
     revalidatePath("/admin/invitations");
     // convite do escritório com herói ligado (0087): o escopo é do herói, mas o destino é o escritório
     const scopeType = typeof row.talent_id === "string" ? "talent" : typeof row.scope_type === "string" ? row.scope_type : null;
-    return { ok: true, role, scopeType };
+    return { ok: true, role: role as AcceptedRole, scopeType, home: portalHomeForAccepted([row]) };
   } catch (error) {
     return fail(error);
   }

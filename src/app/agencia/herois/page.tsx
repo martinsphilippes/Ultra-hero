@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { HeroProfileForm, ManageHeroButton } from "@/components/agency/HeroForms";
+import { AgencyInviteDialog, type HeroInviteTalent } from "@/components/invites/AgencyInviteDialog";
 import { Avatar, EmptyState, PageHeader, Section } from "@/components/ui";
 import { requireAgency } from "@/lib/agency/server";
 import { createClient } from "@/lib/supabase/server";
@@ -26,11 +27,21 @@ export default async function AgencyHeroesPage() {
     .is("archived_at", null)
     .order("display_name");
   const heroes = (data ?? []).flatMap((row) => (row.creator ? [row.creator] : []));
+  // 0091: convite de herói — creators do casting sem login (o selo do acesso diz quem já tem conta)
+  const [{ data: casting }, { data: access }, ti] = await Promise.all([
+    supabase.from("talent_profiles").select("id, display_name, creator_id, creator:creator_profiles(name)").eq("agency_id", ctx.agency.id).is("archived_at", null).order("display_name"),
+    supabase.rpc("agency_talent_access", { p_agency: ctx.agency.id }),
+    getTranslations("invites.agency"),
+  ]);
+  const withLogin = new Set((access ?? []).filter((a) => a.access === "login").map((a) => a.talent_id));
+  const inviteTalents: HeroInviteTalent[] = (casting ?? [])
+    .filter((x) => !withLogin.has(x.id))
+    .map((x) => ({ id: x.id, name: x.display_name, hasHero: x.creator_id !== null, heroName: (x.creator as { name: string } | null)?.name ?? null }));
   const locked = ctx.agency.isDemo;
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader title={t("title")} description={t("description")} actions={locked ? null : <AgencyInviteDialog mode="hero" talents={inviteTalents} />} />
       <Section title={t("listTitle", { count: heroes.length })}>
         {heroes.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface">
@@ -49,7 +60,11 @@ export default async function AgencyHeroesPage() {
                     </Link>
                   </div>
                 </div>
-                {hero.status === "active" ? <ManageHeroButton heroId={hero.id} label={t("manage")} /> : <span className="type-caption text-fg-muted">{t("suspended")}</span>}
+                {hero.status === "active" ? (
+                  <ManageHeroButton heroId={hero.id} label={t("manage")} />
+                ) : (
+                  <span className="type-caption text-fg-muted">{hero.status === "pending" ? ti("heroPending") : t("suspended")}</span>
+                )}
               </li>
             ))}
           </ul>

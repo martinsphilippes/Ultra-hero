@@ -20,6 +20,8 @@ export function InviteAcceptCard({ token, email }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<AcceptedRole | null>(null);
   const [scopeType, setScopeType] = useState<string | null>(null);
+  const [home, setHome] = useState<string | null>(null);
+  const ti = useTranslations("invites");
 
   function accept() {
     setError(null);
@@ -34,11 +36,57 @@ export function InviteAcceptCard({ token, email }: Props) {
         return;
       }
       setScopeType(result.scopeType);
+      setHome(result.home);
       setRole(result.role);
     });
   }
 
   if (role) {
+    // 0091: passo a passo da empresa, painel do admin, Equipe (creator sem herói) e início (consumidor)
+    const onboarding = scopeType === "onboarding";
+    const message = onboarding
+      ? ti("accept.successOnboarding")
+      : role === "admin"
+        ? ti("accept.successAdmin")
+        : role === "consumer"
+          ? ti("accept.successConsumer")
+          : role === "agency"
+            ? t("successAgency")
+            : role === "brand"
+              ? t("successBrand")
+              : role === "professional"
+                ? t("successProfessional")
+                : role === "creator" && scopeType === "talent"
+                  ? t("successTalent")
+                  : role === "creator" && scopeType === "global"
+                    ? ti("accept.successCreatorFree")
+                    : role === "creator"
+                      ? t("successCreator")
+                      : SELLER_PORTAL_ENABLED
+                        ? t("successSeller")
+                        : t("successSellerPortalOff");
+    const target = role === "seller" && !SELLER_PORTAL_ENABLED && !onboarding ? "/personalities" : (home ?? "/");
+    const label = onboarding
+      ? ti("accept.goOnboarding")
+      : role === "admin"
+        ? ti("accept.goAdmin")
+        : role === "consumer"
+          ? t("goHome")
+          : role === "agency"
+            ? t("goAgency")
+            : role === "brand"
+              ? t("goBrand")
+              : role === "professional"
+                ? t("goProfessional")
+                : role === "creator" && scopeType === "talent"
+                  ? t("goOffice")
+                  : role === "creator" && scopeType === "global"
+                    ? ti("accept.goHeroTeam")
+                    : role === "creator"
+                      ? t("goCreator")
+                      : SELLER_PORTAL_ENABLED
+                        ? t("goSeller")
+                        : t("goHome");
     return (
       <div className="flex flex-col items-center gap-4 text-center" role="status">
         <span aria-hidden="true" className="flex size-14 items-center justify-center rounded-2xl border border-success/30 bg-success-soft text-success">
@@ -46,40 +94,12 @@ export function InviteAcceptCard({ token, email }: Props) {
         </span>
         <div>
           <h2 className="type-h3 text-fg">{t("successTitle")}</h2>
-          <p className="type-body-sm mt-1 text-fg-muted">
-            {role === "agency"
-              ? t("successAgency")
-              : role === "brand"
-                ? t("successBrand")
-                : role === "professional"
-                  ? t("successProfessional")
-                  : role === "creator" && scopeType === "talent"
-                    ? t("successTalent")
-                    : role === "creator"
-                    ? t("successCreator")
-                    : SELLER_PORTAL_ENABLED
-                      ? t("successSeller")
-                      : t("successSellerPortalOff")}
-          </p>
-          {role === "agency" || role === "brand" ? <p className="type-caption mt-2 text-fg-subtle">{t("inboxOnlyNote")}</p> : null}
+          <p className="type-body-sm mt-1 text-fg-muted">{message}</p>
+          {(role === "agency" || role === "brand") && !onboarding ? <p className="type-caption mt-2 text-fg-subtle">{t("inboxOnlyNote")}</p> : null}
         </div>
         <Button asChild size="lg" block>
-          {/* portal do fornecedor desligado (0053): volta ao app */}
-          {role === "agency" ? (
-            <Link href="/agencia">{t("goAgency")}</Link>
-          ) : role === "brand" ? (
-            <Link href="/marca">{t("goBrand")}</Link>
-          ) : role === "professional" ? (
-            <Link href="/profissional">{t("goProfessional")}</Link>
-          ) : role === "creator" && scopeType === "talent" ? (
-            <a href="/creator/escritorio">{t("goOffice")}</a>
-          ) : role === "creator" ? (
-            <Link href="/profile">{t("goCreator")}</Link>
-          ) : SELLER_PORTAL_ENABLED ? (
-            <Link href="/seller">{t("goSeller")}</Link>
-          ) : (
-            <Link href="/personalities">{t("goHome")}</Link>
-          )}
+          {/* escritório e painel do admin trocam de casca: navegação completa */}
+          <a href={target}>{label}</a>
         </Button>
       </div>
     );

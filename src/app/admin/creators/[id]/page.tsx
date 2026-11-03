@@ -11,6 +11,7 @@ import { ReferenceMetricsEditor } from "@/components/admin-ops/ReferenceMetricsE
 import { CreatorCoverRemoveButton, CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
 import { HeroCategoriesField } from "@/components/admin-content/HeroCategoriesField";
 import { LibraryTabsEditor } from "@/components/admin-content/LibraryTabsEditor";
+import { HeroTeamPanel } from "@/components/invites/HeroTeamPanel";
 import { Badge, Button, PageHeader } from "@/components/ui";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { isStoredCoverUrl } from "@/lib/hero-cover/paths";
@@ -18,6 +19,7 @@ import { localizedLabel } from "@/lib/catalog/queries";
 import { toCategoryTabRow, toOverrideRow } from "@/lib/heroes/library-tab-queries";
 import { primaryCategoryId, resolveLibraryConfig, toEditorRows, type LibraryTabEditorRow } from "@/lib/heroes/library-tabs";
 import { loadFollowerCount, loadReferences } from "@/lib/heroes/follow-queries";
+import { parseHeroTeam } from "@/lib/invitations/hero-team";
 import { createClient } from "@/lib/supabase/server";
 
 type Params = Promise<{ id: string }>;
@@ -89,12 +91,15 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
     supabase.from("hero_categories").select("id, name, is_active").order("sort_order").order("slug"),
     supabase.from("creator_category_links").select("category_id, position").eq("creator_id", id).order("position"),
   ]);
-  const [tabsSection, references, followers, tf] = await Promise.all([
+  const [tabsSection, references, followers, tf, tteam, teamRes] = await Promise.all([
     loadHeroTabs(supabase, id, categoriesRes.data ?? [], categoryLinksRes.data ?? [], locale),
     // referências para comparação e seguidores (0056); null = migração ausente
     loadReferences(supabase, id),
     loadFollowerCount(supabase, id),
     getTranslations("follows.admin"),
+    getTranslations("invites.team"),
+    // equipe do herói (0091); sem a migração, a seção avisa
+    supabase.rpc("hero_team_list", { p_creator: id }),
   ]);
   if (error) throw new Error(error.message);
   if (!creator) notFound();
@@ -197,6 +202,14 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
           privateMeta={{ reviewedAt: privateRow?.reviewed_at ?? null }}
         />
       </div>
+
+      {/* Equipe do herói (0091): o admin convida, remove e transfere a titularidade como o titular */}
+      <section aria-labelledby="hero-team-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6" data-testid="admin-hero-team">
+        <h2 id="hero-team-title" className="type-h2 text-fg">
+          {tteam("title")}
+        </h2>
+        {teamRes.error ? <p className="type-body-sm text-fg-muted">{tteam("unavailable")}</p> : <HeroTeamPanel creatorId={creator.id} heroName={creator.name} team={parseHeroTeam(teamRes.data)} />}
+      </section>
 
       {/* Categorias do herói (até 2): definem os chips da aba Hero e, depois, os atalhos da página. */}
       <section aria-labelledby="hero-categories-title" className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 md:p-6">

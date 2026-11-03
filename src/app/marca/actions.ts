@@ -135,6 +135,23 @@ export async function removeBrandStaffAction(input: { userId: string }): Promise
   }
 }
 
+// 0091: o dono passa a posse a alguém da Equipe e vira Equipe (a RPC confere e audita).
+export async function transferBrandOwnerAction(input: { userId: string }): Promise<BrandPortalResult> {
+  const ctx = await requireBrand();
+  const parsed = z.object({ userId: z.uuid() }).safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("brand_transfer_owner", { p_brand: ctx.brand.id, p_user: parsed.data.userId });
+    if (error) return agencyFail(error);
+    revalidatePath("/marca", "layout");
+    const t = await getTranslations("invites.brand");
+    return { ok: true, message: t("transferred") };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
 export async function revokeBrandInviteAction(input: { id: string }): Promise<BrandPortalResult> {
   await requireBrand();
   const parsed = z.object({ id: z.uuid() }).safeParse(input);

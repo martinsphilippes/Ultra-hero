@@ -1,5 +1,18 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // convites por papel, equipe do herói e primeiro acesso (0091)
+  "admin_invite_max_48h",
+  "admin_confirm_required",
+  "invalid_role",
+  "creator_role_required",
+  "has_hero",
+  "owner_must_transfer",
+  "onboarding_not_found",
+  "invalid_cnpj",
+  "creator_profile_already_linked",
+  "professional_profile_already_linked",
+  "invitation_email_mismatch",
+  "invitation_expired",
   "creator_already_in_casting",
   "user_has_talent",
   "talent_has_login",

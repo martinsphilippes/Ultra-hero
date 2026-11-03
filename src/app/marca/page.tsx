@@ -35,6 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
+  const tnoag = await getTranslations("invites.brand.noAgency");
   const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard, budgets, sponsorships] = await Promise.all([
     getTranslations("brandPortal.dashboard"),
     getTranslations("commercial"),
@@ -78,6 +79,18 @@ export default async function BrandDashboardPage() {
         description={ctx.agency ? t("servedBy", { agency: ctx.agency.name }) : undefined}
         actions={ctx.role ? <RoleBadge role={ctx.role === "owner" ? "owner" : "brandStaff"} /> : null}
       />
+      {!ctx.agency && ctx.role ? (
+        // 0091: marca sem agência funciona; a chamada aberta a todas as agências não precisa de vínculo
+        <section className="flex flex-col gap-3 rounded-2xl border border-dashed border-border-strong bg-surface p-4" data-testid="brand-no-agency">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-sm font-semibold text-fg">{tnoag("title")}</h2>
+            <p className="type-body-sm text-fg-muted">{tnoag("text")}</p>
+          </div>
+          <Button asChild size="lg" leadingIcon={<Megaphone />}>
+            <Link href="/marca/oportunidades/nova">{tnoag("publishCall")}</Link>
+          </Button>
+        </section>
+      ) : null}
       {ctx.brands.length > 1 ? <BrandSwitcher brands={ctx.brands.map((b) => ({ id: b.id, name: b.name, logoUrl: b.logoUrl }))} currentId={ctx.brand.id} /> : null}
       {wb ? <TodayPanel portal="brand" items={todayItems} kinds={BRAND_TODAY_KINDS} locale={locale} timezone={wb.timezone} now={now} /> : null}
       {stageCounts ? (

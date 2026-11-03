@@ -13393,5 +13393,299 @@ delete from public.agencies where id = '97000000-0000-4000-8000-000000009701';
 delete from auth.users where id::text like '97000000-0000-4000-8000-0000000009%';
 drop table t_s97;
 
+-- ================================================================ S98 · Convites por papel, equipe do herói e primeiro acesso (0091)
+-- Admin convida cada papel (Admin só até 48h e com confirmação); quem não é admin não usa o convite do admin (agência
+-- não convida admin/fornecedor/profissional); colaborador da agência não convida marca nem herói; gestor convida marca
+-- nova (onboarding já ligada) e marca existente (pedido de vínculo que o dono aceita; e-mail diferente recusa); dono da
+-- marca sem agência convida a Equipe, a Equipe não convida; dono transfere a posse. Titular do herói convida membro,
+-- membro não convida; membro age pelo herói (my_creator_id) e abre o escritório do talento ligado, sem dar o
+-- consentimento; quem é de fora não vê nada. Onboarding cria a empresa e o papel certo (CNPJ validado; só
+-- authenticated). Creator sem herói cria o dele (pendente). S14 segue 18.
+\ir ../migrations/0091_convites_equipe_heroi_onboarding.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('98000000-0000-4000-8000-000000009801', 's98-admin@test.local'),
+  ('98000000-0000-4000-8000-000000009802', 's98-gestor@test.local'),
+  ('98000000-0000-4000-8000-000000009803', 's98-colab@test.local'),
+  ('98000000-0000-4000-8000-000000009804', 's98-titular@test.local'),
+  ('98000000-0000-4000-8000-000000009805', 's98-membro@test.local'),
+  ('98000000-0000-4000-8000-000000009806', 's98-fora@test.local'),
+  ('98000000-0000-4000-8000-000000009807', 's98-dono-marca@test.local'),
+  ('98000000-0000-4000-8000-000000009808', 's98-equipe-marca@test.local'),
+  ('98000000-0000-4000-8000-000000009809', 's98-nova-agencia@test.local'),
+  ('98000000-0000-4000-8000-000000009810', 's98-nova-marca@test.local'),
+  ('98000000-0000-4000-8000-000000009811', 's98-creator-livre@test.local'),
+  ('98000000-0000-4000-8000-000000009812', 's98-novo-admin@test.local'),
+  ('98000000-0000-4000-8000-000000009813', 's98-forn@test.local'),
+  ('98000000-0000-4000-8000-000000009814', 's98-pro@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('98000000-0000-4000-8000-000000009801', 'admin', 'global');
+insert into public.agencies (id, slug, name) values ('98000000-0000-4000-8000-000000009901', 's98-agencia', 'Agência S98');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('98000000-0000-4000-8000-000000009901', '98000000-0000-4000-8000-000000009802', 'manager', 'Gestor S98'),
+  ('98000000-0000-4000-8000-000000009901', '98000000-0000-4000-8000-000000009803', 'staff', 'Colab S98');
+-- herói ativo com titular, ligado a um talento do casting; marca autogerida com dono
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('98000000-0000-4000-8000-000000009911', 's98-heroi', 'Herói S98', 'active', '98000000-0000-4000-8000-000000009804');
+insert into public.talent_profiles (id, agency_id, display_name, creator_id, consent_at, consent_version) values
+  ('98000000-0000-4000-8000-000000009921', '98000000-0000-4000-8000-000000009901', 'Creator S98', '98000000-0000-4000-8000-000000009911', now(), 'v1'),
+  ('98000000-0000-4000-8000-000000009922', '98000000-0000-4000-8000-000000009901', 'Creator sem herói S98', null, null, null);
+insert into public.role_assignments (user_id, role, scope_type, scope_id) values
+  ('98000000-0000-4000-8000-000000009804', 'creator', 'creator', '98000000-0000-4000-8000-000000009911');
+insert into public.brands (id, slug, name, site_url, status, self_managed) values
+  ('98000000-0000-4000-8000-000000009931', 's98-marca', 'Marca S98', 'https://marca-s98.example.com', 'inactive', true),
+  ('98000000-0000-4000-8000-000000009932', 's98-marca-outra', 'Outra S98', 'https://outra-s98.example.com', 'inactive', true);
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('98000000-0000-4000-8000-000000009931', '98000000-0000-4000-8000-000000009807', 'owner', 'Dono S98'),
+  ('98000000-0000-4000-8000-000000009932', '98000000-0000-4000-8000-000000009806', 'owner', 'Dono Outra S98');
+insert into public.role_assignments (user_id, role, scope_type, scope_id) values
+  ('98000000-0000-4000-8000-000000009807', 'brand', 'brand', '98000000-0000-4000-8000-000000009931');
+create temp table t_s98 (k text primary key, v text);
+grant all on t_s98 to anon, authenticated, service_role;
+
+select tests.ok('S98 estrutura: RPCs novas sem sobrecarga, definer com search_path, fora do visitante; internas fora do authenticated; S14 segue 18',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('admin_invite', 'hero_team_invite', 'hero_team_remove',
+     'hero_team_transfer', 'hero_team_list', 'creator_create_my_hero', 'agency_invite_brand', 'agency_invite_hero', 'brand_transfer_owner',
+     'onboarding_pending', 'onboarding_create_agency', 'onboarding_create_brand', 'onboarding_create_seller', 'onboarding_create_professional',
+     'my_hero_team', 'brand_invite_member', 'agency_invitation_revoke', 'accept_invitation_core', 'my_creator_id', 'my_talent_id')) = 20
+  and (select bool_and(prosecdef and proconfig is not null) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('admin_invite',
+     'hero_team_invite', 'onboarding_create_agency', 'onboarding_create_brand', 'onboarding_create_seller', 'onboarding_create_professional',
+     'agency_invite_brand', 'agency_invite_hero', 'creator_create_my_hero', 'brand_transfer_owner'))
+  and not has_function_privilege('anon', 'public.admin_invite(text, text, int, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.onboarding_create_agency(text, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.onboarding_create_brand(text, text, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.onboarding_create_seller(text)', 'execute')
+  and not has_function_privilege('anon', 'public.onboarding_create_professional(text, text, text, text)', 'execute')
+  and not has_function_privilege('anon', 'public.onboarding_pending()', 'execute')
+  and not has_function_privilege('anon', 'public.hero_team_invite(uuid, text, int)', 'execute')
+  and has_function_privilege('authenticated', 'public.onboarding_create_brand(text, text, text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.invitation_issue(text, text, text, int, jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.create_pending_hero(text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.onboarding_take(text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.creator_team_role(uuid, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.free_slug(text, text)', 'execute')
+  and (select relrowsecurity from pg_class where oid = 'public.creator_team_members'::regclass)
+  and (select relrowsecurity from pg_class where oid = 'public.account_onboardings'::regclass)
+  and not has_table_privilege('anon', 'public.creator_team_members', 'select')
+  and not has_table_privilege('authenticated', 'public.creator_team_members', 'insert')
+  and not has_table_privilege('authenticated', 'public.account_onboardings', 'insert')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+select tests.ok('S98 migração: o titular do herói está na equipe como owner',
+  exists (select 1 from public.creator_team_members where creator_profile_id = '98000000-0000-4000-8000-000000009911'
+          and user_id = '98000000-0000-4000-8000-000000009804' and role = 'owner' and status = 'active'));
+
+-- 1) admin convida cada papel ---------------------------------------------------------------------------------------
+select tests.login('98000000-0000-4000-8000-000000009801', 's98-admin@test.local');
+select tests.expect_error('S98 convite de Admin acima de 48h é recusado', $q$select public.admin_invite('s98-novo-admin@test.local', 'admin', 3, '{"confirm_admin": true}')$q$, 'admin_invite_max_48h');
+select tests.expect_error('S98 convite de Admin sem a confirmação extra é recusado', $q$select public.admin_invite('s98-novo-admin@test.local', 'admin', 2, '{}')$q$, 'admin_confirm_required');
+select tests.expect_error('S98 papel desconhecido recusa', $q$select public.admin_invite('x.s98@test.local', 'dono', 7, '{}')$q$, 'invalid_role');
+insert into t_s98 values ('adm', public.admin_invite('s98-novo-admin@test.local', 'admin', 2, '{"confirm_admin": true}')::text);
+insert into t_s98 values ('cons', public.admin_invite('s98-consumidor@test.local', 'consumer', 7, '{}')::text);
+insert into t_s98 values ('agen', public.admin_invite('s98-nova-agencia@test.local', 'agency', 7, '{}')::text);
+insert into t_s98 values ('marc', public.admin_invite('s98-nova-marca@test.local', 'brand', 7, '{}')::text);
+insert into t_s98 values ('forn', public.admin_invite('s98-forn@test.local', 'seller', 7, '{}')::text);
+insert into t_s98 values ('prof', public.admin_invite('s98-pro@test.local', 'professional', 7, '{}')::text);
+insert into t_s98 values ('crl', public.admin_invite('s98-creator-livre@test.local', 'creator', 7, '{"hero_mode": "none"}')::text);
+insert into t_s98 values ('crn', public.admin_invite('s98-creator-novo@test.local', 'creator', 7, '{"hero_mode": "new", "hero_name": "Herói Novo S98"}')::text);
+insert into t_s98 values ('cre', public.admin_invite('s98-creator-equipe@test.local', 'creator', 7, '{"hero_mode": "existing", "hero_id": "98000000-0000-4000-8000-000000009911"}')::text);
+insert into t_s98 values ('her', public.admin_invite('s98-heroi-titular@test.local', 'hero', 7,
+  '{"hero_name": "Herói Equipe S98", "team_mode": "new", "team_email": "s98-heroi-membro@test.local"}')::text);
+insert into t_s98 values ('hex', public.admin_invite('s98-heroi-titular2@test.local', 'hero', 7,
+  '{"hero_name": "Herói Existente S98", "team_mode": "existing", "team_user_id": "98000000-0000-4000-8000-000000009804"}')::text);
+select tests.expect_error('S98 herói com creator existente exige papel creator', $q$select public.admin_invite('s98-h3@test.local', 'hero', 7,
+  '{"hero_name": "Herói Três S98", "team_mode": "existing", "team_user_id": "98000000-0000-4000-8000-000000009806"}')$q$, 'creator_role_required');
+select tests.su();
+select tests.ok('S98 convites do admin: um por papel, com a forma certa',
+  (select role::text = 'admin' and kind = 'admin' and expires_at <= now() + interval '48 hours 1 minute'
+   from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'adm'))
+  and (select role::text = 'consumer' and kind = 'consumer' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'cons'))
+  and (select role::text = 'agency' and kind = 'onboarding' and agency_id is null from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'agen'))
+  and (select role::text = 'brand' and kind = 'onboarding' and brand_id is null from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'marc'))
+  and (select role::text = 'seller' and kind = 'onboarding' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'forn'))
+  and (select role::text = 'professional' and kind = 'onboarding' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'prof'))
+  and (select role::text = 'creator' and creator_profile_id is null from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'crl'))
+  and (select team_role = 'owner' and c.status::text = 'pending' and c.name = 'Herói Novo S98' from public.invitations i join public.creator_profiles c on c.id = i.creator_profile_id
+       where i.id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'crn'))
+  and (select team_role = 'member' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s98 where k = 'cre'))
+  and (select jsonb_array_length(v::jsonb -> 'invitations') = 2 from t_s98 where k = 'her')
+  and (select kind = 'hero_team' and team_role = 'member' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 1 ->> 'id')::uuid from t_s98 where k = 'her'))
+  and exists (select 1 from public.creator_team_members m where m.creator_profile_id = (select (v::jsonb ->> 'creator_profile_id')::uuid from t_s98 where k = 'hex')
+              and m.user_id = '98000000-0000-4000-8000-000000009804' and m.role = 'member')
+  and exists (select 1 from public.admin_audit where action = 'invitation.create_admin' and resource_id = (select v::jsonb -> 'invitations' -> 0 ->> 'id' from t_s98 where k = 'adm')));
+
+-- 2) quem não é admin não usa o convite do admin -----------------------------------------------------------------------
+select tests.login('98000000-0000-4000-8000-000000009802', 's98-gestor@test.local');
+select tests.expect_error('S98 agência não convida admin', $q$select public.admin_invite('x.s98@test.local', 'admin', 1, '{"confirm_admin": true}')$q$, 'forbidden');
+select tests.expect_error('S98 agência não convida fornecedor', $q$select public.admin_invite('x.s98@test.local', 'seller', 7, '{}')$q$, 'forbidden');
+select tests.expect_error('S98 agência não convida profissional', $q$select public.admin_invite('x.s98@test.local', 'professional', 7, '{}')$q$, 'forbidden');
+select tests.anon();
+select tests.expect_error('S98 visitante não convida', $q$select public.admin_invite('x.s98@test.local', 'consumer', 7, '{}')$q$, 'permission denied');
+select tests.expect_error('S98 visitante não cria empresa (onboarding só authenticated)', $q$select public.onboarding_create_brand('X', null, null, 'https://x.example.com')$q$, 'permission denied');
+
+-- 3) agência: colaborador não convida; gestor convida marca nova e marca existente; herói --------------------------------
+select tests.login('98000000-0000-4000-8000-000000009803', 's98-colab@test.local');
+select tests.expect_error('S98 colaborador da agência não convida marca', $q$select public.agency_invite_brand('98000000-0000-4000-8000-000000009901', 'y.s98@test.local')$q$, 'forbidden');
+select tests.expect_error('S98 colaborador da agência não convida herói', $q$select * from public.agency_invite_hero('98000000-0000-4000-8000-000000009922', 'Herói X', 'y.s98@test.local')$q$, 'forbidden');
+select tests.login('98000000-0000-4000-8000-000000009806', 's98-fora@test.local');
+select tests.expect_error('S98 quem é de fora não convida pela agência', $q$select public.agency_invite_brand('98000000-0000-4000-8000-000000009901', 'y.s98@test.local')$q$, 'not_found');
+select tests.login('98000000-0000-4000-8000-000000009802', 's98-gestor@test.local');
+insert into t_s98 values ('bnew', public.agency_invite_brand('98000000-0000-4000-8000-000000009901', 's98-marca-da-agencia@test.local')::text);
+insert into t_s98 values ('blink', public.agency_invite_brand('98000000-0000-4000-8000-000000009901', 'S98-Dono-Marca@test.local')::text);
+select tests.ok('S98 gestor: e-mail sem marca → marca nova (onboarding ligada); dono de marca → pedido de vínculo',
+  (select v::jsonb ->> 'kind' = 'onboarding' from t_s98 where k = 'bnew') and (select v::jsonb ->> 'kind' = 'brand_link' from t_s98 where k = 'blink'));
+insert into t_s98 select 'hinv', invitation_id::text from public.agency_invite_hero('98000000-0000-4000-8000-000000009922', 'Herói do Casting S98', 's98-heroi-casting@test.local');
+select tests.su();
+select tests.ok('S98 herói do casting: nasce pendente ligado ao talento, convite do escritório',
+  (select c.status::text = 'pending' and c.name = 'Herói do Casting S98' from public.talent_profiles t join public.creator_profiles c on c.id = t.creator_id
+   where t.id = '98000000-0000-4000-8000-000000009922')
+  and (select talent_id = '98000000-0000-4000-8000-000000009922' from public.invitations where id = (select v::uuid from t_s98 where k = 'hinv')));
+-- aceite com e-mail diferente recusa; o dono aceita o vínculo
+select tests.login('98000000-0000-4000-8000-000000009806', 's98-fora@test.local');
+select tests.expect_error('S98 núcleo do aceite fora do authenticated', format('select public.accept_invitation_core(%L)', (select v::jsonb ->> 'id' from t_s98 where k = 'blink')), 'permission denied');
+select tests.expect_error('S98 aceite com e-mail diferente recusa', format('select public.accept_invitation(%L)', (select v::jsonb ->> 'token' from t_s98 where k = 'blink')), 'invitation_email_mismatch');
+select tests.login('98000000-0000-4000-8000-000000009807', 's98-dono-marca@test.local');
+insert into t_s98 values ('blacc', public.accept_invitation((select v::jsonb ->> 'token' from t_s98 where k = 'blink'))::text);
+select tests.ok('S98 dono aceita o vínculo: marca atendida pela agência',
+  public.brand_active_agency('98000000-0000-4000-8000-000000009931') = '98000000-0000-4000-8000-000000009901'
+  and (select v::jsonb ->> 'scope_type' = 'brand' from t_s98 where k = 'blacc'));
+
+-- 4) marca: dono convida a Equipe; a Equipe não convida; transferência -----------------------------------------------------
+select tests.su();
+update public.agency_brands set status = 'archived' where brand_id = '98000000-0000-4000-8000-000000009931';
+select tests.login('98000000-0000-4000-8000-000000009807', 's98-dono-marca@test.local');
+select tests.ok('S98 marca sem agência funciona: dono segue dono e lê só a própria marca',
+  public.brand_member_of('98000000-0000-4000-8000-000000009931') = 'owner'
+  and public.brand_active_agency('98000000-0000-4000-8000-000000009931') is null
+  and exists (select 1 from public.brands where id = '98000000-0000-4000-8000-000000009931')
+  and not exists (select 1 from public.brands where id = '98000000-0000-4000-8000-000000009932')
+  and not exists (select 1 from public.brand_members where brand_id = '98000000-0000-4000-8000-000000009932'));
+insert into t_s98 select 'bstaff', token from public.brand_invite_member('98000000-0000-4000-8000-000000009931', 's98-equipe-marca@test.local', 7);
+select tests.ok('S98 dono lê o convite da equipe sem agência', exists (select 1 from public.invitations where brand_id = '98000000-0000-4000-8000-000000009931' and kind = 'brand_staff'));
+select tests.login('98000000-0000-4000-8000-000000009808', 's98-equipe-marca@test.local');
+insert into t_s98 values ('bsacc', public.accept_my_invitations()::text);
+select tests.ok('S98 Equipe entrou na marca sem agência', public.brand_member_of('98000000-0000-4000-8000-000000009931') = 'staff');
+select tests.expect_error('S98 Equipe não convida', $q$select * from public.brand_invite_member('98000000-0000-4000-8000-000000009931', 'z.s98@test.local', 7)$q$, 'forbidden');
+select tests.expect_error('S98 Equipe não transfere a posse', $q$select public.brand_transfer_owner('98000000-0000-4000-8000-000000009931', '98000000-0000-4000-8000-000000009808')$q$, 'forbidden');
+select tests.login('98000000-0000-4000-8000-000000009807', 's98-dono-marca@test.local');
+select public.brand_transfer_owner('98000000-0000-4000-8000-000000009931', '98000000-0000-4000-8000-000000009808');
+select tests.ok('S98 transferência: antigo dono vira Equipe', public.brand_member_of('98000000-0000-4000-8000-000000009931') = 'staff');
+select tests.login('98000000-0000-4000-8000-000000009808', 's98-equipe-marca@test.local');
+select tests.ok('S98 transferência: novo dono', public.brand_member_of('98000000-0000-4000-8000-000000009931') = 'owner');
+
+-- 5) equipe do herói -------------------------------------------------------------------------------------------------
+select tests.login('98000000-0000-4000-8000-000000009804', 's98-titular@test.local');
+insert into t_s98 select 'tinv', token from public.hero_team_invite('98000000-0000-4000-8000-000000009911', 's98-membro@test.local', 7);
+select tests.ok('S98 titular lê o convite da equipe', exists (select 1 from public.invitations where creator_profile_id = '98000000-0000-4000-8000-000000009911' and kind = 'hero_team' and email = 's98-membro@test.local'));
+select tests.expect_error('S98 titular não sai sem transferir', $q$select public.hero_team_remove('98000000-0000-4000-8000-000000009911', '98000000-0000-4000-8000-000000009804')$q$, 'owner_must_transfer');
+select tests.login('98000000-0000-4000-8000-000000009805', 's98-membro@test.local');
+select tests.ok('S98 antes do aceite: sem herói nem escritório', public.my_creator_id() is null and public.talent_my_context() is null);
+insert into t_s98 values ('macc', public.accept_invitation((select v from t_s98 where k = 'tinv'))::text);
+select tests.ok('S98 membro age pelo herói e abre o escritório ligado (marcado como membro)',
+  public.my_creator_id() = '98000000-0000-4000-8000-000000009911'
+  and (public.talent_my_context() ->> 'id') = '98000000-0000-4000-8000-000000009921'
+  and (public.talent_my_context() ->> 'is_team_member')::boolean
+  and (public.hero_team_list('98000000-0000-4000-8000-000000009911') ->> 'my_role') = 'member'
+  and jsonb_array_length(public.hero_team_list('98000000-0000-4000-8000-000000009911') -> 'members') = 2
+  and jsonb_array_length(public.hero_team_list('98000000-0000-4000-8000-000000009911') -> 'invites') = 0);
+select tests.expect_error('S98 membro não convida', $q$select * from public.hero_team_invite('98000000-0000-4000-8000-000000009911', 'w.s98@test.local', 7)$q$, 'forbidden');
+select tests.expect_error('S98 membro não dá o consentimento do titular', $q$select public.talent_set_consent(false, 'v1')$q$, 'forbidden');
+select tests.expect_error('S98 membro não remove ninguém', $q$select public.hero_team_remove('98000000-0000-4000-8000-000000009911', '98000000-0000-4000-8000-000000009804')$q$, 'forbidden');
+select tests.login('98000000-0000-4000-8000-000000009806', 's98-fora@test.local');
+select tests.ok('S98 usuário de fora não vê nada',
+  public.my_creator_id() is null and public.talent_my_context() is null
+  and not exists (select 1 from public.creator_team_members where creator_profile_id = '98000000-0000-4000-8000-000000009911')
+  and not exists (select 1 from public.invitations where creator_profile_id = '98000000-0000-4000-8000-000000009911')
+  and not exists (select 1 from public.account_onboardings));
+select tests.expect_error('S98 de fora não lê a equipe', $q$select public.hero_team_list('98000000-0000-4000-8000-000000009911')$q$, 'not_found');
+select tests.expect_error('S98 de fora não convida para a equipe', $q$select * from public.hero_team_invite('98000000-0000-4000-8000-000000009911', 'w.s98@test.local', 7)$q$, 'not_found');
+-- titular transfere: o membro vira titular e o antigo segue membro; depois remove o antigo
+select tests.login('98000000-0000-4000-8000-000000009804', 's98-titular@test.local');
+select public.hero_team_transfer('98000000-0000-4000-8000-000000009911', '98000000-0000-4000-8000-000000009805');
+select tests.su();
+select tests.ok('S98 transferência do herói: user_id = novo titular; o antigo continua membro',
+  (select user_id from public.creator_profiles where id = '98000000-0000-4000-8000-000000009911') = '98000000-0000-4000-8000-000000009805'
+  and (select role from public.creator_team_members where creator_profile_id = '98000000-0000-4000-8000-000000009911' and user_id = '98000000-0000-4000-8000-000000009804') = 'member'
+  and (select count(*) from public.creator_team_members where creator_profile_id = '98000000-0000-4000-8000-000000009911' and role = 'owner' and status = 'active') = 1);
+select tests.login('98000000-0000-4000-8000-000000009805', 's98-membro@test.local');
+select public.hero_team_remove('98000000-0000-4000-8000-000000009911', '98000000-0000-4000-8000-000000009804');
+select tests.login('98000000-0000-4000-8000-000000009804', 's98-titular@test.local');
+select tests.ok('S98 removido perde o herói', public.my_creator_id() is null);
+
+-- 6) primeiro acesso por onboarding --------------------------------------------------------------------------------
+select tests.login('98000000-0000-4000-8000-000000009809', 's98-nova-agencia@test.local');
+insert into t_s98 values ('agacc', public.accept_my_invitations()::text);
+select tests.ok('S98 aceite de agência sem empresa → onboarding (sem papel ainda)',
+  (select v::jsonb -> 0 ->> 'scope_type' = 'onboarding' and v::jsonb -> 0 ->> 'onboarding' = 'agency' from t_s98 where k = 'agacc')
+  and (public.onboarding_pending() -> 0 ->> 'kind') = 'agency'
+  and not exists (select 1 from public.role_assignments where user_id = '98000000-0000-4000-8000-000000009809' and role::text = 'agency'));
+select tests.expect_error('S98 CNPJ inválido recusa', $q$select public.onboarding_create_agency('Agência Nova S98', '11.222.333/0001-80', 'contato@nova-s98.example.com')$q$, 'invalid_cnpj');
+select tests.expect_error('S98 passo de outro tipo não existe', $q$select public.onboarding_create_brand('Marca X S98', null, null, 'https://x.example.com')$q$, 'onboarding_not_found');
+insert into t_s98 values ('agid', public.onboarding_create_agency('Agência Nova S98', '11.222.333/0001-81', 'Contato@Nova-S98.example.com')::text);
+select tests.ok('S98 onboarding da agência: Adm da agência nova, papel agência, passo concluído',
+  public.agency_role_of((select v::uuid from t_s98 where k = 'agid')) = 'admin'
+  and exists (select 1 from public.role_assignments where user_id = '98000000-0000-4000-8000-000000009809' and role::text = 'agency'
+              and scope_id = (select v::uuid from t_s98 where k = 'agid'))
+  and (select cnpj = '11222333000181' and contact_email = 'contato@nova-s98.example.com' from public.agencies where id = (select v::uuid from t_s98 where k = 'agid'))
+  and jsonb_array_length(public.onboarding_pending()) = 0);
+select tests.expect_error('S98 onboarding não se repete', $q$select public.onboarding_create_agency('Outra S98', null, null)$q$, 'onboarding_not_found');
+
+select tests.login('98000000-0000-4000-8000-000000009810', 's98-nova-marca@test.local');
+select public.accept_my_invitations();
+insert into t_s98 values ('brid', public.onboarding_create_brand('Marca Nova S98', '', 'Bebidas', 'https://marca-nova-s98.example.com')::text);
+select tests.ok('S98 onboarding da marca: Dono sem agência, marca autogerida fora da loja pública; lê só a própria',
+  public.brand_member_of((select v::uuid from t_s98 where k = 'brid')) = 'owner'
+  and public.brand_active_agency((select v::uuid from t_s98 where k = 'brid')) is null
+  and (select self_managed and status = 'inactive' and segment = 'Bebidas' from public.brands where id = (select v::uuid from t_s98 where k = 'brid'))
+  and exists (select 1 from public.role_assignments where user_id = '98000000-0000-4000-8000-000000009810' and role::text = 'brand')
+  and not exists (select 1 from public.brands where id = '98000000-0000-4000-8000-000000009931'));
+
+select tests.login('98000000-0000-4000-8000-000000009813', 's98-forn@test.local');
+select public.accept_my_invitations();
+insert into t_s98 values ('slid', public.onboarding_create_seller('Operação S98')::text);
+select tests.ok('S98 onboarding do fornecedor: owner da operação', public.is_seller_of((select v::uuid from t_s98 where k = 'slid')));
+select tests.login('98000000-0000-4000-8000-000000009814', 's98-pro@test.local');
+select public.accept_my_invitations();
+select tests.expect_error('S98 profissional com especialidade inválida recusa', $q$select public.onboarding_create_professional('Pro S98', 'dentist', '12345', 'SP')$q$, 'invalid_input');
+insert into t_s98 values ('prid', public.onboarding_create_professional('Pro S98', 'nutritionist', '12345', 'sp')::text);
+select tests.su();
+select tests.ok('S98 onboarding do profissional: perfil pendente com o registro da especialidade',
+  (select user_id = '98000000-0000-4000-8000-000000009814' and registry_type = 'CRN' and registry_uf = 'SP' and status = 'pending'
+   from public.professionals where id = (select v::uuid from t_s98 where k = 'prid')));
+
+-- 7) admin e consumidor; creator sem herói cria o dele ------------------------------------------------------------------
+select tests.login('98000000-0000-4000-8000-000000009812', 's98-novo-admin@test.local');
+select public.accept_my_invitations();
+select tests.ok('S98 convite de Admin aceito dá o papel admin', public.is_admin());
+select tests.login('98000000-0000-4000-8000-000000009811', 's98-creator-livre@test.local');
+insert into t_s98 values ('clacc', public.accept_my_invitations()::text);
+select tests.ok('S98 creator sem herói: papel creator global', (select v::jsonb -> 0 ->> 'scope_type' = 'global' and v::jsonb -> 0 ->> 'role' = 'creator' from t_s98 where k = 'clacc'));
+insert into t_s98 values ('mine', public.creator_create_my_hero('Meu Herói S98')::text);
+select tests.ok('S98 Criar meu herói: pendente, a pessoa é titular e o lê', (select status::text = 'pending' and user_id = '98000000-0000-4000-8000-000000009811'
+  from public.creator_profiles where id = (select v::uuid from t_s98 where k = 'mine'))
+  and (public.my_hero_team() ->> 'role') = 'owner' and public.my_creator_id() is null);
+select tests.expect_error('S98 Criar meu herói só uma vez', $q$select public.creator_create_my_hero('Outro S98')$q$, 'has_hero');
+select tests.login('98000000-0000-4000-8000-000000009806', 's98-fora@test.local');
+select tests.expect_error('S98 sem papel creator não cria herói', $q$select public.creator_create_my_hero('Intruso S98')$q$, 'creator_role_required');
+select tests.ok('S98 de fora não lê o herói pendente', not exists (select 1 from public.creator_profiles where id = (select v::uuid from t_s98 where k = 'mine')));
+
+-- limpeza
+select tests.su();
+delete from public.role_assignments where user_id::text like '98000000-%';
+delete from public.account_onboardings where user_id::text like '98000000-%';
+delete from public.invitations where email::text like '%s98%';
+delete from public.creator_team_members where user_id::text like '98000000-%';
+delete from public.talent_profiles where agency_id::text like '98000000-%';
+delete from public.creator_profiles where id::text like '98000000-%' or name like '%S98';
+delete from public.agency_brands where brand_id in (select id from public.brands where name like '%S98');
+delete from public.brand_members where brand_id in (select id from public.brands where name like '%S98');
+delete from public.brands where name like '%S98';
+delete from public.seller_memberships where user_id::text like '98000000-%';
+delete from public.seller_organizations where name like '%S98';
+delete from public.professionals where name like '%S98';
+delete from public.inbox_notifications where user_id::text like '98000000-%';
+delete from public.agency_members where user_id::text like '98000000-%';
+delete from public.agencies where name like '%S98';
+delete from auth.users where id::text like '98000000-%';
+drop table t_s98;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

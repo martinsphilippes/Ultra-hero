@@ -4,6 +4,7 @@ import { BrandMemberRemove } from "@/components/agency/BrandMemberRemove";
 import { InviteDialog } from "@/components/agency/InviteDialog";
 import { RevokeInviteButton } from "@/components/agency/RevokeInviteButton";
 import { RoleBadge } from "@/components/agency/RoleBadge";
+import { BrandOwnerTransfer } from "@/components/invites/BrandOwnerTransfer";
 import { Avatar, EmptyState, PageHeader, Section } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
@@ -48,7 +49,12 @@ export default async function BrandTeamPage() {
                 </div>
                 <RoleBadge role={m.role === "owner" ? "owner" : "brandStaff"} />
               </div>
-              {isOwner && m.role === "staff" && m.userId !== user?.id ? <BrandMemberRemove brandId={ctx.brand.id} userId={m.userId} name={m.name} from="brand" /> : null}
+              {isOwner && m.role === "staff" && m.userId !== user?.id ? (
+                <div className="flex flex-wrap gap-2">
+                  <BrandOwnerTransfer userId={m.userId} name={m.name} />
+                  <BrandMemberRemove brandId={ctx.brand.id} userId={m.userId} name={m.name} from="brand" />
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

@@ -9,6 +9,7 @@ import { RevokeInvitationButton } from "@/components/admin-ops/StatusActions";
 import { Badge, PageHeader } from "@/components/ui";
 import { formatDateTime } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
+import { isAdminInviteRole, type AdminInviteRole } from "@/lib/invitations/rules";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,6 +23,9 @@ type SearchParams = Promise<{ status?: string; page?: string; new?: string; role
 const PAGE_SIZE = 25;
 
 type InvitationRow = {
+  /** 0091: forma do convite (admin, consumer, onboarding, hero, hero_team…) e papel na equipe do herói. */
+  kind?: string | null;
+  team_role?: string | null;
   id: string;
   email: string;
   role: "creator" | "seller" | "admin" | "consumer" | "professional" | "agency" | "brand";
@@ -67,16 +71,41 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
   // com a 0058 a lista também traz o profissional do convite; sem ela, a leitura de antes
   // com a 0064, também agência e marca; com a 0065, o talento; cada leitura cai para a anterior se a
   // coluna ainda não existe
-  const withTalent = await listQuery(`${base}, professional_id, agency_id, brand_id, member_role, talent_id`);
+  const withKind = await listQuery(`${base}, professional_id, agency_id, brand_id, member_role, talent_id, kind, team_role`);
+  const withTalent = withKind.error ? await listQuery(`${base}, professional_id, agency_id, brand_id, member_role, talent_id`) : withKind;
   const withAgency = withTalent.error ? await listQuery(`${base}, professional_id, agency_id, brand_id, member_role`) : withTalent;
   const withPro = withAgency.error ? await listQuery(`${base}, professional_id`) : withAgency;
-  const [{ data, error, count }, creatorsRes, sellersRes] = await Promise.all([
+  const [{ data, error, count }, creatorsRes, sellersRes, creatorRolesRes, tr] = await Promise.all([
     withPro.error ? listQuery(base) : Promise.resolve(withPro),
     supabase.from("creator_profiles").select("id, name, user_id, slug, avatar_url").order("name"),
     supabase.from("seller_organizations").select("id, name").order("name"),
+    // pessoas com papel creator (para a equipe do herói); o admin lê todos os papéis
+    supabase.from("role_assignments").select("user_id").eq("role", "creator").is("revoked_at", null).limit(500),
+    getTranslations("invites.roles"),
   ]);
+  const creatorUserIds = Array.from(new Set((creatorRolesRes.data ?? []).map((r) => r.user_id)));
+  const { data: creatorProfiles } = creatorUserIds.length
+    ? await supabase.from("profiles").select("id, display_name").in("id", creatorUserIds)
+    : { data: [] as Array<{ id: string; display_name: string | null }> };
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as unknown as InvitationRow[];
+  // papel do convite: 0091 pela forma (kind); antes dela, pelos campos de escopo
+  const roleLabel = (r: InvitationRow) =>
+    r.kind === "hero" || (!r.kind && r.role === "creator" && r.creator_profile_id && !r.talent_id)
+      ? tr("hero")
+      : r.kind === "hero_team"
+        ? tr("heroTeam")
+        : r.role === "admin" || r.role === "consumer"
+          ? tr(r.role)
+          : r.role === "agency"
+            ? t("roleAgency")
+            : r.role === "brand"
+              ? t("roleBrand")
+              : r.role === "professional"
+                ? tn("portals.professional")
+                : r.role === "creator"
+                  ? t("roleTalent")
+                  : t("form.roleSeller");
   const now = Date.now();
 
   const columns: Column<InvitationRow>[] = [
@@ -86,17 +115,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
       header: t("columns.role"),
       cell: (r) => (
         <Badge variant="info" size="sm">
-          {r.role === "agency"
-            ? t("roleAgency")
-            : r.role === "brand"
-              ? t("roleBrand")
-              : r.role === "professional"
-                ? tn("portals.professional")
-                : r.role === "creator" && r.talent_id
-                  ? t("roleTalent")
-                  : r.role === "creator"
-                  ? t("form.roleCreator")
-                  : t("form.roleSeller")}
+          {roleLabel(r)}
         </Badge>
       ),
     },
@@ -150,7 +169,9 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
 
   const creators = (creatorsRes.data ?? []).map((c) => ({ id: c.id, name: c.name, linked: Boolean(c.user_id), slug: c.slug, avatarUrl: c.avatar_url }));
   const sellers = (sellersRes.data ?? []).map((s) => ({ id: s.id, name: s.name }));
-  const initialRole = sp.role === "seller" ? "seller" : "creator";
+  const initialRole: AdminInviteRole = isAdminInviteRole(sp.role) ? sp.role : "creator";
+  const nameById = new Map((creatorProfiles ?? []).map((p) => [p.id, p.display_name]));
+  const creatorUsers = creatorUserIds.map((id) => ({ id, name: nameById.get(id) || id.slice(0, 8) })).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="flex flex-col gap-6">
@@ -158,7 +179,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
         title={t("title")}
         description={t("description")}
         eyebrow={tn("portals.admin")}
-        actions={<InvitationForm creators={creators} sellers={sellers} initialRole={initialRole} initialCreatorId={sp.creator} initialSellerId={sp.org} defaultOpen={sp.new === "1"} />}
+        actions={<InvitationForm creators={creators} creatorUsers={creatorUsers} sellers={sellers} initialRole={initialRole} initialCreatorId={sp.creator} initialSellerId={sp.org} defaultOpen={sp.new === "1"} />}
       />
       <nav aria-label={t("filters.status")} className="flex flex-wrap gap-2">
         <FilterLink href="/admin/invitations" active={!status} label={tc("all")} />

@@ -2165,6 +2165,8 @@ export type Database = {
       };
       invitations: {
         Row: {
+          kind: string | null;
+          team_role: string | null;
           accepted_at: string | null;
           accepted_by: string | null;
           agency_id: string | null;
@@ -2186,6 +2188,8 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          kind?: string | null;
+          team_role?: string | null;
           accepted_at?: string | null;
           accepted_by?: string | null;
           agency_id?: string | null;
@@ -2206,6 +2210,8 @@ export type Database = {
           token_hash: string;
         };
         Update: {
+          kind?: string | null;
+          team_role?: string | null;
           accepted_at?: string | null;
           accepted_by?: string | null;
           agency_id?: string | null;
@@ -5017,6 +5023,9 @@ export type Database = {
       };
       brands: {
         Row: {
+          self_managed: boolean;
+          cnpj: string | null;
+          segment: string | null;
           created_at: string;
           created_by: string | null;
           default_relationship: string;
@@ -5031,6 +5040,9 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          self_managed?: boolean;
+          cnpj?: string | null;
+          segment?: string | null;
           created_at?: string;
           created_by?: string | null;
           default_relationship?: string;
@@ -5044,6 +5056,9 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          self_managed?: boolean;
+          cnpj?: string | null;
+          segment?: string | null;
           created_at?: string;
           created_by?: string | null;
           default_relationship?: string;
@@ -6059,6 +6074,7 @@ export type Database = {
       };
       agencies: {
         Row: {
+          cnpj: string | null;
           contact_email: string | null;
           created_at: string;
           created_by: string | null;
@@ -6074,6 +6090,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          cnpj?: string | null;
           contact_email?: string | null;
           created_at?: string;
           created_by?: string | null;
@@ -6088,6 +6105,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          cnpj?: string | null;
           contact_email?: string | null;
           created_at?: string;
           created_by?: string | null;
@@ -6150,6 +6168,82 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      creator_team_members: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          creator_profile_id: string;
+          removed_at: string | null;
+          role: string;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id: string;
+          removed_at?: string | null;
+          role?: string;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id?: string;
+          removed_at?: string | null;
+          role?: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "creator_team_members_creator_profile_id_fkey";
+            columns: ["creator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "creator_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      account_onboardings: {
+        Row: {
+          agency_id: string | null;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          invitation_id: string | null;
+          kind: string;
+          result_id: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          invitation_id?: string | null;
+          kind: string;
+          result_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          agency_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          invitation_id?: string | null;
+          kind?: string;
+          result_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       agency_brands: {
         Row: {
@@ -10845,6 +10939,25 @@ isOneToOne: false
       is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_demo_account: { Args: Record<PropertyKey, never>; Returns: boolean };
       accept_invitation: { Args: { p_token: string }; Returns: Json };
+      // 0091: convites por papel, equipe do herói e primeiro acesso
+      admin_invite: { Args: { p_email: string; p_role: string; p_days: number; p_options?: Json }; Returns: Json };
+      hero_team_invite: { Args: { p_creator: string; p_email: string; p_days?: number | null }; Returns: { invitation_id: string; token: string }[] };
+      hero_team_remove: { Args: { p_creator: string; p_user: string }; Returns: undefined };
+      hero_team_transfer: { Args: { p_creator: string; p_user: string }; Returns: undefined };
+      hero_team_list: { Args: { p_creator: string }; Returns: Json };
+      my_hero_team: { Args: Record<PropertyKey, never>; Returns: Json };
+      my_team_creator_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      my_owned_creator_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      creator_create_my_hero: { Args: { p_name: string }; Returns: string };
+      agency_invite_brand: { Args: { p_agency: string; p_email: string; p_days?: number | null }; Returns: Json };
+      agency_invite_hero: { Args: { p_talent: string; p_name: string; p_email: string; p_days?: number | null }; Returns: { invitation_id: string; token: string }[] };
+      brand_transfer_owner: { Args: { p_brand: string; p_user: string }; Returns: undefined };
+      cnpj_valid: { Args: { p: string }; Returns: boolean };
+      onboarding_pending: { Args: Record<PropertyKey, never>; Returns: Json };
+      onboarding_create_agency: { Args: { p_name: string; p_cnpj: string | null; p_contact_email: string | null }; Returns: string };
+      onboarding_create_brand: { Args: { p_name: string; p_cnpj: string | null; p_segment: string | null; p_site_url: string }; Returns: string };
+      onboarding_create_seller: { Args: { p_name: string }; Returns: string };
+      onboarding_create_professional: { Args: { p_name: string; p_specialty: string; p_registry_number: string; p_registry_uf: string }; Returns: string };
       accept_my_invitations: { Args: Record<PropertyKey, never>; Returns: Json };
       accept_partner_terms: { Args: { p_version: string }; Returns: undefined };
       admin_resolve_report: { Args: { p_archive_content: boolean; p_id: string; p_status: string; p_suspend_creator: boolean }; Returns: undefined };

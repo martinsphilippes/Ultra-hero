@@ -54,10 +54,12 @@ type EditorProps = {
   coverState: HeroCoverState;
   /** "Sua conta" (nome exibido, idioma, tema): no fim do mesmo editor, sem um segundo "Editar perfil". */
   account?: ReactNode;
+  /** 0091: aviso no lugar do "inativo" (ex.: membro da equipe — só o titular edita). */
+  readOnlyNotice?: string;
 };
 
 /** "Editar perfil" e "Ver página pública" + o editor completo, recolhido por padrão. */
-export async function HeroProfileEditor({ profile, active, photoState, coverState, account }: EditorProps) {
+export async function HeroProfileEditor({ profile, active, photoState, coverState, account, readOnlyNotice }: EditorProps) {
   const t = await getTranslations("creator.profile");
   // perfil de chef (0027): especialidades públicas e pedido de credenciais; sem as colunas, sem a parte
   const supabase = await createClient();
@@ -72,10 +74,10 @@ export async function HeroProfileEditor({ profile, active, photoState, coverStat
   const request = (requestRes.data as unknown as CredentialsRequest | null) ?? null;
 
   return (
-    <HeroEditorDisclosure publicHref={active ? `/personalities/${profile.slug}` : null}>
+    <HeroEditorDisclosure publicHref={active || readOnlyNotice ? `/personalities/${profile.slug}` : null}>
       {!active && (
         <p role="status" className="rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-fg">
-          {t("inactiveNotice")}
+          {readOnlyNotice ?? t("inactiveNotice")}
         </p>
       )}
 

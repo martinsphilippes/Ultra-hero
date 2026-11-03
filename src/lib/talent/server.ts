@@ -22,6 +22,8 @@ export type TalentSelf = {
   agency: string;
   agencyIsDemo: boolean;
   manager: string | null;
+  /** 0091: membro da equipe do herói (não é a pessoa titular; não dá o consentimento). */
+  isTeamMember: boolean;
 };
 
 export type TalentContext = { state: "unavailable" } | { state: "none" } | { state: "ok"; talent: TalentSelf };
@@ -41,6 +43,7 @@ type ContextRow = {
   agency: string;
   agency_is_demo: boolean;
   manager: string | null;
+  is_team_member?: boolean;
 };
 
 export function toTalentSelf(row: ContextRow): TalentSelf {
@@ -59,6 +62,7 @@ export function toTalentSelf(row: ContextRow): TalentSelf {
     agency: row.agency,
     agencyIsDemo: row.agency_is_demo,
     manager: row.manager,
+    isTeamMember: row.is_team_member === true,
   };
 }
 

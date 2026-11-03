@@ -48,7 +48,8 @@
     "content": "My content",
     "links": "Product links",
     "recipes": "My Recipes",
-    "office": "Office"
+    "office": "Office",
+    "team": "Team"
   },
   "seller": {
     "dashboard": "Dashboard",

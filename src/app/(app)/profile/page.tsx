@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
+import { createClient } from "@/lib/supabase/server";
 import { getMyCreator } from "@/app/creator/(hero)/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure";
@@ -51,6 +53,13 @@ export default async function ProfilePage() {
     getAvatarPhotoState(),
     getMyCreator(),
   ]);
+  const [tinv, tonb, onboarding] = await Promise.all([
+    getTranslations("invites.team"),
+    getTranslations("invites.onboarding"),
+    // 0091: passo a passo do primeiro acesso ainda aberto (empresa a criar); sem a migração, nada
+    createClient().then((c) => c.rpc("onboarding_pending")),
+  ]);
+  const onboardingOpen = Array.isArray(onboarding.data) && onboarding.data.length > 0;
   // só com o papel de herói (ou admin), como no portal: a linha em creator_profiles sozinha não basta
   const heroProfile = heroProfileFor(heroRoleNames(roles), creator.profile);
   // envio de capa (0042): só o herói vê; sem a 0042 ou sem service role fica "indisponível"
@@ -73,6 +82,8 @@ export default async function ProfilePage() {
   const theme = resolveTheme(profile?.theme);
   // perfil ativo e vinculado (my_creator_id): só aí o editor do herói grava, e o avatar é um só
   const heroActive = heroProfile !== null && creator.creatorId !== null;
+  // 0091: membro da equipe do herói posta, mas perfil, foto e capa ficam com o titular
+  const heroOwner = heroActive && creator.teamRole !== "member";
   // admin com perfil de herói posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros heróis)
   const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/creator/post/new";
 
@@ -85,7 +96,7 @@ export default async function ProfilePage() {
       photoState={photoState}
       photoHint={heroProfile ? tcp("photoHint") : undefined}
       // herói ativo: um avatar só, no perfil público do mesmo editor; inativo ou não herói: o avatar fica aqui
-      avatarInHeroEditor={heroActive}
+      avatarInHeroEditor={heroOwner}
     />
   );
   // e-mail e papéis: no cabeçalho de quem não é herói; dentro de "Sua conta" para o herói
@@ -113,6 +124,12 @@ export default async function ProfilePage() {
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={tc("app.name")} />
 
+      {onboardingOpen ? (
+        <Link href="/primeiro-acesso" className="flex min-h-14 items-center justify-between gap-3 rounded-2xl border border-accent/40 bg-accent-soft px-4 py-3 text-sm font-semibold text-fg" data-testid="onboarding-banner">
+          {tonb("banner")}
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : null}
       <PortalShortcuts items={portalItems} />
 
       {heroProfile ? (
@@ -123,7 +140,8 @@ export default async function ProfilePage() {
           {heroActive ? <HeroNewPost href={newPostHref} /> : null}
           <HeroProfileEditor
             profile={heroProfile}
-            active={heroActive}
+            active={heroOwner}
+            readOnlyNotice={heroActive && !heroOwner ? tinv("memberProfileNotice") : undefined}
             photoState={photoState}
             coverState={coverState ?? { upload: "not_configured", canRemove: false }}
             account={

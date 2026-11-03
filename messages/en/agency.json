@@ -340,7 +340,19 @@
     "payment_open": "This payment was already reported and is waiting for the agency.",
     "invalid_pix_key": "Invalid PIX key for the chosen type.",
     "invalid_bank": "Check bank, branch and account.",
-    "payment_method_required": "Enter a PIX key or the bank details."
+    "payment_method_required": "Enter a PIX key or the bank details.",
+    "invalid_role": "Invalid role.",
+    "admin_invite_max_48h": "An Admin invite is valid for 48 hours at most.",
+    "admin_confirm_required": "Confirm the person will have full control of Ultra.",
+    "creator_role_required": "The person needs the creator role.",
+    "has_hero": "You already have a hero.",
+    "owner_must_transfer": "The lead can't leave the team without transferring it first.",
+    "onboarding_not_found": "There is no open first access for this.",
+    "invalid_cnpj": "Invalid CNPJ.",
+    "creator_profile_already_linked": "This hero already has another lead.",
+    "professional_profile_already_linked": "You already have a professional profile.",
+    "invitation_email_mismatch": "This invite belongs to another email.",
+    "invitation_expired": "This invite has expired."
   },
   "casting": {
     "title": "Roster",
