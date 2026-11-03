@@ -72,7 +72,7 @@
   },
   "creators": {
     "title": "Creators",
-    "description": "Catálogo autorizado por {agency}: só quem consentiu aparecer, com o que o media kit libera.",
+    "description": "Creators da agência {agency} disponíveis para sua marca.",
     "descriptionNoAgency": "Sua marca ainda não está ligada a uma agência.",
     "filters": {
       "search": "Buscar",
@@ -118,7 +118,8 @@
     "representedBy": "Representado por {agency}.",
     "consentMissing": "sem consentimento (kit indisponível)",
     "shortlistsLink": "Pré-seleção",
-    "compareHint": "Marque de 2 a 4 creators para comparar lado a lado."
+    "compareHint": "Marque de 2 a 4 creators para comparar lado a lado.",
+    "consentNote": "Só aparece quem autorizou estar no catálogo, com os dados que o media kit libera."
   },
   "campaigns": {
     "draftSaved": "Rascunho salvo.",

@@ -61,9 +61,9 @@ export default async function AgencyTasksPage({ searchParams }: Props) {
         showDeal
         create={{
           agencyId: ctx.agency.id,
-          members: team.map((m) => ({ userId: m.userId, name: m.name })),
-          talents: talents.items.map((x) => ({ id: x.id, name: x.name, userId: null })),
-          deals: deals.items.map((d) => ({ id: d.id, name: `${d.title} · ${d.brand.name}` })),
+          members: team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle })),
+          talents: talents.items.map((x) => ({ id: x.id, name: x.name, userId: null, city: x.city, state: x.state, hasLogin: x.hasLogin, avatarUrl: x.hero?.avatarUrl ?? null, managerName: team.find((m) => m.userId === x.managerId)?.name ?? null })),
+          deals: deals.items.map((d) => ({ id: d.id, name: d.title, brand: d.brand.name, logoUrl: d.brand.logoUrl })),
         }}
         emptyText={t(`empty.${filter}`)}
       />

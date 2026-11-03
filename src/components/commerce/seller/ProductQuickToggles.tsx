@@ -6,7 +6,7 @@ import { useId, useState, useTransition } from "react";
 import { setOrgProductAvailabilityAction, setOrgProductStockAction } from "@/app/admin/sellers/product-actions";
 import { setProductDemoStock, toggleProductAvailability } from "@/app/seller/products/actions";
 import { splitErrorString } from "@/components/commerce/lib/errors";
-import { Button, Input, Switch, useToast } from "@/components/ui";
+import { Button, NumberInput, Switch, useToast } from "@/components/ui";
 
 type Props = {
   productId: string;
@@ -75,7 +75,7 @@ export function ProductQuickToggles({ productId, title, availability, demoStock,
         <label htmlFor={`${id}-stock`} className="sr-only">
           {t("quickStock", { title })}
         </label>
-        <Input id={`${id}-stock`} value={stock} onChange={(e) => setStock(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" inputSize="sm" placeholder="∞" className="w-20" disabled={pending} />
+        <NumberInput id={`${id}-stock`} value={stock} onValueChange={(_, n) => setStock(n === null ? "" : String(n))} inputSize="sm" placeholder="∞" className="w-20" disabled={pending} />
         <Button type="submit" variant="ghost" size="sm" disabled={pending}>
           {t("quickStockSave")}
         </Button>

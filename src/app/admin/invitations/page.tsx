@@ -72,7 +72,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
   const withPro = withAgency.error ? await listQuery(`${base}, professional_id`) : withAgency;
   const [{ data, error, count }, creatorsRes, sellersRes] = await Promise.all([
     withPro.error ? listQuery(base) : Promise.resolve(withPro),
-    supabase.from("creator_profiles").select("id, name, user_id").order("name"),
+    supabase.from("creator_profiles").select("id, name, user_id, slug, avatar_url").order("name"),
     supabase.from("seller_organizations").select("id, name").order("name"),
   ]);
   if (error) throw new Error(error.message);
@@ -148,7 +148,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
     { key: "actions", header: "", align: "right", cell: (r) => (r.status === "pending" ? <RevokeInvitationButton id={r.id} /> : null) },
   ];
 
-  const creators = (creatorsRes.data ?? []).map((c) => ({ id: c.id, name: c.name, linked: Boolean(c.user_id) }));
+  const creators = (creatorsRes.data ?? []).map((c) => ({ id: c.id, name: c.name, linked: Boolean(c.user_id), slug: c.slug, avatarUrl: c.avatar_url }));
   const sellers = (sellersRes.data ?? []).map((s) => ({ id: s.id, name: s.name }));
   const initialRole = sp.role === "seller" ? "seller" : "creator";
 

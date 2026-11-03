@@ -4,14 +4,15 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { saveDeliverablesAction } from "@/app/agencia/negocios/actions";
-import { Button, DatePicker, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, DatePicker, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { DeliverableRow } from "@/lib/deals/queries";
 import type { DeliverableItemInput } from "@/lib/deals/schemas";
 import { DELIVERABLE_KINDS, type DeliverableKind } from "@/lib/deals/vocab";
 import { NETWORKS } from "@/lib/talent/vocab";
+import { talentOption, type TalentPickFields } from "@/lib/ui/entity";
 import { DeliverableStatusBadge } from "./StatusBadges";
 
-type Talent = { dealTalentId: string; name: string };
+type Talent = { dealTalentId: string; name: string } & TalentPickFields;
 type Item = DeliverableItemInput & { status: DeliverableRow["status"] | "new" };
 
 // Entregáveis planejados por creator. Os que já saíram de "planejado" ficam só leitura; remover da lista
@@ -20,6 +21,8 @@ export function DeliverablesEditor({ dealId, talents, items, canEdit }: { dealId
   const t = useTranslations("agency.deal.deliverables");
   const tk = useTranslations("commercial.deliverableKinds");
   const tn = useTranslations("mediaKit.networks");
+  const tp = useTranslations("pickers");
+  const talentOptions = talents.map((x) => talentOption(tp, { ...x, id: x.dealTalentId }));
   const { toast } = useToast();
   const [list, setList] = useState<Item[]>(
     items.map((d) => ({ id: d.id, dealTalentId: d.dealTalentId, kind: d.kind, network: (d.network ?? "") as DeliverableItemInput["network"], title: d.title, brief: d.brief, dueAt: d.dueAt?.slice(0, 10) ?? "", publishAt: d.publishAt?.slice(0, 10) ?? "", status: d.status })),
@@ -65,14 +68,8 @@ export function DeliverablesEditor({ dealId, talents, items, canEdit }: { dealId
                 ) : null}
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <FormField label={t("talent")}>
-                  <Select value={item.dealTalentId} onChange={(e) => update(index, { dealTalentId: e.target.value })} disabled={locked || pending}>
-                    {talents.map((tal) => (
-                      <option key={tal.dealTalentId} value={tal.dealTalentId}>
-                        {tal.name}
-                      </option>
-                    ))}
-                  </Select>
+                <FormField label={t("talent")} hint={tp("hints.deliverableTalent")}>
+                  <EntitySelect value={item.dealTalentId} onChange={(e) => update(index, { dealTalentId: e.target.value })} disabled={locked || pending} roleInOption={false} options={talentOptions} />
                 </FormField>
                 <FormField label={t("kind")}>
                   <Select value={item.kind} onChange={(e) => update(index, { kind: e.target.value as DeliverableKind })} disabled={locked || pending}>

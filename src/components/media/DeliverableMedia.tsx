@@ -3,7 +3,7 @@
 import { BarChart3, MessageSquareText, Play, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { Button, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, DatePicker, Dialog, FormField, Input, NumberInput, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { signedUrlAction } from "@/lib/documents/actions";
@@ -134,7 +134,7 @@ function MetricsDialog({ portal, deliverableId, today, refs, onClose }: { portal
         <div className="grid grid-cols-2 gap-3">
           {METRIC_KEYS.map((k) => (
             <FormField key={k} label={t(`labels.${k}`)}>
-              <Input inputMode="numeric" value={values[k]} maxLength={17} onChange={(e) => setValues((cur) => ({ ...cur, [k]: e.target.value }))} disabled={pending} data-testid={`metric-${k}`} />
+              <NumberInput value={values[k]} max={1_000_000_000_000} onValueChange={(text) => setValues((cur) => ({ ...cur, [k]: text }))} disabled={pending} data-testid={`metric-${k}`} />
             </FormField>
           ))}
         </div>

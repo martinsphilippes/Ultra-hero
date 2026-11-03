@@ -12635,5 +12635,380 @@ delete from public.agencies where id in ('95000000-0000-4000-8000-000000009501',
 delete from auth.users where id::text like '95000000-0000-4000-8000-00000000095%';
 drop table t_s95;
 
+-- ================================================================ S96 · Chamada da marca: oportunidade que parte da marca (0089)
+-- A equipe da marca monta e o dono publica (0081); o alvo decide quem vê (agências que me atendem / escolhidas / todas);
+-- agência fora do alvo vê 0; gestor+ vê sem valor, só o Adm lê a verba (na forma escolhida) e envia a proposta com
+-- valor; agência só vê a própria proposta e nunca quantas há; creator vê sem valor, demonstra interesse e avisa a
+-- agência; rodadas com aprovação do dono; prazo; escolha das vencedoras cria a campanha (vínculo por projeto para quem
+-- não atende a marca) e avisa as outras. S14 segue 18.
+\ir ../migrations/0089_chamada_da_marca.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local'),
+  ('96000000-0000-4000-8000-000000000962', 's96-gestor-a@test.local'),
+  ('96000000-0000-4000-8000-000000000963', 's96-colab-a@test.local'),
+  ('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local'),
+  ('96000000-0000-4000-8000-000000000965', 's96-equipe-alfa@test.local'),
+  ('96000000-0000-4000-8000-000000000966', 's96-adm-b@test.local'),
+  ('96000000-0000-4000-8000-000000000967', 's96-adm-c@test.local'),
+  ('96000000-0000-4000-8000-000000000968', 's96-creator-a@test.local'),
+  ('96000000-0000-4000-8000-000000000969', 's96-dono-beta@test.local'),
+  ('96000000-0000-4000-8000-000000000960', 's96-creator-c@test.local'),
+  ('96000000-0000-4000-8000-0000000009a1', 's96-adm-d@test.local');
+insert into public.agencies (id, slug, name) values
+  ('96000000-0000-4000-8000-000000009601', 's96-agencia-a', 'Agência A S96'),
+  ('96000000-0000-4000-8000-000000009602', 's96-agencia-b', 'Agência B S96'),
+  ('96000000-0000-4000-8000-000000009603', 's96-agencia-c', 'Agência C S96'),
+  ('96000000-0000-4000-8000-000000009604', 's96-agencia-d', 'Agência D S96');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('96000000-0000-4000-8000-000000009601', '96000000-0000-4000-8000-000000000961', 'admin', 'Ana Adm A'),
+  ('96000000-0000-4000-8000-000000009601', '96000000-0000-4000-8000-000000000962', 'manager', 'Gil Gestor A'),
+  ('96000000-0000-4000-8000-000000009601', '96000000-0000-4000-8000-000000000963', 'staff', 'Caio Colab A'),
+  ('96000000-0000-4000-8000-000000009602', '96000000-0000-4000-8000-000000000966', 'admin', 'Bia Adm B'),
+  ('96000000-0000-4000-8000-000000009603', '96000000-0000-4000-8000-000000000967', 'admin', 'Cid Adm C'),
+  ('96000000-0000-4000-8000-000000009604', '96000000-0000-4000-8000-0000000009a1', 'admin', 'Davi Adm D');
+insert into public.brands (id, slug, name, site_url) values
+  ('96000000-0000-4000-8000-000000009611', 's96-marca-alfa', 'Marca Alfa S96', 'https://alfa.s96.test'),
+  ('96000000-0000-4000-8000-000000009612', 's96-marca-beta', 'Marca Beta S96', 'https://beta.s96.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('96000000-0000-4000-8000-000000009601', '96000000-0000-4000-8000-000000009611'),
+  ('96000000-0000-4000-8000-000000009603', '96000000-0000-4000-8000-000000009612');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('96000000-0000-4000-8000-000000009611', '96000000-0000-4000-8000-000000000964', 'owner', 'Dona Alfa'),
+  ('96000000-0000-4000-8000-000000009611', '96000000-0000-4000-8000-000000000965', 'staff', 'Equipe Alfa'),
+  ('96000000-0000-4000-8000-000000009612', '96000000-0000-4000-8000-000000000969', 'owner', 'Dono Beta');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
+  ('96000000-0000-4000-8000-000000009621', '96000000-0000-4000-8000-000000009601', 'Creator Liberada A', '96000000-0000-4000-8000-000000000968', true, now() - interval '30 days'),
+  ('96000000-0000-4000-8000-000000009622', '96000000-0000-4000-8000-000000009601', 'Creator Oculta A', null, false, now() - interval '30 days'),
+  ('96000000-0000-4000-8000-000000009623', '96000000-0000-4000-8000-000000009602', 'Creator B', null, true, now() - interval '30 days'),
+  ('96000000-0000-4000-8000-000000009624', '96000000-0000-4000-8000-000000009603', 'Creator C', '96000000-0000-4000-8000-000000000960', true, now() - interval '30 days'),
+  ('96000000-0000-4000-8000-000000009625', '96000000-0000-4000-8000-000000009604', 'Creator D', null, true, now() - interval '30 days');
+create temp table t_s96 (k text primary key, v text);
+grant all on t_s96 to anon, authenticated, service_role;
+insert into t_s96 values ('data', jsonb_build_object('title', 'Lançamento verão S96', 'objective', 'launch', 'description', 'Protetor solar novo',
+  'starts_on', (current_date + 20)::text, 'ends_on', (current_date + 40)::text, 'location', '',
+  'target_audience', 'Jovens que vão à praia', 'target_age_bands', jsonb_build_array('18-24', '25-34'), 'target_states', jsonb_build_array('RJ', 'BA'),
+  'region_note', 'Litoral', 'deliverables', '[{"kind": "reels", "quantity": 2, "network": "instagram"}, {"kind": "stories", "quantity": 5, "network": "instagram"}]'::jsonb,
+  'creators_wanted', 3, 'niches', jsonb_build_array('Beleza', 'Praia', 'beleza'), 'networks', jsonb_build_array('instagram', 'tiktok'),
+  'budget_cents', 3000000, 'budget_display', 'up_to', 'respond_by', (now() + interval '10 days')::text, 'audience', 'selected',
+  'agency_ids', jsonb_build_array('96000000-0000-4000-8000-000000009601', '96000000-0000-4000-8000-000000009602', '96000000-0000-4000-8000-000000009604'))::text);
+insert into t_s96 values ('deliv_a', '[{"talent_id": "96000000-0000-4000-8000-000000009621", "deliverables": [{"kind": "reels", "quantity": 2, "network": "instagram"}, {"kind": "stories", "quantity": 5, "network": "instagram"}], "media_kit_url": "https://kit.s96.test/a"}]');
+
+select tests.ok('S96 estrutura: 6 tabelas com RLS e só leitura, internas fechadas, nada para visitante, sem sobrecarga; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.brand_calls'::regclass, 'public.brand_call_targets'::regclass, 'public.brand_call_interests'::regclass,
+     'public.brand_call_proposals'::regclass, 'public.brand_call_proposal_talents'::regclass, 'public.brand_call_rounds'::regclass))
+  and not has_table_privilege('anon', 'public.brand_calls', 'select')
+  and not has_table_privilege('anon', 'public.brand_call_proposals', 'select')
+  and not has_table_privilege('authenticated', 'public.brand_calls', 'insert')
+  and not has_table_privilege('authenticated', 'public.brand_call_proposals', 'update')
+  and not has_table_privilege('authenticated', 'public.brand_call_rounds', 'delete')
+  and not has_table_privilege('authenticated', 'public.brand_call_interests', 'insert')
+  and not has_function_privilege('authenticated', 'public.brand_call_agree(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_call_round_apply(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_call_close_out(uuid, text, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_call_publish(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_call_agency_ok(uuid, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.brand_call_deadline_scan()', 'execute')
+  and has_function_privilege('authenticated', 'public.brand_call_save(uuid, uuid, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_brand_call_reply(uuid, text, bigint, jsonb, date, text)', 'execute')
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('brand_call_save', 'brand_call_submit', 'brand_call_review',
+       'brand_call_reply', 'brand_call_round_review', 'brand_call_decide', 'agency_brand_call_proposal_save', 'agency_brand_call_proposal_send',
+       'agency_brand_call_proposal_discard', 'agency_brand_call_reply', 'talent_brand_call_interest', 'brand_calls_list', 'brand_call_detail',
+       'brand_call_agency_options', 'agency_brand_calls', 'agency_brand_call_detail', 'talent_brand_calls', 'brand_request_save', 'brand_request_submit',
+       'brand_request_ask_approval', 'inbox_kind_emails')) = 21
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname like '%brand_call%'
+                  and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.anon();
+select tests.expect_error('S96 visitante não lê chamadas', $q$select count(*) from public.brand_calls$q$, 'permission denied');
+select tests.expect_error('S96 visitante não cria chamada', $q$select public.brand_call_save(null, null, '{}')$q$, 'permission denied');
+
+-- equipe monta; validações; pede ao dono
+select tests.login('96000000-0000-4000-8000-000000000965', 's96-equipe-alfa@test.local');
+select tests.expect_error('S96 título curto recusado',
+  $q$select public.brand_call_save('96000000-0000-4000-8000-000000009611', null, (select v::jsonb from t_s96 where k = 'data') || '{"title": "ab"}')$q$, 'invalid_input');
+select tests.expect_error('S96 faixa etária fora da lista recusada',
+  $q$select public.brand_call_save('96000000-0000-4000-8000-000000009611', null, (select v::jsonb from t_s96 where k = 'data') || '{"target_age_bands": ["10-12"]}')$q$, 'invalid_input');
+select tests.expect_error('S96 "até R$ X" sem valor recusado',
+  $q$select public.brand_call_save('96000000-0000-4000-8000-000000009611', null, (select v::jsonb from t_s96 where k = 'data') || '{"budget_cents": null}')$q$, 'invalid_input');
+select tests.expect_error('S96 equipe não cria chamada para outra marca',
+  $q$select public.brand_call_save('96000000-0000-4000-8000-000000009612', null, (select v::jsonb from t_s96 where k = 'data'))$q$, 'not_found');
+insert into t_s96 values ('c1', public.brand_call_save('96000000-0000-4000-8000-000000009611', null, (select v::jsonb from t_s96 where k = 'data'))::text);
+select tests.ok('S96 rascunho salvo com público, nichos sem repetir e 3 agências escolhidas',
+  (select status = 'draft' and niches = array['Beleza', 'Praia'] and target_states = array['BA', 'RJ'] and budget_display = 'up_to' and creators_wanted = 3
+     from public.brand_calls where id = (select v::uuid from t_s96 where k = 'c1'))
+  and (select count(*) from public.brand_call_targets where call_id = (select v::uuid from t_s96 where k = 'c1')) = 3);
+select tests.expect_error('S96 prazo depois do período recusado',
+  $q$select public.brand_call_save('96000000-0000-4000-8000-000000009611', (select v::uuid from t_s96 where k = 'c1'), (select v::jsonb from t_s96 where k = 'data')
+     || jsonb_build_object('respond_by', (now() + interval '60 days')::text)); select public.brand_call_submit((select v::uuid from t_s96 where k = 'c1'), null)$q$, 'invalid_date');
+select public.brand_call_save('96000000-0000-4000-8000-000000009611', (select v::uuid from t_s96 where k = 'c1'), (select v::jsonb from t_s96 where k = 'data') || '{"deliverables": []}');
+select tests.expect_error('S96 sem entregas não publica', $q$select public.brand_call_submit((select v::uuid from t_s96 where k = 'c1'), null)$q$, 'call_incomplete');
+select public.brand_call_save('96000000-0000-4000-8000-000000009611', (select v::uuid from t_s96 where k = 'c1'), (select v::jsonb from t_s96 where k = 'data'));
+select tests.ok('S96 equipe pede ao dono', public.brand_call_submit((select v::uuid from t_s96 where k = 'c1'), 'Pode publicar?') = 'pending_owner');
+select tests.expect_error('S96 equipe não edita esperando o dono',
+  $q$select public.brand_call_save('96000000-0000-4000-8000-000000009611', (select v::uuid from t_s96 where k = 'c1'), (select v::jsonb from t_s96 where k = 'data'))$q$, 'awaiting_approval');
+select tests.expect_error('S96 equipe não aprova', $q$select public.brand_call_review((select v::uuid from t_s96 where k = 'c1'), 'approve', null)$q$, 'forbidden');
+select tests.expect_error('S96 equipe não decide', $q$select public.brand_call_decide((select v::uuid from t_s96 where k = 'c1'), 'cancel', null, null)$q$, 'forbidden');
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+select tests.ok('S96 rascunho é invisível para as agências', (select count(*) from public.brand_calls) = 0
+  and jsonb_array_length(public.agency_brand_calls('96000000-0000-4000-8000-000000009601')) = 0);
+select tests.expect_error('S96 agência não abre rascunho', $q$select public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601')$q$, 'not_found');
+select tests.su();
+select tests.ok('S96 dono avisado do pedido de publicação', (select count(*) from public.inbox_notifications where kind = 'brand_call_review'
+  and user_id = '96000000-0000-4000-8000-000000000964' and params ->> 'status' = 'requested') = 1);
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+select tests.expect_error('S96 devolver sem nota recusado', $q$select public.brand_call_review((select v::uuid from t_s96 where k = 'c1'), 'return', '')$q$, 'note_required');
+select public.brand_call_review((select v::uuid from t_s96 where k = 'c1'), 'return', 'Ajuste o texto');
+select tests.login('96000000-0000-4000-8000-000000000965', 's96-equipe-alfa@test.local');
+select public.brand_call_save('96000000-0000-4000-8000-000000009611', (select v::uuid from t_s96 where k = 'c1'), (select v::jsonb from t_s96 where k = 'data'));
+select public.brand_call_submit((select v::uuid from t_s96 where k = 'c1'), null);
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+insert into t_s96 values ('rv1', public.brand_call_review((select v::uuid from t_s96 where k = 'c1'), 'approve', null));
+select tests.ok('S96 dono aprova = publica', (select v from t_s96 where k = 'rv1') = 'published'
+  and (select status = 'open' and published_at is not null and approval_status = 'none' from public.brand_calls where id = (select v::uuid from t_s96 where k = 'c1')));
+select tests.su();
+select tests.ok('S96 avisos: gestores das agências do alvo (sino + e-mail), nenhum para a agência fora, colaborador nem creator; equipe sabe que publicou',
+  (select count(*) from public.inbox_notifications where kind = 'brand_call_published' and user_id in ('96000000-0000-4000-8000-000000000961', '96000000-0000-4000-8000-000000000962',
+     '96000000-0000-4000-8000-000000000966', '96000000-0000-4000-8000-0000000009a1')) = 4
+  and (select count(*) from public.inbox_notifications where kind = 'brand_call_published' and user_id in ('96000000-0000-4000-8000-000000000963', '96000000-0000-4000-8000-000000000967',
+     '96000000-0000-4000-8000-000000000968')) = 0
+  and (select count(*) from public.email_outbox q join public.inbox_notifications n on n.id = q.notification_id
+       where n.kind = 'brand_call_published' and n.user_id = '96000000-0000-4000-8000-000000000966') = 1
+  and (select count(*) from public.inbox_notifications where kind = 'brand_call_review' and user_id = '96000000-0000-4000-8000-000000000965' and params ->> 'status' = 'approved') = 1
+  and not exists (select 1 from public.inbox_notifications where kind like 'brand_call%' and params::text like '%3000000%'));
+
+-- quem vê
+select tests.login('96000000-0000-4000-8000-000000000962', 's96-gestor-a@test.local');
+select tests.ok('S96 gestor vê a chamada sem verba e não lê a tabela',
+  (select count(*) from public.brand_calls) = 0
+  and (select x ->> 'budget_cents' is null and x ->> 'view_status' = 'open' and x ->> 'budget_display' = 'up_to' and x::text not like '%3000000%'
+       from jsonb_array_elements(public.agency_brand_calls('96000000-0000-4000-8000-000000009601')) x where x ->> 'id' = (select v from t_s96 where k = 'c1')));
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+select tests.ok('S96 Adm vê a verba "até" e só os creators liberados como candidatos',
+  (select (d -> 'call' ->> 'budget_cents')::bigint = 3000000 and (d ->> 'can_values')::boolean
+     and jsonb_array_length(d -> 'candidates') = 1 and d -> 'candidates' -> 0 ->> 'id' = '96000000-0000-4000-8000-000000009621'
+     and d::text not like '%Agência B S96%' and d::text not like '%agency_ids%'
+   from public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601') d));
+select tests.login('96000000-0000-4000-8000-000000000963', 's96-colab-a@test.local');
+select tests.expect_error('S96 colaborador não vê chamadas', $q$select public.agency_brand_calls('96000000-0000-4000-8000-000000009601')$q$, 'not_found');
+select tests.login('96000000-0000-4000-8000-000000000967', 's96-adm-c@test.local');
+select tests.ok('S96 agência fora do alvo vê 0', jsonb_array_length(public.agency_brand_calls('96000000-0000-4000-8000-000000009603')) = 0
+  and (select count(*) from public.brand_calls) = 0 and (select count(*) from public.brand_call_targets) = 0);
+select tests.expect_error('S96 agência fora do alvo não abre', $q$select public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009603')$q$, 'not_found');
+select tests.expect_error('S96 agência fora do alvo não propõe',
+  $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009603', '{"talents": []}')$q$, 'not_found');
+select tests.expect_error('S96 Adm de C não usa a agência A', $q$select public.agency_brand_calls('96000000-0000-4000-8000-000000009601')$q$, 'not_found');
+select tests.login('96000000-0000-4000-8000-000000000969', 's96-dono-beta@test.local');
+select tests.ok('S96 outra marca vê 0', (select count(*) from public.brand_calls) = 0 and jsonb_array_length(public.brand_calls_list('96000000-0000-4000-8000-000000009612')) = 0);
+select tests.expect_error('S96 outra marca não abre', $q$select public.brand_call_detail((select v::uuid from t_s96 where k = 'c1'))$q$, 'not_found');
+
+-- creator: vê sem valor, demonstra interesse (avisa a agência); creator de fora não
+select tests.login('96000000-0000-4000-8000-000000000968', 's96-creator-a@test.local');
+select tests.ok('S96 creator vê a chamada da agência dele sem valor',
+  (select x::text not like '%budget_cents%' and x::text not like '%3000000%' and x ->> 'brand_name' = 'Marca Alfa S96'
+   from jsonb_array_elements(public.talent_brand_calls()) x where x ->> 'id' = (select v from t_s96 where k = 'c1'))
+  and (select count(*) from public.brand_calls) = 0);
+select public.talent_brand_call_interest((select v::uuid from t_s96 where k = 'c1'), 'Amo praia!');
+select public.talent_brand_call_interest((select v::uuid from t_s96 where k = 'c1'), 'Amo praia e protetor!');
+select tests.ok('S96 interesse registrado (um por chamada, mensagem atualizada)', (select count(*) from public.brand_call_interests) = 1
+  and (select message from public.brand_call_interests) = 'Amo praia e protetor!');
+select tests.login('96000000-0000-4000-8000-000000000960', 's96-creator-c@test.local');
+select tests.ok('S96 creator de agência fora do alvo não vê', jsonb_array_length(public.talent_brand_calls()) = 0);
+select tests.expect_error('S96 creator de fora não demonstra interesse', $q$select public.talent_brand_call_interest((select v::uuid from t_s96 where k = 'c1'), 'oi')$q$, 'not_found');
+select tests.su();
+select tests.ok('S96 interesse avisa só os gestores da agência do creator (uma vez)',
+  (select count(*) from public.inbox_notifications where kind = 'brand_call_interest' and user_id in ('96000000-0000-4000-8000-000000000961', '96000000-0000-4000-8000-000000000962')) = 2
+  and (select count(*) from public.inbox_notifications where kind = 'brand_call_interest' and user_id not in ('96000000-0000-4000-8000-000000000961', '96000000-0000-4000-8000-000000000962')
+       and user_id::text like '96000000-%') = 0);
+
+-- agência A: gestor monta (sem valor), Adm completa e envia
+select tests.login('96000000-0000-4000-8000-000000000962', 's96-gestor-a@test.local');
+select tests.ok('S96 gestor vê o interessado', (select d -> 'interests' -> 0 ->> 'message' = 'Amo praia e protetor!'
+  from public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601') d));
+select tests.expect_error('S96 creator não liberado para marcas não entra',
+  $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601',
+     '{"talents": [{"talent_id": "96000000-0000-4000-8000-000000009622", "deliverables": [{"kind": "reels", "quantity": 1}]}]}')$q$, 'consent_required');
+select tests.expect_error('S96 creator de outra agência não entra',
+  $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601',
+     '{"talents": [{"talent_id": "96000000-0000-4000-8000-000000009623", "deliverables": [{"kind": "reels", "quantity": 1}]}]}')$q$, 'not_found');
+select tests.expect_error('S96 link de media kit inválido recusado',
+  $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601',
+     '{"talents": [{"talent_id": "96000000-0000-4000-8000-000000009621", "deliverables": [{"kind": "reels", "quantity": 1}], "media_kit_url": "javascript:alert(1)"}]}')$q$, 'invalid_input');
+insert into t_s96 values ('pa', public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601',
+  jsonb_build_object('talents', (select v::jsonb from t_s96 where k = 'deliv_a'), 'amount_cents', 1, 'note', 'Creator com 80 mil seguidores', 'deliver_by', (current_date + 35)::text))::text);
+select tests.ok('S96 rascunho do gestor sem valor (ignorado), entregas somadas',
+  (select d -> 'proposals' -> 0 ->> 'status' = 'draft' and (d -> 'proposals' -> 0 ->> 'has_amount')::boolean = false and d -> 'proposals' -> 0 ->> 'amount_cents' is null
+     and d -> 'proposals' -> 0 -> 'deliverables' @> '[{"kind": "reels", "quantity": 2}]'
+   from public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601') d)
+  and (select count(*) from public.brand_call_proposals) = 0 and (select count(*) from public.brand_call_proposal_talents) = 1);
+select tests.expect_error('S96 gestor não envia', $q$select public.agency_brand_call_proposal_send((select v::uuid from t_s96 where k = 'pa'))$q$, 'forbidden');
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+select tests.expect_error('S96 sem valor não envia', $q$select public.agency_brand_call_proposal_send((select v::uuid from t_s96 where k = 'pa'))$q$, 'amount_required');
+select public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601',
+  jsonb_build_object('talents', (select v::jsonb from t_s96 where k = 'deliv_a'), 'amount_cents', 2500000, 'note', 'Creator com 80 mil seguidores', 'deliver_by', (current_date + 35)::text));
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+select tests.ok('S96 rascunho da agência é invisível para a marca', (select count(*) from public.brand_call_proposals) = 0 and (select count(*) from public.brand_call_proposal_talents) = 0
+  and (select jsonb_array_length(d -> 'proposals') = 0 from public.brand_call_detail((select v::uuid from t_s96 where k = 'c1')) d));
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+insert into t_s96 values ('sa', public.agency_brand_call_proposal_send((select v::uuid from t_s96 where k = 'pa')));
+select tests.ok('S96 Adm envia: aberta esperando a marca', (select v from t_s96 where k = 'sa') = 'open'
+  and (select status = 'open' and awaiting = 'brand' and amount_cents = 2500000 and rounds = 1 from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pa')));
+select tests.expect_error('S96 uma proposta viva por agência',
+  $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601', jsonb_build_object('talents', (select v::jsonb from t_s96 where k = 'deliv_a')))$q$, 'already_negotiating');
+
+-- agências B e D propõem; ninguém vê a proposta da outra
+select tests.login('96000000-0000-4000-8000-000000000966', 's96-adm-b@test.local');
+insert into t_s96 values ('pb', public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009602',
+  '{"talents": [{"talent_id": "96000000-0000-4000-8000-000000009623", "deliverables": [{"kind": "reels", "quantity": 2, "network": "instagram"}]}], "amount_cents": 2000000}')::text);
+select public.agency_brand_call_proposal_send((select v::uuid from t_s96 where k = 'pb'));
+select tests.ok('S96 agência B só vê a própria proposta e não sabe quantas há',
+  (select count(*) from public.brand_call_proposals) = 1 and (select count(*) from public.brand_call_rounds) = 1 and (select count(*) from public.brand_call_interests) = 0
+  and (select jsonb_array_length(d -> 'proposals') = 1 and d::text not like '%Agência A S96%' and d::text not like '%2500000%' and jsonb_array_length(d -> 'interests') = 0
+       from public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009602') d));
+select tests.login('96000000-0000-4000-8000-0000000009a1', 's96-adm-d@test.local');
+insert into t_s96 values ('pd', public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009604',
+  '{"talents": [{"talent_id": "96000000-0000-4000-8000-000000009625", "deliverables": [{"kind": "post", "quantity": 1, "network": "instagram"}]}], "amount_cents": 900000}')::text);
+select public.agency_brand_call_proposal_send((select v::uuid from t_s96 where k = 'pd'));
+
+-- marca compara: vê as 3 enviadas com creators (cartão autorizado) e o histórico
+select tests.login('96000000-0000-4000-8000-000000000965', 's96-equipe-alfa@test.local');
+select tests.ok('S96 marca vê as propostas enviadas com creators, link do kit e valores',
+  (select jsonb_array_length(d -> 'proposals') = 3 and d ->> 'role' = 'staff'
+     and exists (select 1 from jsonb_array_elements(d -> 'proposals') q where q ->> 'agency_name' = 'Agência A S96' and (q ->> 'amount_cents')::bigint = 2500000
+                 and q -> 'talents' -> 0 ->> 'media_kit_url' = 'https://kit.s96.test/a' and q -> 'talents' -> 0 -> 'card' ->> 'name' = 'Creator Liberada A')
+   from public.brand_call_detail((select v::uuid from t_s96 where k = 'c1')) d)
+  and (select count(*) from public.brand_call_proposals) = 3 and (select count(*) from public.brand_call_interests) = 0);
+select tests.su();
+select tests.ok('S96 proposta avisa a marca (todos), sem valor', (select count(*) from public.inbox_notifications where kind = 'brand_call_negotiation'
+  and user_id = '96000000-0000-4000-8000-000000000965' and params ->> 'status' = 'proposed') = 3
+  and not exists (select 1 from public.inbox_notifications where kind = 'brand_call_negotiation' and params::text ~ '2500000|2000000|900000'));
+
+-- rodadas: equipe contrapropõe (espera o dono), dono aprova, Adm A aceita = acordo
+select tests.login('96000000-0000-4000-8000-000000000965', 's96-equipe-alfa@test.local');
+select tests.expect_error('S96 contraproposta sem entregas recusada',
+  $q$select public.brand_call_reply((select v::uuid from t_s96 where k = 'pa'), 'counter', 2200000, '[]', null, null)$q$, 'invalid_input');
+select tests.ok('S96 equipe contrapropõe: espera o dono', public.brand_call_reply((select v::uuid from t_s96 where k = 'pa'), 'counter', 2200000,
+  '[{"kind": "reels", "quantity": 2, "network": "instagram"}, {"kind": "stories", "quantity": 6, "network": "instagram"}]', null, 'Fechamos em 22 mil com 6 stories?') = 'pending_owner');
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+select tests.ok('S96 rodada esperando o dono é invisível para a agência', (select count(*) from public.brand_call_rounds) = 1
+  and (select jsonb_array_length(d -> 'proposals' -> 0 -> 'history') = 1 from public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601') d));
+select tests.expect_error('S96 agência não responde fora da vez', $q$select public.agency_brand_call_reply((select v::uuid from t_s96 where k = 'pa'), 'accept', null, null, null, null)$q$, 'invalid_state');
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+insert into t_s96 values ('rr1', public.brand_call_round_review((select id from public.brand_call_rounds where proposal_id = (select v::uuid from t_s96 where k = 'pa') and state = 'pending_owner'), 'approve', null));
+select tests.ok('S96 dono aprova a rodada: vai à agência', (select v from t_s96 where k = 'rr1') = 'open'
+  and (select awaiting = 'agency' and amount_cents = 2200000 from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pa')));
+select tests.login('96000000-0000-4000-8000-000000000962', 's96-gestor-a@test.local');
+select tests.expect_error('S96 gestor não responde rodada', $q$select public.agency_brand_call_reply((select v::uuid from t_s96 where k = 'pa'), 'accept', null, null, null, null)$q$, 'forbidden');
+select tests.ok('S96 gestor vê o histórico sem valor', (select count(*) from public.brand_call_rounds) = 0
+  and (select d -> 'proposals' -> 0 -> 'history' -> 1 ->> 'amount_cents' is null and d -> 'proposals' -> 0 -> 'history' -> 1 ->> 'action' = 'counter'
+       from public.agency_brand_call_detail((select v::uuid from t_s96 where k = 'c1'), '96000000-0000-4000-8000-000000009601') d));
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+select tests.expect_error('S96 recusar sem nota recusado', $q$select public.agency_brand_call_reply((select v::uuid from t_s96 where k = 'pa'), 'decline', null, null, null, '')$q$, 'note_required');
+insert into t_s96 values ('ac1', public.agency_brand_call_reply((select v::uuid from t_s96 where k = 'pa'), 'accept', null, null, null, null));
+select tests.ok('S96 Adm aceita a contraproposta: acordo congelado', (select v from t_s96 where k = 'ac1') = 'agreed'
+  and (select status = 'agreed' and agreed_cents = 2200000 and agreed_side = 'agency' and request_id is not null and agreed_deliverables @> '[{"kind": "stories", "quantity": 6}]'
+       from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pa')));
+select tests.su();
+select tests.ok('S96 acordo cria a campanha da marca para a agência A: rascunho, origem marcada, público, entregas, creator e valor acordado; notas sem valor',
+  (select c.status = 'draft' and c.origin = 'brand' and c.agency_id = '96000000-0000-4000-8000-000000009601' and c.brand_call_id = (select v::uuid from t_s96 where k = 'c1')
+     and c.talent_id = '96000000-0000-4000-8000-000000009621' and c.objective = 'launch' and c.target_states = array['BA', 'RJ'] and c.networks = array['instagram', 'tiktok']
+     and c.deliverables @> '[{"kind": "stories", "quantity": 6}]' and c.notes like '%Creator Liberada A%' and c.notes not like '%2200000%' and c.notes not like '%22.000%'
+   from public.campaign_requests c where c.id = (select request_id from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pa')))
+  and (select b.budget_min_cents = 2200000 and b.budget_max_cents = 2200000 from public.campaign_request_budgets b
+       where b.request_id = (select request_id from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pa')))
+  and (select count(*) from public.inbox_notifications where kind = 'brand_call_decided' and user_id = '96000000-0000-4000-8000-000000000968' and params ->> 'status' = 'chosen') = 1);
+
+-- prazo: chamada 2 com prazo vencido
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+insert into t_s96 values ('c2', public.brand_call_save('96000000-0000-4000-8000-000000009611', null, (select v::jsonb from t_s96 where k = 'data')
+  || '{"audience": "my_agencies", "budget_display": "open", "budget_cents": null}')::text);
+select tests.ok('S96 dono publica direto (alvo: agências que me atendem)', public.brand_call_submit((select v::uuid from t_s96 where k = 'c2'), null) = 'published');
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+select tests.ok('S96 agência que atende vê; verba "a combinar" sem valor', (select x ->> 'budget_cents' is null and x ->> 'budget_display' = 'open'
+  from jsonb_array_elements(public.agency_brand_calls('96000000-0000-4000-8000-000000009601')) x where x ->> 'id' = (select v from t_s96 where k = 'c2')));
+insert into t_s96 values ('pa2', public.agency_brand_call_proposal_save((select v::uuid from t_s96 where k = 'c2'), '96000000-0000-4000-8000-000000009601',
+  jsonb_build_object('talents', (select v::jsonb from t_s96 where k = 'deliv_a'), 'amount_cents', 1500000))::text);
+select tests.login('96000000-0000-4000-8000-000000000966', 's96-adm-b@test.local');
+select tests.ok('S96 agência que não atende não vê "agências que me atendem"',
+  not exists (select 1 from jsonb_array_elements(public.agency_brand_calls('96000000-0000-4000-8000-000000009602')) x where x ->> 'id' = (select v from t_s96 where k = 'c2')));
+select tests.su();
+update public.brand_calls set respond_by = now() - interval '1 minute' where id = (select v::uuid from t_s96 where k = 'c2');
+select tests.login('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local');
+select tests.expect_error('S96 prazo vencido não envia proposta', $q$select public.agency_brand_call_proposal_send((select v::uuid from t_s96 where k = 'pa2'))$q$, 'deadline_passed');
+select tests.ok('S96 agência vê "prazo encerrado"', (select x ->> 'view_status' = 'expired'
+  from jsonb_array_elements(public.agency_brand_calls('96000000-0000-4000-8000-000000009601')) x where x ->> 'id' = (select v from t_s96 where k = 'c2')));
+select tests.login('96000000-0000-4000-8000-000000000968', 's96-creator-a@test.local');
+select tests.expect_error('S96 prazo vencido não aceita interesse', $q$select public.talent_brand_call_interest((select v::uuid from t_s96 where k = 'c2'), null)$q$, 'deadline_passed');
+select tests.su();
+insert into t_s96 values ('scan', public.brand_call_deadline_scan()::text);
+select tests.ok('S96 cron encerra pelo prazo', (select v::int from t_s96 where k = 'scan') >= 1
+  and (select status = 'closed' and closed_reason = 'deadline' and decided_at is null from public.brand_calls where id = (select v::uuid from t_s96 where k = 'c2')));
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+select public.brand_call_decide((select v::uuid from t_s96 where k = 'c2'), 'close', null, 'Vamos rever');
+select tests.su();
+select tests.ok('S96 encerrar sem vencedora: rascunho da agência fechado e agência avisada',
+  (select status = 'closed' and closed_reason = 'decision' from public.brand_calls where id = (select v::uuid from t_s96 where k = 'c2'))
+  and (select status = 'closed' and end_reason = 'decided' from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pa2'))
+  and (select count(*) from public.inbox_notifications where kind = 'brand_call_decided' and user_id = '96000000-0000-4000-8000-000000000961'
+       and entity_id = (select v::uuid from t_s96 where k = 'c2') and params ->> 'status' = 'closed') = 1);
+
+-- escolha das vencedoras na chamada 1: B (não atende a marca) vence; D perde; A já tinha acordo
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+select tests.expect_error('S96 cancelar com acordo recusado', $q$select public.brand_call_decide((select v::uuid from t_s96 where k = 'c1'), 'cancel', null, null)$q$, 'has_agreement');
+select tests.expect_error('S96 contratar sem escolher recusado', $q$select public.brand_call_decide((select v::uuid from t_s96 where k = 'c1'), 'contract', '{}', null)$q$, 'invalid_input');
+select public.brand_call_decide((select v::uuid from t_s96 where k = 'c1'), 'contract', array[(select v::uuid from t_s96 where k = 'pb')], 'Obrigado a todos');
+select tests.ok('S96 contratada: A e B com acordo, D encerrada; B ganhou vínculo por projeto sem mudar a agência ativa da marca',
+  (select status = 'contracted' and decided_at is not null from public.brand_calls where id = (select v::uuid from t_s96 where k = 'c1'))
+  and (select status = 'agreed' and agreed_cents = 2000000 and agreed_side = 'brand' from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pb'))
+  and (select status = 'closed' and end_reason = 'decided' from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pd'))
+  and public.brand_active_agency('96000000-0000-4000-8000-000000009611') = '96000000-0000-4000-8000-000000009601');
+select tests.expect_error('S96 decidida não decide de novo', $q$select public.brand_call_decide((select v::uuid from t_s96 where k = 'c1'), 'close', null, null)$q$, 'invalid_state');
+select tests.su();
+select tests.ok('S96 vínculo por projeto arquivado e avisos de desfecho para todas as agências que propuseram',
+  (select status = 'archived' from public.agency_brands where agency_id = '96000000-0000-4000-8000-000000009602' and brand_id = '96000000-0000-4000-8000-000000009611')
+  and (select params ->> 'status' from public.inbox_notifications where kind = 'brand_call_decided' and user_id = '96000000-0000-4000-8000-0000000009a1') = 'lost'
+  and (select params ->> 'status' from public.inbox_notifications where kind = 'brand_call_decided' and user_id = '96000000-0000-4000-8000-000000000966') = 'won'
+  and (select params ->> 'status' from public.inbox_notifications where kind = 'brand_call_decided' and user_id = '96000000-0000-4000-8000-000000000962'
+       and entity_id = (select v::uuid from t_s96 where k = 'c1')) = 'won');
+-- dono envia as duas campanhas pelo fluxo normal: B (vínculo por projeto) também vira negócio, com os creators da proposta
+select tests.login('96000000-0000-4000-8000-000000000964', 's96-dono-alfa@test.local');
+select public.brand_request_save((select request_id from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pb')), '96000000-0000-4000-8000-000000009611',
+  jsonb_build_object('talent_id', '96000000-0000-4000-8000-000000009623', 'budget_min_cents', 1, 'budget_max_cents', 1, 'notes', 'Ok'));
+insert into t_s96 values ('deal_b', public.brand_request_submit((select request_id from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pb')))::text);
+insert into t_s96 values ('deal_a', public.brand_request_submit((select request_id from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pa')))::text);
+select tests.su();
+select tests.ok('S96 campanhas enviadas viram negócio na agência certa com os creators sugeridos; valor acordado travado',
+  (select agency_id = '96000000-0000-4000-8000-000000009602' from public.deals where id = (select v::uuid from t_s96 where k = 'deal_b'))
+  and exists (select 1 from public.deal_talents where deal_id = (select v::uuid from t_s96 where k = 'deal_b') and talent_id = '96000000-0000-4000-8000-000000009623')
+  and exists (select 1 from public.deal_talents where deal_id = (select v::uuid from t_s96 where k = 'deal_a') and talent_id = '96000000-0000-4000-8000-000000009621')
+  and (select budget_max_cents from public.campaign_request_budgets where request_id = (select request_id from public.brand_call_proposals where id = (select v::uuid from t_s96 where k = 'pb'))) = 2000000);
+select tests.login('96000000-0000-4000-8000-000000000966', 's96-adm-b@test.local');
+select tests.ok('S96 agência B vê "venceu"; não vê a chamada 2', (select x ->> 'view_status' = 'won'
+  from jsonb_array_elements(public.agency_brand_calls('96000000-0000-4000-8000-000000009602')) x where x ->> 'id' = (select v from t_s96 where k = 'c1')));
+select tests.login('96000000-0000-4000-8000-0000000009a1', 's96-adm-d@test.local');
+select tests.ok('S96 agência D vê "não escolhida"', (select x ->> 'view_status' = 'lost'
+  from jsonb_array_elements(public.agency_brand_calls('96000000-0000-4000-8000-000000009604')) x where x ->> 'id' = (select v from t_s96 where k = 'c1')));
+select tests.login('96000000-0000-4000-8000-000000000968', 's96-creator-a@test.local');
+select tests.ok('S96 creator escolhido vê "escolhida", sem valor', (select (x ->> 'chosen')::boolean and x::text not like '%2200000%'
+  from jsonb_array_elements(public.talent_brand_calls()) x where x ->> 'id' = (select v from t_s96 where k = 'c1')));
+select tests.ok('S96 e-mail: rodadas e decisão sim, revisão interna não',
+  public.inbox_kind_emails('brand_call_negotiation', '/x', '{"status": "proposed"}') and public.inbox_kind_emails('brand_call_decided', '/x', '{}')
+  and not public.inbox_kind_emails('brand_call_review', '/x', '{}') and not public.inbox_kind_emails('brand_call_negotiation', '/x', '{"status": "approval"}'));
+
+select tests.su();
+delete from public.deals where agency_id::text like '96000000-0000-4000-8000-00000000960%';
+delete from public.campaign_requests where brand_id::text like '96000000-0000-4000-8000-00000000961%';
+delete from public.brand_calls where brand_id::text like '96000000-0000-4000-8000-00000000961%';
+delete from public.talent_profiles where id::text like '96000000-%';
+delete from public.brand_members where brand_id::text like '96000000-0000-4000-8000-00000000961%';
+delete from public.agency_brands where agency_id::text like '96000000-0000-4000-8000-00000000960%';
+delete from public.brands where id::text like '96000000-0000-4000-8000-00000000961%';
+delete from public.inbox_notifications where user_id::text like '96000000-0000-4000-8000-0000000009%';
+delete from public.agency_members where agency_id::text like '96000000-0000-4000-8000-00000000960%';
+delete from public.agencies where id::text like '96000000-0000-4000-8000-00000000960%';
+delete from auth.users where id::text like '96000000-0000-4000-8000-0000000009%';
+drop table t_s96;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

@@ -112,14 +112,14 @@ export async function listBrandInvites(brandId: string): Promise<PendingInvite[]
 }
 
 /** Marcas ativas do app que ainda não estão com esta agência (para vincular). */
-export async function listLinkableBrands(agencyId: string): Promise<Array<{ id: string; name: string; slug: string }>> {
+export async function listLinkableBrands(agencyId: string): Promise<Array<{ id: string; name: string; slug: string; logoUrl: string | null; siteUrl: string }>> {
   const supabase = await createClient();
   const [{ data: brands }, { data: links }] = await Promise.all([
-    supabase.from("brands").select("id, name, slug, is_demo").eq("status", "active").order("name").limit(200),
+    supabase.from("brands").select("id, name, slug, is_demo, logo_url, site_url").eq("status", "active").order("name").limit(200),
     supabase.from("agency_brands").select("brand_id").eq("agency_id", agencyId).eq("status", "active"),
   ]);
   const linked = new Set((links ?? []).map((l) => l.brand_id));
-  return (brands ?? []).filter((b) => !b.is_demo && !linked.has(b.id)).map((b) => ({ id: b.id, name: b.name, slug: b.slug }));
+  return (brands ?? []).filter((b) => !b.is_demo && !linked.has(b.id)).map((b) => ({ id: b.id, name: b.name, slug: b.slug, logoUrl: b.logo_url, siteUrl: b.site_url }));
 }
 
 export type AgencyDashboard = { available: boolean; members: number; brands: number; pendingInvites: number; unread: number };

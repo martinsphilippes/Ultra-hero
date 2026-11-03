@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
 import { archiveTalentAction, linkCreatorAction, recordConsentAction, saveTalentAction, setCatalogAction, setSegmentsAction } from "@/app/agencia/casting/actions";
-import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, EntitySelect, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import { AVAILABILITIES, COMMERCIAL_STATUSES, UFS, type Availability, type CommercialStatus } from "@/lib/talent/vocab";
 
 export { EMPTY_TALENT, type TalentFormValues } from "@/lib/talent/form-values";
 import type { TalentFormValues } from "@/lib/talent/form-values";
+import { heroOption, memberOption } from "@/lib/ui/entity";
 
 // Ficha do talento (gestor+): dados de contato e notas internas nunca vão ao kit nem ao creator
 // (talent_my_context não devolve esses campos). Sem valores aqui.
-export function TalentForm({ initial, managers, canEdit }: { initial: TalentFormValues; managers: { userId: string; name: string }[]; canEdit: boolean }) {
+export function TalentForm({ initial, managers, canEdit }: { initial: TalentFormValues; managers: { userId: string; name: string; role?: string | null; jobTitle?: string | null }[]; canEdit: boolean }) {
+  const tp = useTranslations("pickers");
   const t = useTranslations("agency.casting.form");
   const tv = useTranslations("agency.casting");
   const router = useRouter();
@@ -74,15 +76,8 @@ export function TalentForm({ initial, managers, canEdit }: { initial: TalentForm
             ))}
           </Select>
         </FormField>
-        <FormField label={t("manager")}>
-          <Select value={v.managerId} onChange={(e) => set("managerId", e.target.value)} disabled={disabled}>
-            <option value="">{t("noManager")}</option>
-            {managers.map((m) => (
-              <option key={m.userId} value={m.userId}>
-                {m.name}
-              </option>
-            ))}
-          </Select>
+        <FormField label={t("manager")} hint={tp("hints.talentManager")}>
+          <EntitySelect value={v.managerId} onChange={(e) => set("managerId", e.target.value)} disabled={disabled} emptyLabel={t("noManager")} emptyCard={tp("empty.noManager")} options={managers.map((m) => memberOption(tp, m))} />
         </FormField>
       </div>
       <FormField label={t("availabilityNote")} hint={t("availabilityNoteHint")}>
@@ -184,7 +179,8 @@ export function CatalogSwitch({ talentId, visible, consentOk, canEdit }: { talen
 }
 
 // Liga (ou desliga) o herói com página pública: o banco recusa herói já em outro casting.
-export function HeroLinkForm({ talentId, heroes, currentId, canEdit, locked }: { talentId: string; heroes: { id: string; name: string }[]; currentId: string | null; canEdit: boolean; locked: boolean }) {
+export function HeroLinkForm({ talentId, heroes, currentId, canEdit, locked }: { talentId: string; heroes: { id: string; name: string; slug?: string | null; avatarUrl?: string | null }[]; currentId: string | null; canEdit: boolean; locked: boolean }) {
+  const tp = useTranslations("pickers");
   const t = useTranslations("agency.casting.hero");
   const { toast } = useToast();
   const [creatorId, setCreatorId] = useState("");
@@ -207,18 +203,11 @@ export function HeroLinkForm({ talentId, heroes, currentId, canEdit, locked }: {
     );
   }
   return (
-    <div className="flex flex-wrap items-end gap-2">
-      <FormField label={t("label")} hint={locked ? t("locked") : t("hint")} className="min-w-56 flex-1">
-        <Select value={creatorId} onChange={(e) => setCreatorId(e.target.value)} disabled={pending || locked}>
-          <option value="">{t("choose")}</option>
-          {heroes.map((h) => (
-            <option key={h.id} value={h.id}>
-              {h.name}
-            </option>
-          ))}
-        </Select>
+    <div className="flex flex-col gap-2">
+      <FormField label={t("label")} hint={locked ? t("locked") : tp("hints.heroLink")} className="min-w-56 flex-1">
+        <EntitySelect value={creatorId} onChange={(e) => setCreatorId(e.target.value)} disabled={pending || locked} emptyLabel={t("choose")} roleInOption={false} options={heroes.map((h) => heroOption(tp, h))} />
       </FormField>
-      <Button type="button" size="sm" variant="secondary" leadingIcon={<Link2 />} onClick={() => run(creatorId)} loading={pending} disabled={!creatorId || locked}>
+      <Button type="button" size="sm" variant="secondary" leadingIcon={<Link2 />} onClick={() => run(creatorId)} loading={pending} disabled={!creatorId || locked} className="w-fit">
         {t("link")}
       </Button>
     </div>

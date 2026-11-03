@@ -11,6 +11,7 @@ export const KIND_VARIANT: Record<EventKind, BadgeVariant> = {
   recording: "gastronomy",
   commercial_date: "warning",
   sponsorship: "routine",
+  brand_call: "training",
   other: "neutral",
 };
 
@@ -23,5 +24,6 @@ export const KIND_DOT: Record<EventKind, string> = {
   recording: "bg-pillar-gastronomy",
   commercial_date: "bg-warning",
   sponsorship: "bg-pillar-routine",
+  brand_call: "bg-pillar-training",
   other: "bg-fg-subtle",
 };

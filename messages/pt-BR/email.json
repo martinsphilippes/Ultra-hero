@@ -62,6 +62,26 @@
         "subject": "Negociação de patrocínio: {title}",
         "body": "{status, select, proposed {{brand} fez uma proposta para a cota {tier} de {title}.} countered {Nova contraproposta na cota {tier} de {title}.} agreed {Patrocínio acordado: cota {tier} de {title}.} declined {A proposta da cota {tier} de {title} foi recusada.} closed {A cota {tier} de {title} foi fechada com outra marca.} approval {A equipe preparou uma proposta para {title}: aprove para enviar.} returned {O dono devolveu a proposta de {title}.} approved {O dono aprovou e enviou a proposta de {title}.} other {Novidade na negociação de {title}.}} Veja os detalhes no app.",
         "cta": "Ver negociação"
+      },
+      "brand_call_published": {
+        "subject": "Pedido de marca: {title}",
+        "body": "{brand} publicou o pedido {title} para a sua agência. Propostas até {date}.",
+        "cta": "Ver pedido"
+      },
+      "brand_call_interest": {
+        "subject": "Creator com interesse: {title}",
+        "body": "{talent} demonstrou interesse no pedido {title}. Veja ao montar a proposta.",
+        "cta": "Ver pedido"
+      },
+      "brand_call_negotiation": {
+        "subject": "{status, select, proposed {Nova proposta} countered {Nova contraproposta} agreed {Acordo fechado} other {Proposta recusada}}: {title}",
+        "body": "{status, select, proposed {{name} enviou uma proposta para {title}.} countered {Há uma contraproposta em {title}. É a sua vez.} agreed {O acordo em {title} foi fechado.} other {A proposta de {title} foi recusada.}}",
+        "cta": "Ver negociação"
+      },
+      "brand_call_decided": {
+        "subject": "Pedido de marca decidido: {title}",
+        "body": "{status, select, won {Sua proposta venceu em {title}. A marca recebe a campanha pronta.} lost {A marca escolheu outra proposta em {title}.} chosen {Você foi escolhido para {title} ({brand}). A sua agência cuida do resto.} cancelled {A marca cancelou {title}.} other {A marca encerrou {title}.}}",
+        "cta": "Ver detalhes"
       }
     }
   }

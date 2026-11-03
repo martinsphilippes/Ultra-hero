@@ -329,7 +329,9 @@
     "tier_full": "This tier is already closed with the maximum number of brands.",
     "already_agreed": "Your brand already closed a tier in this opportunity.",
     "already_negotiating": "Your brand already has a proposal in progress for this opportunity.",
-    "has_agreement": "There is an agreed sponsorship: it can't be cancelled. Close it to confirm the brands with a deal."
+    "has_agreement": "There is an agreed sponsorship: it can't be cancelled. Close it to confirm the brands with a deal.",
+    "call_incomplete": "Complete the call before publishing: deliverables, networks, deadline and agencies.",
+    "amount_required": "Enter the total amount before sending."
   },
   "casting": {
     "title": "Roster",
@@ -828,7 +830,9 @@
     "edit": "Edit",
     "editLabel": "Edit {title}",
     "sponsorshipEdit": "Edit in opportunity",
-    "sponsorshipEditLabel": "Edit in opportunity: {title}"
+    "sponsorshipEditLabel": "Edit in opportunity: {title}",
+    "brandCallOpen": "Open request",
+    "brandCallOpenLabel": "Open the request {title}"
   },
   "execution": {
     "title": "Execution",

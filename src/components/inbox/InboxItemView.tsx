@@ -1,4 +1,4 @@
-import { Bell, Briefcase, CalendarDays, FileCheck2, Handshake, MessageSquare, UserPlus, Wallet, type LucideIcon } from "lucide-react";
+import { Bell, Briefcase, CalendarDays, FileCheck2, Handshake, Megaphone, MessageSquare, UserPlus, Wallet, type LucideIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/config";
 import { formatRelativeTime } from "@/i18n/format";
@@ -30,6 +30,11 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   sponsorship_interest: Handshake,
   sponsorship_decided: Handshake,
   sponsorship_negotiation: Handshake,
+  brand_call_published: Megaphone,
+  brand_call_interest: Megaphone,
+  brand_call_negotiation: Megaphone,
+  brand_call_decided: Megaphone,
+  brand_call_review: Megaphone,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

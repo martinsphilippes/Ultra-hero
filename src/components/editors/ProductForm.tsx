@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, useTransition, type FormEvent } from "react";
 import { StatusBadge } from "@/components/admin";
-import { Button, DemoBadge, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, DemoBadge, EntitySelect, FormField, Input, MoneyInput, NumberInput, Select, Textarea, useToast } from "@/components/ui";
 import { localizedLabel } from "@/lib/catalog/queries";
 import { AttributesEditor, attributesToRows, rowsToAttributes, type AttributeRow } from "./product/AttributesEditor";
 import { ChipsInput } from "./product/ChipsInput";
@@ -46,6 +46,7 @@ function toDraft(initial: Partial<ProductFormValues> | undefined, sellerOrgs: Pr
 
 export function ProductForm({ mode, initial, sellerOrgs, categories, moderation, action }: ProductFormProps) {
   const t = useTranslations("commerce.productForm");
+  const tp = useTranslations("pickers");
   const ts = useTranslations("adminCommon.status");
   const tc = useTranslations("common.actions");
   const locale = useLocale();
@@ -140,15 +141,8 @@ export function ProductForm({ mode, initial, sellerOrgs, categories, moderation,
       <fieldset className="flex flex-col gap-5">
         <legend className="type-h3 mb-1 text-fg">{t("sections.basics")}</legend>
         {sellerOrgs.length > 1 ? (
-          <FormField label={t("fields.seller")} error={err("seller_org_id")} required id={`${id}-seller_org_id`}>
-            <Select value={draft.seller_org_id} onChange={(e) => set("seller_org_id", e.target.value)} disabled={pending || mode === "edit"}>
-              <option value="">—</option>
-              {sellerOrgs.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
-            </Select>
+          <FormField label={t("fields.seller")} hint={tp("hints.productSeller")} error={err("seller_org_id")} required id={`${id}-seller_org_id`}>
+            <EntitySelect value={draft.seller_org_id} onChange={(e) => set("seller_org_id", e.target.value)} disabled={pending || mode === "edit"} emptyLabel="—" roleInOption={false} options={sellerOrgs.map((o) => ({ value: o.id, name: o.name, role: tp("roles.seller") }))} />
           </FormField>
         ) : null}
         <FormField label={t("fields.category")} error={err("category_id")} hint={isFood ? t("foodRequired") : undefined} required id={`${id}-category_id`}>
@@ -185,7 +179,7 @@ export function ProductForm({ mode, initial, sellerOrgs, categories, moderation,
             <MoneyInput value={draft.priceInput} onValueChange={(text) => set("priceInput", text)} maxCents={100_000_000} disabled={pending} />
           </FormField>
           <FormField label={t("fields.demoStock")} hint={t("fields.demoStockHint")} error={err("demo_stock")} id={`${id}-demo_stock`}>
-            <Input value={draft.demoStockInput} onChange={(e) => set("demoStockInput", e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" disabled={pending} />
+            <NumberInput value={draft.demoStockInput} onValueChange={(_, n) => set("demoStockInput", n === null ? "" : String(n))} disabled={pending} />
           </FormField>
         </div>
         <FormField label={t("fields.availability")} id={`${id}-availability`}>

@@ -56,6 +56,11 @@ export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, fla
             <Link href={`/agencia/negocios/${e.dealId}`} className="text-sm font-semibold text-fg underline-offset-2 hover:underline">
               {e.title}
             </Link>
+          ) : e.brandCallId && portal === "agency" ? (
+            // 0089: chamada da marca abre o pedido (a proposta da agência)
+            <Link href={`/agencia/oportunidades/pedidos/${e.brandCallId}`} className="text-sm font-semibold text-fg underline-offset-2 hover:underline">
+              {e.title}
+            </Link>
           ) : e.sponsorshipId && portal !== "office" ? (
             // 0085: a oportunidade de patrocínio abre a ficha dela (agência) ou a resposta (marca)
             <Link

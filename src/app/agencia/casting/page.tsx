@@ -5,13 +5,14 @@ import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
 import { TalentAccessBadge } from "@/components/agency/TalentAccessBadge";
 import { TalentStatusBadges } from "@/components/agency/TalentStatusBadges";
-import { Avatar, Button, EmptyState, Input, PageHeader, Select } from "@/components/ui";
+import { Avatar, Button, EmptyState, EntitySelect, Input, PageHeader, Select } from "@/components/ui";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { resolveTalentAccess } from "@/lib/talent/access";
 import { formatCount } from "@/lib/talent/media-kit";
 import { listManagers, listSegments, listTalentAccess, listTalents } from "@/lib/talent/queries";
 import { AVAILABILITIES, COMMERCIAL_STATUSES } from "@/lib/talent/vocab";
+import { memberOption } from "@/lib/ui/entity";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +39,9 @@ export default async function CastingPage({ searchParams }: Props) {
     q: sp.q?.slice(0, 60),
     archived,
   };
-  const [t, locale, list, segments, managers, access] = await Promise.all([
+  const [t, tp, locale, list, segments, managers, access] = await Promise.all([
     getTranslations("agency.casting"),
+    getTranslations("pickers"),
     getLocale(),
     listTalents(ctx.agency.id, filters),
     listSegments(ctx.agency.id),
@@ -117,15 +119,7 @@ export default async function CastingPage({ searchParams }: Props) {
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
           {t("filters.manager")}
-          <Select name="gestor" defaultValue={filters.manager ?? ""}>
-            <option value="">{t("filters.all")}</option>
-            <option value="none">{t("filters.noManager")}</option>
-            {managers.map((m) => (
-              <option key={m.userId} value={m.userId}>
-                {m.name}
-              </option>
-            ))}
-          </Select>
+          <EntitySelect name="gestor" defaultValue={filters.manager ?? ""} emptyLabel={t("filters.all")} extraOptions={[{ value: "none", label: t("filters.noManager") }]} options={managers.map((m) => memberOption(tp, m))} />
         </label>
         <div className="flex items-end gap-2">
           <Button type="submit" size="sm" variant="secondary" leadingIcon={<Search />}>

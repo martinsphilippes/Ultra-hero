@@ -4,12 +4,13 @@ import { CheckSquare, ExternalLink, Plus, ThumbsDown, ThumbsUp } from "lucide-re
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { decideTaskAction, saveTaskAction, setTaskStatusAction } from "@/lib/execution/actions";
 import type { Task } from "@/lib/execution/queries";
 import { ATTACHMENT_STEPS, DECISION_STEPS, TASK_STATUSES, type TaskStatus } from "@/lib/execution/vocab";
+import { dealOption, memberOption, talentOption, type TalentPickFields } from "@/lib/ui/entity";
 
 type Portal = "agency" | "brand" | "office";
 type Props = {
@@ -21,7 +22,13 @@ type Props = {
   dealTalentId?: string | null;
   canEdit?: boolean;
   /** Agência: formulário de tarefa avulsa (precisa da agência e das opções). */
-  create?: { agencyId: string; members: { userId: string; name: string }[]; talents: { id: string; name: string; userId: string | null }[]; deals?: { id: string; name: string }[]; fixedDealId?: string | null };
+  create?: {
+    agencyId: string;
+    members: { userId: string; name: string; role?: string | null; jobTitle?: string | null }[];
+    talents: ({ id: string; name: string; userId: string | null } & TalentPickFields)[];
+    deals?: { id: string; name: string; brand?: string | null; logoUrl?: string | null }[];
+    fixedDealId?: string | null;
+  };
   showDeal?: boolean;
   emptyText: string;
 };
@@ -213,6 +220,7 @@ function DecideDialog({ portal, task, dealId, requestId, onClose }: { portal: "a
 
 function TaskForm({ create }: { create: NonNullable<Props["create"]> }) {
   const t = useTranslations("agency.tasks.form");
+  const tp = useTranslations("pickers");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [v, setV] = useState({ title: "", description: "", side: "agency" as "agency" | "talent", dealId: create.fixedDealId ?? "", talentId: "", assigneeId: "", dueDate: "" });
@@ -249,38 +257,17 @@ function TaskForm({ create }: { create: NonNullable<Props["create"]> }) {
               </Select>
             </FormField>
             {v.side === "talent" ? (
-              <FormField label={t("talent")} required>
-                <Select value={v.talentId} onChange={(e) => setV({ ...v, talentId: e.target.value })} disabled={pending}>
-                  <option value="">—</option>
-                  {create.talents.map((x) => (
-                    <option key={x.id} value={x.id}>
-                      {x.name}
-                    </option>
-                  ))}
-                </Select>
+              <FormField label={t("talent")} hint={tp("hints.taskTalent")} required>
+                <EntitySelect value={v.talentId} onChange={(e) => setV({ ...v, talentId: e.target.value })} disabled={pending} emptyLabel="—" roleInOption={false} options={create.talents.map((x) => talentOption(tp, x))} />
               </FormField>
             ) : (
-              <FormField label={t("assignee")}>
-                <Select value={v.assigneeId} onChange={(e) => setV({ ...v, assigneeId: e.target.value })} disabled={pending}>
-                  <option value="">—</option>
-                  {create.members.map((m) => (
-                    <option key={m.userId} value={m.userId}>
-                      {m.name}
-                    </option>
-                  ))}
-                </Select>
+              <FormField label={t("assignee")} hint={tp("hints.taskAssignee")}>
+                <EntitySelect value={v.assigneeId} onChange={(e) => setV({ ...v, assigneeId: e.target.value })} disabled={pending} emptyLabel="—" emptyCard={tp("empty.noAssignee")} options={create.members.map((m) => memberOption(tp, m))} />
               </FormField>
             )}
             {!create.fixedDealId && create.deals ? (
-              <FormField label={t("deal")}>
-                <Select value={v.dealId} onChange={(e) => setV({ ...v, dealId: e.target.value })} disabled={pending}>
-                  <option value="">—</option>
-                  {create.deals.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </Select>
+              <FormField label={t("deal")} hint={tp("hints.taskDeal")}>
+                <EntitySelect value={v.dealId} onChange={(e) => setV({ ...v, dealId: e.target.value })} disabled={pending} emptyLabel="—" emptyCard={tp("empty.noTaskDeal")} roleInOption={false} options={create.deals.map((d) => dealOption(tp, d))} />
               </FormField>
             ) : null}
             <FormField label={t("dueDate")}>

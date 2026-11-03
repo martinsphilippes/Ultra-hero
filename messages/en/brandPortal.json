@@ -72,7 +72,7 @@
   },
   "creators": {
     "title": "Creators",
-    "description": "Catalog authorized by {agency}: only those who consented to appear, with what the media kit shares.",
+    "description": "Creators from {agency} available to your brand.",
     "descriptionNoAgency": "Your brand is not linked to an agency yet.",
     "filters": {
       "search": "Search",
@@ -118,7 +118,8 @@
     "representedBy": "Represented by {agency}.",
     "consentMissing": "no consent (kit unavailable)",
     "shortlistsLink": "Shortlist",
-    "compareHint": "Mark 2 to 4 creators to compare side by side."
+    "compareHint": "Mark 2 to 4 creators to compare side by side.",
+    "consentNote": "Only creators who agreed to be in the catalog appear, with the data their media kit shares."
   },
   "campaigns": {
     "draftSaved": "Draft saved.",

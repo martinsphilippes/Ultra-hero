@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveCreatorReferencesAction } from "@/app/admin/creators/reference-actions";
-import { Button, FormField, Input, useToast } from "@/components/ui";
+import { Button, FormField, Input, NumberInput, useToast } from "@/components/ui";
 import { COMPARE_METRIC_DEFS, COMPARE_METRICS, type CompareMetricKey } from "@/lib/heroes/compare";
 
 type Props = { creatorId: string; initial: Partial<Record<CompareMetricKey, number>> };
@@ -38,12 +38,12 @@ export function ReferenceMetricsEditor({ creatorId, initial }: Props) {
       <div className="grid gap-3 sm:grid-cols-2">
         {COMPARE_METRICS.map((key) => (
           <FormField key={key} label={tm(`${key}.label`)} hint={t("unit", { unit: t(`units.${COMPARE_METRIC_DEFS[key].unit}`) })}>
-            <Input
-              inputMode="decimal"
-              value={values[key]}
-              onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
-              data-testid={`reference-${key}`}
-            />
+            {COMPARE_METRIC_DEFS[key].decimals === 0 ? (
+              // contagem inteira (passos, pontos…): ponto de milhar enquanto digita
+              <NumberInput value={values[key]} max={COMPARE_METRIC_DEFS[key].max} onValueChange={(text) => setValues((prev) => ({ ...prev, [key]: text }))} data-testid={`reference-${key}`} />
+            ) : (
+              <Input inputMode="decimal" value={values[key]} onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))} data-testid={`reference-${key}`} />
+            )}
           </FormField>
         ))}
       </div>

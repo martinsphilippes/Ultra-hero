@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function NewCollectiblePage() {
   const [t, supabase] = await Promise.all([getTranslations("collectibles.admin"), createClient()]);
-  const [{ data: heroes }, photoState] = await Promise.all([supabase.from("creator_profiles").select("id, name").order("name"), getPostPhotoState()]);
+  const [{ data: heroes }, photoState] = await Promise.all([supabase.from("creator_profiles").select("id, name, slug, avatar_url").order("name"), getPostPhotoState()]);
   return (
     <div className="mx-auto flex w-full max-w-prose flex-col gap-6">
       <BackLink href="/admin/collectibles">{t("title")}</BackLink>

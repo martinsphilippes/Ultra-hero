@@ -41,7 +41,7 @@ export default async function AdminCollectiblePage({ params }: Props) {
   if (await finalizeIfDue(supabase, loaded.item, true)) loaded = (await fetchCollectible(supabase, id)) ?? loaded;
   const { item } = loaded;
   const [{ data: heroes }, { data: audit }, views, { data: result }, photoState] = await Promise.all([
-    supabase.from("creator_profiles").select("id, name").order("name"),
+    supabase.from("creator_profiles").select("id, name, slug, avatar_url").order("name"),
     supabase
       .from("admin_audit")
       .select("id, action, justification, created_at")

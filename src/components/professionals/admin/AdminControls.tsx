@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 import { inviteProfessional, setProfessionalStatus, setProfessionalSuggestion } from "@/app/admin/professionals/actions";
 import { CopyButton } from "@/components/admin-ops/CopyButton";
-import { Button, Checkbox, FormField, IconButton, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, EntitySelect, FormField, IconButton, Input, Textarea, useToast } from "@/components/ui";
 import type { ProfessionalStatus } from "@/lib/professionals/rules";
 
 // Controles do admin na página do profissional (0058). Cada ação chama uma RPC auditada.
@@ -145,6 +145,8 @@ export function SuggestionsEditor({
   options: Record<Target, { id: string; label: string }[]>;
 }) {
   const t = useTranslations("professionals.admin.suggestions");
+  const tp = useTranslations("pickers");
+  const targetRole: Record<Target, string> = { creator: tp("roles.hero"), content: tp("roles.content"), program: tp("roles.program") };
   const { pending, error, run } = useRun();
   const [picked, setPicked] = useState<Record<Target, string>>({ creator: "", content: "", program: "" });
   const groups: { target: Target; label: string }[] = [
@@ -184,23 +186,18 @@ export function SuggestionsEditor({
                 </li>
               ))}
             </ul>
-            <div className="flex flex-wrap items-end gap-2">
-              <Select
+            <div className="flex flex-wrap items-start gap-2">
+              <EntitySelect
                 aria-label={label}
+                aria-describedby={`sugg-${target}-hint`}
                 value={picked[target]}
                 onChange={(e) => setPicked((p) => ({ ...p, [target]: e.target.value }))}
                 disabled={pending}
-                className="min-w-0 flex-1"
-              >
-                <option value="">{t("select")}</option>
-                {options[target]
-                  .filter((o) => !taken.has(o.id))
-                  .map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.label}
-                    </option>
-                  ))}
-              </Select>
+                wrapperClassName="min-w-0 flex-1"
+                emptyLabel={t("select")}
+                roleInOption={false}
+                options={options[target].filter((o) => !taken.has(o.id)).map((o) => ({ value: o.id, name: o.label, role: targetRole[target] }))}
+              />
               <Button
                 type="button"
                 variant="secondary"
@@ -211,6 +208,9 @@ export function SuggestionsEditor({
                 {t("add")}
               </Button>
             </div>
+            <p id={`sugg-${target}-hint`} className="type-caption text-fg-muted">
+              {tp("hints.professionalTarget")}
+            </p>
           </section>
         );
       })}

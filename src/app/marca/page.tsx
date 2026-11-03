@@ -78,7 +78,7 @@ export default async function BrandDashboardPage() {
         description={ctx.agency ? t("servedBy", { agency: ctx.agency.name }) : undefined}
         actions={ctx.role ? <RoleBadge role={ctx.role === "owner" ? "owner" : "brandStaff"} /> : null}
       />
-      {ctx.brands.length > 1 ? <BrandSwitcher brands={ctx.brands.map((b) => ({ id: b.id, name: b.name }))} currentId={ctx.brand.id} /> : null}
+      {ctx.brands.length > 1 ? <BrandSwitcher brands={ctx.brands.map((b) => ({ id: b.id, name: b.name, logoUrl: b.logoUrl }))} currentId={ctx.brand.id} /> : null}
       {wb ? <TodayPanel portal="brand" items={todayItems} kinds={BRAND_TODAY_KINDS} locale={locale} timezone={wb.timezone} now={now} /> : null}
       {stageCounts ? (
         <section aria-labelledby="brand-stage-summary" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" data-testid="brand-stage-summary">

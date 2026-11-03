@@ -329,7 +329,9 @@
     "tier_full": "Esta cota já foi fechada com o número máximo de marcas.",
     "already_agreed": "Sua marca já fechou uma cota desta oportunidade.",
     "already_negotiating": "Sua marca já tem uma proposta em andamento nesta oportunidade.",
-    "has_agreement": "Há patrocínio acordado: não dá para cancelar. Encerre para confirmar as marcas com acordo."
+    "has_agreement": "Há patrocínio acordado: não dá para cancelar. Encerre para confirmar as marcas com acordo.",
+    "call_incomplete": "Complete a chamada antes de publicar: entregas, redes, prazo e agências.",
+    "amount_required": "Informe o valor total antes de enviar."
   },
   "casting": {
     "title": "Casting",
@@ -828,7 +830,9 @@
     "edit": "Editar",
     "editLabel": "Editar {title}",
     "sponsorshipEdit": "Editar na oportunidade",
-    "sponsorshipEditLabel": "Editar na oportunidade: {title}"
+    "sponsorshipEditLabel": "Editar na oportunidade: {title}",
+    "brandCallOpen": "Abrir pedido",
+    "brandCallOpenLabel": "Abrir o pedido {title}"
   },
   "execution": {
     "title": "Execução",

@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
 import { StageBadge } from "@/components/deals/StatusBadges";
-import { Button, EmptyState, PageHeader, Select } from "@/components/ui";
+import { Button, EmptyState, EntitySelect, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate, formatRelativeTime } from "@/i18n/format";
 import { listAgencyBrands, listTeam } from "@/lib/agency/queries";
@@ -13,6 +13,7 @@ import { requireAgency } from "@/lib/agency/server";
 import { getUser } from "@/lib/auth/session";
 import { listDeals } from "@/lib/deals/queries";
 import { DEAL_STAGES, type DealStage } from "@/lib/deals/stages";
+import { brandOption, memberOption } from "@/lib/ui/entity";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +32,10 @@ export default async function PipelinePage({ searchParams }: Props) {
   const closed = sp.status === "encerrados";
   const user = await getUser();
   const ownerFilter = sp.responsavel === "me" ? user?.id : sp.responsavel;
-  const [t, tc, locale, list, brands, team] = await Promise.all([
+  const [t, tc, tp, locale, list, brands, team] = await Promise.all([
     getTranslations("agency.pipeline"),
     getTranslations("commercial"),
+    getTranslations("pickers"),
     getLocale() as Promise<Locale>,
     listDeals(ctx.agency.id, { owner: ownerFilter, brand: sp.marca, closed }),
     listAgencyBrands(ctx.agency.id),
@@ -76,27 +78,20 @@ export default async function PipelinePage({ searchParams }: Props) {
         {closed ? <input type="hidden" name="status" value="encerrados" /> : null}
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
           {t("filters.owner")}
-          <Select name="responsavel" defaultValue={sp.responsavel ?? ""}>
-            <option value="">{t("filters.all")}</option>
-            <option value="me">{t("filters.mine")}</option>
-            <option value="none">{t("filters.noOwner")}</option>
-            {team.map((m) => (
-              <option key={m.userId} value={m.userId}>
-                {m.name}
-              </option>
-            ))}
-          </Select>
+          <EntitySelect
+            name="responsavel"
+            defaultValue={sp.responsavel ?? ""}
+            emptyLabel={t("filters.all")}
+            extraOptions={[
+              { value: "me", label: t("filters.mine") },
+              { value: "none", label: t("filters.noOwner") },
+            ]}
+            options={team.map((m) => memberOption(tp, m))}
+          />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
           {t("filters.brand")}
-          <Select name="marca" defaultValue={sp.marca ?? ""}>
-            <option value="">{t("filters.all")}</option>
-            {brands.map((b) => (
-              <option key={b.brand.id} value={b.brand.id}>
-                {b.brand.name}
-              </option>
-            ))}
-          </Select>
+          <EntitySelect name="marca" defaultValue={sp.marca ?? ""} emptyLabel={t("filters.all")} roleInOption={false} options={brands.map((b) => brandOption(tp, { id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl }))} />
         </label>
         <div className="flex items-end gap-2">
           <Button type="submit" size="sm" variant="secondary">

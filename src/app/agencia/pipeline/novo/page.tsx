@@ -24,8 +24,8 @@ export default async function NewDealPage() {
         <DealForm
           initial={{ brandId: brands[0]?.brand.id ?? "", title: "", talentBrief: "", expectedStart: "", expectedEnd: "", ownerId: "", notes: "" }}
           dealId={null}
-          brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name }))}
-          members={team.map((m) => ({ userId: m.userId, name: m.name }))}
+          brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl }))}
+          members={team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle }))}
           canEdit={brands.length > 0}
           canSetOwner
         />

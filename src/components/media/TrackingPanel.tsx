@@ -3,13 +3,14 @@
 import { Copy, Link2, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Button, DatePicker, Dialog, FormField, Input, MoneyInput, Select, useToast } from "@/components/ui";
+import { Button, DatePicker, Dialog, EntitySelect, FormField, Input, MoneyInput, NumberInput, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
 import { deleteSaleAction, recordSaleAction, saveTrackingLinkAction } from "@/lib/media/actions";
 import { conversionRate, normalizeCoupon, salesTotals, trackingUrl, type SaleRow } from "@/lib/media/metrics";
 import type { TrackingLink } from "@/lib/media/queries";
+import { parseIntText } from "@/lib/numbers/int-input";
 
 type Row = { dealTalentId: string; talentName: string; link: TrackingLink | null };
 type Props = {
@@ -211,6 +212,7 @@ function LinkDialog({ row, dealId, requestId, brandSite, onClose }: { row: Row; 
 
 function SaleDialog({ rows, dealId, requestId, today, onClose }: { rows: Row[]; dealId: string; requestId?: string | null; today: string; onClose: () => void }) {
   const t = useTranslations("media.sales");
+  const tp = useTranslations("pickers");
   const tc = useTranslations("media.common");
   const { toast } = useToast();
   const [linkId, setLinkId] = useState(rows[0]?.link?.id ?? "");
@@ -222,7 +224,9 @@ function SaleDialog({ rows, dealId, requestId, today, onClose }: { rows: Row[]; 
   const [pending, start] = useTransition();
   function submit() {
     setError(null);
-    const q = quantity.trim() === "" ? 0 : /^\d{1,8}$/.test(quantity.trim()) ? Number(quantity.trim()) : NaN;
+    // aceita "1.234" (NumberInput) e "1234"
+    const parsedQ = parseIntText(quantity, 10_000_000);
+    const q = parsedQ === null ? 0 : parsedQ === undefined ? NaN : parsedQ;
     if (!Number.isFinite(q)) return setError(t("invalidQuantity"));
     const cents = parseBrlToCents(revenue);
     if (cents === undefined) return setError(t("invalidRevenue"));
@@ -245,19 +249,23 @@ function SaleDialog({ rows, dealId, requestId, today, onClose }: { rows: Row[]; 
           submit();
         }}
       >
-        <FormField label={t("link")} required>
-          <Select value={linkId} onChange={(e) => setLinkId(e.target.value)} disabled={pending}>
-            {rows.map((r) => (
-              <option key={r.link!.id} value={r.link!.id}>
-                {r.talentName}
-                {r.link!.coupon ? ` · ${r.link!.coupon}` : ""}
-              </option>
-            ))}
-          </Select>
+        <FormField label={t("link")} hint={tp("hints.salesLink")} required>
+          <EntitySelect
+            value={linkId}
+            onChange={(e) => setLinkId(e.target.value)}
+            disabled={pending}
+            roleInOption={false}
+            options={rows.map((r) => ({
+              value: r.link!.id,
+              name: r.link!.coupon ? `${r.talentName} · ${r.link!.coupon}` : r.talentName,
+              role: tp("roles.creator"),
+              detail: r.link!.coupon ? tp("details.coupon", { coupon: r.link!.coupon }) : null,
+            }))}
+          />
         </FormField>
         <div className="grid grid-cols-2 gap-3">
           <FormField label={t("quantity")}>
-            <Input inputMode="numeric" value={quantity} maxLength={8} onChange={(e) => setQuantity(e.target.value)} disabled={pending} data-testid="sales-quantity" />
+            <NumberInput value={quantity} max={10_000_000} onValueChange={(text) => setQuantity(text)} disabled={pending} data-testid="sales-quantity" />
           </FormField>
           <FormField label={t("revenue")}>
             <MoneyInput value={revenue} maxCents={10_000_000_000} onValueChange={(v) => setRevenue(v)} disabled={pending} data-testid="sales-revenue" />

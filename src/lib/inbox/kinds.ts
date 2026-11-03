@@ -47,6 +47,12 @@ export const INBOX_KINDS = [
   "sponsorship_decided",
   // negociação das cotas (0088)
   "sponsorship_negotiation",
+  // chamada da marca (0089): publicada (agências do alvo), interesse do creator, rodadas, desfecho e revisão interna
+  "brand_call_published",
+  "brand_call_interest",
+  "brand_call_negotiation",
+  "brand_call_decided",
+  "brand_call_review",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
@@ -99,6 +105,14 @@ export function inboxKindEmails(kind: string, link: string, params: Record<strin
       return link.startsWith("/agencia/");
     case "sponsorship_negotiation":
       return status === "proposed" || status === "countered" || status === "agreed" || status === "declined" || status === "closed";
+    // 0089: chamada da marca (a revisão interna da publicação fica só no sino)
+    case "brand_call_published":
+    case "brand_call_interest":
+      return link.startsWith("/agencia/");
+    case "brand_call_negotiation":
+      return status === "proposed" || status === "countered" || status === "agreed" || status === "declined";
+    case "brand_call_decided":
+      return true;
     default:
       return false;
   }

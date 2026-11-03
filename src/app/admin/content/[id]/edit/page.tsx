@@ -32,7 +32,7 @@ export default async function AdminContentEditPage({ params }: Params) {
       .eq("id", id)
       .maybeSingle(),
     supabase.from("content_bodies").select("body, media_provider, media_ref, captions_url").eq("content_id", id).maybeSingle(),
-    supabase.from("creator_profiles").select("id, name, is_fictional").order("name"),
+    supabase.from("creator_profiles").select("id, name, is_fictional, slug, avatar_url").order("name"),
     getPostPhotoState(),
     // blocos (0075/0076) e produtos vinculados validados, para o formulário editar
     loadPostBlocks(supabase, id),

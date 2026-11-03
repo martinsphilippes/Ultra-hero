@@ -4,10 +4,11 @@ import { Mail, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
 import { createInvitation } from "@/app/admin/ops-actions";
-import { Button, Dialog, FormField, Input, Select } from "@/components/ui";
+import { Button, Dialog, EntitySelect, FormField, Input, Select } from "@/components/ui";
+import { heroOption } from "@/lib/ui/entity";
 import { CopyButton } from "./CopyButton";
 
-export type CreatorOption = { id: string; name: string; linked: boolean };
+export type CreatorOption = { id: string; name: string; linked: boolean; slug?: string | null; avatarUrl?: string | null };
 export type SellerOption = { id: string; name: string };
 
 type Props = {
@@ -25,6 +26,7 @@ type Props = {
 // Cria um convite e mostra o link UMA única vez (o banco só guarda o hash do token).
 export function InvitationForm({ creators, sellers, initialRole = "creator", initialCreatorId = "", initialSellerId = "", defaultOpen = false, triggerLabel }: Props) {
   const t = useTranslations("adminOps.invitations");
+  const tp = useTranslations("pickers");
   const tc = useTranslations("common.actions");
   // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
   const formId = useId();
@@ -119,39 +121,22 @@ export function InvitationForm({ creators, sellers, initialRole = "creator", ini
               </Select>
             </FormField>
             {role === "creator" ? (
-              <FormField label={t("form.creatorProfile")} hint={t("form.creatorProfileHint")} required>
-                <Select value={creatorId} onChange={(e) => setCreatorId(e.target.value)} disabled={pending}>
-                  <option value="">{t("form.selectPlaceholder")}</option>
-                  {unlinked.length > 0 && (
-                    <optgroup label={t("form.unlinkedGroup")}>
-                      {unlinked.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {linked.length > 0 && (
-                    <optgroup label={t("form.linkedGroup")}>
-                      {linked.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </Select>
+              <FormField label={t("form.creatorProfile")} hint={tp("hints.adminInviteCreator")} required>
+                <EntitySelect
+                  value={creatorId}
+                  onChange={(e) => setCreatorId(e.target.value)}
+                  disabled={pending}
+                  emptyLabel={t("form.selectPlaceholder")}
+                  roleInOption={false}
+                  options={[
+                    ...unlinked.map((c) => ({ ...heroOption(tp, { id: c.id, name: c.name, slug: c.slug, avatarUrl: c.avatarUrl, detail: tp("details.heroUnlinked") }), group: t("form.unlinkedGroup") })),
+                    ...linked.map((c) => ({ ...heroOption(tp, { id: c.id, name: c.name, slug: c.slug, avatarUrl: c.avatarUrl, detail: tp("details.heroLinked") }), group: t("form.linkedGroup") })),
+                  ]}
+                />
               </FormField>
             ) : (
-              <FormField label={t("form.sellerOrg")} required>
-                <Select value={sellerId} onChange={(e) => setSellerId(e.target.value)} disabled={pending}>
-                  <option value="">{t("form.selectPlaceholder")}</option>
-                  {sellers.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </Select>
+              <FormField label={t("form.sellerOrg")} hint={tp("hints.adminInviteSeller")} required>
+                <EntitySelect value={sellerId} onChange={(e) => setSellerId(e.target.value)} disabled={pending} emptyLabel={t("form.selectPlaceholder")} roleInOption={false} options={sellers.map((s) => ({ value: s.id, name: s.name, role: tp("roles.seller") }))} />
               </FormField>
             )}
             <FormField label={t("form.days")} hint={t("form.daysHint")} required error={error ?? undefined}>

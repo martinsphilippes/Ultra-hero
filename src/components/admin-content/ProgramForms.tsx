@@ -4,16 +4,20 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createProgramAction, createVersionAction, saveVersionFieldsAction, updateProgramAction, type VersionFieldsInput } from "@/app/admin/programs/actions";
-import { Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
+import { heroOption, type PickerT } from "@/lib/ui/entity";
 
-type CreatorOption = { id: string; name: string };
+const creatorOptions = (tk: PickerT, creators: CreatorOption[]) => creators.map((c) => heroOption(tk, { id: c.id, name: c.name, slug: c.slug, avatarUrl: c.avatar_url }));
+
+type CreatorOption = { id: string; name: string; slug?: string | null; avatar_url?: string | null };
 const PILLAR_KEYS = PILLARS;
 
 // ---------------------------------------------------------------- criar programa + 1ª versão
 export function ProgramCreateForm({ creators, initialCreatorId = null }: { creators: CreatorOption[]; initialCreatorId?: string | null }) {
   const t = useTranslations("adminContent.programs.create");
   const tc = useTranslations("adminContent.common");
+  const tk = useTranslations("pickers");
   const tp = useTranslations("common.pillars");
   const router = useRouter();
   const { toast } = useToast();
@@ -51,15 +55,8 @@ export function ProgramCreateForm({ creators, initialCreatorId = null }: { creat
       <FormField label={tc("slug")} required className="md:col-span-2">
         <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} maxLength={80} />
       </FormField>
-      <FormField label={tc("creator")}>
-        <Select value={form.creator_id} onChange={(e) => setForm({ ...form, creator_id: e.target.value })}>
-          <option value="">{tc("noCreator")}</option>
-          {creators.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Select>
+      <FormField label={tc("creator")} hint={tk("hints.programCreator")}>
+        <EntitySelect value={form.creator_id} onChange={(e) => setForm({ ...form, creator_id: e.target.value })} emptyLabel={tc("noCreator")} emptyCard={tk("empty.noCreator")} roleInOption={false} options={creatorOptions(tk, creators)} />
       </FormField>
       <FormField label={tc("pillar")} required>
         <Select value={form.pillar} onChange={(e) => setForm({ ...form, pillar: e.target.value as Pillar })}>
@@ -103,6 +100,7 @@ type BasicsProps = { programId: string; creators: CreatorOption[]; initial: { sl
 
 export function ProgramBasicsForm({ programId, creators, initial }: BasicsProps) {
   const tc = useTranslations("adminContent.common");
+  const tk = useTranslations("pickers");
   const tp = useTranslations("common.pillars");
   const router = useRouter();
   const { toast } = useToast();
@@ -141,15 +139,8 @@ export function ProgramBasicsForm({ programId, creators, initial }: BasicsProps)
           ))}
         </Select>
       </FormField>
-      <FormField label={tc("creator")}>
-        <Select value={form.creator_id} onChange={(e) => setForm({ ...form, creator_id: e.target.value })} selectSize="sm">
-          <option value="">{tc("noCreator")}</option>
-          {creators.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Select>
+      <FormField label={tc("creator")} hint={tk("hints.programCreator")}>
+        <EntitySelect value={form.creator_id} onChange={(e) => setForm({ ...form, creator_id: e.target.value })} selectSize="sm" emptyLabel={tc("noCreator")} emptyCard={tk("empty.noCreator")} roleInOption={false} options={creatorOptions(tk, creators)} />
       </FormField>
       <FormField label={tc("cover")} hint={tc("coverHint")}>
         <Input value={form.cover_url} onChange={(e) => setForm({ ...form, cover_url: e.target.value })} maxLength={500} inputSize="sm" />

@@ -3,9 +3,10 @@ import { ListChecks, Search, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { CatalogGrid } from "@/components/selection/CatalogGrid";
-import { Button, EmptyState, Input, PageHeader, Select } from "@/components/ui";
+import { Button, EmptyState, Input, NumberInput, PageHeader, Select } from "@/components/ui";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { searchTalentsForBrand } from "@/lib/deals/queries";
+import { parseIntText } from "@/lib/numbers/int-input";
 import { brandRatings } from "@/lib/selection/queries";
 import { AVAILABILITIES, NETWORKS, UFS } from "@/lib/talent/vocab";
 
@@ -27,7 +28,8 @@ export default async function BrandCreatorsPage({ searchParams }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
   const sp = await searchParams;
-  const minFollowers = sp.seguidores && /^\d{1,9}$/.test(sp.seguidores) ? Number(sp.seguidores) : undefined;
+  // o campo manda "10.000" (ponto de milhar enquanto digita); links antigos mandam "10000"
+  const minFollowers = parseIntText(sp.seguidores, 999_999_999) ?? undefined;
   const filters = { q: sp.q?.slice(0, 60), segment: sp.segmento && /^[0-9a-f-]{36}$/i.test(sp.segmento) ? sp.segmento : undefined, state: pick(sp.uf, UFS), network: pick(sp.rede, NETWORKS), minFollowers, availability: pick(sp.disponibilidade, AVAILABILITIES.filter((a) => a !== "unavailable")) };
   const [t, tn, list, ratings] = await Promise.all([getTranslations("brandPortal.creators"), getTranslations("mediaKit.networks"), searchTalentsForBrand(ctx.brand.id, filters), brandRatings(ctx.brand.id)]);
   const filtered = Boolean(filters.q || filters.segment || filters.state || filters.network || filters.minFollowers || filters.availability);
@@ -96,7 +98,7 @@ export default async function BrandCreatorsPage({ searchParams }: Props) {
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
           {t("filters.minFollowers")}
-          <Input name="seguidores" type="number" inputMode="numeric" min={0} step={1000} defaultValue={minFollowers ?? ""} />
+          <NumberInput name="seguidores" max={999_999_999} defaultValue={minFollowers ?? ""} placeholder="10.000" />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
           {t("filters.availability")}
@@ -120,7 +122,8 @@ export default async function BrandCreatorsPage({ searchParams }: Props) {
         </div>
       </form>
       <p className="type-caption text-fg-muted">
-        {t("sourceNote")} {list.items.length > 1 ? t("compareHint") : null}
+        {/* a informação de consentimento saiu do topo (descrição curta) e fica nesta nota menor */}
+        {t("consentNote")} {t("sourceNote")} {list.items.length > 1 ? t("compareHint") : null}
       </p>
       {list.items.length > 0 ? (
         // nota média da marca e "Comparar" (0081)

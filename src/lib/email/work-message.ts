@@ -19,6 +19,11 @@ export const WORK_EMAIL_KINDS = [
   "sponsorship_decided",
   // negociação das cotas (0088)
   "sponsorship_negotiation",
+  // chamada da marca (0089)
+  "brand_call_published",
+  "brand_call_interest",
+  "brand_call_negotiation",
+  "brand_call_decided",
 ] as const;
 export type WorkEmailKind = (typeof WORK_EMAIL_KINDS)[number];
 

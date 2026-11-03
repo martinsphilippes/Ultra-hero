@@ -7,9 +7,10 @@ import { useId, useState, useTransition, type FormEvent } from "react";
 import { triageFeedback } from "@/app/admin/ops-actions";
 import { FEEDBACK_ADMIN_NOTE_MAX, FEEDBACK_PRIORITIES, FEEDBACK_STATUSES, type FeedbackPriority, type FeedbackStatus } from "@/components/feedback/constants";
 import type { FeedbackTriagePatch } from "@/components/feedback/schema";
-import { Button, Dialog, FormField, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Dialog, EntitySelect, FormField, Select, Textarea, useToast } from "@/components/ui";
 
-export type AdminOption = { id: string; label: string };
+/** Admin do app; `email` aparece completo no cartão (a tela de feedback é só de admin, que já lê e-mails). */
+export type AdminOption = { id: string; label: string; email?: string | null };
 
 type Props = {
   id: string;
@@ -26,6 +27,7 @@ type Values = { status: FeedbackStatus; priority: FeedbackPriority | ""; assigne
 // Só envia o que mudou; a RPC confere o papel de novo e grava a auditoria (feedback.triage).
 export function FeedbackTriageDialog({ id, status, priority, assignee, adminNote, admins }: Props) {
   const t = useTranslations("adminOps.feedback");
+  const tp = useTranslations("pickers");
   const ts = useTranslations("adminCommon.status");
   const tc = useTranslations("common.actions");
   const router = useRouter();
@@ -137,15 +139,16 @@ export function FeedbackTriageDialog({ id, status, priority, assignee, adminNote
               </Select>
             </FormField>
           </div>
-          <FormField label={t("triage.assignee")} hint={t("triage.assigneeHint")}>
-            <Select value={values.assignee} disabled={pending} onChange={(e) => set("assignee", e.target.value)}>
-              <option value="">{t("unassigned")}</option>
-              {options.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.label}
-                </option>
-              ))}
-            </Select>
+          <FormField label={t("triage.assignee")} hint={tp("hints.feedbackAssignee")}>
+            <EntitySelect
+              value={values.assignee}
+              disabled={pending}
+              onChange={(e) => set("assignee", e.target.value)}
+              emptyLabel={t("unassigned")}
+              emptyCard={tp("empty.noAdmin")}
+              roleInOption={false}
+              options={options.map((a) => ({ value: a.id, name: a.label, role: tp("roles.admin"), email: a.email && a.email !== a.label ? a.email : null }))}
+            />
           </FormField>
           <FormField label={t("triage.note")} hint={t("triage.noteHint")} error={error ?? undefined}>
             <Textarea value={values.adminNote} maxLength={FEEDBACK_ADMIN_NOTE_MAX} rows={3} disabled={pending} onChange={(e) => set("adminNote", e.target.value)} />

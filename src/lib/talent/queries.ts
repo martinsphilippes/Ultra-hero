@@ -268,20 +268,21 @@ export async function kitSource(input: {
   };
 }
 
-export type ManagerOption = { userId: string; name: string };
+export type ManagerOption = { userId: string; name: string; role: string; jobTitle: string | null };
 
 /** Quem pode ser gestor responsável: Adm e gestores ativos da agência. */
 export async function listManagers(agencyId: string): Promise<ManagerOption[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("agency_members").select("user_id, display_name, role").eq("agency_id", agencyId).is("revoked_at", null).in("role", ["admin", "manager"]).order("display_name");
-  return (data ?? []).map((m) => ({ userId: m.user_id, name: m.display_name }));
+  const { data } = await supabase.from("agency_members").select("user_id, display_name, role, job_title").eq("agency_id", agencyId).is("revoked_at", null).in("role", ["admin", "manager"]).order("display_name");
+  // papel e cargo alimentam o cartão abaixo da caixa "Gestor" (EntitySelect)
+  return (data ?? []).map((m) => ({ userId: m.user_id, name: m.display_name, role: m.role, jobTitle: m.job_title }));
 }
 
 /** Heróis ativos para ligar a um talento (o banco recusa quem já está em outro casting). */
-export async function listHeroOptions(): Promise<{ id: string; name: string }[]> {
+export async function listHeroOptions(): Promise<{ id: string; name: string; slug: string; avatarUrl: string | null }[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("creator_profiles").select("id, name").eq("status", "active").order("name").limit(500);
-  return (data ?? []).map((c) => ({ id: c.id, name: c.name }));
+  const { data } = await supabase.from("creator_profiles").select("id, name, slug, avatar_url").eq("status", "active").order("name").limit(500);
+  return (data ?? []).map((c) => ({ id: c.id, name: c.name, slug: c.slug, avatarUrl: c.avatar_url }));
 }
 
 export type TalentDocument = { id: string; title: string; kind: string; mimeType: string; sizeBytes: number; status: string; shareTalent: boolean; restricted: boolean; uploaderSide: string; createdAt: string };

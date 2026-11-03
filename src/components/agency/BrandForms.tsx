@@ -4,8 +4,9 @@ import { Link2, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { createBrandAction, linkBrandAction } from "@/app/agencia/marcas/actions";
-import { Button, FormField, Input, Select } from "@/components/ui";
+import { Button, EntitySelect, FormField, Input } from "@/components/ui";
 import { slugFromName } from "@/lib/agency/schemas";
+import { brandOption } from "@/lib/ui/entity";
 
 // Cadastro de marca pela agência (nasce fora do app, D7) e vínculo de marca que já existe no app.
 export function BrandCreateForm({ demo }: { demo: boolean }) {
@@ -75,22 +76,17 @@ export function BrandCreateForm({ demo }: { demo: boolean }) {
   );
 }
 
-export function BrandLinkForm({ brands }: { brands: Array<{ id: string; name: string }> }) {
+export function BrandLinkForm({ brands }: { brands: Array<{ id: string; name: string; logoUrl?: string | null; siteUrl?: string | null }> }) {
   const t = useTranslations("agency.brands.link");
+  const tp = useTranslations("pickers");
   const [brandId, setBrandId] = useState(brands[0]?.id ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   if (brands.length === 0) return <p className="type-body-sm text-fg-muted">{t("none")}</p>;
   return (
     <div className="flex flex-col gap-3">
-      <FormField label={t("label")} hint={t("hint")}>
-        <Select value={brandId} onChange={(e) => setBrandId(e.target.value)} disabled={pending}>
-          {brands.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </Select>
+      <FormField label={t("label")} hint={tp("hints.brandLink")}>
+        <EntitySelect value={brandId} onChange={(e) => setBrandId(e.target.value)} disabled={pending} roleInOption={false} options={brands.map((b) => brandOption(tp, { ...b, detail: b.siteUrl?.replace(/^https?:\/\//, "") ?? null }))} />
       </FormField>
       {error ? (
         <p role="alert" className="type-body-sm text-danger">

@@ -1,22 +1,27 @@
 import type { Metadata } from "next";
 import { CalendarDays, Handshake } from "lucide-react";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { AgendaCalendar } from "@/components/calendar/AgendaCalendar";
 import { EventEditorProvider, EventNewButton } from "@/components/calendar/EventEditor";
 import { FeedCard } from "@/components/calendar/FeedCard";
-import { Button, EmptyState, PageHeader, Select } from "@/components/ui";
+import { Button, EmptyState, EntitySelect, PageHeader, Select } from "@/components/ui";
 import { listAgencyBrands } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { getOrigin } from "@/lib/auth/origin";
 import { getUser } from "@/lib/auth/session";
 import { queryRange, zonedDayKey } from "@/lib/calendar/grid";
-import { monthKey, parseMonth } from "@/lib/calendar/ics";
-import { listEvents, myFeedState, writableDealIds } from "@/lib/calendar/queries";
+import { monthKey, parseMonth, plusDays } from "@/lib/calendar/ics";
+import { listEvents, myFeedState, writableDealIds, type CalendarEvent } from "@/lib/calendar/queries";
 import { EVENT_KINDS } from "@/lib/calendar/vocab";
+import { listAgencyBrandCalls } from "@/lib/brand-call/queries";
 import { listDeals } from "@/lib/deals/queries";
+import { toZonedIso } from "@/lib/deals/schemas";
+import { formatDateTime } from "@/i18n/format";
+import type { Locale } from "@/i18n/config";
 import { listTalents } from "@/lib/talent/queries";
+import { brandOption, talentOption } from "@/lib/ui/entity";
 
 export const dynamic = "force-dynamic";
 
@@ -44,10 +49,18 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
     const now = parseMonth(undefined, tz);
     return monthKey(now.year, now.month);
   })();
-  const [t, tc, tsp, list, talents, brands, deals, feed, origin, user] = await Promise.all([
+  // 0089: chamadas da marca (gestor+) entram como evento do período; os filtros de creator/marca não se aplicam a elas
+  const showCalls = isManager && !sp.creator && !sp.marca && (!sp.tipo || sp.tipo === "brand_call");
+  const [tbc, locale, calls] = await Promise.all([
+    getTranslations("brandCall.agency"),
+    getLocale() as Promise<Locale>,
+    showCalls ? listAgencyBrandCalls(ctx.agency.id) : Promise.resolve({ available: false, items: [] }),
+  ]);
+  const [t, tc, tsp, tp, list, talents, brands, deals, feed, origin, user] = await Promise.all([
     getTranslations("agency.agenda"),
     getTranslations("commercial"),
     getTranslations("sponsorship.agency"),
+    getTranslations("pickers"),
     listEvents({ from, to, overlap: true, agencyId: ctx.agency.id, talentId: sp.creator, brandId: sp.marca, kind: sp.tipo }),
     listTalents(ctx.agency.id),
     listAgencyBrands(ctx.agency.id),
@@ -69,13 +82,44 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   const dealSet = new Set(dealIds);
   const formOptions = {
     // colaborador: só os negócios em que pode criar
-    deals: deals.items.filter((d) => dealSet.has(d.id)).map((d) => ({ id: d.id, name: `${d.title} · ${d.brand.name}` })),
-    talents: talents.items.map((x) => ({ id: x.id, name: x.name })),
-    brands: brands.map((b) => ({ id: b.brand.id, name: b.brand.name })),
+    deals: deals.items.filter((d) => dealSet.has(d.id)).map((d) => ({ id: d.id, name: d.title, brand: d.brand.name, logoUrl: d.brand.logoUrl })),
+    talents: talents.items.map((x) => ({ id: x.id, name: x.name, city: x.city, state: x.state, hasLogin: x.hasLogin, avatarUrl: x.hero?.avatarUrl ?? null })),
+    brands: brands.map((b) => ({ id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl })),
     canPublishCommercialDate: isManager,
     dealRequired: !isManager,
   };
   const filtered = Boolean(sp.creator || sp.marca || sp.tipo);
+  const callEvents: CalendarEvent[] = calls.items
+    .filter((c) => c.viewStatus === "open" || c.viewStatus === "expired" || c.viewStatus === "won")
+    .flatMap((c) => {
+      const startsAt = toZonedIso(c.startsOn, "00:00", tz);
+      const endsAt = toZonedIso(plusDays(c.endsOn || c.startsOn, 1), "00:00", tz);
+      if (!startsAt || !endsAt || Date.parse(startsAt) >= Date.parse(to) || Date.parse(endsAt) < Date.parse(from)) return [];
+      return [
+        {
+          id: `brand_call:${c.id}`,
+          kind: "brand_call" as const,
+          title: tbc("calendarTitle", { title: c.title }),
+          subtitle: c.respondBy && c.viewStatus === "open" ? tbc("calendarSubtitle", { brand: c.brandName, date: formatDateTime(c.respondBy, locale, tz) }) : c.brandName,
+          description: "",
+          startsAt,
+          endsAt,
+          allDay: true,
+          location: c.location,
+          brandId: null,
+          dealId: null,
+          talentId: null,
+          deliverableId: null,
+          sponsorshipId: null,
+          brandCallId: c.id,
+          source: "system" as const,
+          visibleToBrand: false,
+          visibleToTalent: false,
+          updatedAt: c.publishedAt ?? c.createdAt,
+        },
+      ];
+    });
+  const events = [...list.items, ...callEvents].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
   return (
     <EventEditorProvider options={formOptions} timeZone={tz} today={today} permissions={{ isManager, dealIds }} canCreate={isManager || dealIds.length > 0}>
@@ -101,25 +145,11 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
           <input type="hidden" name="mes" value={monthKey(year, month)} />
           <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
             {t("filters.talent")}
-            <Select name="creator" defaultValue={sp.creator ?? ""}>
-              <option value="">{t("filters.all")}</option>
-              {talents.items.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.name}
-                </option>
-              ))}
-            </Select>
+            <EntitySelect name="creator" defaultValue={sp.creator ?? ""} emptyLabel={t("filters.all")} roleInOption={false} options={formOptions.talents.map((x) => talentOption(tp, x))} />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
             {t("filters.brand")}
-            <Select name="marca" defaultValue={sp.marca ?? ""}>
-              <option value="">{t("filters.all")}</option>
-              {brands.map((b) => (
-                <option key={b.brand.id} value={b.brand.id}>
-                  {b.brand.name}
-                </option>
-              ))}
-            </Select>
+            <EntitySelect name="marca" defaultValue={sp.marca ?? ""} emptyLabel={t("filters.all")} roleInOption={false} options={formOptions.brands.map((b) => brandOption(tp, b))} />
           </label>
           <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
             {t("filters.kind")}
@@ -144,7 +174,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
           </div>
         </form>
         <AgendaCalendar
-          events={list.items}
+          events={events}
           timeZone={tz}
           portal="agency"
           year={year}

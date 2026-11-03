@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Handshake } from "lucide-react";
+import { Handshake, Megaphone, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { LinkTabsNav } from "@/components/admin-content/LinkTabsNav";
+import { CallStatusBadge } from "@/components/brand-call/shared";
 import { SponsorshipStatusBadge, sponsorshipWhen } from "@/components/sponsorship/SponsorshipView";
-import { Badge, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
-import { formatDateTime } from "@/i18n/format";
+import { formatDateTime, formatPlainDate } from "@/i18n/format";
+import { listBrandCalls } from "@/lib/brand-call/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { formatCents } from "@/lib/deals/schemas";
 import { listBrandSponsorships } from "@/lib/sponsorship/queries";
@@ -20,9 +24,26 @@ export async function generateMetadata(): Promise<Metadata> {
 // Oportunidades de patrocínio que a agência ofereceu a esta marca (0085): as abertas primeiro, com a resposta da
 // marca. 0088: o valor PEDIDO (a menor cota com vaga, ou "Valor a combinar") e em quem está a vez da negociação.
 // Nunca as respostas nem as propostas de outras marcas.
-export default async function BrandSponsorshipsPage() {
+// 0089: aba "Minhas chamadas" (?aba=chamadas) — a necessidade que parte da marca, com as propostas das agências.
+type Props = { searchParams: Promise<{ aba?: string }> };
+
+export default async function BrandSponsorshipsPage({ searchParams }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
+  const sp = await searchParams;
+  const tab = sp.aba === "chamadas" ? "calls" : "offers";
+  const tbc = await getTranslations("brandCall.brand");
+  const tabs = (
+    <LinkTabsNav
+      label={tbc("tabsLabel")}
+      value={tab}
+      tabs={[
+        { value: "offers", label: tbc("tabOffers"), href: "/marca/oportunidades" },
+        { value: "calls", label: tbc("tabCalls"), href: "/marca/oportunidades?aba=chamadas" },
+      ]}
+    />
+  );
+  if (tab === "calls") return <BrandCallsTab tabs={tabs} brandId={ctx.brand.id} canCreate={Boolean(ctx.role)} />;
   const [t, locale, list] = await Promise.all([getTranslations("sponsorship.brand"), getLocale() as Promise<Locale>, listBrandSponsorships(ctx.brand.id)]);
   if (!list.available) {
     return (
@@ -41,6 +62,7 @@ export default async function BrandSponsorshipsPage() {
   return (
     <div className="flex flex-col gap-5" data-testid="brand-sponsorships">
       <PageHeader title={t("title")} description={ctx.agency ? t("description", { agency: ctx.agency.name }) : t("descriptionNoAgency")} />
+      {tabs}
       {list.items.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState icon={<Handshake />} title={t("empty")} description={t("emptyHint")} />
@@ -76,6 +98,71 @@ export default async function BrandSponsorshipsPage() {
                 </span>
                 <span className="text-sm font-medium text-fg" data-testid="sponsorship-price">{priceLine(o.tiers)}</span>
                 {o.status === "open" ? <span className="type-caption text-fg-muted">{t("respondUntil", { date: formatDateTime(o.respondBy, locale, o.timezone) })}</span> : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// Minhas chamadas (0089): rascunhos, abertas e decididas, com quantas propostas chegaram e em quem está a vez.
+async function BrandCallsTab({ tabs, brandId, canCreate }: { tabs: ReactNode; brandId: string; canCreate: boolean }) {
+  const [t, locale, list] = await Promise.all([getTranslations("brandCall.brand"), getLocale() as Promise<Locale>, listBrandCalls(brandId)]);
+  const newButton = canCreate ? (
+    <Button asChild size="sm" leadingIcon={<Plus />}>
+      <Link href="/marca/oportunidades/nova" data-testid="brand-call-new">
+        {t("new")}
+      </Link>
+    </Button>
+  ) : null;
+  return (
+    <div className="flex flex-col gap-5" data-testid="brand-calls">
+      <PageHeader title={t("title")} description={t("description")} actions={newButton} />
+      {tabs}
+      {!list.available ? (
+        <div className="rounded-2xl border border-border bg-surface" data-testid="module-unavailable">
+          <EmptyState icon={<Megaphone />} title={t("unavailable")} />
+        </div>
+      ) : list.items.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface">
+          <EmptyState icon={<Megaphone />} title={t("empty")} description={t("emptyHint")} action={newButton} />
+        </div>
+      ) : (
+        <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="brand-call-list">
+          {list.items.map((c) => (
+            <li key={c.id}>
+              <Link
+                href={`/marca/oportunidades/chamadas/${c.id}`}
+                className="flex flex-col gap-1.5 p-4 transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus"
+              >
+                <span className="flex flex-wrap items-center gap-2">
+                  <CallStatusBadge status={c.status} closedReason={c.closedReason} />
+                  {c.approval === "pending" ? (
+                    <Badge size="sm" variant="warning">
+                      {t("badgeApproval")}
+                    </Badge>
+                  ) : null}
+                  {c.awaitingBrand > 0 ? (
+                    <Badge size="sm" variant="warning">
+                      {t("badgeYourTurn", { count: c.awaitingBrand })}
+                    </Badge>
+                  ) : null}
+                  {c.pendingOwner > 0 ? (
+                    <Badge size="sm" variant="warning">
+                      {t("badgeOwner")}
+                    </Badge>
+                  ) : null}
+                  <span className="text-sm font-semibold text-fg">{c.title}</span>
+                </span>
+                <span className="type-caption text-fg-muted">
+                  {formatPlainDate(c.startsOn, locale)}
+                  {c.endsOn !== c.startsOn ? ` – ${formatPlainDate(c.endsOn, locale)}` : ""}
+                  {c.status !== "draft" ? ` · ${t("proposals", { count: c.proposals })}` : ""}
+                  {c.agreed > 0 ? ` · ${t("agreed", { count: c.agreed })}` : ""}
+                </span>
+                {c.status === "open" && c.respondBy ? <span className="type-caption text-fg-muted">{t("respondUntil", { date: formatDateTime(c.respondBy, locale) })}</span> : null}
               </Link>
             </li>
           ))}

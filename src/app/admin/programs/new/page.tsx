@@ -18,7 +18,7 @@ export default async function AdminProgramNewPage({ searchParams }: { searchPara
   const [t, tc, creatorsRes] = await Promise.all([
     getTranslations("adminContent.programs.create"),
     getTranslations("adminContent.common"),
-    supabase.from("creator_profiles").select("id, name").eq("status", "active").order("name"),
+    supabase.from("creator_profiles").select("id, name, slug, avatar_url").eq("status", "active").order("name"),
   ]);
   return (
     <div className="flex flex-col gap-6">

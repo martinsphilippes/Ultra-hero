@@ -8,12 +8,14 @@ export { DatePicker, DateTimePicker, type DatePickerProps, type DateTimePickerPr
 export { Dialog, type DialogProps } from "./dialog";
 export { Divider } from "./divider";
 export { EmptyState } from "./empty-state";
+export { EntityCard, EntitySelect, type EntityOption } from "./entity-select";
 export { ErrorState } from "./error-state";
 export { FormField } from "./form-field";
 export { IconButton } from "./icon-button";
 export { Input, fieldBase } from "./input";
 export { Label } from "./label";
 export { MoneyInput } from "./money-input";
+export { NumberInput } from "./number-input";
 export { PageHeader, StepMark } from "./page-header";
 export { ProgressBar, ProgressRing } from "./progress";
 export { Section } from "./section";

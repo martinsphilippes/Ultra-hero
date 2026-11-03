@@ -21,6 +21,8 @@ export type CalendarEvent = {
   deliverableId: string | null;
   /** Oportunidade de patrocínio (0085) que gerou o evento. */
   sponsorshipId: string | null;
+  /** Chamada da marca (0089): evento montado pela tela da agência, nunca vem do banco. */
+  brandCallId?: string | null;
   source: "manual" | "system";
   visibleToBrand: boolean;
   visibleToTalent: boolean;

@@ -2,11 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { saveEventAction } from "@/lib/calendar/actions";
 import { MANUAL_EVENT_KINDS, type EventInput, type ManualEventKind } from "@/lib/calendar/vocab";
+import { brandOption, dealOption, talentOption, type TalentPickFields } from "@/lib/ui/entity";
 
-export type EventOption = { id: string; name: string };
+/** Opção das listas do formulário; os campos extras alimentam o cartão abaixo da caixa (negócio: marca e logo). */
+export type EventOption = { id: string; name: string; brand?: string | null; logoUrl?: string | null } & TalentPickFields;
 export type EventFormOptions = {
   /** Negócio fixo (ficha do negócio) ou lista para escolher (agenda). */
   fixedDealId?: string | null;
@@ -31,6 +33,7 @@ type Props = EventFormOptions & {
 export function EventFormDialog({ open, onOpenChange, initial, fixedDealId = null, deals = [], talents = [], brands = [], canPublishCommercialDate, dealRequired = false }: Props) {
   const t = useTranslations("agency.agenda.form");
   const tk = useTranslations("commercial.eventKinds");
+  const tp = useTranslations("pickers");
   const { toast } = useToast();
   const [v, setV] = useState<EventInput>(initial);
   const [error, setError] = useState<string | null>(null);
@@ -90,38 +93,33 @@ export function EventFormDialog({ open, onOpenChange, initial, fixedDealId = nul
         {!commercial ? (
           <div className="grid gap-3 sm:grid-cols-2">
             {fixedDealId ? null : (
-              <FormField label={t("deal")} hint={dealRequired ? t("dealRequiredHint") : undefined} required={dealRequired}>
-                <Select value={v.dealId} onChange={(e) => setV((cur) => ({ ...cur, dealId: e.target.value, visibleToBrand: e.target.value ? cur.visibleToBrand : false }))} disabled={pending}>
-                  <option value="">—</option>
-                  {deals.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </Select>
+              <FormField label={t("deal")} hint={tp(dealRequired ? "hints.eventDealRequired" : "hints.eventDeal")} required={dealRequired}>
+                <EntitySelect
+                  value={v.dealId}
+                  onChange={(e) => setV((cur) => ({ ...cur, dealId: e.target.value, visibleToBrand: e.target.value ? cur.visibleToBrand : false }))}
+                  disabled={pending}
+                  emptyLabel="—"
+                  emptyCard={dealRequired ? undefined : tp("empty.noDeal")}
+                  roleInOption={false}
+                  options={deals.map((d) => dealOption(tp, d))}
+                />
               </FormField>
             )}
-            <FormField label={t("talent")} hint={t("talentHint")}>
-              <Select value={v.talentId} onChange={(e) => setV((cur) => ({ ...cur, talentId: e.target.value, visibleToTalent: e.target.value ? cur.visibleToTalent : false }))} disabled={pending}>
-                <option value="">—</option>
-                {talents.map((x) => (
-                  <option key={x.id} value={x.id}>
-                    {x.name}
-                  </option>
-                ))}
-              </Select>
+            <FormField label={t("talent")} hint={tp("hints.eventTalent")}>
+              <EntitySelect
+                value={v.talentId}
+                onChange={(e) => setV((cur) => ({ ...cur, talentId: e.target.value, visibleToTalent: e.target.value ? cur.visibleToTalent : false }))}
+                disabled={pending}
+                emptyLabel="—"
+                emptyCard={tp("empty.noTalent")}
+                roleInOption={false}
+                options={talents.map((x) => talentOption(tp, x))}
+              />
             </FormField>
           </div>
         ) : brands.length > 0 ? (
-          <FormField label={t("brand")} hint={t("brandHint")}>
-            <Select value={v.brandId} onChange={(e) => set("brandId", e.target.value)} disabled={pending}>
-              <option value="">{t("allBrands")}</option>
-              {brands.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </Select>
+          <FormField label={t("brand")} hint={tp("hints.eventBrand")}>
+            <EntitySelect value={v.brandId} onChange={(e) => set("brandId", e.target.value)} disabled={pending} emptyLabel={t("allBrands")} emptyCard={tp("empty.allBrands")} roleInOption={false} options={brands.map((b) => brandOption(tp, { id: b.id, name: b.name, logoUrl: b.logoUrl }))} />
           </FormField>
         ) : null}
         <FormField label={t("location")}>

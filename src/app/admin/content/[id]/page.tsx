@@ -70,7 +70,7 @@ type Params = { params: Promise<{ id: string }> };
 
 type ShowcaseData = {
   showcase: { id: string; name: string }[];
-  heroes: { id: string; name: string }[];
+  heroes: { id: string; name: string; slug: string; avatar_url: string | null }[];
   available: boolean;
   signer: string;
   ready: { id: string; title: string; status: string } | null;
@@ -82,7 +82,7 @@ async function loadShowcase(contentId: string): Promise<ShowcaseData> {
   const supabase = await createClient();
   const [linksRes, heroesRes, signerRes, readyRes] = await Promise.all([
     supabase.from("creator_recipe_links").select("status, creator:creator_profiles(id, name)").eq("content_id", contentId).eq("status", "validated"),
-    supabase.from("creator_profiles").select("id, name").eq("status", "active").order("name"),
+    supabase.from("creator_profiles").select("id, name, slug, avatar_url").eq("status", "active").order("name"),
     supabase.from("recipe_signers").select("chef_id").eq("content_id", contentId).maybeSingle(),
     supabase.from("recipe_ready_products").select("product:products(id, title, status)").eq("content_id", contentId).maybeSingle(),
   ]);
@@ -93,7 +93,7 @@ async function loadShowcase(contentId: string): Promise<ShowcaseData> {
   const ready = (readyRes.data as unknown as { product: { id: string; title: string; status: string } | null } | null)?.product ?? null;
   return {
     showcase,
-    heroes: (heroesRes.data ?? []) as { id: string; name: string }[],
+    heroes: (heroesRes.data ?? []) as { id: string; name: string; slug: string; avatar_url: string | null }[],
     available: !signerRes.error && !readyRes.error,
     signer: signerChoiceValue(signerRes.data),
     ready,

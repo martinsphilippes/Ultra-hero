@@ -101,7 +101,7 @@ export default async function DealDeliverablesPage({ params }: Props) {
       <section className="flex flex-col gap-3">
         {inExecution ? <h2 className="text-base font-semibold text-fg">{t("planTitle")}</h2> : null}
         <p className="type-body-sm text-fg-muted">{t("intro")}</p>
-        <DeliverablesEditor dealId={deal.id} talents={active.map((x) => ({ dealTalentId: x.id, name: x.talent.name }))} items={items.filter((d) => d.status !== "cancelled")} canEdit={canEdit} />
+        <DeliverablesEditor dealId={deal.id} talents={active.map((x) => ({ dealTalentId: x.id, name: x.talent.name, city: x.talent.city, state: x.talent.state, hasLogin: x.talent.hasLogin, avatarUrl: x.talent.avatarUrl }))} items={items.filter((d) => d.status !== "cancelled")} canEdit={canEdit} />
       </section>
     </div>
   );

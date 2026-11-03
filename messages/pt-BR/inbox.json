@@ -174,6 +174,26 @@
     "sponsorship_negotiation": {
       "title": "Negociação de patrocínio",
       "body": "{status, select, proposed {{brand} fez uma proposta para a cota {tier} de {title}.} countered {Nova contraproposta na cota {tier} de {title}.} agreed {Patrocínio acordado: cota {tier} de {title}.} declined {A proposta da cota {tier} de {title} foi recusada.} closed {A cota {tier} de {title} foi fechada com outra marca.} approval {A equipe preparou uma proposta para {title}: aprove para enviar.} returned {O dono devolveu a proposta de {title}.} approved {O dono aprovou e enviou a proposta de {title}.} other {Novidade na negociação de {title}.}}"
+    },
+    "brand_call_published": {
+      "title": "Pedido de marca",
+      "body": "{brand} publicou {title}. Propostas até {date}."
+    },
+    "brand_call_interest": {
+      "title": "Creator com interesse",
+      "body": "{talent} tem interesse no pedido {title}."
+    },
+    "brand_call_negotiation": {
+      "title": "Proposta para pedido de marca",
+      "body": "{status, select, proposed {{name} enviou uma proposta para {title}.} countered {Nova contraproposta em {title}.} agreed {Acordo fechado em {title}.} declined {A proposta de {title} foi recusada.} approval {A equipe preparou uma resposta em {title}: aprove para enviar.} returned {O dono devolveu a sua resposta em {title}.} approved {O dono aprovou e enviou a sua resposta em {title}.} other {Novidade em {title}.}}"
+    },
+    "brand_call_decided": {
+      "title": "Pedido de marca decidido",
+      "body": "{status, select, won {Sua proposta venceu em {title} ({brand}).} lost {{brand} escolheu outra proposta em {title}.} chosen {Você foi escolhido para {title} ({brand}).} cancelled {{brand} cancelou {title}.} other {{brand} encerrou {title}.}}"
+    },
+    "brand_call_review": {
+      "title": "Chamada para aprovar",
+      "body": "{status, select, requested {{name} pediu para publicar {title}.} returned {O dono devolveu {title} para ajustes.} approved {O dono publicou {title}.} other {Novidade em {title}.}}"
     }
   }
 }

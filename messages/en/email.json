@@ -62,6 +62,26 @@
         "subject": "Sponsorship negotiation: {title}",
         "body": "{status, select, proposed {{brand} made an offer for the {tier} tier of {title}.} countered {New counteroffer on the {tier} tier of {title}.} agreed {Sponsorship agreed: {tier} tier of {title}.} declined {The offer for the {tier} tier of {title} was declined.} closed {The {tier} tier of {title} was closed with another brand.} approval {The team prepared an offer for {title}: approve to send.} returned {The owner returned the offer for {title}.} approved {The owner approved and sent the offer for {title}.} other {News in the negotiation of {title}.}} See the details in the app.",
         "cta": "See negotiation"
+      },
+      "brand_call_published": {
+        "subject": "Brand request: {title}",
+        "body": "{brand} published the request {title} for your agency. Proposals until {date}.",
+        "cta": "See request"
+      },
+      "brand_call_interest": {
+        "subject": "Interested creator: {title}",
+        "body": "{talent} showed interest in the request {title}. See it when building the proposal.",
+        "cta": "See request"
+      },
+      "brand_call_negotiation": {
+        "subject": "{status, select, proposed {New proposal} countered {New counteroffer} agreed {Deal closed} other {Proposal declined}}: {title}",
+        "body": "{status, select, proposed {{name} sent a proposal for {title}.} countered {There is a counteroffer on {title}. It is your turn.} agreed {The deal on {title} is closed.} other {The proposal for {title} was declined.}}",
+        "cta": "See negotiation"
+      },
+      "brand_call_decided": {
+        "subject": "Brand request decided: {title}",
+        "body": "{status, select, won {Your proposal won on {title}. The brand gets the campaign ready.} lost {The brand chose another proposal on {title}.} chosen {You were chosen for {title} ({brand}). Your agency handles the rest.} cancelled {The brand cancelled {title}.} other {The brand closed {title}.}}",
+        "cta": "See details"
       }
     }
   }

@@ -131,7 +131,8 @@
     "recording": "Grabación",
     "commercial_date": "Fecha comercial",
     "other": "Otro",
-    "sponsorship": "Patrocinio"
+    "sponsorship": "Patrocinio",
+    "brand_call": "Pedido de marca"
   },
   "agenda": {
     "allDay": "todo el día",

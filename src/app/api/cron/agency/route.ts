@@ -56,6 +56,14 @@ async function handler(request: Request) {
     } else {
       out.sponsorships_closed = Number(sponsorships.data ?? 0);
     }
+    // 0089: chamadas da marca com prazo para propostas vencido
+    const brandCalls = await admin.rpc("brand_call_deadline_scan");
+    if (brandCalls.error) {
+      if (!NOT_MIGRATED.has(brandCalls.error.code ?? "")) throw new Error(brandCalls.error.message);
+      out.brand_calls_skipped = "not_migrated";
+    } else {
+      out.brand_calls_closed = Number(brandCalls.data ?? 0);
+    }
     try {
       Object.assign(out, await collectYouTubeMetrics(admin));
     } catch (error) {

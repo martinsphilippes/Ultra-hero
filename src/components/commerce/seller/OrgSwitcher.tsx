@@ -4,22 +4,23 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useId, useTransition } from "react";
 import { selectSellerOrg } from "@/app/seller/actions";
-import { Select } from "@/components/ui";
+import { EntitySelect } from "@/components/ui";
 
 type Props = { orgs: { id: string; name: string }[]; activeId: string };
 
 // Seletor de organização (só aparece quando o usuário pertence a mais de uma).
 export function OrgSwitcher({ orgs, activeId }: Props) {
   const t = useTranslations("seller.portal");
+  const tp = useTranslations("pickers");
   const router = useRouter();
   const id = useId();
   const [pending, startTransition] = useTransition();
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-sm font-semibold text-fg">
         {t("orgLabel")}
       </label>
-      <Select
+      <EntitySelect
         id={id}
         value={activeId}
         selectSize="sm"
@@ -31,13 +32,13 @@ export function OrgSwitcher({ orgs, activeId }: Props) {
             if (result.ok) router.refresh();
           })
         }
-      >
-        {orgs.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.name}
-          </option>
-        ))}
-      </Select>
+        aria-describedby={`${id}-hint`}
+        roleInOption={false}
+        options={orgs.map((o) => ({ value: o.id, name: o.name, role: tp("roles.seller") }))}
+      />
+      <p id={`${id}-hint`} className="type-caption text-fg-muted">
+        {tp("hints.orgSwitcher")}
+      </p>
     </div>
   );
 }

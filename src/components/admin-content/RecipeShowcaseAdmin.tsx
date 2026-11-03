@@ -7,10 +7,11 @@ import { useState, useTransition } from "react";
 import { searchProductsAction } from "@/app/admin/content-actions";
 import { setRecipeReadyProductAction, setRecipeShowcaseHeroAction, setRecipeSignerAction } from "@/app/admin/content/showcase-actions";
 import type { ActionResult } from "@/components/admin";
-import { Badge, Button, FormField, Select, useToast } from "@/components/ui";
+import { Badge, Button, EntitySelect, FormField, useToast } from "@/components/ui";
+import { heroOption } from "@/lib/ui/entity";
 import { SearchPicker, type PickItem } from "./SearchPicker";
 
-type Hero = { id: string; name: string };
+type Hero = { id: string; name: string; slug?: string | null; avatar_url?: string | null };
 
 type Props = {
   contentId: string;
@@ -32,6 +33,7 @@ type Props = {
 // ação auditada no banco; a tela recarrega os dados depois.
 export function RecipeShowcaseAdmin({ contentId, author, showcase, heroes, available, signer, ready }: Props) {
   const t = useTranslations("adminContent.content.showcase");
+  const tp = useTranslations("pickers");
   const router = useRouter();
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
@@ -82,16 +84,9 @@ export function RecipeShowcaseAdmin({ contentId, author, showcase, heroes, avail
           {!author && showcase.length === 0 ? <li className="px-3 py-2 type-caption text-fg-muted">{t("heroes.empty")}</li> : null}
         </ul>
         {candidates.length > 0 ? (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-            <FormField label={t("heroes.add")} className="flex-1">
-              <Select value={addHero} onChange={(e) => setAddHero(e.target.value)} data-testid="showcase-hero-select">
-                <option value="">{t("heroes.pick")}</option>
-                {candidates.map((hero) => (
-                  <option key={hero.id} value={hero.id}>
-                    {hero.name}
-                  </option>
-                ))}
-              </Select>
+          <div className="flex flex-col gap-2">
+            <FormField label={t("heroes.add")} hint={tp("hints.showcaseHero")} className="flex-1">
+              <EntitySelect value={addHero} onChange={(e) => setAddHero(e.target.value)} data-testid="showcase-hero-select" emptyLabel={t("heroes.pick")} roleInOption={false} options={candidates.map((hero) => heroOption(tp, { id: hero.id, name: hero.name, slug: hero.slug, avatarUrl: hero.avatar_url }))} />
             </FormField>
             <Button type="button" variant="secondary" leadingIcon={<Plus />} disabled={!addHero || pending} onClick={() => run(() => setRecipeShowcaseHeroAction(contentId, addHero, true), () => setAddHero(""))}>
               {t("heroes.addButton")}
@@ -111,18 +106,20 @@ export function RecipeShowcaseAdmin({ contentId, author, showcase, heroes, avail
             <h3 id="showcase-signer" className="text-sm font-semibold text-fg">
               {t("signer.title")}
             </h3>
-            <FormField label={t("signer.label")} hint={t("signer.hint")}>
-              <Select value={signerValue} onChange={(e) => setSignerValue(e.target.value)} data-testid="showcase-signer-select">
-                <option value="author">{author ? t("signer.author", { name: author.name }) : t("signer.authorNone")}</option>
-                <option value="none">{t("signer.none")}</option>
-                {heroes
-                  .filter((hero) => hero.id !== author?.id)
-                  .map((hero) => (
-                    <option key={hero.id} value={hero.id}>
-                      {hero.name}
-                    </option>
-                  ))}
-              </Select>
+            <FormField label={t("signer.label")} hint={tp("hints.recipeSigner")}>
+              <EntitySelect
+                value={signerValue}
+                onChange={(e) => setSignerValue(e.target.value)}
+                data-testid="showcase-signer-select"
+                roleInOption={false}
+                extraOptions={[{ value: "none", label: t("signer.none") }]}
+                options={[
+                  author
+                    ? { ...heroOption(tp, { id: author.id, name: author.name, slug: author.slug, avatarUrl: author.avatar_url }), value: "author", name: t("signer.author", { name: author.name }) }
+                    : { value: "author", name: t("signer.authorNone") },
+                  ...heroes.filter((hero) => hero.id !== author?.id).map((hero) => heroOption(tp, { id: hero.id, name: hero.name, slug: hero.slug, avatarUrl: hero.avatar_url })),
+                ]}
+              />
             </FormField>
             <Button type="button" variant="secondary" className="w-fit" disabled={signerValue === signer || pending} onClick={() => run(() => setRecipeSignerAction(contentId, signerValue))} data-testid="showcase-signer-save">
               {t("signer.save")}

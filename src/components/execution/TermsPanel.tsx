@@ -4,7 +4,7 @@ import { CheckCircle2, FileSignature, ReceiptText, Send, ShieldCheck, Undo2 } fr
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, DatePicker, Dialog, FormField, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, EntitySelect, FormField, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { RightsEditor } from "@/components/offer/RightsEditor";
@@ -12,6 +12,7 @@ import { RightsView } from "@/components/offer/RightsView";
 import { confirmContractAction, recordAcceptanceAction, saveTermsAction, sendTermsAction, withdrawTermsAction } from "@/lib/execution/actions";
 import type { Terms } from "@/lib/execution/queries";
 import { EMPTY_RIGHTS, rightsIssue } from "@/lib/offer/rights";
+import { talentOption } from "@/lib/ui/entity";
 import { SignDialog } from "@/components/signature/SignDialog";
 
 type Portal = "agency" | "brand" | "office";
@@ -279,6 +280,7 @@ function TermsForm({ dealId, initial, draftId, segments }: { dealId: string; ini
 
 function RecordDialog({ termsId, dealId, brandPending, talents, onClose }: { termsId: string; dealId: string; brandPending: boolean; talents: { dealTalentId: string; name: string }[]; onClose: () => void }) {
   const ta = useTranslations("agency.terms");
+  const tp = useTranslations("pickers");
   const { toast } = useToast();
   const [party, setParty] = useState<"brand" | "talent">(brandPending ? "brand" : "talent");
   const [dealTalentId, setDealTalentId] = useState(talents[0]?.dealTalentId ?? "");
@@ -313,21 +315,15 @@ function RecordDialog({ termsId, dealId, brandPending, talents, onClose }: { ter
       }
     >
       <div className="flex flex-col gap-3">
-        <FormField label={ta("party")}>
+        <FormField label={ta("party")} hint={tp("hints.termsParty")}>
           <Select value={party} onChange={(e) => setParty(e.target.value as "brand" | "talent")} disabled={pending}>
             {brandPending ? <option value="brand">{ta("partyBrand")}</option> : null}
             {talents.length > 0 ? <option value="talent">{ta("partyTalent")}</option> : null}
           </Select>
         </FormField>
         {party === "talent" ? (
-          <FormField label={ta("talent")}>
-            <Select value={dealTalentId} onChange={(e) => setDealTalentId(e.target.value)} disabled={pending}>
-              {talents.map((x) => (
-                <option key={x.dealTalentId} value={x.dealTalentId}>
-                  {x.name}
-                </option>
-              ))}
-            </Select>
+          <FormField label={ta("talent")} hint={tp("hints.termsTalent")}>
+            <EntitySelect value={dealTalentId} onChange={(e) => setDealTalentId(e.target.value)} disabled={pending} roleInOption={false} options={talents.map((x) => talentOption(tp, { id: x.dealTalentId, name: x.name, hasLogin: false }))} />
           </FormField>
         ) : null}
         <FormField label={ta("recordNote")} hint={ta("recordNoteHint")} required>

@@ -62,6 +62,26 @@
         "subject": "Negociación de patrocinio: {title}",
         "body": "{status, select, proposed {{brand} hizo una propuesta para la cuota {tier} de {title}.} countered {Nueva contrapropuesta en la cuota {tier} de {title}.} agreed {Patrocinio acordado: cuota {tier} de {title}.} declined {La propuesta de la cuota {tier} de {title} fue rechazada.} closed {La cuota {tier} de {title} se cerró con otra marca.} approval {El equipo preparó una propuesta para {title}: apruébala para enviar.} returned {El dueño devolvió la propuesta de {title}.} approved {El dueño aprobó y envió la propuesta de {title}.} other {Novedad en la negociación de {title}.}} Mira los detalles en la app.",
         "cta": "Ver negociación"
+      },
+      "brand_call_published": {
+        "subject": "Pedido de marca: {title}",
+        "body": "{brand} publicó el pedido {title} para tu agencia. Propuestas hasta {date}.",
+        "cta": "Ver pedido"
+      },
+      "brand_call_interest": {
+        "subject": "Creator interesado: {title}",
+        "body": "{talent} mostró interés en el pedido {title}. Velo al armar la propuesta.",
+        "cta": "Ver pedido"
+      },
+      "brand_call_negotiation": {
+        "subject": "{status, select, proposed {Nueva propuesta} countered {Nueva contrapropuesta} agreed {Acuerdo cerrado} other {Propuesta rechazada}}: {title}",
+        "body": "{status, select, proposed {{name} envió una propuesta para {title}.} countered {Hay una contrapropuesta en {title}. Es tu turno.} agreed {El acuerdo en {title} está cerrado.} other {La propuesta de {title} fue rechazada.}}",
+        "cta": "Ver negociación"
+      },
+      "brand_call_decided": {
+        "subject": "Pedido de marca decidido: {title}",
+        "body": "{status, select, won {Tu propuesta ganó en {title}. La marca recibe la campaña lista.} lost {La marca eligió otra propuesta en {title}.} chosen {Te eligieron para {title} ({brand}). Tu agencia se ocupa del resto.} cancelled {La marca canceló {title}.} other {La marca cerró {title}.}}",
+        "cta": "Ver detalles"
       }
     }
   }

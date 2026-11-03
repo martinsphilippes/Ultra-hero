@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 import { saveContentBrandLinksAction, saveCreatorBrandsAction, saveProgramBrandProductsAction } from "@/app/admin/marcas/actions";
-import { Badge, Button, IconButton, Input, Select, Switch } from "@/components/ui";
+import { Badge, Button, EntitySelect, IconButton, Input, Select, Switch } from "@/components/ui";
 import { RELATIONSHIPS, type Relationship } from "@/lib/brands";
 import { MAX_CONTENT_LINKS, MAX_CREATOR_BRANDS, MAX_PROGRAM_PRODUCTS, PROGRAM_NOTE_MAX, type BrandLinkItem, type ProductLinkItem } from "@/lib/brands/admin";
 import type { BrandOption, ProductOption } from "@/lib/brands/admin-queries";
@@ -26,6 +26,7 @@ type BrandListProps = { value: BrandLinkItem[]; onChange: (v: BrandLinkItem[]) =
 
 function BrandList({ value, onChange, options, max, disabled, testId }: BrandListProps) {
   const t = useTranslations("adminOps.brands");
+  const tp = useTranslations("pickers");
   const [picked, setPicked] = useState("");
   const byId = new Map(options.map((o) => [o.id, o]));
   const taken = new Set(value.map((v) => v.id));
@@ -77,17 +78,18 @@ function BrandList({ value, onChange, options, max, disabled, testId }: BrandLis
           );
         })}
       </ol>
-      <div className="flex flex-wrap items-end gap-2">
-        <Select aria-label={t("links.selectBrand")} value={picked} disabled={disabled || full} onChange={(e) => setPicked(e.target.value)} className="min-w-0 flex-1">
-          <option value="">{t("links.selectBrand")}</option>
-          {options
-            .filter((o) => !taken.has(o.id))
-            .map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.name}
-              </option>
-            ))}
-        </Select>
+      <div className="flex flex-wrap items-start gap-2">
+        <EntitySelect
+          aria-label={t("links.selectBrand")}
+          aria-describedby={`${testId}-brand-hint`}
+          value={picked}
+          disabled={disabled || full}
+          onChange={(e) => setPicked(e.target.value)}
+          wrapperClassName="min-w-0 flex-1"
+          emptyLabel={t("links.selectBrand")}
+          roleInOption={false}
+          options={options.filter((o) => !taken.has(o.id)).map((o) => ({ value: o.id, name: o.name, role: tp("roles.brand"), detail: t.has(`relationship.${o.default_relationship}`) ? t(`relationship.${o.default_relationship}`) : null }))}
+        />
         <Button
           type="button"
           variant="secondary"
@@ -103,6 +105,9 @@ function BrandList({ value, onChange, options, max, disabled, testId }: BrandLis
           {t("links.addBrand")}
         </Button>
       </div>
+      <p id={`${testId}-brand-hint`} className="type-caption text-fg-muted">
+        {tp("hints.heroBrand")}
+      </p>
     </div>
   );
 }

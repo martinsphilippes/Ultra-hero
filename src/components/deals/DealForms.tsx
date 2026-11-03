@@ -5,17 +5,21 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
-import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { canConfirm, DEAL_OUTCOMES, moveNeedsNote, nextStages, type DealOutcome, type DealStage } from "@/lib/deals/stages";
 import { ACTIVITY_KINDS, type ActivityKind } from "@/lib/deals/vocab";
+import { brandOption, memberOption } from "@/lib/ui/entity";
 
-export type Member = { userId: string; name: string };
+/** Membro da agência para as listas; `role` (admin|manager|staff) e `jobTitle` vêm de listTeam. */
+export type Member = { userId: string; name: string; role?: string | null; jobTitle?: string | null };
 
 // ---------------------------------------------------------------- criar / editar
 type DealValues = { title: string; talentBrief: string; expectedStart: string; expectedEnd: string; ownerId: string; notes: string; brandId: string };
 
-export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwner }: { initial: DealValues; dealId: string | null; brands: { id: string; name: string }[]; members: Member[]; canEdit: boolean; canSetOwner: boolean }) {
+export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwner }: { initial: DealValues; dealId: string | null; brands: { id: string; name: string; logoUrl?: string | null }[]; members: Member[]; canEdit: boolean; canSetOwner: boolean }) {
   const t = useTranslations("agency.deal.form");
+  const tp = useTranslations("pickers");
+  const memberOptions = members.map((m) => memberOption(tp, m));
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
@@ -40,15 +44,15 @@ export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwne
   return (
     <form onSubmit={submit} className="flex flex-col gap-4" noValidate data-testid="deal-form">
       {!dealId ? (
-        <FormField label={t("brand")} required>
-          <Select value={v.brandId} onChange={(e) => set("brandId", e.target.value)} disabled={disabled}>
-            <option value="">—</option>
-            {brands.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </Select>
+        <FormField label={t("brand")} hint={tp("hints.dealBrand")} required>
+          <EntitySelect
+            value={v.brandId}
+            onChange={(e) => set("brandId", e.target.value)}
+            disabled={disabled}
+            emptyLabel="—"
+            roleInOption={false}
+            options={brands.map((b) => brandOption(tp, b))}
+          />
         </FormField>
       ) : null}
       <FormField label={t("title")} required>
@@ -66,15 +70,8 @@ export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwne
         </FormField>
       </div>
       {canSetOwner ? (
-        <FormField label={t("owner")} hint={t("ownerHint")}>
-          <Select value={v.ownerId} onChange={(e) => set("ownerId", e.target.value)} disabled={disabled}>
-            <option value="">{t("noOwner")}</option>
-            {members.map((m) => (
-              <option key={m.userId} value={m.userId}>
-                {m.name}
-              </option>
-            ))}
-          </Select>
+        <FormField label={t("owner")} hint={tp("hints.dealOwner")}>
+          <EntitySelect value={v.ownerId} onChange={(e) => set("ownerId", e.target.value)} disabled={disabled} emptyLabel={t("noOwner")} emptyCard={tp("empty.noOwner")} options={memberOptions} />
         </FormField>
       ) : null}
       {!dealId ? (

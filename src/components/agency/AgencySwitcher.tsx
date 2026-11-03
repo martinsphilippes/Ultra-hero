@@ -3,17 +3,18 @@
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 import { selectAgencyAction } from "@/app/agencia/actions";
-import { FormField, Select } from "@/components/ui";
+import { EntitySelect, FormField } from "@/components/ui";
 
 type Props = { agencies: Array<{ id: string; name: string; isDemo: boolean }>; currentId: string };
 
 // Admin geral escolhe a agência que está vendo (cookie no servidor; recarrega sem histórico).
 export function AgencySwitcher({ agencies, currentId }: Props) {
   const t = useTranslations("agency.dashboard");
+  const tp = useTranslations("pickers");
   const [pending, start] = useTransition();
   return (
-    <FormField label={t("switchAgency")} className="max-w-sm">
-      <Select
+    <FormField label={t("switchAgency")} hint={tp("hints.agencySwitcher")} className="max-w-sm">
+      <EntitySelect
         value={currentId}
         disabled={pending}
         data-testid="agency-switcher"
@@ -24,13 +25,9 @@ export function AgencySwitcher({ agencies, currentId }: Props) {
             if (result.ok) window.location.replace("/agencia");
           });
         }}
-      >
-        {agencies.map((a) => (
-          <option key={a.id} value={a.id}>
-            {a.isDemo ? `${a.name} · ${t("demoTag")}` : a.name}
-          </option>
-        ))}
-      </Select>
+        roleInOption={false}
+        options={agencies.map((a) => ({ value: a.id, name: a.isDemo ? `${a.name} · ${t("demoTag")}` : a.name, role: tp("roles.agency") }))}
+      />
     </FormField>
   );
 }

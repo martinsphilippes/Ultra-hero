@@ -40,7 +40,7 @@ export default async function DealTasksPage({ params }: Props) {
         tasks={tasks}
         dealId={deal.id}
         canEdit={canEdit}
-        create={canEdit ? { agencyId: ctx.agency.id, fixedDealId: deal.id, members: team.map((m) => ({ userId: m.userId, name: m.name })), talents: active.map((x) => ({ id: x.talentId, name: x.talent.name, userId: null })) } : undefined}
+        create={canEdit ? { agencyId: ctx.agency.id, fixedDealId: deal.id, members: team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle })), talents: active.map((x) => ({ id: x.talentId, name: x.talent.name, userId: null, city: x.talent.city, state: x.talent.state, hasLogin: x.talent.hasLogin, avatarUrl: x.talent.avatarUrl })) } : undefined}
         emptyText={t("emptyDeal")}
       />
     </div>

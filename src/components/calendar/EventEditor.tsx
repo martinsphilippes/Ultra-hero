@@ -103,12 +103,22 @@ export function EventNewOnDayButton({ day, dateLabel }: { day: string; dateLabel
   );
 }
 
-type ActionEvent = EditableEvent & { sponsorshipId: string | null };
+type ActionEvent = EditableEvent & { sponsorshipId: string | null; brandCallId?: string | null };
 
 /** Ações de um item da lista (agência): editar e remover os manuais que a pessoa pode mexer; patrocínio abre a oportunidade. */
 export function EventActions({ event }: { event: ActionEvent }) {
   const t = useTranslations("agency.agenda");
   const editor = useEventEditor();
+  if (event.kind === "brand_call" && event.brandCallId) {
+    // 0089: a chamada da marca se responde na tela do pedido
+    return (
+      <Button asChild size="sm" variant="ghost" leadingIcon={<ExternalLink />}>
+        <Link href={`/agencia/oportunidades/pedidos/${event.brandCallId}`} aria-label={t("brandCallOpenLabel", { title: event.title })} data-testid="event-open-brand-call">
+          <span className="sr-only sm:not-sr-only">{t("brandCallOpen")}</span>
+        </Link>
+      </Button>
+    );
+  }
   if (event.kind === "sponsorship" && event.sponsorshipId) {
     // 0085: a oportunidade se edita na tela dela
     return (

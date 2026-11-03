@@ -131,7 +131,8 @@
     "recording": "Recording",
     "commercial_date": "Commercial date",
     "other": "Other",
-    "sponsorship": "Sponsorship"
+    "sponsorship": "Sponsorship",
+    "brand_call": "Brand request"
   },
   "agenda": {
     "allDay": "all day",

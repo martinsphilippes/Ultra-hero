@@ -3,7 +3,7 @@
 import { AtSign, Pencil, Plus, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, DatePicker, Dialog, FormField, Input, Select, useToast } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FormField, Input, NumberInput, Select, useToast } from "@/components/ui";
 import { deleteSocialAction, saveSocialAction } from "@/lib/talent/actions";
 import { formatBp, formatCount } from "@/lib/talent/media-kit";
 import { asOfInRange, audienceSchema, parseCount, percentToBp, type Audience } from "@/lib/talent/schemas";
@@ -251,13 +251,13 @@ export function SocialEditor({ portal, talentId, accounts, canEdit }: Props) {
             </FormField>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <FormField label={tv("followers")}>
-                <Input inputMode="numeric" value={draft.followers} onChange={(e) => set("followers", e.target.value)} disabled={pending} />
+                <NumberInput value={draft.followers} max={1_000_000_000} onValueChange={(text) => set("followers", text)} disabled={pending} />
               </FormField>
               <FormField label={tv("views")}>
-                <Input inputMode="numeric" value={draft.avgViews} onChange={(e) => set("avgViews", e.target.value)} disabled={pending} />
+                <NumberInput value={draft.avgViews} max={1_000_000_000} onValueChange={(text) => set("avgViews", text)} disabled={pending} />
               </FormField>
               <FormField label={tv("reach")}>
-                <Input inputMode="numeric" value={draft.avgReach} onChange={(e) => set("avgReach", e.target.value)} disabled={pending} />
+                <NumberInput value={draft.avgReach} max={1_000_000_000} onValueChange={(text) => set("avgReach", text)} disabled={pending} />
               </FormField>
               <FormField label={t("engagementPct")}>
                 <Input inputMode="decimal" value={draft.engagement} onChange={(e) => set("engagement", e.target.value)} disabled={pending} />

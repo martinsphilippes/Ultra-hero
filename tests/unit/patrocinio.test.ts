@@ -139,8 +139,8 @@ describe("Hoje da marca", () => {
 
 describe("avisos, e-mail, agenda e menu", () => {
   it("três avisos novos, no check da 0085; e-mail para a parte certa; nenhum vira push", () => {
-    // o check de tipos de aviso mais recente é o da 0088 (0085 + negociação das cotas)
-    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0088_patrocinio_cotas_negociacao.sql"), "utf8");
+    // o check de tipos de aviso mais recente é o da 0089 (0085 + negociação das cotas da 0088 + chamada da marca)
+    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0089_chamada_da_marca.sql"), "utf8");
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(inboxKindEmails("sponsorship_published", "/marca/oportunidades/x")).toBe(true);
     expect(inboxKindEmails("sponsorship_published", "/agencia/oportunidades/x")).toBe(false);

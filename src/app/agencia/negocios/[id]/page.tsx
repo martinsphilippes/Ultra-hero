@@ -80,7 +80,7 @@ export default async function DealOverviewPage({ params }: Props) {
             initial={{ brandId: deal.brand.id, title: deal.title, talentBrief: deal.talentBrief, expectedStart: deal.expectedStart ?? "", expectedEnd: deal.expectedEnd ?? "", ownerId: deal.ownerId ?? "", notes: "" }}
             dealId={deal.id}
             brands={[]}
-            members={team.map((m) => ({ userId: m.userId, name: m.name }))}
+            members={team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle }))}
             canEdit={canEdit}
             canSetOwner={isManager}
           />
@@ -129,7 +129,7 @@ export default async function DealOverviewPage({ params }: Props) {
         ) : null}
         {/* 0086: criar (hoje, 09:00–10:00) e editar/remover os compromissos manuais deste negócio, para quem pode mexer nele */}
         <EventEditorProvider
-          options={{ fixedDealId: deal.id, talents: talents.filter((x) => !["declined", "removed"].includes(x.status)).map((x) => ({ id: x.talentId, name: x.talent.name })), canPublishCommercialDate: false }}
+          options={{ fixedDealId: deal.id, talents: talents.filter((x) => !["declined", "removed"].includes(x.status)).map((x) => ({ id: x.talentId, name: x.talent.name, city: x.talent.city, state: x.talent.state, hasLogin: x.talent.hasLogin, avatarUrl: x.talent.avatarUrl })), canPublishCommercialDate: false }}
           timeZone={tz}
           today={zonedDayKey(new Date(), tz)}
           permissions={{ isManager, dealIds: canEdit ? [deal.id] : [] }}

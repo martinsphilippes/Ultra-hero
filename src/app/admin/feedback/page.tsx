@@ -59,7 +59,7 @@ export default async function AdminFeedbackPage({ searchParams }: { searchParams
   if (error) throw new Error(error.message);
   if (adminsRes.error) throw new Error(adminsRes.error.message);
   const rows = (data ?? []) as FeedbackRow[];
-  const admins: AdminOption[] = (adminsRes.data ?? []).map((a) => ({ id: a.id, label: a.display_name || a.email }));
+  const admins: AdminOption[] = (adminsRes.data ?? []).map((a) => ({ id: a.id, label: a.display_name || a.email, email: a.email }));
   const adminLabel = new Map(admins.map((a) => [a.id, a.label]));
 
   const categoryLabel = (value: string) => (t.has(`categories.${value}`) ? t(`categories.${value}`) : value);

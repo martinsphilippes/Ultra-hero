@@ -7,12 +7,13 @@ import { loadContentBlockOptionsAction } from "@/app/admin/content/block-actions
 import { saveContentAction } from "@/app/admin/content-actions";
 import { ContentForm } from "@/components/editors/ContentForm";
 import type { ContentFormValues } from "@/components/editors/types";
-import { FormField, Select, useToast } from "@/components/ui";
+import { EntitySelect, FormField, useToast } from "@/components/ui";
+import { heroOption } from "@/lib/ui/entity";
 import type { ComposerOptions } from "@/lib/post-blocks/queries";
 import { emptyDrafts, type BlockDrafts } from "@/lib/post-blocks/schema";
 import { ContentKindPicker, type ContentKind } from "./ContentKindPicker";
 
-type CreatorOption = { id: string; name: string; is_fictional: boolean };
+type CreatorOption = { id: string; name: string; is_fictional: boolean; slug?: string | null; avatar_url?: string | null };
 
 type Props = {
   mode: "create" | "edit";
@@ -36,6 +37,7 @@ const BLOCK_HREFS = { newRecipe: "/creator/recipes/new", links: "/admin/links", 
 export function AdminContentEditor({ mode, contentId, initial, creators, initialCreatorId, readOnly = false, coverState, initialBlocks }: Props) {
   const t = useTranslations("adminContent.content.form");
   const tc = useTranslations("adminContent.common");
+  const tp = useTranslations("pickers");
   const router = useRouter();
   const { toast } = useToast();
   const [creatorId, setCreatorId] = useState<string>(initialCreatorId ?? "");
@@ -88,16 +90,16 @@ export function AdminContentEditor({ mode, contentId, initial, creators, initial
 
   return (
     <div className="flex flex-col gap-6">
-      <FormField label={t("creatorLabel")} hint={t("creatorHint")} error={creatorError ?? undefined} required={mode === "create"}>
-        <Select value={creatorId} onChange={(e) => setCreatorId(e.target.value)} disabled={readOnly}>
-          <option value="">{tc("noCreator")}</option>
-          {creators.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-              {c.is_fictional ? ` · ${tc("fictional")}` : ""}
-            </option>
-          ))}
-        </Select>
+      <FormField label={t("creatorLabel")} hint={tp("hints.contentCreator")} error={creatorError ?? undefined} required={mode === "create"}>
+        <EntitySelect
+          value={creatorId}
+          onChange={(e) => setCreatorId(e.target.value)}
+          disabled={readOnly}
+          emptyLabel={tc("noCreator")}
+          emptyCard={tp("empty.noCreator")}
+          roleInOption={false}
+          options={creators.map((c) => ({ ...heroOption(tp, { id: c.id, name: c.name, slug: c.slug, avatarUrl: c.avatar_url }), name: c.is_fictional ? `${c.name} · ${tc("fictional")}` : c.name }))}
+        />
       </FormField>
       {mode === "create" ? <ContentKindPicker value={kind} onChange={setKind} creatorId={creatorId || null} /> : null}
       {/* a capa é reservada em nome do herói escolhido acima (post_photo_upload_claim pelo admin, 0045) */}

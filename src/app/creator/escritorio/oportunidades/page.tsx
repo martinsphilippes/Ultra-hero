@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
-import { Inbox } from "lucide-react";
+import { Inbox, Megaphone } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { CallSummary, TalentInterestButton } from "@/components/brand-call/CallSummary";
 import { TalentStatusBadge } from "@/components/deals/StatusBadges";
 import { Avatar, Badge, EmptyState } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
+import { networksMatch, talentCallStatus } from "@/lib/brand-call/logic";
+import { listTalentBrandCalls } from "@/lib/brand-call/queries";
 import { listOpportunities } from "@/lib/deals/queries";
 import { getTalentContext } from "@/lib/talent/server";
 
@@ -21,7 +24,53 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OpportunitiesPage() {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
-  const [t, locale, list] = await Promise.all([getTranslations("talent.opportunities"), getLocale() as Promise<Locale>, listOpportunities()]);
+  const [t, tbc, locale, list, calls] = await Promise.all([
+    getTranslations("talent.opportunities"),
+    getTranslations("brandCall.talent"),
+    getLocale() as Promise<Locale>,
+    listOpportunities(),
+    listTalentBrandCalls(),
+  ]);
+  // 0089: pedidos de marcas visíveis à agência do creator (sem valor); "Tenho interesse" avisa a agência
+  const callsSection =
+    calls.available && calls.items.length > 0 ? (
+      <section className="flex flex-col gap-3" aria-labelledby="opp-calls" data-testid="talent-brand-calls">
+        <div className="flex flex-col gap-0.5">
+          <h2 id="opp-calls" className="flex items-center gap-2 text-sm font-semibold text-fg">
+            <Megaphone className="size-4 text-accent-text" aria-hidden="true" />
+            {tbc("title")}
+          </h2>
+          <p className="type-caption text-fg-muted">{tbc("hint")}</p>
+        </div>
+        <ul className="flex flex-col gap-3">
+          {calls.items.map((c) => {
+            const status = talentCallStatus(c);
+            return (
+              <li key={c.id} className="flex flex-col gap-2" data-testid="talent-brand-call">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge size="sm" variant={status === "open" ? "success" : status === "chosen" ? "accent" : "neutral"}>
+                    {tbc(`status.${status}`)}
+                  </Badge>
+                  {status === "open" && networksMatch(c.networks, c.myNetworks) ? (
+                    <Badge size="sm" variant="info">
+                      {tbc("match")}
+                    </Badge>
+                  ) : null}
+                  {c.myInterest ? (
+                    <Badge size="sm" variant="accent">
+                      {tbc("interestSentBadge")}
+                    </Badge>
+                  ) : null}
+                  <span className="text-sm font-semibold text-fg">{c.title}</span>
+                </div>
+                <CallSummary call={c} budget="none" showBrand />
+                {status === "open" ? <TalentInterestButton callId={c.id} current={c.myInterest ? c.myInterest.message : null} /> : null}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    ) : null;
   if (!list.available) {
     return (
       <div className="rounded-2xl border border-border bg-surface" data-testid="module-unavailable">
@@ -57,6 +106,7 @@ export default async function OpportunitiesPage() {
   return (
     <div className="flex flex-col gap-5" data-testid="opportunities">
       <p className="type-body-sm text-fg-muted">{t("intro")}</p>
+      {callsSection}
       {list.items.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface">
           <EmptyState icon={<Inbox />} title={t("empty")} description={t("emptyHint")} />

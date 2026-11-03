@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveCollectibleAction, type CollectibleFormValues } from "@/app/admin/collectibles/actions";
-import { Button, FormField, IconButton, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, EntitySelect, FormField, IconButton, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { heroOption } from "@/lib/ui/entity";
 import type { PostPhotoState } from "@/lib/post-photo/constants";
 import {
   centsToInput,
@@ -19,7 +20,7 @@ import {
 } from "@/lib/collectibles/rules";
 import { COLLECTIBLE_PHOTOS_MAX, CollectiblePhotosPicker } from "./CollectiblePhotosPicker";
 
-export type HeroOption = { id: string; name: string };
+export type HeroOption = { id: string; name: string; slug?: string | null; avatar_url?: string | null };
 
 type Props = {
   id: string | null;
@@ -36,6 +37,7 @@ type Props = {
 // botões de incremento e duração.
 export function CollectibleForm({ id, initial, heroes, locked, photoState }: Props) {
   const t = useTranslations("collectibles.admin.form");
+  const tp = useTranslations("pickers");
   const router = useRouter();
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
@@ -95,15 +97,8 @@ export function CollectibleForm({ id, initial, heroes, locked, photoState }: Pro
       <FormField label={t("title")} required error={errors.title}>
         <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
       </FormField>
-      <FormField label={t("hero")} hint={t("heroHint")}>
-        <Select value={creatorId} onChange={(e) => setCreatorId(e.target.value)}>
-          <option value="">{t("noHero")}</option>
-          {heroes.map((h) => (
-            <option key={h.id} value={h.id}>
-              {h.name}
-            </option>
-          ))}
-        </Select>
+      <FormField label={t("hero")} hint={tp("hints.collectibleHero")}>
+        <EntitySelect value={creatorId} onChange={(e) => setCreatorId(e.target.value)} emptyLabel={t("noHero")} emptyCard={tp("empty.noHero")} roleInOption={false} options={heroes.map((h) => heroOption(tp, { id: h.id, name: h.name, slug: h.slug, avatarUrl: h.avatar_url }))} />
       </FormField>
       <FormField label={t("description")}>
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={4000} rows={4} />

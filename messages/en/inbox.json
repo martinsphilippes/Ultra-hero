@@ -174,6 +174,26 @@
     "sponsorship_negotiation": {
       "title": "Sponsorship negotiation",
       "body": "{status, select, proposed {{brand} made an offer for the {tier} tier of {title}.} countered {New counteroffer on the {tier} tier of {title}.} agreed {Sponsorship agreed: {tier} tier of {title}.} declined {The offer for the {tier} tier of {title} was declined.} closed {The {tier} tier of {title} was closed with another brand.} approval {The team prepared an offer for {title}: approve to send.} returned {The owner returned the offer for {title}.} approved {The owner approved and sent the offer for {title}.} other {News in the negotiation of {title}.}}"
+    },
+    "brand_call_published": {
+      "title": "Brand request",
+      "body": "{brand} published {title}. Proposals until {date}."
+    },
+    "brand_call_interest": {
+      "title": "Interested creator",
+      "body": "{talent} is interested in the request {title}."
+    },
+    "brand_call_negotiation": {
+      "title": "Proposal for a brand request",
+      "body": "{status, select, proposed {{name} sent a proposal for {title}.} countered {New counteroffer on {title}.} agreed {Deal closed on {title}.} declined {The proposal for {title} was declined.} approval {The team prepared a reply on {title}: approve to send.} returned {The owner sent back your reply on {title}.} approved {The owner approved and sent your reply on {title}.} other {News on {title}.}}"
+    },
+    "brand_call_decided": {
+      "title": "Brand request decided",
+      "body": "{status, select, won {Your proposal won on {title} ({brand}).} lost {{brand} chose another proposal on {title}.} chosen {You were chosen for {title} ({brand}).} cancelled {{brand} cancelled {title}.} other {{brand} closed {title}.}}"
+    },
+    "brand_call_review": {
+      "title": "Call to approve",
+      "body": "{status, select, requested {{name} asked to publish {title}.} returned {The owner sent {title} back for changes.} approved {The owner published {title}.} other {News on {title}.}}"
     }
   }
 }

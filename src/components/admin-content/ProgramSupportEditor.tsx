@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveProgramProductsAction, setProgramProfessionalAction, setProgramProfessionalServiceAction } from "@/app/admin/programs/actions";
 import type { ActionResult } from "@/components/admin";
-import { Button, FormField, IconButton, Input, Select, useToast } from "@/components/ui";
+import { Button, EntitySelect, FormField, IconButton, Input, Select, useToast } from "@/components/ui";
 import { MAX_PROGRAM_PRODUCTS, PROGRAM_PRODUCT_NOTE_MAX } from "@/lib/programs/support";
 
 // Etapa 4 (0059): produto(s) e profissional(is) do programa, no admin do programa. Produtos: lista
@@ -50,6 +50,7 @@ function useRun() {
 
 export function ProgramSupportEditor({ programId, available, products, productOptions, professionals, professionalOptions }: Props) {
   const t = useTranslations("adminContent.programs.support");
+  const tp = useTranslations("pickers");
   const { pending, error, run } = useRun();
   const [list, setList] = useState<SupportProductItem[]>(products);
   const [pickedProduct, setPickedProduct] = useState("");
@@ -178,17 +179,18 @@ export function ProgramSupportEditor({ programId, available, products, productOp
             </li>
           ))}
         </ul>
-        <div className="flex flex-wrap items-end gap-2">
-          <Select aria-label={t("selectProfessional")} value={pickedPro} onChange={(e) => setPickedPro(e.target.value)} disabled={pending} className="min-w-0 flex-1">
-            <option value="">{t("selectProfessional")}</option>
-            {professionalOptions
-              .filter((o) => !suggested.has(o.id))
-              .map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-          </Select>
+        <div className="flex flex-wrap items-start gap-2">
+          <EntitySelect
+            aria-label={t("selectProfessional")}
+            aria-describedby="program-pro-hint"
+            value={pickedPro}
+            onChange={(e) => setPickedPro(e.target.value)}
+            disabled={pending}
+            wrapperClassName="min-w-0 flex-1"
+            emptyLabel={t("selectProfessional")}
+            roleInOption={false}
+            options={professionalOptions.filter((o) => !suggested.has(o.id)).map((o) => ({ value: o.id, name: o.label, role: tp("roles.professional") }))}
+          />
           <Button
             type="button"
             variant="secondary"
@@ -199,6 +201,9 @@ export function ProgramSupportEditor({ programId, available, products, productOp
             {t("addProfessional")}
           </Button>
         </div>
+        <p id="program-pro-hint" className="type-caption text-fg-muted">
+          {tp("hints.programProfessional")}
+        </p>
       </section>
     </div>
   );

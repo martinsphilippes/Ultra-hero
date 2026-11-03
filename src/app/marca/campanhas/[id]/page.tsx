@@ -36,6 +36,7 @@ import { getDealMedia } from "@/lib/media/queries";
 import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { draftEditable } from "@/lib/selection/logic";
 import { listBrandSponsorships } from "@/lib/sponsorship/queries";
+import { listBrandCalls } from "@/lib/brand-call/queries";
 import { createClient } from "@/lib/supabase/server";
 import { localDay } from "@/lib/today/logic";
 import { cn } from "@/lib/utils";
@@ -77,7 +78,7 @@ export default async function BrandCampaignPage({ params }: Props) {
   const stepIndex = BRAND_STATUSES.indexOf(detail.brandStatus);
   const steps = BRAND_STATUSES.filter((s) => s !== "cancelled");
   const inExecution = deal !== null && ["contracting", "running", "done"].includes(detail.brandStatus);
-  const [messages, docs, exec, budgetPanel, media, tm, origin, user, sponsorships] = await Promise.all([
+  const [messages, docs, exec, budgetPanel, media, tm, origin, user, sponsorships, brandCalls, tbc] = await Promise.all([
     deal ? listMessages(deal.id, "brand_agency") : Promise.resolve([]),
     (async () => {
       const supabase = await createClient();
@@ -94,6 +95,9 @@ export default async function BrandCampaignPage({ params }: Props) {
     getUser(),
     // 0085: a campanha nasceu de uma oportunidade de patrocínio? (a marca não lê campaign_requests direto)
     request.origin === "brand" ? listBrandSponsorships(ctx.brand.id) : Promise.resolve({ available: false, items: [] }),
+    // 0089: a campanha nasceu de um acordo de chamada da marca?
+    request.origin === "brand" ? listBrandCalls(ctx.brand.id) : Promise.resolve({ available: false, items: [] }),
+    getTranslations("brandCall.brand"),
   ]);
   const mediaData = media?.available ? media.data : null;
   const today = localDay(new Date(), "America/Sao_Paulo");
@@ -113,6 +117,15 @@ export default async function BrandCampaignPage({ params }: Props) {
     </p>
   ) : null;
   const fromSponsorship = sponsorships.items.find((o) => o.myResponse?.requestId === request.id) ?? null;
+  const fromCall = brandCalls.items.find((c) => c.requestIds.includes(request.id)) ?? null;
+  const callNote = fromCall ? (
+    <p className="rounded-xl border border-accent/30 bg-accent-soft px-3 py-2 type-body-sm text-fg" data-testid="campaign-brand-call">
+      {tbc("fromCall", { title: fromCall.title })}{" "}
+      <Link href={`/marca/oportunidades/chamadas/${fromCall.id}`} className="font-medium text-accent-text underline-offset-2 hover:underline">
+        {tbc("seeCall")}
+      </Link>
+    </p>
+  ) : null;
   const sponsorshipNote = fromSponsorship ? (
     <p className="rounded-xl border border-accent/30 bg-accent-soft px-3 py-2 type-body-sm text-fg" data-testid="campaign-sponsorship">
       {tsp("fromSponsorship", { title: fromSponsorship.title, name: fromSponsorship.talent.name })}{" "}
@@ -136,6 +149,7 @@ export default async function BrandCampaignPage({ params }: Props) {
         {request.origin === "brand" ? <ApprovalPanel requestId={request.id} role={ctx.role} approval={approval} isDraft /> : null}
         {shortlistNote}
       {sponsorshipNote}
+      {callNote}
         <CampaignForm
           submitMode={submitMode}
           initial={{
@@ -163,7 +177,7 @@ export default async function BrandCampaignPage({ params }: Props) {
           }}
           creatorName={detail.requestedTalent?.name ?? null}
           canEdit
-          sponsorshipBudget={fromSponsorship ? (fromSponsorship.negotiation?.status === "agreed" ? "agreed" : "negotiating") : null}
+          sponsorshipBudget={fromCall ? "agreed" : fromSponsorship ? (fromSponsorship.negotiation?.status === "agreed" ? "agreed" : "negotiating") : null}
         />
       </div>
     );
@@ -198,6 +212,7 @@ export default async function BrandCampaignPage({ params }: Props) {
       {request.origin === "brand" && detail.brandStatus !== "cancelled" ? <ApprovalPanel requestId={request.id} role={ctx.role} approval={approval} isDraft={isDraft} /> : null}
       {shortlistNote}
       {sponsorshipNote}
+      {callNote}
       {detail.brandStatus !== "cancelled" ? (
         <ol className="flex flex-wrap gap-2" aria-label={t("stepsLabel")} data-testid="campaign-steps">
           {steps.map((s, i) => (

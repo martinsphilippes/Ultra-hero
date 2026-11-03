@@ -80,6 +80,10 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
   }
 
   const roleLabel = (r: string) => (target.kind === "brandMember" && r === "staff" ? tr("brandStaff") : tr(r as "admin"));
+  // a dica explica o nível escolhido (o que a pessoa vê e faz depois de aceitar), não só a regra de valores
+  const tp = useTranslations("pickers");
+  const roleInfoKey = target.kind === "brandMember" && role === "staff" ? "brandStaff" : role;
+  const roleHint = `${tp("hints.inviteRoleIntro")} ${tp.has(`inviteRoles.${roleInfoKey}`) ? tp(`inviteRoles.${roleInfoKey}`) : t("roleHint")}`;
 
   return (
     <>
@@ -133,7 +137,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
               <Input type="email" autoComplete="off" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={pending} />
             </FormField>
             {roles.length > 1 ? (
-              <FormField label={t("role")} hint={t("roleHint")} required>
+              <FormField label={t("role")} hint={roleHint} required>
                 <Select value={role} onChange={(e) => setRole(e.target.value)} disabled={pending}>
                   {roles.map((r) => (
                     <option key={r} value={r}>

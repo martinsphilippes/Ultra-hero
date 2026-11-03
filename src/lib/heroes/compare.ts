@@ -38,10 +38,13 @@ export function isCompareMetricKey(value: string): value is CompareMetricKey {
 
 /** Valor digitado pelo admin → número válido para o indicador; vazio = sem comparação (null). */
 export function parseReferenceInput(key: CompareMetricKey, raw: string): { ok: true; value: number | null } | { ok: false } {
-  const text = raw.trim().replace(",", ".");
+  const def = COMPARE_METRIC_DEFS[key];
+  let text = raw.trim();
+  // indicador inteiro (passos, pontos…): o campo mostra ponto de milhar ("12.000"); tira os pontos de grupo
+  if (def.decimals === 0 && /^\d{1,3}(\.\d{3})+$/.test(text)) text = text.replace(/\./g, "");
+  text = text.replace(",", ".");
   if (text === "") return { ok: true, value: null };
   const value = Number(text);
-  const def = COMPARE_METRIC_DEFS[key];
   if (!Number.isFinite(value) || value <= 0 || value > def.max) return { ok: false };
   // o banco guarda numeric(10,2)
   return { ok: true, value: Math.round(value * 100) / 100 };

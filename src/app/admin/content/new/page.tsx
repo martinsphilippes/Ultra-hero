@@ -21,7 +21,7 @@ export default async function AdminContentNewPage({ searchParams }: { searchPara
   const [t, tc, creatorsRes, coverState] = await Promise.all([
     getTranslations("adminContent.content.form"),
     getTranslations("adminContent.common"),
-    supabase.from("creator_profiles").select("id, name, is_fictional").eq("status", "active").order("name"),
+    supabase.from("creator_profiles").select("id, name, is_fictional, slug, avatar_url").eq("status", "active").order("name"),
     getPostPhotoState(),
   ]);
 

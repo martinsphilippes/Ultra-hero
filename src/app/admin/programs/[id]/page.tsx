@@ -75,7 +75,7 @@ export default async function AdminProgramDetailPage({ params }: Params) {
       .select("id, version_no, title, status, published_at, created_at, enrollments(count), items:program_items(count)")
       .eq("program_id", id)
       .order("version_no", { ascending: false }),
-    supabase.from("creator_profiles").select("id, name").order("name"),
+    supabase.from("creator_profiles").select("id, name, slug, avatar_url").order("name"),
     loadProgramSupportAdmin(id),
   ]);
   const versions = (versionsRes.data ?? []) as unknown as Version[];

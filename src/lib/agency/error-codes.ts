@@ -60,6 +60,9 @@ export const AGENCY_ERROR_CODES = [
   "already_agreed",
   "already_negotiating",
   "has_agreement",
+  // chamada da marca (0089)
+  "call_incomplete",
+  "amount_required",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",
