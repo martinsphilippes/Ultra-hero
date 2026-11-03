@@ -11999,5 +11999,151 @@ delete from public.agencies where id in ('92000000-0000-4000-8000-000000009201',
 delete from auth.users where id::text like '92000000-0000-4000-8000-00000000092%';
 drop table t_s92;
 
+-- ================================================================ S93 · Editar compromisso manual da agenda (0086)
+-- A agência edita o compromisso manual pela mesma RPC da criação (agency_event_save com id): gestor+ edita qualquer
+-- manual; colaborador só os dos negócios dele (antes e depois da edição); marca, creator e visitante não editam;
+-- evento de sistema (inclusive o de oportunidade de patrocínio) recusa. As validações da criação valem na edição
+-- (sem negócio a marca não vê; sem creator o creator não vê) e o creator que passa a ver é avisado no sino (também
+-- quando a edição troca o creator). Sem sobrecarga; S14 segue 18.
+\ir ../migrations/0086_agenda_editar_compromisso.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('93000000-0000-4000-8000-000000000931', 's93-gestor@test.local'),
+  ('93000000-0000-4000-8000-000000000932', 's93-colab-dono@test.local'),
+  ('93000000-0000-4000-8000-000000000933', 's93-colab-fora@test.local'),
+  ('93000000-0000-4000-8000-000000000934', 's93-marca@test.local'),
+  ('93000000-0000-4000-8000-000000000935', 's93-creator-um@test.local'),
+  ('93000000-0000-4000-8000-000000000936', 's93-creator-dois@test.local');
+insert into public.agencies (id, slug, name) values ('93000000-0000-4000-8000-000000009301', 's93-agencia', 'Agência S93');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('93000000-0000-4000-8000-000000009301', '93000000-0000-4000-8000-000000000931', 'manager', 'Gil Gestor S93'),
+  ('93000000-0000-4000-8000-000000009301', '93000000-0000-4000-8000-000000000932', 'staff', 'Dani Dona S93'),
+  ('93000000-0000-4000-8000-000000009301', '93000000-0000-4000-8000-000000000933', 'staff', 'Fábio Fora S93');
+insert into public.brands (id, slug, name, site_url) values ('93000000-0000-4000-8000-000000009311', 's93-marca', 'Marca S93', 'https://marca.s93.test');
+insert into public.agency_brands (agency_id, brand_id) values ('93000000-0000-4000-8000-000000009301', '93000000-0000-4000-8000-000000009311');
+insert into public.brand_members (brand_id, user_id, role, display_name) values ('93000000-0000-4000-8000-000000009311', '93000000-0000-4000-8000-000000000934', 'owner', 'Dona Marca S93');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, consent_at) values
+  ('93000000-0000-4000-8000-000000009321', '93000000-0000-4000-8000-000000009301', 'Creator Um S93', '93000000-0000-4000-8000-000000000935', now()),
+  ('93000000-0000-4000-8000-000000009322', '93000000-0000-4000-8000-000000009301', 'Creator Dois S93', '93000000-0000-4000-8000-000000000936', now());
+-- negócio 1 da colaboradora (dona); negócio 2 sem dono (só gestor+)
+insert into public.deals (id, agency_id, brand_id, title, stage, brand_visible, expected_start, expected_end, owner_id) values
+  ('93000000-0000-4000-8000-000000009341', '93000000-0000-4000-8000-000000009301', '93000000-0000-4000-8000-000000009311', 'Negócio Dani S93', 'qualification', true,
+   current_date + 5, current_date + 40, '93000000-0000-4000-8000-000000000932'),
+  ('93000000-0000-4000-8000-000000009342', '93000000-0000-4000-8000-000000009301', '93000000-0000-4000-8000-000000009311', 'Negócio Livre S93', 'qualification', true,
+   current_date + 5, current_date + 40, null);
+-- evento de sistema (como os mantidos por gatilho)
+insert into public.calendar_events (id, agency_id, kind, title, starts_at, ends_at, source, source_key) values
+  ('93000000-0000-4000-8000-000000009351', '93000000-0000-4000-8000-000000009301', 'campaign', 'Campanha S93', now() + interval '6 days', now() + interval '7 days', 'system', 's93:system');
+create temp table t_s93 (k text primary key, v text);
+grant all on t_s93 to anon, authenticated, service_role;
+
+select tests.ok('S93 estrutura: uma só agency_event_save (sem sobrecarga), security definer com search_path, fora do visitante; S14 segue 18',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'agency_event_save') = 1
+  and (select prosecdef and proconfig is not null from pg_proc where oid = 'public.agency_event_save(uuid, uuid, jsonb)'::regprocedure)
+  and has_function_privilege('authenticated', 'public.agency_event_save(uuid, uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_event_save(uuid, uuid, jsonb)', 'execute')
+  and not has_table_privilege('authenticated', 'public.calendar_events', 'update')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- gestor cria uma reunião geral; colaboradora cria uma gravação no negócio dela, visível ao creator um
+select tests.login('93000000-0000-4000-8000-000000000931', 's93-gestor@test.local');
+insert into t_s93 values ('geral', public.agency_event_save('93000000-0000-4000-8000-000000009301', null,
+  jsonb_build_object('kind', 'meeting', 'title', 'Reunião geral S93', 'starts_at', now() + interval '3 days', 'ends_at', now() + interval '3 days 1 hour'))::text);
+select tests.login('93000000-0000-4000-8000-000000000932', 's93-colab-dono@test.local');
+insert into t_s93 values ('grav', public.agency_event_save('93000000-0000-4000-8000-000000009301', null,
+  jsonb_build_object('kind', 'recording', 'title', 'Gravação S93', 'deal_id', '93000000-0000-4000-8000-000000009341', 'talent_id', '93000000-0000-4000-8000-000000009321',
+    'visible_to_talent', true, 'starts_at', now() + interval '4 days', 'ends_at', now() + interval '4 days 2 hours'))::text);
+select tests.su();
+select tests.ok('S93 criação avisa o creator um (uma vez)',
+  (select count(*) from public.inbox_notifications where user_id = '93000000-0000-4000-8000-000000000935' and kind = 'calendar_event_added') = 1);
+
+-- colaboradora edita o próprio (título, horário, local, descrição)
+select tests.login('93000000-0000-4000-8000-000000000932', 's93-colab-dono@test.local');
+select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'),
+  jsonb_build_object('kind', 'recording', 'title', 'Gravação no estúdio S93', 'deal_id', '93000000-0000-4000-8000-000000009341', 'talent_id', '93000000-0000-4000-8000-000000009321',
+    'visible_to_talent', true, 'visible_to_brand', true, 'location', 'Estúdio 2', 'description', 'Levar figurino.',
+    'starts_at', now() + interval '5 days', 'ends_at', now() + interval '5 days 3 hours', 'all_day', false));
+select tests.su();
+select tests.ok('S93 colaboradora editou o próprio: título, local, descrição, horário e marca vê (há negócio)',
+  (select title = 'Gravação no estúdio S93' and location = 'Estúdio 2' and description = 'Levar figurino.' and visible_to_brand and visible_to_talent
+     and starts_at > now() + interval '4 days 12 hours' and source = 'manual' and created_by = '93000000-0000-4000-8000-000000000932'
+   from public.calendar_events where id = (select v::uuid from t_s93 where k = 'grav')));
+select tests.ok('S93 editar sem mudar o creator não reavisa',
+  (select count(*) from public.inbox_notifications where user_id = '93000000-0000-4000-8000-000000000935' and kind = 'calendar_event_added') = 1);
+select tests.ok('S93 edição fica no histórico com antes e depois',
+  (select count(*) from public.admin_audit where resource_type = 'calendar_event' and resource_id = (select v from t_s93 where k = 'grav') and actor_id = '93000000-0000-4000-8000-000000000932') >= 2);
+
+-- a marca lê o título novo (visível, negócio que ela vê); o creator um também
+select tests.login('93000000-0000-4000-8000-000000000934', 's93-marca@test.local');
+select tests.ok('S93 marca vê o compromisso editado', (select title from public.calendar_events where id = (select v::uuid from t_s93 where k = 'grav')) = 'Gravação no estúdio S93');
+select tests.expect_error('S93 marca não edita', $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"title": "x"}')$q$, 'not_found');
+select tests.expect_error('S93 marca não altera a tabela direto', $q$update public.calendar_events set title = 'x' where id = (select v::uuid from t_s93 where k = 'grav')$q$, 'permission denied');
+select tests.login('93000000-0000-4000-8000-000000000935', 's93-creator-um@test.local');
+select tests.ok('S93 creator um vê o compromisso', (select count(*) from public.calendar_events where id = (select v::uuid from t_s93 where k = 'grav')) = 1);
+select tests.expect_error('S93 creator não edita', $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"title": "x"}')$q$, 'not_found');
+select tests.anon();
+select tests.expect_error('S93 visitante não edita', $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"title": "x"}')$q$, 'permission denied');
+
+-- colaborador fora do negócio: não edita o da colega nem a reunião geral; a dona não leva o evento para negócio alheio
+select tests.login('93000000-0000-4000-8000-000000000933', 's93-colab-fora@test.local');
+select tests.expect_error('S93 colaborador fora do negócio não edita', $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"title": "Invadido"}')$q$, 'forbidden');
+select tests.expect_error('S93 colaborador não edita reunião sem negócio', $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'geral'), '{"title": "Invadido"}')$q$, 'forbidden');
+select tests.login('93000000-0000-4000-8000-000000000932', 's93-colab-dono@test.local');
+select tests.expect_error('S93 colaboradora não move o próprio para negócio que não é dela',
+  $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"deal_id": "93000000-0000-4000-8000-000000009342"}')$q$, 'forbidden');
+select tests.expect_error('S93 colaboradora não tira o negócio (ficaria geral, só gestor+)',
+  $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"deal_id": ""}')$q$, 'forbidden');
+select tests.su();
+select tests.ok('S93 tentativas bloqueadas não mudaram nada',
+  (select title = 'Gravação no estúdio S93' and deal_id = '93000000-0000-4000-8000-000000009341' from public.calendar_events where id = (select v::uuid from t_s93 where k = 'grav'))
+  and (select title from public.calendar_events where id = (select v::uuid from t_s93 where k = 'geral')) = 'Reunião geral S93');
+
+-- trocar o creator de um evento já visível avisa quem passa a ver
+select tests.login('93000000-0000-4000-8000-000000000932', 's93-colab-dono@test.local');
+select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"talent_id": "93000000-0000-4000-8000-000000009322"}');
+select tests.su();
+select tests.ok('S93 creator dois (passou a ver) foi avisado; o um deixou de ver e não ganhou outro aviso',
+  (select count(*) from public.inbox_notifications where user_id = '93000000-0000-4000-8000-000000000936' and kind = 'calendar_event_added') = 1
+  and (select count(*) from public.inbox_notifications where user_id = '93000000-0000-4000-8000-000000000935' and kind = 'calendar_event_added') = 1);
+select tests.login('93000000-0000-4000-8000-000000000935', 's93-creator-um@test.local');
+select tests.ok('S93 creator um não vê mais o evento', (select count(*) from public.calendar_events where id = (select v::uuid from t_s93 where k = 'grav')) = 0);
+select tests.login('93000000-0000-4000-8000-000000000936', 's93-creator-dois@test.local');
+select tests.ok('S93 creator dois vê o evento', (select count(*) from public.calendar_events where id = (select v::uuid from t_s93 where k = 'grav')) = 1);
+
+-- gestor edita qualquer manual; as validações da criação valem: sem negócio a marca não vê, sem creator o creator não vê
+select tests.login('93000000-0000-4000-8000-000000000931', 's93-gestor@test.local');
+select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'geral'),
+  jsonb_build_object('kind', 'other', 'title', 'Reunião geral remarcada S93', 'visible_to_brand', true, 'visible_to_talent', true, 'all_day', true,
+    'starts_at', (current_date + 8)::timestamptz, 'ends_at', (current_date + 9)::timestamptz));
+select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'grav'), '{"title": "Gravação ajustada pelo gestor S93", "talent_id": ""}');
+select tests.ok('S93 gestor editou a geral: sem negócio/creator, marca e creator não veem',
+  (select title = 'Reunião geral remarcada S93' and kind = 'other' and all_day and not visible_to_brand and not visible_to_talent
+   from public.calendar_events where id = (select v::uuid from t_s93 where k = 'geral')));
+select tests.ok('S93 gestor editou o do negócio: sem creator, o creator deixa de ver',
+  (select title = 'Gravação ajustada pelo gestor S93' and talent_id is null and not visible_to_talent and visible_to_brand
+   from public.calendar_events where id = (select v::uuid from t_s93 where k = 'grav')));
+select tests.expect_error('S93 edição com fim antes do início recusada',
+  $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'geral'), jsonb_build_object('starts_at', now() + interval '2 days', 'ends_at', now() + interval '1 day'))$q$, 'invalid_input');
+select tests.expect_error('S93 edição sem título recusada',
+  $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'geral'), '{"title": "  "}')$q$, 'invalid_input');
+select tests.expect_error('S93 evento de sistema não é editável', $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', '93000000-0000-4000-8000-000000009351', '{"title": "x"}')$q$, 'invalid_state');
+select tests.expect_error('S93 tipo de sistema não entra pela edição', $q$select public.agency_event_save('93000000-0000-4000-8000-000000009301', (select v::uuid from t_s93 where k = 'geral'), '{"kind": "sponsorship"}')$q$, 'invalid_input');
+select tests.su();
+select tests.ok('S93 evento de sistema intacto', (select title from public.calendar_events where id = '93000000-0000-4000-8000-000000009351') = 'Campanha S93');
+
+-- limpeza
+select tests.su();
+delete from public.calendar_events where agency_id = '93000000-0000-4000-8000-000000009301';
+delete from public.deals where agency_id = '93000000-0000-4000-8000-000000009301';
+delete from public.talent_profiles where id::text like '93000000-%';
+delete from public.brand_members where brand_id = '93000000-0000-4000-8000-000000009311';
+delete from public.agency_brands where agency_id = '93000000-0000-4000-8000-000000009301';
+delete from public.brands where id = '93000000-0000-4000-8000-000000009311';
+delete from public.inbox_notifications where user_id::text like '93000000-0000-4000-8000-00000000093%';
+delete from public.agency_members where agency_id = '93000000-0000-4000-8000-000000009301';
+delete from public.agencies where id = '93000000-0000-4000-8000-000000009301';
+delete from auth.users where id::text like '93000000-0000-4000-8000-00000000093%';
+drop table t_s93;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

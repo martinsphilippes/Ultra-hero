@@ -110,3 +110,17 @@ export async function upcomingCount(days = 14, filters: { agencyId?: string } = 
   if (error) return null;
   return count ?? 0;
 }
+
+/**
+ * 0086 · Negócios em que a pessoa pode criar/editar/remover compromissos (a mesma regra de deal_write_scope):
+ * gestor+ em qualquer negócio aberto; colaborador só nos abertos em que é dono ou está na equipe. `openDeals` vem
+ * de listDeals (já sem os fechados). O banco confere de novo em agency_event_save/agency_event_delete.
+ */
+export async function writableDealIds(openDeals: readonly { id: string; ownerId: string | null }[], isManager: boolean, userId: string | null): Promise<string[]> {
+  if (isManager) return openDeals.map((d) => d.id);
+  if (!userId) return [];
+  const supabase = await createClient();
+  const { data } = await supabase.from("deal_team").select("deal_id").eq("user_id", userId);
+  const team = new Set((data ?? []).map((r) => r.deal_id));
+  return openDeals.filter((d) => d.ownerId === userId || team.has(d.id)).map((d) => d.id);
+}

@@ -803,8 +803,16 @@
       "titleRequired": "Give it a title.",
       "dealRequired": "Pick one of your deals.",
       "visibleToBrandNeedsDeal": "Choose a deal above so the brand can see it.",
-      "visibleToTalentNeedsTalent": "Choose a creator above so the creator can see it."
-    }
+      "visibleToTalentNeedsTalent": "Choose a creator above so the creator can see it.",
+      "editTitle": "Edit event",
+      "editHint": "Everyone who can see this event sees the new version. If you pick another creator to see it, they get a bell notification.",
+      "newOnDay": "Event on this day",
+      "newOnDayLabel": "New event on {date}"
+    },
+    "edit": "Edit",
+    "editLabel": "Edit {title}",
+    "sponsorshipEdit": "Edit in opportunity",
+    "sponsorshipEditLabel": "Edit in opportunity: {title}"
   },
   "execution": {
     "title": "Execution",

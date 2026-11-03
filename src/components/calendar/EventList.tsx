@@ -6,7 +6,7 @@ import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { eventDays, zonedDayKey } from "@/lib/calendar/grid";
 import type { CalendarEvent } from "@/lib/calendar/queries";
-import { EventDeleteButton } from "./EventDeleteButton";
+import { EventActions } from "./EventEditor";
 import { KIND_VARIANT } from "./kinds";
 
 type Props = {
@@ -14,7 +14,6 @@ type Props = {
   timeZone: string;
   /** Portal que está lendo: define links e ações. */
   portal: "agency" | "brand" | "office";
-  canDelete?: boolean;
   emptyTitle: string;
   emptyHint?: string;
   /** Sem os títulos de dia (a grade da agenda já mostra o dia escolhido). */
@@ -22,8 +21,9 @@ type Props = {
 };
 
 // Lista agrupada por dia (serve aos três portais): tipo, horário ou "dia inteiro", título, de quem é,
-// local; na agência, link para o negócio e remoção dos manuais. Nunca valores.
-export function EventList({ events, timeZone, portal, canDelete = false, emptyTitle, emptyHint, flat = false }: Props) {
+// local; na agência, link para o negócio e as ações (0086: editar e remover os manuais que a pessoa pode mexer,
+// pelo EventEditorProvider da página; oportunidade de patrocínio abre a tela dela). Nunca valores.
+export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, flat = false }: Props) {
   const t = useTranslations("commercial.agenda");
   const tk = useTranslations("commercial.eventKinds");
   const locale = useLocale() as Locale;
@@ -86,7 +86,7 @@ export function EventList({ events, timeZone, portal, canDelete = false, emptyTi
         {/* bloco 9: evento de vários dias (aparece em cada dia da grade) diz até quando vai, nos três portais */}
         {spanDays(e) > 1 ? <span className="type-caption text-fg-subtle">{t("until", { date: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, undefined, timeZone) })}</span> : null}
       </span>
-      {canDelete && e.source === "manual" ? <EventDeleteButton id={e.id} dealId={e.dealId} title={e.title} /> : null}
+      {portal === "agency" ? <EventActions event={e} /> : null}
     </li>
   );
   if (flat) {

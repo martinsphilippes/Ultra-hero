@@ -803,8 +803,16 @@
       "titleRequired": "Dê um título.",
       "dealRequired": "Escolha um negócio seu.",
       "visibleToBrandNeedsDeal": "Escolha um negócio acima para a marca poder ver.",
-      "visibleToTalentNeedsTalent": "Escolha um creator acima para o creator poder ver."
-    }
+      "visibleToTalentNeedsTalent": "Escolha um creator acima para o creator poder ver.",
+      "editTitle": "Editar compromisso",
+      "editHint": "Quem vê o compromisso passa a ver a versão nova. Se você escolher outro creator para ver, ele é avisado no sino.",
+      "newOnDay": "Compromisso neste dia",
+      "newOnDayLabel": "Novo compromisso em {date}"
+    },
+    "edit": "Editar",
+    "editLabel": "Editar {title}",
+    "sponsorshipEdit": "Editar na oportunidade",
+    "sponsorshipEditLabel": "Editar na oportunidade: {title}"
   },
   "execution": {
     "title": "Execução",

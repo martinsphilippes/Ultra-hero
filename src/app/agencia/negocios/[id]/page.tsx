@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import { EventForm } from "@/components/calendar/EventForm";
+import { EventEditorProvider, EventNewButton } from "@/components/calendar/EventEditor";
 import { EventList } from "@/components/calendar/EventList";
 import { ActivityForm, ConfirmCard, DealForm, MoveForm, TeamPicker } from "@/components/deals/DealForms";
 import { BriefView } from "@/components/brief/BriefView";
@@ -10,6 +10,7 @@ import { DealFinanceCard } from "@/components/finance/DealFinanceCard";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { listTeam } from "@/lib/agency/queries";
+import { zonedDayKey } from "@/lib/calendar/grid";
 import { listDealEvents } from "@/lib/calendar/queries";
 import { getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import { splitSystemBody } from "@/lib/deals/vocab";
@@ -31,6 +32,7 @@ type Props = { params: Promise<{ id: string }> };
 export default async function DealOverviewPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, isOwner, canEdit, isManager, isAdmin } = await loadDeal(id);
+  const tz = ctx.agency.timezone || "America/Sao_Paulo";
   const [t, tc, tb, locale, team, request, budget, activities, talents, events] = await Promise.all([
     getTranslations("agency.deal"),
     getTranslations("brief"),
@@ -125,15 +127,24 @@ export default async function DealOverviewPage({ params }: Props) {
             <MoveForm dealId={deal.id} stage={deal.stage} role={ctx.platformAdmin ? "admin" : ctx.role} isOwner={isOwner} canClose={isManager} />
           </section>
         ) : null}
-        <section className={card} aria-labelledby="deal-events">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="deal-events" className="text-base font-semibold text-fg">
-              {t("sections.events")}
-            </h2>
-            {canEdit ? <EventForm fixedDealId={deal.id} talents={talents.filter((x) => !["declined", "removed"].includes(x.status)).map((x) => ({ id: x.talentId, name: x.talent.name }))} canPublishCommercialDate={false} /> : null}
-          </div>
-          <EventList events={events} timeZone={ctx.agency.timezone || "America/Sao_Paulo"} portal="agency" canDelete={canEdit} emptyTitle={t("noEvents")} />
-        </section>
+        {/* 0086: criar (hoje, 09:00–10:00) e editar/remover os compromissos manuais deste negócio, para quem pode mexer nele */}
+        <EventEditorProvider
+          options={{ fixedDealId: deal.id, talents: talents.filter((x) => !["declined", "removed"].includes(x.status)).map((x) => ({ id: x.talentId, name: x.talent.name })), canPublishCommercialDate: false }}
+          timeZone={tz}
+          today={zonedDayKey(new Date(), tz)}
+          permissions={{ isManager, dealIds: canEdit ? [deal.id] : [] }}
+          canCreate={canEdit}
+        >
+          <section className={card} aria-labelledby="deal-events">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 id="deal-events" className="text-base font-semibold text-fg">
+                {t("sections.events")}
+              </h2>
+              <EventNewButton />
+            </div>
+            <EventList events={events} timeZone={tz} portal="agency" emptyTitle={t("noEvents")} />
+          </section>
+        </EventEditorProvider>
         {isManager ? (
           <section className={card} aria-labelledby="deal-team">
             <h2 id="deal-team" className="text-base font-semibold text-fg">
