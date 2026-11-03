@@ -3,7 +3,7 @@
 import { Copy, Link2, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Button, Dialog, FormField, Input, Select, useToast } from "@/components/ui";
+import { Button, DatePicker, Dialog, FormField, Input, Select, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
@@ -264,7 +264,7 @@ function SaleDialog({ rows, dealId, requestId, today, onClose }: { rows: Row[]; 
           </FormField>
         </div>
         <FormField label={t("reportedOn")} required>
-          <Input type="date" value={reportedOn} max={today} onChange={(e) => setReportedOn(e.target.value)} disabled={pending} />
+          <DatePicker value={reportedOn} max={today} onChange={(value) => setReportedOn(value)} disabled={pending} />
         </FormField>
         <FormField label={t("note")}>
           <Input value={note} maxLength={280} onChange={(e) => setNote(e.target.value)} disabled={pending} />

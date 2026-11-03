@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { reviewContentAction, setContentStatusAction, setFeaturedAction } from "@/app/admin/content-actions";
 import { ConfirmActionDialog } from "@/components/admin";
-import { Badge, FormField, Input } from "@/components/ui";
+import { Badge, DateTimePicker, FormField } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { getDeviceTimeZone } from "@/lib/utils/timezone";
@@ -70,7 +70,7 @@ export function ContentReviewActions({ contentId, type, status, reviewStatus, is
           </div>
         )}
         <FormField label={tsch("publishAt")} hint={tz ? tsch("hint", { tz }) : tsch("hintNoTz")} error={scheduleError ?? undefined}>
-          <Input type="datetime-local" value={input} onChange={(e) => setInput(e.target.value)} />
+          <DateTimePicker value={input} onChange={(value) => setInput(value)} />
         </FormField>
         {scheduled && (
           <div className="flex flex-wrap gap-2">

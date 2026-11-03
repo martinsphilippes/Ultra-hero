@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition, type FormEvent } from "react";
 import { createRetentionException, type RetentionExceptionValues } from "@/app/admin/ops-actions";
-import { Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 
 function defaultReviewDate() {
   const d = new Date();
@@ -89,7 +89,7 @@ export function RetentionExceptionForm() {
               <Input value={values.ownerId ?? ""} className="font-mono" disabled={pending} onChange={(e) => set("ownerId", e.target.value)} />
             </FormField>
             <FormField label={t("reviewAt")} required error={error ?? undefined}>
-              <Input type="date" value={values.reviewAt} disabled={pending} onChange={(e) => set("reviewAt", e.target.value)} />
+              <DatePicker value={values.reviewAt} disabled={pending} onChange={(value) => set("reviewAt", value)} />
             </FormField>
           </div>
         </form>

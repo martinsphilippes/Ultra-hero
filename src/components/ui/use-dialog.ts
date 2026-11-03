@@ -66,6 +66,8 @@ export function useDialog({ open, onOpenChange, dismissible = true }: Options) {
   const onKeyDown = useCallback((event: KeyboardEvent<HTMLDialogElement>) => {
     if (event.key !== "Tab") return;
     const dialog = event.currentTarget;
+    // caixa aninhada (ex.: calendário do DatePicker aberto de dentro de um Sheet): o Tab é dela, não deste
+    if (event.target instanceof Element && event.target.closest("dialog") !== dialog) return;
     const focusables = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
       (el) => !el.hasAttribute("disabled") && el.getAttribute("aria-hidden") !== "true",
     );

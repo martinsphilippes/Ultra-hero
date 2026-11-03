@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { AuditEntry } from "@/components/admin-ops/AuditEntry";
 import { PaginationNav } from "@/components/admin-ops/PaginationNav";
-import { Button, EmptyState, Input, PageHeader, Select } from "@/components/ui";
+import { Button, DatePicker, EmptyState, Input, PageHeader, Select } from "@/components/ui";
 import type { Tables } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -79,10 +79,10 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: S
           <Input id="a-actor" name="actor" defaultValue={actor} placeholder={t("filters.actorPlaceholder")} autoComplete="off" className="font-mono" />
         </Field>
         <Field id="a-from" label={t("filters.from")}>
-          <Input id="a-from" name="from" type="date" defaultValue={from} />
+          <DatePicker id="a-from" name="from" defaultValue={from} />
         </Field>
         <Field id="a-to" label={t("filters.to")}>
-          <Input id="a-to" name="to" type="date" defaultValue={to} />
+          <DatePicker id="a-to" name="to" defaultValue={to} />
         </Field>
         <div className="flex gap-2">
           <Button type="submit">

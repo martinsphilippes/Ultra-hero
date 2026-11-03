@@ -5,7 +5,7 @@ import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { RecipeRowActions } from "@/components/recipes/portal/RecipeRowActions";
-import { Badge, Button, Input, PageHeader, Select } from "@/components/ui";
+import { Badge, Button, DatePicker, Input, PageHeader, Select } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { RECIPE_DIFFICULTIES } from "@/lib/recipes/payload";
@@ -243,14 +243,20 @@ export default async function MyRecipesPage({ searchParams }: Props) {
                   ))}
                 </Select>
               </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
-                {t("from")}
-                <Input type="date" name="from" lang={locale} defaultValue={filters.from} />
-              </label>
-              <label className="flex flex-col gap-1.5 text-sm font-semibold text-fg">
-                {t("to")}
-                <Input type="date" name="to" lang={locale} defaultValue={filters.to} />
-              </label>
+              {/* o calendário abre num <dialog>, que não pode ficar dentro de <label>: rótulo ligado por id */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="recipes-filter-from" className="text-sm font-semibold text-fg">
+                  {t("from")}
+                </label>
+                <DatePicker id="recipes-filter-from" name="from" defaultValue={filters.from} />
+              </div>
+              {/* o calendário abre num <dialog>, que não pode ficar dentro de <label>: rótulo ligado por id */}
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="recipes-filter-to" className="text-sm font-semibold text-fg">
+                  {t("to")}
+                </label>
+                <DatePicker id="recipes-filter-to" name="to" defaultValue={filters.to} />
+              </div>
               <div className="flex items-end gap-2">
                 <Button type="submit" variant="secondary" className="min-h-12">
                   {t("filter")}

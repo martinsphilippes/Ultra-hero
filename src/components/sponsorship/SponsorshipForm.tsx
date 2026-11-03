@@ -4,7 +4,7 @@ import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { saveSponsorshipAction } from "@/lib/sponsorship/actions";
 import { MAX_PERKS, parsePerks, perksValid, type SponsorshipAudience, type SponsorshipInput } from "@/lib/sponsorship/vocab";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
@@ -74,10 +74,10 @@ export function SponsorshipForm({ initial, talents, brands, talentLocked = false
       </FormField>
       <div className="grid gap-3 sm:grid-cols-4">
         <FormField label={t("date")} required>
-          <Input type="date" value={v.date} onChange={(e) => set("date", e.target.value)} disabled={pending} />
+          <DatePicker value={v.date} onChange={(value) => set("date", value)} disabled={pending} />
         </FormField>
         <FormField label={t("endDate")}>
-          <Input type="date" value={v.endDate} min={v.date} onChange={(e) => set("endDate", e.target.value)} disabled={pending} />
+          <DatePicker value={v.endDate} min={v.date} onChange={(value) => set("endDate", value)} disabled={pending} />
         </FormField>
         <FormField label={t("startTime")}>
           <Input type="time" value={v.startTime} onChange={(e) => set("startTime", e.target.value)} disabled={pending || v.allDay} />
@@ -115,7 +115,7 @@ export function SponsorshipForm({ initial, talents, brands, talentLocked = false
       </fieldset>
       <div className="grid gap-3 sm:grid-cols-2">
         <FormField label={t("respondDate")} hint={t("respondHint")} required>
-          <Input type="date" value={v.respondDate} max={v.endDate || v.date} onChange={(e) => set("respondDate", e.target.value)} disabled={pending} />
+          <DatePicker value={v.respondDate} max={v.endDate || v.date} onChange={(value) => set("respondDate", value)} disabled={pending} />
         </FormField>
         <FormField label={t("respondTime")} required>
           <Input type="time" value={v.respondTime} onChange={(e) => set("respondTime", e.target.value)} disabled={pending} />

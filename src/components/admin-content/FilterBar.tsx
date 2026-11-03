@@ -1,6 +1,6 @@
 import { Search } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { Button, FormField, Input, Select } from "@/components/ui";
+import { Button, DatePicker, FormField, Input, Select } from "@/components/ui";
 
 export type FilterOption = { value: string; label: string };
 
@@ -40,7 +40,7 @@ export async function FilterBar({ action, fields, active, hidden }: Props) {
                 ))}
               </Select>
             ) : field.type === "date" ? (
-              <Input type="date" name={field.name} defaultValue={field.value} inputSize="sm" />
+              <DatePicker name={field.name} defaultValue={field.value} inputSize="sm" />
             ) : (
               <Input type="search" name={field.name} defaultValue={field.value} placeholder={field.placeholder} inputSize="sm" leadingIcon={<Search />} maxLength={80} />
             )}

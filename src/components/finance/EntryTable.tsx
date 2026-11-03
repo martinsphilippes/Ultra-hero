@@ -4,7 +4,7 @@ import { CalendarClock, Check, Eye, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Badge, Button, Dialog, FormField, Input, Select, Textarea, useToast, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FormField, Select, Textarea, useToast, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { formatCents } from "@/lib/deals/schemas";
@@ -237,7 +237,7 @@ function ReviewDialog({ entry, decision, today, onClose }: { entry: Entry; decis
         </p>
         {decision === "approve" ? (
           <FormField label={t("payOnLabel")} hint={t("payOnHint")}>
-            <Input type="date" value={payOn} min={today} onChange={(e) => setPayOn(e.target.value)} disabled={pending} />
+            <DatePicker value={payOn} min={today} onChange={(value) => setPayOn(value)} disabled={pending} />
           </FormField>
         ) : null}
         <FormField label={t("reviewNote")} required={decision === "reject"} error={error}>
@@ -293,7 +293,7 @@ function ScheduleDialog({ entry, today, onClose }: { entry: Entry; today: string
           {entry.talentName} · {entry.dealTitle}
         </p>
         <FormField label={t("payOnLabel")} error={error} required>
-          <Input type="date" value={payOn} min={today} onChange={(e) => setPayOn(e.target.value)} disabled={pending} />
+          <DatePicker value={payOn} min={today} onChange={(value) => setPayOn(value)} disabled={pending} />
         </FormField>
       </div>
     </Dialog>

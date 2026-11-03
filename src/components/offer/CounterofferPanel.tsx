@@ -3,7 +3,7 @@
 import { CalendarClock, CheckCircle2, Undo2, Wallet, XCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
@@ -222,7 +222,7 @@ function DateDialog({ dealTalentId, deliverables, expectedStart, dateMin, dateMa
         </FormField>
         {current ? <p className="type-body-sm text-fg">{t("currentDate", { date: formatPlainDate(current, locale) })}</p> : null}
         <FormField label={t("newDate")} required>
-          <Input type="date" value={date} min={dateMin} max={dateMax} onChange={(e) => setDate(e.target.value)} disabled={pending} />
+          <DatePicker value={date} min={dateMin} max={dateMax} onChange={(value) => setDate(value)} disabled={pending} />
         </FormField>
         <FormField label={t("reasonOptional")} hint={t("reasonHint")}>
           <Textarea value={reason} maxLength={300} rows={2} onChange={(e) => setReason(e.target.value)} disabled={pending} />

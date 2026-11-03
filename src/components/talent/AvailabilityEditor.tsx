@@ -3,7 +3,7 @@
 import { CalendarPlus, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, DatePicker, FormField, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import type { AvailabilityRow } from "@/lib/deals/queries";
@@ -89,10 +89,10 @@ export function AvailabilityEditor({ portal, talentId, rows, canEdit }: Props) {
             </Select>
           </FormField>
           <FormField label={t("startsOn")} required>
-            <Input type="date" value={startsOn} onChange={(e) => setStartsOn(e.target.value)} disabled={pending} />
+            <DatePicker value={startsOn} onChange={(value) => setStartsOn(value)} disabled={pending} />
           </FormField>
           <FormField label={t("endsOn")} required>
-            <Input type="date" value={endsOn} min={startsOn || undefined} onChange={(e) => setEndsOn(e.target.value)} disabled={pending} />
+            <DatePicker value={endsOn} min={startsOn || undefined} onChange={(value) => setEndsOn(value)} disabled={pending} />
           </FormField>
           <FormField label={t("note")} hint={t("noteHint")}>
             <Textarea value={note} maxLength={200} rows={1} onChange={(e) => setNote(e.target.value)} disabled={pending} />

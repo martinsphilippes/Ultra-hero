@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 import { createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
 import { RIGHTS_STATUSES } from "@/lib/catalog/rights";
-import { Button, Chip, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
+import { Button, Chip, DatePicker, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { PILLARS, type Pillar } from "@/lib/supabase/helpers";
@@ -147,7 +147,7 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
             <Input value={values.rightsHolder ?? ""} maxLength={160} disabled={pending} onChange={(e) => set("rightsHolder", e.target.value)} />
           </FormField>
           <FormField label={t("rightsValidUntil")} hint={t("rightsValidUntilHint")}>
-            <Input type="date" value={values.rightsValidUntil ?? ""} disabled={pending} onChange={(e) => set("rightsValidUntil", e.target.value)} />
+            <DatePicker value={values.rightsValidUntil ?? ""} disabled={pending} onChange={(value) => set("rightsValidUntil", value)} />
           </FormField>
         </div>
       </fieldset>

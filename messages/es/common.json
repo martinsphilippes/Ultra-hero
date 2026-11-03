@@ -135,5 +135,20 @@
     "next": "Siguiente",
     "done": "Terminar",
     "close": "Cerrar"
+  },
+  "datePicker": {
+    "chooseDate": "Elegir fecha",
+    "chooseDateTime": "Elegir fecha y hora",
+    "placeholder": "Elegir fecha",
+    "placeholderDateTime": "Elegir fecha y hora",
+    "today": "Hoy",
+    "todayMark": "hoy",
+    "clear": "Borrar",
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "time": "Hora",
+    "hour": "Hora",
+    "minute": "Minutos",
+    "done": "Listo"
   }
 }

@@ -3,7 +3,7 @@
 import { Plus, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId } from "react";
-import { Button, FormField, IconButton, Input, Switch, Textarea } from "@/components/ui";
+import { Button, DatePicker, FormField, IconButton, Input, Switch, Textarea } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { ChipInput, ListEditor, NumberField, useValidationMessage } from "./fields";
@@ -157,7 +157,7 @@ export function RecipeEditor({ value, onChange, errors, canValidate = false }: P
                   <Input value={nutrition.validated_by ?? ""} maxLength={120} onChange={(e) => setNutrition({ validated_by: e.target.value || null })} />
                 </FormField>
                 <FormField label={t("nutrition.validatedAt")} error={tv(errors["body.nutrition.validated_at"])} required>
-                  <Input type="date" value={nutrition.validated_at ?? ""} onChange={(e) => setNutrition({ validated_at: e.target.value || null })} />
+                  <DatePicker value={nutrition.validated_at ?? ""} onChange={(value) => setNutrition({ validated_at: value || null })} />
                 </FormField>
               </div>
             )}

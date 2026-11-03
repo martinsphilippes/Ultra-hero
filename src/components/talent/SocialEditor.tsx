@@ -3,7 +3,7 @@
 import { AtSign, Pencil, Plus, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, Dialog, FormField, Input, Select, useToast } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FormField, Input, Select, useToast } from "@/components/ui";
 import { deleteSocialAction, saveSocialAction } from "@/lib/talent/actions";
 import { formatBp, formatCount } from "@/lib/talent/media-kit";
 import { asOfInRange, audienceSchema, parseCount, percentToBp, type Audience } from "@/lib/talent/schemas";
@@ -264,7 +264,7 @@ export function SocialEditor({ portal, talentId, accounts, canEdit }: Props) {
               </FormField>
             </div>
             <FormField label={t("asOf")} hint={t("asOfHint")} required>
-              <Input type="date" value={draft.asOf} max={today()} onChange={(e) => set("asOf", e.target.value)} disabled={pending} className="w-fit" />
+              <DatePicker value={draft.asOf} max={today()} onChange={(value) => set("asOf", value)} disabled={pending} className="w-fit" />
             </FormField>
             <fieldset className="flex flex-col gap-3 rounded-xl border border-border p-3">
               <legend className="px-1 text-sm font-semibold text-fg">{t("audienceTitle")}</legend>

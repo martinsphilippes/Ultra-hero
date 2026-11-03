@@ -4,7 +4,7 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { saveDeliverablesAction } from "@/app/agencia/negocios/actions";
-import { Button, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, DatePicker, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { DeliverableRow } from "@/lib/deals/queries";
 import type { DeliverableItemInput } from "@/lib/deals/schemas";
 import { DELIVERABLE_KINDS, type DeliverableKind } from "@/lib/deals/vocab";
@@ -97,10 +97,10 @@ export function DeliverablesEditor({ dealId, talents, items, canEdit }: { dealId
                   <Input value={item.title} maxLength={120} onChange={(e) => update(index, { title: e.target.value })} disabled={locked || pending} />
                 </FormField>
                 <FormField label={t("dueAt")}>
-                  <Input type="date" value={item.dueAt} onChange={(e) => update(index, { dueAt: e.target.value })} disabled={locked || pending} />
+                  <DatePicker value={item.dueAt} onChange={(value) => update(index, { dueAt: value })} disabled={locked || pending} />
                 </FormField>
                 <FormField label={t("publishAt")}>
-                  <Input type="date" value={item.publishAt} onChange={(e) => update(index, { publishAt: e.target.value })} disabled={locked || pending} />
+                  <DatePicker value={item.publishAt} onChange={(value) => update(index, { publishAt: value })} disabled={locked || pending} />
                 </FormField>
                 <FormField label={t("brief")} className="sm:col-span-2">
                   <Textarea value={item.brief} maxLength={1000} rows={2} onChange={(e) => update(index, { brief: e.target.value })} disabled={locked || pending} />

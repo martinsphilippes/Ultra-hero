@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
 import { archiveTalentAction, linkCreatorAction, recordConsentAction, saveTalentAction, setCatalogAction, setSegmentsAction } from "@/app/agencia/casting/actions";
-import { Button, Checkbox, Dialog, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Switch, Textarea, useToast } from "@/components/ui";
 import { AVAILABILITIES, COMMERCIAL_STATUSES, UFS, type Availability, type CommercialStatus } from "@/lib/talent/vocab";
 
 export { EMPTY_TALENT, type TalentFormValues } from "@/lib/talent/form-values";
@@ -96,7 +96,7 @@ export function TalentForm({ initial, managers, canEdit }: { initial: TalentForm
           <Input type="tel" inputMode="tel" value={v.contactPhone} maxLength={20} onChange={(e) => set("contactPhone", e.target.value)} disabled={disabled} />
         </FormField>
         <FormField label={t("lastContact")}>
-          <Input type="date" value={v.lastContactAt} onChange={(e) => set("lastContactAt", e.target.value)} disabled={disabled} />
+          <DatePicker value={v.lastContactAt} onChange={(value) => set("lastContactAt", value)} disabled={disabled} />
         </FormField>
       </div>
       <FormField label={t("notes")} hint={t("notesHint")}>

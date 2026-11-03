@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
-import { Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { canConfirm, DEAL_OUTCOMES, moveNeedsNote, nextStages, type DealOutcome, type DealStage } from "@/lib/deals/stages";
 import { ACTIVITY_KINDS, type ActivityKind } from "@/lib/deals/vocab";
 
@@ -59,10 +59,10 @@ export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwne
       </FormField>
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label={t("expectedStart")}>
-          <Input type="date" value={v.expectedStart} onChange={(e) => set("expectedStart", e.target.value)} disabled={disabled} />
+          <DatePicker value={v.expectedStart} onChange={(value) => set("expectedStart", value)} disabled={disabled} />
         </FormField>
         <FormField label={t("expectedEnd")}>
-          <Input type="date" value={v.expectedEnd} min={v.expectedStart || undefined} onChange={(e) => set("expectedEnd", e.target.value)} disabled={disabled} />
+          <DatePicker value={v.expectedEnd} min={v.expectedStart || undefined} onChange={(value) => set("expectedEnd", value)} disabled={disabled} />
         </FormField>
       </div>
       {canSetOwner ? (

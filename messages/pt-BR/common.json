@@ -135,5 +135,20 @@
     "next": "Próxima",
     "done": "Concluir",
     "close": "Fechar"
+  },
+  "datePicker": {
+    "chooseDate": "Escolher data",
+    "chooseDateTime": "Escolher data e hora",
+    "placeholder": "Escolher data",
+    "placeholderDateTime": "Escolher data e hora",
+    "today": "Hoje",
+    "todayMark": "hoje",
+    "clear": "Limpar",
+    "prevMonth": "Mês anterior",
+    "nextMonth": "Próximo mês",
+    "time": "Hora",
+    "hour": "Hora",
+    "minute": "Minutos",
+    "done": "Pronto"
   }
 }

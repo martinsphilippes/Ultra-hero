@@ -3,7 +3,7 @@
 import { ExternalLink, Music, Pencil, Plus, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Badge, Button, Checkbox, Dialog, FormField, Input, useToast } from "@/components/ui";
+import { Badge, Button, Checkbox, DatePicker, Dialog, FormField, Input, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { deleteMusicAction, saveMusicAction } from "@/lib/media/actions";
@@ -157,7 +157,7 @@ function MusicDialog({ track, dealId, requestId, onClose }: { track: MusicTrack 
           </div>
         </fieldset>
         <FormField label={t("validUntil")}>
-          <Input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} disabled={pending} />
+          <DatePicker value={validUntil} onChange={(value) => setValidUntil(value)} disabled={pending} />
         </FormField>
         {error ? (
           <p role="alert" className="type-body-sm text-danger">

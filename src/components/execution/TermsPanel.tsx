@@ -4,7 +4,7 @@ import { CheckCircle2, FileSignature, ReceiptText, Send, ShieldCheck, Undo2 } fr
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FormField, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { RightsEditor } from "@/components/offer/RightsEditor";
@@ -263,7 +263,7 @@ function TermsForm({ dealId, initial, draftId, segments }: { dealId: string; ini
         </FormField>
       </div>
       <FormField label={ta("validUntil")} hint={ta("validUntilHint")}>
-        <Input type="date" value={v.validUntil} onChange={(e) => setV({ ...v, validUntil: e.target.value })} disabled={pending} className="sm:max-w-xs" />
+        <DatePicker value={v.validUntil} onChange={(value) => setV({ ...v, validUntil: value })} disabled={pending} className="sm:max-w-xs" />
       </FormField>
       {error ? (
         <p role="alert" className="type-body-sm text-danger">

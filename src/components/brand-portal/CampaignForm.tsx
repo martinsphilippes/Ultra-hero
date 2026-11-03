@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
 import { BriefFields } from "@/components/brief/BriefFields";
-import { Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
 import { askApprovalAction } from "@/lib/selection/actions";
@@ -166,10 +166,10 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <FormField label={t("periodStart")} required>
-            <Input type="date" value={v.periodStart} onChange={(e) => set("periodStart", e.target.value)} disabled={disabled} />
+            <DatePicker value={v.periodStart} onChange={(value) => set("periodStart", value)} disabled={disabled} />
           </FormField>
           <FormField label={t("periodEnd")}>
-            <Input type="date" value={v.periodEnd} min={v.periodStart || undefined} onChange={(e) => set("periodEnd", e.target.value)} disabled={disabled} />
+            <DatePicker value={v.periodEnd} min={v.periodStart || undefined} onChange={(value) => set("periodEnd", value)} disabled={disabled} />
           </FormField>
           <FormField label={t("desiredTime")} hint={t("desiredTimeHint")}>
             <Input type="time" value={v.desiredTime} onChange={(e) => set("desiredTime", e.target.value)} disabled={disabled} />

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { saveEventAction } from "@/lib/calendar/actions";
 import { MANUAL_EVENT_KINDS, type EventInput, type ManualEventKind } from "@/lib/calendar/vocab";
 
@@ -74,10 +74,10 @@ export function EventFormDialog({ open, onOpenChange, initial, fixedDealId = nul
         </div>
         <div className="grid gap-3 sm:grid-cols-4">
           <FormField label={t("date")} required>
-            <Input type="date" value={v.date} onChange={(e) => set("date", e.target.value)} disabled={pending} />
+            <DatePicker value={v.date} onChange={(value) => set("date", value)} disabled={pending} />
           </FormField>
           <FormField label={t("endDate")}>
-            <Input type="date" value={v.endDate} min={v.date} onChange={(e) => set("endDate", e.target.value)} disabled={pending} />
+            <DatePicker value={v.endDate} min={v.date} onChange={(value) => set("endDate", value)} disabled={pending} />
           </FormField>
           <FormField label={t("startTime")}>
             <Input type="time" value={v.startTime} onChange={(e) => set("startTime", e.target.value)} disabled={pending || v.allDay} />

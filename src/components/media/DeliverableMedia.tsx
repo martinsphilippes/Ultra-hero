@@ -3,7 +3,7 @@
 import { BarChart3, MessageSquareText, Play, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { Button, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { signedUrlAction } from "@/lib/documents/actions";
@@ -129,7 +129,7 @@ function MetricsDialog({ portal, deliverableId, today, refs, onClose }: { portal
         }}
       >
         <FormField label={t("measuredOn")} required>
-          <Input type="date" value={measuredOn} max={today} onChange={(e) => setMeasuredOn(e.target.value)} disabled={pending} />
+          <DatePicker value={measuredOn} max={today} onChange={(value) => setMeasuredOn(value)} disabled={pending} />
         </FormField>
         <div className="grid grid-cols-2 gap-3">
           {METRIC_KEYS.map((k) => (

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { cancelCollectibleAction, launchCollectibleAction } from "@/app/admin/collectibles/actions";
 import { ConfirmActionDialog } from "@/components/admin";
-import { Button, FormField, Input, useToast } from "@/components/ui";
+import { Button, DateTimePicker, FormField, useToast } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -68,7 +68,7 @@ export function CollectibleControls({ id, canLaunch, canCancel, durationMinutes 
           </div>
           {when === "later" ? (
             <FormField label={t("startsAt")}>
-              <Input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
+              <DateTimePicker value={startsAt} onChange={(value) => setStartsAt(value)} />
             </FormField>
           ) : null}
           <p className="text-xs text-fg-muted">{endPreview ? t("endsPreview", { date: endPreview }) : t("endsNow", { minutes: durationMinutes })}</p>

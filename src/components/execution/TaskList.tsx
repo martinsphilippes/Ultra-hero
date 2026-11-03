@@ -4,7 +4,7 @@ import { CheckSquare, ExternalLink, Plus, ThumbsDown, ThumbsUp } from "lucide-re
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, Dialog, FormField, Input, Select, Textarea, useToast, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { decideTaskAction, saveTaskAction, setTaskStatusAction } from "@/lib/execution/actions";
@@ -284,7 +284,7 @@ function TaskForm({ create }: { create: NonNullable<Props["create"]> }) {
               </FormField>
             ) : null}
             <FormField label={t("dueDate")}>
-              <Input type="date" value={v.dueDate} onChange={(e) => setV({ ...v, dueDate: e.target.value })} disabled={pending} />
+              <DatePicker value={v.dueDate} onChange={(value) => setV({ ...v, dueDate: value })} disabled={pending} />
             </FormField>
           </div>
           <FormField label={t("description")}>

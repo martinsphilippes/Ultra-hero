@@ -21,19 +21,31 @@ export function zonedDayKey(value: string | number | Date, timeZone: string): st
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
-/** Dia da semana de uma chave YYYY-MM-DD com segunda = 0 … domingo = 6. */
-export function mondayIndex(date: string): number {
+/** 0 = semana começando no domingo (seletor de data, padrão BR); 1 = na segunda (agenda). */
+export type WeekStart = 0 | 1;
+
+/** Posição do dia na semana (0…6) para o início de semana dado. Chave YYYY-MM-DD lida sem fuso (UTC puro). */
+export function weekdayIndex(date: string, weekStart: WeekStart): number {
   const [y, m, d] = date.split("-").map(Number);
-  return (new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7;
+  return (new Date(Date.UTC(y, m - 1, d)).getUTCDay() - weekStart + 7) % 7;
 }
 
-/** Semanas (segunda a domingo) que cobrem o mês; cada semana com 7 dias. */
-export function monthWeeks(year: number, month: number): GridDay[][] {
+/** Dia da semana de uma chave YYYY-MM-DD com segunda = 0 … domingo = 6. */
+export function mondayIndex(date: string): number {
+  return weekdayIndex(date, 1);
+}
+
+/** Dias do mês (28 a 31). */
+export function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/** Semanas que cobrem o mês (por padrão de segunda a domingo); cada semana com 7 dias. */
+export function monthWeeks(year: number, month: number, weekStart: WeekStart = 1): GridDay[][] {
   const first = `${year}-${pad(month)}-01`;
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const last = `${year}-${pad(month)}-${pad(daysInMonth)}`;
-  const start = plusDays(first, -mondayIndex(first));
-  const end = plusDays(last, 6 - mondayIndex(last));
+  const last = `${year}-${pad(month)}-${pad(daysInMonth(year, month))}`;
+  const start = plusDays(first, -weekdayIndex(first, weekStart));
+  const end = plusDays(last, 6 - weekdayIndex(last, weekStart));
   const weeks: GridDay[][] = [];
   let cursor = start;
   while (cursor <= end) {

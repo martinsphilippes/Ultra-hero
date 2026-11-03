@@ -4,7 +4,7 @@ import { CalendarClock, CircleCheck, CircleX, Eye, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { localInputToIso } from "@/components/admin-content/lib/publish-at";
-import { Badge, Button, FormField, Input } from "@/components/ui";
+import { Badge, Button, DateTimePicker, FormField } from "@/components/ui";
 import type { ChecklistEntry } from "@/lib/recipes/checklist";
 import type { RecipeChecklistCode } from "@/lib/recipes/codes";
 import { effectiveTotal, isBlankIngredient, isBlankStep, type RecipeDraft } from "@/lib/recipes/draft";
@@ -104,7 +104,7 @@ export function ReviewStep({ draft, checklist, reviewRequired, busy, serverMissi
       <StepSection title={t("publishTitle")}>
         <p className="-mt-2 type-body-sm text-fg-muted">{reviewRequired ? t("reviewOn") : t("reviewOff")}</p>
         <FormField id="recipe-publish-at" label={reviewRequired ? t("suggestDate") : t("scheduleAt")} hint={t("scheduleHint")} error={dateError ?? undefined}>
-          <Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} disabled={busy} className="sm:w-72" />
+          <DateTimePicker value={when} onChange={(value) => setWhen(value)} disabled={busy} className="sm:w-72" />
         </FormField>
         <div className="flex flex-wrap gap-2">
           {reviewRequired ? (
