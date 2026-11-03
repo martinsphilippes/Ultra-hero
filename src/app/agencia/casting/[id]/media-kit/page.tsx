@@ -5,7 +5,8 @@ import { KitShareCard } from "@/components/talent/KitShareCard";
 import { KitView } from "@/components/talent/KitView";
 import { agencyCan } from "@/lib/agency/roles";
 import { buildKit } from "@/lib/talent/media-kit";
-import { getKit, kitSource, listSocial } from "@/lib/talent/queries";
+import { resolveTalentAccess } from "@/lib/talent/access";
+import { getKit, kitSource, listSocial, listTalentAccess } from "@/lib/talent/queries";
 import { loadTalent } from "../_lib";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,9 @@ export default async function TalentKitPage({ params }: Props) {
     }),
   );
   const canEdit = agencyCan(ctx.role, "manager", ctx.platformAdmin) && !talent.archived;
+  // com login real, só o creator dá o consentimento; sem login, a agência registra com o termo assinado
+  const access = talent.consent === "active" || talent.archived ? null : resolveTalentAccess((await listTalentAccess(ctx.agency.id)).get(talent.id), talent);
+  const hasLogin = access ? access === "login" : talent.hasLogin;
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
@@ -52,6 +56,8 @@ export default async function TalentKitPage({ params }: Props) {
           talentId={talent.id}
           canEdit={canEdit}
           consentOk={talent.consent === "active"}
+          consentHref={`/agencia/casting/${talent.id}#talent-consent`}
+          consentSteps={hasLogin ? "agencyLogin" : "agency"}
           lockedNote={ctx.agency.isDemo ? t("demoLockedKit") : null}
           share={{ active: kit.shareActive, expiresAt: kit.shareExpiresAt, viewCount: kit.viewCount, lastViewedAt: kit.lastViewedAt }}
         />

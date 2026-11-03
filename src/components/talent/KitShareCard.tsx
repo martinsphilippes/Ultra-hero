@@ -19,12 +19,14 @@ type Props = {
   /** Agência de demonstração: só a prévia (D6). O texto vem do servidor (namespace fora do app). */
   lockedNote?: string | null;
   consentHref?: string | null;
+  /** Passo a passo de como conseguir o consentimento (varia por portal e se o creator tem login). */
+  consentSteps?: "agency" | "agencyLogin" | "office";
   share: { active: boolean; expiresAt: string | null; viewCount: number; lastViewedAt: string | null };
 };
 
 // Link público do kit (/kit/<token>): validade de 7, 30 ou 90 dias; o link aparece UMA vez (o banco
 // guarda só o hash). Revogar desliga na hora; o contador mostra as visitas do link atual.
-export function KitShareCard({ portal, talentId, canEdit, consentOk, lockedNote, consentHref, share }: Props) {
+export function KitShareCard({ portal, talentId, canEdit, consentOk, lockedNote, consentHref, consentSteps, share }: Props) {
   const t = useTranslations("mediaKit.share");
   const locale = useLocale() as Locale;
   const { toast } = useToast();
@@ -80,11 +82,16 @@ export function KitShareCard({ portal, talentId, canEdit, consentOk, lockedNote,
       ) : !consentOk ? (
         <p className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning-soft px-3 py-2 type-body-sm text-warning" data-testid="kit-share-consent">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <span>
-            {t("needsConsent")}{" "}
+          <span className="flex flex-col gap-1.5">
+            <span>{t("needsConsent")}</span>
+            {consentSteps ? (
+              <span className="text-fg">
+                {consentSteps === "agency" ? t("consentStepsAgency") : consentSteps === "agencyLogin" ? t("consentStepsAgencyLogin") : t("consentStepsOffice")}
+              </span>
+            ) : null}
             {consentHref ? (
               <a href={consentHref} className="font-semibold underline underline-offset-2">
-                {t("goConsent")}
+                {portal === "agency" ? t("goConsentAgency") : t("goConsent")}
               </a>
             ) : null}
           </span>

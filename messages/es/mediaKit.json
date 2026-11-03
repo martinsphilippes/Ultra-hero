@@ -114,8 +114,8 @@
     "views": "{count, plural, =0 {ninguna visita} one {# visita} other {# visitas}}",
     "lastView": "última visita el {date}",
     "inactive": "Ningún enlace activo. Genera uno para enviar a las marcas.",
-    "needsConsent": "El enlace solo se puede generar con el consentimiento de uso comercial.",
-    "goConsent": "Ver los términos",
+    "needsConsent": "Para generar el link, el creator debe autorizar el uso comercial de su imagen (es lo que permite mostrar el media kit a las marcas).",
+    "goConsent": "Abrir Consentimiento",
     "linkOnce": "Este enlace aparece solo ahora. Cópialo y guárdalo: después solo se puede generar otro.",
     "link": "Enlace del media kit",
     "validity": "Validez",
@@ -123,7 +123,11 @@
     "generate": "Generar enlace",
     "regenerate": "Generar nuevo enlace",
     "revoke": "Desactivar enlace",
-    "confirmRevoke": "¿Desactivar el enlace? Quien tenga la dirección deja de ver el kit."
+    "confirmRevoke": "¿Desactivar el enlace? Quien tenga la dirección deja de ver el kit.",
+    "consentStepsAgency": "Cómo resolverlo: sube la autorización firmada en Documentos y toca \"Registrar consentimiento\" en la ficha del creator.",
+    "consentStepsAgencyLogin": "Cómo resolverlo: este creator tiene login, así que solo él puede autorizar. Pídele que abra el Portal del Creator → Consentimiento y acepte.",
+    "consentStepsOffice": "Cómo resolverlo: abre Consentimiento y acepta los términos. Luego vuelve aquí y genera el link.",
+    "goConsentAgency": "Ir al consentimiento"
   },
   "public": {
     "eyebrow": "Media kit",

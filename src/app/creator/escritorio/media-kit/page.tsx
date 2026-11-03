@@ -73,6 +73,7 @@ export default async function OfficeKitPage() {
             canEdit
             consentOk={consentOk}
             consentHref="/creator/escritorio/consentimento"
+            consentSteps="office"
             lockedNote={talent.agencyIsDemo ? tv("demoLockedKit") : null}
             share={{ active: kit.shareActive, expiresAt: kit.shareExpiresAt, viewCount: kit.viewCount, lastViewedAt: kit.lastViewedAt }}
           />
