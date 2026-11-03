@@ -1,5 +1,7 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // oportunidade de patrocínio por herói (0095)
+  "hero_inactive",
   // sugerir heróis no negócio (0093)
   "invalid_hero_name",
   "invalid_profile_ref",

@@ -1,5 +1,6 @@
 {
   "status": {
+    "draft": "Draft",
     "open": "Open",
     "expired": "Deadline passed",
     "closedDeadline": "Deadline passed",
@@ -9,7 +10,7 @@
     "cancelled": "Cancelled"
   },
   "facts": {
-    "talent": "Creator",
+    "hero": "Hero",
     "when": "When",
     "allDay": "all day",
     "where": "Where",
@@ -20,10 +21,10 @@
   },
   "agency": {
     "title": "Sponsorship opportunities",
-    "description": "Show brands a moment from a roster creator (a race, a show, a live stream) for one of them to sponsor.",
+    "description": "Show brands an event of a hero (a race, a show, a live stream) for one of them to sponsor.",
     "new": "New opportunity",
     "empty": "No opportunities yet.",
-    "emptyHint": "Pick the creator, the date and what the brand gets. Brands are notified right away.",
+    "emptyHint": "Pick the hero, the date and what the brand gets. Brands are notified right away, when you publish.",
     "unavailable": "Opportunities are being updated",
     "unavailableHint": "Try again in a few minutes.",
     "counts": "{interested} interested · {declined} declined · {pending} no reply",
@@ -35,7 +36,7 @@
     "published": "Opportunity published. Brands were notified.",
     "back": "Back to opportunities",
     "newTitle": "New sponsorship opportunity",
-    "newHint": "Shows on the agency's, the creator's and the chosen brands' calendars. Brands see each tier's asking price.",
+    "newHint": "The hero is the creator’s public page the event is for. It shows on the agency’s, the hero’s and the chosen brands’ calendars once published. Brands see each tier’s asking price.",
     "edit": "Edit opportunity",
     "fromAgenda": "Sponsorship opportunity",
     "brandsTitle": "Brand replies",
@@ -60,11 +61,6 @@
     "openDeal": "Open deal",
     "decidedBy": "Decided by {name} on {date}",
     "form": {
-      "talent": "Creator",
-      "talentHint": "Only roster creators with valid consent.",
-      "talentLocked": "There are replies already: the creator can't change.",
-      "talentRequired": "Pick the creator.",
-      "noTalents": "No creator with valid consent in the roster.",
       "title": "Title",
       "titlePlaceholder": "E.g.: Rio Marathon with live stream",
       "titleRequired": "Use a title with at least 3 letters.",
@@ -100,7 +96,7 @@
       "submitEdit": "Save",
       "tiers": {
         "title": "Sponsorship tiers",
-        "hintAdmin": "1 to 3 tiers (e.g. Main, Support). The asking price is what the creator needs; without it, brands see “Price to be agreed”.",
+        "hintAdmin": "1 to 3 tiers (e.g. Main, Support). The asking price is what the hero needs; without it, brands see “Price to be agreed”.",
         "hintManager": "1 to 3 tiers (e.g. Main, Support). The asking price is set by the agency Admin.",
         "name": "Tier name",
         "namePlaceholder": "E.g. Main",
@@ -125,7 +121,76 @@
       "publicTitle": "Event audience",
       "publicHint": "Same fields as the campaign. Brands see it and the campaign starts pre-filled.",
       "valuesAdmin": "Brands in the audience see each tier's asking price, never other brands' proposals.",
-      "valuesManager": "The asking price is filled in by the agency Admin."
+      "valuesManager": "The asking price is filled in by the agency Admin.",
+      "hero": "Hero",
+      "heroHint": "The hero is the person (the public page) this event is for. It’s their event that will be offered to brands.",
+      "heroLocked": "There are replies already: the hero can’t change.",
+      "heroRequired": "Pick the hero.",
+      "consentNotice": "To publish to brands, the hero must have given consent (upload the signed form in Documents or invite them to accept in their office). You can save it as a draft.",
+      "consentNoticeNew": "Their roster profile is created on save; the shortcut to the profile and Documents shows on the opportunity.",
+      "openFicha": "Open the hero’s profile",
+      "openDocuments": "Upload the form in Documents",
+      "saveDraft": "Save draft",
+      "publishDraft": "Save and publish",
+      "heroPicker": {
+        "search": "Search heroes",
+        "searchPlaceholder": "Hero name or address",
+        "searching": "Searching…",
+        "empty": "No hero for this search.",
+        "retry": "Try again",
+        "loadMore": "Show more heroes",
+        "change": "Change hero",
+        "keep": "Keep this hero",
+        "pick": "Pick {name}",
+        "followers": "{count} followers",
+        "noPage": "No page on the platform",
+        "seePage": "See hero page",
+        "scope": {
+          "casting": "On your roster",
+          "outside": "Off your roster",
+          "other_agency": "At another agency",
+          "person_in_casting": "Person already on the roster",
+          "typed": "Off the platform"
+        },
+        "scopeHint": {
+          "casting": "Already has a profile on your roster.",
+          "outside": "Their profile on your roster is created on save.",
+          "other_agency": "Unavailable: already on another agency’s roster.",
+          "person_in_casting": "Unavailable: this hero’s account already has another profile on your roster.",
+          "typed": "Their profile, with just the name, is created on save."
+        },
+        "consent": {
+          "active": "Consent given",
+          "revoked": "Consent revoked",
+          "none": "No consent yet"
+        },
+        "typed": {
+          "title": "Hero who isn’t on the platform",
+          "open": "Type a hero who isn’t on the platform",
+          "hint": "Creates a roster profile with just the name. Then invite them to join the platform.",
+          "name": "Name",
+          "profile": "Public profile or network @",
+          "profileHint": "Optional. E.g. @name or the profile link.",
+          "email": "Contact email",
+          "emailHint": "Optional. Used to invite them later.",
+          "use": "Use this hero",
+          "cancel": "Cancel",
+          "errors": {
+            "name": {
+              "required": "Type the name.",
+              "invalid": "The name must be 2 to 80 characters."
+            },
+            "profile": {
+              "required": "Enter the profile.",
+              "invalid": "Use @profile or a link starting with https://."
+            },
+            "email": {
+              "required": "Enter the email.",
+              "invalid": "Check the email."
+            }
+          }
+        }
+      }
     },
     "decide": {
       "title": "Decision",
@@ -143,7 +208,7 @@
       "confirmCancel": "It leaves the calendar, brands that replied are notified and their drafts are cancelled.",
       "back": "Back",
       "done": {
-        "sponsor": "Sponsorship confirmed. Brands and creator notified.",
+        "sponsor": "Sponsorship confirmed. Brands and hero notified.",
         "close": "Opportunity closed.",
         "cancel": "Opportunity cancelled."
       },
@@ -160,19 +225,33 @@
     "publicLabel": "Event audience",
     "awaitingAgency": "{count, plural, one {# proposal to answer} other {# proposals to answer}}",
     "agreedCount": "{count, plural, one {# deal} other {# deals}}",
-    "missingPrice": "Price missing"
+    "missingPrice": "Price missing",
+    "savedPublished": "Opportunity saved and published. Brands were notified.",
+    "draftSaved": "Draft saved. Brands can’t see it yet.",
+    "draftDiscarded": "Draft discarded.",
+    "draftNeedsConsent": "Hero consent missing",
+    "draftLine": "Draft: only the agency sees it. Publish once the hero has given consent.",
+    "draft": {
+      "title": "Draft",
+      "hint": "Brands and the hero can’t see this opportunity yet. To publish to brands, the hero must have given consent.",
+      "publish": "Publish to brands",
+      "discard": "Discard draft",
+      "confirmTitle": "Discard the draft?",
+      "confirm": "The opportunity is cancelled. Nobody is notified, because nobody saw it.",
+      "back": "Back",
+      "inactive": "This hero’s page isn’t active right now; it can’t be published to brands."
+    }
   },
   "brand": {
     "title": "Sponsorship opportunities",
-    "description": "Moments from {agency} creators your brand can sponsor.",
-    "descriptionNoAgency": "Moments from creators your brand can sponsor.",
+    "description": "Events of {agency} heroes your brand can sponsor.",
+    "descriptionNoAgency": "Events of heroes your brand can sponsor.",
     "empty": "No opportunities right now.",
-    "emptyHint": "When the agency offers a moment to sponsor, it shows up here and in the bell.",
+    "emptyHint": "When the agency offers an event to sponsor, it shows here and in the bell.",
     "unavailable": "Opportunities are being updated",
     "unavailableHint": "Try again in a few minutes.",
     "back": "Back to opportunities",
     "offeredBy": "Offered by {agency}",
-    "seeCreator": "See profile",
     "badgeInterested": "You were interested",
     "badgeDeclined": "You declined",
     "badgePending": "Reply",
@@ -202,11 +281,12 @@
     "badgeAgencyTurn": "With the agency",
     "allTiersFull": "All tiers taken",
     "priceToCombine": "Price to be agreed",
-    "priceFrom": "From {amount}"
+    "priceFrom": "From {amount}",
+    "seeCatalog": "See in the catalog"
   },
   "talent": {
     "title": "Sponsorship opportunities",
-    "hint": "Your moments the agency offered to brands.",
+    "hint": "Your events the agency offered to brands.",
     "sponsoredBy": "Sponsored by {brands}",
     "open": "Waiting for brands until {date}",
     "closed": "Closed without sponsor",
@@ -357,7 +437,7 @@
     "waitingBrandAgency": "Waiting for the brand's reply.",
     "adminAnswers": "Waiting for the agency Admin to reply.",
     "agencyAccept": "Accept",
-    "agencyPrivacy": "Each brand sees only its own negotiation; the creator sees only what was agreed, without prices.",
+    "agencyPrivacy": "Each brand sees only its own negotiation; the hero sees only what was agreed, without prices.",
     "done": {
       "agreed": "Sponsorship agreed. The campaign is ready.",
       "sent": "Sent.",
@@ -365,5 +445,15 @@
       "declined": "Decline recorded.",
       "returned": "Returned to the team."
     }
+  },
+  "hero": {
+    "consent": {
+      "active": "Consent given",
+      "revoked": "Consent revoked",
+      "none": "No consent yet"
+    },
+    "seePage": "See hero page",
+    "outside": "Off the platform",
+    "inactive": "Page offline"
   }
 }

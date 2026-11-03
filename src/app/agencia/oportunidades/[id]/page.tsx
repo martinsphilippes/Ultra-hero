@@ -4,8 +4,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AgencyProposalsPanel } from "@/components/sponsorship/AgencyProposalsPanel";
+import { HeroCard } from "@/components/sponsorship/HeroCard";
 import { PublicChips } from "@/components/sponsorship/NegotiationView";
 import { SponsorshipDecide } from "@/components/sponsorship/SponsorshipDecide";
+import { SponsorshipDraftPanel } from "@/components/sponsorship/SponsorshipDraftPanel";
 import { SponsorshipForm } from "@/components/sponsorship/SponsorshipForm";
 import { SponsorshipFacts, SponsorshipStatusBadge } from "@/components/sponsorship/SponsorshipView";
 import { Badge, PageHeader, type BadgeVariant } from "@/components/ui";
@@ -16,10 +18,10 @@ import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { formatCents } from "@/lib/deals/schemas";
 import { centsToBrl } from "@/lib/money/brl-input";
+import { choiceFromHeroInfo } from "@/lib/sponsorship/hero-pick";
 import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
 import { getAgencySponsorship } from "@/lib/sponsorship/queries";
 import { canDecide, localParts, responseCounts, type AgencySponsorshipBrand } from "@/lib/sponsorship/vocab";
-import { listTalents } from "@/lib/talent/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -32,22 +34,22 @@ type Props = { params: Promise<{ id: string }> };
 
 const RESPONSE_VARIANT: Record<"interested" | "declined" | "pending", BadgeVariant> = { interested: "success", declined: "neutral", pending: "warning" };
 
-// Ficha da oportunidade (0085), gestor+: resumo, marca por marca (quis, recusou, sem resposta; quem e quando; a
-// campanha que nasceu do interesse), a decisão e a edição enquanto aberta.
+// Ficha da oportunidade (0085), gestor+: o herói (0095), resumo, marca por marca (quis, recusou, sem resposta; quem e
+// quando; a campanha que nasceu do interesse), a decisão e a edição enquanto rascunho ou aberta. Rascunho: painel com
+// publicar (exige o consentimento do herói; atalhos da ficha e dos Documentos) e descartar.
 export default async function AgencySponsorshipPage({ params }: Props) {
   const ctx = await requireAgency("manager");
   const { id } = await params;
   const o = await getAgencySponsorship(id);
   if (!o || o.agencyId !== ctx.agency.id) notFound();
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
-  const [t, locale, talents, brands] = await Promise.all([getTranslations("sponsorship.agency"), getLocale() as Promise<Locale>, listTalents(ctx.agency.id), listAgencyBrands(ctx.agency.id)]);
+  const [t, locale, brands] = await Promise.all([getTranslations("sponsorship.agency"), getLocale() as Promise<Locale>, listAgencyBrands(ctx.agency.id)]);
   const counts = responseCounts(o.brands);
   const interested = o.brands.filter((b) => b.response === "interested");
   const start = localParts(o.startsAt, tz);
   const allDayEnd = localParts(new Date(Math.max(Date.parse(o.startsAt), Date.parse(o.endsAt) - 60_000)).toISOString(), tz);
   const end = localParts(o.endsAt, tz);
   const respond = localParts(o.respondBy, tz);
-  const talentOptions = talents.items.filter((x) => (x.consent === "active" && !x.archived) || x.id === o.talentId).map((x) => ({ id: x.id, name: x.name }));
   const responded = o.brands.some((b) => b.response !== null);
   const canValues = o.canValues && agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const agreedBrands = Array.from(new Set(o.proposals.filter((p) => p.status === "agreed").map((p) => p.brandId)));
@@ -90,8 +92,10 @@ export default async function AgencySponsorshipPage({ params }: Props) {
         {t("back")}
       </Link>
       <PageHeader title={o.title} description={o.audience === "all" ? t("audienceAll") : t("audienceSelected", { count: o.targetIds.length })} actions={<SponsorshipStatusBadge status={o.status} closedReason={o.closedReason} />} />
+      {o.status === "draft" ? <SponsorshipDraftPanel id={o.id} hero={o.hero} /> : null}
       <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
-        <SponsorshipFacts o={o} timeZone={tz} talentName={o.talentName} hidePerks />
+        <HeroCard hero={o.hero} side="agency" />
+        <SponsorshipFacts o={o} timeZone={tz} hidePerks />
         <PublicChips value={o.public} label={t("publicLabel")} />
       </section>
       <section aria-labelledby="sponsorship-tiers" className="flex flex-col gap-3" data-testid="agency-tiers">
@@ -150,22 +154,22 @@ export default async function AgencySponsorshipPage({ params }: Props) {
         )}
       </section>
       {canDecide(o) ? <SponsorshipDecide id={o.id} interested={interested.map((b) => ({ brandId: b.brandId, name: b.name }))} agreed={agreedBrands} /> : null}
-      {o.status === "open" ? (
-        <details className="group flex flex-col gap-3" data-testid="sponsorship-edit">
+      {o.status === "open" || o.status === "draft" ? (
+        <details className="group flex flex-col gap-3" data-testid="sponsorship-edit" open={o.status === "draft"}>
           <summary className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-accent-text">
             <Pencil className="size-4" aria-hidden="true" />
             {t("edit")}
           </summary>
           <div className="mt-3">
             <SponsorshipForm
-              talents={talentOptions}
               brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name }))}
-              talentLocked={responded}
+              status={o.status === "draft" ? "draft" : "open"}
+              heroLocked={responded}
               canValues={canValues}
               lockedTierIds={o.tiers.filter((z) => z.hasProposals).map((z) => z.id)}
               initial={{
                 id: o.id,
-                talentId: o.talentId,
+                hero: choiceFromHeroInfo(o.hero),
                 title: o.title,
                 description: o.description,
                 location: o.location,

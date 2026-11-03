@@ -2,6 +2,7 @@ import { z } from "zod";
 import { plusDays } from "@/lib/calendar/ics";
 import { toZonedIso } from "@/lib/deals/schemas";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
+import { heroChoiceSchema, toHeroInfo, type HeroInfo } from "./hero-pick";
 import {
   MAX_PERKS,
   PROPOSAL_END_REASONS,
@@ -23,7 +24,8 @@ import {
 // Oportunidade de patrocínio (0085): lógica pura (testada em tests/unit/patrocinio.test.ts). O banco confere de
 // novo (checks e RPCs); aqui ficam o formulário, as datas no fuso da agência e a leitura das RPCs fechadas.
 
-export const SPONSORSHIP_STATUSES = ["open", "closed", "sponsored", "cancelled"] as const;
+/** draft = rascunho (0095): só a agência vê; marcas e creator só depois de publicada (exige consentimento do herói). */
+export const SPONSORSHIP_STATUSES = ["draft", "open", "closed", "sponsored", "cancelled"] as const;
 export type SponsorshipStatus = (typeof SPONSORSHIP_STATUSES)[number];
 /** Como a marca vê: aberta, prazo encerrado, patrocinada por ela, encerrada (sem dizer quem venceu), cancelada. */
 export const BRAND_SPONSORSHIP_STATUSES = ["open", "expired", "won", "closed", "cancelled"] as const;
@@ -57,7 +59,10 @@ const time = z.union([z.literal(""), z.string().regex(/^\d{2}:\d{2}$/)]);
 export const sponsorshipSchema = z
   .object({
     id: z.uuid().nullable(),
-    talentId: z.uuid(),
+    /** 0095: o herói (ficha do casting, herói da plataforma ou digitado); o consentimento só é exigido para publicar */
+    hero: heroChoiceSchema,
+    /** true = publica às marcas; false = rascunho (ao editar uma aberta, segue aberta) */
+    publish: z.boolean(),
     title: z.string().trim().min(3).max(120),
     description: z.string().trim().max(2000),
     location: z.string().trim().max(200),
@@ -267,6 +272,8 @@ export type AgencyTier = { id: string; position: number; name: string; perks: st
 export type AgencySponsorshipRow = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy"> & {
   talentId: string;
   talentName: string;
+  /** 0095: o herói da oportunidade (a ficha do casting e a página ligada) */
+  hero: HeroInfo;
   status: SponsorshipStatus;
   closedReason: "deadline" | "decision" | null;
   audience: SponsorshipAudience;
@@ -292,6 +299,7 @@ export function toAgencySponsorships(data: unknown): AgencySponsorshipRow[] {
     respondBy: text(r.respond_by),
     talentId: text(r.talent_id),
     talentName: text(r.talent_name),
+    hero: toHeroInfo(r.hero, text(r.talent_name), text(r.talent_id)),
     status: oneOf(SPONSORSHIP_STATUSES, r.status, "open"),
     closedReason: r.closed_reason === "deadline" || r.closed_reason === "decision" ? r.closed_reason : null,
     audience: oneOf(SPONSORSHIP_AUDIENCES, r.audience, "all"),
@@ -324,6 +332,7 @@ export type AgencySponsorshipDetail = SponsorshipCore & {
   agencyId: string;
   talentId: string;
   talentName: string;
+  hero: HeroInfo;
   audience: SponsorshipAudience;
   status: SponsorshipStatus;
   closedReason: "deadline" | "decision" | null;
@@ -348,6 +357,7 @@ export function toAgencySponsorshipDetail(data: unknown): AgencySponsorshipDetai
     agencyId: text(o.agency_id),
     talentId: text(o.talent_id),
     talentName: text(o.talent_name),
+    hero: toHeroInfo(o.hero, text(o.talent_name), text(o.talent_id)),
     audience: oneOf(SPONSORSHIP_AUDIENCES, o.audience, "all"),
     status: oneOf(SPONSORSHIP_STATUSES, o.status, "open"),
     closedReason: o.closed_reason === "deadline" || o.closed_reason === "decision" ? o.closed_reason : null,
@@ -404,6 +414,8 @@ export type BrandSponsorship = SponsorshipCore & {
   agencyName: string;
   timezone: string;
   talent: { id: string; name: string; inCatalog: boolean; photoUrl: string | null };
+  /** 0095: o herói (foto, nome, nicho e endereço da página) — só com consentimento vigente; sem ele, só o nome */
+  hero: HeroInfo;
   myResponse: { response: SponsorshipResponse; message: string; respondedLabel: string; respondedAt: string | null; requestId: string | null; outcome: "won" | "lost" | null } | null;
   /** 0088: cotas com o valor PEDIDO e o resumo da própria negociação */
   tiers: SponsorshipTier[];
@@ -420,6 +432,7 @@ export function toBrandSponsorships(data: unknown): BrandSponsorship[] {
       agencyName: text(r.agency_name),
       timezone: text(r.timezone) || "America/Sao_Paulo",
       talent: { id: text(t.id), name: text(t.name), inCatalog: t.in_catalog === true, photoUrl: str(t.photo_url) },
+      hero: toHeroInfo(r.hero, text(t.name), text(t.id)),
       tiers: arr(r.tiers).map(toTier),
       negotiation:
         r.negotiation && typeof r.negotiation === "object"

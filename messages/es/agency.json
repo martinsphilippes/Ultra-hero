@@ -355,7 +355,8 @@
     "invitation_expired": "Esta invitación venció.",
     "invalid_hero_name": "El nombre del héroe debe tener de 2 a 80 caracteres.",
     "invalid_profile_ref": "Usa @perfil o un enlace que empiece con https://.",
-    "too_many_new_talents": "Como máximo 10 fichas nuevas a la vez. Guarda y continúa."
+    "too_many_new_talents": "Como máximo 10 fichas nuevas a la vez. Guarda y continúa.",
+    "hero_inactive": "La página de este héroe no está activa ahora; no se puede publicar a las marcas."
   },
   "casting": {
     "title": "Casting",

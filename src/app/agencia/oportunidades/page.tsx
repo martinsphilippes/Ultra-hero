@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { LinkTabsNav } from "@/components/admin-content/LinkTabsNav";
 import { AgencyCallStatusBadge, BudgetText } from "@/components/brand-call/shared";
 import { SponsorshipStatusBadge, sponsorshipWhen } from "@/components/sponsorship/SponsorshipView";
-import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
+import { Avatar, Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { agencyCan } from "@/lib/agency/roles";
@@ -85,20 +85,30 @@ export default async function AgencySponsorshipsPage({ searchParams }: Props) {
                       {t("agreedCount", { count: o.agreed })}
                     </Badge>
                   ) : null}
+                  {o.status === "draft" && o.hero.consent !== "active" ? (
+                    <Badge size="sm" variant="warning">
+                      {t("draftNeedsConsent")}
+                    </Badge>
+                  ) : null}
                   {o.status === "open" && o.missingPrice > 0 ? (
                     <Badge size="sm" variant="neutral">
                       {t("missingPrice")}
                     </Badge>
                   ) : null}
                 </span>
-                <span className="type-caption text-fg-muted">
-                  {o.talentName} · {sponsorshipWhen(o, locale, tz)}
-                  {o.location ? ` · ${o.location}` : ""}
+                <span className="flex items-center gap-2 type-caption text-fg-muted">
+                  <Avatar src={o.hero.avatarUrl} name={o.hero.name || o.talentName} size="xs" alt="" />
+                  <span className="min-w-0">
+                    <span className="font-medium text-fg">{o.hero.name || o.talentName}</span> · {sponsorshipWhen(o, locale, tz)}
+                    {o.location ? ` · ${o.location}` : ""}
+                  </span>
                 </span>
                 <span className="type-caption text-fg-muted">
-                  {o.status === "sponsored" && o.winners.length > 0
-                    ? t("sponsoredBy", { brands: o.winners.join(", ") })
-                    : t("counts", { interested: o.interested, declined: o.declined, pending: Math.max(0, o.audienceCount - o.interested - o.declined) })}
+                  {o.status === "draft"
+                    ? t("draftLine")
+                    : o.status === "sponsored" && o.winners.length > 0
+                      ? t("sponsoredBy", { brands: o.winners.join(", ") })
+                      : t("counts", { interested: o.interested, declined: o.declined, pending: Math.max(0, o.audienceCount - o.interested - o.declined) })}
                   {o.status === "open" ? ` · ${t("respondUntil", { date: formatDateTime(o.respondBy, locale, tz) })}` : ""}
                 </span>
               </Link>

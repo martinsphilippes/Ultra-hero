@@ -11,6 +11,7 @@ import type { BrandSponsorshipStatus, SponsorshipCore, SponsorshipStatus } from 
 type AnyStatus = SponsorshipStatus | BrandSponsorshipStatus | "closedDeadline";
 
 const STATUS_VARIANT: Record<AnyStatus, BadgeVariant> = {
+  draft: "info",
   open: "success",
   expired: "warning",
   closedDeadline: "warning",
@@ -44,7 +45,7 @@ export function sponsorshipWhen(o: Pick<SponsorshipCore, "startsAt" | "endsAt" |
   return `${formatDateTime(start, locale, timeZone)} – ${formatDateTime(end, locale, timeZone)}`;
 }
 
-type FactsProps = { o: SponsorshipCore; timeZone: string; talentName?: string | null; showDeadline?: boolean; hidePerks?: boolean };
+type FactsProps = { o: SponsorshipCore; timeZone: string; /** nome do herói */ talentName?: string | null; showDeadline?: boolean; hidePerks?: boolean };
 
 export function SponsorshipFacts({ o, timeZone, talentName = null, showDeadline = true, hidePerks = false }: FactsProps) {
   const t = useTranslations("sponsorship.facts");
@@ -59,7 +60,7 @@ export function SponsorshipFacts({ o, timeZone, talentName = null, showDeadline 
           <li className={row}>
             <Users className={icon} aria-hidden="true" />
             <span>
-              <span className="text-fg-muted">{t("talent")}: </span>
+              <span className="text-fg-muted">{t("hero")}: </span>
               {talentName}
             </span>
           </li>

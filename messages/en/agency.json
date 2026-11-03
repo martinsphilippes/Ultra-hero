@@ -355,7 +355,8 @@
     "invitation_expired": "This invite has expired.",
     "invalid_hero_name": "The hero name must be 2 to 80 characters.",
     "invalid_profile_ref": "Use @handle or a link starting with https://.",
-    "too_many_new_talents": "At most 10 new records at a time. Save and continue."
+    "too_many_new_talents": "At most 10 new records at a time. Save and continue.",
+    "hero_inactive": "This hero’s page isn’t active right now; it can’t be published to brands."
   },
   "casting": {
     "title": "Roster",

@@ -9,7 +9,6 @@ import { requireAgency } from "@/lib/agency/server";
 import { plusDays } from "@/lib/calendar/ics";
 import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
 import { localParts } from "@/lib/sponsorship/vocab";
-import { listTalents } from "@/lib/talent/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -18,22 +17,21 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("newSponsorship") };
 }
 
-type Props = { searchParams: Promise<{ data?: string; creator?: string }> };
+type Props = { searchParams: Promise<{ data?: string }> };
 
-// Nova oportunidade de patrocínio (0085), gestor+. Da agenda chega com ?data=AAAA-MM-DD (e ?creator=).
-// Só creators do elenco com consentimento vigente (regra para serem mostrados às marcas).
+// Nova oportunidade de patrocínio (0085), gestor+. Da agenda chega com ?data=AAAA-MM-DD.
+// 0095: o primeiro campo é o HERÓI (busca na plataforma, fora do casting ou digitado); sem trava de elenco. O consentimento
+// do herói só é exigido para publicar às marcas; o rascunho vale sem ele.
 export default async function NewSponsorshipPage({ searchParams }: Props) {
   const ctx = await requireAgency("manager");
   const sp = await searchParams;
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
-  const [t, talents, brands] = await Promise.all([getTranslations("sponsorship.agency"), listTalents(ctx.agency.id), listAgencyBrands(ctx.agency.id)]);
+  const [t, brands] = await Promise.all([getTranslations("sponsorship.agency"), listAgencyBrands(ctx.agency.id)]);
   const canValues = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const today = localParts(new Date().toISOString(), tz).date;
   const date = sp.data && /^\d{4}-\d{2}-\d{2}$/.test(sp.data) && sp.data >= today ? sp.data : plusDays(today, 14);
   // prazo padrão: 3 dias antes do evento (ou amanhã, se o evento é logo)
   const respond = plusDays(date, -3) > today ? plusDays(date, -3) : plusDays(today, 1) <= date ? plusDays(today, 1) : date;
-  const eligible = talents.items.filter((x) => x.consent === "active" && !x.archived);
-  const creator = eligible.find((x) => x.id === sp.creator)?.id ?? "";
   return (
     <div className="flex flex-col gap-5" data-testid="sponsorship-new">
       <PageHeader
@@ -46,12 +44,11 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
         }
       />
       <SponsorshipForm
-        talents={eligible.map((x) => ({ id: x.id, name: x.name }))}
         brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name }))}
         canValues={canValues}
         initial={{
           id: null,
-          talentId: creator,
+          hero: null,
           title: "",
           description: "",
           location: "",

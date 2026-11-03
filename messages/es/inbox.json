@@ -161,7 +161,7 @@
     },
     "sponsorship_published": {
       "title": "Oportunidad de patrocinio",
-      "body": "{talent}: {title}. Responde hasta {date}."
+      "body": "Héroe {talent}: {title}. Responde hasta {date}."
     },
     "sponsorship_interest": {
       "title": "Una marca quiere patrocinar",

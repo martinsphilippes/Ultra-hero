@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { LinkTabsNav } from "@/components/admin-content/LinkTabsNav";
 import { CallStatusBadge } from "@/components/brand-call/shared";
 import { SponsorshipStatusBadge, sponsorshipWhen } from "@/components/sponsorship/SponsorshipView";
-import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
+import { Avatar, Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { listBrandCalls } from "@/lib/brand-call/queries";
@@ -92,9 +92,12 @@ export default async function BrandSponsorshipsPage({ searchParams }: Props) {
                   ) : null}
                   <span className="text-sm font-semibold text-fg">{o.title}</span>
                 </span>
-                <span className="type-caption text-fg-muted">
-                  {o.talent.name} · {sponsorshipWhen(o, locale, o.timezone)}
-                  {o.location ? ` · ${o.location}` : ""}
+                <span className="flex items-center gap-2 type-caption text-fg-muted" data-testid="sponsorship-hero-line">
+                  <Avatar src={o.hero.avatarUrl} name={o.hero.name || o.talent.name} size="xs" alt="" />
+                  <span className="min-w-0">
+                    <span className="font-medium text-fg">{o.hero.name || o.talent.name}</span> · {sponsorshipWhen(o, locale, o.timezone)}
+                    {o.location ? ` · ${o.location}` : ""}
+                  </span>
                 </span>
                 <span className="text-sm font-medium text-fg" data-testid="sponsorship-price">{priceLine(o.tiers)}</span>
                 {o.status === "open" ? <span className="type-caption text-fg-muted">{t("respondUntil", { date: formatDateTime(o.respondBy, locale, o.timezone) })}</span> : null}

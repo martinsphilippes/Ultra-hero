@@ -4,10 +4,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandNegotiationPanel } from "@/components/sponsorship/BrandNegotiationPanel";
+import { HeroCard } from "@/components/sponsorship/HeroCard";
 import { PublicChips } from "@/components/sponsorship/NegotiationView";
 import { SponsorshipRespond } from "@/components/sponsorship/SponsorshipRespond";
 import { SponsorshipFacts, SponsorshipStatusBadge } from "@/components/sponsorship/SponsorshipView";
-import { Avatar, Button, PageHeader } from "@/components/ui";
+import { Button, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { getBrandContext } from "@/lib/brand-portal/server";
@@ -47,16 +48,14 @@ export default async function BrandSponsorshipPage({ params }: Props) {
       </Link>
       <PageHeader title={o.title} description={t("offeredBy", { agency: o.agencyName })} actions={<SponsorshipStatusBadge status={o.status} />} />
       <section className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4">
-        <div className="flex items-center gap-3">
-          <Avatar src={o.talent.photoUrl} name={o.talent.name} size="md" alt="" />
-          <span className="flex min-w-0 flex-col">
-            <span className="text-sm font-semibold text-fg">{o.talent.name}</span>
-            {o.talent.inCatalog ? (
-              <Link href={`/marca/creators/${o.talent.id}`} className="type-caption font-medium text-accent-text underline-offset-2 hover:underline">
-                {t("seeCreator")}
-              </Link>
-            ) : null}
-          </span>
+        {/* 0095: o herói do evento (foto, nome, nicho e link da página pública — só com o consentimento dele) */}
+        <div className="flex flex-col gap-1">
+          <HeroCard hero={o.hero} side="brand" />
+          {o.talent.inCatalog ? (
+            <Link href={`/marca/creators/${o.talent.id}`} className="inline-flex min-h-8 items-center self-start type-caption font-medium text-accent-text underline-offset-2 hover:underline">
+              {t("seeCatalog")}
+            </Link>
+          ) : null}
         </div>
         <SponsorshipFacts o={o} timeZone={o.timezone} showDeadline={o.status === "open" || o.status === "expired"} hidePerks />
         <PublicChips value={o.public} label={t("publicLabel")} />

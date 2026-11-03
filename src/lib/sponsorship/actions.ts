@@ -8,13 +8,26 @@ import { requireAgency } from "@/lib/agency/server";
 import { requireBrand } from "@/lib/brand-portal/server";
 import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { createClient } from "@/lib/supabase/server";
+import { PICKER_PAGE_SIZE, heroChoiceToDb, parseOpportunityHeroes, type OpportunityHeroPage } from "./hero-pick";
 import { REPLY_ACTIONS, amountValid, proposalPerksValid, publicSchema, publicToDb } from "./negotiation";
 import { SPONSORSHIP_DECISIONS, SPONSORSHIP_RESPONSES, sponsorshipInstants, sponsorshipSchema, type SponsorshipInput } from "./vocab";
 
 // Oportunidade de patrocínio (0085): a agência (gestor+) publica e decide; a marca (dono ou equipe) responde.
 // As RPCs conferem tudo de novo e geram os avisos (sino e fila de e-mail, que sai depois da resposta).
+// 0095: o herói (página pública do creator) é o primeiro campo; a oportunidade nasce rascunho ou publicada, e só publicar
+// exige o consentimento do herói.
 
-export type SponsorshipResult = { ok: true; message: string; id?: string; requestId?: string | null } | { ok: false; error: string };
+export type SponsorshipResult = { ok: true; message: string; id?: string; requestId?: string | null; status?: "draft" | "open" } | { ok: false; error: string };
+
+/** Erro de publicar com texto próprio da oportunidade (consentimento e página do herói); o resto segue o padrão da agência. */
+async function publishFail(error: unknown): Promise<{ ok: false; error: string }> {
+  const message = error instanceof Error ? error.message : ((error as { message?: string } | null)?.message ?? "");
+  if (message.includes("consent_required")) {
+    const t = await getTranslations("sponsorship.agency.form");
+    return { ok: false, error: t("consentNotice") };
+  }
+  return agencyFail(error);
+}
 
 export async function saveSponsorshipAction(input: SponsorshipInput): Promise<SponsorshipResult> {
   const ctx = await requireAgency("manager");
@@ -29,7 +42,8 @@ export async function saveSponsorshipAction(input: SponsorshipInput): Promise<Sp
       p_agency: ctx.agency.id,
       p_id: d.id,
       p_data: {
-        talent_id: d.talentId,
+        hero: heroChoiceToDb(d.hero),
+        publish: d.publish,
         title: d.title,
         description: d.description,
         location: d.location,
@@ -50,13 +64,72 @@ export async function saveSponsorshipAction(input: SponsorshipInput): Promise<Sp
         region_note: d.public.regionNote,
       },
     });
-    if (error) return agencyFail(error);
+    if (error) return publishFail(error);
     if (!data) return agencyFail("generic");
+    revalidatePath("/agencia/oportunidades", "layout");
+    revalidatePath("/agencia/agenda");
+    revalidatePath("/agencia/casting");
+    await dispatchWorkEmails();
+    const t = await getTranslations("sponsorship.agency");
+    // criando: publicada ou rascunho; editando: rascunho que publica, rascunho que segue ou aberta que segue
+    const message = d.publish ? (d.id ? t("savedPublished") : t("published")) : d.id ? t("saved") : t("draftSaved");
+    return { ok: true, message, id: data, status: d.publish ? "open" : "draft" };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+const publishSchema = z.object({ id: z.uuid() });
+
+/** Publica um rascunho às marcas (gestor+): o banco confere consentimento, página do herói ativa e prazo. */
+export async function publishSponsorshipAction(input: z.input<typeof publishSchema>): Promise<SponsorshipResult> {
+  await requireAgency("manager");
+  const parsed = publishSchema.safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("agency_sponsorship_publish", { p_id: parsed.data.id });
+    if (error) return publishFail(error);
     revalidatePath("/agencia/oportunidades", "layout");
     revalidatePath("/agencia/agenda");
     await dispatchWorkEmails();
     const t = await getTranslations("sponsorship.agency");
-    return { ok: true, message: d.id ? t("saved") : t("published"), id: data };
+    return { ok: true, message: t("published"), id: parsed.data.id, status: "open" };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+/** Descarta um rascunho (cancela, sem avisar ninguém: ninguém viu). */
+export async function discardSponsorshipDraftAction(input: z.input<typeof publishSchema>): Promise<SponsorshipResult> {
+  await requireAgency("manager");
+  const parsed = publishSchema.safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("agency_sponsorship_decide", { p_id: parsed.data.id, p_action: "cancel", p_brands: [], p_note: "" });
+    if (error) return agencyFail(error);
+    revalidatePath("/agencia/oportunidades", "layout");
+    revalidatePath("/agencia/agenda");
+    const t = await getTranslations("sponsorship.agency");
+    return { ok: true, message: t("draftDiscarded") };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+export type OpportunityHeroSearchResult = ({ ok: true } & OpportunityHeroPage) | { ok: false; error: string };
+
+/** Busca no servidor dos heróis para a caixa "Herói" (20 por página): casting, fora do casting e indisponíveis. */
+export async function searchOpportunityHeroesAction(input: { q: string; offset?: number }): Promise<OpportunityHeroSearchResult> {
+  const ctx = await requireAgency("manager");
+  const parsed = z.object({ q: z.string().max(200), offset: z.number().int().min(0).max(5000).optional() }).safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("agency_opportunity_hero_search", { p_agency: ctx.agency.id, p_q: parsed.data.q, p_limit: PICKER_PAGE_SIZE, p_offset: parsed.data.offset ?? 0 });
+    if (error) return agencyFail(error);
+    return { ok: true, ...parseOpportunityHeroes(data) };
   } catch (error) {
     return agencyFail(error);
   }

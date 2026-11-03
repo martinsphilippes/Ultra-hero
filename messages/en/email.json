@@ -45,7 +45,7 @@
       },
       "sponsorship_published": {
         "subject": "Sponsorship opportunity: {title}",
-        "body": "The agency is offering a moment from {talent} for your brand to sponsor: {title}. Reply by {date}.",
+        "body": "The agency is offering an event of hero {talent} for your brand to sponsor: {title}. Reply by {date}.",
         "cta": "See opportunity"
       },
       "sponsorship_interest": {

@@ -14297,5 +14297,272 @@ delete from public.agencies where id::text like 'a1010000-%';
 delete from public.creator_profiles where id::text like 'a1010000-%';
 delete from auth.users where id::text like 'a1010000-%';
 
+-- ================================================================ S102 · Oportunidade de patrocínio por herói: ficha criada ao salvar, herói digitado e rascunho sem consentimento (0095)
+-- A agência (gestor+) escolhe o HERÓI da oportunidade: ficha do casting, herói da plataforma fora do casting (a ficha nasce
+-- ao salvar, sem consentimento) ou herói digitado (ficha sem herói). Publicar às marcas exige consentimento vigente e herói
+-- ativo; rascunho vale sem consentimento e é invisível para marca e creator (lista, tabelas, agenda, aviso). Herói de outra
+-- agência, suspenso, pendente e pessoa que já tem ficha são recusados; colaborador, outra agência e visitante recusados;
+-- salvamento atômico; rascunho se descarta (cancela) sem avisos; consentimento revogado esconde a página do herói da marca.
+\ir ../migrations/0095_oportunidade_heroi.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1020000-0000-4000-8000-000000000001','s102-adm-a@test.local'),('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local'),('a1020000-0000-4000-8000-000000000003','s102-colab-a@test.local'),('a1020000-0000-4000-8000-000000000004','s102-adm-b@test.local'),
+  ('a1020000-0000-4000-8000-000000000005','s102-dono-marca@test.local'),('a1020000-0000-4000-8000-000000000006','s102-dono-heroi@test.local'),('a1020000-0000-4000-8000-000000000007','s102-dono-ficha@test.local'),('a1020000-0000-4000-8000-000000000008','s102-adm-demo@test.local');
+insert into public.agencies (id, slug, name) values ('a1020000-0000-4000-8000-0000000000a1','s102-agencia-a','Agência A S102'),('a1020000-0000-4000-8000-0000000000a2','s102-agencia-b','Agência B S102');
+insert into public.agencies (id, slug, name, is_demo) values ('a1020000-0000-4000-8000-0000000000a3','s102-agencia-demo','Agência Demo S102', true);
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1020000-0000-4000-8000-0000000000a1','a1020000-0000-4000-8000-000000000001','admin','Ana Adm S102'),('a1020000-0000-4000-8000-0000000000a1','a1020000-0000-4000-8000-000000000002','manager','Gil Gestor S102'),('a1020000-0000-4000-8000-0000000000a1','a1020000-0000-4000-8000-000000000003','staff','Caio Colab S102'),('a1020000-0000-4000-8000-0000000000a2','a1020000-0000-4000-8000-000000000004','admin','Bia Adm S102'),
+  ('a1020000-0000-4000-8000-0000000000a3','a1020000-0000-4000-8000-000000000008','admin','Dani Demo S102');
+insert into public.brands (id, slug, name, site_url) values ('a1020000-0000-4000-8000-0000000000b1','s102-marca','Marca S102','https://m.s102.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1020000-0000-4000-8000-0000000000a1','a1020000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values ('a1020000-0000-4000-8000-0000000000b1','a1020000-0000-4000-8000-000000000005','owner','Dona S102');
+-- heróis: C1 no casting da A (com consentimento); C2 livre; C3 livre com dono (creator); C4 no casting da B; C5 suspenso; C6 pendente;
+-- C7 dono com ficha própria na A (login); C8 livre (outros testes); C9 livre
+insert into public.creator_profiles (id, slug, name, status, user_id, headline, pillars, socials, rights_status, rights_holder, avatar_url) values
+  ('a1020000-0000-4000-8000-0000000000c1','s102-heroi-casting','Herói Casting S102','active',null,'chamada 1','{training}','{"instagram":"@casting"}','fictional',null,'https://img.test/c1.png'),
+  ('a1020000-0000-4000-8000-0000000000c2','s102-heroi-fora','Herói Fora S102','active',null,'chamada 2','{nutrition,routine}','{"instagram":"@fora"}','authorized','Titular Secreto','https://img.test/c2.png'),
+  ('a1020000-0000-4000-8000-0000000000c3','s102-heroi-dono','Herói Dono S102','active','a1020000-0000-4000-8000-000000000006',null,'{training}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c4','s102-heroi-outra','Herói Outra S102','active',null,null,'{routine}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c5','s102-heroi-suspenso','Herói Suspenso S102','suspended',null,null,'{routine}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c6','s102-heroi-pendente','Herói Pendente S102','pending',null,null,'{routine}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c7','s102-heroi-pessoa','Herói Pessoa S102','active','a1020000-0000-4000-8000-000000000007',null,'{training}','{}','fictional',null,null),
+  ('a1020000-0000-4000-8000-0000000000c8','s102-heroi-livre','Herói Livre S102','active',null,null,'{training}','{}','fictional',null,null);
+insert into public.talent_profiles (id, agency_id, display_name, creator_id, user_id, consent_at, consent_version) values
+  ('a1020000-0000-4000-8000-0000000000e1','a1020000-0000-4000-8000-0000000000a1','Herói Casting S102','a1020000-0000-4000-8000-0000000000c1',null, now() - interval '30 days','v1'),
+  ('a1020000-0000-4000-8000-0000000000e4','a1020000-0000-4000-8000-0000000000a2','Herói Outra S102','a1020000-0000-4000-8000-0000000000c4',null, now() - interval '30 days','v1'),
+  ('a1020000-0000-4000-8000-0000000000e7','a1020000-0000-4000-8000-0000000000a1','Pessoa S102',null,'a1020000-0000-4000-8000-000000000007', null, null),
+  ('a1020000-0000-4000-8000-0000000000e8','a1020000-0000-4000-8000-0000000000a1','Digitada Antiga S102',null,null, null, null),
+  ('a1020000-0000-4000-8000-0000000000e9','a1020000-0000-4000-8000-0000000000a3','Ficha Demo S102',null,null, null, null);
+create temp table t_s102 (k text primary key, v text);
+grant all on t_s102 to anon, authenticated, service_role;
+insert into t_s102 values ('base', jsonb_build_object('title','Corrida S102','location','Rio de Janeiro','starts_at', now() + interval '10 days','ends_at', now() + interval '10 days 5 hours',
+  'all_day', false,'networks', jsonb_build_array('instagram'),'respond_by', now() + interval '5 days','audience','all')::text);
+
+select tests.ok('S102 estrutura: funções novas sem sobrecarga, security definer com search_path fixo, nada para o visitante; S14 segue 18',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_opportunity_hero_search','agency_hero_ficha','sponsorship_hero_json','agency_sponsorship_publish','agency_sponsorship_save')) = 5
+  and (select bool_and(p.prosecdef and p.proconfig is not null) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_opportunity_hero_search','agency_hero_ficha','sponsorship_hero_json','agency_sponsorship_publish','agency_sponsorship_save'))
+  and not has_function_privilege('anon','public.agency_opportunity_hero_search(uuid, text, int, int)','execute')
+  and not has_function_privilege('anon','public.agency_sponsorship_publish(uuid)','execute')
+  and not has_function_privilege('authenticated','public.agency_hero_ficha(uuid, jsonb, text, text)','execute')
+  and not has_function_privilege('authenticated','public.sponsorship_hero_json(uuid, boolean)','execute')
+  and has_function_privilege('authenticated','public.agency_opportunity_hero_search(uuid, text, int, int)','execute')
+  and has_function_privilege('authenticated','public.agency_sponsorship_publish(uuid)','execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+select tests.ok('S102 rascunho é uma situação válida e só aberta/rascunho têm motivo de encerramento vazio',
+  exists (select 1 from pg_constraint where conname = 'sponsorship_opportunities_status_check' and pg_get_constraintdef(oid) like '%draft%'));
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S102 visitante não busca heróis', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'permission denied');
+select tests.expect_error('S102 visitante não salva', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, '{}')$q$, 'permission denied');
+select tests.expect_error('S102 visitante não publica', $q$select public.agency_sponsorship_publish(gen_random_uuid())$q$, 'permission denied');
+
+-- colaborador e agência de fora
+select tests.login('a1020000-0000-4000-8000-000000000003','s102-colab-a@test.local');
+select tests.expect_error('S102 colaborador não busca heróis', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'forbidden');
+select tests.expect_error('S102 colaborador não cria oportunidade com herói', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e1"},"publish":false}')$q$, 'forbidden');
+select tests.login('a1020000-0000-4000-8000-000000000004','s102-adm-b@test.local');
+select tests.expect_error('S102 outra agência não busca na A', $q$select public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','')$q$, 'not_found');
+select tests.expect_error('S102 outra agência não cria na A', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c2"},"publish":false}')$q$, 'not_found');
+select tests.ok('S102 nenhuma ficha nasceu da tentativa de fora', not exists (select 1 from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c2'));
+
+-- gestor: busca da caixa Herói
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+insert into t_s102 select 'all', public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102')::text;
+select tests.ok('S102 busca: selos casting (com consentimento), casting sem herói, fora do casting, outra agência e pessoa já no casting',
+  (select v::jsonb -> 'items' from t_s102 where k='all') @> '[{"slug":"s102-heroi-casting","scope":"casting","consent":"active","kind":"talent"},{"slug":"s102-heroi-fora","scope":"outside","kind":"hero"},{"slug":"s102-heroi-dono","scope":"outside"},{"slug":"s102-heroi-outra","scope":"other_agency"},{"slug":"s102-heroi-pessoa","scope":"person_in_casting"}]'::jsonb);
+select tests.ok('S102 busca: heróis suspenso e pendente não aparecem',
+  not exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s102 where k='all')) i where i ->> 'slug' in ('s102-heroi-suspenso','s102-heroi-pendente')));
+select tests.ok('S102 busca por nome acha a ficha do casting sem herói (sem acento e sem caixa)',
+  jsonb_path_exists(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','DIGITADA antiga') , '$.items[*] ? (@.name == "Digitada Antiga S102" && @.scope == "casting" && @.kind == "talent")'));
+select tests.ok('S102 busca: no casting vem antes, depois fora do casting, depois indisponíveis',
+  (with x as (select i ->> 'scope' as sc, ordinality as n from jsonb_array_elements((select v::jsonb -> 'items' from t_s102 where k='all')) with ordinality as t(i, ordinality))
+   select max(n) filter (where sc='casting') < min(n) filter (where sc='outside') and max(n) filter (where sc='outside') < min(n) filter (where sc in ('other_agency','person_in_casting')) from x));
+select tests.ok('S102 busca: só campos públicos (nada de direitos, conta ou e-mail)',
+  (select bool_and(not (i ? 'rights_status') and not (i ? 'rights_holder') and not (i ? 'user_id') and not (i ? 'email')
+          and (select array_agg(k order by k) from jsonb_object_keys(i) k) = array['avatar_url','consent','creator_id','followers','headline','kind','name','pillars','scope','slug','socials','talent_id'])
+   from jsonb_array_elements((select v::jsonb -> 'items' from t_s102 where k='all')) i)
+  and not ((select v from t_s102 where k='all') like '%Titular Secreto%'));
+select tests.ok('S102 busca pagina: 1 por vez, com has_more',
+  (public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,0) ->> 'has_more')::boolean and jsonb_array_length(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,0) -> 'items') = 1
+  and public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,0) -> 'items' <> public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102',1,1) -> 'items');
+
+-- criar: herói do casting, com consentimento (ausente = publica, como antes)
+insert into t_s102 values ('o1', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e1"}}')::text);
+select tests.ok('S102 herói do casting com consentimento: aberta, usa a ficha existente, evento visível à marca e ao creator',
+  (select status = 'open' and talent_id = 'a1020000-0000-4000-8000-0000000000e1' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o1'))
+  and (select count(*) from public.talent_profiles where agency_id = 'a1020000-0000-4000-8000-0000000000a1') = 3
+  and (select count(*) from public.calendar_events e where e.sponsorship_id = (select v::uuid from t_s102 where k='o1') and e.visible_to_brand and e.visible_to_talent) = 1);
+select tests.ok('S102 a lista da agência traz o herói (página, nome, consentimento)',
+  (select x -> 'hero' ->> 'slug' = 's102-heroi-casting' and x -> 'hero' ->> 'consent' = 'active' and (x -> 'hero' ->> 'has_hero')::boolean
+   from jsonb_array_elements(public.agency_sponsorships('a1020000-0000-4000-8000-0000000000a1')) x where x ->> 'id' = (select v from t_s102 where k='o1')));
+
+-- herói fora do casting como rascunho: a ficha nasce ligada ao herói, sem consentimento
+insert into t_s102 values ('o2', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c2"},"publish":false}')::text);
+select tests.ok('S102 herói de fora, rascunho: ficha ligada ao herói (prospecto, sem consentimento) e oportunidade em rascunho',
+  (select status = 'draft' and closed_reason is null and talent_id = (select id from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c2' and agency_id = 'a1020000-0000-4000-8000-0000000000a1')
+   from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o2'))
+  and (select commercial_status = 'prospect' and consent_at is null and display_name = 'Herói Fora S102' from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c2'));
+select tests.ok('S102 o detalhe do rascunho traz o herói e o consentimento "none"',
+  (public.agency_sponsorship_detail((select v::uuid from t_s102 where k='o2')) -> 'opportunity' -> 'hero') @> '{"slug":"s102-heroi-fora","consent":"none","has_hero":true,"hero_active":true}'::jsonb
+  and public.agency_sponsorship_detail((select v::uuid from t_s102 where k='o2')) -> 'opportunity' ->> 'status' = 'draft');
+select tests.ok('S102 a lista mostra o rascunho depois das abertas',
+  (select (array_agg(x ->> 'status' order by ordinality))[1:2] = array['open','draft'] from jsonb_array_elements(public.agency_sponsorships('a1020000-0000-4000-8000-0000000000a1')) with ordinality as t(x, ordinality)));
+
+-- publicar sem consentimento é recusado e não deixa ficha pela metade
+select tests.expect_error('S102 publicar com herói de fora sem consentimento é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c3"},"publish":true}')$q$, 'consent_required');
+select tests.ok('S102 a recusa desfez a ficha do herói C3 (atômico)', not exists (select 1 from public.talent_profiles where creator_id = 'a1020000-0000-4000-8000-0000000000c3'));
+select tests.expect_error('S102 formato antigo (sem publish) sem consentimento também é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"talent_id":"a1020000-0000-4000-8000-0000000000e8"}')$q$, 'consent_required');
+select tests.expect_error('S102 publicar herói digitado sem consentimento é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"Outro Digitado S102"},"publish":true}')$q$, 'consent_required');
+select tests.ok('S102 nenhuma ficha "Outro Digitado" ficou', not exists (select 1 from public.talent_profiles where display_name = 'Outro Digitado S102'));
+
+-- herói digitado: ficha sem herói, nome limpo, reaproveita a de mesmo nome
+insert into t_s102 values ('o3', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') ||
+  '{"hero":{"kind":"typed","name":"  Digitado   Novo <S102> ","profile":"@digitado.novo","email":"Digitado@Novo.Test"},"publish":false}')::text);
+select tests.ok('S102 herói digitado: ficha sem herói, nome limpo, perfil nas notas e e-mail de contato; rascunho',
+  (select t.creator_id is null and t.display_name = 'Digitado Novo S102' and t.contact_email = 'digitado@novo.test' and t.internal_notes like '%@digitado.novo%' and t.consent_at is null and o.status = 'draft'
+   from public.sponsorship_opportunities o join public.talent_profiles t on t.id = o.talent_id where o.id = (select v::uuid from t_s102 where k='o3')));
+insert into t_s102 values ('o4', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"digitado novo s102"},"publish":false}')::text);
+select tests.ok('S102 digitar o mesmo nome de novo reaproveita a ficha', (select count(*) from public.talent_profiles where agency_id = 'a1020000-0000-4000-8000-0000000000a1' and lower(display_name) = 'digitado novo s102') = 1
+  and (select talent_id from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o3')) = (select talent_id from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o4')));
+select tests.ok('S102 o detalhe do digitado: sem página do herói', (public.agency_sponsorship_detail((select v::uuid from t_s102 where k='o3')) -> 'opportunity' -> 'hero' ->> 'has_hero') = 'false');
+
+-- herói com dono (creator): rascunho
+insert into t_s102 values ('o5', public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c3"},"publish":false}')::text);
+
+-- recusas de herói
+select tests.expect_error('S102 herói de outra agência é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c4"},"publish":false}')$q$, 'creator_already_in_casting');
+select tests.expect_error('S102 ficha de outra agência é recusada', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e4"},"publish":false}')$q$, 'not_found');
+select tests.expect_error('S102 herói suspenso é invisível', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c5"},"publish":false}')$q$, 'not_found');
+select tests.expect_error('S102 herói pendente é invisível', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c6"},"publish":false}')$q$, 'not_found');
+select tests.expect_error('S102 dono do herói que já tem ficha no casting é recusado (uma pessoa, um casting)', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c7"},"publish":false}')$q$, 'user_has_talent');
+select tests.expect_error('S102 tipo de herói desconhecido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"qualquer"},"publish":false}')$q$, 'invalid_input');
+select tests.expect_error('S102 herói que não é objeto', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":"texto","publish":false}')$q$, 'invalid_input');
+select tests.expect_error('S102 id de herói inválido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"x"},"publish":false}')$q$, 'invalid_input');
+select tests.expect_error('S102 nome digitado vazio depois da limpeza', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":" <> "},"publish":false}')$q$, 'invalid_hero_name');
+select tests.expect_error('S102 perfil digitado inválido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"Fulano S102","profile":"javascript:alert(1)"},"publish":false}')$q$, 'invalid_profile_ref');
+select tests.expect_error('S102 e-mail digitado inválido', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"typed","name":"Fulano S102","email":"sem-arroba"},"publish":false}')$q$, 'invalid_email');
+select tests.expect_error('S102 rascunho com prazo vencido é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s102 where k='base') || jsonb_build_object('hero', jsonb_build_object('kind','talent','talent_id','a1020000-0000-4000-8000-0000000000e1'), 'publish', false, 'respond_by', now() - interval '1 hour'))$q$, 'invalid_date');
+select tests.ok('S102 as recusas não deixaram ficha (só C2, C3, digitada nova e as de antes)',
+  (select count(*) from public.talent_profiles where agency_id = 'a1020000-0000-4000-8000-0000000000a1') = 6 and not exists (select 1 from public.talent_profiles where display_name = 'Fulano S102'));
+
+-- rascunho é invisível: marca
+select tests.login('a1020000-0000-4000-8000-000000000005','s102-dono-marca@test.local');
+select tests.ok('S102 marca vê só a oportunidade aberta (rascunhos invisíveis em lista, tabelas, alvos, cotas e agenda)',
+  (select count(*) from public.sponsorship_opportunities) = 1 and (select id from public.sponsorship_opportunities) = (select v::uuid from t_s102 where k='o1')
+  and jsonb_array_length(public.brand_sponsorships('a1020000-0000-4000-8000-0000000000b1')) = 1
+  and (select count(*) from public.sponsorship_tiers where opportunity_id in (select v::uuid from t_s102 where k in ('o2','o3','o5'))) = 0
+  and (select count(*) from public.calendar_events where kind = 'sponsorship') = 1);
+select tests.expect_error('S102 marca não responde a rascunho', $q$select public.brand_sponsorship_respond((select v::uuid from t_s102 where k='o2'), 'a1020000-0000-4000-8000-0000000000b1', 'interested', null)$q$, 'not_found');
+select tests.expect_error('S102 marca não vê a negociação de rascunho', $q$select public.brand_sponsorship_negotiation((select v::uuid from t_s102 where k='o2'), 'a1020000-0000-4000-8000-0000000000b1')$q$, 'not_found');
+select tests.ok('S102 marca vê o herói da aberta (foto, nome, nicho, endereço da página) quando há consentimento',
+  (select x -> 'hero' @> '{"slug":"s102-heroi-casting","name":"Herói Casting S102","avatar_url":"https://img.test/c1.png","pillars":["training"]}'::jsonb
+   from jsonb_array_elements(public.brand_sponsorships('a1020000-0000-4000-8000-0000000000b1')) x));
+-- rascunho é invisível: creator (dono do herói C3, rascunho o5)
+select tests.login('a1020000-0000-4000-8000-000000000006','s102-dono-heroi@test.local');
+select tests.ok('S102 creator dono do herói não vê o rascunho (tabela, lista, agenda)',
+  (select count(*) from public.sponsorship_opportunities) = 0 and jsonb_array_length(public.talent_sponsorships()) = 0
+  and (select count(*) from public.calendar_events where kind = 'sponsorship') = 0);
+
+-- publicar: colaborador não; gestor sem consentimento não; com consentimento sim
+select tests.login('a1020000-0000-4000-8000-000000000003','s102-colab-a@test.local');
+select tests.expect_error('S102 colaborador não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o2'))$q$, 'forbidden');
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select tests.expect_error('S102 publicar sem consentimento é recusado', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o2'))$q$, 'consent_required');
+select tests.expect_error('S102 publicar oportunidade que já está aberta', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o1'))$q$, 'invalid_state');
+select tests.su();
+select public.talent_consent_apply((select talent_id from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o2')), true, 'v1');
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o2'));
+select tests.ok('S102 com o consentimento dado, publica: aberta e evento visível à marca e ao creator',
+  (select status = 'open' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o2'))
+  and (select count(*) from public.calendar_events e where e.sponsorship_id = (select v::uuid from t_s102 where k='o2') and e.visible_to_brand and e.visible_to_talent) = 1);
+select tests.su();
+select tests.ok('S102 publicar avisa a marca (uma vez) e audita',
+  (select count(*) from public.inbox_notifications where kind = 'sponsorship_published' and entity_id = (select v::uuid from t_s102 where k='o2')) = 1
+  and exists (select 1 from public.admin_audit where action = 'sponsorship.publish' and resource_id = (select v from t_s102 where k='o2')));
+select tests.login('a1020000-0000-4000-8000-000000000005','s102-dono-marca@test.local');
+select tests.ok('S102 a marca agora vê as duas abertas', jsonb_array_length(public.brand_sponsorships('a1020000-0000-4000-8000-0000000000b1')) = 2);
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select tests.expect_error('S102 publicar de novo', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o2'))$q$, 'invalid_state');
+
+-- herói suspenso depois: não publica
+select tests.su();
+select public.talent_consent_apply((select talent_id from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o5')), true, 'v1');
+update public.creator_profiles set status = 'suspended' where id = 'a1020000-0000-4000-8000-0000000000c3';
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select tests.expect_error('S102 herói suspenso depois do rascunho: não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o5'))$q$, 'hero_inactive');
+select tests.expect_error('S102 herói suspenso: salvar publicando também é recusado', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o5'), '{"publish":true}')$q$, 'hero_inactive');
+select tests.ok('S102 a busca esconde a ficha do herói suspenso', not exists (select 1 from jsonb_array_elements(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a1','s102-heroi-dono') -> 'items') i));
+select tests.su(); update public.creator_profiles set status = 'active' where id = 'a1020000-0000-4000-8000-0000000000c3';
+-- prazo vencido do rascunho: não publica
+update public.sponsorship_opportunities set respond_by = now() - interval '1 hour' where id = (select v::uuid from t_s102 where k='o5');
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select tests.expect_error('S102 rascunho com prazo vencido não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o5'))$q$, 'invalid_date');
+
+-- editar: rascunho publica pelo salvar (publish=true) e herói pode mudar; aberta fica aberta
+select tests.su(); update public.sponsorship_opportunities set respond_by = now() + interval '3 days' where id = (select v::uuid from t_s102 where k='o5');
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o5'), '{"title":"Corrida S102 editada","publish":true}');
+select tests.ok('S102 rascunho com consentimento publica pelo salvar e título muda', (select status = 'open' and title = 'Corrida S102 editada' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o5')));
+select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o3'), '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e1"},"title":"Digitado vira casting"}');
+select tests.ok('S102 rascunho troca de herói e continua rascunho (publish ausente na edição)',
+  (select status = 'draft' and talent_id = 'a1020000-0000-4000-8000-0000000000e1' and title = 'Digitado vira casting' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o3')));
+select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o1'), '{"title":"Aberta editada S102","publish":false}');
+select tests.ok('S102 aberta editada com publish=false continua aberta (não despublica)', (select status = 'open' and title = 'Aberta editada S102' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o1')));
+
+-- com resposta de marca o herói não muda
+select tests.login('a1020000-0000-4000-8000-000000000005','s102-dono-marca@test.local');
+select public.brand_sponsorship_respond((select v::uuid from t_s102 where k='o1'), 'a1020000-0000-4000-8000-0000000000b1', 'interested', null);
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select tests.expect_error('S102 com resposta da marca, o herói não muda', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o1'), '{"hero":{"kind":"talent","talent_id":"a1020000-0000-4000-8000-0000000000e8"}}')$q$, 'invalid_state');
+
+-- consentimento revogado depois de publicada: a marca segue vendo, o herói só com o nome
+select tests.su();
+select public.talent_consent_apply('a1020000-0000-4000-8000-0000000000e1', false, null);
+select tests.login('a1020000-0000-4000-8000-000000000005','s102-dono-marca@test.local');
+select tests.ok('S102 consentimento revogado: a marca vê a oportunidade, mas o herói só com o nome (sem página, foto nem nicho)',
+  (select x -> 'hero' = '{"talent_id":"a1020000-0000-4000-8000-0000000000e1","name":"Herói Casting S102","has_hero":true,"hero_active":true,"pillars":[]}'::jsonb
+        or (x -> 'hero' ? 'name' and not (x -> 'hero' ? 'slug') and not (x -> 'hero' ? 'avatar_url') and not (x -> 'hero' ? 'creator_id') and not (x -> 'hero' ? 'consent'))
+   from jsonb_array_elements(public.brand_sponsorships('a1020000-0000-4000-8000-0000000000b1')) x where x ->> 'id' = (select v from t_s102 where k='o1')));
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select tests.expect_error('S102 consentimento revogado: o rascunho com esse herói não publica', $q$select public.agency_sponsorship_publish((select v::uuid from t_s102 where k='o3'))$q$, 'consent_required');
+
+-- decidir: rascunho só se descarta
+select tests.login('a1020000-0000-4000-8000-000000000003','s102-colab-a@test.local');
+select tests.expect_error('S102 colaborador não descarta', $q$select public.agency_sponsorship_decide((select v::uuid from t_s102 where k='o3'), 'cancel', '{}', '')$q$, 'forbidden');
+select tests.login('a1020000-0000-4000-8000-000000000002','s102-gestor-a@test.local');
+select tests.expect_error('S102 rascunho não se encerra com patrocínio', $q$select public.agency_sponsorship_decide((select v::uuid from t_s102 where k='o3'), 'sponsor', array['a1020000-0000-4000-8000-0000000000b1']::uuid[], '')$q$, 'invalid_state');
+select tests.expect_error('S102 rascunho não se "encerra"', $q$select public.agency_sponsorship_decide((select v::uuid from t_s102 where k='o3'), 'close', '{}', '')$q$, 'invalid_state');
+select public.agency_sponsorship_decide((select v::uuid from t_s102 where k='o3'), 'cancel', '{}', 'Não vai mais');
+select tests.ok('S102 rascunho descartado: cancelada, sem evento e sem avisos',
+  (select status = 'cancelled' and closed_reason = 'decision' and decision_note = 'Não vai mais' from public.sponsorship_opportunities where id = (select v::uuid from t_s102 where k='o3'))
+  and not exists (select 1 from public.calendar_events where sponsorship_id = (select v::uuid from t_s102 where k='o3'))
+  and not exists (select 1 from public.inbox_notifications where entity_id = (select v::uuid from t_s102 where k='o3')));
+select tests.expect_error('S102 descartada não se edita', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a1', (select v::uuid from t_s102 where k='o3'), '{"title":"Volta"}')$q$, 'invalid_state');
+
+-- agência de demonstração: só enxerga o próprio casting; não cria ficha de herói real
+select tests.login('a1020000-0000-4000-8000-000000000008','s102-adm-demo@test.local');
+select tests.ok('S102 agência de demonstração: a busca traz só a ficha do próprio casting (sem heróis reais)',
+  (select bool_and(i ->> 'scope' = 'casting') and count(*) = 1 from jsonb_array_elements(public.agency_opportunity_hero_search('a1020000-0000-4000-8000-0000000000a3','') -> 'items') i));
+select tests.expect_error('S102 agência de demonstração não cria ficha de herói real', $q$select public.agency_sponsorship_save('a1020000-0000-4000-8000-0000000000a3', null, (select v::jsonb from t_s102 where k='base') || '{"hero":{"kind":"hero","creator_id":"a1020000-0000-4000-8000-0000000000c8"},"publish":false}')$q$, 'demo_locked');
+
+-- S14 segue 18
+select tests.ok('S102 S14 segue 18 (nada novo para o visitante)', (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- limpeza
+select tests.su();
+delete from public.inbox_notifications where entity_id in (select id from public.sponsorship_opportunities where agency_id::text like 'a1020000-%');
+delete from public.campaign_requests where agency_id::text like 'a1020000-%';
+delete from public.sponsorship_opportunities where agency_id::text like 'a1020000-%';
+delete from public.talent_profiles where agency_id::text like 'a1020000-%';
+delete from public.agency_brands where agency_id::text like 'a1020000-%';
+delete from public.brand_members where brand_id::text like 'a1020000-%';
+delete from public.brands where id::text like 'a1020000-%';
+delete from public.agency_members where agency_id::text like 'a1020000-%';
+delete from public.agencies where id::text like 'a1020000-%';
+delete from public.creator_profiles where id::text like 'a1020000-%';
+delete from auth.users where id::text like 'a1020000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

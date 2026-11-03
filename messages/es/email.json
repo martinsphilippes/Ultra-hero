@@ -45,7 +45,7 @@
       },
       "sponsorship_published": {
         "subject": "Oportunidad de patrocinio: {title}",
-        "body": "La agencia ofrece una situación de {talent} para que tu marca la patrocine: {title}. Responde hasta {date}.",
+        "body": "La agencia ofrece un evento del héroe {talent} para que tu marca lo patrocine: {title}. Responde hasta {date}.",
         "cta": "Ver oportunidad"
       },
       "sponsorship_interest": {

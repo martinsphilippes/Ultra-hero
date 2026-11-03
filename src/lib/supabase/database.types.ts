@@ -10540,6 +10540,8 @@ isOneToOne: false
       terms_signature_receipt: { Args: { p_id: string }; Returns: Json };
       inbox_kind_emails: { Args: { p_kind: string; p_link: string; p_params: Json }; Returns: boolean };
       agency_sponsorship_save: { Args: { p_agency: string; p_id: string | null; p_data: Json }; Returns: string };
+      agency_sponsorship_publish: { Args: { p_id: string }; Returns: undefined };
+      agency_opportunity_hero_search: { Args: { p_agency: string; p_q?: string; p_limit?: number; p_offset?: number }; Returns: Json };
       agency_sponsorship_decide: { Args: { p_id: string; p_action: string; p_brands: string[]; p_note: string }; Returns: undefined };
       brand_sponsorship_respond: { Args: { p_id: string; p_brand: string; p_response: string; p_message: string }; Returns: string | null };
       agency_sponsorships: { Args: { p_agency: string }; Returns: Json };

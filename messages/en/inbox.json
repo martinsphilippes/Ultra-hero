@@ -161,7 +161,7 @@
     },
     "sponsorship_published": {
       "title": "Sponsorship opportunity",
-      "body": "{talent}: {title}. Reply by {date}."
+      "body": "Hero {talent}: {title}. Reply by {date}."
     },
     "sponsorship_interest": {
       "title": "Brand wants to sponsor",
