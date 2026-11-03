@@ -1,17 +1,20 @@
 "use client";
 
-import { Send } from "lucide-react";
+import { Plus, Send, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, DatePicker, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { parseBrlToCents } from "@/lib/deals/schemas";
 import { saveSponsorshipAction } from "@/lib/sponsorship/actions";
-import { MAX_PERKS, parsePerks, perksValid, type SponsorshipAudience, type SponsorshipInput } from "@/lib/sponsorship/vocab";
+import { MAX_AMOUNT_CENTS, MAX_TIER_SLOTS, MAX_TIERS, validateTiers, type TierDraft } from "@/lib/sponsorship/negotiation";
+import { MAX_PERKS, parsePerks, type SponsorshipAudience, type SponsorshipInput } from "@/lib/sponsorship/vocab";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
+import { AudienceFields } from "./AudienceFields";
 
 type Option = { id: string; name: string };
 
-export type SponsorshipFormValues = Omit<SponsorshipInput, "perks"> & { perksText: string };
+export type SponsorshipFormValues = Omit<SponsorshipInput, "perks" | "tiers"> & { tiers: TierDraft[] };
 
 type Props = {
   initial: SponsorshipFormValues;
@@ -19,12 +22,17 @@ type Props = {
   brands: Option[];
   /** Já há respostas: o creator não muda (as marcas responderam a ele). */
   talentLocked?: boolean;
+  /** Adm da agência: vê e grava o valor pedido das cotas (gestor cria sem valor; o Adm completa). */
+  canValues: boolean;
+  /** Cotas que já têm proposta não saem (o banco confere). */
+  lockedTierIds?: string[];
 };
 
 // Oportunidade de patrocínio (0085), formulário da agência (gestor+): creator, data/hora ou período, local,
-// descrição, alcance, o que a marca recebe (uma por linha), redes, prazo para responder e quem vê. Mobile first:
-// um campo por linha no celular, botões grandes. Sem valores (a proposta comercial segue na campanha).
-export function SponsorshipForm({ initial, talents, brands, talentLocked = false }: Props) {
+// descrição, alcance, redes, prazo para responder e quem vê. 0088: cotas (1 a 3: nome, valor pedido só para o Adm,
+// contrapartidas uma por linha e quantas marcas levam) e o público do evento (mesmos campos da campanha). Mobile
+// first: um campo por linha no celular, botões grandes.
+export function SponsorshipForm({ initial, talents, brands, talentLocked = false, canValues, lockedTierIds = [] }: Props) {
   const t = useTranslations("sponsorship.agency.form");
   const tn = useTranslations("mediaKit.networks");
   const router = useRouter();
@@ -43,12 +51,17 @@ export function SponsorshipForm({ initial, talents, brands, talentLocked = false
     if (v.title.trim().length < 3) return setError(t("titleRequired"));
     if (v.networks.length === 0) return setError(t("networksRequired"));
     if (v.audience === "selected" && v.brandIds.length === 0) return setError(t("brandsRequired"));
-    const perks = parsePerks(v.perksText);
-    if (!perksValid(perks)) return setError(t("perksInvalid", { max: MAX_PERKS }));
+    const checked = validateTiers(v.tiers, parseBrlToCents, parsePerks, canValues);
+    if (!checked.ok) {
+      const n = checked.index + 1;
+      if (checked.error === "count") return setError(t("tiers.errors.count", { max: MAX_TIERS }));
+      if (checked.error === "perks") return setError(t("tiers.errors.perks", { n, max: MAX_PERKS }));
+      return setError(t(`tiers.errors.${checked.error}`, { n, max: MAX_TIER_SLOTS }));
+    }
     const rest: Partial<SponsorshipFormValues> = { ...v };
-    delete rest.perksText;
+    delete rest.tiers;
     start(async () => {
-      const result = await saveSponsorshipAction({ ...(rest as Omit<SponsorshipFormValues, "perksText">), perks });
+      const result = await saveSponsorshipAction({ ...(rest as Omit<SponsorshipFormValues, "tiers">), perks: [], tiers: checked.tiers });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
       router.push(`/agencia/oportunidades/${result.id ?? v.id}`);
@@ -96,9 +109,55 @@ export function SponsorshipForm({ initial, talents, brands, talentLocked = false
       <FormField label={t("reach")}>
         <Input value={v.expectedReach} maxLength={160} placeholder={t("reachPlaceholder")} onChange={(e) => set("expectedReach", e.target.value)} disabled={pending} />
       </FormField>
-      <FormField label={t("perks")} hint={t("perksHint", { max: MAX_PERKS })}>
-        <Textarea value={v.perksText} rows={4} placeholder={t("perksPlaceholder")} onChange={(e) => set("perksText", e.target.value)} disabled={pending} />
-      </FormField>
+      <fieldset className="flex flex-col gap-3" data-testid="sponsorship-tiers">
+        <legend className="mb-1 flex flex-col gap-0.5">
+          <span className="text-sm font-semibold text-fg">{t("tiers.title")}</span>
+          <span className="type-caption text-fg-muted">{canValues ? t("tiers.hintAdmin") : t("tiers.hintManager")}</span>
+        </legend>
+        {v.tiers.map((tier, i) => {
+          const setTier = (patch: Partial<TierDraft>) => set("tiers", v.tiers.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+          const locked = tier.id !== null && lockedTierIds.includes(tier.id);
+          return (
+            <div key={tier.id ?? `new-${i}`} className="flex flex-col gap-3 rounded-xl border border-border p-3" data-testid="sponsorship-tier">
+              <div className="grid gap-3 sm:grid-cols-[1fr_12rem_7rem]">
+                <FormField label={t("tiers.name")} required>
+                  <Input value={tier.name} maxLength={40} placeholder={t("tiers.namePlaceholder")} onChange={(e) => setTier({ name: e.target.value })} disabled={pending} />
+                </FormField>
+                {canValues ? (
+                  <FormField label={t("tiers.price")} hint={t("tiers.priceHint")}>
+                    <MoneyInput value={tier.priceText} maxCents={MAX_AMOUNT_CENTS} onValueChange={(text) => setTier({ priceText: text })} disabled={pending} data-testid="sponsorship-tier-price" />
+                  </FormField>
+                ) : (
+                  <FormField label={t("tiers.price")}>
+                    <p className="flex min-h-11 items-center type-body-sm text-fg-muted">{t("tiers.priceByAdmin")}</p>
+                  </FormField>
+                )}
+                <FormField label={t("tiers.slots")}>
+                  <Input type="number" inputMode="numeric" min={1} max={MAX_TIER_SLOTS} value={String(tier.slots)} onChange={(e) => setTier({ slots: Math.trunc(Number(e.target.value) || 0) })} disabled={pending} />
+                </FormField>
+              </div>
+              <FormField label={t("tiers.perks")} hint={t("perksHint", { max: MAX_PERKS })}>
+                <Textarea value={tier.perksText} rows={3} placeholder={t("perksPlaceholder")} onChange={(e) => setTier({ perksText: e.target.value })} disabled={pending} />
+              </FormField>
+              {v.tiers.length > 1 ? (
+                <Button type="button" variant="ghost" size="sm" leadingIcon={<Trash2 />} className="self-start" onClick={() => set("tiers", v.tiers.filter((_, j) => j !== i))} disabled={pending || locked}>
+                  {locked ? t("tiers.locked") : t("tiers.remove")}
+                </Button>
+              ) : null}
+            </div>
+          );
+        })}
+        {v.tiers.length < MAX_TIERS ? (
+          <Button type="button" variant="secondary" leadingIcon={<Plus />} className="self-start" onClick={() => set("tiers", [...v.tiers, { id: null, name: "", priceText: "", perksText: "", slots: 1 }])} disabled={pending}>
+            {t("tiers.add")}
+          </Button>
+        ) : null}
+      </fieldset>
+      <fieldset className="flex flex-col gap-2 rounded-xl border border-border p-3">
+        <legend className="px-1 text-sm font-semibold text-fg">{t("publicTitle")}</legend>
+        <p className="type-caption text-fg-muted">{t("publicHint")}</p>
+        <AudienceFields idPrefix="sponsorship" value={v.public} onChange={(next) => set("public", next)} disabled={pending} />
+      </fieldset>
       <fieldset className="flex flex-col gap-1">
         <legend className="mb-1 text-sm font-medium text-fg">{t("networks")}</legend>
         <div className="grid grid-cols-2 gap-x-3 sm:grid-cols-4">
@@ -138,7 +197,7 @@ export function SponsorshipForm({ initial, talents, brands, talentLocked = false
           </div>
         </fieldset>
       ) : null}
-      <p className="type-caption text-fg-muted">{t("noValues")}</p>
+      <p className="type-caption text-fg-muted">{canValues ? t("valuesAdmin") : t("valuesManager")}</p>
       {error ? (
         <p role="alert" className="type-body-sm text-danger">
           {error}

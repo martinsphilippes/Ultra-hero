@@ -8,15 +8,16 @@ import { Button, Checkbox, Dialog, FormField, Textarea, useToast } from "@/compo
 import { decideSponsorshipAction } from "@/lib/sponsorship/actions";
 import type { SponsorshipDecision } from "@/lib/sponsorship/vocab";
 
-type Props = { id: string; interested: { brandId: string; name: string }[] };
+type Props = { id: string; interested: { brandId: string; name: string }[]; /** 0088: marcas com acordo (sempre vencedoras) */ agreed?: string[] };
 
 // Decisão da agência (0085): marca(s) vencedora(s) entre as que quiseram → patrocinada; ou encerrar sem patrocínio;
 // ou cancelar. Encerrar e cancelar pedem confirmação. As marcas que responderam e o creator são avisados.
-export function SponsorshipDecide({ id, interested }: Props) {
+export function SponsorshipDecide({ id, interested, agreed = [] }: Props) {
   const t = useTranslations("sponsorship.agency.decide");
   const router = useRouter();
   const { toast } = useToast();
-  const [winners, setWinners] = useState<string[]>(interested.length === 1 ? [interested[0].brandId] : []);
+  const [winners, setWinners] = useState<string[]>(interested.length === 1 ? Array.from(new Set([interested[0].brandId, ...agreed])) : agreed);
+  const hasAgreement = agreed.length > 0;
   const [note, setNote] = useState("");
   const [confirm, setConfirm] = useState<Exclude<SponsorshipDecision, "sponsor"> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,11 +52,12 @@ export function SponsorshipDecide({ id, interested }: Props) {
             <Checkbox
               key={b.brandId}
               label={b.name}
-              checked={winners.includes(b.brandId)}
+              checked={winners.includes(b.brandId) || agreed.includes(b.brandId)}
               onChange={(e) => setWinners((cur) => (e.target.checked ? Array.from(new Set([...cur, b.brandId])) : cur.filter((x) => x !== b.brandId)))}
-              disabled={pending}
+              disabled={pending || agreed.includes(b.brandId)}
             />
           ))}
+          {hasAgreement ? <p className="type-caption text-fg-muted">{t("agreedLocked")}</p> : null}
         </fieldset>
       )}
       <FormField label={t("note")}>
@@ -70,10 +72,10 @@ export function SponsorshipDecide({ id, interested }: Props) {
         <Button type="button" size="lg" leadingIcon={<CheckCircle2 />} onClick={() => run("sponsor")} disabled={pending || interested.length === 0} data-testid="sponsorship-sponsor">
           {t("sponsor")}
         </Button>
-        <Button type="button" size="lg" variant="secondary" leadingIcon={<XCircle />} onClick={() => setConfirm("close")} disabled={pending}>
+        <Button type="button" size="lg" variant="secondary" leadingIcon={<XCircle />} onClick={() => setConfirm("close")} disabled={pending || hasAgreement}>
           {t("close")}
         </Button>
-        <Button type="button" size="lg" variant="ghost" leadingIcon={<Ban />} onClick={() => setConfirm("cancel")} disabled={pending}>
+        <Button type="button" size="lg" variant="ghost" leadingIcon={<Ban />} onClick={() => setConfirm("cancel")} disabled={pending || hasAgreement}>
           {t("cancel")}
         </Button>
       </div>

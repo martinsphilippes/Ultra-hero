@@ -3,7 +3,7 @@
 import { Copy, Link2, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Button, DatePicker, Dialog, FormField, Input, Select, useToast } from "@/components/ui";
+import { Button, DatePicker, Dialog, FormField, Input, MoneyInput, Select, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
@@ -260,7 +260,7 @@ function SaleDialog({ rows, dealId, requestId, today, onClose }: { rows: Row[]; 
             <Input inputMode="numeric" value={quantity} maxLength={8} onChange={(e) => setQuantity(e.target.value)} disabled={pending} data-testid="sales-quantity" />
           </FormField>
           <FormField label={t("revenue")}>
-            <Input inputMode="decimal" value={revenue} maxLength={20} placeholder="0,00" onChange={(e) => setRevenue(e.target.value)} disabled={pending} data-testid="sales-revenue" />
+            <MoneyInput value={revenue} maxCents={10_000_000_000} onValueChange={(v) => setRevenue(v)} disabled={pending} data-testid="sales-revenue" />
           </FormField>
         </div>
         <FormField label={t("reportedOn")} required>

@@ -55,6 +55,11 @@ export const AGENCY_ERROR_CODES = [
   "deadline_passed",
   "already_responded",
   "not_interested",
+  // cotas e negociação do patrocínio (0088)
+  "tier_full",
+  "already_agreed",
+  "already_negotiating",
+  "has_agreement",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

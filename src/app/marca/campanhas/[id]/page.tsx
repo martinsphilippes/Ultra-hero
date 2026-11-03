@@ -28,7 +28,7 @@ import { getBrandContext } from "@/lib/brand-portal/server";
 import { briefDefined, briefToDraft } from "@/lib/brief/brief";
 import { getBrandCampaign, getRequestBudget, listMessages } from "@/lib/deals/queries";
 import { BRAND_STATUSES } from "@/lib/deals/stages";
-import { formatCents } from "@/lib/deals/schemas";
+import { centsToBrl } from "@/lib/money/brl-input";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
 import { brandBudgetSummary } from "@/lib/finance/queries";
@@ -157,12 +157,13 @@ export default async function BrandCampaignPage({ params }: Props) {
             networks: request.networks as never[],
             deliverables: request.deliverables as never[],
             notes: request.notes,
-            budgetText: budget?.max !== null && budget?.max !== undefined ? formatCents(budget.max, "pt-BR").replace(/[^\d,.]/g, "") : "",
+            budgetText: centsToBrl(budget?.max ?? null),
             budgetNote: budget?.note ?? "",
             briefDraft: briefToDraft(request.brief),
           }}
           creatorName={detail.requestedTalent?.name ?? null}
           canEdit
+          sponsorshipBudget={fromSponsorship ? (fromSponsorship.negotiation?.status === "agreed" ? "agreed" : "negotiating") : null}
         />
       </div>
     );

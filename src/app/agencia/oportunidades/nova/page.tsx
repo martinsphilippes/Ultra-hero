@@ -4,8 +4,10 @@ import Link from "next/link";
 import { SponsorshipForm } from "@/components/sponsorship/SponsorshipForm";
 import { PageHeader } from "@/components/ui";
 import { listAgencyBrands } from "@/lib/agency/queries";
+import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { plusDays } from "@/lib/calendar/ics";
+import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
 import { localParts } from "@/lib/sponsorship/vocab";
 import { listTalents } from "@/lib/talent/queries";
 
@@ -25,6 +27,7 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
   const sp = await searchParams;
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
   const [t, talents, brands] = await Promise.all([getTranslations("sponsorship.agency"), listTalents(ctx.agency.id), listAgencyBrands(ctx.agency.id)]);
+  const canValues = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const today = localParts(new Date().toISOString(), tz).date;
   const date = sp.data && /^\d{4}-\d{2}-\d{2}$/.test(sp.data) && sp.data >= today ? sp.data : plusDays(today, 14);
   // prazo padrão: 3 dias antes do evento (ou amanhã, se o evento é logo)
@@ -45,6 +48,7 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
       <SponsorshipForm
         talents={eligible.map((x) => ({ id: x.id, name: x.name }))}
         brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name }))}
+        canValues={canValues}
         initial={{
           id: null,
           talentId: creator,
@@ -57,7 +61,8 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
           endTime: "12:00",
           allDay: false,
           expectedReach: "",
-          perksText: "",
+          tiers: [{ id: null, name: t("form.tiers.defaultName"), priceText: "", perksText: "", slots: 1 }],
+          public: EMPTY_PUBLIC,
           networks: ["instagram"],
           respondDate: respond,
           respondTime: "18:00",

@@ -53,7 +53,7 @@
     "shortlistDecided": "Decided: create the campaign with the approved",
     "budgetOver": "Committed is above the campaign budget",
     "budgetTalentsOver": "A creator is above their budget",
-    "sponsorshipHint": "Sponsor it or pass"
+    "sponsorshipHint": "Accept a tier, make an offer or decline"
   },
   "talent": {
     "title": "Today",

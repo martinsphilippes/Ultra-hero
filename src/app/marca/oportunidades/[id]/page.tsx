@@ -3,13 +3,15 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BrandNegotiationPanel } from "@/components/sponsorship/BrandNegotiationPanel";
+import { PublicChips } from "@/components/sponsorship/NegotiationView";
 import { SponsorshipRespond } from "@/components/sponsorship/SponsorshipRespond";
 import { SponsorshipFacts, SponsorshipStatusBadge } from "@/components/sponsorship/SponsorshipView";
 import { Avatar, Button, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { getBrandContext } from "@/lib/brand-portal/server";
-import { listBrandSponsorships } from "@/lib/sponsorship/queries";
+import { getBrandNegotiation, listBrandSponsorships } from "@/lib/sponsorship/queries";
 import { brandCanRespond } from "@/lib/sponsorship/vocab";
 
 export const dynamic = "force-dynamic";
@@ -21,8 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { params: Promise<{ id: string }> };
 
-// Oportunidade de patrocínio para a marca (0085): o que é, quando, onde, alcance e o que a marca recebe; "Quero
-// patrocinar" (cria a campanha em rascunho e segue o fluxo normal) ou "Não tenho interesse". Sem valores.
+// Oportunidade de patrocínio para a marca (0085): o que é, quando, onde, alcance e o público do evento. 0088: as cotas
+// com o valor PEDIDO e a negociação em rodadas (BrandNegotiationPanel); "Não tenho interesse" enquanto não negocia.
+// Nunca propostas de outras marcas.
 export default async function BrandSponsorshipPage({ params }: Props) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
@@ -30,6 +33,8 @@ export default async function BrandSponsorshipPage({ params }: Props) {
   const [t, locale, list] = await Promise.all([getTranslations("sponsorship.brand"), getLocale() as Promise<Locale>, listBrandSponsorships(ctx.brand.id)]);
   const o = list.items.find((x) => x.id === id);
   if (!o) notFound();
+  const negotiation = await getBrandNegotiation(o.id, ctx.brand.id);
+  const negotiating = negotiation?.proposals.some((p) => p.status === "draft" || p.status === "open" || p.status === "agreed") ?? false;
   const can = brandCanRespond(o);
   const mine = o.myResponse;
   const statusHint = o.status === "expired" ? t("expiredHint") : o.status === "won" ? t("wonHint") : o.status === "closed" ? t("closedHint") : o.status === "cancelled" ? t("cancelledHint") : null;
@@ -53,11 +58,12 @@ export default async function BrandSponsorshipPage({ params }: Props) {
             ) : null}
           </span>
         </div>
-        <SponsorshipFacts o={o} timeZone={o.timezone} showDeadline={o.status === "open" || o.status === "expired"} />
-        <p className="type-caption text-fg-muted">{t("noValues")}</p>
+        <SponsorshipFacts o={o} timeZone={o.timezone} showDeadline={o.status === "open" || o.status === "expired"} hidePerks />
+        <PublicChips value={o.public} label={t("publicLabel")} />
       </section>
       {statusHint ? <p className="rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg">{statusHint}</p> : null}
-      {mine ? (
+      {negotiation ? <BrandNegotiationPanel opportunityId={o.id} timeZone={o.timezone} negotiation={negotiation} hasRole={Boolean(ctx.role)} eventPublic={o.public} /> : null}
+      {mine && !negotiating ? (
         <section className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4" data-testid="sponsorship-my-response">
           <p className="type-body-sm text-fg">
             {t(mine.response === "interested" ? "myInterest" : "myDecline", { name: mine.respondedLabel || "—", date: mine.respondedAt ? formatDateTime(mine.respondedAt, locale, o.timezone) : "" })}
@@ -68,16 +74,14 @@ export default async function BrandSponsorshipPage({ params }: Props) {
               <Link href={`/marca/campanhas/${mine.requestId}`}>{t("openCampaign")}</Link>
             </Button>
           ) : null}
-          {can.interested ? <p className="type-caption text-fg-muted">{t("changeToInterest")}</p> : null}
+          {mine.response === "declined" && o.status === "open" ? <p className="type-caption text-fg-muted">{t("changeToInterest")}</p> : null}
         </section>
       ) : null}
-      {ctx.role && (can.interested || can.declined) ? (
+      {ctx.role && can.declined && !negotiating ? (
         <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
           <p className="type-body-sm text-fg-muted">{t("respondHint", { date: formatDateTime(o.respondBy, locale, o.timezone) })}</p>
-          <SponsorshipRespond id={o.id} canInterest={can.interested} canDecline={can.declined} />
+          <SponsorshipRespond id={o.id} canInterest={false} canDecline />
         </section>
-      ) : !ctx.role && o.status === "open" ? (
-        <p className="type-caption text-fg-muted">{t("readOnly")}</p>
       ) : null}
     </div>
   );

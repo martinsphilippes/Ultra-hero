@@ -57,6 +57,11 @@
         "subject": "{status, select, won {Your brand was chosen} sponsored {Sponsorship confirmed} cancelled {Opportunity cancelled} other {Opportunity closed}}: {title}",
         "body": "{status, select, won {The agency chose your brand to sponsor {title}. Continue in the campaign in the app.} sponsored {{title} was sponsored by {brand}.} cancelled {The agency cancelled the opportunity {title}.} other {The agency closed the opportunity {title}.}}",
         "cta": "Open the app"
+      },
+      "sponsorship_negotiation": {
+        "subject": "Sponsorship negotiation: {title}",
+        "body": "{status, select, proposed {{brand} made an offer for the {tier} tier of {title}.} countered {New counteroffer on the {tier} tier of {title}.} agreed {Sponsorship agreed: {tier} tier of {title}.} declined {The offer for the {tier} tier of {title} was declined.} closed {The {tier} tier of {title} was closed with another brand.} approval {The team prepared an offer for {title}: approve to send.} returned {The owner returned the offer for {title}.} approved {The owner approved and sent the offer for {title}.} other {News in the negotiation of {title}.}} See the details in the app.",
+        "cta": "See negotiation"
       }
     }
   }

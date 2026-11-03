@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
 import { BriefFields } from "@/components/brief/BriefFields";
-import { Button, Checkbox, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
 import { askApprovalAction } from "@/lib/selection/actions";
@@ -22,12 +22,19 @@ import type { CampaignFormValues } from "@/lib/brand-portal/campaign-form";
  * submitMode (0081): "submit" = o diretor envia à agência; "ask" = a equipe pede aprovação interna ao diretor;
  * "none" = sem botão de envio (o diretor decide um pedido aguardando pelo painel de aprovação).
  */
-type Props = { initial: CampaignFormValues; creatorName: string | null; canEdit: boolean; submitMode?: "submit" | "ask" | "none" };
+type Props = {
+  initial: CampaignFormValues;
+  creatorName: string | null;
+  canEdit: boolean;
+  submitMode?: "submit" | "ask" | "none";
+  /** 0088: campanha de patrocínio — "agreed" = valor do acordo (travado), "negotiating" = valor sai da negociação */
+  sponsorshipBudget?: "agreed" | "negotiating" | null;
+};
 
 // Proposta de campanha da marca em 5 blocos (objetivo, público, período e formato, entregáveis, valor e
 // observações). "Salvar rascunho" e "Enviar à agência" são ações explícitas; enviar exige título,
 // objetivo, data de início, pelo menos uma rede e um entregável (a RPC confere de novo).
-export function CampaignForm({ initial, creatorName, canEdit, submitMode = "submit" }: Props) {
+export function CampaignForm({ initial, creatorName, canEdit, submitMode = "submit", sponsorshipBudget = null }: Props) {
   const t = useTranslations("brandPortal.campaigns.form");
   const ta = useTranslations("selection.approval");
   const asking = submitMode === "ask";
@@ -266,8 +273,18 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
           {t("blocks.budget")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-[14rem_1fr]">
-          <FormField label={t("budget")} hint={t("budgetHint")}>
-            <Input inputMode="decimal" value={v.budgetText} maxLength={20} placeholder="0,00" onChange={(e) => set("budgetText", e.target.value)} disabled={disabled} />
+          <FormField
+            label={t("budget")}
+            hint={sponsorshipBudget === "agreed" ? t("budgetAgreedHint") : sponsorshipBudget === "negotiating" ? t("budgetNegotiatingHint") : t("budgetHint")}
+          >
+            <MoneyInput
+              value={v.budgetText}
+              maxCents={10_000_000_000}
+              onValueChange={(text) => set("budgetText", text)}
+              disabled={disabled || sponsorshipBudget === "agreed"}
+              placeholder={sponsorshipBudget === "negotiating" ? t("budgetNegotiatingPlaceholder") : undefined}
+              data-testid="campaign-budget"
+            />
           </FormField>
           <FormField label={t("budgetNote")}>
             <Input value={v.budgetNote} maxLength={300} onChange={(e) => set("budgetNote", e.target.value)} disabled={disabled} />

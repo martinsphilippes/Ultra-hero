@@ -3,7 +3,7 @@
 import { CalendarClock, CheckCircle2, Undo2, Wallet, XCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, DatePicker, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, DatePicker, Dialog, FormField, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
@@ -163,7 +163,7 @@ function FeeDialog({ dealTalentId, currentFeeCents, onClose }: { dealTalentId: s
       <form onSubmit={submit} className="flex flex-col gap-3" noValidate data-testid="counter-fee-form">
         {currentFeeCents !== null ? <p className="type-body-sm text-fg">{t("currentFee", { value: formatCents(currentFeeCents, locale) })}</p> : null}
         <FormField label={t("newFee")} required>
-          <Input inputMode="decimal" value={text} maxLength={20} placeholder="0,00" onChange={(e) => setText(e.target.value)} disabled={pending} />
+          <MoneyInput value={text} maxCents={10_000_000_000} onValueChange={(v) => setText(v)} disabled={pending} />
         </FormField>
         <FormField label={t("reason")} hint={t("reasonHint")} required>
           <Textarea value={reason} maxLength={300} rows={3} onChange={(e) => setReason(e.target.value)} disabled={pending} />

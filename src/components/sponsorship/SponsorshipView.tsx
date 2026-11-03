@@ -44,9 +44,9 @@ export function sponsorshipWhen(o: Pick<SponsorshipCore, "startsAt" | "endsAt" |
   return `${formatDateTime(start, locale, timeZone)} – ${formatDateTime(end, locale, timeZone)}`;
 }
 
-type FactsProps = { o: SponsorshipCore; timeZone: string; talentName?: string | null; showDeadline?: boolean };
+type FactsProps = { o: SponsorshipCore; timeZone: string; talentName?: string | null; showDeadline?: boolean; hidePerks?: boolean };
 
-export function SponsorshipFacts({ o, timeZone, talentName = null, showDeadline = true }: FactsProps) {
+export function SponsorshipFacts({ o, timeZone, talentName = null, showDeadline = true, hidePerks = false }: FactsProps) {
   const t = useTranslations("sponsorship.facts");
   const tn = useTranslations("mediaKit.networks");
   const locale = useLocale() as Locale;
@@ -107,7 +107,7 @@ export function SponsorshipFacts({ o, timeZone, talentName = null, showDeadline 
           ))}
         </div>
       ) : null}
-      {o.perks.length > 0 ? (
+      {o.perks.length > 0 && !hidePerks ? (
         <div className="flex flex-col gap-1.5">
           <span className="flex items-center gap-2 text-sm font-semibold text-fg">
             <Gift className="size-4 text-accent-text" aria-hidden="true" />

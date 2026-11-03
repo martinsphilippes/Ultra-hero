@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveCollectibleAction, type CollectibleFormValues } from "@/app/admin/collectibles/actions";
-import { Button, FormField, IconButton, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, FormField, IconButton, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import type { PostPhotoState } from "@/lib/post-photo/constants";
 import {
   centsToInput,
@@ -120,7 +120,7 @@ export function CollectibleForm({ id, initial, heroes, locked, photoState }: Pro
         </legend>
         {locked ? <p className="text-xs text-fg-muted">{t("lockedHint")}</p> : null}
         <FormField label={t("startPrice")} required error={errors.price} hint={t("moneyHint")}>
-          <Input value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" leadingIcon={<span className="text-xs font-semibold">R$</span>} />
+          <MoneyInput value={price} maxCents={10_000_000_000} onValueChange={(text) => setPrice(text)} />
         </FormField>
         <div className="flex flex-col gap-2">
           <p className="text-sm font-medium text-fg" id="increments-label">
@@ -129,12 +129,11 @@ export function CollectibleForm({ id, initial, heroes, locked, photoState }: Pro
           <ul className="grid grid-cols-2 gap-2" aria-labelledby="increments-label">
             {increments.map((value, index) => (
               <li key={index} className="flex items-center gap-1">
-                <Input
+                <MoneyInput
                   aria-label={t("incrementN", { n: index + 1 })}
                   value={value}
-                  onChange={(e) => setIncrements((list) => list.map((v, i) => (i === index ? e.target.value : v)))}
-                  inputMode="decimal"
-                  leadingIcon={<span className="text-xs font-semibold">R$</span>}
+                  maxCents={10_000_000_000}
+                  onValueChange={(text) => setIncrements((list) => list.map((v, i) => (i === index ? text : v)))}
                 />
                 {increments.length > 1 ? (
                   <IconButton label={t("removeIncrement")} icon={<Trash2 />} variant="ghost" onClick={() => setIncrements((list) => list.filter((_, i) => i !== index))} />

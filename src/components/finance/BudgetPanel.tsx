@@ -3,10 +3,11 @@
 import { Pencil } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Badge, Button, Dialog, FormField, Input, ProgressBar, useToast, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, Dialog, FormField, MoneyInput, ProgressBar, useToast, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
+import { centsToBrl } from "@/lib/money/brl-input";
 import { setBrandBudgetAction } from "@/lib/finance/actions";
 import { budgetTone, budgetUsedPercent, type BudgetSummary, type BudgetTone } from "@/lib/finance/budget";
 
@@ -113,7 +114,7 @@ export function BudgetPanel({ summary }: { summary: BudgetSummary }) {
 function BudgetDialog({ requestId, target, onClose }: { requestId: string; target: { dealTalentId: string | null; name: string | null; current: number | null }; onClose: () => void }) {
   const t = useTranslations("brandPortal.budget");
   const { toast } = useToast();
-  const [text, setText] = useState(target.current === null ? "" : formatCents(target.current, "pt-BR").replace(/[^\d,.]/g, ""));
+  const [text, setText] = useState(target.current === null ? "" : centsToBrl(target.current));
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   function run() {
@@ -145,7 +146,7 @@ function BudgetDialog({ requestId, target, onClose }: { requestId: string; targe
       }
     >
       <FormField label={t("amount")} hint={target.dealTalentId ? t("amountTalentHint") : t("amountHint")} error={error}>
-        <Input inputMode="decimal" value={text} onChange={(e) => setText(e.target.value)} disabled={pending} placeholder="15.000,00" />
+        <MoneyInput value={text} maxCents={10_000_000_000} onValueChange={(v) => setText(v)} disabled={pending} />
       </FormField>
     </Dialog>
   );

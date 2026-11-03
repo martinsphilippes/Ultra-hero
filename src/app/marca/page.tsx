@@ -55,7 +55,13 @@ export default async function BrandDashboardPage() {
   // 0082: verba estourada entra no "Hoje" (visão geral da verba; sem a migração, fica de fora)
   const budgetOverview = budgets.available ? budgets.data : null;
   // 0085: oportunidade de patrocínio aberta e sem resposta entra no "Hoje" (sem a migração, fica de fora)
-  const openSponsorships = sponsorships.items.map((o) => ({ id: o.id, title: o.title, talentName: o.talent.name, respondBy: o.respondBy, open: o.status === "open", answered: o.myResponse !== null }));
+  // 0088: + negociação esperando a marca (contraproposta da agência; para o dono, a rodada da equipe a aprovar)
+  const openSponsorships = sponsorships.items.map((o) => {
+    const n = o.negotiation;
+    const live = n !== null && (n.status === "open" || n.status === "draft");
+    const awaitingMe = live && (n.pendingOwner ? ctx.role === "owner" : n.status === "open" && n.awaiting === "brand");
+    return { id: o.id, title: o.title, talentName: o.talent.name, respondBy: o.respondBy, open: o.status === "open", answered: o.myResponse !== null || live, awaitingMe };
+  });
   const todayItems = wb ? buildBrandToday(wb, now, { budgets: budgetOverview?.items ?? [], sponsorships: openSponsorships }) : [];
   const stageCounts = wb ? boardCounts(buildBrandBoard(wb)) : null;
   // aprovações pendentes: roteiros e entregas aguardando a marca (painel 0069; antes dele, só os roteiros pela RLS)

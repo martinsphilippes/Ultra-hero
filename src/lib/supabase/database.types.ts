@@ -8315,10 +8315,14 @@ export type Database = {
           location: string;
           networks: string[];
           perks: string[];
+          region_note: string;
           respond_by: string;
           starts_at: string;
           status: string;
           talent_id: string;
+          target_age_bands: string[];
+          target_audience: string;
+          target_states: string[];
           title: string;
           updated_at: string;
         };
@@ -8340,9 +8344,13 @@ export type Database = {
           location?: string;
           networks?: string[];
           perks?: string[];
+          region_note?: string;
           respond_by: string;
           starts_at: string;
           status?: string;
+          target_age_bands?: string[];
+          target_audience?: string;
+          target_states?: string[];
           talent_id: string;
           title: string;
           updated_at?: string;
@@ -8364,9 +8372,13 @@ export type Database = {
           location?: string;
           networks?: string[];
           perks?: string[];
+          region_note?: string;
           respond_by?: string;
           starts_at?: string;
           status?: string;
+          target_age_bands?: string[];
+          target_audience?: string;
+          target_states?: string[];
           talent_id?: string;
           title?: string;
           updated_at?: string;
@@ -8492,6 +8504,264 @@ export type Database = {
             columns: ["request_id"];
             isOneToOne: false;
             referencedRelation: "campaign_requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sponsorship_tiers: {
+        Row: {
+          agency_id: string;
+          created_at: string;
+          id: string;
+          name: string;
+          opportunity_id: string;
+          perks: string[];
+          position: number;
+          price_cents: number | null;
+          price_updated_at: string | null;
+          price_updated_by: string | null;
+          slots: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          created_at?: string;
+          id?: string;
+          name: string;
+          opportunity_id: string;
+          perks?: string[];
+          position?: number;
+          price_cents?: number | null;
+          price_updated_at?: string | null;
+          price_updated_by?: string | null;
+          slots?: number;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          opportunity_id?: string;
+          perks?: string[];
+          position?: number;
+          price_cents?: number | null;
+          price_updated_at?: string | null;
+          price_updated_by?: string | null;
+          slots?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_tiers_opportunity_fk";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "sponsorship_opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sponsorship_tiers_agency_fk";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sponsorship_proposals: {
+        Row: {
+          agency_id: string;
+          agreed_at: string | null;
+          agreed_cents: number | null;
+          agreed_perks: string[] | null;
+          agreed_side: string | null;
+          amount_cents: number;
+          asked_cents: number | null;
+          awaiting: string | null;
+          brand_id: string;
+          created_at: string;
+          created_by: string | null;
+          end_reason: string | null;
+          ended_at: string | null;
+          id: string;
+          opportunity_id: string;
+          perks: string[];
+          request_id: string | null;
+          rounds: number;
+          sent_at: string | null;
+          status: string;
+          tier_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          agreed_at?: string | null;
+          agreed_cents?: number | null;
+          agreed_perks?: string[] | null;
+          agreed_side?: string | null;
+          amount_cents: number;
+          asked_cents?: number | null;
+          awaiting?: string | null;
+          brand_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          opportunity_id: string;
+          perks: string[];
+          request_id?: string | null;
+          rounds?: number;
+          sent_at?: string | null;
+          status?: string;
+          tier_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          agreed_at?: string | null;
+          agreed_cents?: number | null;
+          agreed_perks?: string[] | null;
+          agreed_side?: string | null;
+          amount_cents?: number;
+          asked_cents?: number | null;
+          awaiting?: string | null;
+          brand_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          opportunity_id?: string;
+          perks?: string[];
+          request_id?: string | null;
+          rounds?: number;
+          sent_at?: string | null;
+          status?: string;
+          tier_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_proposals_opportunity_fk";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "sponsorship_opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sponsorship_proposals_tier_fk";
+            columns: ["tier_id"];
+            isOneToOne: false;
+            referencedRelation: "sponsorship_tiers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sponsorship_proposals_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sponsorship_proposals_request_fk";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "campaign_requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sponsorship_rounds: {
+        Row: {
+          action: string;
+          actor_id: string | null;
+          actor_label: string;
+          agency_id: string;
+          amount_cents: number | null;
+          audience: Json | null;
+          brand_id: string;
+          created_at: string;
+          id: string;
+          note: string;
+          opportunity_id: string;
+          perks: string[] | null;
+          proposal_id: string;
+          review_note: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          reviewed_label: string;
+          seq: number;
+          side: string;
+          state: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          action: string;
+          actor_id?: string | null;
+          actor_label?: string;
+          agency_id: string;
+          amount_cents?: number | null;
+          audience?: Json | null;
+          brand_id: string;
+          created_at?: string;
+          id?: string;
+          note?: string;
+          opportunity_id: string;
+          perks?: string[] | null;
+          proposal_id: string;
+          review_note?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewed_label?: string;
+          seq: number;
+          side: string;
+          state?: string;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string | null;
+          actor_label?: string;
+          agency_id?: string;
+          amount_cents?: number | null;
+          audience?: Json | null;
+          brand_id?: string;
+          created_at?: string;
+          id?: string;
+          note?: string;
+          opportunity_id?: string;
+          perks?: string[] | null;
+          proposal_id?: string;
+          review_note?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewed_label?: string;
+          seq?: number;
+          side?: string;
+          state?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_rounds_proposal_fk";
+            columns: ["proposal_id"];
+            isOneToOne: false;
+            referencedRelation: "sponsorship_proposals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sponsorship_rounds_opportunity_fk";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "sponsorship_opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sponsorship_rounds_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "brands";
             referencedColumns: ["id"];
           },
         ];
@@ -9329,6 +9599,19 @@ isOneToOne: false
       my_brand_sponsorship_ids: { Args: { p_calendar: boolean }; Returns: string[] };
       sponsorship_perks_valid: { Args: { p: string[] }; Returns: boolean };
       sponsorship_deadline_scan: { Args: Record<PropertyKey, never>; Returns: number };
+      brand_sponsorship_propose: {
+        Args: { p_id: string; p_brand: string; p_tier: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string; p_audience: Json | null };
+        Returns: string;
+      };
+      brand_sponsorship_reply: {
+        Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string; p_audience: Json | null };
+        Returns: string;
+      };
+      brand_sponsorship_round_review: { Args: { p_round: string; p_decision: string; p_note: string }; Returns: string };
+      agency_sponsorship_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_perks: string[] | null; p_note: string }; Returns: string };
+      brand_sponsorship_negotiation: { Args: { p_id: string; p_brand: string }; Returns: Json };
+      sponsorship_proposal_perks_valid: { Args: { p: string[] }; Returns: boolean };
+      sponsorship_audience_valid: { Args: { p: Json }; Returns: boolean };
       email_outbox_claim: {
         Args: { p_limit?: number | null };
         Returns: { id: number; user_id: string; email: string; locale: string; kind: string; params: Json; link: string; created_at: string }[];

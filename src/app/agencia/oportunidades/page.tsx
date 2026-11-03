@@ -3,7 +3,7 @@ import { Handshake, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { SponsorshipStatusBadge, sponsorshipWhen } from "@/components/sponsorship/SponsorshipView";
-import { Button, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { requireAgency } from "@/lib/agency/server";
@@ -52,6 +52,21 @@ export default async function AgencySponsorshipsPage() {
                 <span className="flex flex-wrap items-center gap-2">
                   <SponsorshipStatusBadge status={o.status} closedReason={o.closedReason} />
                   <span className="text-sm font-semibold text-fg">{o.title}</span>
+                  {o.awaitingAgency > 0 ? (
+                    <Badge size="sm" variant="warning">
+                      {t("awaitingAgency", { count: o.awaitingAgency })}
+                    </Badge>
+                  ) : null}
+                  {o.agreed > 0 ? (
+                    <Badge size="sm" variant="accent">
+                      {t("agreedCount", { count: o.agreed })}
+                    </Badge>
+                  ) : null}
+                  {o.status === "open" && o.missingPrice > 0 ? (
+                    <Badge size="sm" variant="neutral">
+                      {t("missingPrice")}
+                    </Badge>
+                  ) : null}
                 </span>
                 <span className="type-caption text-fg-muted">
                   {o.talentName} · {sponsorshipWhen(o, locale, tz)}

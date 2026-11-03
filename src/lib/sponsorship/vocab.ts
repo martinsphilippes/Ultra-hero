@@ -2,6 +2,23 @@ import { z } from "zod";
 import { plusDays } from "@/lib/calendar/ics";
 import { toZonedIso } from "@/lib/deals/schemas";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
+import {
+  MAX_PERKS,
+  PROPOSAL_END_REASONS,
+  PROPOSAL_STATUSES,
+  ROUND_ACTIONS,
+  ROUND_STATES,
+  perksValid,
+  publicFromDb,
+  publicSchema,
+  tierSchema,
+  type ProposalEndReason,
+  type ProposalStatus,
+  type RoundAction,
+  type RoundState,
+  type Side,
+  type SponsorshipPublic,
+} from "./negotiation";
 
 // Oportunidade de patrocínio (0085): lógica pura (testada em tests/unit/patrocinio.test.ts). O banco confere de
 // novo (checks e RPCs); aqui ficam o formulário, as datas no fuso da agência e a leitura das RPCs fechadas.
@@ -18,7 +35,7 @@ export type SponsorshipDecision = (typeof SPONSORSHIP_DECISIONS)[number];
 export const SPONSORSHIP_RESPONSES = ["interested", "declined"] as const;
 export type SponsorshipResponse = (typeof SPONSORSHIP_RESPONSES)[number];
 
-export const MAX_PERKS = 10;
+export { MAX_PERKS, perksValid } from "./negotiation";
 
 /** Contrapartidas digitadas uma por linha → lista limpa (sem vazios, espaços duplos nem repetidas). */
 export function parsePerks(text: string): string[] {
@@ -31,13 +48,6 @@ export function parsePerks(text: string): string[] {
     out.push(item);
   }
   return out;
-}
-
-/** Mesma regra de public.sponsorship_perks_valid: até 10, de 3 a 120 letras, sem repetir. */
-export function perksValid(perks: readonly string[]): boolean {
-  if (perks.length > MAX_PERKS) return false;
-  const lower = new Set(perks.map((p) => p.toLowerCase()));
-  return lower.size === perks.length && perks.every((p) => p === p.trim() && p.length >= 3 && p.length <= 120);
 }
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -63,6 +73,9 @@ export const sponsorshipSchema = z
     respondTime: z.string().regex(/^\d{2}:\d{2}$/),
     audience: z.enum(SPONSORSHIP_AUDIENCES),
     brandIds: z.array(z.uuid()).max(200),
+    // 0088: cotas (1 a 3) e público do evento
+    tiers: z.array(tierSchema).min(1).max(3),
+    public: publicSchema,
   })
   .refine((v) => v.audience === "all" || v.brandIds.length > 0, { path: ["brandIds"] })
   .refine((v) => perksValid(v.perks), { path: ["perks"] });
@@ -117,6 +130,8 @@ export type SponsorshipCore = {
   perks: string[];
   networks: Network[];
   respondBy: string;
+  /** público do evento (0088), null se vazio */
+  public: SponsorshipPublic | null;
 };
 
 function toCore(r: Row): SponsorshipCore {
@@ -132,8 +147,122 @@ function toCore(r: Row): SponsorshipCore {
     perks: strings(r.perks),
     networks: networks(r.networks),
     respondBy: text(r.respond_by),
+    public: publicFromDb(r.public),
   };
 }
+
+// ---------------------------------------------------------------- 0088: cotas, propostas e rodadas
+const cents = (v: unknown): number | null => (v === null || v === undefined || v === "" ? null : Number(v));
+
+export type SponsorshipTier = { id: string; name: string; priceCents: number | null; perks: string[]; slots: number; full: boolean };
+
+function toTier(r: Row): SponsorshipTier {
+  return { id: text(r.id), name: text(r.name), priceCents: cents(r.price_cents), perks: strings(r.perks), slots: num(r.slots) || 1, full: r.full === true };
+}
+
+export type NegotiationRound = {
+  id: string;
+  seq: number;
+  side: Side;
+  action: RoundAction;
+  /** null para quem não lê valor (gestor) e na recusa */
+  amountCents: number | null;
+  perks: string[] | null;
+  audience: SponsorshipPublic | null;
+  note: string;
+  state: RoundState;
+  actorLabel: string;
+  createdAt: string;
+  reviewedLabel: string;
+  reviewedAt: string | null;
+  reviewNote: string;
+};
+
+function toRounds(v: unknown): NegotiationRound[] {
+  return arr(v).map((r) => ({
+    id: text(r.id),
+    seq: num(r.seq),
+    side: r.side === "agency" ? "agency" : "brand",
+    action: oneOf(ROUND_ACTIONS, r.action, "propose"),
+    amountCents: cents(r.amount_cents),
+    perks: Array.isArray(r.perks) ? strings(r.perks) : null,
+    audience: publicFromDb(r.audience),
+    note: text(r.note),
+    state: oneOf(ROUND_STATES, r.state, "sent"),
+    actorLabel: text(r.actor_label),
+    createdAt: text(r.created_at),
+    reviewedLabel: text(r.reviewed_label),
+    reviewedAt: str(r.reviewed_at),
+    reviewNote: text(r.review_note),
+  }));
+}
+
+export type NegotiationProposal = {
+  id: string;
+  tierId: string;
+  tierName: string;
+  status: ProposalStatus;
+  awaiting: Side | null;
+  askedCents: number | null;
+  amountCents: number | null;
+  perks: string[];
+  agreedCents: number | null;
+  agreedPerks: string[] | null;
+  agreedSide: Side | null;
+  agreedAt: string | null;
+  endedAt: string | null;
+  endReason: ProposalEndReason | null;
+  sentAt: string | null;
+  requestId: string | null;
+  history: NegotiationRound[];
+  /** só na agência */
+  brandId: string;
+  brandName: string;
+};
+
+function toProposal(r: Row): NegotiationProposal {
+  return {
+    id: text(r.id),
+    tierId: text(r.tier_id),
+    tierName: text(r.tier_name),
+    status: oneOf(PROPOSAL_STATUSES, r.status, "closed"),
+    awaiting: r.awaiting === "agency" || r.awaiting === "brand" ? r.awaiting : null,
+    askedCents: cents(r.asked_cents),
+    amountCents: cents(r.amount_cents),
+    perks: strings(r.perks),
+    agreedCents: cents(r.agreed_cents),
+    agreedPerks: Array.isArray(r.agreed_perks) ? strings(r.agreed_perks) : null,
+    agreedSide: r.agreed_side === "agency" || r.agreed_side === "brand" ? r.agreed_side : null,
+    agreedAt: str(r.agreed_at),
+    endedAt: str(r.ended_at),
+    endReason: (PROPOSAL_END_REASONS as readonly string[]).includes(String(r.end_reason)) ? (r.end_reason as ProposalEndReason) : null,
+    sentAt: str(r.sent_at),
+    requestId: str(r.request_id),
+    history: toRounds(r.history),
+    brandId: text(r.brand_id),
+    brandName: text(r.brand_name),
+  };
+}
+
+/** Há rodada da equipe esperando o dono? */
+export function hasPendingOwner(p: Pick<NegotiationProposal, "history">): boolean {
+  return p.history.some((r) => r.state === "pending_owner");
+}
+
+export type BrandNegotiation = { role: "owner" | "staff"; canPropose: boolean; tiers: SponsorshipTier[]; proposals: NegotiationProposal[] };
+
+export function toBrandNegotiation(data: unknown): BrandNegotiation | null {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+  const d = data as Row;
+  return {
+    role: d.role === "owner" ? "owner" : "staff",
+    canPropose: d.can_propose === true,
+    tiers: arr(d.tiers).map(toTier),
+    proposals: arr(d.proposals).map(toProposal),
+  };
+}
+
+export type AgencyTier = { id: string; position: number; name: string; perks: string[]; slots: number; priceCents: number | null; hasPrice: boolean; agreed: number; hasProposals: boolean };
 
 export type AgencySponsorshipRow = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy"> & {
   talentId: string;
@@ -146,6 +275,10 @@ export type AgencySponsorshipRow = Pick<SponsorshipCore, "id" | "title" | "locat
   interested: number;
   declined: number;
   winners: string[];
+  negotiating: number;
+  awaitingAgency: number;
+  agreed: number;
+  missingPrice: number;
 };
 
 export function toAgencySponsorships(data: unknown): AgencySponsorshipRow[] {
@@ -167,6 +300,10 @@ export function toAgencySponsorships(data: unknown): AgencySponsorshipRow[] {
     interested: num(r.interested),
     declined: num(r.declined),
     winners: strings(r.winners),
+    negotiating: num(r.negotiating),
+    awaitingAgency: num(r.awaiting_agency),
+    agreed: num(r.agreed),
+    missingPrice: num(r.missing_price),
   }));
 }
 
@@ -195,6 +332,10 @@ export type AgencySponsorshipDetail = SponsorshipCore & {
   decidedLabel: string;
   targetIds: string[];
   brands: AgencySponsorshipBrand[];
+  /** 0088: só o Adm lê valores */
+  canValues: boolean;
+  tiers: AgencyTier[];
+  proposals: NegotiationProposal[];
 };
 
 export function toAgencySponsorshipDetail(data: unknown): AgencySponsorshipDetail | null {
@@ -214,6 +355,19 @@ export function toAgencySponsorshipDetail(data: unknown): AgencySponsorshipDetai
     decidedAt: str(o.decided_at),
     decidedLabel: text(o.decided_label),
     targetIds: strings(o.target_ids),
+    canValues: d.can_values === true,
+    tiers: arr(d.tiers).map((z) => ({
+      id: text(z.id),
+      position: num(z.position),
+      name: text(z.name),
+      perks: strings(z.perks),
+      slots: num(z.slots) || 1,
+      priceCents: cents(z.price_cents),
+      hasPrice: z.has_price === true,
+      agreed: num(z.agreed),
+      hasProposals: z.has_proposals === true,
+    })),
+    proposals: arr(d.proposals).map(toProposal),
     brands: arr(d.brands).map((b) => ({
       brandId: text(b.brand_id),
       name: text(b.name),
@@ -251,6 +405,9 @@ export type BrandSponsorship = SponsorshipCore & {
   timezone: string;
   talent: { id: string; name: string; inCatalog: boolean; photoUrl: string | null };
   myResponse: { response: SponsorshipResponse; message: string; respondedLabel: string; respondedAt: string | null; requestId: string | null; outcome: "won" | "lost" | null } | null;
+  /** 0088: cotas com o valor PEDIDO e o resumo da própria negociação */
+  tiers: SponsorshipTier[];
+  negotiation: { id: string; status: ProposalStatus; awaiting: Side | null; tierName: string; pendingOwner: boolean } | null;
 };
 
 export function toBrandSponsorships(data: unknown): BrandSponsorship[] {
@@ -263,6 +420,20 @@ export function toBrandSponsorships(data: unknown): BrandSponsorship[] {
       agencyName: text(r.agency_name),
       timezone: text(r.timezone) || "America/Sao_Paulo",
       talent: { id: text(t.id), name: text(t.name), inCatalog: t.in_catalog === true, photoUrl: str(t.photo_url) },
+      tiers: arr(r.tiers).map(toTier),
+      negotiation:
+        r.negotiation && typeof r.negotiation === "object"
+          ? (() => {
+              const n = r.negotiation as Row;
+              return {
+                id: text(n.id),
+                status: oneOf(PROPOSAL_STATUSES, n.status, "closed"),
+                awaiting: n.awaiting === "agency" || n.awaiting === "brand" ? n.awaiting : null,
+                tierName: text(n.tier_name),
+                pendingOwner: n.pending_owner === true,
+              };
+            })()
+          : null,
       myResponse:
         m && (m.response === "interested" || m.response === "declined")
           ? {
@@ -285,9 +456,11 @@ export function brandCanRespond(s: Pick<BrandSponsorship, "status" | "myResponse
   return { interested: s.myResponse.response === "declined", declined: false };
 }
 
-export type TalentSponsorship = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy" | "expectedReach" | "perks"> & {
+export type TalentSponsorship = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy" | "expectedReach" | "perks" | "public"> & {
   status: SponsorshipStatus;
   sponsors: string[];
+  /** 0088: o que ficou combinado com cada marca (o que o creator vai fazer). Nunca valor. */
+  agreements: { brand: string; tier: string; perks: string[] }[];
 };
 
 export function toTalentSponsorships(data: unknown): TalentSponsorship[] {
@@ -303,5 +476,7 @@ export function toTalentSponsorships(data: unknown): TalentSponsorship[] {
     perks: strings(r.perks),
     status: oneOf(SPONSORSHIP_STATUSES, r.status, "open"),
     sponsors: strings(r.sponsors),
+    public: publicFromDb(r.public),
+    agreements: arr(r.agreements).map((a) => ({ brand: text(a.brand), tier: text(a.tier), perks: strings(a.perks) })),
   }));
 }

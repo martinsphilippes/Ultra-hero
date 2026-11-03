@@ -170,6 +170,10 @@
     "sponsorship_decided": {
       "title": "Patrocinio decidido",
       "body": "{status, select, won {Tu marca fue elegida para patrocinar {title}.} sponsored {{title} fue patrocinada por {brand}.} cancelled {La oportunidad {title} fue cancelada.} other {La oportunidad {title} fue cerrada.}}"
+    },
+    "sponsorship_negotiation": {
+      "title": "Negociación de patrocinio",
+      "body": "{status, select, proposed {{brand} hizo una propuesta para la cuota {tier} de {title}.} countered {Nueva contrapropuesta en la cuota {tier} de {title}.} agreed {Patrocinio acordado: cuota {tier} de {title}.} declined {La propuesta de la cuota {tier} de {title} fue rechazada.} closed {La cuota {tier} de {title} se cerró con otra marca.} approval {El equipo preparó una propuesta para {title}: apruébala para enviar.} returned {El dueño devolvió la propuesta de {title}.} approved {El dueño aprobó y envió la propuesta de {title}.} other {Novedad en la negociación de {title}.}}"
     }
   }
 }

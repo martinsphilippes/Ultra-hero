@@ -170,6 +170,10 @@
     "sponsorship_decided": {
       "title": "Sponsorship decided",
       "body": "{status, select, won {Your brand was chosen to sponsor {title}.} sponsored {{title} was sponsored by {brand}.} cancelled {The opportunity {title} was cancelled.} other {The opportunity {title} was closed.}}"
+    },
+    "sponsorship_negotiation": {
+      "title": "Sponsorship negotiation",
+      "body": "{status, select, proposed {{brand} made an offer for the {tier} tier of {title}.} countered {New counteroffer on the {tier} tier of {title}.} agreed {Sponsorship agreed: {tier} tier of {title}.} declined {The offer for the {tier} tier of {title} was declined.} closed {The {tier} tier of {title} was closed with another brand.} approval {The team prepared an offer for {title}: approve to send.} returned {The owner returned the offer for {title}.} approved {The owner approved and sent the offer for {title}.} other {News in the negotiation of {title}.}}"
     }
   }
 }

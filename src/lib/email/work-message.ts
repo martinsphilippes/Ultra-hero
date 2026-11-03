@@ -17,11 +17,13 @@ export const WORK_EMAIL_KINDS = [
   "sponsorship_published",
   "sponsorship_interest",
   "sponsorship_decided",
+  // negociação das cotas (0088)
+  "sponsorship_negotiation",
 ] as const;
 export type WorkEmailKind = (typeof WORK_EMAIL_KINDS)[number];
 
 // tokens sempre presentes (vazio quando o aviso não traz), como no sino e no push
-const TOKENS = ["name", "brand", "deal", "talent", "step", "date", "status", "title"] as const;
+const TOKENS = ["name", "brand", "deal", "talent", "step", "date", "status", "title", "tier"] as const;
 
 export type WorkEmail = { subject: string; text: string; html: string };
 

@@ -325,7 +325,11 @@
     "not_interested": "You can only pick brands that wanted to sponsor.",
     "creator_has_login": "The hero already has a login: the creator enters the office with that account.",
     "hero_invite_pending": "The admin has already invited someone for this hero. Wait for the acceptance or talk to the admin.",
-    "partner_suspended": "This profile is suspended."
+    "partner_suspended": "This profile is suspended.",
+    "tier_full": "This tier is already closed with the maximum number of brands.",
+    "already_agreed": "Your brand already closed a tier in this opportunity.",
+    "already_negotiating": "Your brand already has a proposal in progress for this opportunity.",
+    "has_agreement": "There is an agreed sponsorship: it can't be cancelled. Close it to confirm the brands with a deal."
   },
   "casting": {
     "title": "Roster",

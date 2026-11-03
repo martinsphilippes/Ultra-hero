@@ -35,7 +35,7 @@
     "published": "Opportunity published. Brands were notified.",
     "back": "Back to opportunities",
     "newTitle": "New sponsorship opportunity",
-    "newHint": "Shows on the agency calendar, the creator's and the chosen brands', with no amounts.",
+    "newHint": "Shows on the agency's, the creator's and the chosen brands' calendars. Brands see each tier's asking price.",
     "edit": "Edit opportunity",
     "fromAgenda": "Sponsorship opportunity",
     "brandsTitle": "Brand replies",
@@ -97,7 +97,35 @@
       "noValues": "No amounts: the commercial proposal follows in the campaign of whoever wants to sponsor.",
       "back": "Back",
       "submitNew": "Publish to brands",
-      "submitEdit": "Save"
+      "submitEdit": "Save",
+      "tiers": {
+        "title": "Sponsorship tiers",
+        "hintAdmin": "1 to 3 tiers (e.g. Main, Support). The asking price is what the creator needs; without it, brands see “Price to be agreed”.",
+        "hintManager": "1 to 3 tiers (e.g. Main, Support). The asking price is set by the agency Admin.",
+        "name": "Tier name",
+        "namePlaceholder": "E.g. Main",
+        "price": "Asking price",
+        "priceHint": "Empty = to be agreed",
+        "priceByAdmin": "Set by the Admin",
+        "slots": "Brands",
+        "perks": "What this tier gets",
+        "remove": "Remove tier",
+        "locked": "Tier with proposals can't be removed",
+        "add": "Add tier",
+        "defaultName": "Single tier",
+        "errors": {
+          "count": "Use 1 to {max} tiers.",
+          "name": "Tier {n}: name with 2 to 40 characters.",
+          "nameRepeated": "Tier {n}: another tier has this name.",
+          "price": "Tier {n}: invalid price.",
+          "perks": "Tier {n}: each item 3 to 120 characters, no repeats, up to {max}.",
+          "slots": "Tier {n}: 1 to {max} brands."
+        }
+      },
+      "publicTitle": "Event audience",
+      "publicHint": "Same fields as the campaign. Brands see it and the campaign starts pre-filled.",
+      "valuesAdmin": "Brands in the audience see each tier's asking price, never other brands' proposals.",
+      "valuesManager": "The asking price is filled in by the agency Admin."
     },
     "decide": {
       "title": "Decision",
@@ -118,8 +146,21 @@
         "sponsor": "Sponsorship confirmed. Brands and creator notified.",
         "close": "Opportunity closed.",
         "cancel": "Opportunity cancelled."
-      }
-    }
+      },
+      "agreedLocked": "Brands with a deal are always sponsors."
+    },
+    "tiersTitle": "Tiers",
+    "tierAgreed": "{agreed} of {slots} closed",
+    "tierNoPrice": "No asking price — brands see “Price to be agreed”",
+    "tierPriceSet": "Asking price set by the Admin",
+    "tierNoPriceManager": "No price yet: the Admin fills it in",
+    "proposalsTitle": "Brand proposals",
+    "proposalsHintAdmin": "Each brand sees only its own negotiation. Accept, decline or counter.",
+    "proposalsHintManager": "You follow status and deliverables; prices and replies are up to the Admin.",
+    "publicLabel": "Event audience",
+    "awaitingAgency": "{count, plural, one {# proposal to answer} other {# proposals to answer}}",
+    "agreedCount": "{count, plural, one {# deal} other {# deals}}",
+    "missingPrice": "Price missing"
   },
   "brand": {
     "title": "Sponsorship opportunities",
@@ -136,7 +177,7 @@
     "badgeDeclined": "You declined",
     "badgePending": "Reply",
     "respondUntil": "Reply by {date}",
-    "respondHint": "Reply by {date}. If you want to sponsor, the campaign starts as a draft and goes to the brand owner for approval.",
+    "respondHint": "Not interested? Let the agency know by {date}.",
     "interest": "I want to sponsor",
     "decline": "Not interested",
     "messageLabel": "Message to the agency (optional)",
@@ -154,13 +195,175 @@
     "cancelledHint": "The agency cancelled this opportunity.",
     "noValues": "Amounts are agreed with the agency in the campaign.",
     "fromSponsorship": "This campaign came from the sponsorship opportunity “{title}” with {name}.",
-    "seeOpportunity": "See opportunity"
+    "seeOpportunity": "See opportunity",
+    "publicLabel": "Event audience",
+    "badgeYourTurn": "Your turn",
+    "badgeOwner": "With the owner",
+    "badgeAgencyTurn": "With the agency",
+    "allTiersFull": "All tiers taken",
+    "priceToCombine": "Price to be agreed",
+    "priceFrom": "From {amount}"
   },
   "talent": {
     "title": "Sponsorship opportunities",
     "hint": "Your moments the agency offered to brands.",
     "sponsoredBy": "Sponsored by {brands}",
     "open": "Waiting for brands until {date}",
-    "closed": "Closed without sponsor"
+    "closed": "Closed without sponsor",
+    "public": "Audience",
+    "agreement": "{brand} · {tier} tier — what you'll do:"
+  },
+  "negotiation": {
+    "badge": {
+      "brand": {
+        "waitingOwner": "Waiting for the owner",
+        "waitingAgency": "With the agency",
+        "waitingBrand": "Your turn",
+        "agreed": "Agreed",
+        "declined": "Declined",
+        "closed": "Closed"
+      },
+      "agency": {
+        "waitingOwner": "With the brand",
+        "waitingAgency": "Your turn",
+        "waitingBrand": "With the brand",
+        "agreed": "Agreed",
+        "declined": "Declined",
+        "closed": "Closed"
+      }
+    },
+    "diffSame": "same as asked",
+    "diff": "{pct} ({amount}) vs. asked",
+    "sideAgency": "Agency",
+    "sideBrand": "Brand",
+    "action": {
+      "accept_asked": "Accepted the tier at the asking price",
+      "propose": "Proposal",
+      "counter": "Counteroffer",
+      "accept": "Accepted",
+      "decline": "Declined"
+    },
+    "roundState": {
+      "pending_owner": "Waiting for the owner",
+      "returned": "Returned by the owner"
+    },
+    "perksSame": "Same deliverables",
+    "audienceOfInterest": "Audience of interest",
+    "returnedBy": "Returned by {name} on {date}",
+    "approvedBy": "Approved by {name} on {date}",
+    "composer": {
+      "amount": "Proposed amount",
+      "amountHintNoAsk": "The agency set no price: propose yours.",
+      "sameAsAsked": "Same as the asking price",
+      "perks": "Deliverables (tick what stays)",
+      "removeExtra": "Remove “{item}”",
+      "extraPlaceholder": "Ask for more: e.g. feed post",
+      "extra": "New request",
+      "add": "Add",
+      "note": "Message",
+      "notePlaceholder": "E.g. we close if the logo is on the chest",
+      "audienceToggle": "Tell the audience I'm interested in",
+      "amountInvalid": "Enter an amount above zero.",
+      "perksInvalid": "Keep at least one item (3 to 120 characters, no repeats, up to {max}).",
+      "cancel": "Cancel"
+    },
+    "tierLabel": "{name} tier",
+    "askedWas": "Agency asked: {amount}",
+    "agreedTitle": "Sponsorship agreed",
+    "agreedHint": "Amount and deliverables are frozen. The campaign is ready with them: review and send.",
+    "openCampaign": "Open the campaign",
+    "endReason": {
+      "declined_brand": "Your brand declined this negotiation.",
+      "declined_agency": "The agency declined this proposal.",
+      "tier_full": "The tier was closed with another brand.",
+      "decided": "The agency closed the opportunity.",
+      "cancelled": "The agency cancelled the opportunity.",
+      "returned": "The owner returned this proposal before sending."
+    },
+    "endReasonAgency": {
+      "declined_brand": "The brand declined.",
+      "declined_agency": "The agency declined.",
+      "tier_full": "Closed: the tier is full.",
+      "decided": "Closed by the decision.",
+      "cancelled": "Closed: opportunity cancelled.",
+      "returned": "Returned inside the brand."
+    },
+    "history": "See the {count} rounds",
+    "ownerReviewHint": "{name} prepared this round. Approving sends it to the agency.",
+    "approveAndSend": "Approve and send",
+    "returnToTeam": "Return",
+    "waitingOwner": "Waiting for the brand owner to approve.",
+    "waitingAgency": "Sent. Now it's the agency's turn.",
+    "acceptCounter": "Accept",
+    "acceptCounterStaff": "Accept (goes to owner)",
+    "counter": "Counter",
+    "decline": "Decline",
+    "sendCounter": "Send counteroffer",
+    "sendToOwner": "Send to owner for approval",
+    "tiersTitle": "Tiers",
+    "tiersHint": "The price is what the agency asks. Accept it or make your own offer.",
+    "tierFull": "Taken",
+    "tierSlots": "{count} brands",
+    "priceToCombine": "Price to be agreed",
+    "acceptAsked": "Accept at asking price",
+    "makeCounter": "Make a counteroffer",
+    "makeProposal": "Make an offer",
+    "sendProposal": "Send offer",
+    "cannotPropose": "Offers are closed now (deadline passed or opportunity closed).",
+    "readOnly": "Only the brand team can negotiate.",
+    "staffHint": "What you send goes to the brand owner for approval first.",
+    "pastTitle": "Earlier proposals ({count})",
+    "confirm": {
+      "acceptAsked": {
+        "title": "Accept at asking price?",
+        "body": "{tier} tier for {amount}. The sponsorship is agreed right away and the campaign is created.",
+        "bodyStaff": "{tier} tier for {amount}. It goes to the brand owner for approval.",
+        "cta": "Accept"
+      },
+      "accept": {
+        "title": "Accept the counteroffer?",
+        "body": "Closes at {amount} with the agency's deliverables.",
+        "bodyStaff": "{amount}. It goes to the brand owner for approval.",
+        "cta": "Accept"
+      },
+      "decline": {
+        "title": "Decline the negotiation?",
+        "body": "The agency is notified. While the opportunity is open you can make another offer.",
+        "cta": "Decline"
+      },
+      "return": {
+        "title": "Return to the team?",
+        "body": "Nothing goes to the agency. Say what to adjust.",
+        "cta": "Return"
+      },
+      "agency_accept": {
+        "title": "Accept the offer?",
+        "body": "{brand} sponsors for {amount}. Amount and deliverables are frozen.",
+        "cta": "Accept"
+      },
+      "agency_decline": {
+        "title": "Decline the offer?",
+        "body": "The brand is notified with your note.",
+        "cta": "Decline"
+      }
+    },
+    "back": "Back",
+    "returnNote": "What to adjust",
+    "noteOptional": "Message (optional)",
+    "declineNote": "Reason (required)",
+    "agencyEmpty": "No offers yet.",
+    "valuesAdminOnly": "Prices: only the agency Admin sees them.",
+    "agencyAgreedHint": "The brand's campaign was created with the agreed amount and deliverables.",
+    "waitingBrandAgency": "Waiting for the brand's reply.",
+    "adminAnswers": "Waiting for the agency Admin to reply.",
+    "agencyAccept": "Accept",
+    "agencyPrivacy": "Each brand sees only its own negotiation; the creator sees only what was agreed, without prices.",
+    "done": {
+      "agreed": "Sponsorship agreed. The campaign is ready.",
+      "sent": "Sent.",
+      "toOwner": "Sent to the brand owner for approval.",
+      "declined": "Decline recorded.",
+      "returned": "Returned to the team."
+    }
   }
 }

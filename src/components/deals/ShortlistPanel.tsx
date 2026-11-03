@@ -6,11 +6,12 @@ import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { consultTalentsAction, recordResponseAction, removeDealTalentAction, setFeeAction, setShortlistAction } from "@/app/agencia/negocios/actions";
 import { ConflictAlert } from "@/components/offer/ConflictAlert";
 import { CounterofferReview } from "@/components/offer/CounterofferReview";
-import { Avatar, Badge, Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Avatar, Badge, Button, Checkbox, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import type { DealTalentRow } from "@/lib/deals/queries";
 import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
+import { centsToBrl } from "@/lib/money/brl-input";
 import { isPreConfirmation, type DealStage } from "@/lib/deals/stages";
 import { CONSULT_DAYS, TALENT_RESPONSES, type TalentResponse } from "@/lib/deals/vocab";
 import type { Conflict, Counteroffer } from "@/lib/offer/counteroffer";
@@ -416,9 +417,8 @@ function RecordResponseDialog({ row, dealId, documents, onClose }: { row: DealTa
 
 function FeeDialog({ row, dealId, current, onClose }: { row: DealTalentRow; dealId: string; current: number | undefined; onClose: () => void }) {
   const t = useTranslations("agency.deal.fee");
-  const locale = useLocale() as Locale;
   const { toast } = useToast();
-  const [text, setText] = useState(current !== undefined ? formatCents(current, locale).replace(/[^\d,.\s]/g, "").trim() : "");
+  const [text, setText] = useState(current !== undefined ? centsToBrl(current) : "");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -439,7 +439,7 @@ function FeeDialog({ row, dealId, current, onClose }: { row: DealTalentRow; deal
     <Dialog open onOpenChange={(o) => (!o ? onClose() : null)} title={t("title", { name: row.talent.name })} description={t("hint")} size="sm">
       <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
         <FormField label={t("amount")} hint={row.consultedAt ? t("changeAfterConsult") : undefined} required>
-          <Input inputMode="decimal" value={text} maxLength={20} placeholder="0,00" onChange={(e) => setText(e.target.value)} disabled={pending} />
+          <MoneyInput value={text} maxCents={10_000_000_000} onValueChange={(v) => setText(v)} disabled={pending} />
         </FormField>
         {error ? (
           <p role="alert" className="type-body-sm text-danger">

@@ -3,6 +3,8 @@ import { ArrowLeft, Pencil } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AgencyProposalsPanel } from "@/components/sponsorship/AgencyProposalsPanel";
+import { PublicChips } from "@/components/sponsorship/NegotiationView";
 import { SponsorshipDecide } from "@/components/sponsorship/SponsorshipDecide";
 import { SponsorshipForm } from "@/components/sponsorship/SponsorshipForm";
 import { SponsorshipFacts, SponsorshipStatusBadge } from "@/components/sponsorship/SponsorshipView";
@@ -10,7 +12,11 @@ import { Badge, PageHeader, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { listAgencyBrands } from "@/lib/agency/queries";
+import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
+import { formatCents } from "@/lib/deals/schemas";
+import { centsToBrl } from "@/lib/money/brl-input";
+import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
 import { getAgencySponsorship } from "@/lib/sponsorship/queries";
 import { canDecide, localParts, responseCounts, type AgencySponsorshipBrand } from "@/lib/sponsorship/vocab";
 import { listTalents } from "@/lib/talent/queries";
@@ -43,6 +49,8 @@ export default async function AgencySponsorshipPage({ params }: Props) {
   const respond = localParts(o.respondBy, tz);
   const talentOptions = talents.items.filter((x) => (x.consent === "active" && !x.archived) || x.id === o.talentId).map((x) => ({ id: x.id, name: x.name }));
   const responded = o.brands.some((b) => b.response !== null);
+  const canValues = o.canValues && agencyCan(ctx.role, "admin", ctx.platformAdmin);
+  const agreedBrands = Array.from(new Set(o.proposals.filter((p) => p.status === "agreed").map((p) => p.brandId)));
 
   const brandLine = (b: AgencySponsorshipBrand) => {
     const state = b.response ?? "pending";
@@ -82,8 +90,43 @@ export default async function AgencySponsorshipPage({ params }: Props) {
         {t("back")}
       </Link>
       <PageHeader title={o.title} description={o.audience === "all" ? t("audienceAll") : t("audienceSelected", { count: o.targetIds.length })} actions={<SponsorshipStatusBadge status={o.status} closedReason={o.closedReason} />} />
-      <section className="rounded-2xl border border-border bg-surface p-4">
-        <SponsorshipFacts o={o} timeZone={tz} talentName={o.talentName} />
+      <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
+        <SponsorshipFacts o={o} timeZone={tz} talentName={o.talentName} hidePerks />
+        <PublicChips value={o.public} label={t("publicLabel")} />
+      </section>
+      <section aria-labelledby="sponsorship-tiers" className="flex flex-col gap-3" data-testid="agency-tiers">
+        <h2 id="sponsorship-tiers" className="text-base font-semibold text-fg">
+          {t("tiersTitle")}
+        </h2>
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {o.tiers.map((z) => (
+            <li key={z.id} className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4">
+              <span className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-semibold text-fg">{z.name}</span>
+                <Badge size="sm" variant={z.agreed >= z.slots ? "accent" : "neutral"}>
+                  {t("tierAgreed", { agreed: z.agreed, slots: z.slots })}
+                </Badge>
+              </span>
+              <span className={z.hasPrice ? "text-base font-semibold text-fg" : "type-body-sm text-warning"}>
+                {canValues ? (z.priceCents !== null ? formatCents(z.priceCents, locale) : t("tierNoPrice")) : z.hasPrice ? t("tierPriceSet") : t("tierNoPriceManager")}
+              </span>
+              <ul className="flex list-disc flex-col gap-1 pl-5 type-body-sm text-fg">
+                {z.perks.map((x) => (
+                  <li key={x}>{x}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section aria-labelledby="sponsorship-proposals" className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <h2 id="sponsorship-proposals" className="text-base font-semibold text-fg">
+            {t("proposalsTitle")}
+          </h2>
+          <p className="type-caption text-fg-muted">{canValues ? t("proposalsHintAdmin") : t("proposalsHintManager")}</p>
+        </div>
+        <AgencyProposalsPanel proposals={o.proposals} tiers={o.tiers} canValues={canValues} timeZone={tz} />
       </section>
       {o.decidedAt ? (
         <p className="rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="sponsorship-decided">
@@ -106,7 +149,7 @@ export default async function AgencySponsorshipPage({ params }: Props) {
           <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface">{o.brands.map(brandLine)}</ul>
         )}
       </section>
-      {canDecide(o) ? <SponsorshipDecide id={o.id} interested={interested.map((b) => ({ brandId: b.brandId, name: b.name }))} /> : null}
+      {canDecide(o) ? <SponsorshipDecide id={o.id} interested={interested.map((b) => ({ brandId: b.brandId, name: b.name }))} agreed={agreedBrands} /> : null}
       {o.status === "open" ? (
         <details className="group flex flex-col gap-3" data-testid="sponsorship-edit">
           <summary className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold text-accent-text">
@@ -118,6 +161,8 @@ export default async function AgencySponsorshipPage({ params }: Props) {
               talents={talentOptions}
               brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name }))}
               talentLocked={responded}
+              canValues={canValues}
+              lockedTierIds={o.tiers.filter((z) => z.hasProposals).map((z) => z.id)}
               initial={{
                 id: o.id,
                 talentId: o.talentId,
@@ -130,7 +175,8 @@ export default async function AgencySponsorshipPage({ params }: Props) {
                 endTime: o.allDay ? "12:00" : end.time,
                 allDay: o.allDay,
                 expectedReach: o.expectedReach,
-                perksText: o.perks.join("\n"),
+                tiers: o.tiers.map((z) => ({ id: z.id, name: z.name, priceText: centsToBrl(z.priceCents), perksText: z.perks.join("\n"), slots: z.slots })),
+                public: o.public ?? EMPTY_PUBLIC,
                 networks: o.networks,
                 respondDate: respond.date,
                 respondTime: respond.time,

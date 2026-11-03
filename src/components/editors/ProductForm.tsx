@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, useTransition, type FormEvent } from "react";
 import { StatusBadge } from "@/components/admin";
-import { Button, DemoBadge, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, DemoBadge, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import { localizedLabel } from "@/lib/catalog/queries";
 import { AttributesEditor, attributesToRows, rowsToAttributes, type AttributeRow } from "./product/AttributesEditor";
 import { ChipsInput } from "./product/ChipsInput";
@@ -182,7 +182,7 @@ export function ProductForm({ mode, initial, sellerOrgs, categories, moderation,
         <legend className="type-h3 mb-1 text-fg">{t("sections.pricing")}</legend>
         <div className="grid gap-5 sm:grid-cols-2">
           <FormField label={t("fields.price")} hint={t("fields.priceHint")} error={err("price_cents_demo")} required id={`${id}-price_cents_demo`}>
-            <Input value={draft.priceInput} onChange={(e) => set("priceInput", e.target.value)} inputMode="decimal" placeholder="0,00" disabled={pending} />
+            <MoneyInput value={draft.priceInput} onValueChange={(text) => set("priceInput", text)} maxCents={100_000_000} disabled={pending} />
           </FormField>
           <FormField label={t("fields.demoStock")} hint={t("fields.demoStockHint")} error={err("demo_stock")} id={`${id}-demo_stock`}>
             <Input value={draft.demoStockInput} onChange={(e) => set("demoStockInput", e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" disabled={pending} />

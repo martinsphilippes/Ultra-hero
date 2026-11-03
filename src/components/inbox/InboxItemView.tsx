@@ -29,6 +29,7 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   sponsorship_published: Handshake,
   sponsorship_interest: Handshake,
   sponsorship_decided: Handshake,
+  sponsorship_negotiation: Handshake,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).

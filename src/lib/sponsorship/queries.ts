@@ -3,11 +3,13 @@ import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import {
   toAgencySponsorshipDetail,
+  toBrandNegotiation,
   toAgencySponsorships,
   toBrandSponsorships,
   toTalentSponsorships,
   type AgencySponsorshipDetail,
   type AgencySponsorshipRow,
+  type BrandNegotiation,
   type BrandSponsorship,
   type TalentSponsorship,
 } from "./vocab";
@@ -44,4 +46,13 @@ export async function listTalentSponsorships(): Promise<{ available: boolean; it
   const { data, error } = await supabase.rpc("talent_sponsorships");
   if (error) return { available: !isMissingSchema(error), items: [] };
   return { available: true, items: toTalentSponsorships(data) };
+}
+
+/** A negociação da própria marca nesta oportunidade (0088): cotas com o pedido, propostas e rodadas. */
+export async function getBrandNegotiation(id: string, brandId: string): Promise<BrandNegotiation | null> {
+  if (!UUID.test(id)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("brand_sponsorship_negotiation", { p_id: id, p_brand: brandId });
+  if (error) return null;
+  return toBrandNegotiation(data);
 }

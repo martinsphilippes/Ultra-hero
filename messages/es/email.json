@@ -57,6 +57,11 @@
         "subject": "{status, select, won {Tu marca fue elegida} sponsored {Patrocinio confirmado} cancelled {Oportunidad cancelada} other {Oportunidad cerrada}}: {title}",
         "body": "{status, select, won {La agencia eligió tu marca para patrocinar {title}. Sigue por la campaña en la app.} sponsored {{title} fue patrocinada por {brand}.} cancelled {La agencia canceló la oportunidad {title}.} other {La agencia cerró la oportunidad {title}.}}",
         "cta": "Abrir la app"
+      },
+      "sponsorship_negotiation": {
+        "subject": "Negociación de patrocinio: {title}",
+        "body": "{status, select, proposed {{brand} hizo una propuesta para la cuota {tier} de {title}.} countered {Nueva contrapropuesta en la cuota {tier} de {title}.} agreed {Patrocinio acordado: cuota {tier} de {title}.} declined {La propuesta de la cuota {tier} de {title} fue rechazada.} closed {La cuota {tier} de {title} se cerró con otra marca.} approval {El equipo preparó una propuesta para {title}: apruébala para enviar.} returned {El dueño devolvió la propuesta de {title}.} approved {El dueño aprobó y envió la propuesta de {title}.} other {Novedad en la negociación de {title}.}} Mira los detalles en la app.",
+        "cta": "Ver negociación"
       }
     }
   }

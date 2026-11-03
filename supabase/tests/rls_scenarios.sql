@@ -12277,5 +12277,363 @@ delete from public.agencies where id::text like '94000000-%';
 delete from auth.users where id::text like '94000000-0000-4000-8000-00000000094%';
 drop table t_s94;
 
+-- ================================================================ S95 · Cotas de patrocínio, valor pedido e negociação em rodadas (0088)
+-- A agência põe cotas (nome, valor pedido, contrapartidas, vagas) e o público do evento; só o Adm grava/lê valor (gestor
+-- cria sem valor e vê só status e contrapartidas); a marca do público vê o PEDIDO, nunca propostas de outras; aceita
+-- pelo valor pedido ou propõe (equipe precisa do dono, 0081); a agência (Adm) aceita, recusa com nota ou contrapropõe;
+-- o acordo congela, conta como vencedora, cria a campanha com valor/contrapartidas/público e respeita o limite da cota;
+-- cota esgotada encerra as outras; prazo vencido não aceita proposta nova; creator vê o acordo sem valor. S14 segue 18.
+\ir ../migrations/0088_patrocinio_cotas_negociacao.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('95000000-0000-4000-8000-000000000951', 's95-adm@test.local'),
+  ('95000000-0000-4000-8000-000000000952', 's95-gestor@test.local'),
+  ('95000000-0000-4000-8000-000000000953', 's95-colab@test.local'),
+  ('95000000-0000-4000-8000-000000000954', 's95-dono-alfa@test.local'),
+  ('95000000-0000-4000-8000-000000000955', 's95-equipe-alfa@test.local'),
+  ('95000000-0000-4000-8000-000000000956', 's95-dono-beta@test.local'),
+  ('95000000-0000-4000-8000-000000000957', 's95-dono-gama@test.local'),
+  ('95000000-0000-4000-8000-000000000958', 's95-dono-delta@test.local'),
+  ('95000000-0000-4000-8000-000000000959', 's95-creator@test.local'),
+  ('95000000-0000-4000-8000-000000000950', 's95-fora@test.local');
+insert into public.agencies (id, slug, name) values
+  ('95000000-0000-4000-8000-000000009501', 's95-agencia', 'Agência S95'),
+  ('95000000-0000-4000-8000-000000009502', 's95-agencia-fora', 'Agência Fora S95');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000000951', 'admin', 'Ana Adm S95'),
+  ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000000952', 'manager', 'Gil Gestor S95'),
+  ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000000953', 'staff', 'Caio Colab S95'),
+  ('95000000-0000-4000-8000-000000009502', '95000000-0000-4000-8000-000000000950', 'admin', 'Fora S95');
+insert into public.brands (id, slug, name, site_url) values
+  ('95000000-0000-4000-8000-000000009511', 's95-marca-alfa', 'Marca Alfa S95', 'https://alfa.s95.test'),
+  ('95000000-0000-4000-8000-000000009512', 's95-marca-beta', 'Marca Beta S95', 'https://beta.s95.test'),
+  ('95000000-0000-4000-8000-000000009513', 's95-marca-gama', 'Marca Gama S95', 'https://gama.s95.test'),
+  ('95000000-0000-4000-8000-000000009514', 's95-marca-delta', 'Marca Delta S95', 'https://delta.s95.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000009511'),
+  ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000009512'),
+  ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000009513'),
+  ('95000000-0000-4000-8000-000000009502', '95000000-0000-4000-8000-000000009514');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('95000000-0000-4000-8000-000000009511', '95000000-0000-4000-8000-000000000954', 'owner', 'Dona Alfa'),
+  ('95000000-0000-4000-8000-000000009511', '95000000-0000-4000-8000-000000000955', 'staff', 'Equipe Alfa'),
+  ('95000000-0000-4000-8000-000000009512', '95000000-0000-4000-8000-000000000956', 'owner', 'Dono Beta'),
+  ('95000000-0000-4000-8000-000000009513', '95000000-0000-4000-8000-000000000957', 'owner', 'Dono Gama'),
+  ('95000000-0000-4000-8000-000000009514', '95000000-0000-4000-8000-000000000958', 'owner', 'Dono Delta');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
+  ('95000000-0000-4000-8000-000000009521', '95000000-0000-4000-8000-000000009501', 'Corredora S95', '95000000-0000-4000-8000-000000000959', false, now() - interval '30 days');
+create temp table t_s95 (k text primary key, v text);
+grant all on t_s95 to anon, authenticated, service_role;
+insert into t_s95 values ('data', jsonb_build_object('talent_id', '95000000-0000-4000-8000-000000009521', 'title', 'Maratona S95',
+  'location', 'Rio de Janeiro', 'starts_at', now() + interval '10 days', 'ends_at', now() + interval '10 days 5 hours', 'all_day', false,
+  'expected_reach', '5 mil pessoas', 'networks', jsonb_build_array('instagram'), 'respond_by', now() + interval '5 days', 'audience', 'selected',
+  'brand_ids', jsonb_build_array('95000000-0000-4000-8000-000000009511', '95000000-0000-4000-8000-000000009512'),
+  'target_audience', 'Corredores de rua', 'target_age_bands', jsonb_build_array('25-34', '18-24'), 'target_states', jsonb_build_array('RJ', 'SP'),
+  'region_note', 'Zona Sul',
+  'tiers', jsonb_build_array(
+    jsonb_build_object('name', 'Master', 'price_cents', 1000000, 'slots', 1, 'perks', jsonb_build_array('Logo na camiseta', '3 stories ao vivo', 'Menção na transmissão')),
+    jsonb_build_object('name', 'Apoio', 'price_cents', 300000, 'slots', 2, 'perks', jsonb_build_array('1 story', 'Menção na transmissão'))))::text);
+
+select tests.ok('S95 estrutura: 3 tabelas com RLS e só leitura, internas fechadas, nada para visitante, sem sobrecarga; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.sponsorship_tiers'::regclass, 'public.sponsorship_proposals'::regclass, 'public.sponsorship_rounds'::regclass))
+  and not has_table_privilege('anon', 'public.sponsorship_tiers', 'select')
+  and not has_table_privilege('anon', 'public.sponsorship_rounds', 'select')
+  and not has_table_privilege('authenticated', 'public.sponsorship_tiers', 'update')
+  and not has_table_privilege('authenticated', 'public.sponsorship_proposals', 'insert')
+  and not has_table_privilege('authenticated', 'public.sponsorship_rounds', 'delete')
+  and not has_function_privilege('authenticated', 'public.sponsorship_agree(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_round_apply(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_close_out(uuid, text, uuid[], text, public.actor_type)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_campaign_draft(uuid, uuid, uuid, text[], text, jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_negotiation_notify(uuid, text, text, text)', 'execute')
+  and has_function_privilege('authenticated', 'public.brand_sponsorship_propose(uuid, uuid, uuid, text, bigint, text[], text, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_sponsorship_reply(uuid, text, bigint, text[], text)', 'execute')
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('agency_sponsorship_save', 'agency_sponsorship_decide',
+       'agency_sponsorships', 'agency_sponsorship_detail', 'brand_sponsorships', 'talent_sponsorships', 'brand_request_save', 'inbox_kind_emails',
+       'brand_sponsorship_propose', 'brand_sponsorship_reply', 'brand_sponsorship_round_review', 'agency_sponsorship_reply', 'brand_sponsorship_negotiation',
+       'sponsorship_campaign_draft')) = 14
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+                  and p.proname in ('sponsorship_proposal_perks_valid', 'sponsorship_audience_valid', 'sponsorship_audience_clean', 'sponsorship_tier_agreed',
+                                    'sponsorship_negotiation_notify', 'sponsorship_campaign_draft', 'sponsorship_close_out', 'sponsorship_agree',
+                                    'sponsorship_round_apply', 'sponsorship_terms_check', 'sponsorship_clean_perks', 'brand_sponsorship_propose',
+                                    'brand_sponsorship_reply', 'brand_sponsorship_round_review', 'agency_sponsorship_reply', 'sponsorship_rounds_json',
+                                    'sponsorship_public_json', 'brand_sponsorship_negotiation')
+                  and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.anon();
+select tests.expect_error('S95 visitante não lê cotas', $q$select count(*) from public.sponsorship_tiers$q$, 'permission denied');
+select tests.expect_error('S95 visitante não propõe', $q$select public.brand_sponsorship_propose(null, null, null, 'propose', 1, array['abc'], null, null)$q$, 'permission denied');
+
+-- gestor cria: valor ignorado (só o Adm grava valor); público do evento salvo
+select tests.login('95000000-0000-4000-8000-000000000952', 's95-gestor@test.local');
+select tests.expect_error('S95 mais de 3 cotas recusado',
+  $q$select public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', null, (select v::jsonb from t_s95 where k = 'data')
+     || jsonb_build_object('tiers', jsonb_build_array(jsonb_build_object('name', 'A1'), jsonb_build_object('name', 'A2'), jsonb_build_object('name', 'A3'), jsonb_build_object('name', 'A4'))))$q$, 'invalid_input');
+select tests.expect_error('S95 cota com nome repetido recusada',
+  $q$select public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', null, (select v::jsonb from t_s95 where k = 'data')
+     || jsonb_build_object('tiers', jsonb_build_array(jsonb_build_object('name', 'Ouro'), jsonb_build_object('name', 'ouro'))))$q$, 'invalid_input');
+select tests.expect_error('S95 faixa etária fora da lista recusada',
+  $q$select public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', null, (select v::jsonb from t_s95 where k = 'data') || '{"target_age_bands": ["10-12"]}')$q$, 'invalid_input');
+insert into t_s95 values ('o1', public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', null, (select v::jsonb from t_s95 where k = 'data'))::text);
+select tests.ok('S95 gestor cria com 2 cotas sem valor, público do evento salvo; gestor não lê a tabela das cotas e o detalhe não traz valor',
+  (select count(*) from public.sponsorship_tiers) = 0
+  and (select target_audience = 'Corredores de rua' and target_age_bands = array['18-24', '25-34'] and target_states = array['RJ', 'SP'] and region_note = 'Zona Sul'
+       from public.sponsorship_opportunities where id = (select v::uuid from t_s95 where k = 'o1'))
+  and (select (d ->> 'can_values')::boolean = false and jsonb_array_length(d -> 'tiers') = 2
+         and not exists (select 1 from jsonb_array_elements(d -> 'tiers') z where z ->> 'price_cents' is not null or (z ->> 'has_price')::boolean)
+         and d -> 'opportunity' -> 'public' ->> 'target_audience' = 'Corredores de rua'
+       from public.agency_sponsorship_detail((select v::uuid from t_s95 where k = 'o1')) d));
+-- o Adm completa o valor
+select tests.login('95000000-0000-4000-8000-000000000951', 's95-adm@test.local');
+insert into t_s95 select 'tier_master', id::text from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o1') and name = 'Master';
+insert into t_s95 select 'tier_apoio', id::text from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o1') and name = 'Apoio';
+select public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', (select v::uuid from t_s95 where k = 'o1'), jsonb_build_object('tiers', jsonb_build_array(
+  jsonb_build_object('id', (select v from t_s95 where k = 'tier_master'), 'name', 'Master', 'price_cents', 1000000, 'slots', 1,
+                     'perks', jsonb_build_array('Logo na camiseta', '3 stories ao vivo', 'Menção na transmissão')),
+  jsonb_build_object('id', (select v from t_s95 where k = 'tier_apoio'), 'name', 'Apoio', 'price_cents', 300000, 'slots', 2,
+                     'perks', jsonb_build_array('1 story', 'Menção na transmissão')))));
+select tests.ok('S95 Adm grava e lê o valor pedido; contrapartidas gerais = união das cotas',
+  (select count(*) from public.sponsorship_tiers where price_cents is not null) = 2
+  and (select price_cents from public.sponsorship_tiers where id = (select v::uuid from t_s95 where k = 'tier_master')) = 1000000
+  and (select perks = array['Logo na camiseta', '3 stories ao vivo', 'Menção na transmissão', '1 story'] from public.sponsorship_opportunities where id = (select v::uuid from t_s95 where k = 'o1'))
+  and (select (d ->> 'can_values')::boolean from public.agency_sponsorship_detail((select v::uuid from t_s95 where k = 'o1')) d));
+-- o gestor edita sem mexer no valor
+select tests.login('95000000-0000-4000-8000-000000000952', 's95-gestor@test.local');
+select public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', (select v::uuid from t_s95 where k = 'o1'), jsonb_build_object('tiers', jsonb_build_array(
+  jsonb_build_object('id', (select v from t_s95 where k = 'tier_master'), 'name', 'Master', 'price_cents', 1, 'slots', 1,
+                     'perks', jsonb_build_array('Logo na camiseta', '3 stories ao vivo', 'Menção na transmissão')),
+  jsonb_build_object('id', (select v from t_s95 where k = 'tier_apoio'), 'name', 'Apoio', 'slots', 2, 'perks', jsonb_build_array('1 story', 'Menção na transmissão')))));
+select tests.su();
+select tests.ok('S95 edição do gestor mantém o valor do Adm', (select price_cents from public.sponsorship_tiers where id = (select v::uuid from t_s95 where k = 'tier_master')) = 1000000
+  and (select price_cents from public.sponsorship_tiers where id = (select v::uuid from t_s95 where k = 'tier_apoio')) = 300000);
+
+-- quem vê o pedido
+select tests.login('95000000-0000-4000-8000-000000000954', 's95-dono-alfa@test.local');
+select tests.ok('S95 marca do público vê as cotas com o valor PEDIDO e o público do evento',
+  (select count(*) from public.sponsorship_tiers) = 2
+  and (select (x -> 'tiers' -> 0 ->> 'price_cents')::bigint = 1000000 and x -> 'public' ->> 'region_note' = 'Zona Sul'
+       from jsonb_array_elements(public.brand_sponsorships('95000000-0000-4000-8000-000000009511')) x where x ->> 'id' = (select v from t_s95 where k = 'o1')));
+select tests.login('95000000-0000-4000-8000-000000000957', 's95-dono-gama@test.local');
+select tests.ok('S95 marca fora do público vê 0 linhas', (select count(*) from public.sponsorship_tiers) = 0 and (select count(*) from public.sponsorship_proposals) = 0
+  and (select count(*) from public.sponsorship_rounds) = 0);
+select tests.expect_error('S95 marca fora do público não propõe',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009513', (select v::uuid from t_s95 where k = 'tier_master'), 'accept_asked', null, null, null, null)$q$, 'not_found');
+select tests.expect_error('S95 marca fora do público não lê a negociação',
+  $q$select public.brand_sponsorship_negotiation((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009513')$q$, 'not_found');
+select tests.login('95000000-0000-4000-8000-000000000958', 's95-dono-delta@test.local');
+select tests.expect_error('S95 marca de outra agência não propõe em nome da Alfa',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511', (select v::uuid from t_s95 where k = 'tier_master'), 'accept_asked', null, null, null, null)$q$, 'not_found');
+select tests.login('95000000-0000-4000-8000-000000000959', 's95-creator@test.local');
+select tests.ok('S95 creator não lê cotas (valor) e vê o público do evento dele',
+  (select count(*) from public.sponsorship_tiers) = 0
+  and (select x -> 'public' ->> 'target_audience' = 'Corredores de rua' and x::text not like '%price%'
+       from jsonb_array_elements(public.talent_sponsorships()) x where x ->> 'id' = (select v from t_s95 where k = 'o1')));
+select tests.login('95000000-0000-4000-8000-000000000953', 's95-colab@test.local');
+select tests.ok('S95 colaborador da agência não lê cotas', (select count(*) from public.sponsorship_tiers) = 0);
+
+-- equipe da Alfa propõe na Master: espera o dono (rascunho invisível para a agência)
+select tests.login('95000000-0000-4000-8000-000000000955', 's95-equipe-alfa@test.local');
+select tests.expect_error('S95 proposta sem contrapartida recusada',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511', (select v::uuid from t_s95 where k = 'tier_master'), 'propose', 800000, array[]::text[], null, null)$q$, 'invalid_input');
+select tests.expect_error('S95 proposta sem valor recusada',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511', (select v::uuid from t_s95 where k = 'tier_master'), 'propose', 0, array['Logo na camiseta'], null, null)$q$, 'invalid_input');
+select tests.expect_error('S95 público indicado inválido recusado',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511', (select v::uuid from t_s95 where k = 'tier_master'), 'propose', 800000, array['Logo na camiseta'], null, '{"genero": "x"}')$q$, 'invalid_input');
+insert into t_s95 values ('p1', public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511',
+  (select v::uuid from t_s95 where k = 'tier_master'), 'propose', 800000, array['Logo na camiseta', '3 stories ao vivo', 'Post no feed'], 'Podemos fechar por 8 mil?',
+  '{"target_audience": "Mulheres que correm", "target_age_bands": ["25-34"], "target_states": ["RJ"]}')::text);
+select tests.expect_error('S95 uma proposta viva por marca',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511', (select v::uuid from t_s95 where k = 'tier_apoio'), 'accept_asked', null, null, null, null)$q$, 'already_negotiating');
+select tests.expect_error('S95 equipe não aprova a própria rodada',
+  $q$select public.brand_sponsorship_round_review((select id from public.sponsorship_rounds where proposal_id = (select v::uuid from t_s95 where k = 'p1')), 'approve', null)$q$, 'forbidden');
+select tests.login('95000000-0000-4000-8000-000000000951', 's95-adm@test.local');
+select tests.ok('S95 rascunho da equipe é invisível para a agência', (select count(*) from public.sponsorship_proposals) = 0 and (select count(*) from public.sponsorship_rounds) = 0
+  and (select jsonb_array_length(d -> 'proposals') = 0 from public.agency_sponsorship_detail((select v::uuid from t_s95 where k = 'o1')) d));
+select tests.su();
+select tests.ok('S95 dono avisado para aprovar', (select count(*) from public.inbox_notifications where kind = 'sponsorship_negotiation' and user_id = '95000000-0000-4000-8000-000000000954'
+  and params ->> 'status' = 'approval') = 1);
+select tests.login('95000000-0000-4000-8000-000000000954', 's95-dono-alfa@test.local');
+insert into t_s95 values ('r1', public.brand_sponsorship_round_review((select id from public.sponsorship_rounds where proposal_id = (select v::uuid from t_s95 where k = 'p1')), 'approve', null));
+select tests.ok('S95 dono aprova: vai à agência, aberta esperando a agência; marca vira "quer patrocinar"',
+  (select v from t_s95 where k = 'r1') = 'open'
+  and (select status = 'open' and awaiting = 'agency' and asked_cents = 1000000 and amount_cents = 800000 and sent_at is not null from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p1'))
+  and (select response = 'interested' from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s95 where k = 'o1') and brand_id = '95000000-0000-4000-8000-000000009511'));
+select tests.su();
+select tests.ok('S95 Adm da agência avisado (sino e e-mail), gestor não; aviso sem valor',
+  (select count(*) from public.inbox_notifications where kind = 'sponsorship_negotiation' and user_id = '95000000-0000-4000-8000-000000000951' and params ->> 'status' = 'proposed') = 1
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_negotiation' and user_id = '95000000-0000-4000-8000-000000000952') = 0
+  and (select count(*) from public.email_outbox q join public.inbox_notifications n on n.id = q.notification_id
+       where n.kind = 'sponsorship_negotiation' and n.user_id = '95000000-0000-4000-8000-000000000951') = 1
+  and not exists (select 1 from public.inbox_notifications where kind = 'sponsorship_negotiation' and params::text ~ '800000|1000000'));
+
+-- agência: gestor vê status e contrapartidas sem valor; só o Adm responde
+select tests.login('95000000-0000-4000-8000-000000000952', 's95-gestor@test.local');
+select tests.ok('S95 gestor não lê propostas/rodadas; o detalhe traz status, contrapartidas e público indicado, nunca valor',
+  (select count(*) from public.sponsorship_proposals) = 0 and (select count(*) from public.sponsorship_rounds) = 0
+  and (select jsonb_array_length(d -> 'proposals') = 1 and d -> 'proposals' -> 0 ->> 'status' = 'open' and d -> 'proposals' -> 0 ->> 'amount_cents' is null
+         and d -> 'proposals' -> 0 ->> 'asked_cents' is null and d -> 'proposals' -> 0 -> 'perks' ? 'Post no feed'
+         and d -> 'proposals' -> 0 -> 'history' -> 0 ->> 'amount_cents' is null
+         and d -> 'proposals' -> 0 -> 'history' -> 0 -> 'audience' ->> 'target_audience' = 'Mulheres que correm'
+       from public.agency_sponsorship_detail((select v::uuid from t_s95 where k = 'o1')) d));
+select tests.expect_error('S95 gestor não responde proposta', $q$select public.agency_sponsorship_reply((select v::uuid from t_s95 where k = 'p1'), 'accept', null, null, null)$q$, 'forbidden');
+select tests.login('95000000-0000-4000-8000-000000000953', 's95-colab@test.local');
+select tests.expect_error('S95 colaborador não responde proposta', $q$select public.agency_sponsorship_reply((select v::uuid from t_s95 where k = 'p1'), 'accept', null, null, null)$q$, 'forbidden');
+select tests.login('95000000-0000-4000-8000-000000000950', 's95-fora@test.local');
+select tests.expect_error('S95 agência de fora não responde', $q$select public.agency_sponsorship_reply((select v::uuid from t_s95 where k = 'p1'), 'accept', null, null, null)$q$, 'not_found');
+select tests.ok('S95 agência de fora vê 0 linhas', (select count(*) from public.sponsorship_tiers) = 0 and (select count(*) from public.sponsorship_proposals) = 0);
+select tests.login('95000000-0000-4000-8000-000000000951', 's95-adm@test.local');
+select tests.ok('S95 Adm lê a proposta e a rodada com valor', (select count(*) from public.sponsorship_proposals) = 1
+  and (select amount_cents from public.sponsorship_rounds where proposal_id = (select v::uuid from t_s95 where k = 'p1')) = 800000);
+select tests.expect_error('S95 recusar sem nota recusado', $q$select public.agency_sponsorship_reply((select v::uuid from t_s95 where k = 'p1'), 'decline', null, null, '')$q$, 'note_required');
+insert into t_s95 values ('r2', public.agency_sponsorship_reply((select v::uuid from t_s95 where k = 'p1'), 'counter', 900000, array['Logo na camiseta', '3 stories ao vivo', 'Post no feed', 'Menção na transmissão'], 'Fechamos em 9 mil com a menção.'));
+select tests.ok('S95 Adm contrapropõe: espera a marca',
+  (select v from t_s95 where k = 'r2') = 'open'
+  and (select awaiting = 'brand' and amount_cents = 900000 and rounds = 2 from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p1')));
+select tests.expect_error('S95 Adm não responde fora da vez', $q$select public.agency_sponsorship_reply((select v::uuid from t_s95 where k = 'p1'), 'accept', null, null, null)$q$, 'invalid_state');
+
+-- Beta não vê a proposta da Alfa; aceita a Master pelo valor pedido: acordo, cota esgota, Alfa encerrada
+select tests.login('95000000-0000-4000-8000-000000000956', 's95-dono-beta@test.local');
+select tests.ok('S95 marca não vê proposta de outra marca', (select count(*) from public.sponsorship_proposals) = 0 and (select count(*) from public.sponsorship_rounds) = 0
+  and (select jsonb_array_length(n -> 'proposals') = 0 from public.brand_sponsorship_negotiation((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009512') n));
+insert into t_s95 values ('p2', public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009512',
+  (select v::uuid from t_s95 where k = 'tier_master'), 'accept_asked', null, null, null, null)::text);
+select tests.ok('S95 aceitar pelo valor pedido fecha na hora: congelado, vencedora, campanha com valor, checklist e público do evento',
+  (select status = 'agreed' and agreed_cents = 1000000 and agreed_perks = array['Logo na camiseta', '3 stories ao vivo', 'Menção na transmissão'] and agreed_side = 'brand'
+     and request_id is not null from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p2'))
+  and (select outcome = 'won' from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s95 where k = 'o1') and brand_id = '95000000-0000-4000-8000-000000009512'));
+select tests.ok('S95 acordo pelo pedido: campanha com o valor acordado',
+  (select b.budget_max_cents = 1000000 and b.budget_min_cents = 1000000 from public.campaign_request_budgets b
+       where b.request_id = (select request_id from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p2'))));
+select tests.su();
+select tests.ok('S95 acordo pelo pedido: campanha em rascunho com checklist e público do evento, sem valor nas notas',
+  (select c.status = 'draft' and c.sponsorship_id = (select v::uuid from t_s95 where k = 'o1') and c.brief -> 'checks' ? 'Menção na transmissão'
+         and c.target_audience = 'Corredores de rua' and c.target_states = array['RJ', 'SP'] and c.notes not like '%1000000%' and c.notes not like '%10.000%'
+       from public.campaign_requests c where c.id = (select request_id from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p2'))));
+select tests.login('95000000-0000-4000-8000-000000000956', 's95-dono-beta@test.local');
+select tests.ok('S95 acordo pelo pedido: a marca vê "patrocinada por você"',
+  (select x ->> 'status' = 'won' from jsonb_array_elements(public.brand_sponsorships('95000000-0000-4000-8000-000000009512')) x where x ->> 'id' = (select v from t_s95 where k = 'o1')));
+select tests.ok('S95 Beta vê a cota esgotada', (select (x -> 'tiers' -> 0 ->> 'full')::boolean from jsonb_array_elements(public.brand_sponsorships('95000000-0000-4000-8000-000000009512')) x
+  where x ->> 'id' = (select v from t_s95 where k = 'o1')));
+select tests.expect_error('S95 marca com acordo não abre outra proposta',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009512', (select v::uuid from t_s95 where k = 'tier_apoio'), 'accept_asked', null, null, null, null)$q$, 'already_agreed');
+select tests.su();
+select tests.ok('S95 cota esgotada encerra a proposta da Alfa com aviso; oportunidade segue aberta (Apoio tem vaga); creator avisado',
+  (select status = 'closed' and end_reason = 'tier_full' from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p1'))
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_negotiation' and user_id = '95000000-0000-4000-8000-000000000954' and params ->> 'status' = 'closed') = 1
+  and (select status = 'open' and decided_at is null from public.sponsorship_opportunities where id = (select v::uuid from t_s95 where k = 'o1'))
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_decided' and user_id = '95000000-0000-4000-8000-000000000959' and params ->> 'brand' = 'Marca Beta S95') = 1);
+select tests.login('95000000-0000-4000-8000-000000000954', 's95-dono-alfa@test.local');
+select tests.expect_error('S95 proposta encerrada não recebe resposta', $q$select public.brand_sponsorship_reply((select v::uuid from t_s95 where k = 'p1'), 'accept', null, null, null, null)$q$, 'invalid_state');
+select tests.expect_error('S95 cota esgotada não recebe proposta nova',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511', (select v::uuid from t_s95 where k = 'tier_master'), 'propose', 500000, array['Logo na camiseta'], null, null)$q$, 'tier_full');
+select tests.ok('S95 marca lê só a própria negociação, com o histórico e os valores das rodadas',
+  (select count(*) from public.sponsorship_proposals) = 1 and (select count(*) from public.sponsorship_rounds) = 2
+  and (select jsonb_array_length(n -> 'proposals') = 1 and jsonb_array_length(n -> 'proposals' -> 0 -> 'history') = 2
+         and (n -> 'proposals' -> 0 -> 'history' -> 1 ->> 'amount_cents')::bigint = 900000
+       from public.brand_sponsorship_negotiation((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511') n));
+
+-- equipe tenta o Apoio, dono devolve; depois o dono propõe e contrapropõe; Adm aceita
+select tests.login('95000000-0000-4000-8000-000000000955', 's95-equipe-alfa@test.local');
+insert into t_s95 values ('p3', public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511',
+  (select v::uuid from t_s95 where k = 'tier_apoio'), 'accept_asked', null, null, null, null)::text);
+select tests.login('95000000-0000-4000-8000-000000000954', 's95-dono-alfa@test.local');
+select tests.expect_error('S95 devolver sem nota recusado',
+  $q$select public.brand_sponsorship_round_review((select id from public.sponsorship_rounds where proposal_id = (select v::uuid from t_s95 where k = 'p3')), 'return', '')$q$, 'note_required');
+insert into t_s95 values ('r3', public.brand_sponsorship_round_review((select id from public.sponsorship_rounds where proposal_id = (select v::uuid from t_s95 where k = 'p3')), 'return', 'Vamos negociar o valor'));
+select tests.ok('S95 dono devolve: rascunho encerrado, nunca chegou à agência',
+  (select v from t_s95 where k = 'r3') = 'returned'
+  and (select status = 'closed' and end_reason = 'returned' and sent_at is null from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p3')));
+insert into t_s95 values ('p4', public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o1'), '95000000-0000-4000-8000-000000009511',
+  (select v::uuid from t_s95 where k = 'tier_apoio'), 'propose', 200000, array['1 story', 'Menção na transmissão', 'Post no feed'], null,
+  '{"target_audience": "Mulheres que correm", "target_age_bands": ["25-34"], "target_states": ["RJ"], "region_note": "Barra"}')::text);
+select tests.login('95000000-0000-4000-8000-000000000951', 's95-adm@test.local');
+select tests.ok('S95 agência não vê o rascunho devolvido', (select count(*) from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p3')) = 0);
+select public.agency_sponsorship_reply((select v::uuid from t_s95 where k = 'p4'), 'counter', 250000, array['1 story', 'Menção na transmissão', 'Post no feed'], null);
+select tests.login('95000000-0000-4000-8000-000000000955', 's95-equipe-alfa@test.local');
+select tests.ok('S95 equipe aceita a contraproposta: espera o dono', public.brand_sponsorship_reply((select v::uuid from t_s95 where k = 'p4'), 'accept', null, null, null, null) = 'pending_owner');
+select tests.expect_error('S95 rodada esperando o dono trava outra resposta',
+  $q$select public.brand_sponsorship_reply((select v::uuid from t_s95 where k = 'p4'), 'counter', 240000, array['1 story'], null, null)$q$, 'awaiting_approval');
+select tests.login('95000000-0000-4000-8000-000000000954', 's95-dono-alfa@test.local');
+insert into t_s95 values ('r4', public.brand_sponsorship_round_review((select id from public.sponsorship_rounds where proposal_id = (select v::uuid from t_s95 where k = 'p4') and state = 'pending_owner'), 'approve', null));
+select tests.su();
+select tests.ok('S95 dono aprova o aceite: acordo da Alfa com 250 mil, campanha com o público que a marca indicou',
+  (select v from t_s95 where k = 'r4') = 'agreed'
+  and (select status = 'agreed' and agreed_cents = 250000 and agreed_side = 'brand' from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p4'))
+  and (select c.target_audience = 'Mulheres que correm' and c.region_note = 'Barra' and c.brief -> 'checks' ? 'Post no feed'
+       from public.campaign_requests c where c.id = (select request_id from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p4')))
+  and (select budget_max_cents = 250000 from public.campaign_request_budgets where request_id = (select request_id from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p4'))));
+insert into t_s95 select 'req_alfa', request_id::text from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p4');
+select tests.login('95000000-0000-4000-8000-000000000954', 's95-dono-alfa@test.local');
+select public.brand_request_save((select v::uuid from t_s95 where k = 'req_alfa'), '95000000-0000-4000-8000-000000009511', '{"budget_max_cents": 1, "title": "Maratona S95 ajustada"}');
+select tests.su();
+select tests.ok('S95 campanha do acordo: valor oferecido fica o do acordo (marca ajusta o resto)',
+  (select budget_max_cents = 250000 from public.campaign_request_budgets where request_id = (select v::uuid from t_s95 where k = 'req_alfa'))
+  and (select title = 'Maratona S95 ajustada' from public.campaign_requests where id = (select v::uuid from t_s95 where k = 'req_alfa'))
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_negotiation' and user_id = '95000000-0000-4000-8000-000000000951' and params ->> 'status' = 'agreed') = 2);
+
+-- creator: vê o que vai fazer, nunca valor
+select tests.login('95000000-0000-4000-8000-000000000959', 's95-creator@test.local');
+select tests.ok('S95 creator vê as marcas e as contrapartidas acordadas, sem valor',
+  (select jsonb_array_length(x -> 'agreements') = 2 and x -> 'sponsors' ? 'Marca Alfa S95' and x -> 'sponsors' ? 'Marca Beta S95'
+     and x::text not like '%250000%' and x::text not like '%1000000%' and x::text not like '%cents%'
+   from jsonb_array_elements(public.talent_sponsorships()) x where x ->> 'id' = (select v from t_s95 where k = 'o1'))
+  and (select count(*) from public.sponsorship_proposals) = 0 and (select count(*) from public.sponsorship_rounds) = 0);
+
+-- decisão: cancelar com acordo recusado; encerrar com acordo vira patrocinada com as duas
+select tests.login('95000000-0000-4000-8000-000000000952', 's95-gestor@test.local');
+select tests.expect_error('S95 cancelar com acordo recusado', $q$select public.agency_sponsorship_decide((select v::uuid from t_s95 where k = 'o1'), 'cancel', null, null)$q$, 'has_agreement');
+select public.agency_sponsorship_decide((select v::uuid from t_s95 where k = 'o1'), 'close', null, null);
+select tests.ok('S95 encerrar com acordo vira patrocinada; acordos são as vencedoras',
+  (select status = 'sponsored' from public.sponsorship_opportunities where id = (select v::uuid from t_s95 where k = 'o1'))
+  and (select count(*) from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s95 where k = 'o1') and outcome = 'won') = 2);
+
+-- cota única com 1 vaga: acordo esgota tudo → patrocinada sozinha; prazo vencido não aceita proposta nova
+select tests.login('95000000-0000-4000-8000-000000000951', 's95-adm@test.local');
+insert into t_s95 values ('o2', public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', null,
+  ((select v::jsonb from t_s95 where k = 'data') || jsonb_build_object('audience', 'all', 'title', 'Pedal S95',
+     'tiers', jsonb_build_array(jsonb_build_object('name', 'Cota única', 'price_cents', 500000, 'perks', jsonb_build_array('Logo na bike'))))) - 'brand_ids')::text);
+insert into t_s95 values ('o3', public.agency_sponsorship_save('95000000-0000-4000-8000-000000009501', null,
+  ((select v::jsonb from t_s95 where k = 'data') || '{"audience": "all", "title": "Trilha S95"}') - 'brand_ids' - 'tiers')::text);
+select tests.ok('S95 sem cotas no pedido nasce a "Cota única" sem valor (marca vê "a combinar")',
+  (select count(*) = 1 and bool_and(price_cents is null) from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o3')));
+select tests.login('95000000-0000-4000-8000-000000000957', 's95-dono-gama@test.local');
+select tests.expect_error('S95 sem valor pedido não dá para aceitar pelo pedido',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o3'), '95000000-0000-4000-8000-000000009513', (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o3')), 'accept_asked', null, null, null, null)$q$, 'invalid_state');
+insert into t_s95 values ('p5', public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o2'), '95000000-0000-4000-8000-000000009513',
+  (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o2')), 'propose', 400000, array['Logo na bike'], null, null)::text);
+select tests.login('95000000-0000-4000-8000-000000000956', 's95-dono-beta@test.local');
+select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o2'), '95000000-0000-4000-8000-000000009512',
+  (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o2')), 'accept_asked', null, null, null, null);
+select tests.su();
+select tests.ok('S95 todas as cotas esgotadas: patrocinada sozinha; proposta da Gama encerrada; Gama perdeu',
+  (select status = 'sponsored' and decided_at is not null from public.sponsorship_opportunities where id = (select v::uuid from t_s95 where k = 'o2'))
+  and (select status = 'closed' and end_reason = 'tier_full' from public.sponsorship_proposals where id = (select v::uuid from t_s95 where k = 'p5'))
+  and (select outcome = 'lost' from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s95 where k = 'o2') and brand_id = '95000000-0000-4000-8000-000000009513'));
+select tests.login('95000000-0000-4000-8000-000000000957', 's95-dono-gama@test.local');
+select tests.expect_error('S95 patrocinada não recebe proposta nova',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o2'), '95000000-0000-4000-8000-000000009513', (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o2')), 'propose', 400000, array['Logo na bike'], null, null)$q$, 'invalid_state');
+select tests.su();
+update public.sponsorship_opportunities set respond_by = now() - interval '1 minute' where id = (select v::uuid from t_s95 where k = 'o3');
+select tests.login('95000000-0000-4000-8000-000000000957', 's95-dono-gama@test.local');
+select tests.expect_error('S95 prazo vencido não aceita proposta nova',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s95 where k = 'o3'), '95000000-0000-4000-8000-000000009513', (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s95 where k = 'o3')), 'propose', 400000, array['Logo na bike'], null, null)$q$, 'deadline_passed');
+select tests.ok('S95 a negociação diz que não dá mais para propor', (select (n ->> 'can_propose')::boolean = false
+  from public.brand_sponsorship_negotiation((select v::uuid from t_s95 where k = 'o3'), '95000000-0000-4000-8000-000000009513') n));
+
+select tests.su();
+delete from public.campaign_requests where brand_id::text like '95000000-0000-4000-8000-00000000951%';
+delete from public.sponsorship_opportunities where agency_id = '95000000-0000-4000-8000-000000009501';
+delete from public.calendar_events where agency_id = '95000000-0000-4000-8000-000000009501';
+delete from public.talent_profiles where id::text like '95000000-%';
+delete from public.brand_members where brand_id::text like '95000000-0000-4000-8000-00000000951%';
+delete from public.agency_brands where agency_id in ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000009502');
+delete from public.brands where id::text like '95000000-0000-4000-8000-00000000951%';
+delete from public.inbox_notifications where user_id::text like '95000000-0000-4000-8000-00000000095%';
+delete from public.agency_members where agency_id in ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000009502');
+delete from public.agencies where id in ('95000000-0000-4000-8000-000000009501', '95000000-0000-4000-8000-000000009502');
+delete from auth.users where id::text like '95000000-0000-4000-8000-00000000095%';
+drop table t_s95;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

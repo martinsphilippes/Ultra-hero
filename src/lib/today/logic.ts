@@ -291,7 +291,16 @@ const pick = (u: Urgency | "later"): Urgency => (u === "later" ? "waiting" : u);
 export type TodayBudget = { requestId: string; title: string; over: boolean; talentsOver: number };
 
 /** Oportunidade de patrocínio para o "Hoje" (0085, vem de brand_sponsorships): só a aberta, no prazo e sem resposta entra. */
-export type TodaySponsorship = { id: string; title: string; talentName: string; respondBy: string; open: boolean; answered: boolean };
+export type TodaySponsorship = {
+  id: string;
+  title: string;
+  talentName: string;
+  respondBy: string;
+  open: boolean;
+  answered: boolean;
+  /** 0088: negociação esperando a marca (contraproposta da agência ou rodada da equipe esperando o dono) */
+  awaitingMe?: boolean;
+};
 
 /** "Depende de mim hoje" da marca. */
 export function buildBrandToday(
@@ -371,6 +380,12 @@ export function buildBrandToday(
   // 0085: oportunidade de patrocínio esperando "Quero patrocinar" ou "Não tenho interesse" (só quem tem papel responde)
   if (wb.role) {
     for (const o of opts.sponsorships ?? []) {
+      if (o.awaitingMe) {
+        // a vez é da marca na negociação: entra mesmo depois do prazo (a negociação aberta segue até a decisão)
+        items.push({ ...base, key: `sponsorship:${o.id}`, kind: "sponsorship", urgency: "today", deadline: null, since: null,
+          href: `/marca/oportunidades/${o.id}`, title: o.title, context: o.talentName });
+        continue;
+      }
       if (!o.open || o.answered) continue;
       const deadline = Date.parse(o.respondBy);
       if (Number.isNaN(deadline) || deadline < now.getTime()) continue;

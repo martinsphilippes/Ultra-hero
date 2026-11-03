@@ -4,11 +4,11 @@ import { Pencil, Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useId, useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, Checkbox, Dialog, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, Checkbox, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";
 import type { ServiceView } from "@/lib/professionals/queries";
-import { MAX_SERVICES_PER_PROFESSIONAL, parsePriceInput, SERVICE_MODES, type ServiceKind, type ServiceMode } from "@/lib/professionals/rules";
+import { MAX_PRICE_CENTS, MAX_SERVICES_PER_PROFESSIONAL, parsePriceInput, SERVICE_MODES, type ServiceKind, type ServiceMode } from "@/lib/professionals/rules";
 import type { ServiceValues } from "@/lib/professionals/schemas";
 
 export type SaveServiceFn = (id: string | null, values: ServiceValues & { admin_disabled?: boolean; note?: string }) => Promise<{ ok: true; message: string } | { ok: false; error: string }>;
@@ -179,7 +179,7 @@ export function ServiceEditor({ services, onSave, admin = false }: Props) {
               </FormField>
             )}
             <FormField label={t("form.price")} hint={t("form.priceHint")} required>
-              <Input inputMode="decimal" value={draft.price} onChange={(e) => set("price", e.target.value)} disabled={pending} data-testid="service-price" />
+              <MoneyInput value={draft.price} maxCents={MAX_PRICE_CENTS} onValueChange={(text) => set("price", text)} disabled={pending} data-testid="service-price" />
             </FormField>
             <FormField label={t("form.sortOrder")}>
               <Input type="number" inputMode="numeric" min={0} max={1000} value={draft.sort} onChange={(e) => set("sort", e.target.value)} disabled={pending} />

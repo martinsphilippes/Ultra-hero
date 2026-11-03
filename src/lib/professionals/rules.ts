@@ -119,6 +119,8 @@ export function parsePriceInput(raw: string): number | null {
   if (!/^\d{1,3}(\.\d{3})*(,\d{1,2})?$|^\d+(,\d{1,2})?$|^\d+(\.\d{1,2})?$/.test(clean)) return null;
   let normalized = clean;
   if (clean.includes(",")) normalized = clean.replace(/\./g, "").replace(",", ".");
+  // "50.000" (milhar pt-BR, como o MoneyInput mostra antes do blur) não é 50 reais
+  else if (/^\d{1,3}(\.\d{3})+$/.test(clean)) normalized = clean.replace(/\./g, "");
   const cents = Math.round(Number(normalized) * 100);
   if (!Number.isFinite(cents) || cents < MIN_PRICE_CENTS || cents > MAX_PRICE_CENTS) return null;
   return cents;

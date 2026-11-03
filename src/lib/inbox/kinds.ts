@@ -45,6 +45,8 @@ export const INBOX_KINDS = [
   "sponsorship_published",
   "sponsorship_interest",
   "sponsorship_decided",
+  // negociação das cotas (0088)
+  "sponsorship_negotiation",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
@@ -95,6 +97,8 @@ export function inboxKindEmails(kind: string, link: string, params: Record<strin
       return link.startsWith("/marca/");
     case "sponsorship_interest":
       return link.startsWith("/agencia/");
+    case "sponsorship_negotiation":
+      return status === "proposed" || status === "countered" || status === "agreed" || status === "declined" || status === "closed";
     default:
       return false;
   }

@@ -43,6 +43,9 @@ const base = {
   respondTime: "18:00",
   audience: "all" as const,
   brandIds: [],
+  // 0088: cotas e público do evento
+  tiers: [{ id: null, name: "Cota única", priceCents: null, perks: ["Logo na camiseta"], slots: 1 }],
+  public: { targetAudience: "", targetAgeBands: [], targetStates: [], regionNote: "" },
 };
 
 describe("contrapartidas (mesma regra de public.sponsorship_perks_valid)", () => {
@@ -136,7 +139,8 @@ describe("Hoje da marca", () => {
 
 describe("avisos, e-mail, agenda e menu", () => {
   it("três avisos novos, no check da 0085; e-mail para a parte certa; nenhum vira push", () => {
-    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0085_oportunidade_patrocinio.sql"), "utf8");
+    // o check de tipos de aviso mais recente é o da 0088 (0085 + negociação das cotas)
+    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0088_patrocinio_cotas_negociacao.sql"), "utf8");
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(inboxKindEmails("sponsorship_published", "/marca/oportunidades/x")).toBe(true);
     expect(inboxKindEmails("sponsorship_published", "/agencia/oportunidades/x")).toBe(false);

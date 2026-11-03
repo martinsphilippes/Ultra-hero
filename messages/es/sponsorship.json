@@ -35,7 +35,7 @@
     "published": "Oportunidad publicada. Se avisó a las marcas.",
     "back": "Volver a las oportunidades",
     "newTitle": "Nueva oportunidad de patrocinio",
-    "newHint": "Aparece en la agenda de la agencia, del creator y de las marcas elegidas, sin valores.",
+    "newHint": "Aparece en la agenda de la agencia, del creator y de las marcas elegidas. Las marcas ven el valor pedido de cada cuota.",
     "edit": "Editar oportunidad",
     "fromAgenda": "Oportunidad de patrocinio",
     "brandsTitle": "Respuestas de las marcas",
@@ -97,7 +97,35 @@
       "noValues": "Sin valores: la propuesta comercial sigue en la campaña de quien quiera patrocinar.",
       "back": "Volver",
       "submitNew": "Publicar para las marcas",
-      "submitEdit": "Guardar"
+      "submitEdit": "Guardar",
+      "tiers": {
+        "title": "Cuotas de patrocinio",
+        "hintAdmin": "De 1 a 3 cuotas (ej.: Master, Apoyo). El valor pedido es lo que el creator necesita; sin valor, la marca ve “Valor a convenir”.",
+        "hintManager": "De 1 a 3 cuotas (ej.: Master, Apoyo). El valor pedido lo define el Adm de la agencia.",
+        "name": "Nombre de la cuota",
+        "namePlaceholder": "Ej.: Master",
+        "price": "Valor pedido",
+        "priceHint": "Vacío = a convenir",
+        "priceByAdmin": "Lo define el Adm",
+        "slots": "Marcas",
+        "perks": "Contrapartidas de la cuota",
+        "remove": "Quitar cuota",
+        "locked": "Cuota con propuestas no se quita",
+        "add": "Añadir cuota",
+        "defaultName": "Cuota única",
+        "errors": {
+          "count": "Usa de 1 a {max} cuotas.",
+          "name": "Cuota {n}: nombre de 2 a 40 letras.",
+          "nameRepeated": "Cuota {n}: ya hay otra con ese nombre.",
+          "price": "Cuota {n}: valor inválido.",
+          "perks": "Cuota {n}: cada contrapartida de 3 a 120 letras, sin repetir, hasta {max}.",
+          "slots": "Cuota {n}: de 1 a {max} marcas."
+        }
+      },
+      "publicTitle": "Público del evento",
+      "publicHint": "Los mismos campos de la campaña. La marca lo ve y la campaña nace con ellos completos.",
+      "valuesAdmin": "Las marcas del público ven el valor pedido de cada cuota, nunca las propuestas de otras marcas.",
+      "valuesManager": "El valor pedido lo completa el Adm de la agencia."
     },
     "decide": {
       "title": "Decisión",
@@ -118,8 +146,21 @@
         "sponsor": "Patrocinio confirmado. Marcas y creator avisados.",
         "close": "Oportunidad cerrada.",
         "cancel": "Oportunidad cancelada."
-      }
-    }
+      },
+      "agreedLocked": "Las marcas con acuerdo siempre son patrocinadoras."
+    },
+    "tiersTitle": "Cuotas",
+    "tierAgreed": "{agreed} de {slots} cerrada(s)",
+    "tierNoPrice": "Sin valor pedido — la marca ve “Valor a convenir”",
+    "tierPriceSet": "Valor pedido definido por el Adm",
+    "tierNoPriceManager": "Sin valor: el Adm lo completa",
+    "proposalsTitle": "Propuestas de las marcas",
+    "proposalsHintAdmin": "Cada marca ve solo su propia negociación. Acepta, rechaza o contrapropón.",
+    "proposalsHintManager": "Sigues el estado y las contrapartidas; valores y respuestas son con el Adm.",
+    "publicLabel": "Público del evento",
+    "awaitingAgency": "{count, plural, one {# propuesta por responder} other {# propuestas por responder}}",
+    "agreedCount": "{count, plural, one {# acuerdo} other {# acuerdos}}",
+    "missingPrice": "Falta valor"
   },
   "brand": {
     "title": "Oportunidades de patrocinio",
@@ -136,7 +177,7 @@
     "badgeDeclined": "Rechazaste",
     "badgePending": "Responde",
     "respondUntil": "Responder hasta {date}",
-    "respondHint": "Responde hasta {date}. Si quieres patrocinar, la campaña nace en borrador y va a la aprobación del dueño de la marca.",
+    "respondHint": "¿Sin interés? Avisa a la agencia hasta {date}.",
     "interest": "Quiero patrocinar",
     "decline": "No me interesa",
     "messageLabel": "Mensaje para la agencia (opcional)",
@@ -154,13 +195,175 @@
     "cancelledHint": "La agencia canceló esta oportunidad.",
     "noValues": "Los valores se acuerdan con la agencia en la campaña.",
     "fromSponsorship": "Esta campaña nació de la oportunidad de patrocinio “{title}” con {name}.",
-    "seeOpportunity": "Ver oportunidad"
+    "seeOpportunity": "Ver oportunidad",
+    "publicLabel": "Público del evento",
+    "badgeYourTurn": "Tu turno",
+    "badgeOwner": "Con el dueño",
+    "badgeAgencyTurn": "Con la agencia",
+    "allTiersFull": "Cuotas agotadas",
+    "priceToCombine": "Valor a convenir",
+    "priceFrom": "Desde {amount}"
   },
   "talent": {
     "title": "Oportunidades de patrocinio",
     "hint": "Situaciones tuyas que la agencia ofreció a las marcas.",
     "sponsoredBy": "Patrocinada por {brands}",
     "open": "Esperando a las marcas hasta {date}",
-    "closed": "Cerrada sin patrocinio"
+    "closed": "Cerrada sin patrocinio",
+    "public": "Público",
+    "agreement": "{brand} · cuota {tier} — lo que vas a hacer:"
+  },
+  "negotiation": {
+    "badge": {
+      "brand": {
+        "waitingOwner": "Esperando al dueño",
+        "waitingAgency": "Con la agencia",
+        "waitingBrand": "Tu turno",
+        "agreed": "Acordado",
+        "declined": "Rechazada",
+        "closed": "Cerrada"
+      },
+      "agency": {
+        "waitingOwner": "En la marca",
+        "waitingAgency": "Tu turno",
+        "waitingBrand": "Con la marca",
+        "agreed": "Acordado",
+        "declined": "Rechazada",
+        "closed": "Cerrada"
+      }
+    },
+    "diffSame": "igual a lo pedido",
+    "diff": "{pct} ({amount}) de lo pedido",
+    "sideAgency": "Agencia",
+    "sideBrand": "Marca",
+    "action": {
+      "accept_asked": "Aceptó la cuota por el valor pedido",
+      "propose": "Propuesta",
+      "counter": "Contrapropuesta",
+      "accept": "Aceptó",
+      "decline": "Rechazó"
+    },
+    "roundState": {
+      "pending_owner": "Esperando al dueño",
+      "returned": "Devuelta por el dueño"
+    },
+    "perksSame": "Mismas contrapartidas",
+    "audienceOfInterest": "Público de interés",
+    "returnedBy": "Devuelta por {name} el {date}",
+    "approvedBy": "Aprobada por {name} el {date}",
+    "composer": {
+      "amount": "Valor propuesto",
+      "amountHintNoAsk": "La agencia no pidió valor: propone el tuyo.",
+      "sameAsAsked": "Igual al valor pedido",
+      "perks": "Contrapartidas (marca lo que queda)",
+      "removeExtra": "Quitar “{item}”",
+      "extraPlaceholder": "Pedir más: ej. post en el feed",
+      "extra": "Nuevo pedido",
+      "add": "Pedir",
+      "note": "Mensaje",
+      "notePlaceholder": "Ej.: cerramos si el logo va en el pecho",
+      "audienceToggle": "Indicar el público que me interesa",
+      "amountInvalid": "Escribe un valor mayor que cero.",
+      "perksInvalid": "Deja al menos una contrapartida (3 a 120 letras, sin repetir, hasta {max}).",
+      "cancel": "Cancelar"
+    },
+    "tierLabel": "Cuota {name}",
+    "askedWas": "Pedido de la agencia: {amount}",
+    "agreedTitle": "Patrocinio acordado",
+    "agreedHint": "Valor y contrapartidas quedaron congelados. La campaña ya está lista con ellos: revisa y envía.",
+    "openCampaign": "Abrir la campaña",
+    "endReason": {
+      "declined_brand": "Tu marca rechazó esta negociación.",
+      "declined_agency": "La agencia rechazó esta propuesta.",
+      "tier_full": "La cuota se cerró con otra marca.",
+      "decided": "La agencia cerró la oportunidad.",
+      "cancelled": "La agencia canceló la oportunidad.",
+      "returned": "El dueño devolvió esta propuesta antes de enviarla."
+    },
+    "endReasonAgency": {
+      "declined_brand": "La marca rechazó.",
+      "declined_agency": "La agencia rechazó.",
+      "tier_full": "Cerrada: la cuota se agotó.",
+      "decided": "Cerrada en la decisión.",
+      "cancelled": "Cerrada: oportunidad cancelada.",
+      "returned": "Devuelta dentro de la marca."
+    },
+    "history": "Ver las {count} rondas",
+    "ownerReviewHint": "{name} preparó esta ronda. Aprobar la envía a la agencia.",
+    "approveAndSend": "Aprobar y enviar",
+    "returnToTeam": "Devolver",
+    "waitingOwner": "Esperando que el dueño de la marca apruebe.",
+    "waitingAgency": "Enviada. Ahora es el turno de la agencia.",
+    "acceptCounter": "Aceptar",
+    "acceptCounterStaff": "Aceptar (va al dueño)",
+    "counter": "Contraproponer",
+    "decline": "Rechazar",
+    "sendCounter": "Enviar contrapropuesta",
+    "sendToOwner": "Enviar al dueño para aprobar",
+    "tiersTitle": "Cuotas",
+    "tiersHint": "El valor es lo que pide la agencia. Acéptalo o haz tu propuesta.",
+    "tierFull": "Agotada",
+    "tierSlots": "{count} marcas",
+    "priceToCombine": "Valor a convenir",
+    "acceptAsked": "Aceptar por el valor pedido",
+    "makeCounter": "Hacer contrapropuesta",
+    "makeProposal": "Hacer propuesta",
+    "sendProposal": "Enviar propuesta",
+    "cannotPropose": "No se puede proponer ahora (plazo vencido u oportunidad cerrada).",
+    "readOnly": "Solo el equipo de la marca negocia.",
+    "staffHint": "Lo que envíes va primero al dueño de la marca para aprobar.",
+    "pastTitle": "Propuestas anteriores ({count})",
+    "confirm": {
+      "acceptAsked": {
+        "title": "¿Aceptar por el valor pedido?",
+        "body": "Cuota {tier} por {amount}. El patrocinio queda acordado al instante y la campaña nace lista.",
+        "bodyStaff": "Cuota {tier} por {amount}. Va al dueño de la marca para aprobar.",
+        "cta": "Aceptar"
+      },
+      "accept": {
+        "title": "¿Aceptar la contrapropuesta?",
+        "body": "Cierra por {amount} con las contrapartidas de la agencia.",
+        "bodyStaff": "{amount}. Va al dueño de la marca para aprobar.",
+        "cta": "Aceptar"
+      },
+      "decline": {
+        "title": "¿Rechazar la negociación?",
+        "body": "La agencia recibe el aviso. Mientras la oportunidad esté abierta, puedes hacer otra propuesta.",
+        "cta": "Rechazar"
+      },
+      "return": {
+        "title": "¿Devolver al equipo?",
+        "body": "Nada va a la agencia. Di qué ajustar.",
+        "cta": "Devolver"
+      },
+      "agency_accept": {
+        "title": "¿Aceptar la propuesta?",
+        "body": "{brand} patrocina por {amount}. Valor y contrapartidas quedan congelados.",
+        "cta": "Aceptar"
+      },
+      "agency_decline": {
+        "title": "¿Rechazar la propuesta?",
+        "body": "La marca recibe el aviso con tu nota.",
+        "cta": "Rechazar"
+      }
+    },
+    "back": "Volver",
+    "returnNote": "Qué ajustar",
+    "noteOptional": "Mensaje (opcional)",
+    "declineNote": "Motivo (obligatorio)",
+    "agencyEmpty": "Ninguna propuesta todavía.",
+    "valuesAdminOnly": "Valores: solo los ve el Adm de la agencia.",
+    "agencyAgreedHint": "La campaña de la marca nació con el valor y las contrapartidas del acuerdo.",
+    "waitingBrandAgency": "Esperando la respuesta de la marca.",
+    "adminAnswers": "Esperando la respuesta del Adm de la agencia.",
+    "agencyAccept": "Aceptar",
+    "agencyPrivacy": "Cada marca ve solo su negociación; el creator ve solo lo acordado, sin valores.",
+    "done": {
+      "agreed": "Patrocinio acordado. La campaña está lista.",
+      "sent": "Enviado.",
+      "toOwner": "Enviado al dueño de la marca para aprobar.",
+      "declined": "Rechazo registrado.",
+      "returned": "Devuelto al equipo."
+    }
   }
 }

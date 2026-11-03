@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { deleteBrandAction, deleteBrandProductAction, saveBrandAction, saveBrandProductAction } from "@/app/admin/marcas/actions";
 import { ConfirmActionDialog } from "@/components/admin";
-import { Button, FormField, Input, Select, Textarea } from "@/components/ui";
+import { Button, FormField, Input, MoneyInput, Select, Textarea } from "@/components/ui";
 import { PRODUCT_DESCRIPTION_MAX, slugify } from "@/lib/brands/admin";
 import type { AdminBrand, AdminProduct } from "@/lib/brands/admin-queries";
 import { RELATIONSHIPS } from "@/lib/brands";
@@ -173,7 +173,7 @@ export function ProductForm({ brandId, product, onDone }: ProductFormProps) {
       <ImageField kind="product" label={t("product.image")} hint={t("form.logoHint")} value={image} onChange={setImage} disabled={pending} />
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label={t("product.price")} hint={t("product.priceHint")}>
-          <Input inputMode="decimal" value={price} maxLength={11} placeholder="129,90" disabled={pending} onChange={(e) => setPrice(e.target.value)} />
+          <MoneyInput value={price} maxCents={999_999_999} placeholder="129,90" disabled={pending} onValueChange={(text) => setPrice(text)} />
         </FormField>
         <FormField label={t("product.status")}>
           <Select value={status} disabled={pending} onChange={(e) => setStatus(e.target.value)}>

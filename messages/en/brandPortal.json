@@ -209,7 +209,10 @@
       "back": "Back",
       "budgetInvalid": "Enter the value like 15.000,00.",
       "incomplete": "Something is missing: title, objective, start date, one network and one deliverable.",
-      "briefInvalid": "Check the brief: hashtags with #, valid @ handles and https links."
+      "briefInvalid": "Check the brief: hashtags with #, valid @ handles and https links.",
+      "budgetAgreedHint": "Amount agreed in the sponsorship (can't change here).",
+      "budgetNegotiatingHint": "Sponsorship: the amount comes from the negotiation on the opportunity.",
+      "budgetNegotiatingPlaceholder": "To be agreed"
     },
     "cancel": {
       "action": "Cancel proposal",
@@ -261,8 +264,8 @@
     "editTitle": "Campaign budget",
     "editTalentTitle": "Budget · {name}",
     "amount": "Amount (R$)",
-    "amountHint": "E.g. 15.000,00. Blank goes back to what was told to the agency.",
-    "amountTalentHint": "E.g. 5.000,00. Blank removes this creator's budget.",
+    "amountHint": "Blank goes back to what was told to the agency.",
+    "amountTalentHint": "Blank removes this creator's budget.",
     "amountInvalid": "Invalid amount. Use the 15.000,00 format.",
     "save": "Save",
     "cancel": "Cancel",

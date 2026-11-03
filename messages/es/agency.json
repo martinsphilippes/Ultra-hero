@@ -325,7 +325,11 @@
     "not_interested": "Solo puedes elegir marcas que quisieron patrocinar.",
     "creator_has_login": "El héroe ya tiene acceso: el creator entra en la oficina con esa cuenta.",
     "hero_invite_pending": "El admin ya invitó a alguien para este héroe. Espera la aceptación o habla con el admin.",
-    "partner_suspended": "Este perfil está suspendido."
+    "partner_suspended": "Este perfil está suspendido.",
+    "tier_full": "Esta cuota ya se cerró con el número máximo de marcas.",
+    "already_agreed": "Tu marca ya cerró una cuota de esta oportunidad.",
+    "already_negotiating": "Tu marca ya tiene una propuesta en curso en esta oportunidad.",
+    "has_agreement": "Hay un patrocinio acordado: no se puede cancelar. Ciérrala para confirmar las marcas con acuerdo."
   },
   "casting": {
     "title": "Casting",

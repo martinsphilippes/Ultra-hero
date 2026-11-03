@@ -86,11 +86,13 @@ export function formatBrandPrice(cents: number | null | undefined, currency: str
   }
 }
 
-/** "129,90" ou "129.90" → 12990; vazio → null; inválido → undefined. */
+/** "129,90", "129.90", "1.299,90" ou "R$ 1.299,90" → centavos; vazio → null; inválido → undefined. */
 export function parsePriceInput(input: unknown): number | null | undefined {
   if (input === null || input === undefined) return null;
-  const raw = String(input).trim();
+  let raw = String(input).replace(/R\$|\s/g, "");
   if (!raw) return null;
+  // milhar pt-BR (o MoneyInput mostra "1.299,90"): tira os pontos quando há vírgula ou só grupos de 3
+  if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(raw)) raw = raw.replace(/\./g, "");
   if (!/^\d{1,7}([.,]\d{1,2})?$/.test(raw)) return undefined;
   return Math.round(Number(raw.replace(",", ".")) * 100);
 }

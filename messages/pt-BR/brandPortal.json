@@ -209,7 +209,10 @@
       "back": "Voltar",
       "budgetInvalid": "Informe o valor como 15.000,00.",
       "incomplete": "Falta algo: título, objetivo, data de início, uma rede e um entregável.",
-      "briefInvalid": "Confira o briefing: hashtags com #, @ válidos e links https."
+      "briefInvalid": "Confira o briefing: hashtags com #, @ válidos e links https.",
+      "budgetAgreedHint": "Valor acordado no patrocínio (não muda aqui).",
+      "budgetNegotiatingHint": "Patrocínio: o valor sai da negociação na oportunidade.",
+      "budgetNegotiatingPlaceholder": "A combinar"
     },
     "cancel": {
       "action": "Cancelar proposta",
@@ -261,8 +264,8 @@
     "editTitle": "Verba da campanha",
     "editTalentTitle": "Verba · {name}",
     "amount": "Valor (R$)",
-    "amountHint": "Ex.: 15.000,00. Em branco volta ao que foi informado à agência.",
-    "amountTalentHint": "Ex.: 5.000,00. Em branco tira a verba deste creator.",
+    "amountHint": "Em branco volta ao que foi informado à agência.",
+    "amountTalentHint": "Em branco tira a verba deste creator.",
     "amountInvalid": "Valor inválido. Use o formato 15.000,00.",
     "save": "Salvar",
     "cancel": "Cancelar",
