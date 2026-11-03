@@ -229,7 +229,26 @@
       "description": "Display name, app language and theme."
     },
     "newPost": {
-      "label": "New post"
+      "label": "New post",
+      "hint": "Quick: photo or video from your phone"
+    },
+    "newContent": {
+      "label": "New content",
+      "hint": "Structured: workout, recipe, menu, program",
+      "myContent": "My content"
+    },
+    "worksFor": {
+      "title": "You work for",
+      "owner": "Owner",
+      "member": "Team member",
+      "pending": "Awaiting approval",
+      "current": "In use",
+      "publicPage": "View public page",
+      "workOn": "Work on this hero",
+      "workOnNamed": "Work on the hero {name}",
+      "error": "Could not switch heroes. Try again.",
+      "casting": "{agency}'s casting",
+      "hint": "New post, New content and My content use the hero marked \"In use\"."
     }
   },
   "today": {

@@ -267,7 +267,9 @@
       "acting_unavailable": "Publicar como hero ainda não está disponível neste ambiente.",
       "duplicate": "Já existe um registro igual.",
       "network": "Sem conexão. Tente de novo.",
-      "generic": "Algo deu errado. Tente de novo."
+      "generic": "Algo deu errado. Tente de novo.",
+      "owner_only": "Só o titular do herói (ou a administração) arquiva ou exclui receita que já esteve no ar.",
+      "hero_not_active": "Seu herói ainda não foi aprovado. A receita ficou guardada; publique depois da aprovação."
     }
   },
   "portal": {

@@ -12,8 +12,8 @@ type Props = {
   drafts: BlockDrafts;
   onChange: (next: BlockDrafts) => void;
   programs: ProgramOption[];
-  /** Para onde vai quem ainda não tem programa publicado. */
-  newProgramHref: string;
+  /** Para onde vai quem ainda não tem programa publicado (null: o cadastro de programas não é desta pessoa). */
+  newProgramHref: string | null;
   error?: string | null;
   disabled?: boolean;
 };
@@ -34,9 +34,13 @@ export function ProgramBlockEditor({ drafts, onChange, programs, newProgramHref,
       <p className="type-caption text-fg-muted">{t("hint")}</p>
       <FormField label={t("pick")} hint={programs.length === 0 ? t("noPrograms") : undefined}>
         {programs.length === 0 && !current.program_id ? (
-          <Button asChild variant="secondary" size="sm" className="w-fit">
-            <Link href={newProgramHref}>{t("createProgram")}</Link>
-          </Button>
+          newProgramHref ? (
+            <Button asChild variant="secondary" size="sm" className="w-fit">
+              <Link href={newProgramHref}>{t("createProgram")}</Link>
+            </Button>
+          ) : (
+            <span className="sr-only">{t("noPrograms")}</span>
+          )
         ) : (
           <Select value={current.program_id ?? ""} disabled={disabled} aria-label={t("pick")} onChange={(e) => onChange({ ...drafts, program: { ...current, program_id: e.target.value || null } })} data-testid="block-program-pick">
             <option value="">{t("none")}</option>

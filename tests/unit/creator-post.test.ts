@@ -53,6 +53,8 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
+// 0092: o herói escolhido (cookie) vale no Novo post; aqui, sem escolha
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
 // Termos do Parceiro (0068): confirmação de direitos antes do envio; cada teste liga ou desliga
 vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => state.uploadRights }));
 vi.mock("next/cache", () => ({ revalidatePath: (path: string) => void state.revalidated.push(path) }));

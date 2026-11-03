@@ -166,14 +166,14 @@ export async function listDealTalents(dealId: string): Promise<DealTalentRow[]> 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("deal_talents")
-    .select("id, talent_id, status, terms_ready, consulted_at, respond_by, responded_at, response_note, response_channel, reasons, created_at, talent:talent_profiles!deal_talents_talent_fk(display_name, city, state, availability, user_id, creator_id, consent_at, consent_revoked_at, creator:creator_profiles(avatar_url))")
+    .select("id, talent_id, status, terms_ready, consulted_at, respond_by, responded_at, response_note, response_channel, reasons, created_at, talent:talent_profiles!deal_talents_talent_fk(display_name, city, state, availability, user_id, creator_id, consent_at, consent_revoked_at, creator:creator_profiles(avatar_url, user_id))")
     .eq("deal_id", dealId)
     .order("created_at");
   if (error) return [];
   type Row = {
     id: string; talent_id: string; status: string; terms_ready: boolean; consulted_at: string | null; respond_by: string | null; responded_at: string | null;
     response_note: string; response_channel: string | null; reasons: unknown;
-    talent: { display_name: string; city: string | null; state: string | null; availability: string; user_id: string | null; creator_id: string | null; consent_at: string | null; consent_revoked_at: string | null; creator: { avatar_url: string | null } | null } | null;
+    talent: { display_name: string; city: string | null; state: string | null; availability: string; user_id: string | null; creator_id: string | null; consent_at: string | null; consent_revoked_at: string | null; creator: { avatar_url: string | null; user_id: string | null } | null } | null;
   };
   return ((data ?? []) as unknown as Row[]).map((r) => ({
     id: r.id,
@@ -195,7 +195,8 @@ export async function listDealTalents(dealId: string): Promise<DealTalentRow[]> 
       city: r.talent?.city ?? null,
       state: r.talent?.state ?? null,
       availability: r.talent?.availability ?? "available",
-      hasLogin: Boolean(r.talent?.user_id || r.talent?.creator_id),
+      // login = conta própria da ficha ou conta dono do herói ligado (herói sem dono não responde: a agência registra)
+      hasLogin: Boolean(r.talent?.user_id || r.talent?.creator?.user_id),
       hasHero: Boolean(r.talent?.creator_id),
       avatarUrl: r.talent?.creator?.avatar_url ?? null,
       consentActive: Boolean(r.talent?.consent_at) && !r.talent?.consent_revoked_at,

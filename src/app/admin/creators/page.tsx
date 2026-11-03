@@ -29,7 +29,10 @@ export default async function AdminCreatorsPage() {
   const supabase = await createClient();
   const { data, error } = await supabase.from("creator_profiles").select("id, slug, name, pillars, status, user_id, is_fictional, avatar_url, sort_order, rights_status").order("sort_order").order("name");
   if (error) throw new Error(error.message);
-  const rows = (data ?? []) as CreatorRow[];
+  // 0092: heróis aguardando aprovação primeiro, com o aviso e o botão Aprovar em cada linha
+  const rows = ((data ?? []) as CreatorRow[]).slice().sort((a, b) => Number(b.status === "pending") - Number(a.status === "pending"));
+  const pendingCount = rows.filter((r) => r.status === "pending").length;
+  const tst = await getTranslations("adminOps.creators.status");
 
   const columns: Column<CreatorRow>[] = [
     {
@@ -111,6 +114,11 @@ export default async function AdminCreatorsPage() {
           </Button>
         }
       />
+      {pendingCount > 0 ? (
+        <p role="status" data-testid="pending-heroes-banner" className="rounded-xl border border-warning/30 bg-warning-soft px-4 py-3 text-sm font-medium text-fg">
+          {tst("pendingBanner", { count: pendingCount })}
+        </p>
+      ) : null}
       <DataTable columns={columns} rows={rows} rowKey={(c) => c.id} caption={t("tableCaption")} emptyTitle={t("empty")} emptyDescription={t("emptyDescription")} />
       {/* fila de credenciais do chef (P7): aprovação antes de o texto ir ao perfil público */}
       <CredentialsQueue />

@@ -26,7 +26,8 @@
     "blocksLoading": "Carregando receitas, produtos e programas do herói…",
     "blocksRoutine": "Rotina não abre bloco: o conteúdo sai só com texto, foto ou vídeo. Troque o pilar para abrir treino, nutrição ou cardápio.",
     "products": "Produtos vinculados",
-    "productsDescription": "Produtos da loja que aparecem em \"Produtos relacionados\" na página do conteúdo. O vínculo já sai validado."
+    "productsDescription": "Produtos da loja que aparecem em \"Produtos relacionados\" na página do conteúdo. O vínculo já sai validado.",
+    "productsDescriptionCreator": "Produtos da loja que aparecem em \"Produtos relacionados\". O vínculo vai para a validação da administração."
   },
   "fields": {
     "title": "Título",
@@ -97,7 +98,9 @@
     "acting_unavailable": "Publicar como hero ainda não está disponível neste ambiente.",
     "not_found": "Conteúdo não encontrado.",
     "media_license_mismatch": "Licença incoerente com a mídia: ajuste a licença e salve de novo.",
-    "recipe_editor_pending": "A edição de receitas volta com o novo editor."
+    "recipe_editor_pending": "A edição de receitas volta com o novo editor.",
+    "owner_only": "Só o titular do herói (ou a administração) pode fazer isso com o que já esteve no ar.",
+    "hero_not_active": "Seu herói ainda não foi aprovado. O rascunho ficou guardado; publique depois da aprovação."
   },
   "list": {
     "empty": "Nenhum item ainda.",
@@ -308,5 +311,6 @@
     "max": "Até {max} produtos por conteúdo.",
     "choose": "Escolher…",
     "unavailable": "Produto indisponível"
-  }
+  },
+  "footerNoteCreator": "Salvar guarda um rascunho. Depois, publique (ou envie para revisão) no alto da tela do conteúdo."
 }

@@ -11,15 +11,23 @@ import { creatorActionContext } from "../_lib/creator-action";
 import { setDraftSlug } from "../_lib/draft-slug";
 import { checkStreamVideo, readVideoUploadConfigured } from "../_lib/video-post";
 import { schedulePushDispatch } from "@/lib/push/schedule";
+import { creatorLicenseKind } from "@/lib/creator-content/rules";
+import { isMissingSchema } from "@/lib/supabase/helpers";
 
-// Ações sobre conteúdo do herói. Desde a 0045 só o admin, pelo herói escolhido (creatorActionContext
-// "manage"); o herói comum fica só com o Novo post. Rascunhos e publicar/despublicar pelas RPCs da 0025.
+// Ações sobre conteúdo do herói (Novo conteúdo e Meus conteúdos). 0092: o creator (titular ou membro da equipe)
+// pelo herói dele, ou o admin pelo herói escolhido (creatorActionContext "content"). Rascunhos e publicar/despublicar
+// pelas RPCs da 0025; "Enviar para revisão" quando o admin exige revisão do tipo; tirar do ar e arquivar o que já
+// esteve no ar só o titular (o banco responde owner_only ao membro).
 
 type SaveResult = ActionResult & { id?: string };
 type Supabase = CreatorSupabase;
 
-// Colunas que a personalidade pode escrever (espelha trg_a_content_guard).
-function creatorColumns(v: ContentFormValues) {
+// Colunas que a personalidade pode escrever (espelha trg_a_content_guard). O creator não vê os campos de
+// licença (só do admin): a licença é a do conteúdo próprio e a referência/crédito ficam vazios.
+function creatorColumns(v: ContentFormValues, acting: boolean) {
+  const license = acting
+    ? { media_license_kind: v.media_license_kind, media_license_ref: v.media_license_ref || null, media_credit: v.media_credit || null }
+    : { media_license_kind: creatorLicenseKind(v.media.provider), media_license_ref: null, media_credit: null };
   return {
     title: v.title,
     summary: v.summary || null,
@@ -32,10 +40,38 @@ function creatorColumns(v: ContentFormValues) {
     type: v.type,
     source_locale: v.source_locale,
     disclaimer_kind: v.disclaimer_kind,
-    media_license_kind: v.media_license_kind,
-    media_license_ref: v.media_license_ref || null,
-    media_credit: v.media_credit || null,
+    ...license,
   };
+}
+
+// Blocos (0075/0076) pela RPC post_block_set (o banco confere dono, forma e referências) e produtos: o creator só
+// sugere o vínculo (status 'suggested'; o admin valida em Vínculos, como no fluxo antigo). Sugestão que saiu da
+// lista é apagada; vínculo já validado só o admin tira. Banco sem a 0075: blocos ignorados em silêncio.
+async function saveBlocks(supabase: Supabase, creatorId: string, userId: string, contentId: string, blocks: NonNullable<ContentFormValues["blocks"]>): Promise<string | null> {
+  const pillar = blocks.pillar
+    ? await supabase.rpc("post_block_set", { p_content: contentId, p_kind: blocks.pillar.kind, p_data: blocks.pillar.data })
+    : await supabase.rpc("post_block_set", { p_content: contentId, p_kind: null, p_data: null });
+  if (pillar.error) return isMissingSchema(pillar.error) ? null : failFrom(pillar.error).error;
+  const program = await supabase.rpc("post_block_set", { p_content: contentId, p_kind: "program", p_data: blocks.program ? blocks.program.data : null });
+  if (program.error) return failFrom(program.error).error;
+
+  const { data: links, error } = await supabase.from("content_product_links").select("id, product_id, status").eq("content_id", contentId);
+  if (error) return failFrom(error).error;
+  const chosen = new Set(blocks.products);
+  const existing = new Set((links ?? []).map((l) => l.product_id));
+  const stale = (links ?? []).filter((l) => l.status === "suggested" && !chosen.has(l.product_id)).map((l) => l.id);
+  if (stale.length > 0) {
+    const { error: delError } = await supabase.from("content_product_links").delete().in("id", stale);
+    if (delError) return failFrom(delError).error;
+  }
+  const fresh = blocks.products.filter((id) => !existing.has(id));
+  if (fresh.length > 0) {
+    const { error: insError } = await supabase
+      .from("content_product_links")
+      .insert(fresh.map((product_id) => ({ content_id: contentId, product_id, status: "suggested" as const, suggested_by: userId, suggested_by_creator: creatorId })));
+    if (insError) return failFrom(insError).error;
+  }
+  return null;
 }
 
 async function saveBody(supabase: Supabase, contentId: string, v: ContentFormValues): Promise<string | null> {
@@ -66,8 +102,51 @@ function revalidateContent(id?: string) {
   if (id) revalidatePath(`/creator/content/${id}/edit`);
 }
 
+const idInput = z.object({ id: z.uuid() });
+
+// Exigir revisão (0027, content_review_required): o creator envia o rascunho salvo; o admin aprova ou devolve.
+export async function submitContentForReview(input: { id: string }): Promise<ActionResult> {
+  const parsed = idInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const ctx = await creatorActionContext("content");
+  if (!ctx.ok) return ctx;
+  if (await isRecipe(ctx.supabase, parsed.data.id)) return { ok: false, error: "recipe_editor_pending" };
+  const { error } = await ctx.supabase.rpc("submit_content_for_review", { p_content: parsed.data.id });
+  if (error) return failFrom(error);
+  revalidateContent(parsed.data.id);
+  revalidatePath("/admin/content");
+  return { ok: true };
+}
+
+// Retirar da revisão: volta a rascunho editável (creator_withdraw_review, 0027).
+export async function withdrawContentReview(input: { id: string }): Promise<ActionResult> {
+  const parsed = idInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const ctx = await creatorActionContext("content");
+  if (!ctx.ok) return ctx;
+  const { error } = await ctx.supabase.rpc("creator_withdraw_review", { p_content: parsed.data.id });
+  if (error) return failFrom(error);
+  revalidateContent(parsed.data.id);
+  return { ok: true };
+}
+
+// Arquivar: rascunho que nunca foi ao ar qualquer um da equipe; o que já esteve no ar só o titular (owner_only).
+export async function archiveContent(input: { id: string }): Promise<ActionResult> {
+  const parsed = idInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const ctx = await creatorActionContext("content");
+  if (!ctx.ok) return ctx;
+  if (await isRecipe(ctx.supabase, parsed.data.id)) return { ok: false, error: "recipe_editor_pending" };
+  const { error } = await ctx.supabase.rpc("creator_archive_content", { p_content: parsed.data.id, p_reason: "" });
+  if (error) return failFrom(error);
+  revalidateContent(parsed.data.id);
+  revalidatePath("/inicio");
+  revalidatePath("/explore");
+  return { ok: true };
+}
+
 export async function createContent(values: ContentFormValues): Promise<SaveResult> {
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("content");
   if (!ctx.ok) return ctx;
   // A personalidade nunca valida nutrição (RB-08): a marcação é zerada antes de validar e gravar.
   const parsed = parseContentForm(stripNutritionValidation(values));
@@ -81,18 +160,18 @@ export async function createContent(values: ContentFormValues): Promise<SaveResu
   if (v.media.provider === "cloudflare_stream" || v.media.provider === "upload") return { ok: false, error: "forbidden" };
 
   const { supabase, creatorId, userId } = ctx;
-  const inserted = await insertCreatorContent(supabase, { creator_id: creatorId, created_by: userId, ...creatorColumns(v) });
+  const inserted = await insertCreatorContent(supabase, { creator_id: creatorId, created_by: userId, ...creatorColumns(v, ctx.actingFor !== null) });
   if (!inserted.ok) return inserted;
   const contentId = inserted.id;
 
-  const bodyError = await saveBody(supabase, contentId, v);
+  const bodyError = (await saveBody(supabase, contentId, v)) ?? (v.blocks ? await saveBlocks(supabase, creatorId, userId, contentId, v.blocks) : null);
   revalidateContent(contentId);
   if (bodyError) return { ok: false, error: bodyError, id: contentId };
   return { ok: true, id: contentId };
 }
 
 export async function updateContent(values: ContentFormValues): Promise<SaveResult> {
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("content");
   if (!ctx.ok) return ctx;
   const parsed = parseContentForm(stripNutritionValidation(values));
   if (!parsed.ok || !parsed.data.id) return { ok: false, error: "invalid_input" };
@@ -112,10 +191,10 @@ export async function updateContent(values: ContentFormValues): Promise<SaveResu
     if (current?.media_provider !== v.media.provider || current.media_ref !== v.media.ref) return { ok: false, error: "forbidden" };
   }
 
-  const { error } = await supabase.from("content").update(creatorColumns(v)).eq("id", id);
+  const { error } = await supabase.from("content").update(creatorColumns(v, ctx.actingFor !== null)).eq("id", id);
   if (error) return failFrom(error);
 
-  const bodyError = await saveBody(supabase, id, v);
+  const bodyError = (await saveBody(supabase, id, v)) ?? (v.blocks ? await saveBlocks(supabase, ctx.creatorId, ctx.userId, id, v.blocks) : null);
   revalidateContent(id);
   if (bodyError) return { ok: false, error: bodyError, id };
   return { ok: true, id };
@@ -125,7 +204,7 @@ export async function updateContent(values: ContentFormValues): Promise<SaveResu
 export async function publishContent(input: { id: string }): Promise<ActionResult & { slug?: string }> {
   const parsed = z.object({ id: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("content");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId } = ctx;
   const id = parsed.data.id;
@@ -160,7 +239,7 @@ export async function publishContent(input: { id: string }): Promise<ActionResul
 export async function unpublishContent(input: { id: string }): Promise<ActionResult> {
   const parsed = z.object({ id: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("content");
   if (!ctx.ok) return ctx;
   if (await isRecipe(ctx.supabase, parsed.data.id)) return { ok: false, error: "recipe_editor_pending" };
   const { error } = await ctx.supabase.rpc("creator_unpublish_content", { p_content: parsed.data.id });

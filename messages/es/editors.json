@@ -26,7 +26,8 @@
     "blocksLoading": "Cargando recetas, productos y programas del héroe…",
     "blocksRoutine": "Rutina no abre bloque: el contenido sale solo con texto, foto o video. Cambia el pilar para abrir entrenamiento, nutrición o menú.",
     "products": "Productos vinculados",
-    "productsDescription": "Productos de la tienda que aparecen en \"Productos relacionados\" en la página del contenido. El vínculo ya sale validado."
+    "productsDescription": "Productos de la tienda que aparecen en \"Productos relacionados\" en la página del contenido. El vínculo ya sale validado.",
+    "productsDescriptionCreator": "Productos de la tienda que aparecen en \"Productos relacionados\". El vínculo pasa por la validación de la administración."
   },
   "fields": {
     "title": "Título",
@@ -97,7 +98,9 @@
     "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
     "not_found": "Contenido no encontrado.",
     "media_license_mismatch": "Licencia incoherente con el medio: ajusta la licencia y guarda de nuevo.",
-    "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor."
+    "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor.",
+    "owner_only": "Solo el titular del héroe (o la administración) puede hacer esto con lo que ya estuvo publicado.",
+    "hero_not_active": "Tu héroe aún no fue aprobado. El borrador quedó guardado; publica después de la aprobación."
   },
   "list": {
     "empty": "Todavía no hay elementos.",
@@ -308,5 +311,6 @@
     "max": "Hasta {max} productos por contenido.",
     "choose": "Elegir…",
     "unavailable": "Producto no disponible"
-  }
+  },
+  "footerNoteCreator": "Guardar conserva un borrador. Después, publica (o envía a revisión) arriba en la pantalla del contenido."
 }

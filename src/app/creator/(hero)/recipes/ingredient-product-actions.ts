@@ -30,7 +30,7 @@ function fail(error: DbError): { ok: false; error: string } {
 export async function searchIngredientProducts(q: string): Promise<PickResult> {
   const parsed = z.object({ q: z.string().trim().min(2).max(80) }).safeParse({ q });
   if (!parsed.success) return { ok: true, items: [] };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   const t = await getTranslations("shopping.editor");
   if (!ctx.ok) return { ok: false, error: t("errors.forbidden") };
   const { data, error } = await ctx.supabase
@@ -59,7 +59,7 @@ const suggestSchema = z.object({ ingredientId: z.uuid(), productId: z.uuid(), re
 export async function suggestIngredientProduct(input: { ingredientId: string; productId: string; replaceLinkId?: string | null }): Promise<IngredientProductResult<{ link: IngredientLink }>> {
   const parsed = suggestSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return { ok: false, error: ctx.error === "unauthenticated" ? "unauthenticated" : "forbidden" };
   const { supabase } = ctx;
   const { replaceLinkId } = parsed.data;
@@ -85,7 +85,7 @@ export async function suggestIngredientProduct(input: { ingredientId: string; pr
 export async function withdrawIngredientProduct(input: { linkId: string }): Promise<IngredientProductResult> {
   const parsed = z.object({ linkId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return { ok: false, error: ctx.error === "unauthenticated" ? "unauthenticated" : "forbidden" };
   const { error } = await ctx.supabase.rpc("creator_withdraw_ingredient_product", { p_link: parsed.data.linkId });
   if (error) return fail(error);

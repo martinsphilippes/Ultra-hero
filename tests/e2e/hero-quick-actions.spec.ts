@@ -91,9 +91,10 @@ test.describe("herói: só o Novo post", () => {
     const box = (await button.boundingBox())!;
     expect(box.y).toBeGreaterThan(header.y);
     expect(box.y).toBeLessThan(toggle.y);
+    await expect(page.getByTestId("hero-new-content")).toHaveAttribute("href", "/creator/content/new");
     await expect(page.getByTestId("hero-quick-actions")).toHaveCount(0);
     await expect(page.locator('[data-testid^="hero-action-"]')).toHaveCount(0);
-    for (const href of ["/creator", "/creator/content", "/creator/content/new", "/creator/recipes", "/creator/links"]) {
+    for (const href of ["/creator", "/creator/recipes", "/creator/links"]) {
       await expect(page.locator(`main a[href="${href}"]`)).toHaveCount(0);
     }
     await button.click();
@@ -102,7 +103,7 @@ test.describe("herói: só o Novo post", () => {
 
   test("as telas de gestão do portal voltam ao Perfil", async ({ page }) => {
     await loginAs(page, "creator");
-    for (const path of ["/creator", "/creator/content", "/creator/content/new", "/creator/recipes", "/creator/recipes/new", "/creator/links"]) {
+    for (const path of ["/creator", "/creator/links"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/profile$/);
     }

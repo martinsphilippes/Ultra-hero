@@ -7,6 +7,7 @@ import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireAgency } from "@/lib/agency/server";
 import { activitySchema, confirmSchema, consultSchema, dealCreateSchema, dealMoveSchema, dealUpdateSchema, deliverablesSchema, feeSchema, recordResponseSchema } from "@/lib/deals/schemas";
+import { MAX_NEW_PER_SAVE, MAX_SUGGEST, NAME_MAX, PAGE_SIZE, parseHeroSearch, type HeroSearchPage } from "@/lib/deals/hero-suggest";
 import { REASON_CODES } from "@/lib/deals/vocab";
 import { createClient } from "@/lib/supabase/server";
 
@@ -121,6 +122,67 @@ export async function setShortlistAction(input: z.input<typeof shortlistSchema>)
     revalidateDeal(d.dealId);
     const t = await getTranslations("agency.deal");
     return { ok: true, message: t("shortlistSaved") };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+const reasonsSchema = z.array(z.object({ code: z.enum(REASON_CODES), met: z.boolean(), detail: z.array(z.string().max(60)).max(5) })).max(10);
+
+// Sugerir heróis (0093): uma RPC atômica recebe fichas do casting, heróis da plataforma (a ficha nasce ao salvar) e heróis
+// digitados (ficha sem herói). Papel, agência do negócio, herói ativo e limites são conferidos no banco.
+const suggestSchema = z.object({
+  dealId: uuid,
+  items: z
+    .array(
+      z.discriminatedUnion("kind", [
+        z.object({ kind: z.literal("talent"), talentId: uuid, reasons: reasonsSchema }),
+        z.object({ kind: z.literal("hero"), creatorId: uuid, reasons: reasonsSchema }),
+        z.object({ kind: z.literal("typed"), name: z.string().trim().min(2).max(NAME_MAX), profile: z.string().trim().max(200).optional(), email: z.string().trim().max(254).optional(), reasons: reasonsSchema }),
+      ]),
+    )
+    .max(MAX_SUGGEST),
+});
+
+export async function suggestHeroesAction(input: z.input<typeof suggestSchema>): Promise<DealResult> {
+  await requireAgency("staff");
+  const parsed = suggestSchema.safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  const d = parsed.data;
+  if (d.items.filter((i) => i.kind !== "talent").length > MAX_NEW_PER_SAVE) return agencyFail("too_many_new_talents");
+  try {
+    const supabase = await createClient();
+    const items = d.items.map((i) =>
+      i.kind === "talent"
+        ? { kind: "talent", talent_id: i.talentId, reasons: i.reasons }
+        : i.kind === "hero"
+          ? { kind: "hero", creator_id: i.creatorId, reasons: i.reasons }
+          : { kind: "typed", name: i.name, profile: i.profile ?? "", email: i.email ?? "", reasons: i.reasons },
+    );
+    const { data, error } = await supabase.rpc("agency_deal_suggest_heroes", { p_deal: d.dealId, p_items: items });
+    if (error) return agencyFail(error);
+    revalidateDeal(d.dealId);
+    revalidatePath("/agencia/casting");
+    const created = typeof (data as { created?: unknown } | null)?.created === "number" ? ((data as { created: number }).created) : 0;
+    const t = await getTranslations("agency.deal");
+    return { ok: true, message: created > 0 ? t("heroesSavedCreated", { count: created }) : t("shortlistSaved"), count: created };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+export type HeroSearchResult = ({ ok: true } & HeroSearchPage) | { ok: false; error: string };
+
+/** Busca no servidor dos heróis ativos da plataforma que ainda não são do casting (20 por página). */
+export async function searchHeroesAction(input: { dealId: string; q: string; offset?: number }): Promise<HeroSearchResult> {
+  await requireAgency("staff");
+  const parsed = z.object({ dealId: uuid, q: z.string().max(200), offset: z.number().int().min(0).max(5000).optional() }).safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("agency_hero_search", { p_deal: parsed.data.dealId, p_q: parsed.data.q, p_limit: PAGE_SIZE, p_offset: parsed.data.offset ?? 0 });
+    if (error) return agencyFail(error);
+    return { ok: true, ...parseHeroSearch(data) };
   } catch (error) {
     return agencyFail(error);
   }

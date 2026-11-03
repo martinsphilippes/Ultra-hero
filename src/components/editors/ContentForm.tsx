@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { PillarBlockEditor } from "@/components/creator/post/PillarBlockEditor";
 import { ProgramBlockEditor } from "@/components/creator/post/ProgramBlockEditor";
 import { Button, FormField, Input, Select, Spinner, Switch, Textarea, useToast } from "@/components/ui";
+import { contentEditorFields } from "@/lib/creator-content/rules";
 import { PILLAR_BLOCK, draftToBlock, emptyDrafts, programDraftToBlock, type BlockDrafts } from "@/lib/post-blocks/schema";
 import { AccessFields } from "./content/AccessFields";
 import { CoverPicker } from "./content/CoverPicker";
@@ -46,7 +47,9 @@ type FormState = Omit<ContentFormValues, "body"> & { body: ContentBody };
 
 const EMPTY_MEDIA: ContentFormValues["media"] = { provider: "none", ref: null, captions_url: null };
 
-export function ContentForm({ mode, initial, canEditAccess, readOnly = false, cover, blocks, action }: ContentFormProps) {
+export function ContentForm({ mode, initial, canEditAccess, readOnly = false, cover, blocks, action, audience = "admin" }: ContentFormProps) {
+  // 0092: o creator não vê licença/crédito, conclusão nem o atalho de criar programa (só do admin)
+  const fields = contentEditorFields(audience);
   const t = useTranslations("editors");
   const tc = useTranslations("common");
   const tb = useTranslations("creator.post.blocks");
@@ -248,9 +251,11 @@ export function ContentForm({ mode, initial, canEditAccess, readOnly = false, co
           </FormSection>
         )}
 
-        <FormSection legend={t("sections.license")} description={t("sections.licenseDescription")}>
-          <LicenseFields provider={values.type === "video" ? values.media.provider : "none"} values={values} onChange={(p) => patch(p)} errors={errors} />
-        </FormSection>
+        {fields.license && (
+          <FormSection legend={t("sections.license")} description={t("sections.licenseDescription")}>
+            <LicenseFields provider={values.type === "video" ? values.media.provider : "none"} values={values} onChange={(p) => patch(p)} errors={errors} />
+          </FormSection>
+        )}
 
         <FormSection legend={t(`sections.body.${bodyKindFor(values.type)}`)} description={t("sections.bodyDescription")}>
           {bodyEditor}
@@ -272,15 +277,15 @@ export function ContentForm({ mode, initial, canEditAccess, readOnly = false, co
                   {t("sections.blocksRoutine")}
                 </p>
               )}
-              <ProgramBlockEditor drafts={drafts} onChange={setDrafts} programs={blocks.options.programs} newProgramHref={blocks.hrefs.newProgram} disabled={readOnly || pending} />
+              <ProgramBlockEditor drafts={drafts} onChange={setDrafts} programs={blocks.options.programs} newProgramHref={fields.newProgramLink ? blocks.hrefs.newProgram : null} disabled={readOnly || pending} />
             </FormSection>
-            <FormSection legend={t("sections.products")} description={t("sections.productsDescription")}>
+            <FormSection legend={t("sections.products")} description={t(fields.license ? "sections.productsDescription" : "sections.productsDescriptionCreator")}>
               <LinkedProductsField value={productIds} onChange={setProductIds} products={blocks.options.products} disabled={readOnly || pending} />
             </FormSection>
           </>
         )}
 
-        {canEditAccess && (
+        {canEditAccess && fields.completionMode && (
           <FormSection legend={t("sections.access")} description={t("sections.accessDescription")}>
             <AccessFields values={values} onChange={(p) => patch(p)} errors={errors} />
           </FormSection>
@@ -289,7 +294,7 @@ export function ContentForm({ mode, initial, canEditAccess, readOnly = false, co
 
       {!readOnly && (
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="type-caption text-fg-muted">{t("footerNote")}</p>
+          <p className="type-caption text-fg-muted">{t(fields.license ? "footerNote" : "footerNoteCreator")}</p>
           <Button type="submit" loading={pending} size="lg">
             {mode === "create" ? t("actions.create") : tc("actions.save")}
           </Button>

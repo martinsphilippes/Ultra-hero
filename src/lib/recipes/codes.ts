@@ -91,6 +91,8 @@ export const RECIPE_ERROR_CODES = [
   "version_not_restorable",
   "version_immutable",
   "stream_media_forbidden",
+  // 0092: arquivar/excluir o que já esteve no ar é do titular da equipe do herói
+  "owner_only",
 ] as const;
 export type RecipeErrorCode = (typeof RECIPE_ERROR_CODES)[number];
 

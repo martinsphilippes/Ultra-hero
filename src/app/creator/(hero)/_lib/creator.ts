@@ -1,9 +1,12 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { heroPickerHref, type HeroCard } from "@/lib/acting-hero/constants";
+import { heroPickerHref, isUuid, type HeroCard } from "@/lib/acting-hero/constants";
 import { actingClient, getActingHero } from "@/lib/acting-hero/server";
-import { getUser, hasRole } from "@/lib/auth/session";
+import { getRoles, getUser, hasRole } from "@/lib/auth/session";
+import { hasHeroRole } from "@/lib/auth/talent-scope";
+import { MY_HERO_COOKIE, canRemovePublished, heroSelectable, pickMyHero, type HeroStatus } from "@/lib/creator-content/rules";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/supabase/helpers";
 import type { CreatorSupabase } from "./content-insert";
@@ -81,6 +84,99 @@ export async function getManagedCreator(card: HeroCard): Promise<PortalCreatorCo
 /** Novo post: o próprio herói, ou o admin pelo herói escolhido. */
 export async function getPostingCreator(): Promise<PortalCreatorContext> {
   if (await hasRole("admin")) return actingContext("post");
-  const [ctx, supabase] = await Promise.all([getMyCreator(), createClient()]);
-  return { ...ctx, supabase, acting: false };
+  const [ctx, heroes] = await Promise.all([getMyCreator(), listMyHeroes()]);
+  // 0092: quem está em mais de uma equipe posta pelo herói escolhido (o banco só honra para membro ativo)
+  const chosen = heroes.length > 1 ? await chosenHeroId(heroes, ctx.creatorId) : ctx.creatorId;
+  if (chosen && chosen !== ctx.creatorId) {
+    const supabase = await createClient({ myHeroId: chosen });
+    const { data: profile } = await supabase.from("creator_profiles").select(PROFILE_SELECT).eq("id", chosen).maybeSingle();
+    return { ...ctx, creatorId: chosen, profile: (profile as CreatorProfile | null) ?? ctx.profile, reason: "ok", teamRole: heroes.find((h) => h.id === chosen)?.role ?? null, supabase, acting: false };
+  }
+  return { ...ctx, supabase: await createClient(), acting: false };
+}
+
+/** Herói de que a pessoa faz parte (titular ou membro ativo, herói ativo). */
+export type MyHero = { id: string; name: string; slug: string; avatar_url: string | null; role: "owner" | "member"; status: HeroStatus };
+
+/** Todos os heróis da pessoa (titular ou membro ativo da equipe), com situação — inclusive pendente e suspenso (cartão do Perfil). */
+export const listMyHeroesAll = cache(async (): Promise<MyHero[]> => {
+  const user = await getUser();
+  if (!user) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("creator_team_members")
+    .select("role, created_at, hero:creator_profiles(id, name, slug, avatar_url, status)")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .order("created_at");
+  type Row = { role: string; hero: { id: string; name: string; slug: string; avatar_url: string | null; status: string } | null };
+  return ((data ?? []) as unknown as Row[])
+    .filter((r) => r.hero !== null)
+    .map((r) => ({
+      id: r.hero!.id,
+      name: r.hero!.name,
+      slug: r.hero!.slug,
+      avatar_url: r.hero!.avatar_url,
+      role: r.role === "owner" ? ("owner" as const) : ("member" as const),
+      status: (["active", "pending", "suspended"].includes(r.hero!.status) ? r.hero!.status : "suspended") as HeroStatus,
+    }))
+    .sort((a, b) => (a.role === b.role ? 0 : a.role === "owner" ? -1 : 1));
+});
+
+/** Heróis em que dá para criar (ativo ou pendente), titular primeiro: o seletor de quem está em mais de uma equipe (0091/0092). */
+export const listMyHeroes = cache(async (): Promise<MyHero[]> => (await listMyHeroesAll()).filter((h) => heroSelectable(h.status)));
+
+/** Herói em uso por quem está em mais de uma equipe: o escolhido (cookie), se ainda vale, senão o padrão do banco. */
+export async function chosenHeroId(heroes: readonly { id: string }[], fallback: string | null): Promise<string | null> {
+  const raw = (await cookies()).get(MY_HERO_COOKIE)?.value;
+  return pickMyHero(heroes, isUuid(raw) ? raw.toLowerCase() : null, fallback);
+}
+
+/** Contexto de "Meus conteúdos"/"Novo conteúdo"/receitas: herói em uso, heróis da pessoa e o que ela pode remover. */
+export type ContentWorkspace = PortalCreatorContext & {
+  heroes: MyHero[];
+  teamRole: "owner" | "member" | null;
+  /** Tirar do ar/arquivar/excluir o que já esteve no ar (titular ou admin; o banco confere). */
+  canRemove: boolean;
+  isAdmin: boolean;
+  /** Herói padrão da pessoa (my_creator_id sem escolha): receitas saem por ele. */
+  defaultHeroId: string | null;
+};
+
+/**
+ * Telas de conteúdo do portal (0092): o admin segue pelo herói escolhido em "Publicar como hero"; o creator (titular
+ * ou membro, com papel de herói) usa o herói dele. `followChoice`: honra o herói escolhido no seletor (cookie
+ * revalidado no banco pelo cabeçalho x-my-hero); as receitas não seguem (o Storage não recebe o cabeçalho). Conta
+ * sem papel de herói volta ao Perfil.
+ */
+export async function getContentWorkspace(card: HeroCard, options: { followChoice: boolean }): Promise<ContentWorkspace> {
+  if (await hasRole("admin")) {
+    const ctx = await actingContext(card);
+    return { ...ctx, heroes: [], teamRole: null, canRemove: true, isAdmin: true, defaultHeroId: ctx.creatorId };
+  }
+  if (!hasHeroRole(await getRoles())) redirect("/profile");
+  const [base, heroes, cookieStore] = await Promise.all([getMyCreator(), listMyHeroes(), cookies()]);
+  const raw = cookieStore.get(MY_HERO_COOKIE)?.value;
+  const chosen = options.followChoice ? pickMyHero(heroes, isUuid(raw) ? raw.toLowerCase() : null, base.creatorId) : base.creatorId;
+  if (!chosen || chosen === base.creatorId) {
+    const supabase = await createClient();
+    const teamRole = heroes.find((h) => h.id === base.creatorId)?.role ?? base.teamRole ?? null;
+    return { ...base, supabase, acting: false, heroes, teamRole, canRemove: canRemovePublished({ teamRole, isAdmin: false }), isAdmin: false, defaultHeroId: base.creatorId };
+  }
+  const supabase = await createClient({ myHeroId: chosen });
+  const { data: profile } = await supabase.from("creator_profiles").select(PROFILE_SELECT).eq("id", chosen).maybeSingle();
+  const teamRole = heroes.find((h) => h.id === chosen)?.role ?? null;
+  return {
+    userId: base.userId,
+    creatorId: chosen,
+    profile: (profile as CreatorProfile | null) ?? null,
+    reason: "ok",
+    supabase,
+    acting: false,
+    heroes,
+    teamRole,
+    canRemove: canRemovePublished({ teamRole, isAdmin: false }),
+    isAdmin: false,
+    defaultHeroId: base.creatorId,
+  };
 }

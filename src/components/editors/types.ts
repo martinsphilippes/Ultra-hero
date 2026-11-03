@@ -1,5 +1,6 @@
 // Contratos dos formulários compartilhados entre portais (personalidade, fornecedor) e admin.
 import type { ActionResult } from "@/components/admin/ConfirmActionDialog";
+import type { ContentAudience } from "@/lib/creator-content/rules";
 import type { ComposerOptions } from "@/lib/post-blocks/queries";
 import type { BlockDrafts, PillarBlock, ProgramBlock } from "@/lib/post-blocks/schema";
 import type { ContentType, LocaleCode, Pillar } from "@/lib/supabase/helpers";
@@ -55,8 +56,8 @@ export type ContentBlocksProps = {
   options: ComposerOptions;
   /** Carregamento das opções em andamento (troca de herói). */
   loading?: boolean;
-  /** Atalhos: cadastro de receita, vínculos e novo programa. */
-  hrefs: { newRecipe: string; links: string; newProgram: string };
+  /** Atalhos: cadastro de receita, vínculos e novo programa (null: sem atalho de programa). */
+  hrefs: { newRecipe: string; links: string; newProgram: string | null };
 };
 
 export type ContentFormProps = {
@@ -71,6 +72,8 @@ export type ContentFormProps = {
   /** Blocos (pilar, programa) e produtos vinculados; sem a prop, o formulário fica como antes. */
   blocks?: ContentBlocksProps;
   action: (values: ContentFormValues) => Promise<ActionResult & { id?: string }>;
+  /** Quem edita (0092): o creator não vê os campos só do admin (licença, conclusão, criar programa). Padrão: admin. */
+  audience?: ContentAudience;
 };
 
 export type ProductFormValues = {

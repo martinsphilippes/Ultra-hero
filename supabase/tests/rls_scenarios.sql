@@ -13687,5 +13687,398 @@ delete from public.agencies where name like '%S98';
 delete from auth.users where id::text like '98000000-%';
 drop table t_s98;
 
+-- ================================================================ S99 · Creator cria conteúdo estruturado pelo próprio portal (0092)
+-- Titular cria rascunho estruturado (bloco do pilar), envia para revisão e publica direto; membro da equipe cria,
+-- publica e arquiva o rascunho que nunca foi ao ar, mas não tira do ar nem arquiva o que já esteve no ar
+-- (owner_only); creator em dois heróis escolhe o herói pelo cabeçalho x-my-hero (herói de que não faz parte é
+-- ignorado); creator de outro herói não lê, não edita nem publica; visitante nada. Sem sobrecarga nova; S14 segue 18.
+\ir ../migrations/0092_creator_conteudo_estruturado.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('99000000-0000-4000-8000-000000009901', 's99-titular@test.local'),
+  ('99000000-0000-4000-8000-000000009902', 's99-membro@test.local'),
+  ('99000000-0000-4000-8000-000000009903', 's99-outro@test.local');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('99000000-0000-4000-8000-000000009911', 's99-heroi-a', 'Herói A S99', 'active', '99000000-0000-4000-8000-000000009901'),
+  ('99000000-0000-4000-8000-000000009912', 's99-heroi-b', 'Herói B S99', 'active', '99000000-0000-4000-8000-000000009903'),
+  ('99000000-0000-4000-8000-000000009913', 's99-heroi-c', 'Herói C S99', 'active', null);
+insert into public.role_assignments (user_id, role, scope_type) values
+  ('99000000-0000-4000-8000-000000009901', 'creator', 'global'),
+  ('99000000-0000-4000-8000-000000009902', 'creator', 'global'),
+  ('99000000-0000-4000-8000-000000009903', 'creator', 'global');
+-- o membro está na equipe do A (mais antiga) e na do C
+insert into public.creator_team_members (creator_profile_id, user_id, role, status, created_at) values
+  ('99000000-0000-4000-8000-000000009911', '99000000-0000-4000-8000-000000009902', 'member', 'active', now() - interval '2 days'),
+  ('99000000-0000-4000-8000-000000009913', '99000000-0000-4000-8000-000000009902', 'member', 'active', now() - interval '1 day');
+
+select tests.ok('S99 estrutura: sem sobrecarga nova (publicar e enviar seguem com 2 versões; demais com 1), internas fora do authenticated; S14 segue 18',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'creator_publish_content') = 2
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'submit_content_for_review') = 2
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('creator_unpublish_content', 'creator_archive_content',
+       'creator_delete_recipe', 'my_creator_id', 'my_hero_header_id', 'hero_can_remove')) = 6
+  and (select bool_and(prosecdef and proconfig is not null) from pg_proc where pronamespace = 'public'::regnamespace
+       and proname in ('my_hero_header_id', 'hero_can_remove', 'creator_unpublish_content', 'creator_archive_content', 'creator_delete_recipe', 'post_photo_upload_claim'))
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'post_photo_upload_claim') = 1
+  and not has_function_privilege('authenticated', 'public.my_hero_header_id()', 'execute')
+  and not has_function_privilege('authenticated', 'public.hero_can_remove(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_unpublish_content(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.creator_archive_content(uuid, text)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- titular: cria o rascunho estruturado, grava corpo e bloco do pilar, envia para revisão e publica outro direto
+select tests.login('99000000-0000-4000-8000-000000009901', 's99-titular@test.local');
+select tests.ok('S99 titular: my_creator_id() é o herói dele', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
+insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
+  ('99000000-0000-4000-8000-000000009921', 's99-guia-revisao', '99000000-0000-4000-8000-000000009911', 'training', 'guide', 'Guia S99 revisão', auth.uid()),
+  ('99000000-0000-4000-8000-000000009922', 's99-guia-no-ar', '99000000-0000-4000-8000-000000009911', 'training', 'guide', 'Guia S99 no ar', auth.uid());
+insert into public.content_bodies (content_id, body) values
+  ('99000000-0000-4000-8000-000000009921', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}'),
+  ('99000000-0000-4000-8000-000000009922', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}');
+select public.post_block_set('99000000-0000-4000-8000-000000009922', 'workout',
+  '{"description":"Treino S99","steps":[{"text":"Agachamento 3x12"}]}'::jsonb);
+select tests.ok('S99 titular grava o bloco de treino do conteúdo dele',
+  (select count(*) from public.post_blocks where content_id = '99000000-0000-4000-8000-000000009922' and kind = 'workout') = 1);
+select public.submit_content_for_review('99000000-0000-4000-8000-000000009921');
+select tests.ok('S99 titular envia para revisão (fica em revisão, ainda rascunho)',
+  (select status = 'draft' and review_status = 'in_review' from public.content where id = '99000000-0000-4000-8000-000000009921'));
+select public.creator_publish_content('99000000-0000-4000-8000-000000009922');
+select tests.ok('S99 titular publica direto quando o tipo não exige revisão',
+  (select status = 'published' and published_at is not null from public.content where id = '99000000-0000-4000-8000-000000009922'));
+
+-- membro: cria e publica pelo herói A; não tira do ar nem arquiva o que já esteve no ar
+select tests.login('99000000-0000-4000-8000-000000009902', 's99-membro@test.local');
+select tests.ok('S99 membro: sem cabeçalho, my_creator_id() é a equipe mais antiga (A)', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
+insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
+  ('99000000-0000-4000-8000-000000009923', 's99-membro-rascunho', '99000000-0000-4000-8000-000000009911', 'nutrition', 'article', 'Artigo do membro S99', auth.uid()),
+  ('99000000-0000-4000-8000-000000009924', 's99-membro-no-ar', '99000000-0000-4000-8000-000000009911', 'nutrition', 'article', 'Artigo no ar do membro S99', auth.uid());
+insert into public.content_bodies (content_id, body) values
+  ('99000000-0000-4000-8000-000000009924', '{"kind":"article","sections":[{"heading":"a","text":"b"}]}');
+select public.creator_publish_content('99000000-0000-4000-8000-000000009924');
+select tests.ok('S99 membro cria rascunho e publica pelo herói (a equipe posta pelo herói)',
+  (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009923' and status = 'draft') = 1
+  and (select status = 'published' from public.content where id = '99000000-0000-4000-8000-000000009924'));
+select tests.ok('S99 membro reserva a foto da capa (post_photo_upload_claim aceita a equipe do herói)',
+  public.post_photo_upload_claim(1000, 'image/webp') like '99000000-0000-4000-8000-000000009902/%.webp');
+select tests.expect_error('S99 membro não tira do ar conteúdo publicado: owner_only',
+  $q$select public.creator_unpublish_content('99000000-0000-4000-8000-000000009922')$q$, 'owner_only');
+select tests.expect_error('S99 membro não arquiva conteúdo publicado: owner_only',
+  $q$select public.creator_archive_content('99000000-0000-4000-8000-000000009924', 'teste')$q$, 'owner_only');
+delete from public.content where id = '99000000-0000-4000-8000-000000009922';
+select tests.ok('S99 delete direto do membro não apaga nada (RLS)',
+  (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009922') = 1);
+select public.creator_archive_content('99000000-0000-4000-8000-000000009923', 'não vou usar');
+select tests.ok('S99 membro arquiva o rascunho que nunca foi ao ar',
+  (select status = 'archived' from public.content where id = '99000000-0000-4000-8000-000000009923'));
+-- dois heróis: o cabeçalho x-my-hero escolhe o C; herói de que não faz parte (B) é ignorado
+select set_config('request.headers', '{"x-my-hero":"99000000-0000-4000-8000-000000009913"}', true);
+select tests.ok('S99 membro com x-my-hero do C: my_creator_id() é o C', public.my_creator_id() = '99000000-0000-4000-8000-000000009913');
+insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
+  ('99000000-0000-4000-8000-000000009925', 's99-membro-c', '99000000-0000-4000-8000-000000009913', 'routine', 'guide', 'Guia do C S99', auth.uid());
+select tests.ok('S99 membro cria rascunho no herói C escolhido',
+  (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009925') = 1);
+select set_config('request.headers', '{"x-my-hero":"99000000-0000-4000-8000-000000009912"}', true);
+select tests.ok('S99 x-my-hero de herói alheio é ignorado (volta ao A)', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
+select tests.expect_error('S99 membro não cria conteúdo no herói B (alheio) nem com o cabeçalho',
+  $q$insert into public.content (slug, creator_id, pillar, type, title) values ('s99-invasao', '99000000-0000-4000-8000-000000009912', 'routine', 'guide', 'Invasão')$q$, '42501');
+select set_config('request.headers', '{"x-my-hero":"nao-e-uuid"}', true);
+select tests.ok('S99 x-my-hero que não é uuid é ignorado sem erro', public.my_creator_id() = '99000000-0000-4000-8000-000000009911');
+select set_config('request.headers', '', true);
+
+-- creator de outro herói: não lê, não edita, não publica nem envia
+select tests.login('99000000-0000-4000-8000-000000009903', 's99-outro@test.local');
+select tests.ok('S99 outro herói não lê os rascunhos do A', (select count(*) from public.content where id in
+  ('99000000-0000-4000-8000-000000009921', '99000000-0000-4000-8000-000000009923', '99000000-0000-4000-8000-000000009925')) = 0);
+update public.content set title = 'Invadido' where id = '99000000-0000-4000-8000-000000009922';
+select tests.ok('S99 outro herói não edita conteúdo do A (0 linhas)',
+  (select title from public.content where id = '99000000-0000-4000-8000-000000009922') = 'Guia S99 no ar');
+select tests.expect_error('S99 outro herói não publica rascunho do A', $q$select public.creator_publish_content('99000000-0000-4000-8000-000000009925')$q$, 'forbidden');
+select tests.expect_error('S99 outro herói não envia para revisão conteúdo do A', $q$select public.submit_content_for_review('99000000-0000-4000-8000-000000009925')$q$, 'forbidden');
+select tests.expect_error('S99 outro herói não tira do ar conteúdo do A', $q$select public.creator_unpublish_content('99000000-0000-4000-8000-000000009922')$q$, 'forbidden');
+select tests.expect_error('S99 outro herói não grava bloco no conteúdo do A', $q$select public.post_block_set('99000000-0000-4000-8000-000000009922', null, null)$q$, 'forbidden');
+
+-- visitante: nada
+select tests.anon();
+select tests.ok('S99 visitante não lê rascunho', (select count(*) from public.content where id in
+  ('99000000-0000-4000-8000-000000009921', '99000000-0000-4000-8000-000000009925')) = 0);
+select tests.expect_error('S99 visitante não cria conteúdo', $q$insert into public.content (slug, creator_id, pillar, type, title) values ('s99-anon', '99000000-0000-4000-8000-000000009911', 'routine', 'guide', 'Anon')$q$, '42501');
+select tests.expect_error('S99 visitante não publica', $q$select public.creator_publish_content('99000000-0000-4000-8000-000000009921')$q$, 'permission denied');
+select tests.expect_error('S99 visitante não envia para revisão', $q$select public.submit_content_for_review('99000000-0000-4000-8000-000000009921')$q$, 'permission denied');
+select tests.expect_error('S99 visitante não arquiva', $q$select public.creator_archive_content('99000000-0000-4000-8000-000000009922', null)$q$, 'permission denied');
+
+-- titular: tira do ar e arquiva o que já esteve no ar
+select tests.login('99000000-0000-4000-8000-000000009901', 's99-titular@test.local');
+select public.creator_unpublish_content('99000000-0000-4000-8000-000000009922');
+select public.creator_archive_content('99000000-0000-4000-8000-000000009924', 'saiu do ar');
+select tests.ok('S99 titular tira do ar e arquiva o que já esteve no ar',
+  (select status = 'draft' from public.content where id = '99000000-0000-4000-8000-000000009922')
+  and (select status = 'archived' from public.content where id = '99000000-0000-4000-8000-000000009924'));
+
+
+-- herói PENDENTE: titular e membro preparam rascunhos; publicar só depois da aprovação do admin; suspenso não posta
+select tests.su();
+insert into auth.users (id, email) values
+  ('99000000-0000-4000-8000-000000009904', 's99-pend-titular@test.local'), ('99000000-0000-4000-8000-000000009905', 's99-pend-membro@test.local'),
+  ('99000000-0000-4000-8000-000000009906', 's99-susp-titular@test.local'), ('99000000-0000-4000-8000-000000009907', 's99-admin@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values
+  ('99000000-0000-4000-8000-000000009904', 'creator', 'global'), ('99000000-0000-4000-8000-000000009905', 'creator', 'global'), ('99000000-0000-4000-8000-000000009906', 'creator', 'global'), ('99000000-0000-4000-8000-000000009907', 'admin', 'global');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('99000000-0000-4000-8000-000000009914', 's99-heroi-pend', 'Herói Pendente S99', 'pending', '99000000-0000-4000-8000-000000009904'),
+  ('99000000-0000-4000-8000-000000009915', 's99-heroi-susp', 'Herói Suspenso S99', 'suspended', '99000000-0000-4000-8000-000000009906');
+insert into public.creator_team_members (creator_profile_id, user_id, role, status) values ('99000000-0000-4000-8000-000000009914', '99000000-0000-4000-8000-000000009905', 'member', 'active');
+select tests.login('99000000-0000-4000-8000-000000009904', 's99-pend-titular@test.local');
+select tests.ok('S99 pendente: titular tem my_creator_id() do herói pendente', public.my_creator_id() = '99000000-0000-4000-8000-000000009914');
+insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
+  ('99000000-0000-4000-8000-000000009931', 's99-pend-a', '99000000-0000-4000-8000-000000009914', 'training', 'guide', 'Guia pendente S99', auth.uid()),
+  ('99000000-0000-4000-8000-000000009932', 's99-pend-b', '99000000-0000-4000-8000-000000009914', 'training', 'guide', 'Guia pendente 2 S99', auth.uid());
+insert into public.content_bodies (content_id, body) values
+  ('99000000-0000-4000-8000-000000009931', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}'),
+  ('99000000-0000-4000-8000-000000009932', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}');
+select public.post_block_set('99000000-0000-4000-8000-000000009931', 'workout', '{"description":"T","steps":[{"text":"Passo"}]}'::jsonb);
+select tests.ok('S99 pendente: titular cria rascunho e bloco (guardados)',
+  (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009931' and status = 'draft') = 1
+  and (select count(*) from public.post_blocks where content_id = '99000000-0000-4000-8000-000000009931') = 1);
+select tests.expect_error('S99 pendente: publicar é recusado (hero_not_active)', $q$select public.creator_publish_content('99000000-0000-4000-8000-000000009931')$q$, 'hero_not_active');
+select public.submit_content_for_review('99000000-0000-4000-8000-000000009932');
+select tests.ok('S99 pendente: enviar para revisão fica guardado', (select review_status = 'in_review' from public.content where id = '99000000-0000-4000-8000-000000009932'));
+select tests.login('99000000-0000-4000-8000-000000009905', 's99-pend-membro@test.local');
+select tests.ok('S99 pendente: membro tem o herói pendente', public.my_creator_id() = '99000000-0000-4000-8000-000000009914');
+insert into public.content (id, slug, creator_id, pillar, type, title, created_by) values
+  ('99000000-0000-4000-8000-000000009933', 's99-pend-membro', '99000000-0000-4000-8000-000000009914', 'routine', 'guide', 'Guia do membro pendente S99', auth.uid());
+insert into public.content_bodies (content_id, body) values ('99000000-0000-4000-8000-000000009933', '{"kind":"guide","sections":[{"heading":"a","text":"b"}]}');
+select tests.ok('S99 pendente: membro cria rascunho', (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009933') = 1);
+select tests.expect_error('S99 pendente: membro também não publica', $q$select public.creator_publish_content('99000000-0000-4000-8000-000000009933')$q$, 'hero_not_active');
+select tests.anon();
+select tests.ok('S99 pendente: o público não vê nada do herói pendente', (select count(*) from public.content where creator_id = '99000000-0000-4000-8000-000000009914') = 0
+  and (select count(*) from public.creator_profiles where id = '99000000-0000-4000-8000-000000009914') = 0);
+select tests.su();
+update public.content set access_level = 'free' where id = '99000000-0000-4000-8000-000000009932';
+select tests.login('99000000-0000-4000-8000-000000009907', 's99-admin@test.local');
+select tests.expect_error('S99 pendente: aprovar o conteúdo antes do herói é recusado', $q$select public.admin_review_content('99000000-0000-4000-8000-000000009932', 'approved', 'ok')$q$, 'hero_not_active');
+select public.admin_set_creator_status('99000000-0000-4000-8000-000000009914', 'active', 'aprovado no teste');
+select tests.login('99000000-0000-4000-8000-000000009904', 's99-pend-titular@test.local');
+select public.creator_publish_content('99000000-0000-4000-8000-000000009931');
+select tests.ok('S99 herói aprovado: o rascunho guardado agora publica', (select status = 'published' from public.content where id = '99000000-0000-4000-8000-000000009931'));
+select tests.anon();
+select tests.ok('S99 herói aprovado: o público vê o conteúdo publicado', (select count(*) from public.content where id = '99000000-0000-4000-8000-000000009931') = 1);
+select tests.login('99000000-0000-4000-8000-000000009906', 's99-susp-titular@test.local');
+select tests.ok('S99 suspenso: my_creator_id() nulo', public.my_creator_id() is null);
+select tests.expect_error('S99 suspenso não cria rascunho', $q$insert into public.content (slug, creator_id, pillar, type, title) values ('s99-susp', '99000000-0000-4000-8000-000000009915', 'routine', 'guide', 'Susp')$q$, '42501');
+
+-- limpeza: nada do S99 fica no ar
+select tests.su();
+delete from public.content where id::text like '99000000-%';
+delete from public.post_photo_uploads where user_id::text like '99000000-%';
+delete from public.creator_profiles where id::text like '99000000-%';
+delete from auth.users where id::text like '99000000-%';
+
+-- ================================================================ S100 · Sugerir heróis no negócio: busca na plataforma, ficha criada ao salvar e herói digitado (0093)
+-- Busca (gestor+): só heróis ativos fora do casting da agência, com selo (fora do casting, em outra agência, pessoa já no
+-- casting), sem dados de direitos/conta, paginada e sem acento. Sugerir: gestor+ do negócio aberto da própria agência;
+-- herói do casting reaproveita a ficha, herói de fora cria a ficha sem consentimento, herói digitado cria ficha sem herói
+-- (nome limpo); herói de outra agência, suspenso, pendente e pessoa que já tem ficha são recusados; tudo atômico e
+-- idempotente; creator removido volta a "sugerido". Colaborador, outra agência e visitante recusados; S14 segue 18.
+\ir ../migrations/0093_sugerir_herois_negocio.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('c1000000-0000-4000-8000-000000000001', 's100-adm-a@test.local'),
+  ('c1000000-0000-4000-8000-000000000002', 's100-gestor-a@test.local'),
+  ('c1000000-0000-4000-8000-000000000003', 's100-colab-a@test.local'),
+  ('c1000000-0000-4000-8000-000000000004', 's100-adm-b@test.local'),
+  ('c1000000-0000-4000-8000-000000000005', 's100-dono-fora@test.local'),
+  ('c1000000-0000-4000-8000-000000000006', 's100-dono-outra@test.local'),
+  ('c1000000-0000-4000-8000-000000000007', 's100-dono-casting@test.local'),
+  ('c1000000-0000-4000-8000-000000000008', 's100-adm-demo@test.local');
+insert into public.agencies (id, slug, name) values
+  ('c1000000-0000-4000-8000-0000000000a1', 's100-agencia-a', 'Agência A S100'),
+  ('c1000000-0000-4000-8000-0000000000a2', 's100-agencia-b', 'Agência B S100');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('c1000000-0000-4000-8000-0000000000a1', 'c1000000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S100'),
+  ('c1000000-0000-4000-8000-0000000000a1', 'c1000000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S100'),
+  ('c1000000-0000-4000-8000-0000000000a1', 'c1000000-0000-4000-8000-000000000003', 'staff', 'Caio Colab S100'),
+  ('c1000000-0000-4000-8000-0000000000a2', 'c1000000-0000-4000-8000-000000000004', 'admin', 'Bia Adm S100');
+insert into public.brands (id, slug, name, site_url) values ('c1000000-0000-4000-8000-0000000000b1', 's100-marca', 'Marca S100', 'https://m.s100.test');
+insert into public.agency_brands (agency_id, brand_id) values ('c1000000-0000-4000-8000-0000000000a1', 'c1000000-0000-4000-8000-0000000000b1');
+insert into public.deals (id, agency_id, brand_id, title, owner_id) values
+  ('c1000000-0000-4000-8000-0000000000d1', 'c1000000-0000-4000-8000-0000000000a1', 'c1000000-0000-4000-8000-0000000000b1', 'Negócio S100', 'c1000000-0000-4000-8000-000000000003');
+-- heróis: H1 no casting da A; H2 livre; H3 no casting da B; H4 suspenso; H5 pendente; H6 dono com ficha própria na B (login);
+-- H7 dono com ficha própria na A (login); H8 livre (atomicidade); H9 livre com dono (consentimento pendente)
+insert into public.creator_profiles (id, slug, name, status, user_id, headline, pillars, socials, rights_status, rights_holder) values
+  ('c1000000-0000-4000-8000-0000000000c1', 's100-heroi-casting', 'Heroi Casting S100', 'active', null, 'chamada 1', '{training}', '{"instagram":"@casting"}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c2', 's100-heroi-fora', 'Herói Fora S100', 'active', null, 'chamada 2', '{nutrition,routine}', '{"instagram":"@fora","youtube":"@forayt","site":"https://fora.test"}', 'authorized', 'Titular Secreto'),
+  ('c1000000-0000-4000-8000-0000000000c3', 's100-heroi-outra', 'Herói Outra S100', 'active', null, null, '{routine}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c4', 's100-heroi-suspenso', 'Herói Suspenso S100', 'suspended', null, null, '{routine}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c5', 's100-heroi-pendente', 'Herói Pendente S100', 'pending', null, null, '{routine}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c6', 's100-heroi-dono-b', 'Herói Dono B S100', 'active', 'c1000000-0000-4000-8000-000000000006', null, '{training}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c7', 's100-heroi-dono-a', 'Herói Dono A S100', 'active', 'c1000000-0000-4000-8000-000000000007', null, '{training}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c8', 's100-heroi-livre', 'Herói Livre S100', 'active', null, null, '{training}', '{}', 'fictional', null),
+  ('c1000000-0000-4000-8000-0000000000c9', 's100-heroi-com-dono', 'Herói Com Dono S100', 'active', 'c1000000-0000-4000-8000-000000000005', null, '{gastronomy}', '{}', 'fictional', null);
+insert into public.talent_profiles (id, agency_id, display_name, creator_id, user_id) values
+  ('c1000000-0000-4000-8000-0000000000e1', 'c1000000-0000-4000-8000-0000000000a1', 'Heroi Casting S100', 'c1000000-0000-4000-8000-0000000000c1', null),
+  ('c1000000-0000-4000-8000-0000000000e3', 'c1000000-0000-4000-8000-0000000000a2', 'Herói Outra S100', 'c1000000-0000-4000-8000-0000000000c3', null),
+  ('c1000000-0000-4000-8000-0000000000e6', 'c1000000-0000-4000-8000-0000000000a2', 'Dono B S100', null, 'c1000000-0000-4000-8000-000000000006'),
+  ('c1000000-0000-4000-8000-0000000000e7', 'c1000000-0000-4000-8000-0000000000a1', 'Dono A S100', null, 'c1000000-0000-4000-8000-000000000007');
+create temp table t_s100 (k text primary key, v jsonb);
+grant all on t_s100 to anon, authenticated, service_role;
+
+select tests.ok('S100 estrutura: sem sobrecarga, security definer com search_path fixo, nada para o visitante; S14 segue 18',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_hero_search', 'agency_deal_suggest_heroes')) = 2
+  and (select bool_and(p.prosecdef and p.proconfig is not null) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_hero_search', 'agency_deal_suggest_heroes'))
+  and not has_function_privilege('anon', 'public.agency_hero_search(uuid, text, int, int)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_deal_suggest_heroes(uuid, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_hero_search(uuid, text, int, int)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_deal_suggest_heroes(uuid, jsonb)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S100 visitante não busca heróis', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'permission denied');
+select tests.expect_error('S100 visitante não sugere', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[]')$q$, 'permission denied');
+
+-- colaborador (mesmo sendo o responsável pelo negócio) e agência de fora
+select tests.login('c1000000-0000-4000-8000-000000000003', 's100-colab-a@test.local');
+select tests.expect_error('S100 colaborador não busca heróis', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'forbidden');
+select tests.expect_error('S100 colaborador não sugere herói', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c2"}]')$q$, 'forbidden');
+select tests.login('c1000000-0000-4000-8000-000000000004', 's100-adm-b@test.local');
+select tests.expect_error('S100 agência de fora não busca no negócio alheio', $q$select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '')$q$, 'not_found');
+select tests.expect_error('S100 agência de fora não sugere no negócio alheio', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":"Intruso Fora"}]')$q$, 'not_found');
+select tests.ok('S100 a agência de fora não tem ficha nenhuma criada na A', (select count(*) from public.talent_profiles where display_name = 'Intruso Fora') = 0);
+
+-- gestor: busca
+select tests.login('c1000000-0000-4000-8000-000000000002', 's100-gestor-a@test.local');
+insert into t_s100 select 'all', public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100');
+select tests.ok('S100 busca: o herói do casting e os heróis suspenso e pendente não aparecem',
+  not exists (select 1 from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) i where i ->> 'slug' in ('s100-heroi-casting', 's100-heroi-suspenso', 's100-heroi-pendente')));
+select tests.ok('S100 busca: selos fora do casting, em outra agência (herói e dono com ficha) e pessoa já no casting',
+  (select v -> 'items' from t_s100 where k = 'all') @> '[{"slug":"s100-heroi-fora","scope":"outside"},{"slug":"s100-heroi-livre","scope":"outside"},{"slug":"s100-heroi-com-dono","scope":"outside"},{"slug":"s100-heroi-outra","scope":"other_agency"},{"slug":"s100-heroi-dono-b","scope":"other_agency"},{"slug":"s100-heroi-dono-a","scope":"person_in_casting"}]'::jsonb);
+select tests.ok('S100 busca: os selecionáveis vêm antes dos indisponíveis',
+  (with x as (select i ->> 'scope' as s, ordinality as n from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) with ordinality as t(i, ordinality) where i ->> 'slug' like 's100-%')
+   select max(n) filter (where s = 'outside') < min(n) filter (where s <> 'outside') from x));
+select tests.ok('S100 busca: só campos públicos (nada de direitos, conta ou e-mail)',
+  (select bool_and(not (i ? 'rights_status') and not (i ? 'rights_holder') and not (i ? 'user_id') and not (i ? 'email') and (select array_agg(k order by k) from jsonb_object_keys(i) k) = array['avatar_url', 'followers', 'headline', 'id', 'name', 'pillars', 'scope', 'slug', 'socials'])
+   from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) i)
+  and not ((select v::text from t_s100 where k = 'all') like '%Titular Secreto%'));
+select tests.ok('S100 busca: redes públicas do herói (instagram, youtube, site)',
+  (select i -> 'socials' = '{"instagram":"@fora","youtube":"@forayt","site":"https://fora.test"}'::jsonb from jsonb_array_elements((select v -> 'items' from t_s100 where k = 'all')) i where i ->> 'slug' = 's100-heroi-fora'));
+select tests.ok('S100 busca por nome sem acento e sem caixa', (select jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 'HEROI FORA S100') -> 'items')) = 1
+  and (select public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 'heroi-fora') -> 'items' -> 0 ->> 'slug') = 's100-heroi-fora');
+select tests.ok('S100 busca: curinga do usuário vale como texto (% não casa tudo)', (select jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', '100%') -> 'items')) = 0);
+select tests.ok('S100 busca paginada: página de 2, tem mais, e a próxima começa depois',
+  (public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100', 2, 0) ->> 'has_more')::boolean
+  and jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100', 2, 0) -> 'items') = 2
+  and (public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100', 2, 0) -> 'items' -> 0 ->> 'slug')
+      is distinct from (public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100', 2, 2) -> 'items' -> 0 ->> 'slug')
+  and not (public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100', 50, 0) ->> 'has_more')::boolean);
+
+-- gestor: sugerir (herói do casting, herói de fora, digitado)
+select tests.ok('S100 antes: A tem 2 fichas e nenhuma no negócio', (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 2
+  and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 0);
+insert into t_s100 select 'r1', public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', $j$[
+  {"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c1","reasons":[{"code":"segment","met":true,"detail":["Treino"]}]},
+  {"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c9"},
+  {"kind":"typed","name":"  Ana   <Souza>  ","profile":"@ana.souza","email":"ANA@Exemplo.com"}
+]$j$::jsonb);
+select tests.ok('S100 herói do casting reaproveita a ficha; herói de fora e digitado criam 2 fichas', (select (v ->> 'created')::int = 2 from t_s100 where k = 'r1')
+  and (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 4
+  and (select count(*) from public.talent_profiles where creator_id = 'c1000000-0000-4000-8000-0000000000c1') = 1
+  and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1' and status = 'suggested') = 3
+  and exists (select 1 from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1' and talent_id = 'c1000000-0000-4000-8000-0000000000e1' and reasons @> '[{"code":"segment"}]'));
+select tests.ok('S100 ficha do herói de fora: ligada ao herói, prospecto, sem consentimento, fora do catálogo, criada pelo gestor',
+  (select creator_id = 'c1000000-0000-4000-8000-0000000000c9' and display_name = 'Herói Com Dono S100' and commercial_status = 'prospect' and consent_at is null
+          and consent_revoked_at is null and not catalog_visible and created_by = 'c1000000-0000-4000-8000-000000000002' and agency_id = 'c1000000-0000-4000-8000-0000000000a1'
+   from public.talent_profiles where creator_id = 'c1000000-0000-4000-8000-0000000000c9'));
+select tests.ok('S100 ficha digitada: nome limpo, sem herói e sem login, e-mail e perfil guardados, prospecto',
+  (select creator_id is null and user_id is null and display_name = 'Ana Souza' and contact_email = 'ana@exemplo.com' and internal_notes = 'Perfil informado: @ana.souza' and commercial_status = 'prospect' and not catalog_visible
+   from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1' and display_name = 'Ana Souza'));
+select tests.su();
+select tests.ok('S100 a ficha criada aparece na auditoria com a origem',
+  (select count(*) from public.admin_audit where action = 'talent.create' and (after_data ->> 'source') in ('deal_hero', 'deal_typed') and (after_data ->> 'deal_id') = 'c1000000-0000-4000-8000-0000000000d1') = 2);
+select tests.login('c1000000-0000-4000-8000-000000000002', 's100-gestor-a@test.local');
+
+-- idempotência: mesma lista, mesmo nome com outra caixa
+insert into t_s100 select 'r2', public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', $j$[
+  {"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c1"},
+  {"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c9"},
+  {"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c9"},
+  {"kind":"typed","name":"ana souza"}
+]$j$::jsonb);
+select tests.ok('S100 repetir é idempotente: nenhuma ficha nova, mesmas 3 linhas no negócio, mesmos ids',
+  (select (v ->> 'created')::int = 0 and jsonb_array_length(v -> 'ids') = 3 and (v -> 'ids') = (select v -> 'ids' from t_s100 where k = 'r1') from t_s100 where k = 'r2')
+  and (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 4
+  and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 3);
+select tests.ok('S100 o negócio avançou para a pré-seleção', (select stage = 'shortlist' from public.deals where id = 'c1000000-0000-4000-8000-0000000000d1'));
+select tests.ok('S100 a busca agora trata o herói criado como do casting (some da busca)',
+  not exists (select 1 from jsonb_array_elements(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d1', 's100') -> 'items') i where i ->> 'slug' = 's100-heroi-com-dono'));
+
+-- recusas
+select tests.expect_error('S100 herói de outra agência é recusado', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c3"}]')$q$, 'creator_already_in_casting');
+select tests.expect_error('S100 herói suspenso é invisível', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c4"}]')$q$, 'not_found');
+select tests.expect_error('S100 herói pendente é invisível', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c5"}]')$q$, 'not_found');
+select tests.expect_error('S100 dono do herói com ficha em outra agência é recusado (uma pessoa, um casting)', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c6"}]')$q$, 'user_has_talent');
+select tests.expect_error('S100 dono do herói com ficha neste casting também é recusado', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c7"}]')$q$, 'user_has_talent');
+select tests.expect_error('S100 ficha de outra agência é recusada', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"talent","talent_id":"c1000000-0000-4000-8000-0000000000e3"}]')$q$, 'not_found');
+select tests.expect_error('S100 nome digitado vazio depois da limpeza', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":" <> "}]')$q$, 'invalid_hero_name');
+select tests.expect_error('S100 nome digitado de 1 letra', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":"A"}]')$q$, 'invalid_hero_name');
+select tests.expect_error('S100 perfil que não é @ nem link https', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":"Nome Certo","profile":"javascript:alert(1)"}]')$q$, 'invalid_profile_ref');
+select tests.expect_error('S100 e-mail inválido', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"typed","name":"Nome Certo","email":"sem-arroba"}]')$q$, 'invalid_email');
+select tests.expect_error('S100 tipo desconhecido', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"qualquer"}]')$q$, 'invalid_input');
+select tests.expect_error('S100 lista com mais de 30 itens', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', (select jsonb_agg(jsonb_build_object('kind','typed','name','Fulano ' || g)) from generate_series(1, 31) g))$q$, 'invalid_input');
+select tests.expect_error('S100 no máximo 10 fichas novas por salvamento', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', (select jsonb_agg(jsonb_build_object('kind','typed','name','Novo Nome ' || g)) from generate_series(1, 11) g))$q$, 'too_many_new_talents');
+select tests.ok('S100 as recusas não deixaram ficha nenhuma (o salvamento é atômico)',
+  (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 4
+  and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 3);
+select tests.expect_error('S100 um item ruim desfaz o herói válido da mesma lista', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c8"},{"kind":"typed","name":"<>"}]')$q$, 'invalid_hero_name');
+select tests.ok('S100 o herói livre segue sem ficha e sem linha no negócio', not exists (select 1 from public.talent_profiles where creator_id = 'c1000000-0000-4000-8000-0000000000c8'));
+
+-- remover e sugerir de novo traz de volta como sugerido, sem a consulta antiga
+select tests.su();
+update public.deal_talents set status = 'consulted', consulted_at = now() - interval '1 day', respond_by = now() + interval '5 days', terms_ready = true
+  where deal_id = 'c1000000-0000-4000-8000-0000000000d1' and talent_id = 'c1000000-0000-4000-8000-0000000000e1';
+update public.deal_talents set status = 'removed' where deal_id = 'c1000000-0000-4000-8000-0000000000d1' and talent_id = 'c1000000-0000-4000-8000-0000000000e1';
+select tests.login('c1000000-0000-4000-8000-000000000002', 's100-gestor-a@test.local');
+insert into t_s100 select 'r3', public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[{"kind":"talent","talent_id":"c1000000-0000-4000-8000-0000000000e1"},{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c9"}]');
+select tests.ok('S100 creator removido volta a sugerido, sem consulta nem cachê pronto; a ficha digitada que saiu da lista é tirada',
+  (select (v ->> 'revived')::int = 1 from t_s100 where k = 'r3')
+  and (select status = 'suggested' and consulted_at is null and respond_by is null and not terms_ready from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1' and talent_id = 'c1000000-0000-4000-8000-0000000000e1')
+  and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 2
+  and (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1' and display_name = 'Ana Souza') = 1);
+
+-- consentimento: o creator dono do herói de fora enxerga a agência no escritório, sem consentimento dado
+select tests.login('c1000000-0000-4000-8000-000000000005', 's100-dono-fora@test.local');
+select tests.ok('S100 o dono do herói vê o escritório da agência, com o consentimento ainda pendente e fora do catálogo',
+  (public.talent_my_context() ->> 'agency') = 'Agência A S100' and (public.talent_my_context() ->> 'consent_at') is null and (public.talent_my_context() ->> 'catalog_visible')::boolean = false);
+select tests.ok('S100 o creator não lê talent_profiles (só o escritório por talent_my_context)', (select count(*) from public.talent_profiles) = 0);
+select tests.login('c1000000-0000-4000-8000-000000000004', 's100-adm-b@test.local');
+select tests.ok('S100 a agência B não lê as fichas criadas na A nem as linhas do negócio', (select count(*) from public.talent_profiles where agency_id = 'c1000000-0000-4000-8000-0000000000a1') = 0
+  and (select count(*) from public.deal_talents where deal_id = 'c1000000-0000-4000-8000-0000000000d1') = 0);
+
+-- negócio fechado: recusado
+select tests.su();
+update public.deals set stage = 'closed', outcome = 'cancelled' where id = 'c1000000-0000-4000-8000-0000000000d1';
+select tests.login('c1000000-0000-4000-8000-000000000002', 's100-gestor-a@test.local');
+select tests.expect_error('S100 negócio encerrado não recebe sugestão', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d1', '[]')$q$, 'invalid_stage');
+
+-- agência de demonstração: não enxerga heróis reais, nem cria ficha de herói real; o digitado respeita o limite
+select tests.su();
+insert into public.agencies (id, slug, name, is_demo) values ('c1000000-0000-4000-8000-0000000000a3', 's100-agencia-demo', 'Agência Demo S100', true);
+insert into public.agency_members (agency_id, user_id, role, display_name) values ('c1000000-0000-4000-8000-0000000000a3', 'c1000000-0000-4000-8000-000000000008', 'admin', 'Dani Demo S100');
+insert into public.brands (id, slug, name, site_url) values ('c1000000-0000-4000-8000-0000000000b3', 's100-marca-demo', 'Marca Demo S100', 'https://d.s100.test');
+insert into public.agency_brands (agency_id, brand_id) values ('c1000000-0000-4000-8000-0000000000a3', 'c1000000-0000-4000-8000-0000000000b3');
+insert into public.deals (id, agency_id, brand_id, title) values ('c1000000-0000-4000-8000-0000000000d3', 'c1000000-0000-4000-8000-0000000000a3', 'c1000000-0000-4000-8000-0000000000b3', 'Negócio Demo S100');
+select tests.login('c1000000-0000-4000-8000-000000000008', 's100-adm-demo@test.local');
+select tests.ok('S100 agência de demonstração: a busca volta vazia', jsonb_array_length(public.agency_hero_search('c1000000-0000-4000-8000-0000000000d3', '') -> 'items') = 0);
+select tests.expect_error('S100 agência de demonstração não cria ficha de herói real', $q$select public.agency_deal_suggest_heroes('c1000000-0000-4000-8000-0000000000d3', '[{"kind":"hero","creator_id":"c1000000-0000-4000-8000-0000000000c2"}]')$q$, 'demo_locked');
+
+-- limpeza
+select tests.su();
+delete from public.deal_talents where deal_id::text like 'c1000000-%';
+delete from public.deals where id::text like 'c1000000-%';
+delete from public.talent_profiles where agency_id::text like 'c1000000-%';
+delete from public.agency_brands where agency_id::text like 'c1000000-%';
+delete from public.brands where id::text like 'c1000000-%';
+delete from public.agency_members where agency_id::text like 'c1000000-%';
+delete from public.agencies where id::text like 'c1000000-%';
+delete from public.creator_profiles where id::text like 'c1000000-%';
+delete from auth.users where id::text like 'c1000000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

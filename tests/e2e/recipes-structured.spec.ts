@@ -28,11 +28,13 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
     });
   }
 
-  test("o herói não cria mais conteúdo pelo portal: o endereço antigo volta ao Perfil", async ({ page }) => {
+  test("o herói cria conteúdo estruturado pelo próprio portal, com o seletor de tipo (0092)", async ({ page }) => {
     await loginAs(page, "creator");
     await page.goto("/creator/content/new");
-    await expect(page).toHaveURL(/\/profile$/);
-    await expect(page.getByRole("combobox", { name: "Tipo", exact: true })).toHaveCount(0);
+    await expect(page).toHaveURL(/\/creator\/content\/new$/);
+    await expect(page.getByTestId("content-kind")).toBeVisible();
+    await expect(page.getByTestId("content-kind-program")).toHaveCount(0);
+    await expect(page.getByRole("combobox", { name: "Tipo", exact: true })).toBeVisible();
   });
 
   test("admin pelo herói: o endereço antigo do editor leva a receita ao editor de receitas", async ({ page }) => {

@@ -122,6 +122,8 @@ export default async function DealTalentsPage({ params }: Props) {
   const candidates: Candidate[] = casting.items.map((tl) => ({
     id: tl.id,
     name: tl.name,
+    slug: tl.hero?.slug ?? null,
+    hasHero: tl.hero !== null,
     avatarUrl: tl.hero?.avatarUrl ?? null,
     city: tl.city,
     state: tl.state,
@@ -152,6 +154,7 @@ export default async function DealTalentsPage({ params }: Props) {
         counteroffers={groupByDealTalent(offer?.counteroffers ?? [])}
         canDecideFee={offer?.canDecideFee ?? false}
         canDecideDate={offer?.canDecideDate ?? false}
+        canInvite={isManager && !ctx.agency.isDemo}
       />
       {sponsorable.length > 0 ? (
         <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="deal-sponsorship" data-testid="deal-sponsorship">

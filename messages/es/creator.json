@@ -60,7 +60,7 @@
       },
       "in_review": {
         "title": "En revisión",
-        "description": "Enviado al equipo editorial por el flujo antiguo de revisión. Puedes esperar la decisión o publicar directamente."
+        "description": "Enviado a la administración. Espera la decisión o retíralo de la revisión para editar."
       },
       "returned": {
         "title": "Devuelto para ajustes",
@@ -76,7 +76,11 @@
       },
       "archived": {
         "title": "Archivado",
-        "description": "Archivado por la administración. Queda en solo lectura y no vuelve a estar en línea desde aquí."
+        "description": "Archivado. Queda en solo lectura y no vuelve a publicarse desde aquí."
+      },
+      "draftReview": {
+        "title": "Borrador",
+        "description": "Este tipo de contenido pasa por la revisión de la administración. Guarda y toca Enviar a revisión."
       }
     },
     "notFoundTitle": "Contenido no encontrado",
@@ -106,7 +110,22 @@
     "unpublishDescription": "Sale de línea y vuelve a borrador para que lo edites. Después solo tienes que publicarlo de nuevo.",
     "unpublishConfirm": "Despublicar",
     "unpublished": "Despublicado",
-    "unpublishedDescription": "El contenido volvió a borrador."
+    "unpublishedDescription": "El contenido volvió a borrador.",
+    "submit": "Enviar a revisión",
+    "submitTitle": "¿Enviar a revisión?",
+    "submitDescription": "La administración revisa lo que ya está guardado y lo aprueba o lo devuelve con comentarios. Mientras tanto, el borrador queda bloqueado.",
+    "submitConfirm": "Enviar",
+    "submitted": "Enviado a revisión",
+    "withdraw": "Retirar de la revisión",
+    "withdrawTitle": "¿Retirar de la revisión?",
+    "withdrawDescription": "El contenido vuelve a borrador para que lo edites y lo envíes de nuevo.",
+    "withdrawConfirm": "Retirar",
+    "withdrawn": "Volvió a borrador",
+    "archive": "Archivar",
+    "archiveTitle": "¿Archivar este contenido?",
+    "archiveDescription": "Sale de la lista activa y no aparece en la app. Lo que ya estuvo publicado solo lo archiva el titular del héroe.",
+    "archiveConfirm": "Archivar",
+    "archived": "Archivado"
   },
   "post": {
     "cta": "Nueva publicación",
@@ -214,7 +233,8 @@
       "review_required": "Este tipo de post necesita revisión antes de publicarse. Abre el borrador en Mis contenidos.",
       "upload_rights_required": "Antes del primer envío, confirma que tienes los derechos sobre la foto o el video.",
       "invalid_block": "Los campos del pilar no son válidos. Revisa e intenta de nuevo.",
-      "invalid_reference": "Una receta o producto elegido ya no está disponible. Quítalo y elige otro."
+      "invalid_reference": "Una receta o producto elegido ya no está disponible. Quítalo y elige otro.",
+      "hero_not_active": "Tu héroe aún no fue aprobado. El post quedó guardado como borrador; publica después de la aprobación."
     },
     "photo": {
       "draftTitle": "Post con foto",
@@ -259,7 +279,8 @@
         "photo_media_forbidden": "Esta foto no fue enviada por esta cuenta y no se puede usar aquí.",
         "missing_media": "La foto no quedó vinculada a este post. Descártala y envíala de nuevo.",
         "missing_body": "La foto no quedó vinculada a este post. Descártala y envíala de nuevo.",
-        "not_photo": "Este borrador no tiene una foto enviada desde el celular."
+        "not_photo": "Este borrador no tiene una foto enviada desde el celular.",
+        "hero_not_active": "Tu héroe aún no fue aprobado. La foto quedó guardada como borrador; publica después de la aprobación."
       }
     },
     "talentOnly": "Disponible solo para héroes con página pública",
@@ -483,6 +504,42 @@
     "upload_incomplete": "El video no terminó de subir a Cloudflare. Envíalo de nuevo desde Nueva publicación.",
     "stream_media_forbidden": "Este video no fue enviado por esta cuenta y no se puede usar aquí.",
     "recipe_editor_pending": "La edición de recetas vuelve con el nuevo editor.",
-    "review_required": "La administración exige revisión para este tipo de contenido y el portal aún no permite enviarlo a revisión. Habla con la administración."
+    "review_required": "La administración exige revisión para este tipo de contenido y el portal aún no permite enviarlo a revisión. Habla con la administración.",
+    "owner_only": "Solo el titular del héroe (o la administración) puede retirar del aire, archivar o eliminar lo que ya estuvo publicado.",
+    "already_archived": "Este contenido ya está archivado.",
+    "not_in_review": "Este contenido no está en revisión.",
+    "hero_not_active": "Tu héroe aún no fue aprobado. El borrador quedó guardado; publica después de la aprobación."
+  },
+  "newContent": {
+    "title": "Nuevo contenido",
+    "description": "Contenido estructurado de {name}: texto o video con bloques del pilar (entreno con pasos, nutrición, menú), programa y productos. Guarda el borrador y publica cuando esté listo.",
+    "heroLabel": "Héroe",
+    "heroHint": "Formas parte de más de un héroe. El contenido sale por el héroe elegido.",
+    "heroSwitchError": "No se pudo cambiar de héroe. Inténtalo de nuevo.",
+    "recipeOtherHero": "Las recetas salen por el héroe {name}.",
+    "ownerOnly": "Retirar del aire y archivar contenido publicado es tarea del titular del héroe.",
+    "kind": {
+      "label": "¿Qué vas a crear?",
+      "structured": {
+        "title": "Contenido estructurado",
+        "description": "Texto o video con bloques del pilar (entreno, nutrición, menú), programa y productos. Complétalo abajo."
+      },
+      "post": {
+        "title": "Post rápido",
+        "description": "Foto o video del celular con título y descripción.",
+        "next": "El post rápido se abre en el editor del celular.",
+        "cta": "Abrir Nuevo post"
+      },
+      "recipe": {
+        "title": "Receta",
+        "description": "Receta completa por etapas: ingredientes, pasos, nutrición, foto y productos.",
+        "next": "La receta tiene editor propio, en el Portal del Chef.",
+        "cta": "Abrir el editor de recetas"
+      }
+    },
+    "publishAfterApproval": "Tu héroe aún espera aprobación: el borrador queda guardado y publicas en cuanto sea aprobado."
+  },
+  "pending": {
+    "notice": "Tu héroe espera la aprobación de Ultra. Ya puedes preparar posts y contenidos: aparecen para el público en cuanto el héroe sea aprobado."
   }
 }

@@ -128,7 +128,8 @@
       "newFeedback": "New feedback",
       "awaitingFulfillments": "Fulfillments awaiting",
       "open": "Open",
-      "preparingFulfillments": "Shipments being prepared"
+      "preparingFulfillments": "Shipments being prepared",
+      "pendingHeroes": "Heroes awaiting approval"
     }
   },
   "heroPublishing": {
@@ -395,7 +396,11 @@
       "activateTitle": "Reactivate hero",
       "suspendTitle": "Suspend hero",
       "suspendDescription": "The hero disappears from the public catalog and the linked user loses portal operation. History is kept.",
-      "updated": "Status updated"
+      "updated": "Status updated",
+      "approve": "Approve",
+      "approveTitle": "Approve hero",
+      "approveDescription": "The hero starts showing in the public catalog and what the team already prepared can be published.",
+      "pendingBanner": "{count, plural, =1 {1 hero awaiting approval} other {# heroes awaiting approval}}"
     },
     "invite": "Invite user",
     "linkedTo": "Linked to {email}",

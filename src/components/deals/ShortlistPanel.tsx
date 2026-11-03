@@ -2,11 +2,12 @@
 
 import { Check, Minus, Plus, Send, ShieldAlert, UserMinus, Wallet } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState, useTransition, type FormEvent } from "react";
-import { consultTalentsAction, recordResponseAction, removeDealTalentAction, setFeeAction, setShortlistAction } from "@/app/agencia/negocios/actions";
+import { useState, useTransition, type FormEvent } from "react";
+import { consultTalentsAction, recordResponseAction, removeDealTalentAction, setFeeAction } from "@/app/agencia/negocios/actions";
+import { InviteDialog } from "@/components/agency/InviteDialog";
 import { ConflictAlert } from "@/components/offer/ConflictAlert";
 import { CounterofferReview } from "@/components/offer/CounterofferReview";
-import { Avatar, Badge, Button, Checkbox, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { Avatar, Badge, Button, Checkbox, Dialog, FormField, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import type { DealTalentRow } from "@/lib/deals/queries";
@@ -15,9 +16,10 @@ import { centsToBrl } from "@/lib/money/brl-input";
 import { isPreConfirmation, type DealStage } from "@/lib/deals/stages";
 import { CONSULT_DAYS, TALENT_RESPONSES, type TalentResponse } from "@/lib/deals/vocab";
 import type { Conflict, Counteroffer } from "@/lib/offer/counteroffer";
+import { SuggestHeroesDialog, type Candidate } from "./SuggestHeroesDialog";
 import { TalentStatusBadge } from "./StatusBadges";
 
-export type Candidate = { id: string; name: string; avatarUrl: string | null; city: string | null; state: string | null; availability: string; hasLogin: boolean; reasons: DealTalentRow["reasons"] };
+export type { Candidate };
 
 type Props = {
   dealId: string;
@@ -35,12 +37,14 @@ type Props = {
   counteroffers?: Record<string, Counteroffer[]>;
   canDecideFee?: boolean;
   canDecideDate?: boolean;
+  /** Gestor+ fora da agência de exemplo: pode convidar o creator sem login (0087). */
+  canInvite?: boolean;
 };
 
 // Elenco do negócio: sugeridos com os critérios atendidos, consulta de interesse (só com cachê definido),
 // resposta do creator (pelo escritório) ou registrada pela agência (talento sem login), cachê (só Adm) e
 // remoção. O cachê é a única coisa com valor nesta tela e só aparece para quem o banco devolve.
-export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit, isAdmin, documents, conflicts = {}, counteroffers = {}, canDecideFee = false, canDecideDate = false }: Props) {
+export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit, isAdmin, documents, conflicts = {}, counteroffers = {}, canDecideFee = false, canDecideDate = false, canInvite = false }: Props) {
   const t = useTranslations("agency.deal.talents");
   const tr = useTranslations("commercial.reasons");
   const locale = useLocale() as Locale;
@@ -84,6 +88,11 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
                     <span className="text-sm font-semibold text-fg">{row.talent.name}</span>
                     <TalentStatusBadge status={row.status} />
                     {!row.talent.hasLogin ? <Badge size="sm">{t("noLogin")}</Badge> : null}
+                    {!row.talent.hasHero && !row.talent.hasLogin ? (
+                      <Badge size="sm" variant="warning" data-testid="deal-talent-outside">
+                        {t("outsidePlatform")}
+                      </Badge>
+                    ) : null}
                     {!row.talent.consentActive ? (
                       <Badge size="sm" variant="warning">
                         {t("noConsent")}
@@ -146,6 +155,9 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
                       {t("recordResponse")}
                     </Button>
                   ) : null}
+                  {canInvite && !row.talent.hasLogin ? (
+                    <InviteDialog target={{ kind: "talent", talentId: row.talentId }} roles={[]} triggerLabel={t("inviteCreator")} triggerVariant="secondary" triggerTestId={`invite-open-${row.id}`} />
+                  ) : null}
                   {row.status !== "contracted" && (row.status !== "proposed" || open) ? (
                     <Button type="button" size="sm" variant="ghost" leadingIcon={<UserMinus />} onClick={() => remove(row)} disabled={pending}>
                       {t("remove")}
@@ -170,7 +182,7 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
         </div>
       ) : null}
 
-      <AddTalentsDialog open={adding} onOpenChange={setAdding} dealId={dealId} candidates={candidates} conflicts={conflicts} current={rows.filter((r) => r.status !== "removed").map((r) => ({ talentId: r.talentId, reasons: r.reasons, keep: r.status !== "suggested" }))} />
+      {adding ? <SuggestHeroesDialog dealId={dealId} candidates={candidates} conflicts={conflicts} onClose={() => setAdding(false)} current={rows.filter((r) => r.status !== "removed").map((r) => ({ talentId: r.talentId, reasons: r.reasons, keep: r.status !== "suggested" }))} /> : null}
       <ConsultDialog
         open={consulting}
         onOpenChange={setConsulting}
@@ -182,96 +194,6 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
       {recording ? <RecordResponseDialog row={recording} dealId={dealId} documents={documents} onClose={() => setRecording(null)} /> : null}
       {feeFor ? <FeeDialog row={feeFor} dealId={dealId} current={fees[feeFor.id]} onClose={() => setFeeFor(null)} /> : null}
     </div>
-  );
-}
-
-function AddTalentsDialog({ open, onOpenChange, dealId, candidates, current, conflicts }: { open: boolean; onOpenChange: (o: boolean) => void; dealId: string; candidates: Candidate[]; current: { talentId: string; reasons: DealTalentRow["reasons"]; keep: boolean }[]; conflicts: Record<string, Conflict[]> }) {
-  const t = useTranslations("agency.deal.talents");
-  const tx = useTranslations("offer.conflict");
-  const tr = useTranslations("commercial.reasons");
-  const { toast } = useToast();
-  const [q, setQ] = useState("");
-  const [ids, setIds] = useState<string[]>(current.map((c) => c.talentId));
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
-  const locked = new Set(current.filter((c) => c.keep).map((c) => c.talentId));
-  const list = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    return candidates.filter((c) => !needle || c.name.toLowerCase().includes(needle)).sort((a, b) => b.reasons.filter((r) => r.met).length - a.reasons.filter((r) => r.met).length || a.name.localeCompare(b.name));
-  }, [candidates, q]);
-
-  function save() {
-    setError(null);
-    start(async () => {
-      const items = ids.map((id) => ({ talentId: id, reasons: candidates.find((c) => c.id === id)?.reasons ?? current.find((c) => c.talentId === id)?.reasons ?? [] }));
-      const result = await setShortlistAction({ dealId, items });
-      if (!result.ok) return setError(result.error);
-      toast({ title: result.message, variant: "success" });
-      onOpenChange(false);
-    });
-  }
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title={t("addTitle")}
-      description={t("addHint")}
-      size="lg"
-      footer={
-        <>
-          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={pending}>
-            {t("back")}
-          </Button>
-          <Button type="button" onClick={save} loading={pending} data-testid="shortlist-save">
-            {t("saveShortlist", { count: ids.length })}
-          </Button>
-        </>
-      }
-    >
-      <div className="flex flex-col gap-3">
-        <FormField label={t("search")}>
-          <Input value={q} maxLength={60} onChange={(e) => setQ(e.target.value)} />
-        </FormField>
-        {list.length === 0 ? <p className="type-body-sm text-fg-muted">{t("noCandidates")}</p> : null}
-        <ul className="flex max-h-[50vh] flex-col divide-y divide-border overflow-y-auto rounded-xl border border-border">
-          {list.map((c) => {
-            const met = c.reasons.filter((r) => r.met);
-            return (
-              <li key={c.id} className="flex items-start gap-3 p-3">
-                <Checkbox aria-label={c.name} checked={ids.includes(c.id)} disabled={pending || locked.has(c.id)} onChange={(e) => setIds((cur) => (e.target.checked ? [...cur, c.id] : cur.filter((x) => x !== c.id)))} />
-                <Avatar src={c.avatarUrl} name={c.name} size="sm" alt="" />
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="text-sm font-medium text-fg">{c.name}</span>
-                  <span className="type-caption text-fg-muted">{[c.city, c.state].filter(Boolean).join(" · ") || t("noLocation")}</span>
-                  <span className="flex flex-wrap gap-1">
-                    {c.reasons.map((r) => (
-                      <Badge key={r.code} size="sm" variant={r.met ? "success" : "neutral"}>
-                        {tr(r.code)}
-                      </Badge>
-                    ))}
-                    {c.reasons.length > 0 ? <span className="type-caption text-fg-muted">{t("matchCount", { met: met.length, total: c.reasons.length })}</span> : null}
-                  </span>
-                  {conflicts[c.id] ? (
-                    <span className="flex flex-col gap-0.5" data-testid="candidate-conflict">
-                      <Badge size="sm" variant="warning" icon={<ShieldAlert />} className="w-fit">
-                        {tx("badge")}
-                      </Badge>
-                      <span className="type-caption text-fg-muted">{(conflicts[c.id] ?? []).map((x) => x.brandName).join(", ")}</span>
-                    </span>
-                  ) : null}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-        {error ? (
-          <p role="alert" className="type-body-sm text-danger">
-            {error}
-          </p>
-        ) : null}
-      </div>
-    </Dialog>
   );
 }
 

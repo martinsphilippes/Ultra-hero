@@ -229,7 +229,26 @@
       "description": "Nome exibido, idioma e tema do app."
     },
     "newPost": {
-      "label": "Novo post"
+      "label": "Novo post",
+      "hint": "Rápido: foto ou vídeo do celular"
+    },
+    "newContent": {
+      "label": "Novo conteúdo",
+      "hint": "Estruturado: treino, receita, cardápio, programa",
+      "myContent": "Meus conteúdos"
+    },
+    "worksFor": {
+      "title": "Você trabalha para",
+      "owner": "Titular",
+      "member": "Membro da equipe",
+      "pending": "Pendente de aprovação",
+      "current": "Em uso",
+      "publicPage": "Ver página pública",
+      "workOn": "Trabalhar neste herói",
+      "workOnNamed": "Trabalhar no herói {name}",
+      "error": "Não foi possível trocar de herói. Tente de novo.",
+      "casting": "Casting da agência {agency}",
+      "hint": "Novo post, Novo conteúdo e Meus conteúdos usam o herói marcado como \"Em uso\"."
     }
   },
   "today": {

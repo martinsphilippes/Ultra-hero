@@ -63,7 +63,7 @@ const num = (m: Metrics, key: string) => (typeof m[key] === "number" ? (m[key] a
 
 async function DashboardContent({ days }: { days: number }) {
   const supabase = await createClient();
-  const [t, tn, locale, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting, preparing] = await Promise.all([
+  const [t, tn, locale, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting, preparing, pendingHeroes] = await Promise.all([
     getTranslations("adminOps.dashboard"),
     getTranslations("nav.admin"),
     getLocale(),
@@ -74,6 +74,7 @@ async function DashboardContent({ days }: { days: number }) {
     supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
     supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "awaiting"),
     supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "preparing"),
+    supabase.from("creator_profiles").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   if (metricsRes.error || !metricsRes.data || typeof metricsRes.data !== "object" || Array.isArray(metricsRes.data)) {
@@ -89,6 +90,8 @@ async function DashboardContent({ days }: { days: number }) {
   const n = (v: number) => formatNumber(v, locale);
 
   const pending = [
+    // 0092: heróis criados por convite nascem pendentes; o admin aprova em Personalidades
+    { key: "pendingHeroes", count: pendingHeroes.count ?? 0, href: "/admin/creators", nav: tn("creators") },
     { key: "inReview", count: inReview.count ?? 0, href: "/admin/content", nav: tn("content") },
     { key: "suggestedLinks", count: suggested.count ?? 0, href: "/admin/links", nav: tn("links") },
     { key: "newFeedback", count: newFeedback.count ?? 0, href: "/admin/feedback?status=new", nav: tn("feedback") },

@@ -60,7 +60,7 @@
       },
       "in_review": {
         "title": "Em revisão",
-        "description": "Enviado à equipe editorial pelo fluxo antigo de revisão. Você pode esperar a decisão ou publicar direto."
+        "description": "Enviado à administração. Aguarde a decisão ou retire da revisão para editar."
       },
       "returned": {
         "title": "Devolvido para ajustes",
@@ -76,7 +76,11 @@
       },
       "archived": {
         "title": "Arquivado",
-        "description": "Arquivado pela administração. Fica somente leitura e não volta ao ar por aqui."
+        "description": "Arquivado. Fica somente leitura e não volta ao ar por aqui."
+      },
+      "draftReview": {
+        "title": "Rascunho",
+        "description": "Este tipo de conteúdo passa pela revisão da administração. Salve e toque em Enviar para revisão."
       }
     },
     "notFoundTitle": "Conteúdo não encontrado",
@@ -106,7 +110,22 @@
     "unpublishDescription": "Ele sai do ar e volta a rascunho para você editar. Depois é só publicar de novo.",
     "unpublishConfirm": "Despublicar",
     "unpublished": "Despublicado",
-    "unpublishedDescription": "O conteúdo voltou a rascunho."
+    "unpublishedDescription": "O conteúdo voltou a rascunho.",
+    "submit": "Enviar para revisão",
+    "submitTitle": "Enviar para revisão?",
+    "submitDescription": "A administração revisa o que já está salvo e aprova ou devolve com comentários. Enquanto isso, o rascunho fica travado.",
+    "submitConfirm": "Enviar",
+    "submitted": "Enviado para revisão",
+    "withdraw": "Retirar da revisão",
+    "withdrawTitle": "Retirar da revisão?",
+    "withdrawDescription": "O conteúdo volta a rascunho para você editar e enviar de novo.",
+    "withdrawConfirm": "Retirar",
+    "withdrawn": "Voltou a rascunho",
+    "archive": "Arquivar",
+    "archiveTitle": "Arquivar este conteúdo?",
+    "archiveDescription": "Ele sai da lista ativa e não aparece no app. O que já esteve no ar só o titular do herói arquiva.",
+    "archiveConfirm": "Arquivar",
+    "archived": "Arquivado"
   },
   "post": {
     "cta": "Novo post",
@@ -214,7 +233,8 @@
       "review_required": "Este tipo de post precisa de revisão antes de ir ao ar. Abra o rascunho em Meus conteúdos.",
       "upload_rights_required": "Antes do primeiro envio, confirme que você tem os direitos sobre a foto ou o vídeo.",
       "invalid_block": "Os campos do pilar não ficaram válidos. Confira e tente de novo.",
-      "invalid_reference": "Uma receita ou produto escolhido não está mais disponível. Remova e escolha outro."
+      "invalid_reference": "Uma receita ou produto escolhido não está mais disponível. Remova e escolha outro.",
+      "hero_not_active": "Seu herói ainda não foi aprovado. O post ficou guardado como rascunho; publique depois da aprovação."
     },
     "photo": {
       "draftTitle": "Post com foto",
@@ -259,7 +279,8 @@
         "photo_media_forbidden": "Esta foto não foi enviada por esta conta e não pode ser usada aqui.",
         "missing_media": "A foto não ficou ligada a este post. Descarte e envie de novo.",
         "missing_body": "A foto não ficou ligada a este post. Descarte e envie de novo.",
-        "not_photo": "Este rascunho não tem foto enviada pelo celular."
+        "not_photo": "Este rascunho não tem foto enviada pelo celular.",
+        "hero_not_active": "Seu herói ainda não foi aprovado. A foto ficou guardada como rascunho; publique depois da aprovação."
       }
     },
     "talentOnly": "Disponível só para heróis com página pública",
@@ -483,6 +504,42 @@
     "upload_incomplete": "O vídeo não terminou de subir para o Cloudflare. Envie de novo pelo Novo post.",
     "stream_media_forbidden": "Este vídeo não foi enviado por esta conta e não pode ser usado aqui.",
     "recipe_editor_pending": "A edição de receitas volta com o novo editor.",
-    "review_required": "A administração exige revisão para este tipo de conteúdo e ele ainda não tem envio para revisão no portal. Fale com a administração."
+    "review_required": "A administração exige revisão para este tipo de conteúdo e ele ainda não tem envio para revisão no portal. Fale com a administração.",
+    "owner_only": "Só o titular do herói (ou a administração) pode tirar do ar, arquivar ou excluir o que já esteve no ar.",
+    "already_archived": "Este conteúdo já está arquivado.",
+    "not_in_review": "Este conteúdo não está em revisão.",
+    "hero_not_active": "Seu herói ainda não foi aprovado. O rascunho ficou guardado; publique depois da aprovação."
+  },
+  "newContent": {
+    "title": "Novo conteúdo",
+    "description": "Conteúdo estruturado de {name}: texto ou vídeo com blocos do pilar (treino com passos, nutrição, cardápio), programa e produtos. Salve o rascunho e publique quando estiver pronto.",
+    "heroLabel": "Herói",
+    "heroHint": "Você faz parte de mais de um herói. O conteúdo sai pelo herói escolhido.",
+    "heroSwitchError": "Não foi possível trocar de herói. Tente de novo.",
+    "recipeOtherHero": "Receitas saem pelo herói {name}.",
+    "ownerOnly": "Tirar do ar e arquivar conteúdo publicado é com o titular do herói.",
+    "kind": {
+      "label": "O que você vai criar?",
+      "structured": {
+        "title": "Conteúdo estruturado",
+        "description": "Texto ou vídeo com blocos do pilar (treino, nutrição, cardápio), programa e produtos. Preencha abaixo."
+      },
+      "post": {
+        "title": "Post rápido",
+        "description": "Foto ou vídeo do celular com título e legenda.",
+        "next": "O post rápido abre no editor do celular.",
+        "cta": "Abrir o Novo post"
+      },
+      "recipe": {
+        "title": "Receita",
+        "description": "Receita completa em etapas: ingredientes, passos, nutrição, foto e produtos.",
+        "next": "A receita tem editor próprio, no Portal do Chef.",
+        "cta": "Abrir o editor de receitas"
+      }
+    },
+    "publishAfterApproval": "Seu herói ainda aguarda aprovação: o rascunho fica guardado e você publica assim que ele for aprovado."
+  },
+  "pending": {
+    "notice": "Seu herói está aguardando aprovação do Ultra. Você já pode preparar posts e conteúdos: eles aparecem para o público assim que o herói for aprovado."
   }
 }

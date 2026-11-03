@@ -267,7 +267,9 @@
       "acting_unavailable": "Publicar como héroe aún no está disponible en este entorno.",
       "duplicate": "Ya existe un registro igual.",
       "network": "Sin conexión. Intenta de nuevo.",
-      "generic": "Algo salió mal. Intenta de nuevo."
+      "generic": "Algo salió mal. Intenta de nuevo.",
+      "owner_only": "Solo el titular del héroe (o la administración) archiva o elimina una receta que ya estuvo publicada.",
+      "hero_not_active": "Tu héroe aún no fue aprobado. La receta quedó guardada; publica después de la aprobación."
     }
   },
   "portal": {

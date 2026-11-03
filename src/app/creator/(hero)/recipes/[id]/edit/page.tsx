@@ -17,7 +17,7 @@ import { parseEditorStep } from "@/lib/recipes/editor-steps";
 import { myRecipeStatus, recipeActions } from "@/lib/recipes/portal";
 import { loadRecipeRows } from "@/lib/recipes/rows";
 import { createClient } from "@/lib/supabase/server";
-import { getManagedCreator } from "../../../_lib/creator";
+import { getContentWorkspace } from "../../../_lib/creator";
 import { readVideoUploadConfigured } from "../../../_lib/video-post";
 import { loadLatestFeedback, loadOwnRecipeContent, loadRecipeCategories, loadRecipeReviewRequired, loadUploadsEnabled } from "../../_lib/load";
 
@@ -38,7 +38,7 @@ export default async function EditRecipePage({ params, searchParams }: Params) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
   const sp = await searchParams;
-  const [t, tp, tn, locale, ctx] = await Promise.all([getTranslations("recipes.editor"), getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getManagedCreator("recipes")]);
+  const [t, tp, tn, locale, ctx] = await Promise.all([getTranslations("recipes.editor"), getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getContentWorkspace("recipes", { followChoice: false })]);
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("metaEdit")} />;
 
   const supabase = ctx.supabase;

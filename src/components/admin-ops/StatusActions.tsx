@@ -30,10 +30,10 @@ export function CreatorStatusButton({ id, status }: { id: string; status: "pendi
   return (
     <ConfirmActionDialog
       triggerSize="md"
-      triggerLabel={suspend ? t("suspend") : t("activate")}
-      triggerVariant={suspend ? "ghost" : "secondary"}
-      title={suspend ? t("suspendTitle") : t("activateTitle")}
-      description={suspend ? t("suspendDescription") : undefined}
+      triggerLabel={suspend ? t("suspend") : status === "pending" ? t("approve") : t("activate")}
+      triggerVariant={suspend ? "ghost" : status === "pending" ? "primary" : "secondary"}
+      title={suspend ? t("suspendTitle") : status === "pending" ? t("approveTitle") : t("activateTitle")}
+      description={suspend ? t("suspendDescription") : status === "pending" ? t("approveDescription") : undefined}
       requireJustification
       destructive={suspend}
       action={(justification) => setCreatorStatus({ id, status: suspend ? "suspended" : "active" }, justification)}

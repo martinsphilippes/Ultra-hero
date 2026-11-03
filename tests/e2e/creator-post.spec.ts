@@ -32,10 +32,12 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
     await expect(page.getByTestId("hero-new-post")).toHaveAttribute("href", "/creator/post/new");
   });
 
-  test("herói: a lista de conteúdos do portal não existe mais (volta ao Perfil)", async ({ page }) => {
+  test("herói: Meus conteúdos abre no portal, com Novo post e Novo conteúdo (0092)", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/creator/content");
-    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page).toHaveURL(/\/creator\/content$/);
+    await expect(page.getByTestId("new-post")).toHaveAttribute("href", "/creator/post/new");
+    await expect(page.getByTestId("new-content")).toHaveAttribute("href", "/creator/content/new");
   });
 
   test("admin: Novo post pelo herói escolhido abre o mesmo composer, com a faixa do herói", async ({ page }) => {

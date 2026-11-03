@@ -61,6 +61,8 @@ vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => stat
 vi.mock("@/lib/auth/session", () => ({
   getUser: async () => state.user,
   hasRole: async (role: string) => role === "admin" && state.isAdmin,
+  // 0092: o creator também envia a capa pelo Novo conteúdo dele; aqui a conta comum (sem papel de herói)
+  getRoles: async () => [],
 }));
 vi.mock("@/lib/acting-hero/server", () => ({
   actingClient: async (heroId: string) => {

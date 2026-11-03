@@ -4,12 +4,15 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { createClient } from "@/lib/supabase/server";
-import { getMyCreator } from "@/app/creator/(hero)/_lib/creator";
+import { chosenHeroId, getMyCreator, listMyHeroesAll } from "@/app/creator/(hero)/_lib/creator";
+import { MyHeroesCard } from "@/components/creator/MyHeroesCard";
+import { heroSelectable } from "@/lib/creator-content/rules";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure";
 import { ACCOUNT_ANCHOR } from "@/lib/creator/hero-anchors";
 import { HeroProfileEditor, HeroProfileHeader } from "@/components/creator/HeroProfileTop";
 import { HeroNewPost } from "@/components/creator/HeroNewPost";
+import { HeroPendingNotice } from "@/components/creator/HeroPendingNotice";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
 import { TodaySection } from "@/components/me/today/TodaySection";
@@ -76,6 +79,9 @@ export default async function ProfilePage() {
   // (nos portais do topo)
   const roleBadges = isTalentOnly(roles) ? roleSet.map((r) => (r === "creator" ? "talent" : r)) : roleSet;
   const talentCtx = roleSet.includes("creator") ? await getTalentContext() : null;
+  // "Você trabalha para" (0092): heróis da pessoa (titular/equipe) e o em uso para postar e criar conteúdo
+  const myHeroes = heroProfile ? await listMyHeroesAll() : [];
+  const heroInUse = myHeroes.length > 1 ? await chosenHeroId(myHeroes.filter((h) => heroSelectable(h.status)), creator.creatorId) : (creator.creatorId ?? myHeroes[0]?.id ?? null);
   // "Conectar relógio" ou, com WEARABLES_REAL_ENABLED=1, o relógio que a pessoa conectou.
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
@@ -86,6 +92,9 @@ export default async function ProfilePage() {
   const heroOwner = heroActive && creator.teamRole !== "member";
   // admin com perfil de herói posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros heróis)
   const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/creator/post/new";
+  // 0092: Novo conteúdo (estruturado) ao lado do Novo post; o admin segue pelo seletor de "Publicar como hero"
+  const newContentHref = roleSet.includes("admin") ? heroPickerHref("newContent") : "/creator/content/new";
+  const myContentHref = roleSet.includes("admin") ? heroPickerHref("content") : "/creator/content";
 
   const dataForm = (
     <ProfileDataForm
@@ -133,11 +142,17 @@ export default async function ProfilePage() {
       <PortalShortcuts items={portalItems} />
 
       {heroProfile ? (
-        // topo do herói: cabeçalho público → Novo post → Editar perfil
+        // topo do herói: cabeçalho público → Novo post e Novo conteúdo → Editar perfil
         <div className="flex flex-col gap-4">
           <HeroProfileHeader profile={heroProfile} />
-          {/* o herói só posta no dia a dia (foto ou vídeo); o resto é da administração */}
-          {heroActive ? <HeroNewPost href={newPostHref} /> : null}
+          {heroActive && heroProfile.status === "pending" ? <HeroPendingNotice /> : null}
+          <MyHeroesCard
+            heroes={myHeroes}
+            currentId={heroInUse}
+            agency={talentCtx?.state === "ok" && creator.creatorId ? { heroId: creator.creatorId, name: talentCtx.talent.agency } : null}
+          />
+          {/* Novo post (rápido) e Novo conteúdo (estruturado, 0092) para o titular e a equipe do herói */}
+          {heroActive ? <HeroNewPost href={newPostHref} contentHref={newContentHref} listHref={myContentHref} /> : null}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroOwner}

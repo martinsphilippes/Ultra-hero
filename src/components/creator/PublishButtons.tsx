@@ -1,10 +1,10 @@
 "use client";
 
-import { CircleCheck, CircleX, EyeOff, Send } from "lucide-react";
+import { Archive, CircleCheck, CircleX, EyeOff, Send, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { publishContent, unpublishContent } from "@/app/creator/(hero)/content/actions";
+import { archiveContent, publishContent, submitContentForReview, unpublishContent, withdrawContentReview } from "@/app/creator/(hero)/content/actions";
 import type { ChecklistItem } from "@/components/editors/content/schema";
 import { Button, Dialog, useToast } from "@/components/ui";
 
@@ -151,5 +151,117 @@ export function UnpublishButton({ contentId }: { contentId: string }) {
         )}
       </Dialog>
     </>
+  );
+}
+
+type ConfirmProps = {
+  /** Chaves em creator.publish: botão, título, descrição, confirmar e o aviso de sucesso. */
+  keys: { button: string; title: string; description: string; confirm: string; success: string };
+  run: (input: { id: string }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  contentId: string;
+  icon: React.ReactNode;
+  variant?: "primary" | "secondary" | "ghost";
+  danger?: boolean;
+  testId: string;
+};
+
+// Ação com confirmação (0092): enviar para revisão, retirar da revisão e arquivar.
+function ConfirmContentAction({ keys, run, contentId, icon, variant = "secondary", danger = false, testId }: ConfirmProps) {
+  const t = useTranslations("creator.publish");
+  const tc = useTranslations("common.actions");
+  const errorText = useErrorText();
+  const { toast } = useToast();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function confirm() {
+    setError(null);
+    startTransition(async () => {
+      const result = await run({ id: contentId });
+      if (result.ok) {
+        toast({ title: t(keys.success), variant: "success" });
+        setOpen(false);
+        router.refresh();
+      } else {
+        setError(errorText(result.error));
+      }
+    });
+  }
+
+  return (
+    <>
+      <Button type="button" variant={variant} leadingIcon={icon} onClick={() => setOpen(true)} data-testid={testId}>
+        {t(keys.button)}
+      </Button>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          if (!pending) setOpen(next);
+        }}
+        title={t(keys.title)}
+        description={t(keys.description)}
+        size="sm"
+        footer={
+          <div className="flex w-full justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+              {tc("cancel")}
+            </Button>
+            <Button type="button" variant={danger ? "danger" : "primary"} onClick={confirm} loading={pending}>
+              {t(keys.confirm)}
+            </Button>
+          </div>
+        }
+      >
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
+      </Dialog>
+    </>
+  );
+}
+
+// "Enviar para revisão": quando o admin exige revisão do tipo, o creator manda o rascunho salvo (0092).
+export function SubmitReviewButton({ contentId }: { contentId: string }) {
+  return (
+    <ConfirmContentAction
+      contentId={contentId}
+      run={submitContentForReview}
+      icon={<Send />}
+      variant="primary"
+      testId="submit-review-content"
+      keys={{ button: "submit", title: "submitTitle", description: "submitDescription", confirm: "submitConfirm", success: "submitted" }}
+    />
+  );
+}
+
+// "Retirar da revisão": volta a rascunho editável.
+export function WithdrawReviewButton({ contentId }: { contentId: string }) {
+  return (
+    <ConfirmContentAction
+      contentId={contentId}
+      run={withdrawContentReview}
+      icon={<Undo2 />}
+      testId="withdraw-review-content"
+      keys={{ button: "withdraw", title: "withdrawTitle", description: "withdrawDescription", confirm: "withdrawConfirm", success: "withdrawn" }}
+    />
+  );
+}
+
+// "Arquivar": o que já esteve no ar só o titular (o banco responde owner_only ao membro).
+export function ArchiveContentButton({ contentId }: { contentId: string }) {
+  return (
+    <ConfirmContentAction
+      contentId={contentId}
+      run={archiveContent}
+      icon={<Archive />}
+      variant="ghost"
+      danger
+      testId="archive-content"
+      keys={{ button: "archive", title: "archiveTitle", description: "archiveDescription", confirm: "archiveConfirm", success: "archived" }}
+    />
   );
 }

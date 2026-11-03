@@ -25,6 +25,8 @@ const state = vi.hoisted(() => ({
 }));
 
 vi.mock("server-only", () => ({}));
+// 0092: o herói escolhido (cookie) vale no Novo post; aqui, sem escolha
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 vi.mock("next-intl/server", () => ({ getTranslations: async () => (k: string) => k, getLocale: async () => "pt-BR" }));
 vi.mock("@/lib/auth/session", () => ({
@@ -107,12 +109,13 @@ describe("creatorActionContext", () => {
 });
 
 describe("actions de gestão chamadas direto pelo herói comum", () => {
-  it("criar receita e sugerir vínculo: forbidden, sem escrita", async () => {
+  it("sugerir vínculo segue do admin (forbidden); criar receita é do herói desde a 0092 (chega ao banco, que confere o dono)", async () => {
     const draft = emptyDraft();
     draft.title = "Bolo";
     const built = buildPayload(draft);
     if (!built.ok) throw new Error("payload inválido");
-    expect(await createRecipeDraft({ payload: built.payload })).toEqual({ ok: false, error: "forbidden" });
+    expect(await createRecipeDraft({ payload: built.payload })).not.toEqual({ ok: false, error: "forbidden" });
+    state.inserts = [];
     expect(await suggestLink({ contentId: ids.CONTENT, productId: ids.PRODUCT, note: "" })).toEqual({ ok: false, error: "forbidden" });
     expect(state.inserts).toEqual([]);
   });

@@ -1,5 +1,9 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // sugerir heróis no negócio (0093)
+  "invalid_hero_name",
+  "invalid_profile_ref",
+  "too_many_new_talents",
   // convites por papel, equipe do herói e primeiro acesso (0091)
   "admin_invite_max_48h",
   "admin_confirm_required",

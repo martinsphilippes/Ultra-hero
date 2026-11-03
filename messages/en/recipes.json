@@ -267,7 +267,9 @@
       "acting_unavailable": "Publish as hero is not available in this environment yet.",
       "duplicate": "An identical record already exists.",
       "network": "No connection. Try again.",
-      "generic": "Something went wrong. Try again."
+      "generic": "Something went wrong. Try again.",
+      "owner_only": "Only the hero owner (or the admin team) archives or deletes a recipe that has been published.",
+      "hero_not_active": "Your hero has not been approved yet. The recipe was kept; publish after approval."
     }
   },
   "portal": {

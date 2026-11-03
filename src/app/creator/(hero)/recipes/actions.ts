@@ -86,7 +86,7 @@ function parsePayload(payload: unknown): { ok: true; data: z.infer<typeof recipe
 export async function createRecipeDraft(input: { payload: unknown }): Promise<Ok<{ id: string; updatedAt: string }> | RecipeFailure> {
   const parsed = parsePayload(input?.payload);
   if (!parsed.ok) return parsed;
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const { supabase, creatorId, userId } = ctx;
   const locale = await getLocale();
@@ -132,7 +132,7 @@ export async function saveRecipe(input: { id: string; payload: unknown; expected
   if (!meta.success) return { ok: false, error: "invalid_input" };
   const parsed = parsePayload(input.payload);
   if (!parsed.ok) return parsed;
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, meta.data.id);
   if ("ok" in own) return own;
@@ -170,7 +170,7 @@ export async function registerRecipeMedia(input: z.input<typeof registerSchema>)
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.path[0] === "rights") ? "rights_required" : "invalid_input" };
   const v = parsed.data;
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const path = parseRecipeMediaPath(v.path);
   if (!path || path.creatorId !== ctx.creatorId || path.contentId !== v.contentId) return { ok: false, error: "invalid_path" };
@@ -220,7 +220,7 @@ export async function registerRecipeMedia(input: z.input<typeof registerSchema>)
 export async function deleteRecipeMedia(input: { mediaId: string }): Promise<Ok<{ updatedAt: string | null }> | RecipeFailure> {
   const parsed = z.object({ mediaId: idSchema }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const { data: media } = await ctx.supabase.from("recipe_media").select("content_id").eq("id", parsed.data.mediaId).maybeSingle();
   const { data, error } = await ctx.supabase.rpc("recipe_delete_media", { p_media: parsed.data.mediaId });
@@ -259,7 +259,7 @@ export async function startRecipeVideoUpload(input: z.input<typeof videoSchema>)
   if (!parsed.success) return { ok: false, error: typeof input?.fileSize === "number" && input.fileSize > MAX_POST_BYTES ? "file_too_large" : "invalid_input" };
   const { contentId, fileSize, fileName, durationSec } = parsed.data;
   if (durationSec !== null && durationSec > SERVER_MAX_POST_SECONDS) return { ok: false, error: "too_long" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, contentId);
   if ("ok" in own) return own;
@@ -297,7 +297,7 @@ export async function startRecipeVideoUpload(input: z.input<typeof videoSchema>)
 export async function checkRecipeVideo(input: { contentId: string }): Promise<Ok<{ durationSec: number | null }> | RecipeFailure> {
   const parsed = z.object({ contentId: idSchema }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, parsed.data.contentId);
   if ("ok" in own) return own;
@@ -314,7 +314,7 @@ export async function publishRecipe(input: { id: string; publishAt?: string | nu
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const schedule = parsePublishAt(parsed.data.publishAt);
   if (!schedule.ok) return { ok: false, error: "invalid_publish_at" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, parsed.data.id);
   if ("ok" in own) return own;
@@ -350,7 +350,7 @@ export async function submitRecipe(input: { id: string; requestedPublishAt?: str
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const schedule = parsePublishAt(parsed.data.requestedPublishAt);
   if (!schedule.ok) return { ok: false, error: "invalid_publish_at" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, parsed.data.id);
   if ("ok" in own) return own;
@@ -364,7 +364,7 @@ export async function submitRecipe(input: { id: string; requestedPublishAt?: str
 
 async function simpleRpc(fn: "creator_withdraw_review" | "creator_unpublish_content" | "creator_restore_content", id: string): Promise<Ok | RecipeFailure> {
   if (!idSchema.safeParse(id).success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, id);
   if ("ok" in own) return own;
@@ -392,7 +392,7 @@ export async function restoreRecipe(input: { id: string }): Promise<Ok | RecipeF
 export async function archiveRecipe(input: { id: string; reason?: string }): Promise<Ok | RecipeFailure> {
   const parsed = z.object({ id: idSchema, reason: z.string().trim().max(500).optional() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, parsed.data.id);
   if ("ok" in own) return own;
@@ -408,7 +408,7 @@ export async function archiveRecipe(input: { id: string; reason?: string }): Pro
 /** Cópia como rascunho novo (sem fotos, vídeo nem versões). Slug em uso tenta outro sufixo. */
 export async function duplicateRecipe(input: { id: string }): Promise<Ok<{ id: string }> | RecipeFailure> {
   if (!idSchema.safeParse(input?.id).success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, input.id);
   if ("ok" in own) return own;
@@ -435,7 +435,7 @@ export async function duplicateRecipe(input: { id: string }): Promise<Ok<{ id: s
  */
 export async function deleteRecipeDraft(input: { id: string }): Promise<Ok | RecipeFailure> {
   if (!idSchema.safeParse(input?.id).success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const own = await loadOwnRecipe(ctx, input.id);
   if ("ok" in own) return own;
@@ -470,7 +470,7 @@ export async function deleteRecipeDraft(input: { id: string }): Promise<Ok | Rec
 export async function restoreRecipeVersion(input: { versionId: string; contentId: string }): Promise<Ok<{ updatedAt: string | null }> | RecipeFailure> {
   const parsed = z.object({ versionId: idSchema, contentId: idSchema }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const ctx = await creatorActionContext();
+  const ctx = await creatorActionContext("recipes");
   if (!ctx.ok) return ctx;
   const { data, error } = await ctx.supabase.rpc("creator_restore_recipe_version", { p_version: parsed.data.versionId });
   if (error) return recipeFail(error);

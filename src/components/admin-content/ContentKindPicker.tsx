@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import { chooseActingHero } from "@/app/admin/hero-actions";
 import { Button } from "@/components/ui";
+import { ADMIN_CONTENT_KINDS, contentKindsFor, creatorKindHref, type ContentAudience, type ContentKind } from "@/lib/creator-content/rules";
 import { cn } from "@/lib/utils";
 
-export const CONTENT_KINDS = ["structured", "post", "recipe", "program"] as const;
-export type ContentKind = (typeof CONTENT_KINDS)[number];
+export const CONTENT_KINDS = ADMIN_CONTENT_KINDS;
+export type { ContentKind };
 
 const ICONS: Record<ContentKind, LucideIcon> = { structured: FileText, post: Camera, recipe: ChefHat, program: Layers };
 
@@ -18,13 +19,18 @@ type Props = {
   onChange: (kind: ContentKind) => void;
   /** Herói responsável escolhido acima (post e receita abrem o portal em nome dele). */
   creatorId: string | null;
+  /** 0092: o creator vê só estruturado, post e receita, que abrem o composer e o Portal do Chef dele. */
+  audience?: ContentAudience;
+  /** Aviso no tipo Receita (creator com outro herói escolhido: a receita sai pelo herói padrão). */
+  recipeNote?: string | null;
 };
 
 // "O que você vai criar?" no Novo conteúdo do admin: o conteúdo estruturado fica nesta tela; post
 // rápido e receita abrem o editor próprio em nome do herói (admin_act_as_hero, 0045); programa abre o
 // cadastro de programa já com o herói escolhido.
-export function ContentKindPicker({ value, onChange, creatorId }: Props) {
-  const t = useTranslations("adminContent.content.kind");
+export function ContentKindPicker({ value, onChange, creatorId, audience = "admin", recipeNote = null }: Props) {
+  const t = useTranslations(audience === "admin" ? "adminContent.content.kind" : "creator.newContent.kind");
+  const kinds = contentKindsFor(audience);
   const te = useTranslations("adminOps.heroPublishing.errors");
   const router = useRouter();
   const groupId = useId();
@@ -33,6 +39,11 @@ export function ContentKindPicker({ value, onChange, creatorId }: Props) {
 
   function go() {
     setError(null);
+    if (audience === "creator") {
+      const href = creatorKindHref(value);
+      if (href) router.push(href);
+      return;
+    }
     if (value === "program") {
       router.push(creatorId ? `/admin/programs/new?creator=${creatorId}` : "/admin/programs/new");
       return;
@@ -56,8 +67,8 @@ export function ContentKindPicker({ value, onChange, creatorId }: Props) {
       <p id={groupId} className="text-sm font-medium text-fg">
         {t("label")}
       </p>
-      <div role="radiogroup" aria-labelledby={groupId} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {CONTENT_KINDS.map((kind) => {
+      <div role="radiogroup" aria-labelledby={groupId} className={cn("grid grid-cols-2 gap-2", kinds.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-4")}>
+        {kinds.map((kind) => {
           const Icon = ICONS[kind];
           const selected = kind === value;
           return (
@@ -86,6 +97,7 @@ export function ContentKindPicker({ value, onChange, creatorId }: Props) {
       {value !== "structured" ? (
         <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-elevated p-4">
           <p className="text-sm text-fg">{t(`${value}.next`)}</p>
+          {value === "recipe" && recipeNote ? <p className="type-caption text-fg-muted" data-testid="content-kind-recipe-note">{recipeNote}</p> : null}
           {error ? (
             <p role="alert" className="type-caption font-medium text-danger">
               {error}

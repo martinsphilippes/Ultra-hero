@@ -2,7 +2,8 @@
 
 import { z } from "zod";
 import { actingClient } from "@/lib/acting-hero/server";
-import { getUser, hasRole } from "@/lib/auth/session";
+import { getRoles, getUser, hasRole } from "@/lib/auth/session";
+import { hasHeroRole } from "@/lib/auth/talent-scope";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { POST_PHOTO_MAX_UPLOAD_BYTES } from "@/lib/post-photo/constants";
 import { isPostPhotoPath, publicPostPhotoUrl } from "@/lib/post-photo/paths";
@@ -11,6 +12,7 @@ import { validatePostPhotoBytes } from "@/lib/post-photo/validation";
 import { hasUploadRights } from "@/lib/partner-terms/server";
 import { UPLOAD_RIGHTS_REQUIRED } from "@/lib/partner-terms/version";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { rpcErrorCode } from "@/lib/supabase/helpers";
 
 // Capa do conteúdo no editor do admin: foto tirada na hora ou escolhida no celular (de um vídeo, o
@@ -61,8 +63,10 @@ function rpcFailure(error: { code?: string; message?: string } | null): ContentC
 export async function uploadContentCover(formData: FormData): Promise<ContentCoverResult> {
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  // o editor de conteúdo é do admin (0045): o herói em nome de quem a capa é reservada vem do seletor
-  if (!(await hasRole("admin"))) return { ok: false, error: "forbidden" };
+  // admin (0045): o herói em nome de quem a capa é reservada vem do seletor. 0092: o creator (titular ou membro)
+  // também, pelo Novo conteúdo dele — o banco confere que o herói pedido é o dele (my_creator_id com x-my-hero).
+  const isAdmin = await hasRole("admin");
+  if (!isAdmin && !hasHeroRole(await getRoles())) return { ok: false, error: "forbidden" };
   const base = supabaseBaseUrl();
   if (!hasAdminClient() || !base) return { ok: false, error: "photo_not_configured" };
 
@@ -82,8 +86,8 @@ export async function uploadContentCover(formData: FormData): Promise<ContentCov
     // cabeçalho x-acting-hero: o banco só o honra para o admin com herói ativo (acting_hero_id, 0045).
     // Confere antes de reservar: um admin que também é herói passaria na reserva pelo próprio perfil, e
     // a capa ficaria reservada "por ninguém" para um herói inativo ou inexistente.
-    const supabase = await actingClient(parsed.data.creatorId);
-    const { data: acting, error: actingError } = await supabase.rpc("acting_hero_id");
+    const supabase = isAdmin ? await actingClient(parsed.data.creatorId) : await createClient({ myHeroId: parsed.data.creatorId });
+    const { data: acting, error: actingError } = await supabase.rpc(isAdmin ? "acting_hero_id" : "my_creator_id");
     if (actingError) return { ok: false, error: rpcFailure(actingError) };
     if (acting !== parsed.data.creatorId) return { ok: false, error: "not_a_hero" };
     // Termos do Parceiro (0068): quem envia confirma os direitos sobre a foto antes do primeiro envio

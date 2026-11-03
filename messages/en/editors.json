@@ -26,7 +26,8 @@
     "blocksLoading": "Loading the hero's recipes, products and programs…",
     "blocksRoutine": "Routine opens no block: the content goes out with text, photo or video only. Change the pillar to open workout, nutrition or menu.",
     "products": "Linked products",
-    "productsDescription": "Store products shown under \"Related products\" on the content page. The link is validated right away."
+    "productsDescription": "Store products shown under \"Related products\" on the content page. The link is validated right away.",
+    "productsDescriptionCreator": "Store products shown under \"Related products\". The link goes to the admin team for validation."
   },
   "fields": {
     "title": "Title",
@@ -97,7 +98,9 @@
     "acting_unavailable": "Publish as hero is not available in this environment yet.",
     "not_found": "Content not found.",
     "media_license_mismatch": "License inconsistent with the media: fix the license and save again.",
-    "recipe_editor_pending": "Recipe editing comes back with the new editor."
+    "recipe_editor_pending": "Recipe editing comes back with the new editor.",
+    "owner_only": "Only the hero owner (or the admin team) can do this with what has been published.",
+    "hero_not_active": "Your hero has not been approved yet. The draft was kept; publish after approval."
   },
   "list": {
     "empty": "No items yet.",
@@ -308,5 +311,6 @@
     "max": "Up to {max} products per content.",
     "choose": "Choose…",
     "unavailable": "Unavailable product"
-  }
+  },
+  "footerNoteCreator": "Saving keeps a draft. Then publish it (or send it for review) at the top of the content screen."
 }

@@ -128,7 +128,8 @@
       "newFeedback": "Feedbacks novos",
       "awaitingFulfillments": "Remessas aguardando",
       "open": "Abrir",
-      "preparingFulfillments": "Remessas em preparação"
+      "preparingFulfillments": "Remessas em preparação",
+      "pendingHeroes": "Heróis aguardando aprovação"
     }
   },
   "heroPublishing": {
@@ -395,7 +396,11 @@
       "activateTitle": "Reativar herói",
       "suspendTitle": "Suspender herói",
       "suspendDescription": "O herói some do catálogo público e o usuário vinculado perde a operação no portal. O histórico é mantido.",
-      "updated": "Status atualizado"
+      "updated": "Status atualizado",
+      "approve": "Aprovar",
+      "approveTitle": "Aprovar herói",
+      "approveDescription": "O herói passa a aparecer no catálogo público e o que a equipe já preparou pode ser publicado.",
+      "pendingBanner": "{count, plural, =1 {1 herói aguardando aprovação} other {# heróis aguardando aprovação}}"
     },
     "invite": "Convidar usuário",
     "linkedTo": "Vinculado a {email}",

@@ -16,7 +16,7 @@
     "pipeline": "Pipeline",
     "newDeal": "New deal",
     "deal": "Deal",
-    "dealTalents": "Deal creators",
+    "dealTalents": "Deal heroes",
     "dealDeliverables": "Deal deliverables",
     "dealMessages": "Deal conversation",
     "dealDocuments": "Deal documents",
@@ -277,7 +277,7 @@
     "not_found": "We couldn't find that here.",
     "invalid_input": "Check the fields and try again.",
     "generic": "That didn't work. Try again.",
-    "creator_already_in_casting": "This hero is already linked to a creator in a roster.",
+    "creator_already_in_casting": "This hero is already on an agency's roster.",
     "user_has_talent": "This hero's account already has its own creator profile.",
     "talent_has_login": "The creator already has a login: only they can do this.",
     "talent_has_creator": "This creator already has a linked public page (hero): access is through the hero's account.",
@@ -352,7 +352,10 @@
     "creator_profile_already_linked": "This hero already has another lead.",
     "professional_profile_already_linked": "You already have a professional profile.",
     "invitation_email_mismatch": "This invite belongs to another email.",
-    "invitation_expired": "This invite has expired."
+    "invitation_expired": "This invite has expired.",
+    "invalid_hero_name": "The hero name must be 2 to 80 characters.",
+    "invalid_profile_ref": "Use @handle or a link starting with https://.",
+    "too_many_new_talents": "At most 10 new records at a time. Save and continue."
   },
   "casting": {
     "title": "Roster",
@@ -580,7 +583,7 @@
     "emptyHint": "Brand proposals land here; the agency can also open a deal.",
     "ownerUnknown": "Owner outside the team",
     "noOwner": "No owner",
-    "talents": "{count, plural, =0 {no creators} one {# creator} other {# creators}}",
+    "talents": "{count, plural, =0 {no heroes} one {# hero} other {# heroes}}",
     "startsOn": "Starts {date}",
     "noDate": "No date",
     "inStage": "in this stage {when}",
@@ -599,7 +602,7 @@
     "deliverablesSaved": "Deliverables saved.",
     "consulted": "{count, plural, one {# creator consulted} other {# creators consulted}}.",
     "responseRecorded": "Response recorded.",
-    "talentRemoved": "Creator removed from the deal.",
+    "talentRemoved": "Hero removed from the deal.",
     "confirmed": "Campaign confirmed. The brand and the creators were notified.",
     "backToPipeline": "Pipeline",
     "demoTag": "example",
@@ -608,7 +611,7 @@
     "tabsLabel": "Deal sections",
     "tabs": {
       "overview": "Overview",
-      "talents": "Creators",
+      "talents": "Heroes",
       "deliverables": "Deliverables",
       "messages": "Conversation",
       "documents": "Documents",
@@ -694,7 +697,7 @@
       "required": "Write the entry."
     },
     "talents": {
-      "empty": "No creators in this deal yet.",
+      "empty": "No heroes in this deal yet.",
       "select": "Select {name}",
       "noLogin": "no login",
       "noConsent": "no consent",
@@ -711,16 +714,76 @@
       "recordResponse": "Record response",
       "remove": "Remove",
       "confirmRemove": "Remove {name} from this deal?",
-      "add": "Suggest creators",
+      "add": "Suggest heroes",
       "consult": "{count, plural, =0 {Consult interest} one {Consult # creator} other {Consult # creators}}",
-      "consultHint": "Tick the suggested creators to consult.",
-      "addTitle": "Suggest creators from the roster",
-      "addHint": "Sorted by criteria met (segment, region, network, availability). Those who already replied stay.",
+      "consultHint": "Tick the suggested heroes to consult.",
+      "addTitle": "Suggest heroes",
+      "addHint": "From your roster, the platform, or typed in. The roster comes sorted by the brief's criteria; those who already replied stay.",
       "back": "Back",
       "saveShortlist": "{count, plural, =0 {Save shortlist} one {Save shortlist (#)} other {Save shortlist (#)}}",
-      "search": "Search the roster",
-      "noCandidates": "No creator found.",
-      "matchCount": "{met} of {total} criteria"
+      "search": "Search heroes",
+      "noCandidates": "No hero found.",
+      "matchCount": "{met} of {total} criteria",
+      "searchPlaceholder": "Hero name or address",
+      "searching": "Searching…",
+      "noPlatform": "No platform hero for this search.",
+      "retry": "Try again",
+      "loadMore": "Show more heroes",
+      "castingTitle": "On your roster ({count})",
+      "platformTitle": "Platform heroes",
+      "scope": {
+        "casting": "On your roster",
+        "outside": "Off your roster",
+        "other_agency": "At another agency",
+        "person_in_casting": "Person already on roster"
+      },
+      "scopeHint": {
+        "casting": "Already has a record on your roster.",
+        "outside": "Their record will be created on your roster when you save.",
+        "other_agency": "Unavailable: already on another agency's roster.",
+        "person_in_casting": "Unavailable: this hero's account already has another record on your roster."
+      },
+      "noHeroPage": "No platform page",
+      "followers": "{count} followers",
+      "newFichaNotice": "{count, plural, one {The record of # hero will be created on your roster when you save. It starts without consent: consulting and the catalog follow the usual rules.} other {The records of # heroes will be created on your roster when you save. They start without consent: consulting and the catalog follow the usual rules.}}",
+      "newFichaList": "Records to create",
+      "untick": "Remove {name}",
+      "limits": {
+        "tooMany": "At most {max} heroes per deal.",
+        "tooManyNew": "At most {max} new records at a time. Save and continue."
+      },
+      "outsidePlatform": "Not on the platform — invite them to join",
+      "inviteCreator": "Invite creator",
+      "typed": {
+        "title": "Hero who is not on the platform",
+        "open": "Type a hero who is not on the platform",
+        "hint": "Creates a record on your roster with just the name. Then invite them to join the platform.",
+        "name": "Name",
+        "profile": "Public profile or network handle",
+        "profileHint": "Optional. E.g. @name or the profile link.",
+        "email": "Contact email",
+        "emailHint": "Optional. Used to invite them later.",
+        "add": "Add to the list",
+        "cancel": "Cancel",
+        "duplicate": "This name is already on the list.",
+        "badge": "Not on the platform",
+        "nameOnly": "Name only",
+        "willCreate": "Their record will be created on your roster.",
+        "errors": {
+          "name": {
+            "required": "Type the name.",
+            "invalid": "The name must be 2 to 80 characters."
+          },
+          "profile": {
+            "required": "Enter the profile.",
+            "invalid": "Use @handle or a link starting with https://."
+          },
+          "email": {
+            "required": "Enter the email.",
+            "invalid": "Check the email address."
+          }
+        }
+      }
     },
     "consultDialog": {
       "title": "{count, plural, one {Consult # creator} other {Consult # creators}}",
@@ -788,7 +851,8 @@
       "rateOverrideHint": "Empty uses the agency default ({rate}). Only changes before the contract.",
       "rateSave": "Save deal rate",
       "noEntries": "Entries appear here after the contract."
-    }
+    },
+    "heroesSavedCreated": "{count, plural, one {Shortlist saved. Record created on your roster.} other {Shortlist saved. # records created on your roster.}}"
   },
   "agenda": {
     "title": "Calendar",

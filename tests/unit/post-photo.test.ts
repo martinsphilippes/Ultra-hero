@@ -126,6 +126,7 @@ function client(kind: "user" | "admin") {
 }
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
 // Termos do Parceiro (0068): confirmação de direitos antes do envio; cada teste liga ou desliga
 vi.mock("@/lib/partner-terms/server", () => ({ hasUploadRights: async () => state.uploadRights }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));

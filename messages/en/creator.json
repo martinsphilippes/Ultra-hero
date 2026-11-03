@@ -60,7 +60,7 @@
       },
       "in_review": {
         "title": "Under review",
-        "description": "Sent to the editorial team through the old review flow. You can wait for the decision or publish directly."
+        "description": "Sent to the admin team. Wait for the decision or withdraw it from review to edit."
       },
       "returned": {
         "title": "Returned for changes",
@@ -76,7 +76,11 @@
       },
       "archived": {
         "title": "Archived",
-        "description": "Archived by the administration. Read-only, and it cannot go live again from here."
+        "description": "Archived. It is read-only and does not go back online from here."
+      },
+      "draftReview": {
+        "title": "Draft",
+        "description": "This content type goes through the admin team review. Save it and tap Send for review."
       }
     },
     "notFoundTitle": "Content not found",
@@ -106,7 +110,22 @@
     "unpublishDescription": "It goes offline and back to draft so you can edit it. Then just publish again.",
     "unpublishConfirm": "Unpublish",
     "unpublished": "Unpublished",
-    "unpublishedDescription": "The content is back to draft."
+    "unpublishedDescription": "The content is back to draft.",
+    "submit": "Send for review",
+    "submitTitle": "Send for review?",
+    "submitDescription": "The team reviews what is already saved and approves it or sends it back with comments. Meanwhile the draft is locked.",
+    "submitConfirm": "Send",
+    "submitted": "Sent for review",
+    "withdraw": "Withdraw from review",
+    "withdrawTitle": "Withdraw from review?",
+    "withdrawDescription": "The content goes back to draft so you can edit and send it again.",
+    "withdrawConfirm": "Withdraw",
+    "withdrawn": "Back to draft",
+    "archive": "Archive",
+    "archiveTitle": "Archive this content?",
+    "archiveDescription": "It leaves the active list and does not show in the app. Only the hero owner archives what has been published.",
+    "archiveConfirm": "Archive",
+    "archived": "Archived"
   },
   "post": {
     "cta": "New post",
@@ -214,7 +233,8 @@
       "review_required": "This kind of post needs a review before going live. Open the draft in My content.",
       "upload_rights_required": "Before your first upload, confirm that you hold the rights to the photo or video.",
       "invalid_block": "The pillar fields are not valid. Check and try again.",
-      "invalid_reference": "A chosen recipe or product is no longer available. Remove it and choose another."
+      "invalid_reference": "A chosen recipe or product is no longer available. Remove it and choose another.",
+      "hero_not_active": "Your hero has not been approved yet. The post was kept as a draft; publish after approval."
     },
     "photo": {
       "draftTitle": "Photo post",
@@ -259,7 +279,8 @@
         "photo_media_forbidden": "This photo was not uploaded by this account and cannot be used here.",
         "missing_media": "The photo is not attached to this post. Discard it and upload again.",
         "missing_body": "The photo is not attached to this post. Discard it and upload again.",
-        "not_photo": "This draft has no photo uploaded from the phone."
+        "not_photo": "This draft has no photo uploaded from the phone.",
+        "hero_not_active": "Your hero has not been approved yet. The photo was kept as a draft; publish after approval."
       }
     },
     "talentOnly": "Available only for heroes with a public page",
@@ -483,6 +504,42 @@
     "upload_incomplete": "The video did not finish uploading to Cloudflare. Upload it again from New post.",
     "stream_media_forbidden": "This video was not uploaded by this account and cannot be used here.",
     "recipe_editor_pending": "Recipe editing comes back with the new editor.",
-    "review_required": "The administration requires review for this content type, and the portal has no way to submit it for review yet. Contact the administration."
+    "review_required": "The administration requires review for this content type, and the portal has no way to submit it for review yet. Contact the administration.",
+    "owner_only": "Only the hero owner (or the admin team) can take offline, archive or delete what has been published.",
+    "already_archived": "This content is already archived.",
+    "not_in_review": "This content is not under review.",
+    "hero_not_active": "Your hero has not been approved yet. The draft was kept; publish after approval."
+  },
+  "newContent": {
+    "title": "New content",
+    "description": "Structured content for {name}: text or video with pillar blocks (workout steps, nutrition, menu), program and products. Save the draft and publish when it is ready.",
+    "heroLabel": "Hero",
+    "heroHint": "You are part of more than one hero. The content goes out under the chosen hero.",
+    "heroSwitchError": "Could not switch heroes. Try again.",
+    "recipeOtherHero": "Recipes go out under the hero {name}.",
+    "ownerOnly": "Only the hero owner can take published content offline or archive it.",
+    "kind": {
+      "label": "What will you create?",
+      "structured": {
+        "title": "Structured content",
+        "description": "Text or video with pillar blocks (workout, nutrition, menu), program and products. Fill it in below."
+      },
+      "post": {
+        "title": "Quick post",
+        "description": "Photo or video from your phone with a title and caption.",
+        "next": "The quick post opens in the phone editor.",
+        "cta": "Open New post"
+      },
+      "recipe": {
+        "title": "Recipe",
+        "description": "Full recipe in steps: ingredients, steps, nutrition, photo and products.",
+        "next": "Recipes have their own editor, in the Chef Portal.",
+        "cta": "Open the recipe editor"
+      }
+    },
+    "publishAfterApproval": "Your hero is still waiting for approval: the draft is kept and you publish as soon as it is approved."
+  },
+  "pending": {
+    "notice": "Your hero is waiting for Ultra approval. You can already prepare posts and content: they show to the public as soon as the hero is approved."
   }
 }

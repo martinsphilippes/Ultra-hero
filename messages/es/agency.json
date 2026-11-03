@@ -16,7 +16,7 @@
     "pipeline": "Pipeline",
     "newDeal": "Nuevo negocio",
     "deal": "Negocio",
-    "dealTalents": "Creators del negocio",
+    "dealTalents": "Héroes del negocio",
     "dealDeliverables": "Entregas del negocio",
     "dealMessages": "Conversación del negocio",
     "dealDocuments": "Documentos del negocio",
@@ -277,7 +277,7 @@
     "not_found": "No encontramos eso aquí.",
     "invalid_input": "Revisa los campos e inténtalo de nuevo.",
     "generic": "No funcionó ahora. Inténtalo de nuevo.",
-    "creator_already_in_casting": "Este héroe ya está vinculado a un creator en un casting.",
+    "creator_already_in_casting": "Este héroe ya está en el casting de una agencia.",
     "user_has_talent": "La cuenta de este héroe ya tiene una ficha de creator propia.",
     "talent_has_login": "El creator ya tiene acceso: solo él puede hacerlo.",
     "talent_has_creator": "Este creator ya tiene página pública (héroe) vinculada: el acceso es por la cuenta del héroe.",
@@ -352,7 +352,10 @@
     "creator_profile_already_linked": "Este héroe ya tiene otro titular.",
     "professional_profile_already_linked": "Ya tienes un perfil profesional.",
     "invitation_email_mismatch": "Esta invitación es de otro correo.",
-    "invitation_expired": "Esta invitación venció."
+    "invitation_expired": "Esta invitación venció.",
+    "invalid_hero_name": "El nombre del héroe debe tener de 2 a 80 caracteres.",
+    "invalid_profile_ref": "Usa @perfil o un enlace que empiece con https://.",
+    "too_many_new_talents": "Como máximo 10 fichas nuevas a la vez. Guarda y continúa."
   },
   "casting": {
     "title": "Casting",
@@ -580,7 +583,7 @@
     "emptyHint": "Las propuestas de las marcas llegan aquí; la agencia también puede abrir un negocio.",
     "ownerUnknown": "Responsable fuera del equipo",
     "noOwner": "Sin responsable",
-    "talents": "{count, plural, =0 {sin creators} one {# creator} other {# creators}}",
+    "talents": "{count, plural, =0 {sin héroes} one {# héroe} other {# héroes}}",
     "startsOn": "Inicio {date}",
     "noDate": "Sin fecha",
     "inStage": "en esta etapa {when}",
@@ -599,7 +602,7 @@
     "deliverablesSaved": "Entregables guardados.",
     "consulted": "{count, plural, one {# creator consultado} other {# creators consultados}}.",
     "responseRecorded": "Respuesta registrada.",
-    "talentRemoved": "Creator quitado del negocio.",
+    "talentRemoved": "Héroe quitado del negocio.",
     "confirmed": "Campaña confirmada. La marca y los creators fueron avisados.",
     "backToPipeline": "Pipeline",
     "demoTag": "ejemplo",
@@ -608,7 +611,7 @@
     "tabsLabel": "Secciones del negocio",
     "tabs": {
       "overview": "Visión general",
-      "talents": "Creators",
+      "talents": "Héroes",
       "deliverables": "Entregas",
       "messages": "Conversación",
       "documents": "Documentos",
@@ -694,7 +697,7 @@
       "required": "Escribe el registro."
     },
     "talents": {
-      "empty": "Todavía no hay creators en este negocio.",
+      "empty": "Todavía no hay héroes en este negocio.",
       "select": "Seleccionar {name}",
       "noLogin": "sin acceso",
       "noConsent": "sin consentimiento",
@@ -711,16 +714,76 @@
       "recordResponse": "Registrar respuesta",
       "remove": "Quitar",
       "confirmRemove": "¿Quitar a {name} de este negocio?",
-      "add": "Sugerir creators",
+      "add": "Sugerir héroes",
       "consult": "{count, plural, =0 {Consultar interés} one {Consultar # creator} other {Consultar # creators}}",
-      "consultHint": "Marca los creators sugeridos para consultar.",
-      "addTitle": "Sugerir creators del casting",
-      "addHint": "Ordenados por criterios cumplidos (segmento, región, red, disponibilidad). Los que ya respondieron se quedan.",
+      "consultHint": "Marca los héroes sugeridos para consultar.",
+      "addTitle": "Sugerir héroes",
+      "addHint": "De tu casting, de la plataforma o escrito. El casting viene ordenado por los criterios del briefing; quien ya respondió se queda.",
       "back": "Volver",
       "saveShortlist": "{count, plural, =0 {Guardar elenco} one {Guardar elenco (#)} other {Guardar elenco (#)}}",
-      "search": "Buscar en el casting",
-      "noCandidates": "No se encontró ningún creator.",
-      "matchCount": "{met} de {total} criterios"
+      "search": "Buscar héroes",
+      "noCandidates": "No se encontró ningún héroe.",
+      "matchCount": "{met} de {total} criterios",
+      "searchPlaceholder": "Nombre o dirección del héroe",
+      "searching": "Buscando…",
+      "noPlatform": "Ningún héroe de la plataforma para esta búsqueda.",
+      "retry": "Intentar de nuevo",
+      "loadMore": "Ver más héroes",
+      "castingTitle": "En tu casting ({count})",
+      "platformTitle": "Héroes de la plataforma",
+      "scope": {
+        "casting": "En tu casting",
+        "outside": "Fuera del casting",
+        "other_agency": "En otra agencia",
+        "person_in_casting": "Persona ya en el casting"
+      },
+      "scopeHint": {
+        "casting": "Ya tiene ficha en tu casting.",
+        "outside": "Se creará su ficha en tu casting al guardar.",
+        "other_agency": "No disponible: ya está en el casting de otra agencia.",
+        "person_in_casting": "No disponible: la cuenta de este héroe ya tiene otra ficha en tu casting."
+      },
+      "noHeroPage": "Sin página en la plataforma",
+      "followers": "{count} seguidores",
+      "newFichaNotice": "{count, plural, one {Se creará la ficha de # héroe en tu casting al guardar. Nace sin consentimiento: la consulta y el catálogo siguen las reglas de siempre.} other {Se crearán las fichas de # héroes en tu casting al guardar. Nacen sin consentimiento: la consulta y el catálogo siguen las reglas de siempre.}}",
+      "newFichaList": "Fichas por crear",
+      "untick": "Quitar a {name}",
+      "limits": {
+        "tooMany": "Como máximo {max} héroes por negocio.",
+        "tooManyNew": "Como máximo {max} fichas nuevas a la vez. Guarda y continúa."
+      },
+      "outsidePlatform": "Fuera de la plataforma — invítalo a entrar",
+      "inviteCreator": "Invitar creator",
+      "typed": {
+        "title": "Héroe que no está en la plataforma",
+        "open": "Escribir un héroe que no está en la plataforma",
+        "hint": "Crea en tu casting una ficha solo con el nombre. Después, invítalo a entrar en la plataforma.",
+        "name": "Nombre",
+        "profile": "Perfil público o @ de la red",
+        "profileHint": "Opcional. Ej.: @nombre o el enlace del perfil.",
+        "email": "Correo de contacto",
+        "emailHint": "Opcional. Sirve para invitarlo después.",
+        "add": "Añadir a la lista",
+        "cancel": "Cancelar",
+        "duplicate": "Este nombre ya está en la lista.",
+        "badge": "Fuera de la plataforma",
+        "nameOnly": "Solo el nombre",
+        "willCreate": "Se creará su ficha en tu casting.",
+        "errors": {
+          "name": {
+            "required": "Escribe el nombre.",
+            "invalid": "El nombre debe tener de 2 a 80 caracteres."
+          },
+          "profile": {
+            "required": "Indica el perfil.",
+            "invalid": "Usa @perfil o un enlace que empiece con https://."
+          },
+          "email": {
+            "required": "Indica el correo.",
+            "invalid": "Revisa el correo."
+          }
+        }
+      }
     },
     "consultDialog": {
       "title": "{count, plural, one {Consultar # creator} other {Consultar # creators}}",
@@ -788,7 +851,8 @@
       "rateOverrideHint": "Vacío usa la tasa estándar de la agencia ({rate}). Solo cambia antes de la contratación.",
       "rateSave": "Guardar tasa del negocio",
       "noEntries": "Los asientos aparecen aquí después de la contratación."
-    }
+    },
+    "heroesSavedCreated": "{count, plural, one {Elenco guardado. Ficha creada en tu casting.} other {Elenco guardado. # fichas creadas en tu casting.}}"
   },
   "agenda": {
     "title": "Agenda",

@@ -10721,6 +10721,14 @@ isOneToOne: false
         Args: { p_deal: string; p_items: Json };
         Returns: undefined;
       };
+      agency_hero_search: {
+        Args: { p_deal: string; p_limit?: number; p_offset?: number; p_q?: string };
+        Returns: Json;
+      };
+      agency_deal_suggest_heroes: {
+        Args: { p_deal: string; p_items: Json };
+        Returns: Json;
+      };
       agency_deal_move: {
         Args: {
           p_deal: string;
@@ -11559,6 +11567,8 @@ isOneToOne: false
         Returns: boolean;
       };
       my_creator_id: { Args: Record<PropertyKey, never>; Returns: string };
+      hero_can_remove: { Args: { p_creator: string }; Returns: boolean };
+      my_hero_header_id: { Args: Record<PropertyKey, never>; Returns: string };
       my_entitled_modules: {
         Args: Record<PropertyKey, never>;
         Returns: string[];

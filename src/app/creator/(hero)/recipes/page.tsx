@@ -23,7 +23,7 @@ import {
   type RecipeStats,
   type StatsDisplay,
 } from "@/lib/recipes/portal";
-import { getManagedCreator } from "../_lib/creator";
+import { getContentWorkspace } from "../_lib/creator";
 import { loadRecipeCategories } from "./_lib/load";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -61,7 +61,7 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 // situação derivada (agendada = publicada com data futura), indicadores reais e ações.
 export default async function MyRecipesPage({ searchParams }: Props) {
   const filters = parseMyRecipesFilters(await searchParams);
-  const [t, tn, locale, ctx] = await Promise.all([getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getManagedCreator("recipes")]);
+  const [t, tn, locale, ctx] = await Promise.all([getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getContentWorkspace("recipes", { followChoice: false })]);
   const tcat = await getTranslations("catalog");
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("title")} />;
 

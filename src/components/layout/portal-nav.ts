@@ -49,9 +49,12 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "settings", href: "/admin/settings" },
   ],
   creator: [
-    // O herói só posta; conteúdos, receitas, vínculos e painel são do admin ("Publicar como hero").
+    // O herói posta (Novo post) e, desde a 0092, cria conteúdo estruturado; vínculos e painel são do admin.
     // O escritório (0065) aparece para quem está num casting; o talento sem página não tem "Novo post".
     { key: "post", href: "/creator/post/new" },
+    // 0092: o creator (titular ou membro) cria conteúdo estruturado e acompanha os dele pelo próprio portal
+    { key: "newContent", href: "/creator/content/new" },
+    { key: "content", href: "/creator/content" },
     { key: "office", href: "/creator/escritorio" },
     // Equipe do herói (0091): titular e membros; sem herói, "Criar meu herói"
     { key: "team", href: "/creator/equipe" },
