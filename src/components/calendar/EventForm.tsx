@@ -92,7 +92,7 @@ export function EventForm({ fixedDealId = null, deals = [], talents = [], brands
             <div className="grid gap-3 sm:grid-cols-2">
               {fixedDealId ? null : (
                 <FormField label={t("deal")} hint={dealRequired ? t("dealRequiredHint") : undefined} required={dealRequired}>
-                  <Select value={v.dealId} onChange={(e) => set("dealId", e.target.value)} disabled={pending}>
+                  <Select value={v.dealId} onChange={(e) => setV((cur) => ({ ...cur, dealId: e.target.value, visibleToBrand: e.target.value ? cur.visibleToBrand : false }))} disabled={pending}>
                     <option value="">—</option>
                     {deals.map((d) => (
                       <option key={d.id} value={d.id}>
@@ -103,7 +103,7 @@ export function EventForm({ fixedDealId = null, deals = [], talents = [], brands
                 </FormField>
               )}
               <FormField label={t("talent")} hint={t("talentHint")}>
-                <Select value={v.talentId} onChange={(e) => set("talentId", e.target.value)} disabled={pending}>
+                <Select value={v.talentId} onChange={(e) => setV((cur) => ({ ...cur, talentId: e.target.value, visibleToTalent: e.target.value ? cur.visibleToTalent : false }))} disabled={pending}>
                   <option value="">—</option>
                   {talents.map((x) => (
                     <option key={x.id} value={x.id}>
@@ -132,9 +132,25 @@ export function EventForm({ fixedDealId = null, deals = [], talents = [], brands
             <Textarea value={v.description} maxLength={2000} rows={3} onChange={(e) => set("description", e.target.value)} disabled={pending} />
           </FormField>
           {!commercial ? (
-            <div className="flex flex-wrap gap-4">
-              <Checkbox label={t("visibleToBrand")} checked={v.visibleToBrand} onChange={(e) => set("visibleToBrand", e.target.checked)} disabled={pending || !v.dealId} />
-              <Checkbox label={t("visibleToTalent")} checked={v.visibleToTalent} onChange={(e) => set("visibleToTalent", e.target.checked)} disabled={pending || !v.talentId} />
+            // bloco 9: cada opção é uma linha inteira tocável (44px+); sem negócio/creator fica esmaecida e diz o que
+            // falta logo embaixo, e habilita assim que a escolha é feita acima (o estado é o mesmo do formulário)
+            <div className="flex flex-col gap-1" data-testid="event-visibility">
+              <Checkbox
+                label={t("visibleToBrand")}
+                description={v.dealId ? undefined : t("visibleToBrandNeedsDeal")}
+                checked={v.visibleToBrand}
+                onChange={(e) => set("visibleToBrand", e.target.checked)}
+                disabled={pending || !v.dealId}
+                data-testid="event-visible-brand"
+              />
+              <Checkbox
+                label={t("visibleToTalent")}
+                description={v.talentId ? undefined : t("visibleToTalentNeedsTalent")}
+                checked={v.visibleToTalent}
+                onChange={(e) => set("visibleToTalent", e.target.checked)}
+                disabled={pending || !v.talentId}
+                data-testid="event-visible-talent"
+              />
             </div>
           ) : (
             <p className="type-caption text-fg-muted">{t("commercialNote")}</p>

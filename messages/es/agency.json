@@ -794,14 +794,16 @@
       "location": "Lugar",
       "description": "Descripción",
       "descriptionHint": "Quien ve el evento lee este texto. Sin valores.",
-      "visibleToBrand": "La marca lo ve (necesita negocio)",
-      "visibleToTalent": "El creator lo ve (necesita creator)",
+      "visibleToBrand": "La marca lo ve",
+      "visibleToTalent": "El creator lo ve",
       "commercialNote": "La fecha comercial aparece en la agenda de las marcas y genera aviso en su campana.",
       "back": "Volver",
       "save": "Guardar",
       "publish": "Publicar",
       "titleRequired": "Ponle un título.",
-      "dealRequired": "Elige un negocio tuyo."
+      "dealRequired": "Elige un negocio tuyo.",
+      "visibleToBrandNeedsDeal": "Elige un negocio arriba para que la marca pueda verlo.",
+      "visibleToTalentNeedsTalent": "Elige un creator arriba para que el creator pueda verlo."
     }
   },
   "execution": {

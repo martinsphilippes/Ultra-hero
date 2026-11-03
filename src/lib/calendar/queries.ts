@@ -57,11 +57,22 @@ function toEvent(r: Row): CalendarEvent {
   };
 }
 
-export type EventFilters = { from: string; to: string; agencyId?: string; talentId?: string; brandId?: string; dealId?: string; kind?: string };
+export type EventFilters = {
+  from: string;
+  to: string;
+  agencyId?: string;
+  talentId?: string;
+  brandId?: string;
+  dealId?: string;
+  kind?: string;
+  /** Bloco 9 (grade): traz também o que COMEÇOU antes de `from` e ainda está em curso (eventos de vários dias). */
+  overlap?: boolean;
+};
 
 export async function listEvents(filters: EventFilters): Promise<{ available: boolean; items: CalendarEvent[] }> {
   const supabase = await createClient();
-  let query = supabase.from("calendar_events").select(SELECT).gte("starts_at", filters.from).lt("starts_at", filters.to).order("starts_at").limit(500);
+  const base = supabase.from("calendar_events").select(SELECT).lt("starts_at", filters.to);
+  let query = (filters.overlap ? base.gte("ends_at", filters.from) : base.gte("starts_at", filters.from)).order("starts_at").limit(500);
   if (filters.agencyId) query = query.eq("agency_id", filters.agencyId);
   if (filters.talentId && /^[0-9a-f-]{36}$/i.test(filters.talentId)) query = query.eq("talent_id", filters.talentId);
   if (filters.brandId && /^[0-9a-f-]{36}$/i.test(filters.brandId)) query = query.eq("brand_id", filters.brandId);

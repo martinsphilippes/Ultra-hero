@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { CalendarDays, Handshake } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
-import { EventList } from "@/components/calendar/EventList";
+import { AgendaCalendar } from "@/components/calendar/AgendaCalendar";
 import { FeedCard } from "@/components/calendar/FeedCard";
-import { MonthNav } from "@/components/calendar/MonthNav";
 import { SponsorshipStatusBadge, sponsorshipWhen } from "@/components/sponsorship/SponsorshipView";
 import { EmptyState } from "@/components/ui";
 import { defaultTimeZone, type Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { getOrigin } from "@/lib/auth/origin";
-import { monthKey, parseMonth, shiftMonth } from "@/lib/calendar/ics";
+import { queryRange, zonedDayKey } from "@/lib/calendar/grid";
+import { parseMonth } from "@/lib/calendar/ics";
 import { listEvents, myFeedState } from "@/lib/calendar/queries";
 import { listTalentSponsorships } from "@/lib/sponsorship/queries";
 import { getTalentContext } from "@/lib/talent/server";
@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("agenda") };
 }
 
-type Props = { searchParams: Promise<{ mes?: string }> };
+type Props = { searchParams: Promise<{ mes?: string; dia?: string }> };
 
 // Agenda do creator (web e app): campanhas confirmadas, prazos de resposta, entregas e gravações que a
 // agência marcou como visíveis para ele. A agenda pessoal dele fica fora; o feed .ics leva tudo ao celular.
@@ -31,14 +31,13 @@ export default async function OfficeAgendaPage({ searchParams }: Props) {
   const sp = await searchParams;
   const tz = defaultTimeZone;
   const { year, month } = parseMonth(sp.mes, tz);
-  const next = shiftMonth(year, month, 1);
-  const from = new Date(Date.UTC(year, month - 1, 1) - 24 * 3600_000).toISOString();
-  const to = new Date(Date.UTC(next.year, next.month - 1, 1) + 24 * 3600_000).toISOString();
+  // bloco 9: a grade cobre também os dias dos meses vizinhos e os eventos de vários dias em curso
+  const { from, to } = queryRange(year, month);
   const [t, tsp, locale, list, feed, origin, sponsorships] = await Promise.all([
     getTranslations("talent.agenda"),
     getTranslations("sponsorship.talent"),
     getLocale() as Promise<Locale>,
-    listEvents({ from, to, talentId: ctx.talent.id }),
+    listEvents({ from, to, overlap: true, talentId: ctx.talent.id }),
     myFeedState(),
     getOrigin(),
     listTalentSponsorships(),
@@ -50,12 +49,10 @@ export default async function OfficeAgendaPage({ searchParams }: Props) {
       </div>
     );
   }
-  const items = list.items.filter((e) => monthKey(year, month) === new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit" }).format(new Date(e.startsAt)));
   return (
     <div className="flex flex-col gap-5" data-testid="office-agenda">
       <p className="type-body-sm text-fg-muted">{t("intro")}</p>
-      <MonthNav base="/creator/escritorio/agenda" year={year} month={month} />
-      <EventList events={items} timeZone={tz} portal="office" emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
+      <AgendaCalendar events={list.items} timeZone={tz} portal="office" year={year} month={month} today={zonedDayKey(new Date(), tz)} base="/creator/escritorio/agenda" requestedDay={sp.dia} emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
       {/* 0085: situações suas que a agência ofereceu às marcas; se patrocinada, por quem (nunca quem recusou) */}
       {sponsorships.items.length > 0 ? (
         <section aria-labelledby="office-sponsorships" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" data-testid="office-sponsorships">

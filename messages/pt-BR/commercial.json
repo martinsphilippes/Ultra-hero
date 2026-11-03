@@ -142,7 +142,13 @@
     "until": "até {date}",
     "monthNav": "Mês",
     "prevMonth": "Mês anterior",
-    "nextMonth": "Próximo mês"
+    "nextMonth": "Próximo mês",
+    "today": "Hoje",
+    "todayMark": "hoje",
+    "dayCount": "{count, plural, =0 {nenhum compromisso} =1 {1 compromisso} other {# compromissos}}",
+    "more": "+{count}",
+    "legend": "Legenda dos tipos",
+    "dayEmpty": "Nada neste dia."
   },
   "feed": {
     "title": "Assinar no seu calendário",

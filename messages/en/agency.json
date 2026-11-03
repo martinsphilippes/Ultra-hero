@@ -794,14 +794,16 @@
       "location": "Location",
       "description": "Description",
       "descriptionHint": "Whoever sees the event reads this text. No values.",
-      "visibleToBrand": "Brand sees it (needs a deal)",
-      "visibleToTalent": "Creator sees it (needs a creator)",
+      "visibleToBrand": "Brand sees it",
+      "visibleToTalent": "Creator sees it",
       "commercialNote": "The commercial date shows in the brands' calendar and notifies their bell.",
       "back": "Back",
       "save": "Save",
       "publish": "Publish",
       "titleRequired": "Give it a title.",
-      "dealRequired": "Pick one of your deals."
+      "dealRequired": "Pick one of your deals.",
+      "visibleToBrandNeedsDeal": "Choose a deal above so the brand can see it.",
+      "visibleToTalentNeedsTalent": "Choose a creator above so the creator can see it."
     }
   },
   "execution": {

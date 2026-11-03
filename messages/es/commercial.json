@@ -142,7 +142,13 @@
     "until": "hasta {date}",
     "monthNav": "Mes",
     "prevMonth": "Mes anterior",
-    "nextMonth": "Mes siguiente"
+    "nextMonth": "Mes siguiente",
+    "today": "Hoy",
+    "todayMark": "hoy",
+    "dayCount": "{count, plural, =0 {ningún compromiso} =1 {1 compromiso} other {# compromisos}}",
+    "more": "+{count}",
+    "legend": "Tipos de compromiso",
+    "dayEmpty": "Nada este día."
   },
   "feed": {
     "title": "Suscribir en tu calendario",
