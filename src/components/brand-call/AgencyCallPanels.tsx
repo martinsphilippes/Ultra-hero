@@ -4,7 +4,11 @@ import { Ban, CheckCircle2, MessageSquareReply, Save, Send, Sparkles, Trash2 } f
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Badge, Button, Checkbox, DatePicker, FormField, Input, MoneyInput, Textarea, useToast } from "@/components/ui";
+import { CastBuilderButton } from "@/components/casting/CastBuilderDialog";
+import { Badge, Button, Checkbox, DatePicker, FormField, Input, Textarea, useToast } from "@/components/ui";
+import { ValueModelFields } from "@/components/value-model/ValueModelFields";
+import { ValueTermsView } from "@/components/value-model/ValueTermsView";
+import { validateTerms, type ValueModel } from "@/lib/value-model/model";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { agencyCallReplyAction, discardCallProposalAction, saveCallProposalAction } from "@/lib/brand-call/actions";
@@ -29,13 +33,17 @@ type BuilderProps = {
   interests: CallInterest[];
   draft: CallProposal | null;
   canValues: boolean;
+  /** 0096: modelo e máximo da chamada (a proposta começa com eles) */
+  callValueModel: ValueModel;
+  callMaxHeroes: number | null;
 };
 
 // Proposta da agência para a chamada da marca (0089). Gestor+ escolhe creators do casting liberados para marcas
 // (os interessados primeiro, com a mensagem), entregas de cada um (começa com as pedidas pela marca), link do media
 // kit, prazo de entrega e observações. Só o Adm grava o valor total e envia; o gestor salva o rascunho para o Adm.
-export function AgencyProposalBuilder({ callId, callDeliverables, candidates, interests, draft, canValues }: BuilderProps) {
+export function AgencyProposalBuilder({ callId, callDeliverables, candidates, interests, draft, canValues, callValueModel, callMaxHeroes }: BuilderProps) {
   const t = useTranslations("brandCall.agency.proposal");
+  const tv = useTranslations("valueModel");
   const tn = useTranslations("mediaKit.networks");
   const router = useRouter();
   const { toast } = useToast();
@@ -44,6 +52,9 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
   );
   const [order, setOrder] = useState<string[]>(() => (draft?.talents ?? []).map((x) => x.talentId));
   const [amountText, setAmountText] = useState(centsToBrl(draft?.amountCents ?? null));
+  // 0096: a proposta começa com o modelo da chamada (a agência pode propor outro); gestor só vê o que o Adm definiu
+  const [valueModel, setValueModel] = useState<ValueModel>(draft?.valueModel ?? callValueModel);
+  const [maxHeroes, setMaxHeroes] = useState<number | null>(draft ? draft.maxHeroes : callValueModel === "por_heroi" ? callMaxHeroes : null);
   const [deliverBy, setDeliverBy] = useState(draft?.deliverBy ?? "");
   const [note, setNote] = useState(draft?.note ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -69,11 +80,22 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
     if (order.some((id) => !mediaKitUrlValid(picks[id]?.mediaKitUrl ?? ""))) return setError(t("errors.mediaKit"));
     const amountCents = canValues ? brlToCents(amountText) : null;
     if (send && amountCents === null) return setError(t("errors.amount"));
+    const model = canValues ? valueModel : (draft?.valueModel ?? "fixo");
+    const max = canValues ? (valueModel === "por_heroi" ? maxHeroes : null) : (draft?.maxHeroes ?? null);
+    if (canValues) {
+      const problem = validateTerms({ model, amountCents: send || valueModel === "por_heroi" ? amountCents : null, maxHeroes: max });
+      if (problem === "value_per_hero_required" && !send && amountCents === null) {
+        // rascunho por herói pode ficar sem valor; o máximo é obrigatório
+      } else if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
+    }
+    if (model === "por_heroi" && max !== null && order.length > max) return setError(tv("errors.max_heroes", { max }));
     start(async () => {
       const result = await saveCallProposalAction({
         callId,
         talents: order.map((id) => ({ talentId: id, deliverables: picks[id].deliverables, mediaKitUrl: picks[id].mediaKitUrl.trim() })),
         amountCents,
+        valueModel: model,
+        maxHeroes: max,
         deliverBy: deliverBy || null,
         note,
         send,
@@ -141,20 +163,50 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
           <DeliverablesText items={total} className="type-body-sm text-fg" />
         </p>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-2">
-        {canValues ? (
-          <FormField label={t("amount")} hint={t("amountHint")} required>
-            <MoneyInput value={amountText} maxCents={10_000_000_000} onValueChange={(text) => setAmountText(text)} disabled={pending} data-testid="proposal-amount" />
-          </FormField>
-        ) : (
-          <FormField label={t("amount")}>
-            <p className="flex min-h-11 items-center type-body-sm text-fg-muted">{draft?.hasAmount ? t("amountSet") : t("amountByAdmin")}</p>
-          </FormField>
-        )}
-        <FormField label={t("deliverBy")}>
-          <DatePicker value={deliverBy} onChange={setDeliverBy} disabled={pending} />
+      {canValues ? (
+        <ValueModelFields
+          idPrefix="proposal"
+          model={valueModel}
+          onModelChange={(m) => {
+            setValueModel(m);
+            setMaxHeroes(m === "por_heroi" ? (maxHeroes ?? callMaxHeroes ?? Math.max(1, order.length)) : null);
+          }}
+          amountText={amountText}
+          onAmountChange={setAmountText}
+          maxHeroes={maxHeroes}
+          onMaxHeroesChange={setMaxHeroes}
+          disabled={pending}
+          required
+          amountTestId="proposal-amount"
+        />
+      ) : (
+        <FormField label={t("amount")}>
+          <div className="flex min-h-11 flex-col justify-center gap-0.5">
+            <p className="type-body-sm text-fg-muted">{draft?.hasAmount ? t("amountSet") : t("amountByAdmin")}</p>
+            {draft?.valueModel === "por_heroi" ? <ValueTermsView model="por_heroi" amountCents={null} maxHeroes={draft.maxHeroes} canValues={false} /> : null}
+          </div>
         </FormField>
-      </div>
+      )}
+      {canValues && valueModel === "fixo" ? (
+        <CastBuilderButton
+          callId={callId}
+          maxHeroes={null}
+          currentIds={order}
+          allowedIds={candidates.map((c) => c.id)}
+          budgetCents={brlToCents(amountText)}
+          onUse={(ids) => {
+            setPicks((cur) => {
+              const next: Record<string, Chosen> = {};
+              for (const id of ids) next[id] = cur[id] ?? { deliverables: callDeliverables.length > 0 ? callDeliverables : [{ kind: "reels", quantity: 1, network: null }], mediaKitUrl: "" };
+              return next;
+            });
+            setOrder(ids);
+          }}
+        />
+      ) : null}
+      <FormField label={t("deliverBy")}>
+        <DatePicker value={deliverBy} onChange={setDeliverBy} disabled={pending} />
+      </FormField>
       <FormField label={t("note")} hint={t("noteHint")}>
         <Textarea value={note} maxLength={1000} rows={3} onChange={(e) => setNote(e.target.value)} disabled={pending} />
       </FormField>
@@ -185,12 +237,13 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
 /** A vez da agência (só Adm): aceitar a contraproposta, contrapropor ou recusar com nota. */
 export function AgencyCallReply({ proposal: p, decided, canValues }: { proposal: CallProposal; decided: boolean; canValues: boolean }) {
   const t = useTranslations("brandCall.negotiation");
+  const tv = useTranslations("valueModel");
   const locale = useLocale() as Locale;
   const router = useRouter();
   const { toast } = useToast();
   const actions = agencyCallActions(p, decided, canValues);
   const [mode, setMode] = useState<"counter" | "decline" | null>(null);
-  const [terms, setTerms] = useState<TermsDraft>({ amountText: centsToBrl(p.amountCents), deliverables: p.deliverables, deliverBy: p.deliverBy ?? "", note: "" });
+  const [terms, setTerms] = useState<TermsDraft>({ amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: p.deliverables, deliverBy: p.deliverBy ?? "", note: "" });
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   if (p.status === "open" && p.awaiting === "agency" && !canValues) return <p className="type-caption text-warning">{t("adminOnly")}</p>;
@@ -201,9 +254,22 @@ export function AgencyCallReply({ proposal: p, decided, canValues }: { proposal:
     setError(null);
     const amountCents = action === "counter" ? brlToCents(terms.amountText) : null;
     if (action === "counter" && (amountCents === null || terms.deliverables.length === 0)) return setError(t("termsRequired"));
+    if (action === "counter") {
+      const problem = validateTerms({ model: terms.valueModel, amountCents, maxHeroes: terms.maxHeroes });
+      if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
+    }
     if (action === "decline" && terms.note.trim().length < 3) return setError(t("declineNoteRequired"));
     start(async () => {
-      const result = await agencyCallReplyAction({ proposalId: p.id, action, amountCents, deliverables: action === "counter" ? terms.deliverables : [], deliverBy: terms.deliverBy || null, note: terms.note });
+      const result = await agencyCallReplyAction({
+        proposalId: p.id,
+        action,
+        amountCents,
+        deliverables: action === "counter" ? terms.deliverables : [],
+        deliverBy: terms.deliverBy || null,
+        note: terms.note,
+        valueModel: action === "counter" ? terms.valueModel : null,
+        maxHeroes: action === "counter" ? terms.maxHeroes : null,
+      });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
       setMode(null);

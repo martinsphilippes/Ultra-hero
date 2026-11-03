@@ -39,6 +39,8 @@ export default async function NewBrandCallPage() {
     networks: [],
     budgetText: "",
     budgetDisplay: "open",
+    valueModel: "fixo",
+    maxHeroes: null,
     respondDate: plusDays(today, 7),
     respondTime: "18:00",
     audience: agencies.some((a) => a.serves) ? "my_agencies" : "all",

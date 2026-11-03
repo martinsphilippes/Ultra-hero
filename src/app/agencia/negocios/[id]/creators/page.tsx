@@ -5,7 +5,7 @@ import {
   type Candidate,
 } from "@/components/deals/ShortlistPanel";
 import { SponsorshipButton } from "@/components/finance/SponsorshipButton";
-import { getRequest, listDealFees, listDealTalents } from "@/lib/deals/queries";
+import { getDealValueTerms, getRequest, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import type { Reason } from "@/lib/deals/vocab";
 import { groupByDealTalent } from "@/lib/offer/counteroffer";
 import { getAgencyOfferState } from "@/lib/offer/queries";
@@ -70,13 +70,15 @@ export default async function DealTalentsPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, canEdit, isAdmin, isManager } = await loadDeal(id);
   const ts = await getTranslations("agency.sponsorship");
-  const [rows, fees, request, casting] = await Promise.all([
+  const [rows, fees, request, casting, valueTerms] = await Promise.all([
     listDealTalents(deal.id),
     isAdmin ? listDealFees(deal.id) : Promise.resolve({}),
     deal.requestId ? getRequest(deal.requestId) : Promise.resolve(null),
     canEdit
       ? listTalents(ctx.agency.id)
       : Promise.resolve({ available: true, items: [] }),
+    // 0096: modelo de valor e máximo de heróis (gestor+; o valor em R$ só vem para o Adm)
+    isManager ? getDealValueTerms(deal.id) : Promise.resolve(null),
   ]);
   const supabase = await createClient();
   const [{ data: segmentRows }, { data: networkRows }, { data: docs }] =
@@ -155,6 +157,8 @@ export default async function DealTalentsPage({ params }: Props) {
         canDecideFee={offer?.canDecideFee ?? false}
         canDecideDate={offer?.canDecideDate ?? false}
         canInvite={isManager && !ctx.agency.isDemo}
+        valueTerms={valueTerms}
+        canCast={isManager}
       />
       {sponsorable.length > 0 ? (
         <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5" aria-labelledby="deal-sponsorship" data-testid="deal-sponsorship">

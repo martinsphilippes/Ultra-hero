@@ -14564,5 +14564,301 @@ delete from public.agencies where id::text like 'a1020000-%';
 delete from public.creator_profiles where id::text like 'a1020000-%';
 delete from auth.users where id::text like 'a1020000-%';
 
+-- ================================================================ S103 · Modelo de valor (fixo x por herói) e montador de elenco (0096)
+-- Valor fixo (total dividido entre os heróis) ou por herói (valor + máximo de heróis obrigatório, teto = valor × máximo) na
+-- campanha da marca, na chamada, na proposta da agência e nas contrapropostas; o banco recusa indicar/acordar mais heróis que o
+-- máximo; o acordo congela modelo/valor/máximo e a campanha nasce herdando; a marca lê total/modelo/máximo da própria campanha e
+-- nunca cachê; o gestor lê modelo/máximo sem valor e o montador sem nenhum R$ (só o Adm vê cachês); outra marca/agência, colaborador
+-- e visitante não leem nada; o creator não vê modelo nem valor; S14 segue 18.
+\ir ../migrations/0096_modelo_valor_montador_elenco.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local'),('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local'),
+  ('b1030000-0000-4000-8000-000000000003','s103-colab-a@test.local'),('b1030000-0000-4000-8000-000000000004','s103-adm-b@test.local'),
+  ('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local'),('b1030000-0000-4000-8000-000000000006','s103-dono-m2@test.local'),
+  ('b1030000-0000-4000-8000-000000000007','s103-heroi@test.local');
+insert into public.agencies (id, slug, name) values ('b1030000-0000-4000-8000-0000000000a1','s103-agencia-a','Agência A S103'),('b1030000-0000-4000-8000-0000000000a2','s103-agencia-b','Agência B S103');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-000000000001','admin','Ana Adm S103'),('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-000000000002','manager','Gil Gestor S103'),
+  ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-000000000003','staff','Caio Colab S103'),('b1030000-0000-4000-8000-0000000000a2','b1030000-0000-4000-8000-000000000004','admin','Bia Adm S103');
+insert into public.brands (id, slug, name, site_url) values ('b1030000-0000-4000-8000-0000000000b1','s103-marca-1','Marca 1 S103','https://m1.s103.test'),('b1030000-0000-4000-8000-0000000000b2','s103-marca-2','Marca 2 S103','https://m2.s103.test');
+insert into public.agency_brands (agency_id, brand_id) values ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-0000000000b1'),('b1030000-0000-4000-8000-0000000000a2','b1030000-0000-4000-8000-0000000000b2');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('b1030000-0000-4000-8000-0000000000b1','b1030000-0000-4000-8000-000000000005','owner','Dona M1 S103'),('b1030000-0000-4000-8000-0000000000b2','b1030000-0000-4000-8000-000000000006','owner','Dono M2 S103');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
+  ('b1030000-0000-4000-8000-0000000000e1','b1030000-0000-4000-8000-0000000000a1','Herói Um S103','b1030000-0000-4000-8000-000000000007',true, now() - interval '30 days'),
+  ('b1030000-0000-4000-8000-0000000000e2','b1030000-0000-4000-8000-0000000000a1','Herói Dois S103',null,true, now() - interval '30 days'),
+  ('b1030000-0000-4000-8000-0000000000e3','b1030000-0000-4000-8000-0000000000a1','Herói Três S103',null,true, now() - interval '30 days'),
+  ('b1030000-0000-4000-8000-0000000000e4','b1030000-0000-4000-8000-0000000000a1','Herói Quatro S103',null,false, null),
+  ('b1030000-0000-4000-8000-0000000000e5','b1030000-0000-4000-8000-0000000000a2','Herói Cinco S103',null,true, now() - interval '30 days');
+insert into public.talent_social_accounts (agency_id, talent_id, network, handle, followers, avg_reach, engagement_bp, audience, as_of, declared_side) values
+  ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-0000000000e1','instagram','s103um',120000,30000,320,'{"age":{"18-24":4000,"25-34":3500},"top_states":["RJ","SP"]}', current_date - 10,'agency'),
+  ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-0000000000e2','instagram','s103dois',40000,9000,510,'{}', current_date - 400,'agency');
+insert into public.talent_availability (agency_id, talent_id, kind, starts_on, ends_on) values
+  ('b1030000-0000-4000-8000-0000000000a1','b1030000-0000-4000-8000-0000000000e3','blocked', current_date + 25, current_date + 30);
+create temp table t_s103 (k text primary key, v text);
+grant all on t_s103 to anon, authenticated, service_role;
+insert into t_s103 values ('req', jsonb_build_object('title','Campanha S103','objective','awareness','period_start',(current_date + 20)::text,'period_end',(current_date + 40)::text,
+  'networks',jsonb_build_array('instagram'),'deliverables','[{"kind":"post","quantity":1,"network":"instagram"}]'::jsonb,'target_age_bands',jsonb_build_array('18-24'),'target_states',jsonb_build_array('RJ'))::text);
+insert into t_s103 values ('call', jsonb_build_object('title','Chamada S103','objective','launch','description','Teste','starts_on',(current_date + 20)::text,'ends_on',(current_date + 40)::text,'location','',
+  'deliverables','[{"kind":"reels","quantity":2,"network":"instagram"}]'::jsonb,'creators_wanted',3,'niches',jsonb_build_array('Beleza'),'networks',jsonb_build_array('instagram'),
+  'budget_cents',200000,'budget_display','exact','respond_by',(now() + interval '10 days')::text,'audience','my_agencies','value_model','por_heroi','max_heroes',3)::text);
+
+select tests.ok('S103 estrutura: funções novas sem sobrecarga, com search_path fixo, nada para o visitante; S14 segue 18',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_cast_inputs','agency_deal_cast_apply','deal_value_terms','value_terms_check','value_ceiling_cents','deal_max_heroes_check','brand_call_reply','agency_brand_call_reply','brand_request_save','brand_call_save')) = 10
+  and (select bool_and(p.proconfig is not null) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_cast_inputs','agency_deal_cast_apply','deal_value_terms','value_terms_check','value_ceiling_cents','deal_max_heroes_check'))
+  and not has_function_privilege('anon','public.agency_cast_inputs(uuid, uuid, uuid)','execute')
+  and not has_function_privilege('anon','public.agency_deal_cast_apply(uuid, jsonb)','execute')
+  and not has_function_privilege('anon','public.deal_value_terms(uuid)','execute')
+  and not has_function_privilege('authenticated','public.value_terms_check(text, bigint, int)','execute')
+  and has_function_privilege('authenticated','public.agency_cast_inputs(uuid, uuid, uuid)','execute')
+  and has_function_privilege('authenticated','public.brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int)','execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S103 visitante não monta elenco', $q$select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', gen_random_uuid(), null)$q$, 'permission denied');
+select tests.expect_error('S103 visitante não usa elenco', $q$select public.agency_deal_cast_apply(gen_random_uuid(), '[]')$q$, 'permission denied');
+select tests.expect_error('S103 visitante não lê o modelo do negócio', $q$select public.deal_value_terms(gen_random_uuid())$q$, 'permission denied');
+
+-- marca: validação do modelo na campanha
+select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
+select tests.expect_error('S103 por herói sem máximo é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000}')$q$, 'max_heroes_required');
+select tests.expect_error('S103 por herói com máximo 0 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":0}')$q$, 'max_heroes_required');
+select tests.expect_error('S103 por herói com máximo 51 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":51}')$q$, 'max_heroes_required');
+select tests.expect_error('S103 por herói sem valor é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","max_heroes":3}')$q$, 'value_per_hero_required');
+select tests.expect_error('S103 por herói com valor 0 é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":0,"max_heroes":3}')$q$, 'value_per_hero_required');
+select tests.expect_error('S103 modelo desconhecido é recusado', $q$select public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"gratis","budget_max_cents":200000}')$q$, 'invalid_input');
+select tests.ok('S103 nenhuma campanha ficou das recusas', (select count(*) from public.campaign_requests where brand_id = 'b1030000-0000-4000-8000-0000000000b1') = 0);
+insert into t_s103 values ('r1', public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":3}')::text);
+insert into t_s103 values ('r2', public.brand_request_save(null, 'b1030000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s103 where k='req') || '{"title":"Campanha fixa S103","value_model":"fixo","budget_max_cents":1200000,"max_heroes":9}')::text);
+select tests.ok('S103 por herói: valor por herói, máximo 3, teto 600000 (valor × máximo) e sem mínimo; fixo ignora o máximo',
+  (select value_model = 'por_heroi' and max_heroes = 3 and budget_max_cents = 200000 and budget_min_cents is null and budget_max_cents * max_heroes = 600000
+   from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r1'))
+  and (select value_model = 'fixo' and max_heroes is null and budget_max_cents = 1200000 from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r2')));
+select public.brand_request_save((select v::uuid from t_s103 where k='r1'), 'b1030000-0000-4000-8000-0000000000b1', '{"title":"Campanha S103 editada"}');
+select tests.ok('S103 salvar sem as chaves do valor mantém o modelo e o máximo',
+  (select value_model = 'por_heroi' and max_heroes = 3 and budget_max_cents = 200000 from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r1')));
+select public.brand_request_save((select v::uuid from t_s103 where k='r1'), 'b1030000-0000-4000-8000-0000000000b1', '{"value_model":"fixo","budget_max_cents":900000}');
+select tests.ok('S103 trocar para fixo no rascunho zera o máximo',
+  (select value_model = 'fixo' and max_heroes is null and budget_max_cents = 900000 from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r1')));
+select public.brand_request_save((select v::uuid from t_s103 where k='r1'), 'b1030000-0000-4000-8000-0000000000b1', '{"value_model":"por_heroi","budget_max_cents":200000,"max_heroes":3}');
+select tests.ok('S103 a marca lê modelo, máximo e valor da própria campanha',
+  (select value_model = 'por_heroi' and max_heroes = 3 and budget_max_cents = 200000 from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r1')));
+select tests.login('b1030000-0000-4000-8000-000000000006','s103-dono-m2@test.local');
+select tests.ok('S103 outra marca não lê o valor da campanha', (select count(*) from public.campaign_request_budgets) = 0);
+select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
+insert into t_s103 values ('d1', public.brand_request_submit((select v::uuid from t_s103 where k='r1'))::text);
+insert into t_s103 values ('d2', public.brand_request_submit((select v::uuid from t_s103 where k='r2'))::text);
+select tests.expect_error('S103 enviada à agência, o modelo não muda mais', $q$select public.brand_request_save((select v::uuid from t_s103 where k='r1'), 'b1030000-0000-4000-8000-0000000000b1', '{"value_model":"fixo","budget_max_cents":900000}')$q$, 'invalid_state');
+select tests.su();
+update t_s103 set v = (select id::text from public.deals where request_id = (select v::uuid from t_s103 where k='r1')) where k = 'd1';
+update t_s103 set v = (select id::text from public.deals where request_id = (select v::uuid from t_s103 where k='r2')) where k = 'd2';
+
+-- agência: o gestor lê modelo/máximo sem valor, o Adm lê tudo; colaborador e outras agências nada
+select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
+select tests.ok('S103 gestor lê modelo e máximo do negócio, sem valor nem teto',
+  (select d ->> 'value_model' = 'por_heroi' and (d ->> 'max_heroes')::int = 3 and d ->> 'value_cents' is null and d ->> 'ceiling_cents' is null and (d ->> 'has_value')::boolean
+   from public.deal_value_terms((select v::uuid from t_s103 where k='d1')) d)
+  and (select count(*) from public.campaign_request_budgets) = 0);
+select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
+select tests.ok('S103 Adm lê o valor por herói e o teto (200000 × 3)',
+  (select (d ->> 'value_cents')::bigint = 200000 and (d ->> 'ceiling_cents')::bigint = 600000 from public.deal_value_terms((select v::uuid from t_s103 where k='d1')) d));
+select tests.login('b1030000-0000-4000-8000-000000000003','s103-colab-a@test.local');
+select tests.expect_error('S103 colaborador não lê o modelo', $q$select public.deal_value_terms((select v::uuid from t_s103 where k='d1'))$q$, 'forbidden');
+select tests.expect_error('S103 colaborador não monta elenco', $q$select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), null)$q$, 'forbidden');
+select tests.login('b1030000-0000-4000-8000-000000000004','s103-adm-b@test.local');
+select tests.expect_error('S103 outra agência não lê o modelo', $q$select public.deal_value_terms((select v::uuid from t_s103 where k='d1'))$q$, 'not_found');
+select tests.expect_error('S103 outra agência não monta elenco na A', $q$select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), null)$q$, 'not_found');
+select tests.expect_error('S103 outra agência não usa elenco no negócio alheio', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d1'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e5"}]')$q$, 'not_found');
+
+-- máximo de heróis no banco (negócio por herói, máximo 3)
+select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
+select public.agency_deal_suggest_heroes((select v::uuid from t_s103 where k='d1'), '[{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e3"}]');
+select tests.ok('S103 três heróis cabem no máximo 3', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status = 'suggested') = 3);
+select tests.expect_error('S103 o quarto herói é recusado pelo banco (sugerir)', $q$select public.agency_deal_suggest_heroes((select v::uuid from t_s103 where k='d1'), '[{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e3"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e4"}]')$q$, 'max_heroes');
+select tests.ok('S103 a recusa não deixou o quarto', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1')) = 3);
+select public.agency_deal_suggest_heroes((select v::uuid from t_s103 where k='d1'), '[{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"kind":"talent","talent_id":"b1030000-0000-4000-8000-0000000000e4"}]');
+select tests.ok('S103 trocar um herói por outro no teto funciona (a vaga volta antes de conferir)',
+  (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status = 'suggested') = 3
+  and not exists (select 1 from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and talent_id = 'b1030000-0000-4000-8000-0000000000e3'));
+select tests.su();
+select tests.expect_error('S103 inserir direto o quarto herói também é recusado no commit',
+  $q$insert into public.deal_talents (agency_id, deal_id, talent_id, status) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d1'), 'b1030000-0000-4000-8000-0000000000e3', 'suggested'); set constraints all immediate$q$, 'max_heroes');
+update public.deal_talents set status = 'removed' where deal_id = (select v::uuid from t_s103 where k='d1') and talent_id = 'b1030000-0000-4000-8000-0000000000e4';
+insert into public.deal_talents (agency_id, deal_id, talent_id, status) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d1'), 'b1030000-0000-4000-8000-0000000000e3', 'suggested');
+set constraints all immediate;
+select tests.ok('S103 herói removido libera a vaga para outro', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d1') and status not in ('removed','declined')) = 3);
+select tests.expect_error('S103 reviver o removido acima do máximo é recusado',
+  $q$update public.deal_talents set status = 'suggested' where deal_id = (select v::uuid from t_s103 where k='d1') and talent_id = 'b1030000-0000-4000-8000-0000000000e4'; set constraints all immediate$q$, 'max_heroes');
+insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), 'b1030000-0000-4000-8000-0000000000e1', 'suggested', null);
+insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), 'b1030000-0000-4000-8000-0000000000e2', 'suggested', null);
+insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), 'b1030000-0000-4000-8000-0000000000e3', 'suggested', null);
+insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at) values ('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), 'b1030000-0000-4000-8000-0000000000e4', 'suggested', null);
+set constraints all immediate;
+select tests.ok('S103 valor fixo não limita a quantidade de heróis', (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d2')) = 4);
+delete from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d2');
+
+-- montador: gestor sem nenhum valor; Adm com cachês; fixo 1.200.000 com taxa de 20% => orçamento de cachês 1.000.000
+insert into public.deal_talent_fees (agency_id, deal_id, deal_talent_id, talent_id, fee_cents)
+  select dt.agency_id, dt.deal_id, dt.id, dt.talent_id, 400000 from public.deal_talents dt where dt.deal_id = (select v::uuid from t_s103 where k='d1') and dt.talent_id = 'b1030000-0000-4000-8000-0000000000e1';
+select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
+insert into t_s103 select 'gin', public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), null)::text;
+select tests.ok('S103 gestor: montador sem fee_cents, sem orçamento, sem taxa; só proporção do orçamento de cachês (cost_bp)',
+  (select (v::jsonb ->> 'can_values')::boolean = false and v::jsonb -> 'context' ->> 'budget_cents' is null and v::jsonb -> 'context' ->> 'fee_budget_cents' is null and v::jsonb -> 'context' ->> 'rate_bp' is null
+     and (v::jsonb -> 'context' ->> 'has_budget')::boolean and v::jsonb -> 'context' ->> 'value_model' = 'fixo'
+     and not exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'fee_cents' is not null) and v::text not like '%400000%' and v::text not like '%1200000%'
+   from t_s103 where k='gin'));
+select tests.ok('S103 gestor: só os heróis da própria agência (4), com redes declaradas, data do dado, bloqueio e consentimento',
+  (select jsonb_array_length(v::jsonb -> 'heroes') = 4
+     and not exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' like '%Cinco%')
+     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Herói Um S103' and h -> 'accounts' -> 0 ->> 'as_of' is not null and (h -> 'accounts' -> 0 ->> 'avg_reach')::int = 30000 and (h ->> 'consent_ok')::boolean)
+     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Herói Quatro S103' and not (h ->> 'consent_ok')::boolean)
+   from t_s103 where k='gin'));
+select tests.ok('S103 o último cachê do herói (negócio por herói) aparece ao gestor só como proporção: 400000 / 1000000 = 4000 bp',
+  (select (h ->> 'cost_bp')::int = 4000 and h ->> 'fee_source' = 'past' and h ->> 'fee_cents' is null
+   from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='gin' and h ->> 'name' = 'Herói Um S103'));
+select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
+insert into t_s103 select 'ain', public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', (select v::uuid from t_s103 where k='d2'), null)::text;
+select tests.ok('S103 Adm: valor total, taxa e orçamento de cachês (1.200.000 ÷ 1,20 = 1.000.000) e o cachê do herói',
+  (select (v::jsonb ->> 'can_values')::boolean and (v::jsonb -> 'context' ->> 'budget_cents')::bigint = 1200000 and (v::jsonb -> 'context' ->> 'rate_bp')::int = 2000
+     and (v::jsonb -> 'context' ->> 'fee_budget_cents')::bigint = 1000000
+     and exists (select 1 from jsonb_array_elements(v::jsonb -> 'heroes') h where h ->> 'name' = 'Herói Um S103' and (h ->> 'fee_cents')::bigint = 400000 and h ->> 'cost_bp' is null)
+   from t_s103 where k='ain'));
+select tests.ok('S103 período do herói bloqueado (dias 25 a 30) aparece como bloqueado e o dado de 400 dias atrás vem com a data',
+  (select (h ->> 'blocked')::boolean from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='ain' and h ->> 'name' = 'Herói Três S103')
+  and (select (h -> 'accounts' -> 0 ->> 'as_of')::date = current_date - 400 from t_s103, jsonb_array_elements(v::jsonb -> 'heroes') h where k='ain' and h ->> 'name' = 'Herói Dois S103'));
+
+-- usar o elenco
+select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
+select tests.expect_error('S103 gestor não grava repartição de cachê', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":500000}]')$q$, 'forbidden');
+select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"talent_id":"b1030000-0000-4000-8000-0000000000e2"}]');
+select tests.ok('S103 gestor usa o elenco sem valores: 2 heróis sugeridos e nenhum cachê gravado',
+  (select count(*) from public.deal_talents where deal_id = (select v::uuid from t_s103 where k='d2') and status = 'suggested') = 2
+  and (select count(*) from public.deal_talent_fees where deal_id = (select v::uuid from t_s103 where k='d2')) = 0);
+select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
+select tests.expect_error('S103 repartição acima do orçamento de cachês (1.000.000) é recusada', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":600000},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","fee_cents":400001}]')$q$, 'fee_over_budget');
+select tests.expect_error('S103 cachê negativo é recusado', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":-1}]')$q$, 'invalid_input');
+select tests.expect_error('S103 herói de outra agência não entra', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e5"}]')$q$, 'not_found');
+select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d2'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","fee_cents":600000},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","fee_cents":400000}]');
+select tests.ok('S103 Adm usa o elenco com a repartição: soma = orçamento de cachês (1.000.000)',
+  (select sum(fee_cents) = 1000000 and count(*) = 2 from public.deal_talent_fees where deal_id = (select v::uuid from t_s103 where k='d2')));
+select tests.expect_error('S103 elenco acima do máximo (3) no negócio por herói', $q$select public.agency_deal_cast_apply((select v::uuid from t_s103 where k='d1'), '[{"talent_id":"b1030000-0000-4000-8000-0000000000e1"},{"talent_id":"b1030000-0000-4000-8000-0000000000e2"},{"talent_id":"b1030000-0000-4000-8000-0000000000e3"},{"talent_id":"b1030000-0000-4000-8000-0000000000e4"}]')$q$, 'max_heroes');
+
+-- chamada: validação, publicação, proposta, contraproposta e acordo
+select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
+select tests.expect_error('S103 chamada por herói sem máximo é recusada', $q$select public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') - 'max_heroes')$q$, 'max_heroes_required');
+select tests.expect_error('S103 chamada por herói sem valor é recusada', $q$select public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') - 'budget_cents')$q$, 'value_per_hero_required');
+insert into t_s103 values ('c1', public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') || '{"budget_display":"open"}')::text);
+select tests.ok('S103 chamada por herói nunca fica com valor "aberto"; guarda modelo e máximo',
+  (select value_model = 'por_heroi' and max_heroes = 3 and budget_cents = 200000 and budget_display = 'exact' from public.brand_calls where id = (select v::uuid from t_s103 where k='c1')));
+insert into t_s103 values ('c2', public.brand_call_save('b1030000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s103 where k='call') || '{"title":"Chamada fixa S103","value_model":"fixo","max_heroes":4,"budget_cents":900000}')::text);
+select tests.ok('S103 chamada fixa não guarda máximo', (select value_model = 'fixo' and max_heroes is null from public.brand_calls where id = (select v::uuid from t_s103 where k='c2')));
+select public.brand_call_submit((select v::uuid from t_s103 where k='c1'), null);
+select public.brand_call_submit((select v::uuid from t_s103 where k='c2'), null);
+select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
+select tests.expect_error('S103 proposta por herói sem máximo é recusada', $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
+  '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":150000,"value_model":"por_heroi"}')$q$, 'max_heroes_required');
+select tests.expect_error('S103 proposta com mais heróis que o máximo é recusada', $q$select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
+  '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":150000,"value_model":"por_heroi","max_heroes":1}')$q$, 'max_heroes');
+insert into t_s103 values ('p1', public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
+  '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":150000,"value_model":"por_heroi","max_heroes":2}')::text);
+insert into t_s103 values ('p2', public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c2'), 'b1030000-0000-4000-8000-0000000000a1',
+  '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e3","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":800000}')::text);
+select tests.ok('S103 rascunhos guardam o modelo da proposta (por herói com 2; fixo sem máximo)',
+  (select value_model = 'por_heroi' and max_heroes = 2 and amount_cents = 150000 from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'))
+  and (select value_model = 'fixo' and max_heroes is null from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2')));
+select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
+select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
+  '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":1,"value_model":"fixo","max_heroes":null}');
+select tests.su();
+select tests.ok('S103 gestor não muda modelo, valor nem máximo da proposta (só os heróis)',
+  (select value_model = 'por_heroi' and max_heroes = 2 and amount_cents = 150000 from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'))
+  and (select count(*) from public.brand_call_proposal_talents where proposal_id = (select v::uuid from t_s103 where k='p1')) = 1);
+select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
+select tests.ok('S103 gestor lê modelo e máximo da proposta sem o valor',
+  (select (q ->> 'value_model') = 'por_heroi' and (q ->> 'max_heroes')::int = 2 and q ->> 'amount_cents' is null
+   from public.agency_brand_call_detail((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1') d, jsonb_array_elements(d -> 'proposals') q limit 1));
+select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
+select public.agency_brand_call_proposal_save((select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1',
+  '{"talents":[{"talent_id":"b1030000-0000-4000-8000-0000000000e1","deliverables":[{"kind":"reels","quantity":1}]},{"talent_id":"b1030000-0000-4000-8000-0000000000e2","deliverables":[{"kind":"reels","quantity":1}]}],"amount_cents":150000,"value_model":"por_heroi","max_heroes":2}');
+select public.agency_brand_call_proposal_send((select v::uuid from t_s103 where k='p1'));
+select public.agency_brand_call_proposal_send((select v::uuid from t_s103 where k='p2'));
+select tests.ok('S103 a 1ª rodada leva o modelo e o máximo',
+  (select r.value_model = 'por_heroi' and r.max_heroes = 2 and r.amount_cents = 150000 from public.brand_call_rounds r where r.proposal_id = (select v::uuid from t_s103 where k='p1') and r.seq = 1));
+
+-- marca vê tudo da própria chamada; outra marca nada
+select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
+select tests.ok('S103 a marca lê modelo, máximo e valor da proposta por herói (teto 300000)',
+  (select (q ->> 'value_model') = 'por_heroi' and (q ->> 'max_heroes')::int = 2 and (q ->> 'amount_cents')::bigint = 150000 and (q ->> 'amount_cents')::bigint * (q ->> 'max_heroes')::int = 300000
+   from public.brand_call_detail((select v::uuid from t_s103 where k='c1')) d, jsonb_array_elements(d -> 'proposals') q limit 1));
+-- contraproposta: troca para valor fixo; sem informar, mantém o modelo; por herói exige valor e máximo
+select tests.expect_error('S103 contraproposta por herói sem máximo é recusada', $q$select public.brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'ok', 'por_heroi', null)$q$, 'max_heroes_required');
+select public.brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'por herói', 'por_heroi', 2);
+select tests.ok('S103 contraproposta da marca vira por herói com máximo 2 (a proposta tem 3 heróis)',
+  (select value_model = 'por_heroi' and max_heroes = 2 and amount_cents = 100000 and awaiting = 'agency' from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2')));
+select tests.login('b1030000-0000-4000-8000-000000000001','s103-adm-a@test.local');
+select tests.expect_error('S103 a agência não acorda com mais heróis que o máximo da contraproposta', $q$select public.agency_brand_call_reply((select v::uuid from t_s103 where k='p2'), 'accept', null, null, null, null)$q$, 'max_heroes');
+select tests.ok('S103 a recusa desfez o acordo', (select status = 'open' and agreed_value_model is null from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2')));
+select public.agency_brand_call_reply((select v::uuid from t_s103 where k='p2'), 'counter', 100000, '[{"kind":"reels","quantity":3}]'::jsonb, null, 'volto a fixo', 'fixo', null);
+select tests.ok('S103 a agência contrapropõe de volta a valor fixo (máximo zera)',
+  (select value_model = 'fixo' and max_heroes is null and amount_cents = 100000 and awaiting = 'brand' from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2')));
+select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
+select public.brand_call_reply((select v::uuid from t_s103 where k='p2'), 'accept', null, null, null, null);
+select tests.ok('S103 acordo fixo: congela modelo e valor e a campanha herda',
+  (select status = 'agreed' and agreed_value_model = 'fixo' and agreed_max_heroes is null and agreed_cents = 100000 from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p2'))
+  and (select b.value_model = 'fixo' and b.max_heroes is null and b.budget_max_cents = 100000 and b.budget_min_cents = 100000
+       from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p2')));
+select tests.login('b1030000-0000-4000-8000-000000000005','s103-dono-m1@test.local');
+select public.brand_call_reply((select v::uuid from t_s103 where k='p1'), 'accept', null, null, null, null);
+select tests.ok('S103 acordo por herói: congela modelo, valor e máximo; a campanha nasce por herói (sem mínimo) com o teto',
+  (select status = 'agreed' and agreed_value_model = 'por_heroi' and agreed_max_heroes = 2 and agreed_cents = 150000 from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'))
+  and (select b.value_model = 'por_heroi' and b.max_heroes = 2 and b.budget_max_cents = 150000 and b.budget_min_cents is null
+       from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p1')));
+select public.brand_request_save((select request_id from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1')), 'b1030000-0000-4000-8000-0000000000b1', '{"value_model":"fixo","budget_max_cents":5000,"max_heroes":9,"budget_min_cents":5000}');
+select tests.ok('S103 depois do acordo a marca não muda modelo, valor nem máximo da campanha',
+  (select b.value_model = 'por_heroi' and b.max_heroes = 2 and b.budget_max_cents = 150000
+   from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p1')));
+select tests.expect_error('S103 proposta acordada não aceita mais heróis', $q$insert into public.brand_call_proposal_talents (proposal_id, call_id, agency_id, brand_id, talent_id, position, deliverables)
+  values ((select v::uuid from t_s103 where k='p1'), (select v::uuid from t_s103 where k='c1'), 'b1030000-0000-4000-8000-0000000000a1', 'b1030000-0000-4000-8000-0000000000b1', 'b1030000-0000-4000-8000-0000000000e3', 3, '[{"kind":"reels","quantity":1}]')$q$, 'permission denied');
+select tests.su();
+update public.campaign_request_budgets set budget_max_cents = 900000 where request_id = (select v::uuid from t_s103 where k='r1');
+update public.campaign_request_budgets set budget_max_cents = 90000 where request_id = (select request_id from public.brand_call_proposals where id = (select v::uuid from t_s103 where k='p1'));
+select tests.ok('S103 alteração de verba numa campanha por herói enviada vira total ÷ máximo (900000 ÷ 3); o rascunho não passa por isso',
+  (select budget_max_cents = 300000 and value_model = 'por_heroi' from public.campaign_request_budgets where request_id = (select v::uuid from t_s103 where k='r1'))
+  and (select b.budget_max_cents = 90000 from public.brand_call_proposals q join public.campaign_request_budgets b on b.request_id = q.request_id where q.id = (select v::uuid from t_s103 where k='p1')));
+select tests.login('b1030000-0000-4000-8000-000000000006','s103-dono-m2@test.local');
+select tests.expect_error('S103 outra marca não lê a chamada', $q$select public.brand_call_detail((select v::uuid from t_s103 where k='c1'))$q$, 'not_found');
+select tests.login('b1030000-0000-4000-8000-000000000004','s103-adm-b@test.local');
+select tests.expect_error('S103 outra agência (fora do alvo) não lê a chamada nem monta elenco', $q$select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a2', null, (select v::uuid from t_s103 where k='c1'))$q$, 'not_found');
+-- montador na proposta à chamada (gestor sem valor; Adm com a verba por herói não entra como orçamento)
+select tests.login('b1030000-0000-4000-8000-000000000002','s103-gestor-a@test.local');
+select tests.ok('S103 montador da chamada: modelo por herói e máximo 3 para o gestor, sem valor',
+  (select v ->> 'can_values' = 'false' and v -> 'context' ->> 'value_model' = 'por_heroi' and (v -> 'context' ->> 'max_heroes')::int = 3 and v -> 'context' ->> 'budget_cents' is null and v::text not like '%200000%'
+   from (select public.agency_cast_inputs('b1030000-0000-4000-8000-0000000000a1', null, (select v::uuid from t_s103 where k='c1')) as v) x));
+-- creator: nunca vê modelo nem valor
+select tests.login('b1030000-0000-4000-8000-000000000007','s103-heroi@test.local');
+select tests.ok('S103 o herói não vê modelo, máximo nem valor nas chamadas',
+  (select coalesce(jsonb_agg(x)::text, '') not like '%value_model%' and coalesce(jsonb_agg(x)::text, '') not like '%max_heroes%' and coalesce(jsonb_agg(x)::text, '') not like '%budget_cents%' and count(*) >= 1
+   from jsonb_array_elements(public.talent_brand_calls()) x));
+
+-- limpeza
+select tests.su();
+delete from public.brand_call_proposals where brand_id = 'b1030000-0000-4000-8000-0000000000b1';
+delete from public.brand_calls where brand_id = 'b1030000-0000-4000-8000-0000000000b1';
+delete from public.campaign_requests where brand_id = 'b1030000-0000-4000-8000-0000000000b1';
+delete from public.deals where brand_id = 'b1030000-0000-4000-8000-0000000000b1';
+delete from public.inbox_notifications where user_id::text like 'b1030000-%';
+delete from public.talent_availability where agency_id::text like 'b1030000-%';
+delete from public.talent_social_accounts where agency_id::text like 'b1030000-%';
+delete from public.talent_profiles where agency_id::text like 'b1030000-%';
+delete from public.agency_brands where agency_id::text like 'b1030000-%';
+delete from public.brand_members where brand_id::text like 'b1030000-%';
+delete from public.brands where id::text like 'b1030000-%';
+delete from public.agency_members where agency_id::text like 'b1030000-%';
+delete from public.agencies where id::text like 'b1030000-%';
+delete from auth.users where id::text like 'b1030000-%';
+drop table t_s103;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

@@ -1,0 +1,180 @@
+{
+  "model": {
+    "label": "How the value is offered",
+    "fixo": "Fixed event value",
+    "porHeroi": "Value per hero",
+    "hint": {
+      "fixo": "One total value for the whole event. The agency splits it among the heroes it suggests.",
+      "porHeroi": "Each hero receives this value. The maximum number of heroes caps the total investment."
+    }
+  },
+  "amount": {
+    "total": "Total value (R$)",
+    "perHero": "Value per hero (R$)",
+    "hint": {
+      "total": "Optional. Only your brand and the agency admin can see it.",
+      "perHero": "What each hero receives. Only your brand and the agency admin can see it."
+    }
+  },
+  "maxHeroes": {
+    "label": "Maximum heroes",
+    "hint": "The agency cannot suggest more heroes than this."
+  },
+  "summary": {
+    "ceiling": "Up to {value}",
+    "ceilingDetail": "{value} per hero × {n, plural, one {# hero} other {# heroes}}, at most",
+    "perHeroMissing": "Enter the value per hero and the maximum heroes to see the investment ceiling.",
+    "fixed": "{value} in total",
+    "fixedDetail": "Split among the heroes the agency suggests.",
+    "fixedMissing": "No value entered. You can agree it with the agency later."
+  },
+  "view": {
+    "title": "Offered value",
+    "ceiling": "Up to {value}",
+    "perHeroDetail": "{value} per hero · up to {n, plural, one {# hero} other {# heroes}}",
+    "perHero": "Value per hero",
+    "maxOnly": "Up to {n, plural, one {# hero} other {# heroes}}",
+    "fixed": "Fixed event value",
+    "fixedDetail": "Total value, split among the heroes",
+    "slots": "{used} of {max} heroes"
+  },
+  "errors": {
+    "value_per_hero_required": "For a per-hero value, enter what each hero receives (more than zero).",
+    "max_heroes_required": "For a per-hero value, enter the maximum number of heroes (1 to 50).",
+    "max_heroes": "This value is per hero and allows at most {max, plural, one {# hero} other {# heroes}}. Remove someone from the cast."
+  },
+  "cast": {
+    "open": "Build cast",
+    "title": "Build cast",
+    "subtitle": "Pick the result that matters and see hero combinations that fit the value.",
+    "loading": "Loading the roster numbers…",
+    "loadError": "Could not load the roster now. Try again.",
+    "disclaimer": "These are estimates based on the numbers heroes or the agency declared for their networks. There is no direct link to social networks, and the reach of different heroes may overlap.",
+    "oldest": "The oldest data used is from {date}.",
+    "cancel": "Cancel",
+    "use": "Use this cast",
+    "live": "{count, plural, one {# hero} other {# heroes}} · uses {used} ({pct}% of the budget)",
+    "over": "{value} over budget",
+    "leftover": "{value} left",
+    "applied": "Cast suggested on the deal ({count, plural, one {# hero} other {# heroes}}).",
+    "fixedHint": "Fixed value: the builder shows hero combinations that fit the value and helps split the total among them.",
+    "budget": {
+      "title": "Budget",
+      "total": "Total event value (R$)",
+      "totalLocked": "Value offered by the brand on this deal.",
+      "totalHint": "Simulate with a value. It does not change anything on the deal.",
+      "feeBudget": "{value} left for fees, after the agency commission ({rate}%).",
+      "missing": "Enter the total value to see combinations.",
+      "hiddenForManager": "The budget is hidden from you. Combinations show the share of the budget used, as a percentage.",
+      "missingManager": "The admin has not entered the offered value yet. Ask them to simulate.",
+      "maxHeroes": "At most {max, plural, one {# hero} other {# heroes}} at this value."
+    },
+    "goal": {
+      "title": "Desired result",
+      "reach": "Reach",
+      "engagement": "Engagement",
+      "audience": "Audience fit",
+      "sales": "Sales",
+      "mix": "Mix",
+      "hint": {
+        "reach": "More people reached, in total.",
+        "engagement": "More people who like, comment and share.",
+        "audience": "More reach inside the campaign audience and region.",
+        "sales": "Response potential: reach in the right audience times engagement. It is not real sales data.",
+        "mix": "Balances reach, engagement and audience."
+      }
+    },
+    "weights": {
+      "toggle": "Adjust weights",
+      "reach": "Reach",
+      "engagement": "Engagement",
+      "fit": "Right audience",
+      "response": "Response (sales)",
+      "level": {
+        "0": "Does not matter",
+        "1": "A little",
+        "2": "Medium",
+        "3": "A lot"
+      },
+      "hint": "Weights change which heroes and combinations show up first."
+    },
+    "suggestions": {
+      "title": "Combinations that fit",
+      "needBudget": "Enter the budget to see combinations.",
+      "none": {
+        "no_budget": "Enter the budget to see combinations.",
+        "no_eligible": "No hero has enough data: reach, fee or availability is missing. Complete the data or add simulation fees below.",
+        "none_fits": "No hero with data fits this budget on their own."
+      }
+    },
+    "strategy": {
+      "solo": "One strong name",
+      "few": "A few mid-size",
+      "mix": "Mix"
+    },
+    "m": {
+      "reach": "Estimated reach",
+      "cpm": "Cost per thousand",
+      "reachPerPct": "Reach per 1% of budget",
+      "leftover": "Left over",
+      "fit": "Audience fit"
+    },
+    "why": "Why this combination",
+    "reason": {
+      "solo": "Bets on {name}, the hero who delivers the most for the chosen result.",
+      "few": "{n} mid-size heroes: spreads the risk and keeps the investment lean.",
+      "mix": "{n, plural, one {# hero} other {# heroes}}: more voices and different audiences within the same value.",
+      "uses_budget": "Uses {pct}% of the budget.",
+      "lowest_cpm": "Lowest cost per thousand people reached.",
+      "highest_reach": "Highest reach among the options.",
+      "best_fit": "Best fit with the campaign audience ({pct}%).",
+      "has_stale": "{n} hero(es) with old data. Check before closing."
+    },
+    "pick": "Choose this",
+    "picked": "Chosen",
+    "manual": {
+      "title": "Roster heroes ({count})",
+      "noData": "{count} hero(es) without reach data on the campaign networks. They are left out of the suggestions.",
+      "line": "Reach ~{reach} · Fit {fit} · Cost {cost}",
+      "lineNoData": "No reach data",
+      "notReleased": "Not released to brands",
+      "simFee": "Fee to simulate (R$)",
+      "simFeeHint": "No known fee. Type a value just to simulate; nothing is saved.",
+      "fewer": "Show fewer",
+      "more": "See {count, plural, one {# more hero} other {# more heroes}}",
+      "overLimit": "This value allows at most {max, plural, one {# hero} other {# heroes}}.",
+      "outsideAllowed": "A hero lacks consent or is outside the brand catalog. They cannot join the proposal.",
+      "missingFee": "No known fee: {names}. Their cost is not in the math."
+    },
+    "flags": {
+      "no_data": "No data",
+      "followers_estimate": "Reach estimated from followers",
+      "views_estimate": "Reach estimated from views",
+      "stale": "Old data",
+      "staleOn": "Data from {date}",
+      "no_engagement": "No declared engagement",
+      "no_fee": "No fee",
+      "no_audience": "No audience data",
+      "no_rating": "No ratings yet",
+      "no_network": "No campaign network",
+      "blocked": "Blocked on the dates",
+      "unavailable": "Unavailable",
+      "limited": "Limited availability",
+      "no_consent": "No consent"
+    },
+    "feeSource": {
+      "deal": "Fee from this deal",
+      "past": "Fee from a previous deal"
+    },
+    "split": {
+      "title": "Value split",
+      "hint": "The value is split by each hero's reference fee. You can edit it; the sum must match the fee budget.",
+      "skip": "Only suggest the heroes, without splitting the value now",
+      "feeOf": "Fee for {name}",
+      "exact": "Exact sum: {value}",
+      "missing": "{value} missing to match the budget.",
+      "excess": "{value} over the budget.",
+      "reset": "Split automatically again"
+    }
+  }
+}

@@ -356,7 +356,11 @@
     "invalid_hero_name": "O nome do herói precisa ter de 2 a 80 caracteres.",
     "invalid_profile_ref": "Use @perfil ou um link que comece com https://.",
     "too_many_new_talents": "No máximo 10 fichas novas de uma vez. Salve e continue.",
-    "hero_inactive": "A página deste herói não está ativa agora; não dá para publicar às marcas."
+    "hero_inactive": "A página deste herói não está ativa agora; não dá para publicar às marcas.",
+    "max_heroes": "O valor é por herói e tem um máximo de heróis. Tire alguém do elenco antes.",
+    "max_heroes_required": "No valor por herói, informe o máximo de heróis (de 1 a 50).",
+    "value_per_hero_required": "No valor por herói, informe quanto cada herói recebe (maior que zero).",
+    "fee_over_budget": "A soma dos cachês passa do orçamento para cachês (valor total sem a comissão da agência)."
   },
   "casting": {
     "title": "Casting",

@@ -11,6 +11,8 @@ export type Database = {
     Tables: {
       brand_calls: {
         Row: {
+          max_heroes: number | null;
+          value_model: string;
           approval_decided_at: string | null;
           approval_decided_label: string;
           approval_decision_note: string;
@@ -52,6 +54,8 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          max_heroes?: number | null;
+          value_model?: string;
           approval_decided_at?: string | null;
           approval_decided_label?: string;
           approval_decision_note?: string;
@@ -92,6 +96,8 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          max_heroes?: number | null;
+          value_model?: string;
           approval_decided_at?: string | null;
           approval_decided_label?: string;
           approval_decision_note?: string;
@@ -191,6 +197,10 @@ export type Database = {
       };
       brand_call_proposals: {
         Row: {
+          agreed_max_heroes: number | null;
+          agreed_value_model: string | null;
+          max_heroes: number | null;
+          value_model: string;
           agency_id: string;
           agreed_at: string | null;
           agreed_cents: number | null;
@@ -219,6 +229,10 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          agreed_max_heroes?: number | null;
+          agreed_value_model?: string | null;
+          max_heroes?: number | null;
+          value_model?: string;
           agency_id: string;
           agreed_at?: string | null;
           agreed_cents?: number | null;
@@ -246,6 +260,10 @@ export type Database = {
           updated_by?: string | null;
         };
         Update: {
+          agreed_max_heroes?: number | null;
+          agreed_value_model?: string | null;
+          max_heroes?: number | null;
+          value_model?: string;
           agency_id?: string;
           agreed_at?: string | null;
           agreed_cents?: number | null;
@@ -313,6 +331,8 @@ export type Database = {
       };
       brand_call_rounds: {
         Row: {
+          max_heroes: number | null;
+          value_model: string | null;
           action: string;
           actor_id: string | null;
           actor_label: string;
@@ -336,6 +356,8 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          max_heroes?: number | null;
+          value_model?: string | null;
           action: string;
           actor_id?: string | null;
           actor_label?: string;
@@ -358,6 +380,8 @@ export type Database = {
           state?: string;
         };
         Update: {
+          max_heroes?: number | null;
+          value_model?: string | null;
           action?: string;
           actor_id?: string | null;
           actor_label?: string;
@@ -9081,6 +9105,8 @@ export type Database = {
       };
       campaign_request_budgets: {
         Row: {
+          max_heroes: number | null;
+          value_model: string;
           agency_id: string;
           brand_id: string;
           budget_max_cents: number | null;
@@ -9094,6 +9120,8 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          max_heroes?: number | null;
+          value_model?: string;
           agency_id: string;
           brand_id: string;
           budget_max_cents?: number | null;
@@ -9106,6 +9134,8 @@ export type Database = {
           updated_by?: string | null;
         };
         Update: {
+          max_heroes?: number | null;
+          value_model?: string;
           agency_id?: string;
           brand_id?: string;
           budget_max_cents?: number | null;
@@ -10445,14 +10475,17 @@ isOneToOne: false
       brand_call_save: { Args: { p_brand: string; p_id: string | null; p_data: Json }; Returns: string };
       brand_call_submit: { Args: { p_id: string; p_note: string }; Returns: string };
       brand_call_review: { Args: { p_id: string; p_decision: string; p_note: string }; Returns: string };
-      brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string }; Returns: string };
+      brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null }; Returns: string };
       brand_call_round_review: { Args: { p_round: string; p_decision: string; p_note: string }; Returns: string };
       brand_call_decide: { Args: { p_id: string; p_action: string; p_proposals: string[]; p_note: string }; Returns: undefined };
       brand_call_deadline_scan: { Args: Record<PropertyKey, never>; Returns: number };
       agency_brand_call_proposal_save: { Args: { p_call: string; p_agency: string; p_data: Json }; Returns: string };
       agency_brand_call_proposal_send: { Args: { p_proposal: string }; Returns: string };
       agency_brand_call_proposal_discard: { Args: { p_proposal: string }; Returns: undefined };
-      agency_brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string }; Returns: string };
+      deal_value_terms: { Args: { p_deal: string }; Returns: Json };
+      agency_cast_inputs: { Args: { p_agency: string; p_deal?: string | null; p_call?: string | null }; Returns: Json };
+      agency_deal_cast_apply: { Args: { p_deal: string; p_items: Json }; Returns: Json };
+      agency_brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null }; Returns: string };
       talent_brand_call_interest: { Args: { p_call: string; p_message: string }; Returns: undefined };
       brand_calls_list: { Args: { p_brand: string }; Returns: Json };
       brand_call_detail: { Args: { p_id: string }; Returns: Json };

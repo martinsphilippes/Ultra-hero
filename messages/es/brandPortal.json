@@ -213,7 +213,11 @@
       "briefInvalid": "Revisa el briefing: hashtags con #, @ válidos y enlaces https.",
       "budgetAgreedHint": "Valor acordado en el patrocinio (no cambia aquí).",
       "budgetNegotiatingHint": "Patrocinio: el valor sale de la negociación en la oportunidad.",
-      "budgetNegotiatingPlaceholder": "A convenir"
+      "budgetNegotiatingPlaceholder": "A convenir",
+      "valueErrors": {
+        "value_per_hero_required": "En el valor por héroe, indica cuánto recibe cada héroe.",
+        "max_heroes_required": "En el valor por héroe, indica el máximo de héroes (de 1 a 50)."
+      }
     },
     "cancel": {
       "action": "Cancelar propuesta",

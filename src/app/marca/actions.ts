@@ -51,6 +51,8 @@ export async function saveRequestAction(input: BrandRequestInput): Promise<Brand
         notes: d.notes,
         brief: briefPayload(d.brief),
         budget_max_cents: d.budgetMaxCents === null ? "" : String(d.budgetMaxCents),
+        value_model: d.valueModel,
+        max_heroes: d.valueModel === "por_heroi" && d.maxHeroes !== null ? String(d.maxHeroes) : "",
         budget_note: d.budgetNote,
       },
     });

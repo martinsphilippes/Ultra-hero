@@ -25,6 +25,8 @@ export const EMPTY_CAMPAIGN: CampaignFormValues = {
   deliverables: [],
   notes: "",
   budgetText: "",
+  valueModel: "fixo",
+  maxHeroes: null,
   budgetNote: "",
   briefDraft: EMPTY_BRIEF_DRAFT,
 };

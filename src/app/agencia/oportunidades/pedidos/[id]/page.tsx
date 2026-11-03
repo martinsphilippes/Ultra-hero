@@ -6,13 +6,13 @@ import { AgencyCallReply, AgencyProposalBuilder } from "@/components/brand-call/
 import { CallSummary } from "@/components/brand-call/CallSummary";
 import { CallStatusBadge, CallTimeline, DeliverablesText } from "@/components/brand-call/shared";
 import { ProposalBadgeView } from "@/components/sponsorship/NegotiationView";
+import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import { requireAgency } from "@/lib/agency/server";
 import { callProposalBadge } from "@/lib/brand-call/logic";
 import { getAgencyBrandCall } from "@/lib/brand-call/queries";
-import { formatCents } from "@/lib/deals/schemas";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +81,15 @@ export default async function AgencyBrandCallPage({ params }: Props) {
               <dl className="grid grid-cols-2 gap-2 type-body-sm">
                 <div className="flex flex-col">
                   <dt className="type-caption text-fg-muted">{t("amount")}</dt>
-                  <dd className="font-semibold text-fg">{canValues ? formatCents((live.agreedCents ?? live.amountCents) as number, locale) : t("amountHidden")}</dd>
+                  <dd className="font-semibold text-fg">
+                    <ValueTermsView
+                      model={live.agreedValueModel ?? live.valueModel}
+                      amountCents={canValues ? (live.agreedCents ?? live.amountCents) : null}
+                      maxHeroes={live.agreedValueModel ? live.agreedMaxHeroes : live.maxHeroes}
+                      canValues={canValues}
+                    />
+                    {!canValues && (live.agreedValueModel ?? live.valueModel) === "fixo" ? t("amountHidden") : null}
+                  </dd>
                 </div>
                 <div className="flex flex-col">
                   <dt className="type-caption text-fg-muted">{t("deliverBy")}</dt>
@@ -109,6 +117,8 @@ export default async function AgencyBrandCallPage({ params }: Props) {
               interests={detail.interests}
               draft={draft}
               canValues={canValues}
+              callValueModel={call.valueModel}
+              callMaxHeroes={call.maxHeroes}
             />
           ) : !live ? (
             <p className="rounded-xl border border-border bg-surface-hover px-3 py-2 type-body-sm text-fg" data-testid="agency-call-closed">

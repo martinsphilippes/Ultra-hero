@@ -4,6 +4,7 @@ import { CalendarDays, Clock, MapPin, Target, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import { PublicChips } from "@/components/sponsorship/NegotiationView";
 import { Badge, Button, Dialog, FormField, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -87,9 +88,13 @@ export function CallSummary({ call, budget, showBrand = false }: Props) {
       {budget !== "none" ? (
         <div className="flex flex-col gap-0.5 border-t border-border pt-3">
           <span className="type-caption text-fg-muted">{t("budget")}</span>
-          <span className="text-base font-semibold text-fg">
-            <BudgetText display={call.budgetDisplay} cents={call.budgetCents} canValues={budget === "values"} />
-          </span>
+          {call.valueModel === "por_heroi" ? (
+            <ValueTermsView model="por_heroi" amountCents={call.budgetCents} maxHeroes={call.maxHeroes} canValues={budget === "values"} />
+          ) : (
+            <span className="text-base font-semibold text-fg">
+              <BudgetText display={call.budgetDisplay} cents={call.budgetCents} canValues={budget === "values"} />
+            </span>
+          )}
           {budget === "values" && call.budgetDisplay !== "open" ? <span className="type-caption text-fg-muted">{t(`budgetShown.${call.budgetDisplay}`)}</span> : null}
         </div>
       ) : null}

@@ -4,13 +4,14 @@ import { Save, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, DatePicker, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { AudienceFields } from "@/components/sponsorship/AudienceFields";
 import { saveBrandCallAction } from "@/lib/brand-call/actions";
 import { MAX_CREATORS_WANTED, MAX_NICHES, parseNiches, validateCall, type AgencyOption, type CallAudience, type CallFormInput } from "@/lib/brand-call/logic";
 import { OBJECTIVES } from "@/lib/deals/vocab";
 import { brlToCents } from "@/lib/money/brl-input";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
+import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { DeliverablesEditor } from "./shared";
 
 export type CallFormValues = Omit<CallFormInput, "niches" | "budgetCents"> & { nichesText: string; budgetText: string };
@@ -35,7 +36,12 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
   function submit(publish: boolean) {
     setError(null);
     const budgetCents = brlToCents(v.budgetText);
-    const input: CallFormInput = { ...v, niches: parseNiches(v.nichesText), budgetCents: v.budgetDisplay === "open" && budgetCents === null ? null : budgetCents };
+    const input: CallFormInput = {
+      ...v,
+      niches: parseNiches(v.nichesText),
+      budgetCents: v.budgetDisplay === "open" && budgetCents === null ? null : budgetCents,
+      maxHeroes: v.valueModel === "por_heroi" ? v.maxHeroes : null,
+    };
     delete (input as Partial<CallFormValues>).nichesText;
     delete (input as Partial<CallFormValues>).budgetText;
     const problem = validateCall(input, publish);
@@ -124,12 +130,23 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
         <h2 id="bc-budget" className="text-base font-semibold text-fg">
           {t("blocks.budget")}
         </h2>
-        <FormField label={t("budget")} hint={t("budgetHint")}>
-          <MoneyInput value={v.budgetText} maxCents={10_000_000_000} onValueChange={(text) => set("budgetText", text)} disabled={pending} data-testid="brand-call-budget" />
-        </FormField>
+        <ValueModelFields
+          idPrefix="brand-call"
+          model={v.valueModel}
+          onModelChange={(m) =>
+            setV((cur) => ({ ...cur, valueModel: m, maxHeroes: m === "por_heroi" ? (cur.maxHeroes ?? cur.creatorsWanted) : null, budgetDisplay: m === "por_heroi" && cur.budgetDisplay === "open" ? "exact" : cur.budgetDisplay }))
+          }
+          amountText={v.budgetText}
+          onAmountChange={(text) => set("budgetText", text)}
+          maxHeroes={v.maxHeroes}
+          onMaxHeroesChange={(n) => set("maxHeroes", n)}
+          disabled={pending}
+          amountHint={t("budgetHint")}
+          amountTestId="brand-call-budget"
+        />
         <FormField label={t("budgetDisplay")}>
           <Select value={v.budgetDisplay} onChange={(e) => set("budgetDisplay", e.target.value as CallFormValues["budgetDisplay"])} disabled={pending} data-testid="brand-call-budget-display">
-            {(["exact", "up_to", "open"] as const).map((d) => (
+            {(v.valueModel === "por_heroi" ? (["exact", "up_to"] as const) : (["exact", "up_to", "open"] as const)).map((d) => (
               <option key={d} value={d}>
                 {t(`budgetDisplays.${d}`)}
               </option>

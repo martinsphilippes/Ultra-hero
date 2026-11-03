@@ -2,7 +2,9 @@
 
 import { Building2, Plus, Store, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Badge, Button, DatePicker, FormField, Input, MoneyInput, Select, Textarea, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, DatePicker, FormField, Input, Select, Textarea, type BadgeVariant } from "@/components/ui";
+import { ValueModelFields } from "@/components/value-model/ValueModelFields";
+import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import type { AgencyViewStatus, CallRound, CallStatus } from "@/lib/brand-call/logic";
@@ -10,6 +12,7 @@ import type { RequestDeliverable } from "@/lib/deals/schemas";
 import { formatCents } from "@/lib/deals/schemas";
 import { DELIVERABLE_KINDS } from "@/lib/deals/vocab";
 import { NETWORKS } from "@/lib/talent/vocab";
+import type { ValueModel } from "@/lib/value-model/model";
 
 // Peças da chamada da marca (0089) que servem à marca, à agência e ao creator: selos de situação, entregas em texto e
 // o editor de entregas (mesmos campos da campanha), o compositor de termos de uma rodada e a linha do tempo.
@@ -96,21 +99,28 @@ export function DeliverablesEditor({ value, onChange, disabled = false, idPrefix
   );
 }
 
-export type TermsDraft = { amountText: string; deliverables: RequestDeliverable[]; deliverBy: string; note: string };
+export type TermsDraft = { amountText: string; valueModel: ValueModel; maxHeroes: number | null; deliverables: RequestDeliverable[]; deliverBy: string; note: string };
 
 /** Termos de uma rodada (contraproposta): valor total, entregas, prazo de entrega e nota. */
 export function TermsFields({ value, onChange, disabled, idPrefix }: { value: TermsDraft; onChange: (v: TermsDraft) => void; disabled?: boolean; idPrefix: string }) {
   const t = useTranslations("brandCall.negotiation");
   return (
     <div className="flex flex-col gap-3" data-testid={`${idPrefix}-terms`}>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label={t("amount")} required>
-          <MoneyInput value={value.amountText} maxCents={10_000_000_000} onValueChange={(text) => onChange({ ...value, amountText: text })} disabled={disabled} data-testid={`${idPrefix}-amount`} />
-        </FormField>
-        <FormField label={t("deliverBy")}>
-          <DatePicker value={value.deliverBy} onChange={(v) => onChange({ ...value, deliverBy: v })} disabled={disabled} />
-        </FormField>
-      </div>
+      <ValueModelFields
+        idPrefix={idPrefix}
+        model={value.valueModel}
+        onModelChange={(m) => onChange({ ...value, valueModel: m, maxHeroes: m === "por_heroi" ? (value.maxHeroes ?? 3) : null })}
+        amountText={value.amountText}
+        onAmountChange={(text) => onChange({ ...value, amountText: text })}
+        maxHeroes={value.maxHeroes}
+        onMaxHeroesChange={(n) => onChange({ ...value, maxHeroes: n })}
+        disabled={disabled}
+        required
+        amountTestId={`${idPrefix}-amount`}
+      />
+      <FormField label={t("deliverBy")}>
+        <DatePicker value={value.deliverBy} onChange={(v) => onChange({ ...value, deliverBy: v })} disabled={disabled} />
+      </FormField>
       <fieldset className="flex flex-col gap-1">
         <legend className="mb-1 text-sm font-medium text-fg">{t("deliverables")}</legend>
         <DeliverablesEditor idPrefix={idPrefix} value={value.deliverables} onChange={(d) => onChange({ ...value, deliverables: d })} disabled={disabled} />
@@ -149,7 +159,7 @@ export function CallTimeline({ rounds, viewer, agencyName, brandName }: { rounds
               {who}
               {r.actorLabel ? ` · ${r.actorLabel}` : ""} · {formatDateTime(r.createdAt, locale)}
             </span>
-            {r.amountCents !== null ? <span className="text-sm font-semibold text-fg">{formatCents(r.amountCents, locale)}</span> : null}
+            {r.amountCents !== null || r.valueModel === "por_heroi" ? <ValueTermsView model={r.valueModel ?? "fixo"} amountCents={r.amountCents} maxHeroes={r.maxHeroes} canValues={r.amountCents !== null} /> : null}
             {r.deliverables && r.action !== "accept" ? <DeliverablesText items={r.deliverables} className="type-caption text-fg" /> : null}
             {r.deliverBy && r.action !== "accept" ? <span className="type-caption text-fg-muted">{t("deliverByValue", { date: formatPlainDate(r.deliverBy, locale) })}</span> : null}
             {r.note ? <p className="whitespace-pre-wrap type-body-sm text-fg">“{r.note}”</p> : null}

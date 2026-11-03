@@ -1,5 +1,6 @@
 import "server-only";
 import { toBrief, type Brief } from "@/lib/brief/brief";
+import type { ValueModel } from "@/lib/value-model/model";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { BRAND_STATUSES, isDealStage, type BrandStatus, type DealOutcome, type DealStage } from "./stages";
@@ -298,10 +299,30 @@ export async function getRequest(id: string): Promise<RequestRow | null> {
 }
 
 /** Orçamento oferecido pela marca (tabela de valor: só a marca dona e o Adm recebem a linha). */
-export async function getRequestBudget(requestId: string): Promise<{ min: number | null; max: number | null; note: string } | null> {
+export async function getRequestBudget(requestId: string): Promise<{ min: number | null; max: number | null; note: string; valueModel: ValueModel; maxHeroes: number | null } | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from("campaign_request_budgets").select("budget_min_cents, budget_max_cents, note").eq("request_id", requestId).maybeSingle();
-  return data ? { min: data.budget_min_cents, max: data.budget_max_cents, note: data.note } : null;
+  const { data } = await supabase.from("campaign_request_budgets").select("budget_min_cents, budget_max_cents, note, value_model, max_heroes").eq("request_id", requestId).maybeSingle();
+  // 0096: modelo de valor — fixo (total do evento) ou por herói (valor por herói × máximo de heróis)
+  return data ? { min: data.budget_min_cents, max: data.budget_max_cents, note: data.note, valueModel: data.value_model === "por_heroi" ? "por_heroi" : "fixo", maxHeroes: data.max_heroes } : null;
+}
+
+/** 0096: modelo do valor do negócio (gestor+): modelo e máximo; valor e teto só para o Adm. */
+export type DealValueTerms = { valueModel: ValueModel; maxHeroes: number | null; activeHeroes: number; hasValue: boolean; valueCents: number | null; ceilingCents: number | null };
+
+export async function getDealValueTerms(dealId: string): Promise<DealValueTerms | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("deal_value_terms", { p_deal: dealId });
+  if (error || !data || typeof data !== "object") return null;
+  const r = data as Record<string, unknown>;
+  const n = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+  return {
+    valueModel: r.value_model === "por_heroi" ? "por_heroi" : "fixo",
+    maxHeroes: n(r.max_heroes),
+    activeHeroes: Number(r.active_heroes ?? 0),
+    hasValue: r.has_value === true,
+    valueCents: n(r.value_cents),
+    ceilingCents: n(r.ceiling_cents),
+  };
 }
 
 // ---------------------------------------------------------------- marca

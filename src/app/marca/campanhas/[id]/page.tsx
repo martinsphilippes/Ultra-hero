@@ -175,11 +175,14 @@ export default async function BrandCampaignPage({ params }: Props) {
             deliverables: request.deliverables as never[],
             notes: request.notes,
             budgetText: centsToBrl(budget?.max ?? null),
+            valueModel: budget?.valueModel ?? "fixo",
+            maxHeroes: budget?.maxHeroes ?? null,
             budgetNote: budget?.note ?? "",
             briefDraft: briefToDraft(request.brief),
           }}
           creatorName={detail.requestedTalent?.name ?? null}
           canEdit
+          valueMode={fromCall ? "frozen" : fromSponsorship ? "hidden" : "editable"}
           sponsorshipBudget={fromCall ? "agreed" : fromSponsorship ? (fromSponsorship.negotiation?.status === "agreed" ? "agreed" : "negotiating") : null}
         />
       </div>

@@ -1,5 +1,10 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // modelo de valor e montador de elenco (0096): o mais específico primeiro (a busca é por trecho da mensagem)
+  "max_heroes_required",
+  "value_per_hero_required",
+  "fee_over_budget",
+  "max_heroes",
   // oportunidade de patrocínio por herói (0095)
   "hero_inactive",
   // sugerir heróis no negócio (0093)

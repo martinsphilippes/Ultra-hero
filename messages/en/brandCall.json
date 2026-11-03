@@ -100,7 +100,8 @@
       "respondAfterPeriod": "The proposal deadline must be by the end of the period.",
       "deliverables": "Add at least one deliverable.",
       "networks": "Tick at least one network.",
-      "agencies": "Choose at least one agency."
+      "agencies": "Choose at least one agency.",
+      "maxHeroes": "For a per-hero value, enter the maximum number of heroes (1 to 50)."
     },
     "published": "Call published. Agencies were notified.",
     "toOwner": "Sent to the owner for approval.",

@@ -20,7 +20,9 @@ import {
   type BrandCallDetail,
   type CallProposal,
 } from "@/lib/brand-call/logic";
+import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import { formatCents } from "@/lib/deals/schemas";
+import { ceilingCents, validateTerms } from "@/lib/value-model/model";
 import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 import { priceDiff } from "@/lib/sponsorship/negotiation";
 import { CallTimeline, DeliverablesText, TermsFields, type TermsDraft } from "./shared";
@@ -47,9 +49,14 @@ export function BrandCallProposals({ detail }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const visible = proposals.filter((p) => p.status !== "closed" || p.endReason === "decided");
+  // 0096: o que se compara é o teto de investimento (por herói = valor × máximo de heróis); o acordo congela o que foi acordado
+  const termsOf = (p: CallProposal) =>
+    p.status === "agreed" && p.agreedValueModel
+      ? { model: p.agreedValueModel, amountCents: p.agreedCents, maxHeroes: p.agreedMaxHeroes }
+      : { model: p.valueModel, amountCents: p.amountCents, maxHeroes: p.maxHeroes };
   const rows = visible.map((p) => ({
     id: p.id,
-    amountCents: p.agreedCents ?? p.amountCents,
+    amountCents: ceilingCents(termsOf(p)),
     reach: sumReach(p.talents.map((x) => x.card)),
     creators: p.talents.length,
     pieces: deliverablesCount(p.agreedDeliverables ?? p.deliverables),
@@ -91,8 +98,10 @@ export function BrandCallProposals({ detail }: Props) {
         {visible.map((p) => {
           const row = rows.find((r) => r.id === p.id);
           const f = flags[p.id];
-          const amount = p.agreedCents ?? p.amountCents;
-          const diff = call.budgetCents !== null && amount !== null ? priceDiff(call.budgetCents, amount) : null;
+          const terms = termsOf(p);
+          const amount = ceilingCents(terms);
+          const callCeiling = ceilingCents({ model: call.valueModel, amountCents: call.budgetCents, maxHeroes: call.maxHeroes });
+          const diff = callCeiling !== null && amount !== null ? priceDiff(callCeiling, amount) : null;
           return (
             <li key={p.id} className="flex w-[85%] shrink-0 snap-start flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:w-auto" data-testid="compare-card">
               <div className="flex flex-wrap items-center gap-2">
@@ -102,7 +111,7 @@ export function BrandCallProposals({ detail }: Props) {
               <div className="flex flex-col gap-0.5">
                 <span className="type-caption text-fg-muted">{t("amount")}</span>
                 <span className="text-lg font-semibold text-fg" data-testid="compare-amount">
-                  {amount !== null ? formatCents(amount, locale) : "—"}
+                  {amount !== null ? <ValueTermsView model={terms.model} amountCents={terms.amountCents} maxHeroes={terms.maxHeroes} /> : "—"}
                 </span>
                 {diff && diff.cents !== 0 ? (
                   <span className={`type-caption font-medium ${diff.cents > 0 ? "text-warning" : "text-success"}`} data-testid="compare-diff">
@@ -246,12 +255,13 @@ export function BrandCallProposals({ detail }: Props) {
 }
 
 function initialTerms(p: CallProposal): TermsDraft {
-  return { amountText: centsToBrl(p.amountCents), deliverables: p.deliverables, deliverBy: p.deliverBy ?? "", note: "" };
+  return { amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: p.deliverables, deliverBy: p.deliverBy ?? "", note: "" };
 }
 
 /** Negociação de uma proposta, do lado da marca: histórico e ações (equipe: aceitar/contrapropor vão para o dono). */
 function ProposalNegotiation({ proposal: p, detail }: { proposal: CallProposal; detail: BrandCallDetail }) {
   const t = useTranslations("brandCall.negotiation");
+  const tv = useTranslations("valueModel");
   const router = useRouter();
   const { toast } = useToast();
   const { role, call } = detail;
@@ -278,7 +288,13 @@ function ProposalNegotiation({ proposal: p, detail }: { proposal: CallProposal; 
   function reply(action: "accept" | "decline" | "counter") {
     const amountCents = action === "counter" ? brlToCents(terms.amountText) : null;
     if (action === "counter" && (amountCents === null || terms.deliverables.length === 0)) return setError(t("termsRequired"));
-    run(() => brandCallReplyAction({ proposalId: p.id, action, amountCents, deliverables: action === "counter" ? terms.deliverables : [], deliverBy: terms.deliverBy || null, note: terms.note }));
+    if (action === "counter") {
+      const problem = validateTerms({ model: terms.valueModel, amountCents, maxHeroes: terms.maxHeroes });
+      if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
+    }
+    run(() =>
+      brandCallReplyAction({ proposalId: p.id, action, amountCents, deliverables: action === "counter" ? terms.deliverables : [], deliverBy: terms.deliverBy || null, note: terms.note, valueModel: action === "counter" ? terms.valueModel : null, maxHeroes: action === "counter" ? terms.maxHeroes : null }),
+    );
   }
 
   return (

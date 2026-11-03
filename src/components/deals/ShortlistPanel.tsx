@@ -17,6 +17,9 @@ import { isPreConfirmation, type DealStage } from "@/lib/deals/stages";
 import { recoverFromStaleBuild } from "@/lib/stale-build";
 import { CONSULT_DAYS, TALENT_RESPONSES, type TalentResponse } from "@/lib/deals/vocab";
 import type { Conflict, Counteroffer } from "@/lib/offer/counteroffer";
+import { CastBuilderButton } from "@/components/casting/CastBuilderDialog";
+import { ValueTermsView } from "@/components/value-model/ValueTermsView";
+import type { DealValueTerms } from "@/lib/deals/queries";
 import { SuggestHeroesDialog, type Candidate } from "./SuggestHeroesDialog";
 import { TalentStatusBadge } from "./StatusBadges";
 
@@ -40,13 +43,17 @@ type Props = {
   canDecideDate?: boolean;
   /** Gestor+ fora da agência de exemplo: pode convidar o creator sem login (0087). */
   canInvite?: boolean;
+  /** 0096: modelo de valor do negócio e se o chamador monta elenco (gestor+). */
+  valueTerms?: DealValueTerms | null;
+  canCast?: boolean;
 };
 
 // Elenco do negócio: sugeridos com os critérios atendidos, consulta de interesse (só com cachê definido),
 // resposta do creator (pelo escritório) ou registrada pela agência (talento sem login), cachê (só Adm) e
 // remoção. O cachê é a única coisa com valor nesta tela e só aparece para quem o banco devolve.
-export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit, isAdmin, documents, conflicts = {}, counteroffers = {}, canDecideFee = false, canDecideDate = false, canInvite = false }: Props) {
+export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit, isAdmin, documents, conflicts = {}, counteroffers = {}, canDecideFee = false, canDecideDate = false, canInvite = false, valueTerms = null, canCast = false }: Props) {
   const t = useTranslations("agency.deal.talents");
+  const tv = useTranslations("valueModel");
   const tr = useTranslations("commercial.reasons");
   const locale = useLocale() as Locale;
   const { toast } = useToast();
@@ -74,6 +81,29 @@ export function ShortlistPanel({ dealId, stage, rows, candidates, fees, canEdit,
 
   return (
     <div className="flex flex-col gap-4" data-testid="shortlist-panel">
+      {valueTerms && (valueTerms.hasValue || valueTerms.valueModel === "por_heroi") ? (
+        <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" aria-labelledby="deal-value-terms" data-testid="deal-value-terms">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-col gap-0.5">
+              <h2 id="deal-value-terms" className="text-sm font-semibold text-fg">
+                {tv("view.title")}
+              </h2>
+              <ValueTermsView model={valueTerms.valueModel} amountCents={valueTerms.valueCents} maxHeroes={valueTerms.maxHeroes} canValues={isAdmin} />
+            </div>
+            {valueTerms.valueModel === "por_heroi" && valueTerms.maxHeroes !== null ? (
+              <Badge size="sm" variant={valueTerms.activeHeroes >= valueTerms.maxHeroes ? "warning" : "neutral"} data-testid="deal-value-slots">
+                {tv("view.slots", { used: valueTerms.activeHeroes, max: valueTerms.maxHeroes })}
+              </Badge>
+            ) : null}
+          </div>
+          {canCast && canEdit && open && valueTerms.valueModel === "fixo" ? (
+            <>
+              <p className="type-caption text-fg-muted">{tv("cast.fixedHint")}</p>
+              <CastBuilderButton dealId={dealId} currentIds={active.map((r) => r.talentId)} maxHeroes={null} budgetCents={valueTerms.valueCents} />
+            </>
+          ) : null}
+        </section>
+      ) : null}
       {rows.length === 0 ? <p className="rounded-2xl border border-border bg-surface p-4 type-body-sm text-fg-muted">{t("empty")}</p> : null}
       <ul className="flex flex-col gap-3">
         {rows.map((row) => {

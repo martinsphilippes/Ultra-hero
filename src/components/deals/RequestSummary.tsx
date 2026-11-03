@@ -2,9 +2,10 @@ import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatDuration, formatPlainDate } from "@/i18n/format";
 import type { RequestRow } from "@/lib/deals/queries";
-import { formatCents } from "@/lib/deals/schemas";
+import { ValueTermsView } from "@/components/value-model/ValueTermsView";
+import type { ValueModel } from "@/lib/value-model/model";
 
-type Props = { request: RequestRow; budget: { min: number | null; max: number | null; note: string } | null; showHeader?: boolean };
+type Props = { request: RequestRow; budget: { min: number | null; max: number | null; note: string; valueModel?: ValueModel; maxHeroes?: number | null } | null; showHeader?: boolean };
 
 // Resumo do briefing/proposta da marca, igual nos três lugares que o mostram (agência, marca e, em
 // parte, o creator). O valor oferecido só aparece quando a página recebeu a linha (marca dona ou Adm).
@@ -36,7 +37,21 @@ export function RequestSummary({ request, budget }: Props) {
       {row(t("audience"), request.targetAudience)}
       {row(t("ageBands"), request.targetAgeBands.length > 0 ? request.targetAgeBands.join(", ") : null)}
       {row(t("states"), [request.targetStates.join(", "), request.regionNote].filter(Boolean).join(" · ") || null)}
-      {budget ? row(t("budget"), budget.max !== null ? `${formatCents(budget.max, locale)}${budget.note ? ` · ${budget.note}` : ""}` : t("budgetNotInformed")) : null}
+      {budget ? (
+        <div className="flex flex-col" data-testid="request-budget">
+          <dt className="type-caption text-fg-muted">{t("budget")}</dt>
+          <dd className="text-sm text-fg">
+            {budget.max !== null ? (
+              <>
+                <ValueTermsView model={budget.valueModel ?? "fixo"} amountCents={budget.max} maxHeroes={budget.maxHeroes ?? null} />
+                {budget.note ? <span className="type-caption text-fg-muted">{budget.note}</span> : null}
+              </>
+            ) : (
+              t("budgetNotInformed")
+            )}
+          </dd>
+        </div>
+      ) : null}
       {request.notes ? (
         <div className="flex flex-col sm:col-span-2">
           <dt className="type-caption text-fg-muted">{t("notes")}</dt>

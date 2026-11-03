@@ -213,7 +213,11 @@
       "briefInvalid": "Check the brief: hashtags with #, valid @ handles and https links.",
       "budgetAgreedHint": "Amount agreed in the sponsorship (can't change here).",
       "budgetNegotiatingHint": "Sponsorship: the amount comes from the negotiation on the opportunity.",
-      "budgetNegotiatingPlaceholder": "To be agreed"
+      "budgetNegotiatingPlaceholder": "To be agreed",
+      "valueErrors": {
+        "value_per_hero_required": "For a per-hero value, enter what each hero receives.",
+        "max_heroes_required": "For a per-hero value, enter the maximum number of heroes (1 to 50)."
+      }
     },
     "cancel": {
       "action": "Cancel proposal",

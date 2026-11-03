@@ -9,7 +9,9 @@ import { BriefFields } from "@/components/brief/BriefFields";
 import { Button, Checkbox, DatePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
+import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { askApprovalAction } from "@/lib/selection/actions";
+import { validateTerms } from "@/lib/value-model/model";
 import { DELIVERABLE_KINDS, FORMATS, OBJECTIVES } from "@/lib/deals/vocab";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 
@@ -29,12 +31,17 @@ type Props = {
   submitMode?: "submit" | "ask" | "none";
   /** 0088: campanha de patrocínio — "agreed" = valor do acordo (travado), "negotiating" = valor sai da negociação */
   sponsorshipBudget?: "agreed" | "negotiating" | null;
+  /**
+   * 0096: modelo de valor — "editable" (padrão), "frozen" (campanha de um acordo de chamada: modelo, valor e máximo
+   * congelados) ou "hidden" (patrocínio por cotas: o valor segue como estava, sem escolher o modelo).
+   */
+  valueMode?: "editable" | "frozen" | "hidden";
 };
 
 // Proposta de campanha da marca em 5 blocos (objetivo, público, período e formato, entregáveis, valor e
 // observações). "Salvar rascunho" e "Enviar à agência" são ações explícitas; enviar exige título,
 // objetivo, data de início, pelo menos uma rede e um entregável (a RPC confere de novo).
-export function CampaignForm({ initial, creatorName, canEdit, submitMode = "submit", sponsorshipBudget = null }: Props) {
+export function CampaignForm({ initial, creatorName, canEdit, submitMode = "submit", sponsorshipBudget = null, valueMode = "editable" }: Props) {
   const t = useTranslations("brandPortal.campaigns.form");
   const ta = useTranslations("selection.approval");
   const asking = submitMode === "ask";
@@ -57,6 +64,14 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
       setError(t("budgetInvalid"));
       return null;
     }
+    // 0096: por herói exige o valor por herói e o máximo de heróis (o banco confere de novo)
+    if (valueMode === "editable") {
+      const problem = validateTerms({ model: v.valueModel, amountCents: cents, maxHeroes: v.maxHeroes });
+      if (problem === "value_per_hero_required" || problem === "max_heroes_required") {
+        setError(t(`valueErrors.${problem}`));
+        return null;
+      }
+    }
     const brief = draftToBrief(v.briefDraft);
     if (!briefValid(brief)) {
       setError(t("briefInvalid"));
@@ -65,7 +80,7 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
     const rest: Partial<CampaignFormValues> = { ...v };
     delete rest.budgetText;
     delete rest.briefDraft;
-    return { ...(rest as Omit<CampaignFormValues, "budgetText" | "briefDraft">), budgetMaxCents: cents, brief };
+    return { ...(rest as Omit<CampaignFormValues, "budgetText" | "briefDraft">), budgetMaxCents: cents, maxHeroes: v.valueModel === "por_heroi" ? v.maxHeroes : null, brief };
   }
 
   const complete = v.title.trim().length >= 3 && v.objective !== "" && v.periodStart !== "" && v.networks.length > 0 && v.deliverables.length > 0;
@@ -272,24 +287,42 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
         <h2 id="cf-budget" className="text-base font-semibold text-fg">
           {t("blocks.budget")}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-[14rem_1fr]">
-          <FormField
-            label={t("budget")}
-            hint={sponsorshipBudget === "agreed" ? t("budgetAgreedHint") : sponsorshipBudget === "negotiating" ? t("budgetNegotiatingHint") : t("budgetHint")}
-          >
-            <MoneyInput
-              value={v.budgetText}
-              maxCents={10_000_000_000}
-              onValueChange={(text) => set("budgetText", text)}
-              disabled={disabled || sponsorshipBudget === "agreed"}
-              placeholder={sponsorshipBudget === "negotiating" ? t("budgetNegotiatingPlaceholder") : undefined}
-              data-testid="campaign-budget"
+        {valueMode === "hidden" ? (
+          <div className="grid gap-4 sm:grid-cols-[14rem_1fr]">
+            <FormField label={t("budget")} hint={sponsorshipBudget === "agreed" ? t("budgetAgreedHint") : sponsorshipBudget === "negotiating" ? t("budgetNegotiatingHint") : t("budgetHint")}>
+              <MoneyInput
+                value={v.budgetText}
+                maxCents={10_000_000_000}
+                onValueChange={(text) => set("budgetText", text)}
+                disabled={disabled || sponsorshipBudget === "agreed"}
+                placeholder={sponsorshipBudget === "negotiating" ? t("budgetNegotiatingPlaceholder") : undefined}
+                data-testid="campaign-budget"
+              />
+            </FormField>
+            <FormField label={t("budgetNote")}>
+              <Input value={v.budgetNote} maxLength={300} onChange={(e) => set("budgetNote", e.target.value)} disabled={disabled} />
+            </FormField>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <ValueModelFields
+              idPrefix="campaign"
+              model={v.valueModel}
+              onModelChange={(m) => setV((cur) => ({ ...cur, valueModel: m, maxHeroes: m === "por_heroi" ? (cur.maxHeroes ?? 3) : null }))}
+              amountText={v.budgetText}
+              onAmountChange={(text) => set("budgetText", text)}
+              maxHeroes={v.maxHeroes}
+              onMaxHeroesChange={(n) => set("maxHeroes", n)}
+              disabled={disabled}
+              frozen={valueMode === "frozen"}
+              amountHint={valueMode === "frozen" ? t("budgetAgreedHint") : undefined}
+              amountTestId="campaign-budget"
             />
-          </FormField>
-          <FormField label={t("budgetNote")}>
-            <Input value={v.budgetNote} maxLength={300} onChange={(e) => set("budgetNote", e.target.value)} disabled={disabled} />
-          </FormField>
-        </div>
+            <FormField label={t("budgetNote")}>
+              <Input value={v.budgetNote} maxLength={300} onChange={(e) => set("budgetNote", e.target.value)} disabled={disabled} />
+            </FormField>
+          </div>
+        )}
         <FormField label={t("notes")} hint={t("notesHint")}>
           <Textarea value={v.notes} maxLength={2000} rows={4} onChange={(e) => set("notes", e.target.value)} disabled={disabled} />
         </FormField>

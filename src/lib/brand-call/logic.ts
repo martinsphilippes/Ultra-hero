@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VALUE_MODELS, type ValueModel } from "@/lib/value-model/model";
 import { requestDeliverablesSchema, toZonedIso, type RequestDeliverable } from "@/lib/deals/schemas";
 import { DELIVERABLE_KINDS, OBJECTIVES, type Objective } from "@/lib/deals/vocab";
 import {
@@ -139,6 +140,9 @@ export const callFormSchema = z.object({
   networks: z.array(z.enum(NETWORKS)).max(NETWORKS.length),
   budgetCents: z.number().int().min(1).max(10_000_000_000).nullable(),
   budgetDisplay: z.enum(BUDGET_DISPLAYS),
+  /** 0096: fixo = verba total; por_heroi = verba por herói + máximo de heróis (limita o investimento). */
+  valueModel: z.enum(VALUE_MODELS),
+  maxHeroes: z.number().int().min(1).max(50).nullable(),
   respondDate: z.union([z.literal(""), isoDate]),
   respondTime: z.union([z.literal(""), z.string().regex(/^\d{2}:\d{2}$/)]),
   audience: z.enum(CALL_AUDIENCES),
@@ -146,7 +150,7 @@ export const callFormSchema = z.object({
 });
 export type CallFormInput = z.infer<typeof callFormSchema>;
 
-export type CallFormError = "title" | "period" | "budget" | "respond" | "respondAfterPeriod" | "deliverables" | "networks" | "agencies";
+export type CallFormError = "title" | "period" | "budget" | "maxHeroes" | "respond" | "respondAfterPeriod" | "deliverables" | "networks" | "agencies";
 
 /** Fim do período (exclusivo): meia-noite do dia seguinte ao último dia, horário de Brasília (igual ao banco). */
 export function periodEndIso(endsOn: string): string | null {
@@ -174,6 +178,10 @@ export function validateCall(v: CallFormInput, forPublish: boolean, now: Date = 
   const end = v.endsOn || v.startsOn;
   if (!v.startsOn || end < v.startsOn) return "period";
   if (v.budgetDisplay !== "open" && v.budgetCents === null) return "budget";
+  if (v.valueModel === "por_heroi") {
+    if (v.budgetCents === null || v.budgetCents < 1 || v.budgetDisplay === "open") return "budget";
+    if (v.maxHeroes === null) return "maxHeroes";
+  }
   if (!forPublish) return null;
   if (v.deliverables.length === 0) return "deliverables";
   if (v.networks.length === 0) return "networks";
@@ -204,6 +212,8 @@ export function callToDb(v: CallFormInput): Record<string, unknown> {
     networks: v.networks,
     budget_cents: v.budgetDisplay === "open" && v.budgetCents === null ? null : v.budgetCents,
     budget_display: v.budgetDisplay,
+    value_model: v.valueModel,
+    max_heroes: v.valueModel === "por_heroi" ? v.maxHeroes : null,
     respond_by: respondByIso(v.respondDate, v.respondTime),
     audience: v.audience,
     agency_ids: v.audience === "selected" ? v.agencyIds : [],
@@ -313,6 +323,9 @@ export type BrandCall = {
   niches: string[];
   networks: Network[];
   budgetDisplay: BudgetDisplay;
+  /** 0096: modelo do valor e máximo de heróis (a agência gestora lê; o herói não) */
+  valueModel: ValueModel;
+  maxHeroes: number | null;
   /** só para a marca e o Adm da agência (na forma escolhida); null para os outros */
   budgetCents: number | null;
   respondBy: string | null;
@@ -341,6 +354,8 @@ export function toCall(r: Row): BrandCall {
     niches: strings(r.niches),
     networks: networksOf(r.networks),
     budgetDisplay: oneOf(BUDGET_DISPLAYS, r.budget_display, "open"),
+    valueModel: r.value_model === "por_heroi" ? "por_heroi" : "fixo",
+    maxHeroes: r.value_model === "por_heroi" && cents(r.max_heroes) !== null ? num(r.max_heroes) : null,
     budgetCents: cents(r.budget_cents),
     respondBy: str(r.respond_by),
     status: oneOf(CALL_STATUSES, r.status, "draft"),
@@ -358,6 +373,8 @@ export type CallRound = {
   side: Side;
   action: CallRoundAction;
   amountCents: number | null;
+  valueModel: ValueModel | null;
+  maxHeroes: number | null;
   deliverables: RequestDeliverable[] | null;
   deliverBy: string | null;
   note: string;
@@ -376,6 +393,8 @@ function toRounds(v: unknown): CallRound[] {
     side: r.side === "agency" ? "agency" : "brand",
     action: oneOf(CALL_ROUND_ACTIONS, r.action, "propose"),
     amountCents: cents(r.amount_cents),
+    valueModel: r.value_model === "por_heroi" ? "por_heroi" : r.value_model === "fixo" ? "fixo" : null,
+    maxHeroes: cents(r.max_heroes),
     deliverables: Array.isArray(r.deliverables) ? toDeliverables(r.deliverables) : null,
     deliverBy: str(r.deliver_by),
     note: text(r.note),
@@ -418,6 +437,11 @@ export type CallProposal = {
   status: ProposalStatus;
   awaiting: Side | null;
   amountCents: number | null;
+  /** 0096: modelo de valor da proposta (e o que foi acordado, congelado) */
+  valueModel: ValueModel;
+  maxHeroes: number | null;
+  agreedValueModel: ValueModel | null;
+  agreedMaxHeroes: number | null;
   hasAmount: boolean;
   deliverables: RequestDeliverable[];
   deliverBy: string | null;
@@ -444,6 +468,10 @@ function toProposal(q: Row): CallProposal {
     status: oneOf(PROPOSAL_STATUSES, q.status, "closed"),
     awaiting: q.awaiting === "agency" || q.awaiting === "brand" ? q.awaiting : null,
     amountCents: cents(q.amount_cents),
+    valueModel: q.value_model === "por_heroi" ? "por_heroi" : "fixo",
+    maxHeroes: cents(q.max_heroes),
+    agreedValueModel: q.agreed_value_model === "por_heroi" ? "por_heroi" : q.agreed_value_model === "fixo" ? "fixo" : null,
+    agreedMaxHeroes: cents(q.agreed_max_heroes),
     hasAmount: q.has_amount === true || cents(q.amount_cents) !== null,
     deliverables: toDeliverables(q.deliverables),
     deliverBy: str(q.deliver_by),

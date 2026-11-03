@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { briefSchema, EMPTY_BRIEF } from "@/lib/brief/brief";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
+import { VALUE_MODELS } from "@/lib/value-model/model";
 import { ACTIVITY_KINDS, AVAILABILITY_KINDS, DELIVERABLE_KINDS, FORMATS, OBJECTIVES, TALENT_RESPONSES } from "./vocab";
 
 // Formas dos formulários do núcleo comercial (o banco confere de novo: checks e RPCs).
@@ -80,6 +81,9 @@ export const brandRequestSchema = z.object({
   brief: briefSchema.default({ ...EMPTY_BRIEF }),
   /** Valor oferecido em centavos (null = não informado). */
   budgetMaxCents: z.number().int().min(0).max(10_000_000_000).nullable(),
+  /** Modelo do valor oferecido (0096): fixo = total do evento; por_heroi = valor por herói com máximo de heróis. */
+  valueModel: z.enum(VALUE_MODELS),
+  maxHeroes: z.number().int().min(1).max(50).nullable(),
   budgetNote: z.string().trim().max(300),
 });
 export type BrandRequestInput = z.input<typeof brandRequestSchema>;

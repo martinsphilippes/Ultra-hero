@@ -41,6 +41,8 @@ const base: CallFormInput = {
   networks: ["instagram"],
   budgetCents: 3_000_000,
   budgetDisplay: "up_to",
+  valueModel: "fixo",
+  maxHeroes: null,
   respondDate: "2026-11-20",
   respondTime: "18:00",
   audience: "my_agencies",
@@ -210,5 +212,47 @@ describe("leitura das RPCs", () => {
     expect(talentCallStatus({ ...c, respondBy: "2026-11-01T00:00:00Z" }, now)).toBe("expired");
     expect(talentCallStatus({ ...c, chosen: true }, now)).toBe("chosen");
     expect(talentCallStatus({ ...c, status: "contracted" }, now)).toBe("closed");
+  });
+});
+
+// 0096: modelo de valor (fixo x por herói) na chamada, na proposta e nas rodadas
+describe("modelo de valor da chamada", () => {
+  it("por herói exige valor por herói (nunca 'a combinar') e o máximo de heróis", () => {
+    const perHero: CallFormInput = { ...base, valueModel: "por_heroi", maxHeroes: 3, budgetDisplay: "exact", budgetCents: 200_000 };
+    expect(validateCall(perHero, false, now)).toBeNull();
+    expect(validateCall({ ...perHero, maxHeroes: null }, false, now)).toBe("maxHeroes");
+    expect(validateCall({ ...perHero, budgetCents: null }, false, now)).toBe("budget");
+    expect(validateCall({ ...perHero, budgetDisplay: "open" }, false, now)).toBe("budget");
+    // fixo continua como antes (a combinar vale)
+    expect(validateCall({ ...base, budgetDisplay: "open", budgetCents: null }, false, now)).toBeNull();
+  });
+  it("vai ao banco com modelo e máximo; fixo não leva máximo", () => {
+    expect(callToDb({ ...base, valueModel: "por_heroi", maxHeroes: 4, budgetDisplay: "exact", budgetCents: 100 })).toMatchObject({ value_model: "por_heroi", max_heroes: 4, budget_cents: 100 });
+    expect(callToDb({ ...base, valueModel: "fixo", maxHeroes: 4 })).toMatchObject({ value_model: "fixo", max_heroes: null });
+  });
+  it("leitura: modelo e máximo da chamada, da proposta (e do acordo congelado) e das rodadas", () => {
+    const d = toBrandCallDetail({
+      role: "owner",
+      call: { id: "c1", status: "open", value_model: "por_heroi", max_heroes: 3, budget_cents: 200_000, budget_display: "exact" },
+      proposals: [
+        {
+          id: "p1", status: "agreed", value_model: "por_heroi", max_heroes: 2, amount_cents: 150_000,
+          agreed_value_model: "por_heroi", agreed_max_heroes: 2, agreed_cents: 150_000,
+          history: [{ id: "r1", side: "agency", action: "propose", value_model: "fixo", amount_cents: 300_000 }, { id: "r2", side: "brand", action: "decline" }],
+        },
+        { id: "p2", status: "open", amount_cents: 900 },
+      ],
+    });
+    expect(d?.call).toMatchObject({ valueModel: "por_heroi", maxHeroes: 3 });
+    expect(d?.proposals[0]).toMatchObject({ valueModel: "por_heroi", maxHeroes: 2, agreedValueModel: "por_heroi", agreedMaxHeroes: 2 });
+    expect(d?.proposals[0].history[0]).toMatchObject({ valueModel: "fixo" });
+    expect(d?.proposals[0].history[1]).toMatchObject({ valueModel: null, maxHeroes: null });
+    // sem as chaves (banco antigo), tudo é fixo e sem máximo
+    expect(d?.proposals[1]).toMatchObject({ valueModel: "fixo", maxHeroes: null, agreedValueModel: null });
+  });
+  it("o herói não recebe modelo nem máximo", () => {
+    const [c] = toTalentBrandCalls([{ id: "c", status: "open", respond_by: "2026-11-10T00:00:00Z" }]);
+    expect(c.valueModel).toBe("fixo");
+    expect(c.maxHeroes).toBeNull();
   });
 });

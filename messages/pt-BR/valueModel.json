@@ -1,0 +1,180 @@
+{
+  "model": {
+    "label": "Como o valor é oferecido",
+    "fixo": "Valor fixo do evento",
+    "porHeroi": "Valor por herói",
+    "hint": {
+      "fixo": "Um valor total para o evento inteiro. A agência divide entre os heróis que indicar.",
+      "porHeroi": "Cada herói recebe esse valor. O máximo de heróis limita o investimento total."
+    }
+  },
+  "amount": {
+    "total": "Valor total (R$)",
+    "perHero": "Valor por herói (R$)",
+    "hint": {
+      "total": "Opcional. Só a sua marca e o Adm da agência veem.",
+      "perHero": "Quanto cada herói recebe. Só a sua marca e o Adm da agência veem."
+    }
+  },
+  "maxHeroes": {
+    "label": "Máximo de heróis",
+    "hint": "A agência não poderá indicar mais heróis que isso."
+  },
+  "summary": {
+    "ceiling": "Até {value}",
+    "ceilingDetail": "{value} por herói × {n, plural, one {# herói} other {# heróis}}, no máximo",
+    "perHeroMissing": "Informe o valor por herói e o máximo de heróis para ver o teto do investimento.",
+    "fixed": "{value} no total",
+    "fixedDetail": "Dividido entre os heróis que a agência indicar.",
+    "fixedMissing": "Sem valor informado. Você pode combinar com a agência depois."
+  },
+  "view": {
+    "title": "Valor oferecido",
+    "ceiling": "Até {value}",
+    "perHeroDetail": "{value} por herói · máximo de {n, plural, one {# herói} other {# heróis}}",
+    "perHero": "Valor por herói",
+    "maxOnly": "Máximo de {n, plural, one {# herói} other {# heróis}}",
+    "fixed": "Valor fixo do evento",
+    "fixedDetail": "Valor total, dividido entre os heróis",
+    "slots": "{used} de {max} heróis"
+  },
+  "errors": {
+    "value_per_hero_required": "No valor por herói, informe quanto cada herói recebe (maior que zero).",
+    "max_heroes_required": "No valor por herói, informe o máximo de heróis (de 1 a 50).",
+    "max_heroes": "Esse valor é por herói e permite no máximo {max, plural, one {# herói} other {# heróis}}. Tire alguém do elenco."
+  },
+  "cast": {
+    "open": "Montar elenco",
+    "title": "Montar elenco",
+    "subtitle": "Escolha o resultado que importa e veja combinações de heróis que cabem no valor.",
+    "loading": "Buscando os números do casting…",
+    "loadError": "Não foi possível carregar o casting agora. Tente de novo.",
+    "disclaimer": "São estimativas feitas com os números que os heróis ou a agência declararam nas redes. Não há ligação direta com as redes sociais, e o alcance de heróis diferentes pode se repetir.",
+    "oldest": "O dado mais antigo usado é de {date}.",
+    "cancel": "Cancelar",
+    "use": "Usar este elenco",
+    "live": "{count, plural, one {# herói} other {# heróis}} · usa {used} ({pct}% do orçamento)",
+    "over": "passa {value} do orçamento",
+    "leftover": "sobra {value}",
+    "applied": "Elenco sugerido no negócio ({count, plural, one {# herói} other {# heróis}}).",
+    "fixedHint": "Valor fixo: o montador mostra combinações de heróis que cabem no valor e ajuda a dividir o total entre eles.",
+    "budget": {
+      "title": "Orçamento",
+      "total": "Valor total do evento (R$)",
+      "totalLocked": "Valor oferecido pela marca neste negócio.",
+      "totalHint": "Simule com um valor. Ele não muda nada no negócio.",
+      "feeBudget": "Sobra {value} para os cachês, já descontada a comissão da agência ({rate}%).",
+      "missing": "Informe o valor total para ver as combinações.",
+      "hiddenForManager": "O orçamento fica oculto para você. As combinações mostram a parte do orçamento usada, em porcentagem.",
+      "missingManager": "O Adm ainda não informou o valor oferecido. Peça a ele para simular.",
+      "maxHeroes": "Máximo de {max, plural, one {# herói} other {# heróis}} neste valor."
+    },
+    "goal": {
+      "title": "Resultado desejado",
+      "reach": "Alcance",
+      "engagement": "Engajamento",
+      "audience": "Aderência de público",
+      "sales": "Vendas",
+      "mix": "Mix",
+      "hint": {
+        "reach": "Mais pessoas alcançadas, no total.",
+        "engagement": "Mais pessoas que curtem, comentam e compartilham.",
+        "audience": "Mais alcance dentro do público e da região da campanha.",
+        "sales": "Potencial de resposta: alcance no público certo vezes o engajamento. Não é dado real de vendas.",
+        "mix": "Equilibra alcance, engajamento e público."
+      }
+    },
+    "weights": {
+      "toggle": "Ajustar pesos",
+      "reach": "Alcance",
+      "engagement": "Engajamento",
+      "fit": "Público certo",
+      "response": "Resposta (vendas)",
+      "level": {
+        "0": "Não importa",
+        "1": "Pouco",
+        "2": "Médio",
+        "3": "Muito"
+      },
+      "hint": "Os pesos mudam quais heróis e combinações aparecem primeiro."
+    },
+    "suggestions": {
+      "title": "Combinações que cabem",
+      "needBudget": "Informe o orçamento para ver as combinações.",
+      "none": {
+        "no_budget": "Informe o orçamento para ver as combinações.",
+        "no_eligible": "Nenhum herói tem dados suficientes: falta alcance, cachê ou disponibilidade. Complete os dados ou adicione cachês de simulação abaixo.",
+        "none_fits": "Nenhum herói com dados cabe nesse orçamento sozinho."
+      }
+    },
+    "strategy": {
+      "solo": "Um nome forte",
+      "few": "Poucos médios",
+      "mix": "Mix"
+    },
+    "m": {
+      "reach": "Alcance estimado",
+      "cpm": "Custo por mil",
+      "reachPerPct": "Alcance por 1% do orçamento",
+      "leftover": "Sobra",
+      "fit": "Aderência"
+    },
+    "why": "Por que esta combinação",
+    "reason": {
+      "solo": "Aposta em {name}, o herói que mais rende para o resultado escolhido.",
+      "few": "{n, plural, one {# herói} other {# heróis}} de porte médio: espalha o risco e mantém o investimento enxuto.",
+      "mix": "{n, plural, one {# herói} other {# heróis}}: mais vozes e públicos diferentes dentro do mesmo valor.",
+      "uses_budget": "Usa {pct}% do orçamento.",
+      "lowest_cpm": "Tem o menor custo por mil pessoas alcançadas.",
+      "highest_reach": "Tem o maior alcance entre as opções.",
+      "best_fit": "Maior aderência ao público da campanha ({pct}%).",
+      "has_stale": "{n} herói(s) com dado antigo. Confira antes de fechar."
+    },
+    "pick": "Escolher esta",
+    "picked": "Escolhida",
+    "manual": {
+      "title": "Heróis do casting ({count})",
+      "noData": "{count} herói(s) sem dados de alcance nas redes da campanha. Eles não entram nas sugestões.",
+      "line": "Alcance ~{reach} · Aderência {fit} · Custo {cost}",
+      "lineNoData": "Sem dados de alcance",
+      "notReleased": "Não liberado para marcas",
+      "simFee": "Cachê para simular (R$)",
+      "simFeeHint": "Sem cachê conhecido. Digite um valor só para simular; nada é gravado.",
+      "fewer": "Mostrar menos",
+      "more": "Ver mais {count, plural, one {# herói} other {# heróis}}",
+      "overLimit": "Este valor permite no máximo {max, plural, one {# herói} other {# heróis}}.",
+      "outsideAllowed": "Há herói sem consentimento ou fora do catálogo da marca. Ele não pode entrar na proposta.",
+      "missingFee": "Sem cachê conhecido: {names}. O custo deles não entra na conta."
+    },
+    "flags": {
+      "no_data": "Sem dados",
+      "followers_estimate": "Alcance estimado pelos seguidores",
+      "views_estimate": "Alcance estimado pelas visualizações",
+      "stale": "Dado antigo",
+      "staleOn": "Dado de {date}",
+      "no_engagement": "Sem engajamento declarado",
+      "no_fee": "Sem cachê",
+      "no_audience": "Sem dado de público",
+      "no_rating": "Sem notas ainda",
+      "no_network": "Sem rede da campanha",
+      "blocked": "Bloqueado nas datas",
+      "unavailable": "Indisponível",
+      "limited": "Disponibilidade limitada",
+      "no_consent": "Sem consentimento"
+    },
+    "feeSource": {
+      "deal": "Cachê deste negócio",
+      "past": "Cachê de um negócio anterior"
+    },
+    "split": {
+      "title": "Repartição do valor",
+      "hint": "O valor é dividido pelo cachê de referência de cada herói. Você pode editar; a soma precisa fechar com o orçamento para cachês.",
+      "skip": "Só sugerir os heróis, sem dividir o valor agora",
+      "feeOf": "Cachê de {name}",
+      "exact": "Soma exata: {value}",
+      "missing": "Faltam {value} para fechar o orçamento.",
+      "excess": "Passa {value} do orçamento.",
+      "reset": "Dividir de novo automaticamente"
+    }
+  }
+}

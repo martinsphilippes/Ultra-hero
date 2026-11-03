@@ -9,6 +9,7 @@ import { requireBrand } from "@/lib/brand-portal/server";
 import { requestDeliverablesSchema } from "@/lib/deals/schemas";
 import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { createClient } from "@/lib/supabase/server";
+import { VALUE_MODELS } from "@/lib/value-model/model";
 import { getTalentContext } from "@/lib/talent/server";
 import { CALL_DECISIONS, MAX_PROPOSAL_TALENTS, callFormSchema, callToDb, mediaKitUrlValid, validateCall, type CallFormInput } from "./logic";
 
@@ -135,10 +136,15 @@ const termsSchema = z.object({
   deliverables: requestDeliverablesSchema,
   deliverBy: isoDate,
   note: z.string().trim().max(500),
+  /** 0096: a contraproposta pode mudar o modelo de valor e o máximo de heróis (sem informar, ficam como estão). */
+  valueModel: z.enum(VALUE_MODELS).nullable().optional(),
+  maxHeroes: z.number().int().min(1).max(50).nullable().optional(),
 });
 
 function termsValid(d: z.infer<typeof termsSchema>): boolean {
-  return d.action !== "counter" || (d.amountCents !== null && d.deliverables.length > 0);
+  if (d.action !== "counter") return true;
+  if (d.amountCents === null || d.deliverables.length === 0) return false;
+  return d.valueModel !== "por_heroi" || (d.maxHeroes ?? null) !== null;
 }
 
 /** Marca responde à proposta da agência (equipe: aceitar/contrapropor vão para o dono). */
@@ -157,6 +163,8 @@ export async function brandCallReplyAction(input: z.input<typeof termsSchema>): 
       p_deliverables: d.action === "counter" ? (d.deliverables as never) : null,
       p_deliver_by: d.action === "counter" && d.deliverBy ? d.deliverBy : null,
       p_note: d.note,
+      p_value_model: d.action === "counter" ? (d.valueModel ?? null) : null,
+      p_max_heroes: d.action === "counter" && d.valueModel === "por_heroi" ? (d.maxHeroes ?? null) : null,
     } as never);
     if (error) return agencyFail(error);
     refresh();
@@ -199,6 +207,9 @@ const proposalSchema = z.object({
     .min(1)
     .max(MAX_PROPOSAL_TALENTS),
   amountCents: z.number().int().min(1).max(10_000_000_000).nullable(),
+  /** 0096: modelo do valor da proposta (só o Adm muda): fixo = total; por herói = valor por herói + máximo de heróis. */
+  valueModel: z.enum(VALUE_MODELS).default("fixo"),
+  maxHeroes: z.number().int().min(1).max(50).nullable().default(null),
   deliverBy: isoDate,
   note: z.string().trim().max(1000),
   send: z.boolean(),
@@ -218,6 +229,8 @@ export async function saveCallProposalAction(input: z.input<typeof proposalSchem
       p_data: {
         talents: d.talents.map((x) => ({ talent_id: x.talentId, deliverables: x.deliverables, media_kit_url: x.mediaKitUrl })),
         amount_cents: d.amountCents,
+        value_model: d.valueModel,
+        max_heroes: d.valueModel === "por_heroi" ? d.maxHeroes : null,
         deliver_by: d.deliverBy || null,
         note: d.note,
       } as never,
@@ -273,6 +286,8 @@ export async function agencyCallReplyAction(input: z.input<typeof termsSchema>):
       p_deliverables: d.action === "counter" ? (d.deliverables as never) : null,
       p_deliver_by: d.action === "counter" && d.deliverBy ? d.deliverBy : null,
       p_note: d.note,
+      p_value_model: d.action === "counter" ? (d.valueModel ?? null) : null,
+      p_max_heroes: d.action === "counter" && d.valueModel === "por_heroi" ? (d.maxHeroes ?? null) : null,
     } as never);
     if (error) return agencyFail(error);
     refresh();

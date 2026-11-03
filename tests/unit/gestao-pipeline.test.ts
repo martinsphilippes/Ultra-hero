@@ -105,11 +105,16 @@ describe("formas dos formulários", () => {
   });
 
   it("proposta da marca: rascunho vazio passa; valor negativo e UF inventada não", () => {
-    const base = { id: null, talentId: "", title: "", objective: "", product: "", targetAudience: "", targetAgeBands: [], targetStates: [], regionNote: "", periodStart: "", periodEnd: "", desiredTime: "", durationMinutes: "", format: "", location: "", networks: [], deliverables: [], notes: "", budgetMaxCents: null, budgetNote: "" };
+    const base = { id: null, talentId: "", title: "", objective: "", product: "", targetAudience: "", targetAgeBands: [], targetStates: [], regionNote: "", periodStart: "", periodEnd: "", desiredTime: "", durationMinutes: "", format: "", location: "", networks: [], deliverables: [], notes: "", budgetMaxCents: null, valueModel: "fixo", maxHeroes: null, budgetNote: "" };
     expect(brandRequestSchema.safeParse(base).success).toBe(true);
     expect(brandRequestSchema.safeParse({ ...base, budgetMaxCents: -1 }).success).toBe(false);
     expect(brandRequestSchema.safeParse({ ...base, targetStates: ["XX"] }).success).toBe(false);
     expect(brandRequestSchema.safeParse({ ...base, desiredTime: "9h" }).success).toBe(false);
+    // 0096: modelo de valor e máximo de heróis
+    expect(brandRequestSchema.safeParse({ ...base, valueModel: "por_heroi", budgetMaxCents: 200_000, maxHeroes: 3 }).success).toBe(true);
+    expect(brandRequestSchema.safeParse({ ...base, valueModel: "gratis" }).success).toBe(false);
+    expect(brandRequestSchema.safeParse({ ...base, maxHeroes: 0 }).success).toBe(false);
+    expect(brandRequestSchema.safeParse({ ...base, maxHeroes: 51 }).success).toBe(false);
   });
 });
 

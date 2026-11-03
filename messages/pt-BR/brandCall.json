@@ -100,7 +100,8 @@
       "respondAfterPeriod": "O prazo para propostas precisa ser até o fim do período.",
       "deliverables": "Acrescente pelo menos uma entrega.",
       "networks": "Marque pelo menos uma rede.",
-      "agencies": "Escolha pelo menos uma agência."
+      "agencies": "Escolha pelo menos uma agência.",
+      "maxHeroes": "Para valor por herói, informe o máximo de heróis (de 1 a 50)."
     },
     "published": "Chamada publicada. As agências foram avisadas.",
     "toOwner": "Enviada ao dono para aprovar.",
