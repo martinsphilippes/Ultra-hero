@@ -30,9 +30,9 @@ export function BudgetPanel({ summary }: { summary: BudgetSummary }) {
   const anyLocked = campaignLocked || summary.talents.some((x) => budgetRowLocked(summary.locked, x.reservedCents));
 
   const tile = (label: string, value: string, extra?: string, danger = false) => (
-    <div className="flex min-h-16 flex-col justify-center rounded-xl border border-border px-3 py-2">
+    <div className="flex min-h-16 min-w-0 flex-col justify-center rounded-xl border border-border px-3 py-2">
       <span className="type-caption text-fg-muted">{label}</span>
-      <span className={`font-mono text-base font-semibold ${danger ? "text-danger" : "text-fg"}`}>{value}</span>
+      <span className={`font-mono text-sm font-semibold [overflow-wrap:anywhere] sm:text-base ${danger ? "text-danger" : "text-fg"}`}>{value}</span>
       {extra ? <span className="type-caption text-fg-muted">{extra}</span> : null}
     </div>
   );

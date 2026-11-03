@@ -25,15 +25,15 @@ export async function BudgetOverview({ overview, locale }: { overview: Overview;
         <p className="type-body-sm text-fg-muted">{t("overviewEmpty")}</p>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {[
               [t("reserved"), overview.reservedCents],
               [t("committed"), overview.committedCents],
               [t("paid"), overview.paidCents],
             ].map(([label, value]) => (
-              <div key={String(label)} className="flex min-h-14 flex-col justify-center rounded-xl border border-border px-3 py-2">
+              <div key={String(label)} className="flex min-h-14 min-w-0 flex-row items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 sm:flex-col sm:items-start sm:justify-center sm:gap-0">
                 <span className="type-caption text-fg-muted">{label}</span>
-                <span className="font-mono text-sm font-semibold text-fg sm:text-base">{money(Number(value))}</span>
+                <span className="min-w-0 font-mono text-sm font-semibold text-fg [overflow-wrap:anywhere]">{money(Number(value))}</span>
               </div>
             ))}
           </div>
