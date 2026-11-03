@@ -28,11 +28,11 @@ import esMe from "../../messages/es/me.json";
 // capa só com foto real (envio próprio, 0042). Nenhuma ilustração em lugar nenhum.
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined, push: () => undefined }) }));
-vi.mock("@/app/creator/profile/actions", () => ({ updateCreatorProfile: async () => ({ ok: true }) }));
+vi.mock("@/app/creator/(hero)/profile/actions", () => ({ updateCreatorProfile: async () => ({ ok: true }) }));
 vi.mock("@/app/(app)/profile/actions", () => ({ updateProfile: async () => ({ ok: true }) }));
 vi.mock("@/app/(app)/profile/avatar-actions", () => ({ uploadAvatar: async () => ({ ok: true }), removeAvatar: async () => ({ ok: true }) }));
 vi.mock("@/lib/partner-terms/actions", () => ({ confirmUploadRights: async () => ({ ok: true }) }));
-vi.mock("@/app/creator/profile/cover-actions", () => ({ uploadHeroCover: async () => ({ ok: true }), removeHeroCover: async () => ({ ok: true }) }));
+vi.mock("@/app/creator/(hero)/profile/cover-actions", () => ({ uploadHeroCover: async () => ({ ok: true }), removeHeroCover: async () => ({ ok: true }) }));
 
 function render(children: ReactNode) {
   return renderToStaticMarkup(

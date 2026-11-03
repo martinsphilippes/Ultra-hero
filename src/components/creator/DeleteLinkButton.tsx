@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { deleteLink } from "@/app/creator/links/actions";
+import { deleteLink } from "@/app/creator/(hero)/links/actions";
 import { ConfirmActionDialog } from "@/components/admin";
 
 // Exclui um vínculo ainda "sugerido" (RLS impede excluir validados/suspensos/rejeitados).

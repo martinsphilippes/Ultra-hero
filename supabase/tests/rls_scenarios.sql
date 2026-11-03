@@ -12145,5 +12145,137 @@ delete from public.agencies where id = '93000000-0000-4000-8000-000000009301';
 delete from auth.users where id::text like '93000000-0000-4000-8000-00000000093%';
 drop table t_s93;
 
+-- ================================================================ S94 · Login do creator com herói ligado e portal do creator (0087)
+-- O gestor da agência convida o creator cujo herói não tem conta (mesma RPC do convite do escritório, sem
+-- sobrecarga); o colaborador não convida; agência de fora não convida (nem sabe que o talento existe); herói já
+-- com conta e herói com convite pendente do admin recusam. Reenviar troca o link (um pendente só). Aceitar pelo
+-- e-mail (primeiro acesso, 0077) liga a conta ao HERÓI (papel creator escopo creator) e o escritório abre
+-- (talent_my_context). O selo do casting (agency_talent_access) mostra login/pendente/sem login com e-mail
+-- mascarado; prazo só para gestor+. S14 segue 18.
+\ir ../migrations/0087_creator_login_portal.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('94000000-0000-4000-8000-000000000941', 's94-gestor@test.local'),
+  ('94000000-0000-4000-8000-000000000942', 's94-colab@test.local'),
+  ('94000000-0000-4000-8000-000000000943', 's94-gestor-fora@test.local'),
+  ('94000000-0000-4000-8000-000000000944', 'dono.heroi.s94@test.local'),
+  ('94000000-0000-4000-8000-000000000945', 's94-creator@test.local');
+insert into public.agencies (id, slug, name) values
+  ('94000000-0000-4000-8000-000000009401', 's94-agencia', 'Agência S94'),
+  ('94000000-0000-4000-8000-000000009402', 's94-fora', 'Agência Fora S94');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('94000000-0000-4000-8000-000000009401', '94000000-0000-4000-8000-000000000941', 'manager', 'Gestor S94'),
+  ('94000000-0000-4000-8000-000000009401', '94000000-0000-4000-8000-000000000942', 'staff', 'Colab S94'),
+  ('94000000-0000-4000-8000-000000009402', '94000000-0000-4000-8000-000000000943', 'manager', 'Gestor Fora S94');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('94000000-0000-4000-8000-000000009411', 's94-heroi-sem-conta', 'Herói sem conta S94', 'active', null),
+  ('94000000-0000-4000-8000-000000009412', 's94-heroi-com-conta', 'Herói com conta S94', 'active', '94000000-0000-4000-8000-000000000944'),
+  ('94000000-0000-4000-8000-000000009413', 's94-heroi-admin', 'Herói do admin S94', 'active', null),
+  ('94000000-0000-4000-8000-000000009414', 's94-heroi-fora', 'Herói fora S94', 'active', null);
+insert into public.talent_profiles (id, agency_id, display_name, creator_id) values
+  ('94000000-0000-4000-8000-000000009421', '94000000-0000-4000-8000-000000009401', 'Creator com herói S94', '94000000-0000-4000-8000-000000009411'),
+  ('94000000-0000-4000-8000-000000009422', '94000000-0000-4000-8000-000000009401', 'Creator dono S94', '94000000-0000-4000-8000-000000009412'),
+  ('94000000-0000-4000-8000-000000009423', '94000000-0000-4000-8000-000000009401', 'Creator admin S94', '94000000-0000-4000-8000-000000009413'),
+  ('94000000-0000-4000-8000-000000009424', '94000000-0000-4000-8000-000000009402', 'Creator de fora S94', '94000000-0000-4000-8000-000000009414'),
+  ('94000000-0000-4000-8000-000000009425', '94000000-0000-4000-8000-000000009401', 'Creator sem página S94', null);
+-- convite de herói do admin, pendente
+insert into public.invitations (email, role, creator_profile_id, token_hash, expires_at) values
+  ('admin-convidou.s94@test.local', 'creator', '94000000-0000-4000-8000-000000009413', 's94-hash-admin', now() + interval '5 days');
+create temp table t_s94 (k text primary key, v text);
+grant all on t_s94 to anon, authenticated, service_role;
+
+select tests.ok('S94 estrutura: uma agency_invite_talent e uma agency_talent_access (sem sobrecarga), definer com search_path, fora do visitante; núcleo do aceite e máscara internos; S14 segue 18',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'agency_invite_talent') = 1
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'agency_talent_access') = 1
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'accept_invitation_core') = 1
+  and (select bool_and(prosecdef and proconfig is not null) from pg_proc where oid in ('public.agency_invite_talent(uuid, text, int)'::regprocedure, 'public.agency_talent_access(uuid)'::regprocedure))
+  and has_function_privilege('authenticated', 'public.agency_invite_talent(uuid, text, int)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_talent_access(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_invite_talent(uuid, text, int)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_talent_access(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.accept_invitation_core(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.mask_email(text)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- colaborador não convida; agência de fora não convida (nem enxerga); visitante não chama
+select tests.login('94000000-0000-4000-8000-000000000942', 's94-colab@test.local');
+select tests.expect_error('S94 colaborador não convida', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'novo.s94@test.local')$q$, 'forbidden');
+select tests.login('94000000-0000-4000-8000-000000000943', 's94-gestor-fora@test.local');
+select tests.expect_error('S94 agência de fora não convida (not_found)', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'novo.s94@test.local')$q$, 'not_found');
+select tests.expect_error('S94 agência de fora não lê o selo da outra', $q$select * from public.agency_talent_access('94000000-0000-4000-8000-000000009401')$q$, 'not_found');
+select tests.anon();
+select tests.expect_error('S94 visitante não convida', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'novo.s94@test.local')$q$, 'permission denied');
+
+-- gestor: herói com conta e herói com convite do admin recusam; o gestor não convida talento de outra agência
+select tests.login('94000000-0000-4000-8000-000000000941', 's94-gestor@test.local');
+select tests.expect_error('S94 herói já com conta recusa', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009422', 'novo.s94@test.local')$q$, 'creator_has_login');
+select tests.expect_error('S94 herói com convite pendente do admin recusa', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009423', 'novo.s94@test.local')$q$, 'hero_invite_pending');
+select tests.expect_error('S94 gestor não convida talento de outra agência', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009424', 'novo.s94@test.local')$q$, 'not_found');
+
+-- gestor convida o creator com herói sem conta; reenviar troca o link (um pendente só)
+insert into t_s94 select 'inv1', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'antigo.s94@test.local', 7);
+insert into t_s94 select 'inv2', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'S94-Creator@Test.Local', 10);
+select tests.ok('S94 gestor lê o convite do talento com herói (forma do convite de talento)',
+  (select count(*) from public.invitations where talent_id = '94000000-0000-4000-8000-000000009421' and status = 'pending') = 1
+  and (select role::text = 'creator' and agency_id = '94000000-0000-4000-8000-000000009401' and creator_profile_id is null and email::text = 's94-creator@test.local'
+       from public.invitations where id = (select v::uuid from t_s94 where k = 'inv2')));
+select tests.su();
+select tests.ok('S94 reenviar revogou o convite anterior', (select status::text from public.invitations where id = (select v::uuid from t_s94 where k = 'inv1')) = 'revoked');
+
+-- selo: gestor vê pendente com prazo e o login do herói com e-mail mascarado; colaborador vê o selo sem prazo
+select tests.login('94000000-0000-4000-8000-000000000941', 's94-gestor@test.local');
+select tests.ok('S94 selo do gestor: pendente com prazo, login mascarado, sem login',
+  (select access = 'pending' and invite_expires_at > now() + interval '9 days' and login_email is null
+   from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009421')
+  and (select access = 'login' and login_email = 'd•••@test.local' and invite_expires_at is null
+       from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009422')
+  and (select access = 'none' from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009425')
+  and not exists (select 1 from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009424'));
+select tests.login('94000000-0000-4000-8000-000000000942', 's94-colab@test.local');
+select tests.ok('S94 selo do colaborador: pendente sem prazo',
+  (select access = 'pending' and invite_expires_at is null
+   from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009421'));
+
+-- primeiro acesso: o convidado entra com o e-mail convidado; o aceite liga a conta ao herói e o escritório abre
+select tests.login('94000000-0000-4000-8000-000000000945', 's94-creator@test.local');
+select tests.ok('S94 antes do aceite: sem escritório', public.talent_my_context() is null);
+insert into t_s94 values ('acc', public.accept_my_invitations()::text);
+select tests.ok('S94 aceite devolve escopo creator do herói e o talento (o app abre o escritório)',
+  (select (v::jsonb -> 0 ->> 'scope_type') = 'creator' and (v::jsonb -> 0 ->> 'scope_id') = '94000000-0000-4000-8000-000000009411'
+          and (v::jsonb -> 0 ->> 'talent_id') = '94000000-0000-4000-8000-000000009421' from t_s94 where k = 'acc'));
+select tests.ok('S94 escritório abre pelo herói (talent_my_context)',
+  (public.talent_my_context() ->> 'id') = '94000000-0000-4000-8000-000000009421'
+  and (public.talent_my_context() ->> 'has_public_page')::boolean);
+select tests.su();
+select tests.ok('S94 conta ligada ao herói (user_id + papel creator escopo creator); talento sem login próprio',
+  (select user_id from public.creator_profiles where id = '94000000-0000-4000-8000-000000009411') = '94000000-0000-4000-8000-000000000945'
+  and exists (select 1 from public.role_assignments where user_id = '94000000-0000-4000-8000-000000000945' and role::text = 'creator'
+              and scope_type::text = 'creator' and scope_id = '94000000-0000-4000-8000-000000009411' and revoked_at is null)
+  and (select user_id from public.talent_profiles where id = '94000000-0000-4000-8000-000000009421') is null
+  and (select status::text from public.invitations where id = (select v::uuid from t_s94 where k = 'inv2')) = 'accepted');
+select tests.login('94000000-0000-4000-8000-000000000941', 's94-gestor@test.local');
+select tests.ok('S94 depois do aceite o selo vira login (e-mail mascarado)',
+  (select access = 'login' and login_email = 's•••@test.local'
+   from public.agency_talent_access('94000000-0000-4000-8000-000000009401') where talent_id = '94000000-0000-4000-8000-000000009421'));
+select tests.expect_error('S94 herói que acabou de ganhar conta não recebe outro convite', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'outro.s94@test.local')$q$, 'creator_has_login');
+
+-- talento sem página continua pelo caminho antigo (escopo talent)
+insert into t_s94 select 'inv3', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009425', 's94-gestor-fora@test.local');
+select tests.su();
+select tests.ok('S94 convite do talento sem página continua com a mesma forma',
+  (select talent_id = '94000000-0000-4000-8000-000000009425' and creator_profile_id is null from public.invitations where id = (select v::uuid from t_s94 where k = 'inv3')));
+
+-- limpeza
+select tests.su();
+delete from public.role_assignments where user_id::text like '94000000-0000-4000-8000-00000000094%';
+delete from public.invitations where talent_id::text like '94000000-%' or creator_profile_id::text like '94000000-%';
+delete from public.talent_profiles where id::text like '94000000-%';
+delete from public.creator_profiles where id::text like '94000000-%';
+delete from public.inbox_notifications where user_id::text like '94000000-0000-4000-8000-00000000094%';
+delete from public.agency_members where agency_id::text like '94000000-%';
+delete from public.agencies where id::text like '94000000-%';
+delete from auth.users where id::text like '94000000-0000-4000-8000-00000000094%';
+drop table t_s94;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

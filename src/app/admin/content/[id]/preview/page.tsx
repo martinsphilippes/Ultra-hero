@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { loadRecipeCategories } from "@/app/creator/recipes/_lib/load";
+import { loadRecipeCategories } from "@/app/creator/(hero)/recipes/_lib/load";
 import { RecipeView } from "@/components/recipes/view/RecipeView";
 import { loadRecipeView } from "@/components/recipes/view/load-recipe-view";
 import { Button } from "@/components/ui";

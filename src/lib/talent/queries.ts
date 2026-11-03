@@ -1,6 +1,7 @@
 import "server-only";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import { toTalentAccess, type TalentAccessInfo } from "./access";
 import { toKitStats, toPortfolio, type KitStats, type PortfolioItem } from "./kit-auto";
 import type { KitSource, SocialRow } from "./media-kit";
 import { DEFAULT_KIT_FIELDS, type Availability, type CommercialStatus } from "./vocab";
@@ -129,7 +130,7 @@ export async function listSegments(agencyId: string, activeOnly = true): Promise
   return (data ?? []).map((s) => ({ id: s.id, slug: s.slug, name: s.name, sortOrder: s.sort_order, active: s.active }));
 }
 
-export async function listTalents(agencyId: string, filters: TalentFilters = {}): Promise<ListResult<TalentListItem>> {
+export async function listTalents(agencyId: string, filters: TalentFilters = {}): Promise<ListResult<TalentDetail>> {
   const supabase = await createClient();
   let ids: string[] | null = null;
   if (filters.segment && /^[0-9a-f-]{36}$/i.test(filters.segment)) {
@@ -315,6 +316,17 @@ export async function listTalentInvites(talentId: string): Promise<TalentInvite[
   const { data, error } = await supabase.from("invitations").select("id, email, expires_at, created_at").eq("talent_id", talentId).eq("status", "pending").order("created_at", { ascending: false });
   if (error) return [];
   return (data ?? []).map((i) => ({ id: i.id, email: String(i.email), expiresAt: i.expires_at, createdAt: i.created_at }));
+}
+
+/**
+ * Selo do acesso do creator (0087): login (próprio ou do herói, e-mail mascarado), convite pendente ou sem
+ * login. Sem a migração no remoto: mapa vazio (a tela cai no que a linha do talento diz).
+ */
+export async function listTalentAccess(agencyId: string): Promise<Map<string, TalentAccessInfo>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("agency_talent_access", { p_agency: agencyId });
+  if (error || !Array.isArray(data)) return new Map();
+  return new Map(data.map((r) => [r.talent_id, { access: toTalentAccess(r.access), loginEmail: r.login_email ?? null, inviteExpiresAt: r.invite_expires_at ?? null }]));
 }
 
 /** Casting ativo da agência (Início): total e quantos estão em situação "ativo". */

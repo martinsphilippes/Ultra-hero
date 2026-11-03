@@ -9696,6 +9696,7 @@ isOneToOne: false
           token: string;
         }[];
       };
+      agency_talent_access: { Args: { p_agency: string }; Returns: { talent_id: string; access: string; login_email: string | null; invite_expires_at: string | null }[] };
       agency_talent_archive: {
         Args: { p_justification: string; p_talent: string };
         Returns: undefined;

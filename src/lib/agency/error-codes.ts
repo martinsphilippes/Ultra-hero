@@ -4,6 +4,10 @@ export const AGENCY_ERROR_CODES = [
   "user_has_talent",
   "talent_has_login",
   "talent_has_creator",
+  // login do creator com herói ligado (0087)
+  "creator_has_login",
+  "hero_invite_pending",
+  "partner_suspended",
   "talent_already_linked",
   "talent_archived",
   "too_many_segments",

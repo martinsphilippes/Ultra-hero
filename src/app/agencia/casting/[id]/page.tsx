@@ -4,10 +4,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ArchiveTalentButton, CatalogSwitch, HeroLinkForm, RecordConsentForm, SegmentPicker, TalentForm } from "@/components/agency/CastingForms";
 import { InviteDialog } from "@/components/agency/InviteDialog";
 import { RevokeInviteButton } from "@/components/agency/RevokeInviteButton";
+import { TalentAccessBadge } from "@/components/agency/TalentAccessBadge";
 import type { Locale } from "@/i18n/config";
 import { formatDate, formatDateTime } from "@/i18n/format";
 import { agencyCan } from "@/lib/agency/roles";
-import { listHeroOptions, listManagers, listSegments, listTalentDocuments, listTalentInvites } from "@/lib/talent/queries";
+import { canInviteCreator, resolveTalentAccess } from "@/lib/talent/access";
+import { listHeroOptions, listManagers, listSegments, listTalentAccess, listTalentDocuments, listTalentInvites } from "@/lib/talent/queries";
 import { loadTalent } from "./_lib";
 
 export const dynamic = "force-dynamic";
@@ -28,14 +30,20 @@ export default async function TalentSummaryPage({ params }: Props) {
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   const canEdit = isManager && !talent.archived;
   const locked = ctx.agency.isDemo;
+  // acesso real do creator (0087): login próprio ou do herói ligado; herói sem conta NÃO é login
+  const accessMap = talent.archived ? new Map() : await listTalentAccess(ctx.agency.id);
+  const accessInfo = accessMap.get(talent.id);
+  const access = resolveTalentAccess(accessInfo, talent);
+  const hasLogin = access ? access === "login" : talent.hasLogin;
+  const canInvite = canInviteCreator({ access, canEdit, locked, heroActive: Boolean(talent.hero), hasHero: Boolean(talent.creatorId) });
   const [t, locale, managers, segments, heroes, documents, invites] = await Promise.all([
     getTranslations("agency.casting"),
     getLocale() as Promise<Locale>,
     listManagers(ctx.agency.id),
     listSegments(ctx.agency.id),
     canEdit && !talent.creatorId && !talent.userId && !locked ? listHeroOptions() : Promise.resolve([]),
-    canEdit && !talent.hasLogin ? listTalentDocuments(talent.id) : Promise.resolve([]),
-    isManager && !talent.hasLogin ? listTalentInvites(talent.id) : Promise.resolve([]),
+    canEdit && !hasLogin ? listTalentDocuments(talent.id) : Promise.resolve([]),
+    isManager && !hasLogin ? listTalentInvites(talent.id) : Promise.resolve([]),
   ]);
   const consentOk = talent.consent === "active";
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
@@ -100,37 +108,55 @@ export default async function TalentSummaryPage({ params }: Props) {
               )}
               <HeroLinkForm talentId={talent.id} heroes={[]} currentId={talent.creatorId} canEdit={canEdit} locked={locked} />
             </div>
-          ) : talent.userId ? (
-            <p className="type-body-sm text-fg" data-testid="talent-has-login">
-              {t("hasLogin")}
-            </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <p className="type-body-sm text-fg-muted">{t("noLogin")}</p>
-              {canEdit ? (
-                locked ? (
-                  <p className="rounded-xl border border-dashed border-border px-3 py-2 type-caption text-fg-muted">{t("demoLockedInvite")}</p>
-                ) : (
-                  <>
-                    <InviteDialog target={{ kind: "talent", talentId: talent.id }} roles={[]} triggerLabel={t("inviteTalent")} triggerVariant="secondary" />
-                    <HeroLinkForm talentId={talent.id} heroes={heroes} currentId={null} canEdit={canEdit} locked={locked} />
-                  </>
-                )
-              ) : null}
-              {invites.length > 0 ? (
-                <ul className="flex flex-col gap-1" aria-label={t("pendingInvites")}>
-                  {invites.map((i) => (
-                    <li key={i.id} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-1.5 text-sm">
-                      <span className="min-w-0 truncate">
-                        {i.email} · <span className="text-fg-muted">{t("inviteUntil", { date: formatDate(i.expiresAt, locale) })}</span>
-                      </span>
-                      <RevokeInviteButton id={i.id} email={i.email} from="agency" />
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+          ) : null}
+          {/* login do creator (0087): com ou sem herói, a agência convida quem ainda não tem conta */}
+          <div className="flex flex-col gap-3" data-testid="talent-access">
+            <div className="flex flex-wrap items-center gap-2">
+              <TalentAccessBadge access={access} />
+              {hasLogin ? (
+                <p className="type-body-sm text-fg" data-testid="talent-has-login">
+                  {accessInfo?.loginEmail ? t("hasLoginAs", { email: accessInfo.loginEmail }) : t("hasLogin")}
+                </p>
+              ) : (
+                <p className="type-body-sm text-fg-muted">{talent.creatorId ? t("heroNoLogin") : t("noLogin")}</p>
+              )}
             </div>
-          )}
+            {!hasLogin && canEdit && locked ? (
+              <p className="rounded-xl border border-dashed border-border px-3 py-2 type-caption text-fg-muted">{t("demoLockedInvite")}</p>
+            ) : null}
+            {canInvite || (!talent.creatorId && !hasLogin && canEdit && !locked) ? (
+              <div className="flex flex-wrap gap-2">
+                {canInvite ? (
+                  <InviteDialog target={{ kind: "talent", talentId: talent.id }} roles={[]} triggerLabel={talent.creatorId ? t("inviteCreator") : t("inviteTalent")} triggerVariant="secondary" />
+                ) : null}
+                {!talent.creatorId ? <HeroLinkForm talentId={talent.id} heroes={heroes} currentId={null} canEdit={canEdit} locked={locked} /> : null}
+              </div>
+            ) : null}
+            {invites.length > 0 ? (
+              <ul className="flex flex-col gap-1" aria-label={t("pendingInvites")} data-testid="talent-invites">
+                {invites.map((i) => (
+                  <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-1.5 text-sm">
+                    <span className="min-w-0 truncate">
+                      {i.email} · <span className="text-fg-muted">{t("inviteUntil", { date: formatDate(i.expiresAt, locale) })}</span>
+                    </span>
+                    <span className="flex items-center gap-1">
+                      {canInvite ? (
+                        <InviteDialog
+                          target={{ kind: "talent", talentId: talent.id }}
+                          roles={[]}
+                          triggerLabel={t("resendInvite")}
+                          triggerVariant="ghost"
+                          initialEmail={i.email}
+                          triggerTestId="invite-resend"
+                        />
+                      ) : null}
+                      <RevokeInviteButton id={i.id} email={i.email} from="agency" />
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </section>
 
         <section className={card} aria-labelledby="talent-consent">
@@ -144,7 +170,7 @@ export default async function TalentSummaryPage({ params }: Props) {
                 ? t("consentRevokedAt", { date: formatDateTime(talent.consentRevokedAt, locale) })
                 : t("consentNone")}
           </p>
-          {talent.hasLogin ? (
+          {hasLogin ? (
             <p className="type-caption text-fg-muted">{t("consentByTalent")}</p>
           ) : canEdit && !consentOk ? (
             locked ? (

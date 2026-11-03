@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { creatorActionContext } from "@/app/creator/_lib/creator-action";
-import { createRecipeDraft } from "@/app/creator/recipes/actions";
-import { suggestLink } from "@/app/creator/links/actions";
+import { creatorActionContext } from "@/app/creator/(hero)/_lib/creator-action";
+import { createRecipeDraft } from "@/app/creator/(hero)/recipes/actions";
+import { suggestLink } from "@/app/creator/(hero)/links/actions";
 import { buildPayload, emptyDraft } from "@/lib/recipes/draft";
 
 // Quem grava pelo herói (0045): conteúdos, receitas e vínculos só o admin pelo herói escolhido; o

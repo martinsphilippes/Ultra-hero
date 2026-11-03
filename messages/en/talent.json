@@ -12,20 +12,6 @@
     "documents": "Documents",
     "earnings": "Earnings"
   },
-  "tabs": {
-    "label": "Office sections",
-    "home": "Home",
-    "kit": "Media kit",
-    "consent": "Consent",
-    "notifications": "Notices",
-    "opportunities": "Opportunities",
-    "availability": "Availability",
-    "agenda": "Calendar",
-    "tasks": "Tasks",
-    "documents": "Documents",
-    "earnings": "Earnings",
-    "portfolio": "Portfolio"
-  },
   "home": {
     "unavailable": "Office being updated",
     "none": "You are not part of a roster yet",

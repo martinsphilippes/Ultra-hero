@@ -23,19 +23,22 @@ type Props = {
   /** Níveis que podem ser convidados (vazio: só "equipe" da marca). */
   roles: readonly string[];
   triggerLabel?: string;
-  triggerVariant?: "primary" | "secondary";
+  triggerVariant?: "primary" | "secondary" | "ghost";
+  /** E-mail já preenchido (reenviar convite pendente: o link novo substitui o anterior). */
+  initialEmail?: string;
+  triggerTestId?: string;
 };
 
 // Convite por e-mail: o link aparece UMA vez (o banco guarda só o hash). Os avisos dos portais de
 // gestão ficam no sino (sem e-mail transacional no MVP), por isso o link é copiado e enviado à pessoa.
-export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "primary" }: Props) {
+export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "primary", initialEmail = "", triggerTestId = "invite-open" }: Props) {
   const t = useTranslations("agency.invite");
   const tr = useTranslations("agency.roles");
   const tc = useTranslations("common.actions");
   // id único por instância: a mesma página pode ter vários diálogos (o botão do rodapé aponta pelo atributo form)
   const formId = useId();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [role, setRole] = useState(roles[roles.length - 1] ?? "staff");
   const [days, setDays] = useState("7");
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +75,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
     setOpen(false);
     setLink(null);
     setEmailed(false);
-    setEmail("");
+    setEmail(initialEmail);
     setError(null);
   }
 
@@ -80,7 +83,7 @@ export function InviteDialog({ target, roles, triggerLabel, triggerVariant = "pr
 
   return (
     <>
-      <Button type="button" variant={triggerVariant} size="sm" onClick={() => setOpen(true)} leadingIcon={<Mail />} data-testid="invite-open">
+      <Button type="button" variant={triggerVariant} size="sm" onClick={() => setOpen(true)} leadingIcon={<Mail />} data-testid={triggerTestId}>
         {triggerLabel ?? t("open")}
       </Button>
       <Dialog

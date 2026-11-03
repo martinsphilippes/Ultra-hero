@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createRecipeDraft, deleteRecipeMedia, publishRecipe, saveRecipe, submitRecipe, type RegisteredMedia } from "@/app/creator/recipes/actions";
+import { createRecipeDraft, deleteRecipeMedia, publishRecipe, saveRecipe, submitRecipe, type RegisteredMedia } from "@/app/creator/(hero)/recipes/actions";
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
 import { Button, Dialog, useToast } from "@/components/ui";
 import { coverUrlAfterDelete, coverUrlAfterSave, recipeChecklist, serverMissingFor } from "@/lib/recipes/checklist";

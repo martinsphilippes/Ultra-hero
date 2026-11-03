@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { archiveRecipe, deleteRecipeDraft, duplicateRecipe, restoreRecipe, unpublishRecipe, withdrawRecipe } from "@/app/creator/recipes/actions";
+import { archiveRecipe, deleteRecipeDraft, duplicateRecipe, restoreRecipe, unpublishRecipe, withdrawRecipe } from "@/app/creator/(hero)/recipes/actions";
 import { Button, Dialog, FormField, Textarea, useToast } from "@/components/ui";
 import type { MyRecipeStatus } from "@/lib/recipes/portal";
 import { cn } from "@/lib/utils";

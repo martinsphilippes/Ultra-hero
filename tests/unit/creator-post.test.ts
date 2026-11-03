@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/creator/post/actions";
-import { createContent, publishContent, unpublishContent, updateContent } from "@/app/creator/content/actions";
+import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/creator/(hero)/post/actions";
+import { createContent, publishContent, unpublishContent, updateContent } from "@/app/creator/(hero)/content/actions";
 import type { ContentFormValues } from "@/components/editors/types";
-import { slugify, uniqueSlug } from "@/app/creator/_lib/slug";
+import { slugify, uniqueSlug } from "@/app/creator/(hero)/_lib/slug";
 import { MAX_POST_BYTES, durationMinutes, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "@/components/creator/post/validation";
 
 // Composer de post em vídeo do herói: server actions sem Next, Supabase nem Cloudflare. Confere que

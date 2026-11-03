@@ -12,20 +12,6 @@
     "documents": "Documentos",
     "earnings": "Ganancias"
   },
-  "tabs": {
-    "label": "Secciones de la oficina",
-    "home": "Inicio",
-    "kit": "Media kit",
-    "consent": "Consentimiento",
-    "notifications": "Avisos",
-    "opportunities": "Oportunidades",
-    "availability": "Disponibilidad",
-    "agenda": "Agenda",
-    "tasks": "Tareas",
-    "documents": "Documentos",
-    "earnings": "Ganancias",
-    "portfolio": "Portafolio"
-  },
   "home": {
     "unavailable": "Oficina en actualización",
     "none": "Todavía no formas parte de un casting",

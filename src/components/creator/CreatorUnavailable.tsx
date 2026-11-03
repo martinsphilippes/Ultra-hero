@@ -2,7 +2,7 @@ import { ShieldAlert, UserX } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
-import type { CreatorUnavailableReason } from "@/app/creator/_lib/creator";
+import type { CreatorUnavailableReason } from "@/app/creator/(hero)/_lib/creator";
 
 type Props = { reason: CreatorUnavailableReason; name?: string | null; title?: string };
 

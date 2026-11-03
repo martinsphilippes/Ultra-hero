@@ -39,6 +39,11 @@ import {
   Library,
   Search,
   Wallet,
+  CalendarCheck,
+  IdCard,
+  Images,
+  ShieldCheck,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -95,6 +100,14 @@ const ICONS: Record<string, LucideIcon> = {
   tasks: ClipboardList,
   finance: Wallet,
   history: ScrollText,
+  // escritório do creator (0087)
+  opportunities: Sparkles,
+  earnings: Wallet,
+  availability: CalendarCheck,
+  kit: IdCard,
+  portfolio: Images,
+  documents: FileText,
+  consent: ShieldCheck,
 };
 
 function isActive(pathname: string, href: string, root: string) {

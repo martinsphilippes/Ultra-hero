@@ -223,12 +223,14 @@ export async function acceptInvitation(input: { token: string; acceptTerms: bool
     if (termsError) return fail(termsError);
     const { data, error } = await supabase.rpc("accept_invitation", { p_token: parsed.data.token });
     if (error) return fail(error);
-    const row = data && typeof data === "object" && !Array.isArray(data) ? (data as { role?: string; scope_type?: string }) : {};
+    const row = data && typeof data === "object" && !Array.isArray(data) ? (data as { role?: string; scope_type?: string; talent_id?: string }) : {};
     const role = row.role;
     // professional: convite de profissional (0058); agency e brand: gestão (0064)
     if (role !== "creator" && role !== "seller" && role !== "professional" && role !== "agency" && role !== "brand") return fail("generic");
     revalidatePath("/admin/invitations");
-    return { ok: true, role, scopeType: typeof row.scope_type === "string" ? row.scope_type : null };
+    // convite do escritório com herói ligado (0087): o escopo é do herói, mas o destino é o escritório
+    const scopeType = typeof row.talent_id === "string" ? "talent" : typeof row.scope_type === "string" ? row.scope_type : null;
+    return { ok: true, role, scopeType };
   } catch (error) {
     return fail(error);
   }

@@ -12,7 +12,8 @@
     "seller": "Supplier",
     "professional": "Professional",
     "agency": "Agency",
-    "brand": "Brand"
+    "brand": "Brand",
+    "office": "Creator"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -79,7 +80,8 @@
     "seller": "Supplier area",
     "professional": "Professional area",
     "agency": "Agency workspace",
-    "brand": "Brand area"
+    "brand": "Brand area",
+    "office": "Creator office"
   },
   "backToProfile": "Profile",
   "agency": {
@@ -107,5 +109,18 @@
     "catalog": "Creators",
     "agenda": "Calendar",
     "sponsorships": "Sponsorships"
+  },
+  "office": {
+    "dashboard": "Home",
+    "opportunities": "Opportunities",
+    "tasks": "Tasks",
+    "agenda": "Calendar",
+    "earnings": "Earnings",
+    "availability": "Availability",
+    "kit": "Media kit",
+    "portfolio": "Portfolio",
+    "documents": "Documents",
+    "consent": "Consent",
+    "notifications": "Notices"
   }
 }

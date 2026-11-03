@@ -4,7 +4,7 @@ import { Video } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import type { Upload } from "tus-js-client";
-import { startRecipeVideoUpload } from "@/app/creator/recipes/actions";
+import { startRecipeVideoUpload } from "@/app/creator/(hero)/recipes/actions";
 import { normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "@/components/creator/post/validation";
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
 import { UploadRightsDialog } from "@/components/creator/UploadRightsDialog";

@@ -322,7 +322,10 @@
     "name_required": "Type your full name (first and last name).",
     "deadline_passed": "The deadline to reply has passed.",
     "already_responded": "Your brand already replied to this opportunity.",
-    "not_interested": "You can only pick brands that wanted to sponsor."
+    "not_interested": "You can only pick brands that wanted to sponsor.",
+    "creator_has_login": "The hero already has a login: the creator enters the office with that account.",
+    "hero_invite_pending": "The admin has already invited someone for this hero. Wait for the acceptance or talk to the admin.",
+    "partner_suspended": "This profile is suspended."
   },
   "casting": {
     "title": "Roster",
@@ -482,7 +485,16 @@
       "upcoming": "Activities and deals join the timeline with the pipeline."
     },
     "heroUnavailable": "Linked hero is offline (suspended or pending): no public kit, new link or catalog until it is back.",
-    "inviteTalentRole": "Talent"
+    "inviteTalentRole": "Talent",
+    "access": {
+      "login": "Has login",
+      "pending": "Invite pending",
+      "none": "No login"
+    },
+    "hasLoginAs": "Has a login ({email}) and uses the office.",
+    "heroNoLogin": "The hero has no login yet. Invite the creator to enter the office.",
+    "inviteCreator": "Invite creator",
+    "resendInvite": "Resend"
   },
   "documents": {
     "uploaded": "Document uploaded.",

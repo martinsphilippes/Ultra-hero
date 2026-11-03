@@ -271,7 +271,7 @@ vi.mock("@/components/commerce/server/cookies", () => ({ readExpectedPrices: asy
 
 const { addRecipeToShoppingList, clearShoppingList, setShoppingItemChecked } = await import("@/app/(app)/profile/lista-de-compras/actions");
 const { addToCart } = await import("@/app/(app)/shop/actions");
-const { suggestIngredientProduct } = await import("@/app/creator/recipes/ingredient-product-actions");
+const { suggestIngredientProduct } = await import("@/app/creator/(hero)/recipes/ingredient-product-actions");
 const { loadShoppingList } = await import("@/components/recipes/shopping/load-shopping-list");
 
 const USER = "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createContent, updateContent } from "@/app/creator/content/actions";
-import { discardPhotoPost, publishPhotoPost, startPhotoPost } from "@/app/creator/post/photo-actions";
+import { createContent, updateContent } from "@/app/creator/(hero)/content/actions";
+import { discardPhotoPost, publishPhotoPost, startPhotoPost } from "@/app/creator/(hero)/post/photo-actions";
 import { parseContentForm } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { POST_PHOTO_MAX_SOURCE_BYTES, POST_PHOTO_MAX_UPLOAD_BYTES } from "@/lib/post-photo/constants";

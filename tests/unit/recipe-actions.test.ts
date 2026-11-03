@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createRecipeDraft, deleteRecipeDraft, duplicateRecipe, publishRecipe, registerRecipeMedia, saveRecipe, submitRecipe } from "@/app/creator/recipes/actions";
+import { createRecipeDraft, deleteRecipeDraft, duplicateRecipe, publishRecipe, registerRecipeMedia, saveRecipe, submitRecipe } from "@/app/creator/(hero)/recipes/actions";
 import { cleanupRecipeOrphans } from "@/app/api/cron/_lib/recipe-orphans";
 import { buildPayload, emptyDraft } from "@/lib/recipes/draft";
 

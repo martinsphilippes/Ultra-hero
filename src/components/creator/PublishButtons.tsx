@@ -4,7 +4,7 @@ import { CircleCheck, CircleX, EyeOff, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { publishContent, unpublishContent } from "@/app/creator/content/actions";
+import { publishContent, unpublishContent } from "@/app/creator/(hero)/content/actions";
 import type { ChecklistItem } from "@/components/editors/content/schema";
 import { Button, Dialog, useToast } from "@/components/ui";
 

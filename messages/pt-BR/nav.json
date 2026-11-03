@@ -12,7 +12,8 @@
     "seller": "Fornecedor",
     "professional": "Profissional",
     "agency": "Agência",
-    "brand": "Marca"
+    "brand": "Marca",
+    "office": "Creator"
   },
   "admin": {
     "dashboard": "Painel",
@@ -79,7 +80,8 @@
     "seller": "Área do fornecedor",
     "professional": "Área do profissional",
     "agency": "Centro de trabalho da agência",
-    "brand": "Área da marca"
+    "brand": "Área da marca",
+    "office": "Escritório do creator"
   },
   "backToProfile": "Perfil",
   "agency": {
@@ -107,5 +109,18 @@
     "catalog": "Creators",
     "agenda": "Agenda",
     "sponsorships": "Patrocínios"
+  },
+  "office": {
+    "dashboard": "Início",
+    "opportunities": "Oportunidades",
+    "tasks": "Tarefas",
+    "agenda": "Agenda",
+    "earnings": "Ganhos",
+    "availability": "Disponibilidade",
+    "kit": "Media kit",
+    "portfolio": "Portfólio",
+    "documents": "Documentos",
+    "consent": "Consentimento",
+    "notifications": "Avisos"
   }
 }

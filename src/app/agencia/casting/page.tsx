@@ -3,12 +3,14 @@ import { Contact, Plus, Search } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
+import { TalentAccessBadge } from "@/components/agency/TalentAccessBadge";
 import { TalentStatusBadges } from "@/components/agency/TalentStatusBadges";
 import { Avatar, Button, EmptyState, Input, PageHeader, Select } from "@/components/ui";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
+import { resolveTalentAccess } from "@/lib/talent/access";
 import { formatCount } from "@/lib/talent/media-kit";
-import { listManagers, listSegments, listTalents } from "@/lib/talent/queries";
+import { listManagers, listSegments, listTalentAccess, listTalents } from "@/lib/talent/queries";
 import { AVAILABILITIES, COMMERCIAL_STATUSES } from "@/lib/talent/vocab";
 
 export const dynamic = "force-dynamic";
@@ -36,12 +38,14 @@ export default async function CastingPage({ searchParams }: Props) {
     q: sp.q?.slice(0, 60),
     archived,
   };
-  const [t, locale, list, segments, managers] = await Promise.all([
+  const [t, locale, list, segments, managers, access] = await Promise.all([
     getTranslations("agency.casting"),
     getLocale(),
     listTalents(ctx.agency.id, filters),
     listSegments(ctx.agency.id),
     listManagers(ctx.agency.id),
+    // selo do acesso do creator (0087); arquivado não tem acesso a mostrar
+    archived ? Promise.resolve(new Map()) : listTalentAccess(ctx.agency.id),
   ]);
   const canEdit = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const segmentName = new Map(segments.map((s) => [s.id, s.name]));
@@ -154,7 +158,10 @@ export default async function CastingPage({ searchParams }: Props) {
                     </span>
                   </span>
                 </span>
-                <TalentStatusBadges status={talent.commercialStatus} availability={talent.availability} consent={talent.consent} catalogVisible={talent.catalogVisible} archived={talent.archived} />
+                <span className="flex flex-wrap gap-1.5">
+                  <TalentStatusBadges status={talent.commercialStatus} availability={talent.availability} consent={talent.consent} catalogVisible={talent.catalogVisible} archived={talent.archived} />
+                  {!talent.archived ? <TalentAccessBadge access={resolveTalentAccess(access.get(talent.id), talent)} /> : null}
+                </span>
                 <span className="flex flex-wrap gap-x-3 gap-y-1 type-caption text-fg-muted">
                   <span>{talent.segmentIds.map((id) => segmentName.get(id)).filter(Boolean).join(", ") || t("noSegments")}</span>
                   <span>{talent.topFollowers !== null ? t("topFollowers", { count: formatCount(talent.topFollowers, locale) ?? "" }) : t("noMetrics")}</span>

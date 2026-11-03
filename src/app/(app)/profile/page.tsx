@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
-import { getMyCreator } from "@/app/creator/_lib/creator";
+import { getMyCreator } from "@/app/creator/(hero)/_lib/creator";
 import { heroProfileFor } from "@/components/creator/hero-access";
 import { HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure";
 import { ACCOUNT_ANCHOR } from "@/lib/creator/hero-anchors";

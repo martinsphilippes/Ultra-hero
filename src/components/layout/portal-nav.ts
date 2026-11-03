@@ -1,5 +1,7 @@
 // Links dos portais (só href + chave de tradução; ícones ficam no componente cliente).
-export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand";
+// office: o escritório do creator (0087) é um portal como agência e marca (barra lateral e menu no
+// celular); "creator" segue sendo a área do herói, sem menu.
+export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand" | "office";
 
 // Raiz de cada portal (o do profissional mora em /profissional, em português como as rotas do app).
 export const PORTAL_ROOT: Record<Portal, string> = {
@@ -9,6 +11,7 @@ export const PORTAL_ROOT: Record<Portal, string> = {
   professional: "/profissional",
   agency: "/agencia",
   brand: "/marca",
+  office: "/creator/escritorio",
 };
 
 export type PortalLink = { key: string; href: string };
@@ -100,5 +103,20 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "sponsorships", href: "/marca/oportunidades" },
     { key: "team", href: "/marca/equipe" },
     { key: "notifications", href: "/marca/notificacoes" },
+  ],
+  // Escritório do creator (0065 + 0087): as rotas são as mesmas das abas de antes. Patrocínios ficam na
+  // Agenda (não há rota própria do creator) e as assinaturas abrem pelo aviso/termo (sem lista).
+  office: [
+    { key: "dashboard", href: "/creator/escritorio" },
+    { key: "opportunities", href: "/creator/escritorio/oportunidades" },
+    { key: "tasks", href: "/creator/escritorio/tarefas" },
+    { key: "agenda", href: "/creator/escritorio/agenda" },
+    { key: "earnings", href: "/creator/escritorio/ganhos" },
+    { key: "availability", href: "/creator/escritorio/disponibilidade" },
+    { key: "kit", href: "/creator/escritorio/media-kit" },
+    { key: "portfolio", href: "/creator/escritorio/portfolio" },
+    { key: "documents", href: "/creator/escritorio/documentos" },
+    { key: "consent", href: "/creator/escritorio/consentimento" },
+    { key: "notifications", href: "/creator/escritorio/notificacoes" },
   ],
 };

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { saveContentAction } from "@/app/admin/content-actions";
-import { createContent, updateContent } from "@/app/creator/content/actions";
+import { createContent, updateContent } from "@/app/creator/(hero)/content/actions";
 import { nutritionDisplayState, nutritionHasValues, parseNutrition, parseRecipeBody } from "@/components/content/body-types";
 import {
   bodySchema,

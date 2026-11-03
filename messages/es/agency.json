@@ -322,7 +322,10 @@
     "name_required": "Escribe tu nombre completo (nombre y apellido).",
     "deadline_passed": "El plazo para responder ya terminó.",
     "already_responded": "Tu marca ya respondió a esta oportunidad.",
-    "not_interested": "Solo puedes elegir marcas que quisieron patrocinar."
+    "not_interested": "Solo puedes elegir marcas que quisieron patrocinar.",
+    "creator_has_login": "El héroe ya tiene acceso: el creator entra en la oficina con esa cuenta.",
+    "hero_invite_pending": "El admin ya invitó a alguien para este héroe. Espera la aceptación o habla con el admin.",
+    "partner_suspended": "Este perfil está suspendido."
   },
   "casting": {
     "title": "Casting",
@@ -482,7 +485,16 @@
       "upcoming": "Actividades y negocios entran en la línea de tiempo con el pipeline."
     },
     "heroUnavailable": "Héroe vinculado fuera de línea (suspendido o pendiente): sin kit público, enlace nuevo ni catálogo hasta que vuelva.",
-    "inviteTalentRole": "Talento"
+    "inviteTalentRole": "Talento",
+    "access": {
+      "login": "Con acceso",
+      "pending": "Invitación pendiente",
+      "none": "Sin acceso"
+    },
+    "hasLoginAs": "Tiene acceso ({email}) y usa la oficina.",
+    "heroNoLogin": "El héroe aún no tiene acceso. Invita al creator a entrar en la oficina.",
+    "inviteCreator": "Invitar creator",
+    "resendInvite": "Reenviar"
   },
   "documents": {
     "uploaded": "Documento enviado.",
