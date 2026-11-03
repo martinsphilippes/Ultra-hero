@@ -14080,5 +14080,222 @@ delete from public.agencies where id::text like 'c1000000-%';
 delete from public.creator_profiles where id::text like 'c1000000-%';
 delete from auth.users where id::text like 'c1000000-%';
 
+-- ================================================================ S101 · Agenda e financeiro do herói (0094)
+-- Herói independente: titular cria/edita/exclui compromisso e serviço (valor a receber, vencimento, recebido); membro
+-- da equipe LÊ a agenda (e as datas de serviço, sem valor) e NÃO lê nem escreve o financeiro nem a agenda; outro herói
+-- não vê nada; visitante nada; admin lê (não escreve); herói suspenso não escreve (titular ainda lê). Checklist
+-- inválido, serviço de outro herói e troca de herói são recusados. Comprovante: caminho precisa do prefixo do herói.
+-- Herói com agência: o membro da equipe abre o escritório mas NÃO lê o cachê (só o titular); creator_id no contexto.
+-- Sem sobrecarga; funções novas só para authenticated; S14 segue 18.
+\ir ../migrations/0094_heroi_agenda_financeiro.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1010000-0000-4000-8000-000000000001', 's101-titular@test.local'),
+  ('a1010000-0000-4000-8000-000000000002', 's101-membro@test.local'),
+  ('a1010000-0000-4000-8000-000000000003', 's101-outro@test.local'),
+  ('a1010000-0000-4000-8000-000000000004', 's101-admin@test.local'),
+  ('a1010000-0000-4000-8000-000000000005', 's101-suspenso@test.local'),
+  ('a1010000-0000-4000-8000-000000000006', 's101-agencia-titular@test.local'),
+  ('a1010000-0000-4000-8000-000000000007', 's101-agencia-membro@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values
+  ('a1010000-0000-4000-8000-000000000001', 'creator', 'global'),
+  ('a1010000-0000-4000-8000-000000000002', 'creator', 'global'),
+  ('a1010000-0000-4000-8000-000000000003', 'creator', 'global'),
+  ('a1010000-0000-4000-8000-000000000004', 'admin', 'global'),
+  ('a1010000-0000-4000-8000-000000000005', 'creator', 'global'),
+  ('a1010000-0000-4000-8000-000000000006', 'creator', 'global'),
+  ('a1010000-0000-4000-8000-000000000007', 'creator', 'global');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('a1010000-0000-4000-8000-0000000000c1', 's101-heroi-a', 'Herói A S101', 'active', 'a1010000-0000-4000-8000-000000000001'),
+  ('a1010000-0000-4000-8000-0000000000c2', 's101-heroi-b', 'Herói B S101', 'active', 'a1010000-0000-4000-8000-000000000003'),
+  ('a1010000-0000-4000-8000-0000000000c3', 's101-heroi-s', 'Herói S S101', 'active', 'a1010000-0000-4000-8000-000000000005'),
+  ('a1010000-0000-4000-8000-0000000000c4', 's101-heroi-ag', 'Herói Agência S101', 'active', 'a1010000-0000-4000-8000-000000000006');
+insert into public.creator_team_members (creator_profile_id, user_id, role, status) values
+  ('a1010000-0000-4000-8000-0000000000c1', 'a1010000-0000-4000-8000-000000000002', 'member', 'active'),
+  ('a1010000-0000-4000-8000-0000000000c4', 'a1010000-0000-4000-8000-000000000007', 'member', 'active');
+
+select tests.ok('S101 estrutura: RLS ligada, nada para visitante, funções novas fora do anon, uma versão de cada, S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.hero_events'::regclass, 'public.hero_services'::regclass))
+  and not has_table_privilege('anon', 'public.hero_events', 'select') and not has_table_privilege('anon', 'public.hero_services', 'select')
+  and not has_table_privilege('anon', 'public.hero_services', 'insert')
+  and has_table_privilege('authenticated', 'public.hero_services', 'insert')
+  and not has_function_privilege('anon', 'public.hero_service_dates(uuid, date, date)', 'execute')
+  and not has_function_privilege('anon', 'public.my_active_owned_creator_ids()', 'execute')
+  and not has_function_privilege('anon', 'public.my_talent_owner_id()', 'execute')
+  and not has_function_privilege('anon', 'public.hero_proof_access(text, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.hero_work_guard()', 'execute')
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace
+       and proname in ('hero_service_dates', 'my_active_owned_creator_ids', 'my_talent_owner_id', 'hero_proof_access', 'hero_checklist_valid', 'hero_work_guard', 'talent_payouts', 'talent_my_context', 'calendar_feed_resolve')) = 9
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- titular: cria serviço e compromissos, edita, marca recebido, exclui
+select tests.login('a1010000-0000-4000-8000-000000000001', 's101-titular@test.local');
+insert into public.hero_services (id, creator_profile_id, title, client, service_on, amount_cents, due_on, payment_note) values
+  ('a1010000-0000-4000-8000-0000000000e1', 'a1010000-0000-4000-8000-0000000000c1', 'Reels de lançamento', 'Loja Sol', current_date + 3, 150000, current_date + 10, 'Pix'),
+  ('a1010000-0000-4000-8000-0000000000e2', 'a1010000-0000-4000-8000-0000000000c1', 'Palestra', 'Escola Mar', current_date - 20, 80000, current_date - 5, '');
+select tests.ok('S101 titular cria serviços (valor em centavos, vencimento) e lê os dois',
+  (select count(*) from public.hero_services) = 2 and (select sum(amount_cents) from public.hero_services) = 230000
+  and (select created_by from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1') = 'a1010000-0000-4000-8000-000000000001');
+insert into public.hero_events (id, creator_profile_id, kind, title, starts_at, ends_at, location, notes, checklist, client, service_id) values
+  ('a1010000-0000-4000-8000-0000000000d1', 'a1010000-0000-4000-8000-0000000000c1', 'shoot', 'Gravar reels', now() + interval '2 days', now() + interval '2 days 2 hours', 'Estúdio Centro', 'Levar tripé',
+   '[{"text":"Roteiro impresso","done":false},{"text":"Luz","done":true}]', 'Loja Sol', 'a1010000-0000-4000-8000-0000000000e1'),
+  ('a1010000-0000-4000-8000-0000000000d2', 'a1010000-0000-4000-8000-0000000000c1', 'meeting', 'Reunião de briefing', now() + interval '5 days', now() + interval '5 days 1 hour', '', '', '[]', '', null);
+select tests.ok('S101 titular cria compromissos com checklist e serviço vinculado', (select count(*) from public.hero_events) = 2);
+update public.hero_events set title = 'Gravar reels (novo horário)', checklist = '[{"text":"Roteiro impresso","done":true}]' where id = 'a1010000-0000-4000-8000-0000000000d1';
+select tests.ok('S101 titular edita compromisso e marca item do checklist',
+  (select title = 'Gravar reels (novo horário)' and (checklist -> 0 ->> 'done')::boolean from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1'));
+update public.hero_services set status = 'received', received_on = current_date where id = 'a1010000-0000-4000-8000-0000000000e2';
+select tests.ok('S101 titular marca o serviço como recebido (com a data)', (select status = 'received' and received_on = current_date from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e2'));
+select tests.expect_error('S101 recebido exige a data de recebimento', $q$update public.hero_services set status = 'received', received_on = null where id = 'a1010000-0000-4000-8000-0000000000e1'$q$, 'hero_services_received_check');
+select tests.expect_error('S101 checklist com item sem texto é recusado', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at, checklist) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now(), '[{"text":"","done":false}]')$q$, 'hero_events_checklist_check');
+select tests.expect_error('S101 checklist com campo extra é recusado', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at, checklist) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now(), '[{"text":"a","done":false,"x":1}]')$q$, 'hero_events_checklist_check');
+select tests.expect_error('S101 fim antes do início é recusado', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now() - interval '1 hour')$q$, 'hero_events_range_check');
+select tests.expect_error('S101 valor negativo é recusado', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c1', 'x', 'y', current_date, -1)$q$, 'hero_services_amount_cents_check');
+select tests.expect_error('S101 comprovante precisa do prefixo do herói', $q$update public.hero_services set proof_path = 'a1010000-0000-4000-8000-0000000000c2/x/a.pdf', proof_mime = 'application/pdf' where id = 'a1010000-0000-4000-8000-0000000000e1'$q$, 'hero_services_proof_path_check');
+update public.hero_services set proof_path = 'a1010000-0000-4000-8000-0000000000c1/a1010000-0000-4000-8000-0000000000e1/a.pdf', proof_mime = 'application/pdf' where id = 'a1010000-0000-4000-8000-0000000000e1';
+select tests.ok('S101 titular guarda o comprovante (caminho do herói)', (select proof_mime = 'application/pdf' from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1'));
+select tests.expect_error('S101 não troca o herói do registro', $q$update public.hero_events set creator_profile_id = 'a1010000-0000-4000-8000-0000000000c2' where id = 'a1010000-0000-4000-8000-0000000000d2'$q$, 'invalid_input');
+select tests.expect_error('S101 não cria no herói dos outros', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c2', 'x', now(), now())$q$, 'row-level security');
+select tests.expect_error('S101 não cria serviço no herói dos outros', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c2', 'x', 'y', current_date, 1)$q$, 'row-level security');
+select tests.ok('S101 titular lê as datas de serviço para a agenda (sem valor)',
+  jsonb_array_length(public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30)) = 2
+  and (public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30))::text !~ '(amount|due_on|status)');
+select tests.expect_error('S101 período de datas de serviço limitado', $q$select public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date, current_date + 400)$q$, 'invalid_input');
+delete from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d2';
+select tests.ok('S101 titular exclui compromisso', (select count(*) from public.hero_events) = 1);
+
+-- membro da equipe: lê a agenda e as datas de serviço; não lê o financeiro; não escreve nada
+select tests.login('a1010000-0000-4000-8000-000000000002', 's101-membro@test.local');
+select tests.ok('S101 membro lê a agenda do herói (compromisso, checklist e contratante)',
+  (select count(*) from public.hero_events) = 1 and (select jsonb_array_length(checklist) = 1 from public.hero_events limit 1));
+select tests.ok('S101 membro NÃO lê o financeiro do herói', (select count(*) from public.hero_services) = 0);
+select tests.ok('S101 membro vê as datas de serviço na agenda, sem valor, vencimento nem situação',
+  jsonb_array_length(public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30)) = 2
+  and (public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30))::text !~ '(amount|cents|due_on|status|proof)');
+select tests.expect_error('S101 membro não cria compromisso', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now())$q$, 'row-level security');
+select tests.expect_error('S101 membro não cria serviço', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c1', 'x', 'y', current_date, 1)$q$, 'row-level security');
+update public.hero_events set title = 'invadido' where id = 'a1010000-0000-4000-8000-0000000000d1';
+delete from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1';
+update public.hero_services set amount_cents = 1 where id = 'a1010000-0000-4000-8000-0000000000e1';
+select tests.su();
+select tests.ok('S101 membro não altera nem exclui nada (compromisso e serviço intactos)',
+  (select title from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1') = 'Gravar reels (novo horário)'
+  and (select amount_cents from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1') = 150000);
+
+-- outro herói e visitante: nada
+select tests.login('a1010000-0000-4000-8000-000000000003', 's101-outro@test.local');
+select tests.ok('S101 outro herói não lê agenda nem financeiro', (select count(*) from public.hero_events) = 0 and (select count(*) from public.hero_services) = 0);
+select tests.ok('S101 outro herói não vê as datas de serviço de quem não é da equipe', public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date - 30, current_date + 30) = '[]'::jsonb);
+update public.hero_events set title = 'invadido' where id = 'a1010000-0000-4000-8000-0000000000d1';
+delete from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1';
+select tests.su();
+select tests.ok('S101 outro herói não altera nem exclui', (select count(*) from public.hero_services) = 2 and (select title from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1') = 'Gravar reels (novo horário)');
+select tests.anon();
+select tests.expect_error('S101 visitante não lê a agenda', $q$select count(*) from public.hero_events$q$, 'permission denied');
+select tests.expect_error('S101 visitante não lê o financeiro', $q$select count(*) from public.hero_services$q$, 'permission denied');
+select tests.expect_error('S101 visitante não cria serviço', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c1', 'x', 'y', current_date, 1)$q$, 'permission denied');
+select tests.expect_error('S101 visitante não chama as datas de serviço', $q$select public.hero_service_dates('a1010000-0000-4000-8000-0000000000c1', current_date, current_date)$q$, 'permission denied');
+
+-- admin: lê tudo, não escreve
+select tests.login('a1010000-0000-4000-8000-000000000004', 's101-admin@test.local');
+select tests.ok('S101 admin lê agenda e financeiro de todos', (select count(*) from public.hero_events) = 1 and (select count(*) from public.hero_services) = 2);
+select tests.expect_error('S101 admin não escreve na agenda do herói', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c1', 'x', now(), now())$q$, 'row-level security');
+update public.hero_services set amount_cents = 5 where id = 'a1010000-0000-4000-8000-0000000000e1';
+select tests.su();
+select tests.ok('S101 admin não altera o financeiro', (select amount_cents from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1') = 150000);
+
+-- herói suspenso: titular lê, mas não escreve
+select tests.su();
+insert into public.hero_events (id, creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000d3', 'a1010000-0000-4000-8000-0000000000c3', 'Antes da suspensão', now(), now());
+insert into public.hero_services (id, creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000e3', 'a1010000-0000-4000-8000-0000000000c3', 'Serviço antigo', 'Cliente', current_date, 1000);
+update public.creator_profiles set status = 'suspended' where id = 'a1010000-0000-4000-8000-0000000000c3';
+select tests.login('a1010000-0000-4000-8000-000000000005', 's101-suspenso@test.local');
+select tests.ok('S101 titular de herói suspenso ainda lê o que já tinha', (select count(*) from public.hero_events) = 1 and (select count(*) from public.hero_services) = 1);
+select tests.expect_error('S101 herói suspenso não cria compromisso', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at) values ('a1010000-0000-4000-8000-0000000000c3', 'x', now(), now())$q$, 'row-level security');
+select tests.expect_error('S101 herói suspenso não cria serviço', $q$insert into public.hero_services (creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000c3', 'x', 'y', current_date, 1)$q$, 'row-level security');
+update public.hero_services set amount_cents = 7 where id = 'a1010000-0000-4000-8000-0000000000e3';
+delete from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d3';
+select tests.su();
+select tests.ok('S101 herói suspenso não edita nem exclui', (select amount_cents from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e3') = 1000
+  and (select count(*) from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d3') = 1);
+
+-- serviço de outro herói não vincula; excluir serviço mantém o compromisso (vínculo some)
+select tests.login('a1010000-0000-4000-8000-000000000003', 's101-outro@test.local');
+insert into public.hero_services (id, creator_profile_id, title, client, service_on, amount_cents) values ('a1010000-0000-4000-8000-0000000000e4', 'a1010000-0000-4000-8000-0000000000c2', 'Serviço do B', 'Cliente B', current_date, 500);
+select tests.expect_error('S101 compromisso não vincula serviço de outro herói', $q$insert into public.hero_events (creator_profile_id, title, starts_at, ends_at, service_id) values ('a1010000-0000-4000-8000-0000000000c2', 'x', now(), now(), 'a1010000-0000-4000-8000-0000000000e1')$q$, 'invalid_input');
+select tests.login('a1010000-0000-4000-8000-000000000001', 's101-titular@test.local');
+delete from public.hero_services where id = 'a1010000-0000-4000-8000-0000000000e1';
+select tests.ok('S101 excluir o serviço mantém o compromisso, sem o vínculo',
+  (select count(*) from public.hero_events where id = 'a1010000-0000-4000-8000-0000000000d1' and service_id is null) = 1);
+
+-- armazenamento do comprovante: só o titular lê e envia no prefixo do herói
+select tests.login('a1010000-0000-4000-8000-000000000001', 's101-titular@test.local');
+select tests.ok('S101 titular acessa o próprio prefixo do comprovante e não o de outro herói',
+  public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', true) and public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', false)
+  and not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c2/x/a.pdf', false) and not public.hero_proof_access('lixo/a.pdf', false));
+select tests.login('a1010000-0000-4000-8000-000000000002', 's101-membro@test.local');
+select tests.ok('S101 membro não acessa comprovante do herói', not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', false) and not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', true));
+select tests.login('a1010000-0000-4000-8000-000000000004', 's101-admin@test.local');
+select tests.ok('S101 admin lê (e não grava) comprovante', public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', false) and not public.hero_proof_access('a1010000-0000-4000-8000-0000000000c1/x/a.pdf', true));
+
+-- herói com agência: o membro abre o escritório, mas o cachê é só do titular
+select tests.su();
+insert into public.agencies (id, slug, name) values ('a1010000-0000-4000-8000-0000000000a1', 's101-agencia', 'Agência S101');
+insert into public.brands (id, slug, name, site_url) values ('a1010000-0000-4000-8000-0000000000b1', 's101-marca', 'Marca S101', 'https://marca.s101.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1010000-0000-4000-8000-0000000000a1', 'a1010000-0000-4000-8000-0000000000b1');
+insert into public.talent_profiles (id, agency_id, display_name, creator_id, consent_at, consent_version) values
+  ('a1010000-0000-4000-8000-0000000000f1', 'a1010000-0000-4000-8000-0000000000a1', 'Creator Agência S101', 'a1010000-0000-4000-8000-0000000000c4', now(), 'v1');
+insert into public.deals (id, agency_id, brand_id, title, stage) values
+  ('a1010000-0000-4000-8000-0000000000aa', 'a1010000-0000-4000-8000-0000000000a1', 'a1010000-0000-4000-8000-0000000000b1', 'Negócio S101', 'production');
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('a1010000-0000-4000-8000-0000000000ab', 'a1010000-0000-4000-8000-0000000000aa', 'a1010000-0000-4000-8000-0000000000f1', 'contracted', now(), true);
+insert into public.financial_entries (id, agency_id, brand_id, deal_id, talent_id, deal_talent_id, kind, amount_cents, rate_bp) values
+  ('a1010000-0000-4000-8000-0000000000ac', 'a1010000-0000-4000-8000-0000000000a1', 'a1010000-0000-4000-8000-0000000000b1', 'a1010000-0000-4000-8000-0000000000aa',
+   'a1010000-0000-4000-8000-0000000000f1', 'a1010000-0000-4000-8000-0000000000ab', 'talent_payout', 90000, 2000);
+select tests.login('a1010000-0000-4000-8000-000000000006', 's101-agencia-titular@test.local');
+select tests.ok('S101 titular com agência: contexto traz o herói ligado e os ganhos (só o cachê, sem comissão)',
+  (public.talent_my_context() ->> 'creator_id') = 'a1010000-0000-4000-8000-0000000000c4'
+  and jsonb_array_length(public.talent_payouts()) = 1 and (public.talent_payouts() -> 0 ->> 'amount_cents') = '90000'
+  and not exists (select 1 from jsonb_array_elements(public.talent_payouts()) x where x ? 'rate_bp' or x ? 'commission_cents')
+  and (select count(*) from public.financial_entries) = 1);
+select tests.login('a1010000-0000-4000-8000-000000000007', 's101-agencia-membro@test.local');
+select tests.ok('S101 membro com agência abre o escritório (contexto) e marca como membro', (public.talent_my_context() ->> 'creator_id') = 'a1010000-0000-4000-8000-0000000000c4'
+  and (public.talent_my_context() ->> 'is_team_member')::boolean);
+select tests.ok('S101 membro com agência NÃO lê o cachê do titular (ganhos vazios, lançamento invisível)',
+  public.talent_payouts() = '[]'::jsonb and (select count(*) from public.financial_entries) = 0);
+select tests.ok('S101 membro com agência: my_talent_owner_id nulo; titular: o talento',
+  public.my_talent_owner_id() is null);
+select tests.login('a1010000-0000-4000-8000-000000000006', 's101-agencia-titular@test.local');
+select tests.ok('S101 titular com agência: my_talent_owner_id é o talento', public.my_talent_owner_id() = 'a1010000-0000-4000-8000-0000000000f1');
+
+-- feed .ics: compromissos e datas de serviço (sem valor) do herói, só de quem está na equipe
+select tests.su();
+insert into public.calendar_feeds (user_id, token_hash) values
+  ('a1010000-0000-4000-8000-000000000001', encode(extensions.digest(repeat('a', 64), 'sha256'), 'hex')),
+  ('a1010000-0000-4000-8000-000000000002', encode(extensions.digest(repeat('b', 64), 'sha256'), 'hex')),
+  ('a1010000-0000-4000-8000-000000000003', encode(extensions.digest(repeat('c', 64), 'sha256'), 'hex'));
+select tests.ok('S101 feed do titular: compromisso com checklist, data de serviço e sem valor',
+  (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('a', 64)) -> 'events') e where e ->> 'kind' = 'hero_shoot' and e ->> 'description' like '%[x] Roteiro impresso%') = 1
+  and (public.calendar_feed_resolve(repeat('a', 64)))::text !~ '(amount|150000)');
+select tests.ok('S101 feed do membro: o compromisso do herói; o de outro herói só o serviço dele',
+  (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('b', 64)) -> 'events') e where e ->> 'kind' = 'hero_shoot') = 1
+  and (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('c', 64)) -> 'events') e where e ->> 'kind' like 'hero_%') = 1
+  and (select count(*) from jsonb_array_elements(public.calendar_feed_resolve(repeat('c', 64)) -> 'events') e where e ->> 'title' = 'Serviço do B') = 1);
+
+-- limpeza
+select tests.su();
+delete from public.calendar_feeds where user_id::text like 'a1010000-%';
+delete from public.hero_events where creator_profile_id::text like 'a1010000-%';
+delete from public.hero_services where creator_profile_id::text like 'a1010000-%';
+delete from public.financial_entries where agency_id::text like 'a1010000-%';
+delete from public.deal_talents where deal_id::text like 'a1010000-%';
+delete from public.deals where id::text like 'a1010000-%';
+delete from public.talent_profiles where agency_id::text like 'a1010000-%';
+delete from public.agency_brands where agency_id::text like 'a1010000-%';
+delete from public.brands where id::text like 'a1010000-%';
+delete from public.agencies where id::text like 'a1010000-%';
+delete from public.creator_profiles where id::text like 'a1010000-%';
+delete from auth.users where id::text like 'a1010000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

@@ -15,7 +15,7 @@ import { eventSchema, type EventInput } from "./vocab";
 // Agenda (0067): eventos manuais da agência e o feed .ics de cada pessoa (token devolvido UMA vez).
 
 export type CalendarResult = { ok: true; message: string; id?: string; token?: string } | { ok: false; error: string };
-export type FeedPortal = "agency" | "brand" | "office";
+export type FeedPortal = "agency" | "brand" | "office" | "hero";
 
 export async function saveEventAction(input: EventInput): Promise<CalendarResult> {
   const ctx = await requireAgency("staff");
@@ -75,7 +75,7 @@ export async function deleteEventAction(input: { id: string; dealId?: string | n
   }
 }
 
-const PORTAL_PATH: Record<FeedPortal, string> = { agency: "/agencia/agenda", brand: "/marca/agenda", office: "/creator/escritorio/agenda" };
+const PORTAL_PATH: Record<FeedPortal, string> = { agency: "/agencia/agenda", brand: "/marca/agenda", office: "/creator/escritorio/agenda", hero: "/creator/agenda" };
 const fail = (portal: FeedPortal, error: unknown) => (portal === "office" ? talentFail(error) : agencyFail(error));
 
 /** Gera (ou troca) o link do feed: o token volta uma vez; o banco guarda só o SHA-256. */

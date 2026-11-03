@@ -55,6 +55,9 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     // 0092: o creator (titular ou membro) cria conteúdo estruturado e acompanha os dele pelo próprio portal
     { key: "newContent", href: "/creator/content/new" },
     { key: "content", href: "/creator/content" },
+    // 0094: Agenda e Financeiro do herói (independente: ferramentas próprias; com agência: levam ao escritório)
+    { key: "agenda", href: "/creator/agenda" },
+    { key: "finance", href: "/creator/financeiro" },
     { key: "office", href: "/creator/escritorio" },
     // Equipe do herói (0091): titular e membros; sem herói, "Criar meu herói"
     { key: "team", href: "/creator/equipe" },

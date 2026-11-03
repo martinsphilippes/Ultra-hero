@@ -132,7 +132,9 @@
     "commercial_date": "Data comercial",
     "other": "Outro",
     "sponsorship": "Patrocínio",
-    "brand_call": "Pedido de marca"
+    "brand_call": "Pedido de marca",
+    "hero_event": "Evento",
+    "hero_service": "Serviço"
   },
   "agenda": {
     "allDay": "dia inteiro",

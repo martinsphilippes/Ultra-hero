@@ -2,7 +2,7 @@
 
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { EmptyState } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { distinctKinds, gridRange, groupEventsByDay, initialDay, monthWeeks, moveFocus } from "@/lib/calendar/grid";
@@ -30,6 +30,13 @@ type Props = {
   requestedDay?: string | null;
   emptyTitle: string;
   emptyHint?: string;
+  /** 0094 (agenda do herói): atalho no cabeçalho da lista do dia (ex.: "Compromisso neste dia"), com o dia e o nome dele. */
+  dayAction?: (day: string, dateLabel: string) => ReactNode;
+  /** 0094: conteúdo extra e ações de cada item da lista do dia (checklist, editar/excluir). */
+  renderExtra?: (event: CalendarEvent) => ReactNode;
+  renderActions?: (event: CalendarEvent) => ReactNode;
+  /** 0094: avisa o dia selecionado na grade (o "Novo compromisso" do topo abre nele). */
+  onDayChange?: (day: string) => void;
 };
 
 // Agenda em grade (bloco 9), compartilhada pelos três portais. Mês com semanas de segunda a domingo; cada dia é
@@ -38,7 +45,7 @@ type Props = {
 // reaproveitando a EventList (ações de editar/remover continuam lá). As consultas e filtros são os de cada página.
 // 0086: na agência (dentro do EventEditorProvider), o dia selecionado vai para o editor — "Novo compromisso" abre
 // nesse dia — e o cabeçalho da lista do dia ganha o atalho "Compromisso neste dia" (só para quem pode criar).
-export function AgendaCalendar({ events, timeZone, portal, year, month, today, base, extraParams = {}, requestedDay, emptyTitle, emptyHint }: Props) {
+export function AgendaCalendar({ events, timeZone, portal, year, month, today, base, extraParams = {}, requestedDay, emptyTitle, emptyHint, dayAction, renderExtra, renderActions, onDayChange }: Props) {
   const t = useTranslations("commercial.agenda");
   const tk = useTranslations("commercial.eventKinds");
   const locale = useLocale() as Locale;
@@ -52,7 +59,8 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
   const setEditorDay = editor?.setSelectedDay;
   useEffect(() => {
     setEditorDay?.(selected);
-  }, [selected, setEditorDay]);
+    onDayChange?.(selected);
+  }, [selected, setEditorDay, onDayChange]);
 
   const thisMonth = monthKey(year, month);
   const monthHasEvents = [...byDay.keys()].some((d) => d.slice(0, 7) === thisMonth);
@@ -220,10 +228,10 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
           <h3 id={`${titleId}-day`} className="text-sm font-semibold text-fg first-letter:uppercase" aria-live="polite">
             {fullDate(selected)} · {t("dayCount", { count: selectedEvents.length })}
           </h3>
-          {portal === "agency" ? <EventNewOnDayButton day={selected} dateLabel={fullDate(selected)} /> : null}
+          {portal === "agency" ? <EventNewOnDayButton day={selected} dateLabel={fullDate(selected)} /> : (dayAction?.(selected, fullDate(selected)) ?? null)}
         </div>
         {selectedEvents.length > 0 ? (
-          <EventList events={selectedEvents} timeZone={timeZone} portal={portal} emptyTitle={emptyTitle} flat />
+          <EventList events={selectedEvents} timeZone={timeZone} portal={portal} emptyTitle={emptyTitle} flat renderExtra={renderExtra} renderActions={renderActions} />
         ) : (
           <div className="rounded-2xl border border-border bg-surface">
             <EmptyState icon={<CalendarDays />} title={monthHasEvents ? t("dayEmpty") : emptyTitle} description={monthHasEvents ? undefined : emptyHint} size="sm" />

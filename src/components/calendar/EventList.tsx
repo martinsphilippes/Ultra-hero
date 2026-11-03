@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin } from "lucide-react";
+import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Badge, EmptyState } from "@/components/ui";
@@ -18,12 +19,15 @@ type Props = {
   emptyHint?: string;
   /** Sem os títulos de dia (a grade da agenda já mostra o dia escolhido). */
   flat?: boolean;
+  /** 0094 (agenda do herói): conteúdo extra abaixo do item (checklist) e ações à direita (editar/excluir). */
+  renderExtra?: (event: CalendarEvent) => ReactNode;
+  renderActions?: (event: CalendarEvent) => ReactNode;
 };
 
 // Lista agrupada por dia (serve aos três portais): tipo, horário ou "dia inteiro", título, de quem é,
 // local; na agência, link para o negócio e as ações (0086: editar e remover os manuais que a pessoa pode mexer,
 // pelo EventEditorProvider da página; oportunidade de patrocínio abre a tela dela). Nunca valores.
-export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, flat = false }: Props) {
+export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, flat = false, renderExtra, renderActions }: Props) {
   const t = useTranslations("commercial.agenda");
   const tk = useTranslations("commercial.eventKinds");
   const locale = useLocale() as Locale;
@@ -91,7 +95,9 @@ export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, fla
         {/* bloco 9: evento de vários dias (aparece em cada dia da grade) diz até quando vai, nos três portais */}
         {spanDays(e) > 1 ? <span className="type-caption text-fg-subtle">{t("until", { date: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, undefined, timeZone) })}</span> : null}
       </span>
-      {portal === "agency" ? <EventActions event={e} /> : null}
+      {portal === "agency" ? <EventActions event={e} /> : (renderActions?.(e) ?? null)}
+      {/* 0094: o que executar (checklist) ocupa a linha inteira, abaixo do horário, do título e das ações */}
+      {renderExtra ? <div className="flex basis-full flex-col gap-1 empty:hidden">{renderExtra(e)}</div> : null}
     </li>
   );
   if (flat) {

@@ -14,7 +14,7 @@ import { getUser } from "@/lib/auth/session";
 import { queryRange, zonedDayKey } from "@/lib/calendar/grid";
 import { monthKey, parseMonth, plusDays } from "@/lib/calendar/ics";
 import { listEvents, myFeedState, writableDealIds, type CalendarEvent } from "@/lib/calendar/queries";
-import { EVENT_KINDS } from "@/lib/calendar/vocab";
+import { EVENT_KINDS, HERO_ONLY_EVENT_KINDS } from "@/lib/calendar/vocab";
 import { listAgencyBrandCalls } from "@/lib/brand-call/queries";
 import { listDeals } from "@/lib/deals/queries";
 import { toZonedIso } from "@/lib/deals/schemas";
@@ -155,7 +155,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
             {t("filters.kind")}
             <Select name="tipo" defaultValue={sp.tipo ?? ""}>
               <option value="">{t("filters.all")}</option>
-              {EVENT_KINDS.map((k) => (
+              {EVENT_KINDS.filter((k) => !HERO_ONLY_EVENT_KINDS.includes(k)).map((k) => (
                 <option key={k} value={k}>
                   {tc(`eventKinds.${k}`)}
                 </option>

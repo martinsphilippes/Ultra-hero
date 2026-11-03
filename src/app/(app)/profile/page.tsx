@@ -12,6 +12,8 @@ import { HeroEditorDisclosure } from "@/components/creator/HeroEditorDisclosure"
 import { ACCOUNT_ANCHOR } from "@/lib/creator/hero-anchors";
 import { HeroProfileEditor, HeroProfileHeader } from "@/components/creator/HeroProfileTop";
 import { HeroNewPost } from "@/components/creator/HeroNewPost";
+import { HeroWorkShortcuts } from "@/components/hero-work/HeroWorkShortcuts";
+import { loadHeroShortcutData } from "@/lib/hero-work/summary";
 import { HeroPendingNotice } from "@/components/creator/HeroPendingNotice";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { ProfileDataForm } from "@/components/me/ProfileDataForm";
@@ -82,6 +84,9 @@ export default async function ProfilePage() {
   // "Você trabalha para" (0092): heróis da pessoa (titular/equipe) e o em uso para postar e criar conteúdo
   const myHeroes = heroProfile ? await listMyHeroesAll() : [];
   const heroInUse = myHeroes.length > 1 ? await chosenHeroId(myHeroes.filter((h) => heroSelectable(h.status)), creator.creatorId) : (creator.creatorId ?? myHeroes[0]?.id ?? null);
+  // Atalhos Agenda e Financeiro do herói em uso (0094) e o mini-resumo: próximo compromisso e "a receber este mês"
+  const heroForWork = heroProfile && creator.creatorId ? (myHeroes.find((h) => h.id === heroInUse && heroSelectable(h.status)) ?? null) : null;
+  const heroWork = heroForWork ? await loadHeroShortcutData(heroForWork, talentCtx?.state === "ok" ? { talentId: talentCtx.talent.id, creatorId: talentCtx.talent.creatorId } : null) : null;
   // "Conectar relógio" ou, com WEARABLES_REAL_ENABLED=1, o relógio que a pessoa conectou.
   const watchView = await resolveTodayView({ user, roles: roleSet, timeZone: tz, example: false });
   const uiLocale: Locale = isLocale(profile?.locale) ? profile.locale : (locale as Locale);
@@ -153,6 +158,8 @@ export default async function ProfilePage() {
           />
           {/* Novo post (rápido) e Novo conteúdo (estruturado, 0092) para o titular e a equipe do herói */}
           {heroActive ? <HeroNewPost href={newPostHref} contentHref={newContentHref} listHref={myContentHref} /> : null}
+          {/* 0094: Agenda e Financeiro do herói em uso, com o próximo compromisso e "a receber este mês" */}
+          {heroActive && heroWork ? <HeroWorkShortcuts data={heroWork} /> : null}
           <HeroProfileEditor
             profile={heroProfile}
             active={heroOwner}

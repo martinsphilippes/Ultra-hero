@@ -4,8 +4,12 @@ import { z } from "zod";
 // 0085: oportunidade de patrocínio (evento de sistema mantido pela oportunidade).
 // 0089: chamada da marca — só na agenda da agência (gestor+), montada pela tela a partir das chamadas do alvo; não
 // existe em calendar_events nem no feed .ics.
-export const EVENT_KINDS = ["campaign", "deliverable", "consult_deadline", "meeting", "recording", "commercial_date", "other", "sponsorship", "brand_call"] as const;
+// 0094: agenda do herói independente — "evento" e "serviço" (data de um serviço cadastrado no financeiro) são só da
+// tela do herói (montados no servidor; não existem em calendar_events nem nos filtros da agência).
+export const EVENT_KINDS = ["campaign", "deliverable", "consult_deadline", "meeting", "recording", "commercial_date", "other", "sponsorship", "brand_call", "hero_event", "hero_service"] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
+/** Tipos que só a agenda do herói usa (fora do filtro de tipo da agência). */
+export const HERO_ONLY_EVENT_KINDS: readonly EventKind[] = ["hero_event", "hero_service"];
 export const MANUAL_EVENT_KINDS = ["meeting", "recording", "commercial_date", "other"] as const;
 export type ManualEventKind = (typeof MANUAL_EVENT_KINDS)[number];
 

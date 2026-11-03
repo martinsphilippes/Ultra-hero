@@ -83,7 +83,7 @@ describe("portal do creator", () => {
     for (const l of PORTAL_LINKS.office) expect(isBlockedInNativeApp(l.href)).toBe(false);
   });
   it("área do herói continua sem o menu do escritório", () => {
-    expect(PORTAL_LINKS.creator.map((l) => l.key)).toEqual(["post", "newContent", "content", "office", "team"]);
+    expect(PORTAL_LINKS.creator.map((l) => l.key)).toEqual(["post", "newContent", "content", "agenda", "finance", "office", "team"]);
   });
   it("atalho Escritório para quem está num casting (inclusive pelo herói)", () => {
     expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true })[0]).toMatchObject({ key: "office", href: OFFICE_PATH });

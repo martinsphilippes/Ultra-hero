@@ -50,7 +50,9 @@
     "recipes": "My Recipes",
     "office": "Office",
     "team": "Team",
-    "newContent": "New content"
+    "newContent": "New content",
+    "agenda": "Schedule",
+    "finance": "Finances"
   },
   "seller": {
     "dashboard": "Dashboard",

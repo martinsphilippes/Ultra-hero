@@ -6211,6 +6211,139 @@ export type Database = {
           },
         ];
       };
+      hero_events: {
+        Row: {
+          all_day: boolean;
+          checklist: Json;
+          client: string;
+          created_at: string;
+          created_by: string | null;
+          creator_profile_id: string;
+          ends_at: string;
+          id: string;
+          kind: string;
+          location: string;
+          notes: string;
+          service_id: string | null;
+          starts_at: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          all_day?: boolean;
+          checklist?: Json;
+          client?: string;
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id: string;
+          ends_at: string;
+          id?: string;
+          kind?: string;
+          location?: string;
+          notes?: string;
+          service_id?: string | null;
+          starts_at: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          all_day?: boolean;
+          checklist?: Json;
+          client?: string;
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id?: string;
+          ends_at?: string;
+          id?: string;
+          kind?: string;
+          location?: string;
+          notes?: string;
+          service_id?: string | null;
+          starts_at?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hero_events_creator_profile_id_fkey";
+            columns: ["creator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "creator_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "hero_events_service_id_fkey";
+            columns: ["service_id"];
+            isOneToOne: false;
+            referencedRelation: "hero_services";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      hero_services: {
+        Row: {
+          amount_cents: number;
+          client: string;
+          created_at: string;
+          created_by: string | null;
+          creator_profile_id: string;
+          due_on: string | null;
+          id: string;
+          payment_note: string;
+          proof_mime: string | null;
+          proof_path: string | null;
+          received_on: string | null;
+          service_on: string;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          amount_cents: number;
+          client: string;
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id: string;
+          due_on?: string | null;
+          id?: string;
+          payment_note?: string;
+          proof_mime?: string | null;
+          proof_path?: string | null;
+          received_on?: string | null;
+          service_on: string;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          amount_cents?: number;
+          client?: string;
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id?: string;
+          due_on?: string | null;
+          id?: string;
+          payment_note?: string;
+          proof_mime?: string | null;
+          proof_path?: string | null;
+          received_on?: string | null;
+          service_on?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hero_services_creator_profile_id_fkey";
+            columns: ["creator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "creator_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       account_onboardings: {
         Row: {
           agency_id: string | null;
@@ -10956,6 +11089,11 @@ isOneToOne: false
       my_hero_team: { Args: Record<PropertyKey, never>; Returns: Json };
       my_team_creator_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
       my_owned_creator_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      my_active_owned_creator_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      my_talent_owner_id: { Args: Record<PropertyKey, never>; Returns: string };
+      hero_checklist_valid: { Args: { p: Json }; Returns: boolean };
+      hero_service_dates: { Args: { p_creator: string; p_from: string; p_to: string }; Returns: Json };
+      hero_proof_access: { Args: { p_name: string; p_write: boolean }; Returns: boolean };
       creator_create_my_hero: { Args: { p_name: string }; Returns: string };
       agency_invite_brand: { Args: { p_agency: string; p_email: string; p_days?: number | null }; Returns: Json };
       agency_invite_hero: { Args: { p_talent: string; p_name: string; p_email: string; p_days?: number | null }; Returns: { invitation_id: string; token: string }[] };

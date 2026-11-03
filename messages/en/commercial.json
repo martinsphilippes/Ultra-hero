@@ -132,7 +132,9 @@
     "commercial_date": "Commercial date",
     "other": "Other",
     "sponsorship": "Sponsorship",
-    "brand_call": "Brand request"
+    "brand_call": "Brand request",
+    "hero_event": "Event",
+    "hero_service": "Job"
   },
   "agenda": {
     "allDay": "all day",

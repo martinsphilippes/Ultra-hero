@@ -19,6 +19,8 @@ export type TalentSelf = {
   consentRevokedAt: string | null;
   catalogVisible: boolean;
   hasPublicPage: boolean;
+  /** 0094: herói (página pública) ligado ao talento; a tela sabe se o herói em uso é o do casting. */
+  creatorId: string | null;
   agency: string;
   agencyIsDemo: boolean;
   manager: string | null;
@@ -40,6 +42,7 @@ type ContextRow = {
   consent_revoked_at: string | null;
   catalog_visible: boolean;
   has_public_page: boolean;
+  creator_id?: string | null;
   agency: string;
   agency_is_demo: boolean;
   manager: string | null;
@@ -59,6 +62,7 @@ export function toTalentSelf(row: ContextRow): TalentSelf {
     consentRevokedAt: row.consent_revoked_at,
     catalogVisible: row.catalog_visible,
     hasPublicPage: row.has_public_page,
+    creatorId: row.creator_id ?? null,
     agency: row.agency,
     agencyIsDemo: row.agency_is_demo,
     manager: row.manager,

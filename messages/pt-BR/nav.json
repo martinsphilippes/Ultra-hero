@@ -50,7 +50,9 @@
     "recipes": "Minhas Receitas",
     "office": "Escritório",
     "team": "Equipe",
-    "newContent": "Novo conteúdo"
+    "newContent": "Novo conteúdo",
+    "agenda": "Agenda",
+    "finance": "Financeiro"
   },
   "seller": {
     "dashboard": "Painel",

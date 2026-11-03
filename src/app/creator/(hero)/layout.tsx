@@ -18,7 +18,8 @@ export default async function CreatorLayout({ children }: { children: ReactNode 
     const pendingHero = mine.creatorId !== null && mine.profile?.status === "pending";
     // 0091: Equipe do herói (titular, membros; sem herói, "Criar meu herói") para todo creator
     // 0092: Novo conteúdo e Meus conteúdos para quem tem herói (o talento sem página não tem)
-    const navKeys = isTalentOnly(roles) ? ["office", "team"] : talent.state === "ok" ? ["post", "newContent", "content", "office", "team"] : ["post", "newContent", "content", "team"];
+    // 0094: Agenda e Financeiro para quem tem herói (o talento sem página usa o escritório)
+    const navKeys = isTalentOnly(roles) ? ["office", "team"] : talent.state === "ok" ? ["post", "newContent", "content", "agenda", "finance", "office", "team"] : ["post", "newContent", "content", "agenda", "finance", "team"];
     return (
       <PortalShell portal="creator" navKeys={navKeys}>
         {pendingHero ? (
