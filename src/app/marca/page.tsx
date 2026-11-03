@@ -21,6 +21,7 @@ import { brandBudgetOverview } from "@/lib/finance/queries";
 import { unreadInboxCount } from "@/lib/inbox/queries";
 import { BOARD_STAGES, BRAND_TODAY_KINDS, boardCounts, buildBrandBoard, buildBrandToday } from "@/lib/today/logic";
 import { getBrandWorkboard } from "@/lib/today/queries";
+import { listBrandSponsorships } from "@/lib/sponsorship/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function BrandDashboardPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
-  const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard, budgets] = await Promise.all([
+  const [t, tc, tb, locale, members, unread, campaigns, approvals, panel, workboard, budgets, sponsorships] = await Promise.all([
     getTranslations("brandPortal.dashboard"),
     getTranslations("commercial"),
     getTranslations("today.board"),
@@ -46,13 +47,16 @@ export default async function BrandDashboardPage() {
     brandDashboardData(ctx.brand.id),
     getBrandWorkboard(ctx.brand.id),
     brandBudgetOverview(ctx.brand.id),
+    listBrandSponsorships(ctx.brand.id),
   ]);
   // "Depende de mim hoje" e o resumo do painel por etapa (0078): a mesma leitura fechada alimenta os dois
   const wb = workboard.available ? workboard.data : null;
   const now = new Date();
   // 0082: verba estourada entra no "Hoje" (visão geral da verba; sem a migração, fica de fora)
   const budgetOverview = budgets.available ? budgets.data : null;
-  const todayItems = wb ? buildBrandToday(wb, now, { budgets: budgetOverview?.items ?? [] }) : [];
+  // 0085: oportunidade de patrocínio aberta e sem resposta entra no "Hoje" (sem a migração, fica de fora)
+  const openSponsorships = sponsorships.items.map((o) => ({ id: o.id, title: o.title, talentName: o.talent.name, respondBy: o.respondBy, open: o.status === "open", answered: o.myResponse !== null }));
+  const todayItems = wb ? buildBrandToday(wb, now, { budgets: budgetOverview?.items ?? [], sponsorships: openSponsorships }) : [];
   const stageCounts = wb ? boardCounts(buildBrandBoard(wb)) : null;
   // aprovações pendentes: roteiros e entregas aguardando a marca (painel 0069; antes dele, só os roteiros pela RLS)
   const dash = panel.available ? panel.data : null;

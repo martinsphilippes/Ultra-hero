@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Handshake } from "lucide-react";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { EventForm } from "@/components/calendar/EventForm";
 import { EventList } from "@/components/calendar/EventList";
@@ -36,9 +37,14 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   const from = new Date(Date.UTC(year, month - 1, 1) - 24 * 3600_000).toISOString();
   const to = new Date(Date.UTC(next.year, next.month - 1, 1) + 24 * 3600_000).toISOString();
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
-  const [t, tc, list, talents, brands, deals, feed, origin] = await Promise.all([
+  const nowMonth = (() => {
+    const now = parseMonth(undefined, tz);
+    return monthKey(now.year, now.month);
+  })();
+  const [t, tc, tsp, list, talents, brands, deals, feed, origin] = await Promise.all([
     getTranslations("agency.agenda"),
     getTranslations("commercial"),
+    getTranslations("sponsorship.agency"),
     listEvents({ from, to, agencyId: ctx.agency.id, talentId: sp.creator, brandId: sp.marca, kind: sp.tipo }),
     listTalents(ctx.agency.id),
     listAgencyBrands(ctx.agency.id),
@@ -67,13 +73,23 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
         title={t("title")}
         description={t("description")}
         actions={
-          <EventForm
+          <span className="flex flex-wrap gap-2">
+            {/* 0085: oportunidade de patrocínio criada a partir da agenda (gestor+), já no mês em vista */}
+            {isManager ? (
+              <Button asChild size="sm" variant="secondary" leadingIcon={<Handshake />}>
+                <Link href={`/agencia/oportunidades/nova${monthKey(year, month) > nowMonth ? `?data=${monthKey(year, month)}-01` : ""}`} data-testid="agenda-new-sponsorship">
+                  {tsp("fromAgenda")}
+                </Link>
+              </Button>
+            ) : null}
+            <EventForm
             deals={deals.items.map((d) => ({ id: d.id, name: `${d.title} · ${d.brand.name}` }))}
             talents={talents.items.map((x) => ({ id: x.id, name: x.name }))}
             brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name }))}
             canPublishCommercialDate={isManager}
             dealRequired={!isManager}
-          />
+            />
+          </span>
         }
       />
       <MonthNav base="/agencia/agenda" year={year} month={month} extraParams={extra} />

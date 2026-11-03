@@ -19,17 +19,19 @@ export type CalendarEvent = {
   dealId: string | null;
   talentId: string | null;
   deliverableId: string | null;
+  /** Oportunidade de patrocínio (0085) que gerou o evento. */
+  sponsorshipId: string | null;
   source: "manual" | "system";
   visibleToBrand: boolean;
   visibleToTalent: boolean;
   updatedAt: string;
 };
 
-const SELECT = "id, kind, title, subtitle, description, starts_at, ends_at, all_day, location, brand_id, deal_id, talent_id, deliverable_id, source, visible_to_brand, visible_to_talent, updated_at";
+const SELECT = "id, kind, title, subtitle, description, starts_at, ends_at, all_day, location, brand_id, deal_id, talent_id, deliverable_id, sponsorship_id, source, visible_to_brand, visible_to_talent, updated_at";
 
 type Row = {
   id: string; kind: string; title: string; subtitle: string; description: string; starts_at: string; ends_at: string; all_day: boolean; location: string;
-  brand_id: string | null; deal_id: string | null; talent_id: string | null; deliverable_id: string | null; source: string; visible_to_brand: boolean; visible_to_talent: boolean; updated_at: string;
+  brand_id: string | null; deal_id: string | null; talent_id: string | null; deliverable_id: string | null; sponsorship_id?: string | null; source: string; visible_to_brand: boolean; visible_to_talent: boolean; updated_at: string;
 };
 
 function toEvent(r: Row): CalendarEvent {
@@ -47,6 +49,7 @@ function toEvent(r: Row): CalendarEvent {
     dealId: r.deal_id,
     talentId: r.talent_id,
     deliverableId: r.deliverable_id,
+    sponsorshipId: r.sponsorship_id ?? null,
     source: r.source === "system" ? "system" : "manual",
     visibleToBrand: r.visible_to_brand,
     visibleToTalent: r.visible_to_talent,

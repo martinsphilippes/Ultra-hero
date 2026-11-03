@@ -31,7 +31,7 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team", "finance", "history"] as const;
+export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "casting", "brands", "notifications", "settings", "team", "finance", "history"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
@@ -40,19 +40,22 @@ export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): A
   const keys: AgencyNavKey[] = ["dashboard", "pipeline", "tasks", "agenda", "casting", "brands", "notifications"];
   // Heróis (0070): gestor+ cria os perfis e publica em nome deles
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(1, 0, "heroes");
+  // Patrocínio (0085): gestor+ publica e decide; as respostas das marcas não são do colaborador
+  if (agencyCan(role, "manager", platformAdmin)) keys.splice(keys.indexOf("agenda") + 1, 0, "sponsorships");
   if (agencyCan(role, "manager", platformAdmin)) keys.push("settings");
   // Adm: equipe, financeiro simulado e histórico (auditoria da agência)
   if (agencyCan(role, "admin", platformAdmin)) keys.push("team", "finance", "history");
   return keys;
 }
 
-export const BRAND_NAV = ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "team", "notifications"] as const;
+export const BRAND_NAV = ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"] as const;
 export type BrandNavKey = (typeof BRAND_NAV)[number];
 
 export function brandNavKeys(): BrandNavKey[] {
   // Ações por etapa (0078): painel de todas as ações das campanhas, logo depois do Início
   // Biblioteca (0083): conteúdos aprovados com o vencimento do direito de uso, logo depois de Campanhas
-  return ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "team", "notifications"];
+  // Oportunidades de patrocínio (0085): logo depois da Agenda
+  return ["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"];
 }
 
 /** Papel mínimo de cada rota restrita da agência (o layout do segmento redireciona para /agencia). */
@@ -64,6 +67,7 @@ export const AGENCY_ROUTE_MIN: Record<string, AgencyRole> = {
   "/agencia/herois": "manager",
   "/agencia/financeiro": "admin",
   "/agencia/historico": "admin",
+  "/agencia/oportunidades": "manager",
 };
 
 /** Quem mexe num negócio: gestor+ sempre; o colaborador só quando é responsável ou está na equipe dele. */

@@ -26,7 +26,10 @@
     "dealTasks": "Tarefas do negócio",
     "tasks": "Tarefas",
     "finance": "Financeiro",
-    "history": "Histórico"
+    "history": "Histórico",
+    "sponsorships": "Oportunidades de patrocínio",
+    "sponsorship": "Oportunidade de patrocínio",
+    "newSponsorship": "Nova oportunidade"
   },
   "demoBanner": {
     "tag": "Demonstração",
@@ -316,7 +319,10 @@
     "already_signed": "Estes termos já foram assinados.",
     "terms_changed": "Os termos mudaram enquanto você lia. Abra de novo e confira.",
     "invalid_tax_id": "CPF ou CNPJ inválido. Confira os números.",
-    "name_required": "Digite o nome completo (nome e sobrenome)."
+    "name_required": "Digite o nome completo (nome e sobrenome).",
+    "deadline_passed": "O prazo para responder já terminou.",
+    "already_responded": "Sua marca já respondeu a esta oportunidade.",
+    "not_interested": "Só dá para escolher marcas que quiseram patrocinar."
   },
   "casting": {
     "title": "Casting",

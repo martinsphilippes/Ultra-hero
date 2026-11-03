@@ -16,6 +16,7 @@ const KIND_VARIANT: Record<EventKind, BadgeVariant> = {
   recording: "accent",
   commercial_date: "warning",
   other: "neutral",
+  sponsorship: "accent",
 };
 
 type Props = {
@@ -73,6 +74,14 @@ export function EventList({ events, timeZone, portal, canDelete = false, emptyTi
                     </Badge>
                     {portal === "agency" && e.dealId ? (
                       <Link href={`/agencia/negocios/${e.dealId}`} className="text-sm font-semibold text-fg underline-offset-2 hover:underline">
+                        {e.title}
+                      </Link>
+                    ) : e.sponsorshipId && portal !== "office" ? (
+                      // 0085: a oportunidade de patrocínio abre a ficha dela (agência) ou a resposta (marca)
+                      <Link
+                        href={`${portal === "agency" ? "/agencia" : "/marca"}/oportunidades/${e.sponsorshipId}`}
+                        className="text-sm font-semibold text-fg underline-offset-2 hover:underline"
+                      >
                         {e.title}
                       </Link>
                     ) : (

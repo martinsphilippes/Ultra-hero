@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 // Agenda (0067): tipos de evento iguais ao check de calendar_events. Manuais: reunião, gravação, data comercial, outro.
-export const EVENT_KINDS = ["campaign", "deliverable", "consult_deadline", "meeting", "recording", "commercial_date", "other"] as const;
+// 0085: oportunidade de patrocínio (evento de sistema mantido pela oportunidade).
+export const EVENT_KINDS = ["campaign", "deliverable", "consult_deadline", "meeting", "recording", "commercial_date", "other", "sponsorship"] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
 export const MANUAL_EVENT_KINDS = ["meeting", "recording", "commercial_date", "other"] as const;
 export type ManualEventKind = (typeof MANUAL_EVENT_KINDS)[number];

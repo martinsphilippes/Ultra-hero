@@ -42,6 +42,21 @@
         "subject": "Deadline coming up: {deal}",
         "body": "A task in {deal} is due in less than 24 hours ({date}).",
         "cta": "See task"
+      },
+      "sponsorship_published": {
+        "subject": "Sponsorship opportunity: {title}",
+        "body": "The agency is offering a moment from {talent} for your brand to sponsor: {title}. Reply by {date}.",
+        "cta": "See opportunity"
+      },
+      "sponsorship_interest": {
+        "subject": "{brand} wants to sponsor: {title}",
+        "body": "{brand} replied “I want to sponsor” on {title}. Read the message and decide in the app.",
+        "cta": "See replies"
+      },
+      "sponsorship_decided": {
+        "subject": "{status, select, won {Your brand was chosen} sponsored {Sponsorship confirmed} cancelled {Opportunity cancelled} other {Opportunity closed}}: {title}",
+        "body": "{status, select, won {The agency chose your brand to sponsor {title}. Continue in the campaign in the app.} sponsored {{title} was sponsored by {brand}.} cancelled {The agency cancelled the opportunity {title}.} other {The agency closed the opportunity {title}.}}",
+        "cta": "Open the app"
       }
     }
   }

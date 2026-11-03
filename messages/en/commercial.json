@@ -130,7 +130,8 @@
     "meeting": "Meeting",
     "recording": "Recording",
     "commercial_date": "Commercial date",
-    "other": "Other"
+    "other": "Other",
+    "sponsorship": "Sponsorship"
   },
   "agenda": {
     "allDay": "all day",

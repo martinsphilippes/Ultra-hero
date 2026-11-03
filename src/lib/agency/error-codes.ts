@@ -47,6 +47,10 @@ export const AGENCY_ERROR_CODES = [
   "terms_changed",
   "invalid_tax_id",
   "name_required",
+  // oportunidade de patrocínio (0085)
+  "deadline_passed",
+  "already_responded",
+  "not_interested",
   // financeiro e patrocínio (0069)
   "finance_identity",
   "brand_inactive",

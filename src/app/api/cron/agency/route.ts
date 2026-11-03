@@ -11,6 +11,7 @@ import { cleanupAgencyDocOrphans } from "../_lib/agency-docs";
 // oficial (só com YOUTUBE_API_KEY; sem ela o resultado diz "not_configured" e nada é inventado).
 // 0084: aviso de prazo chegando (tarefa que vence nas próximas 24 h) e o envio da fila de e-mail dos avisos (só com
 // RESEND_API_KEY e EMAIL_FROM; sem eles o resultado diz "not_configured" e a fila só é limpa).
+// 0085: oportunidade de patrocínio com o prazo de resposta vencido passa a "encerrada" (a agência ainda escolhe).
 // Cada passo que depende da 0069 pula com "not_migrated" enquanto a migração não chega ao banco.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -47,6 +48,13 @@ async function handler(request: Request) {
       out.due_soon_skipped = "not_migrated";
     } else {
       out.due_soon_notified = Number(dueSoon.data ?? 0);
+    }
+    const sponsorships = await admin.rpc("sponsorship_deadline_scan");
+    if (sponsorships.error) {
+      if (!NOT_MIGRATED.has(sponsorships.error.code ?? "")) throw new Error(sponsorships.error.message);
+      out.sponsorships_skipped = "not_migrated";
+    } else {
+      out.sponsorships_closed = Number(sponsorships.data ?? 0);
     }
     try {
       Object.assign(out, await collectYouTubeMetrics(admin));

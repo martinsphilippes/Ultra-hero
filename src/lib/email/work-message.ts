@@ -6,7 +6,18 @@ import { safeInboxLink } from "@/lib/inbox/kinds";
 import { escapeHtml } from "./escape";
 
 /** Tipos de aviso que têm texto de e-mail (o banco decide quem entra na fila: public.inbox_kind_emails). */
-export const WORK_EMAIL_KINDS = ["opportunity_received", "opportunity_updated", "deliverable_decided", "deliverable_submitted", "contract_acceptance_requested", "task_due_soon"] as const;
+export const WORK_EMAIL_KINDS = [
+  "opportunity_received",
+  "opportunity_updated",
+  "deliverable_decided",
+  "deliverable_submitted",
+  "contract_acceptance_requested",
+  "task_due_soon",
+  // oportunidade de patrocínio (0085)
+  "sponsorship_published",
+  "sponsorship_interest",
+  "sponsorship_decided",
+] as const;
 export type WorkEmailKind = (typeof WORK_EMAIL_KINDS)[number];
 
 // tokens sempre presentes (vazio quando o aviso não traz), como no sino e no push

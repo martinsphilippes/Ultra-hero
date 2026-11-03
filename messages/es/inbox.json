@@ -158,6 +158,18 @@
     "task_due_soon": {
       "title": "Plazo cerca",
       "body": "Una tarea de {deal} vence en menos de 24 horas."
+    },
+    "sponsorship_published": {
+      "title": "Oportunidad de patrocinio",
+      "body": "{talent}: {title}. Responde hasta {date}."
+    },
+    "sponsorship_interest": {
+      "title": "Una marca quiere patrocinar",
+      "body": "{brand} quiere patrocinar {title}."
+    },
+    "sponsorship_decided": {
+      "title": "Patrocinio decidido",
+      "body": "{status, select, won {Tu marca fue elegida para patrocinar {title}.} sponsored {{title} fue patrocinada por {brand}.} cancelled {La oportunidad {title} fue cancelada.} other {La oportunidad {title} fue cerrada.}}"
     }
   }
 }

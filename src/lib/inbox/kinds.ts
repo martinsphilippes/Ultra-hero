@@ -41,6 +41,10 @@ export const INBOX_KINDS = [
   "deliverable_comment",
   // prazo de tarefa chegando em 24 h, pelo cron (0084)
   "task_due_soon",
+  // oportunidade de patrocínio (0085): nova para as marcas, interesse para a agência, decisão para marcas e creator
+  "sponsorship_published",
+  "sponsorship_interest",
+  "sponsorship_decided",
 ] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
@@ -69,6 +73,7 @@ export function inboxKindPushes(kind: string, link: string): boolean {
 /**
  * O aviso também vai por e-mail? Espelha public.inbox_kind_emails (0084): oferta nova e ajuste pedido para o
  * influenciador, contraproposta respondida, entrega aguardando a marca, termos para assinar e prazo em 24 h.
+ * 0085: oportunidade de patrocínio nova (marca), interesse recebido (agência) e decisão (marcas e creator).
  */
 export function inboxKindEmails(kind: string, link: string, params: Record<string, unknown> = {}): boolean {
   const status = typeof params.status === "string" ? params.status : "";
@@ -84,7 +89,12 @@ export function inboxKindEmails(kind: string, link: string, params: Record<strin
       return link.startsWith("/marca/");
     case "contract_acceptance_requested":
     case "task_due_soon":
+    case "sponsorship_decided":
       return true;
+    case "sponsorship_published":
+      return link.startsWith("/marca/");
+    case "sponsorship_interest":
+      return link.startsWith("/agencia/");
     default:
       return false;
   }

@@ -11164,7 +11164,7 @@ insert into public.deal_terms (deal_id, version, status, summary, sent_at, usage
 insert into public.deliverables (id, deal_id, deal_talent_id, kind, network, title, status, due_at, publish_at, published_url, published_at) values
   ('90000000-0000-4000-8000-000000009061', '90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009051', 'video', 'youtube', 'Vídeo Um S90', 'published',
    now() - interval '35 days', now() - interval '30 days', 'https://www.youtube.com/watch?v=abcdefghijk',
-   (((current_date + 5) - interval '1 month')::date + time '12:00') at time zone 'America/Sao_Paulo'),
+   ((((now() at time zone 'America/Sao_Paulo')::date + 5) - interval '1 month')::date + time '12:00') at time zone 'America/Sao_Paulo'),
   ('90000000-0000-4000-8000-000000009062', '90000000-0000-4000-8000-000000009041', '90000000-0000-4000-8000-000000009052', 'reels', 'instagram', 'Reels Dois S90', 'approved',
    now() - interval '3 days', now() + interval '3 days', null, null);
 insert into public.deliverable_versions (id, deal_id, deliverable_id, deal_talent_id, talent_id, revision, kind, url, submitted_side) values
@@ -11214,7 +11214,7 @@ select tests.ok('S90 biblioteca: aprovado e publicado, com influenciador, campan
 select tests.ok('S90 biblioteca: sem publicação o prazo ainda não começou',
   ((select v::jsonb from t_s90 where k = 'lib') -> 'items' -> 1) @> '{"title": "Reels Dois S90", "status": "approved", "published": false, "expires_on": null, "days_left": null}');
 select tests.ok('S90 marca lê o entregável mas não grava métricas', (select count(*) from public.deliverable_metrics) = 0);
-select tests.expect_error('S90 marca não informa métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": 10}')$q$, 'not_found');
+select tests.expect_error('S90 marca não informa métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date, '{"views": 10}')$q$, 'not_found');
 
 -- aviso de vencimento pelo cron (service role)
 select tests.su();
@@ -11238,29 +11238,29 @@ select tests.expect_error('S90 usuário comum não lê biblioteca', $q$select pu
 
 -- creator 1: métricas do próprio entregável publicado
 select tests.login('90000000-0000-4000-8000-000000000904', 's90-creator-1@test.local');
-select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date - 1, '{"views": 1000, "likes": 80, "reach": 900}');
-select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date - 1, '{"views": 1200, "likes": "90", "comments": null}');
+select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date - 1, '{"views": 1000, "likes": 80, "reach": 900}');
+select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date - 1, '{"views": 1200, "likes": "90", "comments": null}');
 select tests.ok('S90 creator informa métricas; o mesmo dia substitui',
   (select count(*) from public.deliverable_metrics) = 1
   and (select views = 1200 and likes = 90 and reach is null and entered_side = 'talent' and source = 'manual' from public.deliverable_metrics));
-select tests.expect_error('S90 data futura recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date + 1, '{"views": 1}')$q$, 'invalid_date');
-select tests.expect_error('S90 data antes da publicação recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date - 60, '{"views": 1}')$q$, 'invalid_date');
-select tests.expect_error('S90 métrica desconhecida recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"followers": 1}')$q$, 'invalid_input');
-select tests.expect_error('S90 número negativo recusado', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": -5}')$q$, 'invalid_input');
-select tests.expect_error('S90 sem nenhum número recusado', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": null}')$q$, 'invalid_input');
-select tests.expect_error('S90 creator não informa métricas do outro', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009062', current_date, '{"views": 1}')$q$, 'not_found');
+select tests.expect_error('S90 data futura recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date + 1, '{"views": 1}')$q$, 'invalid_date');
+select tests.expect_error('S90 data antes da publicação recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date - 60, '{"views": 1}')$q$, 'invalid_date');
+select tests.expect_error('S90 métrica desconhecida recusada', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date, '{"followers": 1}')$q$, 'invalid_input');
+select tests.expect_error('S90 número negativo recusado', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date, '{"views": -5}')$q$, 'invalid_input');
+select tests.expect_error('S90 sem nenhum número recusado', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date, '{"views": null}')$q$, 'invalid_input');
+select tests.expect_error('S90 creator não informa métricas do outro', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009062', (now() at time zone 'America/Sao_Paulo')::date, '{"views": 1}')$q$, 'not_found');
 select tests.login('90000000-0000-4000-8000-000000000905', 's90-creator-2@test.local');
-select tests.expect_error('S90 entregável não publicado não recebe métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009062', current_date, '{"views": 1}')$q$, 'invalid_state');
+select tests.expect_error('S90 entregável não publicado não recebe métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009062', (now() at time zone 'America/Sao_Paulo')::date, '{"views": 1}')$q$, 'invalid_state');
 select tests.ok('S90 creator 2 não lê as métricas do creator 1', (select count(*) from public.deliverable_metrics) = 0);
 
 -- agência: colaborador fora do negócio e gestor
 select tests.login('90000000-0000-4000-8000-000000000903', 's90-colab@test.local');
-select tests.expect_error('S90 colaborador fora do negócio não informa métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": 1}')$q$, 'forbidden');
+select tests.expect_error('S90 colaborador fora do negócio não informa métricas', $q$select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date, '{"views": 1}')$q$, 'forbidden');
 select tests.expect_error('S90 colaborador fora do negócio não cria link', $q$select public.agency_tracking_link_save('90000000-0000-4000-8000-000000009051', null, 'X')$q$, 'forbidden');
 select tests.login('90000000-0000-4000-8000-000000000902', 's90-gestor@test.local');
-select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', current_date, '{"views": 1500, "shares": 12}');
+select public.deliverable_metrics_record('90000000-0000-4000-8000-000000009061', (now() at time zone 'America/Sao_Paulo')::date, '{"views": 1500, "shares": 12}');
 select tests.ok('S90 gestor informa métricas de outro dia (histórico)', (select count(*) from public.deliverable_metrics) = 2
-  and exists (select 1 from public.deliverable_metrics where measured_on = current_date and entered_side = 'agency'));
+  and exists (select 1 from public.deliverable_metrics where measured_on = (now() at time zone 'America/Sao_Paulo')::date and entered_side = 'agency'));
 insert into t_s90 values ('l1', public.agency_tracking_link_save('90000000-0000-4000-8000-000000009051', null, ' alfa10 ')::text);
 select tests.ok('S90 link criado com o site da marca, código curto e cupom em maiúsculas',
   exists (select 1 from public.campaign_tracking_links where id = (select v::uuid from t_s90 where k = 'l1')
@@ -11307,18 +11307,18 @@ select tests.ok('S90 creator não lê vendas', (select count(*) from public.camp
 -- marca: vendas por cupom
 select tests.login('90000000-0000-4000-8000-000000000907', 's90-analista@test.local');
 select tests.ok('S90 analista lê os dois links e as métricas', (select count(*) from public.campaign_tracking_links) = 2 and (select count(*) from public.deliverable_metrics) = 2);
-insert into t_s90 values ('s1', public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 12, 359880, current_date - 1, 'Semana 1')::text);
-select tests.expect_error('S90 venda zerada recusada', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 0, 0, current_date, null)$q$, 'invalid_input');
-select tests.expect_error('S90 venda com data futura recusada', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 1, 100, current_date + 2, null)$q$, 'invalid_date');
+insert into t_s90 values ('s1', public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 12, 359880, (now() at time zone 'America/Sao_Paulo')::date - 1, 'Semana 1')::text);
+select tests.expect_error('S90 venda zerada recusada', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 0, 0, (now() at time zone 'America/Sao_Paulo')::date, null)$q$, 'invalid_input');
+select tests.expect_error('S90 venda com data futura recusada', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 1, 100, (now() at time zone 'America/Sao_Paulo')::date + 2, null)$q$, 'invalid_date');
 select tests.login('90000000-0000-4000-8000-000000000906', 's90-diretor@test.local');
-insert into t_s90 values ('s2', public.brand_sales_record((select v::uuid from t_s90 where k = 'l2'), 3, 89970, current_date, null)::text);
+insert into t_s90 values ('s2', public.brand_sales_record((select v::uuid from t_s90 where k = 'l2'), 3, 89970, (now() at time zone 'America/Sao_Paulo')::date, null)::text);
 select tests.ok('S90 diretor lê as vendas com cupom', (select count(*) from public.campaign_sales) = 2
   and (select coupon from public.campaign_sales where id = (select v::uuid from t_s90 where k = 's1')) = 'ALFA10'
   and (select sum(revenue_cents) from public.campaign_sales) = 449850);
 select tests.login('90000000-0000-4000-8000-000000000907', 's90-analista@test.local');
 select tests.expect_error('S90 analista não apaga a venda do diretor', $q$select public.brand_sales_delete((select v::uuid from t_s90 where k = 's2'))$q$, 'forbidden');
 select tests.login('90000000-0000-4000-8000-000000000908', 's90-outra-marca@test.local');
-select tests.expect_error('S90 outra marca não informa venda', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 1, 100, current_date, null)$q$, 'not_found');
+select tests.expect_error('S90 outra marca não informa venda', $q$select public.brand_sales_record((select v::uuid from t_s90 where k = 'l1'), 1, 100, (now() at time zone 'America/Sao_Paulo')::date, null)$q$, 'not_found');
 select tests.ok('S90 outra marca não lê links, vendas, métricas, músicas nem comentários',
   (select count(*) from public.campaign_tracking_links) = 0 and (select count(*) from public.campaign_sales) = 0
   and (select count(*) from public.deliverable_metrics) = 0 and (select count(*) from public.campaign_music_tracks) = 0
@@ -11656,6 +11656,348 @@ delete from public.agency_members where agency_id = '91000000-0000-4000-8000-000
 delete from public.agencies where id = '91000000-0000-4000-8000-000000009101';
 delete from auth.users where id::text like '91000000-0000-4000-8000-00000000090%';
 drop table t_s91;
+
+-- ================================================================ S92 · Oportunidade de patrocínio na agenda (0085)
+-- A agência (gestor+) publica uma situação de um creator para as marcas atendidas (todas ou escolhidas); vira evento de
+-- sistema na agenda (agência, creator, marcas do público enquanto aberta); a marca quer patrocinar (cria a campanha em
+-- rascunho com o creator, datas e briefing; segue o fluxo da 0081) ou recusa; a agência vê quem quis/recusou e escolhe
+-- as vencedoras. A marca nunca vê respostas de outras; marca fora do público e de outra agência veem 0 linhas; o
+-- creator vê a dele e as vencedoras, nunca quem recusou; colaborador da agência fica de fora. S14 segue 18.
+\ir ../migrations/0085_oportunidade_patrocinio.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local'),
+  ('92000000-0000-4000-8000-000000000922', 's92-colab@test.local'),
+  ('92000000-0000-4000-8000-000000000923', 's92-dono-alfa@test.local'),
+  ('92000000-0000-4000-8000-000000000924', 's92-equipe-alfa@test.local'),
+  ('92000000-0000-4000-8000-000000000925', 's92-dono-beta@test.local'),
+  ('92000000-0000-4000-8000-000000000926', 's92-dono-gama@test.local'),
+  ('92000000-0000-4000-8000-000000000927', 's92-creator@test.local'),
+  ('92000000-0000-4000-8000-000000000928', 's92-agencia-fora@test.local'),
+  ('92000000-0000-4000-8000-000000000929', 's92-dono-delta@test.local');
+insert into public.agencies (id, slug, name) values
+  ('92000000-0000-4000-8000-000000009201', 's92-agencia', 'Agência S92'),
+  ('92000000-0000-4000-8000-000000009202', 's92-agencia-fora', 'Agência Fora S92');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000000921', 'manager', 'Gil Gestor S92'),
+  ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000000922', 'staff', 'Caio Colab S92'),
+  ('92000000-0000-4000-8000-000000009202', '92000000-0000-4000-8000-000000000928', 'admin', 'Fora S92');
+insert into public.brands (id, slug, name, site_url) values
+  ('92000000-0000-4000-8000-000000009211', 's92-marca-alfa', 'Marca Alfa S92', 'https://alfa.s92.test'),
+  ('92000000-0000-4000-8000-000000009212', 's92-marca-beta', 'Marca Beta S92', 'https://beta.s92.test'),
+  ('92000000-0000-4000-8000-000000009213', 's92-marca-gama', 'Marca Gama S92', 'https://gama.s92.test'),
+  ('92000000-0000-4000-8000-000000009214', 's92-marca-delta', 'Marca Delta S92', 'https://delta.s92.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000009211'),
+  ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000009212'),
+  ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000009213'),
+  ('92000000-0000-4000-8000-000000009202', '92000000-0000-4000-8000-000000009214');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('92000000-0000-4000-8000-000000009211', '92000000-0000-4000-8000-000000000923', 'owner', 'Dona Alfa'),
+  ('92000000-0000-4000-8000-000000009211', '92000000-0000-4000-8000-000000000924', 'staff', 'Equipe Alfa'),
+  ('92000000-0000-4000-8000-000000009212', '92000000-0000-4000-8000-000000000925', 'owner', 'Dono Beta'),
+  ('92000000-0000-4000-8000-000000009213', '92000000-0000-4000-8000-000000000926', 'owner', 'Dono Gama'),
+  ('92000000-0000-4000-8000-000000009214', '92000000-0000-4000-8000-000000000929', 'owner', 'Dono Delta');
+-- creator com consentimento mas fora do catálogo (a agência escolhe oferecê-lo), um sem consentimento, um de outra agência
+insert into public.talent_profiles (id, agency_id, display_name, user_id, catalog_visible, consent_at) values
+  ('92000000-0000-4000-8000-000000009221', '92000000-0000-4000-8000-000000009201', 'Corredor S92', '92000000-0000-4000-8000-000000000927', false, now() - interval '30 days'),
+  ('92000000-0000-4000-8000-000000009222', '92000000-0000-4000-8000-000000009201', 'Sem Consentimento S92', null, false, null),
+  ('92000000-0000-4000-8000-000000009223', '92000000-0000-4000-8000-000000009202', 'De Fora S92', null, true, now() - interval '30 days');
+create temp table t_s92 (k text primary key, v text);
+grant all on t_s92 to anon, authenticated, service_role;
+insert into t_s92 values ('data', jsonb_build_object('talent_id', '92000000-0000-4000-8000-000000009221', 'title', 'Maratona do Rio S92',
+  'description', 'Corre os 42 km com transmissão ao vivo.', 'location', 'Rio de Janeiro', 'starts_at', now() + interval '10 days',
+  'ends_at', now() + interval '10 days 5 hours', 'all_day', false, 'expected_reach', '5 mil pessoas no percurso',
+  'perks', jsonb_build_array('Logo na camiseta', '3 stories ao vivo'), 'networks', jsonb_build_array('instagram', 'youtube'),
+  'respond_by', now() + interval '5 days', 'audience', 'selected',
+  'brand_ids', jsonb_build_array('92000000-0000-4000-8000-000000009211', '92000000-0000-4000-8000-000000009212'))::text);
+
+select tests.ok('S92 estrutura: 3 tabelas com RLS e só leitura, auxiliares fechadas, nada para visitante, sem sobrecarga; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.sponsorship_opportunities'::regclass, 'public.sponsorship_targets'::regclass, 'public.sponsorship_responses'::regclass))
+  and not has_table_privilege('anon', 'public.sponsorship_opportunities', 'select')
+  and not has_table_privilege('anon', 'public.sponsorship_responses', 'select')
+  and not has_table_privilege('authenticated', 'public.sponsorship_opportunities', 'insert')
+  and not has_table_privilege('authenticated', 'public.sponsorship_responses', 'update')
+  and not has_table_privilege('authenticated', 'public.sponsorship_targets', 'delete')
+  and not has_function_privilege('authenticated', 'public.brand_sponsorship_ids_for(uuid, boolean)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_sync_event(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_notify_audience(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_deadline_scan()', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_audience_brands(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_brand_in_audience(uuid, uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_sponsorship_save(uuid, uuid, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.brand_sponsorship_respond(uuid, uuid, text, text)', 'execute')
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('brand_request_save', 'calendar_events_for_user', 'inbox_kind_emails')) = 3
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace
+                  and p.proname in ('sponsorship_perks_valid', 'brand_sponsorship_ids_for', 'my_brand_sponsorship_ids', 'sponsorship_brand_in_audience',
+                                    'sponsorship_sync_event', 'sponsorship_local_stamp', 'sponsorship_notify_audience', 'agency_sponsorship_save',
+                                    'agency_sponsorship_decide', 'sponsorship_deadline_scan', 'brand_sponsorship_respond', 'sponsorship_audience_brands',
+                                    'agency_sponsorships', 'agency_sponsorship_detail', 'brand_sponsorships', 'talent_sponsorships')
+                  and (p.proconfig is null or has_function_privilege('anon', p.oid, 'execute')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S92 visitante não lê oportunidades', $q$select count(*) from public.sponsorship_opportunities$q$, 'permission denied');
+select tests.expect_error('S92 visitante não cria oportunidade', $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, '{}')$q$, 'permission denied');
+
+-- colaborador não cria; gestor valida e cria
+select tests.login('92000000-0000-4000-8000-000000000922', 's92-colab@test.local');
+select tests.expect_error('S92 colaborador não cria oportunidade', $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data'))$q$, 'forbidden');
+select tests.login('92000000-0000-4000-8000-000000000928', 's92-agencia-fora@test.local');
+select tests.expect_error('S92 agência de fora não cria na outra', $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data'))$q$, 'not_found');
+select tests.login('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local');
+select tests.expect_error('S92 creator sem consentimento recusado',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || '{"talent_id": "92000000-0000-4000-8000-000000009222"}')$q$, 'consent_required');
+select tests.expect_error('S92 creator de outra agência recusado',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || '{"talent_id": "92000000-0000-4000-8000-000000009223"}')$q$, 'not_found');
+select tests.expect_error('S92 marca de outra agência no público recusada',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || '{"brand_ids": ["92000000-0000-4000-8000-000000009214"]}')$q$, 'brand_not_linked');
+select tests.expect_error('S92 prazo de resposta no passado recusado',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || jsonb_build_object('respond_by', now() - interval '1 hour'))$q$, 'invalid_date');
+select tests.expect_error('S92 prazo depois do fim do evento recusado',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || jsonb_build_object('respond_by', now() + interval '20 days'))$q$, 'invalid_date');
+select tests.expect_error('S92 público escolhido sem marca recusado',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || '{"brand_ids": []}')$q$, 'invalid_input');
+select tests.expect_error('S92 sem rede recusado',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || '{"networks": []}')$q$, 'invalid_input');
+select tests.expect_error('S92 contrapartida repetida recusada',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data') || '{"perks": ["Logo", "logo"]}')$q$, 'invalid_input');
+insert into t_s92 values ('o1', public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null, (select v::jsonb from t_s92 where k = 'data'))::text);
+select tests.ok('S92 gestor cria: aberta, evento de sistema na agenda dele (com o creator, visível à marca e ao creator)',
+  (select status = 'open' and audience = 'selected' and closed_reason is null from public.sponsorship_opportunities where id = (select v::uuid from t_s92 where k = 'o1'))
+  and (select count(*) from public.calendar_events e where e.sponsorship_id = (select v::uuid from t_s92 where k = 'o1') and e.kind = 'sponsorship' and e.source = 'system'
+       and e.talent_id = '92000000-0000-4000-8000-000000009221' and e.subtitle = 'Corredor S92' and e.visible_to_brand and e.visible_to_talent) = 1
+  and (select count(*) from public.sponsorship_targets where opportunity_id = (select v::uuid from t_s92 where k = 'o1')) = 2);
+select tests.ok('S92 gestor lista com contagem do público', (select (x ->> 'audience_count')::int = 2 and (x ->> 'interested')::int = 0
+  from jsonb_array_elements(public.agency_sponsorships('92000000-0000-4000-8000-000000009201')) x where x ->> 'id' = (select v from t_s92 where k = 'o1')));
+select tests.su();
+select tests.ok('S92 aviso sponsorship_published só para as marcas do público (todos os membros), com e-mail na fila',
+  (select count(*) from public.inbox_notifications where kind = 'sponsorship_published' and entity_id = (select v::uuid from t_s92 where k = 'o1')) = 3
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_published' and entity_id = (select v::uuid from t_s92 where k = 'o1')
+       and user_id = '92000000-0000-4000-8000-000000000926') = 0
+  and (select count(*) from public.inbox_notifications n where n.kind = 'sponsorship_published' and n.entity_id = (select v::uuid from t_s92 where k = 'o1')
+       and n.link = '/marca/oportunidades/' || (select v from t_s92 where k = 'o1') and n.params ->> 'talent' = 'Corredor S92' and n.params ? 'date') = 3
+  and (select count(*) from public.email_outbox q join public.inbox_notifications n on n.id = q.notification_id
+       where n.kind = 'sponsorship_published' and n.entity_id = (select v::uuid from t_s92 where k = 'o1')) = 3);
+
+-- quem vê o quê antes de qualquer resposta
+select tests.login('92000000-0000-4000-8000-000000000926', 's92-dono-gama@test.local');
+select tests.ok('S92 marca atendida fora do público vê 0 linhas (oportunidade, alvos, evento, lista)',
+  (select count(*) from public.sponsorship_opportunities) = 0 and (select count(*) from public.sponsorship_targets) = 0
+  and (select count(*) from public.calendar_events where kind = 'sponsorship') = 0
+  and jsonb_array_length(public.brand_sponsorships('92000000-0000-4000-8000-000000009213')) = 0);
+select tests.expect_error('S92 marca fora do público não responde',
+  $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009213', 'interested', null)$q$, 'not_found');
+select tests.login('92000000-0000-4000-8000-000000000929', 's92-dono-delta@test.local');
+select tests.ok('S92 marca de outra agência vê 0 linhas', (select count(*) from public.sponsorship_opportunities) = 0
+  and (select count(*) from public.calendar_events where kind = 'sponsorship') = 0);
+select tests.expect_error('S92 marca de outra agência não responde usando a própria marca',
+  $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009214', 'interested', null)$q$, 'not_found');
+select tests.expect_error('S92 marca de outra agência não responde em nome da Alfa',
+  $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009211', 'interested', null)$q$, 'not_found');
+select tests.login('92000000-0000-4000-8000-000000000922', 's92-colab@test.local');
+select tests.ok('S92 colaborador da agência não lê oportunidade nem evento com creator fora dos negócios dele',
+  (select count(*) from public.sponsorship_opportunities) = 0 and (select count(*) from public.calendar_events where kind = 'sponsorship') = 0);
+select tests.expect_error('S92 colaborador não lê o detalhe', $q$select public.agency_sponsorship_detail((select v::uuid from t_s92 where k = 'o1'))$q$, 'not_found');
+select tests.login('92000000-0000-4000-8000-000000000927', 's92-creator@test.local');
+select tests.ok('S92 creator vê a oportunidade dele e o evento na agenda',
+  (select count(*) from public.sponsorship_opportunities) = 1 and (select count(*) from public.calendar_events where kind = 'sponsorship') = 1
+  and (select count(*) from public.sponsorship_targets) = 0
+  and jsonb_array_length(public.talent_sponsorships()) = 1);
+
+-- a equipe da Alfa quer patrocinar: rascunho com o creator, datas, briefing e origem
+select tests.login('92000000-0000-4000-8000-000000000924', 's92-equipe-alfa@test.local');
+select tests.ok('S92 equipe da Alfa vê a oportunidade, só o próprio alvo e o evento',
+  (select count(*) from public.sponsorship_opportunities) = 1 and (select count(*) from public.sponsorship_targets) = 1
+  and (select count(*) from public.sponsorship_targets where brand_id = '92000000-0000-4000-8000-000000009212') = 0
+  and (select count(*) from public.calendar_events where kind = 'sponsorship') = 1
+  and (select x ->> 'status' = 'open' and x -> 'my_response' = 'null'::jsonb and x -> 'talent' ->> 'name' = 'Corredor S92' and not (x -> 'talent' ->> 'in_catalog')::boolean
+       from jsonb_array_elements(public.brand_sponsorships('92000000-0000-4000-8000-000000009211')) x));
+select tests.expect_error('S92 resposta desconhecida recusada',
+  $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009211', 'talvez', null)$q$, 'invalid_input');
+insert into t_s92 values ('req_alfa', public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009211', 'interested', 'Queremos muito!')::text);
+select tests.expect_error('S92 interesse não se repete', $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009211', 'declined', null)$q$, 'already_responded');
+select tests.ok('S92 equipe vê a própria resposta e o rascunho criado',
+  (select x -> 'my_response' ->> 'response' = 'interested' and x -> 'my_response' ->> 'responded_label' = 'Equipe Alfa'
+     and x -> 'my_response' ->> 'request_id' = (select v from t_s92 where k = 'req_alfa')
+   from jsonb_array_elements(public.brand_sponsorships('92000000-0000-4000-8000-000000009211')) x)
+  and (public.brand_campaign_detail((select v::uuid from t_s92 where k = 'req_alfa')) -> 'request' ->> 'status') = 'draft');
+select tests.su();
+select tests.ok('S92 rascunho nasce preenchido a partir da oportunidade (origem marcada) e completo para o fluxo normal',
+  (select c.origin = 'brand' and c.status = 'draft' and c.sponsorship_id = (select v::uuid from t_s92 where k = 'o1') and c.talent_id = '92000000-0000-4000-8000-000000009221'
+     and c.title = 'Maratona do Rio S92' and c.objective = 'event' and c.location = 'Rio de Janeiro' and c.format = 'in_person' and c.networks = array['instagram', 'youtube']
+     and c.desired_at is not null and c.duration_minutes = 300 and c.period_start is not null and c.deliverables -> 0 ->> 'kind' = 'event'
+     and c.brief -> 'checks' = '["Logo na camiseta", "3 stories ao vivo"]'::jsonb and c.notes like '%5 mil pessoas%' and c.notes like '%Queremos muito!%'
+     and c.created_by = '92000000-0000-4000-8000-000000000924' and public.campaign_request_complete(c)
+   from public.campaign_requests c where c.id = (select v::uuid from t_s92 where k = 'req_alfa'))
+  and (select response = 'interested' and responded_by = '92000000-0000-4000-8000-000000000924' and responded_at is not null and message = 'Queremos muito!'
+       from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s92 where k = 'o1') and brand_id = '92000000-0000-4000-8000-000000009211'));
+select tests.ok('S92 interesse avisa os gestores da agência (não o colaborador)',
+  (select count(*) from public.inbox_notifications where kind = 'sponsorship_interest' and entity_id = (select v::uuid from t_s92 where k = 'o1')
+     and user_id = '92000000-0000-4000-8000-000000000921' and link = '/agencia/oportunidades/' || (select v from t_s92 where k = 'o1') and params ->> 'brand' = 'Marca Alfa S92') = 1
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_interest' and user_id = '92000000-0000-4000-8000-000000000922') = 0);
+-- o fluxo normal: a equipe edita (o creator da oportunidade vale fora do catálogo), não envia direto, pede aprovação
+select tests.login('92000000-0000-4000-8000-000000000924', 's92-equipe-alfa@test.local');
+select public.brand_request_save((select v::uuid from t_s92 where k = 'req_alfa'), '92000000-0000-4000-8000-000000009211',
+  '{"talent_id": "92000000-0000-4000-8000-000000009221", "product": "Tênis S92"}');
+select tests.su();
+select tests.ok('S92 rascunho do patrocínio aceita o creator da oportunidade fora do catálogo',
+  (select product = 'Tênis S92' and talent_id = '92000000-0000-4000-8000-000000009221' from public.campaign_requests where id = (select v::uuid from t_s92 where k = 'req_alfa')));
+select tests.login('92000000-0000-4000-8000-000000000924', 's92-equipe-alfa@test.local');
+select tests.expect_error('S92 rascunho comum não aceita creator fora do catálogo',
+  $q$select public.brand_request_save(null, '92000000-0000-4000-8000-000000009211', '{"title": "Outra S92", "talent_id": "92000000-0000-4000-8000-000000009221"}')$q$, 'not_found');
+select tests.expect_error('S92 equipe não envia direto (0081)', $q$select public.brand_request_submit((select v::uuid from t_s92 where k = 'req_alfa'))$q$, 'approval_required');
+select public.brand_request_ask_approval((select v::uuid from t_s92 where k = 'req_alfa'), 'Patrocínio da maratona');
+select tests.su();
+select tests.ok('S92 pedido de aprovação segue para a dona', (select approval_status = 'pending' from public.campaign_requests where id = (select v::uuid from t_s92 where k = 'req_alfa'))
+  and exists (select 1 from public.inbox_notifications where kind = 'internal_approval_requested' and user_id = '92000000-0000-4000-8000-000000000923'));
+
+-- Beta recusa; nenhuma marca vê a resposta da outra
+select tests.login('92000000-0000-4000-8000-000000000925', 's92-dono-beta@test.local');
+select tests.ok('S92 Beta não vê a resposta da Alfa nem o alvo dela', (select count(*) from public.sponsorship_responses) = 0
+  and (select count(*) from public.sponsorship_targets where brand_id = '92000000-0000-4000-8000-000000009211') = 0);
+select tests.ok('S92 recusa não cria campanha', public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009212', 'declined', null) is null);
+select tests.expect_error('S92 recusa não se repete', $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o1'), '92000000-0000-4000-8000-000000009212', 'declined', null)$q$, 'already_responded');
+select tests.ok('S92 Beta lê só a própria resposta', (select count(*) from public.sponsorship_responses) = 1
+  and (select count(*) from public.sponsorship_responses where brand_id = '92000000-0000-4000-8000-000000009212' and response = 'declined') = 1
+  and public.brand_sponsorships('92000000-0000-4000-8000-000000009212')::text !~ 'Alfa');
+select tests.login('92000000-0000-4000-8000-000000000923', 's92-dono-alfa@test.local');
+select tests.ok('S92 Alfa lê só a própria resposta', (select count(*) from public.sponsorship_responses) = 1
+  and (select count(*) from public.sponsorship_responses where brand_id = '92000000-0000-4000-8000-000000009212') = 0);
+select tests.expect_error('S92 marca não decide', $q$select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o1'), 'sponsor', array['92000000-0000-4000-8000-000000009211']::uuid[], null)$q$, 'not_found');
+select tests.expect_error('S92 marca não edita', $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', (select v::uuid from t_s92 where k = 'o1'), '{"title": "Mudou S92"}')$q$, 'not_found');
+
+-- agência: quem quis, recusou e não respondeu; acrescenta Gama; Beta (respondeu) continua no público
+select tests.login('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local');
+select tests.ok('S92 gestor vê por marca: Alfa quis (com mensagem e rascunho), Beta recusou',
+  (select count(*) from jsonb_array_elements(public.agency_sponsorship_detail((select v::uuid from t_s92 where k = 'o1')) -> 'brands')) = 2
+  and (select b ->> 'response' = 'interested' and b ->> 'message' = 'Queremos muito!' and b ->> 'request_status' = 'draft' and b ->> 'responded_label' = 'Equipe Alfa'
+       from jsonb_array_elements(public.agency_sponsorship_detail((select v::uuid from t_s92 where k = 'o1')) -> 'brands') b where b ->> 'name' = 'Marca Alfa S92')
+  and (select b ->> 'response' = 'declined' from jsonb_array_elements(public.agency_sponsorship_detail((select v::uuid from t_s92 where k = 'o1')) -> 'brands') b where b ->> 'name' = 'Marca Beta S92'));
+select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', (select v::uuid from t_s92 where k = 'o1'),
+  '{"brand_ids": ["92000000-0000-4000-8000-000000009211", "92000000-0000-4000-8000-000000009213"], "title": "Maratona do Rio 2026 S92"}');
+select tests.ok('S92 edição: Gama entra, Beta (já respondeu) fica, nada some da agenda',
+  (select array_agg(brand_id order by brand_id) from public.sponsorship_targets where opportunity_id = (select v::uuid from t_s92 where k = 'o1'))
+    = array['92000000-0000-4000-8000-000000009211', '92000000-0000-4000-8000-000000009212', '92000000-0000-4000-8000-000000009213']::uuid[]
+  and (select title from public.calendar_events where sponsorship_id = (select v::uuid from t_s92 where k = 'o1')) = 'Maratona do Rio 2026 S92');
+select tests.expect_error('S92 trocar o creator depois de respostas recusado',
+  $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', (select v::uuid from t_s92 where k = 'o1'), '{"talent_id": "92000000-0000-4000-8000-000000009222"}')$q$, 'invalid_state');
+select tests.su();
+select tests.ok('S92 Gama é avisada ao entrar; quem já foi avisado não recebe de novo',
+  (select count(*) from public.inbox_notifications where kind = 'sponsorship_published' and entity_id = (select v::uuid from t_s92 where k = 'o1') and user_id = '92000000-0000-4000-8000-000000000926') = 1
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_published' and entity_id = (select v::uuid from t_s92 where k = 'o1')) = 4);
+select tests.login('92000000-0000-4000-8000-000000000926', 's92-dono-gama@test.local');
+select tests.ok('S92 Gama agora vê a oportunidade e o evento', (select count(*) from public.sponsorship_opportunities) = 1 and (select count(*) from public.calendar_events where kind = 'sponsorship') = 1);
+
+-- decisão
+select tests.login('92000000-0000-4000-8000-000000000922', 's92-colab@test.local');
+select tests.expect_error('S92 colaborador não decide', $q$select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o1'), 'sponsor', array['92000000-0000-4000-8000-000000009211']::uuid[], null)$q$, 'forbidden');
+select tests.login('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local');
+select tests.expect_error('S92 vencedora precisa ter querido', $q$select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o1'), 'sponsor', array['92000000-0000-4000-8000-000000009212']::uuid[], null)$q$, 'not_interested');
+select tests.expect_error('S92 patrocinar sem marca recusado', $q$select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o1'), 'sponsor', '{}'::uuid[], null)$q$, 'invalid_input');
+select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o1'), 'sponsor', array['92000000-0000-4000-8000-000000009211']::uuid[], 'Fechado com a Alfa.');
+select tests.expect_error('S92 decisão não se repete', $q$select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o1'), 'close', null, null)$q$, 'invalid_state');
+select tests.expect_error('S92 patrocinada não se edita', $q$select public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', (select v::uuid from t_s92 where k = 'o1'), '{"title": "Mudou S92"}')$q$, 'invalid_state');
+select tests.su();
+select tests.ok('S92 patrocinada: Alfa venceu, quem e quando decidiu, rascunho da Alfa segue',
+  (select status = 'sponsored' and closed_reason = 'decision' and decided_by = '92000000-0000-4000-8000-000000000921' and decided_at is not null and decision_note = 'Fechado com a Alfa.'
+   from public.sponsorship_opportunities where id = (select v::uuid from t_s92 where k = 'o1'))
+  and (select outcome = 'won' from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s92 where k = 'o1') and brand_id = '92000000-0000-4000-8000-000000009211')
+  and (select outcome is null from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s92 where k = 'o1') and brand_id = '92000000-0000-4000-8000-000000009212')
+  and (select status = 'draft' from public.campaign_requests where id = (select v::uuid from t_s92 where k = 'req_alfa')));
+select tests.ok('S92 decisão avisa as marcas que responderam (venceu/encerrada) e o creator (com a vencedora); quem não respondeu, não',
+  (select params ->> 'status' from public.inbox_notifications where kind = 'sponsorship_decided' and user_id = '92000000-0000-4000-8000-000000000923') = 'won'
+  and (select params ->> 'status' from public.inbox_notifications where kind = 'sponsorship_decided' and user_id = '92000000-0000-4000-8000-000000000925') = 'closed'
+  and (select count(*) from public.inbox_notifications where kind = 'sponsorship_decided' and user_id = '92000000-0000-4000-8000-000000000926') = 0
+  and (select params ->> 'status' = 'sponsored' and params ->> 'brand' = 'Marca Alfa S92' and link = '/creator/escritorio/agenda'
+       from public.inbox_notifications where kind = 'sponsorship_decided' and user_id = '92000000-0000-4000-8000-000000000927')
+  and exists (select 1 from public.email_outbox q join public.inbox_notifications n on n.id = q.notification_id where n.kind = 'sponsorship_decided'));
+select tests.login('92000000-0000-4000-8000-000000000927', 's92-creator@test.local');
+select tests.ok('S92 creator vê a vencedora e nunca quem recusou',
+  (select x -> 'sponsors' = '["Marca Alfa S92"]'::jsonb from jsonb_array_elements(public.talent_sponsorships()) x)
+  and public.talent_sponsorships()::text !~ 'Beta' and (select count(*) from public.sponsorship_responses) = 0);
+select tests.login('92000000-0000-4000-8000-000000000925', 's92-dono-beta@test.local');
+select tests.ok('S92 Beta vê "encerrada", sem saber quem venceu, e o evento sai da agenda dela',
+  (select x ->> 'status' = 'closed' from jsonb_array_elements(public.brand_sponsorships('92000000-0000-4000-8000-000000009212')) x)
+  and public.brand_sponsorships('92000000-0000-4000-8000-000000009212')::text !~ 'Alfa'
+  and (select count(*) from public.calendar_events where kind = 'sponsorship') = 0);
+select tests.login('92000000-0000-4000-8000-000000000923', 's92-dono-alfa@test.local');
+select tests.ok('S92 Alfa vê "patrocinada por você" e o evento na agenda',
+  (select x ->> 'status' = 'won' from jsonb_array_elements(public.brand_sponsorships('92000000-0000-4000-8000-000000009211')) x)
+  and (select count(*) from public.calendar_events where kind = 'sponsorship') = 1);
+select tests.su();
+select tests.ok('S92 feed .ics espelha a agenda: Alfa (vencedora) e o creator têm o evento; Beta e Gama não; o colaborador não',
+  exists (select 1 from public.calendar_events_for_user('92000000-0000-4000-8000-000000000923') e where e.sponsorship_id = (select v::uuid from t_s92 where k = 'o1'))
+  and exists (select 1 from public.calendar_events_for_user('92000000-0000-4000-8000-000000000927') e where e.sponsorship_id = (select v::uuid from t_s92 where k = 'o1'))
+  and not exists (select 1 from public.calendar_events_for_user('92000000-0000-4000-8000-000000000925') e where e.sponsorship_id = (select v::uuid from t_s92 where k = 'o1'))
+  and not exists (select 1 from public.calendar_events_for_user('92000000-0000-4000-8000-000000000926') e where e.sponsorship_id = (select v::uuid from t_s92 where k = 'o1'))
+  and not exists (select 1 from public.calendar_events_for_user('92000000-0000-4000-8000-000000000922') e where e.sponsorship_id = (select v::uuid from t_s92 where k = 'o1'))
+  and exists (select 1 from public.calendar_events_for_user('92000000-0000-4000-8000-000000000921') e where e.sponsorship_id = (select v::uuid from t_s92 where k = 'o1')));
+
+-- público "todas": recusa vira interesse; cancelamento cancela os rascunhos e tira o evento
+select tests.login('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local');
+insert into t_s92 values ('o2', public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null,
+  ((select v::jsonb from t_s92 where k = 'data') || '{"audience": "all", "title": "Live de corrida S92"}') - 'brand_ids')::text);
+select tests.login('92000000-0000-4000-8000-000000000929', 's92-dono-delta@test.local');
+select tests.ok('S92 público "todas" não alcança marca de outra agência', (select count(*) from public.sponsorship_opportunities) = 0);
+select tests.login('92000000-0000-4000-8000-000000000926', 's92-dono-gama@test.local');
+select tests.ok('S92 público "todas": Gama vê a nova', (select count(*) from public.sponsorship_opportunities where id = (select v::uuid from t_s92 where k = 'o2')) = 1);
+select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o2'), '92000000-0000-4000-8000-000000009213', 'declined', null);
+insert into t_s92 values ('req_gama', public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o2'), '92000000-0000-4000-8000-000000009213', 'interested', null)::text);
+select tests.ok('S92 recusa pode virar interesse (cria o rascunho)', (select v from t_s92 where k = 'req_gama') is not null
+  and (select response = 'interested' and request_id = (select v::uuid from t_s92 where k = 'req_gama') from public.sponsorship_responses
+       where opportunity_id = (select v::uuid from t_s92 where k = 'o2')));
+select tests.login('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local');
+select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o2'), 'cancel', null, null);
+select tests.su();
+select tests.ok('S92 cancelada: rascunho da Gama cancelado, evento fora da agenda, Gama avisada',
+  (select status from public.sponsorship_opportunities where id = (select v::uuid from t_s92 where k = 'o2')) = 'cancelled'
+  and (select status from public.campaign_requests where id = (select v::uuid from t_s92 where k = 'req_gama')) = 'cancelled'
+  and (select outcome from public.sponsorship_responses where opportunity_id = (select v::uuid from t_s92 where k = 'o2')) = 'lost'
+  and (select count(*) from public.calendar_events where sponsorship_id = (select v::uuid from t_s92 where k = 'o2')) = 0
+  and (select params ->> 'status' from public.inbox_notifications where kind = 'sponsorship_decided' and user_id = '92000000-0000-4000-8000-000000000926') = 'cancelled');
+select tests.login('92000000-0000-4000-8000-000000000926', 's92-dono-gama@test.local');
+select tests.expect_error('S92 cancelada não recebe resposta', $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o2'), '92000000-0000-4000-8000-000000009213', 'interested', null)$q$, 'invalid_state');
+
+-- prazo: passou, ninguém responde; o cron encerra; a agência ainda escolhe a vencedora
+select tests.login('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local');
+insert into t_s92 values ('o3', public.agency_sponsorship_save('92000000-0000-4000-8000-000000009201', null,
+  ((select v::jsonb from t_s92 where k = 'data') || '{"audience": "all", "title": "Pedal S92"}') - 'brand_ids')::text);
+select tests.login('92000000-0000-4000-8000-000000000923', 's92-dono-alfa@test.local');
+select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o3'), '92000000-0000-4000-8000-000000009211', 'interested', null);
+select tests.su();
+update public.sponsorship_opportunities set respond_by = now() - interval '1 minute' where id = (select v::uuid from t_s92 where k = 'o3');
+select tests.login('92000000-0000-4000-8000-000000000925', 's92-dono-beta@test.local');
+select tests.expect_error('S92 depois do prazo a marca não responde', $q$select public.brand_sponsorship_respond((select v::uuid from t_s92 where k = 'o3'), '92000000-0000-4000-8000-000000009212', 'interested', null)$q$, 'deadline_passed');
+select tests.ok('S92 marca vê "prazo encerrado"', (select x ->> 'status' = 'expired' from jsonb_array_elements(public.brand_sponsorships('92000000-0000-4000-8000-000000009212')) x
+  where x ->> 'id' = (select v from t_s92 where k = 'o3')));
+select tests.su();
+insert into t_s92 values ('scan', public.sponsorship_deadline_scan()::text);
+select tests.ok('S92 cron encerra pelo prazo', (select v::int from t_s92 where k = 'scan') >= 1
+  and (select status = 'closed' and closed_reason = 'deadline' and decided_at is null from public.sponsorship_opportunities where id = (select v::uuid from t_s92 where k = 'o3')));
+select tests.login('92000000-0000-4000-8000-000000000921', 's92-gestor@test.local');
+select public.agency_sponsorship_decide((select v::uuid from t_s92 where k = 'o3'), 'sponsor', array['92000000-0000-4000-8000-000000009211']::uuid[], null);
+select tests.ok('S92 encerrada pelo prazo ainda pode ser patrocinada pela decisão',
+  (select status = 'sponsored' and closed_reason = 'decision' from public.sponsorship_opportunities where id = (select v::uuid from t_s92 where k = 'o3')));
+select tests.login('92000000-0000-4000-8000-000000000928', 's92-agencia-fora@test.local');
+select tests.ok('S92 agência de fora não vê nada', (select count(*) from public.sponsorship_opportunities) = 0 and (select count(*) from public.sponsorship_responses) = 0
+  and jsonb_array_length(public.agency_sponsorships('92000000-0000-4000-8000-000000009202')) = 0);
+select tests.expect_error('S92 agência de fora não lê a lista da outra', $q$select public.agency_sponsorships('92000000-0000-4000-8000-000000009201')$q$, 'not_found');
+
+select tests.su();
+delete from public.campaign_requests where brand_id::text like '92000000-0000-4000-8000-00000000921%';
+delete from public.sponsorship_opportunities where agency_id = '92000000-0000-4000-8000-000000009201';
+delete from public.calendar_events where agency_id = '92000000-0000-4000-8000-000000009201';
+delete from public.talent_profiles where id::text like '92000000-%';
+delete from public.brand_members where brand_id::text like '92000000-0000-4000-8000-00000000921%';
+delete from public.agency_brands where agency_id in ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000009202');
+delete from public.brands where id::text like '92000000-0000-4000-8000-00000000921%';
+delete from public.inbox_notifications where user_id::text like '92000000-0000-4000-8000-00000000092%';
+delete from public.agency_members where agency_id in ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000009202');
+delete from public.agencies where id in ('92000000-0000-4000-8000-000000009201', '92000000-0000-4000-8000-000000009202');
+delete from auth.users where id::text like '92000000-0000-4000-8000-00000000092%';
+drop table t_s92;
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

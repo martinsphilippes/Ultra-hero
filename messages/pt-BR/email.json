@@ -42,6 +42,21 @@
         "subject": "Prazo chegando: {deal}",
         "body": "Uma tarefa de {deal} vence em menos de 24 horas ({date}).",
         "cta": "Ver tarefa"
+      },
+      "sponsorship_published": {
+        "subject": "Oportunidade de patrocínio: {title}",
+        "body": "A agência oferece uma situação de {talent} para a sua marca patrocinar: {title}. Responda até {date}.",
+        "cta": "Ver oportunidade"
+      },
+      "sponsorship_interest": {
+        "subject": "{brand} quer patrocinar: {title}",
+        "body": "{brand} respondeu “Quero patrocinar” em {title}. Veja a mensagem e decida no app.",
+        "cta": "Ver respostas"
+      },
+      "sponsorship_decided": {
+        "subject": "{status, select, won {Sua marca foi escolhida} sponsored {Patrocínio confirmado} cancelled {Oportunidade cancelada} other {Oportunidade encerrada}}: {title}",
+        "body": "{status, select, won {A agência escolheu a sua marca para patrocinar {title}. Siga pela campanha no app.} sponsored {{title} foi patrocinada por {brand}.} cancelled {A agência cancelou a oportunidade {title}.} other {A agência encerrou a oportunidade {title}.}}",
+        "cta": "Ver no app"
       }
     }
   }

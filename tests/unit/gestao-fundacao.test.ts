@@ -35,10 +35,10 @@ describe("hierarquia da agência", () => {
 
   it("menu por nível: Equipe só para o Adm, Configurações e Heróis para gestor+", () => {
     expect(agencyNavKeys("staff")).toEqual(["dashboard", "pipeline", "tasks", "agenda", "casting", "brands", "notifications"]);
-    expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings"]);
-    expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
+    expect(agencyNavKeys("manager")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "casting", "brands", "notifications", "settings"]);
+    expect(agencyNavKeys("admin")).toEqual(["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "casting", "brands", "notifications", "settings", "team", "finance", "history"]);
     expect(agencyNavKeys(null, true)).toContain("team");
-    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "team", "notifications"]);
+    expect(brandNavKeys()).toEqual(["dashboard", "board", "campaigns", "library", "catalog", "agenda", "sponsorships", "team", "notifications"]);
   });
 
   it("só o Adm convida a equipe, em qualquer nível", () => {
@@ -103,9 +103,9 @@ describe("erros das RPCs", () => {
 });
 
 describe("avisos", () => {
-  it("36 tipos, iguais ao check do banco (recriado na 0084 com o prazo chegando em 24 h)", () => {
-    expect(INBOX_KINDS).toHaveLength(36);
-    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0084_assinatura_emails_kit_portfolio.sql"), "utf8");
+  it("39 tipos, iguais ao check do banco (recriado na 0085 com os avisos do patrocínio)", () => {
+    expect(INBOX_KINDS).toHaveLength(39);
+    const sql = readFileSync(path.join(process.cwd(), "supabase", "migrations", "0085_oportunidade_patrocinio.sql"), "utf8");
     for (const kind of INBOX_KINDS) expect(sql).toContain(`'${kind}'`);
     expect(isInboxKind("member_joined")).toBe(true);
     expect(isInboxKind("auction_outbid")).toBe(false);

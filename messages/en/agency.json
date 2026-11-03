@@ -26,7 +26,10 @@
     "dealTasks": "Deal tasks",
     "tasks": "Tasks",
     "finance": "Finance",
-    "history": "History"
+    "history": "History",
+    "sponsorships": "Sponsorship opportunities",
+    "sponsorship": "Sponsorship opportunity",
+    "newSponsorship": "New opportunity"
   },
   "demoBanner": {
     "tag": "Demo",
@@ -316,7 +319,10 @@
     "already_signed": "These terms have already been signed.",
     "terms_changed": "The terms changed while you were reading. Open them again and check.",
     "invalid_tax_id": "Invalid CPF or CNPJ. Check the numbers.",
-    "name_required": "Type your full name (first and last name)."
+    "name_required": "Type your full name (first and last name).",
+    "deadline_passed": "The deadline to reply has passed.",
+    "already_responded": "Your brand already replied to this opportunity.",
+    "not_interested": "You can only pick brands that wanted to sponsor."
   },
   "casting": {
     "title": "Roster",

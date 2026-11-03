@@ -31,7 +31,8 @@
       "internalApproval": "Aprovação interna",
       "shortlist": "Pré-seleção",
       "rating": "Avaliar creator",
-      "budget": "Verba estourada"
+      "budget": "Verba estourada",
+      "sponsorship": "Oportunidade de patrocínio"
     },
     "kindsShort": {
       "approval": "Aprovações",
@@ -43,14 +44,16 @@
       "internalApproval": "Aprovações internas",
       "shortlist": "Pré-seleções",
       "rating": "Avaliações",
-      "budget": "Verba"
+      "budget": "Verba",
+      "sponsorship": "Patrocínios"
     },
     "internalPending": "Aguardando a sua aprovação",
     "internalReturned": "Devolvida: ajuste e peça de novo",
     "shortlistSent": "Aprove ou recuse cada creator",
     "shortlistDecided": "Decidida: crie a campanha com os aprovados",
     "budgetOver": "O comprometido passou da verba da campanha",
-    "budgetTalentsOver": "Um influenciador passou da verba dele"
+    "budgetTalentsOver": "Um influenciador passou da verba dele",
+    "sponsorshipHint": "Quero patrocinar ou não tenho interesse"
   },
   "talent": {
     "title": "Hoje",

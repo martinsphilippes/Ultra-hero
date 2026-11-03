@@ -91,6 +91,7 @@ const ICONS: Record<string, LucideIcon> = {
   library: Library,
   catalog: Search,
   agenda: CalendarDays,
+  sponsorships: Handshake,
   tasks: ClipboardList,
   finance: Wallet,
   history: ScrollText,

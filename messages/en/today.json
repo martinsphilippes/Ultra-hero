@@ -31,7 +31,8 @@
       "internalApproval": "Internal approval",
       "shortlist": "Shortlist",
       "rating": "Rate creator",
-      "budget": "Budget exceeded"
+      "budget": "Budget exceeded",
+      "sponsorship": "Sponsorship opportunity"
     },
     "kindsShort": {
       "approval": "Approvals",
@@ -43,14 +44,16 @@
       "internalApproval": "Internal approvals",
       "shortlist": "Shortlists",
       "rating": "Ratings",
-      "budget": "Budget"
+      "budget": "Budget",
+      "sponsorship": "Sponsorships"
     },
     "internalPending": "Waiting for your approval",
     "internalReturned": "Sent back: adjust and ask again",
     "shortlistSent": "Approve or decline each creator",
     "shortlistDecided": "Decided: create the campaign with the approved",
     "budgetOver": "Committed is above the campaign budget",
-    "budgetTalentsOver": "A creator is above their budget"
+    "budgetTalentsOver": "A creator is above their budget",
+    "sponsorshipHint": "Sponsor it or pass"
   },
   "talent": {
     "title": "Today",

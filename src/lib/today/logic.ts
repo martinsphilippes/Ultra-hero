@@ -228,7 +228,8 @@ export function urgencyOfDay(day: string | null, now: Date, timeZone: string, so
 // ---------------------------------------------------------------- itens do "Hoje"
 // 0081: aprovação interna (diretor aprova / analista ajusta o devolvido), pré-seleção e avaliar entrega fechada
 // 0082: verba estourada (marca); nota fiscal pendente e pagamento agendado (creator)
-export const BRAND_TODAY_KINDS = ["approval", "internalApproval", "shortlist", "script", "terms", "budget", "message", "deadline", "rating", "draft"] as const;
+// 0085: oportunidade de patrocínio aberta, no prazo e sem resposta da marca
+export const BRAND_TODAY_KINDS = ["approval", "internalApproval", "shortlist", "script", "terms", "sponsorship", "budget", "message", "deadline", "rating", "draft"] as const;
 export type BrandTodayKind = (typeof BRAND_TODAY_KINDS)[number];
 export const TALENT_TODAY_KINDS = ["adjustment", "scriptAdjustment", "terms", "offer", "deliverable", "task", "invoice", "payment"] as const;
 export type TalentTodayKind = (typeof TALENT_TODAY_KINDS)[number];
@@ -289,8 +290,15 @@ const pick = (u: Urgency | "later"): Urgency => (u === "later" ? "waiting" : u);
 /** Verba de uma campanha para o "Hoje" (0082, vem de brand_budget_overview): só o que precisa de atenção entra. */
 export type TodayBudget = { requestId: string; title: string; over: boolean; talentsOver: number };
 
+/** Oportunidade de patrocínio para o "Hoje" (0085, vem de brand_sponsorships): só a aberta, no prazo e sem resposta entra. */
+export type TodaySponsorship = { id: string; title: string; talentName: string; respondBy: string; open: boolean; answered: boolean };
+
 /** "Depende de mim hoje" da marca. */
-export function buildBrandToday(wb: BrandWorkboard, now: Date, opts: { staleDraftDays?: number; soonDays?: number; budgets?: TodayBudget[] } = {}): TodayItem<BrandTodayKind>[] {
+export function buildBrandToday(
+  wb: BrandWorkboard,
+  now: Date,
+  opts: { staleDraftDays?: number; soonDays?: number; budgets?: TodayBudget[]; sponsorships?: TodaySponsorship[] } = {},
+): TodayItem<BrandTodayKind>[] {
   const tz = wb.timezone;
   const soon = opts.soonDays ?? SOON_DAYS;
   const stale = opts.staleDraftDays ?? STALE_DRAFT_DAYS;
@@ -358,6 +366,16 @@ export function buildBrandToday(wb: BrandWorkboard, now: Date, opts: { staleDraf
       if (!b.over && b.talentsOver <= 0) continue;
       items.push({ ...base, key: `budget:${b.requestId}`, kind: "budget", urgency: "waiting", deadline: null, since: null,
         href: campaignHref(b.requestId, "camp-budget"), title: b.title || titleOf.get(b.requestId) || "", context: "", status: b.over ? "over" : "talents_over" });
+    }
+  }
+  // 0085: oportunidade de patrocínio esperando "Quero patrocinar" ou "Não tenho interesse" (só quem tem papel responde)
+  if (wb.role) {
+    for (const o of opts.sponsorships ?? []) {
+      if (!o.open || o.answered) continue;
+      const deadline = Date.parse(o.respondBy);
+      if (Number.isNaN(deadline) || deadline < now.getTime()) continue;
+      items.push({ ...base, key: `sponsorship:${o.id}`, kind: "sponsorship", urgency: pick(urgencyOf(o.respondBy, now, tz, soon)), deadline: o.respondBy, since: null,
+        href: `/marca/oportunidades/${o.id}`, title: o.title, context: o.talentName });
     }
   }
   for (const c of wb.campaigns) {

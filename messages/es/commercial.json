@@ -130,7 +130,8 @@
     "meeting": "Reunión",
     "recording": "Grabación",
     "commercial_date": "Fecha comercial",
-    "other": "Otro"
+    "other": "Otro",
+    "sponsorship": "Patrocinio"
   },
   "agenda": {
     "allDay": "todo el día",

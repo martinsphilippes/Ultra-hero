@@ -94,7 +94,8 @@
     "agenda": "Agenda",
     "tasks": "Tareas",
     "finance": "Finanzas",
-    "history": "Historial"
+    "history": "Historial",
+    "sponsorships": "Patrocinios"
   },
   "brand": {
     "dashboard": "Inicio",
@@ -104,6 +105,7 @@
     "campaigns": "Campañas",
     "library": "Biblioteca",
     "catalog": "Creators",
-    "agenda": "Agenda"
+    "agenda": "Agenda",
+    "sponsorships": "Patrocinios"
   }
 }

@@ -75,6 +75,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "tasks", href: "/agencia/tarefas" },
     // Agenda (0067): eventos de sistema do pipeline + reuniões, gravações e datas comerciais
     { key: "agenda", href: "/agencia/agenda" },
+    // Oportunidades de patrocínio (0085): situações do elenco oferecidas às marcas; gestor+
+    { key: "sponsorships", href: "/agencia/oportunidades" },
     { key: "casting", href: "/agencia/casting" },
     { key: "brands", href: "/agencia/marcas" },
     { key: "notifications", href: "/agencia/notificacoes" },
@@ -94,6 +96,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "library", href: "/marca/biblioteca" },
     { key: "catalog", href: "/marca/creators" },
     { key: "agenda", href: "/marca/agenda" },
+    // Oportunidades de patrocínio (0085): "Quero patrocinar" ou "Não tenho interesse"
+    { key: "sponsorships", href: "/marca/oportunidades" },
     { key: "team", href: "/marca/equipe" },
     { key: "notifications", href: "/marca/notificacoes" },
   ],

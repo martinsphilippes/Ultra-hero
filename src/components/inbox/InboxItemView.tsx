@@ -26,10 +26,13 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   usage_rights_expiring: CalendarDays,
   deliverable_comment: MessageSquare,
   task_due_soon: CalendarDays,
+  sponsorship_published: Handshake,
+  sponsorship_interest: Handshake,
+  sponsorship_decided: Handshake,
 };
 
 // Tokens que os textos dos avisos podem usar: sempre presentes (vazio quando o aviso não traz).
-const TOKENS = ["name", "brand", "deal", "talent", "step", "date", "status"] as const;
+const TOKENS = ["name", "brand", "deal", "talent", "step", "date", "status", "title"] as const;
 
 export function inboxValues(params: Record<string, string>): Record<string, string> {
   return Object.fromEntries(TOKENS.map((k) => [k, params[k] ?? ""]));

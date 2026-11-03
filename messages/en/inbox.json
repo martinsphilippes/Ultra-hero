@@ -158,6 +158,18 @@
     "task_due_soon": {
       "title": "Deadline coming up",
       "body": "A task in {deal} is due in less than 24 hours."
+    },
+    "sponsorship_published": {
+      "title": "Sponsorship opportunity",
+      "body": "{talent}: {title}. Reply by {date}."
+    },
+    "sponsorship_interest": {
+      "title": "Brand wants to sponsor",
+      "body": "{brand} wants to sponsor {title}."
+    },
+    "sponsorship_decided": {
+      "title": "Sponsorship decided",
+      "body": "{status, select, won {Your brand was chosen to sponsor {title}.} sponsored {{title} was sponsored by {brand}.} cancelled {The opportunity {title} was cancelled.} other {The opportunity {title} was closed.}}"
     }
   }
 }
