@@ -32,7 +32,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh flex-col">
       {/* Impressão (receitas): só o conteúdo da página; a casca do app fica de fora */}
 
-      <header className="uh-header uh-chrome sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
+      {/* Espaço do cabeçalho fixo: o cabeçalho fica preso ao topo da tela e o conteúdo rola por baixo */}
+      <div aria-hidden="true" className="h-[calc(var(--spacing-topbar)+1px+env(safe-area-inset-top,0px))] shrink-0 print:hidden" />
+      <header className="uh-header uh-chrome fixed inset-x-0 top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-4 px-gutter">
           <Link
             href="/"

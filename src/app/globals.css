@@ -273,6 +273,11 @@
     overscroll-behavior-x: none;
   }
 
+  /* Sem "elástico" na rolagem: a barra do topo e a de baixo ficam parados, a página não puxa nem mostra o fundo. */
+  html {
+    overscroll-behavior-y: none;
+  }
+
   body {
     background-color: var(--uh-bg);
     color: var(--uh-fg);
