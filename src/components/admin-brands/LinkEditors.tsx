@@ -210,7 +210,7 @@ function ErrorLine({ error }: { error: string | null }) {
   ) : null;
 }
 
-/** Marcas do herói (/admin/creators/[id]). */
+/** Marcas do herói (/admin/herois/[id]). */
 export function CreatorBrandsEditor({ creatorId, items, options }: { creatorId: string; items: BrandLinkItem[]; options: BrandOption[] }) {
   const t = useTranslations("adminOps.brands");
   const { pending, error, run } = useRun();

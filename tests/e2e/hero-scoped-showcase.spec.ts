@@ -112,8 +112,8 @@ test.describe("admin: programa e produtos do herói (só leitura)", () => {
 
   test("a tela do herói tem o atalho para os produtos que ele indica", async ({ page }) => {
     await loginAs(page, "admin");
-    await page.goto("/admin/creators");
-    await page.locator('main a[href^="/admin/creators/"]').filter({ hasText: "Neymar" }).first().click();
+    await page.goto("/admin/herois");
+    await page.locator('main a[href^="/admin/herois/"]').filter({ hasText: "Neymar" }).first().click();
     await expect(page.getByRole("heading", { level: 1, name: "Neymar" })).toBeVisible();
     const jump = page.getByTestId("hero-products-jump");
     await expect(jump).toHaveText(/Produtos vinculados \(\d+\)/);

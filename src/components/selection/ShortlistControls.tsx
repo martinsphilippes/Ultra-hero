@@ -99,7 +99,7 @@ export function NewShortlistButton() {
         }),
       (r) => {
         setOpen(false);
-        if (r.id) router.push(`/marca/creators/pre-selecao/${r.id}`);
+        if (r.id) router.push(`/marca/herois/pre-selecao/${r.id}`);
       },
     );
   };
@@ -194,7 +194,7 @@ export function ShortlistToolbar({ id, title, canSend, canDelete, canCampaign }:
         onConfirm={() =>
           run(
             () => deleteShortlistAction({ id }),
-            () => router.push("/marca/creators/pre-selecao"),
+            () => router.push("/marca/herois/pre-selecao"),
           )
         }
       >

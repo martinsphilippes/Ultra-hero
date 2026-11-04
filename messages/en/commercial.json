@@ -3,7 +3,7 @@
     "briefing_received": "Briefing received",
     "qualification": "Qualification",
     "shortlist": "Shortlist",
-    "consultation": "Creator consultation",
+    "consultation": "Hero consultation",
     "proposal_prep": "Preparing proposal",
     "proposal_sent": "Proposal sent",
     "negotiation": "Negotiation",
@@ -141,7 +141,7 @@
     "system": "automatic",
     "manual": "manual",
     "visibleBrand": "brand sees",
-    "visibleTalent": "creator sees",
+    "visibleTalent": "hero sees",
     "until": "until {date}",
     "monthNav": "Month",
     "prevMonth": "Previous month",
@@ -171,7 +171,7 @@
   },
   "taskSteps": {
     "1": "Brief received",
-    "2": "Alignment with the creator",
+    "2": "Alignment with the hero",
     "3": "Alignment meeting",
     "4": "Script sent",
     "5": "Script approved by the brand",
@@ -196,7 +196,7 @@
       "recorded_by_agency": "recorded by the agency",
       "e_signature": "electronic signature"
     },
-    "disclaimer": "The brand and the creator accept these terms with a simple electronic signature (full name and CPF/CNPJ), with a receipt. Each new version needs a new signature.",
+    "disclaimer": "The brand and the hero accept these terms with a simple electronic signature (full name and CPF/CNPJ), with a receipt. Each new version needs a new signature.",
     "version": "Terms v{n}",
     "draftLabel": "Draft v{n}",
     "history": "{count, plural, one {# previous version} other {# previous versions}}",
@@ -234,7 +234,7 @@
     },
     "side": {
       "agency": "Agency",
-      "talent": "Creator",
+      "talent": "Hero",
       "brand": "Brand"
     },
     "dueAt": "by {date}",
@@ -271,7 +271,7 @@
     },
     "decided": {
       "approve": "Script approved.",
-      "changes": "Changes requested from the creator."
+      "changes": "Changes requested from the hero."
     }
   },
   "deliverables": {
@@ -285,7 +285,7 @@
     "submissionVersion": "Submission v{n}",
     "proofVersion": "Proof v{n}",
     "submittedBy": {
-      "talent": "by the creator",
+      "talent": "by the hero",
       "agency": "by the agency"
     },
     "openLink": "open",
@@ -358,7 +358,7 @@
     "kinds": {
       "brand_receivable": "Receivable from brand",
       "commission": "Agency commission",
-      "talent_payout": "Creator payout"
+      "talent_payout": "Hero payout"
     },
     "status": {
       "planned": "Planned",
@@ -410,7 +410,7 @@
     "dataTitle": "Signature data",
     "party": "Party",
     "partyBrand": "Brand {brand}",
-    "partyTalent": "Creator {name}",
+    "partyTalent": "Hero {name}",
     "signerName": "Name",
     "cpf": "CPF",
     "cnpj": "CNPJ",

@@ -32,25 +32,25 @@ export function heroCardHref(card: HeroCard, heroId: string): string {
   const creator = encodeURIComponent(heroId);
   switch (card) {
     case "post":
-      return "/creator/post/new";
+      return "/heroi/post/novo";
     case "newContent":
       return `/admin/content/new?creator=${creator}`;
     case "content":
       return `/admin/content?creator=${creator}`;
     case "recipes":
-      return "/creator/recipes";
+      return "/heroi/receitas";
     case "links":
-      return "/creator/links";
+      return "/heroi/vinculos";
     case "dashboard":
-      return "/creator";
+      return "/heroi";
   }
 }
 
 /** Em qual atalho a tela atual está (para "Trocar hero" voltar ao mesmo fluxo com o novo herói). */
 export function heroCardForPath(pathname: string): HeroCard {
-  if (pathname.startsWith("/creator/post")) return "post";
-  if (pathname.startsWith("/creator/recipes")) return "recipes";
-  if (pathname.startsWith("/creator/links")) return "links";
+  if (pathname.startsWith("/heroi/post")) return "post";
+  if (pathname.startsWith("/heroi/receitas")) return "recipes";
+  if (pathname.startsWith("/heroi/vinculos")) return "links";
   if (pathname === "/admin/content/new") return "newContent";
   if (pathname.startsWith("/admin/content")) return "content";
   return "dashboard";

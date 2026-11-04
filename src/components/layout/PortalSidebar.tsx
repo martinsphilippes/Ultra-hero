@@ -45,6 +45,8 @@ import {
   Images,
   ShieldCheck,
   Sparkles,
+  Globe,
+  House,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -103,7 +105,9 @@ const ICONS: Record<string, LucideIcon> = {
   finance: Wallet,
   payments: Wallet,
   history: ScrollText,
-  // escritório do creator (0087)
+  // Portal do Herói (0087 + 0097)
+  home: House,
+  publicPage: Globe,
   opportunities: Sparkles,
   earnings: Wallet,
   availability: CalendarCheck,
@@ -129,11 +133,14 @@ export function PortalNavList({ portal, onNavigate, navKeys }: PortalNavListProp
   return (
     <nav aria-label={t("portalLabel")} className="flex flex-col gap-4">
       <ul className="flex flex-col gap-0.5">
-        {PORTAL_LINKS[portal].filter(({ key }) => !navKeys || navKeys.includes(key)).map(({ key, href }) => {
+        {PORTAL_LINKS[portal].filter(({ key }) => !navKeys || navKeys.includes(key)).map(({ key, href, group }, i, list) => {
           const Icon = ICONS[key] ?? LayoutDashboard;
           const active = isActive(pathname, href, root);
+          // grupo novo (Portal do Herói, 0097): título pequeno antes do primeiro item do grupo
+          const heading = group && group !== list[i - 1]?.group ? t(`groups.${group}`) : null;
           return (
             <li key={href}>
+              {heading ? <p className="px-3 pb-1 pt-3 type-caption font-semibold uppercase tracking-wider text-fg-subtle">{heading}</p> : null}
               <Link
                 href={href}
                 onClick={onNavigate}

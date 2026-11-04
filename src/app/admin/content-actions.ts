@@ -364,7 +364,7 @@ export async function setReviewRequiredAction(type: string, on: boolean, justifi
     const { error } = await supabase.rpc("admin_set_review_required", { p_type: parsed.data.type, p_on: parsed.data.on, p_reason: parsed.data.justification });
     if (error) return fail(error);
     revalidatePath("/admin/content/settings");
-    revalidatePath("/creator/recipes");
+    revalidatePath("/heroi/receitas");
     const t = await getTranslations("recipes.admin");
     return { ok: true, message: t("changed") };
   } catch (error) {

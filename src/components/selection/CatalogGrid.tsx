@@ -28,7 +28,7 @@ export function CatalogGrid({ cards, ratings }: Props) {
           const on = ids.includes(card.id);
           return (
             <li key={card.id} className="flex flex-col gap-1.5">
-              <TalentCardCompact card={card} href={`/marca/creators/${card.id}`} />
+              <TalentCardCompact card={card} href={`/marca/herois/${card.id}`} />
               <div className="flex flex-wrap items-center justify-between gap-2 px-1">
                 {r && r.count > 0 ? (
                   <Badge variant="accent" icon={<Star aria-hidden="true" />} data-testid="catalog-rating">

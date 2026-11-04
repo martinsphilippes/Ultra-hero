@@ -113,7 +113,7 @@ test.describe("catálogo de receitas (visitante)", () => {
 
   test("robots.txt tira as áreas de trabalho e o Modo Cozinha dos buscadores", async ({ request }) => {
     const body = await (await request.get("/robots.txt")).text();
-    for (const path of ["/creator", "/admin", "/profile", "/*/cozinha"]) expect(body).toContain(`Disallow: ${path}`);
+    for (const path of ["/heroi", "/admin", "/profile", "/*/cozinha"]) expect(body).toContain(`Disallow: ${path}`);
   });
 });
 

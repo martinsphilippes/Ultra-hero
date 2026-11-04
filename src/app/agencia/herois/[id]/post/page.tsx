@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { readVideoUploadConfigured } from "@/app/creator/(hero)/_lib/video-post";
+import { readVideoUploadConfigured } from "@/app/heroi/_lib/video-post";
 import { PostComposer } from "@/components/creator/post/PostComposer";
 import { PageHeader } from "@/components/ui";
 import { actingClient, getActingHero } from "@/lib/acting-hero/server";

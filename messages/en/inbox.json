@@ -2,7 +2,7 @@
   "bell": "Notices",
   "bellUnread": "Unread notices: {count}",
   "title": "Notices",
-  "sheetDescription": "Notices from your agency, brand or office arrive here.",
+  "sheetDescription": "Notices from your agency, your brand or the Hero Portal arrive here.",
   "pageDescription": "Everything that happened to you in the management portals.",
   "seeAll": "See all",
   "markAll": "Mark all as read",
@@ -64,7 +64,7 @@
       "body": "There is an update on {deal}."
     },
     "opportunity_answered": {
-      "title": "Creator response",
+      "title": "Hero response",
       "body": "{talent} answered the opportunity for {deal}."
     },
     "contract_acceptance_requested": {
@@ -180,7 +180,7 @@
       "body": "{brand} published {title}. Proposals until {date}."
     },
     "brand_call_interest": {
-      "title": "Interested creator",
+      "title": "Interested hero",
       "body": "{talent} is interested in the request {title}."
     },
     "brand_call_negotiation": {

@@ -150,8 +150,8 @@ describe("erros, menus e travas", () => {
   });
 
   it("oportunidades e disponibilidade existem no app das lojas; pipeline e campanhas da marca não", () => {
-    expect(isBlockedInNativeApp("/creator/escritorio/oportunidades")).toBe(false);
-    expect(isBlockedInNativeApp("/creator/escritorio/disponibilidade")).toBe(false);
+    expect(isBlockedInNativeApp("/heroi/oportunidades")).toBe(false);
+    expect(isBlockedInNativeApp("/heroi/disponibilidade")).toBe(false);
     expect(isBlockedInNativeApp("/agencia/pipeline")).toBe(true);
     expect(isBlockedInNativeApp("/marca/campanhas/nova")).toBe(true);
   });

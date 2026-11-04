@@ -5,7 +5,6 @@
   },
   "shortcuts": {
     "title": "Agenda y finanzas",
-    "tabsLabel": "Agenda y finanzas del héroe",
     "agenda": "Agenda",
     "finance": "Finanzas",
     "next": "Próximo compromiso",
@@ -83,7 +82,8 @@
       "addItem": "Añadir ítem",
       "back": "Volver",
       "save": "Guardar"
-    }
+    },
+    "ownTitle": "Compromisos de {name}"
   },
   "finance": {
     "title": "Servicios y ganancias",
@@ -187,6 +187,7 @@
       "simulated": "Registro interno de control: aquí no se cobra, paga ni transfiere nada.",
       "back": "Volver",
       "save": "Guardar"
-    }
+    },
+    "ownTitle": "Servicios de {name}"
   }
 }

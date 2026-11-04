@@ -181,7 +181,7 @@
     "final": "Vigente ahora",
     "before": "Presupuesto actual",
     "counter": "Valor propuesto por la agencia",
-    "talentsLine": "Presupuesto por creator pedido:",
+    "talentsLine": "Presupuesto por héroe pedido:",
     "reasonLabel": "Motivo",
     "status": {
       "pending_owner": "Esperando al dueño",
@@ -206,7 +206,7 @@
     "plan": {
       "title": "Reajuste propuesto",
       "empty": "Sin cambios además del valor.",
-      "creators": "Creators",
+      "creators": "Héroes",
       "deliverables": "Entregas",
       "period": "Período previsto",
       "schedule": "Fechas y etapas",
@@ -255,7 +255,7 @@
     "newAmountHint": "Presupuesto actual: {amount}.",
     "reason": "Motivo",
     "reasonHint": "¿Por qué cambiar? La agencia lo lee antes de decidir.",
-    "talentsTitle": "Presupuesto por creator (opcional)",
+    "talentsTitle": "Presupuesto por héroe (opcional)",
     "talentsHint": "Cambia solo lo necesario; lo demás queda igual.",
     "amountInvalid": "Indica un valor válido.",
     "reasonShort": "Explica el motivo (al menos 5 letras).",
@@ -275,12 +275,12 @@
     "agencyDeclineHint": "La marca recibe el aviso con el motivo. Sigue el presupuesto actual.",
     "proposeHint": "Di qué cambia con el nuevo presupuesto. La marca confirma; lo que no sea automático se vuelve tarea de este negocio.",
     "counterHint": "Déjalo vacío para aceptar el valor pedido.",
-    "creatorsHint": "Mantener o quitar los creators del negocio; agregar nuevos por nombre.",
-    "creatorName": "Nombre del creator",
+    "creatorsHint": "Mantener o quitar los héroes del negocio; agregar nuevos por nombre.",
+    "creatorName": "Nombre del héroe",
     "creatorAction": "Qué hacer",
     "removeRow": "Quitar",
     "creatorNote": "Nota",
-    "addCreator": "Agregar creator",
+    "addCreator": "Agregar héroe",
     "changeDeliverables": "Cambiar las entregas",
     "periodHint": "Ahora: {start} a {end}. Déjalo vacío para no cambiar.",
     "periodStart": "Inicio",
@@ -290,7 +290,7 @@
     "agencyNote": "Mensaje para la marca",
     "agencyNoteHint": "Opcional.",
     "planErrors": {
-      "creator_name": "Ponle nombre a cada creator agregado.",
+      "creator_name": "Ponle nombre a cada héroe agregado.",
       "period_order": "El período termina antes de empezar.",
       "too_long": "Algún texto pasó del límite."
     }

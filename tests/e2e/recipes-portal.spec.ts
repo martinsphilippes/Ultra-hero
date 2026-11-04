@@ -37,7 +37,7 @@ test.describe("Portal do Chef: Minhas Receitas", () => {
   test("lista com filtros por GET, Nova receita e axe; a faixa mostra o herói escolhido pelo admin", async ({ page }) => {
     await loginAsAdminActing(page, "recipes");
     await expect(page.getByRole("heading", { level: 1, name: "Minhas Receitas" })).toBeVisible();
-    await expect(page.getByTestId("new-recipe")).toHaveAttribute("href", "/creator/recipes/new");
+    await expect(page.getByTestId("new-recipe")).toHaveAttribute("href", "/heroi/receitas/nova");
     await expect(page.getByTestId("recipes-count")).toBeVisible();
 
     // filtros recolhidos atrás de "Filtros" (busca sempre à vista); abre ao tocar e já vem aberto com filtro ativo
@@ -82,7 +82,7 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
 
     try {
       // ---- etapa 1 (rascunho ainda não existe)
-      await page.goto("/creator/recipes/new");
+      await page.goto("/heroi/receitas/nova");
       // só preenche depois da hidratação (antes disso o React refaz os campos e o clique se perde)
       await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-ready", "true", { timeout: 20_000 });
       await expect(page.getByRole("heading", { level: 2, name: "Informações básicas" })).toBeVisible();
@@ -112,7 +112,7 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await expect(page.getByTestId("recipe-total")).toHaveValue("15");
       await expect(page.getByText(/preparo \+ cozimento \+ descanso = 15\smin/)).toBeVisible();
       await page.getByTestId("recipe-next").click();
-      await expect(page).toHaveURL(/\/creator\/recipes\/[0-9a-f-]+\/edit\?step=ingredientes$/, { timeout: 30_000 });
+      await expect(page).toHaveURL(/\/heroi\/receitas\/[0-9a-f-]+\/editar\?step=ingredientes$/, { timeout: 30_000 });
       const id = page.url().split("/")[5];
 
       // ---- etapa 2: dois ingredientes e reordenação com ↓
@@ -216,7 +216,7 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
 
       // ---- prévia com o RecipeView
       await page.getByTestId("recipe-open-preview").click();
-      await expect(page).toHaveURL(new RegExp(`/creator/recipes/${id}/preview$`), { timeout: 20_000 });
+      await expect(page).toHaveURL(new RegExp(`/heroi/receitas/${id}/previa$`), { timeout: 20_000 });
       await expect(page.getByTestId("recipe-preview-banner")).toBeVisible();
       await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
       const flour = page.getByTestId("recipe-ingredient").filter({ hasText: "Farinha de aveia" });
@@ -229,7 +229,7 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       if (REAL_MEDIA) await expect(page.getByTestId("recipe-gallery")).toBeVisible();
 
       // ---- recarregar: tudo veio do banco
-      await page.goto(`/creator/recipes/${id}/edit?step=ingredientes`);
+      await page.goto(`/heroi/receitas/${id}/editar?step=ingredientes`);
       await expect(page.getByTestId("ingredient-name").nth(0)).toHaveValue("Farinha de aveia");
       await expect(page.getByTestId("ingredient-amount").nth(0)).toHaveValue("1/2");
       await expect(page.getByTestId("ingredient-name").nth(1)).toHaveValue("Ovo");
@@ -259,7 +259,7 @@ test.describe("Portal do Chef: editor em 6 etapas", () => {
       await expect(page.getByTestId("recipe-recovery")).toHaveCount(0);
 
       // ---- versões: rascunho nunca publicado ainda não tem versão
-      await page.goto(`/creator/recipes/${id}/versions`);
+      await page.goto(`/heroi/receitas/${id}/versoes`);
       await expect(page.getByText("Ainda não há versões.", { exact: false })).toBeVisible();
     } finally {
       // ---- excluir o rascunho (e as fotos, se houve envio real): nada fica no remoto
@@ -285,7 +285,7 @@ test.describe("renderizador estruturado na página pública", () => {
 });
 
 test.describe("admin: revisão por tipo e fila de credenciais", () => {
-  test("configurações mostram a regra de revisão por tipo (só leitura aqui) e /admin/creators a fila de credenciais", async ({ page }) => {
+  test("configurações mostram a regra de revisão por tipo (só leitura aqui) e /admin/herois a fila de credenciais", async ({ page }) => {
     await loginAs(page, "admin", { home: /\/admin$/ });
     await page.goto("/admin/content/settings");
     const review = page.getByTestId("review-required-settings");
@@ -298,7 +298,7 @@ test.describe("admin: revisão por tipo e fila de credenciais", () => {
       await expect(row).not.toHaveAttribute("data-toggle", "toggle");
       await expect(row.getByRole("button", { name: "Ligar" })).toHaveCount(0);
     }
-    await page.goto("/admin/creators");
+    await page.goto("/admin/herois");
     await expect(page.getByRole("heading", { level: 2, name: "Credenciais dos heróis" })).toBeVisible();
   });
 

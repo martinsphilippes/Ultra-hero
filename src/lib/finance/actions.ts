@@ -112,8 +112,8 @@ export async function attachInvoiceAction(input: z.input<typeof invoiceAttachSch
     const supabase = await createClient();
     const { error } = await supabase.rpc("payout_invoice_attach", { p_entry: parsed.data.entryId, p_document: parsed.data.documentId });
     if (error) return agencyFail(error);
-    revalidatePath("/creator/escritorio/ganhos");
-    revalidatePath("/creator/escritorio");
+    revalidatePath("/heroi/financeiro");
+    revalidatePath("/heroi");
     const t = await getTranslations("talent.earnings");
     return { ok: true, message: t("invoiceSent") };
   } catch (error) {

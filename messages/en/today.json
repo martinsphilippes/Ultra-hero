@@ -30,7 +30,7 @@
       "draft": "Stalled draft",
       "internalApproval": "Internal approval",
       "shortlist": "Shortlist",
-      "rating": "Rate creator",
+      "rating": "Rate hero",
       "budget": "Budget exceeded",
       "sponsorship": "Sponsorship opportunity"
     },
@@ -49,10 +49,10 @@
     },
     "internalPending": "Waiting for your approval",
     "internalReturned": "Sent back: adjust and ask again",
-    "shortlistSent": "Approve or decline each creator",
+    "shortlistSent": "Approve or decline each hero",
     "shortlistDecided": "Decided: create the campaign with the approved",
     "budgetOver": "Committed is above the campaign budget",
-    "budgetTalentsOver": "A creator is above their budget",
+    "budgetTalentsOver": "A hero is above their budget",
     "sponsorshipHint": "Accept a tier, make an offer or decline"
   },
   "talent": {
@@ -88,7 +88,7 @@
   },
   "board": {
     "title": "Actions by stage",
-    "description": "Every deliverable from every creator, across all campaigns.",
+    "description": "Every deliverable from every hero, across all campaigns.",
     "seeBoard": "Open board",
     "tabsLabel": "Stages",
     "unavailable": "The board is not available yet.",
@@ -107,8 +107,8 @@
       "published": "Published"
     },
     "stageHints": {
-      "sent": "Proposal sent, waiting on the agency and the creator.",
-      "accepted": "The creator accepted; production has not started.",
+      "sent": "Proposal sent, waiting on the agency and the hero.",
+      "accepted": "The hero accepted; production has not started.",
       "creating": "In production, with changes requested or approved to publish.",
       "awaiting": "A version was sent and is waiting for your approval.",
       "published": "Published or proven."

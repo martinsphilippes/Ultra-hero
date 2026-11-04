@@ -9,7 +9,7 @@ export function ConsentBanner() {
       <ShieldAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
       <span>
         {t("banner")}{" "}
-        <a href="/creator/escritorio/consentimento" className="font-semibold underline underline-offset-2">
+        <a href="/heroi/consentimento" className="font-semibold underline underline-offset-2">
           {t("bannerLink")}
         </a>
       </span>

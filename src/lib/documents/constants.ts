@@ -11,7 +11,7 @@ const REVALIDATE_PATHS = [
   /^\/agencia\/casting\/[0-9a-f-]{36}\/documentos$/,
   /^\/agencia\/negocios\/[0-9a-f-]{36}\/documentos$/,
   /^\/marca\/campanhas\/[0-9a-f-]{36}$/,
-  /^\/creator\/escritorio\/ganhos$/,
+  /^\/heroi\/financeiro$/,
   /^\/marca\/pagamentos$/,
 ];
 

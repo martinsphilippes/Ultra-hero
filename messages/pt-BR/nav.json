@@ -12,8 +12,7 @@
     "seller": "Fornecedor",
     "professional": "Profissional",
     "agency": "Agência",
-    "brand": "Marca",
-    "office": "Creator"
+    "brand": "Marca"
   },
   "admin": {
     "dashboard": "Painel",
@@ -47,12 +46,21 @@
     "dashboard": "Painel",
     "content": "Meus conteúdos",
     "links": "Vínculos de produtos",
-    "recipes": "Minhas Receitas",
-    "office": "Escritório",
+    "recipes": "Receitas",
     "team": "Equipe",
     "newContent": "Novo conteúdo",
     "agenda": "Agenda",
-    "finance": "Financeiro"
+    "finance": "Financeiro",
+    "home": "Início",
+    "opportunities": "Oportunidades",
+    "tasks": "Tarefas",
+    "availability": "Disponibilidade",
+    "publicPage": "Página pública",
+    "kit": "Media kit",
+    "portfolio": "Portfólio",
+    "documents": "Documentos",
+    "consent": "Consentimento",
+    "notifications": "Avisos"
   },
   "seller": {
     "dashboard": "Painel",
@@ -80,12 +88,11 @@
   "portalLabel": "Portal",
   "portalDescription": {
     "admin": "Administração do Groscove Ultra",
-    "creator": "Área do herói",
+    "creator": "Portal do Herói",
     "seller": "Área do fornecedor",
     "professional": "Área do profissional",
     "agency": "Centro de trabalho da agência",
-    "brand": "Área da marca",
-    "office": "Escritório do creator"
+    "brand": "Área da marca"
   },
   "backToProfile": "Perfil",
   "agency": {
@@ -110,22 +117,14 @@
     "notifications": "Avisos",
     "campaigns": "Campanhas",
     "library": "Biblioteca",
-    "catalog": "Creators",
+    "catalog": "Heróis",
     "agenda": "Agenda",
     "sponsorships": "Patrocínios",
     "payments": "Pagamentos"
   },
-  "office": {
-    "dashboard": "Início",
-    "opportunities": "Oportunidades",
-    "tasks": "Tarefas",
-    "agenda": "Agenda",
-    "earnings": "Ganhos",
-    "availability": "Disponibilidade",
-    "kit": "Media kit",
-    "portfolio": "Portfólio",
-    "documents": "Documentos",
-    "consent": "Consentimento",
-    "notifications": "Avisos"
+  "groups": {
+    "content": "Conteúdo",
+    "work": "Trabalho",
+    "profile": "Perfil"
   }
 }

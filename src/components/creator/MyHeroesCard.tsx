@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { StatusBadge } from "@/components/admin";
 import { Avatar, Badge } from "@/components/ui";
-import type { MyHero } from "@/app/creator/(hero)/_lib/creator";
+import type { MyHero } from "@/app/heroi/_lib/creator";
 import { heroCardCompact, showWorkOnHero } from "@/lib/creator-content/rules";
 import { WorkOnHeroButton } from "./content/WorkOnHeroButton";
 

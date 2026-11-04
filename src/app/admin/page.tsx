@@ -91,7 +91,7 @@ async function DashboardContent({ days }: { days: number }) {
 
   const pending = [
     // 0092: heróis criados por convite nascem pendentes; o admin aprova em Personalidades
-    { key: "pendingHeroes", count: pendingHeroes.count ?? 0, href: "/admin/creators", nav: tn("creators") },
+    { key: "pendingHeroes", count: pendingHeroes.count ?? 0, href: "/admin/herois", nav: tn("creators") },
     { key: "inReview", count: inReview.count ?? 0, href: "/admin/content", nav: tn("content") },
     { key: "suggestedLinks", count: suggested.count ?? 0, href: "/admin/links", nav: tn("links") },
     { key: "newFeedback", count: newFeedback.count ?? 0, href: "/admin/feedback?status=new", nav: tn("feedback") },

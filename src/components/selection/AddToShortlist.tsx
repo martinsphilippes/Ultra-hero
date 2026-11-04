@@ -51,7 +51,7 @@ export function AddToShortlist({ talentId, talentName, lists }: Props) {
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
       setOpen(false);
-      router.push(`/marca/creators/pre-selecao/${target}`);
+      router.push(`/marca/herois/pre-selecao/${target}`);
     });
   }
 

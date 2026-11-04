@@ -30,7 +30,7 @@ test.describe("composer: envio real para o Cloudflare (E2E_STREAM_REAL=1)", () =
     const lister = await page.context().newPage();
     const before = await draftLinks(lister);
 
-    await page.goto("/creator/post/new");
+    await page.goto("/heroi/post/novo");
     await expect(page.getByTestId("video-not-configured"), "Stream ou service role não configurados neste ambiente").toHaveCount(0);
     // Como a pessoa faz: toca no botão e escolhe o arquivo. Esperar a hidratação antes: um arquivo
     // posto no input antes de o React ligar o onChange se perde (a tela fica no passo 1).

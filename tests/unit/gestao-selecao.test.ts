@@ -48,7 +48,7 @@ describe("comparar", () => {
     expect(canCompare([A])).toBe(false);
     expect(canCompare([A, B])).toBe(true);
     expect(canCompare([A, B, C, D, E])).toBe(false);
-    expect(compareHref([A, B])).toBe(`/marca/creators/comparar?ids=${A},${B}`);
+    expect(compareHref([A, B])).toBe(`/marca/herois/comparar?ids=${A},${B}`);
   });
   it("janela de 60 dias: conta livres e indisponíveis, o bloqueio vence a sobreposição e o resto é não declarado", () => {
     const w = availabilityWindow(
@@ -200,7 +200,7 @@ describe("Depende de mim hoje (0081)", () => {
     expect(buildBrandToday(wb("owner", { shortlists: forOwner }), NOW).map((i) => i.key)).toEqual(["shortlist:s1"]);
     const staff = buildBrandToday(wb("staff", { shortlists }), NOW);
     expect(staff.map((i) => i.key)).toEqual(["shortlist:s2"]);
-    expect(staff[0]).toMatchObject({ href: "/marca/creators/pre-selecao/s2", status: "decided" });
+    expect(staff[0]).toMatchObject({ href: "/marca/herois/pre-selecao/s2", status: "decided" });
   });
   it("avaliar: entrega fechada há até 30 dias e ainda sem nota", () => {
     const deliverables = [

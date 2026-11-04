@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { saveCreatorReferencesAction } from "@/app/admin/creators/reference-actions";
+import { saveCreatorReferencesAction } from "@/app/admin/herois/reference-actions";
 import { Button, FormField, Input, NumberInput, useToast } from "@/components/ui";
 import { COMPARE_METRIC_DEFS, COMPARE_METRICS, type CompareMetricKey } from "@/lib/heroes/compare";
 

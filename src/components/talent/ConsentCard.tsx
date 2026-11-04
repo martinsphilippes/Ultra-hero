@@ -3,7 +3,7 @@
 import { ShieldCheck, ShieldOff } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useTransition } from "react";
-import { setConsentAction } from "@/app/creator/escritorio/actions";
+import { setConsentAction } from "@/app/heroi/(agencia)/actions";
 import { Badge, Button, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";

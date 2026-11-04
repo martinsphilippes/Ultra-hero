@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { updateCreatorProfile } from "@/app/creator/(hero)/profile/actions";
+import { updateCreatorProfile } from "@/app/heroi/pagina/actions";
 import { useValidationMessage } from "@/components/editors/content/fields";
 import { AvatarPhotoPicker } from "@/components/me/AvatarPhotoPicker";
 import { Avatar, Button, FormField, Input, Textarea, useToast } from "@/components/ui";

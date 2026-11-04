@@ -68,7 +68,7 @@ test.describe("agenda integrada", () => {
   test("escritório: aba Agenda com o mês e o feed", async ({ page }) => {
     await loginAs(page, "talent");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0065 ainda não aplicada");
-    await page.goto("/creator/escritorio/agenda");
+    await page.goto("/heroi/agenda");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0067 ainda não aplicada");
     await expect(page.getByTestId("office-agenda")).toBeVisible();
     await expect(page.getByTestId("month-nav")).toBeVisible();

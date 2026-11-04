@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createRecipeDraft, deleteRecipeDraft, duplicateRecipe, publishRecipe, registerRecipeMedia, saveRecipe, submitRecipe } from "@/app/creator/(hero)/recipes/actions";
+import { createRecipeDraft, deleteRecipeDraft, duplicateRecipe, publishRecipe, registerRecipeMedia, saveRecipe, submitRecipe } from "@/app/heroi/receitas/actions";
 import { cleanupRecipeOrphans } from "@/app/api/cron/_lib/recipe-orphans";
 import { buildPayload, emptyDraft } from "@/lib/recipes/draft";
 
@@ -165,7 +165,7 @@ describe("saveRecipe", () => {
     const r = await saveRecipe({ id: ids.CONTENT, payload: payload(), expectedUpdatedAt: UPDATED });
     expect(r).toEqual({ ok: true, updatedAt: "2026-10-22T10:05:00Z" });
     expect(calls("recipe_save")[0].args).toMatchObject({ p_content: ids.CONTENT, p_expected_updated_at: UPDATED });
-    expect(state.revalidated).toContain(`/creator/recipes/${ids.CONTENT}/preview`);
+    expect(state.revalidated).toContain(`/heroi/receitas/${ids.CONTENT}/previa`);
   });
   it("stale_draft vira código (o editor abre o diálogo de conflito)", async () => {
     state.rpc.recipe_save = { data: null, error: { message: "stale_draft" } };
@@ -310,7 +310,7 @@ describe("excluir e duplicar", () => {
     state.rpc.creator_delete_recipe = { data: { id: ids.CONTENT, slug: "bowl-abc", paths: ["a/b/c.webp"], uid: null }, error: null };
     expect(await deleteRecipeDraft({ id: ids.CONTENT })).toEqual({ ok: true });
     expect(state.removed).toEqual([["a/b/c.webp"]]);
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/creator/recipes", "/explore", "/content/bowl-abc"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/heroi/receitas", "/explore", "/content/bowl-abc"]));
   });
   it("banco sem a 0036 (PGRST202): rascunho cai na função antiga; arquivada recebe delete_unavailable sem outra chamada", async () => {
     state.rpc.creator_delete_recipe = { data: null, error: { message: "Could not find the function", code: "PGRST202" } };

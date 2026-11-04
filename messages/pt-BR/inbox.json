@@ -2,7 +2,7 @@
   "bell": "Avisos",
   "bellUnread": "Avisos não lidos: {count}",
   "title": "Avisos",
-  "sheetDescription": "Os avisos da sua agência, marca ou escritório chegam aqui.",
+  "sheetDescription": "Os avisos da sua agência, da sua marca ou do Portal do Herói chegam aqui.",
   "pageDescription": "Tudo o que aconteceu com você nos portais de gestão.",
   "seeAll": "Ver todos",
   "markAll": "Marcar todas como lidas",
@@ -64,7 +64,7 @@
       "body": "Houve uma atualização em {deal}."
     },
     "opportunity_answered": {
-      "title": "Resposta do creator",
+      "title": "Resposta do herói",
       "body": "{talent} respondeu à oportunidade de {deal}."
     },
     "contract_acceptance_requested": {
@@ -180,7 +180,7 @@
       "body": "{brand} publicou {title}. Propostas até {date}."
     },
     "brand_call_interest": {
-      "title": "Creator com interesse",
+      "title": "Herói com interesse",
       "body": "{talent} tem interesse no pedido {title}."
     },
     "brand_call_negotiation": {

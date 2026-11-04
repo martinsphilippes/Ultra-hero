@@ -19,7 +19,7 @@ import { publicSetting, rpcExists } from "./helpers/supabase";
 //    Vitest (shopping-list: commerce_off e commerce_disabled). Nenhuma configuração global é alterada aqui;
 //  - persistência: favoritar pelo botão (desfaz antes se já estava favorita), recarregar, sair e entrar
 //    (g3, conta free); o estado inicial volta no afterEach;
-//  - permissões: editar receita de outro chef dá 404; consumidor no /creator sai do portal; visitante não
+//  - permissões: editar receita de outro chef dá 404; consumidor no /heroi sai do portal; visitante não
 //    vê ingredientes;
 //  - comércio: o kit da g3 aparece na lista de compras no estado do comércio (ligado: carrinho de teste ou
 //    indisponível; desligado: "Compras de teste desligadas").
@@ -77,7 +77,7 @@ async function clickNext(page: Page, step: string) {
 
 /** Cria pelo editor de 6 etapas: básicos, 2 ingredientes, 2 etapas e "Nenhum alérgeno". Devolve o id. */
 async function createRecipe(page: Page, title: string): Promise<string> {
-  await page.goto("/creator/recipes/new");
+  await page.goto("/heroi/receitas/nova");
   // só preenche depois da hidratação (antes disso o React refaz os campos e o clique se perde)
   await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-ready", "true", { timeout: 20_000 });
   await page.getByTestId("recipe-title").fill(title);
@@ -87,7 +87,7 @@ async function createRecipe(page: Page, title: string): Promise<string> {
   await page.getByTestId("recipe-prep").fill("5");
   await page.getByTestId("recipe-cook").fill("10");
   await page.getByTestId("recipe-next").click();
-  await expect(page).toHaveURL(/\/creator\/recipes\/[0-9a-f-]+\/edit\?step=ingredientes$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/heroi\/receitas\/[0-9a-f-]+\/editar\?step=ingredientes$/, { timeout: 30_000 });
   const id = page.url().split("/")[5];
 
   await page.getByTestId("add-ingredient").click();
@@ -156,7 +156,7 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     test.skip(info.project.name !== "mobile", "grava no remoto: roda só no projeto mobile");
     test.setTimeout(240_000);
     const { id, title } = await startRun(page);
-    await page.goto(`/creator/recipes/${id}/edit?step=ingredientes`);
+    await page.goto(`/heroi/receitas/${id}/editar?step=ingredientes`);
     await expect(page.getByTestId("ingredient-name").nth(0)).toHaveValue("Farinha de aveia");
     await expect(page.getByTestId("ingredient-amount").nth(0)).toHaveValue("1/2");
     await expect(page.getByTestId("ingredient-unit").nth(0)).toHaveValue("cup");
@@ -179,13 +179,13 @@ test.describe("jornada do chef e publicação efêmera (P4)", () => {
     const { id, title } = await startRun(page);
 
     // ---- publicar (só com a revisão desligada; o rascunho criado sai no afterEach)
-    await page.goto(`/creator/recipes/${id}/edit?step=revisao`);
+    await page.goto(`/heroi/receitas/${id}/editar?step=revisao`);
     await expect(page.getByText("Tudo pronto para publicar.")).toBeVisible();
     const publish = page.getByTestId("recipe-publish");
     test.skip((await publish.count()) === 0, "revisão de receitas ligada: o envio para revisão e a aprovação estão no S28");
     await publish.click();
-    await expect(page).toHaveURL(/\/creator\/recipes$/, { timeout: 30_000 });
-    await page.goto(`/creator/recipes?q=${encodeURIComponent(title)}`);
+    await expect(page).toHaveURL(/\/heroi\/receitas$/, { timeout: 30_000 });
+    await page.goto(`/heroi/receitas?q=${encodeURIComponent(title)}`);
     await expect(page.getByTestId("recipes-count")).toHaveText("1 receita");
     // só o selo da linha: a opção "Publicada" do filtro de situação também existe, recolhida no painel "Filtros"
     await expect(page.getByText("Publicada", { exact: true }).locator("visible=true").first()).toBeVisible();
@@ -297,24 +297,24 @@ test.describe("permissões", () => {
 
   test("admin pelo herói: editar a receita de outro chef dá 404", async ({ page }) => {
     await loginAsAdminActing(page, "recipes");
-    await page.goto(`/creator/recipes/${G6_ID}/edit`);
+    await page.goto(`/heroi/receitas/${G6_ID}/editar`);
     await expectNotFound(page);
     await expect(page.getByTestId("recipe-wizard")).toHaveCount(0);
     await expect(page.getByText("Sopa de legumes")).toHaveCount(0);
     // a prévia e as versões também não abrem
-    await page.goto(`/creator/recipes/${G6_ID}/preview`);
+    await page.goto(`/heroi/receitas/${G6_ID}/previa`);
     await expectNotFound(page);
     await expect(page.getByTestId("recipe-view")).toHaveCount(0);
-    await page.goto(`/creator/recipes/${G6_ID}/versions`);
+    await page.goto(`/heroi/receitas/${G6_ID}/versoes`);
     await expectNotFound(page);
   });
 
-  test("consumidor no /creator sai do portal (vai para o início) e o visitante vai para o login", async ({ page }) => {
-    await page.goto("/creator/recipes");
+  test("consumidor no /heroi sai do portal (vai para o início) e o visitante vai para o login", async ({ page }) => {
+    await page.goto("/heroi/receitas");
     await expect(page).toHaveURL(/\/login\?next=/);
     await loginAs(page, "free");
-    await page.goto("/creator/recipes");
-    await expect(page).not.toHaveURL(/\/creator/);
+    await page.goto("/heroi/receitas");
+    await expect(page).not.toHaveURL(/\/heroi/);
     await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1, name: "Minhas Receitas" })).toHaveCount(0);
   });

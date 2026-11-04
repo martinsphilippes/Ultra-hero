@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/creator/(hero)/post/actions";
-import { createContent, publishContent, unpublishContent, updateContent } from "@/app/creator/(hero)/content/actions";
+import { discardVideoPost, publishVideoPost, startVideoPost } from "@/app/heroi/post/actions";
+import { createContent, publishContent, unpublishContent, updateContent } from "@/app/heroi/conteudos/actions";
 import type { ContentFormValues } from "@/components/editors/types";
-import { slugify, uniqueSlug } from "@/app/creator/(hero)/_lib/slug";
+import { slugify, uniqueSlug } from "@/app/heroi/_lib/slug";
 import { MAX_POST_BYTES, durationMinutes, normalizeDuration, uploadPercent, validateDuration, validateVideoFile } from "@/components/creator/post/validation";
 
 // Composer de post em vídeo do herói: server actions sem Next, Supabase nem Cloudflare. Confere que
@@ -305,7 +305,7 @@ describe("startVideoPost", () => {
       media_ref: ids.UID,
       captions_url: null,
     });
-    expect(state.revalidated).toEqual(["/creator", "/creator/content"]);
+    expect(state.revalidated).toEqual(["/heroi", "/heroi/conteudos"]);
     expect(state.deleted).toHaveLength(0);
   });
 
@@ -427,7 +427,7 @@ describe("publishVideoPost", () => {
     expect(fns.indexOf("creator_set_draft_slug")).toBeLessThan(fns.indexOf("creator_publish_content"));
     expect(state.rpcs.find((r) => r.fn === "creator_publish_content")?.args).toEqual({ p_content: ids.CONTENT });
     expect(state.writes.filter((w) => w.op === "update").map((w) => w.payload)).toContainEqual({ duration_minutes: 2 });
-    expect(state.revalidated).toEqual(["/creator", "/creator/content", "/inicio", "/explore"]);
+    expect(state.revalidated).toEqual(["/heroi", "/heroi/conteudos", "/inicio", "/explore"]);
   });
 
   it("slug já usado: tenta outro sufixo uma vez; duas colisões viram slug_taken", async () => {

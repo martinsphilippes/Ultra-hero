@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { chosenHeroId, getMyCreator, listMyHeroesAll, type MyHero } from "@/app/creator/(hero)/_lib/creator";
+import { chosenHeroId, getMyCreator, listMyHeroesAll, type MyHero } from "@/app/heroi/_lib/creator";
 import { getRoles, getUser } from "@/lib/auth/session";
 import { hasHeroRole } from "@/lib/auth/talent-scope";
 import { heroSelectable } from "@/lib/creator-content/rules";
@@ -17,9 +17,22 @@ import { heroRights, type HeroRights } from "./rules";
 
 export type HeroWorkspace = HeroRights & {
   hero: MyHero;
-  /** O herói em uso é o ligado ao casting da agência: agenda e ganhos moram no escritório (/creator/escritorio). */
+  /** O herói em uso é o ligado ao casting da agência: a agenda e os ganhos da agência aparecem junto (0097). */
   hasAgency: boolean;
 };
+
+/** Herói em uso pela pessoa (titular ou membro), sem redirecionar: null sem papel de herói ou sem herói. */
+export const findHeroWorkspace = cache(async (): Promise<HeroWorkspace | null> => {
+  const user = await getUser();
+  if (!user || !hasHeroRole(await getRoles())) return null;
+  const [heroes, base] = await Promise.all([listMyHeroesAll(), getMyCreator()]);
+  const selectable = heroes.filter((h) => heroSelectable(h.status));
+  const chosen = selectable.length > 1 ? await chosenHeroId(selectable, base.creatorId) : (selectable[0]?.id ?? null);
+  const hero = selectable.find((h) => h.id === chosen) ?? selectable[0] ?? heroes[0] ?? null;
+  if (!hero) return null;
+  const talent = await getTalentContext();
+  return { hero, ...heroRights(hero.role, hero.status), hasAgency: talent.state === "ok" && talent.talent.creatorId === hero.id };
+});
 
 /**
  * Herói em uso pela pessoa (titular ou membro): o escolhido no cartão "Você trabalha para" (cookie, revalidado) ou o
@@ -28,14 +41,9 @@ export type HeroWorkspace = HeroRights & {
 export const getHeroWorkspace = cache(async (): Promise<HeroWorkspace> => {
   const user = await getUser();
   if (!user) redirect("/login?next=/profile");
-  if (!hasHeroRole(await getRoles())) redirect("/profile");
-  const [heroes, base] = await Promise.all([listMyHeroesAll(), getMyCreator()]);
-  const selectable = heroes.filter((h) => heroSelectable(h.status));
-  const chosen = selectable.length > 1 ? await chosenHeroId(selectable, base.creatorId) : (selectable[0]?.id ?? null);
-  const hero = selectable.find((h) => h.id === chosen) ?? selectable[0] ?? heroes[0] ?? null;
-  if (!hero) redirect("/profile");
-  const talent = await getTalentContext();
-  return { hero, ...heroRights(hero.role, hero.status), hasAgency: talent.state === "ok" && talent.talent.creatorId === hero.id };
+  const ws = await findHeroWorkspace();
+  if (!ws) redirect("/profile");
+  return ws;
 });
 
 const EVENT_SELECT = "id, creator_profile_id, kind, title, starts_at, ends_at, all_day, location, notes, client, service_id, checklist, updated_at";

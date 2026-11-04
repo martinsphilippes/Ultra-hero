@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { createContent, updateContent } from "@/app/creator/(hero)/content/actions";
+import { createContent, updateContent } from "@/app/heroi/conteudos/actions";
 import { ContentKindPicker, type ContentKind } from "@/components/admin-content/ContentKindPicker";
 import { ContentForm } from "@/components/editors/ContentForm";
 import type { ContentFormValues } from "@/components/editors/types";
@@ -26,7 +26,7 @@ type Props = {
   initialBlocks?: { drafts: BlockDrafts; products: string[] };
 };
 
-const BLOCK_HREFS = { newRecipe: "/creator/recipes/new", links: "/creator/links", newProgram: null };
+const BLOCK_HREFS = { newRecipe: "/heroi/receitas/nova", links: "/heroi/vinculos", newProgram: null };
 
 // Novo conteúdo do creator (0092): o MESMO editor por blocos do admin (ContentKindPicker + ContentForm), com o herói
 // fixo e sem os campos só do admin (licença, conclusão, autor, criar programa; ver lib/creator-content/rules).
@@ -40,7 +40,7 @@ export function CreatorContentEditor({ mode, initial, readOnly = false, heroId, 
     async (values: ContentFormValues) => {
       const result = mode === "create" ? await createContent(values) : await updateContent(values);
       if (result.ok) {
-        if (mode === "create" && result.id) router.push(`/creator/content/${result.id}/edit`);
+        if (mode === "create" && result.id) router.push(`/heroi/conteudos/${result.id}/editar`);
         else router.refresh();
       }
       return result;

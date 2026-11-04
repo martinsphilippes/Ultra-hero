@@ -5,7 +5,7 @@ import { isTalentOnly } from "@/lib/auth/talent-scope";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { hasHeroRole, heroRoleNames } from "@/lib/auth/talent-scope";
 import { isDocumentsRevalidatePath } from "@/lib/documents/constants";
-import { buildPortalItems, buildSettingsSections, forSurface, OFFICE_PATH } from "@/lib/settings/sections";
+import { buildPortalItems, buildSettingsSections, forSurface, HERO_PORTAL_PATH } from "@/lib/settings/sections";
 
 describe("etapa B: casting no menu e travas", () => {
   it("Casting para todos os níveis; Novo talento só gestor+", () => {
@@ -20,7 +20,7 @@ describe("etapa B: casting no menu e travas", () => {
   });
 
   it("escritório e /kit existem no app das lojas; o portal da agência não", () => {
-    expect(isBlockedInNativeApp("/creator/escritorio")).toBe(false);
+    expect(isBlockedInNativeApp("/heroi")).toBe(false);
     expect(isBlockedInNativeApp("/kit/abc")).toBe(false);
     expect(isBlockedInNativeApp("/agencia/casting")).toBe(true);
   });
@@ -33,18 +33,18 @@ describe("talento sem página pública (D2)", () => {
     expect(isTalentOnly([{ role: "consumer", scope_type: "global" }])).toBe(false);
   });
 
-  it("Configurações mostram o Escritório para quem está num casting (web e app)", () => {
+  it("Configurações mostram um só Portal do Herói para quem está num casting ou tem herói (web e app)", () => {
     const sections = buildSettingsSections(["consumer", "creator"], undefined, { hasTalent: true });
-    const office = sections.find((s) => s.key === "portals")?.items.find((i) => i.key === "office");
-    expect(office).toMatchObject({ kind: "portal", href: OFFICE_PATH, nativeHidden: false });
-    expect(buildSettingsSections(["consumer", "creator"]).find((s) => s.key === "portals")).toBeUndefined();
+    const portals = sections.find((s) => s.key === "portals")?.items ?? [];
+    expect(portals).toEqual([{ kind: "portal", key: "creator", href: HERO_PORTAL_PATH, nativeHidden: false }]);
+    expect(buildSettingsSections(["consumer", "creator"]).find((s) => s.key === "portals")?.items.map((i) => i.key)).toEqual(["creator"]);
   });
 });
 
 describe("portais no topo do Perfil", () => {
-  it("mesmos atalhos da seção Portais: Escritório primeiro, gestão para o admin geral, nada para o consumidor", () => {
+  it("mesmos atalhos da seção Portais: Portal do Herói primeiro, gestão para o admin geral, nada para o consumidor", () => {
     expect(buildPortalItems(["consumer"])).toEqual([]);
-    expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["office"]);
+    expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["creator"]);
     const admin = buildPortalItems(["consumer", "admin"], undefined, { platformAdmin: true });
     expect(admin.map((p) => [p.key, p.href, p.nativeHidden])).toEqual([
       ["agency", "/agencia", true],
@@ -57,10 +57,10 @@ describe("portais no topo do Perfil", () => {
     expect(buildPortalItems(["consumer", "admin"]).map((p) => p.key)).toEqual(["admin"]);
   });
 
-  it("app das lojas: as linhas só da web saem da lista no servidor; o Escritório e a Administração ficam", () => {
+  it("app das lojas: as linhas só da web saem da lista no servidor; o Portal do Herói e a Administração ficam", () => {
     const items = buildPortalItems(["consumer", "admin", "agency"], undefined, { hasTalent: true, platformAdmin: true });
-    expect(forSurface(items, true).map((p) => p.key)).toEqual(["office", "admin"]);
-    expect(forSurface(items, false).map((p) => p.key)).toEqual(["office", "agency", "brand", "admin"]);
+    expect(forSurface(items, true).map((p) => p.key)).toEqual(["creator", "admin"]);
+    expect(forSurface(items, false).map((p) => p.key)).toEqual(["creator", "agency", "brand", "admin"]);
     expect(forSurface(buildPortalItems(["consumer", "agency"]), true)).toEqual([]);
   });
 });

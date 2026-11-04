@@ -19,13 +19,13 @@ export type OfferResult = { ok: true; message: string } | { ok: false; error: st
 const uuid = z.uuid();
 
 function revalidateOffer(dealTalentId: string, dealId?: string | null) {
-  revalidatePath(`/creator/escritorio/oportunidades/${dealTalentId}`);
-  revalidatePath("/creator/escritorio");
+  revalidatePath(`/heroi/oportunidades/${dealTalentId}`);
+  revalidatePath("/heroi");
   if (dealId && /^[0-9a-f-]{36}$/i.test(dealId)) revalidatePath(`/agencia/negocios/${dealId}`, "layout");
 }
 
 export async function createCounterofferAction(input: CounterofferInput): Promise<OfferResult> {
-  await requireUser("/creator/escritorio/oportunidades");
+  await requireUser("/heroi/oportunidades");
   const parsed = counterofferSchema.safeParse(input);
   if (!parsed.success) return talentFail(input?.kind === "fee" && typeof input.reason === "string" && input.reason.trim().length < 3 ? "note_required" : "invalid_input");
   try {
@@ -41,7 +41,7 @@ export async function createCounterofferAction(input: CounterofferInput): Promis
 }
 
 export async function withdrawCounterofferAction(input: { counterofferId: string; dealTalentId: string }): Promise<OfferResult> {
-  await requireUser("/creator/escritorio/oportunidades");
+  await requireUser("/heroi/oportunidades");
   const parsed = z.object({ counterofferId: uuid, dealTalentId: uuid }).safeParse(input);
   if (!parsed.success) return talentFail("invalid_input");
   try {

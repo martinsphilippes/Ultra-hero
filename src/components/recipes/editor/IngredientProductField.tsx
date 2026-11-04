@@ -3,7 +3,7 @@
 import { PackageSearch } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
-import { searchIngredientProducts, suggestIngredientProduct, withdrawIngredientProduct } from "@/app/creator/(hero)/recipes/ingredient-product-actions";
+import { searchIngredientProducts, suggestIngredientProduct, withdrawIngredientProduct } from "@/app/heroi/receitas/ingredient-product-actions";
 import { SearchPicker, type PickItem } from "@/components/admin-content/SearchPicker";
 import { Badge, Button } from "@/components/ui";
 import { ingredientLinkDisplay, suspensionReasonKey, type IngredientLink, type IngredientLinkSummary } from "@/lib/recipes/ingredient-products";

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
-import { archiveRecipe, deleteRecipeDraft, duplicateRecipe, restoreRecipe, unpublishRecipe, withdrawRecipe } from "@/app/creator/(hero)/recipes/actions";
+import { archiveRecipe, deleteRecipeDraft, duplicateRecipe, restoreRecipe, unpublishRecipe, withdrawRecipe } from "@/app/heroi/receitas/actions";
 import { Button, Dialog, FormField, Textarea, useToast } from "@/components/ui";
 import type { MyRecipeStatus } from "@/lib/recipes/portal";
 import { cn } from "@/lib/utils";
@@ -80,7 +80,7 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
           return;
         }
         toast({ title: t("done.duplicated"), variant: "success" });
-        router.push(`/creator/recipes/${result.id}/edit`);
+        router.push(`/heroi/receitas/${result.id}/editar`);
       } catch {
         toast({ title: errorText("network"), variant: "error" });
       }
@@ -98,7 +98,7 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
       // excluída a partir da tela da própria receita: volta para a lista em vez de recarregar uma página que não existe mais
       onConfirm: () =>
         run(() => deleteRecipeDraft({ id }), archived ? t("done.deletedArchived") : t("done.deleted"), () => {
-          if (pathname !== "/creator/recipes") router.push("/creator/recipes");
+          if (pathname !== "/heroi/receitas") router.push("/heroi/receitas");
         }),
     },
     archive: {
@@ -121,7 +121,7 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
   return (
     <div ref={wrapperRef} className="relative flex flex-wrap items-center justify-end gap-1">
       <Button asChild variant="secondary" leadingIcon={allowed.edit ? <Pencil /> : <Eye />}>
-        <Link href={`/creator/recipes/${id}/edit`}>{allowed.edit ? t("actions.edit") : t("actions.open")}</Link>
+        <Link href={`/heroi/receitas/${id}/editar`}>{allowed.edit ? t("actions.edit") : t("actions.open")}</Link>
       </Button>
       <Button
         type="button"
@@ -139,7 +139,7 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
         // no fluxo (não flutuante): a tabela tem overflow-hidden e cortaria um menu absoluto
         <ul id={menuId} className="mt-1 flex min-w-56 basis-full flex-col gap-0.5 rounded-xl border border-border bg-surface-elevated p-1.5 text-left">
           <li>
-            <Link className={itemClass} href={`/creator/recipes/${id}/preview`}>
+            <Link className={itemClass} href={`/heroi/receitas/${id}/previa`}>
               <Eye className="size-4" aria-hidden="true" />
               {t("actions.preview")}
             </Link>
@@ -153,7 +153,7 @@ export function RecipeRowActions({ id, title, slug, situation, allowed }: Props)
             </li>
           )}
           <li>
-            <Link className={itemClass} href={`/creator/recipes/${id}/versions`}>
+            <Link className={itemClass} href={`/heroi/receitas/${id}/versoes`}>
               <History className="size-4" aria-hidden="true" />
               {t("actions.versions")}
             </Link>

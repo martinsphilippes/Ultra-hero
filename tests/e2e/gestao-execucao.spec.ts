@@ -122,7 +122,7 @@ test.describe("execução da campanha", () => {
   test("escritório: aba Tarefas e oportunidade contratada com etapas e entregas do creator", async ({ page }) => {
     await loginAs(page, "talent");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0065 ainda não aplicada");
-    await page.goto("/creator/escritorio/tarefas");
+    await page.goto("/heroi/tarefas");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0068 ainda não aplicada");
     await expect(page.getByTestId("office-tasks")).toBeVisible();
     await expect(page.getByTestId("office-tasks")).not.toContainText("R$");
@@ -131,7 +131,7 @@ test.describe("execução da campanha", () => {
     // só etapas do lado do creator: nada da agência (1, 2) nem da marca (5, 8)
     await expect(page.locator('[data-testid="task-item"][data-step="1"]')).toHaveCount(0);
     await expect(page.locator('[data-testid="task-item"][data-step="5"]')).toHaveCount(0);
-    await page.goto("/creator/escritorio/oportunidades");
+    await page.goto("/heroi/oportunidades");
     const opp = page.getByTestId("opportunity-card").filter({ hasText: /inverno/i });
     test.skip((await opp.count()) === 0, "oportunidade em produção da demonstração ainda não semeada");
     await opp.first().click();

@@ -20,7 +20,7 @@ const fail = (portal: Portal, error: unknown) => (portal === "agency" ? agencyFa
 
 function revalidate(portal: Portal, talentId: string) {
   if (portal === "agency") revalidatePath(`/agencia/casting/${talentId}`, "layout");
-  else revalidatePath("/creator/escritorio", "layout");
+  else revalidatePath("/heroi", "layout");
 }
 
 export async function saveSocialAction(portal: Portal, input: SocialInput): Promise<TalentActionResult> {

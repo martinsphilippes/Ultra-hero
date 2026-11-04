@@ -3,7 +3,7 @@
     "label": "dados de {date} · declarado por {by} em {declaredAt}",
     "labelShort": "dados de {date} · declarado por {by}",
     "side": {
-      "talent": "creator",
+      "talent": "herói",
       "agency": "agência",
       "integration": "integração"
     },
@@ -114,7 +114,7 @@
     "views": "{count, plural, =0 {nenhuma visita} one {# visita} other {# visitas}}",
     "lastView": "última visita em {date}",
     "inactive": "Nenhum link ativo. Gere um para enviar às marcas.",
-    "needsConsent": "Para gerar o link, o creator precisa autorizar o uso comercial da imagem dele (é o que permite mostrar o media kit para marcas).",
+    "needsConsent": "Para gerar o link, o herói precisa autorizar o uso comercial da imagem dele (é o que permite mostrar o media kit para marcas).",
     "goConsent": "Abrir Consentimento",
     "linkOnce": "Este link aparece só agora. Copie e guarde: depois só dá para gerar outro.",
     "link": "Link do media kit",
@@ -124,14 +124,14 @@
     "regenerate": "Gerar novo link",
     "revoke": "Desligar link",
     "confirmRevoke": "Desligar o link? Quem tiver o endereço deixa de ver o kit.",
-    "consentStepsAgency": "Como resolver: envie o termo de autorização assinado em Documentos e toque em \"Registrar consentimento\", na ficha do creator.",
-    "consentStepsAgencyLogin": "Como resolver: este creator tem login, então só ele pode autorizar. Peça para ele abrir o Portal do Creator → Consentimento e aceitar.",
+    "consentStepsAgency": "Como resolver: envie o termo de autorização assinado em Documentos e toque em \"Registrar consentimento\", na ficha do herói.",
+    "consentStepsAgencyLogin": "Como resolver: este herói tem login, então só ele pode autorizar. Peça para ele abrir o Portal do Herói → Consentimento e aceitar.",
     "consentStepsOffice": "Como resolver: abra Consentimento e aceite o termo. Depois volte aqui e gere o link.",
     "goConsentAgency": "Ir para o consentimento"
   },
   "public": {
     "eyebrow": "Media kit",
-    "declaredNote": "Métricas declaradas pelo creator ou pela agência, com a data de cada dado.",
+    "declaredNote": "Métricas declaradas pelo herói ou pela agência, com a data de cada dado.",
     "poweredBy": "Groscove Ultra",
     "unavailableTitle": "Este link não está disponível",
     "unavailableBody": "O link pode ter vencido ou sido desligado. Peça um novo a quem enviou."

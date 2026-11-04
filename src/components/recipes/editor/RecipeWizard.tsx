@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { createRecipeDraft, deleteRecipeMedia, publishRecipe, saveRecipe, submitRecipe, type RegisteredMedia } from "@/app/creator/(hero)/recipes/actions";
+import { createRecipeDraft, deleteRecipeMedia, publishRecipe, saveRecipe, submitRecipe, type RegisteredMedia } from "@/app/heroi/receitas/actions";
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
 import { Button, Dialog, useToast } from "@/components/ui";
 import { coverUrlAfterDelete, coverUrlAfterSave, recipeChecklist, serverMissingFor } from "@/lib/recipes/checklist";
@@ -182,7 +182,7 @@ export function RecipeWizard(props: Props) {
     setFix((f) => (f && f.step === next ? f : null));
     pendingFocus.current = focusId ?? null;
     setStep(next);
-    if (contentId) window.history.replaceState(null, "", `/creator/recipes/${contentId}/edit?step=${next}`);
+    if (contentId) window.history.replaceState(null, "", `/heroi/receitas/${contentId}/editar?step=${next}`);
     if (focusId && next === step) {
       const el = document.getElementById(focusId);
       if (el) revealField(el);
@@ -200,7 +200,7 @@ export function RecipeWizard(props: Props) {
     async (opts: { overwrite?: boolean; quiet?: boolean } = {}): Promise<SaveOutcome> => {
       // rascunho já criado nesta tela: só termina de abrir o editor dele, nunca cria outro
       if (createdRef.current) {
-        window.location.assign(`/creator/recipes/${createdRef.current}/edit?step=ingredientes`);
+        window.location.assign(`/heroi/receitas/${createdRef.current}/editar?step=ingredientes`);
         return "ok";
       }
       const current = draftRef.current;
@@ -224,7 +224,7 @@ export function RecipeWizard(props: Props) {
           // /new às vezes chegava depois e cancelava a troca, deixando a pessoa na tela de criar com o
           // rascunho já gravado (e um segundo toque criaria outro). Guardado em createdRef para isso.
           createdRef.current = result.id;
-          window.location.assign(`/creator/recipes/${result.id}/edit?step=ingredientes`);
+          window.location.assign(`/heroi/receitas/${result.id}/editar?step=ingredientes`);
           return "ok";
         }
         const result = await saveRecipe({ id: contentId, payload: built.payload, expectedUpdatedAt: updatedRef.current ?? "", overwrite: opts.overwrite });
@@ -389,7 +389,7 @@ export function RecipeWizard(props: Props) {
       }
       removeLocal(storageKey);
       toast({ title: kind === "submit" ? t("review.submitted") : at ? t("review.scheduled") : t("review.published"), variant: "success" });
-      router.push("/creator/recipes");
+      router.push("/heroi/receitas");
       router.refresh();
     } catch {
       setSaveError(t("errors.network"));
@@ -407,7 +407,7 @@ export function RecipeWizard(props: Props) {
     // Navegação de documento, não router.push: a gravação (server action com revalidatePath) devolve o
     // resultado antes de terminar de enviar a página revalidada, e um router.push nesse intervalo às
     // vezes era descartado pelo roteador do Next — "Visualizar" ficava parado na etapa de revisão.
-    window.location.assign(`/creator/recipes/${contentId}/preview`);
+    window.location.assign(`/heroi/receitas/${contentId}/previa`);
   }
 
   // ---------------------------------------------------------------- recuperação e conflito
@@ -589,7 +589,7 @@ export function RecipeWizard(props: Props) {
             )}
             {mode === "edit" && contentId && (
               <Button asChild variant="ghost" leadingIcon={<History />}>
-                <Link href={`/creator/recipes/${contentId}/versions`}>{t("versions")}</Link>
+                <Link href={`/heroi/receitas/${contentId}/versoes`}>{t("versions")}</Link>
               </Button>
             )}
           </div>

@@ -65,17 +65,17 @@ describe("assinatura: nome e IP", () => {
 describe("avisos por e-mail (espelho de public.inbox_kind_emails)", () => {
   it("só os avisos combinados, com a parte certa", () => {
     expect(INBOX_KINDS).toContain("task_due_soon");
-    expect(inboxKindEmails("opportunity_received", "/creator/escritorio/oportunidades/x")).toBe(true);
+    expect(inboxKindEmails("opportunity_received", "/heroi/oportunidades/x")).toBe(true);
     expect(inboxKindEmails("opportunity_received", "/agencia/negocios/x")).toBe(false);
-    expect(inboxKindEmails("deliverable_decided", "/creator/escritorio/oportunidades/x", { status: "changes_requested" })).toBe(true);
-    expect(inboxKindEmails("deliverable_decided", "/creator/escritorio/oportunidades/x", { status: "approved" })).toBe(false);
+    expect(inboxKindEmails("deliverable_decided", "/heroi/oportunidades/x", { status: "changes_requested" })).toBe(true);
+    expect(inboxKindEmails("deliverable_decided", "/heroi/oportunidades/x", { status: "approved" })).toBe(false);
     expect(inboxKindEmails("deliverable_submitted", "/marca/campanhas/x")).toBe(true);
     expect(inboxKindEmails("deliverable_submitted", "/agencia/negocios/x/entregas")).toBe(false);
-    expect(inboxKindEmails("opportunity_updated", "/creator/escritorio/oportunidades/x", { status: "counter_accepted" })).toBe(true);
-    expect(inboxKindEmails("opportunity_updated", "/creator/escritorio/oportunidades/x", { status: "deal_lost" })).toBe(false);
+    expect(inboxKindEmails("opportunity_updated", "/heroi/oportunidades/x", { status: "counter_accepted" })).toBe(true);
+    expect(inboxKindEmails("opportunity_updated", "/heroi/oportunidades/x", { status: "deal_lost" })).toBe(false);
     expect(inboxKindEmails("contract_acceptance_requested", "/marca/campanhas/x")).toBe(true);
     expect(inboxKindEmails("task_due_soon", "/agencia/tarefas")).toBe(true);
-    expect(inboxKindEmails("message_received", "/creator/escritorio")).toBe(false);
+    expect(inboxKindEmails("message_received", "/heroi")).toBe(false);
   });
   it("todo tipo que vai por e-mail tem texto nos 3 idiomas", () => {
     for (const locale of ["pt-BR", "en", "es"] as const)
@@ -83,7 +83,7 @@ describe("avisos por e-mail (espelho de public.inbox_kind_emails)", () => {
         const email = buildWorkEmail({ kind, params: { deal: "Verão", brand: "Alfa", talent: "Ana", status: "counter_accepted", date: "2026-11-03 14:00" }, link: "/creator/escritorio/tarefas", origin: "https://app.test/", locale, messages: messages(locale) });
         expect(email).not.toBeNull();
         expect(email!.subject.length).toBeGreaterThan(3);
-        expect(email!.text).toContain("https://app.test/creator/escritorio/tarefas");
+        expect(email!.text).toContain("https://app.test/heroi/tarefas");
       }
     expect(isWorkEmailKind("member_joined")).toBe(false);
   });
@@ -93,13 +93,13 @@ describe("avisos por e-mail (espelho de public.inbox_kind_emails)", () => {
     expect(email.text).not.toContain("evil.test");
     expect(email.html).toContain("&lt;b&gt;Verão&lt;/b&gt;");
     expect(email.html).not.toContain("<b>Verão</b>");
-    const due = buildWorkEmail({ kind: "task_due_soon", params: { deal: "Verão", date: "2026-11-03 14:00" }, link: "/creator/escritorio/tarefas", origin: "https://app.test", locale: "pt-BR", messages: messages("pt-BR") })!;
+    const due = buildWorkEmail({ kind: "task_due_soon", params: { deal: "Verão", date: "2026-11-03 14:00" }, link: "/heroi/tarefas", origin: "https://app.test", locale: "pt-BR", messages: messages("pt-BR") })!;
     expect(due.text).toContain("03/11/2026 14:00");
     expect(formatLocalStamp("2026-11-03 14:00", "en")).toBe("11/03/2026 14:00");
     expect(formatLocalStamp("2026-11-03", "es")).toBe("03/11/2026");
   });
   it("contraproposta: aceita e recusada têm textos diferentes", () => {
-    const base = { kind: "opportunity_updated", link: "/creator/escritorio/oportunidades/x", origin: "https://app.test", locale: "pt-BR" as const, messages: messages("pt-BR") };
+    const base = { kind: "opportunity_updated", link: "/heroi/oportunidades/x", origin: "https://app.test", locale: "pt-BR" as const, messages: messages("pt-BR") };
     const ok = buildWorkEmail({ ...base, params: { deal: "Verão", status: "counter_accepted" } })!;
     const no = buildWorkEmail({ ...base, params: { deal: "Verão", status: "counter_rejected" } })!;
     expect(ok.subject).not.toBe(no.subject);

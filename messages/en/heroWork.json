@@ -5,7 +5,6 @@
   },
   "shortcuts": {
     "title": "Schedule and finances",
-    "tabsLabel": "Hero schedule and finances",
     "agenda": "Schedule",
     "finance": "Finances",
     "next": "Next commitment",
@@ -83,7 +82,8 @@
       "addItem": "Add item",
       "back": "Back",
       "save": "Save"
-    }
+    },
+    "ownTitle": "{name} events"
   },
   "finance": {
     "title": "Jobs and earnings",
@@ -187,6 +187,7 @@
       "simulated": "Internal control record: nothing is charged, paid or transferred here.",
       "back": "Back",
       "save": "Save"
-    }
+    },
+    "ownTitle": "{name} services"
   }
 }

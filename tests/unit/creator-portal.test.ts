@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { PORTAL_LINKS, PORTAL_ROOT } from "@/components/layout/portal-nav";
+import { PORTAL_LINKS, PORTAL_ROOT, heroPortalNavKeys } from "@/components/layout/portal-nav";
 import { agencyErrorCode } from "@/lib/agency/error-codes";
-import { OFFICE_HOME, portalHomeForAccepted } from "@/lib/auth/invite-home";
+import { HERO_PORTAL_HOME, portalHomeForAccepted } from "@/lib/auth/invite-home";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
-import { buildPortalItems, OFFICE_PATH } from "@/lib/settings/sections";
+import { buildPortalItems, HERO_PORTAL_PATH } from "@/lib/settings/sections";
 import { canInviteCreator, resolveTalentAccess, talentAccessVariant, toTalentAccess } from "@/lib/talent/access";
 
 // Bloco 10 (0087): login do creator com herói ligado e o escritório como portal. As regras do banco
 // (quem convida, recusas, aceite ligando ao herói) são testadas no S94.
 
 describe("aceite do convite do escritório", () => {
-  it("convite de talento com herói (escopo creator + talent_id) abre o escritório, não o Perfil", () => {
-    expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", scope_id: "c1", talent_id: "t1" }])).toBe(OFFICE_HOME);
-    expect(OFFICE_HOME).toBe("/creator/escritorio");
+  it("convite da ficha com herói (escopo creator + talent_id) abre o Portal do Herói", () => {
+    expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", scope_id: "c1", talent_id: "t1" }])).toBe(HERO_PORTAL_HOME);
+    expect(HERO_PORTAL_HOME).toBe("/heroi");
   });
-  it("convite de herói do admin (sem talento) segue para o Perfil; talento sem herói ao escritório", () => {
-    expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", scope_id: "c1" }])).toBe("/profile");
-    expect(portalHomeForAccepted([{ role: "creator", scope_type: "talent", scope_id: "t1", talent_id: "t1" }])).toBe(OFFICE_HOME);
+  it("convite de herói do admin (sem ficha) e ficha sem herói: sempre o Portal do Herói (0097)", () => {
+    expect(portalHomeForAccepted([{ role: "creator", scope_type: "creator", scope_id: "c1" }])).toBe(HERO_PORTAL_HOME);
+    expect(portalHomeForAccepted([{ role: "creator", scope_type: "talent", scope_id: "t1", talent_id: "t1" }])).toBe(HERO_PORTAL_HOME);
   });
   it("item com erro não manda; o primeiro aceito manda", () => {
     expect(portalHomeForAccepted([{ error: "user_has_talent", talent_id: "t1" }, { scope_type: "agency" }])).toBe("/agencia");
@@ -61,31 +61,30 @@ describe("selo do acesso no casting", () => {
   });
 });
 
-describe("portal do creator", () => {
-  it("menu com as rotas do escritório, na ordem, raiz no Início", () => {
-    expect(PORTAL_ROOT.office).toBe(OFFICE_PATH);
-    expect(PORTAL_LINKS.office.map((l) => l.key)).toEqual([
-      "dashboard",
-      "opportunities",
-      "tasks",
-      "agenda",
-      "earnings",
-      "availability",
-      "kit",
-      "portfolio",
-      "documents",
-      "consent",
-      "notifications",
-    ]);
-    expect(PORTAL_LINKS.office.every((l) => l.href === OFFICE_PATH || l.href.startsWith(`${OFFICE_PATH}/`))).toBe(true);
+describe("Portal do Herói (0097: um portal só)", () => {
+  it("raiz em /heroi e todos os itens dentro dela, em grupos (Conteúdo, Trabalho, Perfil)", () => {
+    expect(PORTAL_ROOT.creator).toBe(HERO_PORTAL_PATH);
+    expect(PORTAL_LINKS.creator.every((l) => l.href === HERO_PORTAL_PATH || l.href.startsWith(`${HERO_PORTAL_PATH}/`))).toBe(true);
+    expect(new Set(PORTAL_LINKS.creator.map((l) => l.group).filter(Boolean))).toEqual(new Set(["content", "work", "profile"]));
+    expect(Object.keys(PORTAL_ROOT)).not.toContain("office");
   });
   it("nada do portal é bloqueado no app das lojas", () => {
-    for (const l of PORTAL_LINKS.office) expect(isBlockedInNativeApp(l.href)).toBe(false);
+    for (const l of PORTAL_LINKS.creator) expect(isBlockedInNativeApp(l.href)).toBe(false);
   });
-  it("área do herói continua sem o menu do escritório", () => {
-    expect(PORTAL_LINKS.creator.map((l) => l.key)).toEqual(["post", "newContent", "content", "agenda", "finance", "office", "team"]);
+  it("itens da agência só no casting; conteúdo só com herói; agenda e financeiro para os dois", () => {
+    const hero = heroPortalNavKeys({ hero: true, casting: false });
+    expect(hero).toEqual(expect.arrayContaining(["home", "post", "newContent", "content", "recipes", "agenda", "finance", "publicPage", "team", "notifications"]));
+    expect(hero).not.toContain("opportunities");
+    expect(hero).not.toContain("kit");
+    const talent = heroPortalNavKeys({ hero: false, casting: true });
+    expect(talent).toEqual(expect.arrayContaining(["home", "opportunities", "tasks", "agenda", "finance", "availability", "kit", "portfolio", "documents", "consent", "notifications"]));
+    expect(talent).not.toContain("post");
+    expect(heroPortalNavKeys({ hero: true, casting: true })).toEqual(PORTAL_LINKS.creator.map((l) => l.key));
+    expect(heroPortalNavKeys({ hero: false, casting: false })).toEqual(["home", "team", "notifications"]);
   });
-  it("atalho Escritório para quem está num casting (inclusive pelo herói)", () => {
-    expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true })[0]).toMatchObject({ key: "office", href: OFFICE_PATH });
+  it("um atalho só: Portal do Herói para quem tem herói ou está num casting", () => {
+    expect(buildPortalItems(["consumer", "creator"], undefined, { hasTalent: true })).toEqual([{ kind: "portal", key: "creator", href: HERO_PORTAL_PATH, nativeHidden: false }]);
+    expect(buildPortalItems(["consumer", "creator"]).map((p) => p.key)).toEqual(["creator"]);
+    expect(buildPortalItems(["consumer"], undefined, { hasTalent: true }).map((p) => p.key)).toEqual(["creator"]);
   });
 });

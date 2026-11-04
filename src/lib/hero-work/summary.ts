@@ -3,7 +3,7 @@ import { defaultTimeZone } from "@/i18n/config";
 import { zonedDayKey } from "@/lib/calendar/grid";
 import { listEvents } from "@/lib/calendar/queries";
 import { myPayouts } from "@/lib/finance/queries";
-import type { MyHero } from "@/app/creator/(hero)/_lib/creator";
+import type { MyHero } from "@/app/heroi/_lib/creator";
 import { mergeAgenda, nextEvent } from "./agenda";
 import { dueThisMonth, earningsDueThisMonth, effectiveStatus } from "./finance";
 import { heroRights } from "./rules";
@@ -14,7 +14,7 @@ import { listOpenServices, listServiceDates, listUpcomingHeroEvents } from "./se
 // A equipe vê só a agenda: nada de valores para quem não é titular.
 
 export type HeroShortcutData = {
-  /** Agenda e ganhos moram no escritório do casting. */
+  /** O herói em uso é o do casting (a agenda e os ganhos da agência aparecem junto, 0097). */
   hasAgency: boolean;
   canSeeFinance: boolean;
   next: { title: string; startsAt: string; allDay: boolean } | null;

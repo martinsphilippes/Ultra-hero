@@ -1,27 +1,41 @@
 // Links dos portais (só href + chave de tradução; ícones ficam no componente cliente).
-// office: o escritório do creator (0087) é um portal como agência e marca (barra lateral e menu no
-// celular); "creator" segue sendo a área do herói, sem menu.
-export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand" | "office";
+// "creator" é a chave interna do Portal do Herói (0097: portal único em /heroi, com barra lateral e menu no celular).
+export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand";
 
 // Raiz de cada portal (o do profissional mora em /profissional, em português como as rotas do app).
 export const PORTAL_ROOT: Record<Portal, string> = {
   admin: "/admin",
-  creator: "/creator",
+  creator: "/heroi",
   seller: "/seller",
   professional: "/profissional",
   agency: "/agencia",
   brand: "/marca",
-  office: "/creator/escritorio",
 };
 
-export type PortalLink = { key: string; href: string };
+/** group: grupo do menu (textos em nav.groups.<group>); sem grupo, o item fica no topo. */
+export type PortalLink = { key: string; href: string; group?: string };
+
+/** Itens do Portal do Herói para a pessoa (puro, testável). Herói = papel de herói (titular ou membro da equipe);
+ *  casting = está num casting de agência (ficha com login próprio ou herói ligado). */
+export function heroPortalNavKeys(opts: { hero: boolean; casting: boolean }): string[] {
+  const keys = ["home"];
+  if (opts.hero) keys.push("post", "newContent", "content", "recipes");
+  if (opts.casting) keys.push("opportunities", "tasks");
+  if (opts.hero || opts.casting) keys.push("agenda", "finance");
+  if (opts.casting) keys.push("availability");
+  if (opts.hero) keys.push("publicPage");
+  keys.push("team");
+  if (opts.casting) keys.push("kit", "portfolio", "documents", "consent");
+  keys.push("notifications");
+  return keys;
+}
 
 export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
   admin: [
     { key: "dashboard", href: "/admin" },
     { key: "users", href: "/admin/users" },
     { key: "invitations", href: "/admin/invitations" },
-    { key: "creators", href: "/admin/creators" },
+    { key: "creators", href: "/admin/herois" },
     { key: "heroCategories", href: "/admin/hero-categories" },
     { key: "sellers", href: "/admin/sellers" },
     { key: "professionals", href: "/admin/professionals" },
@@ -48,19 +62,28 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "audit", href: "/admin/audit" },
     { key: "settings", href: "/admin/settings" },
   ],
+  // Portal do Herói (0097): o "creator" era o próprio herói, então o portal do herói e o escritório do casting
+  // viraram um só, em /heroi, com os itens em grupos. O layout escolhe os itens (heroPortalNavKeys): os da agência
+  // só para quem está num casting; os de conteúdo só para quem tem herói. Vínculos de produtos é do admin
+  // ("Publicar como hero"), por isso não está aqui; patrocínios aparecem na Agenda (não há tela própria).
   creator: [
-    // O herói posta (Novo post) e, desde a 0092, cria conteúdo estruturado; vínculos e painel são do admin.
-    // O escritório (0065) aparece para quem está num casting; o talento sem página não tem "Novo post".
-    { key: "post", href: "/creator/post/new" },
-    // 0092: o creator (titular ou membro) cria conteúdo estruturado e acompanha os dele pelo próprio portal
-    { key: "newContent", href: "/creator/content/new" },
-    { key: "content", href: "/creator/content" },
-    // 0094: Agenda e Financeiro do herói (independente: ferramentas próprias; com agência: levam ao escritório)
-    { key: "agenda", href: "/creator/agenda" },
-    { key: "finance", href: "/creator/financeiro" },
-    { key: "office", href: "/creator/escritorio" },
-    // Equipe do herói (0091): titular e membros; sem herói, "Criar meu herói"
-    { key: "team", href: "/creator/equipe" },
+    { key: "home", href: "/heroi" },
+    { key: "post", href: "/heroi/post/novo", group: "content" },
+    { key: "newContent", href: "/heroi/conteudos/novo", group: "content" },
+    { key: "content", href: "/heroi/conteudos", group: "content" },
+    { key: "recipes", href: "/heroi/receitas", group: "content" },
+    { key: "opportunities", href: "/heroi/oportunidades", group: "work" },
+    { key: "tasks", href: "/heroi/tarefas", group: "work" },
+    { key: "agenda", href: "/heroi/agenda", group: "work" },
+    { key: "finance", href: "/heroi/financeiro", group: "work" },
+    { key: "availability", href: "/heroi/disponibilidade", group: "work" },
+    { key: "publicPage", href: "/heroi/pagina", group: "profile" },
+    { key: "team", href: "/heroi/equipe", group: "profile" },
+    { key: "kit", href: "/heroi/media-kit", group: "profile" },
+    { key: "portfolio", href: "/heroi/portfolio", group: "profile" },
+    { key: "documents", href: "/heroi/documentos", group: "profile" },
+    { key: "consent", href: "/heroi/consentimento", group: "profile" },
+    { key: "notifications", href: "/heroi/avisos", group: "profile" },
   ],
   seller: [
     { key: "dashboard", href: "/seller" },
@@ -105,7 +128,7 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "campaigns", href: "/marca/campanhas" },
     // Biblioteca (0083): conteúdos aprovados/publicados, direitos de uso e vencimento
     { key: "library", href: "/marca/biblioteca" },
-    { key: "catalog", href: "/marca/creators" },
+    { key: "catalog", href: "/marca/herois" },
     { key: "agenda", href: "/marca/agenda" },
     // Oportunidades de patrocínio (0085): "Quero patrocinar" ou "Não tenho interesse"
     { key: "sponsorships", href: "/marca/oportunidades" },
@@ -113,20 +136,5 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "payments", href: "/marca/pagamentos" },
     { key: "team", href: "/marca/equipe" },
     { key: "notifications", href: "/marca/notificacoes" },
-  ],
-  // Escritório do creator (0065 + 0087): as rotas são as mesmas das abas de antes. Patrocínios ficam na
-  // Agenda (não há rota própria do creator) e as assinaturas abrem pelo aviso/termo (sem lista).
-  office: [
-    { key: "dashboard", href: "/creator/escritorio" },
-    { key: "opportunities", href: "/creator/escritorio/oportunidades" },
-    { key: "tasks", href: "/creator/escritorio/tarefas" },
-    { key: "agenda", href: "/creator/escritorio/agenda" },
-    { key: "earnings", href: "/creator/escritorio/ganhos" },
-    { key: "availability", href: "/creator/escritorio/disponibilidade" },
-    { key: "kit", href: "/creator/escritorio/media-kit" },
-    { key: "portfolio", href: "/creator/escritorio/portfolio" },
-    { key: "documents", href: "/creator/escritorio/documentos" },
-    { key: "consent", href: "/creator/escritorio/consentimento" },
-    { key: "notifications", href: "/creator/escritorio/notificacoes" },
   ],
 };

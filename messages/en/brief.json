@@ -1,9 +1,9 @@
 {
   "title": "Content brief",
-  "hint": "What the creator must include in the post. Separate with spaces, commas or lines.",
+  "hint": "What the hero must include in the post. Separate with spaces, commas or lines.",
   "saved": "Brief saved.",
   "save": "Save brief",
-  "agencyHint": "The creator sees this brief next to the deliverables and checks each item before sending.",
+  "agencyHint": "The hero sees this brief next to the deliverables and checks each item before sending.",
   "invalid": "Not added: {items}",
   "empty": "No structured brief.",
   "fields": {
@@ -55,13 +55,13 @@
     "link": "I added the link {value}",
     "coupon": "I added the coupon {value}",
     "donts": "I did nothing from the “don'ts” list",
-    "recordedTalent": "{count, plural, one {Creator checked # item} other {Creator checked # items}}",
+    "recordedTalent": "{count, plural, one {Hero checked # item} other {Hero checked # items}}",
     "recordedBrand": "{count, plural, one {Brand checked # advertising item} other {Brand checked # advertising items}}",
     "show": "See items"
   },
   "templates": {
     "title": "Start from a template",
-    "hint": "Templates keep objective, audience, deliverables and brief. No title, dates, creator or amount.",
+    "hint": "Templates keep objective, audience, deliverables and brief. No title, dates, hero or amount.",
     "use": "Use",
     "delete": "Delete",
     "deleteConfirm": "Delete the template “{name}”?",
@@ -70,7 +70,7 @@
     "used": "Draft created from the template.",
     "saveAs": "Save as template",
     "dialogTitle": "Save as template",
-    "dialogHint": "Keeps objective, audience, deliverables and brief. No title, dates, creator or amount.",
+    "dialogHint": "Keeps objective, audience, deliverables and brief. No title, dates, hero or amount.",
     "nameLabel": "Template name",
     "nameHint": "With the same name, the old template is replaced.",
     "nameInvalid": "Use 3 to 80 characters.",

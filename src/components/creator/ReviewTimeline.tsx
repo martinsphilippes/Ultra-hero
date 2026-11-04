@@ -34,7 +34,7 @@ export async function ReviewTimeline({ reviews, showContent = false, compact = f
             <StatusBadge status={r.decision} label={ts(r.decision)} />
             <span className="text-sm font-semibold text-fg">{t("round", { n: r.round })}</span>
             {showContent && r.content && (
-              <Link href={`/creator/content/${r.content.id}/edit`} className="truncate text-sm text-accent-text underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+              <Link href={`/heroi/conteudos/${r.content.id}/editar`} className="truncate text-sm text-accent-text underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
                 {r.content.title}
               </Link>
             )}

@@ -6,6 +6,8 @@ import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
 import type { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/database.types";
 import { collectiblePhase } from "@/lib/collectibles/rules";
+import { isHeroPortalLink } from "@/lib/hero-portal/routes";
+import { safeInboxLink } from "@/lib/inbox/kinds";
 import { pushAllowedFor } from "./consent";
 import { buildPushMessage, chunk, ticketOutcomes, type ExpoTicket, type PushEvent } from "./message";
 
@@ -123,8 +125,8 @@ async function resolveEvents(admin: Admin, rows: OutboxRow[], locales: Map<strin
       const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => typeof v === "string" || typeof v === "number").map(([k, v]) => [k, String(v).slice(0, 120)]));
       out.set(
         row.id,
-        notice && !notice.read_at && notice.user_id === row.user_id && notice.link.startsWith("/creator/escritorio")
-          ? { kind: "office", inboxKind: notice.kind, params: clean, link: notice.link }
+        notice && !notice.read_at && notice.user_id === row.user_id && isHeroPortalLink(notice.link)
+          ? { kind: "office", inboxKind: notice.kind, params: clean, link: safeInboxLink(notice.link) }
           : null,
       );
     } else out.set(row.id, null);

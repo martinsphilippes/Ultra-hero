@@ -4,11 +4,10 @@
     "admin": "Admin",
     "agency": "Agency",
     "brand": "Brand",
-    "creator": "Creator",
     "hero": "Hero",
     "seller": "Supplier",
     "professional": "Professional",
-    "heroTeam": "Hero team creator"
+    "heroTeam": "Hero team member"
   },
   "admin": {
     "linkFor": "Link for {email}",
@@ -18,16 +17,11 @@
       "admin": "Full control of Ultra. Valid for 48 hours at most.",
       "agency": "The person creates the agency on first access and becomes Admin.",
       "brand": "The person creates the brand on first access and becomes Owner. No agency needed.",
-      "creator": "The person (creator). Can stay without a hero, join a hero or create a new one.",
-      "hero": "Creates the public page (hero) as pending; whoever accepts becomes the lead.",
+      "hero": "New hero (pending approval), joining a hero's team, or a hero already in an agency's casting.",
       "seller": "The person creates the operation on first access (or joins an existing one).",
       "professional": "The person creates the professional profile on first access."
     },
     "heroLink": {
-      "title": "Link to a hero",
-      "none": "None (create later)",
-      "existing": "Existing hero",
-      "new": "Invite a new hero too",
       "pick": "Hero",
       "pickHint": "No lead: the person becomes the lead. With a lead: joins the team."
     },
@@ -35,13 +29,13 @@
     "heroNewHint": "The hero starts pending and goes live once an admin approves it.",
     "heroTeam": {
       "legend": "Hero",
-      "title": "Team creators",
+      "title": "Team members",
       "hint": "Whoever accepts this invite is the lead. The team can come later.",
       "later": "Later",
-      "existing": "Existing creator",
-      "new": "Invite a new creator too",
-      "pick": "Creator",
-      "email": "Team creator email"
+      "existing": "Existing person",
+      "new": "Invite someone else to the team too",
+      "pick": "Team member",
+      "email": "Team member email"
     },
     "sellerOrgHint": "No organization: the person creates the operation on first access.",
     "sellerOrgNew": "New (created on first access)",
@@ -61,17 +55,36 @@
       "email": "Enter a valid email.",
       "hero": "Choose the hero.",
       "heroName": "Enter the hero name (2 to 80 characters).",
-      "teamUser": "Choose the creator.",
+      "teamUser": "Choose the team member.",
       "teamEmail": "Enter a valid email different from the lead's.",
       "days": "Validity out of range (Admin: up to 48 hours).",
-      "adminConfirm": "Tick the confirmation to invite an Admin."
+      "adminConfirm": "Tick the confirmation to invite an Admin.",
+      "talent": "Choose the casting hero."
+    },
+    "heroMode": {
+      "title": "Invitation type",
+      "new": "New hero",
+      "team": "Join a hero team",
+      "casting": "Hero already in an agency casting",
+      "hints": {
+        "new": "The public page starts pending approval and whoever accepts becomes the lead.",
+        "team": "Hero without a lead: the person becomes the lead. With a lead: joins as a team member.",
+        "casting": "Gives access to the hero profile in the agency casting (opportunities, calendar, earnings)."
+      }
+    },
+    "heroTalent": {
+      "pick": "Hero in the casting",
+      "hint": "The list shows heroes in agency castings who have no login yet.",
+      "none": "No casting hero without a login right now.",
+      "withPage": "With a public page",
+      "withoutPage": "No public page yet"
     }
   },
   "accept": {
     "successOnboarding": "Just create your company now. It takes a minute.",
     "successAdmin": "You are now an Ultra Admin.",
     "successConsumer": "Your account is ready.",
-    "successCreatorFree": "You joined as a creator. Create your hero whenever you like.",
+    "successCreatorFree": "You joined as a hero. Create your hero page whenever you like.",
     "goOnboarding": "Create my company",
     "goAdmin": "Go to Admin",
     "goHeroTeam": "Create my hero"
@@ -113,7 +126,7 @@
       "roleNote": "You will be the agency Admin.",
       "create": "Create agency",
       "doneTitle": "Agency created",
-      "doneText": "Invite your team, brands and creators from the portal.",
+      "doneText": "Invite your team, brands and heroes from the portal.",
       "go": "Go to the agency"
     },
     "brand": {
@@ -159,7 +172,7 @@
     "title": "Team",
     "adminHint": "As an admin, manage each hero's team from the hero page.",
     "noHeroDescription": "You don't have a hero yet.",
-    "ownerDescription": "You are the lead. Invite creators to the hero team.",
+    "ownerDescription": "You are the lead. Invite people to the hero team.",
     "memberDescription": "You are part of this hero's team.",
     "pendingApproval": "Hero waiting for admin approval to go live.",
     "memberNote": "Only the lead invites, removes or transfers.",
@@ -175,14 +188,14 @@
     "transferTitle": "Transfer lead",
     "transferText": "{name} becomes the hero lead. The current lead stays on the team.",
     "removeTitle": "Remove from team",
-    "removeText": "{name} loses access to the hero and the office.",
+    "removeText": "{name} loses access to the hero and the Hero Portal.",
     "cancel": "Cancel",
     "transferConfirm": "Transfer",
     "removeConfirm": "Remove",
     "inviteExpires": "Expires on {date}",
     "revokeFor": "Revoke the invite for {email}",
     "revoke": "Revoke",
-    "invite": "Invite a creator to the team",
+    "invite": "Invite someone to the team",
     "createdTitle": "Invite created",
     "inviteTitle": "{hero} team",
     "done": "Done",
@@ -191,10 +204,10 @@
     "notEmailed": "Copy the link and send it to the person: it won't show again.",
     "link": "Invite link",
     "inviteHint": "The person signs in with their own login and posts as the hero.",
-    "email": "Creator email",
+    "email": "Person's email",
     "days": "Valid for",
     "daysOption": "{days, plural, one {# day} other {# days}}",
-    "memberRole": "Hero team creator",
+    "memberRole": "Hero team member",
     "invited": "Invite created",
     "removed": "Removed from the team",
     "transferred": "Lead transferred",
@@ -233,7 +246,7 @@
     "heroRole": "Hero lead",
     "heroSent": "Hero invite created",
     "errors": {
-      "talent": "Choose the creator.",
+      "talent": "Choose the hero.",
       "heroName": "Enter the hero name."
     },
     "brandOpen": "Invite brand",
@@ -247,9 +260,9 @@
     "notEmailed": "Copy the link and send it to the person: it won't show again.",
     "link": "Invite link",
     "brandHint": "New brand: the person creates the brand and it starts with this agency. Brand owner on Ultra: gets a link request to accept.",
-    "heroHint": "Creator without a hero: the hero starts pending and the person becomes the lead. Hero without a lead: the person takes over.",
-    "noTalents": "Every creator in the casting already has a login.",
-    "talent": "Casting creator",
+    "heroHint": "Hero without a public page: the page starts pending and the person becomes the lead. Page without a lead: the person takes over.",
+    "noTalents": "Every hero in the casting already has a login.",
+    "talent": "Casting hero",
     "pick": "Choose…",
     "hasHero": "Hero: {hero}",
     "noHero": "No hero",

@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { heroPickerHref } from "@/lib/acting-hero/constants";
 import { createClient } from "@/lib/supabase/server";
-import { chosenHeroId, getMyCreator, listMyHeroesAll } from "@/app/creator/(hero)/_lib/creator";
+import { chosenHeroId, getMyCreator, listMyHeroesAll } from "@/app/heroi/_lib/creator";
 import { MyHeroesCard } from "@/components/creator/MyHeroesCard";
 import { heroSelectable } from "@/lib/creator-content/rules";
 import { heroProfileFor } from "@/components/creator/hero-access";
@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // contas. Cabeçalho (foto e nome; o herói mostra o
 // perfil público com selo e bio recolhida e o Novo post; as outras contas, e-mail e papéis) e um
 // só "Editar perfil", com o editor recolhido na mesma tela: perfil público do herói (antes em
-// /creator/profile) e "Sua conta" (nome exibido, foto, idioma e tema). Depois, "Hoje" em 3 cards (Seu
+// /heroi/pagina) e "Sua conta" (nome exibido, foto, idioma e tema). Depois, "Hoje" em 3 cards (Seu
 // dia, Sua noite e Evolução) e, no fim, uma linha "Configurações". Lembretes, coleções, compras, conta,
 // os mesmos portais e Sair moram em /configuracoes, que também abre pelo avatar do topo.
 
@@ -96,10 +96,10 @@ export default async function ProfilePage() {
   // 0091: membro da equipe do herói posta, mas perfil, foto e capa ficam com o titular
   const heroOwner = heroActive && creator.teamRole !== "member";
   // admin com perfil de herói posta pelo seletor de "Publicar como hero" (o mesmo fluxo dos outros heróis)
-  const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/creator/post/new";
+  const newPostHref = roleSet.includes("admin") ? heroPickerHref("post") : "/heroi/post/novo";
   // 0092: Novo conteúdo (estruturado) ao lado do Novo post; o admin segue pelo seletor de "Publicar como hero"
-  const newContentHref = roleSet.includes("admin") ? heroPickerHref("newContent") : "/creator/content/new";
-  const myContentHref = roleSet.includes("admin") ? heroPickerHref("content") : "/creator/content";
+  const newContentHref = roleSet.includes("admin") ? heroPickerHref("newContent") : "/heroi/conteudos/novo";
+  const myContentHref = roleSet.includes("admin") ? heroPickerHref("content") : "/heroi/conteudos";
 
   const dataForm = (
     <ProfileDataForm
@@ -130,7 +130,7 @@ export default async function ProfilePage() {
     </div>
   );
 
-  // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Escritório do casting
+  // portais no topo (pedido do responsável): agência, marca, admin, profissional e o Portal do Herói (0097)
   const native = parseNativeApp((await headers()).get("user-agent")) !== null;
   const portalItems = forSurface(buildPortalItems(roleSet, undefined, { hasTalent: talentCtx?.state === "ok", platformAdmin: true }), native);
 

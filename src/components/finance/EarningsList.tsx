@@ -21,7 +21,7 @@ const STEP_VARIANT: Record<PayStep, BadgeVariant> = {
   paid: "success",
   cancelled: "neutral",
 };
-const REVALIDATE = "/creator/escritorio/ganhos";
+const REVALIDATE = "/heroi/financeiro";
 
 // Lista de pagamentos do influenciador (0082): situação, data prevista e a nota fiscal de cada um. O valor só
 // aparece na web (native:hidden, regra da 0072). Enviar a nota: reserva no armazenamento de documentos (escopo do

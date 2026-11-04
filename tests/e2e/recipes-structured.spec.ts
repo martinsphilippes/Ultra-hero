@@ -30,8 +30,8 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
 
   test("o herói cria conteúdo estruturado pelo próprio portal, com o seletor de tipo (0092)", async ({ page }) => {
     await loginAs(page, "creator");
-    await page.goto("/creator/content/new");
-    await expect(page).toHaveURL(/\/creator\/content\/new$/);
+    await page.goto("/heroi/conteudos/novo");
+    await expect(page).toHaveURL(/\/heroi\/conteudos\/novo$/);
     await expect(page.getByTestId("content-kind")).toBeVisible();
     await expect(page.getByTestId("content-kind-program")).toHaveCount(0);
     await expect(page.getByRole("combobox", { name: "Tipo", exact: true })).toBeVisible();
@@ -40,8 +40,8 @@ test.describe("receitas estruturadas (fase 1): nada visível muda e o editor ant
   test("admin pelo herói: o endereço antigo do editor leva a receita ao editor de receitas", async ({ page }) => {
     await loginAsAdminActing(page, "content");
     const id = seedUuid("content:g1"); // receita do herói da conta demo
-    await page.goto(`/creator/content/${id}/edit`);
-    await expect(page).toHaveURL(new RegExp(`/creator/recipes/${id}/edit$`));
+    await page.goto(`/heroi/conteudos/${id}/editar`);
+    await expect(page).toHaveURL(new RegExp(`/heroi/receitas/${id}/editar$`));
     // receita no ar: o editor mostra o estado e as ações possíveis, sem o assistente
     await expect(page.getByTestId("recipe-status-panel")).toBeVisible();
     await expect(page.getByTestId("recipe-wizard")).toHaveCount(0);

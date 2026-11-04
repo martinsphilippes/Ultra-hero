@@ -4,7 +4,7 @@ import { RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { restoreRecipeVersion } from "@/app/creator/(hero)/recipes/actions";
+import { restoreRecipeVersion } from "@/app/heroi/receitas/actions";
 import { Button, Dialog, useToast } from "@/components/ui";
 import { draftStorageKey } from "@/lib/recipes/draft-recovery";
 import { useRecipeErrorText } from "./use-recipe-error";
@@ -38,7 +38,7 @@ export function RestoreVersionButton({ versionId, contentId, creatorId, versionN
         }
         toast({ title: t("restored"), variant: "success" });
         setOpen(false);
-        router.push(`/creator/recipes/${contentId}/edit`);
+        router.push(`/heroi/receitas/${contentId}/editar`);
         router.refresh();
       } catch {
         setError(errorText("network"));

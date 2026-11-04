@@ -1,4 +1,4 @@
-import { BadgeCheck, BriefcaseBusiness, Building2, ChevronRight, ShieldCheck, Stethoscope, Store, type LucideIcon } from "lucide-react";
+import { BadgeCheck, Building2, ChevronRight, ShieldCheck, Sparkles, Stethoscope, Store, type LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { SettingsItem, SettingsPortalRole } from "@/lib/settings/sections";
@@ -6,7 +6,7 @@ import type { SettingsItem, SettingsPortalRole } from "@/lib/settings/sections";
 const ICONS: Record<SettingsPortalRole, LucideIcon> = {
   seller: Store,
   professional: Stethoscope,
-  office: BriefcaseBusiness,
+  creator: Sparkles,
   agency: Building2,
   brand: BadgeCheck,
   admin: ShieldCheck,

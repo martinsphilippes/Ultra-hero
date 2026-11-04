@@ -14,7 +14,7 @@ import { COMMENT_MAX, NOTE_MAX, REASON_MAX, REASON_MIN, RETURN_NOTE_MIN } from "
 export type SelectionResult = { ok: true; message: string; id?: string } | { ok: false; error: string };
 
 const uuid = z.uuid();
-const LIST_BASE = "/marca/creators/pre-selecao";
+const LIST_BASE = "/marca/herois/pre-selecao";
 
 export async function askApprovalAction(input: { id: string; note: string }): Promise<SelectionResult> {
   const ctx = await requireBrand();

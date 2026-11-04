@@ -42,7 +42,7 @@ const SCOPE_LINK: Record<string, string> = {
 };
 
 function scopeHref(scopeType: string, scopeId: string): string {
-  if (scopeType === "creator") return `/admin/creators/${scopeId}`;
+  if (scopeType === "creator") return `/admin/herois/${scopeId}`;
   if (scopeType === "professional") return `/admin/professionals/${scopeId}`;
   if (scopeType === "agency" || scopeType === "talent") return "/admin/agencia";
   if (scopeType === "brand") return `/admin/marcas/${scopeId}`;

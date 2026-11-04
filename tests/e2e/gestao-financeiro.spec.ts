@@ -49,7 +49,7 @@ test.describe("financeiro simulado, painéis e alertas", () => {
     await expect(page.getByTestId("deal-finance")).toBeVisible();
     await expect(page.getByTestId("entry-table")).toBeVisible();
     await expect(page.locator('[data-testid="entry-item"][data-kind="brand_receivable"]')).toHaveCount(1);
-    await page.goto(`${page.url()}/creators`);
+    await page.goto(`${page.url()}/herois`);
     await expect(page.getByTestId("deal-sponsorship")).toBeVisible();
   });
 
@@ -86,13 +86,13 @@ test.describe("financeiro simulado, painéis e alertas", () => {
   test("escritório: início com próximas entregas e repasses (valor só na web); aba Documentos", async ({ page }) => {
     await loginAs(page, "talent");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0065 ainda não aplicada");
-    await page.goto("/creator/escritorio");
+    await page.goto("/heroi");
     test.skip((await page.getByTestId("office-next-deliveries").count()) === 0, "0069 ainda não aplicada");
     await expect(page.getByTestId("office-next-deliveries")).toBeVisible();
     await expect(page.getByTestId("office-payouts")).toBeVisible();
     await noHorizontalScroll(page);
     await axe(page);
-    await page.goto("/creator/escritorio/documentos");
+    await page.goto("/heroi/documentos");
     await expect(page.getByTestId("office-documents")).toBeVisible();
   });
 

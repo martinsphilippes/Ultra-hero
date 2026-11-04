@@ -1,12 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
+import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
 import { isBlockedInNativeApp, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Rotas que exigem sessão. Papéis NÃO são checados aqui (os layouts fazem isso no servidor).
 // /profissional = portal do profissional (0058); /profissionais (lista pública) não entra.
-const PROTECTED_PREFIXES = ["/admin", "/creator", "/seller", "/profissional", "/agencia", "/marca", "/profile", "/recipes", "/cart", "/checkout", "/orders", "/shop/compras", "/onboarding", "/configuracoes"];
+const PROTECTED_PREFIXES = ["/admin", "/heroi", "/seller", "/profissional", "/agencia", "/marca", "/profile", "/recipes", "/cart", "/checkout", "/orders", "/shop/compras", "/onboarding", "/configuracoes"];
 
 function isProtected(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -53,6 +54,16 @@ function legacyEvolutionResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 308);
 }
 
+// Portal do Herói (0097): /creator/** (portal do herói e escritório), /marca/creators, /agencia/negocios/<id>/creators
+// e /admin/creators mudaram de endereço. 308 permanente com a query, antes da sessão (e-mails, avisos e push antigos).
+function legacyHeroPortalResponse(request: NextRequest): NextResponse | null {
+  const next = legacyHeroPortalTarget(request.nextUrl.pathname);
+  if (!next) return null;
+  const target = request.nextUrl.clone();
+  target.pathname = next;
+  return NextResponse.redirect(target, 308);
+}
+
 // App das lojas: comércio simulado não existe lá (docs/decisions/app-nas-lojas.md).
 // A trava é aqui, e não só no botão escondido: link antigo, histórico ou digitação não abrem a rota.
 function nativeAppResponse(request: NextRequest): NextResponse | null {
@@ -69,7 +80,7 @@ export async function middleware(request: NextRequest) {
   const response = await updateSession(request);
 
   const { pathname, search } = request.nextUrl;
-  const early = nativeAppResponse(request) ?? heroHubResponse(request) ?? legacyEvolutionResponse(request);
+  const early = legacyHeroPortalResponse(request) ?? nativeAppResponse(request) ?? heroHubResponse(request) ?? legacyEvolutionResponse(request);
   if (early) {
     // Mantém os cookies renovados na resposta.
     for (const cookie of response.cookies.getAll()) early.cookies.set(cookie);

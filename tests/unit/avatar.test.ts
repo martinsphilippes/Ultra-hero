@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { removeAvatar, uploadAvatar } from "@/app/(app)/profile/avatar-actions";
 import { deleteAccount, updateProfile } from "@/app/(app)/profile/actions";
 import { adminRemoveCreatorCover, adminRemoveCreatorPhoto, createCreator, updateCreator, type CreatorFormValues } from "@/app/admin/ops-actions";
-import { updateCreatorProfile } from "@/app/creator/(hero)/profile/actions";
-import { removeHeroCover, uploadHeroCover } from "@/app/creator/(hero)/profile/cover-actions";
+import { updateCreatorProfile } from "@/app/heroi/pagina/actions";
+import { removeHeroCover, uploadHeroCover } from "@/app/heroi/pagina/cover-actions";
 import { creatorProfilePayload, parseCreatorProfile, type CreatorProfileInput } from "@/components/creator/profile-schema";
 import { DELETE_CONFIRM_WORD } from "@/components/me/delete-account";
 import { AVATAR_ERRORS, MAX_SOURCE_BYTES, MAX_UPLOAD_BYTES, toAvatarError } from "@/lib/avatar/constants";
@@ -380,9 +380,9 @@ describe("uploadAvatar", () => {
       `admin:storage:remove:avatars/${ids.USER}/${ids.OLD}.jpg`,
       "admin:update:avatar_uploads",
     ]);
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/creator", "/personalities/erick-jacquin"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/", "/profile", "/heroi", "/personalities/erick-jacquin"]));
     // o perfil do herói mora no /profile: o endereço antigo só redireciona
-    expect(state.revalidated).not.toContain("/creator/profile");
+    expect(state.revalidated).not.toContain("/heroi/pagina");
   });
 
   it("o tipo vem dos bytes: PNG disfarçado de WebP não chega ao banco", async () => {
@@ -633,8 +633,8 @@ describe("updateCreatorProfile (perfil do herói no /profile)", () => {
     expect(heroUpdates()[0].payload).toMatchObject({ headline: "Treino curto", bio: "Bio nova" });
     // a capa só muda pelo envio próprio (0042): salvar o formulário nunca a regrava
     expect(heroUpdates()[0].payload).not.toHaveProperty("cover_url");
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities/erick-jacquin"]));
-    expect(state.revalidated).not.toContain("/creator/profile");
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/heroi", "/personalities/erick-jacquin"]));
+    expect(state.revalidated).not.toContain("/heroi/pagina");
   });
 
   it("capa que chegue no formulário (aba antiga, POST direto) é descartada: nem desenho nem URL solta é gravada", async () => {
@@ -1012,7 +1012,7 @@ describe("uploadHeroCover / removeHeroCover", () => {
       `admin:storage:remove:hero-covers/${ids.USER}/${ids.OLD}.jpg`,
       "admin:update:hero_cover_uploads",
     ]);
-    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/creator", "/personalities", "/personalities/erick-jacquin"]));
+    expect(state.revalidated).toEqual(expect.arrayContaining(["/profile", "/heroi", "/personalities", "/personalities/erick-jacquin"]));
     // nada do avatar é tocado
     expect(state.log.some((l) => l.includes("avatar"))).toBe(false);
   });

@@ -1,4 +1,3 @@
-import { ArrowLeft } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -24,10 +23,9 @@ type PortalShellProps = {
   badge?: string;
 };
 
-// Casca dos portais (admin/personalidade/fornecedor): sidebar fixa no desktop, Sheet no mobile.
-// Portal do herói: sem menu (nem lateral nem de três linhas). Os atalhos moram no Perfil do app;
-// aqui fica só "← Perfil" para voltar.
-// O gate de papel acontece no layout que chama este componente (server-side).
+// Casca dos portais (admin, herói, fornecedor, profissional, agência, marca): sidebar fixa no tablet/desktop, Sheet
+// no celular, ação à direita (o sino) e "Voltar ao app" no menu. O Portal do Herói (0097) também tem menu: ele juntou
+// a área do herói e o escritório do casting. O gate de papel acontece no layout que chama este componente.
 export async function PortalShell({ portal, children, navKeys, headerAction, badge }: PortalShellProps) {
   const [session, cookieStore, t, ta] = await Promise.all([
     getSessionSummary(),
@@ -37,12 +35,10 @@ export async function PortalShell({ portal, children, navKeys, headerAction, bad
   ]);
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const theme = resolveTheme(themeCookie);
-  const withMenu = portal !== "creator";
 
   return (
     <div className="flex min-h-dvh">
       {/* Sidebar (md+) */}
-      {withMenu && (
       <aside
         aria-label={ta("a11y.portalNavigation")}
         className="sticky top-0 hidden h-dvh w-sidebar shrink-0 flex-col gap-6 overflow-y-auto border-r border-border bg-surface px-4 py-5 md:flex print:hidden"
@@ -55,30 +51,16 @@ export async function PortalShell({ portal, children, navKeys, headerAction, bad
         </div>
         <PortalNavList portal={portal} navKeys={navKeys} />
       </aside>
-      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="uh-header uh-chrome sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md safe-top print:hidden">
           <div className="flex h-topbar items-center justify-between gap-3 px-gutter">
             <div className="flex min-w-0 items-center gap-2">
-              {withMenu ? (
-                <>
-                  <PortalMobileMenu portal={portal} navKeys={navKeys} />
-                  <Link href={PORTAL_ROOT[portal]} className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus md:hidden">
-                    <Logo size="sm" />
-                  </Link>
-                  <p className="hidden truncate text-sm text-fg-muted md:block">{t(`portalDescription.${portal}`)}</p>
-                </>
-              ) : (
-                <Link
-                  href="/profile"
-                  data-testid="portal-back-profile"
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg pr-2 text-sm font-semibold text-fg hover:text-accent-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                >
-                  <ArrowLeft className="size-5" aria-hidden="true" />
-                  {t("backToProfile")}
-                </Link>
-              )}
+              <PortalMobileMenu portal={portal} navKeys={navKeys} />
+              <Link href={PORTAL_ROOT[portal]} className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus md:hidden">
+                <Logo size="sm" />
+              </Link>
+              <p className="hidden truncate text-sm text-fg-muted md:block">{t(`portalDescription.${portal}`)}</p>
             </div>
             <div className="flex items-center gap-0.5">
               {headerAction}

@@ -66,7 +66,7 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
         return;
       }
       toast({ title: result.message ?? t("updated"), variant: "success" });
-      if (!id && "id" in result) router.push(`/admin/creators/${result.id}`);
+      if (!id && "id" in result) router.push(`/admin/herois/${result.id}`);
       else router.refresh();
     });
   }

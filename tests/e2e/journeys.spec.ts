@@ -19,7 +19,7 @@ test.describe("visitante", () => {
   });
 
   test("rotas protegidas redirecionam para login", async ({ page }) => {
-    for (const route of ["/profile/evolution", "/profile", "/profile/notifications", "/admin", "/admin/feedback", "/creator", "/seller", "/orders"]) {
+    for (const route of ["/profile/evolution", "/profile", "/profile/notifications", "/admin", "/admin/feedback", "/heroi", "/seller", "/orders"]) {
       await page.goto(route);
       await expect(page).toHaveURL(/\/login\?next=/);
     }

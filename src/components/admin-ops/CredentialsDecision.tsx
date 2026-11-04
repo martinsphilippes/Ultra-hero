@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { decideCreatorCredentials } from "@/app/admin/creators/credentials-actions";
+import { decideCreatorCredentials } from "@/app/admin/herois/credentials-actions";
 import { ConfirmActionDialog } from "@/components/admin";
 
 // Aprovar ou reprovar o pedido de credenciais de um herói (justificativa obrigatória, auditada).

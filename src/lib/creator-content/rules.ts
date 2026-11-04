@@ -1,7 +1,7 @@
 // Novo conteúdo do creator (0092): regras puras (cliente e servidor), testadas em tests/unit/creator-content.test.ts.
 //
 // Decisões (pedido do responsável, 03/11): o creator — titular e membros da equipe do herói ativo — cria conteúdo
-// estruturado pelo próprio portal (/creator/content/new) com o MESMO editor por blocos do admin. Ficam só com o admin:
+// estruturado pelo próprio portal (/heroi/conteudos/novo) com o MESMO editor por blocos do admin. Ficam só com o admin:
 //   • escolher outro herói como autor (o creator escreve pelo herói dele; com vários heróis, um seletor simples);
 //   • direitos/licença editorial (tipo de licença, referência do contrato e crédito): o creator publica conteúdo
 //     próprio — a licença é calculada (own; vídeo por link do YouTube/Vimeo = third_party_embed);
@@ -29,9 +29,9 @@ export function contentKindsFor(audience: ContentAudience): readonly ContentKind
 export function creatorKindHref(kind: ContentKind): string | null {
   switch (kind) {
     case "post":
-      return "/creator/post/new";
+      return "/heroi/post/novo";
     case "recipe":
-      return "/creator/recipes/new";
+      return "/heroi/receitas/nova";
     default:
       return null;
   }
@@ -83,7 +83,7 @@ export function creatorCanEdit(input: { status: string; reviewStatus: string; ty
 
 /** Destino de um item de "Meus conteúdos": receita no Portal do Chef; o resto no editor estruturado. */
 export function creatorContentHref(row: { id: string; type: string }): string {
-  return row.type === "recipe" ? `/creator/recipes/${row.id}/edit` : `/creator/content/${row.id}/edit`;
+  return row.type === "recipe" ? `/heroi/receitas/${row.id}/editar` : `/heroi/conteudos/${row.id}/editar`;
 }
 
 /** Cookie com o herói escolhido por quem está em mais de uma equipe (o servidor sempre revalida). */

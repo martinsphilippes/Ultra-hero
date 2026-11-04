@@ -26,7 +26,7 @@ export async function postDealMessageAction(portal: DealPortal, input: { dealId:
     const { data, error } = await supabase.rpc("deal_message_post", { p_deal: d.dealId, p_channel: d.channel, p_talent: d.talentId, p_body: d.body });
     if (error) return fail(portal, error);
     // só caminhos dos três portais (nunca um caminho arbitrário vindo do cliente)
-    if (/^\/(agencia\/negocios|marca\/campanhas|creator\/escritorio\/oportunidades)\/[0-9a-f-]{36}(\/conversa)?$/.test(input.revalidate)) revalidatePath(input.revalidate);
+    if (/^\/(agencia\/negocios|marca\/campanhas|heroi\/oportunidades)\/[0-9a-f-]{36}(\/conversa)?$/.test(input.revalidate)) revalidatePath(input.revalidate);
     const t = await getTranslations("commercial.messages");
     return { ok: true, message: t("sent"), id: data ?? undefined };
   } catch (error) {

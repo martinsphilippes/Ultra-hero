@@ -197,7 +197,7 @@ describe("erros e textos", () => {
     const pt = JSON.parse(readFileSync(path.join(process.cwd(), "messages", "pt-BR", "sponsorship.json"), "utf8")) as { agency: { form: { heroHint: string; consentNotice: string; tiers: { hintAdmin: string } }; description: string }; brand: { description: string } };
     expect(pt.agency.form.heroHint).toContain("herói");
     expect(pt.agency.form.consentNotice).toContain("Documentos");
-    expect(pt.agency.form.consentNotice).toContain("escritório");
-    expect(JSON.stringify([pt.agency.description, pt.brand.description, pt.agency.form.tiers.hintAdmin])).not.toMatch(/creator/i);
+    expect(pt.agency.form.consentNotice).toContain("Portal do Herói");
+    expect(JSON.stringify([pt.agency.description, pt.brand.description, pt.agency.form.tiers.hintAdmin])).not.toMatch(/heroi/i);
   });
 });

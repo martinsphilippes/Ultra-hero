@@ -26,7 +26,7 @@ export async function saveDealBriefAction(input: { dealId: string; brief: Brief 
     const { error } = await supabase.rpc("agency_brief_save", { p_deal: parsed.data.dealId, p_brief: briefPayload(parsed.data.brief) });
     if (error) return agencyFail(error);
     revalidatePath(`/agencia/negocios/${parsed.data.dealId}`, "layout");
-    revalidatePath("/creator/escritorio", "layout");
+    revalidatePath("/heroi", "layout");
     revalidatePath("/marca/campanhas", "layout");
     const t = await getTranslations("brief");
     return { ok: true, message: t("saved") };

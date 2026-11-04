@@ -4,7 +4,7 @@ import { Camera, Images, Trash2, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ChangeEvent, type MouseEvent } from "react";
-import { removeHeroCover, uploadHeroCover } from "@/app/creator/(hero)/profile/cover-actions";
+import { removeHeroCover, uploadHeroCover } from "@/app/heroi/pagina/cover-actions";
 import { Button, Dialog, useToast } from "@/components/ui";
 import { supabaseBaseUrl } from "@/lib/avatar/paths";
 import { AvatarPrepareError, prepareImage, type PreparedAvatar } from "@/lib/avatar/resize";

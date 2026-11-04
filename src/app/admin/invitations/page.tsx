@@ -83,6 +83,9 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
     supabase.from("role_assignments").select("user_id").eq("role", "creator").is("revoked_at", null).limit(500),
     getTranslations("invites.roles"),
   ]);
+  // 0097: fichas do casting que podem receber o convite de acesso (Herói → já no casting); sem a migração, lista vazia
+  const talentsRes = await supabase.rpc("admin_invite_talent_options");
+  const talents = (talentsRes.error ? [] : (talentsRes.data ?? [])).map((r) => ({ id: r.talent_id, name: r.display_name, agency: r.agency_name, hasHero: r.has_hero }));
   const creatorUserIds = Array.from(new Set((creatorRolesRes.data ?? []).map((r) => r.user_id)));
   const { data: creatorProfiles } = creatorUserIds.length
     ? await supabase.from("profiles").select("id, display_name").in("id", creatorUserIds)
@@ -104,7 +107,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
               : r.role === "professional"
                 ? tn("portals.professional")
                 : r.role === "creator"
-                  ? t("roleTalent")
+                  ? tr("hero")
                   : t("form.roleSeller");
   const now = Date.now();
 
@@ -140,7 +143,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
             {tn("admin.professionals")}
           </Link>
         ) : r.role === "creator" && r.creator_profile_id ? (
-          <Link href={`/admin/creators/${r.creator_profile_id}`} className="text-accent-text hover:underline">
+          <Link href={`/admin/herois/${r.creator_profile_id}`} className="text-accent-text hover:underline">
             {r.creator_profiles?.name ?? r.creator_profile_id}
           </Link>
         ) : r.seller_org_id ? (
@@ -169,7 +172,8 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
 
   const creators = (creatorsRes.data ?? []).map((c) => ({ id: c.id, name: c.name, linked: Boolean(c.user_id), slug: c.slug, avatarUrl: c.avatar_url }));
   const sellers = (sellersRes.data ?? []).map((s) => ({ id: s.id, name: s.name }));
-  const initialRole: AdminInviteRole = isAdminInviteRole(sp.role) ? sp.role : "creator";
+  // 0097: links antigos com role=creator (botão "convidar" na tela do herói) abrem o Herói → equipe desse herói
+  const initialRole: AdminInviteRole = isAdminInviteRole(sp.role) ? sp.role : "hero";
   const nameById = new Map((creatorProfiles ?? []).map((p) => [p.id, p.display_name]));
   const creatorUsers = creatorUserIds.map((id) => ({ id, name: nameById.get(id) || id.slice(0, 8) })).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -179,7 +183,7 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
         title={t("title")}
         description={t("description")}
         eyebrow={tn("portals.admin")}
-        actions={<InvitationForm creators={creators} creatorUsers={creatorUsers} sellers={sellers} initialRole={initialRole} initialCreatorId={sp.creator} initialSellerId={sp.org} defaultOpen={sp.new === "1"} />}
+        actions={<InvitationForm creators={creators} creatorUsers={creatorUsers} talents={talents} sellers={sellers} initialRole={initialRole} initialCreatorId={sp.creator} initialSellerId={sp.org} defaultOpen={sp.new === "1"} />}
       />
       <nav aria-label={t("filters.status")} className="flex flex-wrap gap-2">
         <FilterLink href="/admin/invitations" active={!status} label={tc("all")} />

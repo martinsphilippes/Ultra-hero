@@ -131,10 +131,10 @@ export async function updateProfile(input: { displayName: string; avatarUrl?: st
     if (base && released.length > 0 && hasAdminClient()) {
       const admin = createAdminClient();
       for (const url of released) await releaseStoredAvatar(admin, { url, baseUrl: base });
-      revalidatePath("/creator", "layout");
+      revalidatePath("/heroi", "layout");
       revalidatePath("/personalities", "layout");
     } else if (hero) {
-      revalidatePath("/creator", "layout");
+      revalidatePath("/heroi", "layout");
       revalidatePath("/personalities", "layout");
     }
     // Idioma e tema: cookies + perfil (mesmas actions usadas pelos seletores globais).

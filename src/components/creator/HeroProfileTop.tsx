@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { StatusBadge } from "@/components/admin";
 import { HeroBio } from "@/components/discover/personalities/HeroBio";
 import { Avatar, Badge } from "@/components/ui";
-import type { CreatorProfile } from "@/app/creator/(hero)/_lib/creator";
+import type { CreatorProfile } from "@/app/heroi/_lib/creator";
 import type { AvatarPhotoState } from "@/lib/avatar/availability";
 import type { HeroCoverState } from "@/lib/hero-cover/availability";
 import { credentialsState, type CredentialsRequest } from "@/lib/recipes/credentials";

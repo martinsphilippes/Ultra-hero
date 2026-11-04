@@ -72,7 +72,7 @@
     "talent_already_linked": "Este convite já foi usado por outra conta.",
     "admin_invite_max_48h": "Convite de Admin vale no máximo 48 horas.",
     "admin_confirm_required": "Confirme que a pessoa terá controle total do Ultra.",
-    "creator_role_required": "A pessoa precisa ter o papel de creator.",
+    "creator_role_required": "A pessoa precisa ter o papel de herói.",
     "has_hero": "Você já tem um herói.",
     "owner_must_transfer": "O titular não sai da equipe sem antes transferir a titularidade.",
     "onboarding_not_found": "Não há primeiro acesso em aberto para isso.",
@@ -291,8 +291,7 @@
     "expiredNote": "expirado",
     "roleAgency": "Agência",
     "roleBrand": "Marca",
-    "roleTalent": "Creator",
-    "talentTarget": "Ficha do creator"
+    "talentTarget": "Ficha no casting"
   },
   "invite": {
     "title": "Convite",
@@ -308,7 +307,7 @@
     "successTitle": "Convite aceito",
     "successCreator": "Seu acesso de herói foi liberado.",
     "successSeller": "Seu acesso ao portal do fornecedor foi liberado.",
-    "goCreator": "Ir para o Perfil",
+    "goCreator": "Abrir o Portal do Herói",
     "goSeller": "Ir para o portal do fornecedor",
     "goHome": "Voltar ao app",
     "errorTitle": "Não foi possível aceitar",
@@ -323,11 +322,11 @@
     "goAgency": "Abrir portal da agência",
     "goBrand": "Abrir portal da marca",
     "inboxOnlyNote": "Os avisos ficam no sino do portal.",
-    "successTalent": "Pronto! Você agora tem o escritório da agência.",
-    "goOffice": "Abrir o escritório",
+    "successTalent": "Pronto! Você agora tem o Portal do Herói.",
+    "goOffice": "Abrir o Portal do Herói",
     "alreadyHint": "Já entrou pela tela de login com este e-mail? Então o convite já foi aceito e seu acesso está liberado.",
     "openPortals": "Abrir meus portais",
-    "grantGeneric": "O acesso deste convite (agência, marca, creator, herói, fornecedor ou profissional) aparece logo depois de aceitar."
+    "grantGeneric": "O acesso deste convite (agência, marca, herói, fornecedor ou profissional) aparece logo depois de aceitar."
   },
   "creators": {
     "title": "Heróis",

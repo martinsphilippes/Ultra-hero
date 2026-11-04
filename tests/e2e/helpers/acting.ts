@@ -14,12 +14,12 @@ export type HeroCard = "post" | "newContent" | "content" | "recipes" | "links" |
 
 /** Para onde cada atalho leva depois da escolha. */
 export const CARD_URL: Record<HeroCard, RegExp> = {
-  post: /\/creator\/post\/new$/,
+  post: /\/heroi\/post\/novo$/,
   newContent: new RegExp(`/admin/content/new\\?creator=${DEMO_HERO_ID}$`),
   content: new RegExp(`/admin/content\\?creator=${DEMO_HERO_ID}$`),
-  recipes: /\/creator\/recipes$/,
-  links: /\/creator\/links$/,
-  dashboard: /\/creator$/,
+  recipes: /\/heroi\/receitas$/,
+  links: /\/heroi\/vinculos$/,
+  dashboard: /\/heroi$/,
 };
 
 /** O banco dos E2E já tem a 0045? Sem ela os fluxos do admin pelo herói ficam indisponíveis. */

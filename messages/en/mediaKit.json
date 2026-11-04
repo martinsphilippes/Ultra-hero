@@ -3,7 +3,7 @@
     "label": "data from {date} · declared by {by} on {declaredAt}",
     "labelShort": "data from {date} · declared by {by}",
     "side": {
-      "talent": "creator",
+      "talent": "hero",
       "agency": "agency",
       "integration": "integration"
     },
@@ -114,7 +114,7 @@
     "views": "{count, plural, =0 {no visits} one {# visit} other {# visits}}",
     "lastView": "last visit on {date}",
     "inactive": "No active link. Create one to send to brands.",
-    "needsConsent": "To create the link, the creator must authorize commercial use of their image (this is what allows showing the media kit to brands).",
+    "needsConsent": "To create the link, the hero must authorize commercial use of their image (this is what allows showing the media kit to brands).",
     "goConsent": "Open Consent",
     "linkOnce": "This link shows only now. Copy and keep it: later you can only create another.",
     "link": "Media kit link",
@@ -124,14 +124,14 @@
     "regenerate": "Create new link",
     "revoke": "Turn off link",
     "confirmRevoke": "Turn off the link? Anyone with the address will no longer see the kit.",
-    "consentStepsAgency": "How to fix: upload the signed authorization in Documents and tap \"Record consent\" on the creator's profile.",
-    "consentStepsAgencyLogin": "How to fix: this creator has a login, so only they can authorize. Ask them to open the Creator Portal → Consent and accept.",
+    "consentStepsAgency": "How to fix: upload the signed authorization in Documents and tap \"Record consent\" on the hero's profile.",
+    "consentStepsAgencyLogin": "How to fix: this hero has a login, so only they can authorize. Ask them to open the Hero Portal → Consent and accept.",
     "consentStepsOffice": "How to fix: open Consent and accept the terms. Then come back here and create the link.",
     "goConsentAgency": "Go to consent"
   },
   "public": {
     "eyebrow": "Media kit",
-    "declaredNote": "Metrics declared by the creator or the agency, with the date of each figure.",
+    "declaredNote": "Metrics declared by the hero or the agency, with the date of each figure.",
     "poweredBy": "Groscove Ultra",
     "unavailableTitle": "This link is not available",
     "unavailableBody": "The link may have expired or been turned off. Ask whoever sent it for a new one."

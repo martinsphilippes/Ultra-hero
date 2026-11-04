@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import type { RegisteredMedia } from "@/app/creator/(hero)/recipes/actions";
+import type { RegisteredMedia } from "@/app/heroi/receitas/actions";
 import { Button, Checkbox, FormField, Input, Textarea } from "@/components/ui";
 import { RECIPE_LIMITS } from "@/lib/recipes/codes";
 import { emptyStep, focusIndexAfterRemove, isBlankIngredient, moveItem, type DraftStep } from "@/lib/recipes/draft";

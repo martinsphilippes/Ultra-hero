@@ -112,9 +112,9 @@ describe("avisos", () => {
   });
 
   it("push só para tipos do escritório com link do escritório", () => {
-    expect(inboxKindPushes("task_assigned", "/creator/escritorio/tarefas")).toBe(true);
+    expect(inboxKindPushes("task_assigned", "/heroi/tarefas")).toBe(true);
     expect(inboxKindPushes("task_assigned", "/agencia/tarefas")).toBe(false);
-    expect(inboxKindPushes("member_joined", "/creator/escritorio")).toBe(false);
+    expect(inboxKindPushes("member_joined", "/heroi")).toBe(false);
   });
 
   it("parâmetros só de texto curto e links só internos", () => {
@@ -144,8 +144,8 @@ describe("push do escritório", () => {
 
   it("texto vem do tipo do aviso e o link é o do aviso", () => {
     const messages = JSON.parse(readFileSync(path.join(process.cwd(), "messages", "pt-BR", "push.json"), "utf8"));
-    const msg = buildPushMessage({ kind: "office", inboxKind: "task_assigned", params: { deal: "Campanha Verão" }, link: "/creator/escritorio/tarefas" }, "pt-BR", messages);
-    expect(msg).toEqual({ title: "Nova tarefa", body: "Você tem uma tarefa nova em Campanha Verão.", url: "/creator/escritorio/tarefas" });
+    const msg = buildPushMessage({ kind: "office", inboxKind: "task_assigned", params: { deal: "Campanha Verão" }, link: "/heroi/tarefas" }, "pt-BR", messages);
+    expect(msg).toEqual({ title: "Nova tarefa", body: "Você tem uma tarefa nova em Campanha Verão.", url: "/heroi/tarefas" });
   });
 });
 
@@ -155,7 +155,7 @@ describe("integração com o app", () => {
     expect(isBlockedInNativeApp("/agencia/equipe")).toBe(true);
     expect(isBlockedInNativeApp("/marca")).toBe(true);
     expect(isBlockedInNativeApp("/marcas")).toBe(false);
-    expect(isBlockedInNativeApp("/creator/post/new")).toBe(false);
+    expect(isBlockedInNativeApp("/heroi/post/novo")).toBe(false);
   });
 
   it("Configurações mostram os portais de agência e marca (escondidos no app)", () => {

@@ -1,7 +1,7 @@
 {
   "meta": {
-    "eyebrow": "Office",
-    "home": "Office",
+    "eyebrow": "Agency casting",
+    "home": "Home",
     "consent": "Consent",
     "kit": "Media kit",
     "opportunities": "Opportunities",
@@ -13,9 +13,9 @@
     "earnings": "Earnings"
   },
   "home": {
-    "unavailable": "Office being updated",
+    "unavailable": "Hero Portal being updated",
     "none": "You are not part of a roster yet",
-    "noneHint": "When an agency adds you to its roster, your office shows up here.",
+    "noneHint": "When an agency adds you to its casting, opportunities, tasks and earnings show up here.",
     "agency": "{agency} roster",
     "agencyWithManager": "{agency} roster · managed by {manager}",
     "availabilityTitle": "Your availability",
@@ -36,7 +36,6 @@
     "inboxTitle": "Agency notices",
     "inboxAll": "See all",
     "inboxEmpty": "No notices yet.",
-    "upcoming": "Tasks and calendar reach the office in the next stages.",
     "opportunitiesTitle": "Opportunities",
     "opportunitiesAll": "See all",
     "opportunitiesPending": "{count, plural, one {# opportunity awaits your reply.} other {# opportunities await your reply.}}",

@@ -83,7 +83,7 @@ export function HeroAgenda({ creatorId, events, editable, services, timeZone, ye
         year={year}
         month={month}
         today={today}
-        base="/creator/agenda"
+        base="/heroi/agenda"
         requestedDay={requestedDay}
         emptyTitle={t("empty")}
         emptyHint={canWrite ? t("emptyHint") : t("emptyHintMember")}
@@ -111,7 +111,7 @@ export function HeroAgenda({ creatorId, events, editable, services, timeZone, ye
           if (h.source === "service") {
             return canSeeFinance ? (
               <Button asChild size="sm" variant="ghost" leadingIcon={<Wallet />}>
-                <Link href="/creator/financeiro" aria-label={t("openFinanceLabel", { title: e.title })} data-testid="hero-service-open">
+                <Link href="/heroi/financeiro" aria-label={t("openFinanceLabel", { title: e.title })} data-testid="hero-service-open">
                   <span className="sr-only sm:not-sr-only">{t("openFinance")}</span>
                 </Link>
               </Button>

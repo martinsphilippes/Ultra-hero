@@ -12642,6 +12642,10 @@ drop table t_s95;
 -- agência; rodadas com aprovação do dono; prazo; escolha das vencedoras cria a campanha (vínculo por projeto para quem
 -- não atende a marca) e avisa as outras. S14 segue 18.
 \ir ../migrations/0089_chamada_da_marca.sql
+-- banco que já tem a 0096: a 0089 acima recria as respostas de 6 argumentos ao lado das de 8 (0096); dentro da transação
+-- de teste, volta ao estado da 0089 (o S103 aplica a 0096 de novo)
+drop function if exists public.brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int);
+drop function if exists public.agency_brand_call_reply(uuid, text, bigint, jsonb, date, text, text, int);
 select tests.su();
 insert into auth.users (id, email) values
   ('96000000-0000-4000-8000-000000000961', 's96-adm-a@test.local'),
@@ -14859,6 +14863,109 @@ delete from public.agency_members where agency_id::text like 'b1030000-%';
 delete from public.agencies where id::text like 'b1030000-%';
 delete from auth.users where id::text like 'b1030000-%';
 drop table t_s103;
+
+-- ================================================================ S104 · Portal do Herói único: convite "Herói" do admin (0097)
+-- O convite do admin tem 7 papéis (sem "Creator" separado). "Herói" escolhe: herói novo (pendente, a pessoa é a titular),
+-- equipe de um herói existente (titular se ele não tem titular; senão membro) ou herói já no casting (convite de acesso à
+-- ficha, com as mesmas regras do convite da agência: sem login na ficha, herói ligado sem conta, nada arquivado; o convite
+-- novo substitui o pendente da mesma ficha). O aceite da ficha leva a pessoa ao casting (talent_my_context). Convite antigo
+-- com papel 'creator' segue valendo. A lista de fichas convidáveis é só do admin geral (gestor e visitante não leem);
+-- quem não é admin não convida. S14 segue 18.
+\ir ../migrations/0097_portal_heroi_unico.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('b1040000-0000-4000-8000-000000000001','s104-admin@test.local'),('b1040000-0000-4000-8000-000000000002','s104-gestor@test.local'),
+  ('b1040000-0000-4000-8000-000000000003','s104-titular@test.local'),('b1040000-0000-4000-8000-000000000004','s104-login@test.local'),
+  ('b1040000-0000-4000-8000-000000000005','s104-ficha@test.local'),('b1040000-0000-4000-8000-000000000006','s104-antigo@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('b1040000-0000-4000-8000-000000000001', 'admin', 'global');
+insert into public.agencies (id, slug, name) values ('b1040000-0000-4000-8000-0000000000a1','s104-agencia','Agência S104');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('b1040000-0000-4000-8000-0000000000a1','b1040000-0000-4000-8000-000000000002','manager','Gil Gestor S104');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('b1040000-0000-4000-8000-0000000000c1','s104-heroi-titular','Herói Com Titular S104','active','b1040000-0000-4000-8000-000000000003'),
+  ('b1040000-0000-4000-8000-0000000000c2','s104-heroi-livre','Herói Sem Titular S104','active',null),
+  ('b1040000-0000-4000-8000-0000000000c3','s104-heroi-casting','Herói do Casting S104','active',null);
+insert into public.role_assignments (user_id, role, scope_type, scope_id) values
+  ('b1040000-0000-4000-8000-000000000003','creator','creator','b1040000-0000-4000-8000-0000000000c1');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, creator_id, archived_at) values
+  ('b1040000-0000-4000-8000-0000000000e1','b1040000-0000-4000-8000-0000000000a1','Ficha Livre S104',null,null,null),
+  ('b1040000-0000-4000-8000-0000000000e2','b1040000-0000-4000-8000-0000000000a1','Ficha Com Login S104','b1040000-0000-4000-8000-000000000004',null,null),
+  ('b1040000-0000-4000-8000-0000000000e3','b1040000-0000-4000-8000-0000000000a1','Ficha Arquivada S104',null,null,now()),
+  ('b1040000-0000-4000-8000-0000000000e4','b1040000-0000-4000-8000-0000000000a1','Ficha Herói Titular S104',null,'b1040000-0000-4000-8000-0000000000c1',null),
+  ('b1040000-0000-4000-8000-0000000000e5','b1040000-0000-4000-8000-0000000000a1','Ficha Herói Sem Conta S104',null,'b1040000-0000-4000-8000-0000000000c3',null);
+create temp table t_s104 (k text primary key, v text);
+grant all on t_s104 to anon, authenticated, service_role;
+
+select tests.ok('S104 estrutura: admin_invite e a lista de fichas sem sobrecarga, definer com search_path, fora do visitante; S14 segue 18',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'admin_invite') = 1
+  and (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname = 'admin_invite_talent_options') = 1
+  and (select bool_and(prosecdef and proconfig is not null) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('admin_invite', 'admin_invite_talent_options'))
+  and not has_function_privilege('anon', 'public.admin_invite_talent_options()', 'execute')
+  and not has_function_privilege('anon', 'public.admin_invite(text, text, int, jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.admin_invite_talent_options()', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante e gestor da agência: nada
+select tests.anon();
+select tests.expect_error('S104 visitante não lista fichas', $q$select * from public.admin_invite_talent_options()$q$, 'permission denied');
+select tests.login('b1040000-0000-4000-8000-000000000002', 's104-gestor@test.local');
+select tests.expect_error('S104 gestor não lista fichas do admin', $q$select * from public.admin_invite_talent_options()$q$, 'forbidden');
+select tests.expect_error('S104 gestor não usa o convite do admin', $q$select public.admin_invite('x.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e1"}')$q$, 'forbidden');
+
+-- admin: lista e os três caminhos do Herói
+select tests.login('b1040000-0000-4000-8000-000000000001', 's104-admin@test.local');
+select tests.ok('S104 lista do admin: ficha sem login e herói sem conta entram; com login, arquivada e herói com titular ficam fora',
+  (select array_agg(talent_id order by display_name) from public.admin_invite_talent_options() where talent_id::text like 'b1040000-%')
+    = array['b1040000-0000-4000-8000-0000000000e5','b1040000-0000-4000-8000-0000000000e1']::uuid[]
+  and (select has_hero from public.admin_invite_talent_options() where talent_id = 'b1040000-0000-4000-8000-0000000000e5'));
+insert into t_s104 values ('new', public.admin_invite('s104-novo@test.local', 'hero', 7, '{"hero_mode": "new", "hero_name": "Herói Novo S104"}')::text);
+insert into t_s104 values ('own', public.admin_invite('s104-assume@test.local', 'hero', 7, '{"hero_mode": "team", "hero_id": "b1040000-0000-4000-8000-0000000000c2"}')::text);
+insert into t_s104 values ('mem', public.admin_invite('s104-membro@test.local', 'hero', 7, '{"hero_mode": "team", "hero_id": "b1040000-0000-4000-8000-0000000000c1"}')::text);
+insert into t_s104 values ('cast1', public.admin_invite('s104-ficha@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e1"}')::text);
+insert into t_s104 values ('cast2', public.admin_invite('s104-ficha@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e1"}')::text);
+insert into t_s104 values ('old', public.admin_invite('s104-antigo@test.local', 'creator', 7, '{"hero_mode": "none"}')::text);
+select tests.ok('S104 herói novo nasce pendente com a pessoa titular; equipe: titular quando o herói não tem, membro quando tem',
+  (select i.kind = 'hero' and i.team_role = 'owner' and c.status = 'pending' from public.invitations i join public.creator_profiles c on c.id = i.creator_profile_id
+     where i.id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'new'))
+  and (select role::text = 'creator' and creator_profile_id = 'b1040000-0000-4000-8000-0000000000c2' and team_role = 'owner' from public.invitations
+     where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'own'))
+  and (select team_role = 'member' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'mem')));
+select tests.ok('S104 herói no casting: convite da ficha (papel interno creator, agência e ficha), o novo substitui o pendente e fica auditado',
+  (select role::text = 'creator' and talent_id = 'b1040000-0000-4000-8000-0000000000e1' and agency_id = 'b1040000-0000-4000-8000-0000000000a1' and kind is null and status = 'pending'
+     from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'cast2'))
+  and (select status = 'revoked' from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s104 where k = 'cast1'))
+  and exists (select 1 from public.admin_audit where action = 'invitation.create' and resource_id = (select v::jsonb -> 'invitations' -> 0 ->> 'id' from t_s104 where k = 'cast2')));
+select tests.expect_error('S104 ficha com login recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e2"}')$q$, 'talent_has_login');
+select tests.expect_error('S104 ficha arquivada recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e3"}')$q$, 'talent_archived');
+select tests.expect_error('S104 ficha de herói com titular recusa (entra pela conta dele)', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000e4"}')$q$, 'creator_has_login');
+select tests.expect_error('S104 ficha inexistente', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "casting", "talent_id": "b1040000-0000-4000-8000-0000000000ff"}')$q$, 'not_found');
+select tests.expect_error('S104 modo desconhecido recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "outro"}')$q$, 'invalid_input');
+select tests.expect_error('S104 equipe sem herói recusa', $q$select public.admin_invite('y.s104@test.local', 'hero', 7, '{"hero_mode": "team"}')$q$, 'invalid_input');
+
+-- aceite: a pessoa da ficha entra no casting; o convite antigo (creator) segue valendo
+select tests.login('b1040000-0000-4000-8000-000000000005', 's104-ficha@test.local');
+insert into t_s104 values ('acc', public.accept_invitation((select v::jsonb -> 'invitations' -> 0 ->> 'token' from t_s104 where k = 'cast2'))::text);
+select tests.ok('S104 aceite da ficha: a pessoa vira o login da ficha e abre o casting no Portal do Herói',
+  (select v::jsonb ->> 'talent_id' from t_s104 where k = 'acc') = 'b1040000-0000-4000-8000-0000000000e1'
+  and public.my_talent_id() = 'b1040000-0000-4000-8000-0000000000e1'
+  and (public.talent_my_context() ->> 'id') = 'b1040000-0000-4000-8000-0000000000e1');
+select tests.login('b1040000-0000-4000-8000-000000000006', 's104-antigo@test.local');
+insert into t_s104 values ('oacc', public.accept_invitation((select v::jsonb -> 'invitations' -> 0 ->> 'token' from t_s104 where k = 'old'))::text);
+select tests.su();
+select tests.ok('S104 convite antigo com papel creator segue valendo (mesmo papel interno do herói)',
+  exists (select 1 from public.role_assignments where user_id = 'b1040000-0000-4000-8000-000000000006' and role::text = 'creator' and revoked_at is null));
+
+-- limpeza
+delete from public.admin_audit where resource_id in (select id::text from public.invitations where email::text like '%s104%');
+delete from public.invitations where email::text like '%s104%';
+delete from public.creator_team_members where creator_profile_id in (select id from public.creator_profiles where slug like 's104-%' or name = 'Herói Novo S104');
+delete from public.role_assignments where user_id::text like 'b1040000-%';
+delete from public.talent_profiles where id::text like 'b1040000-%';
+delete from public.creator_profiles where id::text like 'b1040000-%' or name = 'Herói Novo S104';
+delete from public.agency_members where agency_id = 'b1040000-0000-4000-8000-0000000000a1';
+delete from public.agencies where id = 'b1040000-0000-4000-8000-0000000000a1';
+delete from auth.users where id::text like 'b1040000-%';
+drop table t_s104;
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

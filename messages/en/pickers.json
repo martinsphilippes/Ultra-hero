@@ -5,7 +5,7 @@
     "agencyStaff": "Staff",
     "brandOwner": "Brand owner",
     "brandStaff": "Brand team",
-    "creator": "Creator",
+    "creator": "Hero",
     "hero": "Hero",
     "brand": "Brand",
     "agency": "Agency",
@@ -30,31 +30,31 @@
   },
   "empty": {
     "noOwner": "No owner: this deal's notifications go to the agency managers and admin.",
-    "noManager": "No manager: the creator stays with the agency as a whole.",
+    "noManager": "No manager: the hero stays with the agency as a whole.",
     "noAssignee": "No assignee: the task stays with the team, unowned.",
     "noDeal": "No deal: standalone agency event.",
     "noTaskDeal": "No deal: standalone agency task.",
-    "noTalent": "No creator: the event does not show in any creator's office.",
+    "noTalent": "No hero: the event does not show in anyone's Hero Portal.",
     "allBrands": "Every brand served by the agency sees this date.",
     "noHero": "No hero: it does not show on any public page.",
     "noAdmin": "No assignee: any admin can pick it up.",
     "noCreator": "No hero: platform content, no author."
   },
   "hints": {
-    "dealOwner": "The person from your agency who runs this deal: they get its notifications (messages from the brand and creators, answers to consultations). The list shows the agency's active members with their level.",
+    "dealOwner": "The person from your agency who runs this deal: they get its notifications (messages from the brand and heroes, answers to consultations). The list shows the agency's active members with their level.",
     "dealBrand": "The brand hiring the campaign. The list shows the active brands the agency serves; a deal opened by the agency only shows to the brand after confirmation.",
-    "talentManager": "Who at the agency looks after this creator day to day. The list shows the admin and active managers; the casting “Manager” filter uses this choice.",
-    "heroLink": "The public hero page that belongs to this creator. The list shows the app's active heroes; a hero can only be in one casting, and the hero's login becomes the creator's access.",
-    "taskTalent": "The creator who does this task: it shows in their office (when they have a login). The list shows the casting's creators.",
+    "talentManager": "Who at the agency looks after this hero day to day. The list shows the admin and active managers; the casting “Manager” filter uses this choice.",
+    "heroLink": "This hero's public page. The list shows the app's active heroes; a hero can only be in one casting, and the page's login becomes the access to the casting profile.",
+    "taskTalent": "The hero who does this task: it shows in their Hero Portal (when they have a login). The list shows the casting's heroes.",
     "taskAssignee": "Who at the agency does this task and gets the notification. The list shows the agency's active members.",
     "taskDeal": "The deal this task belongs to: it also shows on the deal page. The list shows open deals.",
     "eventDeal": "The deal for this event (campaign and brand). With a deal chosen, you can show the event to the brand.",
     "eventDealRequired": "The deal for this event (campaign and brand). Staff: the list only shows deals you are part of.",
-    "eventTalent": "The creator for the shoot or meeting. With a creator chosen, you can show the event in their office. The list shows the casting's creators.",
+    "eventTalent": "The hero for the shoot or meeting. With a hero chosen, you can show the event in their Hero Portal. The list shows the casting's heroes.",
     "eventBrand": "The brand that sees this commercial date. The list shows the brands the agency serves.",
     "termsParty": "Whose acceptance arrived outside the app (email, message, call).",
-    "termsTalent": "The creator whose acceptance arrived outside the app. The list shows this deal's creators who have not accepted the terms yet and have no login (those with a login accept in their office).",
-    "deliverableTalent": "Who produces this deliverable. The list shows this deal's creators.",
+    "termsTalent": "The hero whose acceptance arrived outside the app. The list shows this deal's heroes who have not accepted the terms yet and have no login (those with a login accept in their Hero Portal).",
+    "deliverableTalent": "Who produces this deliverable. The list shows this deal's heroes.",
     "brandLink": "The app brand your agency starts serving (pipeline, calendar, brand portal). The list shows active brands not yet with this agency.",
     "inviteRoleIntro": "The level sets what the person sees and does after accepting.",
     "agencySwitcher": "The agency you are viewing as app admin. Switching reloads the portal with its data.",
@@ -71,7 +71,7 @@
     "heroBrand": "The brand you want to link here. The list shows active brands not linked yet; the card shows its default relationship (you can change it later).",
     "professionalTarget": "Where this professional starts being suggested. The list shows items that do not have this suggestion yet.",
     "programProfessional": "The professional suggested on the program page. The list shows approved professionals not suggested yet.",
-    "salesLink": "The tracking link (creator and coupon) this sale belongs to. The list shows this deal's links.",
+    "salesLink": "The tracking link (hero and coupon) this sale belongs to. The list shows this deal's links.",
     "recipeSigner": "The chef hero shown as the one who signs the recipe. The list shows the author and the app's heroes. With no chef, the recipe shows as “Recommended by” the showcase hero."
   },
   "inviteRoles": {
@@ -80,6 +80,6 @@
     "staff": "Staff: works only on deals they own or are part of; does not see amounts.",
     "owner": "Brand owner: enters the brand portal and invites their own team.",
     "brandStaff": "Brand team: enters the brand portal and follows the campaigns.",
-    "creator": "Creator: enters the creator office (consultations, calendar, deliverables)."
+    "creator": "Hero: enters the Hero Portal (consultations, calendar, deliverables)."
   }
 }

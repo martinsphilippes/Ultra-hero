@@ -65,12 +65,12 @@ describe("atalhos", () => {
     expect(HERO_CARDS).toEqual(["post", "newContent", "content", "recipes", "links", "dashboard"]);
     expect(HERO_SHORTCUTS).toEqual(["post", "newContent", "dashboard"]);
     expect(HERO_CARDS.map((c) => heroCardHref(c, HERO))).toEqual([
-      "/creator/post/new",
+      "/heroi/post/novo",
       `/admin/content/new?creator=${HERO}`,
       `/admin/content?creator=${HERO}`,
-      "/creator/recipes",
-      "/creator/links",
-      "/creator",
+      "/heroi/receitas",
+      "/heroi/vinculos",
+      "/heroi",
     ]);
     expect(isHeroCard("recipes")).toBe(true);
     expect(isHeroCard("admin")).toBe(false);
@@ -78,12 +78,12 @@ describe("atalhos", () => {
   });
 
   it("Trocar hero volta ao mesmo atalho (a página de uma receita volta para a lista)", () => {
-    expect(heroCardForPath("/creator/post/new")).toBe("post");
-    expect(heroCardForPath(`/creator/recipes/${HERO}/edit`)).toBe("recipes");
-    expect(heroCardForPath("/creator/links")).toBe("links");
+    expect(heroCardForPath("/heroi/post/novo")).toBe("post");
+    expect(heroCardForPath(`/heroi/receitas/${HERO}/editar`)).toBe("recipes");
+    expect(heroCardForPath("/heroi/vinculos")).toBe("links");
     expect(heroCardForPath("/admin/content/new")).toBe("newContent");
     expect(heroCardForPath("/admin/content")).toBe("content");
-    expect(heroCardForPath("/creator")).toBe("dashboard");
+    expect(heroCardForPath("/heroi")).toBe("dashboard");
   });
 
   it("cabeçalho e cookie têm os nomes que o banco e o servidor esperam", () => {
@@ -123,7 +123,7 @@ describe("getActingHero", () => {
 
 describe("chooseActingHero", () => {
   it("admin escolhe: o banco confere e audita; o cookie lembra (httpOnly) e a tela abre o atalho", async () => {
-    expect(await chooseActingHero(HERO, "recipes")).toEqual({ ok: true, href: "/creator/recipes" });
+    expect(await chooseActingHero(HERO, "recipes")).toEqual({ ok: true, href: "/heroi/receitas" });
     expect(state.rpcs).toEqual([{ fn: "admin_act_as_hero", acting: null, args: { p_creator: HERO } }]);
     expect(state.set).toHaveLength(1);
     expect(state.set[0]).toMatchObject({ name: ACTING_HERO_COOKIE, value: HERO, options: { httpOnly: true, sameSite: "lax", path: "/" } });

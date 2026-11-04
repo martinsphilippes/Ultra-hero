@@ -11117,6 +11117,7 @@ isOneToOne: false
       accept_invitation: { Args: { p_token: string }; Returns: Json };
       // 0091: convites por papel, equipe do herói e primeiro acesso
       admin_invite: { Args: { p_email: string; p_role: string; p_days: number; p_options?: Json }; Returns: Json };
+      admin_invite_talent_options: { Args: Record<PropertyKey, never>; Returns: { talent_id: string; display_name: string; agency_name: string; has_hero: boolean }[] };
       hero_team_invite: { Args: { p_creator: string; p_email: string; p_days?: number | null }; Returns: { invitation_id: string; token: string }[] };
       hero_team_remove: { Args: { p_creator: string; p_user: string }; Returns: undefined };
       hero_team_transfer: { Args: { p_creator: string; p_user: string }; Returns: undefined };

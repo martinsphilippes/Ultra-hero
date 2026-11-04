@@ -147,8 +147,8 @@ describe("avisos, e-mail, agenda e menu", () => {
     expect(inboxKindEmails("sponsorship_published", "/marca/oportunidades/x")).toBe(true);
     expect(inboxKindEmails("sponsorship_published", "/agencia/oportunidades/x")).toBe(false);
     expect(inboxKindEmails("sponsorship_interest", "/agencia/oportunidades/x")).toBe(true);
-    expect(inboxKindEmails("sponsorship_decided", "/creator/escritorio/agenda")).toBe(true);
-    expect(inboxKindPushes("sponsorship_decided", "/creator/escritorio/agenda")).toBe(false);
+    expect(inboxKindEmails("sponsorship_decided", "/heroi/agenda")).toBe(true);
+    expect(inboxKindPushes("sponsorship_decided", "/heroi/agenda")).toBe(false);
     expect(sql).not.toMatch(/grant execute[^;]*to[^;]*\banon\b/i);
   });
   it("e-mails nos 3 idiomas com título, creator e situação", () => {

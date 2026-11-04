@@ -354,7 +354,7 @@ export function buildBrandToday(
       }
     }
     for (const s of wb.shortlists ?? []) {
-      const href = `/marca/creators/pre-selecao/${s.id}`;
+      const href = `/marca/herois/pre-selecao/${s.id}`;
       if (wb.role === "owner" && s.status === "sent" && s.pending > 0) {
         items.push({ ...base, key: `shortlist:${s.id}`, kind: "shortlist", urgency: "waiting", deadline: null, since: s.sentAt, href, title: s.title, context: s.createdLabel, status: "sent" });
       } else if (s.status === "decided" && s.createdByMe && s.approved > 0) {
@@ -421,7 +421,7 @@ export type TdPayout = {
 };
 export type TalentTodayData = { timezone: string; tasks: TdTask[]; offers: TdOffer[]; deliverables: TdDeliverable[]; terms: TdTerms[]; payouts?: TdPayout[] };
 
-const oppHref = (dealTalentId: string, anchor?: string) => `/creator/escritorio/oportunidades/${dealTalentId}${anchor ? `#${anchor}` : ""}`;
+const oppHref = (dealTalentId: string, anchor?: string) => `/heroi/oportunidades/${dealTalentId}${anchor ? `#${anchor}` : ""}`;
 /** Passos do modelo que repetem o que o entregável já mostra (enviar conteúdo, publicar, comprovar). */
 const DELIVERABLE_STEPS = new Set([7, 9, 10]);
 
@@ -451,14 +451,14 @@ export function buildTalentToday(data: TalentTodayData, now: Date, opts: { soonD
     const isScriptAdjustment = k.step === 4 && k.status === "todo" && k.feedback.trim() !== "";
     if (isScriptAdjustment) {
       items.push({ ...base, key: `scriptAdjustment:${k.id}`, kind: "scriptAdjustment", urgency: pick(urgencyOf(k.dueAt, now, tz, soon)), deadline: k.dueAt, since: null,
-        href: k.dealTalentId ? oppHref(k.dealTalentId, "opp-tasks") : "/creator/escritorio/tarefas", title: k.dealTitle ?? "", context: k.brandName ?? "", note: k.feedback, step: 4 });
+        href: k.dealTalentId ? oppHref(k.dealTalentId, "opp-tasks") : "/heroi/tarefas", title: k.dealTitle ?? "", context: k.brandName ?? "", note: k.feedback, step: 4 });
       continue;
     }
     // tarefa só entra vencendo hoje ou atrasada; os passos que o entregável já mostra não se repetem
     const u = urgencyOf(k.dueAt, now, tz, soon);
     if (u !== "overdue" && u !== "today") continue;
     if (k.step !== null && DELIVERABLE_STEPS.has(k.step) && k.dealId && dealsWithDeliverable.has(k.dealId)) continue;
-    items.push({ ...base, key: `task:${k.id}`, kind: "task", urgency: u, deadline: k.dueAt, since: null, href: "/creator/escritorio/tarefas",
+    items.push({ ...base, key: `task:${k.id}`, kind: "task", urgency: u, deadline: k.dueAt, since: null, href: "/heroi/tarefas",
       title: k.title, context: join(k.brandName, k.dealTitle), status: k.status, step: k.step });
   }
   for (const o of data.offers) {
@@ -473,7 +473,7 @@ export function buildTalentToday(data: TalentTodayData, now: Date, opts: { soonD
   // 0082: entregou e falta a nota (ou foi recusada) → enviar nota; pagamento agendado para os próximos dias → aviso
   for (const p of data.payouts ?? []) {
     if (p.status !== "planned" && p.status !== "due") continue;
-    const href = `/creator/escritorio/ganhos#pay-${p.id}`;
+    const href = `/heroi/financeiro#pay-${p.id}`;
     if (p.scheduledOn) {
       const u = urgencyOfDay(p.scheduledOn, now, tz, soon);
       if (u === "later" || u === "waiting") continue;

@@ -90,8 +90,8 @@ test.describe("admin: atalhos (só leitura)", () => {
 
   test("a tela do herói mostra 'Atalhos deste herói' com a categoria de origem (com a 0050)", async ({ page }) => {
     await loginAs(page, "admin");
-    await page.goto("/admin/creators");
-    await page.locator('main a[href^="/admin/creators/"]').filter({ hasText: "Anitta" }).first().click();
+    await page.goto("/admin/herois");
+    await page.locator('main a[href^="/admin/herois/"]').filter({ hasText: "Anitta" }).first().click();
     await expect(page.getByRole("heading", { level: 1, name: "Anitta" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Atalhos deste herói" })).toBeVisible();
     const editor = page.getByTestId("hero-tabs-editor");

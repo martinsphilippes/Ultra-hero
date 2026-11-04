@@ -30,7 +30,7 @@ type Props = {
 };
 
 const NO_OPTIONS: ComposerOptions = { recipes: [], products: [], programs: [] };
-const BLOCK_HREFS = { newRecipe: "/creator/recipes/new", links: "/admin/links", newProgram: "/admin/programs/new" };
+const BLOCK_HREFS = { newRecipe: "/heroi/receitas/nova", links: "/admin/links", newProgram: "/admin/programs/new" };
 
 // Envolve o ContentForm compartilhado com a escolha da personalidade (campo só do admin). As opções dos
 // blocos (receitas, produtos, programas; 0075/0076) seguem o herói escolhido.

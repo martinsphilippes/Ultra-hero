@@ -3,7 +3,7 @@
 import { Crown, Mail, TriangleAlert, UserMinus, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
-import { inviteHeroTeamAction, removeHeroTeamAction, revokeHeroTeamInviteAction, transferHeroAction } from "@/app/creator/(hero)/equipe/actions";
+import { inviteHeroTeamAction, removeHeroTeamAction, revokeHeroTeamInviteAction, transferHeroAction } from "@/app/heroi/equipe/actions";
 import { CopyButton } from "@/components/admin-ops/CopyButton";
 import { Avatar, Badge, Button, Dialog, EmptyState, FormField, Input, Select, useToast } from "@/components/ui";
 import { canManageTeam, memberActions, type HeroTeam, type HeroTeamMember } from "@/lib/invitations/hero-team";

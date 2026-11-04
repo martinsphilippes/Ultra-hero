@@ -12,8 +12,7 @@
     "seller": "Supplier",
     "professional": "Professional",
     "agency": "Agency",
-    "brand": "Brand",
-    "office": "Creator"
+    "brand": "Brand"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -47,12 +46,21 @@
     "dashboard": "Dashboard",
     "content": "My content",
     "links": "Product links",
-    "recipes": "My Recipes",
-    "office": "Office",
+    "recipes": "Recipes",
     "team": "Team",
     "newContent": "New content",
     "agenda": "Schedule",
-    "finance": "Finances"
+    "finance": "Finances",
+    "home": "Home",
+    "opportunities": "Opportunities",
+    "tasks": "Tasks",
+    "availability": "Availability",
+    "publicPage": "Public page",
+    "kit": "Media kit",
+    "portfolio": "Portfolio",
+    "documents": "Documents",
+    "consent": "Consent",
+    "notifications": "Notices"
   },
   "seller": {
     "dashboard": "Dashboard",
@@ -80,12 +88,11 @@
   "portalLabel": "Portal",
   "portalDescription": {
     "admin": "Groscove Ultra administration",
-    "creator": "Hero area",
+    "creator": "Hero Portal",
     "seller": "Supplier area",
     "professional": "Professional area",
     "agency": "Agency workspace",
-    "brand": "Brand area",
-    "office": "Creator office"
+    "brand": "Brand area"
   },
   "backToProfile": "Profile",
   "agency": {
@@ -110,22 +117,14 @@
     "notifications": "Notices",
     "campaigns": "Campaigns",
     "library": "Library",
-    "catalog": "Creators",
+    "catalog": "Heroes",
     "agenda": "Calendar",
     "sponsorships": "Sponsorships",
     "payments": "Payments"
   },
-  "office": {
-    "dashboard": "Home",
-    "opportunities": "Opportunities",
-    "tasks": "Tasks",
-    "agenda": "Calendar",
-    "earnings": "Earnings",
-    "availability": "Availability",
-    "kit": "Media kit",
-    "portfolio": "Portfolio",
-    "documents": "Documents",
-    "consent": "Consent",
-    "notifications": "Notices"
+  "groups": {
+    "content": "Content",
+    "work": "Work",
+    "profile": "Profile"
   }
 }

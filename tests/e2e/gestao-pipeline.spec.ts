@@ -33,7 +33,7 @@ test.describe("pipeline, proposta e oportunidades", () => {
     await expect(page.getByTestId("deal-form")).toBeVisible();
     await expect(page.getByTestId("request-summary")).toBeVisible();
     const base = page.url();
-    await page.goto(`${base}/creators`);
+    await page.goto(`${base}/herois`);
     await expect(page.getByTestId("shortlist-panel")).toBeVisible();
     await expect(page.getByTestId("deal-talent").first()).toBeVisible();
     // o Adm vê o cachê definido na demonstração
@@ -56,7 +56,7 @@ test.describe("pipeline, proposta e oportunidades", () => {
     const card = page.getByTestId("deal-card");
     test.skip((await card.count()) === 0, "colaborador sem negócio atribuído");
     await card.first().click();
-    await page.goto(`${page.url()}/creators`);
+    await page.goto(`${page.url()}/herois`);
     await expect(page.getByTestId("shortlist-panel")).toBeVisible();
     await expect(page.getByTestId("deal-fee")).toHaveCount(0);
     await expect(page.getByTestId("shortlist-panel")).not.toContainText("R$");
@@ -64,7 +64,7 @@ test.describe("pipeline, proposta e oportunidades", () => {
 
   test("marca: catálogo autorizado sem valores, detalhe com disponibilidade e campanha com andamento", async ({ page }) => {
     await loginAs(page, "brand", { home: null });
-    await page.goto("/marca/creators");
+    await page.goto("/marca/herois");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0066 ainda não aplicada");
     await expect(page.getByTestId("catalog-filters")).toBeVisible();
     const cards = page.getByTestId("catalog-card");
@@ -73,7 +73,7 @@ test.describe("pipeline, proposta e oportunidades", () => {
     await noHorizontalScroll(page);
     await axe(page);
     await cards.first().click();
-    await expect(page).toHaveURL(/\/marca\/creators\/[0-9a-f-]{36}$/);
+    await expect(page).toHaveURL(/\/marca\/herois\/[0-9a-f-]{36}$/);
     await expect(page.getByTestId("catalog-detail")).toBeVisible();
     await expect(page.getByTestId("catalog-availability")).toBeVisible();
     await expect(page.getByTestId("catalog-detail")).not.toContainText("R$");
@@ -96,7 +96,7 @@ test.describe("pipeline, proposta e oportunidades", () => {
   test("escritório: oportunidades com a consulta de demonstração e disponibilidade declarável", async ({ page }) => {
     await loginAs(page, "talent");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0065 ainda não aplicada");
-    await page.goto("/creator/escritorio/oportunidades");
+    await page.goto("/heroi/oportunidades");
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0066 ainda não aplicada");
     await expect(page.getByTestId("opportunities")).toBeVisible();
     const card = page.getByTestId("opportunity-card");
@@ -107,7 +107,7 @@ test.describe("pipeline, proposta e oportunidades", () => {
     await expect(page.getByTestId("opportunity-detail")).toBeVisible();
     await expect(page.getByTestId("opportunity-respond")).toBeVisible();
     await expect(page.getByTestId("thread-talent_agency")).toBeVisible();
-    await page.goto("/creator/escritorio/disponibilidade");
+    await page.goto("/heroi/disponibilidade");
     await expect(page.getByTestId("availability-editor")).toBeVisible();
     await expect(page.getByTestId("availability-add")).toBeVisible();
     await noHorizontalScroll(page);

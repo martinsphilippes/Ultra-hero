@@ -5,7 +5,7 @@
     "agencyStaff": "Colaborador",
     "brandOwner": "Dono da marca",
     "brandStaff": "Equipe da marca",
-    "creator": "Creator",
+    "creator": "Herói",
     "hero": "Herói",
     "brand": "Marca",
     "agency": "Agência",
@@ -30,31 +30,31 @@
   },
   "empty": {
     "noOwner": "Sem responsável: os avisos deste negócio vão para os gestores e o Adm da agência.",
-    "noManager": "Sem gestor: o creator fica com a agência como um todo.",
+    "noManager": "Sem gestor: o herói fica com a agência como um todo.",
     "noAssignee": "Sem responsável: a tarefa fica para a equipe, sem dono.",
     "noDeal": "Sem negócio: compromisso avulso da agência.",
     "noTaskDeal": "Sem negócio: tarefa avulsa da agência.",
-    "noTalent": "Sem creator: o compromisso não aparece no escritório de nenhum creator.",
+    "noTalent": "Sem herói: o compromisso não aparece no Portal do Herói de ninguém.",
     "allBrands": "Todas as marcas atendidas pela agência veem esta data.",
     "noHero": "Sem herói: não aparece em nenhuma página pública.",
     "noAdmin": "Sem responsável: qualquer admin pode pegar.",
     "noCreator": "Sem herói: conteúdo da plataforma, sem autor."
   },
   "hints": {
-    "dealOwner": "A pessoa da sua agência que conduz este negócio: recebe os avisos dele (mensagens da marca e dos creators, respostas às consultas). A lista mostra os membros ativos da agência, com o nível de cada um.",
+    "dealOwner": "A pessoa da sua agência que conduz este negócio: recebe os avisos dele (mensagens da marca e dos heróis, respostas às consultas). A lista mostra os membros ativos da agência, com o nível de cada um.",
     "dealBrand": "A marca que contrata a campanha. A lista mostra as marcas ativas que a agência atende; negócio aberto pela agência só aparece para a marca depois da confirmação.",
-    "talentManager": "Quem da agência cuida deste creator no dia a dia. A lista mostra o Adm e os gestores ativos; o filtro “Gestor” do casting usa esta escolha.",
-    "heroLink": "A página pública de herói que é deste creator. A lista mostra os heróis ativos do app; um herói só pode estar em um casting, e o login do herói passa a valer como acesso do creator.",
-    "taskTalent": "O creator que faz esta tarefa: ela aparece no escritório dele (quando tem login). A lista mostra os creators do casting.",
+    "talentManager": "Quem da agência cuida deste herói no dia a dia. A lista mostra o Adm e os gestores ativos; o filtro “Gestor” do casting usa esta escolha.",
+    "heroLink": "A página pública deste herói. A lista mostra os heróis ativos do app; um herói só pode estar em um casting, e o login da página passa a valer como acesso à ficha.",
+    "taskTalent": "O herói que faz esta tarefa: ela aparece no Portal do Herói (quando tem login). A lista mostra os heróis do casting.",
     "taskAssignee": "Quem da agência faz esta tarefa e recebe o aviso. A lista mostra os membros ativos da agência.",
     "taskDeal": "O negócio a que a tarefa pertence: ela aparece também na ficha dele. A lista mostra os negócios abertos.",
     "eventDeal": "O negócio deste compromisso (campanha e marca). Com um negócio escolhido, você pode mostrar o compromisso à marca.",
     "eventDealRequired": "O negócio deste compromisso (campanha e marca). Colaborador: a lista mostra só os negócios em que você está.",
-    "eventTalent": "O creator da gravação ou reunião. Com um creator escolhido, você pode mostrar o compromisso no escritório dele. A lista mostra os creators do casting.",
+    "eventTalent": "O herói da gravação ou reunião. Com um herói escolhido, você pode mostrar o compromisso no Portal do Herói. A lista mostra os heróis do casting.",
     "eventBrand": "A marca que vê esta data comercial. A lista mostra as marcas atendidas pela agência.",
     "termsParty": "De quem é o aceite que chegou por fora (e-mail, mensagem, ligação).",
-    "termsTalent": "O creator cujo aceite chegou por fora. A lista mostra os creators deste negócio que ainda não aceitaram os termos e não têm login (quem tem login aceita pelo escritório).",
-    "deliverableTalent": "Quem produz esta entrega. A lista mostra os creators deste negócio.",
+    "termsTalent": "O herói cujo aceite chegou por fora. A lista mostra os heróis deste negócio que ainda não aceitaram os termos e não têm login (quem tem login aceita pelo Portal do Herói).",
+    "deliverableTalent": "Quem produz esta entrega. A lista mostra os heróis deste negócio.",
     "brandLink": "A marca do app que a sua agência passa a atender (pipeline, agenda, portal da marca). A lista mostra as marcas ativas que ainda não estão com esta agência.",
     "inviteRoleIntro": "O nível define o que a pessoa vê e faz depois de aceitar.",
     "agencySwitcher": "A agência que você está vendo como admin do app. Trocar recarrega o portal com os dados dela.",
@@ -71,7 +71,7 @@
     "heroBrand": "A marca que você quer ligar aqui. A lista mostra as marcas ativas que ainda não estão ligadas; o cartão mostra a relação padrão dela (você pode mudar depois).",
     "professionalTarget": "Onde este profissional passa a ser sugerido. A lista mostra os itens que ainda não têm esta sugestão.",
     "programProfessional": "O profissional sugerido na página do programa. A lista mostra os profissionais aprovados ainda não sugeridos.",
-    "salesLink": "O link de rastreio (creator e cupom) a que esta venda pertence. A lista mostra os links deste negócio.",
+    "salesLink": "O link de rastreio (herói e cupom) a que esta venda pertence. A lista mostra os links deste negócio.",
     "recipeSigner": "O herói chef que aparece como quem assina a receita. A lista mostra o autor e os heróis do app. Sem chef, a receita aparece como “Indicada por” o herói da vitrine."
   },
   "inviteRoles": {
@@ -80,6 +80,6 @@
     "staff": "Colaborador: trabalha só nos negócios em que é responsável ou da equipe; não vê valores.",
     "owner": "Dono da marca: entra no portal da marca e convida a própria equipe.",
     "brandStaff": "Equipe da marca: entra no portal da marca e acompanha as campanhas.",
-    "creator": "Creator: entra no escritório do creator (consultas, agenda, entregas)."
+    "creator": "Herói: entra no Portal do Herói (consultas, agenda, entregas)."
   }
 }

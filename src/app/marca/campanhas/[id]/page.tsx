@@ -299,7 +299,7 @@ export default async function BrandCampaignPage({ params }: Props) {
             {detail.requestedTalent ? (
               <div className="flex flex-col gap-2">
                 <span className="type-caption text-fg-muted">{t("requestedTalent")}</span>
-                <TalentCardCompact card={detail.requestedTalent} href={`/marca/creators/${detail.requestedTalent.id}`} />
+                <TalentCardCompact card={detail.requestedTalent} href={`/marca/herois/${detail.requestedTalent.id}`} />
               </div>
             ) : null}
             {detail.talents.filter((x) => x.id !== detail.requestedTalent?.id || x.status === "proposed" || x.status === "contracted").length > 0 ? (
@@ -307,7 +307,7 @@ export default async function BrandCampaignPage({ params }: Props) {
                 {detail.talents.map((x) => (
                   <li key={x.dealTalentId} className="flex flex-col gap-1">
                     <span className="type-caption text-fg-muted">{t(`talentStatus.${x.status === "contracted" ? "contracted" : "proposed"}`)}</span>
-                    <TalentCardCompact card={x} href={`/marca/creators/${x.id}`} />
+                    <TalentCardCompact card={x} href={`/marca/herois/${x.id}`} />
                   </li>
                 ))}
               </ul>
@@ -399,7 +399,7 @@ export default async function BrandCampaignPage({ params }: Props) {
           ) : null}
           <p className="type-caption text-fg-muted">
             {t("agencyNote")}{" "}
-            <Link href="/marca/creators" className="font-medium text-accent-text underline-offset-2 hover:underline">
+            <Link href="/marca/herois" className="font-medium text-accent-text underline-offset-2 hover:underline">
               {t("seeCatalog")}
             </Link>
           </p>

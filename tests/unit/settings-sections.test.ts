@@ -32,8 +32,8 @@ describe("buildSettingsSections", () => {
     }
   });
 
-  it("portais só com o papel; o herói não tem portal; fornecedor só com o portal ligado", () => {
-    expect(buildSettingsSections(["creator"]).some((s) => s.key === "portals")).toBe(false);
+  it("portais só com o papel; o herói tem o Portal do Herói (0097); fornecedor só com o portal ligado", () => {
+    expect(buildSettingsSections(["creator"]).find((s) => s.key === "portals")?.items.map((i) => i.key)).toEqual(["creator"]);
     const admin = buildSettingsSections(["consumer", "admin", "professional", "seller"], false, { platformAdmin: true });
     const portals = admin.find((s) => s.key === "portals")!;
     expect(admin.at(-1)).toBe(portals);

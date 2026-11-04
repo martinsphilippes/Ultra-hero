@@ -54,7 +54,7 @@ export function TermsPanel({ portal, dealId, requestId, dealTalentId, stage, ter
   const [acceptOpen, setAcceptOpen] = useState(false);
   const canWrite = portal === "agency" && canEdit && isManager && ["approved", "contracting"].includes(stage);
 
-  const receiptBase = portal === "brand" ? "/marca/assinaturas" : portal === "office" ? "/creator/escritorio/assinaturas" : "/agencia/assinaturas";
+  const receiptBase = portal === "brand" ? "/marca/assinaturas" : portal === "office" ? "/heroi/assinaturas" : "/agencia/assinaturas";
   const myAccepted = live ? live.acceptances.some((a) => (portal === "brand" ? a.party === "brand" : a.party === "talent" && a.dealTalentId === dealTalentId)) : false;
   const pendingTalents = live ? talents.filter((x) => !live.acceptances.some((a) => a.party === "talent" && a.dealTalentId === x.dealTalentId)) : [];
   const brandAccepted = live ? live.acceptances.some((a) => a.party === "brand") : false;

@@ -72,7 +72,7 @@
     "talent_already_linked": "Esta invitación ya fue usada por otra cuenta.",
     "admin_invite_max_48h": "La invitación de Admin vale como máximo 48 horas.",
     "admin_confirm_required": "Confirma que la persona tendrá control total de Ultra.",
-    "creator_role_required": "La persona necesita el rol de creator.",
+    "creator_role_required": "La persona necesita el rol de héroe.",
     "has_hero": "Ya tienes un héroe.",
     "owner_must_transfer": "El titular no sale del equipo sin antes transferir la titularidad.",
     "onboarding_not_found": "No hay un primer acceso abierto para esto.",
@@ -291,8 +291,7 @@
     "expiredNote": "expirada",
     "roleAgency": "Agencia",
     "roleBrand": "Marca",
-    "roleTalent": "Creator",
-    "talentTarget": "Ficha del creator"
+    "talentTarget": "Ficha en el casting"
   },
   "invite": {
     "title": "Invitación",
@@ -308,7 +307,7 @@
     "successTitle": "Invitación aceptada",
     "successCreator": "Tu acceso de héroe está listo.",
     "successSeller": "Tu acceso al portal del proveedor está listo.",
-    "goCreator": "Ir al Perfil",
+    "goCreator": "Abrir el Portal del Héroe",
     "goSeller": "Ir al portal del proveedor",
     "goHome": "Volver a la app",
     "errorTitle": "No se pudo aceptar",
@@ -323,11 +322,11 @@
     "goAgency": "Abrir portal de la agencia",
     "goBrand": "Abrir portal de la marca",
     "inboxOnlyNote": "Los avisos quedan en la campana del portal.",
-    "successTalent": "¡Listo! Ahora tienes la oficina de la agencia.",
-    "goOffice": "Abrir la oficina",
+    "successTalent": "¡Listo! Ahora tienes el Portal del Héroe.",
+    "goOffice": "Abrir el Portal del Héroe",
     "alreadyHint": "¿Ya entraste por la pantalla de inicio de sesión con este e-mail? Entonces la invitación ya fue aceptada y tu acceso está listo.",
     "openPortals": "Abrir mis portales",
-    "grantGeneric": "El acceso de esta invitación (agencia, marca, creator, héroe, proveedor o profesional) aparece justo después de aceptar."
+    "grantGeneric": "El acceso de esta invitación (agencia, marca, héroe, proveedor o profesional) aparece justo después de aceptar."
   },
   "creators": {
     "title": "Héroes",

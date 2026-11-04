@@ -98,26 +98,24 @@
       "professional": "Profesional",
       "agency": "Agencia",
       "brand": "Marca",
-      "talent": "Creator"
+      "talent": "Héroe"
     },
     "portals": {
       "title": "Tus portales",
       "admin": "Administración",
-      "creator": "Portal del héroe",
+      "creator": "Portal del Héroe",
       "seller": "Portal del proveedor",
       "hints": {
-        "creator": "Posts, recetas y vínculos de productos",
+        "creator": "Posts, contenidos, agenda, finanzas y el casting de la agencia",
         "seller": "Productos, entregas y perfil de la operación",
         "admin": "Usuarios, contenidos, pedidos y configuración",
         "professional": "Pedidos, servicios y perfil público",
         "agency": "Casting, equipo, marcas atendidas y avisos",
-        "brand": "Equipo de la marca y avisos de la agencia",
-        "office": "Media kit, consentimiento y avisos de la agencia"
+        "brand": "Equipo de la marca y avisos de la agencia"
       },
       "professional": "Portal del profesional",
       "agency": "Portal de la agencia",
-      "brand": "Portal de la marca",
-      "office": "Oficina"
+      "brand": "Portal de la marca"
     },
     "data": {
       "displayName": "Nombre visible",
@@ -761,7 +759,7 @@
         "description": "Un aviso cuando alguien supera tu puja (como máximo uno por artículo cada 2 minutos)."
       },
       "office_updates": {
-        "label": "Avisos de la oficina",
+        "label": "Avisos del Portal del Héroe",
         "description": "Oportunidades, tareas y entregas de la agencia que cuida tu carrera."
       }
     },

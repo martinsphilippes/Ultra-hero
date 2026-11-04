@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { chooseMyHero } from "@/app/creator/(hero)/content/hero-actions";
+import { chooseMyHero } from "@/app/heroi/conteudos/hero-actions";
 import { Button } from "@/components/ui";
 
 // "Trabalhar neste herói" (0092): grava o herói em uso (cookie conferido no servidor e no banco) e recarrega o Perfil.

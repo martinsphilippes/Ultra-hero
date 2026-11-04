@@ -1,10 +1,15 @@
-// Regras puras dos convites (0091): papéis do convite do admin, validade, campos condicionais do formulário,
+// Regras puras dos convites (0091 + 0097): papéis do convite do admin, validade, campos condicionais do formulário,
 // opções enviadas à RPC admin_invite e CNPJ. Testáveis sem banco; o banco confere tudo de novo.
 
-export const ADMIN_INVITE_ROLES = ["consumer", "admin", "agency", "brand", "creator", "hero", "seller", "professional"] as const;
+// 0097: o "creator" é o próprio herói. O convite do admin tem 7 papéis (sem "Creator" separado); "Herói" escolhe:
+//   new     → herói novo (nasce pendente de aprovação; a pessoa é a titular, com equipe opcional);
+//   team    → entrar na equipe de um herói existente (titular se ele não tem titular; senão membro);
+//   casting → herói que já está no casting de uma agência (convite de acesso à ficha).
+// Por dentro o papel continua app_role 'creator'; convites antigos com 'creator' seguem valendo no aceite.
+export const ADMIN_INVITE_ROLES = ["consumer", "admin", "agency", "brand", "hero", "seller", "professional"] as const;
 export type AdminInviteRole = (typeof ADMIN_INVITE_ROLES)[number];
 
-export const HERO_MODES = ["none", "existing", "new"] as const;
+export const HERO_MODES = ["new", "team", "casting"] as const;
 export type HeroMode = (typeof HERO_MODES)[number];
 export const TEAM_MODES = ["later", "existing", "new"] as const;
 export type TeamMode = (typeof TEAM_MODES)[number];
@@ -38,11 +43,14 @@ export function clampDays(role: AdminInviteRole, days: number): number {
 }
 
 /** Campos condicionais do formulário do admin. */
-export function adminInviteFields(role: AdminInviteRole) {
+export function adminInviteFields(role: AdminInviteRole, heroMode: HeroMode = "new") {
+  const hero = role === "hero";
   return {
-    heroLink: role === "creator",
-    heroTeam: role === "hero",
-    heroName: role === "hero",
+    heroMode: hero,
+    heroLink: hero && heroMode === "team",
+    heroTalent: hero && heroMode === "casting",
+    heroTeam: hero && heroMode === "new",
+    heroName: hero && heroMode === "new",
     adminConfirm: role === "admin",
     onboardingNote: (ONBOARDING_ROLES as readonly string[]).includes(role),
   };
@@ -56,6 +64,8 @@ export type AdminInviteForm = {
   heroMode?: HeroMode;
   heroId?: string;
   heroName?: string;
+  /** Ficha do casting (heroMode "casting"). */
+  talentId?: string;
   teamMode?: TeamMode;
   teamUserId?: string;
   teamEmail?: string;
@@ -68,6 +78,7 @@ export type AdminInviteError =
   | "admin_confirm"
   | "hero_id"
   | "hero_name"
+  | "talent_id"
   | "team_user"
   | "team_email";
 
@@ -91,16 +102,16 @@ export function validateAdminInvite(form: AdminInviteForm): AdminInviteError[] {
   if (!Number.isInteger(form.days) || form.days < 1 || form.days > 30) errors.push("days");
   else if (form.role === "admin" && form.days > 2) errors.push("admin_max_48h");
   if (form.role === "admin" && !form.confirmAdmin) errors.push("admin_confirm");
-  if (form.role === "creator") {
-    const mode = form.heroMode ?? "none";
-    if (mode === "existing" && !UUID.test(form.heroId ?? "")) errors.push("hero_id");
-    if (mode === "new" && !heroNameOk(form.heroName)) errors.push("hero_name");
-  }
   if (form.role === "hero") {
-    if (!heroNameOk(form.heroName)) errors.push("hero_name");
-    const mode = form.teamMode ?? "later";
-    if (mode === "existing" && !UUID.test(form.teamUserId ?? "")) errors.push("team_user");
-    if (mode === "new" && (!isEmail(form.teamEmail) || form.teamEmail?.trim().toLowerCase() === form.email.trim().toLowerCase())) errors.push("team_email");
+    const heroMode = form.heroMode ?? "new";
+    if (heroMode === "team" && !UUID.test(form.heroId ?? "")) errors.push("hero_id");
+    if (heroMode === "casting" && !UUID.test(form.talentId ?? "")) errors.push("talent_id");
+    if (heroMode === "new") {
+      if (!heroNameOk(form.heroName)) errors.push("hero_name");
+      const mode = form.teamMode ?? "later";
+      if (mode === "existing" && !UUID.test(form.teamUserId ?? "")) errors.push("team_user");
+      if (mode === "new" && (!isEmail(form.teamEmail) || form.teamEmail?.trim().toLowerCase() === form.email.trim().toLowerCase())) errors.push("team_email");
+    }
   }
   return errors;
 }
@@ -108,15 +119,12 @@ export function validateAdminInvite(form: AdminInviteForm): AdminInviteError[] {
 /** Opções da RPC admin_invite: só o que vale para o papel escolhido. */
 export function adminInviteOptions(form: AdminInviteForm): Record<string, string | boolean> {
   if (form.role === "admin") return { confirm_admin: Boolean(form.confirmAdmin) };
-  if (form.role === "creator") {
-    const mode = form.heroMode ?? "none";
-    if (mode === "existing") return { hero_mode: mode, hero_id: form.heroId ?? "" };
-    if (mode === "new") return { hero_mode: mode, hero_name: (form.heroName ?? "").trim() };
-    return { hero_mode: "none" };
-  }
   if (form.role === "hero") {
+    const heroMode = form.heroMode ?? "new";
+    if (heroMode === "team") return { hero_mode: "team", hero_id: form.heroId ?? "" };
+    if (heroMode === "casting") return { hero_mode: "casting", talent_id: form.talentId ?? "" };
     const mode = form.teamMode ?? "later";
-    const base = { hero_name: (form.heroName ?? "").trim(), team_mode: mode };
+    const base = { hero_mode: "new", hero_name: (form.heroName ?? "").trim(), team_mode: mode };
     if (mode === "existing") return { ...base, team_user_id: form.teamUserId ?? "" };
     if (mode === "new") return { ...base, team_email: (form.teamEmail ?? "").trim().toLowerCase() };
     return base;

@@ -72,7 +72,7 @@
     "talent_already_linked": "This invite was already used by another account.",
     "admin_invite_max_48h": "An Admin invite is valid for 48 hours at most.",
     "admin_confirm_required": "Confirm the person will have full control of Ultra.",
-    "creator_role_required": "The person needs the creator role.",
+    "creator_role_required": "The person needs the hero role.",
     "has_hero": "You already have a hero.",
     "owner_must_transfer": "The lead can't leave the team without transferring it first.",
     "onboarding_not_found": "There is no open first access for this.",
@@ -291,8 +291,7 @@
     "expiredNote": "expired",
     "roleAgency": "Agency",
     "roleBrand": "Brand",
-    "roleTalent": "Creator",
-    "talentTarget": "Creator profile"
+    "talentTarget": "Casting profile"
   },
   "invite": {
     "title": "Invitation",
@@ -308,7 +307,7 @@
     "successTitle": "Invitation accepted",
     "successCreator": "Your hero access is ready.",
     "successSeller": "Your access to the supplier portal is ready.",
-    "goCreator": "Go to Profile",
+    "goCreator": "Open the Hero Portal",
     "goSeller": "Go to the supplier portal",
     "goHome": "Back to the app",
     "errorTitle": "Could not accept",
@@ -323,11 +322,11 @@
     "goAgency": "Open agency portal",
     "goBrand": "Open brand portal",
     "inboxOnlyNote": "Notices stay on the portal bell.",
-    "successTalent": "Done! You now have the agency office.",
-    "goOffice": "Open the office",
+    "successTalent": "Done! You now have the Hero Portal.",
+    "goOffice": "Open the Hero Portal",
     "alreadyHint": "Already signed in on the login screen with this e-mail? Then the invitation was already accepted and your access is ready.",
     "openPortals": "Open my portals",
-    "grantGeneric": "This invitation's access (agency, brand, creator, hero, supplier or professional) shows right after you accept."
+    "grantGeneric": "This invitation's access (agency, brand, hero, supplier or professional) shows right after you accept."
   },
   "creators": {
     "title": "Heroes",

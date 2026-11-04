@@ -23,7 +23,7 @@ function refresh() {
   revalidatePath("/marca/oportunidades", "layout");
   revalidatePath("/agencia/oportunidades", "layout");
   revalidatePath("/agencia/agenda");
-  revalidatePath("/creator/escritorio/oportunidades");
+  revalidatePath("/heroi/oportunidades");
 }
 
 const isoDate = z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]).nullable();
@@ -311,7 +311,7 @@ export async function callInterestAction(input: z.input<typeof interestSchema>):
     const supabase = await createClient();
     const { error } = await supabase.rpc("talent_brand_call_interest", { p_call: parsed.data.callId, p_message: parsed.data.message });
     if (error) return agencyFail(error);
-    revalidatePath("/creator/escritorio/oportunidades");
+    revalidatePath("/heroi/oportunidades");
     revalidatePath("/agencia/oportunidades", "layout");
     await dispatchWorkEmails();
     const t = await getTranslations("brandCall.talent");

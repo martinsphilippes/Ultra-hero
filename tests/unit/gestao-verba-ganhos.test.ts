@@ -157,7 +157,7 @@ describe("\"Hoje\" com verba e pagamentos", () => {
       pay({ id: "paid", status: "settled" }),
     ]), NOW);
     expect(items.map((i) => i.key).sort()).toEqual(["invoice:missing", "invoice:rejected"]);
-    expect(items.find((i) => i.key === "invoice:rejected")).toMatchObject({ status: "rejected", note: "CNPJ errado", href: "/creator/escritorio/ganhos#pay-rejected", urgency: "waiting" });
+    expect(items.find((i) => i.key === "invoice:rejected")).toMatchObject({ status: "rejected", note: "CNPJ errado", href: "/heroi/financeiro#pay-rejected", urgency: "waiting" });
     expect(items.find((i) => i.key === "invoice:missing")?.status).toBe("missing");
   });
   it("creator: pagamento agendado para os próximos dias entra; mais longe não; agendado não pede nota", () => {
@@ -203,8 +203,8 @@ describe("integração", () => {
     }
   });
   it("a tela de ganhos pode revalidar após enviar a nota (e só ela)", () => {
-    expect(isDocumentsRevalidatePath("/creator/escritorio/ganhos")).toBe(true);
-    expect(isDocumentsRevalidatePath("/creator/escritorio/ganhos/x")).toBe(false);
+    expect(isDocumentsRevalidatePath("/heroi/financeiro")).toBe(true);
+    expect(isDocumentsRevalidatePath("/heroi/ganhos/x")).toBe(false);
   });
 });
 

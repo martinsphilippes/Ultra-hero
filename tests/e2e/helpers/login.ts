@@ -19,7 +19,7 @@ export const DEMO_HOME: Record<DemoKind, RegExp> = {
   agency: /\/agencia$/,
   agencyStaff: /\/agencia$/,
   brand: /\/marca$/,
-  talent: /\/creator\/escritorio$/,
+  talent: /\/heroi$/,
 };
 const DEMO_PATH: Record<DemoKind, string> = {
   creator: "/profile",
@@ -29,7 +29,7 @@ const DEMO_PATH: Record<DemoKind, string> = {
   agency: "/agencia",
   agencyStaff: "/agencia",
   brand: "/marca",
-  talent: "/creator/escritorio",
+  talent: "/heroi",
 };
 
 type Options = {

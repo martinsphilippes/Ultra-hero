@@ -180,22 +180,22 @@ test.describe("perfil do herói no topo do /profile", () => {
     await expect(editor.getByRole("heading", { level: 2, name: "Editar perfil" })).toBeFocused();
   });
 
-  test("o endereço antigo /creator/profile leva ao /profile com o editor aberto", async ({ page }) => {
+  test("o endereço antigo /heroi/pagina leva ao /profile com o editor aberto", async ({ page }) => {
     await loginAs(page, "creator");
-    await page.goto("/creator/profile");
+    await page.goto("/heroi/pagina");
     await expect(page).toHaveURL(/\/profile#perfil-publico$/);
     await expect(page.getByTestId("profile-hero")).toBeVisible();
     await expect(page.locator("#editar-perfil")).toBeVisible();
     await expect(page.locator("#editar-perfil").getByTestId("chef-profile")).toBeVisible();
   });
 
-  test("o herói não tem mais painel: /creator volta ao Perfil; o Novo post não tem menu nem Meu perfil", async ({ page }) => {
+  test("o herói não tem mais painel: /heroi volta ao Perfil; o Novo post não tem menu nem Meu perfil", async ({ page }) => {
     await loginAs(page, "creator");
-    await page.goto("/creator");
+    await page.goto("/heroi");
     await expect(page).toHaveURL(/\/profile$/);
-    await page.goto("/creator/post/new");
+    await page.goto("/heroi/post/novo");
     await expect(page.locator("main").getByText("Meu perfil")).toHaveCount(0);
-    await expect(page.locator('a[href="/creator/profile"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/heroi/pagina"]')).toHaveCount(0);
     // o portal do herói não tem menu: o Novo post mora no Perfil
     await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
   });

@@ -23,12 +23,15 @@ import { CopyButton } from "./CopyButton";
 
 export type CreatorOption = { id: string; name: string; linked: boolean; slug?: string | null; avatarUrl?: string | null };
 export type SellerOption = { id: string; name: string };
-/** Pessoa com papel creator (para entrar na equipe de um herói). */
+/** Pessoa com papel de herói (para entrar na equipe de um herói). */
 export type CreatorUserOption = { id: string; name: string; email?: string | null };
+/** Ficha do casting que pode receber o convite de acesso (0097). */
+export type TalentOption = { id: string; name: string; agency: string; hasHero: boolean };
 
 type Props = {
   creators: CreatorOption[];
   creatorUsers: CreatorUserOption[];
+  talents?: TalentOption[];
   sellers: SellerOption[];
   /** Pré-preenchimento (ex.: botão "convidar" no herói ou na organização). */
   initialRole?: AdminInviteRole;
@@ -41,10 +44,10 @@ type Props = {
 
 const DAY_CHOICES = [1, 2, 3, 7, 14, 30] as const;
 
-// Convite do admin (0091): só e-mail, papel e validade; Creator escolhe o herói (nenhum, existente ou novo),
-// Herói escolhe a equipe (depois, creator existente ou novo). Admin pede confirmação extra e vale no máximo 48h.
-// Os links aparecem UMA vez (o banco só guarda o hash).
-export function InvitationForm({ creators, creatorUsers, sellers, initialRole = "creator", initialCreatorId = "", initialSellerId = "", defaultOpen = false, triggerLabel }: Props) {
+// Convite do admin (0091 + 0097): só e-mail, papel (7) e validade. Herói escolhe: herói novo (pendente, com equipe
+// opcional), entrar na equipe de um herói existente ou herói já no casting de uma agência (acesso à ficha). Admin pede
+// confirmação extra e vale no máximo 48h. Os links aparecem UMA vez (o banco só guarda o hash).
+export function InvitationForm({ creators, creatorUsers, talents = [], sellers, initialRole = "hero", initialCreatorId = "", initialSellerId = "", defaultOpen = false, triggerLabel }: Props) {
   const t = useTranslations("invites.admin");
   const tr = useTranslations("invites.roles");
   const tl = useTranslations("adminOps.invitations");
@@ -57,9 +60,10 @@ export function InvitationForm({ creators, creatorUsers, sellers, initialRole = 
   const [email, setEmail] = useState("");
   const [days, setDays] = useState(defaultDaysFor(initialRole));
   const [confirmAdmin, setConfirmAdmin] = useState(false);
-  const [heroMode, setHeroMode] = useState<HeroMode>(initialCreatorId ? "existing" : "none");
+  const [heroMode, setHeroMode] = useState<HeroMode>(initialCreatorId ? "team" : "new");
   const [heroId, setHeroId] = useState(initialCreatorId);
   const [heroName, setHeroName] = useState("");
+  const [talentId, setTalentId] = useState("");
   const [teamMode, setTeamMode] = useState<TeamMode>("later");
   const [teamUserId, setTeamUserId] = useState("");
   const [teamEmail, setTeamEmail] = useState("");
@@ -69,7 +73,7 @@ export function InvitationForm({ creators, creatorUsers, sellers, initialRole = 
   const [error, setError] = useState<string | null>(null);
   const [links, setLinks] = useState<AdminInviteLink[] | null>(null);
   const [pending, startTransition] = useTransition();
-  const fields = adminInviteFields(role);
+  const fields = adminInviteFields(role, heroMode);
 
   function changeRole(next: AdminInviteRole) {
     setRole(next);
@@ -81,7 +85,7 @@ export function InvitationForm({ creators, creatorUsers, sellers, initialRole = 
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    const form = { email: email.trim(), role, days, confirmAdmin, heroMode, heroId, heroName, teamMode, teamUserId, teamEmail };
+    const form = { email: email.trim(), role, days, confirmAdmin, heroMode, heroId, heroName, talentId, teamMode, teamUserId, teamEmail };
     const found = validateAdminInvite(form);
     setErrors(found);
     if (found.length > 0) return;
@@ -175,25 +179,34 @@ export function InvitationForm({ creators, creatorUsers, sellers, initialRole = 
               </Select>
             </FormField>
 
-            {fields.heroLink ? (
-              <fieldset className="flex min-w-0 flex-col gap-3 rounded-xl border border-border p-3" data-testid="admin-invite-hero-link">
-                <legend className="px-1 text-sm font-semibold text-fg">{t("heroLink.title")}</legend>
-                <Select value={heroMode} onChange={(e) => setHeroMode(e.target.value as HeroMode)} disabled={pending} aria-label={t("heroLink.title")}>
-                  <option value="none">{t("heroLink.none")}</option>
-                  <option value="existing">{t("heroLink.existing")}</option>
-                  <option value="new">{t("heroLink.new")}</option>
+            {fields.heroMode ? (
+              <FormField label={t("heroMode.title")} hint={t(`heroMode.hints.${heroMode}`)}>
+                <Select value={heroMode} onChange={(e) => setHeroMode(e.target.value as HeroMode)} disabled={pending} data-testid="admin-invite-hero-mode">
+                  <option value="new">{t("heroMode.new")}</option>
+                  <option value="team">{t("heroMode.team")}</option>
+                  <option value="casting">{t("heroMode.casting")}</option>
                 </Select>
-                {heroMode === "existing" ? (
-                  <FormField label={t("heroLink.pick")} hint={t("heroLink.pickHint")} required error={has("hero_id") ? t("errors.hero") : undefined}>
-                    <EntitySelect value={heroId} onChange={(e) => setHeroId(e.target.value)} disabled={pending} emptyLabel={tl("form.selectPlaceholder")} roleInOption={false} options={heroOptions} />
-                  </FormField>
-                ) : null}
-                {heroMode === "new" ? (
-                  <FormField label={t("heroName")} hint={t("heroNewHint")} required error={has("hero_name") ? t("errors.heroName") : undefined}>
-                    <Input value={heroName} onChange={(e) => setHeroName(e.target.value)} maxLength={80} disabled={pending} />
-                  </FormField>
-                ) : null}
-              </fieldset>
+              </FormField>
+            ) : null}
+
+            {fields.heroLink ? (
+              <FormField label={t("heroLink.pick")} hint={t("heroLink.pickHint")} required error={has("hero_id") ? t("errors.hero") : undefined}>
+                <EntitySelect value={heroId} onChange={(e) => setHeroId(e.target.value)} disabled={pending} emptyLabel={tl("form.selectPlaceholder")} roleInOption={false} options={heroOptions} />
+              </FormField>
+            ) : null}
+
+            {fields.heroTalent ? (
+              <FormField label={t("heroTalent.pick")} hint={talents.length > 0 ? t("heroTalent.hint") : t("heroTalent.none")} required error={has("talent_id") ? t("errors.talent") : undefined}>
+                <EntitySelect
+                  value={talentId}
+                  onChange={(e) => setTalentId(e.target.value)}
+                  disabled={pending || talents.length === 0}
+                  emptyLabel={tl("form.selectPlaceholder")}
+                  roleInOption={false}
+                  data-testid="admin-invite-talent"
+                  options={talents.map((x) => ({ value: x.id, name: x.name, org: x.agency, detail: x.hasHero ? t("heroTalent.withPage") : t("heroTalent.withoutPage") }))}
+                />
+              </FormField>
             ) : null}
 
             {fields.heroTeam ? (

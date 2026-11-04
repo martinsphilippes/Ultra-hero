@@ -11,7 +11,7 @@ import { ADMIN_INVITE_ROLES, HERO_MODES, TEAM_MODES, adminInviteOptions, validat
 import type { Json } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
-// Convite do admin (0091): e-mail, papel e validade (+ as opções do Creator e do Herói). A RPC admin_invite
+// Convite do admin (0091 + 0097): e-mail, papel e validade (+ as opções do Herói: novo, equipe ou casting). A RPC admin_invite
 // confere tudo de novo (Admin só até 48h e com a confirmação; auditoria própria). O link de cada convite
 // aparece uma única vez (o banco guarda só o hash) e, com e-mail configurado, também vai por e-mail.
 
@@ -26,6 +26,7 @@ const formSchema = z.object({
   heroMode: z.enum(HERO_MODES).optional(),
   heroId: z.string().optional(),
   heroName: z.string().max(120).optional(),
+  talentId: z.string().optional(),
   teamMode: z.enum(TEAM_MODES).optional(),
   teamUserId: z.string().optional(),
   teamEmail: z.string().max(254).optional(),
@@ -50,7 +51,7 @@ export async function adminInviteAction(input: AdminInviteForm): Promise<AdminIn
       p_options: adminInviteOptions(form) as Json,
     });
     if (error) return agencyFail(error);
-    const rows = ((data as { invitations?: Array<{ id: string; email: string; token: string; kind: string }> } | null)?.invitations ?? []).filter((r) => r.token);
+    const rows = ((data as { invitations?: Array<{ id: string; email: string; token: string; kind: string | null }> } | null)?.invitations ?? []).filter((r) => r.token);
     if (rows.length === 0) return agencyFail("generic");
     const [origin, t] = await Promise.all([getOrigin(), getTranslations("invites.roles")]);
     const links: AdminInviteLink[] = [];
@@ -58,7 +59,7 @@ export async function adminInviteAction(input: AdminInviteForm): Promise<AdminIn
       const link = `${origin}/invite?token=${encodeURIComponent(row.token)}`;
       const roleLabel = row.kind === "hero_team" ? t("heroTeam") : t(form.role);
       const emailed = await sendInviteEmail({ to: row.email, link, scopeName: "Groscove Ultra", roleLabel, days: form.days });
-      links.push({ email: row.email, link, emailed, kind: row.kind });
+      links.push({ email: row.email, link, emailed, kind: row.kind ?? "talent" });
     }
     revalidatePath("/admin/invitations");
     return { ok: true, links };

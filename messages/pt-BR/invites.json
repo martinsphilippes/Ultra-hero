@@ -4,11 +4,10 @@
     "admin": "Admin",
     "agency": "Agência",
     "brand": "Marca",
-    "creator": "Creator",
     "hero": "Herói",
     "seller": "Fornecedor",
     "professional": "Profissional",
-    "heroTeam": "Creator da equipe do herói"
+    "heroTeam": "Membro da equipe do herói"
   },
   "admin": {
     "linkFor": "Link para {email}",
@@ -18,16 +17,11 @@
       "admin": "Controle total do Ultra. Vale no máximo 48 horas.",
       "agency": "A pessoa cria a agência no primeiro acesso e vira Adm.",
       "brand": "A pessoa cria a marca no primeiro acesso e vira Dono. Não precisa de agência.",
-      "creator": "A pessoa (creator). Pode ficar sem herói, entrar num herói ou criar um novo.",
-      "hero": "Cria a página pública (herói) pendente; quem aceita vira titular.",
+      "hero": "Herói novo (pendente de aprovação), entrar na equipe de um herói ou herói que já está no casting de uma agência.",
       "seller": "A pessoa cria a operação no primeiro acesso (ou entra numa já cadastrada).",
       "professional": "A pessoa cria o perfil profissional no primeiro acesso."
     },
     "heroLink": {
-      "title": "Vincular a herói",
-      "none": "Nenhum (cria depois)",
-      "existing": "Herói existente",
-      "new": "Convidar herói novo junto",
       "pick": "Herói",
       "pickHint": "Sem titular: a pessoa vira titular. Com titular: entra na equipe."
     },
@@ -35,13 +29,13 @@
     "heroNewHint": "O herói nasce pendente e vai ao ar quando o admin aprovar.",
     "heroTeam": {
       "legend": "Herói",
-      "title": "Creators da equipe",
+      "title": "Membros da equipe",
       "hint": "Quem aceita este convite é o titular. A equipe pode vir depois.",
       "later": "Depois",
-      "existing": "Creator existente",
-      "new": "Convidar creator novo junto",
-      "pick": "Creator",
-      "email": "E-mail do creator da equipe"
+      "existing": "Pessoa já cadastrada",
+      "new": "Convidar mais alguém para a equipe",
+      "pick": "Membro da equipe",
+      "email": "E-mail do membro da equipe"
     },
     "sellerOrgHint": "Sem organização: a pessoa cria a operação no primeiro acesso.",
     "sellerOrgNew": "Nova (criada no primeiro acesso)",
@@ -61,17 +55,36 @@
       "email": "Informe um e-mail válido.",
       "hero": "Escolha o herói.",
       "heroName": "Informe o nome do herói (2 a 80 letras).",
-      "teamUser": "Escolha o creator.",
+      "teamUser": "Escolha o membro da equipe.",
       "teamEmail": "Informe um e-mail válido e diferente do titular.",
       "days": "Validade fora do limite (Admin: até 48 horas).",
-      "adminConfirm": "Marque a confirmação para convidar um Admin."
+      "adminConfirm": "Marque a confirmação para convidar um Admin.",
+      "talent": "Escolha o herói do casting."
+    },
+    "heroMode": {
+      "title": "Tipo de convite",
+      "new": "Herói novo",
+      "team": "Entrar na equipe de um herói",
+      "casting": "Herói que já está no casting de uma agência",
+      "hints": {
+        "new": "A página pública nasce pendente de aprovação e quem aceita vira titular.",
+        "team": "Herói sem titular: a pessoa vira titular. Com titular: entra como membro da equipe.",
+        "casting": "Dá acesso à ficha do herói no casting da agência (oportunidades, agenda, ganhos)."
+      }
+    },
+    "heroTalent": {
+      "pick": "Herói no casting",
+      "hint": "A lista mostra os heróis do casting das agências que ainda não têm login.",
+      "none": "Nenhum herói do casting sem login agora.",
+      "withPage": "Com página pública",
+      "withoutPage": "Ainda sem página pública"
     }
   },
   "accept": {
     "successOnboarding": "Falta só criar a sua empresa. Leva um minuto.",
     "successAdmin": "Você agora é Admin do Ultra.",
     "successConsumer": "Sua conta está pronta.",
-    "successCreatorFree": "Você entrou como creator. Crie o seu herói quando quiser.",
+    "successCreatorFree": "Você entrou como herói. Crie a sua página de herói quando quiser.",
     "goOnboarding": "Criar minha empresa",
     "goAdmin": "Ir para o Admin",
     "goHeroTeam": "Criar meu herói"
@@ -113,7 +126,7 @@
       "roleNote": "Você será Adm da agência.",
       "create": "Criar agência",
       "doneTitle": "Agência criada",
-      "doneText": "Convide sua equipe, marcas e creators pelo portal.",
+      "doneText": "Convide sua equipe, marcas e heróis pelo portal.",
       "go": "Ir para a agência"
     },
     "brand": {
@@ -159,7 +172,7 @@
     "title": "Equipe",
     "adminHint": "Como admin, gerencie a equipe de cada herói pela ficha do herói.",
     "noHeroDescription": "Você ainda não tem um herói.",
-    "ownerDescription": "Você é o titular. Convide creators para a equipe do herói.",
+    "ownerDescription": "Você é o titular. Convide pessoas para a equipe do herói.",
     "memberDescription": "Você faz parte da equipe deste herói.",
     "pendingApproval": "Herói aguardando a aprovação do admin para ir ao ar.",
     "memberNote": "Só o titular convida, remove ou transfere.",
@@ -175,14 +188,14 @@
     "transferTitle": "Transferir titularidade",
     "transferText": "{name} passa a ser o titular do herói. O titular atual continua na equipe.",
     "removeTitle": "Remover da equipe",
-    "removeText": "{name} perde o acesso ao herói e ao escritório.",
+    "removeText": "{name} perde o acesso ao herói e ao Portal do Herói.",
     "cancel": "Cancelar",
     "transferConfirm": "Transferir",
     "removeConfirm": "Remover",
     "inviteExpires": "Expira em {date}",
     "revokeFor": "Revogar o convite de {email}",
     "revoke": "Revogar",
-    "invite": "Convidar creator para a equipe",
+    "invite": "Convidar alguém para a equipe",
     "createdTitle": "Convite criado",
     "inviteTitle": "Equipe de {hero}",
     "done": "Concluir",
@@ -191,10 +204,10 @@
     "notEmailed": "Copie o link e envie à pessoa: ele não aparece de novo.",
     "link": "Link do convite",
     "inviteHint": "A pessoa entra com login próprio e posta pelo herói.",
-    "email": "E-mail do creator",
+    "email": "E-mail da pessoa",
     "days": "Validade",
     "daysOption": "{days, plural, one {# dia} other {# dias}}",
-    "memberRole": "Creator da equipe do herói",
+    "memberRole": "Membro da equipe do herói",
     "invited": "Convite criado",
     "removed": "Removido da equipe",
     "transferred": "Titularidade transferida",
@@ -233,7 +246,7 @@
     "heroRole": "Titular do herói",
     "heroSent": "Convite de herói criado",
     "errors": {
-      "talent": "Escolha o creator.",
+      "talent": "Escolha o herói.",
       "heroName": "Informe o nome do herói."
     },
     "brandOpen": "Convidar marca",
@@ -247,9 +260,9 @@
     "notEmailed": "Copie o link e envie à pessoa: ele não aparece de novo.",
     "link": "Link do convite",
     "brandHint": "Marca nova: a pessoa cria a marca e já fica com a agência. Dono de marca no Ultra: recebe um pedido de vínculo para aceitar.",
-    "heroHint": "Creator sem herói: o herói nasce pendente e a pessoa vira titular. Herói sem titular: a pessoa assume.",
-    "noTalents": "Todos os creators do casting já têm login.",
-    "talent": "Creator do casting",
+    "heroHint": "Herói sem página pública: a página nasce pendente e a pessoa vira titular. Página sem titular: a pessoa assume.",
+    "noTalents": "Todos os heróis do casting já têm login.",
+    "talent": "Herói do casting",
     "pick": "Escolha…",
     "hasHero": "Herói: {hero}",
     "noHero": "Sem herói",

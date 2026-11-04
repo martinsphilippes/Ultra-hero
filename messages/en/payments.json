@@ -181,7 +181,7 @@
     "final": "Now in effect",
     "before": "Current budget",
     "counter": "Amount proposed by the agency",
-    "talentsLine": "Requested budget per creator:",
+    "talentsLine": "Requested budget per hero:",
     "reasonLabel": "Reason",
     "status": {
       "pending_owner": "Waiting for the owner",
@@ -206,7 +206,7 @@
     "plan": {
       "title": "Proposed realignment",
       "empty": "No changes besides the amount.",
-      "creators": "Creators",
+      "creators": "Heroes",
       "deliverables": "Deliverables",
       "period": "Planned period",
       "schedule": "Dates and stages",
@@ -255,7 +255,7 @@
     "newAmountHint": "Current budget: {amount}.",
     "reason": "Reason",
     "reasonHint": "Why change it? The agency reads it before deciding.",
-    "talentsTitle": "Budget per creator (optional)",
+    "talentsTitle": "Budget per hero (optional)",
     "talentsHint": "Change only what you need; the rest stays the same.",
     "amountInvalid": "Enter a valid amount.",
     "reasonShort": "Explain the reason (at least 5 letters).",
@@ -275,12 +275,12 @@
     "agencyDeclineHint": "The brand gets a notice with the reason. The current budget stays.",
     "proposeHint": "Say what changes with the new budget. The brand confirms; what isn't automatic becomes a task in this deal.",
     "counterHint": "Leave empty to accept the requested amount.",
-    "creatorsHint": "Keep or remove the deal's creators; add new ones by name.",
-    "creatorName": "Creator name",
+    "creatorsHint": "Keep or remove the deal's heroes; add new ones by name.",
+    "creatorName": "Hero name",
     "creatorAction": "What to do",
     "removeRow": "Remove",
     "creatorNote": "Note",
-    "addCreator": "Add creator",
+    "addCreator": "Add hero",
     "changeDeliverables": "Change the deliverables",
     "periodHint": "Now: {start} to {end}. Leave empty to keep it.",
     "periodStart": "Start",
@@ -290,7 +290,7 @@
     "agencyNote": "Message to the brand",
     "agencyNoteHint": "Optional.",
     "planErrors": {
-      "creator_name": "Give each added creator a name.",
+      "creator_name": "Give each added hero a name.",
       "period_order": "The period ends before it starts.",
       "too_long": "Some text is over the limit."
     }

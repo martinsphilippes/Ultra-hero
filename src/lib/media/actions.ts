@@ -37,14 +37,14 @@ function refresh(ref: Ref) {
     revalidatePath(`/marca/campanhas/${ref.requestId}`);
     revalidatePath(`/marca/campanhas/${ref.requestId}/relatorio`);
   }
-  if (ref.dealTalentId && ID.test(ref.dealTalentId)) revalidatePath(`/creator/escritorio/oportunidades/${ref.dealTalentId}`);
+  if (ref.dealTalentId && ID.test(ref.dealTalentId)) revalidatePath(`/heroi/oportunidades/${ref.dealTalentId}`);
   revalidatePath("/marca/biblioteca");
 }
 
 async function gate(portal: Portal) {
   if (portal === "agency") await requireAgency("staff");
   else if (portal === "brand") await requireBrand();
-  else await requireUser("/creator/escritorio/oportunidades");
+  else await requireUser("/heroi/oportunidades");
 }
 
 const refSchema = z.object({ dealId: uuid, requestId: uuid.nullish(), dealTalentId: uuid.nullish() });

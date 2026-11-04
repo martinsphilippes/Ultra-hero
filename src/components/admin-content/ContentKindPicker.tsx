@@ -58,7 +58,7 @@ export function ContentKindPicker({ value, onChange, creatorId, audience = "admi
         setError(te.has(result.error) ? te(result.error) : te("generic"));
         return;
       }
-      router.push(value === "post" ? result.href : "/creator/recipes/new");
+      router.push(value === "post" ? result.href : "/heroi/receitas/nova");
     });
   }
 

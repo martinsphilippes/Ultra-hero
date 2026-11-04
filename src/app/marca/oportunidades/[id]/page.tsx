@@ -52,7 +52,7 @@ export default async function BrandSponsorshipPage({ params }: Props) {
         <div className="flex flex-col gap-1">
           <HeroCard hero={o.hero} side="brand" />
           {o.talent.inCatalog ? (
-            <Link href={`/marca/creators/${o.talent.id}`} className="inline-flex min-h-8 items-center self-start type-caption font-medium text-accent-text underline-offset-2 hover:underline">
+            <Link href={`/marca/herois/${o.talent.id}`} className="inline-flex min-h-8 items-center self-start type-caption font-medium text-accent-text underline-offset-2 hover:underline">
               {t("seeCatalog")}
             </Link>
           ) : null}

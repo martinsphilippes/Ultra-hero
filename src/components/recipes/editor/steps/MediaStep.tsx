@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp, CheckCircle2, Star, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useState } from "react";
-import { checkRecipeVideo, type RegisteredMedia } from "@/app/creator/(hero)/recipes/actions";
+import { checkRecipeVideo, type RegisteredMedia } from "@/app/heroi/receitas/actions";
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
 import { Button, Dialog, FormField, IconButton, Input } from "@/components/ui";
 import { RECIPE_LIMITS } from "@/lib/recipes/codes";

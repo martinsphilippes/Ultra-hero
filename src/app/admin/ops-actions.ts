@@ -314,7 +314,7 @@ export async function createCreator(input: CreatorFormValues): Promise<Result<{ 
     const { data, error } = await supabase.from("creator_profiles").insert(creatorRow(v)).select("id").single();
     if (error) return fail(error);
     const privateError = await savePrivateRights(supabase, data.id, v);
-    revalidatePath("/admin/creators");
+    revalidatePath("/admin/herois");
     if (privateError) return privateError;
     const t = await getTranslations("adminOps.creators.form");
     return { ok: true, id: data.id, message: t("created") };
@@ -334,8 +334,8 @@ export async function updateCreator(id: string, input: CreatorFormValues): Promi
     if (error) return fail(error);
     if (!data) return fail("not_found");
     const privateError = await savePrivateRights(supabase, parsed.data.id, v);
-    revalidatePath("/admin/creators");
-    revalidatePath(`/admin/creators/${parsed.data.id}`);
+    revalidatePath("/admin/herois");
+    revalidatePath(`/admin/herois/${parsed.data.id}`);
     revalidatePath("/personalities");
     if (privateError) return privateError;
     const t = await getTranslations("adminOps.creators.form");
@@ -379,8 +379,8 @@ export async function adminRemoveCreatorPhoto(input: { id: string }, justificati
       p_justification: parsed.data.justification,
       p_actor_type: "admin",
     });
-    revalidatePath("/admin/creators");
-    revalidatePath(`/admin/creators/${creator.id}`);
+    revalidatePath("/admin/herois");
+    revalidatePath(`/admin/herois/${creator.id}`);
     revalidatePath("/personalities");
     revalidatePath(`/personalities/${creator.slug}`);
     revalidatePath("/", "layout");
@@ -424,8 +424,8 @@ export async function adminRemoveCreatorCover(input: { id: string }, justificati
       p_justification: parsed.data.justification,
       p_actor_type: "admin",
     });
-    revalidatePath("/admin/creators");
-    revalidatePath(`/admin/creators/${creator.id}`);
+    revalidatePath("/admin/herois");
+    revalidatePath(`/admin/herois/${creator.id}`);
     revalidatePath("/personalities");
     revalidatePath(`/personalities/${creator.slug}`);
     const t = await getTranslations("adminOps.creators.form");
@@ -447,8 +447,8 @@ export async function setCreatorStatus(input: { id: string; status: "active" | "
       p_justification: parsed.data.justification,
     });
     if (error) return fail(error);
-    revalidatePath("/admin/creators");
-    revalidatePath(`/admin/creators/${parsed.data.id}`);
+    revalidatePath("/admin/herois");
+    revalidatePath(`/admin/herois/${parsed.data.id}`);
     const t = await getTranslations("adminOps.creators.status");
     return { ok: true, message: t("updated") };
   } catch (error) {
@@ -476,8 +476,8 @@ export async function setCreatorProduct(input: { creatorId: string; productId: s
     const { error } = await supabase.rpc("admin_set_creator_product", { p_creator: creatorId, p_product: productId, p_status: status, p_note: parsed.data.note || undefined });
     if (error) return failCreatorProduct(error);
     const { data: creator } = await supabase.from("creator_profiles").select("slug").eq("id", creatorId).maybeSingle();
-    revalidatePath("/admin/creators");
-    revalidatePath(`/admin/creators/${creatorId}`);
+    revalidatePath("/admin/herois");
+    revalidatePath(`/admin/herois/${creatorId}`);
     revalidatePath("/admin/audit");
     if (creator?.slug) revalidatePath(`/personalities/${creator.slug}`);
     const t = await getTranslations("adminOps.creators.products.toasts");

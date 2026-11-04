@@ -6,7 +6,8 @@ import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 import { portalRolesShown } from "@/lib/seller-ops/portal";
 
 export const SETTINGS_PATH = "/configuracoes";
-export const OFFICE_PATH = "/creator/escritorio";
+/** Portal do Herói (0097): um portal só para o herói (página pública, equipe, conteúdos) e o casting da agência. */
+export const HERO_PORTAL_PATH = "/heroi";
 
 /** Linhas comuns (textos em me.profile.links.<key>, salvo as marcadas em me.settings.rows). */
 export type SettingsLinkKey =
@@ -22,9 +23,9 @@ export type SettingsLinkKey =
   | "devices"
   | "appearance";
 
-/** Portais (textos em me.profile.portals); o herói não tem portal (só posta pelo Perfil, 0045).
- *  "office" é o escritório do creator que está num casting (0065; web e app). */
-export type SettingsPortalRole = "seller" | "professional" | "office" | "agency" | "brand" | "admin";
+/** Portais (textos em me.profile.portals). "creator" é o Portal do Herói (0097: o antigo escritório do casting e a área
+ *  do herói viraram um só; web e app): para quem tem papel de herói ou está num casting. */
+export type SettingsPortalRole = "creator" | "seller" | "professional" | "agency" | "brand" | "admin";
 
 export type SettingsSectionKey = "routine" | "collections" | "purchases" | "account" | "portals";
 
@@ -85,20 +86,21 @@ function nativeHidden(href: string): boolean {
 }
 
 export type PortalOptions = {
-  /** Está num casting (0065): atalho do Escritório. */
+  /** Está num casting (0065): também abre o Portal do Herói. */
   hasTalent?: boolean;
   /** Admin geral com conta real (is_platform_admin): supervisiona agência e marca. A conta pública de
    *  demonstração com papel admin não ganha esses atalhos (os portais dizem "indisponível" para ela). */
   platformAdmin?: boolean;
 };
 
-/** Atalhos dos portais (topo do Perfil e seção Portais das Configurações): os do papel e o Escritório
- *  de quem está num casting. O admin geral de conta real supervisiona os portais de gestão (0064). */
+/** Atalhos dos portais (topo do Perfil e seção Portais das Configurações): os do papel e um só "Portal do Herói" para
+ *  quem tem papel de herói (titular, membro da equipe ou só no casting) ou está num casting. O admin geral de conta
+ *  real supervisiona os portais de gestão (0064). */
 export function buildPortalItems(roles: readonly string[], sellerPortalEnabled?: boolean, opts: PortalOptions = {}): SettingsItem[] {
   const withManagement = roles.includes("admin") && opts.platformAdmin ? [...roles, "agency", "brand"] : roles;
   const shown = portalRolesShown(withManagement, sellerPortalEnabled);
   const portals: SettingsItem[] = PORTALS.filter((p) => shown.includes(p.role)).map((p) => ({ kind: "portal", key: p.role, href: p.href, nativeHidden: nativeHidden(p.href) }));
-  if (opts.hasTalent) portals.unshift({ kind: "portal", key: "office", href: OFFICE_PATH, nativeHidden: nativeHidden(OFFICE_PATH) });
+  if (opts.hasTalent || roles.includes("creator")) portals.unshift({ kind: "portal", key: "creator", href: HERO_PORTAL_PATH, nativeHidden: nativeHidden(HERO_PORTAL_PATH) });
   return portals;
 }
 

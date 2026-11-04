@@ -30,7 +30,7 @@
       "draft": "Borrador detenido",
       "internalApproval": "Aprobación interna",
       "shortlist": "Preselección",
-      "rating": "Evaluar creator",
+      "rating": "Evaluar héroe",
       "budget": "Presupuesto excedido",
       "sponsorship": "Oportunidad de patrocinio"
     },
@@ -49,10 +49,10 @@
     },
     "internalPending": "Esperando tu aprobación",
     "internalReturned": "Devuelta: ajusta y pide de nuevo",
-    "shortlistSent": "Aprueba o rechaza cada creator",
+    "shortlistSent": "Aprueba o rechaza cada héroe",
     "shortlistDecided": "Decidida: crea la campaña con los aprobados",
     "budgetOver": "Lo comprometido superó el presupuesto de la campaña",
-    "budgetTalentsOver": "Un creator superó su presupuesto",
+    "budgetTalentsOver": "Un héroe superó su presupuesto",
     "sponsorshipHint": "Acepta la cuota, haz una propuesta o rechaza"
   },
   "talent": {
@@ -88,7 +88,7 @@
   },
   "board": {
     "title": "Acciones por etapa",
-    "description": "Cada entregable de cada creator, en todas las campañas.",
+    "description": "Cada entregable de cada héroe, en todas las campañas.",
     "seeBoard": "Ver panel",
     "tabsLabel": "Etapas",
     "unavailable": "El panel aún no está disponible.",
@@ -107,8 +107,8 @@
       "published": "Publicada"
     },
     "stageHints": {
-      "sent": "Propuesta enviada, esperando a la agencia y al creator.",
-      "accepted": "El creator aceptó; la producción aún no empezó.",
+      "sent": "Propuesta enviada, esperando a la agencia y al héroe.",
+      "accepted": "El héroe aceptó; la producción aún no empezó.",
       "creating": "En producción, con ajuste pedido o aprobado para publicar.",
       "awaiting": "Versión enviada esperando tu aprobación.",
       "published": "Publicado o comprobado."

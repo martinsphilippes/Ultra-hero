@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import { requestCredentials, saveSpecialties, withdrawCredentials } from "@/app/creator/(hero)/profile/chef-actions";
+import { requestCredentials, saveSpecialties, withdrawCredentials } from "@/app/heroi/pagina/chef-actions";
 import { ChipInput } from "@/components/editors/content/fields";
 import { Button, FormField, Textarea, useToast } from "@/components/ui";
 import { useRevealHeroEditor } from "./HeroEditorDisclosure";

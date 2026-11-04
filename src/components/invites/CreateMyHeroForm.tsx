@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
-import { createMyHeroAction } from "@/app/creator/(hero)/equipe/actions";
+import { createMyHeroAction } from "@/app/heroi/equipe/actions";
 import { Button, FormField, Input } from "@/components/ui";
 
 // "Criar meu herói" (0091): o creator sem herói cria a página pública dele; ela nasce pendente e o admin

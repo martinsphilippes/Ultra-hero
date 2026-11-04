@@ -252,7 +252,7 @@ describe("avisos, menu, erros e migração 0090", () => {
       expect(INBOX_KINDS).toContain(kind);
       expect(sql).toContain(`'${kind}'`);
       expect(isWorkEmailKind(kind)).toBe(true);
-      expect(inboxKindPushes(kind, "/creator/escritorio")).toBe(false);
+      expect(inboxKindPushes(kind, "/heroi")).toBe(false);
     }
     expect(inboxKindEmails("budget_change", "/agencia/negocios/x", { status: "requested" })).toBe(true);
     expect(inboxKindEmails("budget_change", "/marca/campanhas/x", { status: "review" })).toBe(false);

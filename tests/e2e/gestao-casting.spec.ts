@@ -74,22 +74,22 @@ test.describe("casting e media kit", () => {
     await expect(page.getByTestId("office-kit-status")).toBeVisible();
     await noHorizontalScroll(page);
     await axe(page);
-    await page.goto("/creator/escritorio/media-kit");
+    await page.goto("/heroi/media-kit");
     await expect(page.getByTestId("kit-editor")).toBeVisible();
     await expect(page.getByTestId("kit-share-locked")).toBeVisible();
     await expect(page.getByTestId("kit-generate")).toHaveCount(0);
-    await page.goto("/creator/escritorio/consentimento");
+    await page.goto("/heroi/consentimento");
     await expect(page.getByTestId("consent-card")).toBeVisible();
-    // talento sem página pública: /creator leva ao escritório e o Novo post explica que é só de herói
-    await page.goto("/creator");
-    await expect(page).toHaveURL(/\/creator\/escritorio$/, { timeout: 20_000 });
-    await page.goto("/creator/post/new");
+    // talento sem página pública: /heroi leva ao escritório e o Novo post explica que é só de herói
+    await page.goto("/heroi");
+    await expect(page).toHaveURL(/\/heroi$/, { timeout: 20_000 });
+    await page.goto("/heroi/post/novo");
     await expect(page.getByTestId("post-talent-only")).toBeVisible();
   });
 
   test("consumidor não tem escritório", async ({ page }) => {
     await loginAs(page, "free", { home: null });
-    await page.goto("/creator/escritorio");
-    await expect(page).not.toHaveURL(/\/creator\/escritorio$/, { timeout: 20_000 });
+    await page.goto("/heroi");
+    await expect(page).not.toHaveURL(/\/heroi$/, { timeout: 20_000 });
   });
 });

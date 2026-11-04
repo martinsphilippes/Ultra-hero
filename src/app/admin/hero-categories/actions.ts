@@ -27,7 +27,7 @@ async function requireAdmin(): Promise<void> {
 function revalidate(creatorId?: string) {
   revalidatePath("/admin/hero-categories");
   revalidatePath("/personalities");
-  if (creatorId) revalidatePath(`/admin/creators/${creatorId}`);
+  if (creatorId) revalidatePath(`/admin/herois/${creatorId}`);
 }
 
 const label = z.string().trim().max(40);
@@ -202,7 +202,7 @@ function revalidateTabs(creatorId?: string) {
   // páginas dos heróis (hub e bibliotecas)
   revalidatePath("/personalities/[slug]", "page");
   revalidatePath("/personalities/[slug]/[library]", "page");
-  if (creatorId) revalidatePath(`/admin/creators/${creatorId}`);
+  if (creatorId) revalidatePath(`/admin/herois/${creatorId}`);
 }
 
 /** Salva os 7 atalhos da categoria de uma vez, na ordem recebida (10, 20, 30…). */

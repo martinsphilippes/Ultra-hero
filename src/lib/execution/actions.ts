@@ -28,8 +28,8 @@ function revalidateDeal(portal: ExecPortal, dealId: string, requestId?: string |
   if (portal === "agency" && /^[0-9a-f-]{36}$/i.test(dealId)) revalidatePath(`/agencia/negocios/${dealId}`, "layout");
   revalidatePath("/agencia/tarefas");
   if (requestId && /^[0-9a-f-]{36}$/i.test(requestId)) revalidatePath(`/marca/campanhas/${requestId}`);
-  if (dealTalentId && /^[0-9a-f-]{36}$/i.test(dealTalentId)) revalidatePath(`/creator/escritorio/oportunidades/${dealTalentId}`);
-  revalidatePath("/creator/escritorio/tarefas");
+  if (dealTalentId && /^[0-9a-f-]{36}$/i.test(dealTalentId)) revalidatePath(`/heroi/oportunidades/${dealTalentId}`);
+  revalidatePath("/heroi/tarefas");
 }
 
 // ---------------------------------------------------------------- termos
@@ -146,7 +146,7 @@ export async function saveTaskAction(input: TaskSaveInput): Promise<ExecResult> 
 
 export async function setTaskStatusAction(portal: "agency" | "office", input: z.input<typeof taskStatusSchema> & { dealId?: string | null; dealTalentId?: string | null }): Promise<ExecResult> {
   if (portal === "agency") await requireAgency("staff");
-  else await requireUser("/creator/escritorio/tarefas");
+  else await requireUser("/heroi/tarefas");
   const parsed = taskStatusSchema.safeParse(input);
   if (!parsed.success) return fail(portal, "invalid_input");
   const d = parsed.data;
@@ -158,7 +158,7 @@ export async function setTaskStatusAction(portal: "agency" | "office", input: z.
     if (input.dealId && /^[0-9a-f-]{36}$/i.test(input.dealId)) revalidateDeal(portal, input.dealId, null, input.dealTalentId);
     else {
       revalidatePath("/agencia/tarefas");
-      revalidatePath("/creator/escritorio/tarefas");
+      revalidatePath("/heroi/tarefas");
     }
     const t = await getTranslations("commercial.tasks");
     return { ok: true, message: t(`statusSet.${d.status}`) };
@@ -190,7 +190,7 @@ type DealRef = { dealId: string; requestId?: string | null; dealTalentId?: strin
 
 export async function submitDeliverableAction(portal: "agency" | "office", input: z.input<typeof submitSchema> & DealRef): Promise<ExecResult> {
   if (portal === "agency") await requireAgency("staff");
-  else await requireUser("/creator/escritorio/oportunidades");
+  else await requireUser("/heroi/oportunidades");
   const parsed = submitSchema.safeParse(input);
   if (!parsed.success) return fail(portal, "invalid_input");
   const d = parsed.data;
@@ -237,7 +237,7 @@ export async function decideDeliverableAction(portal: "agency" | "brand", input:
 
 export async function publishDeliverableAction(portal: "agency" | "office", input: z.input<typeof publishSchema> & DealRef): Promise<ExecResult> {
   if (portal === "agency") await requireAgency("staff");
-  else await requireUser("/creator/escritorio/oportunidades");
+  else await requireUser("/heroi/oportunidades");
   const parsed = publishSchema.safeParse(input);
   if (!parsed.success) return fail(portal, "invalid_url");
   try {
@@ -254,7 +254,7 @@ export async function publishDeliverableAction(portal: "agency" | "office", inpu
 
 export async function proofDeliverableAction(portal: "agency" | "office", input: z.input<typeof submitSchema> & DealRef): Promise<ExecResult> {
   if (portal === "agency") await requireAgency("staff");
-  else await requireUser("/creator/escritorio/oportunidades");
+  else await requireUser("/heroi/oportunidades");
   const parsed = submitSchema.safeParse(input);
   if (!parsed.success) return fail(portal, "invalid_input");
   const d = parsed.data;

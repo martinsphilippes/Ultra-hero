@@ -3,7 +3,7 @@
 import { ImagePlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useRef, useState } from "react";
-import { registerRecipeMedia, type RegisteredMedia } from "@/app/creator/(hero)/recipes/actions";
+import { registerRecipeMedia, type RegisteredMedia } from "@/app/heroi/receitas/actions";
 import { useRecipeErrorText } from "@/components/recipes/portal/use-recipe-error";
 import { Button, Checkbox, FormField, Input, ProgressBar } from "@/components/ui";
 import { RECIPE_MEDIA_BUCKET, recipeMediaPath } from "@/lib/recipes/media";

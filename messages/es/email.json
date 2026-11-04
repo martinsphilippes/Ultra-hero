@@ -6,12 +6,12 @@
     "cta": "Aceptar la invitación",
     "expires": "El enlace vale por {days} días y solo funciona con este correo.",
     "ignore": "Si no esperabas esta invitación, ignora este mensaje.",
-    "signature": "Groscove Ultra · el puente entre marcas y creators"
+    "signature": "Groscove Ultra · el puente entre marcas y héroes"
   },
   "work": {
     "greeting": "¡Hola!",
     "prefs": "Recibes este e-mail porque tienes los avisos por e-mail activados en Groscove Ultra. Para desactivarlos, ve a Perfil → Notificaciones.",
-    "signature": "Groscove Ultra · el puente entre marcas y creators",
+    "signature": "Groscove Ultra · el puente entre marcas y héroes",
     "kinds": {
       "opportunity_received": {
         "subject": "Nueva oportunidad: {brand}",
@@ -69,7 +69,7 @@
         "cta": "Ver pedido"
       },
       "brand_call_interest": {
-        "subject": "Creator interesado: {title}",
+        "subject": "Héroe interesado: {title}",
         "body": "{talent} mostró interés en el pedido {title}. Velo al armar la propuesta.",
         "cta": "Ver pedido"
       },

@@ -27,7 +27,7 @@ async function guard(portal: SignPortal): Promise<boolean> {
     const ctx = await requireBrand();
     return ctx.role === "owner";
   }
-  await requireUser("/creator/escritorio/oportunidades");
+  await requireUser("/heroi/oportunidades");
   return true;
 }
 
@@ -71,7 +71,7 @@ export async function signTermsAction(portal: SignPortal, input: z.input<typeof 
     const { data, error } = portal === "brand" ? await supabase.rpc("brand_terms_sign", args) : await supabase.rpc("talent_terms_sign", args);
     if (error || !data) return fail(portal, error ?? "generic");
     if (d.requestId) revalidatePath(`/marca/campanhas/${d.requestId}`);
-    if (d.dealTalentId) revalidatePath(`/creator/escritorio/oportunidades/${d.dealTalentId}`);
+    if (d.dealTalentId) revalidatePath(`/heroi/oportunidades/${d.dealTalentId}`);
     revalidatePath(`/agencia/negocios/${d.dealId}`, "layout");
     const t = await getTranslations("commercial.signature");
     return { ok: true, message: t("signed"), id: data };

@@ -17,27 +17,29 @@ async function loginAsHero(page: Page) {
 }
 
 test.describe("portal do herói: novo post com foto ou vídeo", () => {
-  test("Novo post do herói sem menu: só “← Perfil” no topo, e o Perfil leva de volta ao Novo post", async ({ page }) => {
+  test("Novo post no Portal do Herói (0097): menu do portal, sino e o Perfil leva de volta ao Novo post", async ({ page }) => {
+    await loginAsHero(page);
+    await page.goto("/heroi/post/novo");
+    // portal único: menu (lateral no tablet/desktop, três linhas no celular) com os grupos e "Voltar ao app"
+    await expect(page.getByTestId("acting-hero-banner")).toHaveCount(0);
+    await expect(page.getByRole("navigation", { name: "Portal" }).first()).toBeAttached();
+    await expect(page.locator('a[href="/heroi/conteudos/novo"]').first()).toBeAttached();
+    await page.goto("/profile");
+    await expect(page.getByTestId("hero-new-post")).toHaveAttribute("href", "/heroi/post/novo");
+  });
+
+  test("endereço antigo do creator redireciona para o Portal do Herói", async ({ page }) => {
     await loginAsHero(page);
     await page.goto("/creator/post/new");
-    // sem botão de três linhas e sem menu lateral (o resto do portal é da administração, 0045)
-    await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveCount(0);
-    await expect(page.getByRole("navigation", { name: "Portal" })).toHaveCount(0);
-    await expect(page.getByTestId("acting-hero-banner")).toHaveCount(0);
-    const back = page.getByTestId("portal-back-profile");
-    await expect(back).toHaveAttribute("href", "/profile");
-    expect((await back.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-    await back.click();
-    await expect(page).toHaveURL(/\/profile$/);
-    await expect(page.getByTestId("hero-new-post")).toHaveAttribute("href", "/creator/post/new");
+    await expect(page).toHaveURL(/\/heroi\/post\/novo$/);
   });
 
   test("herói: Meus conteúdos abre no portal, com Novo post e Novo conteúdo (0092)", async ({ page }) => {
     await loginAsHero(page);
-    await page.goto("/creator/content");
-    await expect(page).toHaveURL(/\/creator\/content$/);
-    await expect(page.getByTestId("new-post")).toHaveAttribute("href", "/creator/post/new");
-    await expect(page.getByTestId("new-content")).toHaveAttribute("href", "/creator/content/new");
+    await page.goto("/heroi/conteudos");
+    await expect(page).toHaveURL(/\/heroi\/conteudos$/);
+    await expect(page.getByTestId("new-post")).toHaveAttribute("href", "/heroi/post/novo");
+    await expect(page.getByTestId("new-content")).toHaveAttribute("href", "/heroi/conteudos/novo");
   });
 
   test("admin: Novo post pelo herói escolhido abre o mesmo composer, com a faixa do herói", async ({ page }) => {
@@ -47,9 +49,9 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
     await expect(page.getByTestId("acting-hero-name")).not.toBeEmpty();
   });
 
-  test("/creator/post/new abre com Tirar foto, Gravar vídeo e Escolher da galeria; foto independe do Stream", async ({ page }) => {
+  test("/heroi/post/novo abre com Tirar foto, Gravar vídeo e Escolher da galeria; foto independe do Stream", async ({ page }) => {
     await loginAsHero(page);
-    await page.goto("/creator/post/new");
+    await page.goto("/heroi/post/novo");
     await expect(page.getByRole("heading", { level: 1, name: "Novo post" })).toBeVisible();
     await expect(page.getByText("Tire ou escolha uma foto, ou grave um vídeo de até 3 minutos.", { exact: false })).toBeVisible();
 
@@ -101,7 +103,7 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
 
   test("arquivo escolhido vai para foto ou vídeo pelo tipo; o que não está disponível avisa sem enviar nada", async ({ page }) => {
     await loginAsHero(page);
-    await page.goto("/creator/post/new");
+    await page.goto("/heroi/post/novo");
     // esperar a hidratação: arquivo posto antes de o React ligar o onChange se perde
     await page.waitForLoadState("networkidle");
     const alert = page.locator("main").getByRole("alert");
@@ -132,9 +134,9 @@ test.describe("portal do herói: novo post com foto ou vídeo", () => {
     const heroId = new URL(page.url()).searchParams.get("creator")!;
     await expect(page.getByRole("link", { name: "Novo conteúdo" })).toHaveAttribute("href", `/admin/content/new?creator=${heroId}`);
     // o painel do herói (modo do admin) leva os filtros para a lista do admin
-    await page.goto("/creator/content?status=draft");
+    await page.goto("/heroi/conteudos?status=draft");
     await expect(page).toHaveURL(new RegExp(`/admin/content\\?creator=${heroId}&status=draft$`));
-    await page.goto("/creator/content/new");
+    await page.goto("/heroi/conteudos/novo");
     await expect(page).toHaveURL(new RegExp(`/admin/content/new\\?creator=${heroId}$`));
   });
 });
@@ -155,7 +157,7 @@ test.describe("composer: envio real de foto (E2E_POST_PHOTO_REAL=1)", () => {
   });
 
   async function pickPhoto(page: Page) {
-    await page.goto("/creator/post/new");
+    await page.goto("/heroi/post/novo");
     await expect(page.getByTestId("photo-unavailable"), "0043 ou service role ausentes neste ambiente").toHaveCount(0);
     await page.waitForLoadState("networkidle");
     const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByRole("button", { name: /Escolher da galeria/ }).click()]);

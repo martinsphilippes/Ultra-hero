@@ -27,14 +27,14 @@ describe("campos do editor de conteúdo por público (0092)", () => {
 
 describe("destino por tipo", () => {
   it("post vai ao composer, receita ao Portal do Chef, estruturado fica no editor", () => {
-    expect(creatorKindHref("post")).toBe("/creator/post/new");
-    expect(creatorKindHref("recipe")).toBe("/creator/recipes/new");
+    expect(creatorKindHref("post")).toBe("/heroi/post/novo");
+    expect(creatorKindHref("recipe")).toBe("/heroi/receitas/nova");
     expect(creatorKindHref("structured")).toBeNull();
     expect(creatorKindHref("program")).toBeNull();
   });
   it("Meus conteúdos: receita abre no Portal do Chef", () => {
-    expect(creatorContentHref({ id: "a", type: "recipe" })).toBe("/creator/recipes/a/edit");
-    expect(creatorContentHref({ id: "a", type: "guide" })).toBe("/creator/content/a/edit");
+    expect(creatorContentHref({ id: "a", type: "recipe" })).toBe("/heroi/receitas/a/editar");
+    expect(creatorContentHref({ id: "a", type: "guide" })).toBe("/heroi/conteudos/a/editar");
   });
 });
 

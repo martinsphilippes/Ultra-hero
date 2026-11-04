@@ -1,7 +1,7 @@
 {
   "meta": {
-    "eyebrow": "Escritório",
-    "home": "Escritório",
+    "eyebrow": "Casting da agência",
+    "home": "Início",
     "consent": "Consentimento",
     "kit": "Media kit",
     "opportunities": "Oportunidades",
@@ -13,9 +13,9 @@
     "earnings": "Ganhos"
   },
   "home": {
-    "unavailable": "Escritório em atualização",
+    "unavailable": "Portal do Herói em atualização",
     "none": "Você ainda não faz parte de um casting",
-    "noneHint": "Quando uma agência incluir você no casting dela, o escritório aparece aqui.",
+    "noneHint": "Quando uma agência incluir você no casting dela, as oportunidades, tarefas e ganhos aparecem aqui.",
     "agency": "Casting de {agency}",
     "agencyWithManager": "Casting de {agency} · gestão: {manager}",
     "availabilityTitle": "Sua disponibilidade",
@@ -36,7 +36,6 @@
     "inboxTitle": "Avisos da agência",
     "inboxAll": "Ver todos",
     "inboxEmpty": "Nenhum aviso por enquanto.",
-    "upcoming": "Tarefas e agenda chegam ao escritório nas próximas etapas.",
     "opportunitiesTitle": "Oportunidades",
     "opportunitiesAll": "Ver todas",
     "opportunitiesPending": "{count, plural, one {# oportunidade aguarda a sua resposta.} other {# oportunidades aguardam a sua resposta.}}",

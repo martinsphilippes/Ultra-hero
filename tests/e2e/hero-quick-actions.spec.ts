@@ -83,7 +83,7 @@ test.describe("herói: só o Novo post", () => {
     await loginAs(page, "creator");
     const button = page.getByTestId("hero-new-post");
     await expect(button).toBeVisible();
-    await expect(button).toHaveAttribute("href", "/creator/post/new");
+    await expect(button).toHaveAttribute("href", "/heroi/post/novo");
     await expect(button).toHaveText("Novo post");
     expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     const header = (await page.getByTestId("profile-hero").boundingBox())!;
@@ -91,19 +91,19 @@ test.describe("herói: só o Novo post", () => {
     const box = (await button.boundingBox())!;
     expect(box.y).toBeGreaterThan(header.y);
     expect(box.y).toBeLessThan(toggle.y);
-    await expect(page.getByTestId("hero-new-content")).toHaveAttribute("href", "/creator/content/new");
+    await expect(page.getByTestId("hero-new-content")).toHaveAttribute("href", "/heroi/conteudos/novo");
     await expect(page.getByTestId("hero-quick-actions")).toHaveCount(0);
     await expect(page.locator('[data-testid^="hero-action-"]')).toHaveCount(0);
-    for (const href of ["/creator", "/creator/recipes", "/creator/links"]) {
+    for (const href of ["/heroi", "/heroi/receitas", "/heroi/vinculos"]) {
       await expect(page.locator(`main a[href="${href}"]`)).toHaveCount(0);
     }
     await button.click();
-    await expect(page).toHaveURL(/\/creator\/post\/new$/);
+    await expect(page).toHaveURL(/\/heroi\/post\/novo$/);
   });
 
   test("as telas de gestão do portal voltam ao Perfil", async ({ page }) => {
     await loginAs(page, "creator");
-    for (const path of ["/creator", "/creator/links"]) {
+    for (const path of ["/heroi", "/heroi/vinculos"]) {
       await page.goto(path);
       await expect(page, path).toHaveURL(/\/profile$/);
     }

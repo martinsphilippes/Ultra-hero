@@ -129,8 +129,8 @@ test.describe("admin: categorias dos heróis (só leitura)", () => {
 
   test("a tela do herói mostra o campo Categorias (até 2, em ordem)", async ({ page }) => {
     await loginAs(page, "admin");
-    await page.goto("/admin/creators");
-    await page.locator('main a[href^="/admin/creators/"]').filter({ hasText: "Anitta" }).first().click();
+    await page.goto("/admin/herois");
+    await page.locator('main a[href^="/admin/herois/"]').filter({ hasText: "Anitta" }).first().click();
     await expect(page.getByRole("heading", { level: 1, name: "Anitta" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Categorias" })).toBeVisible();
     const field = page.getByTestId("hero-categories-field");

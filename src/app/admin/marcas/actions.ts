@@ -164,7 +164,7 @@ export async function saveCreatorBrandsAction(creatorId: string, items: unknown[
       p_items: list.value.map((i) => ({ brand_id: i.id, relationship: i.relationship, status: i.status })),
     });
     if (error) return fail(error);
-    revalidatePath(`/admin/creators/${id.data}`);
+    revalidatePath(`/admin/herois/${id.data}`);
     revalidatePublic();
     const t = await getTranslations("adminOps.brands.links");
     return { ok: true, message: t("saved") };

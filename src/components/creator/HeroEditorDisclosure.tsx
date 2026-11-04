@@ -9,7 +9,7 @@ import { Button } from "@/components/ui";
 
 // "Editar perfil" no topo do /profile, como no Instagram (todas as contas; o herói tem também o perfil
 // público): o editor completo fica recolhido logo abaixo do botão, na mesma tela. Abre pelo botão, pelo endereço /profile#perfil-publico (o
-// antigo /creator/profile redireciona para lá), pelo atalho em Dados e sozinho quando um formulário
+// antigo /heroi/pagina redireciona para lá), pelo atalho em Dados e sozinho quando um formulário
 // de dentro mostra erro (erro escondido ninguém corrige).
 
 const OPEN_EVENT = "hero-editor:open";

@@ -2,7 +2,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { decideCreatorCredentials } from "@/app/admin/creators/credentials-actions";
+import { decideCreatorCredentials } from "@/app/admin/herois/credentials-actions";
 import { setReviewRequiredAction } from "@/app/admin/content-actions";
 import { isStructuredRecipeMarker, summarizeBody, summarizeRecipeRows } from "@/components/admin-content/lib/body-summary";
 import { reviewChangeAllowed, reviewToggle } from "@/components/admin-content/lib/review-required";

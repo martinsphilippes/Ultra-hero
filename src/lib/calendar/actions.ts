@@ -75,7 +75,7 @@ export async function deleteEventAction(input: { id: string; dealId?: string | n
   }
 }
 
-const PORTAL_PATH: Record<FeedPortal, string> = { agency: "/agencia/agenda", brand: "/marca/agenda", office: "/creator/escritorio/agenda", hero: "/creator/agenda" };
+const PORTAL_PATH: Record<FeedPortal, string> = { agency: "/agencia/agenda", brand: "/marca/agenda", office: "/heroi/agenda", hero: "/heroi/agenda" };
 const fail = (portal: FeedPortal, error: unknown) => (portal === "office" ? talentFail(error) : agencyFail(error));
 
 /** Gera (ou troca) o link do feed: o token volta uma vez; o banco guarda só o SHA-256. */

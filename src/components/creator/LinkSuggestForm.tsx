@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, useTransition } from "react";
-import { searchProducts, suggestLink, type ProductHit } from "@/app/creator/(hero)/links/actions";
+import { searchProducts, suggestLink, type ProductHit } from "@/app/heroi/vinculos/actions";
 import { Button, FormField, Input, Select, Spinner, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/i18n/format";

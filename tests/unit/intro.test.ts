@@ -94,7 +94,7 @@ describe("abertura animada: quando mostrar", () => {
     for (const path of ["/", "/login", "/signup", "/explore", "/programs/abc", "/personalities/x/produtos", "/profile", "/recipes", "/shop", "/cart"]) {
       expect(run({ path }).intro(), path).toBe("play");
     }
-    for (const path of ["/admin", "/creator/posts", "/seller", "/checkout", "/legal/terms", "/verify", "/offline", "/loginx", "/api/health"]) {
+    for (const path of ["/admin", "/heroi/posts", "/seller", "/checkout", "/legal/terms", "/verify", "/offline", "/loginx", "/api/health"]) {
       expect(run({ path }).intro(), path).toBeNull();
     }
   });

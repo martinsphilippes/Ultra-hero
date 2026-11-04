@@ -134,7 +134,7 @@ export default async function BrandDashboardPage() {
           </Button>
         ) : null}
         <Button asChild size="sm" variant="secondary" leadingIcon={<Search />}>
-          <Link href="/marca/creators">{t("seeCreators")}</Link>
+          <Link href="/marca/herois">{t("seeCreators")}</Link>
         </Button>
         <Button asChild size="sm" variant="secondary">
           <Link href="/marca/campanhas">{t("seeCampaigns")}</Link>
@@ -159,7 +159,7 @@ export default async function BrandDashboardPage() {
                 {dash.suggested.map((card) => (
                   <li key={card.dealTalentId} className="flex flex-col gap-1">
                     <span className="type-caption text-fg-muted">{card.dealTitle}</span>
-                    <TalentCardCompact card={card} href={`/marca/creators/${card.id}`} />
+                    <TalentCardCompact card={card} href={`/marca/herois/${card.id}`} />
                   </li>
                 ))}
               </ul>

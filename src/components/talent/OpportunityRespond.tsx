@@ -3,7 +3,7 @@
 import { MessageCircle, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { respondOpportunityAction } from "@/app/creator/escritorio/actions";
+import { respondOpportunityAction } from "@/app/heroi/(agencia)/actions";
 import { Button, FormField, Textarea, useToast } from "@/components/ui";
 import type { TalentResponse } from "@/lib/deals/vocab";
 

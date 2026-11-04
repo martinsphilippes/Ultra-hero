@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { chooseMyHero } from "@/app/creator/(hero)/content/hero-actions";
+import { chooseMyHero } from "@/app/heroi/conteudos/hero-actions";
 import { EntitySelect, FormField } from "@/components/ui";
 import { heroOption } from "@/lib/ui/entity";
 

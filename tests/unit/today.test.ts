@@ -223,11 +223,11 @@ describe("Hoje do creator", () => {
   it("ajustes (entrega e roteiro), oferta com prazo, entrega próxima e termos, com links diretos e ordem por urgência", () => {
     const items = buildTalentToday(data, NOW);
     expect(items.map((i) => i.key)).toEqual(["task:late", "task:solo", "deliverable:soon", "offer:dt9", "terms:terms1:dt2", "adjustment:adj", "scriptAdjustment:s4"]);
-    expect(items.find((i) => i.kind === "adjustment")).toMatchObject({ href: "/creator/escritorio/oportunidades/dt1#opp-execution", note: "Trocar a trilha", urgency: "soon" });
-    expect(items.find((i) => i.kind === "scriptAdjustment")).toMatchObject({ href: "/creator/escritorio/oportunidades/dt1#opp-tasks", step: 4 });
-    expect(items.find((i) => i.kind === "offer")).toMatchObject({ href: "/creator/escritorio/oportunidades/dt9", urgency: "soon" });
-    expect(items.find((i) => i.kind === "terms")).toMatchObject({ href: "/creator/escritorio/oportunidades/dt2#opp-terms", urgency: "soon" });
-    expect(items.find((i) => i.key === "task:late")?.href).toBe("/creator/escritorio/tarefas");
+    expect(items.find((i) => i.kind === "adjustment")).toMatchObject({ href: "/heroi/oportunidades/dt1#opp-execution", note: "Trocar a trilha", urgency: "soon" });
+    expect(items.find((i) => i.kind === "scriptAdjustment")).toMatchObject({ href: "/heroi/oportunidades/dt1#opp-tasks", step: 4 });
+    expect(items.find((i) => i.kind === "offer")).toMatchObject({ href: "/heroi/oportunidades/dt9", urgency: "soon" });
+    expect(items.find((i) => i.kind === "terms")).toMatchObject({ href: "/heroi/oportunidades/dt2#opp-terms", urgency: "soon" });
+    expect(items.find((i) => i.key === "task:late")?.href).toBe("/heroi/tarefas");
     expect(Object.values(countByKind(items, TALENT_TODAY_KINDS)).reduce((a, b) => a + b, 0)).toBe(items.length);
   });
   it("entrega longe fica fora", () => {

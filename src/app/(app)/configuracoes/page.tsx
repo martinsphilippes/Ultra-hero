@@ -4,7 +4,6 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import {
   BadgeCheck,
-  BriefcaseBusiness,
   Building2,
   Bell,
   BellRing,
@@ -55,7 +54,7 @@ const ICONS: Record<SettingsItem["key"], LucideIcon> = {
   seller: Store,
   professional: Stethoscope,
   agency: Building2,
-  office: BriefcaseBusiness,
+  creator: Sparkles,
   brand: BadgeCheck,
   admin: ShieldCheck,
 };

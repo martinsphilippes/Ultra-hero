@@ -151,7 +151,7 @@ test.describe("produto correspondente no editor (admin pelo herói da conta demo
     await purgeTestRecipes(page, titlePrefix);
     const title = `${titlePrefix} ${Date.now()}`;
     try {
-      await page.goto("/creator/recipes/new");
+      await page.goto("/heroi/receitas/nova");
       // só preenche depois da hidratação (antes disso o React refaz os campos e o clique se perde)
       await expect(page.getByTestId("recipe-wizard")).toHaveAttribute("data-ready", "true", { timeout: 20_000 });
       await page.getByTestId("recipe-title").fill(title);
@@ -161,7 +161,7 @@ test.describe("produto correspondente no editor (admin pelo herói da conta demo
       await page.getByTestId("recipe-prep").fill("5");
       await page.getByTestId("recipe-cook").fill("10");
       await page.getByTestId("recipe-next").click();
-      await expect(page).toHaveURL(/\/creator\/recipes\/[0-9a-f-]+\/edit\?step=ingredientes$/, { timeout: 30_000 });
+      await expect(page).toHaveURL(/\/heroi\/receitas\/[0-9a-f-]+\/editar\?step=ingredientes$/, { timeout: 30_000 });
 
       await page.getByTestId("add-ingredient").click();
       await page.getByTestId("ingredient-name").nth(0).fill("Azeite");

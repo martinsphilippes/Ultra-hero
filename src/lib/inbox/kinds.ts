@@ -1,3 +1,5 @@
+import { isHeroPortalLink, legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
+
 // Tipos de aviso do sino (0064, inbox_notifications.kind). Espelha o check da tabela e
 // public.inbox_kind_pushes: só avisos do escritório do creator viram push (opt-in).
 export const INBOX_KINDS = [
@@ -79,9 +81,10 @@ export function isInboxKind(value: unknown): value is InboxKind {
   return typeof value === "string" && (INBOX_KINDS as readonly string[]).includes(value);
 }
 
-/** O aviso vira push? Só os tipos do escritório e só com link do escritório (mesma regra do banco). */
+/** O aviso vira push? Só os tipos do Portal do Herói e só com link do portal (mesma regra do banco, que ainda grava
+ *  /creator/escritorio/...). */
 export function inboxKindPushes(kind: string, link: string): boolean {
-  return (PUSH_KINDS as readonly string[]).includes(kind) && link.startsWith("/creator/escritorio");
+  return (PUSH_KINDS as readonly string[]).includes(kind) && isHeroPortalLink(link);
 }
 
 /**
@@ -91,7 +94,7 @@ export function inboxKindPushes(kind: string, link: string): boolean {
  */
 export function inboxKindEmails(kind: string, link: string, params: Record<string, unknown> = {}): boolean {
   const status = typeof params.status === "string" ? params.status : "";
-  const office = link.startsWith("/creator/escritorio");
+  const office = isHeroPortalLink(link);
   switch (kind) {
     case "opportunity_received":
       return office;
@@ -144,5 +147,11 @@ export function inboxParams(raw: unknown): Record<string, string> {
 
 /** Link interno seguro (o banco já confere o formato; aqui é a última barreira antes do <a>). */
 export function safeInboxLink(link: unknown): string {
-  return typeof link === "string" && /^\/[A-Za-z0-9/_?=&%#.-]*$/.test(link) && !link.startsWith("//") ? link : "/";
+  if (!(typeof link === "string" && /^\/[A-Za-z0-9/_?=&%#.-]*$/.test(link) && !link.startsWith("//"))) return "/";
+  // 0097: o banco ainda grava os links do escritório antigo (/creator/escritorio/...); o sino e o e-mail já mostram o
+  // endereço do Portal do Herói (o middleware também redireciona, para links já enviados)
+  const cut = link.search(/[?#]/);
+  const path = cut === -1 ? link : link.slice(0, cut);
+  const target = legacyHeroPortalTarget(path);
+  return target ? `${target}${cut === -1 ? "" : link.slice(cut)}` : link;
 }

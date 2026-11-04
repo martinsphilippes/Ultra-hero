@@ -181,7 +181,7 @@
     "final": "Passou a valer",
     "before": "Verba atual",
     "counter": "Valor proposto pela agência",
-    "talentsLine": "Verba por creator pedida:",
+    "talentsLine": "Verba por herói pedida:",
     "reasonLabel": "Motivo",
     "status": {
       "pending_owner": "Esperando o dono",
@@ -206,7 +206,7 @@
     "plan": {
       "title": "Realinhamento proposto",
       "empty": "Sem mudanças além do valor.",
-      "creators": "Creators",
+      "creators": "Heróis",
       "deliverables": "Entregas",
       "period": "Período previsto",
       "schedule": "Datas e etapas",
@@ -255,7 +255,7 @@
     "newAmountHint": "Verba atual: {amount}.",
     "reason": "Motivo",
     "reasonHint": "Por que mudar? A agência lê antes de decidir.",
-    "talentsTitle": "Verba por creator (opcional)",
+    "talentsTitle": "Verba por herói (opcional)",
     "talentsHint": "Mude só o que precisar; o resto continua igual.",
     "amountInvalid": "Informe um valor válido.",
     "reasonShort": "Explique o motivo (pelo menos 5 letras).",
@@ -275,12 +275,12 @@
     "agencyDeclineHint": "A marca recebe o aviso com o motivo. A verba atual continua valendo.",
     "proposeHint": "Diga o que muda com a nova verba. A marca confirma; o que não for automático vira tarefa deste negócio.",
     "counterHint": "Deixe vazio para aceitar o valor pedido.",
-    "creatorsHint": "Manter ou remover os creators do negócio; adicionar novos pelo nome.",
-    "creatorName": "Nome do creator",
+    "creatorsHint": "Manter ou remover os heróis do negócio; adicionar novos pelo nome.",
+    "creatorName": "Nome do herói",
     "creatorAction": "O que fazer",
     "removeRow": "Tirar",
     "creatorNote": "Nota",
-    "addCreator": "Adicionar creator",
+    "addCreator": "Adicionar herói",
     "changeDeliverables": "Mudar as entregas",
     "periodHint": "Hoje: {start} a {end}. Deixe vazio para não mudar.",
     "periodStart": "Início",
@@ -290,7 +290,7 @@
     "agencyNote": "Mensagem para a marca",
     "agencyNoteHint": "Opcional.",
     "planErrors": {
-      "creator_name": "Dê um nome a cada creator adicionado.",
+      "creator_name": "Dê um nome a cada herói adicionado.",
       "period_order": "O fim do período vem antes do início.",
       "too_long": "Algum texto passou do limite."
     }

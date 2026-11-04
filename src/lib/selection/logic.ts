@@ -37,7 +37,7 @@ export function toggleCompare(ids: readonly string[], id: string): string[] {
 
 export const canCompare = (ids: readonly string[]) => ids.length >= COMPARE_MIN && ids.length <= COMPARE_MAX;
 
-export const compareHref = (ids: readonly string[]) => `/marca/creators/comparar?ids=${ids.join(",")}`;
+export const compareHref = (ids: readonly string[]) => `/marca/herois/comparar?ids=${ids.join(",")}`;
 
 export type Period = {
   kind: "available" | "blocked";

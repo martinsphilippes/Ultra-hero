@@ -26,7 +26,7 @@ type Options = {
 export async function purgeTestRecipes(page: Page, prefix: string, { title }: Options = {}): Promise<number> {
   let removed = 0;
   for (let i = 0; i < 12; i++) {
-    await page.goto(`/creator/recipes?q=${encodeURIComponent(title ?? prefix)}`);
+    await page.goto(`/heroi/receitas?q=${encodeURIComponent(title ?? prefix)}`);
     const menus = page.getByTestId("recipe-row-menu");
     const labels = await menus.evaluateAll((els) => els.map((el) => el.getAttribute("aria-label") ?? ""));
     const index = labels.findIndex((label) => {
@@ -52,6 +52,6 @@ export async function purgeTestRecipes(page: Page, prefix: string, { title }: Op
 
 /** Confere que nenhuma receita desta execução sobrou (o título exato não aparece mais na lista). */
 export async function expectNoTestRecipe(page: Page, title: string) {
-  await page.goto(`/creator/recipes?q=${encodeURIComponent(title)}`);
+  await page.goto(`/heroi/receitas?q=${encodeURIComponent(title)}`);
   await expect(page.getByTestId("recipes-count")).toHaveText("Nenhuma receita");
 }

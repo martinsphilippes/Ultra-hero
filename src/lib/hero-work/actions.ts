@@ -16,7 +16,7 @@ import { heroEventSchema, heroServiceSchema, isProofPath, PROOF_MIME_TYPES, type
 
 export type HeroWorkResult = { ok: true; message: string; id?: string; url?: string; checklist?: { text: string; done: boolean }[] } | { ok: false; error: string };
 
-const PATHS = ["/creator/agenda", "/creator/financeiro", "/profile"] as const;
+const PATHS = ["/heroi/agenda", "/heroi/financeiro", "/profile"] as const;
 function refresh() {
   for (const path of PATHS) revalidatePath(path);
 }

@@ -1,9 +1,9 @@
 {
   "title": "Briefing do conteúdo",
-  "hint": "O que o creator precisa colocar no post. Separe por espaço, vírgula ou linha.",
+  "hint": "O que o herói precisa colocar no post. Separe por espaço, vírgula ou linha.",
   "saved": "Briefing salvo.",
   "save": "Salvar briefing",
-  "agencyHint": "O creator vê este briefing junto das entregas e confere cada item antes de enviar.",
+  "agencyHint": "O herói vê este briefing junto das entregas e confere cada item antes de enviar.",
   "invalid": "Não entrou: {items}",
   "empty": "Sem briefing estruturado.",
   "fields": {
@@ -55,13 +55,13 @@
     "link": "Coloquei o link {value}",
     "coupon": "Coloquei o cupom {value}",
     "donts": "Não fiz nada da lista “o que não fazer”",
-    "recordedTalent": "{count, plural, one {O creator conferiu # item} other {O creator conferiu # itens}}",
+    "recordedTalent": "{count, plural, one {O herói conferiu # item} other {O herói conferiu # itens}}",
     "recordedBrand": "{count, plural, one {Marca conferiu # item de publicidade} other {Marca conferiu # itens de publicidade}}",
     "show": "Ver itens"
   },
   "templates": {
     "title": "Começar de um modelo",
-    "hint": "Modelos guardam objetivo, público, entregáveis e briefing. Sem título, datas, creator e valor.",
+    "hint": "Modelos guardam objetivo, público, entregáveis e briefing. Sem título, datas, herói e valor.",
     "use": "Usar",
     "delete": "Apagar",
     "deleteConfirm": "Apagar o modelo “{name}”?",
@@ -70,7 +70,7 @@
     "used": "Rascunho criado a partir do modelo.",
     "saveAs": "Salvar como modelo",
     "dialogTitle": "Salvar como modelo",
-    "dialogHint": "Guarda objetivo, público, entregáveis e briefing. Sem título, datas, creator e valor.",
+    "dialogHint": "Guarda objetivo, público, entregáveis e briefing. Sem título, datas, herói e valor.",
     "nameLabel": "Nome do modelo",
     "nameHint": "Com o mesmo nome, o modelo antigo é substituído.",
     "nameInvalid": "Use de 3 a 80 caracteres.",

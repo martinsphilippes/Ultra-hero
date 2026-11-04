@@ -172,7 +172,7 @@ describe("área depois do aceite", () => {
   it("primeiro convite aceito manda; item com erro é ignorado", () => {
     expect(portalHomeForAccepted([])).toBeNull();
     expect(portalHomeForAccepted([{ id: "x", error: "agency_member_elsewhere" } as never, { scope_type: "brand" }])).toBe("/marca");
-    expect(portalHomeForAccepted([{ scope_type: "talent" }])).toBe("/creator/escritorio");
+    expect(portalHomeForAccepted([{ scope_type: "talent" }])).toBe("/heroi");
     expect(portalHomeForAccepted([{ scope_type: "seller_org" }])).toBe("/seller");
     expect(portalHomeForAccepted([{ scope_type: "desconhecido" }])).toBeNull();
   });
