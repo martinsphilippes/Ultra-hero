@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { CultureHome } from "@/components/culture/CultureHomeCard";
 import { ArrowRight, Bell, FileSignature, Megaphone, Search, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -119,9 +117,6 @@ export default async function BrandDashboardPage() {
         </section>
       ) : null}
       {budgetOverview ? <BudgetOverview overview={budgetOverview} locale={locale} /> : null}
-      <Suspense fallback={null}>
-        <CultureHome portal="brand" />
-      </Suspense>
       <p className="flex items-start gap-2 rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="brand-inbox-note">
         <Bell className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
         {t("inboxNote")}

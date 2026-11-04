@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { CultureHome } from "@/components/culture/CultureHomeCard";
 import { BriefcaseBusiness, ClipboardList, Contact, Plus, UserPlus, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -61,9 +59,6 @@ export default async function AgencyDashboardPage() {
         <AgencySwitcher agencies={ctx.agencies.map((a) => ({ id: a.id, name: a.name, isDemo: a.isDemo }))} currentId={ctx.agency.id} />
       ) : null}
 
-      <Suspense fallback={null}>
-        <CultureHome portal="agency" />
-      </Suspense>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="agency-kpis">
         {deals ? <KpiCard label={t("kpi.deals")} value={deals.open} hint={t("kpi.dealsHint", { agency: deals.awaitingAgency, creator: deals.awaitingCreator })} tone={deals.awaitingAgency > 0 ? "danger" : "default"} /> : null}
         {deals ? <KpiCard label={t("kpi.confirmed")} value={deals.confirmed} /> : null}
