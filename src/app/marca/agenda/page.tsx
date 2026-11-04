@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { CalendarDays } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { AgendaCalendar } from "@/components/calendar/AgendaCalendar";
 import { AgendaTabs } from "@/components/culture/AgendaTabs";
-import { BrandQuickActions } from "@/components/brand-portal/BrandQuickActions";
+import { BrandAgenda } from "@/components/brand-portal/BrandAgenda";
 import { FeedCard } from "@/components/calendar/FeedCard";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { getOrigin } from "@/lib/auth/origin";
@@ -61,9 +60,8 @@ export default async function BrandAgendaPage({ searchParams }: Props) {
     <div className="flex flex-col gap-5" data-testid="brand-agenda">
       <PageHeader title={t("title")} description={ctx.agency ? t("description", { agency: ctx.agency.name }) : t("descriptionNoAgency")} />
       <AgendaTabs base="/marca/agenda" active="agenda" />
-      <BrandQuickActions canPropose={Boolean(ctx.role && ctx.agency)} />
       <AgendaFilterBar base="/marca/agenda" params={{ mes: monthKey(year, month) }} filters={gFilters} collections={groscove.collections} />
-      <AgendaCalendar events={items} timeZone={tz} portal="brand" year={year} month={month} today={zonedDayKey(new Date(), tz)} base="/marca/agenda" extraParams={agendaFilterParams(gFilters)} requestedDay={sp.dia} emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
+      <BrandAgenda canPropose={Boolean(ctx.role && ctx.agency)} events={items} timeZone={tz} year={year} month={month} today={zonedDayKey(new Date(), tz)} base="/marca/agenda" extraParams={agendaFilterParams(gFilters)} requestedDay={sp.dia} emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
       <p className="type-caption text-fg-muted">{t("note")}</p>
       {ctx.role ? <FeedCard portal="brand" origin={origin} state={feed} /> : null}
     </div>

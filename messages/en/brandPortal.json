@@ -55,7 +55,9 @@
     "suggestedNone": "No hero confirmed in the open campaigns yet.",
     "nextEventsTitle": "Upcoming dates",
     "nextEventsNone": "No date published in the coming days.",
-    "seeAgenda": "See agenda"
+    "seeAgenda": "See agenda",
+    "proposeOnDay": "Proposal on this day",
+    "proposeOnDayLabel": "New proposal for {date}"
   },
   "team": {
     "title": "Brand team",

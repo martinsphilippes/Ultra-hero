@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("newCampaign") };
 }
 
-type Props = { searchParams: Promise<{ creator?: string; evento?: string }> };
+type Props = { searchParams: Promise<{ creator?: string; evento?: string; data?: string }> };
 
 // Nova proposta: vazia ou já endereçada a um creator do catálogo (?creator=<id>, só se ele for do
 // catálogo autorizado), ou a partir de um modelo de briefing da marca (0080; só sem creator escolhido, porque o
@@ -55,7 +55,12 @@ export default async function NewCampaignPage({ searchParams }: Props) {
         calendarEventId: pre.calendarEventId,
         eventSegments: pre.segmentSlugs,
       }
-    : { ...EMPTY_CAMPAIGN, talentId: creator?.id ?? "" };
+    : {
+        ...EMPTY_CAMPAIGN,
+        talentId: creator?.id ?? "",
+        // dia escolhido na agenda da marca (?data=YYYY-MM-DD) já entra como início do período
+        ...(sp.data && /^\d{4}-\d{2}-\d{2}$/.test(sp.data) && !Number.isNaN(Date.parse(`${sp.data}T12:00:00Z`)) ? { periodStart: sp.data } : {}),
+      };
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={t("newTitle")} description={t("newDescription", { agency: ctx.agency.name })} backHref="/marca/campanhas" backLabel={t("title")} />

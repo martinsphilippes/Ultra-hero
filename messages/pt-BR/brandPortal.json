@@ -55,7 +55,9 @@
     "suggestedNone": "Nenhum herói confirmado nas campanhas abertas ainda.",
     "nextEventsTitle": "Próximas datas",
     "nextEventsNone": "Nenhuma data publicada nos próximos dias.",
-    "seeAgenda": "Ver agenda"
+    "seeAgenda": "Ver agenda",
+    "proposeOnDay": "Proposta neste dia",
+    "proposeOnDayLabel": "Nova proposta para {date}"
   },
   "team": {
     "title": "Equipe da marca",
