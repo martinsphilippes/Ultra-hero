@@ -15942,5 +15942,33 @@ delete from public.agencies where name like '%S109';
 delete from auth.users where id::text like 'a1090000-%';
 drop table t_s109;
 
+
+-- ================================================================ S110 · Calendário Groscove visível para marca fora da vitrine (0104)
+-- Marca nasce 'inactive' (fora da vitrine); o membro ativo lê o calendário e manifesta interesse; o removido não.
+\ir ../migrations/0104_calendario_marca_qualquer_status.sql
+select tests.su();
+insert into auth.users (id, email) values ('a1100000-0000-4000-8000-000000000001','s110-dono@test.local'),('a1100000-0000-4000-8000-000000000002','s110-ex@test.local');
+insert into public.brands (id, slug, name, site_url, status) values ('a1100000-0000-4000-8000-0000000000b1','s110-marca','Marca S110','https://m.s110.test','inactive');
+insert into public.brand_members (brand_id, user_id, role, display_name) values ('a1100000-0000-4000-8000-0000000000b1','a1100000-0000-4000-8000-000000000001','owner','Dono S110');
+insert into public.brand_members (brand_id, user_id, role, display_name, revoked_at) values ('a1100000-0000-4000-8000-0000000000b1','a1100000-0000-4000-8000-000000000002','staff','Ex S110', now());
+insert into public.calendar_events (id, scope, kind, title, starts_at, ends_at, all_day, status, published_at, source, source_key)
+values ('a1100000-0000-4000-8000-0000000000e1','platform','institutional','Evento S110', now() + interval '2 days', now() + interval '3 days', true, 'published', now() - interval '1 hour', 'manual', 's110-evento');
+select tests.login('a1100000-0000-4000-8000-000000000001','s110-dono@test.local');
+select tests.ok('S110 dono de marca fora da vitrine (inactive) lê o Calendário Groscove',
+  (select count(*) from public.calendar_events where id = 'a1100000-0000-4000-8000-0000000000e1') = 1);
+select tests.ok('S110 a marca entra em "minhas marcas"', 'a1100000-0000-4000-8000-0000000000b1'::uuid = any (public.my_member_brand_ids()));
+select tests.ok('S110 dono manifesta interesse pela marca',
+  public.platform_event_set_interest('a1100000-0000-4000-8000-0000000000e1', 'brand', 'a1100000-0000-4000-8000-0000000000b1', true) = 'interested');
+select tests.login('a1100000-0000-4000-8000-000000000002','s110-ex@test.local');
+select tests.ok('S110 membro removido da marca não lê o calendário',
+  (select count(*) from public.calendar_events where id = 'a1100000-0000-4000-8000-0000000000e1') = 0);
+select tests.expect_error('S110 membro removido não manifesta interesse',
+  $q$select public.platform_event_set_interest('a1100000-0000-4000-8000-0000000000e1', 'brand', 'a1100000-0000-4000-8000-0000000000b1', true)$q$, 'not_found');
+select tests.su();
+delete from public.calendar_event_interests where event_id = 'a1100000-0000-4000-8000-0000000000e1';
+delete from public.calendar_events where id = 'a1100000-0000-4000-8000-0000000000e1';
+delete from public.brands where id = 'a1100000-0000-4000-8000-0000000000b1';
+delete from auth.users where id::text like 'a1100000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
