@@ -170,6 +170,8 @@ export function buildBrandBoard(wb: Pick<BrandWorkboard, "campaigns" | "talents"
         continue;
       }
       for (const d of delivs) {
+        // campanha concluída: entrega que nunca foi produzida não fica "em criação" (negócio encerrado à força, 04/11)
+        if (c.brandStatus === "done" && (d.status === "planned" || d.status === "in_production")) continue;
         const stage = deliverableStage(d.status, production);
         if (!stage) continue;
         out[stage].push({
