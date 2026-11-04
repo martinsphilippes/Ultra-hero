@@ -382,7 +382,9 @@
     "talent_agency_mismatch": "This hero isn't in this agency's casting.",
     "payment_terms_required": "Before sending the terms, the Admin must set the payment terms (agreed amount, method and dates).",
     "agreed_below_payouts": "The agreed amount does not cover the heroes' fees. Review the amount or the fees.",
-    "plan_locked": "The contract is already confirmed: adjust the installments in Finance › Brand payments."
+    "plan_locked": "The contract is already confirmed: adjust the installments in Finance › Brand payments.",
+    "nda_required": "Sign the NDA to enter the room.",
+    "room_archived": "The project room is archived."
   },
   "casting": {
     "title": "Roster",
@@ -645,7 +647,9 @@
       "documents": "Documents",
       "terms": "Terms",
       "tasks": "Tasks",
-      "roadmap": "Plan"
+      "roadmap": "Plan",
+      "room": "Room",
+      "closing": "Closing"
     },
     "sections": {
       "request": "Brand proposal",

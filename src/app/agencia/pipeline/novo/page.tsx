@@ -17,8 +17,12 @@ export async function generateMetadata(): Promise<Metadata> {
 // Negócio aberto pela própria agência (briefing recebido fora do portal): cria o pedido de origem
 // "agência" e o negócio em "briefing recebido". A marca só vê quando a agência confirmar.
 // 0107: o cliente pode ser a marca, o herói (ficha do casting) ou os dois; escolher o serviço gera o roteiro na hora.
-export default async function NewDealPage() {
+type Props = { searchParams: Promise<{ marca?: string; heroi?: string; servico?: string }> };
+
+// 0110: ?marca=&heroi=&servico=<slug> vêm do "próximo negócio" sugerido no clipping (só preenchem; a agência confere).
+export default async function NewDealPage({ searchParams }: Props) {
   const ctx = await requireAgency("manager");
+  const sp = await searchParams;
   const [t, brands, team, talents, services] = await Promise.all([
     getTranslations("agency.pipeline"),
     listAgencyBrands(ctx.agency.id),
@@ -27,12 +31,16 @@ export default async function NewDealPage() {
     listServices(ctx.agency.id, { activeOnly: true }),
   ]);
   const clientTalents = talents.items.map((x) => ({ id: x.id, name: x.name, city: x.city, state: x.state, avatarUrl: x.hero?.avatarUrl ?? null }));
+  const brandPick = brands.find((b) => b.brand.id === sp.marca)?.brand.id ?? null;
+  const talentPick = clientTalents.find((x) => x.id === sp.heroi)?.id ?? "";
+  const servicePick = services.items.find((x) => x.slug === sp.servico)?.id ?? "";
+  const prefill = brandPick || talentPick || servicePick ? { client: brandPick && talentPick ? ("both" as const) : talentPick ? ("talent" as const) : ("brand" as const), talentId: talentPick, serviceId: servicePick } : undefined;
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={t("newTitle")} description={t("newDescription")} backHref="/agencia/pipeline" backLabel={t("title")} />
       <section className="rounded-2xl border border-border bg-surface p-4 sm:p-5">
         <DealForm
-          initial={{ brandId: brands[0]?.brand.id ?? "", title: "", talentBrief: "", expectedStart: "", expectedEnd: "", ownerId: "", notes: "" }}
+          initial={{ brandId: brandPick ?? brands[0]?.brand.id ?? "", title: "", talentBrief: "", expectedStart: "", expectedEnd: "", ownerId: "", notes: "" }}
           dealId={null}
           brands={brands.map((b) => ({ id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl }))}
           members={team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle }))}
@@ -40,6 +48,7 @@ export default async function NewDealPage() {
           canSetOwner
           talents={clientTalents}
           services={services.items.map((x) => ({ id: x.id, name: x.name, clientKind: x.clientKind, slaDays: x.slaDays }))}
+          prefill={prefill}
         />
         {brands.length === 0 && clientTalents.length === 0 ? <p className="mt-3 type-body-sm text-fg-muted">{t("noBrands")}</p> : null}
       </section>

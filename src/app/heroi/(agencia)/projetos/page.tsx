@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { ListChecks } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { MyRoomsList } from "@/components/project-room/MyRoomsList";
 import { ClientProjectCard } from "@/components/roadmap/ClientProjectCard";
 import { EmptyState } from "@/components/ui";
+import { getMyRooms } from "@/lib/project-room/queries";
 import { getClientProjects } from "@/lib/roadmap/queries";
 import { getTalentContext } from "@/lib/talent/server";
 
@@ -18,7 +20,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HeroProjectsPage() {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
-  const [t, list] = await Promise.all([getTranslations("roadmap.hero"), getClientProjects()]);
+  const [t, tr, list, rooms] = await Promise.all([getTranslations("roadmap.hero"), getTranslations("projectRoom.mine"), getClientProjects(), getMyRooms()]);
+  // 0110: salas dos projetos em que o herói é cliente ou foi contratado (abertas)
+  const myRooms = rooms.items.filter((r) => r.side === "talent");
   if (!list.available) {
     return (
       <div className="rounded-2xl border border-border bg-surface" data-testid="module-unavailable">
@@ -28,6 +32,15 @@ export default async function HeroProjectsPage() {
   }
   return (
     <div className="flex flex-col gap-4" data-testid="hero-projects">
+      {myRooms.length > 0 ? (
+        <section className="flex flex-col gap-2" aria-labelledby="hero-rooms">
+          <h2 id="hero-rooms" className="text-base font-semibold text-fg">
+            {tr("heroTitle")}
+          </h2>
+          <p className="type-body-sm text-fg-muted">{tr("heroHint")}</p>
+          <MyRoomsList rooms={myRooms} portal="talent" />
+        </section>
+      ) : null}
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold text-fg">{t("title")}</h2>
         <p className="type-body-sm text-fg-muted">{t("description")}</p>

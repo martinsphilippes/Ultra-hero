@@ -3,7 +3,7 @@ import { drainEmailOutbox } from "@/lib/email/outbox";
 import { collectYouTubeMetrics } from "@/lib/media/youtube-collect";
 import { drainPushOutbox } from "@/lib/push/dispatch";
 import { runCronJob } from "../_lib/cron";
-import { cleanupAgencyDocOrphans } from "../_lib/agency-docs";
+import { cleanupAgencyDocOrphans, cleanupRoomOrphans } from "../_lib/agency-docs";
 
 // Gestão (0069), diário: alerta de creator sem contato há N dias (1×/semana) e de tarefa vencida (1×/dia),
 // limpeza de avisos antigos e de documentos pendentes, e o envio das notificações push que isso gerou.
@@ -100,6 +100,12 @@ async function handler(request: Request) {
       Object.assign(out, await cleanupAgencyDocOrphans(admin));
     } catch (error) {
       out.docs_orphans_error = error instanceof Error ? error.message : String(error);
+    }
+    // 0110: arquivos da sala do projeto reservados e nunca publicados
+    try {
+      Object.assign(out, await cleanupRoomOrphans(admin));
+    } catch (error) {
+      out.room_orphans_error = error instanceof Error ? error.message : String(error);
     }
     try {
       out.email = dueSoon.error ? "not_migrated" : await drainEmailOutbox(admin, getOriginFromRequest(request), 20_000);

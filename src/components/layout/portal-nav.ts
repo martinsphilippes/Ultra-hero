@@ -1,6 +1,7 @@
 // Links dos portais (só href + chave de tradução; ícones ficam no componente cliente).
 // "creator" é a chave interna do Portal do Herói (0097: portal único em /heroi, com barra lateral e menu no celular).
-export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand";
+// "project" (0110): portal mínimo do staff externo (fotógrafo, maquiador…) em /projetos — só as salas em que foi chamado.
+export type Portal = "admin" | "creator" | "seller" | "professional" | "agency" | "brand" | "project";
 
 // Raiz de cada portal (o do profissional mora em /profissional, em português como as rotas do app).
 export const PORTAL_ROOT: Record<Portal, string> = {
@@ -10,6 +11,7 @@ export const PORTAL_ROOT: Record<Portal, string> = {
   professional: "/profissional",
   agency: "/agencia",
   brand: "/marca",
+  project: "/projetos",
 };
 
 /** group: grupo do menu (textos em nav.groups.<group>); sem grupo, o item fica no topo. */
@@ -140,5 +142,10 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "payments", href: "/marca/pagamentos" },
     { key: "team", href: "/marca/equipe" },
     { key: "notifications", href: "/marca/notificacoes" },
+  ],
+  // Staff externo (0110): as salas dos projetos em que foi chamado e os avisos
+  project: [
+    { key: "projects", href: "/projetos" },
+    { key: "notifications", href: "/projetos/avisos" },
   ],
 };

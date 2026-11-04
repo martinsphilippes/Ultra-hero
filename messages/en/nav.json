@@ -12,7 +12,8 @@
     "seller": "Supplier",
     "professional": "Professional",
     "agency": "Agency",
-    "brand": "Brand"
+    "brand": "Brand",
+    "project": "Projects"
   },
   "admin": {
     "dashboard": "Dashboard",
@@ -94,7 +95,8 @@
     "seller": "Supplier area",
     "professional": "Professional area",
     "agency": "Agency workspace",
-    "brand": "Brand area"
+    "brand": "Brand area",
+    "project": "Projects you were invited to"
   },
   "backToProfile": "Profile",
   "agency": {
@@ -128,5 +130,9 @@
     "content": "Content",
     "work": "Work",
     "profile": "Profile"
+  },
+  "project": {
+    "projects": "My projects",
+    "notifications": "Notifications"
   }
 }

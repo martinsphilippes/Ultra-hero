@@ -2,6 +2,7 @@
 
 import {
   ArrowLeft,
+  MessagesSquare,
   BadgeCheck,
   Bell,
   BriefcaseBusiness,
@@ -117,6 +118,8 @@ const ICONS: Record<string, LucideIcon> = {
   portfolio: Images,
   documents: FileText,
   consent: ShieldCheck,
+  // Staff externo (0110)
+  projects: MessagesSquare,
 };
 
 function isActive(pathname: string, href: string, root: string) {

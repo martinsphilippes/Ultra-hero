@@ -33,3 +33,29 @@ export async function cleanupAgencyDocOrphans(admin: Admin, limit = 200): Promis
   }
   return { docs_orphans_deleted: deleted, docs_orphans_failed: failed };
 }
+
+export type RoomOrphansResult = { room_orphans_deleted: number; room_orphans_failed: number } | { room_orphans_skipped: "not_migrated" };
+
+/** 0110: arquivos da sala do projeto reservados e não publicados há mais de 24 h (mesmo caminho: Storage, depois linhas). */
+export async function cleanupRoomOrphans(admin: Admin, limit = 200): Promise<RoomOrphansResult> {
+  const { data, error } = await admin.rpc("project_room_orphans", { p_limit: limit });
+  if (error) {
+    if (error.code === "PGRST202" || error.code === "42883") return { room_orphans_skipped: "not_migrated" };
+    throw new Error(error.message);
+  }
+  const paths = ((data ?? []) as unknown[]).filter((p): p is string => typeof p === "string");
+  let deleted = 0;
+  let failed = 0;
+  for (let i = 0; i < paths.length; i += CHUNK) {
+    const chunk = paths.slice(i, i + CHUNK);
+    const { error: removeError } = await admin.storage.from(AGENCY_DOCS_BUCKET).remove(chunk);
+    if (removeError) {
+      failed += chunk.length;
+      continue;
+    }
+    const { data: purged, error: purgeError } = await admin.rpc("project_room_orphans_purge", { p_paths: chunk });
+    if (purgeError) failed += chunk.length;
+    else deleted += Number(purged ?? 0);
+  }
+  return { room_orphans_deleted: deleted, room_orphans_failed: failed };
+}

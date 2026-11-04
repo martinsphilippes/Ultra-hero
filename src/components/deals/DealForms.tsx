@@ -31,6 +31,7 @@ export function DealForm({
   canSetOwner,
   talents = [],
   services = [],
+  prefill,
 }: {
   initial: DealValues;
   dealId: string | null;
@@ -40,6 +41,8 @@ export function DealForm({
   canSetOwner: boolean;
   talents?: ClientTalent[];
   services?: ServiceOption[];
+  /** 0110: "próximo negócio" sugerido no clipping já chega com cliente, herói e serviço. */
+  prefill?: { client?: ClientKind; talentId?: string; serviceId?: string };
 }) {
   const t = useTranslations("agency.deal.form");
   const tr = useTranslations("roadmap.newDeal");
@@ -50,9 +53,9 @@ export function DealForm({
   const { toast } = useToast();
   const [v, setV] = useState(initial);
   // 0107: cliente = marca, herói ou os dois; serviço opcional (gera o roteiro) e início do roteiro (vazio = hoje)
-  const [client, setClient] = useState<ClientKind>(brands.length > 0 || talents.length === 0 ? "brand" : "talent");
-  const [talentId, setTalentId] = useState("");
-  const [serviceId, setServiceId] = useState("");
+  const [client, setClient] = useState<ClientKind>(prefill?.client ?? (brands.length > 0 || talents.length === 0 ? "brand" : "talent"));
+  const [talentId, setTalentId] = useState(prefill?.talentId ?? "");
+  const [serviceId, setServiceId] = useState(prefill?.serviceId ?? "");
   const [startOn, setStartOn] = useState("");
   const fitting = services.filter((x) => serviceFitsClient(x.clientKind, client));
   const [error, setError] = useState<string | null>(null);

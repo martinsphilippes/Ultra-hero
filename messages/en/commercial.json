@@ -361,7 +361,9 @@
       "pick": "Choose the deliverable. The link to what you published is already filled in.",
       "submit": "Send as: {title}",
       "publish": "Record publication: {title}"
-    }
+    },
+    "previewOn": "Preview agreed for {date}",
+    "previewBadge": "Preview"
   },
   "finance": {
     "kinds": {

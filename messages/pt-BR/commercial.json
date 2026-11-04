@@ -361,7 +361,9 @@
       "pick": "Escolha a entrega. O link do que você publicou já vai preenchido.",
       "submit": "Enviar como: {title}",
       "publish": "Registrar publicação: {title}"
-    }
+    },
+    "previewOn": "Prévia combinada para {date}",
+    "previewBadge": "Prévia"
   },
   "finance": {
     "kinds": {

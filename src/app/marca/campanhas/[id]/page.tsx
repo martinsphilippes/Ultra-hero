@@ -11,6 +11,7 @@ import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
 import { DealOffer } from "@/components/deals/DealOffer";
 import { MessageThread } from "@/components/deals/MessageThread";
 import { NextStepCard } from "@/components/deals/NextStepCard";
+import { RoomLinkCard } from "@/components/project-room/RoomLinkCard";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { BrandStatusBadge, DeliverableStatusBadge } from "@/components/deals/StatusBadges";
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
@@ -38,6 +39,7 @@ import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
 import { brandBudgetChanges, brandBudgetSummary, dealPaymentPlan } from "@/lib/finance/queries";
 import { getDealMedia } from "@/lib/media/queries";
+import { getDealPreviews, getRoomAccess } from "@/lib/project-room/queries";
 import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { draftEditable } from "@/lib/selection/logic";
 import { listBrandSponsorships } from "@/lib/sponsorship/queries";
@@ -110,6 +112,8 @@ export default async function BrandCampaignPage({ params }: Props) {
   ]);
   // 0108: condições de pagamento combinadas com a agência (total, forma e parcelas; previsto até a contratação)
   const [paymentPlan, tplan] = await Promise.all([deal ? dealPaymentPlan(deal.id) : Promise.resolve(null), getTranslations("payments.plan")]);
+  // 0110: sala do projeto (aberta: link; arquivada: clipping) e prévias das entregas
+  const [roomAccess, previews] = await Promise.all([deal ? getRoomAccess(deal.id) : Promise.resolve(null), deal && inExecution ? getDealPreviews(deal.id) : Promise.resolve([])]);
   const mediaData = media?.available ? media.data : null;
   const today = localDay(new Date(), "America/Sao_Paulo");
   const linkRows = detail.talents
@@ -243,6 +247,7 @@ export default async function BrandCampaignPage({ params }: Props) {
       {shortlistNote}
       {sponsorshipNote}
       {callNote}
+      {deal && roomAccess?.exists ? <RoomLinkCard portal="brand" dealId={deal.id} access={roomAccess} /> : null}
       {!isDraft ? (
         <NextStepCard
           party="brand"
@@ -377,6 +382,8 @@ export default async function BrandCampaignPage({ params }: Props) {
                 canAct={canEdit && detail.brandStatus !== "cancelled"}
                 emptyText={t("deliverablesNone")}
                 media={mediaData ? { readings: mediaData.metrics, comments: mediaData.comments, youtubeConfigured: youTubeConfigured(), today } : null}
+                previewVersionIds={previews.flatMap((p) => p.versionIds)}
+                previewDates={Object.fromEntries(previews.filter((p) => p.previewOn).map((p) => [p.deliverableId, p.previewOn as string]))}
               />
             ) : detail.deliverables.length === 0 ? (
               <p className="type-body-sm text-fg-muted">{t("deliverablesNone")}</p>

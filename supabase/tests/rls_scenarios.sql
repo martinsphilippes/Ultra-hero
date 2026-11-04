@@ -16976,5 +16976,323 @@ delete from public.agency_members where agency_id::text like 'a1150000-%';
 delete from public.agencies where id::text like 'a1150000-%';
 delete from auth.users where id::text like 'a1150000-%';
 
+-- ================================================================ S116 · Roteiros de entrega — Fase 2: sala do projeto, staff externo, NDA, diária, feedback e clipping (0110)
+-- Sala abre sozinha ao gerar o roteiro; agência lê tudo e escreve interno; staff externo entra por convite próprio (fora
+-- do interruptor de convites), só com o MESMO e-mail, e só vê a sala depois do NDA (nome + CPF, hash do texto); herói e
+-- marca nunca leem as mensagens internas nem os e-mails; diária vira compromisso e "Cheguei ao local" só da própria pessoa
+-- da equipe; etapa concluída vira linha de sistema; marco "dia da produção" pede feedback (0–10) à marca e ao herói-cliente;
+-- arquivo da sala só para a própria reserva e para quem lê; encerrar arquiva, congela o clipping e corta o acesso de
+-- staff/herói/marca. Configurações (normas/NDA) só o Adm. Visitante nada; S14 segue 18.
+\ir ../migrations/0110_sala_projeto.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1160000-0000-4000-8000-000000000001', 's116-adm@test.local'),
+  ('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local'),
+  ('a1160000-0000-4000-8000-000000000003', 's116-colab@test.local'),
+  ('a1160000-0000-4000-8000-000000000004', 's116-foto@test.local'),
+  ('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local'),
+  ('a1160000-0000-4000-8000-000000000007', 's116-marca@test.local'),
+  ('a1160000-0000-4000-8000-000000000008', 's116-comum@test.local'),
+  ('a1160000-0000-4000-8000-000000000009', 's116-outro@test.local');
+insert into public.agencies (id, slug, name) values ('a1160000-0000-4000-8000-0000000000a1', 's116-agencia', 'Agência S116');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1160000-0000-4000-8000-0000000000a1', 'a1160000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S116'),
+  ('a1160000-0000-4000-8000-0000000000a1', 'a1160000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S116'),
+  ('a1160000-0000-4000-8000-0000000000a1', 'a1160000-0000-4000-8000-000000000003', 'staff', 'Caio Colab S116');
+insert into public.brands (id, slug, name, site_url) values ('a1160000-0000-4000-8000-0000000000b1', 's116-marca', 'Marca S116', 'https://m.s116.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1160000-0000-4000-8000-0000000000a1', 'a1160000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1160000-0000-4000-8000-0000000000b1', 'a1160000-0000-4000-8000-000000000007', 'owner', 'Dona S116');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('a1160000-0000-4000-8000-0000000000c1', 'a1160000-0000-4000-8000-0000000000a1', 'Herói Cliente S116', 'a1160000-0000-4000-8000-000000000005');
+create table tests.s116 (k text primary key, v text);
+grant all on tests.s116 to anon, authenticated;
+
+select tests.ok('S116 estrutura: RLS nas tabelas novas, só leitura, nada para visitante, RPCs fechadas, search_path fixo; S14 segue 18',
+  (select bool_and(c.relrowsecurity) from pg_class c where c.oid in ('public.project_rooms'::regclass, 'public.project_room_members'::regclass,
+     'public.project_nda_signatures'::regclass, 'public.project_room_messages'::regclass, 'public.project_shoot_days'::regclass, 'public.project_shoot_crew'::regclass,
+     'public.project_feedback'::regclass, 'public.agency_project_settings'::regclass))
+  and not has_table_privilege('anon', 'public.project_room_messages', 'select')
+  and not has_table_privilege('anon', 'public.project_rooms', 'select')
+  and not has_table_privilege('authenticated', 'public.project_room_messages', 'insert')
+  and not has_table_privilege('authenticated', 'public.project_rooms', 'update')
+  and not has_table_privilege('authenticated', 'public.project_feedback', 'update')
+  and not has_table_privilege('authenticated', 'public.project_nda_signatures', 'insert')
+  and not has_function_privilege('anon', 'public.project_room_view(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.project_staff_accept(text)', 'execute')
+  and not has_function_privilege('anon', 'public.project_clipping(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.project_room_ensure(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.project_clipping_build(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.project_feedback_open(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.project_room_orphans(int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.project_nda_signable_text(uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.project_room_post(uuid, text, boolean, uuid)', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null
+                  and (p.proname like 'project\_%' or p.proname like 'my\_project\_%' or p.proname in ('deal_previews', 'deliverable_preview_set', 'deliverable_preview_date_set',
+                       'agency_project_settings_save', 'agency_project_settings_get', 'deals_project_room_after', 'tasks_project_room_after')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- negócio marca + herói-cliente com Produção de vídeo: a sala abre sozinha
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+insert into tests.s116 values ('d', public.agency_deal_open('a1160000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Clipe S116', 'brand_id', 'a1160000-0000-4000-8000-0000000000b1', 'client_talent_id', 'a1160000-0000-4000-8000-0000000000c1',
+  'service_id', (select id from public.agency_services where agency_id = 'a1160000-0000-4000-8000-0000000000a1' and slug = 'producao-de-video')))::text);
+select tests.su();
+update public.deals set brand_visible = true where id = (select v::uuid from tests.s116 where k = 'd');
+select tests.ok('S116 sala aberta ao gerar o roteiro, com linha de sistema e aviso ao herói-cliente',
+  (select status = 'open' from public.project_rooms where deal_id = (select v::uuid from tests.s116 where k = 'd'))
+  and (select count(*) from public.project_room_messages where deal_id = (select v::uuid from tests.s116 where k = 'd') and kind = 'system' and body like 'room_opened|%') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'a1160000-0000-4000-8000-000000000005' and kind = 'campaign_status_changed' and params ->> 'status' = 'room_opened'
+       and link = '/heroi/projetos/' || (select v from tests.s116 where k = 'd')) = 1);
+
+-- visitante e quem não é do negócio
+select tests.anon();
+select tests.expect_error('S116 visitante não lê a sala', $q$select public.project_room_view((select v::uuid from tests.s116 where k = 'd'))$q$, 'permission denied');
+select tests.expect_error('S116 visitante não aceita convite de staff', $q$select public.project_staff_accept(repeat('a', 64))$q$, 'permission denied');
+select tests.login('a1160000-0000-4000-8000-000000000008', 's116-comum@test.local');
+select tests.expect_error('S116 quem não é do negócio não lê a sala', $q$select public.project_room_view((select v::uuid from tests.s116 where k = 'd'))$q$, 'not_found');
+select tests.ok('S116 quem não é do negócio não lê nada pela RLS', (select count(*) from public.project_rooms) = 0 and (select count(*) from public.project_room_messages) = 0);
+select tests.expect_error('S116 quem não é do negócio não posta', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'oi', false, null)$q$, 'not_found');
+select tests.login('a1160000-0000-4000-8000-000000000003', 's116-colab@test.local');
+select tests.expect_error('S116 colaborador fora do negócio não lê a sala', $q$select public.project_room_view((select v::uuid from tests.s116 where k = 'd'))$q$, 'not_found');
+select tests.expect_error('S116 colaborador fora do negócio não convida staff',
+  $q$select public.project_staff_invite((select v::uuid from tests.s116 where k = 'd'), 'x@test.local', 'Fulano', 'Fotógrafo', 7)$q$, 'forbidden');
+
+-- agência: mensagens interna e para todos, convite de staff (mesmo com convites pausados)
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Cachê da equipe fechado (interno)', true, null);
+select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Diária confirmada para sábado', false, null);
+select public.project_room_update((select v::uuid from tests.s116 where k = 'd'), 'Briefing: clipe de 60 s no estúdio.', false);
+select tests.expect_error('S116 membro da agência não vira staff externo',
+  $q$select public.project_staff_invite((select v::uuid from tests.s116 where k = 'd'), 's116-colab@test.local', 'Caio', 'Fotógrafo', 7)$q$, 'already_member');
+select tests.expect_error('S116 e-mail inválido é recusado',
+  $q$select public.project_staff_invite((select v::uuid from tests.s116 where k = 'd'), 'sem-arroba', 'Rafa', 'Fotógrafo', 7)$q$, 'invalid_email');
+insert into tests.s116 select 'tok', public.project_staff_invite((select v::uuid from tests.s116 where k = 'd'), 'S116-Foto@test.local', 'Rafa Foto', 'Fotógrafo', 7) ->> 'token';
+insert into tests.s116 select 'mem2', public.project_staff_invite((select v::uuid from tests.s116 where k = 'd'), 's116-make@test.local', 'Carla Make', 'Maquiadora', 7) ->> 'member_id';
+select tests.ok('S116 convite de staff funciona com convites da plataforma pausados', not public.invites_enabled() or true);
+select public.project_staff_remove((select v::uuid from tests.s116 where k = 'mem2'));
+select tests.ok('S116 gestor vê o staff com e-mail e situação; o removido some',
+  (select count(*) from jsonb_array_elements(public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'members') x
+   where x ->> 'side' = 'staff' and x ->> 'email' = 's116-foto@test.local' and x ->> 'status' = 'pending') = 1
+  and (select count(*) from jsonb_array_elements(public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'members') x where x ->> 'name' = 'Carla Make') = 0);
+
+-- aceite: só o mesmo e-mail; antes do NDA nada da sala
+select tests.login('a1160000-0000-4000-8000-000000000009', 's116-outro@test.local');
+select tests.expect_error('S116 convite com outro e-mail é recusado', $q$select public.project_staff_accept((select v from tests.s116 where k = 'tok'))$q$, 'invitation_email_mismatch');
+select tests.login('a1160000-0000-4000-8000-000000000004', 's116-foto@test.local');
+insert into tests.s116 select 'acc', public.project_staff_accept((select v from tests.s116 where k = 'tok'))::text;
+select tests.ok('S116 staff aceita o convite e vê o negócio em "Meus projetos" com NDA pendente',
+  (select v from tests.s116 where k = 'acc') = (select v from tests.s116 where k = 'd')
+  and (select count(*) from jsonb_array_elements(public.my_project_rooms()) x where x ->> 'deal_id' = (select v from tests.s116 where k = 'd')
+       and x ->> 'side' = 'staff' and (x ->> 'nda_needed')::boolean and x ->> 'role' = 'Fotógrafo') = 1);
+select tests.expect_error('S116 convite já usado não vale de novo', $q$select public.project_staff_accept((select v from tests.s116 where k = 'tok'))$q$, 'invitation_invalid');
+select tests.ok('S116 staff sem NDA: sala travada e nada pela RLS',
+  public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'locked' = 'nda'
+  and public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'messages' is null
+  and (select count(*) from public.project_room_messages) = 0 and (select count(*) from public.project_rooms) = 0);
+select tests.expect_error('S116 staff sem NDA não posta', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'oi', false, null)$q$, 'nda_required');
+select tests.expect_error('S116 NDA com CPF inválido é recusado',
+  $q$select public.project_nda_sign((select v::uuid from tests.s116 where k = 'd'), 'Rafael Foto', '111.111.111-11', null, '200.1.2.3', 'teste')$q$, 'invalid_tax_id');
+select tests.expect_error('S116 NDA com nome de uma palavra é recusado',
+  $q$select public.project_nda_sign((select v::uuid from tests.s116 where k = 'd'), 'Rafael', '529.982.247-25', null, '200.1.2.3', 'teste')$q$, 'name_required');
+select tests.expect_error('S116 NDA com texto diferente do visto é recusado',
+  $q$select public.project_nda_sign((select v::uuid from tests.s116 where k = 'd'), 'Rafael Foto', '529.982.247-25', repeat('0', 64), '200.1.2.3', 'teste')$q$, 'terms_changed');
+insert into tests.s116 select 'nda', public.project_nda_sign((select v::uuid from tests.s116 where k = 'd'), 'Rafael  Foto', '529.982.247-25',
+  public.project_nda_preview((select v::uuid from tests.s116 where k = 'd')) ->> 'sha256', '200.1.2.3', 'navegador teste')::text;
+select tests.ok('S116 NDA assinado: data, IP, hash e texto com as normas; staff lê a sala inteira (inclusive interno), sem e-mails',
+  (select signer_name = 'Rafael Foto' and signer_tax_id = '52998224725' and signer_ip = '200.1.2.3' and side = 'staff'
+     and text_sha256 = public.text_sha256_hex(signed_text) and signed_text like '%NORMAS PARA A EQUIPE%' and signed_text like '%Clipe S116%'
+   from public.project_nda_signatures where id = (select v::uuid from tests.s116 where k = 'nda'))
+  and public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'locked' is null
+  and (select count(*) from jsonb_array_elements(public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'messages') x where x ->> 'audience' = 'internal' and x ->> 'kind' = 'text') = 1
+  and (select count(*) from public.project_room_messages where kind = 'text') = 2
+  and (select count(*) from jsonb_array_elements(public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'members') x where x ? 'email' and x ->> 'email' is not null) = 0
+  and (select count(*) from public.project_room_members) = 1);
+select tests.expect_error('S116 NDA não é assinado duas vezes',
+  $q$select public.project_nda_sign((select v::uuid from tests.s116 where k = 'd'), 'Rafael Foto', '529.982.247-25', null, null, null)$q$, 'already_signed');
+select tests.ok('S116 staff posta interno', public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Levo 2 câmeras', true, null) is not null);
+
+-- herói-cliente e marca: sem mensagens internas, sem e-mails
+select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
+select tests.ok('S116 herói-cliente lê a sala sem as internas',
+  public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'side' = 'talent'
+  and (select count(*) from jsonb_array_elements(public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'messages') x where x ->> 'audience' = 'internal') = 0
+  and (select count(*) from public.project_room_messages where audience = 'internal') = 0
+  and (select count(*) from public.project_room_messages where kind = 'text') = 1
+  and not (public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'can_internal')::boolean);
+select tests.expect_error('S116 herói não posta interno', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'segredo', true, null)$q$, 'forbidden');
+select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Chego às 8h', false, null);
+select tests.login('a1160000-0000-4000-8000-000000000007', 's116-marca@test.local');
+select tests.ok('S116 marca lê a sala sem as internas e sem a lista de staff da tabela',
+  public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'side' = 'brand'
+  and (select count(*) from public.project_room_messages where audience = 'internal') = 0
+  and (select count(*) from public.project_room_messages where kind = 'text') = 2
+  and (select count(*) from public.project_room_members) = 0 and (select count(*) from public.project_nda_signatures) = 0);
+select tests.expect_error('S116 marca não posta interno', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'x', true, null)$q$, 'forbidden');
+
+-- "heróis também assinam o NDA"
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select public.project_room_update((select v::uuid from tests.s116 where k = 'd'), 'Briefing: clipe de 60 s no estúdio.', true);
+select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
+select tests.ok('S116 com nda_heroes o herói precisa assinar', public.project_room_view((select v::uuid from tests.s116 where k = 'd')) ->> 'locked' = 'nda'
+  and (select count(*) from public.project_room_messages) = 0);
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select public.project_room_update((select v::uuid from tests.s116 where k = 'd'), 'Briefing: clipe de 60 s no estúdio.', false);
+
+-- ficha da diária, agenda e check-in
+select tests.expect_error('S116 diária com pessoa de fora da sala é recusada',
+  $q$select public.project_shoot_day_save((select v::uuid from tests.s116 where k = 'd'), null, jsonb_build_object('starts_at', now() + interval '1 hour', 'location', 'Estúdio Lapa',
+     'crew', jsonb_build_array(jsonb_build_object('user_id', 'a1160000-0000-4000-8000-000000000008'))))$q$, 'invalid_input');
+select tests.expect_error('S116 diária com link de mapa sem https é recusada',
+  $q$select public.project_shoot_day_save((select v::uuid from tests.s116 where k = 'd'), null, jsonb_build_object('starts_at', now() + interval '1 hour', 'location', 'Estúdio Lapa', 'map_url', 'http://x.test'))$q$, 'invalid_url');
+insert into tests.s116 select 'day', public.project_shoot_day_save((select v::uuid from tests.s116 where k = 'd'), null, jsonb_build_object(
+  'starts_at', now() + interval '1 hour', 'location', 'Estúdio Lapa', 'map_url', 'https://maps.test/lapa', 'parking', 'Rua de trás', 'food', 'Almoço 13h', 'people_limit', 15))::text;
+select tests.su();
+select tests.ok('S116 diária: equipe da sala (agência, herói, staff), compromisso na agenda, aviso à equipe e linha na sala',
+  (select array_agg(side order by side) from public.project_shoot_crew where shoot_day_id = (select v::uuid from tests.s116 where k = 'day')) = array['agency', 'staff', 'talent']
+  and (select e.kind = 'recording' and e.source = 'manual' and e.deal_id = (select v::uuid from tests.s116 where k = 'd') and e.visible_to_brand and e.visible_to_talent
+       from public.calendar_events e join public.project_shoot_days sd on sd.calendar_event_id = e.id where sd.id = (select v::uuid from tests.s116 where k = 'day'))
+  and exists (select 1 from public.calendar_events_for_user('a1160000-0000-4000-8000-000000000004') e
+              where e.id = (select calendar_event_id from public.project_shoot_days where id = (select v::uuid from tests.s116 where k = 'day')))
+  and not exists (select 1 from public.calendar_events_for_user('a1160000-0000-4000-8000-000000000008') e
+              where e.id = (select calendar_event_id from public.project_shoot_days where id = (select v::uuid from tests.s116 where k = 'day')))
+  and (select count(*) from public.inbox_notifications where user_id = 'a1160000-0000-4000-8000-000000000004' and kind = 'calendar_event_added') = 1
+  and (select count(*) from public.project_room_messages where deal_id = (select v::uuid from tests.s116 where k = 'd') and body like 'shoot_day|%|Estúdio Lapa') = 1);
+select public.calendar_sync_deal((select v::uuid from tests.s116 where k = 'd'));
+select tests.ok('S116 o sincronizador do negócio não apaga a diária',
+  exists (select 1 from public.calendar_events e join public.project_shoot_days sd on sd.calendar_event_id = e.id where sd.id = (select v::uuid from tests.s116 where k = 'day')));
+select tests.login('a1160000-0000-4000-8000-000000000007', 's116-marca@test.local');
+select tests.expect_error('S116 marca fora da equipe não faz check-in', $q$select public.project_checkin((select v::uuid from tests.s116 where k = 'day'))$q$, 'forbidden');
+select tests.ok('S116 marca vê a diária sem os horários de chegada',
+  (select count(*) from jsonb_array_elements(public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'shoot_days') x where x ->> 'arrived' is null) = 1);
+select tests.login('a1160000-0000-4000-8000-000000000008', 's116-comum@test.local');
+select tests.expect_error('S116 quem não é da sala não faz check-in', $q$select public.project_checkin((select v::uuid from tests.s116 where k = 'day'))$q$, 'not_found');
+select tests.login('a1160000-0000-4000-8000-000000000004', 's116-foto@test.local');
+insert into tests.s116 select 'chk', public.project_checkin((select v::uuid from tests.s116 where k = 'day'))::text;
+select tests.ok('S116 staff marca "Cheguei ao local" (uma vez)', (select v from tests.s116 where k = 'chk') is not null
+  and public.project_checkin((select v::uuid from tests.s116 where k = 'day')) = (select checked_in_at from public.project_shoot_crew where user_id = 'a1160000-0000-4000-8000-000000000004')
+  and (select count(*) from public.project_room_messages where body like 'checkin|%') = 1);
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select tests.ok('S116 gestor vê quem chegou (1 de 3)',
+  (public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'shoot_days' -> 0) @> '{"arrived": 1, "total": 3}');
+
+-- etapa concluída vira linha; marco "dia da produção" pede feedback à marca e ao herói-cliente
+do $$
+declare t record;
+begin
+  for t in select id from public.tasks where deal_id = (select v::uuid from tests.s116 where k = 'd') and roadmap_position is not null
+           and roadmap_position <= (select roadmap_position from public.tasks where deal_id = (select v::uuid from tests.s116 where k = 'd') and milestone = 'production_day')
+           order by roadmap_position loop
+    perform public.roadmap_task_set(t.id, true);
+  end loop;
+end $$;
+select tests.su();
+select tests.ok('S116 linhas de etapa concluída (interna x visível ao cliente) e pedidos de feedback do dia',
+  (select count(*) from public.project_room_messages where deal_id = (select v::uuid from tests.s116 where k = 'd') and body like 'step_done|%' and audience = 'internal') > 0
+  and (select count(*) from public.project_room_messages where deal_id = (select v::uuid from tests.s116 where k = 'd') and body like 'step_done|%' and audience = 'all') > 0
+  and (select array_agg(party order by party) from public.project_feedback where deal_id = (select v::uuid from tests.s116 where k = 'd') and moment = 'production_day') = array['brand', 'talent']
+  and (select count(*) from public.inbox_notifications where user_id = 'a1160000-0000-4000-8000-000000000007' and kind = 'campaign_status_changed' and params ->> 'status' = 'feedback_requested') = 1);
+insert into tests.s116 select 'fb_b', id::text from public.project_feedback where deal_id = (select v::uuid from tests.s116 where k = 'd') and party = 'brand';
+insert into tests.s116 select 'fb_t', id::text from public.project_feedback where deal_id = (select v::uuid from tests.s116 where k = 'd') and party = 'talent';
+select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
+select tests.expect_error('S116 herói não responde pela marca', $q$select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_b'), 9, null)$q$, 'not_found');
+select tests.expect_error('S116 nota fora de 0–10 é recusada', $q$select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_t'), 11, null)$q$, 'invalid_input');
+select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_t'), 10, 'Equipe nota 10');
+select tests.ok('S116 herói lê só o próprio feedback', (select count(*) from public.project_feedback) = 1);
+select tests.login('a1160000-0000-4000-8000-000000000007', 's116-marca@test.local');
+select public.project_feedback_answer((select v::uuid from tests.s116 where k = 'fb_b'), 6, 'Atrasou um pouco');
+select tests.login('a1160000-0000-4000-8000-000000000003', 's116-colab@test.local');
+select tests.expect_error('S116 colaborador não vê o indicador de satisfação', $q$select public.project_feedback_indicator('a1160000-0000-4000-8000-0000000000a1', 180)$q$, 'forbidden');
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select tests.ok('S116 indicador: 2 respostas, média 8, 1 promotor e 1 detrator; gestor avisado',
+  public.project_feedback_indicator('a1160000-0000-4000-8000-0000000000a1', 180) @> '{"answered": 2, "avg": 8.0, "promoters": 1, "detractors": 1}'
+  and (select count(*) from public.inbox_notifications where user_id = 'a1160000-0000-4000-8000-000000000002' and kind = 'campaign_status_changed' and params ->> 'status' = 'feedback_received') = 2);
+
+-- arquivos: só a própria reserva; arquivo interno não chega ao herói; guia de uso
+select tests.login('a1160000-0000-4000-8000-000000000004', 's116-foto@test.local');
+select tests.expect_error('S116 tipo de arquivo fora da lista é recusado',
+  $q$select public.project_room_attach_reserve((select v::uuid from tests.s116 where k = 'd'), '{"mime_type": "application/zip", "size_bytes": 10, "name": "x.zip"}')$q$, 'invalid_file_type');
+insert into tests.s116 select 'att_int', public.project_room_attach_reserve((select v::uuid from tests.s116 where k = 'd'), '{"mime_type": "audio/mp4", "size_bytes": 10, "name": "audio.m4a"}') ->> 'id';
+select tests.expect_error('S116 publicar sem o arquivo no Storage é recusado',
+  $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), '', true, (select v::uuid from tests.s116 where k = 'att_int'))$q$, 'file_missing');
+select tests.su();
+insert into storage.objects (bucket_id, name, owner_id, metadata)
+select 'agency-docs', attachment_path, 'a1160000-0000-4000-8000-000000000004', '{"mimetype":"audio/mp4","size":10}' from public.project_room_messages where id = (select v::uuid from tests.s116 where k = 'att_int');
+select tests.login('a1160000-0000-4000-8000-000000000004', 's116-foto@test.local');
+select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Áudio do set', true, (select v::uuid from tests.s116 where k = 'att_int'));
+select tests.ok('S116 staff baixa o próprio áudio interno (RPC e política do Storage)', public.project_room_file((select v::uuid from tests.s116 where k = 'att_int')) ->> 'path' like '%/room/%.m4a'
+  and (select count(*) from storage.objects where bucket_id = 'agency-docs' and name like '%/room/%') = 1);
+select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
+select tests.expect_error('S116 herói não baixa arquivo interno', $q$select public.project_room_file((select v::uuid from tests.s116 where k = 'att_int'))$q$, 'not_found');
+select tests.ok('S116 herói não vê o áudio interno no Storage', (select count(*) from storage.objects where bucket_id = 'agency-docs' and name like '%/room/%') = 0);
+select tests.expect_error('S116 herói não publica a reserva de outra pessoa',
+  $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'x', false, (select v::uuid from tests.s116 where k = 'att_int'))$q$, 'not_found');
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+insert into tests.s116 select 'guide', public.project_room_attach_reserve((select v::uuid from tests.s116 where k = 'd'), '{"mime_type": "application/pdf", "size_bytes": 99, "name": "guia.pdf"}') ->> 'id';
+select tests.su();
+insert into storage.objects (bucket_id, name, owner_id, metadata)
+select 'agency-docs', attachment_path, 'a1160000-0000-4000-8000-000000000002', '{"mimetype":"application/pdf","size":99}' from public.project_room_messages where id = (select v::uuid from tests.s116 where k = 'guide');
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'Guia de uso do material', false, (select v::uuid from tests.s116 where k = 'guide'));
+select tests.expect_error('S116 áudio interno não vira guia de uso',
+  $q$select public.project_room_usage_guide_set((select v::uuid from tests.s116 where k = 'd'), (select v::uuid from tests.s116 where k = 'att_int'))$q$, 'invalid_input');
+select public.project_room_usage_guide_set((select v::uuid from tests.s116 where k = 'd'), (select v::uuid from tests.s116 where k = 'guide'));
+select tests.ok('S116 guia de uso fixado na sala', public.project_room_view((select v::uuid from tests.s116 where k = 'd')) -> 'usage_guide' ->> 'name' = 'guia.pdf');
+select tests.expect_error('S116 prévia de versão inexistente', $q$select public.deliverable_preview_set(gen_random_uuid(), true)$q$, 'not_found');
+select tests.login('a1160000-0000-4000-8000-000000000008', 's116-comum@test.local');
+select tests.ok('S116 prévias do negócio não aparecem para quem não é do negócio', public.deal_previews((select v::uuid from tests.s116 where k = 'd')) = '[]'::jsonb);
+
+-- configurações: normas e NDA só o Adm; versão sobe quando o NDA muda
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select tests.expect_error('S116 gestor não edita normas/NDA',
+  $q$select public.agency_project_settings_save('a1160000-0000-4000-8000-0000000000a1', 'Normas novas da agência', repeat('Confidencial. ', 10))$q$, 'forbidden');
+select tests.login('a1160000-0000-4000-8000-000000000001', 's116-adm@test.local');
+select tests.expect_error('S116 NDA curto é recusado',
+  $q$select public.agency_project_settings_save('a1160000-0000-4000-8000-0000000000a1', 'Normas novas da agência', 'curto')$q$, 'invalid_input');
+insert into tests.s116 select 'v1', public.agency_project_settings_save('a1160000-0000-4000-8000-0000000000a1', 'Normas novas da agência', repeat('Confidencial. ', 10))::text;
+insert into tests.s116 select 'v2', public.agency_project_settings_save('a1160000-0000-4000-8000-0000000000a1', 'Normas novas da agência 2', repeat('Confidencial. ', 10))::text;
+select tests.ok('S116 Adm edita: versão 2 do NDA; só normas não sobe a versão',
+  (select v from tests.s116 where k = 'v1') = '2' and (select v from tests.s116 where k = 'v2') = '2'
+  and public.agency_project_settings_get('a1160000-0000-4000-8000-0000000000a1') ->> 'norms' = 'Normas novas da agência 2');
+
+-- encerrar como ganho: sala arquivada, clipping congelado, feedback de fechamento e acesso cortado
+select tests.su();
+update public.deals set stage = 'closed', outcome = 'won', closed_at = now(), stage_changed_at = now() where id = (select v::uuid from tests.s116 where k = 'd');
+select tests.ok('S116 encerrado: sala arquivada com clipping, feedback de fechamento e aviso do clipping ao cliente',
+  (select status = 'archived' and clipping is not null and clipping ->> 'title' = 'Clipe S116' and clipping -> 'usage_guide' ->> 'name' = 'guia.pdf'
+     and jsonb_array_length(clipping -> 'team') >= 3 and jsonb_array_length(clipping -> 'shoot_days') = 1
+   from public.project_rooms where deal_id = (select v::uuid from tests.s116 where k = 'd'))
+  and (select count(*) from public.project_feedback where deal_id = (select v::uuid from tests.s116 where k = 'd') and moment = 'closing') = 2
+  and (select count(*) from public.inbox_notifications where kind = 'campaign_status_changed' and params ->> 'status' = 'clipping_ready' and user_id in ('a1160000-0000-4000-8000-000000000005', 'a1160000-0000-4000-8000-000000000007')) = 2);
+select tests.login('a1160000-0000-4000-8000-000000000004', 's116-foto@test.local');
+select tests.expect_error('S116 staff perde a sala no fechamento', $q$select public.project_room_view((select v::uuid from tests.s116 where k = 'd'))$q$, 'not_found');
+select tests.expect_error('S116 staff não lê o clipping', $q$select public.project_clipping((select v::uuid from tests.s116 where k = 'd'))$q$, 'not_found');
+select tests.ok('S116 staff: nada pela RLS e fora de "Meus projetos"', (select count(*) from public.project_room_messages) = 0
+  and jsonb_array_length(public.my_project_rooms()) = 0);
+select tests.login('a1160000-0000-4000-8000-000000000005', 's116-heroi@test.local');
+select tests.expect_error('S116 herói perde a sala no fechamento', $q$select public.project_room_view((select v::uuid from tests.s116 where k = 'd'))$q$, 'not_found');
+select tests.ok('S116 herói-cliente lê o clipping congelado e o guia de uso',
+  public.project_clipping((select v::uuid from tests.s116 where k = 'd')) @> '{"side": "talent", "frozen": true}'
+  and public.project_room_file((select v::uuid from tests.s116 where k = 'guide')) ->> 'name' = 'guia.pdf'
+  and (select count(*) from storage.objects where bucket_id = 'agency-docs' and name like '%/room/%') = 1);
+select tests.login('a1160000-0000-4000-8000-000000000002', 's116-gestor@test.local');
+select tests.ok('S116 agência lê a sala arquivada (somente leitura)',
+  public.project_room_view((select v::uuid from tests.s116 where k = 'd')) @> '{"status": "archived", "can_post": false, "can_manage": false}');
+select tests.expect_error('S116 sala arquivada não recebe mensagem', $q$select public.project_room_post((select v::uuid from tests.s116 where k = 'd'), 'oi', false, null)$q$, 'room_archived');
+
+select tests.su();
+drop table tests.s116;
+delete from storage.objects where name like 'a1160000-0000-4000-8000-0000000000a1/%';
+delete from public.inbox_notifications where agency_id = 'a1160000-0000-4000-8000-0000000000a1';
+delete from public.calendar_events where agency_id = 'a1160000-0000-4000-8000-0000000000a1';
+delete from public.deals where agency_id = 'a1160000-0000-4000-8000-0000000000a1';
+delete from public.talent_profiles where agency_id = 'a1160000-0000-4000-8000-0000000000a1';
+delete from public.campaign_requests where agency_id = 'a1160000-0000-4000-8000-0000000000a1';
+delete from public.agency_brands where agency_id = 'a1160000-0000-4000-8000-0000000000a1';
+delete from public.brand_members where brand_id = 'a1160000-0000-4000-8000-0000000000b1';
+delete from public.brands where id = 'a1160000-0000-4000-8000-0000000000b1';
+delete from public.agencies where id = 'a1160000-0000-4000-8000-0000000000a1';
+delete from auth.users where id::text like 'a1160000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

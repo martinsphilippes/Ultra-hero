@@ -35,13 +35,16 @@ type Props = {
    * "Enviar como entrega" com as entregas que esperam um link (enviar ou publicar) e o diálogo já abre com ele.
    */
   prefillUrl?: string | null;
+  /** 0110: versões marcadas como prévia (o "Demo" do PDF) e data combinada da prévia por entrega. */
+  previewVersionIds?: readonly string[];
+  previewDates?: Readonly<Record<string, string>>;
 };
 
 type Mode = "submit" | "decide" | "publish" | "proof" | "close";
 
 // Entregas com versões: cada envio é uma versão nova (nunca herda aprovação); a marca aprova ou pede ajustes com
 // feedback; publicar registra a URL; comprovar fecha o ciclo; a agência conclui ou cancela. Sem valores.
-export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText, brief = EMPTY_BRIEF, media = null, prefillUrl = null }: Props) {
+export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, deliverables, canAct = false, documents = [], emptyText, brief = EMPTY_BRIEF, media = null, prefillUrl = null, previewVersionIds = [], previewDates = {} }: Props) {
   const t = useTranslations("commercial.deliverables");
   const tk = useTranslations("commercial.deliverableKinds");
   const tn = useTranslations("mediaKit.networks");
@@ -87,6 +90,7 @@ export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, del
               {d.publishAt ? ` · ${t("publishAt", { date: formatPlainDate(d.publishAt.slice(0, 10), locale) })}` : ""}
             </p>
             {d.brief ? <p className="type-body-sm text-fg-muted">{d.brief}</p> : null}
+            {previewDates[d.id] ? <p className="type-caption text-info">{t("previewOn", { date: formatPlainDate(previewDates[d.id], locale) })}</p> : null}
             {d.status === "changes_requested" && d.brandFeedback ? <p className="rounded-xl border border-warning/40 bg-warning-soft/40 px-3 py-2 text-sm text-fg">{t("changesFeedback", { text: d.brandFeedback })}</p> : null}
             {d.publishedUrl ? (
               <a href={d.publishedUrl} target="_blank" rel="noopener noreferrer" className="inline-flex w-fit items-center gap-1 text-sm font-medium text-accent-text underline-offset-2 hover:underline">
@@ -100,6 +104,14 @@ export function DeliverablesBoard({ portal, dealId, requestId, dealTalentId, del
                   <li key={v.id} className="flex flex-col gap-0.5 type-caption text-fg-muted" data-testid="deliverable-version">
                     <span className="text-fg">
                       {v.kind === "proof" ? t("proofVersion", { n: v.revision }) : t("submissionVersion", { n: v.revision })} · {formatDateTime(v.submittedAt, locale)} · {t(`submittedBy.${v.submittedSide}`)}
+                      {previewVersionIds.includes(v.id) ? (
+                        <>
+                          {" "}
+                          <Badge size="sm" variant="info">
+                            {t("previewBadge")}
+                          </Badge>
+                        </>
+                      ) : null}
                       {v.url ? (
                         <>
                           {" · "}

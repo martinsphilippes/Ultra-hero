@@ -3,11 +3,13 @@ import { getTranslations } from "next-intl/server";
 import { DeliverablesEditor } from "@/components/deals/DeliverablesEditor";
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
 import { MusicPanel } from "@/components/media/MusicPanel";
+import { PreviewPanel } from "@/components/project-room/PreviewPanel";
 import { TrackingPanel } from "@/components/media/TrackingPanel";
 import { getOrigin } from "@/lib/auth/origin";
 import { listDealTalents, listDeliverables } from "@/lib/deals/queries";
 import { getDealExecution } from "@/lib/execution/queries";
 import { getDealMedia } from "@/lib/media/queries";
+import { getDealPreviews } from "@/lib/project-room/queries";
 import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { createClient } from "@/lib/supabase/server";
 import { localDay } from "@/lib/today/logic";
@@ -29,7 +31,7 @@ export default async function DealDeliverablesPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, canEdit, isAdmin } = await loadDeal(id);
   const inExecution = deal.stage === "production" || deal.stage === "closed";
-  const [t, te, tm, talents, items, exec, docs, media, origin, brandSite] = await Promise.all([
+  const [t, te, tm, talents, items, exec, docs, media, origin, brandSite, previews] = await Promise.all([
     getTranslations("agency.deal.deliverables"),
     getTranslations("agency.execution"),
     getTranslations("media"),
@@ -50,6 +52,8 @@ export default async function DealDeliverablesPage({ params }: Props) {
       const { data } = await supabase.from("brands").select("site_url").eq("id", deal.brand.id).maybeSingle();
       return data?.site_url || null;
     })(),
+    // 0110: prévias (versão marcada + data combinada)
+    inExecution ? getDealPreviews(deal.id) : Promise.resolve([]),
   ]);
   const today = localDay(new Date(), ctx.agency.timezone || "America/Sao_Paulo");
   const mediaData = media?.available ? media.data : null;
@@ -73,7 +77,10 @@ export default async function DealDeliverablesPage({ params }: Props) {
             documents={docs}
             emptyText={te("empty")}
             media={mediaData ? { readings: mediaData.metrics, comments: mediaData.comments, youtubeConfigured: youTubeConfigured(), today } : null}
+            previewVersionIds={previews.flatMap((p) => p.versionIds)}
+            previewDates={Object.fromEntries(previews.filter((p) => p.previewOn).map((p) => [p.deliverableId, p.previewOn as string]))}
           />
+          <PreviewPanel dealId={deal.id} deliverables={exec.data?.deliverables ?? []} previews={previews} canEdit={canEdit} />
         </section>
       ) : null}
       {inExecution && mediaData ? (

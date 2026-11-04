@@ -1,5 +1,8 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // sala do projeto (0110)
+  "nda_required",
+  "room_archived",
   // condições de pagamento (0108)
   "payment_terms_required",
   "agreed_below_payouts",

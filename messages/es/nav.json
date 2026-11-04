@@ -12,7 +12,8 @@
     "seller": "Proveedor",
     "professional": "Profesional",
     "agency": "Agencia",
-    "brand": "Marca"
+    "brand": "Marca",
+    "project": "Proyectos"
   },
   "admin": {
     "dashboard": "Panel",
@@ -94,7 +95,8 @@
     "seller": "Área del proveedor",
     "professional": "Área del profesional",
     "agency": "Centro de trabajo de la agencia",
-    "brand": "Área de la marca"
+    "brand": "Área de la marca",
+    "project": "Proyectos a los que te llamaron"
   },
   "backToProfile": "Perfil",
   "agency": {
@@ -128,5 +130,9 @@
     "content": "Contenido",
     "work": "Trabajo",
     "profile": "Perfil"
+  },
+  "project": {
+    "projects": "Mis proyectos",
+    "notifications": "Avisos"
   }
 }

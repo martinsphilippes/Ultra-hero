@@ -1,4 +1,5 @@
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, ScrollText } from "lucide-react";
+import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -8,7 +9,7 @@ import { RoadmapProgress } from "./RoadmapProgress";
 
 // Projeto em que o herói é cliente da agência (0107): andamento em dias úteis e só as etapas visíveis ao cliente.
 export async function ClientProjectCard({ project, limit }: { project: ClientProject; limit?: number }) {
-  const [t, locale] = await Promise.all([getTranslations("roadmap.hero"), getLocale() as Promise<Locale>]);
+  const [t, tl, locale] = await Promise.all([getTranslations("roadmap.hero"), getTranslations("projectRoom.link"), getLocale() as Promise<Locale>]);
   const nextIndex = project.steps.findIndex((s) => !s.done);
   const steps = limit ? project.steps.slice(Math.max(0, nextIndex - 1), Math.max(0, nextIndex - 1) + limit) : project.steps;
   return (
@@ -27,6 +28,11 @@ export async function ClientProjectCard({ project, limit }: { project: ClientPro
         ) : null}
       </div>
       {project.progress ? <RoadmapProgress progress={project.progress} compact /> : null}
+      {/* 0110: clipping do projeto (ao vivo; congelado no fechamento) e a pesquisa de satisfação */}
+      <Link href={`/heroi/projetos/${project.dealId}/clipping`} className="inline-flex min-h-11 w-fit items-center gap-1 text-sm font-medium text-accent-text underline-offset-2 hover:underline" data-testid="client-project-clipping">
+        <ScrollText className="size-4" aria-hidden="true" />
+        {tl("clipping")}
+      </Link>
       {steps.length > 0 ? (
         <ol className="flex flex-col gap-1.5">
           {steps.map((s, i) => (

@@ -382,7 +382,9 @@
     "talent_agency_mismatch": "Ese héroe no es del casting de esta agencia.",
     "payment_terms_required": "Antes de enviar los términos, el Adm debe definir las condiciones de pago (valor acordado, forma y fechas).",
     "agreed_below_payouts": "El valor acordado no cubre los cachés de los héroes. Revisa el valor o los cachés.",
-    "plan_locked": "La contratación ya fue confirmada: ajusta las cuotas en Finanzas › Pagos de la marca."
+    "plan_locked": "La contratación ya fue confirmada: ajusta las cuotas en Finanzas › Pagos de la marca.",
+    "nda_required": "Firma el NDA para entrar a la sala.",
+    "room_archived": "La sala del proyecto está archivada."
   },
   "casting": {
     "title": "Casting",
@@ -645,7 +647,9 @@
       "documents": "Documentos",
       "terms": "Términos",
       "tasks": "Tareas",
-      "roadmap": "Plan"
+      "roadmap": "Plan",
+      "room": "Sala",
+      "closing": "Cierre"
     },
     "sections": {
       "request": "Propuesta de la marca",
