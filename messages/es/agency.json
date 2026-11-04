@@ -379,7 +379,10 @@
     "roadmap_started": "Ya hay etapas concluidas: el servicio ya no puede cambiarse.",
     "roadmap_exists": "Este negocio ya tiene plan.",
     "client_required": "Elige la marca, el héroe o ambos.",
-    "talent_agency_mismatch": "Ese héroe no es del casting de esta agencia."
+    "talent_agency_mismatch": "Ese héroe no es del casting de esta agencia.",
+    "payment_terms_required": "Antes de enviar los términos, el Adm debe definir las condiciones de pago (valor acordado, forma y fechas).",
+    "agreed_below_payouts": "El valor acordado no cubre los cachés de los héroes. Revisa el valor o los cachés.",
+    "plan_locked": "La contratación ya fue confirmada: ajusta las cuotas en Finanzas › Pagos de la marca."
   },
   "casting": {
     "title": "Casting",
@@ -880,7 +883,8 @@
       "rateOverride": "Tasa de este negocio (%)",
       "rateOverrideHint": "Vacío usa la tasa estándar de la agencia ({rate}). Solo cambia antes de la contratación.",
       "rateSave": "Guardar tasa del negocio",
-      "noEntries": "Los asientos aparecen aquí después de la contratación."
+      "noEntries": "Los asientos aparecen aquí después de la contratación.",
+      "planRules": "Las condiciones de pago ya están guardadas: la marca paga el valor acordado y la comisión es lo que queda después de los pagos a los héroes. Este cálculo por tasa es solo una referencia."
     },
     "heroesSavedCreated": "{count, plural, one {Elenco guardado. Ficha creada en tu casting.} other {Elenco guardado. # fichas creadas en tu casting.}}"
   },
@@ -1085,7 +1089,10 @@
       "cancelled": "Cancelados",
       "all": "Todos",
       "invoices": "Facturas por revisar",
-      "payments": "Pagos de la marca"
+      "payments": "Pagos de la marca",
+      "receivable": "Por cobrar",
+      "payable": "Por pagar",
+      "forecast": "Previstos"
     },
     "empty": {
       "open": "Ningún asiento abierto.",
@@ -1093,7 +1100,10 @@
       "settled": "Ningún asiento liquidado.",
       "cancelled": "Ningún asiento cancelado.",
       "all": "Todavía ningún asiento. Nacen al confirmar la contratación.",
-      "invoices": "Ninguna factura esperando revisión."
+      "invoices": "Ninguna factura esperando revisión.",
+      "receivable": "Nada pendiente por cobrar a las marcas.",
+      "payable": "Ningún pago pendiente a los héroes.",
+      "forecast": "Ningún previsto: guarda las condiciones de pago de un negocio para verlo aquí."
     },
     "kpi": {
       "receivableOpen": "Por cobrar",
@@ -1103,7 +1113,8 @@
       "payoutOpen": "Pagos pendientes",
       "payoutSettled": "{value} pagados",
       "overdue": "Vencidos",
-      "openCount": "{count} abiertos en {deals, plural, one {# negocio} other {# negocios}}"
+      "openCount": "{count} abiertos en {deals, plural, one {# negocio} other {# negocios}}",
+      "forecast": "Previsto (esperando la contratación): {receivable} por cobrar a las marcas · {payout} por pagar a los héroes."
     },
     "dueOn": "vence el {date}",
     "noDue": "sin vencimiento",

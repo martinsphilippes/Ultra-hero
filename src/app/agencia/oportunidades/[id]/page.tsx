@@ -19,7 +19,7 @@ import { requireAgency } from "@/lib/agency/server";
 import { formatCents } from "@/lib/deals/schemas";
 import { centsToBrl } from "@/lib/money/brl-input";
 import { choiceFromHeroInfo } from "@/lib/sponsorship/hero-pick";
-import { EMPTY_PUBLIC } from "@/lib/sponsorship/negotiation";
+import { EMPTY_PUBLIC, tierTotalCents } from "@/lib/sponsorship/negotiation";
 import { getAgencySponsorship } from "@/lib/sponsorship/queries";
 import { canDecide, localParts, responseCounts, type AgencySponsorshipBrand } from "@/lib/sponsorship/vocab";
 
@@ -43,7 +43,7 @@ export default async function AgencySponsorshipPage({ params }: Props) {
   const o = await getAgencySponsorship(id);
   if (!o || o.agencyId !== ctx.agency.id) notFound();
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
-  const [t, locale, brands] = await Promise.all([getTranslations("sponsorship.agency"), getLocale() as Promise<Locale>, listAgencyBrands(ctx.agency.id)]);
+  const [t, tvm, locale, brands] = await Promise.all([getTranslations("sponsorship.agency"), getTranslations("sponsorship.tierValue"), getLocale() as Promise<Locale>, listAgencyBrands(ctx.agency.id)]);
   const counts = responseCounts(o.brands);
   const interested = o.brands.filter((b) => b.response === "interested");
   const start = localParts(o.startsAt, tz);
@@ -114,6 +114,15 @@ export default async function AgencySponsorshipPage({ params }: Props) {
               <span className={z.hasPrice ? "text-base font-semibold text-fg" : "type-body-sm text-warning"}>
                 {canValues ? (z.priceCents !== null ? formatCents(z.priceCents, locale) : t("tierNoPrice")) : z.hasPrice ? t("tierPriceSet") : t("tierNoPriceManager")}
               </span>
+              {/* 0108: modelo de valor da cota; no fixo, quanto já foi coberto e a parte de cada nova marca */}
+              <span className="type-caption text-fg-muted" data-testid="tier-model">
+                {tvm(`tierModel.${z.valueModel}`)}
+                {canValues && z.priceCents !== null
+                  ? z.valueModel === "fixo"
+                    ? ` · ${tvm("tierCovered", { covered: formatCents(z.coveredCents ?? 0, locale), total: formatCents(z.priceCents, locale) })}${z.askCents !== null ? ` · ${tvm("tierShare", { value: formatCents(z.askCents, locale) })}` : ""}`
+                    : ` · ${tvm("tierTotal", { value: formatCents(tierTotalCents({ valueModel: z.valueModel, priceCents: z.priceCents, slots: z.slots }) ?? 0, locale) })}`
+                  : ""}
+              </span>
               <ul className="flex list-disc flex-col gap-1 pl-5 type-body-sm text-fg">
                 {z.perks.map((x) => (
                   <li key={x}>{x}</li>
@@ -179,7 +188,7 @@ export default async function AgencySponsorshipPage({ params }: Props) {
                 endTime: o.allDay ? "12:00" : end.time,
                 allDay: o.allDay,
                 expectedReach: o.expectedReach,
-                tiers: o.tiers.map((z) => ({ id: z.id, name: z.name, priceText: centsToBrl(z.priceCents), perksText: z.perks.join("\n"), slots: z.slots })),
+                tiers: o.tiers.map((z) => ({ id: z.id, name: z.name, priceText: centsToBrl(z.priceCents), perksText: z.perks.join("\n"), slots: z.slots, valueModel: z.valueModel })),
                 public: o.public ?? EMPTY_PUBLIC,
                 networks: o.networks,
                 respondDate: respond.date,

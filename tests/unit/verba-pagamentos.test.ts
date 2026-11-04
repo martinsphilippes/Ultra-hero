@@ -154,6 +154,7 @@ const receivable = (p: Partial<Receivable> = {}): Receivable => ({
   totalCents: 300000,
   entryStatus: "due",
   installments: [],
+  plan: null,
   ...p,
 });
 
@@ -219,7 +220,7 @@ describe("pagamentos da marca: lógica pura", () => {
 
   it("totais e filtros da agência", () => {
     const inst = (id: string, amount: number, dueOn: string, status: "open" | "paid" = "open", reported = false) => ({
-      id, seq: 1, label: "", amountCents: amount, dueOn, status, paidAt: null,
+      id, seq: 1, label: "", amountCents: amount, dueOn, status, paidAt: null, fromPlan: false,
       report: reported ? { id: "r" + id, status: "reported" as const, paidOn: dueOn, amountCents: amount, note: "", reviewNote: "", documentId: null, reportedLabel: "", reviewedLabel: "", createdAt: "", reviewedAt: null } : null,
     });
     const a = receivable({ entryId: "a", installments: [inst("1", 100, "2026-11-01", "paid"), inst("2", 200, "2026-11-01")] });

@@ -14,6 +14,7 @@ import { canSendInvoice, earningGroup, payStep, type Earning, type PayStep } fro
 import { createClient } from "@/lib/supabase/client";
 
 const STEP_VARIANT: Record<PayStep, BadgeVariant> = {
+  awaiting_contract: "info",
   awaiting_invoice: "warning",
   invoice_sent: "info",
   invoice_approved: "info",
@@ -56,7 +57,7 @@ export function EarningsList({ items }: { items: Earning[] }) {
             : e.scheduledOn
               ? t("scheduledFor", { date: formatPlainDate(e.scheduledOn, locale) })
               : e.dueOn
-                ? t("expected", { date: formatPlainDate(e.dueOn, locale) })
+                ? t(e.status === "forecast" ? "forecastOn" : "expected", { date: formatPlainDate(e.dueOn, locale) })
                 : t("noDate");
         const sendable = canSendInvoice(e);
         return (
@@ -75,6 +76,13 @@ export function EarningsList({ items }: { items: Earning[] }) {
               {group ? <span className="type-caption text-fg-muted">{t(`groups.${group}`)}</span> : null}
               <span className="type-caption text-fg">{date}</span>
             </div>
+            {e.payoutMethod || (e.invoiceRequired && e.status !== "settled" && e.status !== "cancelled") ? (
+              <p className="type-caption text-fg-muted" data-testid="earning-terms">
+                {e.payoutMethod ? t(`payoutMethod.${e.payoutMethod}`) : null}
+                {e.payoutMethod && e.invoiceRequired ? " · " : null}
+                {e.invoiceRequired ? <span className={!e.invoice && e.status !== "forecast" ? "font-medium text-warning" : undefined}>{t("invoiceRequired")}</span> : null}
+              </p>
+            ) : null}
             {e.invoice?.status === "rejected" && e.invoice.reviewNote ? <p className="type-caption text-danger">{t("rejectedNote", { note: e.invoice.reviewNote })}</p> : null}
             {sendable && !e.delivered ? <p className="type-caption text-fg-muted">{t("inProduction")}</p> : null}
             <div className="flex flex-wrap gap-2">

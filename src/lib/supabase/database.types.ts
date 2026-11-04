@@ -332,6 +332,81 @@ export type Database = {
         };
         Relationships: [];
       };
+      // 0108: condições de pagamento do negócio e cópia congelada por versão dos termos (só leitura; escrita pelas RPCs)
+      deal_payment_plans: {
+        Row: {
+          agency_id: string;
+          brand_id: string | null;
+          created_at: string;
+          deal_id: string;
+          plan: Json;
+          total_cents: number;
+          updated_at: string;
+          updated_by: string | null;
+          updated_label: string;
+          version: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          brand_id?: string | null;
+          created_at?: string;
+          deal_id: string;
+          plan: Json;
+          total_cents: number;
+          updated_at?: string;
+          updated_by?: string | null;
+          updated_label?: string;
+          version?: number;
+        };
+        Update: {
+          agency_id?: string;
+          brand_id?: string | null;
+          created_at?: string;
+          deal_id?: string;
+          plan?: Json;
+          total_cents?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+          updated_label?: string;
+          version?: number;
+        };
+        Relationships: [];
+      };
+      deal_terms_payments: {
+        Row: {
+          agency_id: string;
+          created_at: string;
+          deal_id: string;
+          payouts: Json;
+          plan: Json;
+          plan_version: number;
+          terms_id: string;
+          total_cents: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          created_at?: string;
+          deal_id: string;
+          payouts?: Json;
+          plan: Json;
+          plan_version?: number;
+          terms_id: string;
+          total_cents: number;
+        };
+        Update: {
+          agency_id?: string;
+          created_at?: string;
+          deal_id?: string;
+          payouts?: Json;
+          plan?: Json;
+          plan_version?: number;
+          terms_id?: string;
+          total_cents?: number;
+        };
+        Relationships: [];
+      };
       // 0106: rodadas da proposta da marca no negócio (só leitura; escrita pelas RPCs)
       deal_offer_rounds: {
         Row: {
@@ -8257,6 +8332,7 @@ export type Database = {
       };
       brand_payment_installments: {
         Row: {
+          from_plan: boolean;
           agency_id: string;
           amount_cents: number;
           brand_id: string;
@@ -8274,6 +8350,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          from_plan?: boolean;
           agency_id: string;
           amount_cents: number;
           brand_id: string;
@@ -8290,6 +8367,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          from_plan?: boolean;
           agency_id?: string;
           amount_cents?: number;
           brand_id?: string;
@@ -9707,6 +9785,7 @@ export type Database = {
       };
       sponsorship_tiers: {
         Row: {
+          value_model: string;
           agency_id: string;
           created_at: string;
           id: string;
@@ -9722,6 +9801,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          value_model?: string;
           agency_id: string;
           created_at?: string;
           id?: string;
@@ -9736,6 +9816,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          value_model?: string;
           agency_id?: string;
           created_at?: string;
           id?: string;
@@ -10933,6 +11014,7 @@ export type Database = {
       };
       financial_entries: {
         Row: {
+          from_plan: boolean;
           agency_id: string;
           amount_cents: number;
           brand_id: string;
@@ -10956,6 +11038,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          from_plan?: boolean;
           agency_id: string;
           amount_cents: number;
           brand_id: string;
@@ -10978,6 +11061,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          from_plan?: boolean;
           agency_id?: string;
           amount_cents?: number;
           brand_id?: string;
@@ -11098,6 +11182,18 @@ isOneToOne: false
       agency_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null }; Returns: string };
       brand_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null }; Returns: string };
       deal_offer_rounds_json: { Args: { p_deal: string }; Returns: Json };
+      // 0108: condições de pagamento
+      agency_payment_plan_save: { Args: { p_deal: string; p_data: Json }; Returns: Json };
+      deal_payment_plan_json: { Args: { p_deal: string }; Returns: Json };
+      deal_payment_scan: { Args: Record<PropertyKey, never>; Returns: Json };
+      payment_plan_clean: { Args: { p: Json }; Returns: Json };
+      payment_plan_valid: { Args: { p: Json }; Returns: boolean };
+      payment_plan_parts: { Args: { p: Json; p_total: number; p_sig: string; p_del: string; p_pub: string }; Returns: Json };
+      payment_plan_payout_due: { Args: { p: Json; p_received: string; p_del: string }; Returns: string };
+      payment_rule_date: { Args: { p_rule: string; p_days: number; p_on: string; p_sig: string; p_del: string; p_pub: string }; Returns: string };
+      payment_rule_text: { Args: { p_rule: string; p_days: number; p_on: string }; Returns: string };
+      brl_text: { Args: { p_cents: number }; Returns: string };
+      terms_text_without_payment: { Args: { p: string }; Returns: string };
       agency_cast_inputs: { Args: { p_agency: string; p_deal?: string | null; p_call?: string | null }; Returns: Json };
       agency_deal_cast_apply: { Args: { p_deal: string; p_items: Json }; Returns: Json };
       agency_brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null }; Returns: string };

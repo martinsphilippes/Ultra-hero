@@ -59,7 +59,7 @@ describe("contrapartidas da proposta", () => {
 });
 
 describe("cotas da agência", () => {
-  const draft = (p: Partial<TierDraft>): TierDraft => ({ id: null, name: "Master", priceText: "10.000,00", perksText: "Logo na camiseta\n3 stories ao vivo", slots: 1, ...p });
+  const draft = (p: Partial<TierDraft>): TierDraft => ({ id: null, name: "Master", priceText: "10.000,00", perksText: "Logo na camiseta\n3 stories ao vivo", slots: 1, valueModel: "por_marca", ...p });
   it("Adm grava o valor; gestor não envia valor", () => {
     const adm = validateTiers([draft({}), draft({ name: "Apoio", priceText: "", slots: 2 })], parseBrlToCents, parsePerks, true);
     expect(adm.ok && adm.tiers.map((x) => x.priceCents)).toEqual([1_000_000, null]);

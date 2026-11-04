@@ -252,6 +252,12 @@
     "cancel": "Cancelar",
     "invoiceTitle": "Factura · {deal}",
     "invoiceDocTitle": "Factura · {deal}",
-    "invoiceSent": "Factura enviada. La agencia la revisará."
+    "invoiceSent": "Factura enviada. La agencia la revisará.",
+    "forecastOn": "Previsto para el {date} · esperando la contratación",
+    "payoutMethod": {
+      "pix": "Cobra por PIX",
+      "transfer": "Cobra por transferencia (TED)"
+    },
+    "invoiceRequired": "Factura obligatoria"
   }
 }

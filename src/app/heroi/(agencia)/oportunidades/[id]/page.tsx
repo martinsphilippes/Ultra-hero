@@ -7,6 +7,7 @@ import { DeliverableStatusBadge, TalentStatusBadge } from "@/components/deals/St
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
 import { TaskList } from "@/components/execution/TaskList";
 import { TermsPanel } from "@/components/execution/TermsPanel";
+import { PaymentPlanSummary } from "@/components/finance/PaymentPlan";
 import { CampaignCreate } from "@/components/hero-work/CampaignCreate";
 import { CampaignPublishedToast } from "@/components/hero-work/CampaignPublishedToast";
 import { MusicPanel } from "@/components/media/MusicPanel";
@@ -23,6 +24,7 @@ import { listMessages, listOpportunities, myFee } from "@/lib/deals/queries";
 import { formatCents } from "@/lib/deals/schemas";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
+import { dealPaymentPlan } from "@/lib/finance/queries";
 import { canCreateForCampaign, deliverablesAwaitingLink, parsePublishedSlug, publishedContentUrl } from "@/lib/hero-work/campaign";
 import { getDealMedia } from "@/lib/media/queries";
 import { youTubeConfigured } from "@/lib/media/youtube-collect";
@@ -68,6 +70,8 @@ export default async function OpportunityPage({ params, searchParams }: Props) {
     getTranslations("media"),
     getOrigin(),
   ]);
+  // 0108: o repasse dele (quanto, quando, como e se a nota é exigida), só para o titular proposto/contratado
+  const [paymentPlan, tplan] = await Promise.all([contracted ? dealPaymentPlan(o.deal.id) : Promise.resolve(null), getTranslations("payments.plan")]);
   const mediaData = media?.available ? media.data : null;
   const offer = offerRes.data;
   const execution = exec.available ? exec.data : null;
@@ -185,6 +189,14 @@ export default async function OpportunityPage({ params, searchParams }: Props) {
           dateMin={range.min}
           dateMax={range.max}
         />
+      ) : null}
+      {paymentPlan && paymentPlan.viewer === "talent" && paymentPlan.hasPlan ? (
+        <section className={card} aria-labelledby="opp-payout" data-testid="opportunity-payout">
+          <h3 id="opp-payout" className="text-base font-semibold text-fg">
+            {tplan("payoutTitle")}
+          </h3>
+          <PaymentPlanSummary view={paymentPlan} />
+        </section>
       ) : null}
       {execution && execution.terms.length > 0 ? (
         <section className={card} aria-labelledby="opp-terms" data-testid="opportunity-terms">

@@ -13,7 +13,8 @@ import { isEntryStatus, type EntryStatus } from "./vocab";
 
 export const INVOICE_STATUSES = ["submitted", "approved", "rejected"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
-export const PAY_STEPS = ["awaiting_invoice", "invoice_sent", "invoice_approved", "scheduled", "paid", "cancelled"] as const;
+// 0108: "awaiting_contract" = previsto (condições salvas, a contratação ainda não foi confirmada)
+export const PAY_STEPS = ["awaiting_contract", "awaiting_invoice", "invoice_sent", "invoice_approved", "scheduled", "paid", "cancelled"] as const;
 export type PayStep = (typeof PAY_STEPS)[number];
 export const EARNING_GROUPS = ["receivable", "forecast", "paid"] as const;
 export type EarningGroup = (typeof EARNING_GROUPS)[number];
@@ -34,6 +35,9 @@ export type Earning = {
   settledAt: string | null;
   delivered: boolean;
   invoice: PayoutInvoice | null;
+  /** 0108: condições do repasse (forma, se a nota é exigida) */
+  payoutMethod: "pix" | "transfer" | null;
+  invoiceRequired: boolean;
 };
 
 export function isInvoiceStatus(value: unknown): value is InvoiceStatus {
@@ -67,6 +71,8 @@ export function toEarnings(data: unknown): Earning[] {
     settledAt: str(p.settled_at),
     delivered: p.delivered === true,
     invoice: toInvoice(p.invoice),
+    payoutMethod: p.payout_method === "pix" || p.payout_method === "transfer" ? p.payout_method : null,
+    invoiceRequired: p.invoice_required === true,
   }));
 }
 
@@ -84,6 +90,7 @@ export function latestInvoice(list: unknown): PayoutInvoice | null {
 export function payStep(e: { status: EntryStatus; scheduledOn: string | null; invoice: Pick<PayoutInvoice, "status"> | null }): PayStep {
   if (e.status === "settled") return "paid";
   if (e.status === "cancelled") return "cancelled";
+  if (e.status === "forecast") return "awaiting_contract";
   if (e.scheduledOn) return "scheduled";
   if (e.invoice?.status === "submitted") return "invoice_sent";
   if (e.invoice?.status === "approved") return "invoice_approved";

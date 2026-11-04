@@ -222,6 +222,10 @@
     "roadmap_overdue": {
       "title": "Step overdue",
       "body": "{title} · {deal} was due on {date}."
+    },
+    "payout_due": {
+      "title": "{status, select, late {Payout overdue} today {Payout due today} other {Payout due soon}}",
+      "body": "{status, select, late {The payout for {deal} ({talent}) is overdue.} today {The payout for {deal} ({talent}) is due today.} other {The payout for {deal} ({talent}) is due within 3 days.}}"
     }
   }
 }

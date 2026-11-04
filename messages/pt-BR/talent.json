@@ -252,6 +252,12 @@
     "cancel": "Cancelar",
     "invoiceTitle": "Nota fiscal · {deal}",
     "invoiceDocTitle": "Nota fiscal · {deal}",
-    "invoiceSent": "Nota enviada. A agência vai conferir."
+    "invoiceSent": "Nota enviada. A agência vai conferir.",
+    "forecastOn": "Previsto para {date} · aguardando contratação",
+    "payoutMethod": {
+      "pix": "Recebe por PIX",
+      "transfer": "Recebe por transferência (TED)"
+    },
+    "invoiceRequired": "Nota fiscal exigida"
   }
 }

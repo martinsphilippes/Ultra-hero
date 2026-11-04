@@ -9,6 +9,7 @@ import { DealOffer } from "@/components/deals/DealOffer";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { AgencyBudgetChange } from "@/components/finance/AgencyBudgetChange";
 import { DealFinanceCard } from "@/components/finance/DealFinanceCard";
+import { DealPaymentPlanCard } from "@/components/finance/PaymentPlan";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { listTeam } from "@/lib/agency/queries";
@@ -16,7 +17,7 @@ import { zonedDayKey } from "@/lib/calendar/grid";
 import { listDealEvents } from "@/lib/calendar/queries";
 import { getDealOffer, getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import { splitSystemBody } from "@/lib/deals/vocab";
-import { agencyBudgetChanges, agencyRates, dealEntries } from "@/lib/finance/queries";
+import { agencyBudgetChanges, agencyRates, dealEntries, dealPaymentPlan } from "@/lib/finance/queries";
 import { requestDeliverablesSchema } from "@/lib/deals/schemas";
 import { loadDeal } from "./_lib";
 
@@ -53,6 +54,8 @@ export default async function DealOverviewPage({ params }: Props) {
     // 0106: proposta da marca (Adm aceita/contrapropõe; gestor e equipe só a situação)
     getDealOffer(deal.id),
   ]);
+  // 0108: condições de pagamento (Adm edita antes da contratação; os demais veem o resumo sem valores)
+  const plan = deal.brand ? await dealPaymentPlan(deal.id) : null;
   // financeiro simulado (0069), só para o Adm: taxa, prévia e lançamentos; sem a migração, a seção some
   const [fees, rates, entries] = isAdmin
     ? await Promise.all([listDealFees(deal.id), agencyRates(ctx.agency.id, deal.id), dealEntries(deal.id)])
@@ -136,6 +139,7 @@ export default async function DealOverviewPage({ params }: Props) {
         </section>
       </div>
       <div className="flex flex-col gap-5">
+        {plan && plan.enabled && (plan.hasPlan || plan.agreed || plan.canEdit) ? <DealPaymentPlanCard dealId={deal.id} view={plan} today={zonedDayKey(new Date(), tz)} /> : null}
         {isAdmin && canEdit ? <ConfirmCard dealId={deal.id} stage={deal.stage} readyCount={ready.length} missingFee={ready.filter((x) => !x.termsReady).length} /> : null}
         {isAdmin && rates && entries.available ? (
           <DealFinanceCard
@@ -145,6 +149,7 @@ export default async function DealOverviewPage({ params }: Props) {
             contracted={rates.contracted}
             fees={financeTalents.map((x) => ({ name: x.talent.name, feeCents: Object.hasOwn(fees, x.id) ? fees[x.id] : null }))}
             entries={entries.items}
+            hasPlan={plan?.hasPlan ?? false}
           />
         ) : null}
         {canEdit || (deal.stage === "closed" && isAdmin) ? (

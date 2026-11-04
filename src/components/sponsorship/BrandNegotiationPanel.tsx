@@ -31,6 +31,7 @@ type Confirm = { kind: "acceptAsked"; tier: SponsorshipTier } | { kind: "accept"
 // rodadas com a agência: aceitar, recusar ou contrapropor. A equipe monta e o dono aprova (0081); recusar vai direto.
 export function BrandNegotiationPanel({ opportunityId, timeZone, negotiation, hasRole, eventPublic }: Props) {
   const t = useTranslations("sponsorship.negotiation");
+  const tvm = useTranslations("sponsorship.tierValue");
   const locale = useLocale() as Locale;
   const router = useRouter();
   const { toast } = useToast();
@@ -208,6 +209,13 @@ export function BrandNegotiationPanel({ opportunityId, timeZone, negotiation, ha
               <p className={tier.priceCents !== null ? "text-xl font-semibold text-fg" : "text-base font-medium text-fg-muted"} data-testid="tier-price">
                 {tier.priceCents !== null ? formatCents(tier.priceCents, locale) : t("priceToCombine")}
               </p>
+              {/* 0108: valor fixo do evento (dividido entre as marcas) ou valor por marca */}
+              {tier.priceCents !== null ? (
+                <p className="type-caption text-fg-muted" data-testid="tier-model" data-model={tier.valueModel}>
+                  {tier.valueModel === "fixo" ? tvm("brandFixo", { value: formatCents(tier.priceCents, locale), n: tier.slots }) : tvm("brandPorMarca", { value: formatCents(tier.priceCents, locale), n: tier.slots })}
+                  {tier.valueModel === "fixo" && tier.askCents !== null ? ` · ${tvm("brandShare", { value: formatCents(tier.askCents, locale) })}` : ""}
+                </p>
+              ) : null}
               {tier.perks.length > 0 ? (
                 <ul className="flex list-disc flex-col gap-1 pl-6 type-body-sm text-fg">
                   {tier.perks.map((x) => (
@@ -217,7 +225,7 @@ export function BrandNegotiationPanel({ opportunityId, timeZone, negotiation, ha
               ) : null}
               {can && !composing ? (
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  {tier.priceCents !== null && tier.perks.length > 0 ? (
+                  {tier.askCents !== null && tier.perks.length > 0 ? (
                     <Button type="button" size="lg" leadingIcon={<Handshake />} onClick={() => setConfirm({ kind: "acceptAsked", tier })} disabled={pending} data-testid="tier-accept">
                       {t("acceptAsked")}
                     </Button>
@@ -230,8 +238,8 @@ export function BrandNegotiationPanel({ opportunityId, timeZone, negotiation, ha
               {composing ? (
                 <TermsComposer
                   basePerks={tier.perks}
-                  askedCents={tier.priceCents}
-                  initialCents={tier.priceCents}
+                  askedCents={tier.askCents}
+                  initialCents={tier.askCents}
                   withAudience
                   initialPublic={eventPublic}
                   submitLabel={owner ? t("sendProposal") : t("sendToOwner")}
@@ -268,7 +276,7 @@ export function BrandNegotiationPanel({ opportunityId, timeZone, negotiation, ha
         title={confirm ? t(`confirm.${confirm.kind}.title`) : ""}
         description={
           confirm?.kind === "acceptAsked"
-            ? t(owner ? "confirm.acceptAsked.body" : "confirm.acceptAsked.bodyStaff", { tier: confirm.tier.name, amount: formatCents(confirm.tier.priceCents ?? 0, locale) })
+            ? t(owner ? "confirm.acceptAsked.body" : "confirm.acceptAsked.bodyStaff", { tier: confirm.tier.name, amount: formatCents(confirm.tier.askCents ?? 0, locale) })
             : confirm?.kind === "accept"
               ? t(owner ? "confirm.accept.body" : "confirm.accept.bodyStaff", { amount: formatCents(confirm.proposal.amountCents ?? 0, locale) })
               : confirm

@@ -457,5 +457,33 @@
     "seePage": "Ver página do herói",
     "outside": "Fora da plataforma",
     "inactive": "Página fora do ar"
+  },
+  "tierValue": {
+    "model": "Modelo de valor",
+    "fixo": "Valor fixo do evento",
+    "porMarca": "Valor por marca",
+    "hintFixo": "O total da cota no evento; as marcas que entrarem completam esse valor.",
+    "hintPorMarca": "Cada marca paga este valor; o total é valor × quantidade de marcas.",
+    "amountFixo": "Valor total da cota",
+    "amountPorMarca": "Valor por marca",
+    "amountHint": "Vazio = \"a combinar\".",
+    "byAdmin": "O Adm define o valor",
+    "slots": "Quantidade de marcas",
+    "slotsHintFixo": "Até quantas marcas dividem o valor.",
+    "slotsHintPorMarca": "Quantas marcas podem levar a cota.",
+    "summaryTotal": "Total da cota: {value}",
+    "summaryFixo": "Cada marca a partir de ≈ {share} (até {n} marcas)",
+    "summaryPorMarca": "{value} por marca × {n} marca(s)",
+    "summaryMissing": "Informe o valor para ver o total da cota.",
+    "tierModel": {
+      "fixo": "Valor fixo do evento",
+      "por_marca": "Valor por marca"
+    },
+    "tierCovered": "coberto {covered} de {total}",
+    "tierShare": "próxima marca a partir de {value}",
+    "tierTotal": "total da cota {value}",
+    "brandFixo": "Valor total do evento: {value}, dividido entre até {n} marcas",
+    "brandPorMarca": "Valor por marca: {value} (até {n} marcas)",
+    "brandShare": "sua parte a partir de {value}"
   }
 }

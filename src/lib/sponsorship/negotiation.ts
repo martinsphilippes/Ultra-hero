@@ -129,7 +129,28 @@ export function publicChips(p: SponsorshipPublic | null): string[] {
 }
 
 // ---------------------------------------------------------------- cotas (formulário da agência)
-export type TierDraft = { id: string | null; name: string; priceText: string; perksText: string; slots: number };
+// 0108: modelo de valor da cota, como na área das marcas — "fixo" = valor total da cota no evento (as marcas que
+// entram completam, até "slots"); "por_marca" = valor por marca × quantidade de marcas (o padrão, comportamento antigo).
+export const TIER_MODELS = ["fixo", "por_marca"] as const;
+export type TierModel = (typeof TIER_MODELS)[number];
+export type TierDraft = { id: string | null; name: string; priceText: string; perksText: string; slots: number; valueModel: TierModel };
+
+/** Total da cota: fixo = o próprio valor; por marca = valor × quantidade de marcas (teto). */
+export function tierTotalCents(t: { valueModel: TierModel; priceCents: number | null; slots: number }): number | null {
+  if (t.priceCents === null) return null;
+  return t.valueModel === "fixo" ? t.priceCents : t.priceCents * Math.max(1, t.slots);
+}
+
+/** Quanto cada marca paga a partir de: por marca = o valor; fixo = (total − coberto) ÷ vagas que sobram, arredondado
+ *  para cima (mesma conta de public.sponsorship_tier_ask). null = a combinar ou já coberto. */
+export function tierShareCents(t: { valueModel: TierModel; priceCents: number | null; slots: number }, coveredCents = 0, agreedCount = 0): number | null {
+  if (t.priceCents === null) return null;
+  if (t.valueModel === "por_marca") return t.priceCents;
+  const remaining = t.priceCents - coveredCents;
+  if (remaining < 1) return null;
+  const left = Math.max(1, t.slots - agreedCount);
+  return Math.ceil(remaining / left);
+}
 
 export const tierSchema = z.object({
   id: z.uuid().nullable(),
@@ -137,6 +158,8 @@ export const tierSchema = z.object({
   priceCents: z.number().int().min(1).max(MAX_AMOUNT_CENTS).nullable(),
   perks: z.array(z.string()).max(MAX_PERKS),
   slots: z.number().int().min(1).max(MAX_TIER_SLOTS),
+  // sem o campo (formato antigo) = por marca, o comportamento de antes
+  valueModel: z.enum(TIER_MODELS).default("por_marca"),
 });
 export type TierInput = z.infer<typeof tierSchema>;
 
@@ -169,7 +192,7 @@ export function validateTiers(
     const perks = parsePerks(d.perksText);
     if (!perksValid(perks)) return { ok: false, index, error: "perks" };
     if (!Number.isInteger(d.slots) || d.slots < 1 || d.slots > MAX_TIER_SLOTS) return { ok: false, index, error: "slots" };
-    tiers.push({ id: d.id, name, priceCents, perks, slots: d.slots });
+    tiers.push({ id: d.id, name, priceCents, perks, slots: d.slots, valueModel: d.valueModel });
   }
   return { ok: true, tiers };
 }

@@ -379,7 +379,10 @@
     "roadmap_started": "Já há etapas concluídas: o serviço não pode mais ser trocado.",
     "roadmap_exists": "Este negócio já tem roteiro.",
     "client_required": "Escolha a marca, o herói ou os dois.",
-    "talent_agency_mismatch": "Esse herói não é do casting desta agência."
+    "talent_agency_mismatch": "Esse herói não é do casting desta agência.",
+    "payment_terms_required": "Antes de enviar os termos, o Adm precisa definir as condições de pagamento (valor acordado, forma e datas).",
+    "agreed_below_payouts": "O valor acordado não cobre os cachês dos heróis. Revise o valor ou os cachês.",
+    "plan_locked": "A contratação já foi confirmada: ajuste as parcelas em Financeiro › Pagamentos da marca."
   },
   "casting": {
     "title": "Casting",
@@ -880,7 +883,8 @@
       "rateOverride": "Taxa deste negócio (%)",
       "rateOverrideHint": "Vazio usa a taxa padrão da agência ({rate}). Só muda antes da contratação.",
       "rateSave": "Salvar taxa do negócio",
-      "noEntries": "Os lançamentos aparecem aqui depois da contratação."
+      "noEntries": "Os lançamentos aparecem aqui depois da contratação.",
+      "planRules": "As condições de pagamento já estão salvas: a marca paga o valor acordado e a comissão é o que sobra depois dos repasses. Esta conta pela taxa é só referência."
     },
     "heroesSavedCreated": "{count, plural, one {Elenco salvo. Ficha criada no seu casting.} other {Elenco salvo. # fichas criadas no seu casting.}}"
   },
@@ -1085,7 +1089,10 @@
       "cancelled": "Cancelados",
       "all": "Todos",
       "invoices": "Notas para conferir",
-      "payments": "Pagamentos da marca"
+      "payments": "Pagamentos da marca",
+      "receivable": "A receber",
+      "payable": "A pagar",
+      "forecast": "Previstos"
     },
     "empty": {
       "open": "Nenhum lançamento em aberto.",
@@ -1093,7 +1100,10 @@
       "settled": "Nenhum lançamento liquidado.",
       "cancelled": "Nenhum lançamento cancelado.",
       "all": "Nenhum lançamento ainda. Eles nascem na confirmação da contratação.",
-      "invoices": "Nenhuma nota fiscal esperando conferência."
+      "invoices": "Nenhuma nota fiscal esperando conferência.",
+      "receivable": "Nada a receber das marcas em aberto.",
+      "payable": "Nenhum repasse aos heróis em aberto.",
+      "forecast": "Nenhum previsto: salve as condições de pagamento de um negócio para ver aqui."
     },
     "kpi": {
       "receivableOpen": "A receber",
@@ -1103,7 +1113,8 @@
       "payoutOpen": "Repasses a pagar",
       "payoutSettled": "{value} pagos",
       "overdue": "Vencidos",
-      "openCount": "{count} em aberto em {deals, plural, one {# negócio} other {# negócios}}"
+      "openCount": "{count} em aberto em {deals, plural, one {# negócio} other {# negócios}}",
+      "forecast": "Previsto (aguardando contratação): {receivable} a receber das marcas · {payout} a repassar aos heróis."
     },
     "dueOn": "vence em {date}",
     "noDue": "sem vencimento",

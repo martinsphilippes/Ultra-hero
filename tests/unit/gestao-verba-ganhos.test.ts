@@ -25,7 +25,7 @@ import { toTalentToday } from "@/lib/today/normalize";
 const ID = "11111111-1111-4111-8111-111111111111";
 const earning = (over: Partial<Earning> = {}): Earning => ({
   id: "e1", dealId: "d1", dealTalentId: "dt1", agencyId: "a1", dealTitle: "Verão", brandName: "Alfa", status: "planned", amountCents: 100000,
-  dueOn: "2026-12-01", scheduledOn: null, settledAt: null, delivered: false, invoice: null, ...over,
+  dueOn: "2026-12-01", scheduledOn: null, settledAt: null, delivered: false, invoice: null, payoutMethod: null, invoiceRequired: false, ...over,
 });
 const inv = (status: "submitted" | "approved" | "rejected", over: Record<string, unknown> = {}) => ({ id: `i-${status}`, status, reviewNote: "", documentId: "doc", submittedAt: "2026-11-01T10:00:00Z", reviewedAt: null, ...over });
 

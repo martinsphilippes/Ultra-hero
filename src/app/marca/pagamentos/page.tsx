@@ -6,7 +6,7 @@ import { EmptyState, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { formatCents } from "@/lib/deals/schemas";
-import { paymentTotals } from "@/lib/finance/payments";
+import { forecastTotal, paymentTotals } from "@/lib/finance/payments";
 import { brandPayments } from "@/lib/finance/queries";
 import { localDay } from "@/lib/today/logic";
 
@@ -21,7 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 // Pagamentos da marca (0090): tudo o que a marca deve às agências (campanhas, patrocínios e chamadas acordados que
 // geraram o "a receber"), com parcelas, vencimento e situação, os dados de pagamento da agência e "Informar
-// pagamento" (dono e equipe). Registro/controle simulado: nada aqui cobra nem move dinheiro.
+// pagamento" (dono e equipe). 0108: as condições combinadas aparecem como "Previsto" desde o acordo, com forma e
+// datas, e viram "em aberto" na contratação. Registro/controle simulado: nada aqui cobra nem move dinheiro.
 export default async function BrandPaymentsPage() {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
@@ -39,6 +40,8 @@ export default async function BrandPaymentsPage() {
   const data = res.data;
   const today = localDay(new Date(), data.agencies[0]?.timezone ?? "America/Sao_Paulo");
   const totals = paymentTotals(data.items, today);
+  // 0108: previsto (condições combinadas, aguardando a contratação) fica fora dos totais em aberto
+  const forecast = forecastTotal(data.items);
   const tile = (label: string, cents: number, tone: "fg" | "danger" | "warning" | "success" = "fg", extra?: string) => (
     <div className="flex min-h-16 flex-col justify-center rounded-xl border border-border bg-surface px-3 py-2">
       <span className="type-caption text-fg-muted">{label}</span>
@@ -61,6 +64,11 @@ export default async function BrandPaymentsPage() {
             {tile(t("totals.reported"), totals.reportedCents, totals.reportedCount > 0 ? "warning" : "fg")}
             {tile(t("totals.paid"), totals.paidCents, "success")}
           </div>
+          {forecast.count > 0 ? (
+            <p className="rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="payment-forecast">
+              {t("totals.forecast", { value: formatCents(forecast.cents, locale), count: forecast.count })}
+            </p>
+          ) : null}
           {data.agencies.map((a) => (
             <PaymentDataCard key={a.agencyId} agencyName={a.name} settings={a.settings} />
           ))}

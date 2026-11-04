@@ -4,10 +4,12 @@ import { z } from "zod";
 // F = soma dos cachês dos creators contratados; taxa em pontos-base; C = F × taxa; V = F + C (o que a marca paga).
 export const ENTRY_KINDS = ["brand_receivable", "commission", "talent_payout"] as const;
 export type EntryKind = (typeof ENTRY_KINDS)[number];
-export const ENTRY_STATUSES = ["planned", "due", "settled", "cancelled"] as const;
+// 0108: "forecast" = previsto (condições salvas, aguardando a contratação): não vence nem muda à mão
+export const ENTRY_STATUSES = ["forecast", "planned", "due", "settled", "cancelled"] as const;
 export type EntryStatus = (typeof ENTRY_STATUSES)[number];
 // "invoices" (0082): repasses com nota fiscal enviada esperando o Adm
-export const ENTRY_FILTERS = ["open", "invoices", "overdue", "settled", "cancelled", "all"] as const;
+// 0108: "receivable" (a receber das marcas), "payable" (a pagar aos heróis) e "forecast" (previstos)
+export const ENTRY_FILTERS = ["open", "receivable", "payable", "invoices", "overdue", "forecast", "settled", "cancelled", "all"] as const;
 export type EntryFilter = (typeof ENTRY_FILTERS)[number];
 export const MAX_RATE_BP = 5000;
 

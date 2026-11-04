@@ -1,5 +1,9 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // condições de pagamento (0108)
+  "payment_terms_required",
+  "agreed_below_payouts",
+  "plan_locked",
   // roteiros de entrega (0107)
   "roadmap_started",
   "roadmap_exists",

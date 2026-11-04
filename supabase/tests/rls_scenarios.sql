@@ -16523,5 +16523,348 @@ delete from public.agencies where id::text like 'a1130000-%';
 delete from auth.users where id::text like 'a1130000-%';
 drop table tests.s113;
 
+-- ================================================================ S114 · Condições de pagamento, previsto, termos com pagamento e modelo das cotas (0108)
+-- Plano de pagamento por negócio (só o Adm grava; gestor/colaborador sem valores; marca vê total e parcelas; herói
+-- titular só o repasse dele): previsto ('forecast') nasce ao salvar e acompanha os cachês, não vence nem recebe
+-- informe/agenda; enviar termos exige o plano (caso "Mulheres": aprovado, termos em rascunho); a cópia congelada vai
+-- para o texto assinado (marca: total e parcelas; herói: o cachê dele; gestor: sem pagamento) e é ela que a
+-- contratação usa (valor ACORDADO, comissão = acordado − repasses, identidade conferida); depois o plano trava.
+-- Aviso de repasse (herói e Adm), negócio perdido cancela o previsto, cliente só herói fica fora. Cotas: modelo fixo
+-- (pedido por marca = o que falta ÷ vagas) ou por marca; proposta acima do total é recusada. S14 segue 18.
+\ir ../migrations/0108_condicoes_pagamento.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local'),
+  ('a1140000-0000-4000-8000-000000000002', 's114-gestor@test.local'),
+  ('a1140000-0000-4000-8000-000000000003', 's114-colab@test.local'),
+  ('a1140000-0000-4000-8000-000000000004', 's114-dono@test.local'),
+  ('a1140000-0000-4000-8000-000000000005', 's114-equipe@test.local'),
+  ('a1140000-0000-4000-8000-000000000006', 's114-outra@test.local'),
+  ('a1140000-0000-4000-8000-000000000007', 's114-heroi@test.local'),
+  ('a1140000-0000-4000-8000-000000000008', 's114-comum@test.local');
+insert into public.agencies (id, slug, name) values ('a1140000-0000-4000-8000-0000000000a1', 's114-agencia', 'Agência S114');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S114'),
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S114'),
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-000000000003', 'staff', 'Caio Colab S114');
+insert into public.brands (id, slug, name, site_url) values
+  ('a1140000-0000-4000-8000-0000000000b1', 's114-marca', 'Marca S114', 'https://m.s114.test'),
+  ('a1140000-0000-4000-8000-0000000000b2', 's114-outra', 'Outra S114', 'https://o.s114.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b1'),
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b2');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1140000-0000-4000-8000-0000000000b1', 'a1140000-0000-4000-8000-000000000004', 'owner', 'Dona S114'),
+  ('a1140000-0000-4000-8000-0000000000b1', 'a1140000-0000-4000-8000-000000000005', 'staff', 'Equipe S114'),
+  ('a1140000-0000-4000-8000-0000000000b2', 'a1140000-0000-4000-8000-000000000006', 'owner', 'Dono Outra S114');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, consent_at) values
+  ('a1140000-0000-4000-8000-0000000000c1', 'a1140000-0000-4000-8000-0000000000a1', 'Heroína Um S114', 'a1140000-0000-4000-8000-000000000007', now() - interval '30 days'),
+  ('a1140000-0000-4000-8000-0000000000c2', 'a1140000-0000-4000-8000-0000000000a1', 'Herói Dois S114', null, now() - interval '30 days');
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables, period_start, period_end) values
+  ('a1140000-0000-4000-8000-0000000000d1', 'a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b1', 'brand', 'Mulheres S114', 'converted', now() - interval '10 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 30),
+  ('a1140000-0000-4000-8000-0000000000d3', 'a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b1', 'brand', 'Perdida S114', 'converted', now() - interval '10 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 30);
+insert into public.campaign_request_budgets (agency_id, brand_id, request_id, budget_min_cents, budget_max_cents) values
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b1', 'a1140000-0000-4000-8000-0000000000d1', 300000, 300000);
+insert into public.deals (id, agency_id, brand_id, request_id, title, stage, brand_visible, owner_id, expected_start, expected_end) values
+  ('a1140000-0000-4000-8000-0000000000e1', 'a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b1', 'a1140000-0000-4000-8000-0000000000d1',
+   'Mulheres S114', 'approved', true, 'a1140000-0000-4000-8000-000000000002', current_date + 10, current_date + 30),
+  ('a1140000-0000-4000-8000-0000000000e3', 'a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000b1', 'a1140000-0000-4000-8000-0000000000d3',
+   'Perdida S114', 'negotiation', true, null, current_date + 10, current_date + 30);
+insert into public.deals (id, agency_id, brand_id, client_talent_id, title, stage, brand_visible, owner_id) values
+  ('a1140000-0000-4000-8000-0000000000e2', 'a1140000-0000-4000-8000-0000000000a1', null, 'a1140000-0000-4000-8000-0000000000c1', 'Mentoria S114', 'briefing_received', false, null);
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('a1140000-0000-4000-8000-0000000000f1', 'a1140000-0000-4000-8000-0000000000e1', 'a1140000-0000-4000-8000-0000000000c1', 'proposed', now() - interval '5 days', true),
+  ('a1140000-0000-4000-8000-0000000000f2', 'a1140000-0000-4000-8000-0000000000e1', 'a1140000-0000-4000-8000-0000000000c2', 'proposed', now() - interval '5 days', true),
+  ('a1140000-0000-4000-8000-0000000000f3', 'a1140000-0000-4000-8000-0000000000e3', 'a1140000-0000-4000-8000-0000000000c2', 'proposed', now() - interval '5 days', true);
+insert into public.deal_talent_fees (agency_id, deal_id, deal_talent_id, talent_id, fee_cents) values
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000e1', 'a1140000-0000-4000-8000-0000000000f1', 'a1140000-0000-4000-8000-0000000000c1', 100000),
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000e1', 'a1140000-0000-4000-8000-0000000000f2', 'a1140000-0000-4000-8000-0000000000c2', 80000),
+  ('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000e3', 'a1140000-0000-4000-8000-0000000000f3', 'a1140000-0000-4000-8000-0000000000c2', 50000);
+create temp table t_s114 (k text primary key, v text);
+grant all on t_s114 to anon, authenticated, service_role;
+insert into t_s114 values ('plan', jsonb_build_object('method', 'pix', 'structure', 'down_payment', 'down_payment_pct', 30,
+  'first_rule', 'signature', 'first_days', 0, 'balance_rule', 'publication', 'balance_days', 15,
+  'payout_rule', 'after_receipt', 'payout_days', 10, 'payout_method', 'pix', 'invoice_talent', true, 'invoice_agency', true, 'notes', 'Boleto não')::text);
+
+select tests.ok('S114 estrutura: 2 tabelas com RLS e só leitura, internas fechadas, nada para visitante, search_path fixo, sem sobrecarga; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.deal_payment_plans'::regclass, 'public.deal_terms_payments'::regclass))
+  and not has_table_privilege('anon', 'public.deal_payment_plans', 'select') and not has_table_privilege('anon', 'public.deal_terms_payments', 'select')
+  and not has_table_privilege('authenticated', 'public.deal_payment_plans', 'insert') and not has_table_privilege('authenticated', 'public.deal_payment_plans', 'update')
+  and not has_table_privilege('authenticated', 'public.deal_terms_payments', 'insert') and not has_table_privilege('authenticated', 'public.deal_terms_payments', 'delete')
+  and not has_column_privilege('authenticated', 'public.deal_signatures', 'signed_text', 'select')
+  and has_column_privilege('authenticated', 'public.deal_signatures', 'text_sha256', 'select')
+  and has_column_privilege('authenticated', 'public.financial_entries', 'from_plan', 'select')
+  and not has_function_privilege('authenticated', 'public.deal_payment_write(uuid, bigint, jsonb, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_payment_forecast(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_payment_events(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_payment_scan()', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_terms_payment_text(uuid, text, uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.sponsorship_tier_ask(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_payment_plan_save(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.deal_payment_plan_json(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.payment_plan_clean(jsonb)', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_payment_plan_save(uuid, jsonb)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace
+       and p.proname in ('agency_payment_plan_save', 'deal_payment_plan_json', 'deal_payment_write', 'payment_plan_parts', 'agency_terms_send', 'terms_sign_preview')) = 6
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null
+                  and (p.proname like '%payment_plan%' or p.proname like 'deal_payment%' or p.proname like 'sponsorship_tier_%'))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.ok('S114 conta pura: sinal 30% + saldo, 3 parcelas mensais (31/01 → 28/02) e repasse após receber',
+  public.payment_plan_parts(public.payment_plan_clean((select v::jsonb from t_s114 where k = 'plan')), 300000, '2026-11-10', '2026-12-01', '2026-12-05')
+    = '[{"seq": 1, "amount_cents": 90000, "due_on": "2026-11-10"}, {"seq": 2, "amount_cents": 210000, "due_on": "2026-12-20"}]'::jsonb
+  and public.payment_plan_parts(public.payment_plan_clean('{"structure": "installments", "installments": 3, "interval": "monthly", "first_rule": "date", "first_on": "2027-01-31"}'),
+        100001, null, null, null)
+    = '[{"seq": 1, "amount_cents": 33334, "due_on": "2027-01-31"}, {"seq": 2, "amount_cents": 33334, "due_on": "2027-02-28"}, {"seq": 3, "amount_cents": 33333, "due_on": "2027-03-31"}]'::jsonb
+  and public.payment_plan_payout_due(public.payment_plan_clean((select v::jsonb from t_s114 where k = 'plan')), '2026-12-20', '2026-12-01') = '2026-12-30'
+  and public.brl_text(123456) = 'R$ 1.234,56'
+  and not public.payment_plan_valid('{"structure": "installments", "installments": 13, "interval": "monthly", "first_rule": "date", "first_on": "2027-01-31"}'));
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S114 visitante não lê planos', $q$select count(*) from public.deal_payment_plans$q$, 'permission denied');
+select tests.expect_error('S114 visitante não lê o plano', $q$select public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1')$q$, 'permission denied');
+select tests.expect_error('S114 visitante não salva', $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', '{}')$q$, 'permission denied');
+
+-- "Mulheres": termos em rascunho, enviar pede as condições
+select tests.login('a1140000-0000-4000-8000-000000000002', 's114-gestor@test.local');
+insert into t_s114 values ('terms', public.agency_terms_save('a1140000-0000-4000-8000-0000000000e1',
+  '{"summary": "Campanha Mulheres: 1 reels por heroína, com aprovação da marca."}')::text);
+select tests.expect_error('S114 enviar termos sem condições de pagamento é recusado',
+  $q$select public.agency_terms_send((select v::uuid from t_s114 where k = 'terms'))$q$, 'payment_terms_required');
+select tests.expect_error('S114 gestor não grava condições',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 300000, 'plan', (select v::jsonb from t_s114 where k = 'plan')))$q$, 'forbidden');
+select tests.ok('S114 gestor lê a situação sem valor', public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"viewer": "agency", "values": false, "status": "none", "has_plan": false, "can_edit": false}'
+  and not (public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') ? 'total_cents'));
+select tests.login('a1140000-0000-4000-8000-000000000003', 's114-colab@test.local');
+select tests.expect_error('S114 colaborador fora do negócio não lê', $q$select public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1')$q$, 'not_found');
+select tests.expect_error('S114 colaborador não grava',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 300000, 'plan', (select v::jsonb from t_s114 where k = 'plan')))$q$, 'forbidden');
+
+-- Adm: sugestão, validações e salvar
+select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
+select tests.ok('S114 Adm vê a sugestão (valor oferecido) e pode editar',
+  public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"values": true, "can_edit": true, "payouts_cents": 180000, "suggested": {"source": "offered", "cents": 300000}}');
+select tests.expect_error('S114 acordado abaixo dos repasses é recusado',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 150000, 'plan', (select v::jsonb from t_s114 where k = 'plan')))$q$, 'agreed_below_payouts');
+select tests.expect_error('S114 13 parcelas é recusado',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', '{"total_cents": 300000, "plan": {"structure": "installments", "installments": 13, "interval": "monthly", "first_rule": "date", "first_on": "2027-01-10"}}')$q$, 'invalid_input');
+select tests.expect_error('S114 data muito distante é recusada',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 300000, 'plan', jsonb_build_object('structure', 'single', 'first_rule', 'date', 'first_on', current_date + 900)))$q$, 'invalid_date');
+select tests.expect_error('S114 forma "outra" sem descrição é recusada',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 300000, 'plan', jsonb_build_object('method', 'other', 'structure', 'single', 'first_rule', 'signature')))$q$, 'invalid_input');
+select tests.ok('S114 Adm salva o acordado com sinal + saldo', (public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1',
+  jsonb_build_object('total_cents', 300000, 'plan', (select v::jsonb from t_s114 where k = 'plan'))) ->> 'version')::int = 1);
+select tests.su();
+select tests.ok('S114 previsto: a receber = acordado em 2 parcelas, comissão = acordado − repasses, identidade fecha',
+  (select count(*) from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and status = 'forecast') = 4
+  and (select amount_cents from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and kind = 'brand_receivable') = 300000
+  and (select amount_cents from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and kind = 'commission') = 120000
+  and (select sum(case when kind = 'brand_receivable' then amount_cents else -amount_cents end) from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1') = 0
+  and (select array_agg(i.amount_cents order by i.seq) from public.brand_payment_installments i join public.financial_entries f on f.id = i.entry_id
+       where f.deal_id = 'a1140000-0000-4000-8000-0000000000e1' and i.from_plan) = array[90000, 210000]::bigint[]
+  and (select due_on from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and kind = 'brand_receivable') = current_date
+  and (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000004' and kind = 'payment_plan' and params::text not like '%300000%') = 1);
+
+-- previsto acompanha o cachê (gatilho) e não se mexe à mão
+update public.deal_talent_fees set fee_cents = 90000 where deal_talent_id = 'a1140000-0000-4000-8000-0000000000f2';
+select tests.ok('S114 cachê mudou: previsto refeito (comissão 110000)',
+  (select amount_cents from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and kind = 'commission' and status = 'forecast') = 110000);
+select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
+insert into t_s114 values ('payout1', (select id::text from public.financial_entries where deal_talent_id = 'a1140000-0000-4000-8000-0000000000f1'));
+select tests.expect_error('S114 previsto não muda de situação à mão',
+  $q$select public.agency_entry_set_status((select v::uuid from t_s114 where k = 'payout1'), 'settled')$q$, 'invalid_state');
+select tests.expect_error('S114 previsto não se agenda',
+  $q$select public.agency_payout_schedule((select v::uuid from t_s114 where k = 'payout1'), current_date + 3)$q$, 'invalid_state');
+select tests.ok('S114 resumo do Adm separa o previsto do aberto',
+  public.agency_finance_summary('a1140000-0000-4000-8000-0000000000a1') @> '{"receivable_forecast_cents": 300000, "receivable_open_cents": 0, "forecast_count": 4, "open_count": 0}');
+select tests.ok('S114 taxa do negócio continua editável com previsto', (public.agency_rates('a1140000-0000-4000-8000-0000000000a1', 'a1140000-0000-4000-8000-0000000000e1') ->> 'contracted')::boolean = false);
+
+-- marca: total e parcelas, sem repasse; não informa pagamento do previsto
+select tests.login('a1140000-0000-4000-8000-000000000004', 's114-dono@test.local');
+select tests.ok('S114 marca vê total e parcelas, sem cachês nem repasse',
+  public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"viewer": "brand", "status": "forecast", "total_cents": 300000, "plan": {"structure": "down_payment", "invoice_agency": true}}'
+  and not (public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') -> 'plan' ? 'payout_rule')
+  and not (public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') ? 'payouts')
+  and jsonb_array_length(public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') -> 'parts') = 2);
+select tests.ok('S114 Pagamentos da marca mostram o previsto com as condições',
+  (public.brand_payments('a1140000-0000-4000-8000-0000000000b1') -> 'items') @> '[{"entry_status": "forecast", "total_cents": 300000, "plan": {"method": "pix", "structure": "down_payment"}}]'
+  and (select count(*) from public.financial_entries) = 0);
+insert into t_s114 values ('inst1', (select i.id::text from public.brand_payment_installments i
+  where i.deal_id = 'a1140000-0000-4000-8000-0000000000e1' and i.seq = 1));
+select tests.expect_error('S114 marca não informa pagamento de previsto',
+  $q$select public.brand_payment_report((select v::uuid from t_s114 where k = 'inst1'), current_date, 90000)$q$, 'invalid_state');
+select tests.login('a1140000-0000-4000-8000-000000000006', 's114-outra@test.local');
+select tests.expect_error('S114 outra marca não lê o plano', $q$select public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1')$q$, 'not_found');
+select tests.ok('S114 outra marca não vê parcelas', (select count(*) from public.brand_payment_installments where deal_id = 'a1140000-0000-4000-8000-0000000000e1') = 0);
+select tests.login('a1140000-0000-4000-8000-000000000008', 's114-comum@test.local');
+select tests.expect_error('S114 quem não é de nada não lê o plano', $q$select public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1')$q$, 'not_found');
+
+-- herói titular: só o repasse dele (previsto, nota exigida)
+select tests.login('a1140000-0000-4000-8000-000000000007', 's114-heroi@test.local');
+select tests.ok('S114 herói vê só o próprio repasse com regra e nota exigida',
+  public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"viewer": "talent", "plan": {"payout_rule": "after_receipt", "payout_days": 10, "invoice_talent": true}, "my_payout": {"amount_cents": 100000, "status": "forecast"}}'
+  and not (public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') ? 'total_cents')
+  and not (public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') ? 'parts')
+  and (select count(*) from public.financial_entries) = 1
+  and public.talent_payouts() @> '[{"status": "forecast", "amount_cents": 100000, "invoice_required": true, "payout_method": "pix"}]');
+
+-- envio dos termos: cópia congelada; texto assinado por parte
+select tests.login('a1140000-0000-4000-8000-000000000002', 's114-gestor@test.local');
+select public.agency_terms_send((select v::uuid from t_s114 where k = 'terms'));
+select tests.su();
+select tests.ok('S114 envio congela a cópia do plano (acordado e cachês)',
+  (select total_cents = 300000 and jsonb_array_length(payouts) = 2 and plan_version = 1 from public.deal_terms_payments where terms_id = (select v::uuid from t_s114 where k = 'terms'))
+  and (select stage from public.deals where id = 'a1140000-0000-4000-8000-0000000000e1') = 'contracting');
+select tests.login('a1140000-0000-4000-8000-000000000004', 's114-dono@test.local');
+insert into t_s114 values ('brand_preview', public.terms_sign_preview((select v::uuid from t_s114 where k = 'terms'))::text);
+select tests.ok('S114 marca assina total, sinal e saldo (sem repasse)',
+  (select v::jsonb ->> 'text' from t_s114 where k = 'brand_preview') like '%CONDIÇÕES DE PAGAMENTO%R$ 3.000,00%Sinal: R$ 900,00 — vencimento na assinatura%Saldo: R$ 2.100,00 — vencimento 15 dias após a publicação%'
+  and (select v::jsonb ->> 'text' from t_s114 where k = 'brand_preview') not like '%REPASSE%');
+select tests.ok('S114 marca assina com o hash da prévia',
+  public.brand_terms_sign((select v::uuid from t_s114 where k = 'terms'), 'Dona da Marca S114', '529.982.247-25',
+    (select v::jsonb ->> 'sha256' from t_s114 where k = 'brand_preview')) is not null);
+select tests.login('a1140000-0000-4000-8000-000000000007', 's114-heroi@test.local');
+select tests.ok('S114 herói assina o cachê dele (sem o valor da marca)',
+  (public.terms_sign_preview((select v::uuid from t_s114 where k = 'terms')) ->> 'text') like '%REPASSE AO HERÓI%Seu cachê: R$ 1.000,00%10 dias após a agência receber%Nota fiscal do herói: exigida%'
+  and (public.terms_sign_preview((select v::uuid from t_s114 where k = 'terms')) ->> 'text') not like '%3.000,00%'
+  and public.talent_terms_sign((select v::uuid from t_s114 where k = 'terms'), 'Heroína Um Silva', '529.982.247-25') is not null);
+select tests.login('a1140000-0000-4000-8000-000000000002', 's114-gestor@test.local');
+select tests.ok('S114 gestor vê a prévia e o comprovante sem pagamento',
+  (public.terms_sign_preview((select v::uuid from t_s114 where k = 'terms')) ->> 'text') not like '%PAGAMENTO%'
+  and (public.terms_signature_receipt((select id from public.deal_signatures where terms_id = (select v::uuid from t_s114 where k = 'terms') and party = 'brand')) ->> 'text') not like '%3.000,00%'
+  and (public.terms_signature_receipt((select id from public.deal_signatures where terms_id = (select v::uuid from t_s114 where k = 'terms') and party = 'brand')) ->> 'payment_hidden')::boolean
+  and (public.terms_signature_receipt((select id from public.deal_signatures where terms_id = (select v::uuid from t_s114 where k = 'terms') and party = 'brand')) ->> 'intact')::boolean);
+select tests.expect_error('S114 gestor não lê o texto assinado direto', $q$select signed_text from public.deal_signatures$q$, 'permission denied');
+select public.agency_record_acceptance((select v::uuid from t_s114 where k = 'terms'), 'talent', 'a1140000-0000-4000-8000-0000000000f2', null, 'Aceite por e-mail');
+
+-- Adm muda o plano depois do envio: aviso de nova versão; a contratação usa a cópia ASSINADA
+select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
+select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 320000, 'plan', (select v::jsonb from t_s114 where k = 'plan')));
+select tests.ok('S114 plano mudou depois do envio: termos pendentes',
+  public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"terms_pending": true, "total_cents": 320000}');
+select tests.login('a1140000-0000-4000-8000-000000000002', 's114-gestor@test.local');
+select tests.ok('S114 contratação confirmada', public.agency_contract_confirm('a1140000-0000-4000-8000-0000000000e1') >= 0);
+select tests.su();
+select tests.ok('S114 efetivo: valor assinado (3.000,00), em aberto, parcelas do plano, sem previsto, identidade',
+  (select count(*) from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and status = 'forecast') = 0
+  and (select amount_cents from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and kind = 'brand_receivable' and status = 'planned') = 300000
+  and (select amount_cents from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and kind = 'commission' and status = 'planned') = 110000
+  and (select sum(case when kind = 'brand_receivable' then amount_cents else -amount_cents end) from public.financial_entries
+       where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and status <> 'cancelled') = 0
+  and (select array_agg(i.amount_cents order by i.seq) from public.brand_payment_installments i join public.financial_entries f on f.id = i.entry_id
+       where f.deal_id = 'a1140000-0000-4000-8000-0000000000e1' and f.status = 'planned') = array[90000, 210000]::bigint[]
+  and (select count(*) from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e1' and kind = 'talent_payout' and status = 'planned' and from_plan) = 2);
+select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
+select tests.expect_error('S114 depois da contratação o plano trava (parcelas pela divisão da 0090)',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e1', jsonb_build_object('total_cents', 300000, 'plan', (select v::jsonb from t_s114 where k = 'plan')))$q$, 'plan_locked');
+select tests.ok('S114 plano efetivo', public.deal_payment_plan_json('a1140000-0000-4000-8000-0000000000e1') @> '{"status": "effective", "locked": true, "can_edit": false}');
+
+-- aviso do repasse (agendado para daqui a 2 dias): herói e Adm, sem valor
+select public.agency_payout_schedule((select id from public.financial_entries where deal_talent_id = 'a1140000-0000-4000-8000-0000000000f1' and status <> 'cancelled'), current_date + 2);
+select tests.su();
+select tests.ok('S114 varredura diária roda', (public.deal_payment_scan() ->> 'payout_alerts')::int >= 2);
+select tests.ok('S114 herói e Adm avisados do repasse a vencer (sem valor); herói sem login não recebe',
+  (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000007' and kind = 'payout_due' and params ->> 'status' = 'soon'
+     and params::text not like '%100000%') = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000001' and kind = 'payout_due') >= 1
+  and (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000002' and kind = 'payout_due') = 0);
+select tests.ok('S114 varredura de novo não repete o aviso', (select count(*) from (select public.deal_payment_scan()) x) = 1
+  and (select count(*) from public.inbox_notifications where user_id = 'a1140000-0000-4000-8000-000000000007' and kind = 'payout_due') = 1);
+
+-- negócio perdido: previsto cancelado; cliente só herói: fora
+select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
+select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e3', jsonb_build_object('total_cents', 70000,
+  'plan', jsonb_build_object('structure', 'installments', 'installments', 2, 'interval', 'biweekly', 'first_rule', 'date', 'first_on', current_date + 5)));
+select tests.su();
+select tests.ok('S114 quinzenal: 2 parcelas com 14 dias entre elas',
+  (select array_agg(due_on order by seq) from public.brand_payment_installments where deal_id = 'a1140000-0000-4000-8000-0000000000e3') = array[current_date + 5, current_date + 19]);
+update public.deals set stage = 'closed', outcome = 'lost', closed_at = now() where id = 'a1140000-0000-4000-8000-0000000000e3';
+select tests.ok('S114 negócio perdido cancela o previsto',
+  (select bool_and(status = 'cancelled') and count(*) = 3 from public.financial_entries where deal_id = 'a1140000-0000-4000-8000-0000000000e3'));
+select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
+select tests.expect_error('S114 cliente só herói fica fora do plano',
+  $q$select public.agency_payment_plan_save('a1140000-0000-4000-8000-0000000000e2', '{"total_cents": 50000, "plan": {"structure": "single", "first_rule": "signature"}}')$q$, 'invalid_state');
+
+-- cotas: valor fixo do evento × por marca
+insert into t_s114 values ('opp', public.agency_sponsorship_save('a1140000-0000-4000-8000-0000000000a1', null, jsonb_build_object(
+  'talent_id', 'a1140000-0000-4000-8000-0000000000c1', 'title', 'Corrida S114', 'location', 'São Paulo', 'starts_at', now() + interval '20 days',
+  'ends_at', now() + interval '20 days 4 hours', 'networks', jsonb_build_array('instagram'), 'respond_by', now() + interval '10 days', 'audience', 'selected',
+  'brand_ids', jsonb_build_array('a1140000-0000-4000-8000-0000000000b1'),
+  'tiers', jsonb_build_array(
+    jsonb_build_object('name', 'Evento', 'value_model', 'fixo', 'price_cents', 900000, 'slots', 3, 'perks', jsonb_build_array('Logo no palco')),
+    jsonb_build_object('name', 'Apoio', 'value_model', 'por_marca', 'price_cents', 200000, 'slots', 2, 'perks', jsonb_build_array('1 story')))))::text);
+select tests.ok('S114 Adm vê modelo, pedido por marca e coberto',
+  (public.agency_sponsorship_detail((select v::uuid from t_s114 where k = 'opp')) -> 'tiers')
+    @> '[{"name": "Evento", "value_model": "fixo", "price_cents": 900000, "ask_cents": 300000, "covered_cents": 0}, {"name": "Apoio", "value_model": "por_marca", "ask_cents": 200000}]');
+select tests.expect_error('S114 modelo inválido é recusado',
+  $q$select public.agency_sponsorship_save('a1140000-0000-4000-8000-0000000000a1', (select v::uuid from t_s114 where k = 'opp'),
+     jsonb_build_object('tiers', jsonb_build_array(jsonb_build_object('name', 'Evento', 'value_model', 'cota', 'price_cents', 900000, 'slots', 3, 'perks', jsonb_build_array('Logo')))))$q$, 'invalid_input');
+select tests.login('a1140000-0000-4000-8000-000000000002', 's114-gestor@test.local');
+select tests.ok('S114 gestor vê o modelo, sem valores',
+  (public.agency_sponsorship_detail((select v::uuid from t_s114 where k = 'opp')) -> 'tiers') @> '[{"name": "Evento", "value_model": "fixo", "price_cents": null, "ask_cents": null, "covered_cents": null}]');
+select tests.login('a1140000-0000-4000-8000-000000000004', 's114-dono@test.local');
+select tests.ok('S114 marca vê o valor total do evento e o "a partir de" por marca',
+  (public.brand_sponsorships('a1140000-0000-4000-8000-0000000000b1') -> 0 -> 'tiers') @> '[{"name": "Evento", "value_model": "fixo", "price_cents": 900000, "ask_cents": 300000, "slots": 3}]');
+select tests.ok('S114 painel de negociação da marca traz o modelo e o pedido por marca',
+  (public.brand_sponsorship_negotiation((select v::uuid from t_s114 where k = 'opp'), 'a1140000-0000-4000-8000-0000000000b1') -> 'tiers')
+    @> '[{"name": "Evento", "value_model": "fixo", "ask_cents": 300000}, {"name": "Apoio", "value_model": "por_marca", "ask_cents": 200000}]');
+select tests.expect_error('S114 no fixo a marca não propõe acima do total',
+  $q$select public.brand_sponsorship_propose((select v::uuid from t_s114 where k = 'opp'), 'a1140000-0000-4000-8000-0000000000b1',
+     (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s114 where k = 'opp') and name = 'Evento'), 'propose', 950000, array['Logo no palco'], null, null)$q$, 'invalid_input');
+select tests.ok('S114 marca aceita a parte dela pelo valor pedido (R$ 3.000,00)',
+  public.brand_sponsorship_propose((select v::uuid from t_s114 where k = 'opp'), 'a1140000-0000-4000-8000-0000000000b1',
+    (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s114 where k = 'opp') and name = 'Evento'), 'accept_asked', null, null, null, null) is not null);
+select tests.su();
+select tests.ok('S114 acordo pelo pedido por marca no fixo',
+  (select status = 'agreed' and agreed_cents = 300000 and asked_cents = 300000 from public.sponsorship_proposals where brand_id = 'a1140000-0000-4000-8000-0000000000b1'
+   and opportunity_id = (select v::uuid from t_s114 where k = 'opp')));
+select tests.ok('S114 coberto e pedido seguinte (resto ÷ vagas)',
+  public.sponsorship_tier_covered((select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s114 where k = 'opp') and name = 'Evento')) = 300000
+  and public.sponsorship_tier_ask((select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s114 where k = 'opp') and name = 'Evento')) = 300000);
+select tests.login('a1140000-0000-4000-8000-000000000001', 's114-adm@test.local');
+select tests.expect_error('S114 com acordo, o modelo da cota não muda',
+  $q$select public.agency_sponsorship_save('a1140000-0000-4000-8000-0000000000a1', (select v::uuid from t_s114 where k = 'opp'),
+     jsonb_build_object('tiers', jsonb_build_array(
+       jsonb_build_object('id', (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s114 where k = 'opp') and name = 'Evento'),
+         'name', 'Evento', 'value_model', 'por_marca', 'price_cents', 900000, 'slots', 3, 'perks', jsonb_build_array('Logo no palco')),
+       jsonb_build_object('id', (select id from public.sponsorship_tiers where opportunity_id = (select v::uuid from t_s114 where k = 'opp') and name = 'Apoio'),
+         'name', 'Apoio', 'value_model', 'por_marca', 'price_cents', 200000, 'slots', 2, 'perks', jsonb_build_array('1 story')))))$q$, 'invalid_state');
+
+select tests.su();
+delete from public.inbox_notifications where user_id::text like 'a1140000-%';
+delete from public.sponsorship_rounds where agency_id::text like 'a1140000-%';
+delete from public.sponsorship_proposals where agency_id::text like 'a1140000-%';
+delete from public.sponsorship_responses where agency_id::text like 'a1140000-%';
+delete from public.campaign_request_budgets where agency_id::text like 'a1140000-%';
+delete from public.brand_payment_installments where agency_id::text like 'a1140000-%';
+delete from public.financial_entries where agency_id::text like 'a1140000-%';
+delete from public.deal_signatures where agency_id::text like 'a1140000-%';
+delete from public.deal_acceptances where agency_id::text like 'a1140000-%';
+delete from public.deal_terms_payments where agency_id::text like 'a1140000-%';
+delete from public.deal_payment_plans where agency_id::text like 'a1140000-%';
+delete from public.tasks where agency_id::text like 'a1140000-%';
+delete from public.deliverables where deal_id::text like 'a1140000-%';
+delete from public.activities where agency_id::text like 'a1140000-%';
+delete from public.deal_terms where agency_id::text like 'a1140000-%';
+delete from public.deal_talent_fees where deal_id::text like 'a1140000-%';
+delete from public.deal_talents where deal_id::text like 'a1140000-%';
+delete from public.deals where agency_id::text like 'a1140000-%';
+delete from public.sponsorship_targets where agency_id::text like 'a1140000-%';
+delete from public.calendar_events where agency_id::text like 'a1140000-%';
+delete from public.sponsorship_opportunities where agency_id::text like 'a1140000-%';
+delete from public.campaign_request_budgets where request_id::text like 'a1140000-%';
+delete from public.campaign_requests where agency_id::text like 'a1140000-%';
+delete from public.talent_profiles where id::text like 'a1140000-%';
+delete from public.brand_members where brand_id::text like 'a1140000-%';
+delete from public.agency_brands where agency_id::text like 'a1140000-%';
+delete from public.brands where id::text like 'a1140000-%';
+delete from public.agency_members where agency_id::text like 'a1140000-%';
+delete from public.agencies where id::text like 'a1140000-%';
+delete from auth.users where id::text like 'a1140000-%';
+drop table t_s114;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

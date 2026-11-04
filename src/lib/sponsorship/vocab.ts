@@ -162,10 +162,20 @@ function toCore(r: Row): SponsorshipCore {
 // ---------------------------------------------------------------- 0088: cotas, propostas e rodadas
 const cents = (v: unknown): number | null => (v === null || v === undefined || v === "" ? null : Number(v));
 
-export type SponsorshipTier = { id: string; name: string; priceCents: number | null; perks: string[]; slots: number; full: boolean };
+// 0108: valueModel (fixo do evento | por marca) e askCents = quanto ESTA marca paga pelo valor pedido
+export type SponsorshipTier = { id: string; name: string; priceCents: number | null; perks: string[]; slots: number; full: boolean; valueModel: "fixo" | "por_marca"; askCents: number | null };
 
 function toTier(r: Row): SponsorshipTier {
-  return { id: text(r.id), name: text(r.name), priceCents: cents(r.price_cents), perks: strings(r.perks), slots: num(r.slots) || 1, full: r.full === true };
+  return {
+    id: text(r.id),
+    name: text(r.name),
+    priceCents: cents(r.price_cents),
+    perks: strings(r.perks),
+    slots: num(r.slots) || 1,
+    full: r.full === true,
+    valueModel: r.value_model === "fixo" ? "fixo" : "por_marca",
+    askCents: r.ask_cents === undefined ? cents(r.price_cents) : cents(r.ask_cents),
+  };
 }
 
 export type NegotiationRound = {
@@ -270,7 +280,21 @@ export function toBrandNegotiation(data: unknown): BrandNegotiation | null {
   };
 }
 
-export type AgencyTier = { id: string; position: number; name: string; perks: string[]; slots: number; priceCents: number | null; hasPrice: boolean; agreed: number; hasProposals: boolean };
+export type AgencyTier = {
+  id: string;
+  position: number;
+  name: string;
+  perks: string[];
+  slots: number;
+  priceCents: number | null;
+  hasPrice: boolean;
+  agreed: number;
+  hasProposals: boolean;
+  /** 0108: modelo de valor, pedido por marca e quanto já foi coberto pelos acordos (os dois últimos só para o Adm) */
+  valueModel: "fixo" | "por_marca";
+  askCents: number | null;
+  coveredCents: number | null;
+};
 
 export type AgencySponsorshipRow = Pick<SponsorshipCore, "id" | "title" | "location" | "startsAt" | "endsAt" | "allDay" | "respondBy"> & {
   talentId: string;
@@ -379,6 +403,9 @@ export function toAgencySponsorshipDetail(data: unknown): AgencySponsorshipDetai
       hasPrice: z.has_price === true,
       agreed: num(z.agreed),
       hasProposals: z.has_proposals === true,
+      valueModel: z.value_model === "fixo" ? ("fixo" as const) : ("por_marca" as const),
+      askCents: cents(z.ask_cents),
+      coveredCents: cents(z.covered_cents),
     })),
     proposals: arr(d.proposals).map(toProposal),
     brands: arr(d.brands).map((b) => ({

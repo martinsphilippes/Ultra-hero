@@ -19,6 +19,7 @@ import { RatingPanel } from "@/components/selection/RatingPanel";
 import { TermsPanel } from "@/components/execution/TermsPanel";
 import { BrandBudgetChange } from "@/components/finance/BrandBudgetChange";
 import { BudgetPanel } from "@/components/finance/BudgetPanel";
+import { PaymentPlanSummary, PlanStatusBadge } from "@/components/finance/PaymentPlan";
 import { MusicPanel } from "@/components/media/MusicPanel";
 import { TrackingPanel } from "@/components/media/TrackingPanel";
 import { buttonBase, buttonSizes, buttonVariants, PageHeader } from "@/components/ui";
@@ -33,7 +34,7 @@ import { BRAND_STATUSES } from "@/lib/deals/stages";
 import { centsToBrl } from "@/lib/money/brl-input";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
-import { brandBudgetChanges, brandBudgetSummary } from "@/lib/finance/queries";
+import { brandBudgetChanges, brandBudgetSummary, dealPaymentPlan } from "@/lib/finance/queries";
 import { getDealMedia } from "@/lib/media/queries";
 import { youTubeConfigured } from "@/lib/media/youtube-collect";
 import { draftEditable } from "@/lib/selection/logic";
@@ -105,6 +106,8 @@ export default async function BrandCampaignPage({ params }: Props) {
     // 0106: contraproposta da agência (o dono aceita, contrapropõe ou recusa)
     deal ? getDealOffer(deal.id) : Promise.resolve(null),
   ]);
+  // 0108: condições de pagamento combinadas com a agência (total, forma e parcelas; previsto até a contratação)
+  const [paymentPlan, tplan] = await Promise.all([deal ? dealPaymentPlan(deal.id) : Promise.resolve(null), getTranslations("payments.plan")]);
   const mediaData = media?.available ? media.data : null;
   const today = localDay(new Date(), "America/Sao_Paulo");
   const linkRows = detail.talents
@@ -275,6 +278,20 @@ export default async function BrandCampaignPage({ params }: Props) {
           ) : null}
         </div>
         <div className="flex flex-col gap-5">
+          {paymentPlan && paymentPlan.hasPlan ? (
+            <section id="payment-plan" className={`${card} scroll-mt-20`} aria-labelledby="camp-payment-plan" data-testid="campaign-payment-plan">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 id="camp-payment-plan" className="text-base font-semibold text-fg">
+                  {tplan("title")}
+                </h2>
+                <PlanStatusBadge status={paymentPlan.status} />
+              </div>
+              <PaymentPlanSummary view={paymentPlan} />
+              <Link href="/marca/pagamentos" className="w-fit type-body-sm font-medium text-accent-text underline-offset-2 hover:underline">
+                {tplan("openPayments")}
+              </Link>
+            </section>
+          ) : null}
           {budgetSummary ? (
             <section id="camp-budget" className={`${card} scroll-mt-20`} aria-labelledby="camp-budget-title">
               <div className="flex flex-col gap-1">

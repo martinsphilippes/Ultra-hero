@@ -457,5 +457,33 @@
     "seePage": "See hero page",
     "outside": "Off the platform",
     "inactive": "Page offline"
+  },
+  "tierValue": {
+    "model": "Pricing model",
+    "fixo": "Fixed event amount",
+    "porMarca": "Amount per brand",
+    "hintFixo": "The total for this tier at the event; the brands that join make up this amount.",
+    "hintPorMarca": "Each brand pays this amount; the total is amount × number of brands.",
+    "amountFixo": "Total tier amount",
+    "amountPorMarca": "Amount per brand",
+    "amountHint": "Empty = \"to be agreed\".",
+    "byAdmin": "The Admin sets the amount",
+    "slots": "Number of brands",
+    "slotsHintFixo": "How many brands can split the amount.",
+    "slotsHintPorMarca": "How many brands can take this tier.",
+    "summaryTotal": "Tier total: {value}",
+    "summaryFixo": "Each brand from ≈ {share} (up to {n} brands)",
+    "summaryPorMarca": "{value} per brand × {n} brand(s)",
+    "summaryMissing": "Enter the amount to see the tier total.",
+    "tierModel": {
+      "fixo": "Fixed event amount",
+      "por_marca": "Amount per brand"
+    },
+    "tierCovered": "covered {covered} of {total}",
+    "tierShare": "next brand from {value}",
+    "tierTotal": "tier total {value}",
+    "brandFixo": "Total event amount: {value}, split among up to {n} brands",
+    "brandPorMarca": "Amount per brand: {value} (up to {n} brands)",
+    "brandShare": "your share from {value}"
   }
 }

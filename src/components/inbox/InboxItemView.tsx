@@ -43,6 +43,7 @@ const ICON: Partial<Record<string, LucideIcon>> = {
   payment_reported: Wallet,
   payment_reviewed: Wallet,
   payment_due: Wallet,
+  payout_due: Wallet,
   payment_plan: Wallet,
   roadmap_due_soon: CalendarDays,
   roadmap_overdue: CalendarDays,

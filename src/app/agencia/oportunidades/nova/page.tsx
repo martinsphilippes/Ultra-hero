@@ -95,7 +95,7 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
           endTime: pre?.endTime ?? "12:00",
           allDay: pre?.allDay ?? false,
           expectedReach: "",
-          tiers: [{ id: null, name: t("form.tiers.defaultName"), priceText: "", perksText: "", slots: 1 }],
+          tiers: [{ id: null, name: t("form.tiers.defaultName"), priceText: "", perksText: "", slots: 1, valueModel: "por_marca" }],
           public: EMPTY_PUBLIC,
           networks: ["instagram"],
           respondDate: pre?.respondDate ?? respond,

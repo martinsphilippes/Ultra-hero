@@ -252,6 +252,12 @@
     "cancel": "Cancel",
     "invoiceTitle": "Invoice · {deal}",
     "invoiceDocTitle": "Invoice · {deal}",
-    "invoiceSent": "Invoice sent. The agency will review it."
+    "invoiceSent": "Invoice sent. The agency will review it.",
+    "forecastOn": "Expected on {date} · awaiting contract",
+    "payoutMethod": {
+      "pix": "Paid by PIX",
+      "transfer": "Paid by bank transfer (TED)"
+    },
+    "invoiceRequired": "Invoice required"
   }
 }

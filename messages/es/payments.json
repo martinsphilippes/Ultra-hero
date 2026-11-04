@@ -20,7 +20,8 @@
     "upcoming": "Por vencer",
     "overdue": "Vencido",
     "reported": "Informado",
-    "paid": "Pagado"
+    "paid": "Pagado",
+    "forecast": "Previsto"
   },
   "data": {
     "title": "Datos para pagar a {agency}",
@@ -46,7 +47,8 @@
       "overdue": "Vencido",
       "reported": "Informado",
       "paid": "Pagado",
-      "count": "{count, plural, one {# cuota} other {# cuotas}}"
+      "count": "{count, plural, one {# cuota} other {# cuotas}}",
+      "forecast": "Previsto (esperando la contratación): {value} en {count, plural, one {# campaña} other {# campañas}}."
     },
     "simulated": "Solo registro y control: la app no cobra ni mueve dinero. El pago se hace fuera (PIX o banco) y se informa aquí.",
     "reportTitle": "Informar pago",
@@ -75,13 +77,15 @@
       "reported": "Informados",
       "open": "Pendientes",
       "paid": "Pagados",
-      "all": "Todos"
+      "all": "Todos",
+      "forecast": "Previstos"
     },
     "empty": {
       "reported": "Ningún pago esperando revisión",
       "open": "Nada pendiente",
       "paid": "Ningún pago confirmado aún",
-      "all": "Nada que cobrar a las marcas"
+      "all": "Nada que cobrar a las marcas",
+      "forecast": "Ningún pago previsto."
     },
     "simulated": "Solo registro y control: nada aquí cobra ni mueve dinero.",
     "amountDiffers": "El valor informado es distinto del valor de la cuota.",
@@ -294,5 +298,139 @@
       "period_order": "El período termina antes de empezar.",
       "too_long": "Algún texto pasó del límite."
     }
-  }
+  },
+  "plan": {
+    "title": "Condiciones de pago",
+    "status": {
+      "none": "Sin condiciones",
+      "saved": "Guardadas",
+      "forecast": "Previsto",
+      "effective": "Vigentes"
+    },
+    "ruleText": {
+      "date": "el {date}",
+      "signature": "{days, plural, =0 {a la firma} one {# día después de la firma} other {# días después de la firma}}",
+      "delivery": "{days, plural, =0 {a la entrega aprobada} one {# día después de la entrega aprobada} other {# días después de la entrega aprobada}}",
+      "publication": "{days, plural, =0 {a la publicación} one {# día después de la publicación} other {# días después de la publicación}}"
+    },
+    "payoutText": {
+      "after_receipt": "{days, plural, =0 {cuando la agencia cobre} one {# día después de que la agencia cobre} other {# días después de que la agencia cobre}}",
+      "fixed_date": "el {date}",
+      "after_delivery": "{days, plural, =0 {a la entrega aprobada} one {# día después de la entrega aprobada} other {# días después de la entrega aprobada}}"
+    },
+    "rules": {
+      "date": "Fecha fija",
+      "signature": "A la firma",
+      "delivery": "A la entrega aprobada",
+      "publication": "A la publicación"
+    },
+    "dueOn": "Vencimiento",
+    "plusDays": "+ días corridos",
+    "plusDaysHint": "Fin de semana o feriado no cambia la fecha.",
+    "downPayment": "Anticipo",
+    "balance": "Saldo",
+    "single": "Pago único",
+    "part": "Cuota {n} de {total}",
+    "noDate": "Sin fecha",
+    "paid": "Pagada",
+    "talentNone": "La agencia aún no definió cuándo y cómo cobras.",
+    "myPayout": "Tu caché",
+    "when": "Cuándo",
+    "expectedOn": "previsto para el {date}",
+    "payoutMethodLabel": "Forma de pago al héroe",
+    "payoutMethods": {
+      "pix": "PIX",
+      "transfer": "Transferencia (TED)"
+    },
+    "invoiceTalentLabel": "Factura",
+    "invoiceRequired": "Factura obligatoria",
+    "invoiceNotRequired": "Factura no obligatoria",
+    "forecastBanner": "Previsto · esperando la contratación",
+    "brandNone": "La agencia aún no definió las condiciones de pago.",
+    "agencyNone": "El Adm aún no definió las condiciones de pago.",
+    "total": "Valor acordado",
+    "methodLabel": "Forma de pago",
+    "method": {
+      "pix": "PIX",
+      "boleto": "Boleto",
+      "transfer": "Transferencia (TED)",
+      "card": "Tarjeta",
+      "other": "Otra"
+    },
+    "structureLabel": "Cómo paga la marca",
+    "structureText": {
+      "down_payment": "Anticipo de {pct}% + saldo",
+      "installments": "{n} cuotas ({interval})"
+    },
+    "structure": {
+      "single": "Pago único",
+      "down_payment": "Anticipo + saldo",
+      "installments": "En cuotas"
+    },
+    "intervals": {
+      "monthly": "mensual",
+      "biweekly": "quincenal",
+      "manual": "fechas manuales"
+    },
+    "downPaymentDue": "Vencimiento del anticipo",
+    "firstDue": "1.er vencimiento",
+    "balanceDue": "Vencimiento del saldo",
+    "singleDue": "Vencimiento",
+    "payoutLabel": "Pago al héroe",
+    "invoiceLabel": "Factura",
+    "invoiceAgencyShort": "La agencia factura a la marca",
+    "invoiceTalentShort": "El héroe factura a la agencia",
+    "invoiceNone": "Sin factura",
+    "saved": "Condiciones guardadas. El previsto ya aparece para la marca y los héroes.",
+    "errors": {
+      "total": "Indica el valor acordado con la marca.",
+      "methodNote": "Describe la forma de pago (2 a 120 letras).",
+      "downPayment": "El anticipo va del 1% al 99%.",
+      "installments": "Elige de 2 a 12 cuotas.",
+      "dates": "Revisa las fechas: una por cuota, en orden.",
+      "firstOn": "Elige la fecha de vencimiento.",
+      "balanceOn": "El saldo vence el día del anticipo o después.",
+      "days": "Usa de 0 a 365 días.",
+      "payoutOn": "Elige la fecha del pago al héroe.",
+      "notes": "Observaciones: hasta 500 letras.",
+      "belowPayouts": "El valor acordado no cubre los cachés de los héroes. Aumenta el valor o revisa los cachés."
+    },
+    "suggested": {
+      "agreed": "Acordado en la negociación: {value}",
+      "offered": "Valor ofrecido por la marca: {value}",
+      "fees": "Cachés + tasa de la agencia: {value}",
+      "none": "Sugerencia: {value}"
+    },
+    "useSuggested": "Usar este valor",
+    "totalHint": "Lo que la marca paga en total. La comisión es lo que queda después de los pagos a los héroes.",
+    "methodNote": "¿Qué forma?",
+    "downPaymentPct": "Anticipo (%)",
+    "downPaymentPctHint": "El resto es el saldo.",
+    "installmentsLabel": "Cuotas",
+    "intervalLabel": "Intervalo",
+    "payoutRules": {
+      "after_receipt": "Después de que la agencia cobre",
+      "fixed_date": "En fecha fija",
+      "after_delivery": "Después de la entrega aprobada"
+    },
+    "invoiceTalent": "Exigir factura del héroe",
+    "invoiceTalentHint": "El héroe ve el recordatorio en Ganancias.",
+    "invoiceAgency": "La agencia emite factura a la marca",
+    "notes": "Observaciones para la marca",
+    "preview": "Cómo queda",
+    "previewEmpty": "Completa el valor y las fechas para ver las cuotas.",
+    "payouts": "Pagos a los héroes",
+    "commission": "Comisión de la agencia",
+    "feeMissing": "caché por definir",
+    "previewHint": "Las fechas por evento son previsiones y se ajustan cuando ocurren la firma, la entrega o la publicación.",
+    "saveChanges": "Guardar cambios",
+    "save": "Guardar condiciones",
+    "neededAdmin": "Propuesta aceptada: define cuándo y cómo paga la marca y cobra el héroe.",
+    "neededOthers": "Propuesta aceptada: el Adm debe definir las condiciones de pago antes de enviar los términos.",
+    "termsPending": "Las condiciones cambiaron después de enviar los términos. Envía una nueva versión para que la marca y los héroes firmen.",
+    "simulated": "Registro y control internos: nada aquí cobra ni mueve dinero.",
+    "openPayments": "Ver en Pagos",
+    "payoutTitle": "Tu pago"
+  },
+  "forecastDue": "Previsto para el {date} · esperando la contratación"
 }

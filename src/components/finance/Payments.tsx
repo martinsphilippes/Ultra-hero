@@ -14,8 +14,8 @@ import {
   canReport,
   daysUntil,
   formatPixKey,
-  installmentState,
   MAX_INSTALLMENTS,
+  receivableInstallmentState,
   splitEvenly,
   splitRemaining,
   type Installment,
@@ -32,7 +32,7 @@ import { createClient } from "@/lib/supabase/client";
 // com comprovante; o Adm da agência divide em parcelas e confirma ou recusa. Registro/controle simulado: nada aqui
 // cobra nem move dinheiro.
 
-const STATE_VARIANT: Record<InstallmentState, BadgeVariant> = { upcoming: "info", overdue: "danger", reported: "warning", paid: "success" };
+const STATE_VARIANT: Record<InstallmentState, BadgeVariant> = { forecast: "neutral", upcoming: "info", overdue: "danger", reported: "warning", paid: "success" };
 const REVALIDATE = "/marca/pagamentos";
 
 export function InstallmentBadge({ state }: { state: InstallmentState }) {
@@ -66,6 +66,7 @@ function dueText(t: ReturnType<typeof useTranslations>, i: Installment, state: I
   if (!i.dueOn) return t("noDue");
   const days = daysUntil(i.dueOn, today);
   const date = formatPlainDate(i.dueOn, locale);
+  if (state === "forecast") return t("forecastDue", { date });
   if (days < 0) return t("overdueSince", { date, days: -days });
   if (days === 0) return t("dueToday", { date });
   return t("dueOn", { date, days });
@@ -130,6 +131,25 @@ export function PaymentDataCard({ agencyName, settings }: { agencyName: string; 
   );
 }
 
+/** 0108: forma, nota da agência e observações do "a receber"; previsto avisa que espera a contratação. */
+function ReceivableTerms({ r }: { r: Receivable }) {
+  const t = useTranslations("payments.plan");
+  if (!r.plan && r.entryStatus !== "forecast") return null;
+  return (
+    <div className="flex flex-col gap-1 type-caption text-fg-muted" data-testid="receivable-terms">
+      {r.entryStatus === "forecast" ? <span className="font-medium text-fg">{t("forecastBanner")}</span> : null}
+      {r.plan ? (
+        <span>
+          {t(`method.${r.plan.method}`)}
+          {r.plan.method === "other" && r.plan.methodNote ? ` (${r.plan.methodNote})` : ""} · {t(`structure.${r.plan.structure}`)}
+          {r.plan.invoiceAgency ? ` · ${t("invoiceAgencyShort")}` : ""}
+        </span>
+      ) : null}
+      {r.plan?.notes ? <span className="whitespace-pre-line">“{r.plan.notes}”</span> : null}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------- marca: lista e "Informar pagamento"
 
 export function BrandPaymentsList({ items, today, canAct }: { items: Receivable[]; today: string; canAct: boolean }) {
@@ -150,9 +170,10 @@ export function BrandPaymentsList({ items, today, canAct }: { items: Receivable[
             </div>
             <span className="font-mono text-base font-semibold text-fg">{formatCents(r.totalCents, locale)}</span>
           </div>
+          <ReceivableTerms r={r} />
           <ul className="flex flex-col divide-y divide-border rounded-xl border border-border">
             {r.installments.map((i) => {
-              const state = r.entryStatus === "settled" ? "paid" : installmentState(i, today);
+              const state = receivableInstallmentState(r, i, today);
               const report = i.report;
               return (
                 <li key={i.id} className="flex flex-col gap-2 p-3" data-testid="installment">
@@ -309,9 +330,10 @@ export function AgencyPaymentsList({ items, today }: { items: Receivable[]; toda
               </div>
               <span className="font-mono text-base font-semibold text-fg">{formatCents(r.totalCents, locale)}</span>
             </div>
+            <ReceivableTerms r={r} />
             <ul className="flex flex-col divide-y divide-border rounded-xl border border-border">
               {r.installments.map((i) => {
-                const state = r.entryStatus === "settled" ? "paid" : installmentState(i, today);
+                const state = receivableInstallmentState(r, i, today);
                 const report = i.report;
                 return (
                   <li key={i.id} className="flex flex-col gap-2 p-3" data-testid="installment">

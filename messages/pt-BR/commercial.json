@@ -373,7 +373,8 @@
       "planned": "Planejado",
       "due": "A vencer",
       "settled": "Liquidado",
-      "cancelled": "Cancelado"
+      "cancelled": "Cancelado",
+      "forecast": "Previsto"
     },
     "payStep": {
       "awaiting_invoice": "Aguardando nota",
@@ -381,7 +382,8 @@
       "invoice_approved": "Nota aprovada",
       "scheduled": "Agendado",
       "paid": "Pago",
-      "cancelled": "Cancelado"
+      "cancelled": "Cancelado",
+      "awaiting_contract": "Previsto"
     }
   },
   "signature": {

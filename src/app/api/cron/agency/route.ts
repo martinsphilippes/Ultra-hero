@@ -13,6 +13,8 @@ import { cleanupAgencyDocOrphans } from "../_lib/agency-docs";
 // RESEND_API_KEY e EMAIL_FROM; sem eles o resultado diz "not_configured" e a fila só é limpa).
 // 0085: oportunidade de patrocínio com o prazo de resposta vencido passa a "encerrada" (a agência ainda escolhe).
 // 0090: aviso de vencimento das parcelas que a marca deve à agência (registro simulado, nada é cobrado).
+// 0108: condições de pagamento — refaz o previsto, acompanha as datas relativas (entrega/publicação) e avisa o repasse
+// ao herói (3 dias antes, no dia e vencido) para o herói e para o Adm.
 // Cada passo que depende da 0069 pula com "not_migrated" enquanto a migração não chega ao banco.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -72,6 +74,14 @@ async function handler(request: Request) {
       out.payments_skipped = "not_migrated";
     } else {
       out.payments_notified = Number(payments.data ?? 0);
+    }
+    // 0108: previsto, datas relativas e aviso do repasse ao herói
+    const plans = await admin.rpc("deal_payment_scan");
+    if (plans.error) {
+      if (!NOT_MIGRATED.has(plans.error.code ?? "")) throw new Error(plans.error.message);
+      out.payment_plans_skipped = "not_migrated";
+    } else {
+      out.payment_plans = plans.data;
     }
     // 0107: roteiros de entrega — recalcula a previsão, avisa 1 dia útil antes do prazo e o atraso ao Gestor
     const roadmap = await admin.rpc("roadmap_alert_scan");

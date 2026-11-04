@@ -19,11 +19,13 @@ type Props = {
   /** Cachês dos creators que seguem no negócio (só o Adm chega aqui). */
   fees: { name: string; feeCents: number | null }[];
   entries: Entry[];
+  /** 0108: com condições de pagamento salvas, vale o valor acordado (a prévia por taxa é só referência) */
+  hasPlan?: boolean;
 };
 
 // Financeiro do negócio (Adm): antes da contratação, prévia (cachês + taxa = o que a marca paga) e sobrescrita
 // da taxa; depois, os lançamentos gerados. Sempre simulado.
-export function DealFinanceCard({ dealId, agencyRateBp, dealRateBp, contracted, fees, entries }: Props) {
+export function DealFinanceCard({ dealId, agencyRateBp, dealRateBp, contracted, fees, entries, hasPlan = false }: Props) {
   const t = useTranslations("agency.deal.finance");
   const tf = useTranslations("agency.finance");
   const locale = useLocale() as Locale;
@@ -73,6 +75,11 @@ export function DealFinanceCard({ dealId, agencyRateBp, dealRateBp, contracted, 
             </div>
           </dl>
           {missing > 0 ? <p className="type-caption text-warning">{t("missingFees", { count: missing })}</p> : null}
+          {hasPlan ? (
+            <p className="type-caption text-fg-muted" data-testid="deal-finance-plan">
+              {t("planRules")}
+            </p>
+          ) : null}
           <FormField label={t("rateOverride")} hint={t("rateOverrideHint", { rate: formatRate(agencyRateBp, locale) })} error={error}>
             <Input inputMode="decimal" value={value} maxLength={6} placeholder={(agencyRateBp / 100).toLocaleString(locale)} onChange={(e) => setValue(e.target.value)} disabled={pending} className="sm:max-w-32" />
           </FormField>

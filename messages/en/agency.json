@@ -379,7 +379,10 @@
     "roadmap_started": "Steps are already done: the service can no longer be changed.",
     "roadmap_exists": "This deal already has a plan.",
     "client_required": "Choose the brand, the hero or both.",
-    "talent_agency_mismatch": "This hero isn't in this agency's casting."
+    "talent_agency_mismatch": "This hero isn't in this agency's casting.",
+    "payment_terms_required": "Before sending the terms, the Admin must set the payment terms (agreed amount, method and dates).",
+    "agreed_below_payouts": "The agreed amount does not cover the heroes' fees. Review the amount or the fees.",
+    "plan_locked": "The contract is already confirmed: adjust the installments in Finance › Brand payments."
   },
   "casting": {
     "title": "Roster",
@@ -880,7 +883,8 @@
       "rateOverride": "This deal's rate (%)",
       "rateOverrideHint": "Empty uses the agency default ({rate}). Only changes before the contract.",
       "rateSave": "Save deal rate",
-      "noEntries": "Entries appear here after the contract."
+      "noEntries": "Entries appear here after the contract.",
+      "planRules": "Payment terms are saved: the brand pays the agreed amount and the commission is what is left after payouts. This rate-based estimate is only a reference."
     },
     "heroesSavedCreated": "{count, plural, one {Shortlist saved. Record created on your roster.} other {Shortlist saved. # records created on your roster.}}"
   },
@@ -1085,7 +1089,10 @@
       "cancelled": "Cancelled",
       "all": "All",
       "invoices": "Invoices to review",
-      "payments": "Brand payments"
+      "payments": "Brand payments",
+      "receivable": "Receivable",
+      "payable": "Payable",
+      "forecast": "Forecast"
     },
     "empty": {
       "open": "No open entry.",
@@ -1093,7 +1100,10 @@
       "settled": "No settled entry.",
       "cancelled": "No cancelled entry.",
       "all": "No entry yet. They are created when the contract is confirmed.",
-      "invoices": "No invoice waiting for review."
+      "invoices": "No invoice waiting for review.",
+      "receivable": "Nothing open to receive from brands.",
+      "payable": "No open payouts to heroes.",
+      "forecast": "No forecast: save the payment terms of a deal to see it here."
     },
     "kpi": {
       "receivableOpen": "Receivable",
@@ -1103,7 +1113,8 @@
       "payoutOpen": "Payouts to pay",
       "payoutSettled": "{value} paid",
       "overdue": "Overdue",
-      "openCount": "{count} open across {deals, plural, one {# deal} other {# deals}}"
+      "openCount": "{count} open across {deals, plural, one {# deal} other {# deals}}",
+      "forecast": "Forecast (awaiting contract): {receivable} to receive from brands · {payout} to pay heroes."
     },
     "dueOn": "due {date}",
     "noDue": "no due date",

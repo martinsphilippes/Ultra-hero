@@ -222,6 +222,10 @@
     "roadmap_overdue": {
       "title": "Etapa atrasada",
       "body": "{title} · {deal} venció el {date}."
+    },
+    "payout_due": {
+      "title": "{status, select, late {Pago al héroe vencido} today {Pago al héroe vence hoy} other {Pago al héroe por vencer}}",
+      "body": "{status, select, late {El pago de {deal} ({talent}) está vencido.} today {El pago de {deal} ({talent}) vence hoy.} other {El pago de {deal} ({talent}) vence en hasta 3 días.}}"
     }
   }
 }

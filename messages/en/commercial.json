@@ -373,7 +373,8 @@
       "planned": "Planned",
       "due": "Due",
       "settled": "Settled",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "forecast": "Forecast"
     },
     "payStep": {
       "awaiting_invoice": "Awaiting invoice",
@@ -381,7 +382,8 @@
       "invoice_approved": "Invoice approved",
       "scheduled": "Scheduled",
       "paid": "Paid",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "awaiting_contract": "Forecast"
     }
   },
   "signature": {

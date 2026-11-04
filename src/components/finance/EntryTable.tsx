@@ -23,7 +23,7 @@ type Props = {
   emptyText: string;
 };
 
-const STATUS_VARIANT: Record<EntryStatus, BadgeVariant> = { planned: "neutral", due: "warning", settled: "success", cancelled: "neutral" };
+const STATUS_VARIANT: Record<EntryStatus, BadgeVariant> = { forecast: "info", planned: "neutral", due: "warning", settled: "success", cancelled: "neutral" };
 const KIND_VARIANT = { brand_receivable: "info", commission: "accent", talent_payout: "neutral" } as const;
 
 // Lançamentos simulados: tipo, negócio, valor, vencimento e situação. O Adm avança a situação; cancelar pede nota.
@@ -64,7 +64,7 @@ export function EntryTable({ entries, canAct = false, compact = false, emptyText
     <>
       <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="entry-table">
         {entries.map((e) => {
-          const overdue = e.dueOn !== null && e.dueOn < today && (e.status === "planned" || e.status === "due");
+          const overdue = (e.scheduledOn ?? e.dueOn) !== null && (e.scheduledOn ?? e.dueOn)! < today && (e.status === "planned" || e.status === "due");
           const next = canAct ? nextEntryStatuses(e.status) : [];
           return (
             <li key={e.id} className="flex flex-wrap items-start gap-3 p-3" data-testid="entry-item" data-kind={e.kind} data-status={e.status}>

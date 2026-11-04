@@ -20,7 +20,8 @@
     "upcoming": "Upcoming",
     "overdue": "Overdue",
     "reported": "Reported",
-    "paid": "Paid"
+    "paid": "Paid",
+    "forecast": "Forecast"
   },
   "data": {
     "title": "How to pay {agency}",
@@ -46,7 +47,8 @@
       "overdue": "Overdue",
       "reported": "Reported",
       "paid": "Paid",
-      "count": "{count, plural, one {# installment} other {# installments}}"
+      "count": "{count, plural, one {# installment} other {# installments}}",
+      "forecast": "Forecast (awaiting contract): {value} across {count, plural, one {# campaign} other {# campaigns}}."
     },
     "simulated": "Record and tracking only: the app does not charge or move money. Pay outside the app (PIX or bank) and report it here.",
     "reportTitle": "Report payment",
@@ -75,13 +77,15 @@
       "reported": "Reported",
       "open": "Open",
       "paid": "Paid",
-      "all": "All"
+      "all": "All",
+      "forecast": "Forecast"
     },
     "empty": {
       "reported": "No payment waiting for review",
       "open": "Nothing open",
       "paid": "No confirmed payment yet",
-      "all": "Nothing to receive from brands"
+      "all": "Nothing to receive from brands",
+      "forecast": "No forecast payments."
     },
     "simulated": "Record and tracking only: nothing here charges or moves money.",
     "amountDiffers": "The reported amount differs from the installment amount.",
@@ -294,5 +298,139 @@
       "period_order": "The period ends before it starts.",
       "too_long": "Some text is over the limit."
     }
-  }
+  },
+  "plan": {
+    "title": "Payment terms",
+    "status": {
+      "none": "No terms",
+      "saved": "Saved",
+      "forecast": "Forecast",
+      "effective": "In effect"
+    },
+    "ruleText": {
+      "date": "on {date}",
+      "signature": "{days, plural, =0 {on signature} one {# day after signature} other {# days after signature}}",
+      "delivery": "{days, plural, =0 {on approved delivery} one {# day after approved delivery} other {# days after approved delivery}}",
+      "publication": "{days, plural, =0 {on publication} one {# day after publication} other {# days after publication}}"
+    },
+    "payoutText": {
+      "after_receipt": "{days, plural, =0 {when the agency is paid} one {# day after the agency is paid} other {# days after the agency is paid}}",
+      "fixed_date": "on {date}",
+      "after_delivery": "{days, plural, =0 {on approved delivery} one {# day after approved delivery} other {# days after approved delivery}}"
+    },
+    "rules": {
+      "date": "Fixed date",
+      "signature": "On signature",
+      "delivery": "On approved delivery",
+      "publication": "On publication"
+    },
+    "dueOn": "Due date",
+    "plusDays": "+ calendar days",
+    "plusDaysHint": "Weekends and holidays do not move the date.",
+    "downPayment": "Down payment",
+    "balance": "Balance",
+    "single": "Single payment",
+    "part": "Installment {n} of {total}",
+    "noDate": "No date",
+    "paid": "Paid",
+    "talentNone": "The agency has not set when and how you get paid yet.",
+    "myPayout": "Your fee",
+    "when": "When",
+    "expectedOn": "expected on {date}",
+    "payoutMethodLabel": "Payout method",
+    "payoutMethods": {
+      "pix": "PIX",
+      "transfer": "Bank transfer (TED)"
+    },
+    "invoiceTalentLabel": "Invoice",
+    "invoiceRequired": "Invoice required",
+    "invoiceNotRequired": "Invoice not required",
+    "forecastBanner": "Forecast · awaiting contract",
+    "brandNone": "The agency has not set the payment terms yet.",
+    "agencyNone": "The Admin has not set the payment terms yet.",
+    "total": "Agreed amount",
+    "methodLabel": "Payment method",
+    "method": {
+      "pix": "PIX",
+      "boleto": "Boleto",
+      "transfer": "Bank transfer (TED)",
+      "card": "Card",
+      "other": "Other"
+    },
+    "structureLabel": "How the brand pays",
+    "structureText": {
+      "down_payment": "{pct}% down payment + balance",
+      "installments": "{n} installments ({interval})"
+    },
+    "structure": {
+      "single": "Single payment",
+      "down_payment": "Down payment + balance",
+      "installments": "Installments"
+    },
+    "intervals": {
+      "monthly": "monthly",
+      "biweekly": "every two weeks",
+      "manual": "custom dates"
+    },
+    "downPaymentDue": "Down payment due",
+    "firstDue": "First due date",
+    "balanceDue": "Balance due",
+    "singleDue": "Due date",
+    "payoutLabel": "Payout to the hero",
+    "invoiceLabel": "Invoice",
+    "invoiceAgencyShort": "Agency issues an invoice to the brand",
+    "invoiceTalentShort": "Hero issues an invoice to the agency",
+    "invoiceNone": "No invoice",
+    "saved": "Terms saved. The forecast is now visible to the brand and the heroes.",
+    "errors": {
+      "total": "Enter the amount agreed with the brand.",
+      "methodNote": "Describe the payment method (2 to 120 characters).",
+      "downPayment": "The down payment goes from 1% to 99%.",
+      "installments": "Choose 2 to 12 installments.",
+      "dates": "Check the dates: one per installment, in order.",
+      "firstOn": "Pick the due date.",
+      "balanceOn": "The balance is due on or after the down payment.",
+      "days": "Use 0 to 365 days.",
+      "payoutOn": "Pick the payout date.",
+      "notes": "Notes: up to 500 characters.",
+      "belowPayouts": "The agreed amount does not cover the heroes' fees. Raise the amount or review the fees."
+    },
+    "suggested": {
+      "agreed": "Agreed in the negotiation: {value}",
+      "offered": "Amount offered by the brand: {value}",
+      "fees": "Fees + agency rate: {value}",
+      "none": "Suggestion: {value}"
+    },
+    "useSuggested": "Use this amount",
+    "totalHint": "What the brand pays in total. The commission is what is left after payouts.",
+    "methodNote": "Which method?",
+    "downPaymentPct": "Down payment (%)",
+    "downPaymentPctHint": "The rest is the balance.",
+    "installmentsLabel": "Installments",
+    "intervalLabel": "Interval",
+    "payoutRules": {
+      "after_receipt": "After the agency is paid",
+      "fixed_date": "On a fixed date",
+      "after_delivery": "After approved delivery"
+    },
+    "invoiceTalent": "Require an invoice from the hero",
+    "invoiceTalentHint": "The hero sees the reminder in Earnings.",
+    "invoiceAgency": "Agency issues an invoice to the brand",
+    "notes": "Notes for the brand",
+    "preview": "Preview",
+    "previewEmpty": "Fill in the amount and dates to see the installments.",
+    "payouts": "Payouts to heroes",
+    "commission": "Agency commission",
+    "feeMissing": "fee to be set",
+    "previewHint": "Event-based dates are estimates and adjust when signature, delivery or publication happen.",
+    "saveChanges": "Save changes",
+    "save": "Save terms",
+    "neededAdmin": "Proposal accepted: set when and how the brand pays and the hero gets paid.",
+    "neededOthers": "Proposal accepted: the Admin must set the payment terms before the terms are sent.",
+    "termsPending": "The payment terms changed after the terms were sent. Send a new version of the terms for the brand and heroes to sign.",
+    "simulated": "Internal record and control: nothing here charges or moves money.",
+    "openPayments": "Open Payments",
+    "payoutTitle": "Your payment"
+  },
+  "forecastDue": "Expected on {date} · awaiting contract"
 }

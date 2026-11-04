@@ -3,13 +3,14 @@
 import { FilePenLine, Plus, Send, ShieldAlert, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, MoneyInput, NumberInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, MoneyInput, NumberInput, QuantityInput, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
+import type { Locale } from "@/i18n/config";
 import { fichaLinks, formActions, publishBlock, type HeroChoice } from "@/lib/sponsorship/hero-pick";
-import { parseBrlToCents } from "@/lib/deals/schemas";
+import { formatCents, parseBrlToCents } from "@/lib/deals/schemas";
 import { saveSponsorshipAction, type OpportunityHeroSearchResult } from "@/lib/sponsorship/actions";
-import { MAX_AMOUNT_CENTS, MAX_TIER_SLOTS, MAX_TIERS, validateTiers, type TierDraft } from "@/lib/sponsorship/negotiation";
+import { MAX_AMOUNT_CENTS, MAX_TIER_SLOTS, MAX_TIERS, tierShareCents, tierTotalCents, validateTiers, type TierDraft, type TierModel } from "@/lib/sponsorship/negotiation";
 import { MAX_PERKS, parsePerks, type SponsorshipAudience, type SponsorshipInput } from "@/lib/sponsorship/vocab";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
 import { AudienceFields } from "./AudienceFields";
@@ -155,23 +156,11 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
           const locked = tier.id !== null && lockedTierIds.includes(tier.id);
           return (
             <div key={tier.id ?? `new-${i}`} className="flex flex-col gap-3 rounded-xl border border-border p-3" data-testid="sponsorship-tier">
-              <div className="grid gap-3 sm:grid-cols-[1fr_12rem_7rem]">
-                <FormField label={t("tiers.name")} required>
-                  <Input value={tier.name} maxLength={40} placeholder={t("tiers.namePlaceholder")} onChange={(e) => setTier({ name: e.target.value })} disabled={pending} />
-                </FormField>
-                {canValues ? (
-                  <FormField label={t("tiers.price")} hint={t("tiers.priceHint")}>
-                    <MoneyInput value={tier.priceText} maxCents={MAX_AMOUNT_CENTS} onValueChange={(text) => setTier({ priceText: text })} disabled={pending} data-testid="sponsorship-tier-price" />
-                  </FormField>
-                ) : (
-                  <FormField label={t("tiers.price")}>
-                    <p className="flex min-h-11 items-center type-body-sm text-fg-muted">{t("tiers.priceByAdmin")}</p>
-                  </FormField>
-                )}
-                <FormField label={t("tiers.slots")}>
-                  <QuantityInput min={1} max={MAX_TIER_SLOTS} value={tier.slots} onValueChange={(n) => setTier({ slots: n })} disabled={pending} />
-                </FormField>
-              </div>
+              <FormField label={t("tiers.name")} required>
+                <Input value={tier.name} maxLength={40} placeholder={t("tiers.namePlaceholder")} onChange={(e) => setTier({ name: e.target.value })} disabled={pending} />
+              </FormField>
+              {/* 0108: valor fixo do evento (as marcas completam) | valor por marca × quantidade de marcas */}
+              <TierValueFields tier={tier} canValues={canValues} disabled={pending} onChange={setTier} />
               <FormField label={t("tiers.perks")} hint={t("perksHint", { max: MAX_PERKS })}>
                 <Textarea value={tier.perksText} rows={3} placeholder={t("perksPlaceholder")} onChange={(e) => setTier({ perksText: e.target.value })} disabled={pending} />
               </FormField>
@@ -184,7 +173,7 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
           );
         })}
         {v.tiers.length < MAX_TIERS ? (
-          <Button type="button" variant="secondary" leadingIcon={<Plus />} className="self-start" onClick={() => set("tiers", [...v.tiers, { id: null, name: "", priceText: "", perksText: "", slots: 1 }])} disabled={pending}>
+          <Button type="button" variant="secondary" leadingIcon={<Plus />} className="self-start" onClick={() => set("tiers", [...v.tiers, { id: null, name: "", priceText: "", perksText: "", slots: 1, valueModel: "por_marca" }])} disabled={pending}>
             {t("tiers.add")}
           </Button>
         ) : null}
@@ -260,5 +249,66 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
         ) : null}
       </div>
     </form>
+  );
+}
+
+// 0108: modelo de valor da cota, no mesmo visual do ValueModelFields da área das marcas: "Valor fixo do evento" (total
+// da cota, que as marcas que entram completam) ou "Valor por marca" (× quantidade de marcas = teto). O gestor vê o
+// modelo e as vagas, mas o valor fica com o Adm.
+function TierValueFields({ tier, canValues, disabled, onChange }: { tier: TierDraft; canValues: boolean; disabled: boolean; onChange: (patch: Partial<TierDraft>) => void }) {
+  const t = useTranslations("sponsorship.tierValue");
+  const locale = useLocale() as Locale;
+  const fixed = tier.valueModel === "fixo";
+  const price = parseBrlToCents(tier.priceText);
+  const cents = typeof price === "number" && price > 0 ? price : null;
+  const total = tierTotalCents({ valueModel: tier.valueModel, priceCents: cents, slots: tier.slots });
+  const share = tierShareCents({ valueModel: tier.valueModel, priceCents: cents, slots: tier.slots });
+  return (
+    <div className="flex flex-col gap-3" data-testid="sponsorship-tier-value">
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium text-fg">{t("model")}</span>
+        <SegmentedControl<TierModel>
+          aria-label={t("model")}
+          value={tier.valueModel}
+          onValueChange={(m) => {
+            if (canValues && !disabled) onChange({ valueModel: m });
+          }}
+          options={[
+            { value: "fixo", label: t("fixo"), disabled: disabled || !canValues },
+            { value: "por_marca", label: t("porMarca"), disabled: disabled || !canValues },
+          ]}
+          className="w-full sm:w-fit"
+        />
+        <p className="type-caption text-fg-muted">{fixed ? t("hintFixo") : t("hintPorMarca")}</p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {canValues ? (
+          <FormField label={fixed ? t("amountFixo") : t("amountPorMarca")} hint={t("amountHint")}>
+            <MoneyInput value={tier.priceText} maxCents={MAX_AMOUNT_CENTS} onValueChange={(text) => onChange({ priceText: text })} disabled={disabled} data-testid="sponsorship-tier-price" />
+          </FormField>
+        ) : (
+          <FormField label={fixed ? t("amountFixo") : t("amountPorMarca")}>
+            <p className="flex min-h-11 items-center type-body-sm text-fg-muted">{t("byAdmin")}</p>
+          </FormField>
+        )}
+        <FormField label={t("slots")} hint={fixed ? t("slotsHintFixo") : t("slotsHintPorMarca")}>
+          <QuantityInput min={1} max={MAX_TIER_SLOTS} value={tier.slots} onValueChange={(n) => onChange({ slots: n })} disabled={disabled} data-testid="sponsorship-tier-slots" />
+        </FormField>
+      </div>
+      {canValues ? (
+        <p role="status" className="rounded-xl border border-accent/30 bg-accent-soft px-3 py-2 text-sm text-fg" data-testid="sponsorship-tier-summary">
+          {total !== null ? (
+            <>
+              <strong className="block text-base font-semibold">{t("summaryTotal", { value: formatCents(total, locale) })}</strong>
+              <span className="type-caption text-fg-muted">
+                {fixed ? t("summaryFixo", { share: formatCents(share ?? 0, locale), n: tier.slots }) : t("summaryPorMarca", { value: formatCents(cents ?? 0, locale), n: tier.slots })}
+              </span>
+            </>
+          ) : (
+            <span className="text-fg-muted">{t("summaryMissing")}</span>
+          )}
+        </p>
+      ) : null}
+    </div>
   );
 }

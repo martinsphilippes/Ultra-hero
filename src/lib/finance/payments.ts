@@ -148,6 +148,16 @@ export type Installment = {
   status: "open" | "paid";
   paidAt: string | null;
   report: PaymentReport | null;
+  /** 0108: parcela gerada pelas condições de pagamento (a data relativa acompanha entrega/publicação) */
+  fromPlan: boolean;
+};
+/** 0108: condições do "a receber" (forma, estrutura, nota da agência, observações) */
+export type ReceivablePlan = {
+  method: "pix" | "boleto" | "transfer" | "card" | "other";
+  methodNote: string;
+  structure: "single" | "down_payment" | "installments";
+  invoiceAgency: boolean;
+  notes: string;
 };
 export type Receivable = {
   entryId: string;
@@ -160,8 +170,9 @@ export type Receivable = {
   agencyName: string;
   origin: "campaign" | "sponsorship" | "call";
   totalCents: number;
-  entryStatus: "planned" | "due" | "settled" | "cancelled";
+  entryStatus: "forecast" | "planned" | "due" | "settled" | "cancelled";
   installments: Installment[];
+  plan: ReceivablePlan | null;
 };
 
 function toReport(raw: unknown): PaymentReport | null {
@@ -186,7 +197,8 @@ function toReport(raw: unknown): PaymentReport | null {
 export function toReceivable(raw: unknown): Receivable | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const k = raw as Row;
-  const status = ["planned", "due", "settled", "cancelled"].includes(str(k.entry_status)) ? (k.entry_status as Receivable["entryStatus"]) : "planned";
+  const status = ["forecast", "planned", "due", "settled", "cancelled"].includes(str(k.entry_status)) ? (k.entry_status as Receivable["entryStatus"]) : "planned";
+  const p = k.plan && typeof k.plan === "object" && !Array.isArray(k.plan) ? (k.plan as Row) : null;
   return {
     entryId: str(k.entry_id),
     dealId: str(k.deal_id),
@@ -208,7 +220,17 @@ export function toReceivable(raw: unknown): Receivable | null {
       status: i.status === "paid" ? "paid" : "open",
       paidAt: strOrNull(i.paid_at),
       report: toReport(i.report),
+      fromPlan: i.from_plan === true,
     })),
+    plan: p
+      ? {
+          method: (["pix", "boleto", "transfer", "card", "other"] as const).find((m) => m === p.method) ?? "pix",
+          methodNote: str(p.method_note),
+          structure: p.structure === "down_payment" || p.structure === "installments" ? p.structure : "single",
+          invoiceAgency: p.invoice_agency === true,
+          notes: str(p.notes),
+        }
+      : null,
   };
 }
 
@@ -248,7 +270,15 @@ export function daysUntil(dueOn: string, today: string): number {
   return Math.round((a - b) / 86_400_000);
 }
 
-export type InstallmentState = "upcoming" | "overdue" | "reported" | "paid";
+// 0108: "forecast" = previsto (condições salvas, aguardando a contratação): não vence nem recebe informe
+export type InstallmentState = "forecast" | "upcoming" | "overdue" | "reported" | "paid";
+
+/** Situação da parcela dentro do "a receber" (o lançamento previsto ou liquidado manda). */
+export function receivableInstallmentState(r: Pick<Receivable, "entryStatus">, i: Pick<Installment, "status" | "dueOn" | "report">, today: string): InstallmentState {
+  if (r.entryStatus === "forecast") return "forecast";
+  if (r.entryStatus === "settled") return "paid";
+  return installmentState(i, today);
+}
 
 /** a vencer, vencido, informado (esperando a agência) ou pago. Informe recusado volta a "a vencer"/"vencido". */
 export function installmentState(i: Pick<Installment, "status" | "dueOn" | "report">, today: string): InstallmentState {
@@ -295,6 +325,8 @@ export type PaymentTotals = { openCents: number; overdueCents: number; reportedC
 export function paymentTotals(items: Receivable[], today: string): PaymentTotals {
   const out: PaymentTotals = { openCents: 0, overdueCents: 0, reportedCents: 0, paidCents: 0, overdueCount: 0, reportedCount: 0 };
   for (const r of items) {
+    // 0108: previsto fica fora dos totais (aparece à parte, em forecastTotal)
+    if (r.entryStatus === "forecast") continue;
     for (const i of r.installments) {
       const s = r.entryStatus === "settled" ? "paid" : installmentState(i, today);
       if (s === "paid") out.paidCents += i.amountCents;
@@ -313,13 +345,21 @@ export function paymentTotals(items: Receivable[], today: string): PaymentTotals
   return out;
 }
 
-export const AGENCY_PAYMENT_FILTERS = ["reported", "open", "paid", "all"] as const;
+export const AGENCY_PAYMENT_FILTERS = ["reported", "open", "forecast", "paid", "all"] as const;
+
+/** 0108: soma dos "a receber" previstos (aguardando a contratação). */
+export function forecastTotal(items: Receivable[]): { cents: number; count: number } {
+  const f = items.filter((r) => r.entryStatus === "forecast");
+  return { cents: f.reduce((acc, r) => acc + r.totalCents, 0), count: f.length };
+}
 export type AgencyPaymentFilter = (typeof AGENCY_PAYMENT_FILTERS)[number];
 
 /** Filtro da lista da agência: informados (esperando o Adm), em aberto, pagos ou todos. */
 export function filterReceivables(items: Receivable[], filter: AgencyPaymentFilter, today: string): Receivable[] {
   if (filter === "all") return items;
+  if (filter === "forecast") return items.filter((r) => r.entryStatus === "forecast");
   return items.filter((r) => {
+    if (r.entryStatus === "forecast") return false;
     const states = r.installments.map((i) => (r.entryStatus === "settled" ? "paid" : installmentState(i, today)));
     if (filter === "reported") return states.includes("reported");
     if (filter === "paid") return states.length > 0 && states.every((s) => s === "paid");

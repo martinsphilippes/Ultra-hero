@@ -58,7 +58,7 @@ export async function saveSponsorshipAction(input: SponsorshipInput): Promise<Sp
         audience: d.audience,
         brand_ids: d.audience === "selected" ? d.brandIds : [],
         // 0088: cotas (o banco ignora o valor de quem não é Adm) e público do evento
-        tiers: d.tiers.map((x) => ({ id: x.id, name: x.name, price_cents: x.priceCents, perks: x.perks, slots: x.slots })),
+        tiers: d.tiers.map((x) => ({ id: x.id, name: x.name, price_cents: x.priceCents, perks: x.perks, slots: x.slots, value_model: x.valueModel })),
         target_audience: d.public.targetAudience,
         target_age_bands: d.public.targetAgeBands,
         target_states: d.public.targetStates,

@@ -5,7 +5,7 @@ import type { Locale } from "@/i18n/config";
 import { formatCents } from "@/lib/deals/schemas";
 import type { FinanceSummary } from "@/lib/finance/queries";
 
-// Indicadores financeiros (Adm): a receber, comissão, repasses e vencidos. Tudo simulado: o selo diz isso.
+// Indicadores financeiros (Adm): a receber, comissão, repasses e vencidos; 0108: previstos numa linha à parte. Tudo simulado: o selo diz isso.
 export async function FinanceKpis({ summary, compact = false }: { summary: FinanceSummary; compact?: boolean }) {
   const [t, locale] = await Promise.all([getTranslations("agency.finance"), getLocale() as Promise<Locale>]);
   return (
@@ -16,6 +16,11 @@ export async function FinanceKpis({ summary, compact = false }: { summary: Finan
         <KpiCard label={t("kpi.payoutOpen")} value={formatCents(summary.payoutOpenCents, locale)} hint={t("kpi.payoutSettled", { value: formatCents(summary.payoutSettledCents, locale) })} />
         <KpiCard label={t("kpi.overdue")} value={summary.overdueCount} hint={t("kpi.openCount", { count: summary.openCount, deals: summary.deals })} tone={summary.overdueCount > 0 ? "danger" : "default"} />
       </div>
+      {summary.forecastCount > 0 ? (
+        <p className="rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="finance-forecast">
+          {t("kpi.forecast", { receivable: formatCents(summary.receivableForecastCents, locale), payout: formatCents(summary.payoutForecastCents, locale) })}
+        </p>
+      ) : null}
       {!compact ? (
         <p className="flex items-start gap-2 rounded-xl border border-dashed border-border px-3 py-2 type-caption text-fg-muted" data-testid="finance-disclaimer">
           <ShieldAlert className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />

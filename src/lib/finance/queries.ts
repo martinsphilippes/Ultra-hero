@@ -5,6 +5,7 @@ import { toBudgetOverview, toBudgetSummary, type BudgetOverview, type BudgetSumm
 import { toAgencyChanges, toBrandChanges, type AgencyChanges, type BrandChanges } from "./budget-change";
 import { toAgencyPayments, toBrandPayments, toPaymentSettings, type AgencyPaymentsData, type BrandPaymentsData, type PaymentSettings } from "./payments";
 import { latestInvoice, toEarnings, type Earning, type PayoutInvoice } from "./earnings";
+import { toPaymentPlanView, type PaymentPlanView } from "./payment-plan";
 import { isEntryKind, isEntryStatus, type EntryFilter, type EntryKind, type EntryStatus } from "./vocab";
 
 // Financeiro simulado (0069): lançamentos pela RLS (só o Adm da agência lê; o creator lê o próprio repasse) e o
@@ -40,6 +41,10 @@ export type FinanceSummary = {
   overdueCount: number;
   openCount: number;
   deals: number;
+  /** 0108: previstos (condições salvas, aguardando a contratação) */
+  receivableForecastCents: number;
+  payoutForecastCents: number;
+  forecastCount: number;
 };
 
 const ENTRY_SELECT_BASE = "id, deal_id, talent_id, deal_talent_id, kind, amount_cents, status, due_on, settled_at, note, created_at, deal:deals!financial_entries_deal_fk(title), brand:brands!financial_entries_brand_fk(name), talent:talent_profiles!financial_entries_talent_fk(display_name)";
@@ -74,6 +79,10 @@ export async function listEntries(agencyId: string, filter: EntryFilter = "open"
   const run = async (select: string) => {
     let query = supabase.from("financial_entries").select(select).eq("agency_id", agencyId).order("due_on", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }).limit(500);
     if (filter === "open") query = query.in("status", ["planned", "due"]);
+    // 0108: a receber (marcas) e a pagar (heróis) em aberto, por vencimento; previstos à parte
+    if (filter === "receivable") query = query.eq("kind", "brand_receivable").in("status", ["planned", "due"]);
+    if (filter === "payable") query = query.eq("kind", "talent_payout").in("status", ["planned", "due"]);
+    if (filter === "forecast") query = query.eq("status", "forecast");
     if (filter === "overdue") query = query.in("status", ["planned", "due"]).lt("due_on", new Date().toISOString().slice(0, 10));
     if (filter === "settled") query = query.eq("status", "settled");
     if (filter === "cancelled") query = query.eq("status", "cancelled");
@@ -140,6 +149,9 @@ export function toSummary(raw: unknown): FinanceSummary | null {
     overdueCount: num(k.overdue_count),
     openCount: num(k.open_count),
     deals: num(k.deals),
+    receivableForecastCents: num(k.receivable_forecast_cents),
+    payoutForecastCents: num(k.payout_forecast_cents),
+    forecastCount: num(k.forecast_count),
   };
 }
 
@@ -202,4 +214,16 @@ export async function agencyPaymentSettings(agencyId: string): Promise<{ availab
   const { data, error } = await supabase.from("agency_payment_settings").select("*").eq("agency_id", agencyId).maybeSingle();
   if (error) return { available: !isMissingSchema(error), data: null };
   return { available: true, data: toPaymentSettings(data) };
+}
+
+// ---------------------------------------------------------------- 0108: condições de pagamento
+
+/** Condições de pagamento de um negócio como quem lê pode ver (Adm com valores; gestor/equipe sem; marca total e
+ *  parcelas; herói só o repasse dele). null sem acesso ou sem a migração. */
+export async function dealPaymentPlan(dealId: string | null | undefined): Promise<PaymentPlanView | null> {
+  if (!dealId || !/^[0-9a-f-]{36}$/i.test(dealId)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("deal_payment_plan_json", { p_deal: dealId });
+  if (error) return null;
+  return toPaymentPlanView(data);
 }
