@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { agencyErrorCode } from "@/lib/agency/error-codes";
 import {
-  becomeOptions,
   destinationAfterSignup,
   isBusinessProfile,
   loginPathFor,
@@ -45,12 +44,6 @@ describe("perfis da tela de entrada", () => {
     expect(loginPathFor("consumer", "/profile")).toBe("/login?perfil=app&next=%2Fprofile");
   });
 
-  it("Configurações › Quero ser…: só o que a pessoa ainda não é; no app das lojas, só Herói", () => {
-    expect(becomeOptions(["consumer"])).toEqual(["hero", "brand", "agency"]);
-    expect(becomeOptions(["consumer", "creator", "agency"])).toEqual(["brand"]);
-    expect(becomeOptions(["consumer"], true)).toEqual(["hero"]);
-    expect(becomeOptions(["creator", "brand", "agency"])).toEqual([]);
-  });
 });
 
 describe("formulário do cadastro por perfil", () => {
@@ -78,6 +71,7 @@ describe("formulário do cadastro por perfil", () => {
   it("erros do self-service viram chaves conhecidas", () => {
     expect(selfOnboardingError("brand_already_owned")).toBe("brand_already_owned");
     expect(selfOnboardingError("ERROR: rate_limited")).toBe("rate_limited");
+    expect(selfOnboardingError("profile_conflict:agency")).toBe("profile_conflict");
     expect(selfOnboardingError("boom")).toBe("unknown");
     expect(selfOnboardingError(null)).toBe("unknown");
   });

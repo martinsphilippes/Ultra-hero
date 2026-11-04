@@ -225,6 +225,19 @@
       "valueErrors": {
         "value_per_hero_required": "En el valor por héroe, indica cuánto recibe cada héroe.",
         "max_heroes_required": "En el valor por héroe, indica el máximo de héroes (de 1 a 50)."
+      },
+      "groups": {
+        "item": "Entregable {n}",
+        "kinds": "Tipos (elige uno o más)",
+        "networks": "Redes (elige una o más)",
+        "quantityHint": "Vale para cada tipo en cada red.",
+        "summary": "Genera {count, plural, one {# entrega} other {# entregas}}: {kinds} en {networks}",
+        "total": "En total: {count, plural, one {# entrega} other {# entregas}} en {combos, plural, one {# combinación} other {# combinaciones}} de tipo y red (máximo {max}).",
+        "kindRequired": "Elige al menos un tipo.",
+        "networkRequired": "Elige al menos una red.",
+        "rowProblem": "Entregable {n}: {problem}",
+        "tooMany": "Son {count} combinaciones de tipo y red; el máximo es {max}. Quita algunos tipos o redes.",
+        "tooManyTotal": "Sumando todos los héroes, la propuesta tiene {count} combinaciones distintas de tipo y red; el máximo es {max}."
       }
     },
     "cancel": {

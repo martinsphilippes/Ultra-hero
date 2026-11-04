@@ -294,11 +294,12 @@
     "selfSignupsLink": "Ver registros nuevos"
   },
   "start": {
-    "metaTitle": "Nuevo perfil",
+    "metaTitle": "Registro",
     "start": "Empezar",
     "notNow": "Ahora no",
     "alreadyText": "Ya tienes este perfil.",
     "errors": {
+      "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Héroe} brand {una cuenta de Marca} agency {una cuenta de Agencia} other {una cuenta de otro perfil}}. Usa otro correo.",
       "agency_member_elsewhere": "Ya formas parte de una agencia.",
       "brand_already_owned": "Ya eres Dueño de una marca.",
       "has_hero": "Ya tienes un héroe.",
@@ -308,7 +309,7 @@
       "unknown": "No se pudo empezar. Inténtalo de nuevo."
     },
     "hero": {
-      "title": "Quiero ser Héroe",
+      "title": "Registro de Héroe",
       "text": "Crea la página de tu héroe y trabaja con marcas.",
       "step1": "Ponle nombre a tu héroe.",
       "step2": "El admin lo aprueba antes de publicarlo.",
@@ -316,7 +317,7 @@
       "go": "Ir al Portal del Héroe"
     },
     "brand": {
-      "title": "Quiero ser Marca",
+      "title": "Registro de Marca",
       "text": "Contrata héroes y haz campañas.",
       "step1": "Indica el nombre y el sitio de la marca.",
       "step2": "Te conviertes en Dueño de la marca.",
@@ -324,7 +325,7 @@
       "go": "Ir a la marca"
     },
     "agency": {
-      "title": "Quiero ser Agencia",
+      "title": "Registro de Agencia",
       "text": "Representa héroes y gestiona negocios.",
       "step1": "Indica el nombre de la agencia.",
       "step2": "Te conviertes en Admin de la agencia.",

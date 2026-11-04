@@ -3,10 +3,11 @@
 import { Check, Plus, Trash2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { DeliverablesEditor } from "@/components/brand-call/shared";
+import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
 import { Button, Checkbox, DateRangePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
+import { expandDeliverableGroups, groupDeliverables } from "@/lib/deals/deliverable-groups";
 import type { RequestDeliverable } from "@/lib/deals/schemas";
 import { isOpenChange, MAX_PERKS, NOTE_MIN, planProblem, type BudgetChange, type CreatorAction, type PlanDraft } from "@/lib/finance/budget-change";
 import { decideBudgetChangeAction } from "@/lib/finance/change-actions";
@@ -141,6 +142,9 @@ function ProposeDialog({ change, dealId, talents, deliverables, periodStart, per
     perksText: "",
     note: "",
   });
+  // entregas em linhas (vários tipos × várias redes); viram itens tipo × rede ao propor
+  const [groups, setGroups] = useState(() => groupDeliverables(deliverables));
+  const groupsError = useGroupsError();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const patch = (p: Partial<PlanDraft>) => setDraft((cur) => ({ ...cur, ...p }));
@@ -149,12 +153,15 @@ function ProposeDialog({ change, dealId, talents, deliverables, periodStart, per
 
   function run() {
     setError(null);
-    const problem = planProblem(draft);
+    const expanded = draft.changeDeliverables ? expandDeliverableGroups(groups) : { ok: true as const, items: draft.deliverables };
+    if (!expanded.ok) return setError(groupsError(expanded, groups));
+    const plan: PlanDraft = { ...draft, deliverables: expanded.items };
+    const problem = planProblem(plan);
     if (problem) return setError(t(`planErrors.${problem}`));
     const counterCents = counter.trim() ? brlToCents(counter) : null;
     if (counter.trim() && counterCents === null) return setError(t("amountInvalid"));
     start(async () => {
-      const r = await decideBudgetChangeAction({ id: change.id, dealId, decision: "propose", note, counterCents, plan: draft });
+      const r = await decideBudgetChangeAction({ id: change.id, dealId, decision: "propose", note, counterCents, plan });
       if (!r.ok) return setError(r.error);
       toast({ title: r.message, variant: "success" });
       onClose();
@@ -239,7 +246,7 @@ function ProposeDialog({ change, dealId, talents, deliverables, periodStart, per
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-semibold text-fg">{tp("deliverables")}</legend>
           <Checkbox label={t("changeDeliverables")} checked={draft.changeDeliverables} onChange={(e) => patch({ changeDeliverables: e.target.checked })} disabled={pending} />
-          {draft.changeDeliverables ? <DeliverablesEditor value={draft.deliverables} onChange={(v) => patch({ deliverables: v })} disabled={pending} idPrefix="realign" /> : null}
+          {draft.changeDeliverables ? <DeliverableGroupsEditor value={groups} onChange={setGroups} disabled={pending} idPrefix="realign" defaultKind="reels" /> : null}
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">

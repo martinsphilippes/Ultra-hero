@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { StartProfileButton } from "@/components/invites/StartProfileButton";
 import { Button } from "@/components/ui";
+import { businessKindOfRoles } from "@/lib/auth/profile-conflict";
 import { isBusinessProfile, parseSignupProfile, loginPathFor, PROFILE_HOME, PROFILE_ONBOARDING_PATH } from "@/lib/auth/profile-signup";
 import { getRoles, getUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -18,10 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("metaTitle") };
 }
 
-const ROLE_OF = { hero: "creator", brand: "brand", agency: "agency" } as const;
-
-// /comecar/heroi|marca|agencia (0103): quem já tem conta vira Herói, Marca ou Agência pelo mesmo passo a passo do
-// cadastro. Passo em aberto: vai direto a ele. Já tem o papel: mostra o portal. Senão: explica e "Começar".
+// /comecar/heroi|marca|agencia (0103): continuação do cadastro por perfil depois de entrar ("Já tenho conta" com o
+// perfil escolhido na entrada e o Google). Passo em aberto: vai direto a ele. Já tem o perfil: mostra o portal.
+// 0116 (um e-mail, um perfil de negócio): conta que já é de OUTRO tipo vê o motivo e o próprio portal, sem "Começar".
+// Não há mais link para cá de dentro do app (a seção "Novo perfil" das Configurações saiu).
 export default async function StartProfilePage({ params }: { params: Params }) {
   const { perfil } = await params;
   const profile = parseSignupProfile(perfil);
@@ -34,7 +35,20 @@ export default async function StartProfilePage({ params }: { params: Params }) {
   if (open) redirect(PROFILE_ONBOARDING_PATH);
 
   // agência e herói: um por conta; marca: dá para ser Equipe de outra, mas Dono só de uma (o banco confere)
-  const already = profile !== "brand" && roles.some((r) => r.role === ROLE_OF[profile]);
+  const roleNames = roles.map((r) => r.role as string);
+  const current = roleNames.includes("admin") ? null : businessKindOfRoles(roleNames);
+  if (current && current !== profile) {
+    return (
+      <AuthCard title={t(`${profile}.title`)} subtitle={t("errors.profile_conflict", { kind: current })}>
+        <div className="flex flex-col gap-3" data-testid="start-profile-conflict">
+          <Button asChild size="lg" block>
+            <Link href={PROFILE_HOME[current]}>{t(`${current}.go`)}</Link>
+          </Button>
+        </div>
+      </AuthCard>
+    );
+  }
+  const already = profile !== "brand" && current === profile;
   return (
     <AuthCard title={t(`${profile}.title`)} subtitle={already ? t("alreadyText") : t(`${profile}.text`)}>
       {already ? (

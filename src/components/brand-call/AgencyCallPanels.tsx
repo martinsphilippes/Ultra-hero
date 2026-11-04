@@ -22,9 +22,12 @@ import {
 } from "@/lib/brand-call/logic";
 import type { RequestDeliverable } from "@/lib/deals/schemas";
 import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
-import { DeliverablesEditor, DeliverablesText, TermsFields, type TermsDraft } from "./shared";
+import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
+import { distinctCombos, expandDeliverableGroups, expandValidGroups, groupDeliverables, MAX_DELIVERABLE_COMBOS, newGroup, type DeliverableGroup } from "@/lib/deals/deliverable-groups";
+import { DeliverablesText, TermsFields, type TermsDraft } from "./shared";
 
-type Chosen = { deliverables: RequestDeliverable[]; mediaKitUrl: string };
+// entregas de cada creator em linhas (vários tipos × várias redes); viram itens tipo × rede ao salvar
+type Chosen = { deliverables: DeliverableGroup[]; mediaKitUrl: string };
 
 type BuilderProps = {
   callId: string;
@@ -48,8 +51,11 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
   const router = useRouter();
   const { toast } = useToast();
   const [picks, setPicks] = useState<Record<string, Chosen>>(() =>
-    Object.fromEntries((draft?.talents ?? []).map((x) => [x.talentId, { deliverables: x.deliverables, mediaKitUrl: x.mediaKitUrl }])),
+    Object.fromEntries((draft?.talents ?? []).map((x) => [x.talentId, { deliverables: groupDeliverables(x.deliverables), mediaKitUrl: x.mediaKitUrl }])),
   );
+  const groupsError = useGroupsError();
+  const tg = useTranslations("brandPortal.campaigns.form.groups");
+  const startGroups = (): DeliverableGroup[] => (callDeliverables.length > 0 ? groupDeliverables(callDeliverables) : [newGroup("reels")]);
   const [order, setOrder] = useState<string[]>(() => (draft?.talents ?? []).map((x) => x.talentId));
   const [amountText, setAmountText] = useState(centsToBrl(draft?.amountCents ?? null));
   // 0096: a proposta começa com o modelo da chamada (a agência pode propor outro); gestor só vê o que o Adm definiu
@@ -61,12 +67,12 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
   const [pending, start] = useTransition();
   const interestOf = (id: string) => interests.find((i) => i.talentId === id) ?? null;
   const sorted = [...candidates].sort((a, b) => Number(b.interested) - Number(a.interested) || a.name.localeCompare(b.name));
-  const total = sumDeliverables(order.flatMap((id) => picks[id]?.deliverables ?? []));
+  const total = sumDeliverables(order.flatMap((id) => expandValidGroups(picks[id]?.deliverables ?? [])));
 
   function toggle(id: string, on: boolean) {
     setPicks((cur) => {
       const next = { ...cur };
-      if (on) next[id] = cur[id] ?? { deliverables: callDeliverables.length > 0 ? callDeliverables : [{ kind: "reels", quantity: 1, network: null }], mediaKitUrl: "" };
+      if (on) next[id] = cur[id] ?? { deliverables: startGroups(), mediaKitUrl: "" };
       else delete next[id];
       return next;
     });
@@ -77,6 +83,15 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
     setError(null);
     if (order.length === 0) return setError(t("errors.noCreators"));
     if (order.some((id) => (picks[id]?.deliverables.length ?? 0) === 0)) return setError(t("errors.deliverables"));
+    const expanded: Record<string, RequestDeliverable[]> = {};
+    for (const id of order) {
+      const r = expandDeliverableGroups(picks[id].deliverables);
+      if (!r.ok) return setError(`${candidates.find((c) => c.id === id)?.name ?? ""}: ${groupsError(r, picks[id].deliverables)}`);
+      expanded[id] = r.items;
+    }
+    // o banco soma as entregas de todos por tipo + rede e guarda até 30 pares: acima disso, avisa em vez de cortar
+    const pairs = distinctCombos(order.flatMap((id) => expanded[id]));
+    if (pairs > MAX_DELIVERABLE_COMBOS) return setError(tg("tooManyTotal", { count: pairs, max: MAX_DELIVERABLE_COMBOS }));
     if (order.some((id) => !mediaKitUrlValid(picks[id]?.mediaKitUrl ?? ""))) return setError(t("errors.mediaKit"));
     const amountCents = canValues ? brlToCents(amountText) : null;
     if (send && amountCents === null) return setError(t("errors.amount"));
@@ -92,7 +107,7 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
     start(async () => {
       const result = await saveCallProposalAction({
         callId,
-        talents: order.map((id) => ({ talentId: id, deliverables: picks[id].deliverables, mediaKitUrl: picks[id].mediaKitUrl.trim() })),
+        talents: order.map((id) => ({ talentId: id, deliverables: expanded[id], mediaKitUrl: picks[id].mediaKitUrl.trim() })),
         amountCents,
         valueModel: model,
         maxHeroes: max,
@@ -147,7 +162,7 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
               {interest?.message ? <p className="type-caption text-fg-muted">“{interest.message}”</p> : null}
               {on ? (
                 <div className="flex flex-col gap-2">
-                  <DeliverablesEditor idPrefix={`pick-${c.id}`} value={picks[c.id].deliverables} onChange={(d) => setPicks((cur) => ({ ...cur, [c.id]: { ...cur[c.id], deliverables: d } }))} disabled={pending} />
+                  <DeliverableGroupsEditor idPrefix={`pick-${c.id}`} value={picks[c.id].deliverables} onChange={(d) => setPicks((cur) => ({ ...cur, [c.id]: { ...cur[c.id], deliverables: d } }))} disabled={pending} defaultKind="reels" />
                   <FormField label={t("mediaKit")} hint={t("mediaKitHint")}>
                     <Input type="url" inputMode="url" value={picks[c.id].mediaKitUrl} maxLength={500} placeholder="https://" onChange={(e) => setPicks((cur) => ({ ...cur, [c.id]: { ...cur[c.id], mediaKitUrl: e.target.value } }))} disabled={pending} />
                   </FormField>
@@ -197,7 +212,7 @@ export function AgencyProposalBuilder({ callId, callDeliverables, candidates, in
           onUse={(ids) => {
             setPicks((cur) => {
               const next: Record<string, Chosen> = {};
-              for (const id of ids) next[id] = cur[id] ?? { deliverables: callDeliverables.length > 0 ? callDeliverables : [{ kind: "reels", quantity: 1, network: null }], mediaKitUrl: "" };
+              for (const id of ids) next[id] = cur[id] ?? { deliverables: startGroups(), mediaKitUrl: "" };
               return next;
             });
             setOrder(ids);
@@ -243,7 +258,8 @@ export function AgencyCallReply({ proposal: p, decided, canValues }: { proposal:
   const { toast } = useToast();
   const actions = agencyCallActions(p, decided, canValues);
   const [mode, setMode] = useState<"counter" | "decline" | null>(null);
-  const [terms, setTerms] = useState<TermsDraft>({ amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: p.deliverables, deliverBy: p.deliverBy ?? "", note: "" });
+  const [terms, setTerms] = useState<TermsDraft>({ amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: groupDeliverables(p.deliverables), deliverBy: p.deliverBy ?? "", note: "" });
+  const groupsError = useGroupsError();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   if (p.status === "open" && p.awaiting === "agency" && !canValues) return <p className="type-caption text-warning">{t("adminOnly")}</p>;
@@ -254,6 +270,8 @@ export function AgencyCallReply({ proposal: p, decided, canValues }: { proposal:
     setError(null);
     const amountCents = action === "counter" ? brlToCents(terms.amountText) : null;
     if (action === "counter" && (amountCents === null || terms.deliverables.length === 0)) return setError(t("termsRequired"));
+    const expanded = action === "counter" ? expandDeliverableGroups(terms.deliverables) : { ok: true as const, items: [] };
+    if (!expanded.ok) return setError(groupsError(expanded, terms.deliverables));
     if (action === "counter") {
       const problem = validateTerms({ model: terms.valueModel, amountCents, maxHeroes: terms.maxHeroes });
       if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
@@ -264,7 +282,7 @@ export function AgencyCallReply({ proposal: p, decided, canValues }: { proposal:
         proposalId: p.id,
         action,
         amountCents,
-        deliverables: action === "counter" ? terms.deliverables : [],
+        deliverables: expanded.items,
         deliverBy: terms.deliverBy || null,
         note: terms.note,
         valueModel: action === "counter" ? terms.valueModel : null,

@@ -265,6 +265,7 @@
     "soonBody": "Segmentos do casting, regras de comissão (só Adm) e datas comerciais."
   },
   "errors": {
+    "profile_conflict": "Este e-mail já é usado por {kind, select, hero {uma conta de Herói} brand {uma conta de Marca} agency {uma conta de Agência} other {uma conta de outro perfil}}. Use outro e-mail.",
     "demo_account_forbidden": "Contas de exemplo não entram em agências reais.",
     "demo_locked": "A agência de exemplo tem equipe e vínculos fixos.",
     "demo_brand": "Marcas de exemplo do app não entram em agências.",
@@ -923,7 +924,14 @@
       "brief": "Orientações",
       "add": "Adicionar entregável",
       "save": "Salvar entregáveis",
-      "planTitle": "Planejamento"
+      "planTitle": "Planejamento",
+      "kinds": "Tipos (escolha um ou mais)",
+      "networks": "Redes (escolha uma ou mais)",
+      "kindRequired": "Escolha pelo menos um tipo.",
+      "networkRequired": "Escolha pelo menos uma rede.",
+      "newSummary": "Gera {count, plural, one {# entregável} other {# entregáveis}}: {kinds} em {networks}",
+      "rowProblem": "Entregável {n}: {problem}",
+      "tooMany": "A lista ficaria com {count} entregáveis; o máximo por vez é {max}. Tire alguns tipos ou redes."
     },
     "messages": {
       "channels": "Canais",

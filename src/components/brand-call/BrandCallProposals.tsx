@@ -25,6 +25,8 @@ import { formatCents } from "@/lib/deals/schemas";
 import { ceilingCents, validateTerms } from "@/lib/value-model/model";
 import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 import { priceDiff } from "@/lib/sponsorship/negotiation";
+import { useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
+import { expandDeliverableGroups, groupDeliverables } from "@/lib/deals/deliverable-groups";
 import { CallTimeline, DeliverablesText, TermsFields, type TermsDraft } from "./shared";
 
 type Props = { detail: BrandCallDetail };
@@ -255,7 +257,7 @@ export function BrandCallProposals({ detail }: Props) {
 }
 
 function initialTerms(p: CallProposal): TermsDraft {
-  return { amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: p.deliverables, deliverBy: p.deliverBy ?? "", note: "" };
+  return { amountText: centsToBrl(p.amountCents), valueModel: p.valueModel, maxHeroes: p.maxHeroes, deliverables: groupDeliverables(p.deliverables), deliverBy: p.deliverBy ?? "", note: "" };
 }
 
 /** Negociação de uma proposta, do lado da marca: histórico e ações (equipe: aceitar/contrapropor vão para o dono). */
@@ -270,6 +272,7 @@ function ProposalNegotiation({ proposal: p, detail }: { proposal: CallProposal; 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"counter" | "decline" | null>(null);
   const [terms, setTerms] = useState<TermsDraft>(() => initialTerms(p));
+  const groupsError = useGroupsError();
   const [reviewNote, setReviewNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -288,12 +291,14 @@ function ProposalNegotiation({ proposal: p, detail }: { proposal: CallProposal; 
   function reply(action: "accept" | "decline" | "counter") {
     const amountCents = action === "counter" ? brlToCents(terms.amountText) : null;
     if (action === "counter" && (amountCents === null || terms.deliverables.length === 0)) return setError(t("termsRequired"));
+    const expanded = action === "counter" ? expandDeliverableGroups(terms.deliverables) : { ok: true as const, items: [] };
+    if (!expanded.ok) return setError(groupsError(expanded, terms.deliverables));
     if (action === "counter") {
       const problem = validateTerms({ model: terms.valueModel, amountCents, maxHeroes: terms.maxHeroes });
       if (problem === "value_per_hero_required" || problem === "max_heroes_required") return setError(tv(`errors.${problem}`));
     }
     run(() =>
-      brandCallReplyAction({ proposalId: p.id, action, amountCents, deliverables: action === "counter" ? terms.deliverables : [], deliverBy: terms.deliverBy || null, note: terms.note, valueModel: action === "counter" ? terms.valueModel : null, maxHeroes: action === "counter" ? terms.maxHeroes : null }),
+      brandCallReplyAction({ proposalId: p.id, action, amountCents, deliverables: expanded.items, deliverBy: terms.deliverBy || null, note: terms.note, valueModel: action === "counter" ? terms.valueModel : null, maxHeroes: action === "counter" ? terms.maxHeroes : null }),
     );
   }
 

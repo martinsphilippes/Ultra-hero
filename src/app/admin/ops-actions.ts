@@ -8,6 +8,7 @@ import { BAN_FOREVER, BAN_NONE, restoreBanDuration, suspensionBlock } from "@/co
 import type { FeedbackStatus } from "@/components/feedback/constants";
 import { feedbackTriageSchema, type FeedbackTriageInput } from "@/components/feedback/schema";
 import { portalHomeForAccepted, type AcceptedInvitation } from "@/lib/auth/invite-home";
+import { profileConflictParams } from "@/lib/auth/profile-conflict";
 import { requireRole } from "@/lib/auth/session";
 import { isStoredAvatarUrl, storedAvatarOwner, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { RIGHTS_STATUSES } from "@/lib/catalog/rights";
@@ -43,6 +44,8 @@ async function fail(error: unknown): Promise<Failure> {
     code = error;
   }
   if (!t.has(code)) code = "generic";
+  // 0116: um e-mail, um perfil de negócio — a mensagem diz o tipo que a conta já tem
+  if (code === "profile_conflict") return { ok: false, error: t(code, profileConflictParams(error)) };
   return { ok: false, error: t(code) };
 }
 

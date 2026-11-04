@@ -265,6 +265,7 @@
     "soonBody": "Casting segments, commission rules (Admin only) and commercial dates."
   },
   "errors": {
+    "profile_conflict": "This email is already used by {kind, select, hero {a Hero account} brand {a Brand account} agency {an Agency account} other {another profile account}}. Use another email.",
     "demo_account_forbidden": "Example accounts can't join real agencies.",
     "demo_locked": "The example agency has a fixed team and links.",
     "demo_brand": "The app's sample brands can't join agencies.",
@@ -923,7 +924,14 @@
       "brief": "Guidance",
       "add": "Add deliverable",
       "save": "Save deliverables",
-      "planTitle": "Plan"
+      "planTitle": "Plan",
+      "kinds": "Types (pick one or more)",
+      "networks": "Networks (pick one or more)",
+      "kindRequired": "Pick at least one type.",
+      "networkRequired": "Pick at least one network.",
+      "newSummary": "Creates {count, plural, one {# deliverable} other {# deliverables}}: {kinds} on {networks}",
+      "rowProblem": "Deliverable {n}: {problem}",
+      "tooMany": "The list would have {count} deliverables; the maximum at a time is {max}. Remove some types or networks."
     },
     "messages": {
       "channels": "Channels",

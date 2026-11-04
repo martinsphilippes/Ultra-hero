@@ -294,11 +294,12 @@
     "selfSignupsLink": "See new sign-ups"
   },
   "start": {
-    "metaTitle": "New profile",
+    "metaTitle": "Sign up",
     "start": "Start",
     "notNow": "Not now",
     "alreadyText": "You already have this profile.",
     "errors": {
+      "profile_conflict": "This email is already used by {kind, select, hero {a Hero account} brand {a Brand account} agency {an Agency account} other {another profile account}}. Use another email.",
       "agency_member_elsewhere": "You are already part of an agency.",
       "brand_already_owned": "You already own a brand.",
       "has_hero": "You already have a hero.",
@@ -308,7 +309,7 @@
       "unknown": "Could not start. Please try again."
     },
     "hero": {
-      "title": "I want to be a Hero",
+      "title": "Hero sign-up",
       "text": "Create your hero page and work with brands.",
       "step1": "Name your hero.",
       "step2": "The admin approves it before it goes live.",
@@ -316,7 +317,7 @@
       "go": "Go to the Hero Portal"
     },
     "brand": {
-      "title": "I want to be a Brand",
+      "title": "Brand sign-up",
       "text": "Hire heroes and run campaigns.",
       "step1": "Enter the brand name and website.",
       "step2": "You become the brand Owner.",
@@ -324,7 +325,7 @@
       "go": "Go to the brand"
     },
     "agency": {
-      "title": "I want to be an Agency",
+      "title": "Agency sign-up",
       "text": "Represent heroes and manage deals.",
       "step1": "Enter the agency name.",
       "step2": "You become the agency Admin.",

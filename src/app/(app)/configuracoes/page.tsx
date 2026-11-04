@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { isValidTimeZone, localDateIn } from "@/components/me/dates";
 import { Button, PageHeader } from "@/components/ui";
-import { becomeOptions, startPathFor, type BusinessProfile } from "@/lib/auth/profile-signup";
 import { getProfile, getRoles, requireUser } from "@/lib/auth/session";
 import { appliesOn } from "@/lib/routine/reminders";
 import { getTalentContext } from "@/lib/talent/server";
@@ -60,8 +59,6 @@ const ICONS: Record<SettingsItem["key"], LucideIcon> = {
   admin: ShieldCheck,
 };
 
-const BECOME_ICONS: Record<BusinessProfile, LucideIcon> = { hero: Sparkles, brand: BadgeCheck, agency: Building2 };
-
 const rowClass =
   "flex min-h-16 items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus sm:px-5";
 
@@ -76,11 +73,8 @@ export default async function SettingsPage() {
   const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok", platformAdmin: true })
     .map((section) => ({ ...section, items: forSurface(section.items, native) }))
     .filter((section) => section.items.length > 0);
-  // 0103: "Quero ser Herói/Marca/Agência" — o mesmo passo a passo do cadastro por perfil, para quem ainda não tem
-  const become = becomeOptions(
-    roles.map((r) => r.role),
-    native,
-  );
+  // Sem "Novo perfil" (decisão do dono, 0116): uma conta tem um só perfil de negócio (Herói, Marca OU Agência); o perfil
+  // se escolhe no cadastro. Portais vêm no topo (buildSettingsSections os põe primeiro).
 
   // resumo da linha de Lembretes (como era no Perfil); se a leitura falhar, a linha fica sem contagem
   const supabase = await createClient();
@@ -149,33 +143,6 @@ export default async function SettingsPage() {
           </ul>
         </section>
       ))}
-
-      {become.length > 0 ? (
-        <section aria-labelledby="settings-become" data-testid="settings-section-become" className="flex flex-col gap-2">
-          <h2 id="settings-become" className="type-overline px-1 text-fg-muted">
-            {t("sections.become")}
-          </h2>
-          <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
-            {become.map((p) => {
-              const Icon = BECOME_ICONS[p];
-              return (
-                <li key={p}>
-                  <Link href={startPathFor(p)} data-testid={`settings-become-${p}`} className={rowClass}>
-                    <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
-                      <Icon className="size-5" />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="text-sm font-semibold text-fg">{t(`become.${p}.title`)}</span>
-                      <span className="type-caption text-fg-muted">{t(`become.${p}.hint`)}</span>
-                    </span>
-                    <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
 
       {/* Sair e Excluir conta: no fim, como no Instagram */}
       <div className="flex flex-col items-start gap-3">

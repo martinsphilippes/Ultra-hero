@@ -12527,6 +12527,10 @@ isOneToOne: false
       is_platform_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_demo_account: { Args: Record<PropertyKey, never>; Returns: boolean };
       accept_invitation: { Args: { p_token: string }; Returns: Json };
+      // 0116: um e-mail, um perfil de negócio (internas: só service_role; a trava roda nos triggers)
+      account_business_kinds: { Args: { p_user: string }; Returns: string[] };
+      business_profile_guard: { Args: { p_user: string; p_kind: string }; Returns: undefined };
+      invitation_business_kind: { Args: { p_kind: string; p_role: string }; Returns: string | null };
       // 0091: convites por papel, equipe do herói e primeiro acesso
       admin_invite: { Args: { p_email: string; p_role: string; p_days: number; p_options?: Json }; Returns: Json };
       admin_invite_talent_options: { Args: Record<PropertyKey, never>; Returns: { talent_id: string; display_name: string; agency_name: string; has_hero: boolean }[] };

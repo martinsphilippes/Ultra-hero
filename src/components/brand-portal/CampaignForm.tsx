@@ -1,18 +1,20 @@
 "use client";
 
-import { Plus, Save, Send, Trash2 } from "lucide-react";
+import { Save, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
 import { BriefFields } from "@/components/brief/BriefFields";
-import { Button, Checkbox, DateRangePicker, Dialog, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
+import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
+import { Button, Checkbox, DateRangePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief } from "@/lib/brief/brief";
-import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
+import { expandDeliverableGroups, groupDeliverables } from "@/lib/deals/deliverable-groups";
+import { parseBrlToCents, type BrandRequestInput } from "@/lib/deals/schemas";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { askApprovalAction } from "@/lib/selection/actions";
 import { validateTerms } from "@/lib/value-model/model";
-import { DELIVERABLE_KINDS, FORMATS, OBJECTIVES } from "@/lib/deals/vocab";
+import { FORMATS, OBJECTIVES } from "@/lib/deals/vocab";
 import { AGE_BANDS, NETWORKS, UFS } from "@/lib/talent/vocab";
 
 // Valores vazios ficam num módulo comum (campaign-form.ts): uma página do servidor que importasse a
@@ -52,6 +54,9 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
+  // entregáveis em linhas (vários tipos × várias redes); viram itens tipo × rede ao salvar (formato do banco igual)
+  const [groups, setGroups] = useState(() => groupDeliverables(initial.deliverables));
+  const groupsError = useGroupsError();
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [pending, start] = useTransition();
@@ -73,6 +78,11 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
         return null;
       }
     }
+    const expanded = expandDeliverableGroups(groups);
+    if (!expanded.ok) {
+      setError(groupsError(expanded, groups));
+      return null;
+    }
     const brief = draftToBrief(v.briefDraft);
     if (!briefValid(brief)) {
       setError(t("briefInvalid"));
@@ -81,10 +91,10 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
     const rest: Partial<CampaignFormValues> = { ...v };
     delete rest.budgetText;
     delete rest.briefDraft;
-    return { ...(rest as Omit<CampaignFormValues, "budgetText" | "briefDraft">), budgetMaxCents: cents, maxHeroes: v.valueModel === "por_heroi" ? v.maxHeroes : null, brief };
+    return { ...(rest as Omit<CampaignFormValues, "budgetText" | "briefDraft">), deliverables: expanded.items, budgetMaxCents: cents, maxHeroes: v.valueModel === "por_heroi" ? v.maxHeroes : null, brief };
   }
 
-  const complete = v.title.trim().length >= 3 && v.objective !== "" && v.periodStart !== "" && v.networks.length > 0 && v.deliverables.length > 0;
+  const complete = v.title.trim().length >= 3 && v.objective !== "" && v.periodStart !== "" && v.networks.length > 0 && groups.length > 0;
 
   function save(thenSubmit: boolean) {
     setError(null);
@@ -231,45 +241,7 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
           <span className="text-sm font-medium text-fg">
             {t("deliverables")} <span className="text-danger">*</span>
           </span>
-          {v.deliverables.length === 0 ? <p className="type-body-sm text-fg-muted">{t("deliverablesEmpty")}</p> : null}
-          <ul className="flex flex-col gap-2">
-            {v.deliverables.map((d, i) => (
-              <li key={i} className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-[1fr_6rem_1fr_auto] sm:items-end">
-                <FormField label={t("deliverableKind")}>
-                  <Select value={d.kind} onChange={(e) => set("deliverables", v.deliverables.map((x, j) => (j === i ? { ...x, kind: e.target.value as RequestDeliverable["kind"] } : x)))} disabled={disabled}>
-                    {DELIVERABLE_KINDS.map((k) => (
-                      <option key={k} value={k}>
-                        {tc(`deliverableKinds.${k}`)}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-                <FormField label={t("quantity")}>
-                  <QuantityInput min={1} max={100} value={d.quantity} onValueChange={(n) => set("deliverables", v.deliverables.map((x, j) => (j === i ? { ...x, quantity: n } : x)))} disabled={disabled} />
-                </FormField>
-                <FormField label={t("deliverableNetwork")}>
-                  <Select value={d.network ?? ""} onChange={(e) => set("deliverables", v.deliverables.map((x, j) => (j === i ? { ...x, network: (e.target.value || null) as RequestDeliverable["network"] } : x)))} disabled={disabled}>
-                    <option value="">—</option>
-                    {NETWORKS.map((n) => (
-                      <option key={n} value={n}>
-                        {tn(n)}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-                {canEdit ? (
-                  <Button type="button" size="sm" variant="ghost" leadingIcon={<Trash2 />} onClick={() => set("deliverables", v.deliverables.filter((_, j) => j !== i))} disabled={pending} aria-label={t("removeDeliverable", { n: i + 1 })}>
-                    <span className="sr-only sm:not-sr-only">{t("remove")}</span>
-                  </Button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-          {canEdit ? (
-            <Button type="button" size="sm" variant="secondary" leadingIcon={<Plus />} onClick={() => set("deliverables", [...v.deliverables, { kind: "post", quantity: 1, network: null }])} disabled={pending || v.deliverables.length >= 30} className="w-fit">
-              {t("addDeliverable")}
-            </Button>
-          ) : null}
+          <DeliverableGroupsEditor idPrefix="campaign" value={groups} onChange={setGroups} disabled={disabled} canEdit={canEdit} defaultKind="post" defaultNetworks={v.networks} />
         </div>
       </section>
 

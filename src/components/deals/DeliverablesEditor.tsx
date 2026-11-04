@@ -1,19 +1,29 @@
 "use client";
 
 import { Plus, Save, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState, useTransition, type FormEvent } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useState, useTransition, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { saveDeliverablesAction } from "@/app/agencia/negocios/actions";
 import { Button, DatePicker, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import type { DeliverableRow } from "@/lib/deals/queries";
+import { toggleIn } from "@/lib/deals/deliverable-groups";
 import type { DeliverableItemInput } from "@/lib/deals/schemas";
 import { DELIVERABLE_KINDS, type DeliverableKind } from "@/lib/deals/vocab";
-import { NETWORKS } from "@/lib/talent/vocab";
+import { NETWORKS, type Network } from "@/lib/talent/vocab";
 import { talentOption, type TalentPickFields } from "@/lib/ui/entity";
+import { ChoiceChips } from "./DeliverableGroupsEditor";
 import { DeliverableStatusBadge } from "./StatusBadges";
 
 type Talent = { dealTalentId: string; name: string } & TalentPickFields;
-type Item = DeliverableItemInput & { status: DeliverableRow["status"] | "new" };
+// Linha nova: vários tipos e várias redes (pedido do responsável, 04/11); ao salvar vira um entregável por
+// tipo × rede, todos com o mesmo herói, título, orientações e datas. Linhas já salvas são registros com histórico
+// próprio e seguem com um tipo e uma rede.
+type Item = DeliverableItemInput & { status: DeliverableRow["status"] | "new"; kinds: DeliverableKind[]; networks: Network[] };
+/** Teto de itens enviados (o mesmo de deliverablesSchema). */
+const MAX_ITEMS = 60;
+const isNew = (i: Item) => i.id === null;
+const newCount = (i: Item) => i.kinds.length * i.networks.length;
 
 // Entregáveis planejados por creator. Os que já saíram de "planejado" ficam só leitura; remover da lista
 // cancela o planejado (histórico fica). A aprovação por versão chega na P2.
@@ -22,11 +32,16 @@ export function DeliverablesEditor({ dealId, talents, items, canEdit }: { dealId
   const tk = useTranslations("commercial.deliverableKinds");
   const tn = useTranslations("mediaKit.networks");
   const tp = useTranslations("pickers");
+  const locale = useLocale();
   const talentOptions = talents.map((x) => talentOption(tp, { ...x, id: x.dealTalentId }));
   const { toast } = useToast();
-  const [list, setList] = useState<Item[]>(
-    items.map((d) => ({ id: d.id, dealTalentId: d.dealTalentId, kind: d.kind, network: (d.network ?? "") as DeliverableItemInput["network"], title: d.title, brief: d.brief, dueAt: d.dueAt?.slice(0, 10) ?? "", publishAt: d.publishAt?.slice(0, 10) ?? "", status: d.status })),
-  );
+  const fromProps = () =>
+    items.map((d): Item => ({ id: d.id, dealTalentId: d.dealTalentId, kind: d.kind, network: (d.network ?? "") as DeliverableItemInput["network"], title: d.title, brief: d.brief, dueAt: d.dueAt?.slice(0, 10) ?? "", publishAt: d.publishAt?.slice(0, 10) ?? "", status: d.status, kinds: [], networks: [] }));
+  const [list, setList] = useState<Item[]>(fromProps);
+  const router = useRouter();
+  // depois de salvar, a página recarrega os dados: as linhas novas viram registros com id (não são enviadas de novo)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setList(fromProps()), [items]);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const editable = (i: Item) => i.status === "new" || i.status === "planned" || i.status === "in_production";
@@ -34,17 +49,26 @@ export function DeliverablesEditor({ dealId, talents, items, canEdit }: { dealId
 
   function add() {
     if (talents.length === 0) return;
-    setList((cur) => [...cur, { id: null, dealTalentId: talents[0].dealTalentId, kind: "post", network: "", title: "", brief: "", dueAt: "", publishAt: "", status: "new" }]);
+    setList((cur) => [...cur, { id: null, dealTalentId: talents[0].dealTalentId, kind: "post", network: "", title: "", brief: "", dueAt: "", publishAt: "", status: "new", kinds: ["post"], networks: [] }]);
   }
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    const bad = list.findIndex((i) => isNew(i) && (i.kinds.length === 0 || i.networks.length === 0));
+    if (bad >= 0) return setError(t("rowProblem", { n: bad + 1, problem: t(list[bad].kinds.length === 0 ? "kindRequired" : "networkRequired") }));
+    // linha nova → um item por tipo × rede; os que não podem mais ser editados vão como estão (a RPC ignora a mudança deles)
+    const items = list.flatMap((i) => {
+      const base = { id: i.id, dealTalentId: i.dealTalentId, title: i.title, brief: i.brief, dueAt: i.dueAt, publishAt: i.publishAt };
+      if (!isNew(i)) return [{ ...base, kind: i.kind, network: i.network }];
+      return i.kinds.flatMap((kind) => i.networks.map((network) => ({ ...base, kind, network })));
+    });
+    if (items.length > MAX_ITEMS) return setError(t("tooMany", { count: items.length, max: MAX_ITEMS }));
     start(async () => {
-      // os que não podem mais ser editados vão como estão (a RPC ignora a mudança deles)
-      const result = await saveDeliverablesAction({ dealId, items: list.map((i) => ({ id: i.id, dealTalentId: i.dealTalentId, kind: i.kind, network: i.network, title: i.title, brief: i.brief, dueAt: i.dueAt, publishAt: i.publishAt })) });
+      const result = await saveDeliverablesAction({ dealId, items });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
+      router.refresh();
     });
   }
 
@@ -67,29 +91,68 @@ export function DeliverablesEditor({ dealId, talents, items, canEdit }: { dealId
                   </Button>
                 ) : null}
               </div>
+              {isNew(item) && !locked ? (
+                <div className="flex flex-col gap-3">
+                  <ChoiceChips
+                    legend={t("kinds")}
+                    options={DELIVERABLE_KINDS.map((k) => ({ value: k, label: tk(k) }))}
+                    selected={item.kinds}
+                    onToggle={(k) => update(index, { kinds: toggleIn(DELIVERABLE_KINDS, item.kinds, k) })}
+                    disabled={pending}
+                    invalid={item.kinds.length === 0}
+                    describedBy={`deliv-new-${index}`}
+                    testId={`deliverable-kinds-${index}`}
+                  />
+                  <ChoiceChips
+                    legend={t("networks")}
+                    options={NETWORKS.map((n) => ({ value: n, label: tn(n) }))}
+                    selected={item.networks}
+                    onToggle={(n) => update(index, { networks: toggleIn(NETWORKS, item.networks, n) })}
+                    disabled={pending}
+                    invalid={item.networks.length === 0}
+                    describedBy={`deliv-new-${index}`}
+                    testId={`deliverable-networks-${index}`}
+                  />
+                  <p id={`deliv-new-${index}`} aria-live="polite" className={newCount(item) === 0 ? "type-body-sm text-danger" : "type-body-sm text-fg-muted"}>
+                    {item.kinds.length === 0
+                      ? t("kindRequired")
+                      : item.networks.length === 0
+                        ? t("networkRequired")
+                        : t("newSummary", {
+                            count: newCount(item),
+                            kinds: item.kinds.map((k) => tk(k)).join(" + "),
+                            networks: new Intl.ListFormat(locale, { style: "long", type: "conjunction" }).format(item.networks.map((n) => tn(n))),
+                          })}
+                  </p>
+                </div>
+              ) : null}
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <FormField label={t("talent")} hint={tp("hints.deliverableTalent")}>
                   <EntitySelect value={item.dealTalentId} onChange={(e) => update(index, { dealTalentId: e.target.value })} disabled={locked || pending} roleInOption={false} options={talentOptions} />
                 </FormField>
-                <FormField label={t("kind")}>
-                  <Select value={item.kind} onChange={(e) => update(index, { kind: e.target.value as DeliverableKind })} disabled={locked || pending}>
-                    {DELIVERABLE_KINDS.map((k) => (
-                      <option key={k} value={k}>
-                        {tk(k)}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
-                <FormField label={t("network")}>
-                  <Select value={item.network ?? ""} onChange={(e) => update(index, { network: e.target.value as DeliverableItemInput["network"] })} disabled={locked || pending}>
-                    <option value="">—</option>
-                    {NETWORKS.map((n) => (
-                      <option key={n} value={n}>
-                        {tn(n)}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
+                {isNew(item) ? null : (
+                  <>
+                    <FormField label={t("kind")}>
+                      <Select value={item.kind} onChange={(e) => update(index, { kind: e.target.value as DeliverableKind })} disabled={locked || pending}>
+                        {DELIVERABLE_KINDS.map((k) => (
+                          <option key={k} value={k}>
+                            {tk(k)}
+                          </option>
+                        ))}
+                      </Select>
+                    </FormField>
+                    <FormField label={t("network")}>
+                      <Select value={item.network ?? ""} onChange={(e) => update(index, { network: e.target.value as DeliverableItemInput["network"] })} disabled={locked || pending}>
+                        <option value="">—</option>
+                        {NETWORKS.map((n) => (
+                          <option key={n} value={n}>
+                            {tn(n)}
+                          </option>
+                        ))}
+                      </Select>
+                    </FormField>
+                  </>
+                )}
                 <FormField label={t("title")}>
                   <Input value={item.title} maxLength={120} onChange={(e) => update(index, { title: e.target.value })} disabled={locked || pending} />
                 </FormField>

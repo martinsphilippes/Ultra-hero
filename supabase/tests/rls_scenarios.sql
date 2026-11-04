@@ -7796,8 +7796,10 @@ insert into public.brands (id, slug, name, site_url, status) values
   (public.seed_uuid('s74:brand:livre'), 's74-livre', 'Livre', 'https://example.com/l', 'active'),
   (public.seed_uuid('s74:brand:demo'), 's74-demo', 'Demo', 'https://example.com/e', 'active');
 update public.brands set is_demo = true where id = public.seed_uuid('s74:brand:demo');
+-- 0116: Dono numa conta só de marca (a colaboradora da agência não pode ser também da marca)
+insert into auth.users (id, email, raw_app_meta_data) values ('74000000-0000-4000-8000-0000000000b9', 's74-dono-marca@test.local', '{}');
 insert into public.brand_members (brand_id, user_id, role, display_name) values
-  (public.seed_uuid('s74:brand:membro'), '74000000-0000-4000-8000-0000000000a4', 'owner', 'Fulano');
+  (public.seed_uuid('s74:brand:membro'), '74000000-0000-4000-8000-0000000000b9', 'owner', 'Fulano');
 insert into public.documents (id, agency_id, scope_type, brand_id, kind, title, storage_path, mime_type, size_bytes, status, uploader_side)
 values (public.seed_uuid('s74:doc:brand'), public.seed_uuid('s74:agency:b'), 'brand', public.seed_uuid('s74:brand:doc'), 'other', 'Doc',
         public.seed_uuid('s74:agency:b')::text || '/brand/' || public.seed_uuid('s74:brand:doc')::text || '/' || public.seed_uuid('s74:doc:brand')::text || '.pdf',
@@ -12263,7 +12265,8 @@ select tests.ok('S94 depois do aceite o selo vira login (e-mail mascarado)',
 select tests.expect_error('S94 herói que acabou de ganhar conta não recebe outro convite', $q$select * from public.agency_invite_talent('94000000-0000-4000-8000-000000009421', 'outro.s94@test.local')$q$, 'creator_has_login');
 
 -- talento sem página continua pelo caminho antigo (escopo talent)
-insert into t_s94 select 'inv3', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009425', 's94-gestor-fora@test.local');
+-- 0116: e-mail sem conta (o gestor de outra agência não pode virar herói: um e-mail, um perfil de negócio)
+insert into t_s94 select 'inv3', invitation_id::text from public.agency_invite_talent('94000000-0000-4000-8000-000000009425', 's94-talento-sem-conta@test.local');
 select tests.su();
 select tests.ok('S94 convite do talento sem página continua com a mesma forma',
   (select talent_id = '94000000-0000-4000-8000-000000009425' and creator_profile_id is null from public.invitations where id = (select v::uuid from t_s94 where k = 'inv3')));
@@ -18050,6 +18053,147 @@ delete from public.brand_members where brand_id = 'a1200000-0000-4000-8000-00000
 delete from public.brands where id = 'a1200000-0000-4000-8000-0000000000b1';
 delete from public.agencies where id = 'a1200000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'a1200000-%';
+
+-- ================================================================ S121 · Um e-mail, um perfil de negócio: Herói OU Marca OU Agência (0116)
+-- Uma conta só tem UM tipo de perfil de negócio (consumidor é a base e não conta; admin da plataforma fica fora). As
+-- tabelas de vínculo recusam outro tipo (profile_conflict:<tipo que a conta já tem>), o mesmo tipo pode repetir (Dono de
+-- 2 marcas), vínculo revogado não conta; as RPCs herdam a trava: cadastro por perfil, convite novo (recusa no envio),
+-- aceite de convite (o convite segue pendente), ligar herói/Dono a conta existente. Staff externo de projeto não é
+-- perfil. Funções internas fechadas; S14 segue 18.
+\ir ../migrations/0116_um_perfil_por_conta.sql
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'invites.enabled';
+insert into public.app_settings (key, value) values ('experiment.open', 'true'::jsonb)
+  on conflict (key) do update set value = 'true'::jsonb;
+insert into auth.users (id, email) values
+  ('a1210000-0000-4000-8000-000000000001', 's121-agencia@test.local'),
+  ('a1210000-0000-4000-8000-000000000002', 's121-marca@test.local'),
+  ('a1210000-0000-4000-8000-000000000003', 's121-heroi@test.local'),
+  ('a1210000-0000-4000-8000-000000000004', 's121-consumidor@test.local'),
+  ('a1210000-0000-4000-8000-000000000005', 's121-admin@test.local'),
+  ('a1210000-0000-4000-8000-000000000006', 's121-ex-agencia@test.local'),
+  ('a1210000-0000-4000-8000-000000000007', 's121-convidado@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('a1210000-0000-4000-8000-000000000005', 'admin', 'global');
+insert into public.agencies (id, slug, name) values ('a1210000-0000-4000-8000-0000000000a1', 's121-agencia', 'Agência S121');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000001', 'admin', 'Ana S121'),
+  ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000006', 'staff', 'Ex S121');
+insert into public.brands (id, slug, name, site_url) values
+  ('a1210000-0000-4000-8000-0000000000b1', 's121-marca', 'Marca S121', 'https://m.s121.test'),
+  ('a1210000-0000-4000-8000-0000000000b2', 's121-marca-2', 'Marca 2 S121', 'https://m2.s121.test'),
+  ('a1210000-0000-4000-8000-0000000000b3', 's121-marca-3', 'Marca 3 S121', 'https://m3.s121.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1210000-0000-4000-8000-0000000000b1', 'a1210000-0000-4000-8000-000000000002', 'owner', 'Bia S121');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('a1210000-0000-4000-8000-0000000000c1', 's121-heroi', 'Herói S121', 'active', 'a1210000-0000-4000-8000-000000000003'),
+  ('a1210000-0000-4000-8000-0000000000c2', 's121-sem-dono', 'Sem dono S121', 'active', null);
+insert into public.talent_profiles (id, agency_id, display_name) values
+  ('a1210000-0000-4000-8000-0000000000d1', 'a1210000-0000-4000-8000-0000000000a1', 'Talento S121');
+
+select tests.ok('S121 estrutura: triggers nas 8 tabelas, funções internas fechadas, search_path fixo; S14 segue 18',
+  (select count(*) from pg_trigger t where t.tgname = 'business_profile_guard' and not t.tgisinternal
+     and t.tgrelid in ('public.brand_members'::regclass, 'public.agency_members'::regclass, 'public.creator_profiles'::regclass,
+                       'public.talent_profiles'::regclass, 'public.creator_team_members'::regclass, 'public.role_assignments'::regclass,
+                       'public.account_onboardings'::regclass, 'public.invitations'::regclass)) = 8
+  and not has_function_privilege('authenticated', 'public.account_business_kinds(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.account_business_kinds(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.business_profile_guard(uuid, text)', 'execute')
+  and not has_function_privilege('anon', 'public.business_profile_guard(uuid, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.business_profile_row_guard()', 'execute')
+  and not has_function_privilege('anon', 'public.invitation_business_kind(text, text)', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and p.proconfig is null
+                  and p.proname in ('account_business_kinds', 'business_profile_guard', 'business_profile_row_guard'))
+  and public.account_business_kinds('a1210000-0000-4000-8000-000000000001') = array['agency']
+  and public.account_business_kinds('a1210000-0000-4000-8000-000000000002') = array['brand']
+  and public.account_business_kinds('a1210000-0000-4000-8000-000000000003') = array['hero']
+  and public.account_business_kinds('a1210000-0000-4000-8000-000000000004') = '{}'::text[]
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- defesa nas tabelas: outro tipo recusa (com o tipo que a conta já tem)
+select tests.expect_error('S121 agência não vira Dono de marca',
+  $q$insert into public.brand_members (brand_id, user_id, role, display_name) values ('a1210000-0000-4000-8000-0000000000b2', 'a1210000-0000-4000-8000-000000000001', 'owner', 'X')$q$, 'profile_conflict:agency');
+select tests.expect_error('S121 marca não entra na equipe da agência',
+  $q$insert into public.agency_members (agency_id, user_id, role, display_name) values ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000002', 'staff', 'X')$q$, 'profile_conflict:brand');
+select tests.expect_error('S121 marca não vira titular de herói',
+  $q$update public.creator_profiles set user_id = 'a1210000-0000-4000-8000-000000000002' where id = 'a1210000-0000-4000-8000-0000000000c2'$q$, 'profile_conflict:brand');
+select tests.expect_error('S121 agência não vira login de talento',
+  $q$update public.talent_profiles set user_id = 'a1210000-0000-4000-8000-000000000001' where id = 'a1210000-0000-4000-8000-0000000000d1'$q$, 'profile_conflict:agency');
+select tests.expect_error('S121 herói não entra na equipe da agência',
+  $q$insert into public.agency_members (agency_id, user_id, role, display_name) values ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000003', 'staff', 'X')$q$, 'profile_conflict:hero');
+select tests.expect_error('S121 agência não entra na equipe de um herói',
+  $q$insert into public.creator_team_members (creator_profile_id, user_id, role, status) values ('a1210000-0000-4000-8000-0000000000c1', 'a1210000-0000-4000-8000-000000000001', 'member', 'active')$q$, 'profile_conflict:agency');
+select tests.expect_error('S121 papel de herói para a marca recusa',
+  $q$insert into public.role_assignments (user_id, role, scope_type) values ('a1210000-0000-4000-8000-000000000002', 'creator', 'global')$q$, 'profile_conflict:brand');
+
+-- mesmo tipo repete; consumidor vira um tipo; admin da plataforma fica fora; vínculo revogado não conta
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1210000-0000-4000-8000-0000000000b2', 'a1210000-0000-4000-8000-000000000002', 'owner', 'Bia S121');
+update public.agency_members set job_title = 'Diretora' where user_id = 'a1210000-0000-4000-8000-000000000001';
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1210000-0000-4000-8000-0000000000b3', 'a1210000-0000-4000-8000-000000000005', 'owner', 'Adm S121');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000005', 'staff', 'Adm S121');
+update public.agency_members set revoked_at = now() where user_id = 'a1210000-0000-4000-8000-000000000006';
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1210000-0000-4000-8000-0000000000b3', 'a1210000-0000-4000-8000-000000000006', 'staff', 'Ex S121');
+select tests.ok('S121 mesmo tipo repete (Dono de 2 marcas, editar o vínculo), admin fora da regra, ex-membro revogado vira marca',
+  (select count(*) from public.brand_members where user_id = 'a1210000-0000-4000-8000-000000000002' and revoked_at is null) = 2
+  and (select job_title from public.agency_members where user_id = 'a1210000-0000-4000-8000-000000000001') = 'Diretora'
+  and public.account_business_kinds('a1210000-0000-4000-8000-000000000005') = array['agency', 'brand']
+  and public.account_business_kinds('a1210000-0000-4000-8000-000000000006') = array['brand']);
+select tests.expect_error('S121 quem virou marca não volta à agência (reativar o vínculo antigo recusa)',
+  $q$update public.agency_members set revoked_at = null where user_id = 'a1210000-0000-4000-8000-000000000006'$q$, 'profile_conflict:brand');
+
+-- cadastro por perfil (self-onboarding): outro tipo recusa; consumidor começa
+select tests.login('a1210000-0000-4000-8000-000000000001', 's121-agencia@test.local');
+select tests.expect_error('S121 agência não começa o cadastro de Herói', $q$select public.self_onboarding_start('hero')$q$, 'profile_conflict:agency');
+select tests.login('a1210000-0000-4000-8000-000000000002', 's121-marca@test.local');
+select tests.expect_error('S121 marca não começa o cadastro de Agência', $q$select public.self_onboarding_start('agency')$q$, 'profile_conflict:brand');
+select tests.login('a1210000-0000-4000-8000-000000000004', 's121-consumidor@test.local');
+select tests.ok('S121 consumidor começa o cadastro de Marca', (public.self_onboarding_start('brand') ->> 'kind') = 'brand');
+
+-- convite novo para e-mail de outro tipo: recusa no envio
+select tests.login('a1210000-0000-4000-8000-000000000001', 's121-agencia@test.local');
+select tests.expect_error('S121 convite de equipe da agência para e-mail de marca recusa no envio',
+  $q$select * from public.agency_invite_member('a1210000-0000-4000-8000-0000000000a1', 's121-marca@test.local', 'staff')$q$, 'profile_conflict:brand');
+select tests.expect_error('S121 Nova marca com contato que é herói recusa (e a marca não nasce)',
+  $q$select public.agency_brand_create_with_access('a1210000-0000-4000-8000-0000000000a1', '{"name":"Nova S121","slug":"s121-nova","site_url":"https://n.s121.test"}', 'Contato S121', 's121-heroi@test.local', '+5511912340121')$q$, 'profile_conflict:hero');
+select tests.expect_error('S121 Novo herói com e-mail de conta de marca recusa',
+  $q$select public.agency_hero_create('a1210000-0000-4000-8000-0000000000a1', '{"display_name":"Herói Novo S121"}', 's121-marca@test.local', '+5511912340122')$q$, 'profile_conflict:brand');
+select tests.su();
+select tests.ok('S121 nada ficou pela metade (marca e talento recusados não existem)',
+  not exists (select 1 from public.brands where slug = 's121-nova')
+  and not exists (select 1 from public.talent_profiles where display_name = 'Herói Novo S121'));
+
+-- aceite: o convite (de marca) foi feito antes de a pessoa virar agência → recusa e o convite segue pendente
+insert into public.invitations (id, email, role, brand_id, member_role, kind, token_hash, expires_at)
+values ('a1210000-0000-4000-8000-0000000000e1', 's121-convidado@test.local', 'brand', 'a1210000-0000-4000-8000-0000000000b2', 'staff', 'brand_staff',
+        encode(extensions.digest('s121-token', 'sha256'), 'hex'), now() + interval '7 days');
+update public.brands set self_managed = true where id = 'a1210000-0000-4000-8000-0000000000b2';
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1210000-0000-4000-8000-0000000000a1', 'a1210000-0000-4000-8000-000000000007', 'staff', 'Convidado S121');
+select tests.login('a1210000-0000-4000-8000-000000000007', 's121-convidado@test.local');
+select tests.ok('S121 aceite de convite de marca por conta de agência recusa com o tipo',
+  (select public.accept_my_invitations()::text like '%profile_conflict:agency%'));
+select tests.su();
+select tests.ok('S121 o convite recusado segue pendente e a conta continua só agência',
+  (select status::text from public.invitations where id = 'a1210000-0000-4000-8000-0000000000e1') = 'pending'
+  and public.account_business_kinds('a1210000-0000-4000-8000-000000000007') = array['agency']);
+
+-- staff externo de projeto (0110) não é perfil de negócio: as tabelas da sala não têm a trava
+select tests.ok('S121 staff externo de projeto fica fora da regra',
+  not exists (select 1 from pg_trigger t where t.tgname = 'business_profile_guard' and t.tgrelid = 'public.project_room_members'::regclass));
+
+select tests.su();
+delete from public.invitations where id::text like 'a1210000-%';
+delete from public.account_onboardings where user_id::text like 'a1210000-%';
+delete from public.agency_brands where brand_id::text like 'a1210000-%';
+delete from public.talent_profiles where id::text like 'a1210000-%';
+delete from public.creator_profiles where id::text like 'a1210000-%';
+delete from public.brands where id::text like 'a1210000-%';
+delete from public.agencies where id::text like 'a1210000-%';
+delete from auth.users where id::text like 'a1210000-%';
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

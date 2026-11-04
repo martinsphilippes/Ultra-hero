@@ -908,8 +908,7 @@
       "collections": "Colecciones",
       "purchases": "Compras",
       "account": "Cuenta y app",
-      "portals": "Portales",
-      "become": "Nuevo perfil"
+      "portals": "Portales"
     },
     "rows": {
       "devices": {
@@ -921,20 +920,6 @@
         "description": "Idioma de la app, tema claro u oscuro, nombre y foto."
       }
     },
-    "deleteAccount": "Eliminar cuenta",
-    "become": {
-      "hero": {
-        "title": "Quiero ser Héroe",
-        "hint": "Crea tu héroe y trabaja con marcas"
-      },
-      "brand": {
-        "title": "Quiero ser Marca",
-        "hint": "Contrata héroes y haz campañas"
-      },
-      "agency": {
-        "title": "Quiero ser Agencia",
-        "hint": "Representa héroes y gestiona negocios"
-      }
-    }
+    "deleteAccount": "Eliminar cuenta"
   }
 }

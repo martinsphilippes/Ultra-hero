@@ -57,6 +57,8 @@ test.describe("Configurações", () => {
       expect(await section.locator("a").evaluateAll((links) => links.map((a) => a.getAttribute("href")))).toEqual([...hrefs]);
     }
     await expect(page.getByTestId("settings-section-portals")).toHaveCount(0);
+    // 0116: sem "Novo perfil" (um e-mail, um perfil de negócio)
+    await expect(page.getByTestId("settings-section-become")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Sair da conta" })).toBeVisible();
     await expect(page.getByTestId("settings-delete-account")).toHaveAttribute("href", "/profile/account#excluir-conta");
     // a aba Perfil segue ativa nas Configurações (celular)

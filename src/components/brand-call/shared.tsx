@@ -1,8 +1,9 @@
 "use client";
 
-import { Building2, Plus, Store, Trash2 } from "lucide-react";
+import { Building2, Store } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Badge, Button, DatePicker, FormField, QuantityInput, Select, Textarea, type BadgeVariant } from "@/components/ui";
+import { DeliverableGroupsEditor } from "@/components/deals/DeliverableGroupsEditor";
+import { Badge, DatePicker, FormField, Textarea, type BadgeVariant } from "@/components/ui";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import type { Locale } from "@/i18n/config";
@@ -10,12 +11,11 @@ import { formatDateTime, formatPlainDate } from "@/i18n/format";
 import type { AgencyViewStatus, CallRound, CallStatus } from "@/lib/brand-call/logic";
 import type { RequestDeliverable } from "@/lib/deals/schemas";
 import { formatCents } from "@/lib/deals/schemas";
-import { DELIVERABLE_KINDS } from "@/lib/deals/vocab";
-import { NETWORKS } from "@/lib/talent/vocab";
+import type { DeliverableGroup } from "@/lib/deals/deliverable-groups";
 import type { ValueModel } from "@/lib/value-model/model";
 
-// Peças da chamada da marca (0089) que servem à marca, à agência e ao creator: selos de situação, entregas em texto e
-// o editor de entregas (mesmos campos da campanha), o compositor de termos de uma rodada e a linha do tempo.
+// Peças da chamada da marca (0089) que servem à marca, à agência e ao creator: selos de situação, entregas em texto (o editor
+// de entregas é o DeliverableGroupsEditor, o mesmo da campanha), o compositor de termos de uma rodada e a linha do tempo.
 
 const CALL_VARIANT: Record<CallStatus, BadgeVariant> = { draft: "neutral", open: "success", closed: "neutral", contracted: "accent", cancelled: "neutral" };
 const AGENCY_VARIANT: Record<AgencyViewStatus, BadgeVariant> = { open: "success", expired: "warning", won: "accent", lost: "neutral", closed: "neutral", cancelled: "neutral" };
@@ -50,56 +50,7 @@ export function DeliverablesText({ items, className }: { items: RequestDeliverab
   );
 }
 
-type EditorProps = { value: RequestDeliverable[]; onChange: (next: RequestDeliverable[]) => void; disabled?: boolean; idPrefix: string };
-
-/** Lista de entregas (tipo + quantidade + rede), os mesmos campos e textos da campanha. */
-export function DeliverablesEditor({ value, onChange, disabled = false, idPrefix }: EditorProps) {
-  const t = useTranslations("brandPortal.campaigns.form");
-  const tk = useTranslations("commercial.deliverableKinds");
-  const tn = useTranslations("mediaKit.networks");
-  const patch = (i: number, p: Partial<RequestDeliverable>) => onChange(value.map((x, j) => (j === i ? { ...x, ...p } : x)));
-  return (
-    <div className="flex flex-col gap-2" data-testid={`${idPrefix}-deliverables`}>
-      {value.length === 0 ? <p className="type-body-sm text-fg-muted">{t("deliverablesEmpty")}</p> : null}
-      <ul className="flex flex-col gap-2">
-        {value.map((d, i) => (
-          <li key={i} className="grid grid-cols-[1fr_5rem] gap-2 rounded-xl border border-border p-3 sm:grid-cols-[1fr_5rem_1fr_auto] sm:items-end">
-            <FormField label={t("deliverableKind")}>
-              <Select value={d.kind} onChange={(e) => patch(i, { kind: e.target.value as RequestDeliverable["kind"] })} disabled={disabled}>
-                {DELIVERABLE_KINDS.map((k) => (
-                  <option key={k} value={k}>
-                    {tk(k)}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label={t("quantity")}>
-              <QuantityInput min={1} max={100} value={d.quantity} onValueChange={(n) => patch(i, { quantity: n })} disabled={disabled} />
-            </FormField>
-            <FormField label={t("deliverableNetwork")} className="col-span-2 sm:col-span-1">
-              <Select value={d.network ?? ""} onChange={(e) => patch(i, { network: (e.target.value || null) as RequestDeliverable["network"] })} disabled={disabled}>
-                <option value="">—</option>
-                {NETWORKS.map((n) => (
-                  <option key={n} value={n}>
-                    {tn(n)}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <Button type="button" size="sm" variant="ghost" leadingIcon={<Trash2 />} className="col-span-2 justify-self-start sm:col-span-1" onClick={() => onChange(value.filter((_, j) => j !== i))} disabled={disabled} aria-label={t("removeDeliverable", { n: i + 1 })}>
-              <span className="sr-only sm:not-sr-only">{t("remove")}</span>
-            </Button>
-          </li>
-        ))}
-      </ul>
-      <Button type="button" size="sm" variant="secondary" leadingIcon={<Plus />} onClick={() => onChange([...value, { kind: "reels", quantity: 1, network: null }])} disabled={disabled || value.length >= 30} className="w-fit">
-        {t("addDeliverable")}
-      </Button>
-    </div>
-  );
-}
-
-export type TermsDraft = { amountText: string; valueModel: ValueModel; maxHeroes: number | null; deliverables: RequestDeliverable[]; deliverBy: string; note: string };
+export type TermsDraft = { amountText: string; valueModel: ValueModel; maxHeroes: number | null; deliverables: DeliverableGroup[]; deliverBy: string; note: string };
 
 /** Termos de uma rodada (contraproposta): valor total, entregas, prazo de entrega e nota. */
 export function TermsFields({ value, onChange, disabled, idPrefix }: { value: TermsDraft; onChange: (v: TermsDraft) => void; disabled?: boolean; idPrefix: string }) {
@@ -123,7 +74,7 @@ export function TermsFields({ value, onChange, disabled, idPrefix }: { value: Te
       </FormField>
       <fieldset className="flex flex-col gap-1">
         <legend className="mb-1 text-sm font-medium text-fg">{t("deliverables")}</legend>
-        <DeliverablesEditor idPrefix={idPrefix} value={value.deliverables} onChange={(d) => onChange({ ...value, deliverables: d })} disabled={disabled} />
+        <DeliverableGroupsEditor idPrefix={idPrefix} value={value.deliverables} onChange={(d) => onChange({ ...value, deliverables: d })} disabled={disabled} defaultKind="reels" />
       </fieldset>
       <FormField label={t("note")}>
         <Textarea value={value.note} maxLength={500} rows={2} onChange={(e) => onChange({ ...value, note: e.target.value })} disabled={disabled} />

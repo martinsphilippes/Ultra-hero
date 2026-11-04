@@ -12,7 +12,8 @@ import { OBJECTIVES } from "@/lib/deals/vocab";
 import { brlToCents } from "@/lib/money/brl-input";
 import { NETWORKS, type Network } from "@/lib/talent/vocab";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
-import { DeliverablesEditor } from "./shared";
+import { DeliverableGroupsEditor, useGroupsError } from "@/components/deals/DeliverableGroupsEditor";
+import { expandDeliverableGroups, groupDeliverables } from "@/lib/deals/deliverable-groups";
 
 export type CallFormValues = Omit<CallFormInput, "niches" | "budgetCents"> & { nichesText: string; budgetText: string };
 
@@ -29,6 +30,9 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const [v, setV] = useState(initial);
+  // entregáveis em linhas (vários tipos × várias redes); viram itens tipo × rede ao salvar
+  const [groups, setGroups] = useState(() => groupDeliverables(initial.deliverables));
+  const groupsError = useGroupsError();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const set = <K extends keyof CallFormValues>(k: K, value: CallFormValues[K]) => setV((cur) => ({ ...cur, [k]: value }));
@@ -36,9 +40,12 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
 
   function submit(publish: boolean) {
     setError(null);
+    const expanded = expandDeliverableGroups(groups);
+    if (!expanded.ok) return setError(groupsError(expanded, groups));
     const budgetCents = brlToCents(v.budgetText);
     const input: CallFormInput = {
       ...v,
+      deliverables: expanded.items,
       niches: parseNiches(v.nichesText),
       budgetCents: v.budgetDisplay === "open" && budgetCents === null ? null : budgetCents,
       maxHeroes: v.valueModel === "por_heroi" ? v.maxHeroes : null,
@@ -103,7 +110,7 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
         <h2 id="bc-deliverables" className="text-base font-semibold text-fg">
           {t("blocks.deliverables")}
         </h2>
-        <DeliverablesEditor idPrefix="brand-call" value={v.deliverables} onChange={(d) => set("deliverables", d)} disabled={pending} />
+        <DeliverableGroupsEditor idPrefix="brand-call" value={groups} onChange={setGroups} disabled={pending} defaultKind="reels" defaultNetworks={v.networks} />
         <div className="grid gap-3 sm:grid-cols-2">
           <FormField label={t("creatorsWanted")}>
             <QuantityInput min={1} max={MAX_CREATORS_WANTED} value={v.creatorsWanted} onValueChange={(n) => set("creatorsWanted", n)} disabled={pending} />

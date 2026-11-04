@@ -27,6 +27,7 @@
     "backToList": "Voltar à lista"
   },
   "errors": {
+    "profile_conflict": "Este e-mail já é usado por {kind, select, hero {uma conta de Herói} brand {uma conta de Marca} agency {uma conta de Agência} other {uma conta de outro perfil}}. Use outro e-mail.",
     "forbidden": "Você não tem permissão para esta ação.",
     "unauthenticated": "Sessão expirada. Entre novamente.",
     "invalid_input": "Dados inválidos. Revise o formulário.",

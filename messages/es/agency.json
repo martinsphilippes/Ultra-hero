@@ -265,6 +265,7 @@
     "soonBody": "Segmentos del casting, reglas de comisión (solo Adm) y fechas comerciales."
   },
   "errors": {
+    "profile_conflict": "Este correo ya lo usa {kind, select, hero {una cuenta de Héroe} brand {una cuenta de Marca} agency {una cuenta de Agencia} other {una cuenta de otro perfil}}. Usa otro correo.",
     "demo_account_forbidden": "Las cuentas de ejemplo no entran en agencias reales.",
     "demo_locked": "La agencia de ejemplo tiene equipo y vínculos fijos.",
     "demo_brand": "Las marcas de ejemplo de la app no entran en agencias.",
@@ -923,7 +924,14 @@
       "brief": "Orientaciones",
       "add": "Agregar entregable",
       "save": "Guardar entregables",
-      "planTitle": "Planificación"
+      "planTitle": "Planificación",
+      "kinds": "Tipos (elige uno o más)",
+      "networks": "Redes (elige una o más)",
+      "kindRequired": "Elige al menos un tipo.",
+      "networkRequired": "Elige al menos una red.",
+      "newSummary": "Genera {count, plural, one {# entregable} other {# entregables}}: {kinds} en {networks}",
+      "rowProblem": "Entregable {n}: {problem}",
+      "tooMany": "La lista tendría {count} entregables; el máximo por vez es {max}. Quita algunos tipos o redes."
     },
     "messages": {
       "channels": "Canales",

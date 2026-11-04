@@ -27,6 +27,7 @@
     "backToList": "Back to list"
   },
   "errors": {
+    "profile_conflict": "This email is already used by {kind, select, hero {a Hero account} brand {a Brand account} agency {an Agency account} other {another profile account}}. Use another email.",
     "forbidden": "You do not have permission for this action.",
     "unauthenticated": "Session expired. Sign in again.",
     "invalid_input": "Invalid data. Review the form.",

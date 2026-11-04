@@ -33,7 +33,8 @@ export const PROFILE_HOME: Record<BusinessProfile, string> = { hero: "/heroi", b
 /** Passo a passo (a escolha fica guardada no banco; voltar aqui retoma). */
 export const PROFILE_ONBOARDING_PATH = "/primeiro-acesso";
 
-/** Página autenticada que começa o passo a passo (Configurações › "Quero ser…", Google e "Já tenho conta"). */
+/** Página autenticada que continua o cadastro por perfil (Google e "Já tenho conta" com o perfil escolhido na entrada).
+ *  0116: não há mais atalho "Quero ser…" nas Configurações — um e-mail tem um só perfil de negócio. */
 export function startPathFor(profile: BusinessProfile): string {
   return `/comecar/${PROFILE_SLUG[profile]}`;
 }
@@ -56,12 +57,6 @@ export function profilesForSurface(native: boolean): SignupProfile[] {
   return native ? SIGNUP_PROFILES.filter((p) => p !== "brand" && p !== "agency") : [...SIGNUP_PROFILES];
 }
 
-/** "Quero ser Herói/Marca/Agência" (Configurações): só os perfis que a pessoa ainda não tem. */
-export function becomeOptions(roles: readonly string[], native = false): BusinessProfile[] {
-  const has: Record<BusinessProfile, boolean> = { hero: roles.includes("creator"), brand: roles.includes("brand"), agency: roles.includes("agency") };
-  return BUSINESS_PROFILES.filter((p) => !has[p] && !(native && p !== "hero"));
-}
-
 const passwordSchema = z.string({ error: "required" }).min(8, { error: "passwordTooShort" }).max(72, { error: "passwordTooLong" });
 
 /** Cadastro com perfil: os campos do cadastro rápido (nome completo, e-mail, celular) + a senha escolhida. */
@@ -70,6 +65,8 @@ export type ProfileSignupInput = z.infer<typeof profileSignupSchema>;
 
 /** Erros das RPCs do self-service que a tela traduz (invites.selfSignup.errors.*). Outros = unknown. */
 export const SELF_ONBOARDING_ERRORS = [
+  // 0116: a conta já tem outro perfil de negócio (o tipo vem depois de ":")
+  "profile_conflict",
   "agency_member_elsewhere",
   "brand_already_owned",
   "has_hero",

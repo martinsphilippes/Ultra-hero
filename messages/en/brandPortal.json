@@ -225,6 +225,19 @@
       "valueErrors": {
         "value_per_hero_required": "For a per-hero value, enter what each hero receives.",
         "max_heroes_required": "For a per-hero value, enter the maximum number of heroes (1 to 50)."
+      },
+      "groups": {
+        "item": "Deliverable {n}",
+        "kinds": "Types (pick one or more)",
+        "networks": "Networks (pick one or more)",
+        "quantityHint": "Applies to each type on each network.",
+        "summary": "Creates {count, plural, one {# deliverable} other {# deliverables}}: {kinds} on {networks}",
+        "total": "In total: {count, plural, one {# deliverable} other {# deliverables}} across {combos, plural, one {# type and network combination} other {# type and network combinations}} (max {max}).",
+        "kindRequired": "Pick at least one type.",
+        "networkRequired": "Pick at least one network.",
+        "rowProblem": "Deliverable {n}: {problem}",
+        "tooMany": "That is {count} type and network combinations; the maximum is {max}. Remove some types or networks.",
+        "tooManyTotal": "Adding up all heroes, the proposal has {count} different type and network combinations; the maximum is {max}."
       }
     },
     "cancel": {
