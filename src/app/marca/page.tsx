@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, Bell, FileSignature, Megaphone, Search, Users } from "lucide-react";
+import { ArrowRight, Bell, FileSignature, Megaphone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
@@ -126,22 +126,6 @@ export default async function BrandDashboardPage() {
         {pendingApprovals !== null ? <KpiCard label={t("kpi.approvals")} value={pendingApprovals} hint={t("kpi.approvalsHint")} tone={pendingApprovals > 0 ? "danger" : "default"} /> : null}
         <KpiCard label={t("kpi.team")} value={members.length} />
         <KpiCard label={t("kpi.unread")} value={unread ?? 0} />
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {ctx.role && ctx.agency ? (
-          <Button asChild size="sm" leadingIcon={<Megaphone />}>
-            <Link href="/marca/campanhas/nova">{t("newCampaign")}</Link>
-          </Button>
-        ) : null}
-        <Button asChild size="sm" variant="secondary" leadingIcon={<Search />}>
-          <Link href="/marca/herois">{t("seeCreators")}</Link>
-        </Button>
-        <Button asChild size="sm" variant="secondary">
-          <Link href="/marca/campanhas">{t("seeCampaigns")}</Link>
-        </Button>
-        <Button asChild size="sm" variant="secondary" leadingIcon={<Users />}>
-          <Link href="/marca/equipe">{t("seeTeam")}</Link>
-        </Button>
       </div>
       {dash ? (
         <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
