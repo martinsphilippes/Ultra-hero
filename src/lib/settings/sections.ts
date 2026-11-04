@@ -104,14 +104,15 @@ export function buildPortalItems(roles: readonly string[], sellerPortalEnabled?:
   return portals;
 }
 
-/** Seções na ordem da tela; seção sem linha não aparece (Portais só com papel ou com talento no casting). */
+/** Seções na ordem da tela; seção sem linha não aparece (Portais só com papel ou com talento no casting). Portais vêm
+ *  PRIMEIRO (pedido do responsável): acesso rápido ao portal do login, antes de rotina, coleções, compras e conta. */
 export function buildSettingsSections(roles: readonly string[], sellerPortalEnabled?: boolean, opts: PortalOptions = {}): SettingsSection[] {
   const sections: SettingsSection[] = LINK_SECTIONS.map(({ key, items }) => ({
     key,
     items: items.map(([k, href]) => ({ kind: "link" as const, key: k, href, nativeHidden: nativeHidden(href) })),
   }));
   const portals = buildPortalItems(roles, sellerPortalEnabled, opts);
-  if (portals.length > 0) sections.push({ key: "portals", items: portals });
+  if (portals.length > 0) sections.unshift({ key: "portals", items: portals });
   return sections;
 }
 

@@ -36,7 +36,7 @@ describe("buildSettingsSections", () => {
     expect(buildSettingsSections(["creator"]).find((s) => s.key === "portals")?.items.map((i) => i.key)).toEqual(["creator"]);
     const admin = buildSettingsSections(["consumer", "admin", "professional", "seller"], false, { platformAdmin: true });
     const portals = admin.find((s) => s.key === "portals")!;
-    expect(admin.at(-1)).toBe(portals);
+    expect(admin[0]).toBe(portals);
     // o admin geral também tem os atalhos da agência e da marca (gestão, 0064)
     expect(portals.items.map((i) => [i.key, i.href])).toEqual([
       ["professional", "/profissional"],
