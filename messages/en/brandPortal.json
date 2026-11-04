@@ -57,7 +57,13 @@
     "nextEventsNone": "No date published in the coming days.",
     "seeAgenda": "See agenda",
     "proposeOnDay": "Proposal on this day",
-    "proposeOnDayLabel": "New proposal for {date}"
+    "proposeOnDayLabel": "New proposal for {date}",
+    "shortcuts": {
+      "heroes": "Heroes",
+      "campaigns": "Campaigns",
+      "team": "Team",
+      "label": "Brand shortcuts"
+    }
   },
   "team": {
     "title": "Brand team",

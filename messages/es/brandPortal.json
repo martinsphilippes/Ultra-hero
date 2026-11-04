@@ -57,7 +57,13 @@
     "nextEventsNone": "Ninguna fecha publicada en los próximos días.",
     "seeAgenda": "Ver agenda",
     "proposeOnDay": "Propuesta en este día",
-    "proposeOnDayLabel": "Nueva propuesta para {date}"
+    "proposeOnDayLabel": "Nueva propuesta para {date}",
+    "shortcuts": {
+      "heroes": "Héroes",
+      "campaigns": "Campañas",
+      "team": "Equipo",
+      "label": "Atajos de la marca"
+    }
   },
   "team": {
     "title": "Equipo de la marca",
