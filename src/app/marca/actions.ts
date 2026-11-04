@@ -13,6 +13,7 @@ import { briefPayload } from "@/lib/brief/brief";
 import { brandRequestSchema, toZonedIso, type BrandRequestInput } from "@/lib/deals/schemas";
 import { defaultTimeZone } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
+import { linkToEvent } from "@/lib/culture/link";
 
 // Portal da marca: o dono convida e remove a equipe (a RPC confere e audita). Propostas de campanha
 // (0066): salvar rascunho, enviar à agência e cancelar; o valor oferecido vai à tabela de valor
@@ -58,9 +59,13 @@ export async function saveRequestAction(input: BrandRequestInput): Promise<Brand
     });
     if (error) return agencyFail(error);
     if (!data) return agencyFail("generic");
+    // 0101: campanha a partir de um evento da agenda — vínculo (e segmento sugerido) gravado ainda no rascunho
+    let linkFailed = false;
+    if (d.calendarEventId) linkFailed = !(await linkToEvent("campaign", data, d.calendarEventId, d.eventSegments ?? [])).ok;
     revalidatePath("/marca/campanhas");
     revalidatePath(`/marca/campanhas/${data}`);
     const t = await getTranslations("brandPortal.campaigns");
+    if (linkFailed) return { ok: true, message: (await getTranslations("culture.link"))("failed"), id: data };
     return { ok: true, message: t("draftSaved"), id: data };
   } catch (error) {
     return agencyFail(error);

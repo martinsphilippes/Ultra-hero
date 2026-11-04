@@ -81,6 +81,8 @@ export const sponsorshipSchema = z
     // 0088: cotas (1 a 3) e público do evento
     tiers: z.array(tierSchema).min(1).max(3),
     public: publicSchema,
+    /** 0101: oportunidade criada a partir de um evento da agenda */
+    calendarEventId: z.union([z.literal(""), z.uuid()]).optional(),
   })
   .refine((v) => v.audience === "all" || v.brandIds.length > 0, { path: ["brandIds"] })
   .refine((v) => perksValid(v.perks), { path: ["perks"] });

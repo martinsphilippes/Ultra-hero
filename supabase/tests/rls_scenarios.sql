@@ -15411,5 +15411,268 @@ delete from public.role_assignments where user_id::text like 'a1060000-%';
 delete from auth.users where id::text like 'a1060000-%';
 drop table t_s106;
 
+-- ================================================================ S107 · Agenda conectada: proposta a partir do evento, conteúdos editoriais e Real-Time Culture (0101)
+-- Vínculo campanha/chamada/patrocínio ↔ evento só por quem edita o item e só com evento que ele vê (plataforma no ar ou da
+-- mesma agência); território → segmento da agência sem sobrescrever; depois de enviada a campanha o vínculo fica. Histórico
+-- do evento por perfil (marca só o dela e nunca herói; agência o dela sem rascunho de marca; herói só o patrocínio dele já
+-- publicado; admin tudo menos rascunho de marca; outra agência nada). Oportunidades abertas por evento (só números).
+-- Hashtags do mês / trending do trimestre para quem tem portal. Notícias e dicas: admin para todos, agência para a rede;
+-- rascunho e programado futuro invisíveis; colaborador não escreve; visitante e consumidor nada. S14 segue 18.
+\ir ../migrations/0101_cultura_comercial_agenda.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1070000-0000-4000-8000-000000000001','s107-admin@test.local'),('a1070000-0000-4000-8000-000000000002','s107-gestor-a@test.local'),
+  ('a1070000-0000-4000-8000-000000000003','s107-colab-a@test.local'),('a1070000-0000-4000-8000-000000000004','s107-gestor-b@test.local'),
+  ('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local'),('a1070000-0000-4000-8000-000000000006','s107-equipe-m2@test.local'),
+  ('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local'),('a1070000-0000-4000-8000-000000000008','s107-consumidor@test.local'),
+  ('a1070000-0000-4000-8000-000000000009','s107-heroi-b@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('a1070000-0000-4000-8000-000000000001','admin','global');
+insert into public.agencies (id, slug, name) values ('a1070000-0000-4000-8000-0000000000a1','s107-agencia-a','Agência A S107'),('a1070000-0000-4000-8000-0000000000a2','s107-agencia-b','Agência B S107');
+select public.agency_seed_defaults('a1070000-0000-4000-8000-0000000000a1');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1070000-0000-4000-8000-0000000000a1','a1070000-0000-4000-8000-000000000002','manager','Gil S107'),
+  ('a1070000-0000-4000-8000-0000000000a1','a1070000-0000-4000-8000-000000000003','staff','Caio S107'),
+  ('a1070000-0000-4000-8000-0000000000a2','a1070000-0000-4000-8000-000000000004','manager','Bia S107');
+insert into public.brands (id, slug, name, site_url) values ('a1070000-0000-4000-8000-0000000000b1','s107-marca-1','Marca 1 S107','https://m1.s107.test'),
+  ('a1070000-0000-4000-8000-0000000000b2','s107-marca-2','Marca 2 S107','https://m2.s107.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1070000-0000-4000-8000-0000000000a1','a1070000-0000-4000-8000-0000000000b1'),
+  ('a1070000-0000-4000-8000-0000000000a2','a1070000-0000-4000-8000-0000000000b2');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1070000-0000-4000-8000-0000000000b1','a1070000-0000-4000-8000-000000000005','owner','Dona S107'),
+  ('a1070000-0000-4000-8000-0000000000b2','a1070000-0000-4000-8000-000000000006','staff','Equipe S107');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('a1070000-0000-4000-8000-0000000000c1','s107-heroi-a','Herói A S107','active','a1070000-0000-4000-8000-000000000007'),
+  ('a1070000-0000-4000-8000-0000000000c2','s107-heroi-b','Herói B S107','active','a1070000-0000-4000-8000-000000000009');
+insert into public.talent_profiles (id, agency_id, display_name, creator_id, consent_at) values
+  ('a1070000-0000-4000-8000-0000000000e1','a1070000-0000-4000-8000-0000000000a1','Herói A S107','a1070000-0000-4000-8000-0000000000c1', now() - interval '10 days'),
+  ('a1070000-0000-4000-8000-0000000000e2','a1070000-0000-4000-8000-0000000000a2','Herói B S107','a1070000-0000-4000-8000-0000000000c2', now() - interval '10 days');
+-- eventos: plataforma publicado (futebol), rascunho, programado futuro; compromisso interno da agência A e da B
+insert into public.calendar_events (id, scope, agency_id, kind, title, starts_at, ends_at, all_day, status, published_at, source, source_key, territory, hashtags) values
+  ('a1070000-0000-4000-8000-0000000000f1','platform',null,'institutional','Final S107', (current_date + 12)::timestamp at time zone 'America/Sao_Paulo', (current_date + 13)::timestamp at time zone 'America/Sao_Paulo', true, 'published', now() - interval '1 day', 'manual', 'manual:s107-f1', 'futebol', array['FinalS107']),
+  ('a1070000-0000-4000-8000-0000000000f2','platform',null,'institutional','Rascunho S107', (current_date + 20)::timestamp at time zone 'America/Sao_Paulo', (current_date + 21)::timestamp at time zone 'America/Sao_Paulo', true, 'draft', null, 'manual', 'manual:s107-f2', null, '{}'),
+  ('a1070000-0000-4000-8000-0000000000f3','platform',null,'institutional','Programado S107', (current_date + 30)::timestamp at time zone 'America/Sao_Paulo', (current_date + 31)::timestamp at time zone 'America/Sao_Paulo', true, 'scheduled', now() + interval '5 days', 'manual', 'manual:s107-f3', null, '{}');
+insert into public.calendar_events (id, scope, agency_id, kind, title, starts_at, ends_at, source) values
+  ('a1070000-0000-4000-8000-0000000000f4','agency','a1070000-0000-4000-8000-0000000000a1','meeting','Reunião interna A S107', now() + interval '3 days', now() + interval '3 days 1 hour', 'manual'),
+  ('a1070000-0000-4000-8000-0000000000f5','agency','a1070000-0000-4000-8000-0000000000a2','meeting','Reunião interna B S107', now() + interval '3 days', now() + interval '3 days 1 hour', 'manual');
+insert into public.calendar_imports (id, source_name, format, year, meta) values ('a1070000-0000-4000-8000-0000000000d1','Teste S107','script', 2099,
+  '{"months":[{"month":5,"label":"#MAIO 2099","hashtags":["#S107","#MAIO"]}],"quarters":[{"quarter":"Q2","trending_topics":["#TrendS107"],"territories":["Futebol"],"summary":"Resumo S107"}]}');
+create temp table t_s107 (k text primary key, v text);
+grant all on t_s107 to anon, authenticated, service_role;
+insert into t_s107 values ('req', jsonb_build_object('title','Campanha da Final S107','objective','awareness','period_start',(current_date + 12)::text,'period_end',(current_date + 12)::text,
+  'networks',jsonb_build_array('instagram'),'deliverables','[{"kind":"post","quantity":1,"network":"instagram"}]'::jsonb)::text);
+insert into t_s107 values ('call', jsonb_build_object('title','Chamada da Final S107','objective','launch','description','Final','starts_on',(current_date + 12)::text,'ends_on',(current_date + 12)::text,
+  'deliverables','[{"kind":"reels","quantity":1,"network":"instagram"}]'::jsonb,'creators_wanted',2,'niches',jsonb_build_array('Futebol'),'networks',jsonb_build_array('instagram'),
+  'budget_display','open','respond_by',(now() + interval '6 days')::text,'audience','my_agencies')::text);
+insert into t_s107 values ('sp', jsonb_build_object('talent_id','a1070000-0000-4000-8000-0000000000e1','title','Patrocínio da Final S107','description','Final','location','Maracanã',
+  'starts_at', now() + interval '12 days','ends_at', now() + interval '12 days 3 hours','all_day', false,'networks', jsonb_build_array('instagram'),
+  'respond_by', now() + interval '6 days','audience','all')::text);
+
+select tests.ok('S107 estrutura: colunas de vínculo, RLS em agenda_posts, nada para visitante, funções sem sobrecarga, search_path fixo e fora do anon; S14 segue 18',
+  (select count(*) from information_schema.columns where table_schema = 'public' and column_name = 'calendar_event_id' and table_name in ('campaign_requests','brand_calls','sponsorship_opportunities')) = 3
+  and (select relrowsecurity from pg_class where oid = 'public.agenda_posts'::regclass)
+  and not has_table_privilege('anon', 'public.agenda_posts', 'select') and not has_table_privilege('authenticated', 'public.agenda_posts', 'insert')
+  and not has_table_privilege('authenticated', 'public.agenda_posts', 'update') and not has_table_privilege('authenticated', 'public.agenda_posts', 'delete')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('calendar_event_visible_for','commercial_event_link','calendar_event_commercial',
+       'calendar_event_opportunities','platform_culture_meta','my_agency_network_ids','agenda_post_save','agenda_post_delete')) = 8
+  and (select bool_and(p.proconfig is not null) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('calendar_event_visible_for','commercial_event_link',
+       'calendar_event_commercial','calendar_event_opportunities','platform_culture_meta','my_agency_network_ids','agenda_post_save','agenda_post_delete'))
+  and not has_function_privilege('anon', 'public.commercial_event_link(text, uuid, uuid, text[])', 'execute')
+  and not has_function_privilege('anon', 'public.agenda_post_save(uuid, uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.platform_culture_meta(int, int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.calendar_event_visible_for(uuid, uuid)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S107 visitante não liga evento', $q$select public.commercial_event_link('campaign', gen_random_uuid(), null, null)$q$, 'permission denied');
+select tests.expect_error('S107 visitante não lê histórico', $q$select public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1')$q$, 'permission denied');
+select tests.expect_error('S107 visitante não lê hashtags do mês', $q$select public.platform_culture_meta(2099, 5)$q$, 'permission denied');
+select tests.expect_error('S107 visitante não lê notícias', $q$select count(*) from public.agenda_posts$q$, 'permission denied');
+select tests.expect_error('S107 visitante não escreve notícia', $q$select public.agenda_post_save(null, null, '{"title":"x"}')$q$, 'permission denied');
+
+-- marca: campanha e chamada a partir do evento
+select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local');
+insert into t_s107 values ('r1', public.brand_request_save(null, 'a1070000-0000-4000-8000-0000000000b1', (select v::jsonb from t_s107 where k = 'req'))::text);
+select tests.ok('S107 marca liga a campanha ao evento da plataforma; território futebol → segmento "esportes" da agência',
+  public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), 'a1070000-0000-4000-8000-0000000000f1', array['esportes']) = 'a1070000-0000-4000-8000-0000000000f1');
+select tests.su();
+select tests.ok('S107 vínculo gravado e segmento resolvido para o segmento ATIVO da agência da campanha',
+  (select r.calendar_event_id = 'a1070000-0000-4000-8000-0000000000f1'
+          and r.segment_ids = array[(select s.id from public.talent_segments s where s.agency_id = 'a1070000-0000-4000-8000-0000000000a1' and s.slug = 'esportes')]
+     from public.campaign_requests r where r.id = (select v::uuid from t_s107 where k = 'r1')));
+select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local');
+select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), 'a1070000-0000-4000-8000-0000000000f1', array['bem-estar']);
+select tests.su();
+select tests.ok('S107 segmento escolhido não é sobrescrito numa nova ligação',
+  (select cardinality(r.segment_ids) = 1 and r.segment_ids[1] = (select s.id from public.talent_segments s where s.agency_id = 'a1070000-0000-4000-8000-0000000000a1' and s.slug = 'esportes')
+     from public.campaign_requests r where r.id = (select v::uuid from t_s107 where k = 'r1')));
+select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local');
+select tests.expect_error('S107 marca não liga a evento em rascunho', $q$select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), 'a1070000-0000-4000-8000-0000000000f2', null)$q$, 'not_found');
+select tests.expect_error('S107 marca não liga a evento programado ainda fora do ar', $q$select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), 'a1070000-0000-4000-8000-0000000000f3', null)$q$, 'not_found');
+select tests.expect_error('S107 marca não liga a compromisso interno da agência', $q$select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), 'a1070000-0000-4000-8000-0000000000f4', null)$q$, 'not_found');
+select tests.expect_error('S107 slug de segmento inválido é recusado', $q$select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), 'a1070000-0000-4000-8000-0000000000f1', array['Não Vale'])$q$, 'invalid_input');
+select tests.expect_error('S107 tipo desconhecido é recusado', $q$select public.commercial_event_link('deal', (select v::uuid from t_s107 where k = 'r1'), 'a1070000-0000-4000-8000-0000000000f1', null)$q$, 'invalid_input');
+insert into t_s107 values ('c1', public.brand_call_save('a1070000-0000-4000-8000-0000000000b1', null, (select v::jsonb from t_s107 where k = 'call'))::text);
+select tests.ok('S107 marca liga a chamada (rascunho) ao evento da plataforma',
+  public.commercial_event_link('brand_call', (select v::uuid from t_s107 where k = 'c1'), 'a1070000-0000-4000-8000-0000000000f1', null) = 'a1070000-0000-4000-8000-0000000000f1');
+select tests.login('a1070000-0000-4000-8000-000000000006','s107-equipe-m2@test.local');
+select tests.expect_error('S107 outra marca não liga a campanha alheia', $q$select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), null, null)$q$, 'not_found');
+select tests.expect_error('S107 outra marca não liga a chamada alheia', $q$select public.commercial_event_link('brand_call', (select v::uuid from t_s107 where k = 'c1'), null, null)$q$, 'not_found');
+select tests.login('a1070000-0000-4000-8000-000000000002','s107-gestor-a@test.local');
+select tests.expect_error('S107 agência não liga a campanha da marca', $q$select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), null, null)$q$, 'not_found');
+-- enviada, a campanha vira negócio e o vínculo fica preservado
+select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local');
+insert into t_s107 values ('deal', public.brand_request_submit((select v::uuid from t_s107 where k = 'r1'))::text);
+select tests.expect_error('S107 depois de enviada, o vínculo não muda', $q$select public.commercial_event_link('campaign', (select v::uuid from t_s107 where k = 'r1'), null, null)$q$, 'invalid_state');
+
+-- agência: patrocínio a partir do evento
+select tests.login('a1070000-0000-4000-8000-000000000002','s107-gestor-a@test.local');
+insert into t_s107 values ('s1', public.agency_sponsorship_save('a1070000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s107 where k = 'sp') || '{"publish":false}')::text);
+insert into t_s107 values ('s2', public.agency_sponsorship_save('a1070000-0000-4000-8000-0000000000a1', null, (select v::jsonb from t_s107 where k = 'sp') || '{"publish":true,"title":"Patrocínio aberto S107"}')::text);
+select tests.ok('S107 gestor liga rascunho e aberta ao evento da plataforma e ao compromisso da própria agência',
+  public.commercial_event_link('sponsorship', (select v::uuid from t_s107 where k = 's1'), 'a1070000-0000-4000-8000-0000000000f4', null) = 'a1070000-0000-4000-8000-0000000000f4'
+  and public.commercial_event_link('sponsorship', (select v::uuid from t_s107 where k = 's1'), 'a1070000-0000-4000-8000-0000000000f1', null) = 'a1070000-0000-4000-8000-0000000000f1'
+  and public.commercial_event_link('sponsorship', (select v::uuid from t_s107 where k = 's2'), 'a1070000-0000-4000-8000-0000000000f1', null) = 'a1070000-0000-4000-8000-0000000000f1');
+select tests.expect_error('S107 gestor não liga a compromisso de outra agência', $q$select public.commercial_event_link('sponsorship', (select v::uuid from t_s107 where k = 's1'), 'a1070000-0000-4000-8000-0000000000f5', null)$q$, 'not_found');
+select tests.login('a1070000-0000-4000-8000-000000000003','s107-colab-a@test.local');
+select tests.expect_error('S107 colaborador não liga patrocínio', $q$select public.commercial_event_link('sponsorship', (select v::uuid from t_s107 where k = 's1'), null, null)$q$, 'forbidden');
+select tests.login('a1070000-0000-4000-8000-000000000004','s107-gestor-b@test.local');
+select tests.expect_error('S107 outra agência não liga patrocínio', $q$select public.commercial_event_link('sponsorship', (select v::uuid from t_s107 where k = 's1'), null, null)$q$, 'not_found');
+
+-- histórico do evento por perfil
+select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local');
+insert into t_s107 values ('h_brand', public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1')::text);
+select tests.ok('S107 marca vê a campanha e a chamada dela e o patrocínio aberto que chega a ela; sem rascunho da agência, sem negócio interno',
+  (select count(*) from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_brand')) x where x ->> 'side' = 'brand') = 3
+  and exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_brand')) x where x ->> 'kind' = 'campaign' and not (x ? 'deal_id'))
+  and exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_brand')) x where x ->> 'kind' = 'brand_call')
+  and not exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_brand')) x where x ->> 'id' = (select v from t_s107 where k = 's1')));
+select tests.login('a1070000-0000-4000-8000-000000000002','s107-gestor-a@test.local');
+insert into t_s107 values ('h_ag', public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1')::text);
+select tests.ok('S107 gestor vê a campanha (com o negócio) e os dois patrocínios; não vê a chamada em rascunho da marca',
+  (select count(*) from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_ag')) x where x ->> 'side' = 'agency') = 3
+  and exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_ag')) x where x ->> 'kind' = 'campaign' and x ->> 'deal_id' = (select v from t_s107 where k = 'deal'))
+  and not exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_ag')) x where x ->> 'kind' = 'brand_call'));
+select tests.login('a1070000-0000-4000-8000-000000000004','s107-gestor-b@test.local');
+select tests.ok('S107 outra agência não vê nada ligado ao evento', jsonb_array_length(public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1') -> 'items') = 0);
+select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
+insert into t_s107 values ('h_hero', public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1')::text);
+select tests.ok('S107 herói vê só o patrocínio dele já publicado (nem rascunho, nem campanha em que não foi consultado)',
+  (select count(*) = 1 and bool_and(x ->> 'side' = 'hero' and x ->> 'id' = (select v from t_s107 where k = 's2'))
+     from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_hero')) x));
+select tests.login('a1070000-0000-4000-8000-000000000001','s107-admin@test.local');
+insert into t_s107 values ('h_adm', public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1')::text);
+select tests.ok('S107 admin vê campanha e patrocínios; rascunho de chamada da marca não',
+  (select count(*) from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_adm')) x where x ->> 'side' = 'admin') = 3
+  and not exists (select 1 from jsonb_array_elements((select v::jsonb -> 'items' from t_s107 where k = 'h_adm')) x where x ->> 'kind' = 'brand_call'));
+select tests.login('a1070000-0000-4000-8000-000000000008','s107-consumidor@test.local');
+select tests.expect_error('S107 consumidor sem portal não lê o histórico', $q$select public.calendar_event_commercial('a1070000-0000-4000-8000-0000000000f1')$q$, 'not_found');
+
+-- eventos com oportunidades abertas (só números)
+select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local');
+select tests.ok('S107 marca: o evento aparece com 1 patrocínio aberto (a chamada em rascunho não conta)',
+  exists (select 1 from jsonb_array_elements(public.calendar_event_opportunities()) x where x ->> 'event_id' = 'a1070000-0000-4000-8000-0000000000f1' and (x ->> 'sponsorships')::int = 1 and (x ->> 'calls')::int = 0));
+select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
+select tests.ok('S107 herói: o patrocínio aberto dele conta',
+  exists (select 1 from jsonb_array_elements(public.calendar_event_opportunities()) x where x ->> 'event_id' = 'a1070000-0000-4000-8000-0000000000f1' and (x ->> 'sponsorships')::int = 1));
+select tests.login('a1070000-0000-4000-8000-000000000004','s107-gestor-b@test.local');
+select tests.ok('S107 outra agência não vê as oportunidades da agência A',
+  not exists (select 1 from jsonb_array_elements(public.calendar_event_opportunities()) x where x ->> 'event_id' = 'a1070000-0000-4000-8000-0000000000f1'));
+select tests.login('a1070000-0000-4000-8000-000000000008','s107-consumidor@test.local');
+select tests.ok('S107 consumidor sem portal: nada', public.calendar_event_opportunities() = '[]'::jsonb);
+
+-- hashtags do mês e trending topics
+select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
+select tests.ok('S107 herói lê hashtags do mês e o trimestre (Q2) da importação',
+  (select m -> 'month' ->> 'label' = '#MAIO 2099' and m -> 'month' -> 'hashtags' = '["#S107","#MAIO"]'::jsonb and m -> 'quarter' ->> 'quarter' = 'Q2'
+          and m -> 'quarter' ->> 'summary' = 'Resumo S107' and m -> 'quarter' -> 'trending_topics' = '["#TrendS107"]'::jsonb
+     from (select public.platform_culture_meta(2099, 5) as m) s)
+  and (select m -> 'month' = 'null'::jsonb and m -> 'quarter' = 'null'::jsonb from (select public.platform_culture_meta(2099, 9) as m) s));
+select tests.expect_error('S107 mês inválido é recusado', $q$select public.platform_culture_meta(2099, 13)$q$, 'invalid_input');
+select tests.login('a1070000-0000-4000-8000-000000000008','s107-consumidor@test.local');
+select tests.expect_error('S107 consumidor não lê hashtags do mês', $q$select public.platform_culture_meta(2099, 5)$q$, 'not_found');
+
+-- notícias e dicas
+select tests.login('a1070000-0000-4000-8000-000000000001','s107-admin@test.local');
+insert into t_s107 values ('p_pub', public.agenda_post_save(null, null, '{"kind":"news","title":"  Final   chegando S107 ","body":"Texto","calendar_event_id":"a1070000-0000-4000-8000-0000000000f1","status":"published","link_url":"https://g.s107.test/final"}')::text);
+insert into t_s107 values ('p_draft', public.agenda_post_save(null, null, '{"kind":"tip","title":"Dica rascunho S107","status":"draft"}')::text);
+insert into t_s107 values ('p_fut', public.agenda_post_save(null, null, jsonb_build_object('title','Programada S107','status','scheduled','publish_at', now() + interval '2 days'))::text);
+insert into t_s107 values ('p_due', public.agenda_post_save(null, null, jsonb_build_object('title','Programada vencida S107','status','scheduled','publish_at', now() - interval '1 hour'))::text);
+select tests.ok('S107 admin publica para todos: título normalizado, published_at e estados',
+  (select title = 'Final chegando S107' and scope = 'platform' and agency_id is null and status = 'published' and published_at = now() and calendar_event_id = 'a1070000-0000-4000-8000-0000000000f1'
+     from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'p_pub'))
+  and (select status = 'draft' and published_at is null and kind = 'tip' from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'p_draft')));
+select tests.expect_error('S107 notícia da plataforma não liga a evento em rascunho', $q$select public.agenda_post_save(null, null, '{"title":"Liga rascunho S107","calendar_event_id":"a1070000-0000-4000-8000-0000000000f2"}')$q$, 'not_found');
+select tests.expect_error('S107 link sem https é recusado', $q$select public.agenda_post_save(null, null, '{"title":"Link ruim S107","link_url":"http://x.test"}')$q$, 'invalid_input');
+select tests.expect_error('S107 título curto é recusado', $q$select public.agenda_post_save(null, null, '{"title":"x"}')$q$, 'invalid_input');
+select tests.expect_error('S107 programado sem data é recusado', $q$select public.agenda_post_save(null, null, '{"title":"Sem data S107","status":"scheduled"}')$q$, 'invalid_input');
+select tests.login('a1070000-0000-4000-8000-000000000002','s107-gestor-a@test.local');
+select tests.expect_error('S107 gestor de agência não publica para a plataforma', $q$select public.agenda_post_save(null, null, '{"title":"Para todos S107"}')$q$, 'forbidden');
+insert into t_s107 values ('a_pub', public.agenda_post_save(null, 'a1070000-0000-4000-8000-0000000000a1', '{"kind":"tip","title":"Dica da agência S107","calendar_event_id":"a1070000-0000-4000-8000-0000000000f4","status":"published","image_url":"https://img.s107.test/a.jpg"}')::text);
+insert into t_s107 values ('a_draft', public.agenda_post_save(null, 'a1070000-0000-4000-8000-0000000000a1', '{"title":"Rascunho da agência S107"}')::text);
+select tests.expect_error('S107 agência não liga a evento de outra agência', $q$select public.agenda_post_save(null, 'a1070000-0000-4000-8000-0000000000a1', '{"title":"Liga B S107","calendar_event_id":"a1070000-0000-4000-8000-0000000000f5"}')$q$, 'not_found');
+select tests.expect_error('S107 agência não edita notícia da plataforma', $q$select public.agenda_post_save((select v::uuid from t_s107 where k = 'p_pub'), 'a1070000-0000-4000-8000-0000000000a1', '{"title":"Troca S107"}')$q$, 'not_found');
+select tests.ok('S107 gestor vê os da agência (com rascunho) e os publicados da plataforma; nunca rascunho/programado da plataforma',
+  (select count(*) from public.agenda_posts where title like '%S107%') = 4
+  and exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'a_draft'))
+  and not exists (select 1 from public.agenda_posts where id in ((select v::uuid from t_s107 where k = 'p_draft'), (select v::uuid from t_s107 where k = 'p_fut'))));
+select tests.login('a1070000-0000-4000-8000-000000000003','s107-colab-a@test.local');
+select tests.expect_error('S107 colaborador não escreve notícia', $q$select public.agenda_post_save(null, 'a1070000-0000-4000-8000-0000000000a1', '{"title":"Colab S107"}')$q$, 'forbidden');
+select tests.expect_error('S107 colaborador não apaga notícia', $q$select public.agenda_post_delete((select v::uuid from t_s107 where k = 'a_pub'))$q$, 'forbidden');
+select tests.ok('S107 colaborador lê o publicado da agência, não o rascunho',
+  exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'a_pub'))
+  and not exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'a_draft')));
+select tests.login('a1070000-0000-4000-8000-000000000004','s107-gestor-b@test.local');
+select tests.expect_error('S107 outra agência não escreve pela agência A', $q$select public.agenda_post_save(null, 'a1070000-0000-4000-8000-0000000000a1', '{"title":"Invasão S107"}')$q$, 'not_found');
+select tests.expect_error('S107 outra agência não apaga', $q$select public.agenda_post_delete((select v::uuid from t_s107 where k = 'a_pub'))$q$, 'not_found');
+select tests.ok('S107 outra agência só vê os publicados da plataforma',
+  (select count(*) from public.agenda_posts where title like '%S107%') = 2
+  and not exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'a_pub')));
+select tests.login('a1070000-0000-4000-8000-000000000005','s107-dona-m1@test.local');
+select tests.ok('S107 marca atendida lê plataforma publicada + programada vencida + publicado da agência dela (3)',
+  (select count(*) from public.agenda_posts where title like '%S107%') = 3 and exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'p_due')));
+select tests.login('a1070000-0000-4000-8000-000000000006','s107-equipe-m2@test.local');
+select tests.ok('S107 marca de outra agência não lê o conteúdo da agência A', (select count(*) from public.agenda_posts where title like '%S107%') = 2);
+select tests.login('a1070000-0000-4000-8000-000000000007','s107-heroi-a@test.local');
+select tests.ok('S107 herói do casting da agência A lê o publicado dela', exists (select 1 from public.agenda_posts where id = (select v::uuid from t_s107 where k = 'a_pub'))
+  and (select count(*) from public.agenda_posts where title like '%S107%') = 3);
+select tests.login('a1070000-0000-4000-8000-000000000009','s107-heroi-b@test.local');
+select tests.ok('S107 herói de outra agência não lê o conteúdo da agência A', (select count(*) from public.agenda_posts where title like '%S107%') = 2);
+select tests.login('a1070000-0000-4000-8000-000000000008','s107-consumidor@test.local');
+select tests.ok('S107 consumidor sem portal não lê nada', (select count(*) from public.agenda_posts where title like '%S107%') = 0);
+select tests.login('a1070000-0000-4000-8000-000000000001','s107-admin@test.local');
+select tests.ok('S107 admin vê tudo (6)', (select count(*) from public.agenda_posts where title like '%S107%') = 6);
+select public.agenda_post_delete((select v::uuid from t_s107 where k = 'p_draft'));
+select tests.login('a1070000-0000-4000-8000-000000000002','s107-gestor-a@test.local');
+select public.agenda_post_delete((select v::uuid from t_s107 where k = 'a_draft'));
+select tests.su();
+select tests.ok('S107 exclusões feitas por quem pode, com auditoria',
+  not exists (select 1 from public.agenda_posts where id in ((select v::uuid from t_s107 where k = 'p_draft'), (select v::uuid from t_s107 where k = 'a_draft')))
+  and (select count(*) from public.admin_audit where action = 'agenda.post_delete' and actor_id::text like 'a1070000-%') = 2
+  and (select count(*) from public.admin_audit where action = 'calendar.commercial_link' and actor_id::text like 'a1070000-%') >= 4);
+
+-- limpeza
+select tests.su();
+delete from public.agenda_posts where title like '%S107%';
+delete from public.sponsorship_opportunities where agency_id::text like 'a1070000-%';
+delete from public.brand_calls where brand_id::text like 'a1070000-%';
+delete from public.deals where agency_id::text like 'a1070000-%';
+delete from public.campaign_requests where agency_id::text like 'a1070000-%';
+delete from public.calendar_events where id::text like 'a1070000-%' or agency_id::text like 'a1070000-%';
+delete from public.calendar_imports where id::text like 'a1070000-%';
+delete from public.inbox_notifications where agency_id::text like 'a1070000-%' or user_id::text like 'a1070000-%';
+delete from public.admin_audit where actor_id::text like 'a1070000-%';
+delete from public.talent_profiles where id::text like 'a1070000-%';
+delete from public.creator_profiles where id::text like 'a1070000-%';
+delete from public.brand_members where brand_id::text like 'a1070000-%';
+delete from public.agency_brands where agency_id::text like 'a1070000-%';
+delete from public.brands where id::text like 'a1070000-%';
+delete from public.talent_segments where agency_id::text like 'a1070000-%';
+delete from public.agency_members where agency_id::text like 'a1070000-%';
+delete from public.agencies where id::text like 'a1070000-%';
+delete from public.role_assignments where user_id::text like 'a1070000-%';
+delete from auth.users where id::text like 'a1070000-%';
+drop table t_s107;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

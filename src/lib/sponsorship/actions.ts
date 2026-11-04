@@ -8,6 +8,7 @@ import { requireAgency } from "@/lib/agency/server";
 import { requireBrand } from "@/lib/brand-portal/server";
 import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { createClient } from "@/lib/supabase/server";
+import { linkToEvent } from "@/lib/culture/link";
 import { PICKER_PAGE_SIZE, heroChoiceToDb, parseOpportunityHeroes, type OpportunityHeroPage } from "./hero-pick";
 import { REPLY_ACTIONS, amountValid, proposalPerksValid, publicSchema, publicToDb } from "./negotiation";
 import { SPONSORSHIP_DECISIONS, SPONSORSHIP_RESPONSES, sponsorshipInstants, sponsorshipSchema, type SponsorshipInput } from "./vocab";
@@ -66,13 +67,23 @@ export async function saveSponsorshipAction(input: SponsorshipInput): Promise<Sp
     });
     if (error) return publishFail(error);
     if (!data) return agencyFail("generic");
+    // 0101: oportunidade a partir de um evento da agenda
+    const linkFailed = d.calendarEventId ? !(await linkToEvent("sponsorship", data, d.calendarEventId)).ok : false;
     revalidatePath("/agencia/oportunidades", "layout");
     revalidatePath("/agencia/agenda");
     revalidatePath("/agencia/casting");
     await dispatchWorkEmails();
     const t = await getTranslations("sponsorship.agency");
     // criando: publicada ou rascunho; editando: rascunho que publica, rascunho que segue ou aberta que segue
-    const message = d.publish ? (d.id ? t("savedPublished") : t("published")) : d.id ? t("saved") : t("draftSaved");
+    const message = linkFailed
+      ? (await getTranslations("culture.link"))("failed")
+      : d.publish
+        ? d.id
+          ? t("savedPublished")
+          : t("published")
+        : d.id
+          ? t("saved")
+          : t("draftSaved");
     return { ok: true, message, id: data, status: d.publish ? "open" : "draft" };
   } catch (error) {
     return agencyFail(error);

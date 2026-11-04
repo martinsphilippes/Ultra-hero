@@ -3,6 +3,7 @@ import { CalendarDays, ChevronRight, FileUp, Plus } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { AgendaCalendar } from "@/components/calendar/AgendaCalendar";
+import { AgendaTabs } from "@/components/culture/AgendaTabs";
 import { AgendaFilterBar } from "@/components/platform-calendar/AgendaFilterBar";
 import { PlatformBadges, useCollectionLabel } from "@/components/platform-calendar/PlatformBadges";
 import { eventWhen } from "@/components/platform-calendar/PlatformEventView";
@@ -78,6 +79,7 @@ export default async function AdminAgendaPage({ searchParams }: Props) {
     return (
       <div className="flex flex-col gap-5" data-testid="admin-agenda">
         {header}
+        <AgendaTabs base="/admin/agenda" active="agenda" />
         {tabs}
         <AgendaFilterBar base="/admin/agenda" params={{ v: "mes", mes: monthKey(year, month) }} filters={filters} collections={collections} showMode={false} />
         <AgendaCalendar
@@ -118,6 +120,7 @@ export default async function AdminAgendaPage({ searchParams }: Props) {
   return (
     <div className="flex flex-col gap-5" data-testid="admin-agenda">
       {header}
+      <AgendaTabs base="/admin/agenda" active="agenda" />
       {tabs}
       <form method="get" action="/admin/agenda" className="grid gap-3 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-3 lg:grid-cols-6" data-testid="admin-agenda-filters">
         <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">

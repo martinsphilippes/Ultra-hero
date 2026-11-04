@@ -85,6 +85,10 @@ export const brandRequestSchema = z.object({
   valueModel: z.enum(VALUE_MODELS),
   maxHeroes: z.number().int().min(1).max(50).nullable(),
   budgetNote: z.string().trim().max(300),
+  /** 0101: campanha criada a partir de um evento da agenda (vínculo gravado depois de salvar, ainda no rascunho). */
+  calendarEventId: z.union([z.literal(""), uuid]).optional(),
+  /** 0101: segmentos sugeridos pelo território do evento (slugs; o banco resolve na agência e não sobrescreve). */
+  eventSegments: z.array(z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/).max(40)).max(5).optional(),
 });
 export type BrandRequestInput = z.input<typeof brandRequestSchema>;
 

@@ -9,6 +9,7 @@ import { requireBrand } from "@/lib/brand-portal/server";
 import { requestDeliverablesSchema } from "@/lib/deals/schemas";
 import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { createClient } from "@/lib/supabase/server";
+import { linkToEvent } from "@/lib/culture/link";
 import { VALUE_MODELS } from "@/lib/value-model/model";
 import { getTalentContext } from "@/lib/talent/server";
 import { CALL_DECISIONS, MAX_PROPOSAL_TALENTS, callFormSchema, callToDb, mediaKitUrlValid, validateCall, type CallFormInput } from "./logic";
@@ -45,6 +46,11 @@ export async function saveBrandCallAction(input: CallFormInput, publish: boolean
     if (error) return agencyFail(error);
     if (!data) return agencyFail("generic");
     let status = "draft";
+    // 0101: chamada a partir de um evento da agenda — o vínculo é gravado no rascunho, antes de publicar
+    if (v.calendarEventId && !(await linkToEvent("brand_call", data, v.calendarEventId)).ok) {
+      refresh();
+      return { ok: true, id: data, status, message: (await getTranslations("culture.link"))("failed") };
+    }
     if (publish) {
       const sent = await supabase.rpc("brand_call_submit", { p_id: data, p_note: "" });
       if (sent.error) {

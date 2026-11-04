@@ -1,0 +1,186 @@
+{
+  "tabs": {
+    "label": "Calendar and culture",
+    "agenda": "Calendar",
+    "culture": "Culture"
+  },
+  "page": {
+    "title": "Real-Time Culture",
+    "description": "What is happening now and what is coming up in the Groscove Calendar.",
+    "empty": "Nothing on the radar with this filter.",
+    "emptyHint": "Try another territory or come back later.",
+    "unavailable": "Real-Time Culture is not available right now.",
+    "openAgenda": "See in the calendar"
+  },
+  "lanes": {
+    "happening": "Happening now",
+    "seasons": "In season",
+    "featured": "Highlights",
+    "opportunities": "With open opportunities",
+    "next7": "Next 7 days",
+    "next30": "Next 30 days",
+    "posts": "News and tips"
+  },
+  "trends": {
+    "month": "Hashtags of the month",
+    "quarter": "Quarter trends ({quarter})",
+    "territories": "Hot territories: {list}"
+  },
+  "card": {
+    "open": "Open {title}",
+    "until": "until {date}",
+    "sponsorships": "{count, plural, =1 {1 open sponsorship} other {# open sponsorships}}",
+    "calls": "{count, plural, =1 {1 open call} other {# open calls}}"
+  },
+  "actions": {
+    "createCampaign": "Create campaign",
+    "openCall": "Open call",
+    "createOpportunity": "Create opportunity",
+    "edit": "Edit"
+  },
+  "home": {
+    "title": "Real-Time Culture",
+    "now": "Now",
+    "soon": "Coming up",
+    "open": "See culture",
+    "empty": "No events in the next days.",
+    "tags": "Hashtags of the month"
+  },
+  "posts": {
+    "news": "News",
+    "tip": "Tip",
+    "groscove": "Groscove",
+    "openLink": "Open link",
+    "aboutEvent": "About: {title}",
+    "empty": "No news or tips yet.",
+    "imageAlt": "Image for {title}",
+    "eventTitle": "News and tips about this event"
+  },
+  "fromEvent": {
+    "title": "From the event",
+    "hint": "The link to the event is recorded. Review everything before sending.",
+    "unavailable": "Event not found or over: the form started blank."
+  },
+  "brand": {
+    "title": "Commercial proposal",
+    "interested": "Your brand showed interest in this event.",
+    "notInterested": "Show interest before proposing: the agency is notified.",
+    "campaign": "Create a campaign from this event",
+    "call": "Open a call for agencies from this event",
+    "needsAgency": "To create a campaign, the brand needs an active agency. A call goes to several agencies.",
+    "membersOnly": "Only the brand owner and team create proposals.",
+    "heroesHidden": "Brands only see how many heroes are interested, never who."
+  },
+  "agency": {
+    "create": "Create a sponsorship opportunity from this event",
+    "heroLater": "The hero is chosen in the form.",
+    "managersOnly": "Managers or Admins create opportunities."
+  },
+  "compat": {
+    "title": "Compatibility",
+    "hint": "Heroes in your roster and brands you serve interested in this event.",
+    "hintAdmin": "All heroes and brands interested in this event.",
+    "heroes": "Heroes",
+    "brands": "Brands",
+    "noHeroes": "No interested heroes.",
+    "noBrands": "No interested brands.",
+    "withHero": "Open opportunity with {name}",
+    "forBrand": "Open opportunity for {name}",
+    "pairs": "{count, plural, =0 {No possible pair yet} =1 {1 possible pair} other {# possible pairs}}"
+  },
+  "history": {
+    "title": "Linked proposals and deals",
+    "empty": "Nothing linked to this event yet.",
+    "deal": "Deal: {stage}",
+    "dealOpen": "Open deal",
+    "kinds": {
+      "campaign": "Campaign",
+      "brand_call": "Call",
+      "sponsorship": "Sponsorship"
+    },
+    "status": {
+      "campaign": {
+        "draft": "Draft",
+        "submitted": "Sent",
+        "converted": "Became a deal",
+        "declined": "Declined",
+        "cancelled": "Cancelled"
+      },
+      "brand_call": {
+        "draft": "Draft",
+        "open": "Open",
+        "closed": "Closed",
+        "contracted": "Contracted",
+        "cancelled": "Cancelled"
+      },
+      "sponsorship": {
+        "draft": "Draft",
+        "open": "Open",
+        "closed": "Closed",
+        "sponsored": "Sponsored",
+        "cancelled": "Cancelled"
+      }
+    }
+  },
+  "link": {
+    "failed": "Draft saved, but the link to the event was not recorded. Open the event and try again."
+  },
+  "editorial": {
+    "title": "News and tips",
+    "description": "Editorial planning tied to the calendar.",
+    "new": "New news or tip",
+    "edit": "Edit news or tip",
+    "back": "News and tips",
+    "write": "Write news about this event",
+    "views": {
+      "semana": "Week",
+      "lista": "List"
+    },
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "thisWeek": "This week",
+    "weekOf": "Week of {date}",
+    "undated": "Drafts (no date)",
+    "empty": "Nothing planned.",
+    "emptyDay": "Free",
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "published": "Published"
+    },
+    "audienceAdmin": "Goes to every profile with a portal (heroes, brands and agencies).",
+    "audienceAgency": "Goes to your network: team, brands you serve and heroes in your roster.",
+    "form": {
+      "kind": "Type",
+      "title": "Title",
+      "body": "Text",
+      "image": "Image (optional)",
+      "imageHint": "https address of the image.",
+      "link": "Link (optional)",
+      "linkHint": "https address to learn more.",
+      "event": "Calendar event (optional)",
+      "eventSearch": "Search event",
+      "eventSearchPlaceholder": "Event name",
+      "eventNone": "No linked event",
+      "eventRemove": "Remove link",
+      "eventNoResults": "No event found.",
+      "status": "Publishing",
+      "publishDate": "Date",
+      "publishTime": "Time",
+      "save": "Save",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this news or tip? This cannot be undone.",
+      "saved": "Saved.",
+      "deleted": "Deleted.",
+      "invalid": "Check the title (3 to 140), https links and the publishing date."
+    }
+  },
+  "errors": {
+    "forbidden": "You don't have permission for this.",
+    "not_found": "Not found.",
+    "invalid_input": "Check the fields.",
+    "invalid_state": "This can't be done right now.",
+    "unauthenticated": "Sign in again to continue.",
+    "generic": "Something went wrong. Try again."
+  }
+}

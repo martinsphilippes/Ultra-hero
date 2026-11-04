@@ -147,6 +147,8 @@ export const callFormSchema = z.object({
   respondTime: z.union([z.literal(""), z.string().regex(/^\d{2}:\d{2}$/)]),
   audience: z.enum(CALL_AUDIENCES),
   agencyIds: z.array(z.uuid()).max(200),
+  /** 0101: chamada aberta a partir de um evento da agenda (vínculo gravado no rascunho, antes de publicar). */
+  calendarEventId: z.union([z.literal(""), z.uuid()]).optional(),
 });
 export type CallFormInput = z.infer<typeof callFormSchema>;
 

@@ -1,0 +1,186 @@
+{
+  "tabs": {
+    "label": "Agenda y cultura",
+    "agenda": "Agenda",
+    "culture": "Cultura"
+  },
+  "page": {
+    "title": "Real-Time Culture",
+    "description": "Lo que está pasando ahora y lo que viene en el Calendario Groscove.",
+    "empty": "Nada en el radar con este filtro.",
+    "emptyHint": "Cambia el territorio o vuelve más tarde.",
+    "unavailable": "Real-Time Culture no está disponible ahora.",
+    "openAgenda": "Ver en la agenda"
+  },
+  "lanes": {
+    "happening": "Pasando ahora",
+    "seasons": "En temporada",
+    "featured": "Destacados",
+    "opportunities": "Con oportunidades abiertas",
+    "next7": "Próximos 7 días",
+    "next30": "Próximos 30 días",
+    "posts": "Noticias y consejos"
+  },
+  "trends": {
+    "month": "Hashtags del mes",
+    "quarter": "Tendencias del trimestre ({quarter})",
+    "territories": "Territorios en alza: {list}"
+  },
+  "card": {
+    "open": "Abrir {title}",
+    "until": "hasta {date}",
+    "sponsorships": "{count, plural, =1 {1 patrocinio abierto} other {# patrocinios abiertos}}",
+    "calls": "{count, plural, =1 {1 convocatoria abierta} other {# convocatorias abiertas}}"
+  },
+  "actions": {
+    "createCampaign": "Crear campaña",
+    "openCall": "Abrir convocatoria",
+    "createOpportunity": "Crear oportunidad",
+    "edit": "Editar"
+  },
+  "home": {
+    "title": "Real-Time Culture",
+    "now": "Ahora",
+    "soon": "Próximamente",
+    "open": "Ver cultura",
+    "empty": "Sin eventos en los próximos días.",
+    "tags": "Hashtags del mes"
+  },
+  "posts": {
+    "news": "Noticia",
+    "tip": "Consejo",
+    "groscove": "Groscove",
+    "openLink": "Abrir enlace",
+    "aboutEvent": "Sobre: {title}",
+    "empty": "Aún no hay noticias ni consejos.",
+    "imageAlt": "Imagen de {title}",
+    "eventTitle": "Noticias y consejos sobre este evento"
+  },
+  "fromEvent": {
+    "title": "A partir del evento",
+    "hint": "El vínculo con el evento queda registrado. Revisa todo antes de enviar.",
+    "unavailable": "Evento no encontrado o terminado: el formulario empezó en blanco."
+  },
+  "brand": {
+    "title": "Propuesta comercial",
+    "interested": "Tu marca mostró interés en este evento.",
+    "notInterested": "Muestra interés antes de proponer: la agencia se entera.",
+    "campaign": "Crear campaña a partir de este evento",
+    "call": "Abrir convocatoria para agencias a partir de este evento",
+    "needsAgency": "Para crear campaña, la marca necesita una agencia activa. La convocatoria va a varias agencias.",
+    "membersOnly": "Solo el dueño y el equipo de la marca crean propuestas.",
+    "heroesHidden": "La marca solo ve cuántos héroes se interesaron, nunca quiénes."
+  },
+  "agency": {
+    "create": "Crear oportunidad de patrocinio a partir de este evento",
+    "heroLater": "El héroe se elige en el formulario.",
+    "managersOnly": "Gestor o Adm crea oportunidades."
+  },
+  "compat": {
+    "title": "Compatibilidad",
+    "hint": "Héroes de tu casting y marcas que atiendes con interés en este evento.",
+    "hintAdmin": "Todos los héroes y marcas con interés en este evento.",
+    "heroes": "Héroes",
+    "brands": "Marcas",
+    "noHeroes": "Ningún héroe con interés.",
+    "noBrands": "Ninguna marca con interés.",
+    "withHero": "Abrir oportunidad con {name}",
+    "forBrand": "Abrir oportunidad para {name}",
+    "pairs": "{count, plural, =0 {Aún sin pareja posible} =1 {1 pareja posible} other {# parejas posibles}}"
+  },
+  "history": {
+    "title": "Propuestas y negocios vinculados",
+    "empty": "Nada vinculado a este evento todavía.",
+    "deal": "Negocio: {stage}",
+    "dealOpen": "Abrir negocio",
+    "kinds": {
+      "campaign": "Campaña",
+      "brand_call": "Convocatoria",
+      "sponsorship": "Patrocinio"
+    },
+    "status": {
+      "campaign": {
+        "draft": "Borrador",
+        "submitted": "Enviada",
+        "converted": "Se volvió negocio",
+        "declined": "Rechazada",
+        "cancelled": "Cancelada"
+      },
+      "brand_call": {
+        "draft": "Borrador",
+        "open": "Abierta",
+        "closed": "Cerrada",
+        "contracted": "Contratada",
+        "cancelled": "Cancelada"
+      },
+      "sponsorship": {
+        "draft": "Borrador",
+        "open": "Abierta",
+        "closed": "Cerrada",
+        "sponsored": "Patrocinada",
+        "cancelled": "Cancelada"
+      }
+    }
+  },
+  "link": {
+    "failed": "Borrador guardado, pero el vínculo con el evento no se registró. Abre el evento e inténtalo de nuevo."
+  },
+  "editorial": {
+    "title": "Noticias y consejos",
+    "description": "Planificación editorial vinculada a la agenda.",
+    "new": "Nueva noticia o consejo",
+    "edit": "Editar noticia o consejo",
+    "back": "Noticias y consejos",
+    "write": "Escribir noticia sobre este evento",
+    "views": {
+      "semana": "Semana",
+      "lista": "Lista"
+    },
+    "prevWeek": "Semana anterior",
+    "nextWeek": "Próxima semana",
+    "thisWeek": "Esta semana",
+    "weekOf": "Semana del {date}",
+    "undated": "Borradores (sin fecha)",
+    "empty": "Nada planificado.",
+    "emptyDay": "Libre",
+    "status": {
+      "draft": "Borrador",
+      "scheduled": "Programado",
+      "published": "Publicado"
+    },
+    "audienceAdmin": "Va a todos los perfiles con portal (héroes, marcas y agencias).",
+    "audienceAgency": "Va a tu red: equipo, marcas atendidas y héroes del casting.",
+    "form": {
+      "kind": "Tipo",
+      "title": "Título",
+      "body": "Texto",
+      "image": "Imagen (opcional)",
+      "imageHint": "Dirección https de la imagen.",
+      "link": "Enlace (opcional)",
+      "linkHint": "Dirección https para saber más.",
+      "event": "Evento de la agenda (opcional)",
+      "eventSearch": "Buscar evento",
+      "eventSearchPlaceholder": "Nombre del evento",
+      "eventNone": "Sin evento vinculado",
+      "eventRemove": "Quitar vínculo",
+      "eventNoResults": "Ningún evento encontrado.",
+      "status": "Publicación",
+      "publishDate": "Fecha",
+      "publishTime": "Hora",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "deleteConfirm": "¿Eliminar esta noticia o consejo? No se puede deshacer.",
+      "saved": "Guardado.",
+      "deleted": "Eliminado.",
+      "invalid": "Revisa el título (3 a 140), los enlaces https y la fecha de publicación."
+    }
+  },
+  "errors": {
+    "forbidden": "No tienes permiso para esto.",
+    "not_found": "No encontrado.",
+    "invalid_input": "Revisa los campos.",
+    "invalid_state": "Esto no se puede hacer ahora.",
+    "unauthenticated": "Vuelve a entrar para continuar.",
+    "generic": "Algo salió mal. Inténtalo de nuevo."
+  }
+}

@@ -4,6 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { InterestButton } from "@/components/platform-calendar/InterestButton";
 import { InterestCounts, PlatformEventView } from "@/components/platform-calendar/PlatformEventView";
 import { BackLink } from "@/components/ui/back-link";
+import { BrandEventActions, EventCommercialPanel } from "@/components/culture/EventCommerce";
+import { EventPosts } from "@/components/culture/EventPosts";
+import { eventCommercial, listVisiblePosts } from "@/lib/culture/queries";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { agendaBackHref } from "@/lib/platform-calendar/links";
 import { getPlatformEvent, interestSummary, listEventInterests } from "@/lib/platform-calendar/queries";
@@ -23,7 +26,13 @@ export default async function BrandGroscoveEventPage({ params }: { params: Promi
   const { id } = await params;
   const event = await getPlatformEvent(id);
   if (!event || event.effective === "draft" || event.effective === "scheduled") notFound();
-  const [t, counts, interests] = await Promise.all([getTranslations("groscoveCalendar"), interestSummary(id), listEventInterests(id)]);
+  const [t, counts, interests, history, posts] = await Promise.all([
+    getTranslations("groscoveCalendar"),
+    interestSummary(id),
+    listEventInterests(id),
+    eventCommercial(id),
+    listVisiblePosts({ eventId: id, limit: 10 }),
+  ]);
   const mine = interests.find((i) => i.party === "brand" && i.ownerId === ctx.brand.id);
   const closed = event.status === "cancelled" || new Date(event.endsAt).getTime() < Date.now();
   return (
@@ -42,6 +51,10 @@ export default async function BrandGroscoveEventPage({ params }: { params: Promi
           <InterestCounts counts={counts} />
           <p className="type-caption text-fg-subtle">{t("interest.notContractBrand")}</p>
         </section>
+        {/* 0101: propor a partir do evento pelos fluxos existentes; a marca vê só as propostas dela (nunca heróis) */}
+        <BrandEventActions eventId={event.id} interested={mine?.state === "interested"} canPropose={Boolean(ctx.role)} hasAgency={Boolean(ctx.agency)} closed={closed} />
+        <EventPosts posts={posts.items} portal="brand" />
+        <EventCommercialPanel items={history} />
       </PlatformEventView>
     </div>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CalendarDays, Clock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { FeedCard } from "@/components/calendar/FeedCard";
+import { AgendaTabs } from "@/components/culture/AgendaTabs";
 import { HeroAgenda } from "@/components/hero-work/HeroAgenda";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { defaultTimeZone } from "@/i18n/config";
@@ -70,6 +71,7 @@ export default async function HeroAgendaPage({ searchParams }: Props) {
   return (
     <div className="flex flex-col gap-5" data-testid="hero-agenda-page">
       <PageHeader eyebrow={eyebrow} title={t("title")} description={show.agency ? undefined : ws?.canWriteAgenda ? t("intro") : t("introMember")} />
+      <AgendaTabs base="/heroi/agenda" active="agenda" />
       <AgendaFilterBar base="/heroi/agenda" params={{ mes: monthKey(year, month) }} filters={gFilters} collections={groscove.collections} />
       {show.agency ? <AgencyAgenda sp={sp} groscove={groscove.events} filters={gFilters} /> : null}
       {show.own && ws && events ? (

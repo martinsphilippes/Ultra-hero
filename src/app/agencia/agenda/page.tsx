@@ -3,6 +3,7 @@ import { CalendarDays, Handshake } from "lucide-react";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AgendaCalendar } from "@/components/calendar/AgendaCalendar";
+import { AgendaTabs } from "@/components/culture/AgendaTabs";
 import { EventEditorProvider, EventNewButton } from "@/components/calendar/EventEditor";
 import { FeedCard } from "@/components/calendar/FeedCard";
 import { Button, EmptyState, EntitySelect, PageHeader, Select } from "@/components/ui";
@@ -147,6 +148,8 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
             </span>
           }
         />
+        {/* 0101: aba Cultura (Real-Time Culture) dentro da agenda */}
+        <AgendaTabs base="/agencia/agenda" active="agenda" />
         <form method="get" action="/agencia/agenda" className="grid gap-3 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-[1fr_1fr_1fr_auto]" data-testid="agenda-filters">
           <input type="hidden" name="mes" value={monthKey(year, month)} />
           <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">

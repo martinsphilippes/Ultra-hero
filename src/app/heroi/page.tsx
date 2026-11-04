@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { CultureHome } from "@/components/culture/CultureHomeCard";
 import { ArrowRight, Briefcase, FilePlus2, FileText, SquarePlus, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
@@ -66,6 +68,10 @@ export default async function HeroPortalHome() {
   return (
     <div className="flex flex-col gap-5" data-testid="hero-portal-home">
       {casting ? <AgencyHeader talent={talent.talent} /> : <PageHeader eyebrow={t("eyebrow")} title={heroName ?? t("title")} description={t("intro")} />}
+      {/* 0101: Real-Time Culture (atalho para a aba Cultura da agenda) */}
+      <Suspense fallback={null}>
+        <CultureHome portal="hero" />
+      </Suspense>
       {hero && !hasHeroPage ? (
         // sem herói ainda (ex.: convite aceito sem herói): o herói nasce na Equipe do portal, pendente de aprovação
         <Link href="/heroi/equipe" className={QUICK} data-testid="hero-portal-create">

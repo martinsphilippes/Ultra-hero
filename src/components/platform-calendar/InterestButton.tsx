@@ -14,11 +14,13 @@ type Props = {
   state: "none" | "interested" | "withdrawn";
   /** Evento cancelado ou encerrado: não aceita interesse novo (retirar continua possível). */
   closed: boolean;
+  /** 0101: versão curta para os cartões da Real-Time Culture (só o botão, sem o texto de estado). */
+  compact?: boolean;
 };
 
 // "Tenho interesse" / "Retirar interesse" (0098). Interesse é só um sinal para a agência e a Groscove: não vira
 // proposta, negócio nem contrato. O banco confere quem pode (titular do herói ativo; dono/equipe da marca).
-export function InterestButton({ eventId, party, ownerId, state: initial, closed }: Props) {
+export function InterestButton({ eventId, party, ownerId, state: initial, closed, compact = false }: Props) {
   const t = useTranslations("groscoveCalendar.interest");
   const { toast } = useToast();
   const [state, setState] = useState(initial);
@@ -31,6 +33,25 @@ export function InterestButton({ eventId, party, ownerId, state: initial, closed
       if (result.ok) setState(result.state === "interested" ? "interested" : result.state === "withdrawn" ? "withdrawn" : "none");
       toast({ title: result.ok ? result.message : result.error, variant: result.ok ? "success" : "error" });
     });
+  }
+
+  if (compact) {
+    if (closed && !interested) return null;
+    return (
+      <Button
+        type="button"
+        size="sm"
+        variant={interested ? "secondary" : "primary"}
+        leadingIcon={interested ? <HeartOff /> : <Heart />}
+        onClick={toggle}
+        disabled={pending}
+        aria-pressed={interested}
+        data-testid="interest-compact"
+        data-state={state}
+      >
+        {interested ? t("withdraw") : t("add")}
+      </Button>
+    );
   }
 
   return (

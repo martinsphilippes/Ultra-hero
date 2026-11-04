@@ -4,6 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { InterestButton } from "@/components/platform-calendar/InterestButton";
 import { InterestCounts, PlatformEventView } from "@/components/platform-calendar/PlatformEventView";
 import { BackLink } from "@/components/ui/back-link";
+import { EventCommercialPanel } from "@/components/culture/EventCommerce";
+import { EventPosts } from "@/components/culture/EventPosts";
+import { eventCommercial, listVisiblePosts } from "@/lib/culture/queries";
 import { agendaBackHref } from "@/lib/platform-calendar/links";
 import { getPlatformEvent, interestSummary, listEventInterests } from "@/lib/platform-calendar/queries";
 import { findHeroWorkspace } from "@/lib/hero-work/server";
@@ -21,7 +24,13 @@ export default async function HeroGroscoveEventPage({ params }: { params: Promis
   const { id } = await params;
   const event = await getPlatformEvent(id);
   if (!event || event.effective === "draft" || event.effective === "scheduled") notFound();
-  const [t, ws, counts] = await Promise.all([getTranslations("groscoveCalendar"), findHeroWorkspace(), interestSummary(id)]);
+  const [t, ws, counts, history, posts] = await Promise.all([
+    getTranslations("groscoveCalendar"),
+    findHeroWorkspace(),
+    interestSummary(id),
+    eventCommercial(id),
+    listVisiblePosts({ eventId: id, limit: 10 }),
+  ]);
   const mine = ws ? (await listEventInterests(id)).find((i) => i.party === "hero" && i.ownerId === ws.hero.id) : undefined;
   const canAct = ws !== null && ws.hero.role === "owner" && ws.hero.status === "active";
   const closed = event.status === "cancelled" || new Date(event.endsAt).getTime() < Date.now();
@@ -43,6 +52,9 @@ export default async function HeroGroscoveEventPage({ params }: { params: Promis
           <InterestCounts counts={counts} />
           <p className="type-caption text-fg-subtle">{t("interest.notContract")}</p>
         </section>
+        {/* 0101: notícias/dicas do evento e o que envolve o herói (negócio em que foi consultado, patrocínio dele) */}
+        <EventPosts posts={posts.items} portal="hero" />
+        {history.length > 0 ? <EventCommercialPanel items={history} /> : null}
       </PlatformEventView>
     </div>
   );

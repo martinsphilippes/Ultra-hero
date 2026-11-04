@@ -154,6 +154,19 @@ export async function getPlatformEvent(id: string): Promise<PlatformEvent | null
   return toPlatformEvent(data as Row, new Date());
 }
 
+/** Vários eventos por id (só o que a RLS deixa ver; no máximo 100), na ordem de início. */
+export async function getPlatformEventsByIds(ids: readonly string[], opts: { published?: boolean } = {}): Promise<PlatformEvent[]> {
+  const list = [...new Set(ids.filter((id) => /^[0-9a-f-]{36}$/i.test(id)))].slice(0, 100);
+  if (list.length === 0) return [];
+  const supabase = await createClient();
+  const now = new Date();
+  let query = supabase.from("calendar_events").select(SELECT).eq("scope", "platform").in("id", list).order("starts_at");
+  if (opts.published !== false) query = query.neq("status", "draft").lte("published_at", now.toISOString());
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return (data as Row[]).map((r) => toPlatformEvent(r, now));
+}
+
 export type AdminEventFilters = { year?: number | null; territory?: Territory | null; status?: PlatformStatus | null; collection?: string | null; q?: string | null; page?: number };
 export const ADMIN_PAGE_SIZE = 50;
 

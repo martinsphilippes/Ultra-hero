@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       brand_calls: {
         Row: {
+          calendar_event_id: string | null;
           max_heroes: number | null;
           value_model: string;
           approval_decided_at: string | null;
@@ -54,6 +55,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          calendar_event_id?: string | null;
           max_heroes?: number | null;
           value_model?: string;
           approval_decided_at?: string | null;
@@ -96,6 +98,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          calendar_event_id?: string | null;
           max_heroes?: number | null;
           value_model?: string;
           approval_decided_at?: string | null;
@@ -7063,6 +7066,7 @@ export type Database = {
       };
       campaign_requests: {
         Row: {
+          calendar_event_id: string | null;
           approval_decided_at: string | null;
           approval_decided_by: string | null;
           approval_decided_label: string;
@@ -7107,6 +7111,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          calendar_event_id?: string | null;
           approval_decided_at?: string | null;
           approval_decided_by?: string | null;
           approval_decided_label?: string;
@@ -7150,6 +7155,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          calendar_event_id?: string | null;
           approval_decided_at?: string | null;
           approval_decided_by?: string | null;
           approval_decided_label?: string;
@@ -9248,6 +9254,7 @@ export type Database = {
       };
       sponsorship_opportunities: {
         Row: {
+          calendar_event_id: string | null;
           agency_id: string;
           all_day: boolean;
           audience: string;
@@ -9277,6 +9284,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          calendar_event_id?: string | null;
           agency_id: string;
           all_day?: boolean;
           audience?: string;
@@ -9305,6 +9313,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          calendar_event_id?: string | null;
           agency_id?: string;
           all_day?: boolean;
           audience?: string;
@@ -10029,6 +10038,61 @@ export type Database = {
           meta?: Json;
           source_name?: string;
           year?: number | null;
+        };
+        Relationships: [];
+      };
+      agenda_posts: {
+        Row: {
+          agency_id: string | null;
+          body: string;
+          calendar_event_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          image_url: string | null;
+          kind: string;
+          link_url: string | null;
+          published_at: string | null;
+          scope: string;
+          status: string;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id?: string | null;
+          body?: string;
+          calendar_event_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          image_url?: string | null;
+          kind?: string;
+          link_url?: string | null;
+          published_at?: string | null;
+          scope: string;
+          status?: string;
+          title: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          agency_id?: string | null;
+          body?: string;
+          calendar_event_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          image_url?: string | null;
+          kind?: string;
+          link_url?: string | null;
+          published_at?: string | null;
+          scope?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+          updated_by?: string | null;
         };
         Relationships: [];
       };
@@ -11040,6 +11104,13 @@ isOneToOne: false
       admin_set_platform_calendar_editor: { Args: { p_agency: string; p_on: boolean }; Returns: undefined };
       platform_event_set_interest: { Args: { p_event: string; p_interested: boolean; p_owner: string; p_party: string }; Returns: string };
       platform_event_interest_summary: { Args: { p_event: string }; Returns: Json };
+      commercial_event_link: { Args: { p_event: string | null; p_id: string; p_kind: string; p_segments: string[] | null }; Returns: string | null };
+      calendar_event_commercial: { Args: { p_event: string }; Returns: Json };
+      calendar_event_opportunities: { Args: Record<PropertyKey, never>; Returns: Json };
+      platform_culture_meta: { Args: { p_month: number; p_year: number }; Returns: Json };
+      my_agency_network_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      agenda_post_save: { Args: { p_agency: string | null; p_data: Json; p_id: string | null }; Returns: string };
+      agenda_post_delete: { Args: { p_id: string }; Returns: undefined };
       seasonal_theme_save: { Args: { p_data: Json; p_id: string | null }; Returns: string };
       seasonal_theme_set_status: { Args: { p_id: string; p_status: string }; Returns: undefined };
       seasonal_theme_delete: { Args: { p_id: string }; Returns: undefined };
