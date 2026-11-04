@@ -20,10 +20,11 @@ type Props = {
   alternatives?: ReactNode;
   /** Sessão criada há pouco pelo cadastro (recarregou a página antes de "Já anotei"). */
   resumeSignedIn?: boolean;
+  defaultEmail?: string;
 };
 
 // Tela inicial: cadastro rápido sem senha. Depois de criar, mostra a senha gerada uma vez.
-export function QuickSignupForm({ next, alternatives, resumeSignedIn }: Props) {
+export function QuickSignupForm({ next, alternatives, resumeSignedIn, defaultEmail }: Props) {
   const t = useTranslations("auth");
   const [state, formAction, pending] = useActionState(quickSignupAction, initialQuickSignupState);
   const [phone, setPhone] = useState("");
@@ -55,7 +56,7 @@ export function QuickSignupForm({ next, alternatives, resumeSignedIn }: Props) {
         </FormField>
 
         <FormField label={t("fields.email")} required error={err(fieldErrors.email)}>
-          <Input name="email" type="email" autoComplete="email" inputMode="email" placeholder={t("fields.emailPlaceholder")} maxLength={254} />
+          <Input name="email" type="email" autoComplete="email" inputMode="email" placeholder={t("fields.emailPlaceholder")} maxLength={254} defaultValue={defaultEmail} />
         </FormField>
 
         <FormField label={t("quick.phone")} required hint={t("quick.phoneHint")} error={err(fieldErrors.phone)}>

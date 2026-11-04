@@ -13,8 +13,8 @@ export const QUICK_SIGNUP_PENDING_COOKIE = "uh-qs-pending";
 /** Limites por janela de 1 hora (contam tentativas válidas, com ou sem sucesso). */
 export const QUICK_SIGNUP_LIMITS = { windowMinutes: 60, perIp: 10, perEmail: 3 } as const;
 
-export function quickSignupRateLimited(counts: { ip: number; email: number }): boolean {
-  return counts.ip >= QUICK_SIGNUP_LIMITS.perIp || counts.email >= QUICK_SIGNUP_LIMITS.perEmail;
+export function quickSignupRateLimited(counts: { ip: number; email: number }, limits: { perIp: number; perEmail: number } = QUICK_SIGNUP_LIMITS): boolean {
+  return counts.ip >= limits.perIp || counts.email >= limits.perEmail;
 }
 
 /** Nome e sobrenome: 2+ partes com letra, 3 a 120 caracteres, espaços normalizados. */

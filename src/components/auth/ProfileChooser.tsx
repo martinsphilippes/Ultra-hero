@@ -5,11 +5,11 @@ import { loginPathFor, type SignupProfile } from "@/lib/auth/profile-signup";
 
 const ICONS: Record<SignupProfile, LucideIcon> = { hero: Sparkles, brand: BadgeCheck, agency: Building2, consumer: Smartphone };
 
-type Props = { profiles: readonly SignupProfile[]; next?: string | null };
+type Props = { profiles: readonly SignupProfile[]; next?: string | null; email?: string | null };
 
 // "Como você vai usar o Ultra?" (0103): cartões grandes, um por perfil, que levam ao cadastro daquele perfil. Mobile
 // first: um por linha, área de toque alta, ícone + título + frase curta.
-export function ProfileChooser({ profiles, next }: Props) {
+export function ProfileChooser({ profiles, next, email }: Props) {
   const t = useTranslations("auth.choose");
   return (
     <ul className="flex flex-col gap-3" aria-label={t("cardsLabel")} data-testid="profile-chooser">
@@ -18,7 +18,7 @@ export function ProfileChooser({ profiles, next }: Props) {
         return (
           <li key={p}>
             <Link
-              href={loginPathFor(p, next)}
+              href={loginPathFor(p, next, email)}
               data-testid={`profile-card-${p}`}
               className="flex min-h-20 items-center gap-4 rounded-2xl border border-border bg-bg p-4 transition-colors hover:border-accent/50 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >

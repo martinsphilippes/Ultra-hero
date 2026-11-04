@@ -15,11 +15,17 @@ import { initialAuthState } from "@/lib/auth/types";
 import { AuthAlert } from "./AuthAlert";
 import { PasswordInput } from "./PasswordInput";
 
-type Props = { profile: BusinessProfile; alternatives?: ReactNode };
+type Props = {
+  profile: BusinessProfile;
+  alternatives?: ReactNode;
+  /** Período sem senha (lib/auth/passwordless): o campo Senha some e o servidor gera uma senha forte. */
+  passwordless?: boolean;
+  defaultEmail?: string;
+};
 
 // Cadastro por perfil (0103): nome, e-mail, celular e senha → a conta nasce, a pessoa entra e segue para o passo a
 // passo do perfil (Herói, Marca ou Agência). Passo 1 de 2 (o 2 é o /primeiro-acesso).
-export function ProfileSignupForm({ profile, alternatives }: Props) {
+export function ProfileSignupForm({ profile, alternatives, passwordless = false, defaultEmail }: Props) {
   const t = useTranslations("auth");
   const [state, formAction, pending] = useActionState(profileSignupAction, initialAuthState);
   const [phone, setPhone] = useState("");
@@ -54,7 +60,7 @@ export function ProfileSignupForm({ profile, alternatives }: Props) {
         </FormField>
 
         <FormField label={t("fields.email")} required error={err(fieldErrors.email)}>
-          <Input name="email" type="email" autoComplete="email" inputMode="email" placeholder={t("fields.emailPlaceholder")} maxLength={254} />
+          <Input name="email" type="email" autoComplete="email" inputMode="email" placeholder={t("fields.emailPlaceholder")} maxLength={254} defaultValue={defaultEmail} />
         </FormField>
 
         <FormField label={t("quick.phone")} required hint={t("quick.phoneHint")} error={err(fieldErrors.phone)}>
@@ -70,9 +76,11 @@ export function ProfileSignupForm({ profile, alternatives }: Props) {
           />
         </FormField>
 
-        <FormField label={t("fields.password")} required hint={t("fields.passwordHint")} error={err(fieldErrors.password)}>
-          <PasswordInput name="password" autoComplete="new-password" placeholder={t("fields.passwordPlaceholder")} maxLength={72} />
-        </FormField>
+        {!passwordless && (
+          <FormField label={t("fields.password")} required hint={t("fields.passwordHint")} error={err(fieldErrors.password)}>
+            <PasswordInput name="password" autoComplete="new-password" placeholder={t("fields.passwordPlaceholder")} maxLength={72} />
+          </FormField>
+        )}
 
         {/* Campo-isca: fora da tela e da ordem de tabulação, escondido de leitores de tela. */}
         <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">

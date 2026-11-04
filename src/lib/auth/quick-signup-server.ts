@@ -6,6 +6,10 @@ import type { Database } from "@/lib/supabase/database.types";
 import { generatePassword } from "./generated-password";
 import { isPasswordVaultConfigured, openPassword, sealPassword } from "./password-crypto";
 import { QUICK_SIGNUP_LIMITS, quickSignupRateLimited } from "./quick-signup";
+import { isPasswordlessActive } from "./passwordless";
+
+// Durante o acesso sem senha (evento), muita gente cadastra pela mesma rede: limite por IP mais alto.
+const EVENT_SIGNUP_LIMITS = { windowMinutes: 60, perIp: 150, perEmail: 3 } as const;
 
 // Cadastro rápido e cofre da senha gerada: tudo pelo service role (as tabelas da 0046 não têm
 // acesso nenhum pela API). Nunca registre senha, e-mail, celular ou IP em log.
@@ -51,15 +55,20 @@ export function hashForRateLimit(kind: "ip" | "email", value: string, secret = p
 }
 
 /** Conta tentativas na janela e registra esta. Limpa o que tem mais de 1 dia (melhor esforço). */
-export async function recordQuickSignupAttempt(admin: Admin, ipHash: string, emailHash: string): Promise<"ok" | "limited" | "schema_missing" | "error"> {
-  const since = new Date(Date.now() - QUICK_SIGNUP_LIMITS.windowMinutes * 60_000).toISOString();
+export async function recordQuickSignupAttempt(
+  admin: Admin,
+  ipHash: string,
+  emailHash: string,
+  limits: { windowMinutes: number; perIp: number; perEmail: number } = isPasswordlessActive() ? EVENT_SIGNUP_LIMITS : QUICK_SIGNUP_LIMITS,
+): Promise<"ok" | "limited" | "schema_missing" | "error"> {
+  const since = new Date(Date.now() - limits.windowMinutes * 60_000).toISOString();
   const [byIp, byEmail] = await Promise.all([
     admin.from("quick_signup_attempts").select("id", { head: true, count: "exact" }).eq("ip_hash", ipHash).gte("created_at", since),
     admin.from("quick_signup_attempts").select("id", { head: true, count: "exact" }).eq("email_hash", emailHash).gte("created_at", since),
   ]);
   const err = byIp.error ?? byEmail.error;
   if (err) return isMissingSchema(err) ? "schema_missing" : "error";
-  if (quickSignupRateLimited({ ip: byIp.count ?? 0, email: byEmail.count ?? 0 })) return "limited";
+  if (quickSignupRateLimited({ ip: byIp.count ?? 0, email: byEmail.count ?? 0 }, limits)) return "limited";
   const { error } = await admin.from("quick_signup_attempts").insert({ ip_hash: ipHash, email_hash: emailHash });
   if (error) return isMissingSchema(error) ? "schema_missing" : "error";
   // o resultado não importa: o que sobrar sai na próxima tentativa

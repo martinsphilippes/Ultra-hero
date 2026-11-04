@@ -156,6 +156,8 @@ beforeEach(() => {
   });
   vi.stubEnv("ACCOUNT_PASSWORD_KEY_V1", KEY);
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-role-test");
+  // regras de sempre (fora do período sem senha do evento; esse período tem testes em passwordless-actions)
+  vi.stubEnv("PASSWORDLESS_DISABLED", "1");
   logs = [];
   for (const level of ["log", "info", "warn", "error"] as const) {
     vi.spyOn(console, level).mockImplementation((...args: unknown[]) => void logs.push(args.map(String).join(" ")));

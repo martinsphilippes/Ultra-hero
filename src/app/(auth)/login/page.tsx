@@ -15,6 +15,7 @@ import { QuickSignupForm } from "@/components/auth/QuickSignupForm";
 import { legalRichTags } from "@/components/legal/rich-tags";
 import { Divider } from "@/components/ui/divider";
 import { readExperimentOpen } from "@/lib/auth/experiment";
+import { isPasswordlessActive, passwordlessLastDayLabel } from "@/lib/auth/passwordless";
 import { isBusinessProfile, parseSignupProfile, profilesForSurface, startPathFor } from "@/lib/auth/profile-signup";
 import { QUICK_SIGNUP_PENDING_COOKIE } from "@/lib/auth/quick-signup";
 import { quickSignupAvailability } from "@/lib/auth/quick-signup-server";
@@ -24,7 +25,7 @@ import { isAuthQueryError } from "@/lib/auth/types";
 import { getNativeApp } from "@/lib/native-app/server";
 import { createClient } from "@/lib/supabase/server";
 
-type SearchParams = Promise<{ next?: string; error?: string; mode?: string; perfil?: string }>;
+type SearchParams = Promise<{ next?: string; error?: string; mode?: string; perfil?: string; email?: string }>;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("auth.quick");
@@ -36,7 +37,11 @@ export async function generateMetadata(): Promise<Metadata> {
 // Agência criam a conta com senha e seguem ao passo a passo do perfil. "Já tenho conta" (Google e senha) fica embaixo
 // em todas as telas; com um perfil escolhido, entrar leva a /comecar/<perfil> (o mesmo fluxo de Configurações).
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
-  const { next: rawNext, error, mode, perfil } = await searchParams;
+  const { next: rawNext, error, mode, perfil, email: rawEmail } = await searchParams;
+  // e-mail vindo do "Criar conta" do login sem senha: só preenche o campo (validado de novo na action)
+  const prefillEmail = typeof rawEmail === "string" && rawEmail.length <= 254 && /^[^\s@]+@[^\s@]+$/.test(rawEmail) ? rawEmail : undefined;
+  // período do evento (lib/auth/passwordless): entrar e criar conta só com o e-mail; volta sozinho ao normal no prazo
+  const passwordless = isPasswordlessActive();
   const next = safeNext(rawNext, LOGIN_HOME);
 
   // Já autenticado: não faz sentido ver a entrada, salvo logo depois do cadastro rápido (a tela
@@ -51,14 +56,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
   const fromInvitation = next === "/invite" || next.startsWith("/invite?");
   // Pedido explícito (?mode=password) ou sessão expirada: abre "Já tenho senha".
   // Veio do link do convite: abre direto (o convidado cria a senha ali no primeiro acesso).
-  const passwordOpen = mode === "password" || queryError === "sessionRequired" || fromInvitation;
+  const passwordOpen = mode === "password" || queryError === "sessionRequired" || fromInvitation || (passwordless && !perfil);
   // Perfil escolhido; convite (já emitido) e a tela "Sua senha" recarregada seguem no cadastro rápido de sempre.
   const surfaceProfiles = profilesForSurface(nativeApp !== null);
   const parsedProfile = parseSignupProfile(perfil);
   const profile = (user && pendingSignup) || fromInvitation ? "consumer" : parsedProfile && surfaceProfiles.includes(parsedProfile) ? parsedProfile : null;
   // com perfil de negócio, entrar com a conta existente continua no passo a passo dele
   const afterLogin = profile && isBusinessProfile(profile) ? startPathFor(profile) : next;
-  const chooseHref = rawNext ? `/login?next=${encodeURIComponent(next)}` : "/login";
+  const chooseParams = new URLSearchParams();
+  if (rawNext) chooseParams.set("next", next);
+  if (prefillEmail) chooseParams.set("email", prefillEmail);
+  const chooseHref = chooseParams.size ? `/login?${chooseParams.toString()}` : "/login";
 
   const alternatives = (
     <div className="flex flex-col gap-5">
@@ -76,7 +84,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           </span>
         </summary>
         <div className="px-4 pb-4 pt-1">
-          <LoginForm next={afterLogin} />
+          <LoginForm next={afterLogin} passwordless={passwordless} passwordlessUntil={passwordless ? passwordlessLastDayLabel() : undefined} defaultEmail={prefillEmail} />
         </div>
       </details>
     </div>
@@ -112,7 +120,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         <AuthCard title={t("choose.title")} subtitle={t("choose.subtitle")}>
           <div className="flex flex-col gap-5">
             {alerts}
-            <ProfileChooser profiles={surfaceProfiles} next={rawNext ? next : null} />
+            <ProfileChooser profiles={surfaceProfiles} next={rawNext ? next : null} email={prefillEmail} />
             {alternatives}
           </div>
         </AuthCard>
@@ -127,7 +135,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           <div className="flex flex-col gap-4">
             {changeProfile}
             {alerts}
-            <ProfileSignupForm profile={profile} alternatives={alternatives} />
+            <ProfileSignupForm profile={profile} alternatives={alternatives} passwordless={passwordless} defaultEmail={prefillEmail} />
           </div>
         </AuthCard>
       </div>
@@ -140,7 +148,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         <div className="flex flex-col gap-4">
           {changeProfile}
           {alerts}
-          <QuickSignupForm next={next} alternatives={alternatives} resumeSignedIn={Boolean(user && pendingSignup)} />
+          <QuickSignupForm next={next} alternatives={alternatives} resumeSignedIn={Boolean(user && pendingSignup)} defaultEmail={prefillEmail} />
         </div>
       </AuthCard>
     </div>

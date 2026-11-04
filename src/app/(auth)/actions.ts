@@ -7,6 +7,8 @@ import { z } from "zod";
 import { isSignupRefusedByDatabase, readExperimentOpen } from "@/lib/auth/experiment";
 import { generatePassword } from "@/lib/auth/generated-password";
 import { acceptMyInvitations, hasPendingInvitation } from "@/lib/auth/invite-first-access";
+import { isPasswordlessActive } from "@/lib/auth/passwordless";
+import { recordPasswordlessAttempt, signInWithoutPassword, type PasswordlessResult } from "@/lib/auth/passwordless-server";
 import { getOrigin } from "@/lib/auth/origin";
 import { HONEYPOT_FIELD, QUICK_SIGNUP_PENDING_COOKIE, quickSignupSchema } from "@/lib/auth/quick-signup";
 import { clientIp, forgetGeneratedPassword, hashForRateLimit, isMissingSchema, recordQuickSignupAttempt, storeGeneratedPassword } from "@/lib/auth/quick-signup-server";
@@ -72,7 +74,27 @@ function mapAuthError(error: AuthError): string {
   }
 }
 
+// Resultado do "entrar sem senha" que não abriu sessão → chave de auth.errors.*.
+function passwordlessError(result: Exclude<PasswordlessResult, "ok">): string {
+  switch (result) {
+    case "not_found":
+      return "noAccount";
+    case "admin":
+      return "passwordRequired";
+    case "suspended":
+      return "accountSuspended";
+    case "limited":
+      return "tooManyRequests";
+    default:
+      return "unknown";
+  }
+}
+
 export async function loginAction(_prev: AuthActionState, formData: FormData): Promise<AuthActionState> {
+  // Período do evento (passwordless.ts): o formulário só com e-mail manda passwordless=1. Fora do período o campo é
+  // ignorado e vale a senha, como sempre (página antiga aberta depois do prazo cai no erro de senha obrigatória).
+  if (formData.get("passwordless") === "1" && isPasswordlessActive()) return passwordlessLogin(formData);
+
   const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
 
@@ -88,11 +110,42 @@ export async function loginAction(_prev: AuthActionState, formData: FormData): P
     return { status: "error", error: mapAuthError(error) };
   }
 
+  return finishLogin(supabase, next);
+}
+
+// Depois de abrir a sessão: convites pendentes do e-mail entram junto e o passo a passo em aberto é retomado.
+async function finishLogin(supabase: Awaited<ReturnType<typeof createClient>>, next: string): Promise<never> {
   // convites pendentes do e-mail da conta entram junto com o login
   const home = await acceptMyInvitations(supabase);
   // 0103: passo a passo em aberto (cadastro por perfil ou convite) e nenhum destino pedido: retoma de onde parou
   if (!home && next === LOGIN_HOME && (await hasOpenOnboarding(supabase))) redirect(PROFILE_ONBOARDING_PATH);
   redirect(afterInvites(next, home));
+}
+
+// Entrar só com o e-mail (período do evento). Sem conta: convidado ganha a conta na hora (como o primeiro acesso da
+// 0077, com senha gerada); os demais recebem "noAccount" e a tela oferece "Criar conta". Admin: "passwordRequired".
+async function passwordlessLogin(formData: FormData): Promise<AuthActionState> {
+  const parsed = forgotSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
+  const { email } = parsed.data;
+  const next = safeNext(formData.get("next"), LOGIN_HOME);
+  if (!hasAdminClient()) return { status: "error", error: "passwordRequired" };
+  const admin = createAdminClient();
+
+  const ip = clientIp(await headers());
+  const attempt = await recordPasswordlessAttempt(admin, ip, email);
+  if (attempt === "limited") return { status: "error", error: "tooManyRequests" };
+  if (attempt !== "ok") return { status: "error", error: "unknown" };
+
+  const supabase = await createClient();
+  let result = await signInWithoutPassword(admin, supabase, email);
+  if (result === "not_found" && (await hasPendingInvitation(admin, email))) {
+    const { error: createError } = await admin.auth.admin.createUser({ email, password: generatePassword(), email_confirm: true, app_metadata: { invite_first_access: true } });
+    if (createError) return { status: "error", error: isSignupRefusedByDatabase(createError) ? "experimentClosed" : "unknown" };
+    result = await signInWithoutPassword(admin, supabase, email);
+  }
+  if (result !== "ok") return { status: "error", error: passwordlessError(result) };
+  return finishLogin(supabase, next);
 }
 
 async function hasOpenOnboarding(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
@@ -184,6 +237,13 @@ export async function quickSignupAction(_prev: QuickSignupState, formData: FormD
   if (createError || !created.user) {
     const msg = createError?.message ?? "";
     if (createError?.code === "email_exists" || createError?.code === "user_already_exists" || /already (been )?registered|already exists/i.test(msg)) {
+      // período sem senha (evento): e-mail já cadastrado só entra (admin continua exigindo senha)
+      if (isPasswordlessActive()) {
+        const supabase = await createClient();
+        const result = await signInWithoutPassword(admin, supabase, email);
+        if (result !== "ok") return { status: "error", error: passwordlessError(result) };
+        return finishLogin(supabase, safeNext(formData.get("next"), LOGIN_HOME));
+      }
       return { status: "error", error: "emailExists" };
     }
     if (isSignupRefusedByDatabase(createError) && !(await readExperimentOpen(await createClient()))) return { status: "error", error: "experimentClosed" };
@@ -278,14 +338,18 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
   if (typeof profile !== "string" || !(BUSINESS_PROFILES as readonly string[]).includes(profile)) return { status: "error", error: "unknown" };
   const kind = profile as BusinessProfile;
 
-  const parsed = profileSignupSchema.safeParse({
+  // Período sem senha (evento): o campo Senha some; o servidor gera uma senha forte (guardada no cofre, como no
+  // cadastro rápido, para a pessoa consultar em Perfil › Conta) e e-mail já cadastrado só entra e segue.
+  const passwordless = isPasswordlessActive();
+  const parsed = (passwordless ? quickSignupSchema : profileSignupSchema).safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     phone: formData.get("phone"),
     password: formData.get("password"),
   });
   if (!parsed.success) return { status: "error", fieldErrors: toFieldErrors(parsed.error) };
-  const { fullName, email, phone, password } = parsed.data;
+  const { fullName, email, phone } = parsed.data;
+  const password = "password" in parsed.data && typeof parsed.data.password === "string" ? parsed.data.password : generatePassword();
 
   if (!hasAdminClient()) return { status: "error", error: "signupUnavailable" };
   const admin = createAdminClient();
@@ -305,6 +369,14 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
   if (createError || !created.user) {
     const msg = createError?.message ?? "";
     if (createError?.code === "email_exists" || createError?.code === "user_already_exists" || /already (been )?registered|already exists/i.test(msg)) {
+      if (passwordless) {
+        const supabase = await createClient();
+        const result = await signInWithoutPassword(admin, supabase, email);
+        if (result !== "ok") return { status: "error", error: passwordlessError(result) };
+        await acceptMyInvitations(supabase);
+        const { error: startError } = await supabase.rpc("self_onboarding_start", { p_kind: kind });
+        redirect(startError ? startPathFor(kind) : PROFILE_ONBOARDING_PATH);
+      }
       return { status: "error", error: "emailExists" };
     }
     if (createError?.code === "weak_password") return { status: "error", fieldErrors: { password: "weakPassword" } };
@@ -314,6 +386,7 @@ export async function profileSignupAction(_prev: AuthActionState, formData: Form
   }
   const { error: profileError } = await admin.from("profiles").update({ full_name: fullName, phone_e164: phone }).eq("id", created.user.id);
   if (profileError && !isMissingSchema(profileError)) console.warn("[profile-signup] perfil sem celular:", profileError.code ?? "erro");
+  if (passwordless) await storeGeneratedPassword(admin, created.user.id, password);
 
   const supabase = await createClient();
   await supabase.auth.signOut({ scope: "local" });

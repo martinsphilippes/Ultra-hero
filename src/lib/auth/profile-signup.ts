@@ -39,9 +39,10 @@ export function startPathFor(profile: BusinessProfile): string {
 }
 
 /** Entrada com o perfil escolhido: /login?perfil=… (mantém o destino pedido, se houver). */
-export function loginPathFor(profile: SignupProfile, next?: string | null): string {
+export function loginPathFor(profile: SignupProfile, next?: string | null, email?: string | null): string {
   const params = new URLSearchParams({ perfil: PROFILE_SLUG[profile] });
   if (next) params.set("next", next);
+  if (email) params.set("email", email);
   return `/login?${params.toString()}`;
 }
 
