@@ -26,6 +26,14 @@ export function isOnboardingKind(value: unknown): value is OnboardingKind {
   return typeof value === "string" && (ONBOARDING_ROLES as readonly string[]).includes(value);
 }
 
+/** Passo a passo do /primeiro-acesso: os do convite e, desde o cadastro por perfil (0103), o herói (nasce pendente). */
+export const WIZARD_KINDS = [...ONBOARDING_ROLES, "hero"] as const;
+export type WizardKind = (typeof WIZARD_KINDS)[number];
+
+export function isWizardKind(value: unknown): value is WizardKind {
+  return typeof value === "string" && (WIZARD_KINDS as readonly string[]).includes(value);
+}
+
 /** Validade máxima em dias: Admin no máximo 48h (2 dias); os demais até 30. */
 export function maxDaysFor(role: AdminInviteRole): number {
   return role === "admin" ? 2 : 30;

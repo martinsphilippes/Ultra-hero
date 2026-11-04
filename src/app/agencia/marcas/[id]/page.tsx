@@ -13,6 +13,7 @@ import { formatDate } from "@/i18n/format";
 import { getAgencyBrand, listBrandInvites, listBrandMembers } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +68,13 @@ export default async function AgencyBrandPage({ params }: Props) {
       <Section
         title={t("membersTitle")}
         description={t("membersHint")}
-        action={canEdit && active && !locked ? <InviteDialog target={{ kind: "brandMember", brandId: id }} roles={["owner", "staff"]} triggerVariant="secondary" /> : null}
+        action={
+          canEdit && active && !locked ? (
+            <InvitesGate>
+              <InviteDialog target={{ kind: "brandMember", brandId: id }} roles={["owner", "staff"]} triggerVariant="secondary" />
+            </InvitesGate>
+          ) : null
+        }
       >
         {members.length > 0 ? (
           <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="brand-members">

@@ -6377,33 +6377,39 @@ export type Database = {
       account_onboardings: {
         Row: {
           agency_id: string | null;
+          cancelled_at: string | null;
           completed_at: string | null;
           created_at: string;
           id: string;
           invitation_id: string | null;
           kind: string;
           result_id: string | null;
+          source: string;
           user_id: string;
         };
         ComputedFields: never;
         Insert: {
           agency_id?: string | null;
+          cancelled_at?: string | null;
           completed_at?: string | null;
           created_at?: string;
           id?: string;
           invitation_id?: string | null;
           kind: string;
           result_id?: string | null;
+          source?: string;
           user_id: string;
         };
         Update: {
           agency_id?: string | null;
+          cancelled_at?: string | null;
           completed_at?: string | null;
           created_at?: string;
           id?: string;
           invitation_id?: string | null;
           kind?: string;
           result_id?: string | null;
+          source?: string;
           user_id?: string;
         };
         Relationships: [];
@@ -11489,6 +11495,11 @@ isOneToOne: false
       brand_transfer_owner: { Args: { p_brand: string; p_user: string }; Returns: undefined };
       cnpj_valid: { Args: { p: string }; Returns: boolean };
       onboarding_pending: { Args: Record<PropertyKey, never>; Returns: Json };
+      // 0103: cadastro por perfil e convites pausados
+      self_onboarding_start: { Args: { p_kind: string }; Returns: Json };
+      self_onboarding_cancel: { Args: { p_kind: string }; Returns: boolean };
+      admin_self_signups: { Args: { p_days?: number }; Returns: Json };
+      invites_enabled: { Args: Record<PropertyKey, never>; Returns: boolean };
       onboarding_create_agency: { Args: { p_name: string; p_cnpj: string | null; p_contact_email: string | null }; Returns: string };
       onboarding_create_brand: { Args: { p_name: string; p_cnpj: string | null; p_segment: string | null; p_site_url: string }; Returns: string };
       onboarding_create_seller: { Args: { p_name: string }; Returns: string };

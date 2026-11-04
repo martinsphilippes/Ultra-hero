@@ -11,6 +11,11 @@ export const AGENCY_ERROR_CODES = [
   "invalid_hero_name",
   "invalid_profile_ref",
   "too_many_new_talents",
+  // cadastro por perfil e convites pausados (0103)
+  "invites_disabled",
+  "brand_already_owned",
+  "rate_limited",
+  "experiment_closed",
   // convites por papel, equipe do herói e primeiro acesso (0091)
   "admin_invite_max_48h",
   "admin_confirm_required",

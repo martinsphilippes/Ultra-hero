@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { CreateMyHeroForm } from "@/components/invites/CreateMyHeroForm";
 import { HeroTeamPanel } from "@/components/invites/HeroTeamPanel";
 import { PageHeader } from "@/components/ui";
+import { getInvitesEnabled } from "@/lib/invitations/flag";
 import { hasRole, requireRole } from "@/lib/auth/session";
 import { parseHeroTeam, parseMyHero } from "@/lib/invitations/hero-team";
 import { createClient } from "@/lib/supabase/server";
@@ -41,7 +42,7 @@ export default async function HeroTeamPage() {
           {t("pendingApproval")}
         </p>
       ) : null}
-      <HeroTeamPanel creatorId={hero.creatorId} heroName={hero.name} team={team} />
+      <HeroTeamPanel creatorId={hero.creatorId} heroName={hero.name} team={team} invitesEnabled={await getInvitesEnabled()} />
     </div>
   );
 }

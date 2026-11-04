@@ -360,7 +360,11 @@
     "max_heroes": "O valor é por herói e tem um máximo de heróis. Tire alguém do elenco antes.",
     "max_heroes_required": "No valor por herói, informe o máximo de heróis (de 1 a 50).",
     "value_per_hero_required": "No valor por herói, informe quanto cada herói recebe (maior que zero).",
-    "fee_over_budget": "A soma dos cachês passa do orçamento para cachês (valor total sem a comissão da agência)."
+    "fee_over_budget": "A soma dos cachês passa do orçamento para cachês (valor total sem a comissão da agência).",
+    "invites_disabled": "Convites desativados no momento.",
+    "brand_already_owned": "Você já é Dono de uma marca.",
+    "rate_limited": "Muitas tentativas. Tente de novo mais tarde.",
+    "experiment_closed": "Os cadastros estão pausados no momento."
   },
   "casting": {
     "title": "Casting",

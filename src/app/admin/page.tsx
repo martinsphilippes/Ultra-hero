@@ -63,18 +63,24 @@ const num = (m: Metrics, key: string) => (typeof m[key] === "number" ? (m[key] a
 
 async function DashboardContent({ days }: { days: number }) {
   const supabase = await createClient();
-  const [t, tn, locale, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting, preparing, pendingHeroes] = await Promise.all([
+  const [t, tn, locale, metricsRes, settingsRes, inReview, suggested, newFeedback, awaiting, preparing, pendingHeroes, selfSignups] = await Promise.all([
     getTranslations("adminOps.dashboard"),
     getTranslations("nav.admin"),
     getLocale(),
     supabase.rpc("admin_metrics", { p_days: days }),
-    supabase.from("app_settings").select("key, value").in("key", ["commerce.enabled", "ai.enabled", "experiment.open"]),
+    supabase.from("app_settings").select("key, value").in("key", ["commerce.enabled", "ai.enabled", "experiment.open", "invites.enabled"]),
     supabase.from("content").select("id", { count: "exact", head: true }).eq("review_status", "in_review"),
     supabase.from("content_product_links").select("id", { count: "exact", head: true }).eq("status", "suggested"),
     supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
     supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "awaiting"),
     supabase.from("test_fulfillments").select("id", { count: "exact", head: true }).eq("status", "preparing"),
     supabase.from("creator_profiles").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    // 0103: agências, marcas e heróis criados por autosserviço nos últimos 7 dias (a lista fica em /admin/cadastros)
+    supabase
+      .from("account_onboardings")
+      .select("id", { count: "exact", head: true })
+      .eq("source", "self")
+      .gte("created_at", new Date(Date.now() - 7 * 86_400_000).toISOString()),
   ]);
 
   if (metricsRes.error || !metricsRes.data || typeof metricsRes.data !== "object" || Array.isArray(metricsRes.data)) {
@@ -92,6 +98,7 @@ async function DashboardContent({ days }: { days: number }) {
   const pending = [
     // 0092: heróis criados por convite nascem pendentes; o admin aprova em Personalidades
     { key: "pendingHeroes", count: pendingHeroes.count ?? 0, href: "/admin/herois", nav: tn("creators") },
+    { key: "selfSignups", count: selfSignups.count ?? 0, href: "/admin/cadastros", nav: tn("invitations") },
     { key: "inReview", count: inReview.count ?? 0, href: "/admin/content", nav: tn("content") },
     { key: "suggestedLinks", count: suggested.count ?? 0, href: "/admin/links", nav: tn("links") },
     { key: "newFeedback", count: newFeedback.count ?? 0, href: "/admin/feedback?status=new", nav: tn("feedback") },
@@ -104,6 +111,7 @@ async function DashboardContent({ days }: { days: number }) {
     { key: "commerce.enabled", label: t("incidents.commerce") },
     { key: "ai.enabled", label: t("incidents.ai") },
     { key: "experiment.open", label: t("incidents.experiment") },
+    { key: "invites.enabled", label: t("incidents.invites") },
   ];
 
   return (

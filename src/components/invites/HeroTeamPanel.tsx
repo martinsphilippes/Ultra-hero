@@ -5,21 +5,28 @@ import { useLocale, useTranslations } from "next-intl";
 import { useId, useState, useTransition, type FormEvent } from "react";
 import { inviteHeroTeamAction, removeHeroTeamAction, revokeHeroTeamInviteAction, transferHeroAction } from "@/app/heroi/equipe/actions";
 import { CopyButton } from "@/components/admin-ops/CopyButton";
+import { InvitesDisabledNote } from "./InvitesDisabledNote";
 import { Avatar, Badge, Button, Dialog, EmptyState, FormField, Input, Select, useToast } from "@/components/ui";
 import { canManageTeam, memberActions, type HeroTeam, type HeroTeamMember } from "@/lib/invitations/hero-team";
 
-type Props = { creatorId: string; heroName: string; team: HeroTeam };
+type Props = {
+  creatorId: string;
+  heroName: string;
+  team: HeroTeam;
+  /** 0103: convites pausados — o aviso curto fica no lugar do botão "Convidar". */
+  invitesEnabled?: boolean;
+};
 
 // Equipe do herói (0091): titular + creators da equipe (social media, editor…), cada um com login próprio.
 // O titular (ou o admin) convida, remove e transfere a titularidade; o membro só consulta.
-export function HeroTeamPanel({ creatorId, heroName, team }: Props) {
+export function HeroTeamPanel({ creatorId, heroName, team, invitesEnabled = true }: Props) {
   const t = useTranslations("invites.team");
   const locale = useLocale();
   const manage = canManageTeam(team);
   const fmt = (iso: string) => (iso ? new Date(iso).toLocaleDateString(locale) : "");
   return (
     <div className="flex flex-col gap-5" data-testid="hero-team">
-      {manage ? <InviteMember creatorId={creatorId} heroName={heroName} /> : <p className="rounded-xl border border-dashed border-border px-3 py-2 type-body-sm text-fg-muted">{t("memberNote")}</p>}
+      {manage ? invitesEnabled ? <InviteMember creatorId={creatorId} heroName={heroName} /> : <InvitesDisabledNote className="self-start" /> : <p className="rounded-xl border border-dashed border-border px-3 py-2 type-body-sm text-fg-muted">{t("memberNote")}</p>}
       <section aria-labelledby="hero-team-members" className="flex flex-col gap-2">
         <h2 id="hero-team-members" className="text-sm font-semibold text-fg">
           {t("membersTitle", { count: team.members.length })}

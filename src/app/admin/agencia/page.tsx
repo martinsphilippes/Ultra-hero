@@ -9,6 +9,7 @@ import { AGENCY_ROLES } from "@/lib/agency/roles";
 import { requireRole } from "@/lib/auth/session";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,9 @@ export default async function AdminAgencyPage() {
                   </Badge>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <InviteDialog target={{ kind: "adminAgency", agencyId: a.id }} roles={AGENCY_ROLES} triggerLabel={t("invite")} triggerVariant="secondary" />
+                  <InvitesGate>
+                    <InviteDialog target={{ kind: "adminAgency", agencyId: a.id }} roles={AGENCY_ROLES} triggerLabel={t("invite")} triggerVariant="secondary" />
+                  </InvitesGate>
                   <Link href="/agencia" className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent-text hover:underline">
                     {t("openPortal")}
                     <ExternalLink className="size-4" aria-hidden="true" />

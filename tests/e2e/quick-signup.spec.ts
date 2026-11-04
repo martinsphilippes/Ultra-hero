@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 import { loginAs } from "./helpers/login";
 
-// Tela inicial = cadastro rápido (nome completo, e-mail, celular) → senha gerada. Os testes comuns não
+// Cadastro rápido (0103: cartão "Só quero usar o app" da entrada, /login?perfil=app) → senha gerada. Os testes comuns não
 // criam conta: passam com e sem a migração 0046 e com e sem o service role no servidor. O cadastro
 // REAL (cria usuário no projeto compartilhado e apaga no fim) só roda com E2E_QUICK_SIGNUP_REAL=1.
 
@@ -11,7 +11,7 @@ const form = (page: Page) => page.getByTestId("quick-signup");
 
 test.describe("cadastro rápido na tela inicial", () => {
   test("campos, Google em destaque, 'Já tenho senha' recolhido, aceite legal e axe limpo", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/login?perfil=app");
     await expect(page.getByRole("heading", { level: 1, name: "Entre em segundos" })).toBeVisible();
     await expect(form(page).getByLabel("Nome completo")).toBeVisible();
     await expect(form(page).getByLabel("E-mail")).toBeVisible();
@@ -45,7 +45,7 @@ test.describe("cadastro rápido na tela inicial", () => {
   });
 
   test("validação: obrigatórios, nome e sobrenome, celular com DDD (sem criar conta)", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/login?perfil=app");
     await form(page).getByRole("button", { name: "Entrar", exact: true }).click();
     await expect(form(page).getByText("Campo obrigatório.")).toHaveCount(3);
     await expect(form(page).getByLabel("Nome completo")).toHaveAttribute("aria-invalid", "true");
@@ -63,7 +63,7 @@ test.describe("cadastro rápido na tela inicial", () => {
   });
 
   test("máscara do celular aceita +55 e DDD", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/login?perfil=app");
     const phone = form(page).getByLabel("Celular");
     await phone.pressSequentially("11912345678");
     await expect(phone).toHaveValue("(11) 91234-5678");
@@ -77,11 +77,14 @@ test.describe("cadastro rápido na tela inicial", () => {
     await expect(page).toHaveURL(/\/login$/);
     await page.goto("/signup?next=%2Fprofile");
     await expect(page).toHaveURL(/\/login\?next=%2Fprofile$/);
+    // 0103: a entrada mostra os perfis; "Só quero usar o app" abre o cadastro rápido mantendo o destino
+    await page.getByTestId("profile-card-consumer").click();
+    await expect(page).toHaveURL(/\/login\?perfil=app&next=%2Fprofile$/);
     await expect(form(page)).toBeVisible();
   });
 
   test("sem o service role ou sem a 0046, avisa que o cadastro está indisponível (o resto da tela funciona)", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/login?perfil=app");
     const unavailable = page.getByTestId("quick-signup-unavailable");
     test.skip((await unavailable.count()) === 0, "cadastro rápido disponível neste ambiente");
     await expect(unavailable).toContainText("Cadastro rápido indisponível no momento");
@@ -128,7 +131,7 @@ test.describe("cadastro rápido de verdade (E2E_QUICK_SIGNUP_REAL=1)", () => {
   test("cria a conta, mostra a senha uma vez, entra no app e a senha confere no Perfil", async ({ page, browser }, testInfo) => {
     // uma conta só por execução (o projeto mobile repetiria o cadastro)
     test.skip(testInfo.project.name !== "desktop", "roda só no projeto desktop");
-    await page.goto("/login");
+    await page.goto("/login?perfil=app");
     test.skip((await page.getByTestId("quick-signup-unavailable").count()) > 0, "cadastro rápido indisponível neste ambiente");
     await form(page).getByLabel("Nome completo").fill("Pessoa Teste E2E");
     await form(page).getByLabel("E-mail").fill(email);
@@ -155,7 +158,7 @@ test.describe("cadastro rápido de verdade (E2E_QUICK_SIGNUP_REAL=1)", () => {
     // mesmo e-mail de novo, noutro navegador: não entra sem a senha
     const other = await browser.newContext();
     const otherPage = await other.newPage();
-    await otherPage.goto("/login");
+    await otherPage.goto("/login?perfil=app");
     await form(otherPage).getByLabel("Nome completo").fill("Outra Pessoa");
     await form(otherPage).getByLabel("E-mail").fill(email);
     await form(otherPage).getByLabel("Celular").pressSequentially("11912345678");

@@ -118,7 +118,8 @@
       "experiment": "Open sign-up",
       "on": "On",
       "off": "Off",
-      "manage": "Manage in Settings"
+      "manage": "Manage in Settings",
+      "invites": "Invitations on"
     },
     "pending": {
       "title": "Pending work",
@@ -129,7 +130,8 @@
       "awaitingFulfillments": "Fulfillments awaiting",
       "open": "Open",
       "preparingFulfillments": "Shipments being prepared",
-      "pendingHeroes": "Heroes awaiting approval"
+      "pendingHeroes": "Heroes awaiting approval",
+      "selfSignups": "New sign-ups (7 days)"
     }
   },
   "heroPublishing": {
@@ -715,7 +717,9 @@
       "addEmail": "Add e-mail",
       "emailPlaceholder": "name@domain.com",
       "removeEmail": "Remove {email}",
-      "missing": "Key missing in the database (it will be created on save)."
+      "missing": "Key missing in the database (it will be created on save).",
+      "invites_enabled": "Invitations on",
+      "invites_enabled_desc": "Off: nobody creates invitations (admin, agency, brand, hero team), enforced in the database. Invitations already sent remain valid. People sign up on their own as Hero, Brand or Agency."
     },
     "ops": {
       "title": "Operations",

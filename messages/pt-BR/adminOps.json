@@ -118,7 +118,8 @@
       "experiment": "Cadastro aberto",
       "on": "Ligado",
       "off": "Desligado",
-      "manage": "Gerenciar em Configurações"
+      "manage": "Gerenciar em Configurações",
+      "invites": "Convites ativos"
     },
     "pending": {
       "title": "Pendências",
@@ -129,7 +130,8 @@
       "awaitingFulfillments": "Remessas aguardando",
       "open": "Abrir",
       "preparingFulfillments": "Remessas em preparação",
-      "pendingHeroes": "Heróis aguardando aprovação"
+      "pendingHeroes": "Heróis aguardando aprovação",
+      "selfSignups": "Novos cadastros (7 dias)"
     }
   },
   "heroPublishing": {
@@ -715,7 +717,9 @@
       "addEmail": "Adicionar e-mail",
       "emailPlaceholder": "nome@dominio.com",
       "removeEmail": "Remover {email}",
-      "missing": "Chave ausente no banco (será criada ao salvar)."
+      "missing": "Chave ausente no banco (será criada ao salvar).",
+      "invites_enabled": "Convites ativos",
+      "invites_enabled_desc": "Desligado: ninguém cria convite (admin, agência, marca, equipe do herói), direto no banco. Os convites já enviados continuam valendo. As pessoas se cadastram sozinhas como Herói, Marca ou Agência."
     },
     "ops": {
       "title": "Operações",

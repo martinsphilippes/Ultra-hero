@@ -118,7 +118,8 @@
       "experiment": "Registro abierto",
       "on": "Activado",
       "off": "Desactivado",
-      "manage": "Gestionar en Configuración"
+      "manage": "Gestionar en Configuración",
+      "invites": "Invitaciones activas"
     },
     "pending": {
       "title": "Pendientes",
@@ -129,7 +130,8 @@
       "awaitingFulfillments": "Envíos en espera",
       "open": "Abrir",
       "preparingFulfillments": "Envíos en preparación",
-      "pendingHeroes": "Héroes esperando aprobación"
+      "pendingHeroes": "Héroes esperando aprobación",
+      "selfSignups": "Registros nuevos (7 días)"
     }
   },
   "heroPublishing": {
@@ -715,7 +717,9 @@
       "addEmail": "Agregar correo",
       "emailPlaceholder": "nombre@dominio.com",
       "removeEmail": "Quitar {email}",
-      "missing": "Clave ausente en la base (se creará al guardar)."
+      "missing": "Clave ausente en la base (se creará al guardar).",
+      "invites_enabled": "Invitaciones activas",
+      "invites_enabled_desc": "Desactivado: nadie crea invitaciones (admin, agencia, marca, equipo del héroe), directo en la base de datos. Las invitaciones ya enviadas siguen valiendo. Las personas se registran solas como Héroe, Marca o Agencia."
     },
     "ops": {
       "title": "Operaciones",

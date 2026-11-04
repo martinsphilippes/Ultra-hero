@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireUser } from "@/lib/auth/session";
-import { BR_UFS, PROFESSIONAL_SPECIALTIES, cnpjDigits, isValidCnpj } from "@/lib/invitations/rules";
+import { BR_UFS, PROFESSIONAL_SPECIALTIES, WIZARD_KINDS, cnpjDigits, isValidCnpj } from "@/lib/invitations/rules";
 import { createClient } from "@/lib/supabase/server";
 
 // Primeiro acesso (0091): quem aceitou convite de agência, marca, fornecedor ou profissional sem empresa cria a
@@ -101,6 +101,38 @@ export async function createProfessionalAction(input: { name: string; specialty:
     });
     if (error) return agencyFail(error);
     return done("/profissional");
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+// Herói (0103, cadastro por perfil): nasce pendente de aprovação do admin; a pessoa vira titular e já pode preparar
+// posts no Portal do Herói. A RPC aceita o passo 'hero' em aberto no lugar do papel creator.
+export async function createHeroAction(input: { name: string }): Promise<OnboardingResult> {
+  await requireUser("/primeiro-acesso");
+  const parsed = z.object({ name: name(80) }).safeParse(input);
+  if (!parsed.success) return agencyFail("name_required");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("creator_create_my_hero", { p_name: parsed.data.name });
+    if (error) return agencyFail(error);
+    revalidatePath("/profile");
+    return done("/heroi");
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+// "Agora não": encerra o passo do cadastro por perfil (o de convite não é afetado). Recomeça por Configurações.
+export async function cancelSelfOnboardingAction(input: { kind: string }): Promise<OnboardingResult> {
+  await requireUser("/primeiro-acesso");
+  const parsed = z.object({ kind: z.enum(WIZARD_KINDS) }).safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("self_onboarding_cancel", { p_kind: parsed.data.kind });
+    if (error) return agencyFail(error);
+    return done("/");
   } catch (error) {
     return agencyFail(error);
   }

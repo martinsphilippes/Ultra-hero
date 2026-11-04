@@ -126,7 +126,7 @@
       "roleNote": "Você será Adm da agência.",
       "create": "Criar agência",
       "doneTitle": "Agência criada",
-      "doneText": "Convide sua equipe, marcas e heróis pelo portal.",
+      "doneText": "Monte seu casting e atenda marcas pelo portal.",
       "go": "Ir para a agência"
     },
     "brand": {
@@ -141,7 +141,7 @@
       "roleNote": "Você será Dono da marca.",
       "create": "Criar marca",
       "doneTitle": "Marca criada",
-      "doneText": "Convide sua equipe e publique sua primeira chamada.",
+      "doneText": "Publique sua primeira chamada para as agências.",
       "go": "Ir para a marca"
     },
     "seller": {
@@ -166,6 +166,18 @@
       "doneTitle": "Perfil criado",
       "doneText": "Complete seus serviços enquanto o registro é conferido.",
       "go": "Ir para o perfil"
+    },
+    "selfTitle": "Seu cadastro",
+    "heroSubtitle": "Dê um nome ao seu herói. O admin aprova antes de ir ao ar.",
+    "notNow": "Agora não",
+    "hero": {
+      "title": "Seu herói",
+      "name": "Nome do herói",
+      "roleNote": "Seu herói fica pendente até a aprovação do admin. Enquanto isso você já pode preparar posts.",
+      "create": "Criar meu herói",
+      "doneTitle": "Herói criado",
+      "doneText": "Aguardando aprovação do admin. Você já pode preparar seus posts.",
+      "go": "Ir para o Portal do Herói"
     }
   },
   "team": {
@@ -273,5 +285,75 @@
     "days": "Validade",
     "daysOption": "{days, plural, one {# dia} other {# dias}}",
     "heroPending": "Aguardando aprovação"
+  },
+  "paused": {
+    "note": "Convites desativados no momento",
+    "hint": "Os convites já enviados continuam valendo.",
+    "adminBanner": "Convites pausados: ninguém cria convite novo; os já enviados continuam valendo. As pessoas se cadastram sozinhas como Herói, Marca ou Agência.",
+    "adminTurnOn": "Religar em Configurações",
+    "selfSignupsLink": "Ver novos cadastros"
+  },
+  "start": {
+    "metaTitle": "Novo perfil",
+    "start": "Começar",
+    "notNow": "Agora não",
+    "alreadyText": "Você já tem este perfil.",
+    "errors": {
+      "agency_member_elsewhere": "Você já faz parte de uma agência.",
+      "brand_already_owned": "Você já é Dono de uma marca.",
+      "has_hero": "Você já tem um herói.",
+      "rate_limited": "Muitas tentativas hoje. Tente de novo amanhã.",
+      "experiment_closed": "Os cadastros estão pausados no momento.",
+      "demo_account_forbidden": "Esta conta não pode criar perfis.",
+      "unknown": "Não foi possível começar. Tente de novo."
+    },
+    "hero": {
+      "title": "Quero ser Herói",
+      "text": "Crie a página do seu herói e trabalhe com marcas.",
+      "step1": "Dê um nome ao seu herói.",
+      "step2": "O admin aprova antes de ir ao ar.",
+      "step3": "Enquanto isso, prepare seus posts no Portal do Herói.",
+      "go": "Ir para o Portal do Herói"
+    },
+    "brand": {
+      "title": "Quero ser Marca",
+      "text": "Contrate heróis e faça campanhas.",
+      "step1": "Informe o nome e o site da marca.",
+      "step2": "Você vira Dono da marca.",
+      "step3": "Publique chamadas para as agências.",
+      "go": "Ir para a marca"
+    },
+    "agency": {
+      "title": "Quero ser Agência",
+      "text": "Represente heróis e gerencie negócios.",
+      "step1": "Informe o nome da agência.",
+      "step2": "Você vira Adm da agência.",
+      "step3": "Monte seu casting e atenda marcas.",
+      "go": "Ir para a agência"
+    }
+  },
+  "selfSignups": {
+    "title": "Novos cadastros",
+    "description": "Agências, marcas e heróis criados sem convite nos últimos 14 dias.",
+    "back": "Início",
+    "empty": "Nenhum cadastro novo.",
+    "unavailable": "Lista indisponível no momento.",
+    "noName": "Ainda sem nome",
+    "open": "Ver e suspender",
+    "approve": "Aprovar herói",
+    "kinds": {
+      "agency": "Agência",
+      "brand": "Marca",
+      "hero": "Herói"
+    },
+    "states": {
+      "inProgress": "Em andamento",
+      "cancelled": "Desistiu",
+      "pending": "Pendente",
+      "active": "Ativo",
+      "inactive": "Fora da loja",
+      "suspended": "Suspenso",
+      "other": "—"
+    }
   }
 }

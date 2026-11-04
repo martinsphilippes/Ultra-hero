@@ -13,6 +13,7 @@ import type { FnReturns, Tables } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 import { SELLER_PORTAL_ENABLED } from "@/lib/seller-ops/portal";
 import { getAdminSellerOrg } from "../_lib/org";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 type Params = Promise<{ id: string }>;
 type Membership = Tables<"seller_memberships"> & { email?: string | null; display_name?: string | null };
@@ -107,12 +108,14 @@ export default async function EditSellerPage({ params }: { params: Params }) {
             <p className="type-caption text-fg-muted">{t("memberships.description")}</p>
             {SELLER_PORTAL_ENABLED ? null : <p className="type-caption text-fg-muted">{t("hub.portalOff")}</p>}
           </div>
-          <Button asChild variant="secondary" size="sm">
-            <Link href={`/admin/invitations?new=1&role=seller&org=${org.id}`}>
-              <Mail className="size-4" aria-hidden="true" />
-              {t("memberships.invite")}
-            </Link>
-          </Button>
+          <InvitesGate>
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/admin/invitations?new=1&role=seller&org=${org.id}`}>
+                <Mail className="size-4" aria-hidden="true" />
+                {t("memberships.invite")}
+              </Link>
+            </Button>
+          </InvitesGate>
         </div>
         <DataTable columns={columns} rows={members} rowKey={(m) => m.id} caption={t("memberships.tableCaption")} emptyTitle={t("memberships.empty")} emptyDescription={t("memberships.emptyDescription")} />
       </section>

@@ -1,18 +1,23 @@
 "use client";
 
-import { ArrowLeft, Building2, CircleCheck } from "lucide-react";
+import { ArrowLeft, Building2, CircleCheck, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { createAgencyAction, createBrandAction, createProfessionalAction, createSellerAction, type OnboardingResult } from "@/app/primeiro-acesso/actions";
+import { cancelSelfOnboardingAction, createAgencyAction, createBrandAction, createHeroAction, createProfessionalAction, createSellerAction, type OnboardingResult } from "@/app/primeiro-acesso/actions";
 import { Button, FormField, Input, Select } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { BR_UFS, PROFESSIONAL_SPECIALTIES, REGISTRY_BY_SPECIALTY, cnpjDigits, formatCnpj, isValidCnpj, type OnboardingKind, type ProfessionalSpecialty } from "@/lib/invitations/rules";
+import { BR_UFS, PROFESSIONAL_SPECIALTIES, REGISTRY_BY_SPECIALTY, cnpjDigits, formatCnpj, isValidCnpj, type ProfessionalSpecialty, type WizardKind } from "@/lib/invitations/rules";
 
-type Props = { kind: OnboardingKind; agencyName?: string | null };
+type Props = {
+  kind: WizardKind;
+  agencyName?: string | null;
+  /** Passo do cadastro por perfil (0103): mostra "Agora não" (o de convite fica esperando a empresa). */
+  selfService?: boolean;
+};
 
 // Passo a passo curto do primeiro acesso (0091): 1) dados da empresa/perfil, 2) revisar e criar. Mobile first:
 // um campo por linha, botões grandes. A RPC dá o papel (Adm da agência, Dono da marca, owner da operação).
-export function OnboardingWizard({ kind, agencyName }: Props) {
+export function OnboardingWizard({ kind, agencyName, selfService = false }: Props) {
   const t = useTranslations("invites.onboarding");
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
@@ -50,6 +55,7 @@ export function OnboardingWizard({ kind, agencyName }: Props) {
       if (kind === "agency") result = await createAgencyAction({ name, cnpj, contactEmail });
       else if (kind === "brand") result = await createBrandAction({ name, cnpj, segment, siteUrl });
       else if (kind === "seller") result = await createSellerAction({ name });
+      else if (kind === "hero") result = await createHeroAction({ name });
       else result = await createProfessionalAction({ name, specialty, registryNumber, registryUf });
       if (!result.ok) {
         setError(result.error);
@@ -57,6 +63,14 @@ export function OnboardingWizard({ kind, agencyName }: Props) {
         return;
       }
       setHome(result.home);
+    });
+  }
+
+  // "Agora não" (só no cadastro por perfil): encerra o passo e volta ao app; dá para recomeçar por Configurações
+  function cancel() {
+    start(async () => {
+      const result = await cancelSelfOnboardingAction({ kind });
+      window.location.assign(result.ok ? result.home : "/");
     });
   }
 
@@ -93,7 +107,7 @@ export function OnboardingWizard({ kind, agencyName }: Props) {
     <div className="flex flex-col gap-5" data-testid={`onboarding-${kind}`}>
       <div className="flex items-center gap-3">
         <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent-text">
-          <Building2 className="size-5" />
+          {kind === "hero" ? <Sparkles className="size-5" /> : <Building2 className="size-5" />}
         </span>
         <div className="min-w-0">
           <p className="type-caption text-fg-muted">{t("stepOf", { step, total: 2 })}</p>
@@ -173,6 +187,11 @@ export function OnboardingWizard({ kind, agencyName }: Props) {
           <Button type="submit" size="lg" block data-testid="onboarding-next">
             {t("next")}
           </Button>
+          {selfService ? (
+            <Button type="button" variant="ghost" block onClick={cancel} disabled={pending} data-testid="onboarding-cancel">
+              {t("notNow")}
+            </Button>
+          ) : null}
         </form>
       ) : (
         <div className="flex flex-col gap-4">

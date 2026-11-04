@@ -11,6 +11,8 @@ import { agencyCan } from "@/lib/agency/roles";
 import { canInviteCreator, resolveTalentAccess } from "@/lib/talent/access";
 import { listHeroOptions, listManagers, listSegments, listTalentAccess, listTalentDocuments, listTalentInvites } from "@/lib/talent/queries";
 import { loadTalent } from "./_lib";
+import { InvitesGate } from "@/components/invites/InvitesGate";
+import { getInvitesEnabled } from "@/lib/invitations/flag";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,8 @@ export default async function TalentSummaryPage({ params }: Props) {
   const accessInfo = accessMap.get(talent.id);
   const access = resolveTalentAccess(accessInfo, talent);
   const hasLogin = access ? access === "login" : talent.hasLogin;
+  // 0103: convites pausados escondem o "reenviar" (o aviso fica no lugar do botão principal)
+  const invitesOn = await getInvitesEnabled();
   const canInvite = canInviteCreator({ access, canEdit, locked, heroActive: Boolean(talent.hero), hasHero: Boolean(talent.creatorId) });
   const [t, locale, managers, segments, heroes, documents, invites] = await Promise.all([
     getTranslations("agency.casting"),
@@ -127,7 +131,9 @@ export default async function TalentSummaryPage({ params }: Props) {
             {canInvite || (!talent.creatorId && !hasLogin && canEdit && !locked) ? (
               <div className="flex flex-wrap gap-2">
                 {canInvite ? (
-                  <InviteDialog target={{ kind: "talent", talentId: talent.id }} roles={[]} triggerLabel={talent.creatorId ? t("inviteCreator") : t("inviteTalent")} triggerVariant="secondary" />
+                  <InvitesGate>
+                    <InviteDialog target={{ kind: "talent", talentId: talent.id }} roles={[]} triggerLabel={talent.creatorId ? t("inviteCreator") : t("inviteTalent")} triggerVariant="secondary" />
+                  </InvitesGate>
                 ) : null}
                 {!talent.creatorId ? <HeroLinkForm talentId={talent.id} heroes={heroes} currentId={null} canEdit={canEdit} locked={locked} /> : null}
               </div>
@@ -140,7 +146,7 @@ export default async function TalentSummaryPage({ params }: Props) {
                       {i.email} · <span className="text-fg-muted">{t("inviteUntil", { date: formatDate(i.expiresAt, locale) })}</span>
                     </span>
                     <span className="flex items-center gap-1">
-                      {canInvite ? (
+                      {canInvite && invitesOn ? (
                         <InviteDialog
                           target={{ kind: "talent", talentId: talent.id }}
                           roles={[]}

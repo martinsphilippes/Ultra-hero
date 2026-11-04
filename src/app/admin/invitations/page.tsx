@@ -4,11 +4,13 @@ import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { FilterLink } from "@/components/admin-ops/FilterLink";
 import { InvitationForm } from "@/components/admin-ops/InvitationForm";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 import { PaginationNav } from "@/components/admin-ops/PaginationNav";
 import { RevokeInvitationButton } from "@/components/admin-ops/StatusActions";
 import { Badge, PageHeader } from "@/components/ui";
 import { formatDateTime } from "@/i18n/format";
 import { getLocale } from "@/i18n/server";
+import { getInvitesEnabled } from "@/lib/invitations/flag";
 import { isAdminInviteRole, type AdminInviteRole } from "@/lib/invitations/rules";
 import { createClient } from "@/lib/supabase/server";
 
@@ -50,12 +52,14 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
   const sp = await searchParams;
   const status = (STATUSES as readonly string[]).includes(sp.status ?? "") ? (sp.status as Status) : undefined;
   const page = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
-  const [t, tc, ts, tn, locale] = await Promise.all([
+  const [t, tc, ts, tn, locale, tp, invitesOn] = await Promise.all([
     getTranslations("adminOps.invitations"),
     getTranslations("adminOps.common"),
     getTranslations("adminCommon.status"),
     getTranslations("nav"),
     getLocale(),
+    getTranslations("invites.paused"),
+    getInvitesEnabled(),
   ]);
   const supabase = await createClient();
   const base = "id, email, role, status, expires_at, created_at, creator_profile_id, seller_org_id, creator_profiles(name), seller_organizations(name)";
@@ -183,8 +187,24 @@ export default async function AdminInvitationsPage({ searchParams }: { searchPar
         title={t("title")}
         description={t("description")}
         eyebrow={tn("portals.admin")}
-        actions={<InvitationForm creators={creators} creatorUsers={creatorUsers} talents={talents} sellers={sellers} initialRole={initialRole} initialCreatorId={sp.creator} initialSellerId={sp.org} defaultOpen={sp.new === "1"} />}
+        actions={
+          <InvitesGate>
+            <InvitationForm creators={creators} creatorUsers={creatorUsers} talents={talents} sellers={sellers} initialRole={initialRole} initialCreatorId={sp.creator} initialSellerId={sp.org} defaultOpen={sp.new === "1"} />
+          </InvitesGate>
+        }
       />
+      {/* 0103: convites pausados — os já emitidos seguem valendo; o admin religa em Configurações */}
+      {invitesOn ? null : (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-warning/40 bg-warning-soft px-3 py-2 type-body-sm text-fg" data-testid="invites-paused-banner">
+          {tp("adminBanner")}
+          <Link href="/admin/settings" className="font-semibold text-accent-text hover:underline">
+            {tp("adminTurnOn")}
+          </Link>
+        </p>
+      )}
+      <Link href="/admin/cadastros" className="self-start text-sm font-semibold text-accent-text hover:underline" data-testid="self-signups-link">
+        {tp("selfSignupsLink")}
+      </Link>
       <nav aria-label={t("filters.status")} className="flex flex-wrap gap-2">
         <FilterLink href="/admin/invitations" active={!status} label={tc("all")} />
         {STATUSES.map((s) => (

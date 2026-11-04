@@ -11,6 +11,7 @@ import { getUser } from "@/lib/auth/session";
 import { listTeam, listTeamInvites } from "@/lib/agency/queries";
 import { AGENCY_ROLES } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,13 @@ export default async function AgencyTeamPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t("title")} description={t("description")} actions={locked ? null : <InviteDialog target={{ kind: "team" }} roles={AGENCY_ROLES} />} />
+      <PageHeader title={t("title")} description={t("description")} actions={
+          locked ? null : (
+            <InvitesGate>
+              <InviteDialog target={{ kind: "team" }} roles={AGENCY_ROLES} />
+            </InvitesGate>
+          )
+        } />
       {locked ? <p className="rounded-xl border border-dashed border-border-strong p-3 type-body-sm text-fg-muted">{t("demoLocked")}</p> : null}
 
       <section aria-labelledby="team-levels" className="grid gap-2 sm:grid-cols-3">

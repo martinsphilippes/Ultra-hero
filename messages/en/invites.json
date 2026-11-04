@@ -126,7 +126,7 @@
       "roleNote": "You will be the agency Admin.",
       "create": "Create agency",
       "doneTitle": "Agency created",
-      "doneText": "Invite your team, brands and heroes from the portal.",
+      "doneText": "Build your roster and serve brands from the portal.",
       "go": "Go to the agency"
     },
     "brand": {
@@ -141,7 +141,7 @@
       "roleNote": "You will be the brand Owner.",
       "create": "Create brand",
       "doneTitle": "Brand created",
-      "doneText": "Invite your team and publish your first call.",
+      "doneText": "Publish your first call to agencies.",
       "go": "Go to the brand"
     },
     "seller": {
@@ -166,6 +166,18 @@
       "doneTitle": "Profile created",
       "doneText": "Fill in your services while the registration is checked.",
       "go": "Go to the profile"
+    },
+    "selfTitle": "Your sign-up",
+    "heroSubtitle": "Name your hero. The admin approves it before it goes live.",
+    "notNow": "Not now",
+    "hero": {
+      "title": "Your hero",
+      "name": "Hero name",
+      "roleNote": "Your hero stays pending until the admin approves it. Meanwhile you can already prepare posts.",
+      "create": "Create my hero",
+      "doneTitle": "Hero created",
+      "doneText": "Waiting for admin approval. You can already prepare your posts.",
+      "go": "Go to the Hero Portal"
     }
   },
   "team": {
@@ -273,5 +285,75 @@
     "days": "Valid for",
     "daysOption": "{days, plural, one {# day} other {# days}}",
     "heroPending": "Waiting for approval"
+  },
+  "paused": {
+    "note": "Invitations are turned off right now",
+    "hint": "Invitations already sent remain valid.",
+    "adminBanner": "Invitations paused: nobody creates new invitations; the ones already sent remain valid. People sign up on their own as Hero, Brand or Agency.",
+    "adminTurnOn": "Turn back on in Settings",
+    "selfSignupsLink": "See new sign-ups"
+  },
+  "start": {
+    "metaTitle": "New profile",
+    "start": "Start",
+    "notNow": "Not now",
+    "alreadyText": "You already have this profile.",
+    "errors": {
+      "agency_member_elsewhere": "You are already part of an agency.",
+      "brand_already_owned": "You already own a brand.",
+      "has_hero": "You already have a hero.",
+      "rate_limited": "Too many attempts today. Try again tomorrow.",
+      "experiment_closed": "Sign-ups are paused right now.",
+      "demo_account_forbidden": "This account cannot create profiles.",
+      "unknown": "Could not start. Please try again."
+    },
+    "hero": {
+      "title": "I want to be a Hero",
+      "text": "Create your hero page and work with brands.",
+      "step1": "Name your hero.",
+      "step2": "The admin approves it before it goes live.",
+      "step3": "Meanwhile, prepare your posts in the Hero Portal.",
+      "go": "Go to the Hero Portal"
+    },
+    "brand": {
+      "title": "I want to be a Brand",
+      "text": "Hire heroes and run campaigns.",
+      "step1": "Enter the brand name and website.",
+      "step2": "You become the brand Owner.",
+      "step3": "Publish calls to agencies.",
+      "go": "Go to the brand"
+    },
+    "agency": {
+      "title": "I want to be an Agency",
+      "text": "Represent heroes and manage deals.",
+      "step1": "Enter the agency name.",
+      "step2": "You become the agency Admin.",
+      "step3": "Build your roster and serve brands.",
+      "go": "Go to the agency"
+    }
+  },
+  "selfSignups": {
+    "title": "New sign-ups",
+    "description": "Agencies, brands and heroes created without an invitation in the last 14 days.",
+    "back": "Home",
+    "empty": "No new sign-ups.",
+    "unavailable": "List unavailable right now.",
+    "noName": "No name yet",
+    "open": "View and suspend",
+    "approve": "Approve hero",
+    "kinds": {
+      "agency": "Agency",
+      "brand": "Brand",
+      "hero": "Hero"
+    },
+    "states": {
+      "inProgress": "In progress",
+      "cancelled": "Gave up",
+      "pending": "Pending",
+      "active": "Active",
+      "inactive": "Out of the store",
+      "suspended": "Suspended",
+      "other": "—"
+    }
   }
 }

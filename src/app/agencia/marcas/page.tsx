@@ -8,6 +8,7 @@ import { Badge, Button, EmptyState, PageHeader } from "@/components/ui";
 import { listAgencyBrands } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,11 @@ export default async function AgencyBrandsPage({ searchParams }: Props) {
           canEdit ? (
             <div className="flex flex-wrap gap-2">
               {/* 0091: marca nova (passo a passo do dono) ou pedido de vínculo para o dono de marca existente */}
-              {ctx.agency.isDemo ? null : <AgencyInviteDialog mode="brand" />}
+              {ctx.agency.isDemo ? null : (
+                <InvitesGate>
+                  <AgencyInviteDialog mode="brand" />
+                </InvitesGate>
+              )}
               <Button asChild size="sm" leadingIcon={<Plus />}>
                 <Link href="/agencia/marcas/nova">{t("new")}</Link>
               </Button>

@@ -24,6 +24,8 @@ const SPECS: Spec[] = [
   { key: "commerce.enabled", kind: "switch", kill: true },
   { key: "ai.enabled", kind: "switch", kill: true },
   { key: "experiment.open", kind: "switch", kill: true },
+  // 0103: "Convites ativos" (desligado = criar convite pausado; os já emitidos seguem valendo)
+  { key: "invites.enabled", kind: "switch", kill: true },
   { key: "avatars.uploads_enabled", kind: "switch", kill: true },
   { key: "ai.provider", kind: "select", options: ["deterministic", "openai", "gemini"] },
   { key: "ai.rate_limit_per_hour", kind: "number", min: 0, max: 1000 },

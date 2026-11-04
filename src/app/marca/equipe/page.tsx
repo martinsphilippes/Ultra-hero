@@ -11,6 +11,7 @@ import { formatDate } from "@/i18n/format";
 import { getUser } from "@/lib/auth/session";
 import { listBrandInvites, listBrandMembers } from "@/lib/agency/queries";
 import { requireBrand } from "@/lib/brand-portal/server";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,13 @@ export default async function BrandTeamPage() {
       <PageHeader
         title={t("title")}
         description={isOwner ? t("descriptionOwner") : t("descriptionStaff")}
-        actions={isOwner ? <InviteDialog target={{ kind: "brandStaff" }} roles={["staff"]} /> : null}
+        actions={
+          isOwner ? (
+            <InvitesGate>
+              <InviteDialog target={{ kind: "brandStaff" }} roles={["staff"]} />
+            </InvitesGate>
+          ) : null
+        }
       />
       <Section title={t("membersTitle", { count: members.length })}>
         <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="brand-team">

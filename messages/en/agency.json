@@ -360,7 +360,11 @@
     "max_heroes": "The value is per hero and has a maximum number of heroes. Remove someone from the cast first.",
     "max_heroes_required": "For a per-hero value, enter the maximum number of heroes (1 to 50).",
     "value_per_hero_required": "For a per-hero value, enter what each hero receives (more than zero).",
-    "fee_over_budget": "The sum of the fees is over the fee budget (total value without the agency commission)."
+    "fee_over_budget": "The sum of the fees is over the fee budget (total value without the agency commission).",
+    "invites_disabled": "Invitations are turned off right now.",
+    "brand_already_owned": "You already own a brand.",
+    "rate_limited": "Too many attempts. Try again later.",
+    "experiment_closed": "Sign-ups are paused right now."
   },
   "casting": {
     "title": "Roster",

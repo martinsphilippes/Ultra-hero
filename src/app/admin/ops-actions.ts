@@ -634,6 +634,8 @@ const SETTING_SCHEMAS = {
   "ai.provider": z.enum(["deterministic", "openai", "gemini"]),
   "ai.rate_limit_per_hour": z.coerce.number().int().min(0).max(1000),
   "experiment.open": z.boolean(),
+  // convites ativos (0103)
+  "invites.enabled": z.boolean(),
   "transport.minutes_per_step": z.coerce.number().int().min(0).max(10080),
   "video.provider": z.enum(["embed", "cloudflare_stream", "mux"]),
   bootstrap_admin_emails: z.array(z.email().max(254)).max(20),
@@ -646,7 +648,7 @@ const SETTING_SCHEMAS = {
 } as const;
 
 export type EditableSettingKey = keyof typeof SETTING_SCHEMAS;
-const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open", "recipes.uploads_enabled", "avatars.uploads_enabled"];
+const KILL_SWITCHES: EditableSettingKey[] = ["commerce.enabled", "ai.enabled", "experiment.open", "invites.enabled", "recipes.uploads_enabled", "avatars.uploads_enabled"];
 
 export async function setSetting(input: { key: EditableSettingKey; value: unknown }, justification: string): Promise<Result> {
   await admin();

@@ -13,6 +13,7 @@ import { HeroCategoriesField } from "@/components/admin-content/HeroCategoriesFi
 import { LibraryTabsEditor } from "@/components/admin-content/LibraryTabsEditor";
 import { HeroTeamPanel } from "@/components/invites/HeroTeamPanel";
 import { Badge, Button, PageHeader } from "@/components/ui";
+import { getInvitesEnabled } from "@/lib/invitations/flag";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { isStoredCoverUrl } from "@/lib/hero-cover/paths";
 import { localizedLabel } from "@/lib/catalog/queries";
@@ -208,7 +209,7 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
         <h2 id="hero-team-title" className="type-h2 text-fg">
           {tteam("title")}
         </h2>
-        {teamRes.error ? <p className="type-body-sm text-fg-muted">{tteam("unavailable")}</p> : <HeroTeamPanel creatorId={creator.id} heroName={creator.name} team={parseHeroTeam(teamRes.data)} />}
+        {teamRes.error ? <p className="type-body-sm text-fg-muted">{tteam("unavailable")}</p> : <HeroTeamPanel creatorId={creator.id} heroName={creator.name} team={parseHeroTeam(teamRes.data)} invitesEnabled={await getInvitesEnabled()} />}
       </section>
 
       {/* Categorias do herói (até 2): definem os chips da aba Hero e, depois, os atalhos da página. */}

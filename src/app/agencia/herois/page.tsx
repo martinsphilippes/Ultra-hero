@@ -6,6 +6,7 @@ import { AgencyInviteDialog, type HeroInviteTalent } from "@/components/invites/
 import { Avatar, EmptyState, PageHeader, Section } from "@/components/ui";
 import { requireAgency } from "@/lib/agency/server";
 import { createClient } from "@/lib/supabase/server";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,13 @@ export default async function AgencyHeroesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={t("title")} description={t("description")} actions={locked ? null : <AgencyInviteDialog mode="hero" talents={inviteTalents} />} />
+      <PageHeader title={t("title")} description={t("description")} actions={
+          locked ? null : (
+            <InvitesGate>
+              <AgencyInviteDialog mode="hero" talents={inviteTalents} />
+            </InvitesGate>
+          )
+        } />
       <Section title={t("listTitle", { count: heroes.length })}>
         {heroes.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface">

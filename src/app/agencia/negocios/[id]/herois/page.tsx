@@ -5,6 +5,7 @@ import {
   type Candidate,
 } from "@/components/deals/ShortlistPanel";
 import { SponsorshipButton } from "@/components/finance/SponsorshipButton";
+import { getInvitesEnabled } from "@/lib/invitations/flag";
 import { getDealValueTerms, getRequest, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import type { Reason } from "@/lib/deals/vocab";
 import { groupByDealTalent } from "@/lib/offer/counteroffer";
@@ -156,7 +157,8 @@ export default async function DealTalentsPage({ params }: Props) {
         counteroffers={groupByDealTalent(offer?.counteroffers ?? [])}
         canDecideFee={offer?.canDecideFee ?? false}
         canDecideDate={offer?.canDecideDate ?? false}
-        canInvite={isManager && !ctx.agency.isDemo}
+        // 0103: com os convites pausados o botão de convidar o herói some da lista
+        canInvite={isManager && !ctx.agency.isDemo && (await getInvitesEnabled())}
         valueTerms={valueTerms}
         canCast={isManager}
       />

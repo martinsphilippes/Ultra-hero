@@ -72,7 +72,8 @@ test.describe("admin opera os fornecedores", () => {
     await expect(page).toHaveURL(new RegExp(`${base}/organization$`));
     await expect(page.getByRole("heading", { name: "Editar organização" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Membros" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Convidar membro" })).toBeVisible();
+    // 0103: com os convites pausados o aviso curto fica no lugar do link
+    await expect(page.getByRole("link", { name: "Convidar membro" }).or(page.getByTestId("invites-disabled"))).toBeVisible();
     expect(await axeSerious(page, "main")).toEqual([]);
   });
 

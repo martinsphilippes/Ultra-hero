@@ -15,6 +15,7 @@ import { professionalServices } from "@/lib/professionals/queries";
 import { durationParts, isUuid, responseStats } from "@/lib/professionals/rules";
 import { cn } from "@/lib/utils";
 import { saveProfessionalAdmin, saveProfessionalServiceAdmin } from "../actions";
+import { InvitesGate } from "@/components/invites/InvitesGate";
 
 export const dynamic = "force-dynamic";
 
@@ -133,7 +134,9 @@ async function Overview({ pro: p }: { pro: AdminPro }) {
         <KpiCard label={tp("kpi.median")} value={median} />
       </div>
       <StatusForm id={p.id} status={p.status} verified={p.registryVerified} note={p.verificationNote} />
-      <InviteForm professionalId={p.id} linked={p.userId !== null} />
+      <InvitesGate>
+        <InviteForm professionalId={p.id} linked={p.userId !== null} />
+      </InvitesGate>
     </div>
   );
 }

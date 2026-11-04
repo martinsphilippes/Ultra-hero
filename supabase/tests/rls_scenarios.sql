@@ -5,6 +5,9 @@
 -- =============================================================================
 \set ON_ERROR_STOP on
 begin;
+-- 0103: os convites nascem pausados (invites.enabled = false); os cenários anteriores criam convites, então a suíte
+-- liga o interruptor aqui (o S109 desliga, testa e religa). Tudo volta no rollback do fim.
+update public.app_settings set value = 'true'::jsonb where key = 'invites.enabled';
 
 create schema if not exists tests;
 grant usage on schema tests to anon, authenticated;
@@ -15673,6 +15676,271 @@ delete from public.agencies where id::text like 'a1070000-%';
 delete from public.role_assignments where user_id::text like 'a1070000-%';
 delete from auth.users where id::text like 'a1070000-%';
 drop table t_s107;
+
+-- ================================================================ S108 · Temas sazonais criados e ilustrações em /temas/ (0102)
+-- A validação de imagem passa a aceitar, além do bucket theme-assets, só caminhos internos /temas/<pasta>/<arquivo>.
+-- (png|jpg|webp) (sem "..", barra dupla, outro domínio ou SVG). Os 8 temas criados entram publicados, com as janelas
+-- combinadas (iguais com ou sem o evento do Calendário Groscove), áreas completas e 4 decorativos locais; reaplicar a
+-- migração não duplica nem sobrescreve ajuste do admin. Visitante só lê o que está em vigor; o admin pré-visualiza todos.
+\ir ../migrations/0102_temas_sazonais_criados.sql
+select tests.su();
+insert into auth.users (id, email) values ('a1080000-0000-4000-8000-000000000001','s108-admin@test.local'),('a1080000-0000-4000-8000-000000000002','s108-gestor@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('a1080000-0000-4000-8000-000000000001','admin','global');
+create temp table t_s108 (k text primary key, v text);
+grant all on t_s108 to anon, authenticated, service_role;
+update public.seasonal_theme_settings set enabled = true where id;
+
+select tests.ok('S108 estrutura: validação de imagem segue imutável, search_path fixo, fora do anon; S14 segue 18',
+  (select p.provolatile = 'i' and p.proconfig is not null and not p.prosecdef from pg_proc p where p.oid = 'public.seasonal_theme_asset_ok(text)'::regprocedure)
+  and not has_function_privilege('anon', 'public.seasonal_theme_asset_ok(text)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.ok('S108 imagem: bucket theme-assets e /temas/<pasta>/<arquivo>.(png|jpg|webp) aceitos; caminho com "..", SVG, barra dupla, subpasta, maiúscula, query, outro domínio recusados',
+  public.seasonal_theme_asset_ok('/temas/natal/arvore.webp') and public.seasonal_theme_asset_ok('/temas/copa-feminina/bola.png') and public.seasonal_theme_asset_ok('/temas/dia-dos-pais/oculos.jpg')
+  and public.seasonal_theme_asset_ok('https://abc.supabase.co/storage/v1/object/public/theme-assets/123e4567-e89b-42d3-a456-426614174000.webp')
+  and not public.seasonal_theme_asset_ok('/temas/../segredo.webp') and not public.seasonal_theme_asset_ok('/temas/natal/../../x.webp')
+  and not public.seasonal_theme_asset_ok('/temas/natal/arvore.svg') and not public.seasonal_theme_asset_ok('/temas//arvore.webp')
+  and not public.seasonal_theme_asset_ok('//temas/natal/arvore.webp') and not public.seasonal_theme_asset_ok('/temas/natal/sub/arvore.webp')
+  and not public.seasonal_theme_asset_ok('/temas/Natal/arvore.webp') and not public.seasonal_theme_asset_ok('/temas/natal/arvore.webp?x=1')
+  and not public.seasonal_theme_asset_ok('/temas/natal/arvore.webp' || chr(10)) and not public.seasonal_theme_asset_ok('https://evil.com/temas/natal/arvore.webp')
+  and not public.seasonal_theme_asset_ok('/outra/natal/arvore.webp') and not public.seasonal_theme_asset_ok('/temas/natal/-x.webp'));
+
+select tests.ok('S108 temas criados: 8 publicados, fuso de São Paulo, 3 áreas, 4 decorativos locais (um por canto), faixa sem link, janelas combinadas',
+  (select count(*) from public.seasonal_themes where id::text like 'b0102000-%' and status = 'published' and published_at is not null and timezone = 'America/Sao_Paulo'
+     and areas @> array['app','portals','institutional']::text[] and jsonb_array_length(decorations) = 4
+     and (select count(distinct d ->> 'position') from jsonb_array_elements(decorations) d) = 4
+     and not exists (select 1 from jsonb_array_elements(decorations) d where (d ->> 'url') !~ '^/temas/')
+     and banner ? 'text' and not banner ? 'href' and not event_cancelled) = 8
+  and (select bool_and(window_start = (x.s::timestamp at time zone 'America/Sao_Paulo') and window_end = (x.e::timestamp at time zone 'America/Sao_Paulo') and priority = x.p)
+       from (values ('b0102000-0000-4000-8000-000000000001', '2026-12-15', '2026-12-26', 300), ('b0102000-0000-4000-8000-000000000002', '2026-12-26', '2027-01-02', 400),
+                    ('b0102000-0000-4000-8000-000000000003', '2026-11-20', '2026-11-28', 100), ('b0102000-0000-4000-8000-000000000004', '2027-02-01', '2027-02-10', 500),
+                    ('b0102000-0000-4000-8000-000000000005', '2027-06-17', '2027-07-26', 800), ('b0102000-0000-4000-8000-000000000006', '2027-01-11', '2027-04-21', 150),
+                    ('b0102000-0000-4000-8000-000000000007', '2027-05-02', '2027-05-10', 200), ('b0102000-0000-4000-8000-000000000008', '2027-08-01', '2027-08-09', 200)) x(id, s, e, p)
+       join public.seasonal_themes t on t.id = x.id::uuid));
+
+-- reaplicar: não duplica e não desfaz ajuste do admin
+update public.seasonal_themes set priority = 301 where id = 'b0102000-0000-4000-8000-000000000001';
+\ir ../migrations/0102_temas_sazonais_criados.sql
+select tests.su();
+select tests.ok('S108 reaplicar a 0102 não duplica nem sobrescreve o ajuste do admin',
+  (select count(*) from public.seasonal_themes where id::text like 'b0102000-%') = 8
+  and (select priority from public.seasonal_themes where id = 'b0102000-0000-4000-8000-000000000001') = 301);
+update public.seasonal_themes set priority = 300 where id = 'b0102000-0000-4000-8000-000000000001';
+insert into t_s108 select 'active_now', count(*)::text from public.seasonal_themes where id::text like 'b0102000-%' and window_start <= now() + interval '10 minutes' and window_end > now();
+
+-- visitante: só o que está em vigor agora (fora da data, nada aparece)
+select tests.anon();
+select tests.ok('S108 visitante lê só os temas criados em vigor agora (colunas de apresentação)',
+  (select count(*) from public.seasonal_themes where id::text like 'b0102000-%') = (select v::int from t_s108 where k = 'active_now'));
+select tests.login('a1080000-0000-4000-8000-000000000002','s108-gestor@test.local');
+select tests.expect_error('S108 quem não é admin não pré-visualiza tema fora da data', $q$select public.seasonal_themes_admin('b0102000-0000-4000-8000-000000000001')$q$, 'forbidden');
+
+-- admin: pré-visualiza qualquer tema criado (fora da data) e salva imagem local; caminho inválido é recusado
+select tests.login('a1080000-0000-4000-8000-000000000001','s108-admin@test.local');
+select tests.ok('S108 admin lê cada tema criado pelo painel (prévia "Ver no app" fora da data)',
+  (select count(*) from (values (1),(2),(3),(4),(5),(6),(7),(8)) n(i)
+    where public.seasonal_themes_admin(('b0102000-0000-4000-8000-00000000000' || n.i)::uuid) #>> '{themes,0,decorations,0,url}' like '/temas/%') = 8);
+insert into t_s108 values ('live', public.seasonal_theme_save(null, jsonb_build_object('name','Local S108','starts_at', now() - interval '1 hour','ends_at', now() + interval '1 day',
+  'priority', 999, 'areas', jsonb_build_array('app'),
+  'background', '{"type":"image","url":"/temas/natal/padrao-flocos.webp","fit":"repeat","intensity":20}'::jsonb,
+  'decorations', '[{"url":"/temas/natal/arvore.webp","position":"bottom-left","size":"lg"}]'::jsonb))::text);
+select public.seasonal_theme_set_status((select v::uuid from t_s108 where k = 'live'), 'published');
+select tests.expect_error('S108 decorativo com ".." é recusado', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"decorations":[{"url":"/temas/../x.webp","position":"top-left","size":"sm"}]}')$q$, 'invalid_input');
+select tests.expect_error('S108 fundo SVG em /temas/ é recusado', $q$select public.seasonal_theme_save(null, '{"name":"x","starts_at":"2026-12-01T00:00:00Z","ends_at":"2026-12-02T00:00:00Z","areas":["app"],"background":{"type":"image","url":"/temas/natal/x.svg","fit":"cover","intensity":20}}')$q$, 'invalid_input');
+select tests.anon();
+select tests.ok('S108 visitante recebe o tema com imagens locais em vigor',
+  (select decorations #>> '{0,url}' = '/temas/natal/arvore.webp' and background ->> 'url' = '/temas/natal/padrao-flocos.webp'
+   from public.seasonal_themes where id = (select v::uuid from t_s108 where k = 'live')));
+
+select tests.su();
+delete from public.seasonal_themes where id = (select v::uuid from t_s108 where k = 'live');
+delete from public.role_assignments where user_id::text like 'a1080000-%';
+delete from auth.users where id::text like 'a1080000-%';
+drop table t_s108;
+
+-- ================================================================ S109 · Cadastro por perfil sem convite e convites pausados (0103)
+-- Herói, Marca e Agência por autosserviço (account_onboardings source 'self'), uma agência/uma marca por conta, limite
+-- de inícios, cadastro fechado, anon nada; interruptor invites.enabled: com ele desligado TODA RPC que cria convite recusa
+-- ('invites_disabled', gatilho no banco), o convite já emitido continua sendo aceito; religar volta a permitir.
+\ir ../migrations/0103_cadastro_por_perfil_convites_pausados.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1090000-0000-4000-8000-000000000001', 's109-admin@test.local'),
+  ('a1090000-0000-4000-8000-000000000002', 's109-agencia@test.local'),
+  ('a1090000-0000-4000-8000-000000000003', 's109-marca@test.local'),
+  ('a1090000-0000-4000-8000-000000000004', 's109-heroi@test.local'),
+  ('a1090000-0000-4000-8000-000000000005', 's109-convidado@test.local'),
+  ('a1090000-0000-4000-8000-000000000006', 's109-fora@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('a1090000-0000-4000-8000-000000000001', 'admin', 'global');
+create temp table t_s109 (k text primary key, v text);
+grant all on t_s109 to anon, authenticated, service_role;
+
+select tests.ok('S109 estrutura: RPCs novas sem sobrecarga, definer com search_path fixo, fora do visitante; internas fora do authenticated; S14 segue 18',
+  (select count(*) from pg_proc where pronamespace = 'public'::regnamespace and proname in ('self_onboarding_start', 'self_onboarding_cancel',
+     'admin_self_signups', 'invites_enabled', 'invitations_flag_guard', 'onboarding_take', 'creator_create_my_hero')) = 7
+  and (select bool_and(prosecdef and proconfig is not null) from pg_proc where pronamespace = 'public'::regnamespace and proname in
+     ('self_onboarding_start', 'self_onboarding_cancel', 'admin_self_signups', 'invites_enabled', 'invitations_flag_guard'))
+  and not has_function_privilege('anon', 'public.self_onboarding_start(text)', 'execute')
+  and not has_function_privilege('anon', 'public.self_onboarding_cancel(text)', 'execute')
+  and not has_function_privilege('anon', 'public.admin_self_signups(int)', 'execute')
+  and not has_function_privilege('anon', 'public.invites_enabled()', 'execute')
+  and has_function_privilege('authenticated', 'public.self_onboarding_start(text)', 'execute')
+  and has_function_privilege('authenticated', 'public.invites_enabled()', 'execute')
+  and not has_function_privilege('authenticated', 'public.invitations_flag_guard()', 'execute')
+  and not has_function_privilege('authenticated', 'public.onboarding_take(text)', 'execute')
+  and exists (select 1 from pg_trigger where tgname = 'invitations_flag_guard' and tgrelid = 'public.invitations'::regclass and not tgisinternal)
+  and not has_table_privilege('authenticated', 'public.account_onboardings', 'insert')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+select tests.ok('S109 interruptor invites.enabled existe em app_settings (a migração cria desligado; a suíte liga no topo)',
+  (select value from public.app_settings where key = 'invites.enabled') is not null);
+
+-- convite emitido ANTES de pausar (flag ligada no topo da suíte)
+select tests.login('a1090000-0000-4000-8000-000000000001', 's109-admin@test.local');
+insert into t_s109 values ('old', public.admin_invite('s109-convidado@test.local', 'consumer', 7, '{}'::jsonb)::text);
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'invites.enabled';
+
+-- visitante: nada
+select tests.anon();
+select tests.expect_error('S109 visitante não começa cadastro de perfil', $q$select public.self_onboarding_start('agency')$q$, '42501');
+select tests.expect_error('S109 visitante não lê o interruptor', $q$select public.invites_enabled()$q$, '42501');
+select tests.expect_error('S109 visitante não lista novos cadastros', $q$select public.admin_self_signups(14)$q$, '42501');
+select tests.expect_error('S109 visitante não lê passos', $q$select count(*) from public.account_onboardings$q$, '42501');
+
+-- Agência: começa, retoma, cria (vira Adm) e não cria a segunda
+select tests.login('a1090000-0000-4000-8000-000000000002', 's109-agencia@test.local');
+select tests.ok('S109 interruptor visível para quem está logado (desligado)', public.invites_enabled() = false);
+select tests.expect_error('S109 tipo fora da lista recusa', $q$select public.self_onboarding_start('seller')$q$, 'invalid_input');
+insert into t_s109 values ('st1', public.self_onboarding_start('agency')::text);
+insert into t_s109 values ('st2', public.self_onboarding_start('agency')::text);
+select tests.ok('S109 agência: começa e retoma o mesmo passo (escolha guardada)',
+  (select v::jsonb ->> 'resumed' from t_s109 where k = 'st1') = 'false' and (select v::jsonb ->> 'resumed' from t_s109 where k = 'st2') = 'true'
+  and (select v::jsonb ->> 'id' from t_s109 where k = 'st1') = (select v::jsonb ->> 'id' from t_s109 where k = 'st2')
+  and jsonb_array_length(public.onboarding_pending()) = 1 and public.onboarding_pending() -> 0 ->> 'kind' = 'agency');
+insert into t_s109 values ('agency', public.onboarding_create_agency('Agência S109', null, null)::text);
+select tests.ok('S109 agência criada: a pessoa é Adm, papel agency, passo fechado',
+  exists (select 1 from public.agency_members where agency_id = (select v::uuid from t_s109 where k = 'agency')
+          and user_id = 'a1090000-0000-4000-8000-000000000002' and role = 'admin' and revoked_at is null)
+  and exists (select 1 from public.role_assignments where user_id = 'a1090000-0000-4000-8000-000000000002' and role = 'agency' and revoked_at is null)
+  and jsonb_array_length(public.onboarding_pending()) = 0);
+select tests.expect_error('S109 não cria segunda agência', $q$select public.self_onboarding_start('agency')$q$, 'agency_member_elsewhere');
+
+-- Marca: Dono de marca autogerida, fora da loja até o admin ativar; não cria a segunda
+select tests.login('a1090000-0000-4000-8000-000000000003', 's109-marca@test.local');
+select public.self_onboarding_start('brand');
+insert into t_s109 values ('brand', public.onboarding_create_brand('Marca S109', null, null, 'https://marca-s109.example.com')::text);
+select tests.ok('S109 marca criada: Dono, self_managed, inactive, papel brand',
+  exists (select 1 from public.brand_members where brand_id = (select v::uuid from t_s109 where k = 'brand')
+          and user_id = 'a1090000-0000-4000-8000-000000000003' and role = 'owner')
+  and exists (select 1 from public.role_assignments where user_id = 'a1090000-0000-4000-8000-000000000003' and role = 'brand' and revoked_at is null));
+select tests.su();
+select tests.ok('S109 marca nasce autogerida e inativa', (select self_managed and status = 'inactive' from public.brands where id = (select v::uuid from t_s109 where k = 'brand')));
+select tests.login('a1090000-0000-4000-8000-000000000003', 's109-marca@test.local');
+select tests.expect_error('S109 não cria segunda marca', $q$select public.self_onboarding_start('brand')$q$, 'brand_already_owned');
+
+-- Herói: sem papel creator só cria com o passo 'hero' em aberto; nasce pendente e a pessoa é titular
+select tests.login('a1090000-0000-4000-8000-000000000004', 's109-heroi@test.local');
+select tests.expect_error('S109 sem passo nem papel não cria herói', $q$select public.creator_create_my_hero('Intruso S109')$q$, 'creator_role_required');
+select public.self_onboarding_start('hero');
+insert into t_s109 values ('hero', public.creator_create_my_hero('Herói S109')::text);
+select tests.ok('S109 herói criado: pendente, titular, papel creator, passo fechado',
+  (select status::text = 'pending' and user_id = 'a1090000-0000-4000-8000-000000000004' from public.creator_profiles where id = (select v::uuid from t_s109 where k = 'hero'))
+  and (public.my_hero_team() ->> 'role') = 'owner'
+  and exists (select 1 from public.role_assignments where user_id = 'a1090000-0000-4000-8000-000000000004' and role = 'creator' and revoked_at is null)
+  and jsonb_array_length(public.onboarding_pending()) = 0);
+select tests.expect_error('S109 não cria segundo herói', $q$select public.self_onboarding_start('hero')$q$, 'has_hero');
+
+-- "Agora não" e limite de inícios (5 em 24h)
+select tests.login('a1090000-0000-4000-8000-000000000006', 's109-fora@test.local');
+select tests.ok('S109 de fora não vê passos nem cadastros alheios', not exists (select 1 from public.account_onboardings));
+select tests.expect_error('S109 de fora não lista novos cadastros', $q$select public.admin_self_signups(14)$q$, 'forbidden');
+select public.self_onboarding_start('brand');
+insert into t_s109 values ('c1', public.self_onboarding_cancel('brand')::text);
+insert into t_s109 values ('c2', public.self_onboarding_cancel('brand')::text);
+select tests.ok('S109 Agora não: encerra o passo e some do pendente', (select v from t_s109 where k = 'c1') = 'true' and (select v from t_s109 where k = 'c2') = 'false'
+  and jsonb_array_length(public.onboarding_pending()) = 0);
+select public.self_onboarding_start('brand'); select public.self_onboarding_cancel('brand');
+select public.self_onboarding_start('brand'); select public.self_onboarding_cancel('brand');
+select public.self_onboarding_start('brand'); select public.self_onboarding_cancel('brand');
+select public.self_onboarding_start('agency'); select public.self_onboarding_cancel('agency');
+select tests.expect_error('S109 limite de inícios por conta', $q$select public.self_onboarding_start('hero')$q$, 'rate_limited');
+
+-- cadastro fechado (experiment.open = false): nada de perfil novo por autosserviço
+select tests.su();
+update public.app_settings set value = 'false'::jsonb where key = 'experiment.open';
+select tests.login('a1090000-0000-4000-8000-000000000005', 's109-convidado@test.local');
+select tests.expect_error('S109 cadastro fechado recusa perfil novo', $q$select public.self_onboarding_start('agency')$q$, 'experiment_closed');
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'experiment.open';
+
+-- fixtures para os convites da agência: talento no casting e marca atendida
+insert into public.talent_profiles (id, agency_id, display_name) values ('a1090000-0000-4000-8000-000000000041', (select v::uuid from t_s109 where k = 'agency'), 'Talento S109');
+insert into public.brands (id, slug, name, site_url, status) values ('a1090000-0000-4000-8000-000000000031', 's109-marca-atendida', 'Atendida S109', 'https://atendida-s109.example.com', 'active');
+insert into public.agency_brands (agency_id, brand_id, status) values ((select v::uuid from t_s109 where k = 'agency'), 'a1090000-0000-4000-8000-000000000031', 'active');
+
+-- convites pausados: cada RPC de criar convite recusa no banco
+select tests.login('a1090000-0000-4000-8000-000000000001', 's109-admin@test.local');
+select tests.expect_error('S109 pausado: admin_invite', $q$select public.admin_invite('n1.s109@test.local', 'agency', 7, '{}'::jsonb)$q$, 'invites_disabled');
+select tests.expect_error('S109 pausado: admin_invite herói novo (nada fica criado)', $q$select public.admin_invite('n2.s109@test.local', 'hero', 7, '{"hero_mode":"new","hero_name":"Pausado S109"}'::jsonb)$q$, 'invites_disabled');
+select tests.expect_error('S109 pausado: admin_create_invitation', format('select * from public.admin_create_invitation(%L, %L, null, %L, 7)', 'n3.s109@test.local', 'creator', (select v from t_s109 where k = 'hero')), 'invites_disabled');
+select tests.expect_error('S109 pausado: admin_invite_professional', format('select * from public.admin_invite_professional(%L, %L, 7)', 'n4.s109@test.local',
+  (select id from public.professionals where user_id is null order by id limit 1)), 'invites_disabled');
+select tests.login('a1090000-0000-4000-8000-000000000002', 's109-agencia@test.local');
+select tests.expect_error('S109 pausado: agência convida equipe', format('select public.agency_invite_member(%L, %L, %L, 7)', (select v from t_s109 where k = 'agency'), 'n5.s109@test.local', 'staff'), 'invites_disabled');
+select tests.expect_error('S109 pausado: agência convida marca', format('select public.agency_invite_brand(%L, %L, 7)', (select v from t_s109 where k = 'agency'), 'n6.s109@test.local'), 'invites_disabled');
+select tests.expect_error('S109 pausado: agência convida equipe da marca', format('select public.agency_invite_brand_member(%L, %L, %L, %L, 7)',
+  (select v from t_s109 where k = 'agency'), 'a1090000-0000-4000-8000-000000000031', 'n7.s109@test.local', 'staff'), 'invites_disabled');
+select tests.expect_error('S109 pausado: agência convida herói', $q$select public.agency_invite_hero('a1090000-0000-4000-8000-000000000041', 'Herói Pausado S109', 'n8.s109@test.local', 7)$q$, 'invites_disabled');
+select tests.expect_error('S109 pausado: agência convida talento', $q$select public.agency_invite_talent('a1090000-0000-4000-8000-000000000041', 'n9.s109@test.local', 7)$q$, 'invites_disabled');
+select tests.login('a1090000-0000-4000-8000-000000000003', 's109-marca@test.local');
+select tests.expect_error('S109 pausado: Dono da marca convida equipe', format('select public.brand_invite_member(%L, %L, 7)', (select v from t_s109 where k = 'brand'), 'n10.s109@test.local'), 'invites_disabled');
+select tests.login('a1090000-0000-4000-8000-000000000004', 's109-heroi@test.local');
+select tests.expect_error('S109 pausado: titular convida equipe do herói', format('select * from public.hero_team_invite(%L, %L, 7)', (select v from t_s109 where k = 'hero'), 'n11.s109@test.local'), 'invites_disabled');
+select tests.su();
+select tests.ok('S109 pausado: nenhum convite novo nem herói pendente de sobra',
+  not exists (select 1 from public.invitations where email::text like 'n%.s109@test.local')
+  and not exists (select 1 from public.creator_profiles where name in ('Pausado S109', 'Herói Pausado S109')));
+
+-- convite já emitido continua valendo
+select tests.login('a1090000-0000-4000-8000-000000000005', 's109-convidado@test.local');
+insert into t_s109 values ('oldacc', public.accept_invitation((select v::jsonb -> 'invitations' -> 0 ->> 'token' from t_s109 where k = 'old'))::text);
+select tests.su();
+select tests.ok('S109 convite emitido antes da pausa é aceito', (select status::text from public.invitations where id = (select (v::jsonb -> 'invitations' -> 0 ->> 'id')::uuid from t_s109 where k = 'old')) = 'accepted');
+
+-- admin: lista de novos cadastros (agência, marca e herói, com nome e estado)
+select tests.login('a1090000-0000-4000-8000-000000000001', 's109-admin@test.local');
+select tests.ok('S109 admin vê os novos cadastros self-service com nome e estado',
+  (select count(*) from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'email' like 's109-%' and x ->> 'completed_at' is not null and not (x ->> 'cancelled')::boolean) = 3
+  and exists (select 1 from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'kind' = 'hero' and x ->> 'name' = 'Herói S109' and x ->> 'status' = 'pending')
+  and exists (select 1 from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'kind' = 'agency' and x ->> 'name' = 'Agência S109' and x ->> 'status' = 'active')
+  and (select count(*) from jsonb_array_elements(public.admin_self_signups(7)) x where x ->> 'email' = 's109-fora@test.local' and (x ->> 'cancelled')::boolean) = 5);
+select tests.ok('S109 admin pode abrir outra marca (sem o limite de uma)', (public.self_onboarding_start('brand') ->> 'resumed') = 'false');
+
+-- religar volta a permitir
+select tests.su();
+update public.app_settings set value = 'true'::jsonb where key = 'invites.enabled';
+select tests.login('a1090000-0000-4000-8000-000000000002', 's109-agencia@test.local');
+select tests.ok('S109 religado: agência volta a convidar', public.invites_enabled()
+  and (select count(*) from public.agency_invite_member((select v::uuid from t_s109 where k = 'agency'), 'n12.s109@test.local', 'staff', 7)) = 1);
+select tests.login('a1090000-0000-4000-8000-000000000004', 's109-heroi@test.local');
+select tests.ok('S109 religado: titular volta a convidar a equipe', (select count(*) from public.hero_team_invite((select v::uuid from t_s109 where k = 'hero'), 'n13.s109@test.local', 7)) = 1);
+
+-- limpeza (a flag fica ligada, como no topo da suíte)
+select tests.su();
+delete from public.invitations where email::text like '%s109%';
+delete from public.role_assignments where user_id::text like 'a1090000-%';
+delete from public.account_onboardings where user_id::text like 'a1090000-%';
+delete from public.creator_team_members where user_id::text like 'a1090000-%';
+delete from public.talent_profiles where id::text like 'a1090000-%';
+delete from public.creator_profiles where name like '%S109';
+delete from public.agency_brands where brand_id in (select id from public.brands where name like '%S109');
+delete from public.brand_members where brand_id in (select id from public.brands where name like '%S109');
+delete from public.brands where name like '%S109';
+delete from public.inbox_notifications where user_id::text like 'a1090000-%';
+delete from public.agency_members where user_id::text like 'a1090000-%';
+delete from public.agencies where name like '%S109';
+delete from auth.users where id::text like 'a1090000-%';
+drop table t_s109;
 
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;
