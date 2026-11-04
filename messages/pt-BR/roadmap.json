@@ -88,8 +88,8 @@
     "startOnHint": "Vazio = hoje. Fim de semana e feriado passam para o próximo dia útil.",
     "replace": "Trocar serviço",
     "start": "Gerar roteiro",
-    "heroClient": "Herói-cliente",
-    "heroClientHint": "O herói vê o projeto no Portal do Herói (só as etapas visíveis ao cliente).",
+    "heroClient": "Herói cliente (contrata a agência)",
+    "heroClientHint": "Use só quando o próprio herói é o cliente, ex.: assessoria artística (ele vê o projeto no Portal do Herói). Quem trabalha na campanha entra na aba Heróis.",
     "noHeroClient": "Nenhum (cliente só a marca)",
     "saveClient": "Salvar cliente",
     "unavailable": "Roteiros em atualização. Volte em instantes.",
@@ -109,20 +109,26 @@
   },
   "newDeal": {
     "client": "Cliente",
-    "clientHint": "A agência atende a marca, o herói ou os dois.",
+    "clientHint": "Quem contrata a agência: a marca, o próprio herói ou os dois.",
     "clientKinds": {
       "brand": "Marca",
-      "talent": "Herói",
+      "talent": "Herói cliente",
       "both": "Os dois"
     },
-    "hero": "Herói",
-    "heroHint": "O herói do casting que é cliente (ele vê o projeto no portal).",
+    "hero": "Herói cliente (contrata a agência)",
+    "heroHint": "Use só quando o próprio herói é o cliente, ex.: assessoria artística. Para quem vai trabalhar na campanha, use 'Heróis da campanha'.",
     "service": "Serviço",
     "serviceHint": "Escolher agora já gera o roteiro com os prazos.",
     "serviceLater": "Escolher depois",
     "serviceOption": "{name} · {days} dias úteis",
     "startOn": "Início do roteiro",
-    "startOnHint": "Vazio = hoje."
+    "startOnHint": "Vazio = hoje.",
+    "cast": "Heróis da campanha (opcional)",
+    "castHint": "Quem vai trabalhar na campanha. Entram como sugeridos na aba Heróis do negócio.",
+    "castAdd": "Adicionar herói do casting…",
+    "castChosen": "{count, plural, one {# herói da campanha} other {# heróis da campanha}}",
+    "castRemove": "Tirar {name} da campanha",
+    "castFailed": "Negócio criado; não foi possível adicionar {names} — adicione na aba Heróis."
   },
   "today": {
     "title": "Hoje no meu setor",
@@ -232,7 +238,8 @@
     "pending": "Previsto para {date}",
     "noSteps": "A agência ainda não marcou etapas visíveis.",
     "seeAll": "Ver todos",
-    "recurringTitle": "Rotina do ciclo"
+    "recurringTitle": "Rotina do ciclo",
+    "youAreClient": "Você é o cliente"
   },
   "recurrence": {
     "title": "Serviço recorrente",

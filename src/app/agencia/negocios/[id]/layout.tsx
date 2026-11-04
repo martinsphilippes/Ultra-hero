@@ -5,6 +5,7 @@ import { StageBadge } from "@/components/deals/StatusBadges";
 import { Badge, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
+import { dealClientLabel } from "@/lib/deals/client-label";
 import { loadDeal } from "./_lib";
 
 type Props = { children: ReactNode; params: Promise<{ id: string }> };
@@ -26,7 +27,13 @@ export default async function DealLayout({ children, params }: Props) {
         description={
           <span className="flex flex-wrap items-center gap-2">
             <StageBadge stage={deal.stage} outcome={deal.outcome} size="md" />
-            <span className="text-fg">{deal.clientLabel}</span>
+            {/* 04/11: herói cliente com "(cliente)"; heróis escalados (deal_talents) contados à parte */}
+            <span className="text-fg" data-testid="deal-client">{dealClientLabel(t, deal.brand.name, deal.clientTalent?.name)}</span>
+            {hasBrand ? (
+              <span className="text-fg-muted" data-testid="deal-cast-count">
+                {t("castCount", { count: deal.talentCount })}
+              </span>
+            ) : null}
             {deal.service ? (
               <Badge variant="info" size="sm">
                 {deal.service.name}

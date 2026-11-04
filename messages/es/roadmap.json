@@ -88,8 +88,8 @@
     "startOnHint": "Vacío = hoy. Fines de semana y feriados pasan al siguiente día hábil.",
     "replace": "Cambiar servicio",
     "start": "Generar plan",
-    "heroClient": "Héroe cliente",
-    "heroClientHint": "El héroe ve el proyecto en el Portal del Héroe (solo las etapas visibles al cliente).",
+    "heroClient": "Héroe cliente (contrata a la agencia)",
+    "heroClientHint": "Úsalo solo cuando el propio héroe es el cliente, ej.: representación artística (ve el proyecto en el Portal del Héroe). Quien trabaja en la campaña va en la pestaña Héroes.",
     "noHeroClient": "Ninguno (cliente solo la marca)",
     "saveClient": "Guardar cliente",
     "unavailable": "Planes en actualización. Vuelve en un momento.",
@@ -109,20 +109,26 @@
   },
   "newDeal": {
     "client": "Cliente",
-    "clientHint": "La agencia atiende a la marca, al héroe o a ambos.",
+    "clientHint": "Quién contrata a la agencia: la marca, el propio héroe o ambos.",
     "clientKinds": {
       "brand": "Marca",
-      "talent": "Héroe",
+      "talent": "Héroe cliente",
       "both": "Ambos"
     },
-    "hero": "Héroe",
-    "heroHint": "El héroe del casting que es cliente (ve el proyecto en el portal).",
+    "hero": "Héroe cliente (contrata a la agencia)",
+    "heroHint": "Úsalo solo cuando el propio héroe es el cliente, ej.: representación artística. Para quien trabajará en la campaña, usa 'Héroes de la campaña'.",
     "service": "Servicio",
     "serviceHint": "Elegir ahora ya genera el plan con los plazos.",
     "serviceLater": "Elegir después",
     "serviceOption": "{name} · {days} días hábiles",
     "startOn": "Inicio del plan",
-    "startOnHint": "Vacío = hoy."
+    "startOnHint": "Vacío = hoy.",
+    "cast": "Héroes de la campaña (opcional)",
+    "castHint": "Quién trabajará en la campaña. Entran como sugeridos en la pestaña Héroes del negocio.",
+    "castAdd": "Agregar héroe del casting…",
+    "castChosen": "{count, plural, one {# héroe de la campaña} other {# héroes de la campaña}}",
+    "castRemove": "Quitar a {name} de la campaña",
+    "castFailed": "Negocio creado; no fue posible agregar {names}: agrégalos en la pestaña Héroes."
   },
   "today": {
     "title": "Hoy en mi sector",
@@ -232,7 +238,8 @@
     "pending": "Previsto para el {date}",
     "noSteps": "La agencia aún no marcó etapas visibles.",
     "seeAll": "Ver todos",
-    "recurringTitle": "Rutina del ciclo"
+    "recurringTitle": "Rutina del ciclo",
+    "youAreClient": "Eres el cliente"
   },
   "recurrence": {
     "title": "Servicio recurrente",

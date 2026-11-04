@@ -655,7 +655,7 @@
     "emptyHint": "As propostas das marcas chegam aqui; a agência também pode abrir um negócio.",
     "ownerUnknown": "Responsável fora da equipe",
     "noOwner": "Sem responsável",
-    "talents": "{count, plural, =0 {sem heróis} one {# herói} other {# heróis}}",
+    "talents": "{count, plural, =0 {sem heróis escalados} one {# herói escalado} other {# heróis escalados}}",
     "startsOn": "Início {date}",
     "noDate": "Sem data",
     "inStage": "nesta etapa {when}",
@@ -952,7 +952,9 @@
       "noEntries": "Os lançamentos aparecem aqui depois da contratação.",
       "planRules": "As condições de pagamento já estão salvas: a marca paga o valor acordado e a comissão é o que sobra depois dos repasses. Esta conta pela taxa é só referência."
     },
-    "heroesSavedCreated": "{count, plural, one {Elenco salvo. Ficha criada no seu casting.} other {Elenco salvo. # fichas criadas no seu casting.}}"
+    "heroesSavedCreated": "{count, plural, one {Elenco salvo. Ficha criada no seu casting.} other {Elenco salvo. # fichas criadas no seu casting.}}",
+    "clientHero": "{name} (cliente)",
+    "castCount": "{count, plural, =0 {sem heróis escalados} one {# herói escalado} other {# heróis escalados}}"
   },
   "agenda": {
     "title": "Agenda",

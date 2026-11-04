@@ -655,7 +655,7 @@
     "emptyHint": "Brand proposals land here; the agency can also open a deal.",
     "ownerUnknown": "Owner outside the team",
     "noOwner": "No owner",
-    "talents": "{count, plural, =0 {no heroes} one {# hero} other {# heroes}}",
+    "talents": "{count, plural, =0 {no heroes cast} one {# hero cast} other {# heroes cast}}",
     "startsOn": "Starts {date}",
     "noDate": "No date",
     "inStage": "in this stage {when}",
@@ -952,7 +952,9 @@
       "noEntries": "Entries appear here after the contract.",
       "planRules": "Payment terms are saved: the brand pays the agreed amount and the commission is what is left after payouts. This rate-based estimate is only a reference."
     },
-    "heroesSavedCreated": "{count, plural, one {Shortlist saved. Record created on your roster.} other {Shortlist saved. # records created on your roster.}}"
+    "heroesSavedCreated": "{count, plural, one {Shortlist saved. Record created on your roster.} other {Shortlist saved. # records created on your roster.}}",
+    "clientHero": "{name} (client)",
+    "castCount": "{count, plural, =0 {no heroes cast} one {# hero cast} other {# heroes cast}}"
   },
   "agenda": {
     "title": "Calendar",

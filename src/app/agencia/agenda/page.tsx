@@ -17,6 +17,7 @@ import { monthKey, parseMonth, plusDays } from "@/lib/calendar/ics";
 import { listEvents, myFeedState, writableDealIds, type CalendarEvent } from "@/lib/calendar/queries";
 import { EVENT_KINDS, NON_FILTER_EVENT_KINDS } from "@/lib/calendar/vocab";
 import { listAgencyBrandCalls } from "@/lib/brand-call/queries";
+import { dealClientLabel } from "@/lib/deals/client-label";
 import { listDeals } from "@/lib/deals/queries";
 import { toZonedIso } from "@/lib/deals/schemas";
 import { formatDateTime } from "@/i18n/format";
@@ -59,9 +60,10 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   })();
   // 0089: chamadas da marca (gestor+) entram como evento do período; os filtros de creator/marca não se aplicam a elas
   const showCalls = isManager && !sp.creator && !sp.marca && (!sp.tipo || sp.tipo === "brand_call");
-  const [tbc, tq, locale, calls] = await Promise.all([
+  const [tbc, tq, tdeal, locale, calls] = await Promise.all([
     getTranslations("brandCall.agency"),
     getTranslations("agency.dashboard"),
+    getTranslations("agency.deal"),
     getLocale() as Promise<Locale>,
     showCalls ? listAgencyBrandCalls(ctx.agency.id) : Promise.resolve({ available: false, items: [] }),
   ]);
@@ -91,7 +93,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   const dealSet = new Set(dealIds);
   const formOptions = {
     // colaborador: só os negócios em que pode criar
-    deals: deals.items.filter((d) => dealSet.has(d.id)).map((d) => ({ id: d.id, name: d.title, brand: d.clientLabel, logoUrl: d.brand.logoUrl })),
+    deals: deals.items.filter((d) => dealSet.has(d.id)).map((d) => ({ id: d.id, name: d.title, brand: dealClientLabel(tdeal, d.brand.name, d.clientTalent?.name), logoUrl: d.brand.logoUrl })),
     talents: talents.items.map((x) => ({ id: x.id, name: x.name, city: x.city, state: x.state, hasLogin: x.hasLogin, avatarUrl: x.hero?.avatarUrl ?? null })),
     brands: brands.map((b) => ({ id: b.brand.id, name: b.brand.name, logoUrl: b.brand.logoUrl })),
     canPublishCommercialDate: isManager,

@@ -8,6 +8,7 @@ import { DealClientForm, RoadmapStart } from "@/components/roadmap/RoadmapStart"
 import { RoadmapSteps } from "@/components/roadmap/RoadmapSteps";
 import { EmptyState } from "@/components/ui";
 import { listTeam } from "@/lib/agency/queries";
+import { dealClientLabel } from "@/lib/deals/client-label";
 import { getDealRecurrence } from "@/lib/roadmap/phase3-queries";
 import { getDealRoadmap, listServices, listTeamSectors } from "@/lib/roadmap/queries";
 import { addDays } from "@/lib/roadmap/recurrence";
@@ -29,8 +30,9 @@ type Props = { params: Promise<{ id: string }> };
 export default async function DealRoadmapPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, canEdit, isManager } = await loadDeal(id);
-  const [t, roadmap, services, team, sectors, talents, recurrence] = await Promise.all([
+  const [t, tdeal, roadmap, services, team, sectors, talents, recurrence] = await Promise.all([
     getTranslations("roadmap.deal"),
+    getTranslations("agency.deal"),
     getDealRoadmap(deal.id),
     listServices(ctx.agency.id, { activeOnly: true }),
     listTeam(ctx.agency.id),
@@ -99,7 +101,7 @@ export default async function DealRoadmapPage({ params }: Props) {
           <h2 id="roadmap-client" className="text-base font-semibold text-fg">
             {t("clientTitle")}
           </h2>
-          <p className="text-sm text-fg">{deal.clientLabel || "—"}</p>
+          <p className="text-sm text-fg">{dealClientLabel(tdeal, deal.brand.name, deal.clientTalent?.name) || "—"}</p>
           {canEdit && talents.items.length > 0 ? (
             <DealClientForm
               dealId={deal.id}

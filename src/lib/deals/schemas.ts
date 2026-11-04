@@ -107,6 +107,8 @@ export const dealCreateSchema = z
     notes: z.string().trim().max(2000),
     /** 0111: negócio de origem (o "próximo negócio" do clipping) */
     originDealId: z.union([z.literal(""), uuid]).default(""),
+    /** 04/11: heróis da campanha (fichas do casting) escalados logo depois de criar — os mesmos da aba Heróis */
+    campaignTalentIds: z.array(uuid).max(30).default([]),
   })
   .refine((d) => d.brandId !== "" || d.clientTalentId !== "", { path: ["brandId"], message: "client_required" });
 

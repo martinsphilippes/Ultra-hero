@@ -7,6 +7,7 @@ import { EmptyState, PageHeader } from "@/components/ui";
 import { listTeam } from "@/lib/agency/queries";
 import { requireAgency } from "@/lib/agency/server";
 import { getUser } from "@/lib/auth/session";
+import { dealClientLabel } from "@/lib/deals/client-label";
 import { listDeals } from "@/lib/deals/queries";
 import { listTasks, taskCounts } from "@/lib/execution/queries";
 import { listTalents } from "@/lib/talent/queries";
@@ -24,8 +25,9 @@ type Props = { searchParams: Promise<{ f?: string }> };
 export default async function AgencyTasksPage({ searchParams }: Props) {
   const [ctx, user, sp] = await Promise.all([requireAgency("staff"), getUser(), searchParams]);
   const filter = sp.f === "team" || sp.f === "overdue" || sp.f === "done" ? sp.f : "mine";
-  const [t, list, counts, team, talents, deals] = await Promise.all([
+  const [t, tdeal, list, counts, team, talents, deals] = await Promise.all([
     getTranslations("agency.tasks"),
+    getTranslations("agency.deal"),
     listTasks({ agencyId: ctx.agency.id, mine: filter === "mine" ? (user?.id ?? "") : undefined, overdue: filter === "overdue", open: filter !== "done" }),
     taskCounts(ctx.agency.id, user?.id ?? null),
     listTeam(ctx.agency.id),
@@ -63,7 +65,7 @@ export default async function AgencyTasksPage({ searchParams }: Props) {
           agencyId: ctx.agency.id,
           members: team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle })),
           talents: talents.items.map((x) => ({ id: x.id, name: x.name, userId: null, city: x.city, state: x.state, hasLogin: x.hasLogin, avatarUrl: x.hero?.avatarUrl ?? null, managerName: team.find((m) => m.userId === x.managerId)?.name ?? null })),
-          deals: deals.items.map((d) => ({ id: d.id, name: d.title, brand: d.clientLabel, logoUrl: d.brand.logoUrl })),
+          deals: deals.items.map((d) => ({ id: d.id, name: d.title, brand: dealClientLabel(tdeal, d.brand.name, d.clientTalent?.name), logoUrl: d.brand.logoUrl })),
         }}
         emptyText={t(`empty.${filter}`)}
       />

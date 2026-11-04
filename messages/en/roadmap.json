@@ -88,8 +88,8 @@
     "startOnHint": "Empty = today. Weekends and holidays move to the next business day.",
     "replace": "Change service",
     "start": "Create plan",
-    "heroClient": "Hero client",
-    "heroClientHint": "The hero sees the project in the Hero Portal (only the steps visible to the client).",
+    "heroClient": "Client hero (hires the agency)",
+    "heroClientHint": "Use only when the hero themself is the client, e.g. artist management (they see the project in the Hero Portal). Who works on the campaign goes in the Heroes tab.",
     "noHeroClient": "None (brand-only client)",
     "saveClient": "Save client",
     "unavailable": "Delivery plans are being updated. Come back shortly.",
@@ -109,20 +109,26 @@
   },
   "newDeal": {
     "client": "Client",
-    "clientHint": "The agency serves the brand, the hero or both.",
+    "clientHint": "Who hires the agency: the brand, the hero themself or both.",
     "clientKinds": {
       "brand": "Brand",
-      "talent": "Hero",
+      "talent": "Client hero",
       "both": "Both"
     },
-    "hero": "Hero",
-    "heroHint": "The casting hero who is the client (they see the project in the portal).",
+    "hero": "Client hero (hires the agency)",
+    "heroHint": "Use only when the hero themself is the client, e.g. artist management. For who will work on the campaign, use 'Campaign heroes'.",
     "service": "Service",
     "serviceHint": "Choosing now creates the plan with deadlines.",
     "serviceLater": "Choose later",
     "serviceOption": "{name} · {days} business days",
     "startOn": "Plan start",
-    "startOnHint": "Empty = today."
+    "startOnHint": "Empty = today.",
+    "cast": "Campaign heroes (optional)",
+    "castHint": "Who will work on the campaign. They are added as suggested in the deal's Heroes tab.",
+    "castAdd": "Add a casting hero…",
+    "castChosen": "{count, plural, one {# campaign hero} other {# campaign heroes}}",
+    "castRemove": "Remove {name} from the campaign",
+    "castFailed": "Deal created; could not add {names} — add them in the Heroes tab."
   },
   "today": {
     "title": "Today in my team",
@@ -232,7 +238,8 @@
     "pending": "Planned for {date}",
     "noSteps": "The agency hasn't marked visible steps yet.",
     "seeAll": "See all",
-    "recurringTitle": "This cycle's routine"
+    "recurringTitle": "This cycle's routine",
+    "youAreClient": "You are the client"
   },
   "recurrence": {
     "title": "Recurring service",

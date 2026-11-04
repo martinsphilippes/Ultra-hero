@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertTriangle, ArrowRightLeft, CheckCircle2, MessageSquarePlus, Save, Undo2, Users, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, CheckCircle2, MessageSquarePlus, Save, Undo2, Users, X, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
-import { Button, Checkbox, DatePicker, DateRangePicker, Dialog, EntitySelect, FormField, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, DateRangePicker, Dialog, EntityCard, EntitySelect, FormField, IconButton, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
+import { campaignHeroIds, heroNames } from "@/lib/deals/client-label";
 import { hasCloseWonPending, type CloseWonPending } from "@/lib/deals/next-step";
 import { canConfirm, DEAL_OUTCOMES, moveNeedsNote, nextStages, type DealOutcome, type DealStage } from "@/lib/deals/stages";
 import { ACTIVITY_KINDS, type ActivityKind } from "@/lib/deals/vocab";
@@ -57,6 +58,9 @@ export function DealForm({
   const [talentId, setTalentId] = useState(prefill?.talentId ?? "");
   const [serviceId, setServiceId] = useState(prefill?.serviceId ?? "");
   const [startOn, setStartOn] = useState("");
+  // 04/11: heróis da campanha (escalados) ≠ herói cliente. Só com marca: negócio só do herói não tem a aba Heróis.
+  const [castIds, setCastIds] = useState<string[]>([]);
+  const castOn = !dealId && client !== "talent" && talents.length > 0;
   const fitting = services.filter((x) => serviceFitsClient(x.clientKind, client));
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -81,9 +85,15 @@ export function DealForm({
             ownerId: v.ownerId,
             notes: v.notes,
             originDealId: prefill?.originDealId ?? "",
+            campaignTalentIds: castOn ? campaignHeroIds(castIds) : [],
           });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });
+      // falha parcial: o negócio existe; os heróis que não entraram são adicionados depois na aba Heróis
+      if (result.castFailed && result.castFailed.length > 0) {
+        const names = heroNames(result.castFailed, talents);
+        toast({ title: tr("castFailed", { names: names.join(", ") }), variant: "error", duration: 12000 });
+      }
       if (!dealId && result.id) router.push(`/agencia/negocios/${result.id}`);
     });
   }
@@ -120,6 +130,38 @@ export function DealForm({
         <FormField label={tr("hero")} hint={tr("heroHint")} required>
           <EntitySelect value={talentId} onChange={(e) => setTalentId(e.target.value)} disabled={disabled} emptyLabel="—" options={talents.map((x) => talentOption(tp, x))} data-testid="deal-client-hero" />
         </FormField>
+      ) : null}
+      {castOn ? (
+        <div className="flex flex-col gap-2" data-testid="deal-cast">
+          {/* reaproveita a caixa de heróis do casting: escolher adiciona à lista abaixo e a caixa volta ao vazio */}
+          <FormField label={tr("cast")} hint={tr("castHint")}>
+            <EntitySelect
+              value=""
+              onChange={(e) => {
+                const id = e.target.value;
+                if (id) setCastIds((cur) => campaignHeroIds([...cur, id]));
+              }}
+              disabled={disabled || castIds.length >= 30}
+              emptyLabel={tr("castAdd")}
+              options={talents.filter((x) => !castIds.includes(x.id)).map((x) => talentOption(tp, x))}
+              data-testid="deal-cast-select"
+            />
+          </FormField>
+          {castIds.length > 0 ? (
+            <ul className="flex flex-col gap-2" aria-label={tr("castChosen", { count: castIds.length })}>
+              {castIds.map((id) => {
+                const hero = talents.find((x) => x.id === id);
+                if (!hero) return null;
+                return (
+                  <li key={id} className="flex items-center gap-2">
+                    <EntityCard option={talentOption(tp, hero)} className="min-w-0 flex-1" />
+                    <IconButton type="button" variant="ghost" icon={<X />} label={tr("castRemove", { name: hero.name })} disabled={disabled} onClick={() => setCastIds((cur) => cur.filter((x) => x !== id))} />
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </div>
       ) : null}
       {!dealId && services.length > 0 ? (
         <FormField label={tr("service")} hint={tr("serviceHint")}>

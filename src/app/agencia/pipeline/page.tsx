@@ -11,6 +11,7 @@ import { listAgencyBrands, listTeam } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
 import { getUser } from "@/lib/auth/session";
+import { dealClientLabel } from "@/lib/deals/client-label";
 import { listDeals } from "@/lib/deals/queries";
 import { DEAL_STAGES, type DealStage } from "@/lib/deals/stages";
 import { brandOption, memberOption } from "@/lib/ui/entity";
@@ -32,8 +33,9 @@ export default async function PipelinePage({ searchParams }: Props) {
   const closed = sp.status === "encerrados";
   const user = await getUser();
   const ownerFilter = sp.responsavel === "me" ? user?.id : sp.responsavel;
-  const [t, tc, tp, locale, list, brands, team] = await Promise.all([
+  const [t, td, tc, tp, locale, list, brands, team] = await Promise.all([
     getTranslations("agency.pipeline"),
+    getTranslations("agency.deal"),
     getTranslations("commercial"),
     getTranslations("pickers"),
     getLocale() as Promise<Locale>,
@@ -129,7 +131,8 @@ export default async function PipelinePage({ searchParams }: Props) {
                         data-testid="deal-card"
                       >
                         <span className="text-sm font-semibold text-fg">{deal.title}</span>
-                        <span className="type-caption text-fg-muted">{deal.clientLabel}{deal.service ? ` · ${deal.service.name}` : ""}</span>
+                        {/* 04/11: herói cliente com "(cliente)", distinto da marca; os escalados vêm à parte, na linha de baixo */}
+                        <span className="type-caption text-fg-muted">{[dealClientLabel(td, deal.brand.name, deal.clientTalent?.name), deal.service?.name].filter(Boolean).join(" · ")}</span>
                         <span className="flex flex-wrap items-center gap-1.5 type-caption text-fg-muted">
                           {closed ? <StageBadge stage={deal.stage} outcome={deal.outcome} /> : null}
                           <span>{deal.ownerId ? (names.get(deal.ownerId) ?? t("ownerUnknown")) : t("noOwner")}</span>

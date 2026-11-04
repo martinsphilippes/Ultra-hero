@@ -7,6 +7,7 @@ import { dispatchWorkEmails } from "@/lib/email/outbox";
 import { agencyFail } from "@/lib/agency/errors";
 import { requireAgency } from "@/lib/agency/server";
 import { activitySchema, confirmSchema, consultSchema, dealCreateSchema, dealMoveSchema, dealUpdateSchema, deliverablesSchema, feeSchema, recordResponseSchema } from "@/lib/deals/schemas";
+import { campaignHeroIds } from "@/lib/deals/client-label";
 import { MAX_NEW_PER_SAVE, MAX_SUGGEST, NAME_MAX, PAGE_SIZE, parseHeroSearch, type HeroSearchPage } from "@/lib/deals/hero-suggest";
 import { REASON_CODES } from "@/lib/deals/vocab";
 import { createClient } from "@/lib/supabase/server";
@@ -14,7 +15,9 @@ import { createClient } from "@/lib/supabase/server";
 // Pipeline comercial (0066): cada ação chama uma RPC que confere papel, etapa e escopo. O servidor só
 // valida a forma. Cachê (agency_fee_set) é a única ação com valor: a RPC exige Adm.
 
-export type DealResult = { ok: true; message: string; id?: string; count?: number } | { ok: false; error: string };
+export type DealResult =
+  | { ok: true; message: string; id?: string; count?: number; /** 04/11: negócio criado, mas estes heróis da campanha não entraram */ castFailed?: string[] }
+  | { ok: false; error: string };
 
 const uuid = z.uuid();
 
@@ -51,10 +54,19 @@ export async function createDealAction(input: z.input<typeof dealCreateSchema>):
     if (!data) return agencyFail("generic");
     // 0111: ligado ao negócio de origem (nova venda); falha aqui não desfaz o negócio criado
     if (d.originDealId) await supabase.rpc("deal_origin_set", { p_deal: data, p_origin: d.originDealId });
+    // 04/11: heróis da campanha escolhidos no formulário entram pela MESMA ação da aba Heróis (RPC atômica
+    // agency_deal_suggest_heroes). Sem migração não dá para criar e escalar numa transação só: se falhar, o negócio
+    // fica criado e a tela avisa quais heróis adicionar na aba Heróis. Negócio sem marca não tem aba Heróis: não escala.
+    const cast = d.brandId ? campaignHeroIds(d.campaignTalentIds) : [];
+    let castFailed: string[] | undefined;
+    if (cast.length > 0) {
+      const res = await suggestHeroesAction({ dealId: data, items: cast.map((talentId) => ({ kind: "talent" as const, talentId, reasons: [] })) });
+      if (!res.ok) castFailed = cast;
+    }
     revalidatePath("/agencia/pipeline");
     revalidatePath("/agencia");
     const t = await getTranslations("agency.deal");
-    return { ok: true, message: t("created"), id: data };
+    return { ok: true, message: t("created"), id: data, ...(castFailed ? { castFailed } : {}) };
   } catch (error) {
     return agencyFail(error);
   }

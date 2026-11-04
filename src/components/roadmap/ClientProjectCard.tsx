@@ -21,11 +21,17 @@ export async function ClientProjectCard({ project, limit }: { project: ClientPro
             {[project.progress?.service, project.brand, project.agency].filter(Boolean).join(" · ")}
           </span>
         </div>
-        {project.closed ? (
-          <Badge variant="neutral" size="sm">
-            {t("closed")}
+        {/* 04/11: o herói aqui é o cliente (contrata a agência), não um herói escalado numa campanha */}
+        <span className="flex flex-wrap gap-1.5">
+          <Badge variant="info" size="sm">
+            {t("youAreClient")}
           </Badge>
-        ) : null}
+          {project.closed ? (
+            <Badge variant="neutral" size="sm">
+              {t("closed")}
+            </Badge>
+          ) : null}
+        </span>
       </div>
       {project.progress ? <RoadmapProgress progress={project.progress} compact /> : null}
       {/* 0110: clipping do projeto (ao vivo; congelado no fechamento) e a pesquisa de satisfação */}

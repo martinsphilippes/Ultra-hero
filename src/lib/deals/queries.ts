@@ -24,7 +24,7 @@ export type DealListItem = {
   isDemo: boolean;
   /** 0107: herói-cliente (ficha do casting), quando o cliente é (também) o herói */
   clientTalent: { id: string; name: string } | null;
-  /** 0107: quem é o cliente para mostrar: "Marca", "Herói" ou "Marca · Herói" */
+  /** 0107: nomes crus do cliente ("Marca · Herói"). Para mostrar, use dealClientLabel (põe "(cliente)" no herói). */
   clientLabel: string;
   /** 0107: serviço do catálogo e início do roteiro */
   service: { id: string; name: string } | null;
