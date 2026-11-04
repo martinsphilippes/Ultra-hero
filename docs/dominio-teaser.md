@@ -12,6 +12,9 @@ O código já está pronto; nada foi configurado na Vercel. Sem as variáveis ab
 | qualquer outra rota em `dominio.com` (`/login`, `/personalities`, `/agencia`…) | volta para `/` (307) |
 | `app.dominio.com` | o app, como hoje em ultra-hero.vercel.app |
 
+O teaser não tem link para o app (o rodapé traz só Termos de Uso e Política de Privacidade): quem já tem conta entra
+direto por `app.dominio.com`.
+
 A regra fica em `src/lib/marketing-host.ts` (testes em `tests/unit/marketing-host.test.ts`) e é aplicada no
 `src/middleware.ts`, antes de tudo. O formulário do teaser é server action (POST na própria página): não depende de
 `/api`.
@@ -24,8 +27,6 @@ A regra fica em `src/lib/marketing-host.ts` (testes em `tests/unit/marketing-hos
 2. Settings → Environment Variables (Production):
    - `MARKETING_HOSTS=dominio.com,www.dominio.com` — hosts que mostram só o teaser (separados por vírgula; sem
      `https://`; porta e maiúsculas são ignoradas).
-   - `MARKETING_APP_URL=https://app.dominio.com` — para onde vai o "Já tenho acesso" do rodapé do teaser. Sem ela, o
-     link some no domínio do teaser (lá não existe `/login`).
    - `NEXT_PUBLIC_SITE_URL=https://app.dominio.com` — origem do app (links de e-mail, convites, Open Graph).
 3. Supabase → Authentication → URL Configuration: incluir `https://app.dominio.com/**` nas Redirect URLs (login com
    Google/Apple, recuperação de senha) e trocar o Site URL quando o app mudar de endereço.

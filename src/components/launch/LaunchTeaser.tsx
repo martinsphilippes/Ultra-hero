@@ -5,13 +5,13 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { ComingSoonCountdown } from "@/components/commerce/coming-soon/ComingSoonCountdown";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
-import { Logo } from "@/components/layout/Logo";
 import { LEGAL_PRIVACY_HREF, LEGAL_TERMS_HREF } from "@/components/legal/rich-tags";
-import { INSTITUTIONAL_LOGIN_HREF, INSTITUTIONAL_PATH } from "@/lib/institutional/root";
+import { INSTITUTIONAL_PATH } from "@/lib/institutional/root";
 import { launchDateLabel, resolveLaunchAt } from "@/lib/launch";
 import type { LaunchLeadKind } from "@/lib/launch-leads";
-import { haveAccessHref, isMarketingHost, marketingAppUrl, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
+import { isMarketingHost, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
 import { LaunchLeadForm, type LaunchLeadTags } from "./LaunchLeadForm";
+import { LaunchLogo } from "./LaunchLogo";
 import "@/components/commerce/coming-soon/coming-soon.css";
 import "./teaser.css";
 
@@ -30,13 +30,12 @@ const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 // explica o produto. Logo grande, uma frase, a contagem até o MESMO lançamento da loja (src/lib/launch.ts) e o
 // formulário curto "Seja o primeiro a saber". A porta do influenciador traz 3 linhas a mais e o @ do Instagram. Não
 // existe porta para empresas. Sempre escuro (teaser.css), nos dois temas; "reduzir movimento" desliga as animações.
+// Rodapé só com Termos de Uso e Política de Privacidade (o "Já tenho acesso" saiu a pedido do dono, 04/11).
 export async function LaunchTeaser({ kind, tags, seasonal }: Props) {
   const [t, tl, headerStore] = await Promise.all([getTranslations("institutional"), getTranslations("legal.links"), headers()]);
   const opensAt = resolveLaunchAt();
   const serverNow = Date.now();
   const marketing = isMarketingHost(requestHost(headerStore), parseMarketingHosts());
-  // no domínio do teaser não há /login: o "Já tenho acesso" vai ao app configurado (ou some)
-  const accessHref = haveAccessHref({ marketing, appUrl: marketingAppUrl(), loginPath: INSTITUTIONAL_LOGIN_HREF });
   const homeHref = marketing ? "/" : INSTITUTIONAL_PATH;
   const date = launchDateLabel(opensAt);
   const year = new Date(serverNow).getFullYear();
@@ -71,7 +70,7 @@ export async function LaunchTeaser({ kind, tags, seasonal }: Props) {
       <main id="main" tabIndex={-1} className="uh-tz-main">
         <section aria-labelledby="tz-title" className="uh-tz-hero">
           <span className="uh-tz-logo uh-tz-in" style={delay(0)}>
-            <Logo size="xl" />
+            <LaunchLogo />
           </span>
           <p className="uh-tz-eyebrow uh-tz-mono uh-tz-in" style={delay(500)}>
             {t("teaser.eyebrow", { date })}
@@ -112,11 +111,6 @@ export async function LaunchTeaser({ kind, tags, seasonal }: Props) {
 
       <footer className="uh-tz-foot">
         <nav aria-label={tl("nav")} className="uh-tz-foot-row">
-          {accessHref ? (
-            <a href={accessHref} className="uh-tz-link" data-testid="teaser-have-access">
-              {t("teaser.haveAccess")}
-            </a>
-          ) : null}
           <Link href={LEGAL_TERMS_HREF} className="uh-tz-link">
             {tl("terms")}
           </Link>

@@ -168,7 +168,6 @@ const USED_KEYS = [
   "teaser.influencer",
   "teaser.back",
   "teaser.backLabel",
-  "teaser.haveAccess",
   "teaser.rights",
   "teaser.countdownTitle",
   "influencer.eyebrow",
@@ -195,9 +194,10 @@ describe("textos do teaser de lançamento", () => {
   });
   it("pt-BR traz a frase, o formulário e o sucesso pedidos pelo dono", () => {
     const pt = messages["pt-BR"];
-    expect(get(pt, "teaser.title")).toBe("A rede social das celebridades está chegando.");
+    expect(get(pt, "teaser.title")).toBe("A rede wellness das celebridades está chegando.");
     expect(get(pt, "teaser.influencer")).toBe("Sou influenciador");
-    expect(get(pt, "teaser.haveAccess")).toBe("Já tenho acesso");
+    // o "Já tenho acesso" saiu do rodapé (pedido do dono, 04/11): o texto não existe mais em nenhum idioma
+    for (const locale of LOCALES) expect(get(messages[locale], "teaser.haveAccess")).toBeUndefined();
     expect(get(pt, "influencer.title")).toBe("Um ecossistema inteiro que conecta você a marcas e empresas.");
     expect(get(pt, "form.title")).toBe("Seja o primeiro a saber");
     expect(get(pt, "form.consent")).toBe("Aceito receber novidades do Groscove Ultra.");

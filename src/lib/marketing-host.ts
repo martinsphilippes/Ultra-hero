@@ -7,8 +7,8 @@
 // (POST na própria página), então não precisa de nenhuma /api.
 // Sem a variável (ou com host fora da lista), nada muda.
 //
-// MARKETING_APP_URL="https://app.groscoveultra.com" (opcional): para onde vai o "Já tenho acesso" do teaser quando ele
-// é aberto num host de marketing (lá o /login não existe). Sem ela, o link some nesses hosts.
+// O teaser não tem mais link para o app (o "Já tenho acesso" saiu do rodapé a pedido do dono, 04/11), então a antiga
+// MARKETING_APP_URL deixou de existir: quem já tem conta entra pelo endereço do app.
 
 type Env = Record<string, string | undefined>;
 
@@ -60,23 +60,4 @@ export function marketingDecision(pathname: string): MarketingDecision {
   if (ALLOWED_EXACT.has(pathname)) return { action: "next" };
   if (ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return { action: "next" };
   return { action: "redirect", pathname: "/" };
-}
-
-/** URL do app para o "Já tenho acesso" (só http/https; inválida = null). */
-export function marketingAppUrl(env: Env = defaultEnv()): string | null {
-  const raw = env.MARKETING_APP_URL?.trim();
-  if (!raw) return null;
-  try {
-    const url = new URL(raw);
-    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
-    return url.origin;
-  } catch {
-    return null;
-  }
-}
-
-/** Destino do "Já tenho acesso": relativo no app; no host de marketing, o app configurado (ou nenhum). */
-export function haveAccessHref(input: { marketing: boolean; appUrl: string | null; loginPath: string }): string | null {
-  if (!input.marketing) return input.loginPath;
-  return input.appUrl ? `${input.appUrl}${input.loginPath}` : null;
 }

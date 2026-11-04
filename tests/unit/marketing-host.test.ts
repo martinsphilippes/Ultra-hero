@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  haveAccessHref,
   isMarketingHost,
-  marketingAppUrl,
   marketingDecision,
   normalizeHost,
   parseMarketingHosts,
@@ -69,14 +67,6 @@ describe("regra de host (pura)", () => {
     for (const p of ["/login", "/personalities", "/agencia", "/marca/campanhas", "/heroi", "/admin", "/api/cron/agency", "/conheca/explorar", "/conhecaX", "/legalx"]) {
       expect(marketingDecision(p), p).toEqual({ action: "redirect", pathname: "/" });
     }
-  });
-  it("\"Já tenho acesso\": relativo no app; no domínio do teaser, o app configurado ou nada", () => {
-    expect(haveAccessHref({ marketing: false, appUrl: null, loginPath: "/login?mode=password" })).toBe("/login?mode=password");
-    expect(haveAccessHref({ marketing: true, appUrl: "https://app.dominio.com", loginPath: "/login?mode=password" })).toBe("https://app.dominio.com/login?mode=password");
-    expect(haveAccessHref({ marketing: true, appUrl: null, loginPath: "/login" })).toBeNull();
-    expect(marketingAppUrl({ MARKETING_APP_URL: "https://app.dominio.com/qualquer" })).toBe("https://app.dominio.com");
-    expect(marketingAppUrl({ MARKETING_APP_URL: "javascript:alert(1)" })).toBeNull();
-    expect(marketingAppUrl({})).toBeNull();
   });
 });
 

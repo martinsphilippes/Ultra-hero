@@ -57,9 +57,12 @@ export function ComingSoonCountdown({ opensAt, serverNow, ns = "commerce.comingS
             <span key={unit.key} className="uh-cs-unit">
               <span className="uh-cs-digits">
                 {digits.map((digit, index) => (
-                  // a chave muda com o dígito: o novo entra com o "flip" (só onde mudou)
-                  <span key={`${digits.length - index}-${digit}`} className="uh-cs-digit uh-cs-flip" suppressHydrationWarning>
-                    {digit}
+                  // a placa é fixa por posição; só o algarismo de dentro remonta quando muda (chave = dígito) e
+                  // entra deslizando, em 2D, recortado pela placa (coming-soon.css: .uh-cs-glyph)
+                  <span key={digits.length - index} className="uh-cs-digit">
+                    <span key={digit} className="uh-cs-glyph uh-cs-flip" suppressHydrationWarning>
+                      {digit}
+                    </span>
                   </span>
                 ))}
               </span>

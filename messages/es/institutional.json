@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Groscove Ultra — Muy pronto",
-    "description": "La red social de las celebridades está llegando. Sé el primero en saberlo.",
+    "description": "La red wellness de las celebridades está llegando. Sé el primero en saberlo.",
     "influencerTitle": "Groscove Ultra — Para influencers",
     "influencerDescription": "Todo un ecosistema que te conecta con marcas y empresas. Sé el primero en saberlo."
   },
@@ -16,11 +16,10 @@
   },
   "teaser": {
     "eyebrow": "Lanzamiento · {date}",
-    "title": "La red social de las celebridades está llegando.",
+    "title": "La red wellness de las celebridades está llegando.",
     "influencer": "Soy influencer",
     "back": "Volver",
     "backLabel": "Volver al inicio",
-    "haveAccess": "Ya tengo acceso",
     "rights": "© {year} Groscove Ultra",
     "countdownTitle": "Cuenta regresiva para el lanzamiento"
   },

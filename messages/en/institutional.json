@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Groscove Ultra — Coming soon",
-    "description": "The celebrity social network is coming. Be the first to know.",
+    "description": "The celebrities' wellness network is coming. Be the first to know.",
     "influencerTitle": "Groscove Ultra — For influencers",
     "influencerDescription": "A whole ecosystem connecting you to brands and companies. Be the first to know."
   },
@@ -16,11 +16,10 @@
   },
   "teaser": {
     "eyebrow": "Launch · {date}",
-    "title": "The celebrity social network is coming.",
+    "title": "The celebrities' wellness network is coming.",
     "influencer": "I'm an influencer",
     "back": "Back",
     "backLabel": "Back to home",
-    "haveAccess": "I already have access",
     "rights": "© {year} Groscove Ultra",
     "countdownTitle": "Countdown to launch"
   },
