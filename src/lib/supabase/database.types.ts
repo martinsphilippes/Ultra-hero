@@ -1596,6 +1596,25 @@ export type Database = {
           },
         ];
       };
+      conversation_reads: {
+        Row: {
+          conv_key: string;
+          read_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          conv_key: string;
+          read_at?: string;
+          user_id: string;
+        };
+        Update: {
+          conv_key?: string;
+          read_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       content_type_settings: {
         Row: {
           auto_threshold_pct: number;
@@ -12277,6 +12296,12 @@ isOneToOne: false
       project_room_view: { Args: { p_deal: string }; Returns: Json };
       my_project_rooms: { Args: Record<PropertyKey, never>; Returns: Json };
       project_room_access: { Args: { p_deal: string }; Returns: Json };
+      conversation_list: {
+        Args: { p_portal: string; p_limit?: number; p_offset?: number; p_kind?: string | null; p_unread?: boolean; p_q?: string | null };
+        Returns: Json;
+      };
+      conversation_unread: { Args: { p_portal: string }; Returns: number };
+      conversation_mark_read: { Args: { p_key: string }; Returns: boolean };
       deliverable_preview_set: { Args: { p_version: string; p_preview: boolean }; Returns: undefined };
       deliverable_preview_date_set: { Args: { p_deliverable: string; p_date: string | null }; Returns: undefined };
       deal_previews: { Args: { p_deal: string }; Returns: Json };

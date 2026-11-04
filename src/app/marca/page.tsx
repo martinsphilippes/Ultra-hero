@@ -8,6 +8,7 @@ import { BrandSwitcher } from "@/components/agency/BrandSwitcher";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
 import { BudgetOverview } from "@/components/finance/BudgetOverview";
+import { MessagesHomeCard } from "@/components/messaging/MessagesHomeCard";
 import { TodayPanel } from "@/components/today/TodayPanel";
 import { Button, PageHeader } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
@@ -127,6 +128,8 @@ export default async function BrandDashboardPage() {
         {pendingApprovals !== null ? <KpiCard href="/marca/acoes?etapa=awaiting" label={t("kpi.approvals")} value={pendingApprovals} hint={t("kpi.approvalsHint")} tone={pendingApprovals > 0 ? "danger" : "default"} /> : null}
         <KpiCard href="/marca/equipe" label={t("kpi.team")} value={members.length} />
         <KpiCard href="/marca/notificacoes?filtro=nao-lidas" label={t("kpi.unread")} value={unread ?? 0} />
+        {/* 0115: conversas não lidas (aba Mensagens de "Avisos e mensagens") */}
+        <MessagesHomeCard portal="brand" basePath="/marca/notificacoes" />
       </div>
       {dash ? (
         <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">

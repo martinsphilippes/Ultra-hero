@@ -1,16 +1,28 @@
 "use client";
 
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, ChevronRight, MessagesSquare } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Sheet, Spinner } from "@/components/ui";
 import { listInboxAction, markReadAction } from "@/lib/inbox/actions";
 import type { InboxItem } from "@/lib/inbox/queries";
+import { conversationUnreadAction } from "@/lib/messaging/actions";
+import type { MessagingPortal } from "@/lib/messaging/logic";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { InboxItemView } from "./InboxItemView";
 
-type Props = { userId: string; initialUnread: number; allHref: string };
+type Props = {
+  userId: string;
+  initialUnread: number;
+  allHref: string;
+  /**
+   * "Avisos e mensagens" (0115): o sino soma as conversas não lidas do portal e o painel abre com um atalho para a aba
+   * Mensagens. Decisão: um ícone só no topo (o cabeçalho do celular já tem menu, tema, idioma e conta; um segundo
+   * ícone de 44 px apertaria o título) — o número é a soma e o nome acessível diz quantos são avisos e quantas conversas.
+   */
+  messages?: { portal: MessagingPortal; href: string; initialUnread: number };
+};
 
 /** Evento de janela com o tipo de cada aviso novo (as telas que precisam se atualizam sozinhas). */
 export const INBOX_EVENT = "uh:inbox";
@@ -18,17 +30,31 @@ const POLL_MS = 30_000;
 
 // Sino dos portais de gestão: contagem de não lidos em tempo real (Realtime + consulta de reserva a cada
 // 30 s com a aba visível), lista dos 20 últimos num painel lateral e "marcar todas como lidas".
-export function NotificationBell({ userId, initialUnread, allHref }: Props) {
+export function NotificationBell({ userId, initialUnread, allHref, messages }: Props) {
   const t = useTranslations("inbox");
+  const tm = useTranslations("messaging");
   const [unread, setUnread] = useState(initialUnread);
+  const [msgUnread, setMsgUnread] = useState(messages?.initialUnread ?? 0);
+  const portal = messages?.portal ?? null;
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<InboxItem[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [realtime, setRealtime] = useState(false);
   const clientRef = useRef<ReturnType<typeof createClient> | null>(null);
 
+  const refreshMessages = useCallback(async () => {
+    if (!portal) return;
+    try {
+      const n = await conversationUnreadAction(portal);
+      if (typeof n === "number") setMsgUnread(n);
+    } catch {
+      // rede instável: a próxima rodada tenta de novo
+    }
+  }, [portal]);
+
   const load = useCallback(async () => {
     setLoading(true);
+    void refreshMessages();
     try {
       const page = await listInboxAction({ limit: 20 });
       setItems(page.items);
@@ -36,16 +62,17 @@ export function NotificationBell({ userId, initialUnread, allHref }: Props) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshMessages]);
 
   const refreshCount = useCallback(async () => {
+    void refreshMessages();
     try {
       const page = await listInboxAction({ limit: 1 });
       setUnread(page.unread);
     } catch {
       // rede instável: a próxima rodada tenta de novo
     }
-  }, []);
+  }, [refreshMessages]);
 
   useEffect(() => {
     let supabase: ReturnType<typeof createClient>;
@@ -60,6 +87,8 @@ export function NotificationBell({ userId, initialUnread, allHref }: Props) {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "inbox_notifications", filter: `user_id=eq.${userId}` }, (payload) => {
         setUnread((n) => n + 1);
         const kind = (payload.new as { kind?: string } | null)?.kind;
+        // aviso de mensagem nova: a conversa também mudou
+        if (kind === "message_received") void refreshMessages();
         if (kind) window.dispatchEvent(new CustomEvent(INBOX_EVENT, { detail: { kind } }));
       })
       .subscribe((status) => {
@@ -69,7 +98,12 @@ export function NotificationBell({ userId, initialUnread, allHref }: Props) {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, refreshMessages]);
+
+  // conversas não lidas: o layout não espera a contagem (ela percorre as conversas); o sino busca ao montar
+  useEffect(() => {
+    void refreshMessages();
+  }, [refreshMessages]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -86,7 +120,8 @@ export function NotificationBell({ userId, initialUnread, allHref }: Props) {
     }
   }
 
-  const label = unread > 0 ? t("bellUnread", { count: unread }) : t("bell");
+  const total = unread + (messages ? msgUnread : 0);
+  const label = messages ? tm("bellLabel", { notices: unread, messages: msgUnread }) : unread > 0 ? t("bellUnread", { count: unread }) : t("bell");
   return (
     <>
       <button
@@ -100,25 +135,25 @@ export function NotificationBell({ userId, initialUnread, allHref }: Props) {
         data-testid="notification-bell"
       >
         <Bell className="size-5" aria-hidden="true" />
-        {unread > 0 ? (
+        {total > 0 ? (
           <span
             aria-hidden="true"
             className={cn("absolute right-1.5 top-1.5 flex min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold leading-[18px] text-white")}
             data-testid="notification-count"
           >
-            {unread > 99 ? "99+" : unread}
+            {total > 99 ? "99+" : total}
           </span>
         ) : null}
       </button>
       <Sheet
         open={open}
         onOpenChange={setOpen}
-        title={t("title")}
+        title={messages ? tm("title") : t("title")}
         description={t("sheetDescription")}
         footer={
           <div className="flex w-full flex-wrap items-center justify-between gap-2">
             <a href={allHref} className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-text hover:underline">
-              {t("seeAll")}
+              {messages ? tm("seeNotices") : t("seeAll")}
             </a>
             <Button type="button" variant="secondary" size="sm" leadingIcon={<CheckCheck />} onClick={markAll} disabled={unread === 0}>
               {t("markAll")}
@@ -126,6 +161,25 @@ export function NotificationBell({ userId, initialUnread, allHref }: Props) {
           </div>
         }
       >
+        {messages ? (
+          <a
+            href={messages.href}
+            className="mb-3 flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2 transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            data-testid="bell-messages-link"
+          >
+            <MessagesSquare className="size-5 shrink-0 text-accent-text" aria-hidden="true" />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-sm font-semibold text-fg">{tm("bellMessages")}</span>
+              <span className="type-caption text-fg-muted">{tm("bellMessagesHint", { count: msgUnread })}</span>
+            </span>
+            {msgUnread > 0 ? (
+              <span aria-hidden="true" className="flex min-w-[22px] items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-bold leading-[22px] text-white">
+                {msgUnread > 99 ? "99+" : msgUnread}
+              </span>
+            ) : null}
+            <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+          </a>
+        ) : null}
         {loading && !items ? (
           <div className="flex justify-center py-8">
             <Spinner />

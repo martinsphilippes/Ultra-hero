@@ -28,7 +28,7 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
     <PortalShell
       portal="agency"
       navKeys={agencyNavKeys(ctx.role, ctx.platformAdmin)}
-      headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/agencia/notificacoes" /> : null}
+      headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/agencia/notificacoes?aba=avisos" messages={{ portal: "agency", href: "/agencia/notificacoes?aba=mensagens", initialUnread: 0 }} /> : null}
     >
       {ctx.agency.isDemo ? (
         <p className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 type-body-sm text-fg-muted" data-testid="agency-demo-banner">

@@ -8,6 +8,7 @@ import { SelfForm } from "@/components/agency/SettingsForms";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { FinanceKpis } from "@/components/finance/FinanceKpis";
 import { InsightsPendingCard } from "@/components/media/InsightsPendingCard";
+import { MessagesHomeCard } from "@/components/messaging/MessagesHomeCard";
 import { FeedbackIndicatorCard } from "@/components/project-room/FeedbackIndicatorCard";
 import { GrowthIndicatorsCard } from "@/components/roadmap/GrowthIndicatorsCard";
 import { RoadmapIndicatorsCard } from "@/components/roadmap/RoadmapIndicatorsCard";
@@ -100,6 +101,8 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
         <KpiCard href="/agencia/marcas" label={t("kpi.brands")} value={data.brands} />
         {isAdmin ? <KpiCard href="/agencia/equipe#convites" label={t("kpi.invites")} value={data.pendingInvites} /> : null}
         <KpiCard href="/agencia/notificacoes?filtro=nao-lidas" label={t("kpi.unread")} value={data.unread} />
+        {/* 0115: conversas não lidas (aba Mensagens de "Avisos e mensagens") */}
+        <MessagesHomeCard portal="agency" basePath="/agencia/notificacoes" />
       </div>
       {sectorToday ? <SectorTodayPanel data={sectorToday} indicatorsHref={indicators?.data ? "#roadmap-indicators" : undefined} /> : null}
       <InsightsPendingCard items={insights.items} side="agency" />

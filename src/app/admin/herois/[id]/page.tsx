@@ -10,6 +10,7 @@ import { CreatorProductActions } from "@/components/admin-ops/CreatorProductActi
 import { ReferenceMetricsEditor } from "@/components/admin-ops/ReferenceMetricsEditor";
 import { CreatorCoverRemoveButton, CreatorPhotoRemoveButton, CreatorStatusButton } from "@/components/admin-ops/StatusActions";
 import { HeroCategoriesField } from "@/components/admin-content/HeroCategoriesField";
+import { ImageAuthorizationNotice } from "@/components/catalog/ImageAuthorizationNotice";
 import { LibraryTabsEditor } from "@/components/admin-content/LibraryTabsEditor";
 import { HeroTeamPanel } from "@/components/invites/HeroTeamPanel";
 import { Badge, Button, PageHeader } from "@/components/ui";
@@ -17,6 +18,7 @@ import { getInvitesEnabled } from "@/lib/invitations/flag";
 import { isStoredAvatarUrl, supabaseBaseUrl } from "@/lib/avatar/paths";
 import { isStoredCoverUrl } from "@/lib/hero-cover/paths";
 import { localizedLabel } from "@/lib/catalog/queries";
+import { needsImageAuthorization } from "@/lib/catalog/rights";
 import { toCategoryTabRow, toOverrideRow } from "@/lib/heroes/library-tab-queries";
 import { primaryCategoryId, resolveLibraryConfig, toEditorRows, type LibraryTabEditorRow } from "@/lib/heroes/library-tabs";
 import { loadFollowerCount, loadReferences } from "@/lib/heroes/follow-queries";
@@ -182,6 +184,8 @@ export default async function EditCreatorPage({ params }: { params: Params }) {
           </Link>
         </Button>
       </div>
+      {/* pessoa real sem autorização de imagem válida: o público não vê selo; aqui fica o aviso com o atalho */}
+      {needsImageAuthorization(creator) ? <ImageAuthorizationNotice audience="admin" href="#creator-rights" /> : null}
       <div className="rounded-2xl border border-border bg-surface p-4 md:p-6">
         <CreatorForm
           id={creator.id}

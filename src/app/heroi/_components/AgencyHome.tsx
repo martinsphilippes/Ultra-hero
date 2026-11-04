@@ -24,6 +24,7 @@ import { getKit, listSocial } from "@/lib/talent/queries";
 import { consentActive, getTalentContext } from "@/lib/talent/server";
 import { TALENT_TODAY_KINDS, buildTalentToday } from "@/lib/today/logic";
 import { getTalentToday } from "@/lib/today/queries";
+import { MessagesHomeCard } from "@/components/messaging/MessagesHomeCard";
 
 // Início do Portal do Herói para quem está num casting (0065 + 0097): Hoje, oportunidades, tarefas, entregas, ganhos,
 // disponibilidade, kit, métricas declaradas com fonte e data e os avisos da agência.
@@ -238,12 +239,15 @@ export async function AgencyHome() {
         )}
       </section>
 
+      {/* 0115: conversas com a agência e salas dos projetos (aba Mensagens de "Avisos e mensagens") */}
+      <MessagesHomeCard portal="hero" basePath="/heroi/avisos" />
+
       <section className={card} aria-labelledby="office-inbox">
         <div className="flex items-center justify-between gap-2">
           <h2 id="office-inbox" className="text-sm font-semibold text-fg">
             {t("inboxTitle")}
           </h2>
-          <a href="/heroi/avisos" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+          <a href="/heroi/avisos?aba=avisos" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
             {t("inboxAll")}
           </a>
         </div>

@@ -17852,6 +17852,195 @@ delete from public.agency_members where agency_id::text like 'a1180000-%';
 delete from public.agencies where id::text like 'a1180000-%';
 delete from auth.users where id::text like 'a1180000-%';
 
+-- ================================================================ S120 · Avisos e mensagens: lista única de conversas com contexto, etapa e não lidas (0115)
+-- Uma lista por portal com as conversas que já existem (canal marca↔agência, canal herói↔agência, sala do projeto):
+-- a agência vê as três (inclusive interno da sala); a marca só o canal dela e a sala sem internas; o herói só o próprio
+-- canal e a sala sem internas; o staff externo só a sala (com internas) depois do NDA; quem não participa não vê nada.
+-- Não lidas por pessoa (marcador só pela RPC; responder = ler); abrir a conversa limpa o aviso "Nova mensagem" dela.
+-- Filtros (tipo, não lidas, busca) e paginação. Visitante nada; S14 segue 18.
+\ir ../migrations/0115_avisos_e_mensagens.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local'),
+  ('a1200000-0000-4000-8000-000000000002', 's120-colab@test.local'),
+  ('a1200000-0000-4000-8000-000000000003', 's120-marca@test.local'),
+  ('a1200000-0000-4000-8000-000000000004', 's120-heroi@test.local'),
+  ('a1200000-0000-4000-8000-000000000005', 's120-foto@test.local'),
+  ('a1200000-0000-4000-8000-000000000006', 's120-outro@test.local');
+insert into public.agencies (id, slug, name) values ('a1200000-0000-4000-8000-0000000000a1', 's120-agencia', 'Agência S120');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1200000-0000-4000-8000-0000000000a1', 'a1200000-0000-4000-8000-000000000001', 'manager', 'Gil Gestor S120'),
+  ('a1200000-0000-4000-8000-0000000000a1', 'a1200000-0000-4000-8000-000000000002', 'staff', 'Caio Colab S120');
+insert into public.brands (id, slug, name, site_url) values ('a1200000-0000-4000-8000-0000000000b1', 's120-marca', 'Marca S120', 'https://m.s120.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1200000-0000-4000-8000-0000000000a1', 'a1200000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1200000-0000-4000-8000-0000000000b1', 'a1200000-0000-4000-8000-000000000003', 'owner', 'Dona S120');
+insert into public.talent_profiles (id, agency_id, display_name, user_id) values
+  ('a1200000-0000-4000-8000-0000000000c1', 'a1200000-0000-4000-8000-0000000000a1', 'Herói S120', 'a1200000-0000-4000-8000-000000000004');
+create table tests.s120 (k text primary key, v text);
+grant all on tests.s120 to anon, authenticated;
+
+select tests.ok('S120 estrutura: marcador com RLS, só leitura do próprio, núcleo fechado, RPCs sem visitante, search_path fixo; S14 segue 18',
+  (select c.relrowsecurity from pg_class c where c.oid = 'public.conversation_reads'::regclass)
+  and not has_table_privilege('anon', 'public.conversation_reads', 'select')
+  and not has_table_privilege('authenticated', 'public.conversation_reads', 'insert')
+  and not has_table_privilege('authenticated', 'public.conversation_reads', 'update')
+  and not has_function_privilege('authenticated', 'public.conversation_rows(text)', 'execute')
+  and not has_function_privilege('anon', 'public.conversation_list(text, integer, integer, text, boolean, text)', 'execute')
+  and not has_function_privilege('anon', 'public.conversation_unread(text)', 'execute')
+  and not has_function_privilege('anon', 'public.conversation_mark_read(text)', 'execute')
+  and has_function_privilege('authenticated', 'public.conversation_mark_read(text)', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null and p.proname like 'conversation\_%')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- negócio com marca e herói-cliente (Produção de vídeo: a sala abre sozinha), visível à marca, herói consultado
+select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
+insert into tests.s120 values ('d', public.agency_deal_open('a1200000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Lançamento S120', 'brand_id', 'a1200000-0000-4000-8000-0000000000b1', 'client_talent_id', 'a1200000-0000-4000-8000-0000000000c1',
+  'service_id', (select id from public.agency_services where agency_id = 'a1200000-0000-4000-8000-0000000000a1' and slug = 'producao-de-video')))::text);
+select tests.su();
+update public.deals set brand_visible = true where id = (select v::uuid from tests.s120 where k = 'd');
+update public.deals set request_id = (select r.id from public.campaign_requests r where r.agency_id = 'a1200000-0000-4000-8000-0000000000a1' limit 1)
+  where id = (select v::uuid from tests.s120 where k = 'd') and request_id is null;
+insert into public.deal_talents (agency_id, deal_id, talent_id, status, consulted_at)
+values ('a1200000-0000-4000-8000-0000000000a1', (select v::uuid from tests.s120 where k = 'd'), 'a1200000-0000-4000-8000-0000000000c1', 'consulted', now());
+
+-- conversas: agência escreve à marca e ao herói; marca e herói respondem; sala com interna e para todos
+select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
+select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'brand_agency', null, 'Olá marca, briefing recebido');
+select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'talent_agency', 'a1200000-0000-4000-8000-0000000000c1', 'Oi herói, topa?');
+select public.project_room_post((select v::uuid from tests.s120 where k = 'd'), 'Segredo interno S120', true, null);
+select public.project_room_post((select v::uuid from tests.s120 where k = 'd'), 'Diária no sábado', false, null);
+insert into tests.s120 select 'tok', public.project_staff_invite((select v::uuid from tests.s120 where k = 'd'), 's120-foto@test.local', 'Rafa Foto', 'Fotógrafo', 7) ->> 'token';
+select tests.login('a1200000-0000-4000-8000-000000000003', 's120-marca@test.local');
+select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'brand_agency', null, 'Perfeito, aguardo a proposta');
+select tests.login('a1200000-0000-4000-8000-000000000004', 's120-heroi@test.local');
+select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'talent_agency', 'a1200000-0000-4000-8000-0000000000c1', 'Topo sim!');
+-- tudo roda numa transação só (now() fixo): a ordem real das mensagens vem de horários espaçados
+select tests.su();
+update public.deal_messages m set created_at = now() - make_interval(mins => x.ago)
+from (values ('Olá marca, briefing recebido', 60), ('Oi herói, topa?', 59), ('Perfeito, aguardo a proposta', 50), ('Topo sim!', 49)) x(body, ago)
+where m.body = x.body and m.agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+update public.project_room_messages m set created_at = now() - make_interval(mins => x.ago)
+from (values ('Segredo interno S120', 58), ('Diária no sábado', 57)) x(body, ago)
+where m.body = x.body and m.agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+
+-- visitante, quem não participa e entrada inválida
+select tests.anon();
+select tests.expect_error('S120 visitante não lista conversas', $q$select public.conversation_list('agency', 50, 0, null, false, null)$q$, 'permission denied');
+select tests.expect_error('S120 visitante não marca como lida', $q$select public.conversation_mark_read('room:' || (select v from tests.s120 where k = 'd'))$q$, 'permission denied');
+select tests.login('a1200000-0000-4000-8000-000000000006', 's120-outro@test.local');
+select tests.ok('S120 quem não participa não vê conversa em nenhum portal',
+  (public.conversation_list('agency', 50, 0, null, false, null) ->> 'total')::int = 0
+  and (public.conversation_list('brand', 50, 0, null, false, null) ->> 'total')::int = 0
+  and (public.conversation_list('hero', 50, 0, null, false, null) ->> 'total')::int = 0
+  and (public.conversation_list('staff', 50, 0, null, false, null) ->> 'total')::int = 0
+  and public.conversation_unread('agency') = 0);
+select tests.ok('S120 quem não participa não grava marcador de conversa alheia',
+  not public.conversation_mark_read('room:' || (select v from tests.s120 where k = 'd'))
+  and not public.conversation_mark_read('deal:' || (select v from tests.s120 where k = 'd') || ':brand'));
+select tests.su();
+select tests.ok('S120 nenhum marcador gravado para quem não participa', not exists (select 1 from public.conversation_reads where user_id = 'a1200000-0000-4000-8000-000000000006'));
+select tests.login('a1200000-0000-4000-8000-000000000006', 's120-outro@test.local');
+select tests.expect_error('S120 chave inválida é recusada', $q$select public.conversation_mark_read('deal:x:brand')$q$, 'invalid_input');
+select tests.expect_error('S120 portal inválido é recusado', $q$select public.conversation_list('admin', 50, 0, null, false, null)$q$, 'invalid_input');
+select tests.expect_error('S120 tipo inválido é recusado', $q$select public.conversation_list('agency', 50, 0, 'chat', false, null)$q$, 'invalid_input');
+select tests.login('a1200000-0000-4000-8000-000000000002', 's120-colab@test.local');
+select tests.ok('S120 colaborador fora do negócio não vê as conversas', (public.conversation_list('agency', 50, 0, null, false, null) ->> 'total')::int = 0);
+
+-- agência: três conversas, com contexto e não lidas só do outro lado
+select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
+select tests.ok('S120 agência: canal da marca, canal do herói e sala; título, contraparte, etapa; não lidas do outro lado',
+  (public.conversation_list('agency', 50, 0, null, false, null) ->> 'total')::int = 3
+  and exists (select 1 from jsonb_array_elements(public.conversation_list('agency', 50, 0, null, false, null) -> 'items') x
+              where x ->> 'kind' = 'campaign' and x ->> 'title' = 'Lançamento S120' and x ->> 'counterpart' = 'Marca S120'
+                and x ->> 'stage' is not null and (x ->> 'unread')::int = 1 and x ->> 'last_body' = 'Perfeito, aguardo a proposta')
+  and exists (select 1 from jsonb_array_elements(public.conversation_list('agency', 50, 0, null, false, null) -> 'items') x
+              where x ->> 'kind' = 'opportunity' and x ->> 'counterpart' = 'Herói S120' and x ->> 'talent_status' = 'consulted'
+                and (x ->> 'unread')::int = 1 and x ->> 'deal_talent_id' is not null)
+  and exists (select 1 from jsonb_array_elements(public.conversation_list('agency', 50, 0, null, false, null) -> 'items') x
+              where x ->> 'kind' = 'room' and x ->> 'room_status' = 'open' and (x ->> 'unread')::int = 0)
+  and public.conversation_unread('agency') = 2
+  and (public.conversation_list('agency', 50, 0, null, false, null) -> 'unread') @> '{"total": 2, "campaign": 1, "opportunity": 1, "room": 0}');
+select tests.ok('S120 filtros: tipo, não lidas, busca (nome e título) e paginação',
+  jsonb_array_length(public.conversation_list('agency', 50, 0, 'room', false, null) -> 'items') = 1
+  and jsonb_array_length(public.conversation_list('agency', 50, 0, null, true, null) -> 'items') = 2
+  and jsonb_array_length(public.conversation_list('agency', 50, 0, null, false, 'herói s120') -> 'items') = 1
+  and jsonb_array_length(public.conversation_list('agency', 50, 0, null, false, 'lançamento') -> 'items') = 3
+  and jsonb_array_length(public.conversation_list('agency', 50, 0, null, false, '100%_') -> 'items') = 0
+  and (public.conversation_list('agency', 1, 0, null, false, null) ->> 'has_more')::boolean
+  and jsonb_array_length(public.conversation_list('agency', 1, 2, null, false, null) -> 'items') = 1
+  and not (public.conversation_list('agency', 1, 2, null, false, null) ->> 'has_more')::boolean);
+
+-- marca: só o canal dela e a sala sem as internas; abrir marca como lida e limpa o aviso da conversa
+select tests.login('a1200000-0000-4000-8000-000000000003', 's120-marca@test.local');
+select tests.ok('S120 marca: canal com a agência e sala (sem internas); nada do canal do herói',
+  (public.conversation_list('brand', 50, 0, null, false, null) ->> 'total')::int = 2
+  and not exists (select 1 from jsonb_array_elements(public.conversation_list('brand', 50, 0, null, false, null) -> 'items') x where x ->> 'kind' = 'opportunity')
+  and exists (select 1 from jsonb_array_elements(public.conversation_list('brand', 50, 0, null, false, null) -> 'items') x
+              where x ->> 'kind' = 'campaign' and x ->> 'counterpart' = 'Agência S120' and x ->> 'request_id' is not null and (x ->> 'unread')::int = 0)
+  and exists (select 1 from jsonb_array_elements(public.conversation_list('brand', 50, 0, null, false, null) -> 'items') x
+              where x ->> 'kind' = 'room' and x ->> 'last_body' = 'Diária no sábado' and (x ->> 'unread')::int = 1)
+  and public.conversation_list('brand', 50, 0, null, false, null)::text not like '%Segredo interno%');
+select tests.ok('S120 marca: aviso "Nova mensagem" da sala existe antes de abrir',
+  exists (select 1 from public.inbox_notifications where user_id = 'a1200000-0000-4000-8000-000000000003' and kind = 'message_received'
+          and link = '/marca/projetos/' || (select v from tests.s120 where k = 'd') and read_at is null));
+insert into tests.s120 select 'mr_b', public.conversation_mark_read('room:' || (select v from tests.s120 where k = 'd'))::text;
+select tests.ok('S120 marca abre a sala: conversa e aviso da sala lidos',
+  (select v from tests.s120 where k = 'mr_b') = 'true'
+  and public.conversation_unread('brand') = 0
+  and not exists (select 1 from public.inbox_notifications where user_id = 'a1200000-0000-4000-8000-000000000003' and kind = 'message_received'
+                  and link like '%/projetos/%' and read_at is null)
+  and (select count(*) from public.conversation_reads) = 1);
+
+-- herói: o próprio canal e a sala do cliente, sem internas
+select tests.login('a1200000-0000-4000-8000-000000000004', 's120-heroi@test.local');
+select tests.ok('S120 herói: o próprio canal (agência como contraparte) e a sala sem internas; não vê o canal da marca nem o marcador alheio',
+  (public.conversation_list('hero', 50, 0, null, false, null) ->> 'total')::int = 2
+  and not exists (select 1 from jsonb_array_elements(public.conversation_list('hero', 50, 0, null, false, null) -> 'items') x where x ->> 'kind' = 'campaign')
+  and exists (select 1 from jsonb_array_elements(public.conversation_list('hero', 50, 0, null, false, null) -> 'items') x
+              where x ->> 'kind' = 'opportunity' and x ->> 'counterpart' = 'Agência S120' and (x ->> 'unread')::int = 0 and x ->> 'last_body' = 'Topo sim!')
+  and public.conversation_list('hero', 50, 0, null, false, null)::text not like '%Segredo interno%'
+  and (select count(*) from public.conversation_reads) = 0
+  and (public.conversation_list('brand', 50, 0, null, false, null) ->> 'total')::int = 0);
+
+-- staff externo: travado até o NDA; depois vê a sala com as internas, e só ela
+select tests.login('a1200000-0000-4000-8000-000000000005', 's120-foto@test.local');
+select public.project_staff_accept((select v from tests.s120 where k = 'tok'));
+select tests.ok('S120 staff sem NDA: sala travada, sem prévia nem contagem',
+  (public.conversation_list('staff', 50, 0, null, false, null) ->> 'total')::int = 1
+  and (public.conversation_list('staff', 50, 0, null, false, null) -> 'items' -> 0) @> '{"kind": "room", "locked": true, "unread": 0}'
+  and public.conversation_list('staff', 50, 0, null, false, null) -> 'items' -> 0 ->> 'last_body' is null);
+select public.project_nda_sign((select v::uuid from tests.s120 where k = 'd'), 'Rafael Foto', '529.982.247-25',
+  public.project_nda_preview((select v::uuid from tests.s120 where k = 'd')) ->> 'sha256', '200.1.2.3', 'navegador teste');
+select tests.ok('S120 staff com NDA: só a sala, com as internas não lidas',
+  (public.conversation_list('staff', 50, 0, null, false, null) ->> 'total')::int = 1
+  and (public.conversation_list('staff', 50, 0, null, false, null) -> 'items' -> 0) @> '{"kind": "room", "locked": false, "unread": 2}'
+  and (public.conversation_list('agency', 50, 0, null, false, null) ->> 'total')::int = 0);
+select public.project_room_post((select v::uuid from tests.s120 where k = 'd'), 'Levo duas câmeras', true, null);
+select tests.ok('S120 quem responde leu: a sala zera para o staff', public.conversation_unread('staff') = 0);
+
+-- agência abre o canal da marca: lido; resposta nova da marca volta a contar
+select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
+select tests.ok('S120 agência: a mensagem interna do staff conta na sala', public.conversation_unread('agency') = 3);
+insert into tests.s120 select 'mr_a', public.conversation_mark_read('deal:' || (select v from tests.s120 where k = 'd') || ':brand')::text;
+select tests.ok('S120 agência abre o canal da marca: zera só ele',
+  (select v from tests.s120 where k = 'mr_a') = 'true'
+  and public.conversation_unread('agency') = 2
+  and (public.conversation_list('agency', 50, 0, 'campaign', false, null) -> 'items' -> 0 ->> 'unread')::int = 0);
+select tests.login('a1200000-0000-4000-8000-000000000003', 's120-marca@test.local');
+select public.deal_message_post((select v::uuid from tests.s120 where k = 'd'), 'brand_agency', null, 'Mais uma dúvida');
+select tests.su();
+update public.deal_messages set created_at = now() + interval '1 minute' where body = 'Mais uma dúvida' and agency_id = 'a1200000-0000-4000-8000-0000000000a1';
+select tests.login('a1200000-0000-4000-8000-000000000001', 's120-gestor@test.local');
+select tests.ok('S120 mensagem nova depois da leitura volta a contar e vira a prévia',
+  (public.conversation_list('agency', 50, 0, 'campaign', false, null) -> 'items' -> 0) @> '{"unread": 1, "last_body": "Mais uma dúvida"}'
+  and (select count(*) from public.conversation_reads) = 1);
+
+select tests.su();
+drop table tests.s120;
+delete from public.conversation_reads where user_id::text like 'a1200000-%';
+delete from public.inbox_notifications where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
 delete from public.calendar_events where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
 delete from public.deals where agency_id = 'a1200000-0000-4000-8000-0000000000a1';
 delete from public.talent_profiles where agency_id = 'a1200000-0000-4000-8000-0000000000a1';

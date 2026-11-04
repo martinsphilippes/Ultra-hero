@@ -10,7 +10,7 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
   const user = await requireUser("/projetos");
   const unread = await unreadInboxCount();
   return (
-    <PortalShell portal="project" headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/projetos/avisos" /> : null}>
+    <PortalShell portal="project" headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/projetos/avisos?aba=avisos" messages={{ portal: "staff", href: "/projetos/avisos?aba=mensagens", initialUnread: 0 }} /> : null}>
       {children}
     </PortalShell>
   );

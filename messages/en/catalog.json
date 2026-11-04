@@ -50,5 +50,13 @@
     "noSteps": "This program has no steps available yet.",
     "count": "{count, plural, =1 {1 program} other {# programs}}"
   },
-  "photoPost": "Photo"
+  "photoPost": "Photo",
+  "imageRights": {
+    "title": "Record image authorization",
+    "awaitingTitle": "Image authorization under review",
+    "agencyHint": "Real person without a valid image authorization. Upload the signed term in Documents and record the consent; the platform confirms the authorization.",
+    "adminHint": "Real person without a valid image authorization. Record the holder and validity under Name and likeness rights.",
+    "awaiting": "Consent recorded with the signed term; the platform still needs to confirm the authorization.",
+    "internal": "Internal notice: not shown to the public."
+  }
 }

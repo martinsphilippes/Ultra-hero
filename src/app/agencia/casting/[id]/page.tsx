@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArchiveTalentButton, CatalogSwitch, HeroLinkForm, RecordConsentForm, SegmentPicker, TalentForm } from "@/components/agency/CastingForms";
 import { AccessPanel } from "@/components/agency/AccessPanel";
+import { ImageAuthorizationNotice } from "@/components/catalog/ImageAuthorizationNotice";
 import { InviteDialog } from "@/components/agency/InviteDialog";
 import { CreateTalentPageButton } from "@/components/agency/NewHeroForm";
 import { RevokeInviteButton } from "@/components/agency/RevokeInviteButton";
@@ -11,6 +12,7 @@ import type { Locale } from "@/i18n/config";
 import { formatDate, formatDateTime } from "@/i18n/format";
 import { loadAccessStatus } from "@/lib/agency/access-status";
 import { agencyCan } from "@/lib/agency/roles";
+import { needsImageAuthorization } from "@/lib/catalog/rights";
 import { canInviteCreator, resolveTalentAccess } from "@/lib/talent/access";
 import { listHeroOptions, listManagers, listSegments, listTalentAccess, listTalentDocuments, listTalentInvites } from "@/lib/talent/queries";
 import { loadTalent } from "./_lib";
@@ -56,6 +58,11 @@ export default async function TalentSummaryPage({ params }: Props) {
   // 0112: acesso do herói (situação, e-mail e celular — só gestor+ e admin geral)
   const accessStatus = isManager && !talent.archived ? ((await loadAccessStatus(await createClient(), ctx.agency.id, "talent")).get(talent.id) ?? null) : null;
   const consentOk = talent.consent === "active";
+  // herói ligado de pessoa real sem autorização de imagem válida: aviso interno (o público não vê selo nenhum)
+  const { data: heroRights } = talent.creatorId
+    ? await (await createClient()).from("creator_profiles").select("is_fictional, rights_status, rights_valid_until").eq("id", talent.creatorId).maybeSingle()
+    : { data: null };
+  const needsRights = heroRights ? needsImageAuthorization(heroRights) : false;
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
 
   return (
@@ -119,6 +126,7 @@ export default async function TalentSummaryPage({ params }: Props) {
               <HeroLinkForm talentId={talent.id} heroes={[]} currentId={talent.creatorId} canEdit={canEdit} locked={locked} />
             </div>
           ) : null}
+          {needsRights ? <ImageAuthorizationNotice audience="agency" href="#talent-consent" awaiting={consentOk} /> : null}
           {accessStatus && !locked ? (
             <div className="flex flex-col gap-2 rounded-xl border border-border p-3" data-testid="talent-account">
               <h3 className="text-sm font-semibold text-fg">{t("accountTitle")}</h3>

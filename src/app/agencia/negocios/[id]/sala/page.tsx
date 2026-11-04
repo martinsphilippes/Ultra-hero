@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { OpenRoomButton } from "@/components/project-room/OpenRoomButton";
 import { ProjectRoom } from "@/components/project-room/ProjectRoom";
 import { EmptyState } from "@/components/ui";
+import { roomKey } from "@/lib/messaging/logic";
+import { markConversationRead } from "@/lib/messaging/queries";
 import { getRoom } from "@/lib/project-room/queries";
 import { loadDeal } from "../_lib";
 
@@ -21,7 +23,8 @@ type Props = { params: Promise<{ id: string }> };
 export default async function DealRoomPage({ params }: Props) {
   const { id } = await params;
   const { deal, canEdit } = await loadDeal(id);
-  const [t, room] = await Promise.all([getTranslations("projectRoom.room"), getRoom(deal.id)]);
+  // 0115: abrir a sala marca a conversa como lida
+  const [t, room] = await Promise.all([getTranslations("projectRoom.room"), getRoom(deal.id), markConversationRead(roomKey(deal.id))]);
   if (!room.available) {
     return (
       <div className="rounded-2xl border border-border bg-surface" data-testid="module-unavailable">

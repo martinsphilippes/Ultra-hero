@@ -1,0 +1,59 @@
+{
+  "title": "Avisos e mensagens",
+  "description": "Suas conversas e tudo o que aconteceu com você nos portais de gestão.",
+  "tabsLabel": "Mensagens ou avisos",
+  "tabMessages": "Mensagens",
+  "tabNotices": "Avisos",
+  "tabUnread": "{count, plural, one {# não lida} other {# não lidas}}",
+  "filterLabel": "Filtrar conversas",
+  "filterAll": "Todas",
+  "filterUnread": "Não lidas ({count})",
+  "kindFilterLabel": "Tipo de conversa",
+  "kindAll": "Todos os tipos",
+  "kinds": {
+    "campaign": "Campanha",
+    "hero": "Herói",
+    "opportunity": "Oportunidade",
+    "room": "Sala do projeto"
+  },
+  "kindsPlural": {
+    "campaign": "Campanhas",
+    "hero": "Heróis",
+    "opportunity": "Oportunidades",
+    "room": "Salas do projeto"
+  },
+  "searchLabel": "Buscar por nome ou título",
+  "searchPlaceholder": "Nome, marca, campanha…",
+  "searchSubmit": "Buscar",
+  "searchClear": "Limpar busca",
+  "listLabel": "Conversas",
+  "rowLabel": "{kind} com {name}: {title}. {stage}. {unread, plural, =0 {Sem mensagens novas} one {# mensagem nova} other {# mensagens novas}}. Última atividade {when}.",
+  "unreadBadge": "{count, plural, one {# nova} other {# novas}}",
+  "closed": "Encerrada · {outcome}",
+  "noStage": "Sem etapa",
+  "noMessages": "Nenhuma mensagem ainda. Toque para começar a conversa.",
+  "attachment": "Arquivo enviado",
+  "locked": "Assine o NDA para entrar na sala.",
+  "room": {
+    "ndaRequired": "Assine o NDA",
+    "archived": "Sala arquivada"
+  },
+  "loadMore": "Carregar mais",
+  "showing": "Mostrando {shown} de {total}",
+  "emptyTitle": "Nenhuma conversa por enquanto",
+  "emptyFiltered": "Nenhuma conversa com esses filtros.",
+  "emptyHint": {
+    "agency": "As conversas nascem nos negócios: o canal com a marca, o canal com cada herói consultado (aba Conversa do negócio) e a sala do projeto. Quando alguém escrever, aparece aqui, com a campanha e a etapa.",
+    "brand": "Cada campanha tem uma conversa com a agência (na página da campanha) e, quando a produção começa, a sala do projeto. Assim que a agência receber sua campanha, a conversa aparece aqui.",
+    "hero": "Cada oportunidade em que a agência consultar você tem uma conversa com a agência; nos projetos confirmados, também a sala do projeto. Elas aparecem aqui.",
+    "staff": "Quando a agência chamar você para um projeto, a sala dele aparece aqui. Depois de assinar o NDA, você conversa com a equipe por ela."
+  },
+  "clearFilters": "Ver todas as conversas",
+  "unavailable": "As conversas não estão disponíveis agora. Tente de novo em instantes.",
+  "homeCard": "Mensagens",
+  "homeCardHint": "{count, plural, =0 {Tudo lido} one {# conversa não lida} other {# conversas não lidas}}",
+  "bellLabel": "Avisos e mensagens: {notices, plural, =0 {nenhum aviso} one {# aviso} other {# avisos}} e {messages, plural, =0 {nenhuma conversa} one {# conversa} other {# conversas}} não lidos",
+  "bellMessages": "Mensagens",
+  "bellMessagesHint": "{count, plural, =0 {Nenhuma conversa não lida} one {# conversa não lida} other {# conversas não lidas}}",
+  "seeNotices": "Ver todos os avisos"
+}

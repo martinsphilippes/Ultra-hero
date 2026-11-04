@@ -5,8 +5,10 @@ import { Plus } from "lucide-react";
 import { AccessPanel } from "@/components/agency/AccessPanel";
 import { ManageHeroButton } from "@/components/agency/HeroForms";
 import { AgencyInviteDialog, type HeroInviteTalent } from "@/components/invites/AgencyInviteDialog";
+import { ImageAuthorizationNotice } from "@/components/catalog/ImageAuthorizationNotice";
 import { Avatar, Button, EmptyState, PageHeader, Section } from "@/components/ui";
 import { loadAccessStatus } from "@/lib/agency/access-status";
+import { needsImageAuthorization } from "@/lib/catalog/rights";
 import { requireAgency } from "@/lib/agency/server";
 import { createClient } from "@/lib/supabase/server";
 import { InvitesGate } from "@/components/invites/InvitesGate";
@@ -26,12 +28,15 @@ export default async function AgencyHeroesPage() {
   const [t, supabase] = await Promise.all([getTranslations("agency.heroes"), createClient()]);
   const { data } = await supabase
     .from("talent_profiles")
-    .select("id, creator:creator_profiles(id, slug, name, headline, avatar_url, status)")
+    .select("id, consent_at, consent_revoked_at, creator:creator_profiles(id, slug, name, headline, avatar_url, status, is_fictional, rights_status, rights_valid_until)")
     .eq("agency_id", ctx.agency.id)
     .not("creator_id", "is", null)
     .is("archived_at", null)
     .order("display_name");
-  const heroes = (data ?? []).flatMap((row) => (row.creator ? [{ ...row.creator, talentId: row.id }] : []));
+  // pessoa real sem autorização de imagem válida: aviso interno com o atalho para o consentimento na ficha
+  const heroes = (data ?? []).flatMap((row) =>
+    row.creator ? [{ ...row.creator, talentId: row.id, needsRights: needsImageAuthorization(row.creator), consentOk: Boolean(row.consent_at && !row.consent_revoked_at) }] : [],
+  );
   // 0091: convite de herói — creators do casting sem login (o selo do acesso diz quem já tem conta)
   const [{ data: casting }, { data: access }, ti, accounts] = await Promise.all([
     supabase.from("talent_profiles").select("id, display_name, creator_id, creator:creator_profiles(name)").eq("agency_id", ctx.agency.id).is("archived_at", null).order("display_name"),
@@ -97,6 +102,7 @@ export default async function AgencyHeroesPage() {
                       <span className="type-caption text-fg-muted">{hero.status === "pending" ? ti("heroPending") : t("suspended")}</span>
                     )}
                   </div>
+                  {hero.needsRights ? <ImageAuthorizationNotice audience="agency" href={`/agencia/casting/${hero.talentId}#talent-consent`} awaiting={hero.consentOk} compact /> : null}
                   {account && !locked ? <AccessPanel kind="talent" targetId={hero.talentId} status={account} compact /> : null}
                 </li>
               );

@@ -131,7 +131,7 @@ export function CreatorForm({ id, initial, privateMeta }: Props) {
         <Textarea value={values.rightsNote ?? ""} maxLength={500} rows={2} disabled={pending} onChange={(e) => set("rightsNote", e.target.value)} />
       </FormField>
 
-      <fieldset className="flex flex-col gap-4 rounded-2xl border border-border bg-surface-elevated p-4">
+      <fieldset id="creator-rights" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-surface-elevated p-4">
         <legend className="px-1 text-sm font-semibold text-fg">{t("rightsSection")}</legend>
         <FormField label={t("rightsStatus")} hint={t("rightsStatusHint")}>
           <Select value={values.rightsStatus ?? "fictional"} disabled={pending} onChange={(e) => set("rightsStatus", e.target.value as CreatorFormValues["rightsStatus"])}>

@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { AccessPanel } from "@/components/agency/AccessPanel";
 import { HeroMediaPanel } from "@/components/agency/HeroMediaPanel";
 import { HeroProfileForm } from "@/components/agency/HeroForms";
+import { ImageAuthorizationNotice } from "@/components/catalog/ImageAuthorizationNotice";
 import { Button, PageHeader, Section } from "@/components/ui";
 import { actingClient, getActingHero } from "@/lib/acting-hero/server";
 import { loadAccessStatus } from "@/lib/agency/access-status";
 import { requireAgency } from "@/lib/agency/server";
+import { needsImageAuthorization } from "@/lib/catalog/rights";
 import { getAvatarPhotoState } from "@/lib/avatar/availability";
 import { getHeroCoverState } from "@/lib/hero-cover/availability";
 import type { Pillar } from "@/lib/supabase/helpers";
@@ -29,11 +31,11 @@ export default async function AgencyHeroPage({ params }: { params: Promise<{ id:
   const acting = await getActingHero();
   if (acting.status !== "ok" || acting.hero.id !== id) redirect("/agencia/herois");
   const [t, supabase, avatarState, coverState] = await Promise.all([getTranslations("agency.heroes"), actingClient(id), getAvatarPhotoState(), getHeroCoverState()]);
-  const { data: hero } = await supabase.from("creator_profiles").select("id, slug, name, headline, bio, pillars, avatar_url, cover_url").eq("id", id).maybeSingle();
+  const { data: hero } = await supabase.from("creator_profiles").select("id, slug, name, headline, bio, pillars, avatar_url, cover_url, is_fictional, rights_status, rights_valid_until").eq("id", id).maybeSingle();
   if (!hero) redirect("/agencia/herois");
   // 0112: acesso do herói (pela ficha do casting ligada; só gestor+ e admin geral)
   const own = await createClient();
-  const { data: talentRow } = await own.from("talent_profiles").select("id").eq("creator_id", id).eq("agency_id", ctx.agency.id).is("archived_at", null).maybeSingle();
+  const { data: talentRow } = await own.from("talent_profiles").select("id, consent_at, consent_revoked_at").eq("creator_id", id).eq("agency_id", ctx.agency.id).is("archived_at", null).maybeSingle();
   const account = talentRow ? ((await loadAccessStatus(own, ctx.agency.id, "talent")).get(talentRow.id) ?? null) : null;
 
   return (
@@ -54,6 +56,14 @@ export default async function AgencyHeroPage({ params }: { params: Promise<{ id:
           </div>
         }
       />
+      {/* pessoa real sem autorização de imagem válida: aviso interno (o público não vê selo nenhum) */}
+      {needsImageAuthorization(hero) ? (
+        <ImageAuthorizationNotice
+          audience="agency"
+          href={talentRow ? `/agencia/casting/${talentRow.id}#talent-consent` : null}
+          awaiting={Boolean(talentRow?.consent_at && !talentRow.consent_revoked_at)}
+        />
+      ) : null}
       {account && talentRow && !ctx.agency.isDemo ? (
         <Section title={t("accountTitle")} description={t("accountDescription")}>
           <div className="rounded-2xl border border-border bg-surface p-4">

@@ -34,7 +34,7 @@ export default async function HeroPortalLayout({ children }: { children: ReactNo
   const pendingHero = mine.creatorId !== null && mine.profile?.status === "pending";
   const navKeys = heroPortalNavKeys({ hero: hasHeroRole(roles), casting: talent.state === "ok" });
   return (
-    <PortalShell portal="creator" navKeys={navKeys} headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/heroi/avisos" /> : null}>
+    <PortalShell portal="creator" navKeys={navKeys} headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/heroi/avisos?aba=avisos" messages={{ portal: "hero", href: "/heroi/avisos?aba=mensagens", initialUnread: 0 }} /> : null}>
       {pendingHero ? (
         <div className="mb-4">
           <HeroPendingNotice />

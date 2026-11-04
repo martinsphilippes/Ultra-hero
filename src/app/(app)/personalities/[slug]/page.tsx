@@ -50,8 +50,15 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
   const [creator, t, tl, locale] = await Promise.all([loadCreator(slug), getTranslations("discover.personalities.profile"), getTranslations("discover.personalities.libraries"), getLocale()]);
   if (!creator) notFound();
 
-  // RB-05: só "autorizado" com titular documentado e dentro da validade tira o selo de fictício.
+  // RB-05: só "autorizado" com titular documentado e dentro da validade aparece como autorizado. O selo "Perfil
+  // ilustrativo" é só do herói fictício (is_fictional); pessoa real pendente ou vencida fica sem selo público e a
+  // pendência vira aviso interno da agência e do admin ("Registrar autorização de imagem").
   const rights = effectiveRightsStatus(creator.rights_status, creator.rights_valid_until);
+  const fictional = showsFictionalBadge(creator.is_fictional);
+  // nota de direitos: autorizado (titular e validade), fictício (nota ou o padrão "criado pela plataforma") ou,
+  // pessoa real sem autorização válida, só a nota escrita pela administração (sem nota, a caixa não aparece)
+  const rightsNote = creator.rights_note?.trim() || null;
+  const showRightsNote = rights === "authorized" || fictional || rightsNote !== null;
   const supabase = await createClient();
   const [hub, follow, followers, brands] = await Promise.all([
     loadCreatorHub(creator),
@@ -91,8 +98,8 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 className="truncate text-xl font-semibold text-fg">{creator.name}</h1>
-              {showsFictionalBadge(rights) && <Badge variant="neutral" size="sm" className="native:hidden">{t("fictional")}</Badge>}
-              {rights === "pending" && <Badge variant="info" size="sm">{t("rightsPendingBadge")}</Badge>}
+              {fictional && <Badge variant="neutral" size="sm" className="native:hidden">{t("fictional")}</Badge>}
+              {fictional && rights === "pending" && <Badge variant="info" size="sm">{t("rightsPendingBadge")}</Badge>}
             </div>
             <ul className="flex gap-5" aria-label={t("statsLabel")} data-testid="hero-stats">
               {stats.map((stat) => (
@@ -154,33 +161,35 @@ export default async function PersonalityPage({ params, searchParams }: Props) {
 
       {/* Nota de direitos (RB-05): fictício ou em validação nunca aparecem como autorizado;
           autorizado exibe o titular e a validade registrados pela administração. */}
-      <aside
-        aria-label={t("rightsTitle")}
-        className={cn(
-          "flex gap-3 rounded-xl border border-dashed p-3",
-          rights === "authorized" ? "border-success/40 bg-success-soft/40" : "border-warning/40 bg-warning-soft/40",
-        )}
-      >
-        {rights === "authorized" ? (
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
-        ) : (
-          <Info className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
-        )}
-        <div className="flex flex-col gap-0.5">
-          <p className="text-sm font-semibold text-fg">{t("rightsTitle")}</p>
-          {rights === "authorized" ? (
-            <p className="type-body-sm text-fg-muted">
-              {t("rightsAuthorized", { holder: creator.rights_holder ?? "" })}
-              {creator.rights_valid_until ? ` ${t("rightsValidUntil", { date: formatPlainDate(creator.rights_valid_until, locale as Locale) })}` : ""}
-            </p>
-          ) : (
-            <p className="type-body-sm text-fg-muted">
-              {creator.rights_note?.trim() || t("rightsDefault")}
-              {rights === "pending" ? ` ${t("rightsPending")}` : ""}
-            </p>
+      {showRightsNote ? (
+        <aside
+          aria-label={t("rightsTitle")}
+          className={cn(
+            "flex gap-3 rounded-xl border border-dashed p-3",
+            rights === "authorized" ? "border-success/40 bg-success-soft/40" : "border-warning/40 bg-warning-soft/40",
           )}
-        </div>
-      </aside>
+        >
+          {rights === "authorized" ? (
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
+          ) : (
+            <Info className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+          )}
+          <div className="flex flex-col gap-0.5">
+            <p className="text-sm font-semibold text-fg">{t("rightsTitle")}</p>
+            {rights === "authorized" ? (
+              <p className="type-body-sm text-fg-muted">
+                {t("rightsAuthorized", { holder: creator.rights_holder ?? "" })}
+                {creator.rights_valid_until ? ` ${t("rightsValidUntil", { date: formatPlainDate(creator.rights_valid_until, locale as Locale) })}` : ""}
+              </p>
+            ) : (
+              <p className="type-body-sm text-fg-muted">
+                {fictional ? (rightsNote ?? t("rightsDefault")) : rightsNote}
+                {fictional && rights === "pending" ? ` ${t("rightsPending")}` : ""}
+              </p>
+            )}
+          </div>
+        </aside>
+      ) : null}
     </div>
   );
 }

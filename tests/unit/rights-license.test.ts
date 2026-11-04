@@ -3,7 +3,7 @@ import { saveContentAction } from "@/app/admin/content-actions";
 import { LICENSE_KIND_VALUES, allowedLicenseKinds, coerceLicenseKind, parseContentForm, toFormValues } from "@/components/editors/content/schema";
 import type { ContentFormValues } from "@/components/editors/types";
 import { formatPlainDate } from "@/i18n/format";
-import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
+import { effectiveRightsStatus, needsImageAuthorization, showsFictionalBadge } from "@/lib/catalog/rights";
 
 // Direitos por personalidade (RF-003/RB-05) e licença de mídia (RF-008/RB-06): regras puras
 // compartilhadas entre página pública, formulário e server action do admin.
@@ -93,10 +93,32 @@ describe("effectiveRightsStatus (o que a página pública pode afirmar)", () => 
     expect(effectiveRightsStatus("authorized", "20/10/2027", TODAY)).toBe("pending");
   });
 
-  it("o selo de fictício só sai quando autorizado", () => {
-    expect(showsFictionalBadge("fictional")).toBe(true);
-    expect(showsFictionalBadge("pending")).toBe(true);
-    expect(showsFictionalBadge("authorized")).toBe(false);
+  it("o selo 'Perfil ilustrativo' é só do herói fictício (is_fictional), qualquer que seja a situação dos direitos", () => {
+    expect(showsFictionalBadge(true)).toBe(true);
+    expect(showsFictionalBadge(false)).toBe(false);
+    expect(showsFictionalBadge(null)).toBe(false);
+    expect(showsFictionalBadge(undefined)).toBe(false);
+  });
+});
+
+describe("needsImageAuthorization (aviso interno da agência e do admin)", () => {
+  const real = (rights_status: string | null, rights_valid_until: string | null = null) => ({ is_fictional: false, rights_status, rights_valid_until });
+
+  it("pessoa real pendente, sem situação ou com autorização vencida precisa registrar a autorização", () => {
+    expect(needsImageAuthorization(real("pending"), TODAY)).toBe(true);
+    expect(needsImageAuthorization(real("fictional"), TODAY)).toBe(true);
+    expect(needsImageAuthorization(real(null), TODAY)).toBe(true);
+    expect(needsImageAuthorization(real("authorized", "2026-10-19"), TODAY)).toBe(true);
+  });
+
+  it("pessoa real autorizada e dentro da validade não tem aviso", () => {
+    expect(needsImageAuthorization(real("authorized"), TODAY)).toBe(false);
+    expect(needsImageAuthorization(real("authorized", "2026-10-20"), TODAY)).toBe(false);
+  });
+
+  it("herói fictício nunca tem aviso", () => {
+    expect(needsImageAuthorization({ is_fictional: true, rights_status: "pending", rights_valid_until: null }, TODAY)).toBe(false);
+    expect(needsImageAuthorization({ is_fictional: true, rights_status: "fictional", rights_valid_until: null }, TODAY)).toBe(false);
   });
 });
 

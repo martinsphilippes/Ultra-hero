@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
 import { MessageThread } from "@/components/deals/MessageThread";
 import { listDealTalents, listMessages } from "@/lib/deals/queries";
+import { dealBrandKey, dealTalentKey } from "@/lib/messaging/logic";
+import { markConversationRead } from "@/lib/messaging/queries";
 import { loadDeal } from "../_lib";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +25,11 @@ export default async function DealMessagesPage({ params, searchParams }: Props) 
   const consulted = talents.filter((x) => x.consultedAt && x.status !== "removed");
   const selected = consulted.find((x) => x.talentId === sp.canal) ?? null;
   const channel = selected ? "talent_agency" : "brand_agency";
-  const messages = await listMessages(deal.id, channel, selected?.talentId);
+  // 0115: abrir o canal marca a conversa como lida (lista "Avisos e mensagens" e o aviso "Nova mensagem")
+  const [messages] = await Promise.all([
+    listMessages(deal.id, channel, selected?.talentId),
+    markConversationRead(selected ? dealTalentKey(deal.id, selected.talentId) : dealBrandKey(deal.id)),
+  ]);
   const base = `/agencia/negocios/${deal.id}/conversa`;
   return (
     <div className="flex flex-col gap-4">

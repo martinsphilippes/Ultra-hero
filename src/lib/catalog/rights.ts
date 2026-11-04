@@ -1,5 +1,9 @@
 // Direitos de nome e imagem por personalidade (RF-003, RF-004, RB-05). Regra pura, usada na
 // página pública e no card: nunca apresenta como autorizado o que não está documentado e válido.
+// Selo público x direitos (decisão do responsável): "Perfil ilustrativo" só identifica personagem criado pela
+// plataforma (creator_profiles.is_fictional = true). Pessoa real com autorização pendente ou vencida não ganha
+// selo público; nada passa a ser "autorizado" por isso (a nota de direitos continua sem afirmar autorização) e
+// a pendência vira um aviso interno para a agência e a administração (needsImageAuthorization).
 
 export type RightsStatus = "fictional" | "authorized" | "pending";
 
@@ -25,7 +29,20 @@ export function effectiveRightsStatus(status: string | null | undefined, validUn
   return "fictional";
 }
 
-/** O selo "personagem fictício" só sai quando o uso está autorizado e válido. */
-export function showsFictionalBadge(status: RightsStatus): boolean {
-  return status !== "authorized";
+/** Selo público "Perfil ilustrativo" (e o aviso padrão de perfil criado pela plataforma): só para herói fictício. */
+export function showsFictionalBadge(isFictional: boolean | null | undefined): boolean {
+  return isFictional === true;
+}
+
+export type HeroRightsFields = {
+  is_fictional: boolean | null | undefined;
+  rights_status: string | null | undefined;
+  rights_valid_until: string | null | undefined;
+};
+
+/** Pessoa real sem autorização de imagem válida (pendente ou vencida): aviso interno "Registrar autorização de
+ *  imagem" para a agência e a administração. Herói fictício não precisa de autorização. */
+export function needsImageAuthorization(hero: HeroRightsFields, today: Date = new Date()): boolean {
+  if (hero.is_fictional === true) return false;
+  return effectiveRightsStatus(hero.rights_status, hero.rights_valid_until, today) !== "authorized";
 }

@@ -32,6 +32,8 @@ import { getUser } from "@/lib/auth/session";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { briefDefined, briefToDraft } from "@/lib/brief/brief";
 import { getBrandCampaign, getDealOffer, getRequestBudget, listMessages } from "@/lib/deals/queries";
+import { dealBrandKey } from "@/lib/messaging/logic";
+import { markConversationRead } from "@/lib/messaging/queries";
 import { flowDeliverables, flowStep, flowTerms, nextStep, nextStepHref, stageFromBrandStatus, type FlowInput } from "@/lib/deals/next-step";
 import { BRAND_STATUSES, isDealStage, type DealOutcome } from "@/lib/deals/stages";
 import { centsToBrl } from "@/lib/money/brl-input";
@@ -113,7 +115,12 @@ export default async function BrandCampaignPage({ params }: Props) {
   // 0108: condições de pagamento combinadas com a agência (total, forma e parcelas; previsto até a contratação)
   const [paymentPlan, tplan] = await Promise.all([deal ? dealPaymentPlan(deal.id) : Promise.resolve(null), getTranslations("payments.plan")]);
   // 0110: sala do projeto (aberta: link; arquivada: clipping) e prévias das entregas
-  const [roomAccess, previews] = await Promise.all([deal ? getRoomAccess(deal.id) : Promise.resolve(null), deal && inExecution ? getDealPreviews(deal.id) : Promise.resolve([])]);
+  // 0115: a conversa com a agência está nesta página — abrir marca como lida (lista "Avisos e mensagens" e o aviso)
+  const [roomAccess, previews] = await Promise.all([
+    deal ? getRoomAccess(deal.id) : Promise.resolve(null),
+    deal && inExecution ? getDealPreviews(deal.id) : Promise.resolve([]),
+    deal ? markConversationRead(dealBrandKey(deal.id)) : Promise.resolve(),
+  ]);
   const mediaData = media?.available ? media.data : null;
   const today = localDay(new Date(), "America/Sao_Paulo");
   const linkRows = detail.talents

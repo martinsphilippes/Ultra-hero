@@ -26,7 +26,7 @@ export default async function BrandLayout({ children }: { children: ReactNode })
       portal="brand"
       navKeys={brandNavKeys()}
       badge={ctx.brand.name}
-      headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/marca/notificacoes" /> : null}
+      headerAction={unread !== null ? <NotificationBell userId={user.id} initialUnread={unread} allHref="/marca/notificacoes?aba=avisos" messages={{ portal: "brand", href: "/marca/notificacoes?aba=mensagens", initialUnread: 0 }} /> : null}
     >
       {ctx.platformAdmin && !ctx.role ? (
         <p className="mb-4 rounded-xl border border-dashed border-border-strong px-3 py-2 type-body-sm text-fg-muted">{t("adminReadOnly")}</p>

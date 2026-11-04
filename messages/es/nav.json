@@ -63,7 +63,7 @@
     "portfolio": "Portafolio",
     "documents": "Documentos",
     "consent": "Consentimiento",
-    "notifications": "Avisos"
+    "notifications": "Avisos y mensajes"
   },
   "seller": {
     "dashboard": "Panel",
@@ -103,7 +103,7 @@
     "dashboard": "Inicio",
     "heroes": "Héroes",
     "brands": "Marcas",
-    "notifications": "Avisos",
+    "notifications": "Avisos y mensajes",
     "settings": "Configuración",
     "team": "Equipo",
     "casting": "Casting",
@@ -119,7 +119,7 @@
     "dashboard": "Inicio",
     "board": "Acciones",
     "team": "Equipo",
-    "notifications": "Avisos",
+    "notifications": "Avisos y mensajes",
     "campaigns": "Campañas",
     "library": "Biblioteca",
     "catalog": "Héroes",
@@ -134,6 +134,7 @@
   },
   "project": {
     "projects": "Mis proyectos",
-    "notifications": "Avisos"
-  }
+    "notifications": "Avisos y mensajes"
+  },
+  "soon": "Pronto"
 }

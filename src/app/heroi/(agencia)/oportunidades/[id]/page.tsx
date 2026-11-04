@@ -22,6 +22,8 @@ import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatDuration, formatPlainDate } from "@/i18n/format";
 import { getOrigin } from "@/lib/auth/origin";
 import { listMessages, listOpportunities, myFee } from "@/lib/deals/queries";
+import { dealTalentKey } from "@/lib/messaging/logic";
+import { markConversationRead } from "@/lib/messaging/queries";
 import { flowDeliverables, flowStep, flowTerms, nextStep, nextStepHref, stageFromOpportunity, type FlowInput } from "@/lib/deals/next-step";
 import { formatCents } from "@/lib/deals/schemas";
 import { isDealStage } from "@/lib/deals/stages";
@@ -74,7 +76,12 @@ export default async function OpportunityPage({ params, searchParams }: Props) {
     getOrigin(),
   ]);
   // 0108: o repasse dele (quanto, quando, como e se a nota é exigida), só para o titular proposto/contratado
-  const [paymentPlan, tplan] = await Promise.all([contracted ? dealPaymentPlan(o.deal.id) : Promise.resolve(null), getTranslations("payments.plan")]);
+  // 0115: a conversa com a agência está nesta página — abrir marca como lida (lista "Avisos e mensagens" e o aviso)
+  const [paymentPlan, tplan] = await Promise.all([
+    contracted ? dealPaymentPlan(o.deal.id) : Promise.resolve(null),
+    getTranslations("payments.plan"),
+    markConversationRead(dealTalentKey(o.deal.id, ctx.talent.id)),
+  ]);
   const mediaData = media?.available ? media.data : null;
   const offer = offerRes.data;
   const execution = exec.available ? exec.data : null;

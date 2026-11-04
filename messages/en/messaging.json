@@ -1,0 +1,59 @@
+{
+  "title": "Notices and messages",
+  "description": "Your conversations and everything that happened to you in the management portals.",
+  "tabsLabel": "Messages or notices",
+  "tabMessages": "Messages",
+  "tabNotices": "Notices",
+  "tabUnread": "{count, plural, one {# unread} other {# unread}}",
+  "filterLabel": "Filter conversations",
+  "filterAll": "All",
+  "filterUnread": "Unread ({count})",
+  "kindFilterLabel": "Conversation type",
+  "kindAll": "All types",
+  "kinds": {
+    "campaign": "Campaign",
+    "hero": "Hero",
+    "opportunity": "Opportunity",
+    "room": "Project room"
+  },
+  "kindsPlural": {
+    "campaign": "Campaigns",
+    "hero": "Heroes",
+    "opportunity": "Opportunities",
+    "room": "Project rooms"
+  },
+  "searchLabel": "Search by name or title",
+  "searchPlaceholder": "Name, brand, campaign…",
+  "searchSubmit": "Search",
+  "searchClear": "Clear search",
+  "listLabel": "Conversations",
+  "rowLabel": "{kind} with {name}: {title}. {stage}. {unread, plural, =0 {No new messages} one {# new message} other {# new messages}}. Last activity {when}.",
+  "unreadBadge": "{count, plural, one {# new} other {# new}}",
+  "closed": "Closed · {outcome}",
+  "noStage": "No stage",
+  "noMessages": "No messages yet. Tap to start the conversation.",
+  "attachment": "File sent",
+  "locked": "Sign the NDA to enter the room.",
+  "room": {
+    "ndaRequired": "Sign the NDA",
+    "archived": "Room archived"
+  },
+  "loadMore": "Load more",
+  "showing": "Showing {shown} of {total}",
+  "emptyTitle": "No conversations yet",
+  "emptyFiltered": "No conversations match these filters.",
+  "emptyHint": {
+    "agency": "Conversations start in deals: the channel with the brand, the channel with each consulted hero (deal Conversation tab) and the project room. When someone writes, it shows up here with the campaign and the stage.",
+    "brand": "Each campaign has a conversation with the agency (on the campaign page) and, once production starts, the project room. As soon as the agency receives your campaign, the conversation shows up here.",
+    "hero": "Each opportunity the agency consults you about has a conversation with the agency; confirmed projects also have the project room. They show up here.",
+    "staff": "When the agency calls you to a project, its room shows up here. After you sign the NDA, you talk to the team there."
+  },
+  "clearFilters": "See all conversations",
+  "unavailable": "Conversations are not available right now. Try again in a moment.",
+  "homeCard": "Messages",
+  "homeCardHint": "{count, plural, =0 {All read} one {# unread conversation} other {# unread conversations}}",
+  "bellLabel": "Notices and messages: {notices, plural, =0 {no notices} one {# notice} other {# notices}} and {messages, plural, =0 {no conversations} one {# conversation} other {# conversations}} unread",
+  "bellMessages": "Messages",
+  "bellMessagesHint": "{count, plural, =0 {No unread conversations} one {# unread conversation} other {# unread conversations}}",
+  "seeNotices": "See all notices"
+}

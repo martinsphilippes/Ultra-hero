@@ -5,7 +5,9 @@ import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CredentialsQueue } from "@/components/admin-ops/CredentialsQueue";
 import { CreatorStatusButton } from "@/components/admin-ops/StatusActions";
+import { ImageAuthorizationNotice } from "@/components/catalog/ImageAuthorizationNotice";
 import { Avatar, Badge, Button, PageHeader, PillarBadge } from "@/components/ui";
+import { needsImageAuthorization } from "@/lib/catalog/rights";
 import type { Tables } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: `${t("portals.admin")} · ${t("admin.creators")}` };
 }
 
-type CreatorRow = Pick<Tables<"creator_profiles">, "id" | "slug" | "name" | "pillars" | "status" | "user_id" | "is_fictional" | "avatar_url" | "sort_order" | "rights_status">;
+type CreatorRow = Pick<Tables<"creator_profiles">, "id" | "slug" | "name" | "pillars" | "status" | "user_id" | "is_fictional" | "avatar_url" | "sort_order" | "rights_status" | "rights_valid_until">;
 type RightsStatus = "fictional" | "pending" | "authorized";
 const RIGHTS_VARIANT: Record<RightsStatus, "neutral" | "info" | "success"> = { fictional: "neutral", pending: "info", authorized: "success" };
 
@@ -27,7 +29,7 @@ export default async function AdminCreatorsPage() {
     getTranslations("nav"),
   ]);
   const supabase = await createClient();
-  const { data, error } = await supabase.from("creator_profiles").select("id, slug, name, pillars, status, user_id, is_fictional, avatar_url, sort_order, rights_status").order("sort_order").order("name");
+  const { data, error } = await supabase.from("creator_profiles").select("id, slug, name, pillars, status, user_id, is_fictional, avatar_url, sort_order, rights_status, rights_valid_until").order("sort_order").order("name");
   if (error) throw new Error(error.message);
   // 0092: heróis aguardando aprovação primeiro, com o aviso e o botão Aprovar em cada linha
   const rows = ((data ?? []) as CreatorRow[]).slice().sort((a, b) => Number(b.status === "pending") - Number(a.status === "pending"));
@@ -90,9 +92,13 @@ export default async function AdminCreatorsPage() {
       cell: (c) => {
         const rights = (c.rights_status as RightsStatus) in RIGHTS_VARIANT ? (c.rights_status as RightsStatus) : "fictional";
         return (
-          <Badge variant={RIGHTS_VARIANT[rights]} size="sm">
-            {t(`rights.${rights}`)}
-          </Badge>
+          <span className="flex flex-col items-start gap-1">
+            <Badge variant={RIGHTS_VARIANT[rights]} size="sm">
+              {t(`rights.${rights}`)}
+            </Badge>
+            {/* pessoa real sem autorização válida (pendente ou vencida): aviso interno com o atalho para os direitos */}
+            {needsImageAuthorization(c) ? <ImageAuthorizationNotice audience="admin" href={`/admin/herois/${c.id}#creator-rights`} compact /> : null}
+          </span>
         );
       },
     },

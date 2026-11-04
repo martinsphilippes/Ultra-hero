@@ -4,7 +4,7 @@ import { HeroCoverImage } from "@/components/creator/HeroCoverImage";
 import { AvatarInitials, Badge, Card } from "@/components/ui";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import type { CreatorCardData } from "@/lib/catalog/queries";
-import { effectiveRightsStatus, showsFictionalBadge } from "@/lib/catalog/rights";
+import { showsFictionalBadge } from "@/lib/catalog/rights";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -15,12 +15,13 @@ type Props = {
   className?: string;
 };
 
-// Card de personalidade. O selo de fictício só sai com uso de nome e imagem autorizado e válido (RB-05).
+// Card de personalidade. O selo "Perfil ilustrativo" só sai para herói fictício (is_fictional); pessoa real
+// com direitos pendentes não ganha selo público (a pendência é aviso interno da agência e do admin, RB-05).
 // Selos: as categorias do herói (0049), não os pilares.
 // Só fotos reais: sem capa, uma superfície lisa do tema; sem foto, as iniciais do nome.
 export async function CreatorCard({ creator, categories = [], priority, className }: Props) {
   const t = await getTranslations("catalog");
-  const fictional = showsFictionalBadge(effectiveRightsStatus(creator.rights_status, creator.rights_valid_until));
+  const fictional = showsFictionalBadge(creator.is_fictional);
   return (
     <Card interactive asChild className={cn("h-full", className)}>
       <Link href={`/personalities/${creator.slug}`}>

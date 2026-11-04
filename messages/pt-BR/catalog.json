@@ -50,5 +50,13 @@
     "noSteps": "Este programa ainda não tem etapas disponíveis.",
     "count": "{count, plural, =1 {1 programa} other {# programas}}"
   },
-  "photoPost": "Foto"
+  "photoPost": "Foto",
+  "imageRights": {
+    "title": "Registrar autorização de imagem",
+    "awaitingTitle": "Autorização de imagem em análise",
+    "agencyHint": "Pessoa real sem autorização de imagem válida. Envie o termo assinado em Documentos e registre o consentimento; a plataforma confirma a autorização.",
+    "adminHint": "Pessoa real sem autorização de imagem válida. Registre o titular e a validade em Direitos de nome e imagem.",
+    "awaiting": "Consentimento registrado com o termo assinado; falta a plataforma confirmar a autorização.",
+    "internal": "Aviso interno: o público não vê."
+  }
 }
