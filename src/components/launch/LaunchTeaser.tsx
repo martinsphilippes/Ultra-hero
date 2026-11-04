@@ -43,6 +43,13 @@ export async function LaunchTeaser({ kind, tags, seasonal }: Props) {
   const title = influencer ? t("influencer.title") : t("teaser.title");
   // o ponto final vira o ponto laranja da marca
   const titleBody = title.endsWith(".") ? title.slice(0, -1) : title;
+  const hasDot = titleBody !== title;
+  const titleCopy = (layer: string) => (
+    <span aria-hidden="true" className={`uh-tz-shine ${layer} uh-tz-title-copy`}>
+      {titleBody}
+      {hasDot ? <span className="uh-tz-dot">.</span> : null}
+    </span>
+  );
 
   return (
     <div className="uh-tz" data-kind={kind} data-testid="launch-teaser">
@@ -80,14 +87,20 @@ export async function LaunchTeaser({ kind, tags, seasonal }: Props) {
               {t("influencer.eyebrow")}
             </p>
           ) : null}
-          <h1 id="tz-title" className="uh-tz-title" style={delay(700)}>
-            {titleBody}
-            {titleBody !== title ? (
-              <span aria-hidden="true" className="uh-tz-dot">
-                .
-              </span>
-            ) : null}
-          </h1>
+          {/* O h1 real fica liso e é o único lido/selecionável; o halo e o reflexo são cópias decorativas (aria-hidden,
+              irmãs do h1 para não duplicar o textContent do título) mascaradas pela mesma faixa do logo — teaser.css. */}
+          <div className="uh-tz-title-wrap uh-tz-in" style={delay(700)}>
+            {titleCopy("uh-tz-shine-halo")}
+            <h1 id="tz-title" className="uh-tz-title">
+              {titleBody}
+              {hasDot ? (
+                <span aria-hidden="true" className="uh-tz-dot">
+                  .
+                </span>
+              ) : null}
+            </h1>
+            {titleCopy("uh-tz-shine-gloss")}
+          </div>
           {influencer ? (
             <ul aria-label={t("influencer.benefitsTitle")} className="uh-tz-benefits uh-tz-in" style={delay(900)}>
               <li>{t("influencer.benefits.brands")}</li>
