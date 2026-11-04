@@ -1,5 +1,5 @@
 // Saneamento do que vem do banco (módulo puro, testado): mesmo com os checks da 0100, o app só usa cores #rrggbb,
-// URLs do bucket theme-assets e links internos/https — o tema nunca injeta CSS ou endereço arbitrário.
+// URLs do bucket theme-assets ou ilustrações do próprio app em /temas/ (0102) e links internos/https — o tema nunca injeta CSS ou endereço arbitrário.
 import type { Decoration, PublicSeasonTheme, SeasonArea, ThemeBackground, ThemeBanner, ThemeTokens } from "./vocab";
 import { DECOR_POSITIONS, DECOR_SIZES, isAssetUrl, isBannerHref, isHexColor, isSeasonArea } from "./vocab";
 

@@ -62,10 +62,15 @@ export function isSeasonArea(value: unknown): value is SeasonArea {
   return typeof value === "string" && (SEASON_AREAS as readonly string[]).includes(value);
 }
 
-/** URL pública aceita para imagem do tema: só o bucket theme-assets, nome <uuid>.(png|jpg|webp). Igual à 0100. */
+/** URL pública aceita para imagem do tema enviada pelo admin: bucket theme-assets, nome <uuid>.(png|jpg|webp). Igual à 0100. */
 export const ASSET_URL_RE = /^https?:\/\/[a-z0-9.:-]+\/storage\/v1\/object\/public\/theme-assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(png|jpg|webp)$/;
+/**
+ * Ilustração que acompanha o app (0102): só a pasta public/temas, /temas/<pasta>/<arquivo>.(png|jpg|webp), cada parte com
+ * letras minúsculas, dígitos e hífen — sem "..", barra dupla, outro domínio ou SVG. Igual à 0102.
+ */
+export const LOCAL_ASSET_RE = /^\/temas\/[a-z0-9]+(-[a-z0-9]+)*\/[a-z0-9]+(-[a-z0-9]+)*\.(png|jpg|webp)$/;
 export function isAssetUrl(value: unknown): value is string {
-  return typeof value === "string" && value.length <= 300 && ASSET_URL_RE.test(value);
+  return typeof value === "string" && value.length <= 300 && (ASSET_URL_RE.test(value) || LOCAL_ASSET_RE.test(value));
 }
 
 /** Link da faixa: caminho interno (/…) ou https. Igual à 0100. */
