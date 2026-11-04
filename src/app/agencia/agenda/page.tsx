@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { CalendarDays, Handshake } from "lucide-react";
+import { BriefcaseBusiness, Building2, CalendarDays, ChevronDown, ClipboardList, Contact, Handshake, Plus, SlidersHorizontal, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AgendaCalendar } from "@/components/calendar/AgendaCalendar";
 import { AgendaTabs } from "@/components/culture/AgendaTabs";
 import { EventEditorProvider, EventNewButton } from "@/components/calendar/EventEditor";
 import { FeedCard } from "@/components/calendar/FeedCard";
-import { Button, EmptyState, EntitySelect, PageHeader, Select } from "@/components/ui";
+import { Button, EmptyState, EntitySelect, PageHeader, QuickActions, Select, type QuickAction } from "@/components/ui";
 import { listAgencyBrands } from "@/lib/agency/queries";
 import { agencyCan } from "@/lib/agency/roles";
 import { requireAgency } from "@/lib/agency/server";
@@ -49,6 +49,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   const { year, month } = parseMonth(sp.mes, tz);
   const { from, to } = queryRange(year, month);
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
+  const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
   // 0098: Calendário Groscove junto (some quando o filtro de tipo está em uso ou em "só meus")
   const gFilters = parseAgendaFilters(sp);
   const groscove = sp.tipo ? { events: [], collections: [] } : await groscoveForAgenda({ from, to }, gFilters);
@@ -58,8 +59,9 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   })();
   // 0089: chamadas da marca (gestor+) entram como evento do período; os filtros de creator/marca não se aplicam a elas
   const showCalls = isManager && !sp.creator && !sp.marca && (!sp.tipo || sp.tipo === "brand_call");
-  const [tbc, locale, calls] = await Promise.all([
+  const [tbc, tq, locale, calls] = await Promise.all([
     getTranslations("brandCall.agency"),
+    getTranslations("agency.dashboard"),
     getLocale() as Promise<Locale>,
     showCalls ? listAgencyBrandCalls(ctx.agency.id) : Promise.resolve({ available: false, items: [] }),
   ]);
@@ -150,7 +152,30 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
         />
         {/* 0101: aba Cultura (Real-Time Culture) dentro da agenda */}
         <AgendaTabs base="/agencia/agenda" active="agenda" />
-        <form method="get" action="/agencia/agenda" className="grid gap-3 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-[1fr_1fr_1fr_auto]" data-testid="agenda-filters">
+        {/* atalhos da agência (vieram do Início, pedido do responsável 04/11): pipeline em destaque + atalhos compactos */}
+        <QuickActions
+          label={tq("shortcuts.label")}
+          testId="agency-quick-actions"
+          primary={{ href: "/agencia/pipeline", icon: <BriefcaseBusiness />, label: tq("seePipeline") }}
+          items={(
+            [
+              { href: "/agencia/tarefas", icon: <ClipboardList />, label: tq("shortcuts.tasks"), title: tq("seeTasks") },
+              isManager ? { href: "/agencia/casting/novo", icon: <Contact />, label: tq("shortcuts.newHero"), title: tq("newTalent") } : null,
+              isManager ? { href: "/agencia/marcas/nova", icon: <Plus />, label: tq("shortcuts.newBrand"), title: tq("newBrand") } : null,
+              isAdmin && !ctx.agency.isDemo ? { href: "/agencia/equipe", icon: <UserPlus />, label: tq("shortcuts.team"), title: tq("inviteTeam") } : null,
+              { href: "/agencia/casting", icon: <Users />, label: tq("shortcuts.casting"), title: tq("seeCasting") },
+              { href: "/agencia/marcas", icon: <Building2 />, label: tq("shortcuts.brands"), title: tq("seeBrands") },
+            ] as (QuickAction | null)[]
+          ).filter((x): x is QuickAction => x !== null)}
+        />
+        {/* filtros da agência recolhidos (enxuto no celular, pedido do responsável 04/11); abre sozinho com filtro em uso */}
+        <details open={filtered} className="group rounded-2xl border border-border bg-surface open:p-3" data-testid="agenda-filters-box">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-2xl px-3 text-sm font-medium text-fg group-open:mb-3 group-open:px-0 hover:bg-surface-hover group-open:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-focus [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal className="size-4 text-fg-muted" aria-hidden="true" />
+            <span className="flex-1">{t("filters.more")}</span>
+            <ChevronDown className="size-4 text-fg-muted transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <form method="get" action="/agencia/agenda" className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto]" data-testid="agenda-filters">
           <input type="hidden" name="mes" value={monthKey(year, month)} />
           <label className="flex flex-col gap-1 text-xs font-medium text-fg-muted">
             {t("filters.talent")}
@@ -181,7 +206,8 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
               </a>
             ) : null}
           </div>
-        </form>
+          </form>
+        </details>
         {sp.tipo ? null : (
           <AgendaFilterBar base="/agencia/agenda" params={{ mes: monthKey(year, month), creator: sp.creator, marca: sp.marca }} filters={gFilters} collections={groscove.collections} />
         )}

@@ -120,7 +120,16 @@
     "seePipeline": "Ver pipeline",
     "seeTasks": "Mis tareas",
     "financeTitle": "Finanzas (simuladas)",
-    "seeFinance": "Ver finanzas"
+    "seeFinance": "Ver finanzas",
+    "shortcuts": {
+      "label": "Atajos de la agencia",
+      "tasks": "Tareas",
+      "newHero": "Nuevo héroe",
+      "newBrand": "Nueva marca",
+      "team": "Equipo",
+      "casting": "Casting",
+      "brands": "Marcas"
+    }
   },
   "team": {
     "title": "Equipo",
@@ -875,7 +884,8 @@
       "kind": "Tipo",
       "all": "Todos",
       "apply": "Filtrar",
-      "clear": "Limpiar"
+      "clear": "Limpiar",
+      "more": "Héroe, marca y tipo"
     },
     "empty": "Nada este mes.",
     "emptyHint": "Confirma una campaña o agenda una reunión.",

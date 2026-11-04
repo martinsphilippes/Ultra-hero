@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BriefcaseBusiness, ClipboardList, Contact, Plus, UserPlus, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { KpiCard } from "@/components/admin-ops/KpiCard";
@@ -7,7 +7,7 @@ import { AgencySwitcher } from "@/components/agency/AgencySwitcher";
 import { SelfForm } from "@/components/agency/SettingsForms";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { FinanceKpis } from "@/components/finance/FinanceKpis";
-import { Button, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { agencyDashboardData } from "@/lib/agency/dashboards";
 import { agencyDashboard } from "@/lib/agency/queries";
 import { castingCounts } from "@/lib/talent/queries";
@@ -25,13 +25,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("dashboard") };
 }
 
-// Início da agência: casting, equipe, marcas atendidas, convites pendentes e avisos; os próximos
+// Início da agência (os atalhos ficam na Agenda, pedido do responsável 04/11): casting, equipe, marcas atendidas, convites pendentes e avisos; os próximos
 // módulos aparecem como "em breve" (pipeline, agenda e, só para o Adm, financeiro).
 export default async function AgencyDashboardPage() {
   const ctx = await getAgencyContext();
   if (ctx.state !== "ok") return null;
   const isAdmin = agencyCan(ctx.role, "admin", ctx.platformAdmin);
-  const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const user = await getUser();
   const [t, data, casting, deals, upcoming, tasks, panel] = await Promise.all([
     getTranslations("agency.dashboard"),
@@ -86,42 +85,6 @@ export default async function AgencyDashboardPage() {
         </section>
       ) : null}
 
-      <section aria-labelledby="agency-quick" className="flex flex-col gap-3">
-        <h2 id="agency-quick" className="text-sm font-semibold text-fg">
-          {t("quickTitle")}
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" leadingIcon={<BriefcaseBusiness />}>
-            <Link href="/agencia/pipeline">{t("seePipeline")}</Link>
-          </Button>
-          {tasks ? (
-            <Button asChild size="sm" variant="secondary" leadingIcon={<ClipboardList />}>
-              <Link href="/agencia/tarefas">{t("seeTasks")}</Link>
-            </Button>
-          ) : null}
-          {isManager ? (
-            <Button asChild size="sm" variant="secondary" leadingIcon={<Contact />}>
-              <Link href="/agencia/casting/novo">{t("newTalent")}</Link>
-            </Button>
-          ) : null}
-          {isManager ? (
-            <Button asChild size="sm" variant="secondary" leadingIcon={<Plus />}>
-              <Link href="/agencia/marcas/nova">{t("newBrand")}</Link>
-            </Button>
-          ) : null}
-          {isAdmin && !ctx.agency.isDemo ? (
-            <Button asChild size="sm" variant="secondary" leadingIcon={<UserPlus />}>
-              <Link href="/agencia/equipe">{t("inviteTeam")}</Link>
-            </Button>
-          ) : null}
-          <Button asChild size="sm" variant="secondary">
-            <Link href="/agencia/casting">{t("seeCasting")}</Link>
-          </Button>
-          <Button asChild size="sm" variant="secondary">
-            <Link href="/agencia/marcas">{t("seeBrands")}</Link>
-          </Button>
-        </div>
-      </section>
 
       {upcomingModules.length > 0 ? (
         <section aria-labelledby="agency-upcoming" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">

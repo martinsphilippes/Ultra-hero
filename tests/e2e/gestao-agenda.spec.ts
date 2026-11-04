@@ -31,6 +31,8 @@ test.describe("agenda integrada", () => {
     test.skip((await page.getByTestId("module-unavailable").count()) > 0, "0067 ainda não aplicada");
     await expect(page.getByTestId("agency-agenda")).toBeVisible();
     await expect(page.getByTestId("month-nav")).toBeVisible();
+    await expect(page.getByTestId("agency-quick-actions")).toBeVisible();
+    await page.getByTestId("agenda-filters-box").locator("summary").click();
     await expect(page.getByTestId("agenda-filters")).toBeVisible();
     await expect(page.getByTestId("event-new")).toBeVisible();
     await expect(page.getByTestId("feed-card")).toBeVisible();

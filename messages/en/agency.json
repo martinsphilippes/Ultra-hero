@@ -120,7 +120,16 @@
     "seePipeline": "See pipeline",
     "seeTasks": "My tasks",
     "financeTitle": "Finance (simulated)",
-    "seeFinance": "See finance"
+    "seeFinance": "See finance",
+    "shortcuts": {
+      "label": "Agency shortcuts",
+      "tasks": "Tasks",
+      "newHero": "New hero",
+      "newBrand": "New brand",
+      "team": "Team",
+      "casting": "Casting",
+      "brands": "Brands"
+    }
   },
   "team": {
     "title": "Team",
@@ -875,7 +884,8 @@
       "kind": "Type",
       "all": "All",
       "apply": "Filter",
-      "clear": "Clear"
+      "clear": "Clear",
+      "more": "Hero, brand and type"
     },
     "empty": "Nothing this month.",
     "emptyHint": "Confirm a campaign or schedule a meeting.",
