@@ -197,7 +197,7 @@
       },
       "access": {
         "q": "¿Cómo entran marcas, agencias y héroes?",
-        "a": "Los portales se habilitan por invitación. ¿Recibiste una? Entra con el correo invitado."
+        "a": "Crea tu cuenta eligiendo tu perfil: Héroe, Marca, Agencia o solo usar la app. ¿Recibiste una invitación? Entra con el correo invitado."
       },
       "devices": {
         "q": "¿Funciona en el celular?",
@@ -215,5 +215,16 @@
   },
   "footer": {
     "rights": "© {year} Groscove Ultra"
+  },
+  "switcher": {
+    "label": "Soy",
+    "app": "Público",
+    "seeAll": "Ver todo para {name}"
+  },
+  "interlude": {
+    "heroes": "Héroes",
+    "brands": "Marcas",
+    "agency": "Agencias",
+    "app": "Público"
   }
 }

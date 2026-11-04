@@ -32,17 +32,25 @@ import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Logo, LogoMark } from "@/components/layout/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
+import { LogoInterlude } from "@/components/institutional/LogoInterlude";
+import { ProfileSwitcher, type SwitcherProfile } from "@/components/institutional/ProfileSwitcher";
+import { Reveal } from "@/components/institutional/Reveal";
+import { TiltCard } from "@/components/institutional/TiltCard";
 import { Button } from "@/components/ui";
 import { LOGIN_HOME } from "@/lib/auth/safe-next";
 import { getUser } from "@/lib/auth/session";
 import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/institutional/content";
 import { INSTITUTIONAL_EXPLORE_PATH, INSTITUTIONAL_LOGIN_HREF, INSTITUTIONAL_PATH, INSTITUTIONAL_SIGNUP_HREF } from "@/lib/institutional/root";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/constants";
+import "./conheca.css";
 
 // Página institucional (etapa 7 · M6/D10): a "apresentação antes de abrir a conta". Visitante sem sessão chega aqui
 // pelo "/" (middleware); logado e app das lojas seguem direto ao app. Componente de servidor, sem imagens: só a marca
 // em SVG, ícones e os componentes do app (os templates de Aparência e os temas sazonais valem aqui também).
 // Só funcionalidades que existem (src/lib/institutional/content.ts); pagamentos e compras: "ainda não ativados".
+// Versão animada (pedido do responsável, 04/11): logo de abertura que surge e se encaixa, cartões que surgem do
+// invisível ao rolar, recursos entrando de um lado e do outro, faixa contínua, logomarca entre um perfil e outro
+// (diminui, aumenta e fixa) e o seletor "Eu sou…". "Reduzir movimento" do aparelho desliga tudo (conheca.css).
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("institutional.meta");
@@ -108,8 +116,27 @@ export default async function InstitutionalPage() {
     </>
   );
 
+  // "Eu sou…": cada perfil com 3 destaques reais (os primeiros recursos do grupo) e o atalho para a seção dele
+  const groupOf = { brand: "brands", hero: "heroes", agency: "agency", app: "app" } as const;
+  const profiles: SwitcherProfile[] = (["brand", "hero", "agency", "app"] as const).map((key) => {
+    const g = FEATURE_GROUPS.find((x) => x.ns === groupOf[key])!;
+    const label = key === "app" ? t("switcher.app") : t(`what.items.${key}.title`);
+    return {
+      key,
+      label,
+      title: t(`${g.ns}.title`),
+      lead: t(`${g.ns}.lead`),
+      href: `#${g.id}`,
+      cta: t("switcher.seeAll", { name: label }),
+      highlights: g.items.slice(0, 3).map((it) => ({ title: t(`${g.ns}.items.${it.key}.title`), body: t(`${g.ns}.items.${it.key}.body`) })),
+    };
+  });
+  // faixa contínua: todos os recursos, duplicados para o laço sem emenda
+  const marquee = FEATURE_GROUPS.flatMap((g) => g.items.map((it) => ({ id: `${g.ns}.${it.key}`, title: t(`${g.ns}.items.${it.key}.title`) })));
+  const titleWords = t("hero.title").split(" ");
+
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col overflow-x-clip">
       <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur-md safe-top">
         <div className="mx-auto flex h-topbar max-w-content items-center justify-between gap-3 px-gutter">
           <Link href={INSTITUTIONAL_PATH} aria-label={t("nav.home")} className={`rounded-lg ${focusRing}`}>
@@ -132,18 +159,36 @@ export default async function InstitutionalPage() {
           <SeasonalTheme area="institutional" />
         </div>
 
-        {/* Abertura: proposta de valor e CTAs */}
+        {/* Abertura: a logo surge grande e se encaixa; o título entra palavra por palavra; ao lado, o seletor "Eu sou…" */}
         <section aria-labelledby="inst-hero" className="relative overflow-hidden">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-accent/15 to-transparent" />
-          <div className="relative mx-auto flex max-w-content flex-col gap-6 px-gutter pb-10 pt-8 md:flex-row md:items-center md:gap-12 md:pb-16 md:pt-16">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-accent/20 to-transparent" />
+          <div aria-hidden="true" className="uh-glow pointer-events-none absolute -left-24 top-24 size-72 rounded-full bg-accent/20 blur-3xl" />
+          <div className="relative mx-auto flex max-w-content flex-col gap-8 px-gutter pb-10 pt-8 md:flex-row md:items-start md:gap-12 md:pb-16 md:pt-14">
             <div className="flex flex-1 flex-col gap-5">
-              <p className="type-overline text-accent-text">{t("hero.eyebrow")}</p>
-              <h1 id="inst-hero" className="type-display max-w-[20ch] text-balance text-fg">
-                {t("hero.title")}
+              <div aria-hidden="true" className="relative flex size-24 items-center justify-center">
+                <span className="uh-glow absolute inset-0 rounded-full bg-accent/30 blur-2xl" />
+                <span className="uh-breathe relative">
+                  <LogoMark className="uh-intro-mark h-16" />
+                </span>
+              </div>
+              <p className="uh-pop type-overline text-accent-text" style={{ animationDelay: "500ms" }}>
+                {t("hero.eyebrow")}
+              </p>
+              <h1 id="inst-hero" className="type-display max-w-[20ch] text-balance text-fg" aria-label={t("hero.title")}>
+                {titleWords.map((w, i) => (
+                  <span key={i} aria-hidden="true" className="uh-intro-word" style={{ animationDelay: `${600 + i * 70}ms` }}>
+                    {w}
+                    {i < titleWords.length - 1 ? "\u00a0" : ""}
+                  </span>
+                ))}
               </h1>
-              <p className="type-body max-w-prose text-fg-muted md:text-lg">{t("hero.lead")}</p>
+              <p className="uh-pop type-body max-w-prose text-fg-muted md:text-lg" style={{ animationDelay: `${700 + titleWords.length * 70}ms` }}>
+                {t("hero.lead")}
+              </p>
               {signedIn ? <p className="type-body-sm text-fg-muted">{t("hero.signedIn")}</p> : null}
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">{ctas}</div>
+              <div className="uh-pop flex flex-col gap-3 sm:flex-row sm:flex-wrap" style={{ animationDelay: `${850 + titleWords.length * 70}ms` }}>
+                {ctas}
+              </div>
               {signedIn ? null : (
                 // <a> comum (sem prefetch): o handler grava a escolha só quando a pessoa clica
                 <a
@@ -156,25 +201,23 @@ export default async function InstitutionalPage() {
                 </a>
               )}
             </div>
-            {/* Os quatro acessos, como um "cartão" da marca (decorativo: o texto está na seção seguinte) */}
-            <div aria-hidden="true" className="hidden flex-1 md:block">
-              <div className="clip-step relative mx-auto aspect-[4/3] max-w-md overflow-hidden rounded-2xl border border-border bg-surface p-8 shadow-md">
-                <LogoMark className="absolute -right-6 -top-6 h-40 opacity-10" />
-                <div className="grid h-full grid-cols-2 gap-3">
-                  {WHAT_ITEMS.map((key) => {
-                    const Icon = WHAT_ICONS[key];
-                    return (
-                      <div key={key} className="flex flex-col justify-between rounded-xl border border-border bg-bg p-4">
-                        <Icon className="size-6 text-accent-text" />
-                        <span className="type-h3 text-fg">{t(`what.items.${key}.title`)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <Reveal from="right" delay={250} className="w-full md:max-w-md md:flex-1">
+              <ProfileSwitcher label={t("switcher.label")} profiles={profiles} />
+            </Reveal>
           </div>
         </section>
+
+        {/* Faixa contínua de recursos passando de um lado ao outro (decorativa; pausa ao passar o mouse) */}
+        <div aria-hidden="true" className="uh-marquee overflow-hidden border-y border-border bg-surface/60 py-3">
+          <div className="uh-marquee-track flex w-max gap-3">
+            {[...marquee, ...marquee].map((m, i) => (
+              <span key={`${m.id}-${i}`} className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-4 py-2 text-sm font-semibold text-fg">
+                <LogoMark className="h-3.5" />
+                {m.title}
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* Navegação interna (rolável no celular) */}
         <nav aria-label={t("nav.sections")} className="border-y border-border bg-surface/60">
@@ -194,14 +237,18 @@ export default async function InstitutionalPage() {
           <section aria-labelledby="o-que-e-title" id="o-que-e" className="flex flex-col gap-6">
             <SectionHead id="o-que-e" title={t("what.title")} lead={t("what.lead")} />
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {WHAT_ITEMS.map((key) => {
+              {WHAT_ITEMS.map((key, i) => {
                 const Icon = WHAT_ICONS[key];
                 return (
-                  <li key={key} className="uh-card flex flex-col gap-2 rounded-xl border border-border bg-surface p-5 shadow-sm">
-                    <Icon className="size-6 text-accent-text" aria-hidden="true" />
-                    <h3 className="type-h3 text-fg">{t(`what.items.${key}.title`)}</h3>
-                    <p className="type-body-sm text-fg-muted">{t(`what.items.${key}.body`)}</p>
-                  </li>
+                  <Reveal key={key} as="li" from="up" delay={i * 140}>
+                    <TiltCard className="uh-card flex h-full flex-col gap-2 rounded-xl border border-border bg-surface p-5 shadow-sm hover:shadow-md">
+                      <span className="flex size-11 items-center justify-center rounded-xl bg-accent/15 text-accent-text">
+                        <Icon className="size-6" aria-hidden="true" />
+                      </span>
+                      <h3 className="type-h3 text-fg">{t(`what.items.${key}.title`)}</h3>
+                      <p className="type-body-sm text-fg-muted">{t(`what.items.${key}.body`)}</p>
+                    </TiltCard>
+                  </Reveal>
                 );
               })}
             </ul>
@@ -212,7 +259,7 @@ export default async function InstitutionalPage() {
             <SectionHead id="como-funciona" title={t("how.title")} lead={t("how.lead")} />
             <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {HOW_STEPS.map((key, i) => (
-                <li key={key} className="flex gap-4 rounded-xl border border-border bg-surface p-5">
+                <Reveal key={key} as="li" from={i % 2 === 0 ? "left" : "right"} delay={(i % 3) * 120} className="flex gap-4 rounded-xl border border-border bg-surface p-5">
                   <span aria-hidden="true" className="type-numeric flex size-10 shrink-0 items-center justify-center rounded-full bg-accent font-mono text-sm font-semibold text-accent-fg">
                     {i + 1}
                   </span>
@@ -220,7 +267,7 @@ export default async function InstitutionalPage() {
                     <h3 className="type-h3 text-fg">{t(`how.steps.${key}.title`)}</h3>
                     <p className="type-body-sm text-fg-muted">{t(`how.steps.${key}.body`)}</p>
                   </div>
-                </li>
+                </Reveal>
               ))}
             </ol>
             <p className="type-body-sm rounded-xl border border-accent/30 bg-accent/10 p-4 text-fg">{t("how.note")}</p>
@@ -228,14 +275,17 @@ export default async function InstitutionalPage() {
 
           {/* Heróis, Marcas, Agência, App */}
           {FEATURE_GROUPS.map((group) => (
-            <section key={group.id} aria-labelledby={`${group.id}-title`} id={group.id} className="flex scroll-mt-20 flex-col gap-6">
+            <div key={group.id} className="flex flex-col gap-10">
+              {/* entre um perfil e outro: a logomarca diminui, aumenta e fixa */}
+              <LogoInterlude label={t(`interlude.${group.ns}`)} />
+            <section aria-labelledby={`${group.id}-title`} id={group.id} className="flex scroll-mt-20 flex-col gap-6">
               <SectionHead id={group.id} title={t(`${group.ns}.title`)} lead={t(`${group.ns}.lead`)} />
               {/* 4 recursos: 4 colunas no desktop (sem cartão sozinho na última linha); 6: 3 colunas */}
               <ul className={`grid gap-3 sm:grid-cols-2 ${group.items.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
-                {group.items.map((item) => {
+                {group.items.map((item, i) => {
                   const Icon = FEATURE_ICONS[`${group.ns}.${item.key}`] ?? Sparkles;
                   return (
-                    <li key={item.key} className="flex gap-4 rounded-xl border border-border bg-surface p-5">
+                    <Reveal key={item.key} as="li" from={i % 2 === 0 ? "left" : "right"} delay={(i % 3) * 110} className="flex gap-4 rounded-xl border border-border bg-surface p-5 transition-colors hover:border-accent/40">
                       <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent-text">
                         <Icon className="size-5" />
                       </span>
@@ -243,7 +293,7 @@ export default async function InstitutionalPage() {
                         <h3 className="type-h3 text-fg">{t(`${group.ns}.items.${item.key}.title`)}</h3>
                         <p className="type-body-sm text-fg-muted">{t(`${group.ns}.items.${item.key}.body`)}</p>
                       </div>
-                    </li>
+                    </Reveal>
                   );
                 })}
               </ul>
@@ -254,11 +304,12 @@ export default async function InstitutionalPage() {
                 </a>
               ) : null}
             </section>
+            </div>
           ))}
 
           {/* Calendário Groscove */}
           <section aria-labelledby="calendario-title" id="calendario" className="scroll-mt-20">
-            <div className="clip-step flex flex-col gap-5 rounded-2xl border border-border bg-surface p-6 md:flex-row md:items-start md:gap-10 md:p-10">
+            <Reveal from="zoom" className="clip-step flex flex-col gap-5 rounded-2xl border border-border bg-surface p-6 md:flex-row md:items-start md:gap-10 md:p-10">
               <div className="flex flex-col gap-2 md:w-2/5">
                 <CalendarDays className="size-8 text-accent-text" aria-hidden="true" />
                 <h2 id="calendario-title" className="type-h1 text-fg">
@@ -274,7 +325,7 @@ export default async function InstitutionalPage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </Reveal>
           </section>
 
           {/* Perguntas frequentes (details nativo: sem JS) */}
@@ -294,7 +345,8 @@ export default async function InstitutionalPage() {
           </section>
 
           {/* Chamada final */}
-          <section aria-labelledby="comecar-title" className="flex flex-col items-start gap-4 rounded-2xl bg-accent/10 p-6 md:items-center md:p-12 md:text-center">
+          <section aria-labelledby="comecar-title" className="relative flex flex-col items-start gap-4 overflow-hidden rounded-2xl bg-accent/10 p-6 md:items-center md:p-12 md:text-center">
+            <LogoMark aria-hidden="true" className="uh-breathe pointer-events-none absolute -bottom-10 -right-10 h-48 opacity-10" />
             <h2 id="comecar-title" className="type-h1 text-fg">
               {t("final.title")}
             </h2>

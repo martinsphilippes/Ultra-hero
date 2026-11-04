@@ -197,7 +197,7 @@
       },
       "access": {
         "q": "How do brands, agencies and heroes get in?",
-        "a": "Portals are opened by invitation. Got an invitation? Sign in with the invited email."
+        "a": "Create your account by choosing your profile: Hero, Brand, Agency or just use the app. Got an invitation? Sign in with the invited email."
       },
       "devices": {
         "q": "Does it work on my phone?",
@@ -215,5 +215,16 @@
   },
   "footer": {
     "rights": "© {year} Groscove Ultra"
+  },
+  "switcher": {
+    "label": "I am",
+    "app": "Audience",
+    "seeAll": "See everything for {name}"
+  },
+  "interlude": {
+    "heroes": "Heroes",
+    "brands": "Brands",
+    "agency": "Agencies",
+    "app": "Audience"
   }
 }
