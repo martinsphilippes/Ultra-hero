@@ -14,7 +14,8 @@
     "overdue": "Atrasado",
     "today": "Hoy",
     "soon": "Próximos días",
-    "waiting": "En espera"
+    "waiting": "En espera",
+    "noRush": "Sin prisa"
   },
   "brand": {
     "title": "Depende de mí hoy",
@@ -65,6 +66,7 @@
       "terms": "Aceptar términos",
       "offer": "Responder oferta",
       "deliverable": "Entrega próxima",
+      "pending": "Tu turno",
       "task": "Tarea",
       "invoice": "Enviar factura",
       "payment": "Pago programado"
@@ -75,6 +77,7 @@
       "terms": "Términos",
       "offer": "Ofertas",
       "deliverable": "Entregas",
+      "pending": "Tu turno",
       "task": "Tareas",
       "invoice": "Facturas",
       "payment": "Pagos"
@@ -84,7 +87,9 @@
     "counter_rejected": "Contrapropuesta rechazada",
     "invoiceMissing": "Entregado: envía la factura para cobrar",
     "invoiceRejected": "Factura rechazada: envía otra",
-    "paymentScheduled": "La agencia programó el pago"
+    "paymentScheduled": "La agencia programó el pago",
+    "pendingHint": "Créalo y envíalo para que la marca lo apruebe",
+    "sendProof": "Publicado: envía el comprobante"
   },
   "board": {
     "title": "Acciones por etapa",

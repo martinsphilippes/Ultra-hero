@@ -222,7 +222,7 @@ describe("Hoje do creator", () => {
   });
   it("ajustes (entrega e roteiro), oferta com prazo, entrega próxima e termos, com links diretos e ordem por urgência", () => {
     const items = buildTalentToday(data, NOW);
-    expect(items.map((i) => i.key)).toEqual(["task:late", "task:solo", "deliverable:soon", "offer:dt9", "terms:terms1:dt2", "adjustment:adj", "scriptAdjustment:s4"]);
+    expect(items.map((i) => i.key)).toEqual(["task:late", "task:solo", "deliverable:soon", "offer:dt9", "terms:terms1:dt2", "adjustment:adj", "scriptAdjustment:s4", "pending:far"]);
     expect(items.find((i) => i.kind === "adjustment")).toMatchObject({ href: "/heroi/oportunidades/dt1#opp-execution", note: "Trocar a trilha", urgency: "soon" });
     expect(items.find((i) => i.kind === "scriptAdjustment")).toMatchObject({ href: "/heroi/oportunidades/dt1#opp-tasks", step: 4 });
     expect(items.find((i) => i.kind === "offer")).toMatchObject({ href: "/heroi/oportunidades/dt9", urgency: "soon" });
@@ -230,8 +230,25 @@ describe("Hoje do creator", () => {
     expect(items.find((i) => i.key === "task:late")?.href).toBe("/heroi/tarefas");
     expect(Object.values(countByKind(items, TALENT_TODAY_KINDS)).reduce((a, b) => a + b, 0)).toBe(items.length);
   });
-  it("entrega longe fica fora", () => {
-    expect(buildTalentToday(data, NOW).some((i) => i.key === "deliverable:far")).toBe(false);
+  it("entrega longe não some (04/11): entra no fim como 'Sua vez', sem pressa, com o prazo", () => {
+    const items = buildTalentToday(data, NOW);
+    expect(items.some((i) => i.key === "deliverable:far")).toBe(false);
+    expect(items.find((i) => i.key === "pending:far")).toMatchObject({ kind: "pending", urgency: "waiting", deadline: h(24 * 9), href: "/heroi/oportunidades/dt1#opp-execution", status: "in_production" });
+  });
+  it("publicada espera o comprovante (sem prazo próprio); sem prazo também é 'Sua vez'", () => {
+    const items = buildTalentToday(
+      {
+        ...data,
+        tasks: [],
+        deliverables: [
+          { ...data.deliverables[2], id: "pub", status: "published", dueAt: h(-48) },
+          { ...data.deliverables[2], id: "nodate", dueAt: null },
+        ],
+      },
+      NOW,
+    );
+    expect(items.find((i) => i.key === "pending:pub")).toMatchObject({ urgency: "waiting", deadline: null, status: "published" });
+    expect(items.find((i) => i.key === "pending:nodate")).toMatchObject({ urgency: "waiting", deadline: null });
   });
 });
 

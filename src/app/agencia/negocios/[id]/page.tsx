@@ -6,6 +6,7 @@ import { ActivityForm, ConfirmCard, DealForm, MoveForm, TeamPicker } from "@/com
 import { BriefView } from "@/components/brief/BriefView";
 import { DealBriefCard } from "@/components/brief/DealBriefCard";
 import { DealOffer } from "@/components/deals/DealOffer";
+import { NextStepCard } from "@/components/deals/NextStepCard";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { AgencyBudgetChange } from "@/components/finance/AgencyBudgetChange";
 import { DealFinanceCard } from "@/components/finance/DealFinanceCard";
@@ -17,6 +18,9 @@ import { zonedDayKey } from "@/lib/calendar/grid";
 import { listDealEvents } from "@/lib/calendar/queries";
 import { getDealOffer, getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import { splitSystemBody } from "@/lib/deals/vocab";
+import { closeWonPending, flowDeliverables, flowStep, flowTerms, isActiveHero, nextStep, nextStepHref, type CloseWonPending, type FlowInput } from "@/lib/deals/next-step";
+import { stageIndex } from "@/lib/deals/stages";
+import { getDealExecution } from "@/lib/execution/queries";
 import { agencyBudgetChanges, agencyRates, dealEntries, dealPaymentPlan } from "@/lib/finance/queries";
 import { requestDeliverablesSchema } from "@/lib/deals/schemas";
 import { loadDeal } from "./_lib";
@@ -55,7 +59,27 @@ export default async function DealOverviewPage({ params }: Props) {
     getDealOffer(deal.id),
   ]);
   // 0108: condições de pagamento (Adm edita antes da contratação; os demais veem o resumo sem valores)
-  const plan = deal.brand ? await dealPaymentPlan(deal.id) : null;
+  const hasBrand = deal.brand.id !== "";
+  const [plan, execRes] = await Promise.all([deal.brand ? dealPaymentPlan(deal.id) : Promise.resolve(null), hasBrand ? getDealExecution(deal.id) : Promise.resolve(null)]);
+  // "Próximo passo" (04/11): a mesma regra das telas da marca e do herói, com o que só a agência lê (aceites, cachês)
+  const execution = execRes?.available ? execRes.data : null;
+  const terms = flowTerms(execution?.terms);
+  const flow: FlowInput = {
+    stage: deal.stage,
+    outcome: deal.outcome,
+    offer: offer && offer.enabled ? { open: offer.open, turn: offer.turn, agreed: offer.agreed } : null,
+    planMissing: plan && plan.enabled ? !plan.hasPlan : null,
+    terms,
+    heroes: talents
+      .filter((x) => isActiveHero(x.status))
+      .map((x) => ({ dealTalentId: x.id, name: x.talent.name, status: x.status, respondBy: x.respondBy, termsAccepted: terms.acceptedBy(x.id), feeReady: x.termsReady })),
+    contractConfirmed: Boolean(execution?.contractConfirmedAt),
+    deliverables: flowDeliverables(execution?.deliverables),
+  };
+  const step = nextStep(flow, { party: "agency", canEdit, isManager, isAdmin, canReplyOffer: offer?.canReply ?? false, canEditPlan: plan?.canEdit ?? false });
+  // guarda do "encerrar como ganho": negócio só do herói não tem termos nem entregas; só a etapa conta
+  const closePending: CloseWonPending | null =
+    deal.stage === "closed" ? null : hasBrand ? closeWonPending(flow) : { termsPending: false, contractPending: stageIndex(deal.stage) < 10, deliverables: [] };
   // financeiro simulado (0069), só para o Adm: taxa, prévia e lançamentos; sem a migração, a seção some
   const [fees, rates, entries] = isAdmin
     ? await Promise.all([listDealFees(deal.id), agencyRates(ctx.agency.id, deal.id), dealEntries(deal.id)])
@@ -66,6 +90,11 @@ export default async function DealOverviewPage({ params }: Props) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      {hasBrand ? (
+        <div className="lg:col-span-2">
+          <NextStepCard party="agency" step={step} flow={flowStep(flow)} href={nextStepHref("agency", step.target, { dealId: deal.id })} dealId={deal.id} timeZone={tz} cancelled={deal.stage === "closed" && deal.outcome !== "won"} />
+        </div>
+      ) : null}
       {offer && offer.enabled && (offer.open || offer.rounds.length > 0) ? (
         <div className="lg:col-span-2">
           <DealOffer portal="agency" dealId={deal.id} requestId={deal.requestId} view={offer} />
@@ -158,7 +187,7 @@ export default async function DealOverviewPage({ params }: Props) {
               {t("sections.stage")}
             </h2>
             <p className="type-body-sm text-fg-muted">{t("stageHint")}</p>
-            <MoveForm dealId={deal.id} stage={deal.stage} role={ctx.platformAdmin ? "admin" : ctx.role} isOwner={isOwner} canClose={isManager} />
+            <MoveForm dealId={deal.id} stage={deal.stage} role={ctx.platformAdmin ? "admin" : ctx.role} isOwner={isOwner} canClose={isManager} closePending={closePending} />
           </section>
         ) : null}
         {/* 0086: criar (hoje, 09:00–10:00) e editar/remover os compromissos manuais deste negócio, para quem pode mexer nele */}

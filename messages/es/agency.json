@@ -670,7 +670,8 @@
       "offer_accepted": "{param, select, brand {La marca aceptó la contrapropuesta. Términos acordados.} other {La agencia aceptó la propuesta de la marca. Términos acordados.}}",
       "offer_countered": "{param, select, brand {La marca hizo una contrapropuesta.} other {La agencia hizo una contrapropuesta.}}",
       "offer_declined": "La marca rechazó la contrapropuesta.",
-      "roadmap_started": "Plan generado: {param}."
+      "roadmap_started": "Plan generado: {param}.",
+      "close_cancelled": "Cerrado con {param} entrega(s) pendiente(s) cancelada(s)."
     },
     "stageHint": "Mover de etapa es manual; volver pide una nota. Propuesta, confirmación y contrato tienen acción propia.",
     "form": {
@@ -693,14 +694,25 @@
       "reopenTo": "Reabrir en {stage}",
       "close": "Cerrar negocio",
       "outcome": "Resultado",
-      "forceWon": "Cerrar como ganado aun con entregas abiertas",
-      "forceWonHint": "Solo el Adm. Queda en la auditoría.",
       "note": "Nota",
       "noteHintRequired": "Obligatoria al volver de etapa o cerrar sin ganar (mínimo 5 caracteres).",
       "noteHint": "Opcional.",
       "apply": "Aplicar",
       "pickStage": "Elige la etapa.",
-      "noteRequired": "Escribe la nota (al menos 5 caracteres)."
+      "noteRequired": "Escribe la nota (al menos 5 caracteres).",
+      "cancelsOpen": "{count, plural, one {La entrega abierta se cancelará} other {Las # entregas abiertas se cancelarán}} junto con el negocio.",
+      "guard": {
+        "title": "Esta campaña aún tiene pendientes",
+        "terms": "No todos aceptaron los términos todavía.",
+        "contract": "La contratación no se confirmó (el negocio no llegó a producción).",
+        "deliverable": "{item} · {hero} — {status}",
+        "hint": "Cerrar como ganada ahora dejaría trabajo a medias en los portales de la marca y del héroe. Lo mejor es concluir por el Próximo paso.",
+        "reason": "Motivo para cerrar de todos modos",
+        "back": "Volver y concluir",
+        "force": "Cerrar de todos modos",
+        "forceCancel": "Cerrar de todos modos y cancelar {count, plural, one {la entrega pendiente} other {las # entregas pendientes}}",
+        "adminOnly": "Solo el Adm puede cerrar con pendientes."
+      }
     },
     "confirm": {
       "title": "Confirmar la campaña",

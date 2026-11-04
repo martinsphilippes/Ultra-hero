@@ -670,7 +670,8 @@
       "offer_accepted": "{param, select, brand {The brand accepted the counteroffer. Terms agreed.} other {The agency accepted the brand's proposal. Terms agreed.}}",
       "offer_countered": "{param, select, brand {The brand made a counteroffer.} other {The agency made a counteroffer.}}",
       "offer_declined": "The brand declined the counteroffer.",
-      "roadmap_started": "Delivery plan created: {param}."
+      "roadmap_started": "Delivery plan created: {param}.",
+      "close_cancelled": "Closed with {param} pending deliverable(s) cancelled."
     },
     "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
     "form": {
@@ -693,14 +694,25 @@
       "reopenTo": "Reopen at {stage}",
       "close": "Close deal",
       "outcome": "Outcome",
-      "forceWon": "Close as won even with open deliverables",
-      "forceWonHint": "Admin only. Recorded in the audit log.",
       "note": "Note",
       "noteHintRequired": "Required when going back a stage or closing without a win (at least 5 characters).",
       "noteHint": "Optional.",
       "apply": "Apply",
       "pickStage": "Pick the stage.",
-      "noteRequired": "Write the note (at least 5 characters)."
+      "noteRequired": "Write the note (at least 5 characters).",
+      "cancelsOpen": "{count, plural, one {The open deliverable will be cancelled} other {The # open deliverables will be cancelled}} along with the deal.",
+      "guard": {
+        "title": "This campaign still has pending items",
+        "terms": "Not everyone has accepted the terms yet.",
+        "contract": "The contract wasn't confirmed (the deal never reached production).",
+        "deliverable": "{item} · {hero} — {status}",
+        "hint": "Closing as won now would leave half-done work in the brand and hero portals. It's best to finish through the Next step.",
+        "reason": "Reason to close anyway",
+        "back": "Go back and finish",
+        "force": "Close anyway",
+        "forceCancel": "Close anyway and cancel {count, plural, one {the pending deliverable} other {the # pending deliverables}}",
+        "adminOnly": "Only the Admin can close with pending items."
+      }
     },
     "confirm": {
       "title": "Confirm the campaign",

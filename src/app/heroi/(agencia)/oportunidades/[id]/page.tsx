@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { BriefView } from "@/components/brief/BriefView";
 import { MessageThread } from "@/components/deals/MessageThread";
+import { NextStepCard } from "@/components/deals/NextStepCard";
 import { DeliverableStatusBadge, TalentStatusBadge } from "@/components/deals/StatusBadges";
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
 import { TaskList } from "@/components/execution/TaskList";
@@ -21,7 +22,9 @@ import type { Locale } from "@/i18n/config";
 import { formatDateTime, formatDuration, formatPlainDate } from "@/i18n/format";
 import { getOrigin } from "@/lib/auth/origin";
 import { listMessages, listOpportunities, myFee } from "@/lib/deals/queries";
+import { flowDeliverables, flowStep, flowTerms, nextStep, nextStepHref, stageFromOpportunity, type FlowInput } from "@/lib/deals/next-step";
 import { formatCents } from "@/lib/deals/schemas";
+import { isDealStage } from "@/lib/deals/stages";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
 import { dealPaymentPlan } from "@/lib/finance/queries";
@@ -105,6 +108,20 @@ export default async function OpportunityPage({ params, searchParams }: Props) {
   const inProduction = Boolean(execution && (execution.stage === "production" || execution.stage === "closed"));
   const prefillUrl = publishedSlug ? publishedContentUrl(origin, publishedSlug) : null;
   const canSendPublished = Boolean(prefillUrl) && inProduction && !closed && deliverablesAwaitingLink(myDeliverables).length > 0;
+  // "Próximo passo" (04/11): a mesma regra da agência e da marca, com o que o herói lê (o aceite dele e o da marca)
+  const myTerms = flowTerms(execution?.terms);
+  const fallbackStage = stageFromOpportunity(o.deal.status);
+  const flow: FlowInput = {
+    stage: execution && isDealStage(execution.stage) ? execution.stage : fallbackStage.stage,
+    outcome: fallbackStage.outcome,
+    offer: null,
+    planMissing: null,
+    terms: myTerms,
+    heroes: [{ dealTalentId: o.id, name: "", status: o.status, respondBy: o.respondBy, termsAccepted: myTerms.acceptedBy(o.id), feeReady: null }],
+    contractConfirmed: Boolean(execution?.contractConfirmedAt),
+    deliverables: flowDeliverables(myDeliverables),
+  };
+  const step = nextStep(flow, { party: "hero", dealTalentId: o.id, status: o.status, canCreate });
   const period = o.deal.expectedStart ? `${formatPlainDate(o.deal.expectedStart, locale)}${o.deal.expectedEnd && o.deal.expectedEnd !== o.deal.expectedStart ? ` – ${formatPlainDate(o.deal.expectedEnd, locale)}` : ""}` : null;
 
   return (
@@ -123,6 +140,7 @@ export default async function OpportunityPage({ params, searchParams }: Props) {
           </span>
         }
       />
+      <NextStepCard party="hero" step={step} flow={flowStep(flow)} href={nextStepHref("hero", step.target, { dealId: o.deal.id, dealTalentId: o.id })} timeZone={tz} cancelled={step.mode === "done" && step.code !== "won"} headingLevel="h3" />
       {offer && offer.conflicts.length > 0 && !closed ? <ConflictAlert conflicts={offer.conflicts} side="talent" /> : null}
       {publishedSlug ? <CampaignPublishedToast slug={publishedSlug} canSend={canSendPublished} /> : null}
       {canCreate ? <CampaignCreate campaignId={o.id} /> : null}

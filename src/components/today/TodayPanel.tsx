@@ -48,7 +48,9 @@ export async function TodayPanel<K extends string>({ portal, items, kinds, local
     if (i.kind === "sponsorship") return t("brand.sponsorshipHint");
     if (i.kind === "invoice") return t(i.status === "rejected" ? "talent.invoiceRejected" : "talent.invoiceMissing");
     if (i.kind === "payment") return t("talent.paymentScheduled");
+    if (i.status === "published") return t("talent.sendProof");
     if (i.status === "approved") return t("approvedToPublish");
+    if (i.kind === "pending") return t("talent.pendingHint");
     if (i.kind === "offer" && (i.status === "counter_open" || i.status === "counter_accepted" || i.status === "counter_rejected")) return t(`talent.${i.status}`);
     return null;
   };
@@ -68,7 +70,7 @@ export async function TodayPanel<K extends string>({ portal, items, kinds, local
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="flex flex-wrap items-center gap-1.5">
               <Badge size="sm" variant={URGENCY_VARIANT[i.urgency]} icon={<Icon aria-hidden="true" />}>
-                {t(`urgency.${i.urgency}`)}
+                {i.kind === "pending" ? t("urgency.noRush") : t(`urgency.${i.urgency}`)}
               </Badge>
               <span className="type-caption font-medium text-fg-muted">{t(`${portal}.kinds.${String(i.kind)}` as string)}</span>
             </span>

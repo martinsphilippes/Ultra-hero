@@ -16866,5 +16866,115 @@ delete from public.agencies where id::text like 'a1140000-%';
 delete from auth.users where id::text like 'a1140000-%';
 drop table t_s114;
 
+-- ================================================================ S115 · Próximo passo: encerrar como ganho sem trabalho fantasma (0109)
+-- Caso do responsável (04/11): negócio aprovado, termos em rascunho, contrato não confirmado e "Post mm" planejado.
+-- Ganho só contratado e sem entrega aberta (D1, inclusive direto da produção); com pendência só o Adm, com motivo, e as
+-- entregas abertas e as tarefas do herói/marca são canceladas na mesma transação (D2); perdido também cancela (D3);
+-- o "Hoje" do herói passa a trazer a entrega publicada esperando o comprovante (D6). S14 segue 18.
+\ir ../migrations/0109_proximo_passo_encerrar_ganho.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1150000-0000-4000-8000-000000000001', 's115-adm@test.local'),
+  ('a1150000-0000-4000-8000-000000000002', 's115-gestor@test.local'),
+  ('a1150000-0000-4000-8000-000000000003', 's115-heroi@test.local');
+insert into public.agencies (id, slug, name) values ('a1150000-0000-4000-8000-0000000000a1', 's115-agencia', 'Agência S115');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S115'),
+  ('a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S115');
+insert into public.brands (id, slug, name, site_url) values ('a1150000-0000-4000-8000-0000000000b1', 's115-marca', 'Marca S115', 'https://m.s115.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-0000000000b1');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, consent_at) values
+  ('a1150000-0000-4000-8000-0000000000c1', 'a1150000-0000-4000-8000-0000000000a1', 'Heroína S115', 'a1150000-0000-4000-8000-000000000003', now() - interval '30 days');
+-- e1: aprovado, termos em rascunho, "Post mm" planejado (o caso); e2: produção com tudo concluído; e3: produção com
+-- entrega publicada (falta comprovante); e4: negociação com entrega planejada (perdido cancela)
+insert into public.deals (id, agency_id, brand_id, title, stage, brand_visible, owner_id, contract_confirmed_at) values
+  ('a1150000-0000-4000-8000-0000000000e1', 'a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-0000000000b1', 'Mm S115', 'approved', true, 'a1150000-0000-4000-8000-000000000002', null),
+  ('a1150000-0000-4000-8000-0000000000e2', 'a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-0000000000b1', 'Pronta S115', 'production', true, 'a1150000-0000-4000-8000-000000000002', now() - interval '9 days'),
+  ('a1150000-0000-4000-8000-0000000000e3', 'a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-0000000000b1', 'Publicada S115', 'approval', true, 'a1150000-0000-4000-8000-000000000002', now() - interval '9 days'),
+  ('a1150000-0000-4000-8000-0000000000e4', 'a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-0000000000b1', 'Perdida S115', 'negotiation', true, 'a1150000-0000-4000-8000-000000000002', null);
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('a1150000-0000-4000-8000-0000000000f1', 'a1150000-0000-4000-8000-0000000000e1', 'a1150000-0000-4000-8000-0000000000c1', 'proposed', now() - interval '5 days', true),
+  ('a1150000-0000-4000-8000-0000000000f2', 'a1150000-0000-4000-8000-0000000000e2', 'a1150000-0000-4000-8000-0000000000c1', 'contracted', now() - interval '20 days', true),
+  ('a1150000-0000-4000-8000-0000000000f3', 'a1150000-0000-4000-8000-0000000000e3', 'a1150000-0000-4000-8000-0000000000c1', 'contracted', now() - interval '20 days', true),
+  ('a1150000-0000-4000-8000-0000000000f4', 'a1150000-0000-4000-8000-0000000000e4', 'a1150000-0000-4000-8000-0000000000c1', 'proposed', now() - interval '5 days', true);
+insert into public.deal_terms (id, agency_id, deal_id, version, status, summary) values
+  ('a1150000-0000-4000-8000-0000000000d1', 'a1150000-0000-4000-8000-0000000000a1', 'a1150000-0000-4000-8000-0000000000e1', 1, 'draft', 'Termos em rascunho do caso S115 (um post).');
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, title, status, due_at, publish_at) values
+  ('a1150000-0000-4000-8000-000000000011', 'a1150000-0000-4000-8000-0000000000e1', 'a1150000-0000-4000-8000-0000000000f1', 'post', 'Post mm', 'planned', now() + interval '10 days', null),
+  ('a1150000-0000-4000-8000-000000000021', 'a1150000-0000-4000-8000-0000000000e2', 'a1150000-0000-4000-8000-0000000000f2', 'reels', 'Reels pronto', 'done', now() - interval '5 days', null),
+  ('a1150000-0000-4000-8000-000000000031', 'a1150000-0000-4000-8000-0000000000e3', 'a1150000-0000-4000-8000-0000000000f3', 'reels', 'Reels publicado', 'published', now() - interval '5 days', now() - interval '2 days'),
+  ('a1150000-0000-4000-8000-000000000041', 'a1150000-0000-4000-8000-0000000000e4', 'a1150000-0000-4000-8000-0000000000f4', 'post', 'Post perdido', 'planned', now() + interval '10 days', null);
+insert into public.tasks (agency_id, scope_type, deal_id, talent_id, side, title, status, due_at) values
+  ('a1150000-0000-4000-8000-0000000000a1', 'deal', 'a1150000-0000-4000-8000-0000000000e1', 'a1150000-0000-4000-8000-0000000000c1', 'talent', 'Gravar post S115', 'todo', now() + interval '2 days'),
+  ('a1150000-0000-4000-8000-0000000000a1', 'deal', 'a1150000-0000-4000-8000-0000000000e1', null, 'agency', 'Relatório S115', 'todo', now() + interval '20 days'),
+  ('a1150000-0000-4000-8000-0000000000a1', 'deal', 'a1150000-0000-4000-8000-0000000000e4', 'a1150000-0000-4000-8000-0000000000c1', 'talent', 'Gravar perdido S115', 'todo', now() + interval '2 days');
+
+select tests.ok('S115 estrutura: mesma assinatura, search_path fixo, visitante sem acesso, sem sobrecarga; S14 segue 18',
+  (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_deal_move', 'talent_today')) = 2
+  and (select bool_and(p.proconfig is not null) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('agency_deal_move', 'talent_today'))
+  and not has_function_privilege('anon', 'public.agency_deal_move(uuid, text, text, text, boolean)', 'execute')
+  and not has_function_privilege('anon', 'public.talent_today()', 'execute')
+  and has_function_privilege('authenticated', 'public.agency_deal_move(uuid, text, text, text, boolean)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+select tests.login('a1150000-0000-4000-8000-000000000002', 's115-gestor@test.local');
+select tests.expect_error('S115 gestor não encerra como ganho sem contratação',
+  $q$select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e1', 'closed', 'won')$q$, 'stage_gate');
+select tests.expect_error('S115 gestor não força o ganho (só o Adm)',
+  $q$select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e1', 'closed', 'won', 'fechado por fora', true)$q$, 'stage_gate');
+select tests.expect_error('S115 com entrega aberta, ganho direto é recusado',
+  $q$select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e3', 'closed', 'won')$q$, 'deliverables_open');
+select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e2', 'closed', 'won');
+select tests.ok('S115 D1: contratado e tudo concluído encerra como ganho direto da produção (gestor, sem forçar, sem cancelar nada)',
+  (select stage = 'closed' and outcome = 'won' from public.deals where id = 'a1150000-0000-4000-8000-0000000000e2')
+  and (select status = 'done' from public.deliverables where id = 'a1150000-0000-4000-8000-000000000021')
+  and not exists (select 1 from public.activities where deal_id = 'a1150000-0000-4000-8000-0000000000e2' and body like 'close_cancelled%'));
+
+select tests.login('a1150000-0000-4000-8000-000000000003', 's115-heroi@test.local');
+select tests.ok('S115 D6: o "Hoje" do herói traz a entrega publicada (falta o comprovante); a concluída não entra',
+  (public.talent_today() -> 'deliverables') @> '[{"id": "a1150000-0000-4000-8000-000000000031", "status": "published"}]'::jsonb
+  and not ((public.talent_today() -> 'deliverables') @> '[{"id": "a1150000-0000-4000-8000-000000000021"}]'::jsonb));
+
+select tests.login('a1150000-0000-4000-8000-000000000001', 's115-adm@test.local');
+select tests.expect_error('S115 Adm sem forçar também esbarra na porteira',
+  $q$select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e1', 'closed', 'won')$q$, 'stage_gate');
+select tests.expect_error('S115 D2: forçar o ganho com pendência exige motivo',
+  $q$select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e1', 'closed', 'won', null, true)$q$, 'note_required');
+select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e1', 'closed', 'won', 'Marca fechou por fora, sem o post', true);
+select tests.ok('S115 D2: ganho forçado cancela o "Post mm" e a tarefa do herói na mesma transação; a tarefa interna fica; linha do tempo registra',
+  (select stage = 'closed' and outcome = 'won' from public.deals where id = 'a1150000-0000-4000-8000-0000000000e1')
+  and (select status = 'cancelled' from public.deliverables where id = 'a1150000-0000-4000-8000-000000000011')
+  and (select status = 'cancelled' from public.tasks where deal_id = 'a1150000-0000-4000-8000-0000000000e1' and side = 'talent')
+  and (select status = 'todo' from public.tasks where deal_id = 'a1150000-0000-4000-8000-0000000000e1' and side = 'agency')
+  and exists (select 1 from public.activities where deal_id = 'a1150000-0000-4000-8000-0000000000e1' and kind = 'system' and body = 'close_cancelled|1'));
+
+select tests.login('a1150000-0000-4000-8000-000000000002', 's115-gestor@test.local');
+select public.agency_deal_move('a1150000-0000-4000-8000-0000000000e4', 'closed', 'lost', 'Marca desistiu S115');
+select tests.ok('S115 D3: perdido cancela a entrega e a tarefa abertas do herói',
+  (select status = 'cancelled' from public.deliverables where id = 'a1150000-0000-4000-8000-000000000041')
+  and (select status = 'cancelled' from public.tasks where deal_id = 'a1150000-0000-4000-8000-0000000000e4'));
+
+select tests.login('a1150000-0000-4000-8000-000000000003', 's115-heroi@test.local');
+select tests.ok('S115 herói: nada de trabalho fantasma dos negócios encerrados no "Hoje"',
+  not ((public.talent_today() -> 'deliverables') @> '[{"id": "a1150000-0000-4000-8000-000000000011"}]'::jsonb)
+  and not ((public.talent_today() -> 'tasks') @> '[{"deal_id": "a1150000-0000-4000-8000-0000000000e1"}]'::jsonb)
+  and (select count(*) from public.tasks where talent_id = 'a1150000-0000-4000-8000-0000000000c1' and status in ('todo', 'doing', 'blocked')) = 0);
+
+select tests.su();
+delete from public.inbox_notifications where user_id::text like 'a1150000-%';
+delete from public.calendar_events where agency_id::text like 'a1150000-%';
+delete from public.tasks where agency_id::text like 'a1150000-%';
+delete from public.deliverables where deal_id::text like 'a1150000-%';
+delete from public.activities where agency_id::text like 'a1150000-%';
+delete from public.deal_terms where agency_id::text like 'a1150000-%';
+delete from public.deal_talents where deal_id::text like 'a1150000-%';
+delete from public.deals where agency_id::text like 'a1150000-%';
+delete from public.talent_profiles where id::text like 'a1150000-%';
+delete from public.agency_brands where agency_id::text like 'a1150000-%';
+delete from public.brands where id::text like 'a1150000-%';
+delete from public.agency_members where agency_id::text like 'a1150000-%';
+delete from public.agencies where id::text like 'a1150000-%';
+delete from auth.users where id::text like 'a1150000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

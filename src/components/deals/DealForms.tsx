@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowRightLeft, CheckCircle2, MessageSquarePlus, Save, Users } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, CheckCircle2, MessageSquarePlus, Save, Undo2, Users, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
 import { Button, Checkbox, DatePicker, DateRangePicker, Dialog, EntitySelect, FormField, Input, SegmentedControl, Select, Textarea, useToast } from "@/components/ui";
+import { hasCloseWonPending, type CloseWonPending } from "@/lib/deals/next-step";
 import { canConfirm, DEAL_OUTCOMES, moveNeedsNote, nextStages, type DealOutcome, type DealStage } from "@/lib/deals/stages";
 import { ACTIVITY_KINDS, type ActivityKind } from "@/lib/deals/vocab";
 import { serviceFitsClient, type ClientKind } from "@/lib/roadmap/vocab";
@@ -167,7 +168,25 @@ export function DealForm({
 }
 
 // ---------------------------------------------------------------- mover de etapa / encerrar
-export function MoveForm({ dealId, stage, role, isOwner, canClose }: { dealId: string; stage: DealStage; role: "admin" | "manager" | "staff" | null; isOwner: boolean; canClose: boolean }) {
+// 04/11: encerrar como ganho com pendências (termos sem aceite, contratação não confirmada, entregas abertas) mostra o
+// que falta e oferece dois caminhos: "Voltar e concluir" (leva ao Próximo passo) ou, só o Adm e com motivo, "Encerrar
+// mesmo assim e cancelar as entregas pendentes" — a RPC (0109) cancela entregas e tarefas abertas na mesma transação,
+// para nenhum portal mostrar trabalho fantasma.
+export function MoveForm({
+  dealId,
+  stage,
+  role,
+  isOwner,
+  canClose,
+  closePending = null,
+}: {
+  dealId: string;
+  stage: DealStage;
+  role: "admin" | "manager" | "staff" | null;
+  isOwner: boolean;
+  canClose: boolean;
+  closePending?: CloseWonPending | null;
+}) {
   const t = useTranslations("agency.deal.move");
   const ts = useTranslations("commercial");
   const { toast } = useToast();
@@ -175,15 +194,15 @@ export function MoveForm({ dealId, stage, role, isOwner, canClose }: { dealId: s
   const [to, setTo] = useState<string>("");
   const [outcome, setOutcome] = useState<DealOutcome>("lost");
   const [note, setNote] = useState("");
-  const [force, setForce] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const closing = to === "closed";
-  const needsNote = closing ? outcome !== "won" : to !== "" && moveNeedsNote(stage, to as DealStage);
+  const guarded = closing && outcome === "won" && closePending !== null && hasCloseWonPending(closePending);
+  const openCount = closePending?.deliverables.length ?? 0;
+  const needsNote = closing ? outcome !== "won" || guarded : to !== "" && moveNeedsNote(stage, to as DealStage);
   if (stage === "closed" && role !== "admin") return null;
 
-  function submit(event: FormEvent) {
-    event.preventDefault();
+  function run(force: boolean) {
     setError(null);
     if (!to) return setError(t("pickStage"));
     if (needsNote && note.trim().length < 5) return setError(t("noteRequired"));
@@ -195,6 +214,18 @@ export function MoveForm({ dealId, stage, role, isOwner, canClose }: { dealId: s
       setNote("");
     });
   }
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (guarded) return;
+    run(false);
+  }
+  function back() {
+    setTo("");
+    setOutcome("lost");
+    setError(null);
+    document.getElementById("next-step")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  const itemLabel = (d: CloseWonPending["deliverables"][number]) => d.title || ts(`deliverableKinds.${d.kind}`);
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-3" noValidate data-testid="deal-move">
@@ -226,8 +257,24 @@ export function MoveForm({ dealId, stage, role, isOwner, canClose }: { dealId: s
           </Select>
         </FormField>
       ) : null}
-      {closing && outcome === "won" && role === "admin" ? <Checkbox label={t("forceWon")} description={t("forceWonHint")} checked={force} onChange={(e) => setForce(e.target.checked)} disabled={pending} /> : null}
-      <FormField label={t("note")} hint={needsNote ? t("noteHintRequired") : t("noteHint")} required={needsNote}>
+      {closing && outcome !== "won" && openCount > 0 ? <p className="type-caption text-fg-muted">{t("cancelsOpen", { count: openCount })}</p> : null}
+      {guarded && closePending ? (
+        <div className="flex flex-col gap-2 rounded-xl border border-warning/40 bg-warning-soft p-3" role="alert" data-testid="close-won-guard">
+          <p className="flex items-center gap-2 text-sm font-semibold text-fg">
+            <AlertTriangle className="size-4 shrink-0 text-warning" aria-hidden="true" />
+            {t("guard.title")}
+          </p>
+          <ul className="flex list-disc flex-col gap-0.5 pl-5 type-body-sm text-fg">
+            {closePending.termsPending ? <li>{t("guard.terms")}</li> : null}
+            {closePending.contractPending ? <li>{t("guard.contract")}</li> : null}
+            {closePending.deliverables.map((d) => (
+              <li key={d.id}>{t("guard.deliverable", { item: itemLabel(d), hero: d.heroName, status: ts(`deliverableStatus.${d.status}`) })}</li>
+            ))}
+          </ul>
+          <p className="type-caption text-fg-muted">{t("guard.hint")}</p>
+        </div>
+      ) : null}
+      <FormField label={guarded ? t("guard.reason") : t("note")} hint={needsNote ? t("noteHintRequired") : t("noteHint")} required={needsNote}>
         <Textarea value={note} maxLength={500} rows={2} onChange={(e) => setNote(e.target.value)} disabled={pending} />
       </FormField>
       {error ? (
@@ -235,9 +282,24 @@ export function MoveForm({ dealId, stage, role, isOwner, canClose }: { dealId: s
           {error}
         </p>
       ) : null}
-      <Button type="submit" size="sm" variant="secondary" leadingIcon={<ArrowRightLeft />} loading={pending} className="w-fit">
-        {t("apply")}
-      </Button>
+      {guarded ? (
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <Button type="button" variant="secondary" leadingIcon={<Undo2 />} onClick={back} disabled={pending} className="min-h-11" data-testid="close-won-back">
+            {t("guard.back")}
+          </Button>
+          {role === "admin" ? (
+            <Button type="button" variant="danger" leadingIcon={<XCircle />} onClick={() => run(true)} loading={pending} className="min-h-11 whitespace-normal text-left" data-testid="close-won-force">
+              {openCount > 0 ? t("guard.forceCancel", { count: openCount }) : t("guard.force")}
+            </Button>
+          ) : (
+            <p className="type-caption text-fg-muted">{t("guard.adminOnly")}</p>
+          )}
+        </div>
+      ) : (
+        <Button type="submit" size="sm" variant="secondary" leadingIcon={<ArrowRightLeft />} loading={pending} className="w-fit">
+          {t("apply")}
+        </Button>
+      )}
     </form>
   );
 }

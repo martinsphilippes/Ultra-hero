@@ -1,0 +1,220 @@
+{
+  "title": "Next step",
+  "badge": {
+    "action": "Your turn",
+    "waiting": "Waiting",
+    "done": "Completed"
+  },
+  "deadline": "Due: {date}",
+  "deadlineLate": "Overdue: {date}",
+  "waitHint": "You'll be notified when it's your turn.",
+  "theBrand": "the brand",
+  "stepsLabel": "Campaign progress",
+  "stepDone": "done",
+  "steps": {
+    "proposal": "Proposal",
+    "terms": "Terms",
+    "contracting": "Contract",
+    "production": "Production",
+    "approval": "Approval",
+    "publication": "Publishing",
+    "done": "Completed"
+  },
+  "actions": {
+    "answerOffer": {
+      "title": "Answer the brand's proposal",
+      "hint": "Accept, counter or decline. The brand is notified right away.",
+      "cta": "Answer proposal"
+    },
+    "answerCounter": {
+      "title": "Answer the agency's counteroffer",
+      "hint": "Accept, make another proposal or decline.",
+      "cta": "See counteroffer"
+    },
+    "buildCast": {
+      "title": "Pick and invite the heroes",
+      "hint": "Build the cast and send the invitation for the heroes to answer.",
+      "cta": "Open heroes"
+    },
+    "talkToHero": {
+      "title": "Talk to {hero}",
+      "hint": "{hero} asked to talk before answering the invitation.",
+      "cta": "Open heroes"
+    },
+    "setFees": {
+      "title": "Set the fee for {names}",
+      "hint": "Without the fee, the campaign can't be confirmed.",
+      "cta": "Set fee"
+    },
+    "confirmDeal": {
+      "title": "Confirm the campaign",
+      "hint": "{count, plural, one {# hero is in} other {# heroes are in}}. Confirm to move on to the terms.",
+      "cta": "Confirm campaign"
+    },
+    "setPlan": {
+      "title": "Set the payment conditions",
+      "hint": "Amount, method and dates. Terms can't be sent without them.",
+      "cta": "Set conditions"
+    },
+    "sendTerms": {
+      "title": "Send the terms",
+      "hint": "Write or review the terms and send them for the brand and heroes to accept.",
+      "cta": "Open terms"
+    },
+    "confirmContract": {
+      "title": "Confirm the contract",
+      "hint": "Everyone accepted the terms. Confirm to start production.",
+      "cta": "Confirm contract"
+    },
+    "planDeliverables": {
+      "title": "Add the deliverables",
+      "hint": "Without deliverables, the heroes don't know what to produce.",
+      "cta": "Open deliverables"
+    },
+    "closeDeliverable": {
+      "title": "Complete the deliverable {item}",
+      "hint": "{hero} sent the proof. Check it and complete the deliverable.",
+      "cta": "Open deliverables"
+    },
+    "finishDeal": {
+      "title": "Close the campaign as won",
+      "hint": "All deliverables are completed.",
+      "cta": "Close as won"
+    },
+    "acceptTerms": {
+      "title": "Accept the terms",
+      "hint": "Read the conditions and sign so the campaign can move on.",
+      "cta": "Read and accept"
+    },
+    "respondInvite": {
+      "title": "Answer the invitation",
+      "hint": "Say whether you're in for this campaign.",
+      "cta": "Answer"
+    },
+    "createDeliverable": {
+      "title": "Create and send {item}",
+      "hint": "Create the content and send it as a deliverable for the brand to approve.",
+      "cta": "Create now"
+    },
+    "fixDeliverable": {
+      "title": "Adjust and resend {item}",
+      "hint": "The brand asked for changes. See the feedback and send the new version.",
+      "cta": "See changes"
+    },
+    "publishDeliverable": {
+      "title": "Publish {item}",
+      "hint": "The brand approved it. Publish and record the post link.",
+      "cta": "Record publication"
+    },
+    "proofDeliverable": {
+      "title": "Send the proof for {item}",
+      "hint": "Send the screenshot or link with the post's numbers.",
+      "cta": "Send proof"
+    },
+    "approveDeliverable": {
+      "title": "Approve {item}",
+      "hint": "{hero} sent it. Approve or ask for changes.",
+      "cta": "See deliverable"
+    }
+  },
+  "waits": {
+    "waitAgencyOffer": {
+      "title": "Waiting for the agency to answer your proposal"
+    },
+    "waitBrandOffer": {
+      "title": "Waiting for the brand to answer the counteroffer"
+    },
+    "waitAdminOffer": {
+      "title": "Waiting for the agency Admin to answer the brand's proposal"
+    },
+    "waitOwnerCounter": {
+      "title": "Waiting for the brand owner to answer the counteroffer"
+    },
+    "waitAgencyProposal": {
+      "title": "The agency is putting the proposal together with the heroes"
+    },
+    "waitHeroesAnswer": {
+      "title": "Waiting for {count, plural, one {# hero} other {# heroes}} to answer the invitation",
+      "hint": "Still to answer: {names}."
+    },
+    "waitTeamCast": {
+      "title": "Waiting for the deal team to build the cast"
+    },
+    "waitAdminConfirm": {
+      "title": "Waiting for the Admin to confirm the campaign"
+    },
+    "waitAdminPlan": {
+      "title": "Waiting for the Admin to set the payment conditions"
+    },
+    "waitTerms": {
+      "title": "Waiting for the agency to send the terms"
+    },
+    "waitManagerTerms": {
+      "title": "Waiting for a manager to send the terms"
+    },
+    "waitOwnerTerms": {
+      "title": "Waiting for the brand owner to accept the terms"
+    },
+    "waitAcceptances": {
+      "title": "Waiting for terms acceptance: {names}",
+      "hint": "Once everyone accepts, confirm the contract."
+    },
+    "waitBrandTerms": {
+      "title": "Waiting for the brand to accept the terms"
+    },
+    "waitHeroTerms": {
+      "title": "Waiting for {names} to accept the terms"
+    },
+    "waitContract": {
+      "title": "Waiting for the agency to confirm the contract"
+    },
+    "waitManagerContract": {
+      "title": "Waiting for a manager to confirm the contract"
+    },
+    "waitDeliverablesPlan": {
+      "title": "Waiting for the agency to add the deliverables"
+    },
+    "waitHeroDeliverable": {
+      "title": "Waiting for {hero} to send {item}"
+    },
+    "waitHeroPublish": {
+      "title": "Waiting for {hero} to publish {item}"
+    },
+    "waitHeroProof": {
+      "title": "Waiting for {hero} to send the proof for {item}"
+    },
+    "waitBrandApproval": {
+      "title": "Waiting for the brand to approve {item}"
+    },
+    "waitAgencyClose": {
+      "title": "Waiting for the agency to complete {item}"
+    },
+    "waitAgencyFinish": {
+      "title": "Waiting for the agency to close the campaign"
+    },
+    "waitManagerFinish": {
+      "title": "Waiting for a manager to close the campaign"
+    },
+    "waitProposalHero": {
+      "title": "The agency is closing the proposal with the brand",
+      "hint": "You'll get the terms to accept once the campaign is confirmed."
+    },
+    "waitHeroTalk": {
+      "title": "Waiting for the agency to talk to you"
+    }
+  },
+  "done": {
+    "won": {
+      "title": "Campaign completed",
+      "hint": "Everything delivered. Thank you!",
+      "cta": "See report"
+    },
+    "closed": {
+      "title": "Campaign closed",
+      "hint": "This campaign was closed without moving forward."
+    },
+    "declined": {
+      "title": "You're not part of this campaign"
+    }
+  }
+}

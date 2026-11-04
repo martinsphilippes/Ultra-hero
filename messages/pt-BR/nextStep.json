@@ -1,0 +1,220 @@
+{
+  "title": "Próximo passo",
+  "badge": {
+    "action": "Sua vez",
+    "waiting": "Aguardando",
+    "done": "Concluída"
+  },
+  "deadline": "Prazo: {date}",
+  "deadlineLate": "Prazo vencido: {date}",
+  "waitHint": "Você recebe um aviso quando for a sua vez.",
+  "theBrand": "a marca",
+  "stepsLabel": "Andamento da campanha",
+  "stepDone": "concluída",
+  "steps": {
+    "proposal": "Proposta",
+    "terms": "Termos",
+    "contracting": "Contratação",
+    "production": "Produção",
+    "approval": "Aprovação",
+    "publication": "Publicação",
+    "done": "Concluída"
+  },
+  "actions": {
+    "answerOffer": {
+      "title": "Responder à proposta da marca",
+      "hint": "Aceite, faça uma contraproposta ou recuse. A marca é avisada na hora.",
+      "cta": "Responder proposta"
+    },
+    "answerCounter": {
+      "title": "Responder à contraproposta da agência",
+      "hint": "Aceite, faça outra proposta ou recuse.",
+      "cta": "Ver contraproposta"
+    },
+    "buildCast": {
+      "title": "Escolher e consultar os heróis",
+      "hint": "Monte o elenco e envie o convite para os heróis responderem.",
+      "cta": "Abrir heróis"
+    },
+    "talkToHero": {
+      "title": "Conversar com {hero}",
+      "hint": "{hero} pediu para conversar antes de responder ao convite.",
+      "cta": "Abrir heróis"
+    },
+    "setFees": {
+      "title": "Definir o cachê de {names}",
+      "hint": "Sem o cachê, a campanha não pode ser confirmada.",
+      "cta": "Definir cachê"
+    },
+    "confirmDeal": {
+      "title": "Confirmar a campanha",
+      "hint": "{count, plural, one {# herói topou} other {# heróis toparam}}. Confirme para seguir para os termos.",
+      "cta": "Confirmar campanha"
+    },
+    "setPlan": {
+      "title": "Definir as condições de pagamento",
+      "hint": "Valor, forma e datas. Sem isso os termos não podem ser enviados.",
+      "cta": "Definir condições"
+    },
+    "sendTerms": {
+      "title": "Enviar os termos",
+      "hint": "Escreva ou revise os termos e envie para a marca e os heróis aceitarem.",
+      "cta": "Abrir termos"
+    },
+    "confirmContract": {
+      "title": "Confirmar a contratação",
+      "hint": "Todos aceitaram os termos. Confirme para liberar a produção das entregas.",
+      "cta": "Confirmar contratação"
+    },
+    "planDeliverables": {
+      "title": "Cadastrar as entregas",
+      "hint": "Sem entregas cadastradas, os heróis não sabem o que produzir.",
+      "cta": "Abrir entregas"
+    },
+    "closeDeliverable": {
+      "title": "Concluir a entrega {item}",
+      "hint": "{hero} enviou o comprovante. Confira e conclua a entrega.",
+      "cta": "Abrir entregas"
+    },
+    "finishDeal": {
+      "title": "Encerrar a campanha como ganha",
+      "hint": "Todas as entregas estão concluídas.",
+      "cta": "Encerrar como ganha"
+    },
+    "acceptTerms": {
+      "title": "Aceitar os termos",
+      "hint": "Leia as condições e assine para a campanha seguir.",
+      "cta": "Ler e aceitar"
+    },
+    "respondInvite": {
+      "title": "Responder ao convite",
+      "hint": "Diga se topa participar desta campanha.",
+      "cta": "Responder"
+    },
+    "createDeliverable": {
+      "title": "Criar e enviar {item}",
+      "hint": "Crie o conteúdo e envie como entrega para a marca aprovar.",
+      "cta": "Criar agora"
+    },
+    "fixDeliverable": {
+      "title": "Ajustar e reenviar {item}",
+      "hint": "A marca pediu ajustes. Veja o retorno e envie a nova versão.",
+      "cta": "Ver ajustes"
+    },
+    "publishDeliverable": {
+      "title": "Publicar {item}",
+      "hint": "A marca aprovou. Publique e registre o link da publicação.",
+      "cta": "Registrar publicação"
+    },
+    "proofDeliverable": {
+      "title": "Enviar o comprovante de {item}",
+      "hint": "Mande o print ou link com os números da publicação.",
+      "cta": "Enviar comprovante"
+    },
+    "approveDeliverable": {
+      "title": "Aprovar {item}",
+      "hint": "{hero} enviou. Aprove ou peça ajustes.",
+      "cta": "Ver entrega"
+    }
+  },
+  "waits": {
+    "waitAgencyOffer": {
+      "title": "Aguardando a agência responder à sua proposta"
+    },
+    "waitBrandOffer": {
+      "title": "Aguardando a marca responder à contraproposta"
+    },
+    "waitAdminOffer": {
+      "title": "Aguardando o Adm da agência responder à proposta da marca"
+    },
+    "waitOwnerCounter": {
+      "title": "Aguardando o dono da marca responder à contraproposta"
+    },
+    "waitAgencyProposal": {
+      "title": "A agência está montando a proposta com os heróis"
+    },
+    "waitHeroesAnswer": {
+      "title": "Aguardando {count, plural, one {# herói} other {# heróis}} responder ao convite",
+      "hint": "Quem ainda não respondeu: {names}."
+    },
+    "waitTeamCast": {
+      "title": "Aguardando a equipe do negócio montar o elenco"
+    },
+    "waitAdminConfirm": {
+      "title": "Aguardando o Adm confirmar a campanha"
+    },
+    "waitAdminPlan": {
+      "title": "Aguardando o Adm definir as condições de pagamento"
+    },
+    "waitTerms": {
+      "title": "Aguardando a agência enviar os termos"
+    },
+    "waitManagerTerms": {
+      "title": "Aguardando um gestor enviar os termos"
+    },
+    "waitOwnerTerms": {
+      "title": "Aguardando o dono da marca aceitar os termos"
+    },
+    "waitAcceptances": {
+      "title": "Aguardando o aceite dos termos: {names}",
+      "hint": "Depois que todos aceitarem, confirme a contratação."
+    },
+    "waitBrandTerms": {
+      "title": "Aguardando a marca aceitar os termos"
+    },
+    "waitHeroTerms": {
+      "title": "Aguardando {names} aceitar os termos"
+    },
+    "waitContract": {
+      "title": "Aguardando a agência confirmar a contratação"
+    },
+    "waitManagerContract": {
+      "title": "Aguardando um gestor confirmar a contratação"
+    },
+    "waitDeliverablesPlan": {
+      "title": "Aguardando a agência cadastrar as entregas"
+    },
+    "waitHeroDeliverable": {
+      "title": "Aguardando {hero} enviar {item}"
+    },
+    "waitHeroPublish": {
+      "title": "Aguardando {hero} publicar {item}"
+    },
+    "waitHeroProof": {
+      "title": "Aguardando {hero} enviar o comprovante de {item}"
+    },
+    "waitBrandApproval": {
+      "title": "Aguardando a marca aprovar {item}"
+    },
+    "waitAgencyClose": {
+      "title": "Aguardando a agência concluir {item}"
+    },
+    "waitAgencyFinish": {
+      "title": "Aguardando a agência encerrar a campanha"
+    },
+    "waitManagerFinish": {
+      "title": "Aguardando um gestor encerrar a campanha"
+    },
+    "waitProposalHero": {
+      "title": "A agência está fechando a proposta com a marca",
+      "hint": "Você recebe os termos para aceitar quando a campanha for confirmada."
+    },
+    "waitHeroTalk": {
+      "title": "Aguardando a agência conversar com você"
+    }
+  },
+  "done": {
+    "won": {
+      "title": "Campanha concluída",
+      "hint": "Tudo entregue. Obrigado!",
+      "cta": "Ver relatório"
+    },
+    "closed": {
+      "title": "Campanha encerrada",
+      "hint": "Esta campanha foi encerrada sem seguir adiante."
+    },
+    "declined": {
+      "title": "Você não participa desta campanha"
+    }
+  }
+}

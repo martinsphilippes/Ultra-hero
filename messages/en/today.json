@@ -14,7 +14,8 @@
     "overdue": "Overdue",
     "today": "Today",
     "soon": "Next days",
-    "waiting": "Waiting"
+    "waiting": "Waiting",
+    "noRush": "No rush"
   },
   "brand": {
     "title": "Waiting on me today",
@@ -65,6 +66,7 @@
       "terms": "Accept terms",
       "offer": "Reply to offer",
       "deliverable": "Upcoming delivery",
+      "pending": "Your turn",
       "task": "Task",
       "invoice": "Send invoice",
       "payment": "Payment scheduled"
@@ -75,6 +77,7 @@
       "terms": "Terms",
       "offer": "Offers",
       "deliverable": "Deliveries",
+      "pending": "Your turn",
       "task": "Tasks",
       "invoice": "Invoices",
       "payment": "Payments"
@@ -84,7 +87,9 @@
     "counter_rejected": "Counteroffer declined",
     "invoiceMissing": "Delivered: send the invoice to get paid",
     "invoiceRejected": "Invoice rejected: send a new one",
-    "paymentScheduled": "The agency scheduled the payment"
+    "paymentScheduled": "The agency scheduled the payment",
+    "pendingHint": "Create it and send it for the brand to approve",
+    "sendProof": "Published: send the proof"
   },
   "board": {
     "title": "Actions by stage",

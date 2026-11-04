@@ -233,7 +233,9 @@ export function urgencyOfDay(day: string | null, now: Date, timeZone: string, so
 // 0085: oportunidade de patrocínio aberta, no prazo e sem resposta da marca
 export const BRAND_TODAY_KINDS = ["approval", "internalApproval", "shortlist", "script", "terms", "sponsorship", "budget", "message", "deadline", "rating", "draft"] as const;
 export type BrandTodayKind = (typeof BRAND_TODAY_KINDS)[number];
-export const TALENT_TODAY_KINDS = ["adjustment", "scriptAdjustment", "terms", "offer", "deliverable", "task", "invoice", "payment"] as const;
+// 04/11 ("Próximo passo"): "pending" = entrega em produção cuja vez é do herói mas sem prazo próximo (ou publicada
+// esperando o comprovante). Antes ela ficava fora do "Hoje" e a marca via "Em criação" enquanto o herói via "Nada pendente".
+export const TALENT_TODAY_KINDS = ["adjustment", "scriptAdjustment", "terms", "offer", "deliverable", "pending", "task", "invoice", "payment"] as const;
 export type TalentTodayKind = (typeof TALENT_TODAY_KINDS)[number];
 
 export type TodayItem<K extends string = string> = {
@@ -427,7 +429,7 @@ const oppHref = (dealTalentId: string, anchor?: string) => `/heroi/oportunidades
 /** Passos do modelo que repetem o que o entregável já mostra (enviar conteúdo, publicar, comprovar). */
 const DELIVERABLE_STEPS = new Set([7, 9, 10]);
 
-/** "Hoje" do creator: tarefas vencendo hoje/atrasadas, consultas, entregáveis próximos, ajustes e termos. */
+/** "Hoje" do creator: tarefas vencendo hoje/atrasadas, consultas, entregáveis (próximos e, sem pressa, os demais da vez dele), ajustes e termos. */
 export function buildTalentToday(data: TalentTodayData, now: Date, opts: { soonDays?: number } = {}): TodayItem<TalentTodayKind>[] {
   const tz = data.timezone;
   const soon = opts.soonDays ?? SOON_DAYS;
@@ -444,7 +446,13 @@ export function buildTalentToday(data: TalentTodayData, now: Date, opts: { soonD
         title: d.title || d.kind, context: join(d.brandName, d.dealTitle), note: d.brandFeedback || null, status: d.status });
       continue;
     }
-    if (u === "later" || u === "waiting") continue;
+    if (d.status === "published" || u === "later" || u === "waiting") {
+      // a vez é do herói, sem pressa: entra no fim da lista (o comprovante não tem prazo próprio)
+      dealsWithDeliverable.add(d.dealId);
+      items.push({ ...base, key: `pending:${d.id}`, kind: "pending", urgency: "waiting", deadline: d.status === "published" ? null : deadline, since: null,
+        href: oppHref(d.dealTalentId, "opp-execution"), title: d.title || d.kind, context: join(d.brandName, d.dealTitle), status: d.status });
+      continue;
+    }
     dealsWithDeliverable.add(d.dealId);
     items.push({ ...base, key: `deliverable:${d.id}`, kind: "deliverable", urgency: u, deadline, since: null, href: oppHref(d.dealTalentId, "opp-execution"),
       title: d.title || d.kind, context: join(d.brandName, d.dealTitle), status: d.status });

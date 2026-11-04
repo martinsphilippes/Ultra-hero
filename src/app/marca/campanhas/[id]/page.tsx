@@ -10,6 +10,7 @@ import { CancelCampaignButton } from "@/components/brand-portal/CancelCampaignBu
 import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
 import { DealOffer } from "@/components/deals/DealOffer";
 import { MessageThread } from "@/components/deals/MessageThread";
+import { NextStepCard } from "@/components/deals/NextStepCard";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { BrandStatusBadge, DeliverableStatusBadge } from "@/components/deals/StatusBadges";
 import { DeliverablesBoard } from "@/components/execution/DeliverablesBoard";
@@ -30,7 +31,8 @@ import { getUser } from "@/lib/auth/session";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { briefDefined, briefToDraft } from "@/lib/brief/brief";
 import { getBrandCampaign, getDealOffer, getRequestBudget, listMessages } from "@/lib/deals/queries";
-import { BRAND_STATUSES } from "@/lib/deals/stages";
+import { flowDeliverables, flowStep, flowTerms, nextStep, nextStepHref, stageFromBrandStatus, type FlowInput } from "@/lib/deals/next-step";
+import { BRAND_STATUSES, isDealStage, type DealOutcome } from "@/lib/deals/stages";
 import { centsToBrl } from "@/lib/money/brl-input";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
 import { getDealExecution } from "@/lib/execution/queries";
@@ -143,6 +145,22 @@ export default async function BrandCampaignPage({ params }: Props) {
       </Link>
     </p>
   ) : null;
+  // "Próximo passo" (04/11): a mesma regra da agência e do herói, com o que a marca lê (aceites e entregas da execução)
+  const flowTermsView = flowTerms(execution?.terms);
+  const fallbackStage = stageFromBrandStatus(detail.brandStatus);
+  const flow: FlowInput = {
+    stage: execution && isDealStage(execution.stage) ? execution.stage : fallbackStage.stage,
+    outcome: (deal?.outcome as DealOutcome | null) ?? fallbackStage.outcome,
+    offer: offer && offer.enabled ? { open: offer.open, turn: offer.turn, agreed: offer.agreed } : null,
+    planMissing: null,
+    terms: flowTermsView,
+    heroes: detail.talents
+      .filter((x) => x.status === "proposed" || x.status === "contracted")
+      .map((x) => ({ dealTalentId: x.dealTalentId, name: x.name, status: x.status, respondBy: null, termsAccepted: flowTermsView.acceptedBy(x.dealTalentId), feeReady: null })),
+    contractConfirmed: Boolean(execution?.contractConfirmedAt),
+    deliverables: flowDeliverables(execution?.deliverables),
+  };
+  const step = nextStep(flow, { party: "brand", isOwner: ctx.role === "owner", canAct: canEdit && detail.brandStatus !== "cancelled" });
   const ratable = (execution?.deliverables ?? []).map((d) => ({ id: d.id, title: d.title, kind: d.kind, talentName: d.talentName, status: d.status, dueAt: d.dueAt, publishAt: d.publishAt, publishedAt: d.publishedAt, proofAt: d.proofAt }));
 
   if (editable) {
@@ -225,7 +243,16 @@ export default async function BrandCampaignPage({ params }: Props) {
       {shortlistNote}
       {sponsorshipNote}
       {callNote}
-      {detail.brandStatus !== "cancelled" ? (
+      {!isDraft ? (
+        <NextStepCard
+          party="brand"
+          step={step}
+          flow={flowStep(flow)}
+          href={nextStepHref("brand", step.target, { dealId: deal?.id ?? "", requestId: request.id })}
+          cancelled={detail.brandStatus === "cancelled"}
+          stepsTestId="campaign-steps"
+        />
+      ) : detail.brandStatus !== "cancelled" ? (
         <ol className="flex flex-wrap gap-2" aria-label={t("stepsLabel")} data-testid="campaign-steps">
           {steps.map((s, i) => (
             <li key={s} className={`rounded-full border px-3 py-1 type-caption ${i <= stepIndex ? "border-accent/40 bg-accent-soft text-accent-text" : "border-border text-fg-muted"}`} aria-current={s === detail.brandStatus ? "step" : undefined}>
