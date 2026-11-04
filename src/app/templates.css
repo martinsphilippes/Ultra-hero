@@ -891,3 +891,232 @@
 [data-template="impact"] .type-numeric {
   text-transform: none;
 }
+
+/* ============================================= 6 · Ultra Perspectivas ====
+   Editorial e terroso (referência: página Perspectivas da Groscove): fundo creme, títulos em serifa clássica
+   (EB Garamond) com as cores da paleta, texto em Manrope, cartões arredondados com sombra suave,
+   traço terracota sob os títulos e formas orgânicas discretas no canto do fundo.
+   Paleta: oliva #7B7D57, petróleo #2A4954, bege dourado #B4A17F, mostarda #BA8C41, terracota #A95935,
+   grafite azulado #30363F, creme #F6F1E8. Tons de texto escurecidos/clareados onde o AA exige. */
+[data-template="perspectivas"] {
+  --uh-chrome-bg: var(--uh-bg);
+  --uh-chrome-fg: var(--uh-fg);
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --uh-font-heading: var(--font-eb-garamond), Georgia, "Times New Roman", serif;
+  --uh-font-h3: var(--font-eb-garamond), Georgia, "Times New Roman", serif;
+  --uh-font-label: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  --uh-display-size: clamp(2.75rem, 1.9rem + 4vw, 4.5rem);
+  --uh-display-leading: 0.98;
+  --uh-display-weight: 500;
+  --uh-display-tracking: -0.015em;
+  --uh-h1-size: clamp(2rem, 1.6rem + 2.2vw, 3rem);
+  --uh-h1-leading: 1.05;
+  --uh-h1-weight: 500;
+  --uh-h1-tracking: -0.015em;
+  --uh-h2-size: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+  --uh-h2-leading: 1.12;
+  --uh-h2-weight: 500;
+  --uh-h2-tracking: -0.005em;
+  --uh-h3-size: 1.25rem;
+  --uh-h3-leading: 1.25;
+  --uh-h3-weight: 600;
+  --uh-h3-tracking: 0;
+  --uh-body-leading: 1.65;
+  --uh-body-sm-leading: 1.55;
+  --uh-caption-tracking: 0.01em;
+  --uh-overline-size: 0.6875rem;
+  --uh-overline-weight: 600;
+  --uh-overline-tracking: 0.18em;
+
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 750;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --uh-btn-radius-sm: 9999px;
+  --uh-btn-radius-md: 9999px;
+  --uh-btn-radius-lg: 9999px;
+  --uh-field-radius: 0.75rem;
+  --uh-chip-radius: 9999px;
+  --uh-badge-radius: 9999px;
+  --uh-btn-tracking: 0.01em;
+
+  --uh-icon-stroke: 1.5;
+}
+[data-template="perspectivas"][data-theme="light"] {
+  color-scheme: light;
+  --uh-bg: #f6f1e8;
+  --uh-surface: #fbf8f2;
+  --uh-surface-elevated: #ffffff;
+  --uh-surface-hover: #efe7da;
+  --uh-border: rgba(48, 54, 63, 0.11);
+  --uh-border-strong: rgba(48, 54, 63, 0.26);
+  --uh-fg: #30363f;
+  --uh-fg-muted: #57585a;
+  --uh-fg-subtle: #66645f;
+  --uh-accent: #a95935;
+  --uh-accent-hover: #8e4a2b;
+  --uh-accent-fg: #ffffff;
+  --uh-accent-text: #8e4a2b;
+  --uh-accent-soft: rgba(169, 89, 53, 0.1);
+  --uh-success: #4f5a2c;
+  --uh-success-soft: rgba(123, 125, 87, 0.16);
+  --uh-warning: #7f5a1c;
+  --uh-warning-soft: rgba(186, 140, 65, 0.2);
+  --uh-danger: #a62a1f;
+  --uh-danger-fg: #ffffff;
+  --uh-danger-soft: rgba(166, 42, 31, 0.09);
+  --uh-info: #2a4954;
+  --uh-info-soft: rgba(42, 73, 84, 0.1);
+  --uh-focus: #2a4954;
+  --uh-overlay: rgba(48, 54, 63, 0.45);
+  --uh-pillar-routine: #2a4954;
+  --uh-pillar-routine-soft: #dfe7e8;
+  --uh-pillar-training: #8e4a2b;
+  --uh-pillar-training-soft: #f3e3d9;
+  --uh-pillar-nutrition: #565834;
+  --uh-pillar-nutrition-soft: #e8e8da;
+  --uh-pillar-gastronomy: #7f5a1c;
+  --uh-pillar-gastronomy-soft: #f3e8d2;
+  --uh-shadow-sm: 0 1px 2px rgba(48, 54, 63, 0.06);
+  --uh-shadow-md: 0 14px 34px -18px rgba(48, 54, 63, 0.3);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(48, 54, 63, 0.38);
+  --uh-shadow-glow: 0 0 0 1px rgba(169, 89, 53, 0.24), 0 14px 34px -16px rgba(169, 89, 53, 0.3);
+  --uh-title-gradient: linear-gradient(100deg, #565834 0%, #8e4a2b 38%, #7f5a1c 64%, #2a4954 100%);
+}
+[data-template="perspectivas"][data-theme="dark"] {
+  color-scheme: dark;
+  --uh-bg: #1d2127;
+  --uh-surface: #262b32;
+  --uh-surface-elevated: #2d333b;
+  --uh-surface-hover: #353c45;
+  --uh-border: rgba(246, 241, 232, 0.1);
+  --uh-border-strong: rgba(246, 241, 232, 0.24);
+  --uh-fg: #f6f1e8;
+  --uh-fg-muted: #cdc3b2;
+  --uh-fg-subtle: #b3a998;
+  --uh-accent: #e09068;
+  --uh-accent-hover: #eaa684;
+  --uh-accent-fg: #1d2127;
+  --uh-accent-text: #e9a17e;
+  --uh-accent-soft: rgba(224, 144, 104, 0.15);
+  --uh-success: #b7ba8a;
+  --uh-success-soft: rgba(183, 186, 138, 0.15);
+  --uh-warning: #ddb06a;
+  --uh-warning-soft: rgba(221, 176, 106, 0.15);
+  --uh-danger: #f09a8c;
+  --uh-danger-fg: #1d2127;
+  --uh-danger-soft: rgba(240, 154, 140, 0.14);
+  --uh-info: #8fbccb;
+  --uh-info-soft: rgba(143, 188, 203, 0.14);
+  --uh-focus: #ddb06a;
+  --uh-overlay: rgba(10, 12, 15, 0.66);
+  --uh-pillar-routine: #8fbccb;
+  --uh-pillar-routine-soft: rgba(143, 188, 203, 0.15);
+  --uh-pillar-training: #e9a17e;
+  --uh-pillar-training-soft: rgba(233, 161, 126, 0.15);
+  --uh-pillar-nutrition: #c2c592;
+  --uh-pillar-nutrition-soft: rgba(194, 197, 146, 0.15);
+  --uh-pillar-gastronomy: #ddb06a;
+  --uh-pillar-gastronomy-soft: rgba(221, 176, 106, 0.15);
+  --uh-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --uh-shadow-md: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --uh-shadow-lg: 0 26px 60px -26px rgba(0, 0, 0, 0.7);
+  --uh-shadow-glow: 0 0 0 1px rgba(224, 144, 104, 0.3), 0 14px 34px -16px rgba(224, 144, 104, 0.25);
+  --uh-title-gradient: linear-gradient(100deg, #c2c592 0%, #e9a17e 38%, #ddb06a 64%, #8fbccb 100%);
+}
+/* formas orgânicas no canto inferior esquerdo do fundo (como na referência), bem discretas e fixas */
+[data-template="perspectivas"] body {
+  background-image:
+    radial-gradient(38rem 30rem at -8% 108%, color-mix(in oklab, #7b7d57 16%, transparent) 0 55%, transparent 56%),
+    radial-gradient(30rem 24rem at 14% 112%, color-mix(in oklab, #a95935 14%, transparent) 0 55%, transparent 56%),
+    radial-gradient(26rem 20rem at 28% 116%, color-mix(in oklab, #b4a17f 16%, transparent) 0 55%, transparent 56%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+[data-template="perspectivas"] .uh-header {
+  border-bottom-color: var(--uh-border);
+  background-color: color-mix(in oklab, var(--uh-bg) 92%, transparent);
+}
+[data-template="perspectivas"] .uh-bottomnav [aria-current="page"] {
+  color: var(--uh-accent-text);
+}
+[data-template="perspectivas"] .uh-nav-indicator {
+  height: 2px;
+  width: 1.75rem;
+  border-radius: 0;
+  background-color: var(--uh-accent);
+}
+[data-template="perspectivas"] .uh-card {
+  border-color: var(--uh-border);
+  box-shadow: var(--uh-shadow-md);
+}
+/* título da página: serifa nas cores da paleta + traço terracota curto abaixo */
+[data-template="perspectivas"] .uh-page-title {
+  background-image: var(--uh-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--uh-fg);
+}
+[data-template="perspectivas"] .uh-page-title::after {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 2px;
+  margin-top: 0.75rem;
+  background-color: var(--uh-accent);
+}
+@media (forced-colors: active) {
+  [data-template="perspectivas"] .uh-page-title {
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+[data-template="perspectivas"] .uh-tab[aria-selected="true"]::after {
+  height: 2px;
+  border-radius: 0;
+}
+[data-template="perspectivas"] .uh-inverse {
+  --uh-accent: #ddb06a;
+  --uh-accent-hover: #e6c084;
+  --uh-accent-fg: #1d2127;
+}
+[data-template="perspectivas"] .uh-on-accent {
+  color: var(--uh-accent-fg);
+}
+[data-template="perspectivas"] .uh-post-type {
+  font-family: var(--uh-font-label);
+  text-transform: uppercase;
+  letter-spacing: var(--uh-overline-tracking);
+  font-size: var(--uh-overline-size);
+  font-weight: var(--uh-overline-weight);
+  color: var(--uh-accent-text);
+}
+[data-template="perspectivas"] .uh-post-title {
+  font-family: var(--uh-font-heading);
+  font-size: 1.375rem;
+  line-height: 1.15;
+  font-weight: 500;
+}
+@media (max-width: 767px) {
+  [data-template="perspectivas"] .uh-post-media {
+    margin-inline: var(--spacing-gutter);
+    border-radius: var(--radius-xl);
+  }
+}
+[data-template="perspectivas"] .uh-tile-grid {
+  gap: 0.375rem;
+  padding-inline: 0.375rem;
+}
+[data-template="perspectivas"] .uh-tile-grid > * {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}

@@ -17,7 +17,7 @@ const CORNER: Record<Decoration["position"], string> = { "top-left": "left-1 top
 
 // Prévia lado a lado (claro e escuro) num template à escolha, sem publicar nada: o contêiner usa o mesmo mecanismo das
 // prévias da Aparência (data-template/data-theme) e as variáveis do tema por cima (style), exatamente como no app.
-// Embaixo, o relatório de contraste AA contra os 5 templates.
+// Embaixo, o relatório de contraste AA contra os 6 templates.
 export function ThemePreview({ tokens, background, decorations, bannerText, bannerLabel }: Props) {
   const t = useTranslations("seasonalTheme.preview");
   const ta = useTranslations("seasonalTheme");

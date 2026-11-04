@@ -1,4 +1,4 @@
-// Contraste WCAG 2.1 (módulo puro, testado). O tema sazonal é validado contra as paletas dos 5 templates de Aparência
+// Contraste WCAG 2.1 (módulo puro, testado). O tema sazonal é validado contra as paletas dos 6 templates de Aparência
 // (claro e escuro), porque cada pessoa pode estar em qualquer um: o tema não pode estragar a leitura em nenhum.
 import type { ColorMode, ModeTokens, ThemeBackground } from "./vocab";
 import { isHexColor } from "./vocab";
@@ -15,6 +15,7 @@ export const TEMPLATE_PALETTES: Record<ColorMode, TemplatePalette[]> = {
     { template: "essential", bg: "#f5f1ea", surface: "#fffdf9", fg: "#2a2420", fgMuted: "#62574f" },
     { template: "performance", bg: "#eef0f3", surface: "#ffffff", fg: "#0f141a", fgMuted: "#4b5563" },
     { template: "urban", bg: "#ededed", surface: "#ffffff", fg: "#0a0a0a", fgMuted: "#474747" },
+    { template: "perspectivas", bg: "#f6f1e8", surface: "#fbf8f2", fg: "#30363f", fgMuted: "#57585a" },
   ],
   dark: [
     { template: "original", bg: "#0b0b0b", surface: "#141414", fg: "#f2efea", fgMuted: "#a7a199" },
@@ -22,6 +23,7 @@ export const TEMPLATE_PALETTES: Record<ColorMode, TemplatePalette[]> = {
     { template: "essential", bg: "#1b1816", surface: "#242020", fg: "#f3ebe2", fgMuted: "#c4b8ac" },
     { template: "performance", bg: "#0b0e12", surface: "#12161c", fg: "#eef2f6", fgMuted: "#a6b0bd" },
     { template: "urban", bg: "#000000", surface: "#131313", fg: "#f5f5f5", fgMuted: "#b5b5b5" },
+    { template: "perspectivas", bg: "#1d2127", surface: "#262b32", fg: "#f6f1e8", fgMuted: "#cdc3b2" },
   ],
 };
 
@@ -108,7 +110,7 @@ export function textBackgrounds(tokens: ModeTokens, mode: ColorMode): string[] {
   return [...out];
 }
 
-/** Valida as cores de um modo contra os 5 templates. Cores inválidas são ignoradas (o zod/banco já barram). */
+/** Valida as cores de um modo contra os 6 templates. Cores inválidas são ignoradas (o zod/banco já barram). */
 export function checkModeTokens(tokens: ModeTokens | undefined, mode: ColorMode): ModeReport {
   const t: ModeTokens = {};
   for (const [k, v] of Object.entries(tokens ?? {})) if (isHexColor(v)) t[k as keyof ModeTokens] = v;

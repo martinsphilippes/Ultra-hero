@@ -97,6 +97,10 @@
       "urban": {
         "name": "Ultra Urban",
         "description": "Esportivo e urbano: blocos retos, alto contraste e detalhes em verde-limão."
+      },
+      "perspectivas": {
+        "name": "Ultra Perspectivas",
+        "description": "Editorial e terroso: creme, oliva, petróleo e terracota, títulos em serifa clássica."
       }
     }
   },

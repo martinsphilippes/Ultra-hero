@@ -47,8 +47,9 @@ const fraunces = localFont({ src: "./fonts/fraunces-latin.woff2", weight: "100 9
 const figtree = localFont({ src: "./fonts/figtree-latin.woff2", weight: "300 900", variable: "--font-figtree", display: "swap", preload: false });
 const inter = localFont({ src: "./fonts/inter-latin.woff2", weight: "100 900", variable: "--font-inter", display: "swap", preload: false });
 const unbounded = localFont({ src: "./fonts/unbounded-latin.woff2", weight: "200 900", variable: "--font-unbounded", display: "swap", preload: false });
+const ebGaramond = localFont({ src: "./fonts/eb-garamond-latin.woff2", weight: "400 800", variable: "--font-eb-garamond", display: "swap", preload: false });
 const spaceGrotesk = localFont({ src: "./fonts/space-grotesk-latin.woff2", weight: "300 700", variable: "--font-space-grotesk", display: "swap", preload: false });
-const fontVariables = [manrope, dmMono, archivo, fraunces, figtree, inter, unbounded, spaceGrotesk].map((f) => f.variable).join(" ");
+const fontVariables = [manrope, dmMono, archivo, fraunces, figtree, inter, unbounded, spaceGrotesk, ebGaramond].map((f) => f.variable).join(" ");
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, origin] = await Promise.all([getTranslations("common.app"), getOrigin()]);
