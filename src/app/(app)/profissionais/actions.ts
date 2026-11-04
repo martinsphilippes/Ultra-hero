@@ -6,6 +6,7 @@ import { isCommerceEnabled } from "@/components/commerce/lib/settings";
 import { getUser } from "@/lib/auth/session";
 import { getNativeApp } from "@/lib/native-app/server";
 import { createClient } from "@/lib/supabase/server";
+import { isShopLockedForViewer } from "@/lib/shop/coming-soon-server";
 
 // Contratar = serviço no carrinho (pagamento simulado, como os produtos). As regras (serviço no ar,
 // profissional aprovado, não é o próprio, limite de 10, kill switch) ficam em service_cart_set (0058).
@@ -31,6 +32,8 @@ export async function hireService(input: { serviceId: string }): Promise<HireRes
   if (await getNativeApp()) return { ok: false, error: "commerce_disabled" };
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
+  // Coming soon da loja (até 01/01/2027): contratar serviços também fica pausado (admin passa)
+  if (await isShopLockedForViewer()) return { ok: false, error: "commerce_disabled" };
   try {
     const supabase = await createClient();
     const settings = await supabase.rpc("public_settings");

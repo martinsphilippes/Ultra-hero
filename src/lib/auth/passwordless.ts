@@ -4,11 +4,11 @@
 // administrador da plataforma continuam exigindo senha. Módulo puro (testável), lido no servidor e no cliente.
 //
 // Variáveis de ambiente (opcionais, só no servidor):
-// - PASSWORDLESS_UNTIL: data ISO que substitui o prazo padrão (ex.: 2026-11-06T03:00:00Z). Inválida = padrão.
+// - PASSWORDLESS_UNTIL: data ISO que substitui o prazo padrão (ex.: 2026-11-06T11:00:00Z). Inválida = padrão.
 // - PASSWORDLESS_DISABLED=1: desliga na hora (kill switch), independentemente do prazo.
 
 /** 2026-11-06 00:00 America/Sao_Paulo (UTC−3). */
-export const PASSWORDLESS_UNTIL = "2026-11-06T03:00:00Z";
+export const PASSWORDLESS_UNTIL = "2026-11-06T11:00:00Z"; // 06/11 às 8h (São Paulo)
 
 /** Limite próprio do "entrar sem senha" (por IP e por e-mail, HMAC, na tabela do cadastro rápido). */
 export const PASSWORDLESS_LIMITS = { windowMinutes: 10, perIp: 20, perEmail: 5 } as const;
@@ -36,8 +36,12 @@ export function isPasswordlessActive(now: Date = new Date(), env: Env = readEnv(
   return now.getTime() < passwordlessUntil(env).getTime();
 }
 
-/** Último dia do período (dd/mm, em São Paulo) para o aviso da tela. */
+/** Fim do período para o aviso da tela, em São Paulo: "06/11 às 8h" (ou "06/11 às 8h30"). */
 export function passwordlessLastDayLabel(env: Env = readEnv()): string {
-  const last = new Date(passwordlessUntil(env).getTime() - 1);
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" }).format(last);
+  const until = passwordlessUntil(env);
+  const parts = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "America/Sao_Paulo" }).formatToParts(until);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  const hour = String(Number(get("hour")));
+  const minute = get("minute");
+  return `${get("day")}/${get("month")} às ${hour}h${minute === "00" ? "" : minute}`;
 }

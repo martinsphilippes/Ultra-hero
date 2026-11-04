@@ -38,14 +38,9 @@ export async function confirmCheckout(input: {
   if (!parsed.success) return { ok: false, error: "invalid_input" };
   const user = await getUser();
   if (!user) return { ok: false, error: "unauthenticated" };
-  // Coming soon (src/lib/shop/coming-soon.ts): nenhum pedido de produto antes da abertura (admin passa).
-  // Serviços de profissionais (0058) não são a loja: carrinho só com serviços segue. A conta é feita no
-  // carrinho do banco (RLS: só o carrinho da própria pessoa), não só no que o cliente mandou.
-  if (await isShopLockedForViewer()) {
-    const supabase = await createClient();
-    const { count } = await supabase.from("cart_items").select("product_id", { count: "exact", head: true });
-    if (count === null || count > 0 || parsed.data.expected.length > 0) return { ok: false, error: "shop_coming_soon" };
-  }
+  // Coming soon (src/lib/shop/coming-soon.ts): nenhum pedido antes da abertura, nem de produto nem de serviço
+  // de profissional (decisão do responsável); o admin passa.
+  if (await isShopLockedForViewer()) return { ok: false, error: "shop_coming_soon" };
   if (parsed.data.services.length > 0) return confirmWithServices(parsed.data);
   if (!parsed.data.destinationId) return { ok: false, error: "invalid_destination" };
 
