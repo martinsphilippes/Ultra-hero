@@ -40,13 +40,17 @@ export function useDialog({ open, onOpenChange, dismissible = true }: Options) {
   // Escape dispara "cancel"; evitamos o fechamento nativo para manter o estado controlado.
   const onCancel = useCallback(
     (event: SyntheticEvent<HTMLDialogElement>) => {
+      // o React repassa o "cancel" de uma caixa aninhada (ex.: calendário aberto de dentro desta) para cá: só vale o desta
+      if (event.target !== event.currentTarget) return;
       event.preventDefault();
       if (dismissible) onOpenChange(false);
     },
     [dismissible, onOpenChange],
   );
 
-  const onClose = useCallback(() => {
+  const onClose = useCallback((event?: SyntheticEvent<HTMLDialogElement>) => {
+    // idem: fechar o calendário de dentro não pode fechar esta caixa (era o "Novo compromisso" sumindo ao escolher a data)
+    if (event && event.target !== event.currentTarget) return;
     // Só avisa quando o <dialog> fechou sozinho (ex.: form method="dialog") com o estado ainda aberto. Se
     // o fechamento veio do próprio estado, o aviso repetido chegava depois e desfazia o que a tela fez no
     // intervalo (a foto de perfil perdia o erro do arquivo escolhido logo após "Cancelar").
