@@ -74,7 +74,7 @@ export const brandRequestSchema = z.object({
   durationMinutes: z.union([z.literal(""), z.coerce.number().int().min(15).max(14400)]),
   format: z.union([z.literal(""), z.enum(FORMATS)]),
   location: z.string().trim().max(200),
-  networks: z.array(z.enum(NETWORKS)).max(11),
+  networks: z.array(z.enum(NETWORKS)).max(NETWORKS.length),
   deliverables: requestDeliverablesSchema,
   notes: z.string().trim().max(2000),
   /** Briefing estruturado (0080); sem ele, vazio. */

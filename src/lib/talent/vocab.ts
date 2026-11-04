@@ -1,6 +1,6 @@
 // Listas fechadas do casting e do media kit (iguais aos checks da 0065; o banco confere de novo).
 
-export const NETWORKS = ["instagram", "tiktok", "youtube", "x", "facebook", "kwai", "twitch", "linkedin", "pinterest", "threads", "other"] as const;
+export const NETWORKS = ["groscove_ultra", "instagram", "tiktok", "youtube", "x", "facebook", "kwai", "twitch", "linkedin", "pinterest", "threads", "other"] as const;
 export type Network = (typeof NETWORKS)[number];
 
 export const AGE_BANDS = ["13-17", "18-24", "25-34", "35-44", "45-54", "55+"] as const;

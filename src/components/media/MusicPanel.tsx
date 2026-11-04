@@ -9,7 +9,7 @@ import { formatPlainDate } from "@/i18n/format";
 import { deleteMusicAction, saveMusicAction } from "@/lib/media/actions";
 import type { MusicTrack } from "@/lib/media/queries";
 
-const NETWORKS = ["instagram", "tiktok", "youtube", "x", "facebook", "kwai", "twitch", "linkedin", "pinterest", "threads", "other"] as const;
+const NETWORKS = ["groscove_ultra", "instagram", "tiktok", "youtube", "x", "facebook", "kwai", "twitch", "linkedin", "pinterest", "threads", "other"] as const;
 type Network = (typeof NETWORKS)[number];
 
 type Props = { tracks: MusicTrack[]; canEdit: boolean; dealId: string; requestId?: string | null; today: string };

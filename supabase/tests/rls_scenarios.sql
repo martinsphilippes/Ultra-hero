@@ -15970,5 +15970,18 @@ delete from public.calendar_events where id = 'a1100000-0000-4000-8000-000000000
 delete from public.brands where id = 'a1100000-0000-4000-8000-0000000000b1';
 delete from auth.users where id::text like 'a1100000-%';
 
+
+-- ================================================================ S111 · Rede "Groscove Ultra" (0105)
+-- Todas as listas fechadas de redes aceitam 'groscove_ultra' (checks e validação dos entregáveis) e o teto de
+-- quantidade de redes subiu para 12.
+\ir ../migrations/0105_rede_groscove_ultra.sql
+select tests.su();
+select tests.ok('S111 os 6 checks de rede aceitam groscove_ultra',
+  (select count(*) from pg_constraint where pg_get_constraintdef(oid) like '%''kwai''::text%' and pg_get_constraintdef(oid) like '%''groscove_ultra''::text%') = 6
+  and (select count(*) from pg_constraint where pg_get_constraintdef(oid) like '%''kwai''::text%' and pg_get_constraintdef(oid) not like '%groscove_ultra%') = 0);
+select tests.ok('S111 teto de redes passou para 12', (select count(*) from pg_constraint where pg_get_constraintdef(oid) like '%cardinality(networks) <= 11%') = 0);
+select tests.ok('S111 validação de entregáveis conhece groscove_ultra',
+  (select prosrc like '%''groscove_ultra''%' from pg_proc where proname = 'campaign_deliverables_valid'));
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

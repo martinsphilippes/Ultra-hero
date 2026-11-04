@@ -177,7 +177,7 @@ export async function deleteSaleAction(input: z.input<typeof refSchema> & { id: 
 }
 
 // ---------------------------------------------------------------- músicas liberadas (agência)
-const NETWORKS = ["instagram", "tiktok", "youtube", "x", "facebook", "kwai", "twitch", "linkedin", "pinterest", "threads", "other"] as const;
+const NETWORKS = ["groscove_ultra", "instagram", "tiktok", "youtube", "x", "facebook", "kwai", "twitch", "linkedin", "pinterest", "threads", "other"] as const;
 const musicSchema = refSchema.extend({
   id: uuid.nullable(),
   title: z.string().trim().min(1).max(120),
