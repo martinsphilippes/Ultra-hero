@@ -5,7 +5,7 @@ import type { GrowthIndicators } from "@/lib/roadmap/phase3-queries";
 
 // Nova venda (0111, D4; gestor+): dos negócios ganhos nos últimos 180 dias, quantos tiveram um "próximo negócio"
 // (ligado pelo clipping ou aberto para o mesmo cliente até 180 dias depois). A satisfação (0110) e o no prazo por
-// serviço (0107) seguem nos cartões ao lado.
+// serviço (0107) seguem nos cartões ao lado. Cartões clicáveis (04/11): taxa → negócios encerrados; ligados → pipeline.
 export async function GrowthIndicatorsCard({ data }: { data: GrowthIndicators }) {
   const t = await getTranslations("roadmap.growth");
   const pct = data.won > 0 ? Math.round((data.withNext / data.won) * 100) : null;
@@ -18,8 +18,8 @@ export async function GrowthIndicatorsCard({ data }: { data: GrowthIndicators })
         <p className="type-caption text-fg-muted">{t("description")}</p>
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiCard label={t("rate")} value={pct === null ? "—" : `${pct}%`} hint={data.won > 0 ? t("rateHint", { next: data.withNext, won: data.won }) : t("noData")} />
-        <KpiCard label={t("linked")} value={data.linked} hint={t("linkedHint")} />
+        <KpiCard href="/agencia/pipeline?status=encerrados" label={t("rate")} value={pct === null ? "—" : `${pct}%`} hint={data.won > 0 ? t("rateHint", { next: data.withNext, won: data.won }) : t("noData")} />
+        <KpiCard href="/agencia/pipeline" label={t("linked")} value={data.linked} hint={t("linkedHint")} />
       </div>
       {data.services.length > 0 || data.recent.length > 0 ? (
         <div className="grid gap-3 md:grid-cols-2">

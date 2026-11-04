@@ -31,10 +31,12 @@ const STATUS_VARIANT: Record<string, BadgeVariant> = {
 
 // Painel de ações por etapa (marca): cada entregável de cada creator mostrado à marca, em cada campanha,
 // em 5 etapas (Enviada → Aceita → Em criação → Aguardando aprovação → Publicada). Cada cartão abre a campanha.
-export default async function BrandBoardPage() {
+// ?etapa=<etapa> abre o painel já naquela etapa (atalhos do início da marca, 04/11).
+export default async function BrandBoardPage({ searchParams }: { searchParams: Promise<{ etapa?: string }> }) {
   const ctx = await getBrandContext();
   if (ctx.state !== "ok") return null;
-  const [t, tc, locale, wb] = await Promise.all([getTranslations("today.board"), getTranslations("commercial"), getLocale() as Promise<Locale>, getBrandWorkboard(ctx.brand.id)]);
+  const [t, tc, locale, wb, sp] = await Promise.all([getTranslations("today.board"), getTranslations("commercial"), getLocale() as Promise<Locale>, getBrandWorkboard(ctx.brand.id), searchParams]);
+  const initial = (BOARD_STAGES as readonly string[]).includes(sp.etapa ?? "") ? (sp.etapa as BoardStage) : undefined;
 
   if (!wb.available || !wb.data) {
     return (
@@ -84,7 +86,7 @@ export default async function BrandBoardPage() {
           <EmptyState icon={<KanbanSquare />} title={t("emptyAll")} />
         </div>
       ) : (
-        <StageBoard stages={BOARD_STAGES} columns={columns} />
+        <StageBoard stages={BOARD_STAGES} columns={columns} initial={initial} />
       )}
     </div>
   );

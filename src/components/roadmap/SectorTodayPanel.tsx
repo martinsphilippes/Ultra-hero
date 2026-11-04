@@ -13,11 +13,18 @@ const BUCKETS = ["overdue", "today", "next"] as const;
 
 // "Hoje no meu setor" (0107): etapas atrasadas, que vencem hoje e no próximo dia útil, % no prazo no mês e os filtros
 // Meu setor / Só minhas / Todos os setores. Marcar feita direto daqui; o roteiro abre para quem pode ver o negócio.
-export async function SectorTodayPanel({ data, basePath = "/agencia" }: { data: SectorToday; basePath?: string }) {
+export async function SectorTodayPanel({ data, basePath = "/agencia", indicatorsHref }: { data: SectorToday; basePath?: string; indicatorsHref?: string }) {
   const [t, ts, locale] = await Promise.all([getTranslations("roadmap.today"), getTranslations("roadmap.sectors"), getLocale() as Promise<Locale>]);
   const by = (b: TodayItem["bucket"]) => data.items.filter((x) => x.bucket === b);
   const pct = data.month.done > 0 ? Math.round((data.month.onTime / data.month.done) * 100) : null;
-  const tile = "flex flex-col gap-0.5 rounded-xl border border-border bg-bg p-3";
+  const tileStatic = "flex flex-col gap-0.5 rounded-xl border border-border bg-bg p-3";
+  const tile = `${tileStatic} min-h-11 transition-colors hover:border-accent/40 hover:bg-surface-hover active:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus`;
+  const onTime = (
+    <>
+      <span className="text-xl font-semibold text-fg type-numeric">{pct === null ? "—" : `${pct}%`}</span>
+      <span className="type-caption text-fg-muted">{pct === null ? t("onTimeNone") : t("onTimeHint", { onTime: data.month.onTime, done: data.month.done })}</span>
+    </>
+  );
   return (
     <section id="hoje-setor" aria-labelledby="sector-today" className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-border bg-surface p-4" data-testid="sector-today">
       <div className="flex flex-col gap-1">
@@ -33,25 +40,29 @@ export async function SectorTodayPanel({ data, basePath = "/agencia" }: { data: 
           <FilterAnchor key={s} href={`${basePath}?setor=${s}#hoje-setor`} active={data.scope === s} label={t(`scopes.${s}`)} />
         ))}
       </nav>
+      {/* contadores clicáveis (04/11): levam à lista do próprio painel; o % no prazo, aos indicadores (gestor+) */}
       <div className="grid grid-cols-3 gap-2">
-        <div className={tile}>
+        <a href={by("overdue").length > 0 ? "#hoje-setor-overdue" : "#hoje-setor"} className={tile} aria-label={`${t("overdue")}: ${by("overdue").length}`}>
           <span className={`text-xl font-semibold type-numeric ${by("overdue").length > 0 ? "text-danger" : "text-fg"}`}>{by("overdue").length}</span>
           <span className="type-caption text-fg-muted">{t("overdue")}</span>
-        </div>
-        <div className={tile}>
+        </a>
+        <a href={by("today").length > 0 ? "#hoje-setor-today" : "#hoje-setor"} className={tile} aria-label={`${t("dueToday")}: ${by("today").length}`}>
           <span className="text-xl font-semibold text-fg type-numeric">{by("today").length}</span>
           <span className="type-caption text-fg-muted">{t("dueToday")}</span>
-        </div>
-        <div className={tile}>
-          <span className="text-xl font-semibold text-fg type-numeric">{pct === null ? "—" : `${pct}%`}</span>
-          <span className="type-caption text-fg-muted">{pct === null ? t("onTimeNone") : t("onTimeHint", { onTime: data.month.onTime, done: data.month.done })}</span>
-        </div>
+        </a>
+        {indicatorsHref ? (
+          <a href={indicatorsHref} className={tile}>
+            {onTime}
+          </a>
+        ) : (
+          <div className={tileStatic}>{onTime}</div>
+        )}
       </div>
       {data.items.length === 0 ? (
         <p className="type-body-sm text-fg-muted">{t("empty")}</p>
       ) : (
         BUCKETS.filter((b) => by(b).length > 0).map((b) => (
-          <div key={b} className="flex flex-col gap-2">
+          <div key={b} id={`hoje-setor-${b}`} className="flex scroll-mt-20 flex-col gap-2">
             <h3 className={`type-caption font-semibold ${b === "overdue" ? "text-danger" : "text-fg-muted"}`}>
               {b === "overdue" ? t("overdue") : b === "today" ? t("dueToday") : t("dueNext", { date: formatPlainDate(data.next, locale) })}
             </h3>

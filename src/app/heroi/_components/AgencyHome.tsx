@@ -60,6 +60,9 @@ export async function AgencyHome() {
   const overdue = myTasks.filter((x) => x.dueAt && new Date(x.dueAt).getTime() < Date.now()).length;
   const consentOk = consentActive(talent);
   const card = "flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4";
+  const focus = "transition-colors hover:border-accent/40 hover:bg-surface-hover active:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+  const cardLink = `${card} ${focus}`;
+  const tileLink = `flex min-h-11 flex-col gap-1 rounded-xl border border-border p-3 ${focus}`;
   const pendingOpportunities = opportunities.items.filter((o) => ["consulted", "talk_requested"].includes(o.status));
 
   return (
@@ -103,18 +106,20 @@ export async function AgencyHome() {
         </section>
       ) : null}
       {tasks.available ? (
-        <section className={card} aria-labelledby="office-tasks-home" data-testid="office-tasks-home">
+        // cartão inteiro clicável (04/11): abre Tarefas (disponibilidade, kit e redes abaixo também; <a> como antes)
+        <Link href="/heroi/tarefas" className={cardLink} data-testid="office-tasks-home">
           <div className="flex items-center justify-between gap-2">
             <h2 id="office-tasks-home" className="text-sm font-semibold text-fg">
               {t("tasksTitle")}
             </h2>
-            <Link href="/heroi/tarefas" className="text-sm font-medium text-accent-text underline-offset-2 hover:underline">
+            <span className="inline-flex items-center gap-1 text-sm font-medium text-accent-text">
               {t("tasksAll")}
-            </Link>
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </span>
           </div>
-          <p className="text-sm text-fg">{myTasks.length > 0 ? t("tasksPending", { count: myTasks.length }) : t("tasksNone")}</p>
-          {overdue > 0 ? <p className="type-caption font-medium text-danger">{t("tasksOverdue", { count: overdue })}</p> : null}
-        </section>
+          <span className="text-sm text-fg">{myTasks.length > 0 ? t("tasksPending", { count: myTasks.length }) : t("tasksNone")}</span>
+          {overdue > 0 ? <span className="type-caption font-medium text-danger">{t("tasksOverdue", { count: overdue })}</span> : null}
+        </Link>
       ) : null}
       {office ? (
         <div className="grid gap-4 md:grid-cols-2">
@@ -178,35 +183,35 @@ export async function AgencyHome() {
         </div>
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
-        <section className={card} aria-labelledby="office-availability">
+        <a href="/heroi/disponibilidade" className={cardLink} data-testid="office-availability">
           <h2 id="office-availability" className="text-sm font-semibold text-fg">
             {t("availabilityTitle")}
           </h2>
-          <p className="flex flex-wrap items-center gap-2 text-sm text-fg">
+          <span className="flex flex-wrap items-center gap-2 text-sm text-fg">
             <Badge size="sm" variant={talent.availability === "available" ? "success" : talent.availability === "limited" ? "warning" : "neutral"}>
               {t(`availability.${talent.availability}`)}
             </Badge>
             {talent.availabilityNote ? <span className="text-fg-muted">{talent.availabilityNote}</span> : null}
-          </p>
-          <p className="type-caption text-fg-muted">{t("availabilityHint")}</p>
-          <a href="/heroi/disponibilidade" className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent-text underline-offset-2 hover:underline">
+          </span>
+          <span className="type-caption text-fg-muted">{t("availabilityHint")}</span>
+          <span className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent-text">
             {t("availabilityOpen")}
             <ArrowRight className="size-4" aria-hidden="true" />
-          </a>
-        </section>
-        <section className={card} aria-labelledby="office-kit">
+          </span>
+        </a>
+        <a href="/heroi/media-kit" className={cardLink}>
           <h2 id="office-kit" className="flex items-center gap-2 text-sm font-semibold text-fg">
             <Link2 className="size-4" aria-hidden="true" />
             {t("kitTitle")}
           </h2>
-          <p className="text-sm text-fg" data-testid="office-kit-status">
+          <span className="text-sm text-fg" data-testid="office-kit-status">
             {kit.shareActive && kit.shareExpiresAt ? t("kitActive", { date: formatDateTime(kit.shareExpiresAt, locale), count: kit.viewCount }) : t("kitInactive")}
-          </p>
-          <a href="/heroi/media-kit" className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent-text underline-offset-2 hover:underline">
+          </span>
+          <span className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent-text">
             {t("kitOpen")}
             <ArrowRight className="size-4" aria-hidden="true" />
-          </a>
-        </section>
+          </span>
+        </a>
       </div>
 
       <section className={card} aria-labelledby="office-metrics">
@@ -218,12 +223,15 @@ export async function AgencyHome() {
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2" data-testid="office-metrics">
             {networks.slice(0, 4).map((n) => (
-              <li key={n.id} className="flex flex-col gap-1 rounded-xl border border-border p-3">
-                <span className="text-sm font-semibold text-fg">
-                  {tn(n.network)} · @{n.handle}
-                </span>
-                <span className="text-sm text-fg">{n.followers !== null ? t("followers", { count: formatCount(n.followers, locale) ?? "" }) : t("followersUnknown")}</span>
-                <MetricSource asOf={n.as_of} side={n.declared_side} declaredAt={n.updated_at} />
+              <li key={n.id}>
+                {/* 04/11: cada rede abre o kit de mídia, onde as redes e os números ficam */}
+                <a href="/heroi/media-kit" className={tileLink}>
+                  <span className="text-sm font-semibold text-fg">
+                    {tn(n.network)} · @{n.handle}
+                  </span>
+                  <span className="text-sm text-fg">{n.followers !== null ? t("followers", { count: formatCount(n.followers, locale) ?? "" }) : t("followersUnknown")}</span>
+                  <MetricSource asOf={n.as_of} side={n.declared_side} declaredAt={n.updated_at} />
+                </a>
               </li>
             ))}
           </ul>

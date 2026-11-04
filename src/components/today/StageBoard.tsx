@@ -97,7 +97,12 @@ export function StageBoard({ stages, columns, initial }: Props) {
       {/* desktop: colunas */}
       <div className="hidden gap-3 lg:grid lg:grid-cols-5">
         {stages.map((s) => (
-          <section key={s} aria-labelledby={`stage-col-${s}`} className="flex min-w-0 flex-col gap-2 rounded-2xl border border-border bg-surface-elevated p-3" data-testid={`stage-col-${s}`}>
+          <section
+            key={s}
+            aria-labelledby={`stage-col-${s}`}
+            className={`flex min-w-0 flex-col gap-2 rounded-2xl border bg-surface-elevated p-3 ${initial === s ? "border-accent" : "border-border"}`}
+            data-testid={`stage-col-${s}`}
+          >
             <div className="flex items-center justify-between gap-2">
               <h2 id={`stage-col-${s}`} className="text-sm font-semibold text-fg">
                 {t(`stages.${s}`)}

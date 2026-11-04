@@ -43,6 +43,7 @@ export default async function SellerOverviewPage({ params }: Params) {
           profile: sellerHubHref(org.id, "organization"),
           productEdit: (productId) => `${products}/${productId}/edit`,
           fulfillmentsByStatus: (status) => `${shipments}?status=${status}`,
+          productsByStatus: (status) => `${products}?status=${status}`,
         }}
       />
     </div>

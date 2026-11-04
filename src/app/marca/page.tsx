@@ -107,7 +107,7 @@ export default async function BrandDashboardPage() {
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">
             {BOARD_STAGES.map((s) => (
               <li key={s}>
-                <Link href="/marca/acoes" className="flex min-h-14 flex-col justify-center rounded-xl border border-border px-3 py-2 transition-colors hover:bg-surface-hover">
+                <Link href={`/marca/acoes?etapa=${s}`} className="flex min-h-14 flex-col justify-center rounded-xl border border-border px-3 py-2 transition-colors hover:border-accent/40 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
                   <span className="font-mono text-lg font-semibold text-fg">{stageCounts[s]}</span>
                   <span className="type-caption text-fg-muted">{tb(`stages.${s}`)}</span>
                 </Link>
@@ -121,11 +121,12 @@ export default async function BrandDashboardPage() {
         <Bell className="mt-0.5 size-4 shrink-0 text-accent-text" aria-hidden="true" />
         {t("inboxNote")}
       </p>
+      {/* cartões clicáveis (04/11): aprovações abrem o painel de ações na etapa "Aguardando aprovação" */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="brand-kpis">
-        {campaigns.available ? <KpiCard label={t("kpi.campaigns")} value={inProgress.length} hint={drafts.length > 0 ? t("kpi.drafts", { count: drafts.length }) : undefined} /> : null}
-        {pendingApprovals !== null ? <KpiCard label={t("kpi.approvals")} value={pendingApprovals} hint={t("kpi.approvalsHint")} tone={pendingApprovals > 0 ? "danger" : "default"} /> : null}
-        <KpiCard label={t("kpi.team")} value={members.length} />
-        <KpiCard label={t("kpi.unread")} value={unread ?? 0} />
+        {campaigns.available ? <KpiCard href="/marca/campanhas" label={t("kpi.campaigns")} value={inProgress.length} hint={drafts.length > 0 ? t("kpi.drafts", { count: drafts.length }) : undefined} /> : null}
+        {pendingApprovals !== null ? <KpiCard href="/marca/acoes?etapa=awaiting" label={t("kpi.approvals")} value={pendingApprovals} hint={t("kpi.approvalsHint")} tone={pendingApprovals > 0 ? "danger" : "default"} /> : null}
+        <KpiCard href="/marca/equipe" label={t("kpi.team")} value={members.length} />
+        <KpiCard href="/marca/notificacoes?filtro=nao-lidas" label={t("kpi.unread")} value={unread ?? 0} />
       </div>
       {dash ? (
         <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">

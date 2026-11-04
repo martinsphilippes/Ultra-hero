@@ -8,22 +8,27 @@ export async function RoadmapIndicatorsCard({ data }: { data: RoadmapIndicators 
   const [t, ts] = await Promise.all([getTranslations("roadmap.indicators"), getTranslations("roadmap.sectors")]);
   const pct = data.done > 0 ? Math.round((data.onTime / data.done) * 100) : null;
   const fmt = (n: number | null) => (n === null ? "—" : String(n).replace(".", ","));
+  // cartões clicáveis (04/11): atraso → "Hoje no meu setor" com todos os setores; prazo e tempo médio → o detalhe por
+  // setor/serviço logo abaixo (sem detalhe, o próprio bloco)
+  const hasDetail = data.done > 0 || data.lateOpen > 0;
+  const detail = hasDetail ? "#roadmap-indicators-detail" : "#roadmap-indicators";
+  const late = "/agencia?setor=all#hoje-setor";
   return (
-    <section aria-labelledby="roadmap-indicators" className="flex flex-col gap-3" data-testid="roadmap-indicators">
+    <section id="roadmap-indicators" aria-labelledby="roadmap-indicators-title" className="flex scroll-mt-20 flex-col gap-3" data-testid="roadmap-indicators">
       <div className="flex flex-col gap-0.5">
-        <h2 id="roadmap-indicators" className="text-sm font-semibold text-fg">
+        <h2 id="roadmap-indicators-title" className="text-sm font-semibold text-fg">
           {t("title")}
         </h2>
         <p className="type-caption text-fg-muted">{t("description")}</p>
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiCard label={t("onTime")} value={pct === null ? "—" : `${pct}%`} hint={data.done > 0 ? t("onTimeHint", { onTime: data.onTime, done: data.done }) : t("noData")} />
-        <KpiCard label={t("avgDays")} value={fmt(data.avgDays)} hint={t("avgDaysHint")} />
-        <KpiCard label={t("worstSector")} value={data.worstSector ? ts(data.worstSector) : "—"} hint={data.worstSector ? undefined : t("worstNone")} tone={data.worstSector ? "danger" : "default"} />
-        <KpiCard label={t("lateOpen")} value={data.lateOpen} tone={data.lateOpen > 0 ? "danger" : "default"} />
+        <KpiCard href={detail} label={t("onTime")} value={pct === null ? "—" : `${pct}%`} hint={data.done > 0 ? t("onTimeHint", { onTime: data.onTime, done: data.done }) : t("noData")} />
+        <KpiCard href={detail} label={t("avgDays")} value={fmt(data.avgDays)} hint={t("avgDaysHint")} />
+        <KpiCard href={late} label={t("worstSector")} value={data.worstSector ? ts(data.worstSector) : "—"} hint={data.worstSector ? undefined : t("worstNone")} tone={data.worstSector ? "danger" : "default"} />
+        <KpiCard href={late} label={t("lateOpen")} value={data.lateOpen} tone={data.lateOpen > 0 ? "danger" : "default"} />
       </div>
-      {data.done > 0 || data.lateOpen > 0 ? (
-        <div className="grid gap-3 md:grid-cols-2">
+      {hasDetail ? (
+        <div id="roadmap-indicators-detail" className="grid scroll-mt-20 gap-3 md:grid-cols-2">
           <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-4">
             <h3 className="type-caption font-semibold text-fg-muted">{t("bySector")}</h3>
             <ul className="flex flex-col gap-1.5">

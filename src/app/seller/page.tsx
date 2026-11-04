@@ -35,7 +35,14 @@ export default async function SellerHomePage() {
       <DemoNotice>{tp("demoNote")}</DemoNotice>
       <SellerOverview
         orgId={ctx.org.id}
-        links={{ products: "/seller/products", fulfillments: "/seller/fulfillments", profile: "/seller/profile", productEdit: (id) => `/seller/products/${id}/edit` }}
+        links={{
+          products: "/seller/products",
+          fulfillments: "/seller/fulfillments",
+          profile: "/seller/profile",
+          productEdit: (id) => `/seller/products/${id}/edit`,
+          productsByStatus: (status) => `/seller/products?status=${status}`,
+          fulfillmentsByStatus: (status) => `/seller/fulfillments?status=${status}`,
+        }}
       />
     </div>
   );

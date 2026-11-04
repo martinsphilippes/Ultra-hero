@@ -85,20 +85,23 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
         <AgencySwitcher agencies={ctx.agencies.map((a) => ({ id: a.id, name: a.name, isDemo: a.isDemo }))} currentId={ctx.agency.id} />
       ) : null}
 
+      {/* Cartões clicáveis (pedido do responsável 04/11): cada um abre onde a informação está, já filtrado quando a tela
+          aceita filtro. Entregas atrasadas não têm lista própria da agência: vão ao pipeline (cada negócio tem Entregas).
+          Equipe só é link para o Adm (/agencia/equipe é do Adm); convites idem. */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="agency-kpis">
-        {deals ? <KpiCard label={t("kpi.deals")} value={deals.open} hint={t("kpi.dealsHint", { agency: deals.awaitingAgency, creator: deals.awaitingCreator })} tone={deals.awaitingAgency > 0 ? "danger" : "default"} /> : null}
-        {deals ? <KpiCard label={t("kpi.confirmed")} value={deals.confirmed} /> : null}
-        {tasks ? <KpiCard label={t("kpi.tasks")} value={tasks.open} hint={t("kpi.tasksHint", { mine: tasks.mine, overdue: tasks.overdue })} tone={tasks.overdue > 0 ? "danger" : "default"} /> : null}
-        {upcoming !== null ? <KpiCard label={t("kpi.upcoming")} value={upcoming} hint={t("kpi.upcomingHint")} /> : null}
-        {exec ? <KpiCard label={t("kpi.deliverablesOverdue")} value={exec.deliverablesOverdue} hint={t("kpi.approvalsPending", { count: exec.approvalsPending })} tone={exec.deliverablesOverdue > 0 ? "danger" : "default"} /> : null}
-        {casting ? <KpiCard label={t("kpi.casting")} value={casting.total} hint={exec ? t("kpi.noContact", { count: exec.talentsNoContact }) : t("kpi.castingActive", { count: casting.active })} tone={exec && exec.talentsNoContact > 0 ? "danger" : "default"} /> : null}
-        {exec ? <KpiCard label={t("kpi.won90")} value={exec.won90d} hint={t("kpi.lost90", { count: exec.lost90d })} /> : null}
-        <KpiCard label={t("kpi.team")} value={data.members} />
-        <KpiCard label={t("kpi.brands")} value={data.brands} />
-        {isAdmin ? <KpiCard label={t("kpi.invites")} value={data.pendingInvites} /> : null}
-        <KpiCard label={t("kpi.unread")} value={data.unread} />
+        {deals ? <KpiCard href="/agencia/pipeline" label={t("kpi.deals")} value={deals.open} hint={t("kpi.dealsHint", { agency: deals.awaitingAgency, creator: deals.awaitingCreator })} tone={deals.awaitingAgency > 0 ? "danger" : "default"} /> : null}
+        {deals ? <KpiCard href="/agencia/pipeline" label={t("kpi.confirmed")} value={deals.confirmed} /> : null}
+        {tasks ? <KpiCard href={`/agencia/tarefas?f=${tasks.overdue > 0 ? "overdue" : "team"}`} label={t("kpi.tasks")} value={tasks.open} hint={t("kpi.tasksHint", { mine: tasks.mine, overdue: tasks.overdue })} tone={tasks.overdue > 0 ? "danger" : "default"} /> : null}
+        {upcoming !== null ? <KpiCard href="/agencia/agenda" label={t("kpi.upcoming")} value={upcoming} hint={t("kpi.upcomingHint")} /> : null}
+        {exec ? <KpiCard href="/agencia/pipeline" label={t("kpi.deliverablesOverdue")} value={exec.deliverablesOverdue} hint={t("kpi.approvalsPending", { count: exec.approvalsPending })} tone={exec.deliverablesOverdue > 0 ? "danger" : "default"} /> : null}
+        {casting ? <KpiCard href="/agencia/casting" label={t("kpi.casting")} value={casting.total} hint={exec ? t("kpi.noContact", { count: exec.talentsNoContact }) : t("kpi.castingActive", { count: casting.active })} tone={exec && exec.talentsNoContact > 0 ? "danger" : "default"} /> : null}
+        {exec ? <KpiCard href="/agencia/pipeline?status=encerrados" label={t("kpi.won90")} value={exec.won90d} hint={t("kpi.lost90", { count: exec.lost90d })} /> : null}
+        <KpiCard href={isAdmin ? "/agencia/equipe" : undefined} label={t("kpi.team")} value={data.members} />
+        <KpiCard href="/agencia/marcas" label={t("kpi.brands")} value={data.brands} />
+        {isAdmin ? <KpiCard href="/agencia/equipe#convites" label={t("kpi.invites")} value={data.pendingInvites} /> : null}
+        <KpiCard href="/agencia/notificacoes?filtro=nao-lidas" label={t("kpi.unread")} value={data.unread} />
       </div>
-      {sectorToday ? <SectorTodayPanel data={sectorToday} /> : null}
+      {sectorToday ? <SectorTodayPanel data={sectorToday} indicatorsHref={indicators?.data ? "#roadmap-indicators" : undefined} /> : null}
       <InsightsPendingCard items={insights.items} side="agency" />
       {indicators?.data ? <RoadmapIndicatorsCard data={indicators.data} /> : null}
       {satisfaction?.data ? <FeedbackIndicatorCard data={satisfaction.data} /> : null}

@@ -85,7 +85,7 @@ export default async function AgencyTeamPage() {
         </ul>
       </Section>
 
-      <Section title={t("invitesTitle")}>
+      <Section id="convites" title={t("invitesTitle")} className="scroll-mt-20">
         {invites.length > 0 ? (
           <ul className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface" data-testid="team-invites">
             {invites.map((i) => (

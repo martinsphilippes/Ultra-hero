@@ -26,15 +26,23 @@ export async function BudgetOverview({ overview, locale }: { overview: Overview;
       ) : (
         <>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {[
-              [t("reserved"), overview.reservedCents],
-              [t("committed"), overview.committedCents],
-              [t("paid"), overview.paidCents],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="flex min-h-14 min-w-0 flex-row items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 sm:flex-col sm:items-start sm:justify-center sm:gap-0">
+            {/* totais clicáveis (04/11): reservado e comprometido → campanhas; pago → pagamentos da marca */}
+            {(
+              [
+                [t("reserved"), overview.reservedCents, "/marca/campanhas"],
+                [t("committed"), overview.committedCents, "/marca/campanhas"],
+                [t("paid"), overview.paidCents, "/marca/pagamentos"],
+              ] as const
+            ).map(([label, value, href]) => (
+              <Link
+                key={label}
+                href={href}
+                aria-label={`${label}: ${money(Number(value))}`}
+                className="flex min-h-14 min-w-0 flex-row items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 transition-colors hover:border-accent/40 hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:flex-col sm:items-start sm:justify-center sm:gap-0"
+              >
                 <span className="type-caption text-fg-muted">{label}</span>
                 <span className="min-w-0 font-mono text-sm font-semibold text-fg [overflow-wrap:anywhere]">{money(Number(value))}</span>
-              </div>
+              </Link>
             ))}
           </div>
           {overview.overCount > 0 ? <p className="type-caption font-medium text-danger">{t("overCount", { count: overview.overCount })}</p> : null}

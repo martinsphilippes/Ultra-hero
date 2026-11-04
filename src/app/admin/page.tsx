@@ -94,6 +94,11 @@ async function DashboardContent({ days }: { days: number }) {
   const daily = (Array.isArray(m.daily) ? m.daily : []) as DailyPoint[];
   const settings = new Map((settingsRes.data ?? []).map((s) => [s.key, s.value]));
   const n = (v: number) => formatNumber(v, locale);
+  // cartões clicáveis (pedido do responsável 04/11): cada indicador abre onde está o detalhe, no mesmo período
+  // (Métricas: funil e eventos; pedidos de teste; usuários; feedback)
+  const metrics = `/admin/metrics?days=${days}`;
+  const funnel = `${metrics}#funnel-title`;
+  const events = `${metrics}#events-title`;
 
   const pending = [
     // 0092: heróis criados por convite nascem pendentes; o admin aprova em Personalidades
@@ -121,19 +126,19 @@ async function DashboardContent({ days }: { days: number }) {
           {t("kpis.heading")}
         </h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-          <KpiCard label={t("kpis.signups")} value={n(num(m, "signups"))} hint={t("kpis.signupsTotal", { count: n(num(m, "signups_total")) })} />
-          <KpiCard label={t("kpis.activated")} value={n(num(m, "activated_users_distinct"))} hint={t("kpis.activatedHint")} />
-          <KpiCard label={t("kpis.contentViews")} value={n(num(m, "content_views"))} />
-          <KpiCard label={t("kpis.completions")} value={n(num(m, "completions"))} />
-          <KpiCard label={t("kpis.enrollments")} value={n(num(m, "enrollments"))} />
-          <KpiCard label={t("kpis.commercialInterest")} value={n(num(m, "commercial_interest"))} />
-          <KpiCard label={t("kpis.cartAdds")} value={n(num(m, "cart_adds"))} />
-          <KpiCard label={t("kpis.testOrders")} value={n(num(m, "test_orders"))} />
-          <KpiCard label={t("kpis.testOrdersTotal")} value={formatCurrency(num(m, "test_orders_total_cents_demo") / 100, locale)} />
-          <KpiCard label={t("kpis.realRevenue")} value={formatCurrency(0, locale)} hint={t("kpis.realRevenueValue")} tone="muted" />
-          <KpiCard label={t("kpis.recommendationRuns")} value={n(num(m, "recommendation_runs"))} hint={t("kpis.fallbackShare", { share: formatPercent(num(m, "recommendation_fallback_share"), locale) })} />
-          <KpiCard label={t("kpis.feedback")} value={n(num(m, "feedback"))} />
-          <KpiCard label={t("kpis.criticalErrors")} value={n(num(m, "critical_errors"))} tone={num(m, "critical_errors") > 0 ? "danger" : "default"} />
+          <KpiCard href="/admin/users" label={t("kpis.signups")} value={n(num(m, "signups"))} hint={t("kpis.signupsTotal", { count: n(num(m, "signups_total")) })} />
+          <KpiCard href={funnel} label={t("kpis.activated")} value={n(num(m, "activated_users_distinct"))} hint={t("kpis.activatedHint")} />
+          <KpiCard href={funnel} label={t("kpis.contentViews")} value={n(num(m, "content_views"))} />
+          <KpiCard href={funnel} label={t("kpis.completions")} value={n(num(m, "completions"))} />
+          <KpiCard href={funnel} label={t("kpis.enrollments")} value={n(num(m, "enrollments"))} />
+          <KpiCard href={funnel} label={t("kpis.commercialInterest")} value={n(num(m, "commercial_interest"))} />
+          <KpiCard href={funnel} label={t("kpis.cartAdds")} value={n(num(m, "cart_adds"))} />
+          <KpiCard href="/admin/orders" label={t("kpis.testOrders")} value={n(num(m, "test_orders"))} />
+          <KpiCard href="/admin/orders" label={t("kpis.testOrdersTotal")} value={formatCurrency(num(m, "test_orders_total_cents_demo") / 100, locale)} />
+          <KpiCard href="/admin/orders" label={t("kpis.realRevenue")} value={formatCurrency(0, locale)} hint={t("kpis.realRevenueValue")} tone="muted" />
+          <KpiCard href={metrics} label={t("kpis.recommendationRuns")} value={n(num(m, "recommendation_runs"))} hint={t("kpis.fallbackShare", { share: formatPercent(num(m, "recommendation_fallback_share"), locale) })} />
+          <KpiCard href="/admin/feedback" label={t("kpis.feedback")} value={n(num(m, "feedback"))} />
+          <KpiCard href={events} label={t("kpis.criticalErrors")} value={n(num(m, "critical_errors"))} tone={num(m, "critical_errors") > 0 ? "danger" : "default"} />
         </div>
       </section>
 

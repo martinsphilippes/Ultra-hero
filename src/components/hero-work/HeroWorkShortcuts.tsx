@@ -10,6 +10,9 @@ import type { HeroShortcutData } from "@/lib/hero-work/summary";
 const BUTTON =
   "flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl px-3 py-3 text-base font-semibold shadow-sm transition-[background-color,box-shadow] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
+const TILE =
+  "flex min-h-11 min-w-0 flex-col gap-0.5 rounded-xl border border-border bg-surface p-3 transition-colors hover:border-accent/40 hover:bg-surface-hover active:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+
 // Atalhos do herói no Perfil (pedido do responsável): "Agenda" e "Financeiro" em botões grandes, com o próximo
 // compromisso e "A receber este mês". Levam ao Portal do Herói: com agência, a agenda e os
 // ganhos do casting (e os próprios, se houver); independente, as ferramentas do próprio herói. A equipe só tem a Agenda; o financeiro é do titular. Registro simulado.
@@ -40,10 +43,11 @@ export async function HeroWorkShortcuts({ data }: { data: HeroShortcutData }) {
           </Link>
         ) : null}
       </div>
-      <dl className={data.canSeeFinance ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-2"} data-testid="hero-work-summary">
-        <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border border-border bg-surface p-3">
-          <dt className="type-caption font-semibold uppercase tracking-wider text-fg-muted">{t("next")}</dt>
-          <dd className="min-w-0 text-sm text-fg" data-testid="hero-next-event">
+      {/* resumos clicáveis (04/11): o próximo compromisso abre a Agenda; "A receber este mês", o Financeiro */}
+      <div className={data.canSeeFinance ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-2"} data-testid="hero-work-summary">
+        <Link href={agendaHref} className={TILE}>
+          <span className="type-caption font-semibold uppercase tracking-wider text-fg-muted">{t("next")}</span>
+          <span className="min-w-0 text-sm text-fg" data-testid="hero-next-event">
             {data.next ? (
               <>
                 <span className="block truncate font-semibold">{data.next.title}</span>
@@ -52,21 +56,21 @@ export async function HeroWorkShortcuts({ data }: { data: HeroShortcutData }) {
             ) : (
               <span className="type-caption text-fg-muted">{t("nextNone")}</span>
             )}
-          </dd>
-        </div>
+          </span>
+        </Link>
         {data.canSeeFinance && data.dueMonth ? (
-          <div className="flex min-w-0 flex-col gap-0.5 rounded-xl border border-border bg-surface p-3">
-            <dt className="type-caption font-semibold uppercase tracking-wider text-fg-muted">{t("receivableMonth")}</dt>
-            <dd className="text-sm text-fg" data-testid="hero-receivable-month">
+          <Link href={financeHref} className={TILE}>
+            <span className="type-caption font-semibold uppercase tracking-wider text-fg-muted">{t("receivableMonth")}</span>
+            <span className="text-sm text-fg" data-testid="hero-receivable-month">
               <HeroMoney cents={data.dueMonth.cents} locale={locale} className="block font-mono text-base font-semibold" />
               <span className="type-caption text-fg-muted">
                 {data.dueMonth.count > 0 ? t("receivableCount", { count: data.dueMonth.count }) : t("receivableNone")}
                 {data.overdueCount > 0 ? ` · ${t("overdue", { count: data.overdueCount })}` : ""}
               </span>
-            </dd>
-          </div>
+            </span>
+          </Link>
         ) : null}
-      </dl>
+      </div>
     </section>
   );
 }

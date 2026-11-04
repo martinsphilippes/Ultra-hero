@@ -10,14 +10,19 @@ import { createClient } from "@/lib/supabase/server";
 
 type ModerationRow = { id: string; action: "hide" | "suspend" | "clear"; reason: string | null; created_at: string; product: { id: string; title: string } | null };
 
+const TILE =
+  "flex min-h-11 flex-col rounded-xl border border-border bg-surface-elevated p-3 transition-colors hover:border-accent/40 hover:bg-surface-hover active:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+
 export type OverviewLinks = {
   products: string;
   fulfillments: string;
   profile: string;
   /** Edição de um produto (moderação recente). */
   productEdit: (productId: string) => string;
-  /** Lista de remessas já filtrada por status (admin); sem isto, os números não viram link. */
-  fulfillmentsByStatus?: (status: string) => string;
+  /** Lista de remessas já filtrada por status: cada contador abre a lista (cartões clicáveis, 04/11). */
+  fulfillmentsByStatus: (status: string) => string;
+  /** Lista de produtos já filtrada por status. */
+  productsByStatus: (status: string) => string;
 };
 
 // Visão geral de uma organização: produtos por status, remessas abertas e moderação recente.
@@ -51,14 +56,16 @@ export async function SellerOverview({ orgId, links }: { orgId: string; links: O
               <Package className="size-5 text-accent-text" aria-hidden="true" />
               {t("productsTitle")}
             </h2>
-            <dl className="mt-2 grid grid-cols-3 gap-3">
+            <ul className="mt-2 grid grid-cols-3 gap-3">
               {(["published", "draft", "archived"] as const).map((s) => (
-                <div key={s} className="rounded-xl border border-border bg-surface-elevated p-3">
-                  <dt className="type-caption text-fg-muted">{ts(s)}</dt>
-                  <dd className="type-numeric text-2xl font-bold text-fg">{byStatus[s]}</dd>
-                </div>
+                <li key={s}>
+                  <Link href={links.productsByStatus(s)} className={TILE} aria-label={`${ts(s)}: ${byStatus[s]}`} data-testid={`overview-products-${s}`}>
+                    <span className="type-caption text-fg-muted">{ts(s)}</span>
+                    <span className="type-numeric text-2xl font-bold text-fg">{byStatus[s]}</span>
+                  </Link>
+                </li>
               ))}
-            </dl>
+            </ul>
             <Button asChild variant="link" className="mt-3 w-fit">
               <Link href={links.products}>{t("manageProducts")}</Link>
             </Button>
@@ -70,26 +77,16 @@ export async function SellerOverview({ orgId, links }: { orgId: string; links: O
               <Truck className="size-5 text-accent-text" aria-hidden="true" />
               {t("fulfillmentsTitle")}
             </h2>
-            <dl className="mt-2 grid grid-cols-3 gap-3">
+            <ul className="mt-2 grid grid-cols-3 gap-3">
               {OPEN_FULFILLMENT_STATUSES.map((s) => (
-                <div key={s} className="rounded-xl border border-border bg-surface-elevated p-3" data-testid={`overview-fulfillments-${s}`}>
-                  <dt className="type-caption text-fg-muted">{fulfillmentLabel[s]}</dt>
-                  <dd className="type-numeric text-2xl font-bold text-fg">
-                    {links.fulfillmentsByStatus ? (
-                      <Link
-                        href={links.fulfillmentsByStatus(s)}
-                        className="rounded-md underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                        aria-label={`${fulfillmentLabel[s]}: ${byFulfillment[s]}`}
-                      >
-                        {byFulfillment[s]}
-                      </Link>
-                    ) : (
-                      byFulfillment[s]
-                    )}
-                  </dd>
-                </div>
+                <li key={s}>
+                  <Link href={links.fulfillmentsByStatus(s)} className={TILE} aria-label={`${fulfillmentLabel[s]}: ${byFulfillment[s]}`} data-testid={`overview-fulfillments-${s}`}>
+                    <span className="type-caption text-fg-muted">{fulfillmentLabel[s]}</span>
+                    <span className="type-numeric text-2xl font-bold text-fg">{byFulfillment[s]}</span>
+                  </Link>
+                </li>
               ))}
-            </dl>
+            </ul>
             <Button asChild variant="link" className="mt-3 w-fit">
               <Link href={links.fulfillments}>{t("manageFulfillments")}</Link>
             </Button>

@@ -52,11 +52,12 @@ export default async function ProfessionalDashboard() {
         </div>
         <p className="type-body-sm text-fg-muted">{t(`statusHint.${pro.status}`)}</p>
       </section>
+      {/* cartões clicáveis (04/11): cada um abre a caixa de pedidos no filtro correspondente ("concluídos" → encerrados) */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiCard label={t("kpi.pending")} value={count(["pending"])} />
-        <KpiCard label={t("kpi.open")} value={count(["accepted", "scheduled"])} />
-        <KpiCard label={t("kpi.completed")} value={count(["completed"])} />
-        <KpiCard label={t("kpi.median")} value={median} />
+        <KpiCard href="/profissional/pedidos?filtro=pending" label={t("kpi.pending")} value={count(["pending"])} />
+        <KpiCard href="/profissional/pedidos" label={t("kpi.open")} value={count(["accepted", "scheduled"])} />
+        <KpiCard href="/profissional/pedidos?filtro=closed" label={t("kpi.completed")} value={count(["completed"])} />
+        <KpiCard href="/profissional/pedidos?filtro=all" label={t("kpi.median")} value={median} />
       </div>
       <section aria-labelledby="pro-latest" className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
