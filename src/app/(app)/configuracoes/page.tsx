@@ -9,6 +9,7 @@ import {
   BellRing,
   ChefHat,
   ChevronRight,
+  CircleHelp,
   Heart,
   Languages,
   LogOut,
@@ -33,6 +34,7 @@ import { parseNativeApp } from "@/lib/native-app/surface";
 import { buildSettingsSections, DELETE_ACCOUNT_HREF, forSurface, SETTINGS_PATH, type SettingsItem } from "@/lib/settings/sections";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { welcomeAreasFor, welcomeHref } from "@/lib/welcome/areas";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("me.settings");
@@ -67,7 +69,14 @@ const rowClass =
 // Mesmos destinos e as mesmas travas de antes (papéis, app das lojas); Sair e Excluir conta no fim.
 export default async function SettingsPage() {
   const user = await requireUser(SETTINGS_PATH);
-  const [profile, roles, t, tp, tc] = await Promise.all([getProfile(), getRoles(), getTranslations("me.settings"), getTranslations("me.profile"), getTranslations("common")]);
+  const [profile, roles, t, tp, tc, tw] = await Promise.all([
+    getProfile(),
+    getRoles(),
+    getTranslations("me.settings"),
+    getTranslations("me.profile"),
+    getTranslations("common"),
+    getTranslations("welcome.settings"),
+  ]);
   const talent = roles.some((r) => r.role === "creator") ? await getTalentContext() : null;
   const native = parseNativeApp((await headers()).get("user-agent")) !== null;
   const sections = buildSettingsSections(Array.from(new Set(roles.map((r) => r.role))), undefined, { hasTalent: talent?.state === "ok", platformAdmin: true })
@@ -143,6 +152,32 @@ export default async function SettingsPage() {
           </ul>
         </section>
       ))}
+
+      {/* "Como funciona": reabre o card de boas-vindas de cada área da pessoa (carga completa: o card lê o
+          ?como-funciona=1 ao montar). Os portais de gestão somem no app das lojas, como os atalhos acima. */}
+      <section aria-labelledby="settings-welcome" data-testid="settings-section-welcome" className="flex flex-col gap-2">
+        <h2 id="settings-welcome" className="type-overline px-1 text-fg-muted">
+          {tw("title")}
+        </h2>
+        <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+          {welcomeAreasFor({ roles: roles.map((r) => r.role), hasTalent: talent?.state === "ok" })
+            .filter((area) => !native || area === "app" || area === "heroi")
+            .map((area) => (
+              <li key={area}>
+                <a href={welcomeHref(area)} data-testid={`settings-welcome-${area}`} className={rowClass}>
+                  <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-elevated text-accent-text">
+                    <CircleHelp className="size-5" />
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="text-sm font-semibold text-fg">{tw(`areas.${area}`)}</span>
+                    <span className="type-caption text-fg-muted">{tw("hint")}</span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+                </a>
+              </li>
+            ))}
+        </ul>
+      </section>
 
       {/* Sair e Excluir conta: no fim, como no Instagram */}
       <div className="flex flex-col items-start gap-3">

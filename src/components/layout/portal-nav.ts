@@ -65,6 +65,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "metrics", href: "/admin/metrics" },
     // Indicadores (Etapa 5, 0060): por herói, atalho, conversão, profissionais, colecionáveis, ranking
     { key: "indicators", href: "/admin/indicadores" },
+    // Interessados no lançamento (0117): lista "Seja o primeiro a saber" do teaser (/conheca) e a planilha
+    { key: "leads", href: "/admin/interessados" },
     { key: "audit", href: "/admin/audit" },
     { key: "settings", href: "/admin/settings" },
   ],

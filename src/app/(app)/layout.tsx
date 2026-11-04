@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { TimezoneSync } from "@/components/me/TimezoneSync";
 import { getProfile } from "@/lib/auth/session";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
+import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
 
 // Grupo (app): experiência do consumidor com a casca completa.
 // TimezoneSync (só com sessão) alinha profiles.timezone ao fuso do dispositivo.
@@ -17,6 +18,8 @@ export default async function ConsumerLayout({ children }: { children: ReactNode
       {children}
       {profile ? <TimezoneSync timezone={profile.timezone} /> : null}
       {profile ? <OutbidAlerts userId={profile.id} /> : null}
+      {/* boas-vindas do app (uma vez por conta; "Como funciona" nas Configurações reabre) */}
+      {profile ? <WelcomeTourMount area="app" /> : null}
     </AppShell>
   );
 }

@@ -18195,5 +18195,81 @@ delete from public.brands where id::text like 'a1210000-%';
 delete from public.agencies where id::text like 'a1210000-%';
 delete from auth.users where id::text like 'a1210000-%';
 
+-- ================================================================ S122 · Teaser de lançamento: lista "Seja o primeiro a saber" (0117)
+-- launch_leads não tem acesso nenhum pela API (visitante e conta comum nem leem nem gravam; a server action usa o
+-- service role). Único por (email, kind): repetir o e-mail na mesma porta atualiza. Leitura só do admin pela
+-- admin_launch_leads (revogada de anon). S14 segue 18.
+\ir ../migrations/0117_teaser_lancamento.sql
+select tests.su();
+select tests.ok('S122 tabela com RLS ligado e sem políticas',
+  (select relrowsecurity from pg_class where oid = 'public.launch_leads'::regclass)
+  and not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'launch_leads'));
+select tests.ok('S122 visitante e conta comum sem privilégio nenhum na tabela',
+  not has_table_privilege('anon', 'public.launch_leads', 'select') and not has_table_privilege('anon', 'public.launch_leads', 'insert')
+  and not has_table_privilege('authenticated', 'public.launch_leads', 'select') and not has_table_privilege('authenticated', 'public.launch_leads', 'insert')
+  and not has_table_privilege('authenticated', 'public.launch_leads', 'update') and not has_table_privilege('authenticated', 'public.launch_leads', 'delete')
+  and has_table_privilege('service_role', 'public.launch_leads', 'insert'));
+
+-- servidor (service role / superusuário): grava e repete sem erro
+insert into public.launch_leads (kind, name, phone, email, consent_at, source, ip_hash, user_agent)
+values ('publico', 'Ana S122', '+5511912340122', 's122-ana@test.local', now(), 'conheca', 'h1', 'UA');
+update public.launch_leads set created_at = '2020-01-01' where email = 's122-ana@test.local';
+insert into public.launch_leads (kind, name, phone, email, consent_at)
+values ('publico', 'Ana Souza S122', '+5511912340123', 's122-ana@test.local', now())
+on conflict (email, kind) do update set name = excluded.name, phone = excluded.phone, consent_at = excluded.consent_at;
+insert into public.launch_leads (kind, name, phone, email, instagram, consent_at)
+values ('influenciador', 'Ana S122', '+5511912340122', 's122-ana@test.local', 'ana.s122', now());
+select tests.ok('S122 repetir o e-mail na mesma porta atualiza (uma linha, created_at não se altera); outra porta é outra linha',
+  (select count(*) from public.launch_leads where email = 's122-ana@test.local') = 2
+  and (select name from public.launch_leads where email = 's122-ana@test.local' and kind = 'publico') = 'Ana Souza S122'
+  and (select created_at > '2021-01-01' from public.launch_leads where email = 's122-ana@test.local' and kind = 'publico'));
+select tests.expect_error('S122 e-mail repetido sem upsert recusa (único por email+kind)',
+  $q$insert into public.launch_leads (kind, name, phone, email, consent_at) values ('publico', 'Outra S122', '+5511912340124', 's122-ana@test.local', now())$q$, 'launch_leads_email_kind_key');
+select tests.expect_error('S122 tipo fora da lista (empresa) recusa',
+  $q$insert into public.launch_leads (kind, name, phone, email, consent_at) values ('empresa', 'Empresa S122', '+5511912340124', 's122-emp@test.local', now())$q$, 'launch_leads_kind_check');
+select tests.expect_error('S122 celular fora do E.164 recusa',
+  $q$insert into public.launch_leads (kind, name, phone, email, consent_at) values ('publico', 'Bia S122', '(11) 91234-0124', 's122-bia@test.local', now())$q$, 'launch_leads_phone_check');
+select tests.expect_error('S122 e-mail com maiúscula recusa',
+  $q$insert into public.launch_leads (kind, name, phone, email, consent_at) values ('publico', 'Bia S122', '+5511912340124', 'S122-Bia@test.local', now())$q$, 'launch_leads_email_check');
+select tests.expect_error('S122 sem aceite recusa',
+  $q$insert into public.launch_leads (kind, name, phone, email) values ('publico', 'Bia S122', '+5511912340124', 's122-bia@test.local')$q$, 'consent_at');
+select tests.expect_error('S122 @ inválido recusa',
+  $q$insert into public.launch_leads (kind, name, phone, email, instagram, consent_at) values ('influenciador', 'Bia S122', '+5511912340124', 's122-bia@test.local', '@bia s122', now())$q$, 'launch_leads_instagram_check');
+
+-- visitante: nem tabela nem RPC
+select tests.anon();
+select tests.expect_error('S122 visitante não lê a tabela', $q$select count(*) from public.launch_leads$q$, 'permission denied');
+select tests.expect_error('S122 visitante não grava na tabela',
+  $q$insert into public.launch_leads (kind, name, phone, email, consent_at) values ('publico', 'Robô S122', '+5511912340125', 's122-robo@test.local', now())$q$, 'permission denied');
+select tests.expect_error('S122 visitante não executa admin_launch_leads', $q$select public.admin_launch_leads()$q$, 'permission denied');
+
+-- conta comum: nem tabela nem RPC (forbidden)
+select tests.login('10000000-0000-4000-8000-000000000002', 'consumer1@test.local');
+select tests.expect_error('S122 conta comum não lê a tabela', $q$select count(*) from public.launch_leads$q$, 'permission denied');
+select tests.expect_error('S122 conta comum não atualiza a tabela', $q$update public.launch_leads set name = 'x'$q$, 'permission denied');
+select tests.expect_error('S122 conta comum não lê pela RPC', $q$select public.admin_launch_leads()$q$, 'forbidden');
+
+-- admin: totais por tipo, filtro e paginação
+select tests.login('10000000-0000-4000-8000-000000000001', 'admin@test.local');
+select tests.ok('S122 admin vê os totais por tipo e a lista',
+  (select (j -> 'totals' ->> 'publico')::int >= 1 and (j -> 'totals' ->> 'influenciador')::int >= 1
+     and (j -> 'totals' ->> 'all')::int = (j -> 'totals' ->> 'publico')::int + (j -> 'totals' ->> 'influenciador')::int
+     and jsonb_array_length(j -> 'rows') >= 2
+   from public.admin_launch_leads() j));
+select tests.ok('S122 filtro por tipo e paginação',
+  (select (j ->> 'filtered')::int = (j -> 'totals' ->> 'influenciador')::int
+     and not exists (select 1 from jsonb_array_elements(j -> 'rows') r where r ->> 'kind' <> 'influenciador')
+     and exists (select 1 from jsonb_array_elements(j -> 'rows') r where r ->> 'instagram' = 'ana.s122')
+   from public.admin_launch_leads('influenciador', 1000, 0) j)
+  and jsonb_array_length(public.admin_launch_leads(null, 1, 0) -> 'rows') = 1);
+select tests.expect_error('S122 tipo inválido no filtro recusa', $q$select public.admin_launch_leads('empresa')$q$, 'invalid_kind');
+
+select tests.su();
+select tests.ok('S122 RPC security definer com search_path fixo, sem execute para anon; S14 segue 18',
+  (select p.prosecdef and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%') from pg_proc p where p.oid = 'public.admin_launch_leads(text, int, int)'::regprocedure)
+  and not has_function_privilege('anon', 'public.admin_launch_leads(text, int, int)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+delete from public.launch_leads where email like 's122-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

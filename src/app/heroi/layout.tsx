@@ -11,6 +11,7 @@ import { unreadInboxCount } from "@/lib/inbox/queries";
 import { getTalentContext } from "@/lib/talent/server";
 import { getMyCreator } from "./_lib/creator";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
+import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
 
 // Portal do Herói (0097): o "creator" era o próprio herói, então a área do herói (posts, conteúdos, receitas, equipe,
 // agenda e financeiro próprios, 0091–0094) e o escritório do casting (oportunidades, tarefas, agenda e ganhos da
@@ -42,6 +43,8 @@ export default async function HeroPortalLayout({ children }: { children: ReactNo
       ) : null}
       <SeasonalTheme area="portals" />
       {children}
+      {/* boas-vindas do Portal do Herói (não no ramo do admin "Publicar como hero") */}
+      <WelcomeTourMount area="heroi" />
     </PortalShell>
   );
 }

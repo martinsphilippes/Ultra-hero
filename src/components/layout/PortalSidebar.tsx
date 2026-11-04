@@ -85,6 +85,7 @@ const ICONS: Record<string, LucideIcon> = {
   feedback: MessageSquare,
   metrics: BarChart3,
   indicators: Gauge,
+  leads: Mail,
   audit: ScrollText,
   settings: Settings,
   fulfillments: Truck,

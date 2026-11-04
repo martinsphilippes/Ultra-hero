@@ -1,0 +1,121 @@
+{
+  "progress": "Progress",
+  "stepOf": "Step {current} of {total}",
+  "next": "Next",
+  "back": "Back",
+  "skip": "Skip",
+  "start": "Get started",
+  "final": {
+    "title": "More news coming soon.",
+    "body": "This is just the beginning. What's next will be worth the wait.",
+    "date": "Launch · {date}"
+  },
+  "settings": {
+    "title": "How it works",
+    "hint": "See the walkthrough of each area again.",
+    "areas": {
+      "app": "The app",
+      "heroi": "Hero Portal",
+      "marca": "Brand Portal",
+      "agencia": "Agency Portal"
+    }
+  },
+  "areas": {
+    "app": {
+      "title": "Welcome to Groscove Ultra",
+      "steps": {
+        "heroes": {
+          "title": "Heroes",
+          "body": "Follow athletes, chefs and experts and see up close how they live."
+        },
+        "social": {
+          "title": "Social",
+          "body": "Like, comment and keep up with the people you follow."
+        },
+        "explore": {
+          "title": "Explore",
+          "body": "Discover workouts, recipes and programs based on what you like."
+        },
+        "shop": {
+          "title": "Shop",
+          "body": "A store and collectibles signed by the heroes are coming soon."
+        }
+      }
+    },
+    "heroi": {
+      "title": "Welcome to the Hero Portal",
+      "steps": {
+        "opportunities": {
+          "title": "Opportunities",
+          "body": "Brand proposals land here for you to accept or decline."
+        },
+        "deliveries": {
+          "title": "Deliveries",
+          "body": "Send each piece of content and follow its approval until it goes live."
+        },
+        "agenda": {
+          "title": "Schedule",
+          "body": "Shoots, posts and meetings in a single calendar."
+        },
+        "finance": {
+          "title": "Finance",
+          "body": "See how much you have to receive for each job."
+        },
+        "page": {
+          "title": "Messages and public page",
+          "body": "Talk to the agency through the portal and look after your page in the app."
+        }
+      }
+    },
+    "marca": {
+      "title": "Welcome to the Brand Portal",
+      "steps": {
+        "campaigns": {
+          "title": "Campaigns",
+          "body": "Request a campaign with a goal, budget and dates."
+        },
+        "hire": {
+          "title": "How to hire heroes",
+          "body": "Pick heroes from the catalog; the agency handles the negotiation."
+        },
+        "approvals": {
+          "title": "Approvals",
+          "body": "Approve or request changes on each piece of content before it goes live."
+        },
+        "payments": {
+          "title": "Payments",
+          "body": "Follow the amounts and terms of each campaign."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Talk to the agency that serves your brand."
+        }
+      }
+    },
+    "agencia": {
+      "title": "Welcome to the Agency Portal",
+      "steps": {
+        "casting": {
+          "title": "Casting",
+          "body": "Your heroes with media kit, social networks and availability."
+        },
+        "pipeline": {
+          "title": "Pipeline and deals",
+          "body": "From brief to close, every deal at its stage."
+        },
+        "scripts": {
+          "title": "Scripts and tasks",
+          "body": "Scripts to approve and the tasks of each campaign."
+        },
+        "finance": {
+          "title": "Finance",
+          "body": "Income, payouts and what is still to be received."
+        },
+        "room": {
+          "title": "Project room and messages",
+          "body": "Brand, heroes and team in one place, each in their own channel."
+        }
+      }
+    }
+  }
+}

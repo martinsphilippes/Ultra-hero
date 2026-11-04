@@ -1,12 +1,11 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CALENDAR_POINTS, FAQ_ITEMS, FEATURE_GROUPS, HOW_STEPS, SECTION_ANCHORS, WHAT_ITEMS } from "@/lib/institutional/content";
 import { EXPLORE_COOKIE, INSTITUTIONAL_PATH, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
 import { isBlockedInNativeApp } from "@/lib/native-app/surface";
 
-// Etapa 7 · página institucional (/conheca) e o destino do "/".
+// Etapa 7 · página institucional (/conheca, hoje o teaser de lançamento) e o destino do "/".
 
 const session = vi.hoisted(() => ({ signedIn: false, checks: 0 }));
 
@@ -123,11 +122,17 @@ describe("configuração", () => {
     const config = readFileSync(path.join(root, "next.config.ts"), "utf8");
     expect(config).not.toMatch(/source:\s*"\/",/);
   });
-  it("a página recebe os temas sazonais da área institucional e não mexe na abertura animada", () => {
-    const page = readFileSync(path.join(root, "src/app/conheca/page.tsx"), "utf8");
-    expect(page).toContain('<SeasonalTheme area="institutional" />');
-    expect(page).not.toContain("AppIntro");
-    expect(page).not.toMatch(/<img\b|next\/image/);
+  it("as duas portas do teaser recebem os temas sazonais da área institucional e não mexem na abertura animada", () => {
+    for (const file of ["src/app/conheca/page.tsx", "src/app/conheca/influenciador/page.tsx"]) {
+      const page = readFileSync(path.join(root, file), "utf8");
+      expect(page).toContain('<SeasonalTheme area="institutional" />');
+      expect(page).not.toContain("AppIntro");
+      expect(page).not.toMatch(/<img\b|next\/image/);
+    }
+    const teaser = readFileSync(path.join(root, "src/components/launch/LaunchTeaser.tsx"), "utf8");
+    expect(teaser).not.toMatch(/<img\b|next\/image/);
+    // não há porta para empresas
+    expect(teaser).not.toMatch(/conheca\/empresa|kind="empresa"/);
   });
 });
 
@@ -142,65 +147,70 @@ function get(tree: Tree, key: string): unknown {
   return key.split(".").reduce<unknown>((node, part) => (node && typeof node === "object" ? (node as Tree)[part] : undefined), tree);
 }
 
-function usedKeys(): string[] {
-  const keys = ["meta.title", "meta.description", "nav.signup", "nav.login", "nav.skip", "nav.openApp", "nav.sections", "hero.title", "hero.lead", "final.title", "final.lead", "footer.rights"];
-  for (const k of WHAT_ITEMS) keys.push(`what.items.${k}.title`, `what.items.${k}.body`);
-  for (const k of HOW_STEPS) keys.push(`how.steps.${k}.title`, `how.steps.${k}.body`);
-  for (const g of FEATURE_GROUPS) {
-    keys.push(`${g.ns}.title`, `${g.ns}.lead`);
-    for (const i of g.items) keys.push(`${g.ns}.items.${i.key}.title`, `${g.ns}.items.${i.key}.body`);
-  }
-  for (const k of CALENDAR_POINTS) keys.push(`calendar.points.${k}`);
-  for (const k of FAQ_ITEMS) keys.push(`faq.items.${k}.q`, `faq.items.${k}.a`);
-  for (const a of SECTION_ANCHORS) keys.push(a.labelKey);
-  return keys;
-}
-
 function allStrings(tree: unknown): string[] {
   if (typeof tree === "string") return [tree];
   if (tree && typeof tree === "object") return Object.values(tree).flatMap(allStrings);
   return [];
 }
 
-describe("textos da página institucional", () => {
-  it.each(LOCALES)("%s tem todos os textos usados pela página", (locale) => {
-    for (const key of usedKeys()) expect(typeof get(messages[locale], key), `${locale}: ${key}`).toBe("string");
+const USED_KEYS = [
+  "meta.title",
+  "meta.description",
+  "meta.influencerTitle",
+  "meta.influencerDescription",
+  "countdown.units.days",
+  "countdown.units.hours",
+  "countdown.units.minutes",
+  "countdown.units.seconds",
+  "countdown.srCountdown",
+  "teaser.eyebrow",
+  "teaser.title",
+  "teaser.influencer",
+  "teaser.back",
+  "teaser.backLabel",
+  "teaser.haveAccess",
+  "teaser.rights",
+  "teaser.countdownTitle",
+  "influencer.eyebrow",
+  "influencer.title",
+  "influencer.benefitsTitle",
+  "influencer.benefits.brands",
+  "influencer.benefits.work",
+  "influencer.benefits.page",
+  "form.title",
+  "form.name",
+  "form.phone",
+  "form.email",
+  "form.instagram",
+  "form.consent",
+  "form.privacy",
+  "form.submit",
+  "form.success",
+  ...["required", "nameInvalid", "phoneInvalid", "emailInvalid", "consentRequired", "instagramInvalid", "tooMany", "unavailable", "unknown"].map((k) => `form.errors.${k}`),
+];
+
+describe("textos do teaser de lançamento", () => {
+  it.each(LOCALES)("%s tem todos os textos usados pelo teaser", (locale) => {
+    for (const key of USED_KEYS) expect(typeof get(messages[locale], key), `${locale}: ${key}`).toBe("string");
   });
-  it("pt-BR traz a proposta de valor, as seções pedidas e os CTAs", () => {
+  it("pt-BR traz a frase, o formulário e o sucesso pedidos pelo dono", () => {
     const pt = messages["pt-BR"];
-    expect(get(pt, "hero.title")).toBe("A plataforma onde marca, herói e agência fecham negócio rápido.");
-    expect(get(pt, "nav.signup")).toBe("Criar conta");
-    expect(get(pt, "nav.login")).toBe("Entrar");
-    expect(get(pt, "nav.skip")).toBe("Pular e explorar");
-    expect(get(pt, "what.title")).toBe("O que é o Ultra");
-    expect(get(pt, "calendar.title")).toBe("Calendário Groscove");
-    expect(get(pt, "agency.items.castBuilder.title")).toBe("Montador de elenco");
-    expect(String(get(pt, "agency.items.agenda.title"))).toContain("Real-Time Culture");
+    expect(get(pt, "teaser.title")).toBe("A rede social das celebridades está chegando.");
+    expect(get(pt, "teaser.influencer")).toBe("Sou influenciador");
+    expect(get(pt, "teaser.haveAccess")).toBe("Já tenho acesso");
+    expect(get(pt, "influencer.title")).toBe("Um ecossistema inteiro que conecta você a marcas e empresas.");
+    expect(get(pt, "form.title")).toBe("Seja o primeiro a saber");
+    expect(get(pt, "form.consent")).toBe("Aceito receber novidades do Groscove Ultra.");
+    expect(get(pt, "form.submit")).toBe("Quero saber primeiro");
+    expect(get(pt, "form.success")).toBe("Pronto. Você vai saber antes de todo mundo.");
   });
-  it.each(LOCALES)("%s não promete o que não existe: pagamentos ainda não ativados, sem demo/creator", (locale) => {
-    const texts = allStrings(messages[locale]);
-    for (const text of texts) {
-      expect(text).not.toMatch(/demonstra|\bdemo\b|simulad|simulat|creator/i);
+  it.each(LOCALES)("%s não explica o produto nem promete o que não existe (sem demo/creator/simulado/agência/pagamento)", (locale) => {
+    for (const text of allStrings(messages[locale])) {
+      expect(text).not.toMatch(/demonstra|\bdemo\b|simulad|simulat|creator|ag[eê]nci|agency|pagamento|payment|pago\b/i);
     }
-    const notEnabled = { "pt-BR": /ainda não ativad/i, en: /not enabled yet/i, es: /aún no activad/i }[locale];
-    expect(String(get(messages[locale], "brands.items.budget.body"))).toMatch(notEnabled);
-    expect(String(get(messages[locale], "heroes.items.finance.body"))).toMatch(notEnabled);
-    expect(String(get(messages[locale], "faq.items.data.a"))).toMatch(/<privacy>.+<\/privacy>/);
-  });
-  it("cada recurso citado aponta para uma rota que existe no app", () => {
-    const routes = new Set<string>();
-    const walk = (dir: string) => {
-      for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) walk(full);
-        else if (entry.name === "page.tsx") {
-          const rel = path.relative(path.join(process.cwd(), "src/app"), path.dirname(full));
-          // grupos de rota "(x)" não entram no endereço
-          routes.add("/" + rel.split(path.sep).filter((s) => s && !/^\(.*\)$/.test(s)).join("/"));
-        }
-      }
-    };
-    walk(path.join(process.cwd(), "src/app"));
-    for (const g of FEATURE_GROUPS) for (const item of g.items) expect(routes.has(item.route), item.route).toBe(true);
+    expect(String(get(messages[locale], "form.privacy"))).toMatch(/<privacy>.+<\/privacy>/);
+    // metadados sem spoiler: nada de portal, marca/herói/agência
+    const meta = [get(messages[locale], "meta.title"), get(messages[locale], "meta.description")].join(" ");
+    expect(meta).not.toMatch(/portal|her[oó]i|hero|marca/i);
   });
 });

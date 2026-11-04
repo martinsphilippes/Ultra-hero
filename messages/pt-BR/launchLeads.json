@@ -1,0 +1,21 @@
+{
+  "admin": {
+    "title": "Interessados no lançamento",
+    "description": "Quem pediu para saber primeiro no teaser (/conheca). O público em geral e os influenciadores, com o aceite de novidades.",
+    "back": "Painel",
+    "csv": "Baixar planilha (CSV)",
+    "unavailable": "Não foi possível carregar a lista.",
+    "unavailableHint": "Confira se a migração 0117 já foi aplicada no banco.",
+    "empty": "Ninguém por aqui ainda.",
+    "emptyHint": "Os cadastros do teaser aparecem aqui assim que chegarem.",
+    "origin": "Origem: {origin}",
+    "filters": {
+      "label": "Filtrar por tipo",
+      "all": "Todos"
+    },
+    "kinds": {
+      "publico": "Público",
+      "influenciador": "Influenciador"
+    }
+  }
+}

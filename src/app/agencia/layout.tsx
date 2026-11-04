@@ -9,6 +9,7 @@ import { getAgencyContext } from "@/lib/agency/server";
 import { requireRole } from "@/lib/auth/session";
 import { unreadInboxCount } from "@/lib/inbox/queries";
 import { SeasonalTheme } from "@/components/seasonal-theme/SeasonalTheme";
+import { WelcomeTourMount } from "@/components/welcome/WelcomeTourMount";
 
 // Portal da agência (6.2, só web): papel no servidor (admin geral também passa), menu pelo nível
 // (Adm > Gestor > Colaborador) e o sino. Sem loading.tsx na raiz: os layouts de segmento restrito
@@ -40,6 +41,8 @@ export default async function AgencyLayout({ children }: { children: ReactNode }
       ) : null}
       <SeasonalTheme area="portals" />
       {children}
+      {/* boas-vindas do portal: só para quem é membro (o admin que só supervisiona não vê) */}
+      {ctx.role ? <WelcomeTourMount area="agencia" /> : null}
     </PortalShell>
   );
 }

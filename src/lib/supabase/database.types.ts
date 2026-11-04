@@ -3606,6 +3606,62 @@ export type Database = {
         };
         Relationships: [];
       };
+      launch_leads: {
+        // 0117: lista do teaser de lançamento (só service role; leitura do admin pela admin_launch_leads)
+        Row: {
+          consent_at: string;
+          created_at: string;
+          email: string;
+          id: string;
+          instagram: string | null;
+          ip_hash: string | null;
+          kind: string;
+          name: string;
+          phone: string;
+          source: string | null;
+          updated_at: string;
+          user_agent: string | null;
+          utm_campaign: string | null;
+          utm_medium: string | null;
+          utm_source: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          consent_at: string;
+          created_at?: string;
+          email: string;
+          id?: string;
+          instagram?: string | null;
+          ip_hash?: string | null;
+          kind: string;
+          name: string;
+          phone: string;
+          source?: string | null;
+          updated_at?: string;
+          user_agent?: string | null;
+          utm_campaign?: string | null;
+          utm_medium?: string | null;
+          utm_source?: string | null;
+        };
+        Update: {
+          consent_at?: string;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          instagram?: string | null;
+          ip_hash?: string | null;
+          kind?: string;
+          name?: string;
+          phone?: string;
+          source?: string | null;
+          updated_at?: string;
+          user_agent?: string | null;
+          utm_campaign?: string | null;
+          utm_medium?: string | null;
+          utm_source?: string | null;
+        };
+        Relationships: [];
+      };
       quick_signup_attempts: {
         Row: {
           created_at: string;
@@ -12556,6 +12612,7 @@ isOneToOne: false
       self_onboarding_start: { Args: { p_kind: string }; Returns: Json };
       self_onboarding_cancel: { Args: { p_kind: string }; Returns: boolean };
       admin_self_signups: { Args: { p_days?: number }; Returns: Json };
+      admin_launch_leads: { Args: { p_kind?: string | null; p_limit?: number; p_offset?: number }; Returns: Json };
       invites_enabled: { Args: Record<PropertyKey, never>; Returns: boolean };
       onboarding_create_agency: { Args: { p_name: string; p_cnpj: string | null; p_contact_email: string | null }; Returns: string };
       onboarding_create_brand: { Args: { p_name: string; p_cnpj: string | null; p_segment: string | null; p_site_url: string }; Returns: string };

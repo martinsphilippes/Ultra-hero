@@ -1,0 +1,21 @@
+{
+  "admin": {
+    "title": "Launch sign-ups",
+    "description": "People who asked to know first on the teaser (/conheca). The general public and influencers, with their consent to receive news.",
+    "back": "Dashboard",
+    "csv": "Download spreadsheet (CSV)",
+    "unavailable": "We couldn't load the list.",
+    "unavailableHint": "Check that migration 0117 has been applied to the database.",
+    "empty": "Nobody here yet.",
+    "emptyHint": "Teaser sign-ups show up here as soon as they arrive.",
+    "origin": "Source: {origin}",
+    "filters": {
+      "label": "Filter by type",
+      "all": "All"
+    },
+    "kinds": {
+      "publico": "Public",
+      "influenciador": "Influencer"
+    }
+  }
+}

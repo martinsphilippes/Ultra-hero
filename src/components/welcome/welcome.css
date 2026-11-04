@@ -1,0 +1,118 @@
+/* Card de boas-vindas (WelcomeTour). Passos no tema do app; o último passo é sempre "Ultra" (bloco escuro com brilho
+   laranja e a ampulheta do lançamento), nos dois temas. Animações só sem "reduzir movimento". */
+
+.uh-welcome-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--color-border-strong);
+  transition:
+    width 250ms ease,
+    background-color 250ms ease;
+}
+.uh-welcome-dot.is-done {
+  background: color-mix(in srgb, var(--color-accent) 55%, transparent);
+}
+.uh-welcome-dot.is-active {
+  width: 1.5rem;
+  background: var(--color-accent);
+}
+
+.uh-welcome-final {
+  --cs-ink: #0b0b0b;
+  --cs-sand: #ece7df;
+  --cs-sand-muted: #b3aba0;
+  --cs-orange: #ff5a1f;
+  --cs-orange-soft: #ff8a60;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  margin-top: 0.25rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 90, 31, 0.35);
+  padding: 1.5rem 1.25rem 1.25rem;
+  text-align: center;
+  color: var(--cs-sand);
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(255, 90, 31, 0.32), transparent 60%),
+    radial-gradient(80% 50% at 50% 110%, rgba(255, 90, 31, 0.12), transparent 70%),
+    linear-gradient(180deg, #161310, #0b0b0b);
+  box-shadow:
+    0 24px 60px -28px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+.uh-welcome-final::before {
+  content: "";
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 138, 96, 0.9), transparent);
+}
+.uh-welcome-hourglass {
+  width: 2.75rem;
+  height: 4.1rem;
+}
+.uh-welcome-final-title {
+  font-weight: 800;
+  font-size: clamp(1.5rem, 7vw, 1.875rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--cs-sand);
+  background: linear-gradient(100deg, var(--cs-sand) 0%, var(--cs-sand) 40%, #fff7ef 50%, var(--cs-sand) 60%, var(--cs-sand) 100%);
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.uh-welcome-final-dot {
+  color: var(--cs-orange);
+  -webkit-text-fill-color: var(--cs-orange);
+}
+.uh-welcome-final-body {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--cs-sand-muted);
+  text-wrap: pretty;
+}
+.uh-welcome-final-date {
+  font-family: var(--font-dm-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--cs-orange-soft);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .uh-welcome-step {
+    animation: uh-welcome-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .uh-welcome-final-title {
+    animation: uh-welcome-shine 6s ease-in-out 0.6s infinite;
+  }
+}
+@keyframes uh-welcome-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes uh-welcome-shine {
+  0% {
+    background-position: 100% 0;
+  }
+  35%,
+  100% {
+    background-position: -50% 0;
+  }
+}

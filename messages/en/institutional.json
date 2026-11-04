@@ -1,230 +1,66 @@
 {
   "meta": {
-    "title": "Meet Groscove Ultra",
-    "description": "The platform where brands, heroes and agencies close deals fast: opportunities, schedule, terms and deliverables in one place, plus the app where people follow the heroes."
+    "title": "Groscove Ultra — Coming soon",
+    "description": "The celebrity social network is coming. Be the first to know.",
+    "influencerTitle": "Groscove Ultra — For influencers",
+    "influencerDescription": "A whole ecosystem connecting you to brands and companies. Be the first to know."
   },
-  "nav": {
-    "signup": "Create account",
-    "login": "Sign in",
-    "openApp": "Open the app",
-    "skip": "Skip and explore",
-    "sections": "On this page",
-    "home": "Groscove Ultra · Meet"
-  },
-  "hero": {
-    "eyebrow": "Groscove Ultra",
-    "title": "The platform where brands, heroes and agencies close deals fast.",
-    "lead": "Opportunities, schedule, terms and deliverables in one place. Plus the app where people follow the heroes through content, programs and recipes.",
-    "signedIn": "You're already signed in."
-  },
-  "what": {
-    "title": "What Ultra is",
-    "lead": "Four kinds of access, one shared flow. Each profile sees only what it needs.",
-    "items": {
-      "brand": {
-        "title": "Brand",
-        "body": "Finds heroes, sends campaigns and follows every deliverable through to the report."
-      },
-      "hero": {
-        "title": "Hero",
-        "body": "Gets clear opportunities, organizes the schedule and publishes for their audience."
-      },
-      "agency": {
-        "title": "Agency",
-        "body": "Runs everything in the middle: casting, deals, deadlines and the central schedule."
-      },
-      "app": {
-        "title": "App",
-        "body": "Where people follow the heroes: content, programs, recipes and Today."
-      }
-    }
-  },
-  "how": {
-    "title": "How it works",
-    "lead": "From picking a hero to approved content, with the agency in the middle of every conversation.",
-    "steps": {
-      "choose": {
-        "title": "The brand chooses",
-        "body": "Browses the hero catalog, compares side by side and builds a shortlist."
-      },
-      "request": {
-        "title": "Sends the campaign",
-        "body": "Describes the action, the period and the budget. The agency gets the request."
-      },
-      "consult": {
-        "title": "The hero answers",
-        "body": "The agency brings the opportunity to the hero, who accepts or declines."
-      },
-      "terms": {
-        "title": "Terms accepted",
-        "body": "The deal terms are recorded, with version and acceptance."
-      },
-      "deliver": {
-        "title": "Creation and approval",
-        "body": "The hero sends the deliverables. Change requests and approvals are kept by version."
-      },
-      "report": {
-        "title": "Results",
-        "body": "The brand follows each deliverable by stage and opens the campaign report."
-      }
+  "countdown": {
+    "units": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Min",
+      "seconds": "Sec"
     },
-    "note": "The brand doesn't talk to the hero directly: the agency sits in the middle and answers for both sides."
+    "srCountdown": "{days, plural, one {# day} other {# days}}, {hours, plural, one {# hour} other {# hours}} and {minutes, plural, one {# minute} other {# minutes}} until launch, on {date}."
   },
-  "heroes": {
-    "title": "For heroes",
-    "lead": "Brand work and your audience in a single portal: the Hero Portal.",
-    "items": {
-      "page": {
-        "title": "Public page",
-        "body": "Your page in the app, with cover, intro and your content."
-      },
-      "content": {
-        "title": "Content and recipes",
-        "body": "Publish posts, content and recipes for the people who follow you."
-      },
-      "portal": {
-        "title": "Hero Portal",
-        "body": "A home with what needs you today, tasks and notices."
-      },
-      "opportunities": {
-        "title": "Opportunities",
-        "body": "Brand proposals, brought by the agency, to accept or decline."
-      },
-      "agenda": {
-        "title": "Schedule",
-        "body": "Actions, deadlines and availability, with a link to your phone's calendar."
-      },
-      "finance": {
-        "title": "Finances",
-        "body": "Agreed amounts and what's receivable, per deal. Payments not enabled yet."
-      }
+  "teaser": {
+    "eyebrow": "Launch · {date}",
+    "title": "The celebrity social network is coming.",
+    "influencer": "I'm an influencer",
+    "back": "Back",
+    "backLabel": "Back to home",
+    "haveAccess": "I already have access",
+    "rights": "© {year} Groscove Ultra",
+    "countdownTitle": "Countdown to launch"
+  },
+  "influencer": {
+    "eyebrow": "For influencers",
+    "title": "A whole ecosystem connecting you to brands and companies.",
+    "benefitsTitle": "What's coming",
+    "benefits": {
+      "brands": "Brands that match your style.",
+      "work": "Jobs, schedule and earnings in one place.",
+      "page": "Your own page, powered by an entire network."
     }
   },
-  "brands": {
-    "title": "For brands",
-    "lead": "Pick heroes, send campaigns and follow results without a side spreadsheet.",
-    "items": {
-      "catalog": {
-        "title": "Hero catalog",
-        "body": "Search by segment, compare side by side and keep your shortlist."
-      },
-      "campaigns": {
-        "title": "Campaigns",
-        "body": "Every deliverable by stage, from request to approval, on one screen."
-      },
-      "calls": {
-        "title": "Calls",
-        "body": "Post a need, receive proposals from agencies and compare before hiring."
-      },
-      "sponsorship": {
-        "title": "Sponsorship",
-        "body": "See hero events open to sponsorship and say whether you're interested."
-      },
-      "budget": {
-        "title": "Budget and payments",
-        "body": "Budget per campaign, installments and due dates. Payments not enabled yet: Ultra charges nothing."
-      },
-      "reports": {
-        "title": "Reports",
-        "body": "The campaign report and the library of approved content."
-      }
+  "form": {
+    "title": "Be the first to know",
+    "name": "Name",
+    "namePlaceholder": "What should we call you",
+    "phone": "Mobile",
+    "phonePlaceholder": "(11) 91234-5678",
+    "email": "Email",
+    "emailPlaceholder": "you@email.com",
+    "instagram": "Instagram @ (optional)",
+    "instagramPlaceholder": "@yourprofile",
+    "consent": "I agree to receive news from Groscove Ultra.",
+    "privacy": "Your data follows our <privacy>Privacy Policy</privacy>.",
+    "submit": "I want to know first",
+    "sending": "Sending…",
+    "success": "Done. You'll know before everyone else.",
+    "honeypot": "Do not fill in this field",
+    "required": "required",
+    "errors": {
+      "required": "Fill in this field.",
+      "nameInvalid": "Enter your name (letters only).",
+      "phoneInvalid": "Enter a Brazilian mobile with area code, like (11) 91234-5678.",
+      "emailInvalid": "Enter a valid email.",
+      "consentRequired": "Check the box to receive the news.",
+      "instagramInvalid": "Enter just your profile @ (letters, numbers, dot and _).",
+      "tooMany": "Too many attempts in a short time. Try again in a few minutes.",
+      "unavailable": "We couldn't save it right now. Try again later.",
+      "unknown": "Something went wrong. Check the fields and try again."
     }
-  },
-  "agency": {
-    "title": "For agencies",
-    "lead": "The whole operation in one place: who's available, what's stuck and what's due today.",
-    "items": {
-      "casting": {
-        "title": "Casting",
-        "body": "Hero profiles with media kit, networks, documents, availability and history."
-      },
-      "deals": {
-        "title": "Deals",
-        "body": "From request to close: terms, conversation, tasks and deliverables for each deal."
-      },
-      "castBuilder": {
-        "title": "Cast builder",
-        "body": "Build the cast for a proposal from your roster, hero by hero."
-      },
-      "agenda": {
-        "title": "Central schedule and Real-Time Culture",
-        "body": "Every hero's actions in one calendar, and what's happening right now."
-      }
-    }
-  },
-  "app": {
-    "title": "For app users",
-    "lead": "The audience side: follow the heroes and bring what they do into your own routine.",
-    "items": {
-      "content": {
-        "title": "Content",
-        "body": "Videos, posts and articles from the heroes, organized by topic."
-      },
-      "programs": {
-        "title": "Programs",
-        "body": "Sequences to follow at your own pace, from start to finish."
-      },
-      "recipes": {
-        "title": "Recipes",
-        "body": "Recipes from the heroes, with a shopping list and Cook mode."
-      },
-      "today": {
-        "title": "Today",
-        "body": "Your day in focus, measured by the watch you connect, once the connection is available."
-      }
-    },
-    "cta": "Explore the app"
-  },
-  "calendar": {
-    "title": "Groscove Calendar",
-    "lead": "The year's cultural calendar, to plan actions at the right moment.",
-    "points": {
-      "territories": "Dates by territory: football, sports, music, entertainment, fashion, retail, holidays and more.",
-      "interest": "Brands, agencies and heroes mark interest and link proposals to events.",
-      "where": "Available in the brand, agency and hero portals."
-    }
-  },
-  "faq": {
-    "title": "Frequently asked questions",
-    "items": {
-      "cost": {
-        "q": "Does Ultra cost anything?",
-        "a": "Using the app is free. There's no plan or subscription."
-      },
-      "payments": {
-        "q": "Does Ultra charge or make payments?",
-        "a": "Not yet. Payments and purchases are not enabled: deal amounts and orders are recorded for tracking, with no charge."
-      },
-      "access": {
-        "q": "How do brands, agencies and heroes get in?",
-        "a": "Create your account by choosing your profile: Hero, Brand, Agency or just use the app. Got an invitation? Sign in with the invited email."
-      },
-      "devices": {
-        "q": "Does it work on my phone?",
-        "a": "Yes. It works in your phone's and computer's browser, and you can add it to your home screen."
-      },
-      "data": {
-        "q": "What about my data?",
-        "a": "What is stored, for how long and how to delete your account is in the <privacy>Privacy Policy</privacy>."
-      }
-    }
-  },
-  "final": {
-    "title": "Ready to start?",
-    "lead": "Create your account with name, email and phone, or explore the app first."
-  },
-  "footer": {
-    "rights": "© {year} Groscove Ultra"
-  },
-  "switcher": {
-    "label": "I am",
-    "app": "Audience",
-    "seeAll": "See everything for {name}"
-  },
-  "interlude": {
-    "heroes": "Heroes",
-    "brands": "Brands",
-    "agency": "Agencies",
-    "app": "Audience"
   }
 }

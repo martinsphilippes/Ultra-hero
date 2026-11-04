@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
 import { EXPLORE_COOKIE, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
+import { isMarketingHost, marketingDecision, parseMarketingHosts, requestHost } from "@/lib/marketing-host";
 import { isBlockedInNativeApp, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
 import { updateSession } from "@/lib/supabase/middleware";
 
@@ -103,7 +104,25 @@ async function rootResponse(request: NextRequest): Promise<NextResponse> {
   return NextResponse.redirect(target, 307);
 }
 
+// Domínio próprio do teaser (MARKETING_HOSTS; docs/dominio-teaser.md): nesses hosts "/" mostra o teaser (rewrite, o
+// endereço fica "/") e o resto do app volta para "/". Sem a variável, null (nada muda). Não renova sessão: o domínio
+// do teaser não tem login.
+function marketingResponse(request: NextRequest): NextResponse | null {
+  const hosts = parseMarketingHosts();
+  if (!isMarketingHost(requestHost(request.headers, request.nextUrl.host), hosts)) return null;
+  const decision = marketingDecision(request.nextUrl.pathname);
+  if (decision.action === "next") return NextResponse.next();
+  const target = request.nextUrl.clone();
+  target.pathname = decision.pathname;
+  if (decision.action === "rewrite") return NextResponse.rewrite(target);
+  target.search = "";
+  return NextResponse.redirect(target, 307);
+}
+
 export async function middleware(request: NextRequest) {
+  const marketing = marketingResponse(request);
+  if (marketing) return marketing;
+
   // Renova a sessão (cookies) em toda requisição.
   const response = await updateSession(request);
 
