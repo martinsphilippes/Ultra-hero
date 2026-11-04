@@ -41,7 +41,8 @@ describe("Real-Time Culture: faixas", () => {
     const lanes = selectCulture(events, NOW);
     expect(lanes.happening.map((e) => e.id)).toEqual(["agora", "destaque-agora"]);
     expect(lanes.seasons.map((e) => e.id)).toEqual(["temporada"]);
-    expect(lanes.featured.map((e) => e.id)).toEqual(["destaque-agora", "semana"]);
+    // o destaque que já está acontecendo fica só em "Acontecendo agora" (não se repete)
+    expect(lanes.featured.map((e) => e.id)).toEqual(["semana"]);
     expect(lanes.next7.map((e) => e.id)).toEqual(["amanha", "semana"]);
     expect(lanes.next30.map((e) => e.id)).toEqual(["mes"]);
   });

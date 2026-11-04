@@ -5,7 +5,8 @@
 //     (> LONG_EVENT_DAYS, como Brasileirão e Libertadores) ficam numa faixa própria ("Em temporada") para não lotar o agora.
 //   • "Próximos 7 dias" / "Próximos 30 dias" contam por instante (agora + 7×24h / + 30×24h), igual em qualquer fuso; o dia
 //     mostrado em cada cartão segue o fuso do evento.
-//   • Destaques = eventos marcados como destaque (highlight) acontecendo agora ou começando nos próximos 30 dias.
+//   • Destaques = eventos marcados como destaque (highlight) que ainda vão começar nos próximos 30 dias. O que já está
+//     acontecendo não se repete aqui: aparece em "Acontecendo agora" ou "Em temporada" (pedido do responsável, 04/11).
 //   • Cancelado não entra (aparece só na agenda, riscado); rascunho e programado futuro nem chegam aqui (RLS).
 //   • Filtro por território vale para todas as faixas.
 
@@ -55,7 +56,7 @@ export function selectCulture<E extends CultureEventLike>(events: readonly E[], 
   return {
     happening: ongoing.filter((e) => !isLongEvent(e)).sort(byEnd).slice(0, CULTURE_LIMITS.happening),
     seasons: ongoing.filter((e) => isLongEvent(e)).sort(byEnd).slice(0, CULTURE_LIMITS.seasons),
-    featured: live.filter((e) => e.highlight && ms(e.startsAt) < in30).sort(byStart).slice(0, CULTURE_LIMITS.featured),
+    featured: live.filter((e) => e.highlight && ms(e.startsAt) > t && ms(e.startsAt) < in30).sort(byStart).slice(0, CULTURE_LIMITS.featured),
     next7: live.filter((e) => ms(e.startsAt) > t && ms(e.startsAt) <= in7).sort(byStart).slice(0, CULTURE_LIMITS.next7),
     next30: live.filter((e) => ms(e.startsAt) > in7 && ms(e.startsAt) <= in30).sort(byStart).slice(0, CULTURE_LIMITS.next30),
   };
