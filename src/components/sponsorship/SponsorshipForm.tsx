@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Button, Checkbox, DatePicker, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { fichaLinks, formActions, publishBlock, type HeroChoice } from "@/lib/sponsorship/hero-pick";
 import { parseBrlToCents } from "@/lib/deals/schemas";
 import { saveSponsorshipAction, type OpportunityHeroSearchResult } from "@/lib/sponsorship/actions";
@@ -170,7 +170,7 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
                   </FormField>
                 )}
                 <FormField label={t("tiers.slots")}>
-                  <Input type="number" inputMode="numeric" min={1} max={MAX_TIER_SLOTS} value={String(tier.slots)} onChange={(e) => setTier({ slots: Math.trunc(Number(e.target.value) || 0) })} disabled={pending} />
+                  <QuantityInput min={1} max={MAX_TIER_SLOTS} value={tier.slots} onValueChange={(n) => setTier({ slots: n })} disabled={pending} />
                 </FormField>
               </div>
               <FormField label={t("tiers.perks")} hint={t("perksHint", { max: MAX_PERKS })}>

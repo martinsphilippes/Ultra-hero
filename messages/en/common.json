@@ -151,5 +151,9 @@
     "minute": "Minutes",
     "done": "Done"
   },
-  "paymentsInactive": "Payments are not active yet: your order is recorded without any charge."
+  "paymentsInactive": "Payments are not active yet: your order is recorded without any charge.",
+  "quantity": {
+    "decrease": "Decrease",
+    "increase": "Increase"
+  }
 }

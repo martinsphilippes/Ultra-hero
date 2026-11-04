@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState, type ChangeEvent, type ComponentProps, type FocusEvent } from "react";
-import { brlToCents, finalizeBrl, maskBrl, significantBefore, caretForSignificant, typeBrl } from "@/lib/money/brl-input";
+import { brlToCents, editBrlFixed, finalizeBrl, maskBrl } from "@/lib/money/brl-input";
 import { cn } from "@/lib/utils";
 import { Input } from "./input";
 
@@ -31,8 +31,9 @@ type MoneyInputProps = Omit<ComponentProps<"input">, "value" | "defaultValue" | 
 const outward = (text: string) => text.replace(/,$/, "");
 
 /**
- * Campo de valor em reais: "R$" fixo à esquerda, ponto de milhar enquanto digita e ",00" ao sair.
- * O usuário digita reais ("50000" → "R$ 50.000" → blur "R$ 50.000,00"); vírgula abre até 2 casas.
+ * Campo de valor em reais: "R$" cinza fixo à esquerda e o texto sempre completo ("R$ 50.000,00") enquanto digita.
+ * O usuário digita reais ("50000" → "R$ 50.000,00"), com o cursor antes da vírgula; "," leva aos centavos.
+ * Apagar tira dígitos dos reais, mesmo com o cursor no fim (editBrlFixed, pedido do responsável 04/11).
  * Com `name`, o próprio input vai no FormData com o texto mascarado (sem "R$"), que os parsers aceitam.
  */
 export function MoneyInput({
@@ -61,7 +62,7 @@ export function MoneyInput({
     setSeen(value);
     if (brlToCents(value) !== brlToCents(display)) {
       const masked = maskBrl(value);
-      setDisplay(focused.current ? masked : finalizeBrl(masked));
+      setDisplay(finalizeBrl(masked));
     }
   }
 
@@ -79,17 +80,18 @@ export function MoneyInput({
     const raw = e.target.value;
     const inputType = (e.nativeEvent as InputEvent).inputType ?? "";
     const pasted = inputType === "insertFromPaste" || inputType === "insertFromDrop";
-    let next = typeBrl(display, raw, { pasted });
-    const cents = brlToCents(next);
-    if (maxCents !== undefined && cents !== null && cents > maxCents) next = display;
-
     const pos = e.target.selectionStart ?? raw.length;
-    // no fim (o caso comum) o cursor fica sempre no fim; no meio, mantém os mesmos dígitos à esquerda
-    caret.current = pos >= raw.length ? next.length : caretForSignificant(next, significantBefore(raw, pos));
+    let { text: next, caret: at } = editBrlFixed(display, raw, pos, { pasted });
+    const cents = brlToCents(next);
+    if (maxCents !== undefined && cents !== null && cents > maxCents) {
+      next = display;
+      at = display.indexOf(",") >= 0 ? display.indexOf(",") : display.length;
+    }
+    caret.current = at;
     if (next === display) {
-      // a máscara recusou ou não mudou nada: devolve o texto e o cursor (o DOM já mudou)
+      // nada mudou (letra, limite, só pulou o cursor): devolve o texto e põe o cursor no lugar certo
       e.target.value = display;
-      const c = Math.min(caret.current, display.length);
+      const c = Math.min(at, display.length);
       e.target.setSelectionRange(c, c);
       caret.current = null;
       return;
@@ -128,13 +130,19 @@ export function MoneyInput({
       onChange={handleChange}
       onFocus={(e) => {
         focused.current = true;
+        // entrou no campo com o cursor no fim: leva para antes da vírgula (digitar entra nos reais)
+        const el = e.currentTarget;
+        requestAnimationFrame(() => {
+          const c = el.value.indexOf(",");
+          if (document.activeElement === el && c >= 0 && el.selectionStart === el.value.length && el.selectionEnd === el.value.length) el.setSelectionRange(c, c);
+        });
         onFocus?.(e);
       }}
       onBlur={handleBlur}
       invalid={invalid || belowMin}
       aria-invalid={invalid || belowMin || props["aria-invalid"] || undefined}
       className={cn("tabular-nums", props.className)}
-      leadingIcon={<span className="text-sm font-semibold text-fg-muted">R$</span>}
+      leadingIcon={<span className="text-sm font-medium text-fg-subtle">R$</span>}
     />
   );
 }

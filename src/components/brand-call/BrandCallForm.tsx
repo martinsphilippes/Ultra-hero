@@ -4,7 +4,7 @@ import { Save, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, DatePicker, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, FormField, Input, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { AudienceFields } from "@/components/sponsorship/AudienceFields";
 import { saveBrandCallAction } from "@/lib/brand-call/actions";
 import { MAX_CREATORS_WANTED, MAX_NICHES, parseNiches, validateCall, type AgencyOption, type CallAudience, type CallFormInput } from "@/lib/brand-call/logic";
@@ -110,7 +110,7 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
         <DeliverablesEditor idPrefix="brand-call" value={v.deliverables} onChange={(d) => set("deliverables", d)} disabled={pending} />
         <div className="grid gap-3 sm:grid-cols-2">
           <FormField label={t("creatorsWanted")}>
-            <Input type="number" inputMode="numeric" min={1} max={MAX_CREATORS_WANTED} value={String(v.creatorsWanted)} onChange={(e) => set("creatorsWanted", Math.max(1, Math.min(MAX_CREATORS_WANTED, Math.trunc(Number(e.target.value)) || 1)))} disabled={pending} />
+            <QuantityInput min={1} max={MAX_CREATORS_WANTED} value={v.creatorsWanted} onValueChange={(n) => set("creatorsWanted", n)} disabled={pending} />
           </FormField>
           <FormField label={t("niches")} hint={t("nichesHint", { max: MAX_NICHES })}>
             <Input value={v.nichesText} maxLength={500} placeholder={t("nichesPlaceholder")} onChange={(e) => set("nichesText", e.target.value)} disabled={pending} />

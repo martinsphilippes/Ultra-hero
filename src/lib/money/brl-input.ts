@@ -105,3 +105,121 @@ export function caretForSignificant(text: string, count: number): number {
   }
   return text.length;
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Campo sempre completo (pedido do responsável, 04/11: "o preenchimento tem que acompanhar o modelo do real, ,00").
+// O campo mostra sempre "1.234,00" e o cursor fica antes da vírgula: dígitos digitados entram nos REAIS (como antes,
+// "50000" = cinquenta mil); apagar tira o dígito dos reais à esquerda do cursor (inclusive com o cursor no fim do
+// campo, depois do ",00"). Os centavos só mudam se a pessoa digitar "," (o cursor pula para os centavos) ou tocar
+// neles: aí cada dígito ocupa uma casa. Colar/autopreencher/selecionar tudo e digitar lê o texto inteiro em reais.
+
+/** Texto completo ("1.234,00") a partir de inteiro e centavos; inteiro vazio com centavos "00" = campo vazio. */
+function full(int: string, dec: string): string {
+  const i = stripLeadingZeros(int);
+  if ((i === "" || i === "0") && dec === "00") return int === "" ? "" : "0,00";
+  return `${groupThousands(i === "" ? "0" : i)},${dec}`;
+}
+
+function intDigits(text: string): string {
+  const c = text.indexOf(",");
+  return (c >= 0 ? text.slice(0, c) : text).replace(/\D/g, "");
+}
+
+function decDigits(text: string): string {
+  const c = text.indexOf(",");
+  return c >= 0 ? text.slice(c + 1).replace(/\D/g, "").padEnd(2, "0").slice(0, 2) : "00";
+}
+
+/** Posição logo depois do n-ésimo dígito da parte inteira (n=0 → início). */
+function caretAfterIntDigit(text: string, n: number): number {
+  if (n <= 0) return 0;
+  let k = 0;
+  for (let i = 0; i < text.length && text[i] !== ","; i++) {
+    if (/\d/.test(text[i])) k++;
+    if (k === n) return i + 1;
+  }
+  const c = text.indexOf(",");
+  return c >= 0 ? c : text.length;
+}
+
+export type FixedEdit = { text: string; caret: number };
+
+/**
+ * Um passo de edição no campo sempre completo. `prev` é o texto mostrado ("" ou "1.234,00"), `raw` o que o campo
+ * tem agora e `pos` o cursor depois da mudança. `pasted` força a leitura do texto inteiro (colar/soltar).
+ */
+export function editBrlFixed(prev: string, raw: string, pos: number, opts: { pasted?: boolean } = {}): FixedEdit {
+  const beforeComma = (t: string) => (t.indexOf(",") >= 0 ? t.indexOf(",") : t.length);
+  const whole = (): FixedEdit => {
+    const m = maskBrl(raw, { pasted: true });
+    const t = m === "" ? "" : full(intDigits(m), decDigits(m.includes(",") ? m : `${m},00`));
+    return { text: t, caret: beforeComma(t) };
+  };
+  if (opts.pasted || prev === "") {
+    // primeiro dígito num campo vazio também cai aqui: "3" → "3,00" com o cursor antes da vírgula
+    return whole();
+  }
+  const pc = prev.indexOf(",");
+  const pInt = intDigits(prev);
+  const pDec = decDigits(prev);
+
+  if (raw.length === prev.length + 1) {
+    // inserção de um caractere em `i`
+    let i = 0;
+    while (i < prev.length && prev[i] === raw[i]) i++;
+    const ch = raw[i];
+    if (ch === "," || ch === ".") return { text: prev, caret: pc + 1 }; // pula para os centavos
+    if (!/\d/.test(ch)) return { text: prev, caret: Math.min(i, prev.length) };
+    if (i <= pc) {
+      // dígito nos reais
+      const nInt = intDigits(raw);
+      if (stripLeadingZeros(nInt).length > BRL_MAX_INT_DIGITS) return { text: prev, caret: i };
+      const t = full(nInt, pDec);
+      const digitsBefore = raw.slice(0, i + 1).replace(/\D/g, "").length - (nInt.length - stripLeadingZeros(nInt).length);
+      return { text: t, caret: caretAfterIntDigit(t, digitsBefore) };
+    }
+    const slot = i - pc - 1;
+    if (slot <= 1) {
+      // dígito numa casa dos centavos: ocupa a casa
+      const d = pDec.split("");
+      d[slot] = ch;
+      const t = full(pInt === "" ? "0" : pInt, d.join(""));
+      return { text: t, caret: t.indexOf(",") + slot + 2 };
+    }
+    // digitou no fim (depois do ",00"): entra nos reais
+    const nInt = pInt + ch;
+    if (stripLeadingZeros(nInt).length > BRL_MAX_INT_DIGITS) return { text: prev, caret: prev.length };
+    const t = full(nInt, pDec);
+    return { text: t, caret: beforeComma(t) };
+  }
+
+  if (raw.length === prev.length - 1) {
+    // remoção de um caractere em `d`
+    let d = 0;
+    while (d < raw.length && prev[d] === raw[d]) d++;
+    const ch = prev[d];
+    const dropIntDigit = (k: number): FixedEdit => {
+      // tira o k-ésimo dígito (base 0) dos reais
+      const nInt = pInt.slice(0, k) + pInt.slice(k + 1);
+      const t = full(nInt, pDec);
+      return { text: t, caret: t === "" ? 0 : caretAfterIntDigit(t, k) };
+    };
+    if (d > pc) {
+      // apagou um centavo: com centavos zerados, apaga o último dígito dos reais (cursor no fim do campo)
+      if (pDec === "00") return dropIntDigit(pInt.length - 1);
+      const dd = pDec.split("");
+      dd[d - pc - 1] = "0";
+      const t = full(pInt === "" ? "0" : pInt, dd.join(""));
+      return { text: t, caret: t === "" ? 0 : t.indexOf(",") + (d - pc - 1) + 1 };
+    }
+    if (ch === ",") return dropIntDigit(pInt.length - 1);
+    // dígito ou ponto de milhar nos reais: apaga o dígito (o do ponto é o que vem antes dele)
+    const digitsBefore = prev.slice(0, d).replace(/\D/g, "").length;
+    if (ch === ".") return dropIntDigit(digitsBefore - 1);
+    return dropIntDigit(digitsBefore);
+  }
+
+  // troca maior (selecionou e digitou, autopreencher): lê tudo em reais
+  void pos;
+  return whole();
+}

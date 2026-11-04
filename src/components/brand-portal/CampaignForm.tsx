@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
 import { BriefFields } from "@/components/brief/BriefFields";
-import { Button, Checkbox, DatePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, Dialog, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
@@ -247,7 +247,7 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
                   </Select>
                 </FormField>
                 <FormField label={t("quantity")}>
-                  <Input type="number" inputMode="numeric" min={1} max={100} value={String(d.quantity)} onChange={(e) => set("deliverables", v.deliverables.map((x, j) => (j === i ? { ...x, quantity: Math.max(1, Math.min(100, Number(e.target.value) || 1)) } : x)))} disabled={disabled} />
+                  <QuantityInput min={1} max={100} value={d.quantity} onValueChange={(n) => set("deliverables", v.deliverables.map((x, j) => (j === i ? { ...x, quantity: n } : x)))} disabled={disabled} />
                 </FormField>
                 <FormField label={t("deliverableNetwork")}>
                   <Select value={d.network ?? ""} onChange={(e) => set("deliverables", v.deliverables.map((x, j) => (j === i ? { ...x, network: (e.target.value || null) as RequestDeliverable["network"] } : x)))} disabled={disabled}>

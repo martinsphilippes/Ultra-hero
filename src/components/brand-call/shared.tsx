@@ -2,7 +2,7 @@
 
 import { Building2, Plus, Store, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Badge, Button, DatePicker, FormField, Input, Select, Textarea, type BadgeVariant } from "@/components/ui";
+import { Badge, Button, DatePicker, FormField, QuantityInput, Select, Textarea, type BadgeVariant } from "@/components/ui";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
 import { ValueTermsView } from "@/components/value-model/ValueTermsView";
 import type { Locale } from "@/i18n/config";
@@ -74,7 +74,7 @@ export function DeliverablesEditor({ value, onChange, disabled = false, idPrefix
               </Select>
             </FormField>
             <FormField label={t("quantity")}>
-              <Input type="number" inputMode="numeric" min={1} max={100} value={String(d.quantity)} onChange={(e) => patch(i, { quantity: Math.max(1, Math.min(100, Math.trunc(Number(e.target.value)) || 1)) })} disabled={disabled} />
+              <QuantityInput min={1} max={100} value={d.quantity} onValueChange={(n) => patch(i, { quantity: n })} disabled={disabled} />
             </FormField>
             <FormField label={t("deliverableNetwork")} className="col-span-2 sm:col-span-1">
               <Select value={d.network ?? ""} onChange={(e) => patch(i, { network: (e.target.value || null) as RequestDeliverable["network"] })} disabled={disabled}>

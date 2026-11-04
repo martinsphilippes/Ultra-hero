@@ -16,6 +16,7 @@ export { Input, fieldBase } from "./input";
 export { Label } from "./label";
 export { MoneyInput } from "./money-input";
 export { NumberInput } from "./number-input";
+export { QuantityInput } from "./quantity-input";
 export { PageHeader, StepMark } from "./page-header";
 export { ProgressBar, ProgressRing } from "./progress";
 export { Section } from "./section";

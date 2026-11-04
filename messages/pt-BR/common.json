@@ -151,5 +151,9 @@
     "minute": "Minutos",
     "done": "Pronto"
   },
-  "paymentsInactive": "Pagamento ainda não ativado: seu pedido é registrado sem cobrança."
+  "paymentsInactive": "Pagamento ainda não ativado: seu pedido é registrado sem cobrança.",
+  "quantity": {
+    "decrease": "Diminuir",
+    "increase": "Aumentar"
+  }
 }
