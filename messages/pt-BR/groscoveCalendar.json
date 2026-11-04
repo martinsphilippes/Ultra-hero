@@ -38,7 +38,10 @@
     "territory": "Território",
     "allTerritories": "Todos os territórios",
     "collection": "Calendário",
-    "allCollections": "Todos os calendários"
+    "allCollections": "Todos os calendários",
+    "more": "Filtros",
+    "moreActive": "Filtros ({count})",
+    "clear": "Limpar filtro {name}"
   },
   "detail": {
     "back": "Voltar para a agenda",
