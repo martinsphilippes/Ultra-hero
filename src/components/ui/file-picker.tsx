@@ -2,7 +2,7 @@
 
 import { FileText, Paperclip, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRef, useState, type Ref } from "react";
+import { useId, useRef, useState, type Ref } from "react";
 import { cn } from "@/lib/utils";
 
 type FilePickerProps = {
@@ -34,11 +34,10 @@ export function FilePicker({ ref, accept, disabled, name, id, "aria-describedby"
   const inner = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const current = file;
-
-  const pick = () => {
-    if (disabled) return;
-    inner.current?.click();
-  };
+  // o botão visível é um <label> do input: abrir o seletor pelo rótulo nativo funciona em todo navegador (Safari/iOS
+  // ignoravam o input.click() do input escondido em alguns casos — a marca não conseguia anexar, 04/11)
+  const autoId = useId();
+  const inputId = id ?? `file-picker-${autoId}`;
   const clear = () => {
     if (inner.current) inner.current.value = "";
     setFile(null);
@@ -57,9 +56,9 @@ export function FilePicker({ ref, accept, disabled, name, id, "aria-describedby"
         name={name}
         accept={accept}
         disabled={disabled}
-        id={id}
-        tabIndex={-1}
-        className="sr-only"
+        id={inputId}
+        aria-describedby={describedBy}
+        className="peer sr-only"
         data-testid={testId}
         onChange={(e) => {
           // cancelar o seletor não muda nada; escolher troca o arquivo
@@ -80,15 +79,13 @@ export function FilePicker({ ref, accept, disabled, name, id, "aria-describedby"
             </span>
             <span className="type-caption text-fg-muted">{size(current.size)}</span>
           </span>
-          <button
-            type="button"
-            aria-describedby={describedBy}
-            onClick={pick}
-            disabled={disabled}
-            className="min-h-11 shrink-0 rounded-lg px-3 text-sm font-medium text-accent-text hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-focus disabled:opacity-50"
+          <label
+            htmlFor={inputId}
+            aria-disabled={disabled || undefined}
+            className="flex min-h-11 shrink-0 cursor-pointer items-center rounded-lg px-3 text-sm font-medium text-accent-text hover:bg-surface-hover aria-disabled:pointer-events-none aria-disabled:opacity-50"
           >
             {t("change")}
-          </button>
+          </label>
           <button
             type="button"
             onClick={clear}
@@ -100,19 +97,17 @@ export function FilePicker({ ref, accept, disabled, name, id, "aria-describedby"
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          aria-describedby={describedBy}
-          onClick={pick}
-          disabled={disabled}
+        <label
+          htmlFor={inputId}
+          aria-disabled={disabled || undefined}
           className={cn(
-            "flex min-h-12 w-full items-center justify-center gap-2 rounded-[var(--uh-field-radius)] border border-dashed border-border-strong bg-surface px-4 text-sm font-medium text-fg transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50",
+            "flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-[var(--uh-field-radius)] border border-dashed border-border-strong bg-surface px-4 text-sm font-medium text-fg transition-colors hover:bg-surface-hover peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus aria-disabled:pointer-events-none aria-disabled:opacity-50",
             invalid && "border-danger",
           )}
         >
           <Paperclip className="size-4 text-fg-muted" aria-hidden="true" />
           {t("choose")}
-        </button>
+        </label>
       )}
     </div>
   );
