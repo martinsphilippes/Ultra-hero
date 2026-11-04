@@ -217,6 +217,10 @@
     );
     background-size: 250% 100%;
     background-position: 100% 0;
+    /* o fundo recortado pelo texto só pinta dentro da caixa: com line-height 1,04 a perna do "g" da última linha
+       ficava de fora e sumia. A folga embaixo (compensada na margem) cobre as descendentes. */
+    padding-bottom: 0.16em;
+    margin-bottom: -0.16em;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
