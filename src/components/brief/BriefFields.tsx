@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { FormField, Input, Textarea } from "@/components/ui";
+import { ChecklistEditor } from "./ChecklistEditor";
 import { invalidEntries, MAX_COUPON, MAX_DONTS, type BriefDraft } from "@/lib/brief/brief";
 
 type Props = { value: BriefDraft; onChange: (next: BriefDraft) => void; disabled?: boolean };
@@ -40,7 +41,7 @@ export function BriefFields({ value, onChange, disabled }: Props) {
         <Textarea value={value.donts} maxLength={MAX_DONTS} rows={2} onChange={(e) => set("donts", e.target.value)} disabled={disabled} />
       </FormField>
       <FormField label={t("fields.checks")} hint={t("fields.checksHint")}>
-        <Textarea value={value.checks} maxLength={1300} rows={3} onChange={(e) => set("checks", e.target.value)} disabled={disabled} />
+        <ChecklistEditor value={value.checks} onChange={(v) => set("checks", v)} disabled={disabled} />
       </FormField>
     </div>
   );

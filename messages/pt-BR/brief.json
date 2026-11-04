@@ -20,7 +20,13 @@
     "donts": "O que não fazer",
     "dontsHint": "Ex.: não falar de preço, não mostrar concorrentes",
     "checks": "Itens extras do checklist",
-    "checksHint": "Um por linha. A marca confere antes de aprovar."
+    "checksHint": "A marca confere cada item antes de aprovar.",
+    "checkAdd": "Adicionar item",
+    "checkPlaceholder": "Ex.: mostrar o produto nos 3 primeiros segundos",
+    "checkItem": "Item {n} do checklist",
+    "checkRemove": "Remover item {n}",
+    "checkTooShort": "Itens com menos de 3 letras não entram.",
+    "checkCount": "{count} de {max}"
   },
   "view": {
     "hashtags": "Hashtags",

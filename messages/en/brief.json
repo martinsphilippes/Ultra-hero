@@ -20,7 +20,13 @@
     "donts": "Don'ts",
     "dontsHint": "E.g.: don't talk about price, don't show competitors",
     "checks": "Extra checklist items",
-    "checksHint": "One per line. The brand checks them before approving."
+    "checksHint": "The brand checks each item before approving.",
+    "checkAdd": "Add item",
+    "checkPlaceholder": "E.g.: show the product in the first 3 seconds",
+    "checkItem": "Checklist item {n}",
+    "checkRemove": "Remove item {n}",
+    "checkTooShort": "Items shorter than 3 letters are left out.",
+    "checkCount": "{count} of {max}"
   },
   "view": {
     "hashtags": "Hashtags",
