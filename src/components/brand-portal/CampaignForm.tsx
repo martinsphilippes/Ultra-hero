@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { saveRequestAction, submitRequestAction } from "@/app/marca/actions";
 import { BriefFields } from "@/components/brief/BriefFields";
-import { Button, Checkbox, DatePicker, Dialog, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DateRangePicker, Dialog, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { briefValid, draftToBrief } from "@/lib/brief/brief";
 import { parseBrlToCents, type BrandRequestInput, type RequestDeliverable } from "@/lib/deals/schemas";
 import { ValueModelFields } from "@/components/value-model/ValueModelFields";
@@ -43,6 +43,7 @@ type Props = {
 // objetivo, data de início, pelo menos uma rede e um entregável (a RPC confere de novo).
 export function CampaignForm({ initial, creatorName, canEdit, submitMode = "submit", sponsorshipBudget = null, valueMode = "editable" }: Props) {
   const t = useTranslations("brandPortal.campaigns.form");
+  const tdp = useTranslations("common.datePicker");
   const ta = useTranslations("selection.approval");
   const asking = submitMode === "ask";
   const tc = useTranslations("commercial");
@@ -187,11 +188,8 @@ export function CampaignForm({ initial, creatorName, canEdit, submitMode = "subm
           {t("blocks.when")}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <FormField label={t("periodStart")} required>
-            <DatePicker value={v.periodStart} onChange={(value) => set("periodStart", value)} disabled={disabled} />
-          </FormField>
-          <FormField label={t("periodEnd")}>
-            <DatePicker value={v.periodEnd} min={v.periodStart || undefined} onChange={(value) => set("periodEnd", value)} disabled={disabled} />
+          <FormField label={tdp("period")} required className="sm:col-span-2">
+            <DateRangePicker start={v.periodStart} end={v.periodEnd} onChange={(a, b) => setV((cur) => ({ ...cur, periodStart: a, periodEnd: b }))} disabled={disabled} data-testid="campaign-period" />
           </FormField>
           <FormField label={t("desiredTime")} hint={t("desiredTimeHint")}>
             <Input type="time" value={v.desiredTime} onChange={(e) => set("desiredTime", e.target.value)} disabled={disabled} />

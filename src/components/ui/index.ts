@@ -4,7 +4,7 @@ export { Badge, Chip, PillarBadge, badgeVariants, type BadgeVariant, type Pillar
 export { Button, buttonBase, buttonSizes, buttonVariants, type ButtonSize, type ButtonVariant } from "./button";
 export { Card, CardBody, CardDescription, CardFooter, CardImage, CardTitle } from "./card";
 export { Checkbox } from "./checkbox";
-export { DatePicker, DateTimePicker, type DatePickerProps, type DateTimePickerProps } from "./date-picker";
+export { DatePicker, DateRangePicker, DateTimePicker, type DatePickerProps, type DateTimePickerProps } from "./date-picker";
 export { Dialog, type DialogProps } from "./dialog";
 export { Divider } from "./divider";
 export { EmptyState } from "./empty-state";

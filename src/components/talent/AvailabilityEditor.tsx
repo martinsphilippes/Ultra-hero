@@ -3,7 +3,7 @@
 import { CalendarPlus, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Badge, Button, DatePicker, FormField, Select, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, DateRangePicker, FormField, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import type { AvailabilityRow } from "@/lib/deals/queries";
@@ -21,6 +21,7 @@ function today(): string {
 // marca vê no catálogo (nunca a agenda privada). Mesmo editor no escritório e na ficha do casting.
 export function AvailabilityEditor({ portal, talentId, rows, canEdit }: Props) {
   const t = useTranslations("talent.availability");
+  const tdp = useTranslations("common.datePicker");
   const locale = useLocale() as Locale;
   const { toast } = useToast();
   const [kind, setKind] = useState<"available" | "blocked">("available");
@@ -88,11 +89,18 @@ export function AvailabilityEditor({ portal, talentId, rows, canEdit }: Props) {
               ))}
             </Select>
           </FormField>
-          <FormField label={t("startsOn")} required>
-            <DatePicker value={startsOn} onChange={(value) => setStartsOn(value)} disabled={pending} />
-          </FormField>
-          <FormField label={t("endsOn")} required>
-            <DatePicker value={endsOn} min={startsOn || undefined} onChange={(value) => setEndsOn(value)} disabled={pending} />
+          <FormField label={tdp("period")} required>
+            <DateRangePicker
+              start={startsOn}
+              end={endsOn}
+              onChange={(a, b) => {
+                setStartsOn(a);
+                setEndsOn(b);
+              }}
+              required
+              disabled={pending}
+              data-testid="availability-period"
+            />
           </FormField>
           <FormField label={t("note")} hint={t("noteHint")}>
             <Textarea value={note} maxLength={200} rows={1} onChange={(e) => setNote(e.target.value)} disabled={pending} />

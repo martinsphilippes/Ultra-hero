@@ -149,7 +149,13 @@
     "time": "Hora",
     "hour": "Hora",
     "minute": "Minutos",
-    "done": "Listo"
+    "done": "Listo",
+    "chooseRange": "Elegir período",
+    "rangePlaceholder": "Elegir período",
+    "rangeStartHint": "Toca la fecha inicial.",
+    "rangeEndHint": "Ahora toca la fecha final (o cierra para un solo día).",
+    "rangeLabel": "{start} a {end}",
+    "period": "Período"
   },
   "paymentsInactive": "El pago aún no está activado: tu pedido se registra sin ningún cobro.",
   "quantity": {

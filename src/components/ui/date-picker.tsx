@@ -214,8 +214,13 @@ function formatValue(value: string, mode: "date" | "datetime", locale: string): 
 }
 
 type PanelProps = {
-  mode: "date" | "datetime";
+  mode: "date" | "datetime" | "range";
   value: string;
+  /** Período (mode "range"): início e fim já escolhidos ("" = nenhum). */
+  rangeStart?: string;
+  rangeEnd?: string;
+  /** Período: grava início/fim; `close` fecha a caixa. */
+  onRange?: (start: string, end: string, close: boolean) => void;
   min?: string;
   max?: string;
   required?: boolean;
@@ -225,13 +230,15 @@ type PanelProps = {
   onDone: () => void;
 };
 
-function PickerPanel({ mode, value, min, max, required, minuteStep, onPick, onDone }: PanelProps) {
+function PickerPanel({ mode, value, rangeStart = "", rangeEnd = "", onRange, min, max, required, minuteStep, onPick, onDone }: PanelProps) {
   const t = useTranslations("common.datePicker");
   const locale = useLocale();
   const titleId = useId();
   // hoje no relógio do aparelho (o painel só existe depois de aberto, no cliente: sem divergência de hidratação)
   const today = useMemo(() => localTodayKey(), []);
-  const { date: selected, time } = splitDateTime(value);
+  const { date: selected, time } = splitDateTime(mode === "range" ? rangeStart : value);
+  // período: 1º toque marca o início (vale como um dia só), 2º toque marca o fim e fecha
+  const [phase, setPhase] = useState<"start" | "end">("start");
   const [focus, setFocus] = useState(() => initialFocusDay(selected, today, min, max));
   const [view, setView] = useState(() => monthOf(focus));
   const buttons = useRef(new Map<string, HTMLButtonElement>());
@@ -284,6 +291,17 @@ function PickerPanel({ mode, value, min, max, required, minuteStep, onPick, onDo
 
   function pick(day: string) {
     if (isOutOfRange(day, min, max)) return;
+    if (mode === "range") {
+      if (phase === "start") {
+        onRange?.(day, day, false);
+        setPhase("end");
+        moveTo(day);
+      } else {
+        const [a, b] = day < rangeStart ? [day, rangeStart] : [rangeStart, day];
+        onRange?.(a, b, true);
+      }
+      return;
+    }
     if (mode === "date") onPick(day, true);
     else {
       onPick(joinDateTime(day, time), false);
@@ -316,6 +334,12 @@ function PickerPanel({ mode, value, min, max, required, minuteStep, onPick, onDo
         <IconButton label={t("nextMonth")} icon={<ChevronRight />} variant="secondary" onClick={() => showMonth(1)} disabled={!canNext} data-testid="date-picker-next" />
       </div>
 
+      {mode === "range" ? (
+        <p className="text-center type-caption text-fg-muted" aria-live="polite" data-testid="date-range-hint">
+          {phase === "start" ? t("rangeStartHint") : t("rangeEndHint")}
+        </p>
+      ) : null}
+
       <div role="grid" aria-labelledby={titleId} className="flex flex-col gap-1" data-testid="date-picker-grid">
         <div role="row" className="grid grid-cols-7 gap-1">
           {weekdays.map((w) => (
@@ -328,7 +352,9 @@ function PickerPanel({ mode, value, min, max, required, minuteStep, onPick, onDo
           <div key={week[0].date} role="row" className="grid grid-cols-7 gap-1">
             {week.map((d) => {
               const isToday = d.date === today;
-              const isSelected = d.date === selected;
+              const rangeTo = mode === "range" && rangeEnd ? rangeEnd : selected;
+              const isSelected = mode === "range" ? !!rangeStart && (d.date === rangeStart || d.date === rangeTo) : d.date === selected;
+              const inRange = mode === "range" && !!rangeStart && d.date > rangeStart && d.date < rangeTo;
               const off = isOutOfRange(d.date, min, max);
               // dia que recebe o Tab: o foco, ou o 1º do mês visível se o foco ficou noutro mês
               const tabbable = focusInView ? d.date === focus : d.inMonth && d.day === 1;
@@ -356,7 +382,9 @@ function PickerPanel({ mode, value, min, max, required, minuteStep, onPick, onDo
                       "disabled:cursor-not-allowed disabled:opacity-35 disabled:line-through",
                       isSelected
                         ? "bg-accent text-accent-fg shadow-sm"
-                        : isToday
+                        : inRange
+                          ? "rounded-md bg-accent-soft text-fg"
+                          : isToday
                           ? "border-2 border-accent text-fg hover:bg-surface-hover"
                           : d.inMonth
                             ? "text-fg hover:bg-surface-hover"
@@ -404,8 +432,8 @@ function PickerPanel({ mode, value, min, max, required, minuteStep, onPick, onDo
           <Button variant="secondary" disabled={todayDisabled} onClick={() => pick(today)} data-testid="date-picker-today">
             {t("today")}
           </Button>
-          {!required && value ? (
-            <Button variant="ghost" onClick={() => onPick("", true)} data-testid="date-picker-clear">
+          {!required && (mode === "range" ? rangeStart : value) ? (
+            <Button variant="ghost" onClick={() => (mode === "range" ? onRange?.("", "", true) : onPick("", true))} data-testid="date-picker-clear">
               {t("clear")}
             </Button>
           ) : null}
@@ -417,5 +445,152 @@ function PickerPanel({ mode, value, min, max, required, minuteStep, onPick, onDo
         ) : null}
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Período num campo só (pedido do responsável, 04/11: "De" e "Até" viram um campo; marca uma data e depois a outra).
+// Abre a mesma caixa da agenda: o 1º toque marca o início (já vale como um dia só, fim = início), o 2º marca o fim e
+// fecha; tocar antes do início troca a ordem. Valores no formato "YYYY-MM-DD", como no DatePicker. Com
+// `startName`/`endName`, dois <input type="hidden"> levam os valores nos formulários GET (filtros).
+
+export type DateRangePickerProps = {
+  start?: string;
+  end?: string;
+  defaultStart?: string;
+  defaultEnd?: string;
+  onChange?: (start: string, end: string) => void;
+  min?: string;
+  max?: string;
+  disabled?: boolean;
+  required?: boolean;
+  startName?: string;
+  endName?: string;
+  id?: string;
+  placeholder?: string;
+  title?: string;
+  inputSize?: Size;
+  className?: string;
+  invalid?: boolean;
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean | "true" | "false";
+  "data-testid"?: string;
+};
+
+export function DateRangePicker({
+  start,
+  end,
+  defaultStart,
+  defaultEnd,
+  onChange,
+  min,
+  max,
+  disabled,
+  required,
+  startName,
+  endName,
+  id,
+  placeholder,
+  title,
+  inputSize = "md",
+  className,
+  invalid,
+  "aria-label": ariaLabel,
+  "aria-describedby": describedBy,
+  "aria-invalid": ariaInvalid,
+  "data-testid": testId,
+}: DateRangePickerProps) {
+  const t = useTranslations("common.datePicker");
+  const locale = useLocale();
+  const textId = useId();
+  const autoId = useId();
+  const triggerId = id ?? `date-range-${autoId}`;
+  const controlled = start !== undefined || end !== undefined;
+  const [inner, setInner] = useState({ start: defaultStart ?? "", end: defaultEnd ?? "" });
+  const cur = controlled ? { start: start ?? "", end: end ?? "" } : inner;
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState<"sheet" | "dialog">("sheet");
+
+  const s = isDateKey(cur.start) ? cur.start : "";
+  const e = isDateKey(cur.end) ? cur.end : "";
+  const label = s ? (e && e !== s ? t("rangeLabel", { start: formatValue(s, "date", locale), end: formatValue(e, "date", locale) }) : formatValue(s, "date", locale)) : "";
+
+  function setRange(nextStart: string, nextEnd: string) {
+    if (!controlled) setInner({ start: nextStart, end: nextEnd });
+    onChange?.(nextStart, nextEnd);
+  }
+
+  function openPicker() {
+    if (disabled) return;
+    setKind(typeof window !== "undefined" && window.matchMedia?.(DESKTOP_QUERY).matches ? "dialog" : "sheet");
+    setOpen(true);
+  }
+
+  const panel = open ? (
+    <PickerPanel
+      mode="range"
+      value=""
+      rangeStart={s}
+      rangeEnd={e}
+      onRange={(a, b, close) => {
+        setRange(a, b);
+        if (close) setOpen(false);
+      }}
+      min={min}
+      max={max}
+      required={required}
+      minuteStep={5}
+      onPick={() => {}}
+      onDone={() => setOpen(false)}
+    />
+  ) : null;
+  const dialogTitle = title ?? t("chooseRange");
+
+  return (
+    <span className={cn("relative block", className)}>
+      <button
+        type="button"
+        id={triggerId}
+        disabled={disabled}
+        onClick={openPicker}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+        aria-describedby={[textId, describedBy].filter(Boolean).join(" ")}
+        data-invalid={invalid || ariaInvalid === true || ariaInvalid === "true" || undefined}
+        data-testid={testId}
+        data-start={s}
+        data-end={e}
+        className={cn(fieldBase, triggerSizes[inputSize], "flex items-center justify-between gap-2 text-left data-invalid:border-danger")}
+      >
+        <span id={textId} className={cn("min-w-0 truncate tabular-nums", !label && "text-fg-subtle")}>
+          {label || placeholder || t("rangePlaceholder")}
+        </span>
+        <CalendarDays aria-hidden="true" className="size-4 shrink-0 text-fg-muted" />
+      </button>
+      {required ? (
+        <input
+          tabIndex={-1}
+          aria-hidden="true"
+          required
+          value={s}
+          onChange={() => {}}
+          onInvalid={() => document.getElementById(triggerId)?.focus()}
+          className="pointer-events-none absolute bottom-0 left-4 h-px w-px opacity-0"
+        />
+      ) : null}
+      {startName ? <input type="hidden" name={startName} value={s} /> : null}
+      {endName ? <input type="hidden" name={endName} value={e} /> : null}
+      {kind === "dialog" ? (
+        <Dialog open={open} onOpenChange={setOpen} title={dialogTitle} size="sm">
+          {panel}
+        </Dialog>
+      ) : (
+        <Sheet open={open} onOpenChange={setOpen} title={dialogTitle}>
+          {panel}
+        </Sheet>
+      )}
+    </span>
   );
 }

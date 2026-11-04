@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
 import { addActivityAction, confirmDealAction, createDealAction, moveDealAction, setDealTeamAction, updateDealAction } from "@/app/agencia/negocios/actions";
-import { Button, Checkbox, DatePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DateRangePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { canConfirm, DEAL_OUTCOMES, moveNeedsNote, nextStages, type DealOutcome, type DealStage } from "@/lib/deals/stages";
 import { ACTIVITY_KINDS, type ActivityKind } from "@/lib/deals/vocab";
 import { brandOption, memberOption } from "@/lib/ui/entity";
@@ -18,6 +18,7 @@ type DealValues = { title: string; talentBrief: string; expectedStart: string; e
 
 export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwner }: { initial: DealValues; dealId: string | null; brands: { id: string; name: string; logoUrl?: string | null }[]; members: Member[]; canEdit: boolean; canSetOwner: boolean }) {
   const t = useTranslations("agency.deal.form");
+  const tdp = useTranslations("common.datePicker");
   const tp = useTranslations("pickers");
   const memberOptions = members.map((m) => memberOption(tp, m));
   const router = useRouter();
@@ -61,14 +62,9 @@ export function DealForm({ initial, dealId, brands, members, canEdit, canSetOwne
       <FormField label={t("brief")} hint={t("briefHint")}>
         <Textarea value={v.talentBrief} maxLength={3000} rows={4} onChange={(e) => set("talentBrief", e.target.value)} disabled={disabled} />
       </FormField>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label={t("expectedStart")}>
-          <DatePicker value={v.expectedStart} onChange={(value) => set("expectedStart", value)} disabled={disabled} />
-        </FormField>
-        <FormField label={t("expectedEnd")}>
-          <DatePicker value={v.expectedEnd} min={v.expectedStart || undefined} onChange={(value) => set("expectedEnd", value)} disabled={disabled} />
-        </FormField>
-      </div>
+      <FormField label={tdp("period")}>
+        <DateRangePicker start={v.expectedStart} end={v.expectedEnd} onChange={(a, b) => setV((cur) => ({ ...cur, expectedStart: a, expectedEnd: b }))} disabled={disabled} data-testid="deal-period" />
+      </FormField>
       {canSetOwner ? (
         <FormField label={t("owner")} hint={tp("hints.dealOwner")}>
           <EntitySelect value={v.ownerId} onChange={(e) => set("ownerId", e.target.value)} disabled={disabled} emptyLabel={t("noOwner")} emptyCard={tp("empty.noOwner")} options={memberOptions} />

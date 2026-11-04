@@ -5,7 +5,7 @@ import Link from "next/link";
 import { DataTable, StatusBadge, type Column } from "@/components/admin";
 import { CreatorUnavailable } from "@/components/creator/CreatorUnavailable";
 import { RecipeRowActions } from "@/components/recipes/portal/RecipeRowActions";
-import { Badge, Button, DatePicker, Input, PageHeader, Select } from "@/components/ui";
+import { Badge, Button, DateRangePicker, Input, PageHeader, Select } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDateTime } from "@/i18n/format";
 import { RECIPE_DIFFICULTIES } from "@/lib/recipes/payload";
@@ -63,6 +63,7 @@ export default async function MyRecipesPage({ searchParams }: Props) {
   const filters = parseMyRecipesFilters(await searchParams);
   const [t, tn, locale, ctx] = await Promise.all([getTranslations("recipes.portal"), getTranslations("nav"), getLocale(), getContentWorkspace("recipes", { followChoice: false })]);
   const tcat = await getTranslations("catalog");
+  const tdp = await getTranslations("common.datePicker");
   if (!ctx.creatorId) return <CreatorUnavailable reason={ctx.reason === "ok" ? "unlinked" : ctx.reason} name={ctx.profile?.name} title={t("title")} />;
 
   const supabase = ctx.supabase;
@@ -245,17 +246,10 @@ export default async function MyRecipesPage({ searchParams }: Props) {
               </label>
               {/* o calendário abre num <dialog>, que não pode ficar dentro de <label>: rótulo ligado por id */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="recipes-filter-from" className="text-sm font-semibold text-fg">
-                  {t("from")}
+                <label htmlFor="recipes-filter-period" className="text-sm font-semibold text-fg">
+                  {tdp("period")}
                 </label>
-                <DatePicker id="recipes-filter-from" name="from" defaultValue={filters.from} />
-              </div>
-              {/* o calendário abre num <dialog>, que não pode ficar dentro de <label>: rótulo ligado por id */}
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="recipes-filter-to" className="text-sm font-semibold text-fg">
-                  {t("to")}
-                </label>
-                <DatePicker id="recipes-filter-to" name="to" defaultValue={filters.to} />
+                <DateRangePicker id="recipes-filter-period" startName="from" endName="to" defaultStart={filters.from} defaultEnd={filters.to} />
               </div>
               <div className="flex items-end gap-2">
                 <Button type="submit" variant="secondary" className="min-h-12">

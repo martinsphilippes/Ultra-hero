@@ -4,7 +4,7 @@ import { Check, Plus, Trash2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { DeliverablesEditor } from "@/components/brand-call/shared";
-import { Button, Checkbox, DatePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DateRangePicker, Dialog, FormField, Input, MoneyInput, Select, Textarea, useToast } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatPlainDate } from "@/i18n/format";
 import type { RequestDeliverable } from "@/lib/deals/schemas";
@@ -125,6 +125,7 @@ type ProposeProps = { change: BudgetChange; dealId: string; talents: Talent[]; d
 
 function ProposeDialog({ change, dealId, talents, deliverables, periodStart, periodEnd, onClose }: ProposeProps) {
   const t = useTranslations("payments.change");
+  const tdp = useTranslations("common.datePicker");
   const tp = useTranslations("payments.change.plan");
   const locale = useLocale() as Locale;
   const { toast } = useToast();
@@ -244,14 +245,9 @@ function ProposeDialog({ change, dealId, talents, deliverables, periodStart, per
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-semibold text-fg">{tp("period")}</legend>
           <p className="type-caption text-fg-muted">{t("periodHint", { start: periodStart ? formatPlainDate(periodStart, locale) : "—", end: periodEnd ? formatPlainDate(periodEnd, locale) : "—" })}</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <FormField label={t("periodStart")}>
-              <DatePicker value={draft.periodStart} onChange={(v) => patch({ periodStart: v })} disabled={pending} />
-            </FormField>
-            <FormField label={t("periodEnd")}>
-              <DatePicker value={draft.periodEnd} onChange={(v) => patch({ periodEnd: v })} min={draft.periodStart || undefined} disabled={pending} />
-            </FormField>
-          </div>
+          <FormField label={tdp("period")}>
+            <DateRangePicker start={draft.periodStart} end={draft.periodEnd} onChange={(a, b) => patch({ periodStart: a, periodEnd: b })} disabled={pending} data-testid="budget-change-period" />
+          </FormField>
           <FormField label={tp("schedule")} hint={t("scheduleHint")}>
             <Textarea value={draft.scheduleNote} onChange={(e) => patch({ scheduleNote: e.target.value })} rows={2} maxLength={500} disabled={pending} />
           </FormField>

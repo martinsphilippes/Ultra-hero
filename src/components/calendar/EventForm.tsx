@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, DatePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DateRangePicker, Dialog, EntitySelect, FormField, Input, Select, Textarea, useToast } from "@/components/ui";
 import { saveEventAction } from "@/lib/calendar/actions";
 import { MANUAL_EVENT_KINDS, type EventInput, type ManualEventKind } from "@/lib/calendar/vocab";
 import { brandOption, dealOption, talentOption, type TalentPickFields } from "@/lib/ui/entity";
@@ -32,6 +32,7 @@ type Props = EventFormOptions & {
 // componente é remontado a cada abertura (key), então o estado sempre começa dos valores iniciais.
 export function EventFormDialog({ open, onOpenChange, initial, fixedDealId = null, deals = [], talents = [], brands = [], canPublishCommercialDate, dealRequired = false }: Props) {
   const t = useTranslations("agency.agenda.form");
+  const tdp = useTranslations("common.datePicker");
   const tk = useTranslations("commercial.eventKinds");
   const tp = useTranslations("pickers");
   const { toast } = useToast();
@@ -76,11 +77,8 @@ export function EventFormDialog({ open, onOpenChange, initial, fixedDealId = nul
           </FormField>
         </div>
         <div className="grid gap-3 sm:grid-cols-4">
-          <FormField label={t("date")} required>
-            <DatePicker value={v.date} onChange={(value) => set("date", value)} disabled={pending} />
-          </FormField>
-          <FormField label={t("endDate")}>
-            <DatePicker value={v.endDate} min={v.date} onChange={(value) => set("endDate", value)} disabled={pending} />
+          <FormField label={tdp("period")} required className="sm:col-span-2">
+            <DateRangePicker start={v.date} end={v.endDate} onChange={(a, b) => setV((cur) => ({ ...cur, date: a, endDate: b }))} disabled={pending} data-testid="event-period" />
           </FormField>
           <FormField label={t("startTime")}>
             <Input type="time" value={v.startTime} onChange={(e) => set("startTime", e.target.value)} disabled={pending || v.allDay} />

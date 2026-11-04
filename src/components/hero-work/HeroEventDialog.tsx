@@ -3,7 +3,7 @@
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, DatePicker, DateTimePicker, Dialog, EntitySelect, FormField, IconButton, Input, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DateRangePicker, DateTimePicker, Dialog, EntitySelect, FormField, IconButton, Input, Select, Textarea, useToast } from "@/components/ui";
 import { joinDateTime, splitDateTime } from "@/lib/calendar/date-picker";
 import { saveHeroEventAction } from "@/lib/hero-work/actions";
 import { HERO_EVENT_KINDS, MAX_CHECKLIST_ITEMS, type HeroEventInput, type HeroEventKind } from "@/lib/hero-work/vocab";
@@ -23,6 +23,7 @@ type Props = {
 // vinculado (opcional), observações e o que executar em checklist. O mesmo diálogo cria e edita (id preenchido).
 export function HeroEventDialog({ open, onOpenChange, initial, services }: Props) {
   const t = useTranslations("heroWork.agenda.form");
+  const tdp = useTranslations("common.datePicker");
   const tk = useTranslations("heroWork.kinds");
   const { toast } = useToast();
   const [v, setV] = useState<HeroEventInput>(initial);
@@ -88,14 +89,9 @@ export function HeroEventDialog({ open, onOpenChange, initial, services }: Props
         </div>
         <Checkbox label={t("allDay")} checked={v.allDay} onChange={(e) => toggleAllDay(e.target.checked)} disabled={pending} />
         {v.allDay ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label={t("date")} required>
-              <DatePicker value={v.date} onChange={(value) => set("date", value)} disabled={pending} required data-testid="hero-event-date" />
-            </FormField>
-            <FormField label={t("endDate")}>
-              <DatePicker value={v.endDate} min={v.date} onChange={(value) => set("endDate", value)} disabled={pending} />
-            </FormField>
-          </div>
+          <FormField label={tdp("period")} required>
+            <DateRangePicker start={v.date} end={v.endDate} onChange={(a, b) => setV((cur) => ({ ...cur, date: a, endDate: b }))} disabled={pending} required data-testid="hero-event-date" />
+          </FormField>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label={t("startsAt")} required>

@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { AuditEntry } from "@/components/admin-ops/AuditEntry";
 import { PaginationNav } from "@/components/admin-ops/PaginationNav";
-import { Button, DatePicker, EmptyState, Input, PageHeader, Select } from "@/components/ui";
+import { Button, DateRangePicker, EmptyState, Input, PageHeader, Select } from "@/components/ui";
 import type { Tables } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,7 +28,7 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: S
   const from = DATE.test(sp.from ?? "") ? (sp.from as string) : "";
   const to = DATE.test(sp.to ?? "") ? (sp.to as string) : "";
   const page = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
-  const [t, tc, tn] = await Promise.all([getTranslations("adminOps.audit"), getTranslations("adminOps.common"), getTranslations("nav")]);
+  const [t, tc, tn, tdp] = await Promise.all([getTranslations("adminOps.audit"), getTranslations("adminOps.common"), getTranslations("nav"), getTranslations("common.datePicker")]);
 
   const supabase = await createClient();
   let query = supabase
@@ -78,11 +78,8 @@ export default async function AdminAuditPage({ searchParams }: { searchParams: S
         <Field id="a-actor" label={t("filters.actor")}>
           <Input id="a-actor" name="actor" defaultValue={actor} placeholder={t("filters.actorPlaceholder")} autoComplete="off" className="font-mono" />
         </Field>
-        <Field id="a-from" label={t("filters.from")}>
-          <DatePicker id="a-from" name="from" defaultValue={from} />
-        </Field>
-        <Field id="a-to" label={t("filters.to")}>
-          <DatePicker id="a-to" name="to" defaultValue={to} />
+        <Field id="a-period" label={tdp("period")}>
+          <DateRangePicker id="a-period" startName="from" endName="to" defaultStart={from} defaultEnd={to} />
         </Field>
         <div className="flex gap-2">
           <Button type="submit">

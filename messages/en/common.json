@@ -149,7 +149,13 @@
     "time": "Time",
     "hour": "Hour",
     "minute": "Minutes",
-    "done": "Done"
+    "done": "Done",
+    "chooseRange": "Choose period",
+    "rangePlaceholder": "Choose period",
+    "rangeStartHint": "Tap the start date.",
+    "rangeEndHint": "Now tap the end date (or close for a single day).",
+    "rangeLabel": "{start} to {end}",
+    "period": "Period"
   },
   "paymentsInactive": "Payments are not active yet: your order is recorded without any charge.",
   "quantity": {

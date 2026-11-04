@@ -4,7 +4,7 @@ import { Save, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition, type FormEvent } from "react";
-import { Button, Checkbox, DatePicker, FormField, Input, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { AudienceFields } from "@/components/sponsorship/AudienceFields";
 import { saveBrandCallAction } from "@/lib/brand-call/actions";
 import { MAX_CREATORS_WANTED, MAX_NICHES, parseNiches, validateCall, type AgencyOption, type CallAudience, type CallFormInput } from "@/lib/brand-call/logic";
@@ -23,6 +23,7 @@ type Props = { initial: CallFormValues; agencies: AgencyOption[]; role: "owner" 
 // rascunho" guarda; "Publicar" (dono) publica, e na equipe vira "Pedir aprovação ao dono" (0081). Mobile first.
 export function BrandCallForm({ initial, agencies, role }: Props) {
   const t = useTranslations("brandCall.form");
+  const tdp = useTranslations("common.datePicker");
   const to = useTranslations("commercial.objectives");
   const tn = useTranslations("mediaKit.networks");
   const router = useRouter();
@@ -83,14 +84,9 @@ export function BrandCallForm({ initial, agencies, role }: Props) {
         <FormField label={t("description")} hint={t("descriptionHint")}>
           <Textarea value={v.description} maxLength={2000} rows={3} onChange={(e) => set("description", e.target.value)} disabled={pending} />
         </FormField>
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label={t("startsOn")} required>
-            <DatePicker value={v.startsOn} onChange={(value) => set("startsOn", value)} disabled={pending} />
-          </FormField>
-          <FormField label={t("endsOn")}>
-            <DatePicker value={v.endsOn} min={v.startsOn} onChange={(value) => set("endsOn", value)} disabled={pending} />
-          </FormField>
-        </div>
+        <FormField label={tdp("period")} required>
+          <DateRangePicker start={v.startsOn} end={v.endsOn} onChange={(a, b) => setV((cur) => ({ ...cur, startsOn: a, endsOn: b }))} disabled={pending} data-testid="brand-call-period" />
+        </FormField>
         <FormField label={t("location")} hint={t("locationHint")}>
           <Input value={v.location} maxLength={200} onChange={(e) => set("location", e.target.value)} disabled={pending} />
         </FormField>

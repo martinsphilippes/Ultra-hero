@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { Button, Checkbox, DatePicker, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
+import { Button, Checkbox, DatePicker, DateRangePicker, FormField, Input, MoneyInput, QuantityInput, Select, Textarea, useToast } from "@/components/ui";
 import { fichaLinks, formActions, publishBlock, type HeroChoice } from "@/lib/sponsorship/hero-pick";
 import { parseBrlToCents } from "@/lib/deals/schemas";
 import { saveSponsorshipAction, type OpportunityHeroSearchResult } from "@/lib/sponsorship/actions";
@@ -40,6 +40,7 @@ type Props = {
 // first: um campo por linha no celular, botões grandes.
 export function SponsorshipForm({ initial, brands, status = "new", heroLocked = false, search, canValues, lockedTierIds = [] }: Props) {
   const t = useTranslations("sponsorship.agency.form");
+  const tdp = useTranslations("common.datePicker");
   const tn = useTranslations("mediaKit.networks");
   const router = useRouter();
   const { toast } = useToast();
@@ -123,11 +124,8 @@ export function SponsorshipForm({ initial, brands, status = "new", heroLocked = 
         <Input value={v.title} maxLength={120} placeholder={t("titlePlaceholder")} onChange={(e) => set("title", e.target.value)} disabled={pending} />
       </FormField>
       <div className="grid gap-3 sm:grid-cols-4">
-        <FormField label={t("date")} required>
-          <DatePicker value={v.date} onChange={(value) => set("date", value)} disabled={pending} />
-        </FormField>
-        <FormField label={t("endDate")}>
-          <DatePicker value={v.endDate} min={v.date} onChange={(value) => set("endDate", value)} disabled={pending} />
+        <FormField label={tdp("period")} required className="sm:col-span-2">
+          <DateRangePicker start={v.date} end={v.endDate} onChange={(a, b) => setV((cur) => ({ ...cur, date: a, endDate: b }))} disabled={pending} data-testid="sponsorship-period" />
         </FormField>
         <FormField label={t("startTime")}>
           <Input type="time" value={v.startTime} onChange={(e) => set("startTime", e.target.value)} disabled={pending || v.allDay} />
