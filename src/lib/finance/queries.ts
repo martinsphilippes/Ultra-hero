@@ -6,6 +6,7 @@ import { toAgencyChanges, toBrandChanges, type AgencyChanges, type BrandChanges 
 import { toAgencyPayments, toBrandPayments, toPaymentSettings, type AgencyPaymentsData, type BrandPaymentsData, type PaymentSettings } from "./payments";
 import { latestInvoice, toEarnings, type Earning, type PayoutInvoice } from "./earnings";
 import { toPaymentPlanView, type PaymentPlanView } from "./payment-plan";
+import { toClientReceivables, type ClientReceivable } from "./client-payments";
 import { isEntryKind, isEntryStatus, type EntryFilter, type EntryKind, type EntryStatus } from "./vocab";
 
 // Financeiro simulado (0069): lançamentos pela RLS (só o Adm da agência lê; o creator lê o próprio repasse) e o
@@ -80,7 +81,7 @@ export async function listEntries(agencyId: string, filter: EntryFilter = "open"
     let query = supabase.from("financial_entries").select(select).eq("agency_id", agencyId).order("due_on", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }).limit(500);
     if (filter === "open") query = query.in("status", ["planned", "due"]);
     // 0108: a receber (marcas) e a pagar (heróis) em aberto, por vencimento; previstos à parte
-    if (filter === "receivable") query = query.eq("kind", "brand_receivable").in("status", ["planned", "due"]);
+    if (filter === "receivable") query = query.in("kind", ["brand_receivable", "client_receivable"]).in("status", ["planned", "due"]);
     if (filter === "payable") query = query.eq("kind", "talent_payout").in("status", ["planned", "due"]);
     if (filter === "forecast") query = query.eq("status", "forecast");
     if (filter === "overdue") query = query.in("status", ["planned", "due"]).lt("due_on", new Date().toISOString().slice(0, 10));
@@ -226,4 +227,22 @@ export async function dealPaymentPlan(dealId: string | null | undefined): Promis
   const { data, error } = await supabase.rpc("deal_payment_plan_json", { p_deal: dealId });
   if (error) return null;
   return toPaymentPlanView(data);
+}
+
+// ---------------------------------------------------------------- 0111: herói-cliente paga a agência
+
+/** "A pagar" do herói-cliente (só os dele; sem comissão). */
+export async function clientPayments(): Promise<{ available: boolean; items: ClientReceivable[] }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("client_payments");
+  if (error) return { available: !isMissingSchema(error), items: [] };
+  return { available: true, items: toClientReceivables(data) };
+}
+
+/** "A receber" dos heróis-clientes (só o Adm). */
+export async function agencyClientReceivables(agencyId: string): Promise<{ available: boolean; items: ClientReceivable[] }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("agency_client_receivables", { p_agency: agencyId });
+  if (error) return { available: !isMissingSchema(error), items: [] };
+  return { available: true, items: toClientReceivables(data) };
 }

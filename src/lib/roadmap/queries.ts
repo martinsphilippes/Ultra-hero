@@ -371,6 +371,8 @@ export type ClientProject = {
   closed: boolean;
   progress: RoadmapProgress | null;
   steps: { title: string; dueOn: string | null; done: boolean; completedOn: string | null; milestone: Milestone | null }[];
+  /** 0111: ocorrências recorrentes visíveis ao cliente (ciclo corrente e anterior) */
+  recurring: { title: string; dueOn: string | null; done: boolean }[];
 };
 
 export async function getClientProjects(): Promise<{ available: boolean; items: ClientProject[] }> {
@@ -389,6 +391,9 @@ export async function getClientProjects(): Promise<{ available: boolean; items: 
       progress: toProgress(p.progress),
       steps: Array.isArray(p.steps)
         ? (p.steps as Record<string, unknown>[]).map((x) => ({ title: String(x.title ?? ""), dueOn: s(x.due_on), done: x.done === true, completedOn: s(x.completed_on), milestone: isMilestone(x.milestone) ? x.milestone : null }))
+        : [],
+      recurring: Array.isArray(p.recurring)
+        ? (p.recurring as Record<string, unknown>[]).map((x) => ({ title: String(x.title ?? ""), dueOn: s(x.due_on), done: x.done === true }))
         : [],
     })),
   };

@@ -88,8 +88,8 @@
       "body": "Your deliverable for {deal} was reviewed."
     },
     "deliverable_published": {
-      "title": "Content published",
-      "body": "{talent} published the content for {deal}."
+      "title": "{status, select, insights_24h {Send your 24 h insights} insights_7d {Send your 7-day insights} insights_late {Insights overdue} other {Content published}}",
+      "body": "{status, select, insights_24h {{title} for {deal} has been live for 24 h: send the screenshot and numbers (reach, views…).} insights_7d {{title} for {deal} was published 7 days ago: send the final numbers.} insights_late {{talent} hasn't sent the insights for {title} ({deal}) yet.} other {{talent} published the content for {deal}.}}"
     },
     "talent_suggestion": {
       "title": "Campaign suggestion",
@@ -116,12 +116,12 @@
       "body": "The payout for {deal} has a new status."
     },
     "internal_approval_requested": {
-      "title": "Campaign to approve",
-      "body": "{name} asked for approval of {campaign}."
+      "title": "{status, select, strategy_review {Strategy to review} other {Campaign to approve}}",
+      "body": "{status, select, strategy_review {{name} sent the idea “{title}” for Strategy to review.} other {{name} asked for approval of {campaign}.}}"
     },
     "internal_approval_decided": {
-      "title": "Internal approval",
-      "body": "The director decided on {campaign}."
+      "title": "{status, select, strategy_approved {Strategy approved} strategy_returned {Strategy needs changes} other {Internal approval}}",
+      "body": "{status, select, strategy_approved {{name} approved “{title}”. Prepare the material and send it to the brand.} strategy_returned {{name} returned “{title}” with a note to adjust.} other {The director decided on {campaign}.}}"
     },
     "shortlist_sent": {
       "title": "Shortlist to decide",

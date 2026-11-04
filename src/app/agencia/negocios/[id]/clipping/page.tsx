@@ -36,5 +36,7 @@ export default async function DealClippingPage({ params }: Props) {
   if (c.brandId) qs.set("marca", c.brandId);
   if (c.clientTalentId) qs.set("heroi", c.clientTalentId);
   qs.set("servico", next.service);
+  // 0111: o negócio novo nasce ligado a este (conta na taxa de nova venda)
+  qs.set("origem", deal.id);
   return <ClippingView clip={c} newDealHref={isManager ? `/agencia/pipeline/novo?${qs.toString()}` : null} />;
 }

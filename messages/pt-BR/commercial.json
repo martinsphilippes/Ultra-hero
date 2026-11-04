@@ -369,7 +369,8 @@
     "kinds": {
       "brand_receivable": "A receber da marca",
       "commission": "Comissão da agência",
-      "talent_payout": "Repasse ao herói"
+      "talent_payout": "Repasse ao herói",
+      "client_receivable": "A receber do herói-cliente"
     },
     "status": {
       "planned": "Planejado",

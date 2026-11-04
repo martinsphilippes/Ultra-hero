@@ -430,7 +430,35 @@
     "termsPending": "Las condiciones cambiaron después de enviar los términos. Envía una nueva versión para que la marca y los héroes firmen.",
     "simulated": "Registro y control internos: nada aquí cobra ni mueve dinero.",
     "openPayments": "Ver en Pagos",
-    "payoutTitle": "Tu pago"
+    "payoutTitle": "Tu pago",
+    "clientNone": "La agencia aún no definió las condiciones de pago.",
+    "clientHint": "El cliente es el héroe: paga a la agencia. Guarda las condiciones (quedan como previstas) y confirma el cobro cuando se contrate el servicio.",
+    "clientEffective": "Cobro del héroe confirmado: marca las cuotas recibidas en Finanzas › Pagos."
   },
-  "forecastDue": "Previsto para el {date} · esperando la contratación"
+  "forecastDue": "Previsto para el {date} · esperando la contratación",
+  "client": {
+    "heroTitle": "A pagar a la agencia",
+    "heroHint": "Cuotas de los proyectos en los que eres cliente de la agencia.",
+    "agencyTitle": "A cobrar de héroes-clientes",
+    "agencyHint": "Asesoría, mentoría, business plan: marca cada cuota al recibirla.",
+    "forecast": "Previsto · esperando confirmación",
+    "settled": "Saldado",
+    "openLeft": "faltan {amount}",
+    "seq": "{n}.ª",
+    "states": {
+      "paid": "Pagada",
+      "late": "Vencida",
+      "today": "Vence hoy",
+      "open": "Pendiente",
+      "forecast": "Prevista"
+    },
+    "markPaid": "Marcar cuota como recibida",
+    "markOpen": "Deshacer recepción",
+    "markedPaid": "Cuota recibida",
+    "markedOpen": "Cuota reabierta",
+    "confirm": "Confirmar cobro del héroe",
+    "confirmAsk": "¿Confirmar el cobro? Las cuotas quedan pendientes para el héroe y las condiciones se bloquean.",
+    "confirmed": "Cobro confirmado",
+    "simulated": "Solo registro y control: nada aquí cobra ni mueve dinero."
+  }
 }

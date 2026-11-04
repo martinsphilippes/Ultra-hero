@@ -343,12 +343,16 @@ export type PlanPayout = { dealTalentId: string; name: string; status: string; f
 export type PlanViewPart = { seq: number; amountCents: number | null; dueOn: string | null; status: string | null; label: string };
 export type PaymentPlanView = {
   enabled: boolean;
-  viewer: "agency" | "brand" | "talent";
+  /** 0111: negócio só do herói (o herói-cliente paga a agência) */
+  client: boolean;
+  viewer: "agency" | "brand" | "talent" | "client";
   values: boolean;
   status: PlanStatus;
   hasPlan: boolean;
   locked: boolean;
   canEdit: boolean;
+  /** 0111: o Adm pode efetivar a cobrança do herói-cliente */
+  canConfirm: boolean;
   agreed: boolean;
   termsPending: boolean;
   stage: string | null;
@@ -373,18 +377,20 @@ const str = (v: unknown): string => (typeof v === "string" ? v : "");
 export function toPaymentPlanView(raw: unknown): PaymentPlanView | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const k = raw as Row;
-  const viewer = k.viewer === "brand" || k.viewer === "talent" ? k.viewer : "agency";
+  const viewer = k.viewer === "brand" || k.viewer === "talent" || k.viewer === "client" ? k.viewer : "agency";
   const ev = k.events && typeof k.events === "object" ? (k.events as Row) : null;
   const sug = k.suggested && typeof k.suggested === "object" ? (k.suggested as Row) : null;
   const my = k.my_payout && typeof k.my_payout === "object" ? (k.my_payout as Row) : null;
   return {
     enabled: k.enabled !== false,
+    client: k.client === true,
     viewer,
     values: k.values === true,
     status: pick(["none", "saved", "forecast", "effective"] as const, k.status, "none"),
     hasPlan: k.has_plan === true,
     locked: k.locked === true,
     canEdit: k.can_edit === true,
+    canConfirm: k.can_confirm === true,
     agreed: k.agreed === true,
     termsPending: k.terms_pending === true,
     stage: typeof k.stage === "string" ? k.stage : null,

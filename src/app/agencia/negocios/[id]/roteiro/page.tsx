@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { ListChecks } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { RecurrenceCard } from "@/components/roadmap/RecurrenceCard";
 import { RoadmapProgress } from "@/components/roadmap/RoadmapProgress";
 import { DealClientForm, RoadmapStart } from "@/components/roadmap/RoadmapStart";
 import { RoadmapSteps } from "@/components/roadmap/RoadmapSteps";
 import { EmptyState } from "@/components/ui";
 import { listTeam } from "@/lib/agency/queries";
+import { getDealRecurrence } from "@/lib/roadmap/phase3-queries";
 import { getDealRoadmap, listServices, listTeamSectors } from "@/lib/roadmap/queries";
+import { addDays } from "@/lib/roadmap/recurrence";
 import { clientKindOf } from "@/lib/roadmap/vocab";
 import { listTalents } from "@/lib/talent/queries";
 import { loadDeal } from "../_lib";
@@ -26,13 +29,15 @@ type Props = { params: Promise<{ id: string }> };
 export default async function DealRoadmapPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, canEdit, isManager } = await loadDeal(id);
-  const [t, roadmap, services, team, sectors, talents] = await Promise.all([
+  const [t, roadmap, services, team, sectors, talents, recurrence] = await Promise.all([
     getTranslations("roadmap.deal"),
     getDealRoadmap(deal.id),
     listServices(ctx.agency.id, { activeOnly: true }),
     listTeam(ctx.agency.id),
     listTeamSectors(ctx.agency.id),
     canEdit ? listTalents(ctx.agency.id) : Promise.resolve({ available: true, items: [] }),
+    // 0111: contrato recorrente (assessoria de imprensa/artística): ciclos e etapas recorrentes
+    getDealRecurrence(deal.id),
   ]);
   if (!roadmap.available || !services.available) {
     return (
@@ -47,6 +52,9 @@ export default async function DealRoadmapPage({ params }: Props) {
   const client = clientKindOf(hasBrand, Boolean(deal.clientTalent));
   const card = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5";
   const serviceOptions = services.items.map((x) => ({ id: x.id, name: x.name, clientKind: x.clientKind, slaDays: x.slaDays, stepCount: x.stepCount }));
+  const rec = recurrence.data && (recurrence.data.eligible || recurrence.data.config) ? recurrence.data : null;
+  // início sugerido do 1º ciclo: o dia seguinte à previsão do roteiro base (ou hoje)
+  const recStart = rec ? (progress?.forecast && progress.forecast >= rec.today ? addDays(progress.forecast, 1) : rec.today) : "";
   const members = team.map((m) => ({ userId: m.userId, name: m.name, role: m.role, jobTitle: m.jobTitle, sectors: sectors.get(m.userId) ?? [] }));
 
   return (
@@ -86,6 +94,7 @@ export default async function DealRoadmapPage({ params }: Props) {
         )}
       </div>
       <div className="flex flex-col gap-5">
+        {rec ? <RecurrenceCard dealId={deal.id} data={rec} defaultStart={recStart} /> : null}
         <section className={card} aria-labelledby="roadmap-client">
           <h2 id="roadmap-client" className="text-base font-semibold text-fg">
             {t("clientTitle")}

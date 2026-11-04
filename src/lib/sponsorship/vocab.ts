@@ -84,6 +84,8 @@ export const sponsorshipSchema = z
     public: publicSchema,
     /** 0101: oportunidade criada a partir de um evento da agenda */
     calendarEventId: z.union([z.literal(""), z.uuid()]).optional(),
+    /** 0111: oportunidade criada a partir de uma ideia aprovada do banco de estratégias */
+    strategyIdeaId: z.union([z.literal(""), z.uuid()]).optional(),
   })
   .refine((v) => v.audience === "all" || v.brandIds.length > 0, { path: ["brandIds"] })
   .refine((v) => perksValid(v.perks), { path: ["perks"] });

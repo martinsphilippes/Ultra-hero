@@ -430,7 +430,35 @@
     "termsPending": "As condições mudaram depois do envio dos termos. Envie uma nova versão dos termos para a marca e os heróis assinarem.",
     "simulated": "Registro e controle internos: nada aqui cobra nem move dinheiro.",
     "openPayments": "Ver em Pagamentos",
-    "payoutTitle": "Seu pagamento"
+    "payoutTitle": "Seu pagamento",
+    "clientNone": "A agência ainda não definiu as condições de pagamento.",
+    "clientHint": "O cliente é o herói: ele paga a agência. Salve as condições (ficam como previsto) e efetive a cobrança quando o serviço for contratado.",
+    "clientEffective": "Cobrança do herói efetivada: marque as parcelas recebidas em Financeiro › Pagamentos."
   },
-  "forecastDue": "Previsto para {date} · aguardando contratação"
+  "forecastDue": "Previsto para {date} · aguardando contratação",
+  "client": {
+    "heroTitle": "A pagar à agência",
+    "heroHint": "Parcelas dos projetos em que você é cliente da agência.",
+    "agencyTitle": "A receber dos heróis-clientes",
+    "agencyHint": "Assessoria, mentoria, business plan: marque cada parcela quando receber.",
+    "forecast": "Previsto · aguardando confirmação",
+    "settled": "Quitado",
+    "openLeft": "falta {amount}",
+    "seq": "{n}ª",
+    "states": {
+      "paid": "Paga",
+      "late": "Vencida",
+      "today": "Vence hoje",
+      "open": "Em aberto",
+      "forecast": "Prevista"
+    },
+    "markPaid": "Marcar parcela como recebida",
+    "markOpen": "Desfazer recebimento",
+    "markedPaid": "Parcela recebida",
+    "markedOpen": "Parcela reaberta",
+    "confirm": "Efetivar cobrança do herói",
+    "confirmAsk": "Efetivar a cobrança? As parcelas ficam em aberto para o herói e as condições travam.",
+    "confirmed": "Cobrança efetivada",
+    "simulated": "Registro e controle apenas: nada aqui cobra nem move dinheiro."
+  }
 }

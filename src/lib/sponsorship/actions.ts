@@ -69,6 +69,11 @@ export async function saveSponsorshipAction(input: SponsorshipInput): Promise<Sp
     if (!data) return agencyFail("generic");
     // 0101: oportunidade a partir de um evento da agenda
     const linkFailed = d.calendarEventId ? !(await linkToEvent("sponsorship", data, d.calendarEventId)).ok : false;
+    // 0111: a ideia de estratégia fica ligada à oportunidade (publicada = ideia enviada à marca); falha não desfaz
+    if (d.strategyIdeaId) {
+      await supabase.rpc("strategy_idea_link", { p_id: d.strategyIdeaId, p_sponsorship: data });
+      revalidatePath("/agencia/estrategias", "layout");
+    }
     revalidatePath("/agencia/oportunidades", "layout");
     revalidatePath("/agencia/agenda");
     revalidatePath("/agencia/casting");

@@ -139,3 +139,54 @@ export async function setDealClientAction(input: z.input<typeof dealClientSchema
     return agencyFail(error);
   }
 }
+
+// ---------------------------------------------------------------- 0111: serviço recorrente e "próximo negócio"
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const recurrenceSchema = z.object({
+  dealId: z.uuid(),
+  cycle: z.enum(["weekly", "biweekly", "monthly"]),
+  startsOn: z.string().regex(DAY),
+  endsOn: z.union([z.string().regex(DAY), z.literal("")]).default(""),
+  active: z.boolean().default(true),
+});
+
+/** Contrato recorrente do negócio (gestor+ ou responsável/equipe): o banco gera o ciclo corrente na hora. */
+export async function saveRecurrenceAction(input: z.input<typeof recurrenceSchema>): Promise<RoadmapResult> {
+  await requireAgency();
+  const parsed = recurrenceSchema.safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  const d = parsed.data;
+  if (d.endsOn && d.endsOn <= d.startsOn) return agencyFail("invalid_date");
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("deal_recurrence_save", {
+      p_deal: d.dealId,
+      p_data: { cycle: d.cycle, starts_on: d.startsOn, ends_on: d.endsOn || null, active: d.active },
+    });
+    if (error) return agencyFail(error);
+    revalidateRoadmap(d.dealId);
+    const created = Number((data as { created?: number } | null)?.created ?? 0);
+    const t = await getTranslations("roadmap.recurrence");
+    return { ok: true, message: d.active ? t("saved", { count: created }) : t("pausedMsg"), count: created };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}
+
+const originSchema = z.object({ dealId: z.uuid(), originId: z.uuid() });
+
+/** Liga o negócio novo ao negócio de origem (o "próximo negócio" do clipping) — conta na taxa de nova venda. */
+export async function setDealOriginAction(input: z.input<typeof originSchema>): Promise<RoadmapResult> {
+  await requireAgency();
+  const parsed = originSchema.safeParse(input);
+  if (!parsed.success) return agencyFail("invalid_input");
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("deal_origin_set", { p_deal: parsed.data.dealId, p_origin: parsed.data.originId });
+    if (error) return agencyFail(error);
+    revalidatePath("/agencia");
+    return { ok: true, message: "" };
+  } catch (error) {
+    return agencyFail(error);
+  }
+}

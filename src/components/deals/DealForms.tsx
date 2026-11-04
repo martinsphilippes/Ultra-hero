@@ -42,7 +42,7 @@ export function DealForm({
   talents?: ClientTalent[];
   services?: ServiceOption[];
   /** 0110: "próximo negócio" sugerido no clipping já chega com cliente, herói e serviço. */
-  prefill?: { client?: ClientKind; talentId?: string; serviceId?: string };
+  prefill?: { client?: ClientKind; talentId?: string; serviceId?: string; originDealId?: string };
 }) {
   const t = useTranslations("agency.deal.form");
   const tr = useTranslations("roadmap.newDeal");
@@ -80,6 +80,7 @@ export function DealForm({
             expectedEnd: v.expectedEnd,
             ownerId: v.ownerId,
             notes: v.notes,
+            originDealId: prefill?.originDealId ?? "",
           });
       if (!result.ok) return setError(result.error);
       toast({ title: result.message, variant: "success" });

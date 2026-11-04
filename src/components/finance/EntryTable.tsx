@@ -24,7 +24,7 @@ type Props = {
 };
 
 const STATUS_VARIANT: Record<EntryStatus, BadgeVariant> = { forecast: "info", planned: "neutral", due: "warning", settled: "success", cancelled: "neutral" };
-const KIND_VARIANT = { brand_receivable: "info", commission: "accent", talent_payout: "neutral" } as const;
+const KIND_VARIANT = { brand_receivable: "info", commission: "accent", talent_payout: "neutral", client_receivable: "info" } as const;
 
 // Lançamentos simulados: tipo, negócio, valor, vencimento e situação. O Adm avança a situação; cancelar pede nota.
 export function EntryTable({ entries, canAct = false, compact = false, emptyText }: Props) {

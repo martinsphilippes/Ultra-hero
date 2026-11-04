@@ -231,6 +231,56 @@
     "done": "Hecho el {date}",
     "pending": "Previsto para el {date}",
     "noSteps": "La agencia aún no marcó etapas visibles.",
-    "seeAll": "Ver todos"
+    "seeAll": "Ver todos",
+    "recurringTitle": "Rutina del ciclo"
+  },
+  "recurrence": {
+    "title": "Servicio recurrente",
+    "hint": "Contrato con ciclos: en cada ciclo las etapas recurrentes del plan se vuelven tareas (4 pautas al mes, informe semanal, feedback y clipping quincenales…).",
+    "active": "Activo",
+    "paused": "Pausado",
+    "baseTitle": "Etapas que se repiten",
+    "cycle": "Ciclo del contrato",
+    "cycleHint": "Mensual: 4 semanales y 2 quincenales por ciclo.",
+    "cycles": {
+      "weekly": "Semanal",
+      "biweekly": "Quincenal",
+      "monthly": "Mensual"
+    },
+    "startsOn": "Inicio del 1.er ciclo",
+    "endsOn": "Fin del contrato",
+    "endsOnHint": "Vacío: hasta cerrar el negocio.",
+    "activeLabel": "Contrato activo",
+    "activeHint": "Pausado no genera nuevos ciclos.",
+    "startRequired": "Elige el inicio del 1.er ciclo.",
+    "endAfterStart": "El fin debe ser después del inicio.",
+    "rescheduleConfirm": "Cambiar el ciclo o el inicio rehace las tareas abiertas (las concluidas se quedan). ¿Continuar?",
+    "save": "Guardar recurrencia",
+    "create": "Activar recurrencia",
+    "saved": "Recurrencia guardada · {count} tarea(s) en el ciclo",
+    "summary": "Ciclo {cycle} desde {date}.",
+    "none": "Aún sin contrato recurrente.",
+    "current": "Ciclo {n}: {from} a {to}",
+    "noCurrent": "Ningún ciclo en curso",
+    "next": "próximo el {date}",
+    "stats": "{onTime} de {done} a tiempo",
+    "noOccurrences": "Las tareas del ciclo aparecen aquí al inicio de cada ciclo.",
+    "dueOn": "vence {date}",
+    "late": "Atrasada",
+    "pausedMsg": "Recurrencia pausada"
+  },
+  "growth": {
+    "title": "Nueva venta",
+    "description": "Negocios ganados en los últimos 180 días que tuvieron un próximo negocio (vinculado desde el clipping o con el mismo cliente).",
+    "rate": "Tasa de nueva venta",
+    "rateHint": "{next} de {won} ganados",
+    "noData": "Sin negocios ganados en el período",
+    "linked": "Desde el clipping",
+    "linkedHint": "abiertos con el botón “próximo negocio”",
+    "byService": "Por servicio",
+    "noService": "Sin servicio",
+    "serviceRow": "{next} de {won}",
+    "recent": "Últimos próximos negocios",
+    "from": "a partir de {origin}"
   }
 }

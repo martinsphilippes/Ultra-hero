@@ -7,7 +7,9 @@ import { AgencySwitcher } from "@/components/agency/AgencySwitcher";
 import { SelfForm } from "@/components/agency/SettingsForms";
 import { RoleBadge } from "@/components/agency/RoleBadge";
 import { FinanceKpis } from "@/components/finance/FinanceKpis";
+import { InsightsPendingCard } from "@/components/media/InsightsPendingCard";
 import { FeedbackIndicatorCard } from "@/components/project-room/FeedbackIndicatorCard";
+import { GrowthIndicatorsCard } from "@/components/roadmap/GrowthIndicatorsCard";
 import { RoadmapIndicatorsCard } from "@/components/roadmap/RoadmapIndicatorsCard";
 import { SectorTodayPanel } from "@/components/roadmap/SectorTodayPanel";
 import { PageHeader } from "@/components/ui";
@@ -21,6 +23,7 @@ import { upcomingCount } from "@/lib/calendar/queries";
 import { dealCounts } from "@/lib/deals/queries";
 import { taskCounts } from "@/lib/execution/queries";
 import { getFeedbackIndicator } from "@/lib/project-room/queries";
+import { getAgencyInsights, getGrowthIndicators } from "@/lib/roadmap/phase3-queries";
 import { getRoadmapIndicators, getSectorToday } from "@/lib/roadmap/queries";
 import { isTodayScope } from "@/lib/roadmap/vocab";
 
@@ -44,7 +47,7 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
   const [user, sp] = await Promise.all([getUser(), searchParams]);
   const asked = isTodayScope(sp.setor) ? sp.setor : null;
-  const [t, data, casting, deals, upcoming, tasks, panel, firstToday, indicators, satisfaction] = await Promise.all([
+  const [t, data, casting, deals, upcoming, tasks, panel, firstToday, indicators, satisfaction, growth, insights] = await Promise.all([
     getTranslations("agency.dashboard"),
     agencyDashboard(ctx.agency.id, isAdmin),
     castingCounts(ctx.agency.id),
@@ -56,6 +59,9 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
     isManager ? getRoadmapIndicators(ctx.agency.id) : Promise.resolve(null),
     // 0110: satisfação dos clientes (feedback 0–10 depois da produção e no fechamento)
     isManager ? getFeedbackIndicator(ctx.agency.id) : Promise.resolve(null),
+    // 0111: nova venda (próximo negócio depois do fechamento) e insights do publipost pendentes
+    isManager ? getGrowthIndicators(ctx.agency.id) : Promise.resolve(null),
+    getAgencyInsights(ctx.agency.id),
   ]);
   // sem setor e sem filtro escolhido: o gestor vê todos os setores; o colaborador, as etapas dele
   const sectorToday =
@@ -93,8 +99,10 @@ export default async function AgencyDashboardPage({ searchParams }: Props) {
         <KpiCard label={t("kpi.unread")} value={data.unread} />
       </div>
       {sectorToday ? <SectorTodayPanel data={sectorToday} /> : null}
+      <InsightsPendingCard items={insights.items} side="agency" />
       {indicators?.data ? <RoadmapIndicatorsCard data={indicators.data} /> : null}
       {satisfaction?.data ? <FeedbackIndicatorCard data={satisfaction.data} /> : null}
+      {growth?.data ? <GrowthIndicatorsCard data={growth.data} /> : null}
       {finance ? (
         <section aria-labelledby="agency-finance-home" className="flex flex-col gap-3" data-testid="agency-finance-home">
           <div className="flex flex-wrap items-center justify-between gap-2">

@@ -202,5 +202,20 @@
     "noTerms": "Sem termos enviados.",
     "openPublished": "Abrir publicação",
     "openApproved": "Abrir versão aprovada"
+  },
+  "insights": {
+    "agencyTitle": "Insights do publipost",
+    "agencyHint": "Print + números 24 h e 7 dias depois da publicação. O herói é lembrado; atrasados avisam o responsável.",
+    "heroTitle": "Insights para enviar",
+    "heroHint": "Abra a entrega e informe as métricas (alcance, visualizações…). Se puder, envie também o print.",
+    "lateCount": "{count} atrasado(s)",
+    "publishedOn": "publicado em {date}",
+    "hasPrint": "print enviado",
+    "marks": {
+      "24h": "24 h",
+      "7d": "7 dias"
+    },
+    "due": "pendente",
+    "late": "atrasado"
   }
 }

@@ -202,5 +202,20 @@
     "noTerms": "No terms sent.",
     "openPublished": "Open post",
     "openApproved": "Open approved version"
+  },
+  "insights": {
+    "agencyTitle": "Sponsored post insights",
+    "agencyHint": "Screenshot + numbers 24 h and 7 days after publishing. The hero gets reminders; overdue ones alert the deal owner.",
+    "heroTitle": "Insights to send",
+    "heroHint": "Open the deliverable and enter the metrics (reach, views…). Send the screenshot too if you can.",
+    "lateCount": "{count} overdue",
+    "publishedOn": "published {date}",
+    "hasPrint": "screenshot sent",
+    "marks": {
+      "24h": "24 h",
+      "7d": "7 days"
+    },
+    "due": "pending",
+    "late": "overdue"
   }
 }

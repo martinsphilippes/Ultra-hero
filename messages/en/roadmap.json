@@ -231,6 +231,56 @@
     "done": "Done on {date}",
     "pending": "Planned for {date}",
     "noSteps": "The agency hasn't marked visible steps yet.",
-    "seeAll": "See all"
+    "seeAll": "See all",
+    "recurringTitle": "This cycle's routine"
+  },
+  "recurrence": {
+    "title": "Recurring service",
+    "hint": "Contract with cycles: each cycle turns the roadmap's recurring steps into tasks (4 stories a month, weekly report, biweekly feedback and clipping…).",
+    "active": "Active",
+    "paused": "Paused",
+    "baseTitle": "Recurring steps",
+    "cycle": "Contract cycle",
+    "cycleHint": "Monthly: 4 weekly and 2 biweekly per cycle.",
+    "cycles": {
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "monthly": "Monthly"
+    },
+    "startsOn": "First cycle starts",
+    "endsOn": "Contract end",
+    "endsOnHint": "Empty: until the deal is closed.",
+    "activeLabel": "Active contract",
+    "activeHint": "Paused contracts generate no new cycles.",
+    "startRequired": "Pick when the first cycle starts.",
+    "endAfterStart": "The end must be after the start.",
+    "rescheduleConfirm": "Changing the cycle or start redoes the open tasks (completed ones stay). Continue?",
+    "save": "Save recurrence",
+    "create": "Turn on recurrence",
+    "saved": "Recurrence saved · {count} task(s) in the cycle",
+    "summary": "{cycle} cycle since {date}.",
+    "none": "No recurring contract yet.",
+    "current": "Cycle {n}: {from} to {to}",
+    "noCurrent": "No cycle running",
+    "next": "next on {date}",
+    "stats": "{onTime} of {done} on time",
+    "noOccurrences": "The cycle's tasks show up here when each cycle starts.",
+    "dueOn": "due {date}",
+    "late": "Overdue",
+    "pausedMsg": "Recurrence paused"
+  },
+  "growth": {
+    "title": "Repeat sales",
+    "description": "Deals won in the last 180 days that led to a next deal (linked from the clipping or with the same client).",
+    "rate": "Repeat-sale rate",
+    "rateHint": "{next} of {won} won",
+    "noData": "No deals won in the period",
+    "linked": "From the clipping",
+    "linkedHint": "opened with the “next deal” button",
+    "byService": "By service",
+    "noService": "No service",
+    "serviceRow": "{next} of {won}",
+    "recent": "Latest next deals",
+    "from": "from {origin}"
   }
 }

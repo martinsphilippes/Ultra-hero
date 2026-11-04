@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { ListChecks } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { MyRoomsList } from "@/components/project-room/MyRoomsList";
+import { ClientPayments } from "@/components/finance/ClientPayments";
 import { ClientProjectCard } from "@/components/roadmap/ClientProjectCard";
 import { EmptyState } from "@/components/ui";
 import { getMyRooms } from "@/lib/project-room/queries";
+import { clientPayments } from "@/lib/finance/queries";
 import { getClientProjects } from "@/lib/roadmap/queries";
+import { localDay } from "@/lib/today/logic";
 import { getTalentContext } from "@/lib/talent/server";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HeroProjectsPage() {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
-  const [t, tr, list, rooms] = await Promise.all([getTranslations("roadmap.hero"), getTranslations("projectRoom.mine"), getClientProjects(), getMyRooms()]);
+  const [t, tr, list, rooms, payments] = await Promise.all([getTranslations("roadmap.hero"), getTranslations("projectRoom.mine"), getClientProjects(), getMyRooms(), clientPayments()]);
   // 0110: salas dos projetos em que o herói é cliente ou foi contratado (abertas)
   const myRooms = rooms.items.filter((r) => r.side === "talent");
   if (!list.available) {
@@ -41,6 +44,8 @@ export default async function HeroProjectsPage() {
           <MyRoomsList rooms={myRooms} portal="talent" />
         </section>
       ) : null}
+      {/* 0111: o que o herói paga à agência pelos projetos em que é cliente (registro simulado) */}
+      <ClientPayments items={payments.items} side="talent" today={localDay(new Date(), "America/Sao_Paulo")} />
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-semibold text-fg">{t("title")}</h2>
         <p className="type-body-sm text-fg-muted">{t("description")}</p>

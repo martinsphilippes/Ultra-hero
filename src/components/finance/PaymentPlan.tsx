@@ -27,7 +27,7 @@ import {
   type PlanEvents,
   type PlanStatus,
 } from "@/lib/finance/payment-plan";
-import { savePaymentPlanAction } from "@/lib/finance/plan-actions";
+import { confirmClientBillingAction, savePaymentPlanAction } from "@/lib/finance/plan-actions";
 import { brlToCents, centsToBrl } from "@/lib/money/brl-input";
 
 // Condições de pagamento (0108): o Adm define o valor ACORDADO e como/quando a marca paga e o herói recebe; a
@@ -167,7 +167,7 @@ export function PaymentPlanSummary({ view }: { view: PaymentPlanView }) {
       </div>
     );
   }
-  if (!plan) return <p className="type-body-sm text-fg-muted" data-testid="plan-summary-none">{view.viewer === "brand" ? t("brandNone") : t("agencyNone")}</p>;
+  if (!plan) return <p className="type-body-sm text-fg-muted" data-testid="plan-summary-none">{view.viewer === "brand" ? t("brandNone") : view.viewer === "client" ? t("clientNone") : t("agencyNone")}</p>;
   const manual = plan.structure === "installments" && plan.interval === "manual";
   return (
     <div className="flex flex-col gap-3 text-sm" data-testid="plan-summary">
@@ -492,13 +492,45 @@ export function DealPaymentPlanCard({ dealId, view, today }: { dealId: string; v
           {view.canEdit ? t("neededAdmin") : t("neededOthers")}
         </p>
       ) : null}
+      {view.client ? (
+        <p className="rounded-xl border border-info/40 bg-info-soft px-3 py-2 type-body-sm text-fg" data-testid="plan-client">
+          {view.status === "effective" ? t("clientEffective") : t("clientHint")}
+        </p>
+      ) : null}
       {view.termsPending ? (
         <p className="rounded-xl border border-warning/40 bg-warning-soft px-3 py-2 type-body-sm text-fg" data-testid="plan-terms-pending">
           {t("termsPending")}
         </p>
       ) : null}
       {view.canEdit ? <PaymentPlanEditor dealId={dealId} view={view} today={today} /> : <PaymentPlanSummary view={view} />}
+      {view.canConfirm ? <ConfirmClientBillingButton dealId={dealId} /> : null}
       <p className="type-caption text-fg-subtle">{t("simulated")}</p>
     </section>
+  );
+}
+
+/** 0111: o Adm efetiva a cobrança do herói-cliente (o previsto vira em aberto; o plano trava). */
+function ConfirmClientBillingButton({ dealId }: { dealId: string }) {
+  const t = useTranslations("payments.client");
+  const { toast } = useToast();
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      leadingIcon={<CalendarClock />}
+      loading={pending}
+      className="w-full sm:w-fit"
+      data-testid="plan-client-confirm"
+      onClick={() => {
+        if (!window.confirm(t("confirmAsk"))) return;
+        start(async () => {
+          const result = await confirmClientBillingAction({ dealId });
+          toast(result.ok ? { title: result.message, variant: "success" } : { title: result.error, variant: "error" });
+        });
+      }}
+    >
+      {t("confirm")}
+    </Button>
   );
 }

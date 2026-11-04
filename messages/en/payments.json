@@ -430,7 +430,35 @@
     "termsPending": "The payment terms changed after the terms were sent. Send a new version of the terms for the brand and heroes to sign.",
     "simulated": "Internal record and control: nothing here charges or moves money.",
     "openPayments": "Open Payments",
-    "payoutTitle": "Your payment"
+    "payoutTitle": "Your payment",
+    "clientNone": "The agency hasn't set the payment terms yet.",
+    "clientHint": "The client is the hero: they pay the agency. Save the terms (kept as forecast) and confirm the billing once the service is hired.",
+    "clientEffective": "Hero billing confirmed: mark received installments in Finance › Payments."
   },
-  "forecastDue": "Expected on {date} · awaiting contract"
+  "forecastDue": "Expected on {date} · awaiting contract",
+  "client": {
+    "heroTitle": "To pay the agency",
+    "heroHint": "Installments for the projects where you are the agency's client.",
+    "agencyTitle": "Receivable from client heroes",
+    "agencyHint": "Advisory, mentoring, business plan: mark each installment when received.",
+    "forecast": "Forecast · awaiting confirmation",
+    "settled": "Paid off",
+    "openLeft": "{amount} left",
+    "seq": "#{n}",
+    "states": {
+      "paid": "Paid",
+      "late": "Overdue",
+      "today": "Due today",
+      "open": "Open",
+      "forecast": "Forecast"
+    },
+    "markPaid": "Mark installment as received",
+    "markOpen": "Undo receipt",
+    "markedPaid": "Installment received",
+    "markedOpen": "Installment reopened",
+    "confirm": "Confirm hero billing",
+    "confirmAsk": "Confirm the billing? The installments become open for the hero and the terms lock.",
+    "confirmed": "Billing confirmed",
+    "simulated": "Record and tracking only: nothing here charges or moves money."
+  }
 }

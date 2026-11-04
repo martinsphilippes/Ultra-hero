@@ -15,6 +15,7 @@ import { cleanupAgencyDocOrphans, cleanupRoomOrphans } from "../_lib/agency-docs
 // 0090: aviso de vencimento das parcelas que a marca deve à agência (registro simulado, nada é cobrado).
 // 0108: condições de pagamento — refaz o previsto, acompanha as datas relativas (entrega/publicação) e avisa o repasse
 // ao herói (3 dias antes, no dia e vencido) para o herói e para o Adm.
+// 0111: ciclos dos serviços recorrentes (recurrence_scan) e lembrete de insights do publipost (insights_reminder_scan).
 // Cada passo que depende da 0069 pula com "not_migrated" enquanto a migração não chega ao banco.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -83,6 +84,14 @@ async function handler(request: Request) {
     } else {
       out.payment_plans = plans.data;
     }
+    // 0111: serviços recorrentes — gera as tarefas do ciclo corrente (idempotente), antes dos avisos de prazo
+    const recurrence = await admin.rpc("recurrence_scan");
+    if (recurrence.error) {
+      if (!NOT_MIGRATED.has(recurrence.error.code ?? "")) throw new Error(recurrence.error.message);
+      out.recurrence_skipped = "not_migrated";
+    } else {
+      out.recurrence = recurrence.data;
+    }
     // 0107: roteiros de entrega — recalcula a previsão, avisa 1 dia útil antes do prazo e o atraso ao Gestor
     const roadmap = await admin.rpc("roadmap_alert_scan");
     if (roadmap.error) {
@@ -90,6 +99,14 @@ async function handler(request: Request) {
       out.roadmap_skipped = "not_migrated";
     } else {
       out.roadmap = roadmap.data;
+    }
+    // 0111: insights do publipost — lembrete ao herói 24 h e 7 dias depois da publicação; atraso ao responsável
+    const insights = await admin.rpc("insights_reminder_scan");
+    if (insights.error) {
+      if (!NOT_MIGRATED.has(insights.error.code ?? "")) throw new Error(insights.error.message);
+      out.insights_skipped = "not_migrated";
+    } else {
+      out.insights = insights.data;
     }
     try {
       Object.assign(out, await collectYouTubeMetrics(admin));

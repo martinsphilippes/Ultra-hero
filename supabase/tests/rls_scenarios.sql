@@ -17294,5 +17294,286 @@ delete from public.brands where id = 'a1160000-0000-4000-8000-0000000000b1';
 delete from public.agencies where id = 'a1160000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'a1160000-%';
 
+-- ================================================================ S117 · Roteiros de entrega — Fase 3: recorrência, insights, estratégias, nova venda e pagamento do herói-cliente (0111)
+-- Contrato recorrente gera o ciclo corrente das etapas recorrentes (4 semanais e 2 quinzenais por mês), idempotente, fora
+-- da cadeia do roteiro; reprogramar refaz as abertas. Insights 24 h/7 dias: lembrete ao herói e atraso ao responsável,
+-- uma vez por marco; a agência vê só o que pode. Banco de ideias interno: aprovação só da Estratégia/Adm, devolver pede
+-- nota, marca e herói não leem, vínculo com a oportunidade publicada = enviada. Nova venda: ligado ou mesmo cliente.
+-- Herói-cliente: plano previsto → efetivado pelo Adm → parcelas recebidas quitam; o herói vê só o "a pagar" dele, sem
+-- comissão; gestor sem valores. Visitante nada; S14 segue 18.
+\ir ../migrations/0111_roteiros_fase3.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1170000-0000-4000-8000-000000000001', 's117-adm@test.local'),
+  ('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local'),
+  ('a1170000-0000-4000-8000-000000000003', 's117-estrategia@test.local'),
+  ('a1170000-0000-4000-8000-000000000004', 's117-colab@test.local'),
+  ('a1170000-0000-4000-8000-000000000005', 's117-heroi@test.local'),
+  ('a1170000-0000-4000-8000-000000000006', 's117-heroi2@test.local'),
+  ('a1170000-0000-4000-8000-000000000007', 's117-marca@test.local');
+insert into public.agencies (id, slug, name) values ('a1170000-0000-4000-8000-0000000000a1', 's117-agencia', 'Agência S117');
+insert into public.agency_members (agency_id, user_id, role, display_name, sectors) values
+  ('a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S117', '{}'),
+  ('a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S117', '{gestor}'),
+  ('a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-000000000003', 'staff', 'Eva Estratégia S117', '{estrategia}'),
+  ('a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-000000000004', 'staff', 'Caio Colab S117', '{comunicacao}');
+insert into public.brands (id, slug, name, site_url) values ('a1170000-0000-4000-8000-0000000000b1', 's117-marca', 'Marca S117', 'https://m.s117.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1170000-0000-4000-8000-0000000000b1', 'a1170000-0000-4000-8000-000000000007', 'owner', 'Dona S117');
+insert into public.talent_profiles (id, agency_id, display_name, user_id, consent_at) values
+  ('a1170000-0000-4000-8000-0000000000c1', 'a1170000-0000-4000-8000-0000000000a1', 'Herói Cliente S117', 'a1170000-0000-4000-8000-000000000005', now() - interval '30 days'),
+  ('a1170000-0000-4000-8000-0000000000c2', 'a1170000-0000-4000-8000-0000000000a1', 'Herói Publi S117', 'a1170000-0000-4000-8000-000000000006', now() - interval '30 days');
+create table tests.s117 (k text primary key, v text);
+grant all on tests.s117 to anon, authenticated;
+
+select tests.ok('S117 estrutura: RLS nas tabelas novas, só leitura, nada para visitante, internas fechadas, search_path fixo; S14 segue 18',
+  (select bool_and(c.relrowsecurity) from pg_class c where c.oid in ('public.deal_recurrences'::regclass, 'public.strategy_ideas'::regclass))
+  and not has_table_privilege('anon', 'public.strategy_ideas', 'select') and not has_table_privilege('anon', 'public.deal_recurrences', 'select')
+  and not has_table_privilege('authenticated', 'public.strategy_ideas', 'insert') and not has_table_privilege('authenticated', 'public.strategy_ideas', 'update')
+  and not has_table_privilege('authenticated', 'public.deal_recurrences', 'insert')
+  and not has_function_privilege('anon', 'public.strategy_idea_save(uuid, uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.deal_recurrence_save(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.client_payments()', 'execute')
+  and not has_function_privilege('anon', 'public.agency_insights_pending(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_recurrence_generate(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.recurrence_scan()', 'execute')
+  and not has_function_privilege('authenticated', 'public.insights_reminder_scan()', 'execute')
+  and not has_function_privilege('authenticated', 'public.deliverable_insights_rows(int)', 'execute')
+  and not has_function_privilege('authenticated', 'public.client_receivable_json(uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.strategy_casting_report(uuid, date, date)', 'execute')
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null
+                  and (p.proname like 'strategy\_%' or p.proname like 'recurrence\_%' or p.proname like 'deal_recurrence%' or p.proname like '%insights%'
+                       or p.proname in ('deal_origin_set', 'agency_growth_indicators', 'agency_client_billing_confirm', 'agency_client_installment_paid',
+                                        'client_payments', 'agency_client_receivables', 'client_receivable_json', 'sponsorship_strategy_sent')))
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- ---------------------------------------------------------------- recorrência
+select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
+insert into tests.s117 values ('art', public.agency_deal_open('a1170000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Assessoria S117', 'client_talent_id', 'a1170000-0000-4000-8000-0000000000c1',
+  'service_id', (select id from public.agency_services where agency_id = 'a1170000-0000-4000-8000-0000000000a1' and slug = 'assessoria-artistica')))::text);
+insert into tests.s117 values ('pub', public.agency_deal_open('a1170000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Publi sem recorrência S117', 'client_talent_id', 'a1170000-0000-4000-8000-0000000000c1',
+  'service_id', (select id from public.agency_services where agency_id = 'a1170000-0000-4000-8000-0000000000a1' and slug = 'mentoria-jonathas')))::text);
+insert into tests.s117 select 'base_due', string_agg(due_on::text, ',' order by roadmap_position) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is null;
+select tests.expect_error('S117 serviço sem etapa recorrente não aceita contrato recorrente',
+  $q$select public.deal_recurrence_save((select v::uuid from tests.s117 where k = 'pub'), jsonb_build_object('cycle', 'monthly', 'starts_on', current_date))$q$, 'no_recurring_steps');
+select public.deal_recurrence_save((select v::uuid from tests.s117 where k = 'art'), jsonb_build_object('cycle', 'monthly', 'starts_on', current_date));
+select tests.ok('S117 mensal gera o ciclo: 4 relatórios semanais + 2 trocas quinzenais + 2 clippings quinzenais; diária não se multiplica',
+  (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null) = 8
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null and recurrence = 'weekly') = 4
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null and recurrence = 'daily') = 0
+  and (select bool_and(due_on >= available_on and cycle_no = 0 and milestone is null) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null));
+select tests.su();
+select tests.ok('S117 gerar de novo e a varredura são idempotentes',
+  public.deal_recurrence_generate((select v::uuid from tests.s117 where k = 'art')) = 0
+  and (public.recurrence_scan() ->> 'created')::int = 0
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null) = 8);
+select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
+select tests.ok('S117 ocorrências ficam fora da lista e da cadeia do roteiro, mas aparecem na tela de recorrência',
+  jsonb_array_length(public.deal_roadmap((select v::uuid from tests.s117 where k = 'art')) -> 'tasks') = 15
+  and jsonb_array_length(public.deal_recurrence_json((select v::uuid from tests.s117 where k = 'art')) -> 'occurrences') = 8
+  and (public.deal_recurrence_json((select v::uuid from tests.s117 where k = 'art')) -> 'config' ->> 'cycle') = 'monthly');
+select public.roadmap_task_set((select id from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null order by due_on, roadmap_position limit 1), true);
+select tests.ok('S117 concluir uma ocorrência não mexe nos prazos do roteiro base',
+  (select string_agg(due_on::text, ',' order by roadmap_position) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is null)
+    = (select v from tests.s117 where k = 'base_due'));
+select public.deal_recurrence_save((select v::uuid from tests.s117 where k = 'art'), jsonb_build_object('cycle', 'weekly', 'starts_on', current_date));
+select tests.ok('S117 reprogramar para semanal refaz as abertas (a concluída fica e vale pela mesma data): 1 semanal + 2 quinzenais no 1º ciclo',
+  (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null) = 3
+  and (select count(*) from public.tasks where deal_id = (select v::uuid from tests.s117 where k = 'art') and cycle_on is not null and status = 'done') = 1);
+select public.deal_recurrence_save((select v::uuid from tests.s117 where k = 'art'), jsonb_build_object('cycle', 'weekly', 'starts_on', current_date, 'active', false));
+select tests.ok('S117 desativar não gera mais nada', (select active from public.deal_recurrences where deal_id = (select v::uuid from tests.s117 where k = 'art')) = false);
+select tests.su();
+select tests.ok('S117 desativado: a varredura ignora', public.deal_recurrence_generate((select v::uuid from tests.s117 where k = 'art')) = 0);
+select tests.login('a1170000-0000-4000-8000-000000000004', 's117-colab@test.local');
+select tests.expect_error('S117 colaborador fora do negócio não configura a recorrência',
+  $q$select public.deal_recurrence_save((select v::uuid from tests.s117 where k = 'art'), jsonb_build_object('cycle', 'monthly', 'starts_on', current_date))$q$, 'forbidden');
+select tests.expect_error('S117 colaborador fora do negócio não lê a recorrência', $q$select public.deal_recurrence_json((select v::uuid from tests.s117 where k = 'art'))$q$, 'not_found');
+select tests.ok('S117 colaborador fora do negócio não lê o contrato pela RLS', (select count(*) from public.deal_recurrences) = 0);
+select tests.anon();
+select tests.expect_error('S117 visitante não configura recorrência',
+  $q$select public.deal_recurrence_save((select v::uuid from tests.s117 where k = 'art'), '{}'::jsonb)$q$, 'permission denied');
+
+-- ---------------------------------------------------------------- insights (24 h e 7 dias)
+select tests.su();
+insert into public.deals (id, agency_id, brand_id, title, stage, brand_visible, owner_id) values
+  ('a1170000-0000-4000-8000-0000000000e1', 'a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-0000000000b1', 'Publi S117', 'production', true, 'a1170000-0000-4000-8000-000000000002');
+insert into public.deal_talents (id, deal_id, talent_id, status, consulted_at, terms_ready) values
+  ('a1170000-0000-4000-8000-0000000000f1', 'a1170000-0000-4000-8000-0000000000e1', 'a1170000-0000-4000-8000-0000000000c2', 'contracted', now() - interval '20 days', true);
+insert into public.deliverables (id, deal_id, deal_talent_id, kind, network, title, status, due_at, publish_at, published_url, published_at) values
+  ('a1170000-0000-4000-8000-000000000011', 'a1170000-0000-4000-8000-0000000000e1', 'a1170000-0000-4000-8000-0000000000f1', 'reels', 'instagram', 'Reels 24h', 'published', now() - interval '3 days', now() - interval '2 days', 'https://instagram.com/p/s117a', now() - interval '30 hours'),
+  ('a1170000-0000-4000-8000-000000000012', 'a1170000-0000-4000-8000-0000000000e1', 'a1170000-0000-4000-8000-0000000000f1', 'stories', 'instagram', 'Story 7d', 'published', now() - interval '9 days', now() - interval '8 days', 'https://instagram.com/p/s117b', now() - interval '7 days 6 hours'),
+  ('a1170000-0000-4000-8000-000000000013', 'a1170000-0000-4000-8000-0000000000e1', 'a1170000-0000-4000-8000-0000000000f1', 'post', 'instagram', 'Post atrasado', 'published', now() - interval '12 days', now() - interval '11 days', 'https://instagram.com/p/s117c', now() - interval '10 days'),
+  ('a1170000-0000-4000-8000-000000000014', 'a1170000-0000-4000-8000-0000000000e1', 'a1170000-0000-4000-8000-0000000000f1', 'post', 'instagram', 'Post em dia', 'published', now() - interval '12 days', now() - interval '11 days', 'https://instagram.com/p/s117d', now() - interval '10 days');
+insert into public.deliverable_metrics (agency_id, brand_id, deal_id, deliverable_id, deal_talent_id, talent_id, measured_on, reach, entered_side) values
+  ('a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-0000000000b1', 'a1170000-0000-4000-8000-0000000000e1', 'a1170000-0000-4000-8000-000000000014',
+   'a1170000-0000-4000-8000-0000000000f1', 'a1170000-0000-4000-8000-0000000000c2', current_date, 5000, 'talent');
+select tests.ok('S117 situação dos insights por marco (24 h, 7 dias, atrasado, em dia)',
+  public.deliverable_insights_state(now() - interval '30 hours', now(), false, false) = 'due_24h'
+  and public.deliverable_insights_state(now() - interval '5 days', now(), false, false) = 'late_24h'
+  and public.deliverable_insights_state(now() - interval '5 days', now(), true, false) = 'waiting'
+  and public.deliverable_insights_state(now() - interval '170 hours', now(), true, false) = 'due_7d'
+  and public.deliverable_insights_state(now() - interval '10 days', now(), true, false) = 'late_7d'
+  and public.deliverable_insights_state(now() - interval '10 days', now(), false, true) = 'done'
+  and public.deliverable_insights_state(now() - interval '2 hours', now(), false, false) = 'waiting');
+insert into tests.s117 values ('scan1', public.insights_reminder_scan()::text);
+insert into tests.s117 values ('scan2', public.insights_reminder_scan()::text);
+select tests.ok('S117 lembrete ao herói (24 h e 7 dias) e atraso ao responsável, uma vez por marco',
+  (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000006' and kind = 'deliverable_published'
+     and params ->> 'status' in ('insights_24h', 'insights_7d') and link = '/creator/escritorio/oportunidades/a1170000-0000-4000-8000-0000000000f1') = 2
+  and (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000002' and kind = 'deliverable_published'
+     and params ->> 'status' = 'insights_late') = 1
+  and ((select v::jsonb from tests.s117 where k = 'scan2') ->> 'hero_reminders')::int = 0
+  and ((select v::jsonb from tests.s117 where k = 'scan2') ->> 'agency_alerts')::int = 0);
+select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
+select tests.ok('S117 gestor vê 3 pendentes (1 atrasado); o em dia não aparece',
+  jsonb_array_length(public.agency_insights_pending('a1170000-0000-4000-8000-0000000000a1') -> 'items') = 3
+  and (public.agency_insights_pending('a1170000-0000-4000-8000-0000000000a1') ->> 'late')::int = 1);
+select tests.login('a1170000-0000-4000-8000-000000000004', 's117-colab@test.local');
+select tests.ok('S117 colaborador fora do negócio não vê os insights do negócio',
+  jsonb_array_length(public.agency_insights_pending('a1170000-0000-4000-8000-0000000000a1') -> 'items') = 0);
+select tests.login('a1170000-0000-4000-8000-000000000006', 's117-heroi2@test.local');
+select tests.ok('S117 herói vê os insights dele para enviar', jsonb_array_length(public.my_insights_pending()) = 3);
+select tests.expect_error('S117 herói não lê os pendentes da agência', $q$select public.agency_insights_pending('a1170000-0000-4000-8000-0000000000a1')$q$, 'not_found');
+select tests.login('a1170000-0000-4000-8000-000000000005', 's117-heroi@test.local');
+select tests.ok('S117 outro herói não vê os insights alheios', jsonb_array_length(public.my_insights_pending()) = 0);
+
+-- ---------------------------------------------------------------- estratégias para marcas
+select tests.login('a1170000-0000-4000-8000-000000000004', 's117-colab@test.local');
+insert into tests.s117 values ('idea', public.strategy_idea_save('a1170000-0000-4000-8000-0000000000a1', null, jsonb_build_object(
+  'brand_id', 'a1170000-0000-4000-8000-0000000000b1', 'talent_id', 'a1170000-0000-4000-8000-0000000000c2', 'title', 'Dia das Mães com a Marca S117',
+  'body', 'Série de stories com a heroína e a mãe, cupom da marca.', 'idea_on', current_date + 20))::text);
+insert into tests.s117 values ('prospect', public.strategy_idea_save('a1170000-0000-4000-8000-0000000000a1', null, jsonb_build_object(
+  'brand_label', 'Empresa Alvo S117', 'title', 'Prospecção S117'))::text);
+select tests.expect_error('S117 marca que a agência não atende é recusada',
+  $q$select public.strategy_idea_save('a1170000-0000-4000-8000-0000000000a1', null, jsonb_build_object('brand_id', gen_random_uuid(), 'title', 'Fora S117'))$q$, 'not_found');
+select tests.expect_error('S117 ideia sem marca nem empresa-alvo é recusada',
+  $q$select public.strategy_idea_save('a1170000-0000-4000-8000-0000000000a1', null, jsonb_build_object('title', 'Sem alvo S117'))$q$, 'invalid_input');
+select public.strategy_idea_status((select v::uuid from tests.s117 where k = 'idea'), 'review');
+select tests.expect_error('S117 quem não é da Estratégia nem Adm não aprova',
+  $q$select public.strategy_idea_status((select v::uuid from tests.s117 where k = 'idea'), 'approved')$q$, 'forbidden');
+select tests.su();
+select tests.ok('S117 pedido de análise avisa a Estratégia',
+  (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000003' and kind = 'internal_approval_requested'
+     and params ->> 'status' = 'strategy_review') = 1);
+select tests.login('a1170000-0000-4000-8000-000000000003', 's117-estrategia@test.local');
+select tests.expect_error('S117 devolver para ajuste pede nota',
+  $q$select public.strategy_idea_status((select v::uuid from tests.s117 where k = 'idea'), 'idea', 'ok')$q$, 'note_required');
+select public.strategy_idea_status((select v::uuid from tests.s117 where k = 'idea'), 'approved');
+select public.strategy_idea_status((select v::uuid from tests.s117 where k = 'idea'), 'ready');
+select tests.ok('S117 Estratégia aprova, material pronto, autor avisado',
+  (select status from public.strategy_ideas where id = (select v::uuid from tests.s117 where k = 'idea')) = 'ready'
+  and (select count(*) from public.strategy_ideas) = 2
+  and (public.strategy_ideas_list('a1170000-0000-4000-8000-0000000000a1') ->> 'can_approve')::boolean);
+select tests.expect_error('S117 colaborador não liga à oportunidade (gestor+)',
+  $q$select public.strategy_idea_link((select v::uuid from tests.s117 where k = 'idea'), gen_random_uuid())$q$, 'forbidden');
+select tests.su();
+select tests.ok('S117 autor recebe a decisão', (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000004'
+  and kind = 'internal_approval_decided' and params ->> 'status' = 'strategy_approved') = 1);
+insert into public.sponsorship_opportunities (id, agency_id, talent_id, title, starts_at, ends_at, respond_by, status, networks) values
+  ('a1170000-0000-4000-8000-0000000000d1', 'a1170000-0000-4000-8000-0000000000a1', 'a1170000-0000-4000-8000-0000000000c2', 'Dia das Mães S117',
+   now() + interval '20 days', now() + interval '20 days 2 hours', now() + interval '10 days', 'draft', array['instagram']);
+select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
+select tests.ok('S117 vínculo com oportunidade em rascunho mantém a situação', public.strategy_idea_link((select v::uuid from tests.s117 where k = 'idea'), 'a1170000-0000-4000-8000-0000000000d1') = 'ready');
+select tests.su();
+update public.sponsorship_opportunities set status = 'open' where id = 'a1170000-0000-4000-8000-0000000000d1';
+select tests.ok('S117 oportunidade publicada = ideia enviada',
+  (select status = 'sent' and sent_at is not null from public.strategy_ideas where id = (select v::uuid from tests.s117 where k = 'idea')));
+select tests.login('a1170000-0000-4000-8000-000000000003', 's117-estrategia@test.local');
+select tests.expect_error('S117 ideia enviada não se edita',
+  $q$select public.strategy_idea_save('a1170000-0000-4000-8000-0000000000a1', (select v::uuid from tests.s117 where k = 'idea'), jsonb_build_object('brand_label', 'X S117', 'title', 'Outra S117'))$q$, 'invalid_state');
+select tests.ok('S117 relatório do casting no período (entregas publicadas contam)',
+  (public.strategy_casting_report('a1170000-0000-4000-8000-0000000000a1', current_date - 30, current_date) -> 'totals' ->> 'deliverables')::int = 4);
+select tests.expect_error('S117 período do relatório limitado', $q$select public.strategy_casting_report('a1170000-0000-4000-8000-0000000000a1', current_date - 200, current_date)$q$, 'invalid_date');
+select tests.login('a1170000-0000-4000-8000-000000000007', 's117-marca@test.local');
+select tests.ok('S117 marca não lê o banco de ideias', (select count(*) from public.strategy_ideas) = 0);
+select tests.expect_error('S117 marca não lista ideias', $q$select public.strategy_ideas_list('a1170000-0000-4000-8000-0000000000a1')$q$, 'not_found');
+select tests.login('a1170000-0000-4000-8000-000000000006', 's117-heroi2@test.local');
+select tests.ok('S117 herói não lê o banco de ideias', (select count(*) from public.strategy_ideas) = 0);
+select tests.anon();
+select tests.expect_error('S117 visitante não cria ideia', $q$select public.strategy_idea_save('a1170000-0000-4000-8000-0000000000a1', null, '{}'::jsonb)$q$, 'permission denied');
+
+-- ---------------------------------------------------------------- nova venda
+select tests.su();
+update public.deals set stage = 'closed', outcome = 'won', closed_at = now() - interval '5 days' where id = 'a1170000-0000-4000-8000-0000000000e1';
+select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
+select tests.ok('S117 ganho sem próximo negócio: taxa 0 de 1',
+  (public.agency_growth_indicators('a1170000-0000-4000-8000-0000000000a1') ->> 'won')::int = 1
+  and (public.agency_growth_indicators('a1170000-0000-4000-8000-0000000000a1') ->> 'with_next')::int = 0);
+insert into tests.s117 values ('next', public.agency_deal_open('a1170000-0000-4000-8000-0000000000a1', jsonb_build_object(
+  'title', 'Próximo S117', 'client_talent_id', 'a1170000-0000-4000-8000-0000000000c2'))::text);
+select public.deal_origin_set((select v::uuid from tests.s117 where k = 'next'), 'a1170000-0000-4000-8000-0000000000e1');
+select tests.ok('S117 próximo negócio ligado conta como nova venda',
+  (public.agency_growth_indicators('a1170000-0000-4000-8000-0000000000a1') ->> 'with_next')::int = 1
+  and (public.agency_growth_indicators('a1170000-0000-4000-8000-0000000000a1') ->> 'linked')::int = 1);
+select tests.expect_error('S117 origem não pode ser o próprio negócio',
+  $q$select public.deal_origin_set((select v::uuid from tests.s117 where k = 'next'), (select v::uuid from tests.s117 where k = 'next'))$q$, 'not_found');
+select tests.login('a1170000-0000-4000-8000-000000000004', 's117-colab@test.local');
+select tests.expect_error('S117 colaborador não lê os indicadores', $q$select public.agency_growth_indicators('a1170000-0000-4000-8000-0000000000a1')$q$, 'forbidden');
+
+-- ---------------------------------------------------------------- pagamento do herói-cliente
+select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
+select tests.expect_error('S117 gestor não define condições', $q$select public.agency_payment_plan_save((select v::uuid from tests.s117 where k = 'art'),
+  jsonb_build_object('total_cents', 300000, 'plan', jsonb_build_object('structure', 'single', 'first_rule', 'date', 'first_on', current_date + 10)))$q$, 'forbidden');
+select tests.login('a1170000-0000-4000-8000-000000000001', 's117-adm@test.local');
+select public.agency_payment_plan_save((select v::uuid from tests.s117 where k = 'art'), jsonb_build_object('total_cents', 300000,
+  'plan', jsonb_build_object('structure', 'installments', 'installments', 3, 'interval', 'monthly', 'first_rule', 'date', 'first_on', current_date + 10)));
+select tests.ok('S117 plano do herói-cliente nasce PREVISTO com a receber do herói e comissão (sem marca)',
+  (select count(*) from public.financial_entries where deal_id = (select v::uuid from tests.s117 where k = 'art') and status = 'forecast') = 2
+  and (select talent_id = 'a1170000-0000-4000-8000-0000000000c1' and brand_id is null and amount_cents = 300000 from public.financial_entries
+       where deal_id = (select v::uuid from tests.s117 where k = 'art') and kind = 'client_receivable')
+  and (select count(*) from public.brand_payment_installments i join public.financial_entries f on f.id = i.entry_id
+       where f.deal_id = (select v::uuid from tests.s117 where k = 'art') and f.kind = 'client_receivable') = 3
+  and (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ->> 'can_confirm')::boolean);
+select tests.login('a1170000-0000-4000-8000-000000000005', 's117-heroi@test.local');
+select tests.ok('S117 herói-cliente vê o "a pagar" previsto, sem comissão',
+  jsonb_array_length(public.client_payments()) = 1
+  and (public.client_payments() -> 0 ->> 'entry_status') = 'forecast'
+  and (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ->> 'viewer') = 'client'
+  and (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ->> 'total_cents')::bigint = 300000
+  and not (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ? 'commission_cents')
+  and (select count(*) from public.financial_entries) = 0
+  and (select count(*) from public.inbox_notifications where user_id = 'a1170000-0000-4000-8000-000000000005' and kind = 'payment_plan') = 1);
+select tests.login('a1170000-0000-4000-8000-000000000006', 's117-heroi2@test.local');
+select tests.ok('S117 outro herói não vê o "a pagar" alheio', jsonb_array_length(public.client_payments()) = 0);
+select tests.expect_error('S117 outro herói não lê o plano', $q$select public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art'))$q$, 'not_found');
+select tests.login('a1170000-0000-4000-8000-000000000002', 's117-gestor@test.local');
+select tests.ok('S117 gestor vê condições sem valores', not (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ? 'total_cents'));
+select tests.expect_error('S117 gestor não efetiva a cobrança', $q$select public.agency_client_billing_confirm((select v::uuid from tests.s117 where k = 'art'))$q$, 'forbidden');
+select tests.expect_error('S117 gestor não lê o a receber dos heróis', $q$select public.agency_client_receivables('a1170000-0000-4000-8000-0000000000a1')$q$, 'forbidden');
+select tests.login('a1170000-0000-4000-8000-000000000001', 's117-adm@test.local');
+select public.agency_client_billing_confirm((select v::uuid from tests.s117 where k = 'art'));
+select tests.ok('S117 efetivada: em aberto, plano travado, identidade fecha',
+  (select count(*) from public.financial_entries where deal_id = (select v::uuid from tests.s117 where k = 'art') and status = 'planned') = 2
+  and (public.deal_payment_plan_json((select v::uuid from tests.s117 where k = 'art')) ->> 'locked')::boolean
+  and jsonb_array_length(public.agency_client_receivables('a1170000-0000-4000-8000-0000000000a1')) = 1
+  and (public.agency_finance_summary('a1170000-0000-4000-8000-0000000000a1') ->> 'receivable_open_cents')::bigint = 300000);
+select tests.expect_error('S117 plano efetivado não muda', $q$select public.agency_payment_plan_save((select v::uuid from tests.s117 where k = 'art'),
+  jsonb_build_object('total_cents', 1000, 'plan', jsonb_build_object('structure', 'single', 'first_rule', 'date', 'first_on', current_date + 10)))$q$, 'plan_locked');
+select public.agency_client_installment_paid(i.id, true) from public.brand_payment_installments i join public.financial_entries f on f.id = i.entry_id
+  where f.deal_id = (select v::uuid from tests.s117 where k = 'art') and f.kind = 'client_receivable';
+select tests.ok('S117 todas as parcelas recebidas quitam o a receber e a comissão',
+  (select bool_and(status = 'settled') from public.financial_entries where deal_id = (select v::uuid from tests.s117 where k = 'art')));
+select public.agency_client_installment_paid((select i.id from public.brand_payment_installments i join public.financial_entries f on f.id = i.entry_id
+  where f.deal_id = (select v::uuid from tests.s117 where k = 'art') and f.kind = 'client_receivable' order by i.seq desc limit 1), false);
+select tests.ok('S117 desfazer uma parcela reabre o a receber',
+  (select status from public.financial_entries where deal_id = (select v::uuid from tests.s117 where k = 'art') and kind = 'client_receivable') = 'planned');
+select tests.login('a1170000-0000-4000-8000-000000000005', 's117-heroi@test.local');
+select tests.ok('S117 herói vê as parcelas pagas e a aberta',
+  (select count(*) from jsonb_array_elements(public.client_payments() -> 0 -> 'installments') x where x ->> 'status' = 'paid') = 2);
+select tests.expect_error('S117 herói não marca parcela', $q$select public.agency_client_installment_paid((select gen_random_uuid()), true)$q$, 'not_found');
+
+select tests.su();
+drop table tests.s117;
+delete from public.strategy_ideas where agency_id = 'a1170000-0000-4000-8000-0000000000a1';
+delete from public.sponsorship_opportunities where agency_id = 'a1170000-0000-4000-8000-0000000000a1';
+delete from public.financial_entries where agency_id = 'a1170000-0000-4000-8000-0000000000a1';
+delete from public.deals where agency_id = 'a1170000-0000-4000-8000-0000000000a1';
+delete from public.talent_profiles where agency_id = 'a1170000-0000-4000-8000-0000000000a1';
+delete from public.agencies where id = 'a1170000-0000-4000-8000-0000000000a1';
+delete from auth.users where id::text like 'a1170000-%';
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

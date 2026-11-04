@@ -50,6 +50,23 @@ export async function ClientProjectCard({ project, limit }: { project: ClientPro
       ) : (
         <p className="type-caption text-fg-muted">{t("noSteps")}</p>
       )}
+      {/* 0111: serviço recorrente — a rotina do ciclo (pautas, relatórios, feedbacks, clippings) */}
+      {!limit && project.recurring.length > 0 ? (
+        <div className="flex flex-col gap-1.5" data-testid="client-project-recurring">
+          <h4 className="type-caption font-semibold text-fg-muted">{t("recurringTitle")}</h4>
+          <ul className="flex flex-col gap-1">
+            {project.recurring.map((r, i) => (
+              <li key={`${r.title}:${r.dueOn}:${i}`} className="flex items-start gap-2 text-sm">
+                {r.done ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" /> : <Circle className="mt-0.5 size-4 shrink-0 text-fg-muted" aria-hidden="true" />}
+                <span className={r.done ? "text-fg-muted" : "text-fg"}>
+                  {r.title}
+                  {r.dueOn ? <span className="type-caption text-fg-muted"> · {formatPlainDate(r.dueOn, locale, { day: "2-digit", month: "2-digit" })}</span> : null}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </article>
   );
 }

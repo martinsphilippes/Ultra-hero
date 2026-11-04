@@ -88,8 +88,8 @@
       "body": "Tu entrega de {deal} fue evaluada."
     },
     "deliverable_published": {
-      "title": "Contenido publicado",
-      "body": "{talent} publicó el contenido de {deal}."
+      "title": "{status, select, insights_24h {Envía los insights de 24 h} insights_7d {Envía los insights de 7 días} insights_late {Insights atrasados} other {Contenido publicado}}",
+      "body": "{status, select, insights_24h {{title} de {deal} lleva 24 h publicado: envía la captura y los números (alcance, visualizaciones…).} insights_7d {Hace 7 días que {title} de {deal} se publicó: envía los números finales.} insights_late {{talent} aún no envió los insights de {title} ({deal}).} other {{talent} publicó el contenido de {deal}.}}"
     },
     "talent_suggestion": {
       "title": "Sugerencia de campaña",
@@ -116,12 +116,12 @@
       "body": "El pago de {deal} cambió de estado."
     },
     "internal_approval_requested": {
-      "title": "Campaña para aprobar",
-      "body": "{name} pidió aprobación de {campaign}."
+      "title": "{status, select, strategy_review {Estrategia para analizar} other {Campaña para aprobar}}",
+      "body": "{status, select, strategy_review {{name} envió la idea “{title}” para que Estrategia la analice.} other {{name} pidió aprobación de {campaign}.}}"
     },
     "internal_approval_decided": {
-      "title": "Aprobación interna",
-      "body": "El director decidió sobre {campaign}."
+      "title": "{status, select, strategy_approved {Estrategia aprobada} strategy_returned {Estrategia para ajustar} other {Aprobación interna}}",
+      "body": "{status, select, strategy_approved {{name} aprobó “{title}”. Prepara el material y envíalo a la marca.} strategy_returned {{name} devolvió “{title}” con una nota para ajustar.} other {El director decidió sobre {campaign}.}}"
     },
     "shortlist_sent": {
       "title": "Preselección para decidir",

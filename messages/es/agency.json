@@ -384,7 +384,8 @@
     "agreed_below_payouts": "El valor acordado no cubre los cachés de los héroes. Revisa el valor o los cachés.",
     "plan_locked": "La contratación ya fue confirmada: ajusta las cuotas en Finanzas › Pagos de la marca.",
     "nda_required": "Firma el NDA para entrar a la sala.",
-    "room_archived": "La sala del proyecto está archivada."
+    "room_archived": "La sala del proyecto está archivada.",
+    "no_recurring_steps": "El plan de este negocio no tiene etapas recurrentes (semanales, quincenales o mensuales)."
   },
   "casting": {
     "title": "Casting",
@@ -675,7 +676,8 @@
       "offer_countered": "{param, select, brand {La marca hizo una contrapropuesta.} other {La agencia hizo una contrapropuesta.}}",
       "offer_declined": "La marca rechazó la contrapropuesta.",
       "roadmap_started": "Plan generado: {param}.",
-      "close_cancelled": "Cerrado con {param} entrega(s) pendiente(s) cancelada(s)."
+      "close_cancelled": "Cerrado con {param} entrega(s) pendiente(s) cancelada(s).",
+      "recurrence_cycle": "Ciclo {param} del servicio recurrente generado."
     },
     "stageHint": "Mover de etapa es manual; volver pide una nota. Propuesta, confirmación y contrato tienen acción propia.",
     "form": {

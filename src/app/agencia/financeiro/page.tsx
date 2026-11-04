@@ -5,11 +5,12 @@ import Link from "next/link";
 import { FilterAnchor } from "@/components/admin-ops/FilterAnchor";
 import { EntryTable } from "@/components/finance/EntryTable";
 import { FinanceKpis } from "@/components/finance/FinanceKpis";
+import { ClientPayments } from "@/components/finance/ClientPayments";
 import { AgencyPaymentsList } from "@/components/finance/Payments";
 import { EmptyState, PageHeader } from "@/components/ui";
 import { requireAgency } from "@/lib/agency/server";
 import { AGENCY_PAYMENT_FILTERS, filterReceivables, type AgencyPaymentFilter } from "@/lib/finance/payments";
-import { agencyBrandPayments, financeSummary, listEntries } from "@/lib/finance/queries";
+import { agencyBrandPayments, agencyClientReceivables, financeSummary, listEntries } from "@/lib/finance/queries";
 import { ENTRY_FILTERS, type EntryFilter } from "@/lib/finance/vocab";
 import { localDay } from "@/lib/today/logic";
 
@@ -54,7 +55,7 @@ export default async function AgencyFinancePage({ searchParams }: Props) {
 
 async function BrandPaymentsTab({ agencyId, filterParam }: { agencyId: string; filterParam?: string }) {
   const filter: AgencyPaymentFilter = (AGENCY_PAYMENT_FILTERS as readonly string[]).includes(filterParam ?? "") ? (filterParam as AgencyPaymentFilter) : "reported";
-  const [t, tp, res] = await Promise.all([getTranslations("agency.finance"), getTranslations("payments.agency"), agencyBrandPayments(agencyId)]);
+  const [t, tp, res, clients] = await Promise.all([getTranslations("agency.finance"), getTranslations("payments.agency"), agencyBrandPayments(agencyId), agencyClientReceivables(agencyId)]);
   const data = res.data;
   const today = localDay(new Date(), data?.timezone ?? "America/Sao_Paulo");
   const items = data ? filterReceivables(data.items, filter, today) : [];
@@ -91,6 +92,8 @@ async function BrandPaymentsTab({ agencyId, filterParam }: { agencyId: string; f
       ) : (
         <AgencyPaymentsList items={items} today={today} />
       )}
+      {/* 0111: heróis-clientes (assessoria, mentoria, business plan): a agência marca cada parcela recebida */}
+      <ClientPayments items={clients.items} side="agency" today={today} />
       <p className="type-caption text-fg-subtle">{tp("simulated")}</p>
     </div>
   );

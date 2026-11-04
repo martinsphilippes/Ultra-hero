@@ -1,5 +1,7 @@
 // Códigos de erro das RPCs do módulo (lógica pura, testável).
 export const AGENCY_ERROR_CODES = [
+  // roteiros fase 3 (0111): contrato recorrente sem etapa recorrente no roteiro
+  "no_recurring_steps",
   // sala do projeto (0110)
   "nda_required",
   "room_archived",

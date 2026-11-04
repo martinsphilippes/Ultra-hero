@@ -31,13 +31,14 @@ export function canSeeValues(role: AgencyRole | null, platformAdmin = false): bo
 }
 
 // ---------------------------------------------------------------- menus por papel (6.2 e 6.3)
-export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "casting", "brands", "notifications", "settings", "team", "finance", "history"] as const;
+export const AGENCY_NAV = ["dashboard", "heroes", "pipeline", "tasks", "agenda", "sponsorships", "strategies", "casting", "brands", "notifications", "settings", "team", "finance", "history"] as const;
 export type AgencyNavKey = (typeof AGENCY_NAV)[number];
 
 /** Itens do menu da agência (P1a: + Pipeline para todos, o colaborador vê só os negócios dele;
  *  Configurações gestor+; Equipe só o Adm). */
 export function agencyNavKeys(role: AgencyRole | null, platformAdmin = false): AgencyNavKey[] {
-  const keys: AgencyNavKey[] = ["dashboard", "pipeline", "tasks", "agenda", "casting", "brands", "notifications"];
+  // Estratégias para marcas (0111): banco de ideias mensal — todo membro propõe; Estratégia/Adm aprovam
+  const keys: AgencyNavKey[] = ["dashboard", "pipeline", "tasks", "agenda", "strategies", "casting", "brands", "notifications"];
   // Heróis (0070): gestor+ cria os perfis e publica em nome deles
   if (agencyCan(role, "manager", platformAdmin)) keys.splice(1, 0, "heroes");
   // Patrocínio (0085): gestor+ publica e decide; as respostas das marcas não são do colaborador

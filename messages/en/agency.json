@@ -384,7 +384,8 @@
     "agreed_below_payouts": "The agreed amount does not cover the heroes' fees. Review the amount or the fees.",
     "plan_locked": "The contract is already confirmed: adjust the installments in Finance › Brand payments.",
     "nda_required": "Sign the NDA to enter the room.",
-    "room_archived": "The project room is archived."
+    "room_archived": "The project room is archived.",
+    "no_recurring_steps": "This deal's roadmap has no recurring steps (weekly, biweekly or monthly)."
   },
   "casting": {
     "title": "Roster",
@@ -675,7 +676,8 @@
       "offer_countered": "{param, select, brand {The brand made a counteroffer.} other {The agency made a counteroffer.}}",
       "offer_declined": "The brand declined the counteroffer.",
       "roadmap_started": "Delivery plan created: {param}.",
-      "close_cancelled": "Closed with {param} pending deliverable(s) cancelled."
+      "close_cancelled": "Closed with {param} pending deliverable(s) cancelled.",
+      "recurrence_cycle": "Recurring service cycle {param} generated."
     },
     "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
     "form": {

@@ -117,6 +117,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "agenda", href: "/agencia/agenda" },
     // Oportunidades de patrocínio (0085): situações do elenco oferecidas às marcas; gestor+
     { key: "sponsorships", href: "/agencia/oportunidades" },
+    // Estratégias para marcas (0111): banco de ideias do mês, relatório do casting e envio à marca
+    { key: "strategies", href: "/agencia/estrategias" },
     { key: "casting", href: "/agencia/casting" },
     { key: "brands", href: "/agencia/marcas" },
     { key: "notifications", href: "/agencia/notificacoes" },

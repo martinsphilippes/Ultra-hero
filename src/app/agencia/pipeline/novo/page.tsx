@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 // Negócio aberto pela própria agência (briefing recebido fora do portal): cria o pedido de origem
 // "agência" e o negócio em "briefing recebido". A marca só vê quando a agência confirmar.
 // 0107: o cliente pode ser a marca, o herói (ficha do casting) ou os dois; escolher o serviço gera o roteiro na hora.
-type Props = { searchParams: Promise<{ marca?: string; heroi?: string; servico?: string }> };
+type Props = { searchParams: Promise<{ marca?: string; heroi?: string; servico?: string; origem?: string }> };
 
 // 0110: ?marca=&heroi=&servico=<slug> vêm do "próximo negócio" sugerido no clipping (só preenchem; a agência confere).
 export default async function NewDealPage({ searchParams }: Props) {
@@ -34,7 +34,12 @@ export default async function NewDealPage({ searchParams }: Props) {
   const brandPick = brands.find((b) => b.brand.id === sp.marca)?.brand.id ?? null;
   const talentPick = clientTalents.find((x) => x.id === sp.heroi)?.id ?? "";
   const servicePick = services.items.find((x) => x.slug === sp.servico)?.id ?? "";
-  const prefill = brandPick || talentPick || servicePick ? { client: brandPick && talentPick ? ("both" as const) : talentPick ? ("talent" as const) : ("brand" as const), talentId: talentPick, serviceId: servicePick } : undefined;
+  // 0111: ?origem=<negócio> liga o negócio novo ao de origem (taxa de nova venda); o banco confere a agência
+  const originDealId = sp.origem && /^[0-9a-f-]{36}$/i.test(sp.origem) ? sp.origem : "";
+  const prefill =
+    brandPick || talentPick || servicePick || originDealId
+      ? { client: brandPick && talentPick ? ("both" as const) : talentPick ? ("talent" as const) : brandPick ? ("brand" as const) : undefined, talentId: talentPick, serviceId: servicePick, originDealId }
+      : undefined;
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={t("newTitle")} description={t("newDescription")} backHref="/agencia/pipeline" backLabel={t("title")} />

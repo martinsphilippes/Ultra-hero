@@ -369,7 +369,8 @@
     "kinds": {
       "brand_receivable": "Receivable from brand",
       "commission": "Agency commission",
-      "talent_payout": "Hero payout"
+      "talent_payout": "Hero payout",
+      "client_receivable": "Receivable from client hero"
     },
     "status": {
       "planned": "Planned",

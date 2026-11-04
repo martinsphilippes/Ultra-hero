@@ -49,6 +49,8 @@ export async function createDealAction(input: z.input<typeof dealCreateSchema>):
     });
     if (error) return agencyFail(error);
     if (!data) return agencyFail("generic");
+    // 0111: ligado ao negócio de origem (nova venda); falha aqui não desfaz o negócio criado
+    if (d.originDealId) await supabase.rpc("deal_origin_set", { p_deal: data, p_origin: d.originDealId });
     revalidatePath("/agencia/pipeline");
     revalidatePath("/agencia");
     const t = await getTranslations("agency.deal");

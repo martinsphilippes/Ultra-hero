@@ -373,6 +373,131 @@ export type Database = {
         };
         Relationships: [];
       };
+      deal_recurrences: {
+        Row: {
+          active: boolean;
+          agency_id: string;
+          created_at: string;
+          cycle: string;
+          deal_id: string;
+          ends_on: string | null;
+          generated_cycle: number | null;
+          last_generated_at: string | null;
+          starts_on: string;
+          updated_at: string;
+          updated_by: string | null;
+          updated_label: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          agency_id: string;
+          created_at?: string;
+          cycle?: string;
+          deal_id: string;
+          ends_on?: string | null;
+          generated_cycle?: number | null;
+          last_generated_at?: string | null;
+          starts_on: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          updated_label?: string;
+        };
+        Update: {
+          active?: boolean;
+          agency_id?: string;
+          created_at?: string;
+          cycle?: string;
+          deal_id?: string;
+          ends_on?: string | null;
+          generated_cycle?: number | null;
+          last_generated_at?: string | null;
+          starts_on?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          updated_label?: string;
+        };
+        Relationships: [];
+      };
+      strategy_ideas: {
+        Row: {
+          agency_id: string;
+          ai_assisted: boolean;
+          author_id: string | null;
+          author_label: string;
+          body: string;
+          brand_id: string | null;
+          brand_label: string;
+          calendar_event_id: string | null;
+          created_at: string;
+          id: string;
+          idea_on: string | null;
+          month: string;
+          review_note: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          reviewed_label: string;
+          segment_id: string | null;
+          sent_at: string | null;
+          sponsorship_id: string | null;
+          status: string;
+          talent_id: string | null;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          agency_id: string;
+          ai_assisted?: boolean;
+          author_id?: string | null;
+          author_label?: string;
+          body?: string;
+          brand_id?: string | null;
+          brand_label?: string;
+          calendar_event_id?: string | null;
+          created_at?: string;
+          id?: string;
+          idea_on?: string | null;
+          month: string;
+          review_note?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewed_label?: string;
+          segment_id?: string | null;
+          sent_at?: string | null;
+          sponsorship_id?: string | null;
+          status?: string;
+          talent_id?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          ai_assisted?: boolean;
+          author_id?: string | null;
+          author_label?: string;
+          body?: string;
+          brand_id?: string | null;
+          brand_label?: string;
+          calendar_event_id?: string | null;
+          created_at?: string;
+          id?: string;
+          idea_on?: string | null;
+          month?: string;
+          review_note?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewed_label?: string;
+          segment_id?: string | null;
+          sent_at?: string | null;
+          sponsorship_id?: string | null;
+          status?: string;
+          talent_id?: string | null;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       deal_terms_payments: {
         Row: {
           agency_id: string;
@@ -7924,6 +8049,7 @@ export type Database = {
           client_talent_id: string | null;
           roadmap_started_on: string | null;
           service_id: string | null;
+          origin_deal_id: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -7952,6 +8078,7 @@ export type Database = {
           client_talent_id?: string | null;
           roadmap_started_on?: string | null;
           service_id?: string | null;
+          origin_deal_id?: string | null;
         };
         Update: {
           agency_id?: string;
@@ -7979,6 +8106,7 @@ export type Database = {
           client_talent_id?: string | null;
           roadmap_started_on?: string | null;
           service_id?: string | null;
+          origin_deal_id?: string | null;
         };
         Relationships: [
           {
@@ -11109,6 +11237,8 @@ export type Database = {
           attachment_url: string | null;
           brand_id: string | null;
           completed_at: string | null;
+          cycle_no: number | null;
+          cycle_on: string | null;
           completed_by: string | null;
           created_at: string;
           created_by: string | null;
@@ -11147,6 +11277,8 @@ export type Database = {
           attachment_url?: string | null;
           brand_id?: string | null;
           completed_at?: string | null;
+          cycle_no?: number | null;
+          cycle_on?: string | null;
           completed_by?: string | null;
           created_at?: string;
           created_by?: string | null;
@@ -11184,6 +11316,8 @@ export type Database = {
           attachment_url?: string | null;
           brand_id?: string | null;
           completed_at?: string | null;
+          cycle_no?: number | null;
+          cycle_on?: string | null;
           completed_by?: string | null;
           created_at?: string;
           created_by?: string | null;
@@ -11400,7 +11534,7 @@ export type Database = {
           from_plan: boolean;
           agency_id: string;
           amount_cents: number;
-          brand_id: string;
+          brand_id: string | null;
           created_at: string;
           created_by: string | null;
           currency: string;
@@ -11424,7 +11558,7 @@ export type Database = {
           from_plan?: boolean;
           agency_id: string;
           amount_cents: number;
-          brand_id: string;
+          brand_id: string | null;
           created_at?: string;
           created_by?: string | null;
           currency?: string;
@@ -11447,7 +11581,7 @@ export type Database = {
           from_plan?: boolean;
           agency_id?: string;
           amount_cents?: number;
-          brand_id?: string;
+          brand_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           currency?: string;
@@ -12110,6 +12244,28 @@ isOneToOne: false
       project_feedback_answer: { Args: { p_id: string; p_score: number; p_comment?: string | null }; Returns: undefined };
       project_feedback_indicator: { Args: { p_agency: string; p_days?: number }; Returns: Json };
       project_clipping: { Args: { p_deal: string }; Returns: Json };
+      // 0111: roteiros fase 3 — recorrência, insights, estratégias, nova venda e pagamento do herói-cliente
+      deal_origin_set: { Args: { p_deal: string; p_origin: string | null }; Returns: undefined };
+      deliverable_insights_state: { Args: { p_published: string; p_now: string; p_has24: boolean; p_has7: boolean }; Returns: string };
+      insights_reminder_scan: { Args: Record<PropertyKey, never>; Returns: Json };
+      agency_insights_pending: { Args: { p_agency: string }; Returns: Json };
+      my_insights_pending: { Args: Record<PropertyKey, never>; Returns: Json };
+      deal_recurrence_json: { Args: { p_deal: string }; Returns: Json };
+      deal_recurrence_save: { Args: { p_deal: string; p_data: Json }; Returns: Json };
+      recurrence_scan: { Args: Record<PropertyKey, never>; Returns: Json };
+      strategy_can_approve: { Args: { p_agency: string }; Returns: boolean };
+      strategy_idea_save: { Args: { p_agency: string; p_id: string | null; p_data: Json }; Returns: string };
+      strategy_idea_status: { Args: { p_id: string; p_status: string; p_note?: string | null }; Returns: string };
+      strategy_idea_link: { Args: { p_id: string; p_sponsorship: string }; Returns: string };
+      strategy_idea_delete: { Args: { p_id: string }; Returns: undefined };
+      strategy_idea_json: { Args: { p_id: string }; Returns: Json };
+      strategy_ideas_list: { Args: { p_agency: string; p_month?: string | null }; Returns: Json };
+      strategy_casting_report: { Args: { p_agency: string; p_from: string; p_to: string }; Returns: Json };
+      agency_growth_indicators: { Args: { p_agency: string; p_days?: number }; Returns: Json };
+      agency_client_billing_confirm: { Args: { p_deal: string }; Returns: number };
+      agency_client_installment_paid: { Args: { p_installment: string; p_paid: boolean }; Returns: string };
+      client_payments: { Args: Record<PropertyKey, never>; Returns: Json };
+      agency_client_receivables: { Args: { p_agency: string }; Returns: Json };
       brand_request_cancel: {
         Args: { p_id: string; p_note: string };
         Returns: undefined;

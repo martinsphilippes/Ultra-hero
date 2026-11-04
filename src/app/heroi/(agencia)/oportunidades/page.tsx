@@ -11,6 +11,8 @@ import { networksMatch, talentCallStatus } from "@/lib/brand-call/logic";
 import { listTalentBrandCalls } from "@/lib/brand-call/queries";
 import { listOpportunities } from "@/lib/deals/queries";
 import { getTalentContext } from "@/lib/talent/server";
+import { InsightsPendingCard } from "@/components/media/InsightsPendingCard";
+import { getMyInsights } from "@/lib/roadmap/phase3-queries";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +26,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function OpportunitiesPage() {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
-  const [t, tbc, locale, list, calls] = await Promise.all([
+  const [t, tbc, locale, list, calls, insights] = await Promise.all([
     getTranslations("talent.opportunities"),
     getTranslations("brandCall.talent"),
     getLocale() as Promise<Locale>,
     listOpportunities(),
     listTalentBrandCalls(),
+    // 0111: insights do publipost para enviar (24 h e 7 dias depois da publicação)
+    getMyInsights(),
   ]);
   // 0089: pedidos de marcas visíveis à agência do creator (sem valor); "Tenho interesse" avisa a agência
   const callsSection =
@@ -106,6 +110,7 @@ export default async function OpportunitiesPage() {
   return (
     <div className="flex flex-col gap-5" data-testid="opportunities">
       <p className="type-body-sm text-fg-muted">{t("intro")}</p>
+      <InsightsPendingCard items={insights.items} side="talent" />
       {callsSection}
       {list.items.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface">

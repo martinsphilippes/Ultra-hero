@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("newSponsorship") };
 }
 
-type Props = { searchParams: Promise<{ data?: string; evento?: string; heroi?: string; marca?: string }> };
+type Props = { searchParams: Promise<{ data?: string; evento?: string; heroi?: string; marca?: string; ideia?: string }> };
 
 // Nova oportunidade de patrocínio (0085), gestor+. Da agenda chega com ?data=AAAA-MM-DD.
 // 0095: o primeiro campo é o HERÓI (busca na plataforma, fora do casting ou digitado); sem trava de elenco. O consentimento
@@ -41,8 +41,10 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
   // 0101: "Criar oportunidade de patrocínio a partir deste evento" — o herói é escolhido no formulário; da compatibilidade
   // pode vir já com a ficha do casting (?heroi=) ou com a marca interessada como público escolhido (?marca=)
   const pre = from.event ? sponsorshipPrefill(from.event, today) : null;
+  // 0111: "Enviar à marca" de uma ideia aprovada (banco de estratégias) chega com ?ideia= e herói/marca/data
+  const ideaId = sp.ideia && /^[0-9a-f-]{36}$/i.test(sp.ideia) ? sp.ideia : "";
   let hero: HeroChoice | null = null;
-  if (pre && sp.heroi && /^[0-9a-f-]{36}$/i.test(sp.heroi)) {
+  if ((pre || ideaId) && sp.heroi && /^[0-9a-f-]{36}$/i.test(sp.heroi)) {
     const supabase = await createClient();
     const { data: f } = await supabase
       .from("talent_profiles")
@@ -67,7 +69,7 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
       };
     }
   }
-  const brandPick = pre && sp.marca && brands.some((b) => b.brand.id === sp.marca) ? sp.marca : null;
+  const brandPick = (pre || ideaId) && sp.marca && brands.some((b) => b.brand.id === sp.marca) ? sp.marca : null;
   return (
     <div className="flex flex-col gap-5" data-testid="sponsorship-new">
       <PageHeader
@@ -103,6 +105,7 @@ export default async function NewSponsorshipPage({ searchParams }: Props) {
           audience: brandPick ? "selected" : "all",
           brandIds: brandPick ? [brandPick] : [],
           calendarEventId: pre?.calendarEventId ?? "",
+          strategyIdeaId: ideaId,
         }}
       />
     </div>
