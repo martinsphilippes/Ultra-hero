@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isLibraryKey, legacyLibraryTarget } from "@/lib/catalog/creator-libraries";
 import { legacyHeroPortalTarget } from "@/lib/hero-portal/routes";
+import { EXPLORE_COOKIE, rootDestination, rootNeedsSessionCheck } from "@/lib/institutional/root";
 import { isBlockedInNativeApp, NATIVE_BLOCKED_FALLBACK, parseNativeApp } from "@/lib/native-app/surface";
 import { updateSession } from "@/lib/supabase/middleware";
 
@@ -75,20 +76,8 @@ function nativeAppResponse(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(target, 307);
 }
 
-export async function middleware(request: NextRequest) {
-  // Renova a sessão (cookies) em toda requisição.
-  const response = await updateSession(request);
-
-  const { pathname, search } = request.nextUrl;
-  const early = legacyHeroPortalResponse(request) ?? nativeAppResponse(request) ?? heroHubResponse(request) ?? legacyEvolutionResponse(request);
-  if (early) {
-    // Mantém os cookies renovados na resposta.
-    for (const cookie of response.cookies.getAll()) early.cookies.set(cookie);
-    return early;
-  }
-  if (!isProtected(pathname)) return response;
-
-  // Os cookies do request já foram atualizados por updateSession; valida o JWT.
+// Confere o JWT dos cookies (já renovados por updateSession).
+async function hasSession(request: NextRequest): Promise<boolean> {
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
     cookies: {
       getAll() {
@@ -100,7 +89,40 @@ export async function middleware(request: NextRequest) {
     },
   });
   const { data } = await supabase.auth.getClaims();
-  if (data?.claims) return response;
+  return Boolean(data?.claims);
+}
+
+// Endereço principal "/" (etapa 7, antes um redirect fixo do next.config para /personalities): com sessão, app das
+// lojas ou "Pular e explorar" → aba Hero, como sempre; visitante sem sessão → apresentação (/conheca). 307 com a query.
+async function rootResponse(request: NextRequest): Promise<NextResponse> {
+  const nativeApp = parseNativeApp(request.headers.get("user-agent")) !== null;
+  const explored = request.cookies.get(EXPLORE_COOKIE)?.value === "1";
+  const signedIn = rootNeedsSessionCheck({ nativeApp, explored }) ? await hasSession(request) : false;
+  const target = request.nextUrl.clone();
+  target.pathname = rootDestination({ signedIn, nativeApp, explored });
+  return NextResponse.redirect(target, 307);
+}
+
+export async function middleware(request: NextRequest) {
+  // Renova a sessão (cookies) em toda requisição.
+  const response = await updateSession(request);
+
+  const { pathname, search } = request.nextUrl;
+  const early = legacyHeroPortalResponse(request) ?? nativeAppResponse(request) ?? heroHubResponse(request) ?? legacyEvolutionResponse(request);
+  if (early) {
+    // Mantém os cookies renovados na resposta.
+    for (const cookie of response.cookies.getAll()) early.cookies.set(cookie);
+    return early;
+  }
+  if (pathname === "/") {
+    const root = await rootResponse(request);
+    for (const cookie of response.cookies.getAll()) root.cookies.set(cookie);
+    return root;
+  }
+  if (!isProtected(pathname)) return response;
+
+  // Os cookies do request já foram atualizados por updateSession; valida o JWT.
+  if (await hasSession(request)) return response;
 
   const loginUrl = request.nextUrl.clone();
   loginUrl.pathname = "/login";

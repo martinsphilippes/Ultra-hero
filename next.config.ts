@@ -41,8 +41,9 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/programs", destination: "/explore?tab=programas", permanent: true },
-      // abrir o app (endereço principal, ícone do celular) entra direto na aba Hero; o feed mora em /inicio
-      { source: "/", destination: "/personalities", permanent: false },
+      // "/" é decidido no middleware (etapa 7): com sessão ou no app das lojas → aba Hero (/personalities), como
+      // antes; visitante sem sessão → página institucional (/conheca). O ícone do celular (PWA) e a casca das lojas
+      // abrem direto em /personalities. O feed mora em /inicio.
       // pedidos moram em Minhas compras: redirect HTTP aqui, e não só o redirect() da página — com o
       // loading.tsx de /orders a resposta já começava a ser enviada e o redirect virava um refresh no
       // cliente (meta refresh/roteador depois de hidratar), lento na 1ª visita (o E2E às vezes via /orders)
