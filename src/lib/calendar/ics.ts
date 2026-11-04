@@ -12,6 +12,8 @@ export type IcsEvent = {
   allDay: boolean;
   updatedAt?: string | null;
   url?: string | null;
+  /** 0098: evento cancelado do Calendário Groscove continua no feed com STATUS:CANCELLED. */
+  cancelled?: boolean;
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -88,6 +90,7 @@ export function buildIcs(events: readonly IcsEvent[], options: IcsOptions): stri
     if (e.description) lines.push(`DESCRIPTION:${icsEscape(e.description)}`);
     if (e.location) lines.push(`LOCATION:${icsEscape(e.location)}`);
     if (e.url) lines.push(`URL:${e.url}`);
+    if (e.cancelled) lines.push("STATUS:CANCELLED");
     if (e.updatedAt) lines.push(`LAST-MODIFIED:${icsDateTime(e.updatedAt)}`);
     lines.push("END:VEVENT");
   }

@@ -14,13 +14,16 @@ import { getUser } from "@/lib/auth/session";
 import { queryRange, zonedDayKey } from "@/lib/calendar/grid";
 import { monthKey, parseMonth, plusDays } from "@/lib/calendar/ics";
 import { listEvents, myFeedState, writableDealIds, type CalendarEvent } from "@/lib/calendar/queries";
-import { EVENT_KINDS, HERO_ONLY_EVENT_KINDS } from "@/lib/calendar/vocab";
+import { EVENT_KINDS, NON_FILTER_EVENT_KINDS } from "@/lib/calendar/vocab";
 import { listAgencyBrandCalls } from "@/lib/brand-call/queries";
 import { listDeals } from "@/lib/deals/queries";
 import { toZonedIso } from "@/lib/deals/schemas";
 import { formatDateTime } from "@/i18n/format";
 import type { Locale } from "@/i18n/config";
 import { listTalents } from "@/lib/talent/queries";
+import { AgendaFilterBar } from "@/components/platform-calendar/AgendaFilterBar";
+import { groscoveForAgenda, mergeWithGroscove } from "@/lib/platform-calendar/agenda";
+import { agendaFilterParams, parseAgendaFilters } from "@/lib/platform-calendar/vocab";
 import { brandOption, talentOption } from "@/lib/ui/entity";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("agenda") };
 }
 
-type Props = { searchParams: Promise<{ mes?: string; dia?: string; creator?: string; marca?: string; tipo?: string }> };
+type Props = { searchParams: Promise<{ mes?: string; dia?: string; creator?: string; marca?: string; tipo?: string; cal?: string; territorio?: string; colecao?: string }> };
 
 // Agenda da agência (5.6): eventos de sistema (campanhas confirmadas, prazos, entregas) e manuais (reuniões,
 // gravações, datas comerciais), por mês, com filtros. Gestor+ cria; o colaborador só nos negócios dele.
@@ -45,6 +48,9 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
   const { year, month } = parseMonth(sp.mes, tz);
   const { from, to } = queryRange(year, month);
   const isManager = agencyCan(ctx.role, "manager", ctx.platformAdmin);
+  // 0098: Calendário Groscove junto (some quando o filtro de tipo está em uso ou em "só meus")
+  const gFilters = parseAgendaFilters(sp);
+  const groscove = sp.tipo ? { events: [], collections: [] } : await groscoveForAgenda({ from, to }, gFilters);
   const nowMonth = (() => {
     const now = parseMonth(undefined, tz);
     return monthKey(now.year, now.month);
@@ -76,7 +82,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
       </div>
     );
   }
-  const extra = { creator: sp.creator, marca: sp.marca, tipo: sp.tipo };
+  const extra = { creator: sp.creator, marca: sp.marca, tipo: sp.tipo, ...agendaFilterParams(gFilters) };
   const today = zonedDayKey(new Date(), tz);
   const dealIds = await writableDealIds(deals.items, isManager, user?.id ?? null);
   const dealSet = new Set(dealIds);
@@ -119,7 +125,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
         },
       ];
     });
-  const events = [...list.items, ...callEvents].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const events = mergeWithGroscove([...list.items, ...callEvents], groscove.events, gFilters);
 
   return (
     <EventEditorProvider options={formOptions} timeZone={tz} today={today} permissions={{ isManager, dealIds }} canCreate={isManager || dealIds.length > 0}>
@@ -155,7 +161,7 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
             {t("filters.kind")}
             <Select name="tipo" defaultValue={sp.tipo ?? ""}>
               <option value="">{t("filters.all")}</option>
-              {EVENT_KINDS.filter((k) => !HERO_ONLY_EVENT_KINDS.includes(k)).map((k) => (
+              {EVENT_KINDS.filter((k) => !NON_FILTER_EVENT_KINDS.includes(k)).map((k) => (
                 <option key={k} value={k}>
                   {tc(`eventKinds.${k}`)}
                 </option>
@@ -173,6 +179,9 @@ export default async function AgencyAgendaPage({ searchParams }: Props) {
             ) : null}
           </div>
         </form>
+        {sp.tipo ? null : (
+          <AgendaFilterBar base="/agencia/agenda" params={{ mes: monthKey(year, month), creator: sp.creator, marca: sp.marca }} filters={gFilters} collections={groscove.collections} />
+        )}
         <AgendaCalendar
           events={events}
           timeZone={tz}

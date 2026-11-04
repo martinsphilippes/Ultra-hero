@@ -14,6 +14,10 @@ import { heroPortalSections } from "@/lib/hero-work/rules";
 import { findHeroWorkspace, listHeroEvents, listHeroServices, listServiceDates } from "@/lib/hero-work/server";
 import { getTalentContext } from "@/lib/talent/server";
 import { AgencyAgenda } from "./AgencyAgenda";
+import { AgendaFilterBar } from "@/components/platform-calendar/AgendaFilterBar";
+import { groscoveForAgenda, mergeWithGroscove } from "@/lib/platform-calendar/agenda";
+import { agendaFilterParams, parseAgendaFilters } from "@/lib/platform-calendar/vocab";
+import { monthKey } from "@/lib/calendar/ics";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("agenda") };
 }
 
-type Props = { searchParams: Promise<{ mes?: string; dia?: string }> };
+type Props = { searchParams: Promise<{ mes?: string; dia?: string; cal?: string; territorio?: string; colecao?: string }> };
 
 // Agenda do Portal do Herói (0094 + 0097), uma tela só. Com agência: a agenda da agência (campanhas, prazos, entregas,
 // gravações que ela marcou como visíveis e patrocínios) e, se houver, os compromissos próprios do herói. Sem agência:
@@ -36,6 +40,10 @@ export default async function HeroAgendaPage({ searchParams }: Props) {
   const { year, month } = parseMonth(sp.mes, tz);
   const { from, to } = queryRange(year, month);
   const range = gridRange(year, month);
+  // 0098: Calendário Groscove (agenda central da plataforma) junto com a agenda do herói, com filtros próprios
+  const gFilters = parseAgendaFilters(sp);
+  const groscove = await groscoveForAgenda({ from, to }, gFilters);
+  const gParams = agendaFilterParams(gFilters);
   const [events, dates, services, feed, origin] = ws
     ? await Promise.all([
         listHeroEvents(ws.hero.id, from, to),
@@ -62,7 +70,8 @@ export default async function HeroAgendaPage({ searchParams }: Props) {
   return (
     <div className="flex flex-col gap-5" data-testid="hero-agenda-page">
       <PageHeader eyebrow={eyebrow} title={t("title")} description={show.agency ? undefined : ws?.canWriteAgenda ? t("intro") : t("introMember")} />
-      {show.agency ? <AgencyAgenda sp={sp} /> : null}
+      <AgendaFilterBar base="/heroi/agenda" params={{ mes: monthKey(year, month) }} filters={gFilters} collections={groscove.collections} />
+      {show.agency ? <AgencyAgenda sp={sp} groscove={groscove.events} filters={gFilters} /> : null}
       {show.own && ws && events ? (
         <section className="flex flex-col gap-4" aria-labelledby="hero-own-agenda" data-testid="hero-agenda">
           {show.agency ? (
@@ -91,7 +100,8 @@ export default async function HeroAgendaPage({ searchParams }: Props) {
               ) : null}
               <HeroAgenda
                 creatorId={ws.hero.id}
-                events={mergeAgenda(events.items, dates, tz)}
+                events={show.agency ? mergeWithGroscove(mergeAgenda(events.items, dates, tz), [], gFilters) : mergeWithGroscove(mergeAgenda(events.items, dates, tz), groscove.events, gFilters)}
+                extraParams={gParams}
                 editable={events.items}
                 services={services.items.filter((s) => s.status !== "cancelled").map((s) => ({ id: s.id, title: s.title, client: s.client, serviceOn: s.serviceOn }))}
                 timeZone={tz}

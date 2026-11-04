@@ -28,6 +28,7 @@ export async function GET(request: Request, context: { params: Promise<{ token: 
         endsAt: String(e.ends_at),
         allDay: Boolean(e.all_day),
         updatedAt: (e.updated_at as string | null) ?? null,
+        cancelled: e.status === "cancelled",
       }))
     : [];
   const body = buildIcs(events, { calendarName: "Groscove Ultra · Agenda", timeZone: "America/Sao_Paulo" });

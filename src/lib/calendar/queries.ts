@@ -1,6 +1,7 @@
 import "server-only";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import type { PlatformInfo } from "@/lib/platform-calendar/vocab";
 import { isEventKind, type EventKind } from "./vocab";
 
 // Leituras da agenda (RLS decide o que cada portal vê). Sem a 0067: { available: false }.
@@ -27,6 +28,10 @@ export type CalendarEvent = {
   visibleToBrand: boolean;
   visibleToTalent: boolean;
   updatedAt: string;
+  /** 0098: evento do Calendário Groscove (território, estado, hashtags…); nos outros, ausente. */
+  platform?: PlatformInfo | null;
+  /** 0098: evento longo da plataforma aparece na grade só no início e no fim. */
+  edgesOnly?: boolean;
 };
 
 const SELECT = "id, kind, title, subtitle, description, starts_at, ends_at, all_day, location, brand_id, deal_id, talent_id, deliverable_id, sponsorship_id, source, visible_to_brand, visible_to_talent, updated_at";
@@ -73,7 +78,8 @@ export type EventFilters = {
 
 export async function listEvents(filters: EventFilters): Promise<{ available: boolean; items: CalendarEvent[] }> {
   const supabase = await createClient();
-  const base = supabase.from("calendar_events").select(SELECT).lt("starts_at", filters.to);
+  // 0098: o Calendário Groscove (scope='platform') vem por listPlatformEvents, com filtros próprios
+  const base = supabase.from("calendar_events").select(SELECT).eq("scope", "agency").lt("starts_at", filters.to);
   let query = (filters.overlap ? base.gte("ends_at", filters.from) : base.gte("starts_at", filters.from)).order("starts_at").limit(500);
   if (filters.agencyId) query = query.eq("agency_id", filters.agencyId);
   if (filters.talentId && /^[0-9a-f-]{36}$/i.test(filters.talentId)) query = query.eq("talent_id", filters.talentId);
@@ -106,7 +112,7 @@ export async function myFeedState(): Promise<{ active: boolean; rotatedAt: strin
 export async function upcomingCount(days = 14, filters: { agencyId?: string } = {}): Promise<number | null> {
   const supabase = await createClient();
   const now = new Date();
-  let query = supabase.from("calendar_events").select("id", { count: "exact", head: true }).gte("starts_at", now.toISOString()).lt("starts_at", new Date(now.getTime() + days * 86_400_000).toISOString());
+  let query = supabase.from("calendar_events").select("id", { count: "exact", head: true }).eq("scope", "agency").gte("starts_at", now.toISOString()).lt("starts_at", new Date(now.getTime() + days * 86_400_000).toISOString());
   if (filters.agencyId) query = query.eq("agency_id", filters.agencyId);
   const { count, error } = await query;
   if (error) return null;

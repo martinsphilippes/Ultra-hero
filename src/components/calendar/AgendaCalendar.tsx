@@ -5,19 +5,21 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { EmptyState } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
-import { distinctKinds, gridRange, groupEventsByDay, initialDay, monthWeeks, moveFocus } from "@/lib/calendar/grid";
+import { gridRange, groupEventsByDay, initialDay, monthWeeks, moveFocus } from "@/lib/calendar/grid";
 import { monthKey, shiftMonth } from "@/lib/calendar/ics";
 import type { CalendarEvent } from "@/lib/calendar/queries";
 import { EVENT_KINDS } from "@/lib/calendar/vocab";
+import { TERRITORIES } from "@/lib/platform-calendar/vocab";
+import { TERRITORY_DOT } from "@/components/platform-calendar/territories";
 import { cn } from "@/lib/utils";
 import { EventNewOnDayButton, useEventEditor } from "./EventEditor";
-import { EventList } from "./EventList";
+import { EventList, type AgendaPortal } from "./EventList";
 import { KIND_DOT } from "./kinds";
 
 type Props = {
   events: CalendarEvent[];
   timeZone: string;
-  portal: "agency" | "brand" | "office";
+  portal: AgendaPortal;
   year: number;
   month: number;
   /** Hoje (YYYY-MM-DD) no fuso, calculado no servidor (evita divergência na hidratação). */
@@ -48,6 +50,7 @@ type Props = {
 export function AgendaCalendar({ events, timeZone, portal, year, month, today, base, extraParams = {}, requestedDay, emptyTitle, emptyHint, dayAction, renderExtra, renderActions, onDayChange }: Props) {
   const t = useTranslations("commercial.agenda");
   const tk = useTranslations("commercial.eventKinds");
+  const tg = useTranslations("groscoveCalendar");
   const locale = useLocale() as Locale;
   const titleId = useId();
   const weeks = useMemo(() => monthWeeks(year, month), [year, month]);
@@ -64,7 +67,11 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
 
   const thisMonth = monthKey(year, month);
   const monthHasEvents = [...byDay.keys()].some((d) => d.slice(0, 7) === thisMonth);
-  const kindsInView = EVENT_KINDS.filter((k) => [...byDay.values()].some((list) => list.some((e) => e.kind === k)));
+  const kindsInView = EVENT_KINDS.filter((k) => k !== "institutional" && [...byDay.values()].some((list) => list.some((e) => e.kind === k)));
+  // 0098: Calendário Groscove — legenda própria por território (cor do território no ponto da grade)
+  const inView = [...byDay.values()].flat();
+  const groscoveInView = inView.some((e) => e.platform);
+  const territoriesInView = TERRITORIES.filter((k) => inView.some((e) => e.platform?.territory === k));
 
   const href = (y: number, m: number, day?: string) => {
     const params = new URLSearchParams();
@@ -147,7 +154,7 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
               const list = byDay.get(d.date) ?? [];
               const isToday = d.date === today;
               const isSelected = d.date === selected;
-              const dots = distinctKinds(list, 3);
+              const dots = distinctDots(list, 3);
               const label = `${fullDate(d.date)}${isToday ? `, ${t("todayMark")}` : ""}: ${t("dayCount", { count: list.length })}`;
               return (
                 <div key={d.date} role="gridcell" aria-selected={isSelected} className="min-w-0">
@@ -186,8 +193,8 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
                     {/* celular: só pontos por tipo (até 3) */}
                     {dots.length > 0 ? (
                       <span className="mt-auto flex flex-wrap items-center gap-0.5 sm:hidden" aria-hidden="true">
-                        {dots.map((k) => (
-                          <span key={k} className={cn("size-1.5 rounded-full", KIND_DOT[k])} data-kind={k} />
+                        {dots.map((d) => (
+                          <span key={d} className={cn("size-1.5 rounded-full", d)} />
                         ))}
                       </span>
                     ) : null}
@@ -195,8 +202,16 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
                     {list.length > 0 ? (
                       <span className="hidden min-w-0 flex-col gap-0.5 sm:flex" aria-hidden="true">
                         {list.slice(0, 3).map((e, i) => (
-                          <span key={e.id} className={cn("flex min-w-0 items-center gap-1 text-[0.6875rem] leading-tight text-fg", i === 2 && "hidden lg:flex")}>
-                            <span className={cn("size-1.5 shrink-0 rounded-full", KIND_DOT[e.kind])} />
+                          <span
+                            key={e.id}
+                            className={cn(
+                              "flex min-w-0 items-center gap-1 text-[0.6875rem] leading-tight text-fg",
+                              i === 2 && "hidden lg:flex",
+                              e.platform && "rounded-sm bg-accent-soft px-0.5 font-medium",
+                              e.platform?.status === "cancelled" && "line-through opacity-70",
+                            )}
+                          >
+                            <span className={cn("size-1.5 shrink-0 rounded-full", dotOf(e))} />
                             <span className="truncate">{e.title}</span>
                           </span>
                         ))}
@@ -212,6 +227,25 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
         ))}
       </div>
 
+      {groscoveInView ? (
+        <div className="flex flex-col gap-1 rounded-xl border border-accent/30 bg-accent-soft/40 p-2" data-testid="agenda-legend-groscove">
+          <span className="type-caption font-semibold text-accent-text">{tg("legendTitle")}</span>
+          <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label={tg("legendTitle")}>
+            {territoriesInView.map((k) => (
+              <li key={k} className="flex items-center gap-1.5 type-caption text-fg-muted">
+                <span className={cn("size-2 rounded-full", TERRITORY_DOT[k])} aria-hidden="true" />
+                {tg(`territories.${k}`)}
+              </li>
+            ))}
+            {inView.some((e) => e.platform && !e.platform.territory) ? (
+              <li className="flex items-center gap-1.5 type-caption text-fg-muted">
+                <span className="size-2 rounded-full bg-accent" aria-hidden="true" />
+                {tg("noTerritory")}
+              </li>
+            ) : null}
+          </ul>
+        </div>
+      ) : null}
       {kindsInView.length > 0 ? (
         <ul className="flex flex-wrap gap-x-3 gap-y-1" aria-label={t("legend")} data-testid="agenda-legend">
           {kindsInView.map((k) => (
@@ -240,4 +274,20 @@ export function AgendaCalendar({ events, timeZone, portal, year, month, today, b
       </section>
     </section>
   );
+}
+
+/** Cor do ponto de um item: território (Calendário Groscove) ou tipo. */
+function dotOf(e: CalendarEvent): string {
+  if (e.platform) return e.platform.territory ? TERRITORY_DOT[e.platform.territory] : "bg-accent";
+  return KIND_DOT[e.kind];
+}
+
+/** Cores distintas dos pontos do dia (até max), na ordem em que aparecem. */
+function distinctDots(events: readonly CalendarEvent[], max: number): string[] {
+  const out: string[] = [];
+  for (const e of events) {
+    const d = dotOf(e);
+    if (!out.includes(d) && out.length < max) out.push(d);
+  }
+  return out;
 }

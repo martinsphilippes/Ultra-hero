@@ -6098,6 +6098,7 @@ export type Database = {
       };
       agencies: {
         Row: {
+          platform_calendar_editor: boolean;
           cnpj: string | null;
           contact_email: string | null;
           created_at: string;
@@ -6114,6 +6115,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          platform_calendar_editor?: boolean;
           cnpj?: string | null;
           contact_email?: string | null;
           created_at?: string;
@@ -6129,6 +6131,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          platform_calendar_editor?: boolean;
           cnpj?: string | null;
           contact_email?: string | null;
           created_at?: string;
@@ -9714,7 +9717,22 @@ export type Database = {
       };
       calendar_events: {
         Row: {
-          agency_id: string;
+          agency_id: string | null;
+          cancel_reason: string;
+          cancelled_at: string | null;
+          category: string | null;
+          collection: string | null;
+          extra: Json;
+          hashtags: string[];
+          highlight: boolean;
+          import_id: string | null;
+          published_at: string | null;
+          scope: string;
+          status: string;
+          tentative: boolean;
+          territory: string | null;
+          timezone: string;
+          updated_by: string | null;
           all_day: boolean;
           brand_id: string | null;
           created_at: string;
@@ -9740,7 +9758,22 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
-          agency_id: string;
+          agency_id?: string | null;
+          cancel_reason?: string;
+          cancelled_at?: string | null;
+          category?: string | null;
+          collection?: string | null;
+          extra?: Json;
+          hashtags?: string[];
+          highlight?: boolean;
+          import_id?: string | null;
+          published_at?: string | null;
+          scope?: string;
+          status?: string;
+          tentative?: boolean;
+          territory?: string | null;
+          timezone?: string;
+          updated_by?: string | null;
           all_day?: boolean;
           brand_id?: string | null;
           created_at?: string;
@@ -9765,7 +9798,22 @@ export type Database = {
           visible_to_talent?: boolean;
         };
         Update: {
-          agency_id?: string;
+          agency_id?: string | null;
+          cancel_reason?: string;
+          cancelled_at?: string | null;
+          category?: string | null;
+          collection?: string | null;
+          extra?: Json;
+          hashtags?: string[];
+          highlight?: boolean;
+          import_id?: string | null;
+          published_at?: string | null;
+          scope?: string;
+          status?: string;
+          tentative?: boolean;
+          territory?: string | null;
+          timezone?: string;
+          updated_by?: string | null;
           all_day?: boolean;
           brand_id?: string | null;
           created_at?: string;
@@ -9833,6 +9881,111 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      calendar_imports: {
+        Row: {
+          counts: Json;
+          created_at: string;
+          file_hash: string | null;
+          file_name: string;
+          format: string;
+          id: string;
+          imported_by: string | null;
+          meta: Json;
+          source_name: string;
+          year: number | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          counts?: Json;
+          created_at?: string;
+          file_hash?: string | null;
+          file_name?: string;
+          format: string;
+          id?: string;
+          imported_by?: string | null;
+          meta?: Json;
+          source_name: string;
+          year?: number | null;
+        };
+        Update: {
+          counts?: Json;
+          created_at?: string;
+          file_hash?: string | null;
+          file_name?: string;
+          format?: string;
+          id?: string;
+          imported_by?: string | null;
+          meta?: Json;
+          source_name?: string;
+          year?: number | null;
+        };
+        Relationships: [];
+      };
+      calendar_event_interests: {
+        Row: {
+          brand_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          creator_profile_id: string | null;
+          event_id: string;
+          id: string;
+          party: string;
+          state: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          brand_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id?: string | null;
+          event_id: string;
+          id?: string;
+          party: string;
+          state: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          brand_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          creator_profile_id?: string | null;
+          event_id?: string;
+          id?: string;
+          party?: string;
+          state?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      calendar_event_interest_log: {
+        Row: {
+          actor: string | null;
+          at: string;
+          id: number;
+          interest_id: string;
+          state: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actor?: string | null;
+          at?: string;
+          id?: never;
+          interest_id: string;
+          state: string;
+        };
+        Update: {
+          actor?: string | null;
+          at?: string;
+          id?: never;
+          interest_id?: string;
+          state?: string;
+        };
+        Relationships: [];
       };
       calendar_feeds: {
         Row: {
@@ -10764,6 +10917,19 @@ isOneToOne: false
         Returns: undefined;
       };
       calendar_feed_resolve: { Args: { p_token: string }; Returns: Json };
+      platform_calendar_reader: { Args: Record<PropertyKey, never>; Returns: boolean };
+      platform_calendar_reader_for: { Args: { p_user: string }; Returns: boolean };
+      platform_calendar_can_write: { Args: Record<PropertyKey, never>; Returns: boolean };
+      my_member_brand_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      platform_event_normalize: { Args: { p: Json }; Returns: Json };
+      platform_event_state: { Args: { p_current_published: string | null; p_current_status: string | null; p_publish_at: string | null; p_status: string }; Returns: Json };
+      platform_event_save: { Args: { p_data: Json; p_id: string | null }; Returns: string };
+      platform_event_cancel: { Args: { p_id: string; p_reason: string }; Returns: undefined };
+      platform_event_delete: { Args: { p_id: string }; Returns: undefined };
+      platform_events_import: { Args: { p_events: Json; p_import: Json }; Returns: Json };
+      admin_set_platform_calendar_editor: { Args: { p_agency: string; p_on: boolean }; Returns: undefined };
+      platform_event_set_interest: { Args: { p_event: string; p_interested: boolean; p_owner: string; p_party: string }; Returns: string };
+      platform_event_interest_summary: { Args: { p_event: string }; Returns: Json };
       calendar_feed_revoke: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;

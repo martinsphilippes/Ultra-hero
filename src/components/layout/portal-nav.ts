@@ -41,6 +41,8 @@ export const PORTAL_LINKS: Record<Portal, readonly PortalLink[]> = {
     { key: "professionals", href: "/admin/professionals" },
     // Gestão (0064): agências, equipes, marcas atendidas e o ambiente de demonstração
     { key: "agency", href: "/admin/agencia" },
+    // Calendário Groscove (0098): agenda central da plataforma, vista por todos os portais; importação do cronograma
+    { key: "agenda", href: "/admin/agenda" },
     { key: "content", href: "/admin/content" },
     { key: "programs", href: "/admin/programs" },
     { key: "featured", href: "/admin/featured" },

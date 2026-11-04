@@ -1,8 +1,9 @@
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, ChevronRight, MapPin } from "lucide-react";
 import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Badge, EmptyState } from "@/components/ui";
+import { PlatformBadges, useCollectionLabel } from "@/components/platform-calendar/PlatformBadges";
+import { Badge, Button, EmptyState } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { eventDays, zonedDayKey } from "@/lib/calendar/grid";
@@ -10,11 +11,22 @@ import type { CalendarEvent } from "@/lib/calendar/queries";
 import { EventActions } from "./EventEditor";
 import { KIND_VARIANT } from "./kinds";
 
+/** Portais com agenda (0098: + admin, que vê o Calendário Groscove). */
+export type AgendaPortal = "agency" | "brand" | "office" | "admin";
+
+/** 0098: onde abre o detalhe de um evento do Calendário Groscove em cada portal. */
+export const PLATFORM_DETAIL_BASE: Record<AgendaPortal, string> = {
+  agency: "/agencia/agenda/groscove",
+  brand: "/marca/agenda/groscove",
+  office: "/heroi/agenda/groscove",
+  admin: "/admin/agenda",
+};
+
 type Props = {
   events: CalendarEvent[];
   timeZone: string;
   /** Portal que está lendo: define links e ações. */
-  portal: "agency" | "brand" | "office";
+  portal: AgendaPortal;
   emptyTitle: string;
   emptyHint?: string;
   /** Sem os títulos de dia (a grade da agenda já mostra o dia escolhido). */
@@ -30,6 +42,8 @@ type Props = {
 export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, flat = false, renderExtra, renderActions }: Props) {
   const t = useTranslations("commercial.agenda");
   const tk = useTranslations("commercial.eventKinds");
+  const tg = useTranslations("groscoveCalendar");
+  const collectionLabel = useCollectionLabel();
   const locale = useLocale() as Locale;
   if (events.length === 0) {
     return (
@@ -46,7 +60,42 @@ export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, fla
   }
   const timeOf = (iso: string) => new Intl.DateTimeFormat(locale, { timeZone, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
   const spanDays = (e: CalendarEvent) => eventDays(e, timeZone).length;
-  const renderItem = (e: CalendarEvent) => (
+  const renderItem = (e: CalendarEvent) => (e.platform ? renderPlatform(e) : renderOwn(e));
+  // 0098: evento do Calendário Groscove — faixa na cor da plataforma, selos (território, data a confirmar, destaque,
+  // cancelado riscado), coleção/categoria, hashtags e o atalho para o detalhe (interesse, interessados)
+  const renderPlatform = (e: CalendarEvent) => {
+    const p = e.platform!;
+    const cancelled = p.status === "cancelled";
+    const href = `${PLATFORM_DETAIL_BASE[portal]}/${e.id}`;
+    return (
+      <li key={e.id} className="flex flex-wrap items-start gap-3 border-l-4 border-accent bg-accent-soft/40 p-3 first:rounded-t-2xl last:rounded-b-2xl" data-testid="event-item" data-kind={e.kind} data-platform="true" data-status={p.status}>
+        <span className="w-24 shrink-0 font-mono text-sm text-fg-muted">
+          {e.allDay ? t("allDay") : `${timeOf(e.startsAt)}${e.endsAt !== e.startsAt ? `–${timeOf(e.endsAt)}` : ""}`}
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <PlatformBadges info={p} showStatus={portal === "admin"} />
+          <Link href={href} className={`text-sm font-semibold text-fg underline-offset-2 hover:underline ${cancelled ? "line-through decoration-2 opacity-70" : ""}`}>
+            {e.title}
+          </Link>
+          {p.collection || p.category ? (
+            <span className="type-caption text-fg-muted">{[p.collection ? collectionLabel(p.collection) : null, p.category].filter(Boolean).join(" · ")}</span>
+          ) : null}
+          {p.hashtags.length > 0 ? <span className="type-caption text-accent-text">{p.hashtags.map((h) => `#${h}`).join(" ")}</span> : null}
+          {e.edgesOnly ? (
+            <span className="type-caption text-fg-subtle">{tg("season", { start: formatDate(e.startsAt, locale, undefined, p.timezone), end: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, undefined, p.timezone) })}</span>
+          ) : spanDays(e) > 1 ? (
+            <span className="type-caption text-fg-subtle">{t("until", { date: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, undefined, timeZone) })}</span>
+          ) : null}
+        </span>
+        <Button asChild size="sm" variant="ghost" trailingIcon={<ChevronRight />}>
+          <Link href={href} aria-label={tg("openLabel", { title: e.title })} data-testid="platform-open">
+            <span className="sr-only sm:not-sr-only">{tg("open")}</span>
+          </Link>
+        </Button>
+      </li>
+    );
+  };
+  const renderOwn = (e: CalendarEvent) => (
     <li key={e.id} className="flex flex-wrap items-start gap-3 p-3" data-testid="event-item" data-kind={e.kind}>
       <span className="w-24 shrink-0 font-mono text-sm text-fg-muted">
         {e.allDay ? t("allDay") : `${timeOf(e.startsAt)}${e.endsAt !== e.startsAt ? `–${timeOf(e.endsAt)}` : ""}`}

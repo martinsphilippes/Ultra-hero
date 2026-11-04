@@ -9,7 +9,8 @@
 import { plusDays } from "./ics";
 
 export type GridDay = { date: string; day: number; inMonth: boolean };
-export type GridEvent = { startsAt: string; endsAt: string; allDay: boolean };
+/** edgesOnly (0098): evento longo do Calendário Groscove (temporada) aparece só no primeiro e no último dia. */
+export type GridEvent = { startsAt: string; endsAt: string; allDay: boolean; edgesOnly?: boolean };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const MAX_SPAN_DAYS = 92;
@@ -73,6 +74,7 @@ export function eventDays(event: GridEvent, timeZone: string): string[] {
   // fim exclusivo para dia inteiro e para "termina à meia-noite": recua 1 ms; nunca antes do início
   const end = Number.isFinite(endRaw) && endRaw > start ? endRaw - 1 : start;
   const lastDay = zonedDayKey(end, timeZone);
+  if (event.edgesOnly) return lastDay > firstDay ? [firstDay, lastDay] : [firstDay];
   const days = [firstDay];
   let cursor = firstDay;
   while (cursor < lastDay && days.length < MAX_SPAN_DAYS) {

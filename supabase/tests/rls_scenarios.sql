@@ -14967,5 +14967,256 @@ delete from public.agencies where id = 'b1040000-0000-4000-8000-0000000000a1';
 delete from auth.users where id::text like 'b1040000-%';
 drop table t_s104;
 
+-- ================================================================ S105 · Calendário Groscove: agenda central da plataforma, importação e interesse (0098)
+-- Admin cria/edita/publica/programa/cancela/exclui e importa em lote (reimportar o mesmo lote não duplica; "atualizar"
+-- atualiza). Agência (gestor e colaborador), marca (com e sem agência), herói (titular, membro, sem agência) leem
+-- publicados e programados vencidos; rascunho e programado futuro não aparecem; cancelado aparece marcado; pessoa sem
+-- portal e visitante nada. Herói titular manifesta/retira interesse (histórico), membro não; marca manifesta e não vê
+-- heróis interessados; agência vê só os heróis do próprio casting (e as marcas que atende); admin vê tudo; contagens
+-- para todos. Co-edição por agência só com a flag (desligada). Feed .ics inclui a plataforma; calendar_events_for_user
+-- não. Sem sobrecarga; funções novas fora do anon; S14 segue 18.
+\ir ../migrations/0098_calendario_groscove.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1050000-0000-4000-8000-000000000001','s105-admin@test.local'),('a1050000-0000-4000-8000-000000000002','s105-gestor-a@test.local'),
+  ('a1050000-0000-4000-8000-000000000003','s105-colab-a@test.local'),('a1050000-0000-4000-8000-000000000004','s105-gestor-b@test.local'),
+  ('a1050000-0000-4000-8000-000000000005','s105-dono-marca@test.local'),('a1050000-0000-4000-8000-000000000006','s105-equipe-marca2@test.local'),
+  ('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local'),('a1050000-0000-4000-8000-000000000008','s105-heroi-membro@test.local'),
+  ('a1050000-0000-4000-8000-000000000009','s105-heroi-livre@test.local'),('a1050000-0000-4000-8000-00000000000a','s105-heroi-b@test.local'),
+  ('a1050000-0000-4000-8000-00000000000b','s105-consumidor@test.local');
+insert into public.role_assignments (user_id, role, scope_type) values ('a1050000-0000-4000-8000-000000000001','admin','global');
+insert into public.agencies (id, slug, name) values ('a1050000-0000-4000-8000-0000000000a1','s105-agencia-a','Agência A S105'),('a1050000-0000-4000-8000-0000000000a2','s105-agencia-b','Agência B S105');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1050000-0000-4000-8000-0000000000a1','a1050000-0000-4000-8000-000000000002','manager','Gil S105'),
+  ('a1050000-0000-4000-8000-0000000000a1','a1050000-0000-4000-8000-000000000003','staff','Caio S105'),
+  ('a1050000-0000-4000-8000-0000000000a2','a1050000-0000-4000-8000-000000000004','manager','Bia S105');
+insert into public.brands (id, slug, name, site_url) values ('a1050000-0000-4000-8000-0000000000b1','s105-marca','Marca S105','https://m.s105.test'),
+  ('a1050000-0000-4000-8000-0000000000b2','s105-marca-livre','Marca Livre S105','https://l.s105.test');
+insert into public.agency_brands (agency_id, brand_id) values ('a1050000-0000-4000-8000-0000000000a1','a1050000-0000-4000-8000-0000000000b1');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1050000-0000-4000-8000-0000000000b1','a1050000-0000-4000-8000-000000000005','owner','Dona S105'),
+  ('a1050000-0000-4000-8000-0000000000b2','a1050000-0000-4000-8000-000000000006','staff','Equipe S105');
+insert into public.creator_profiles (id, slug, name, status, user_id) values
+  ('a1050000-0000-4000-8000-0000000000c1','s105-heroi-casting','Herói Casting S105','active','a1050000-0000-4000-8000-000000000007'),
+  ('a1050000-0000-4000-8000-0000000000c2','s105-heroi-livre','Herói Livre S105','active','a1050000-0000-4000-8000-000000000009'),
+  ('a1050000-0000-4000-8000-0000000000c3','s105-heroi-b','Herói B S105','active','a1050000-0000-4000-8000-00000000000a');
+insert into public.creator_team_members (creator_profile_id, user_id, role, status) values
+  ('a1050000-0000-4000-8000-0000000000c1','a1050000-0000-4000-8000-000000000008','member','active');
+insert into public.talent_profiles (id, agency_id, display_name, creator_id) values
+  ('a1050000-0000-4000-8000-0000000000e1','a1050000-0000-4000-8000-0000000000a1','Herói Casting S105','a1050000-0000-4000-8000-0000000000c1'),
+  ('a1050000-0000-4000-8000-0000000000e3','a1050000-0000-4000-8000-0000000000a2','Herói B S105','a1050000-0000-4000-8000-0000000000c3');
+create temp table t_s105 (k text primary key, v text);
+grant all on t_s105 to anon, authenticated, service_role;
+
+select tests.ok('S105 estrutura: RLS ligada, nada para visitante, funções sem sobrecarga e fora do anon, search_path fixo; S14 segue 18',
+  (select bool_and(relrowsecurity) from pg_class where oid in ('public.calendar_imports'::regclass, 'public.calendar_event_interests'::regclass, 'public.calendar_event_interest_log'::regclass, 'public.calendar_events'::regclass))
+  and not has_table_privilege('anon', 'public.calendar_events', 'select') and not has_table_privilege('anon', 'public.calendar_imports', 'select')
+  and not has_table_privilege('anon', 'public.calendar_event_interests', 'select') and not has_table_privilege('authenticated', 'public.calendar_event_interests', 'insert')
+  and not has_table_privilege('authenticated', 'public.calendar_events', 'insert') and not has_table_privilege('authenticated', 'public.calendar_imports', 'insert')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in ('platform_calendar_reader_for','platform_calendar_reader','platform_calendar_can_write','my_member_brand_ids',
+       'platform_event_normalize','platform_event_state','platform_event_save','platform_event_cancel','platform_event_delete','platform_events_import','admin_set_platform_calendar_editor',
+       'platform_event_set_interest','platform_event_interest_summary','calendar_events_for_user','calendar_feed_resolve')) = 15
+  and (select bool_and(p.proconfig is not null) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname like 'platform_%')
+  and not has_function_privilege('anon', 'public.platform_event_save(uuid, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.platform_events_import(jsonb, jsonb)', 'execute')
+  and not has_function_privilege('anon', 'public.platform_event_set_interest(uuid, text, uuid, boolean)', 'execute')
+  and not has_function_privilege('anon', 'public.platform_calendar_reader()', 'execute')
+  and not has_function_privilege('authenticated', 'public.platform_calendar_reader_for(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.platform_event_normalize(jsonb)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S105 visitante não lê a agenda', $q$select count(*) from public.calendar_events$q$, 'permission denied');
+select tests.expect_error('S105 visitante não cria evento', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01"}')$q$, 'permission denied');
+select tests.expect_error('S105 visitante não importa', $q$select public.platform_events_import('{}', '[]')$q$, 'permission denied');
+
+-- quem não é admin não escreve
+select tests.login('a1050000-0000-4000-8000-000000000002','s105-gestor-a@test.local');
+select tests.expect_error('S105 gestor de agência (sem a flag) não cria', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01","status":"published"}')$q$, 'forbidden');
+select tests.expect_error('S105 gestor de agência não importa', $q$select public.platform_events_import('{"source_name":"x"}', '[{"source_key":"a","title":"x","start_date":"2026-12-01"}]')$q$, 'forbidden');
+select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
+select tests.expect_error('S105 herói não cria', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01"}')$q$, 'forbidden');
+select tests.expect_error('S105 herói não liga co-edição', $q$select public.admin_set_platform_calendar_editor('a1050000-0000-4000-8000-0000000000a1', true)$q$, 'forbidden');
+
+-- admin: cria rascunho, publicado, programado futuro e programado já vencido (com hora e fuso)
+select tests.login('a1050000-0000-4000-8000-000000000001','s105-admin@test.local');
+insert into t_s105 values ('pub', public.platform_event_save(null, jsonb_build_object('title','  Dia   da Terra S105 ','start_date', to_char(current_date + 10, 'YYYY-MM-DD'),
+  'territory','sustentabilidade','hashtags', jsonb_build_array('#DiaDaTerra','diadaterra','Planeta'),'highlight',true,'status','published','description','Ações verdes'))::text);
+insert into t_s105 values ('draft', public.platform_event_save(null, '{"title":"Rascunho S105","start_date":"2026-12-20","end_date":"2026-12-22","territory":"moda"}')::text);
+insert into t_s105 values ('fut', public.platform_event_save(null, jsonb_build_object('title','Programado S105','start_date', to_char(current_date + 40, 'YYYY-MM-DD'),'status','scheduled','publish_at', now() + interval '3 days'))::text);
+insert into t_s105 values ('past', public.platform_event_save(null, jsonb_build_object('title','Show S105','all_day',false,'starts_at', (current_date + 5)::text || 'T20:00:00-03:00',
+  'ends_at', (current_date + 5)::text || 'T23:00:00-03:00','timezone','America/Manaus','territory','musica','status','scheduled','publish_at', now() - interval '1 hour'))::text);
+select tests.ok('S105 admin cria: título normalizado, dia inteiro no fuso (fim exclusivo), hashtags sem # e sem repetição, estados e published_at',
+  (select title = 'Dia da Terra S105' and all_day and scope = 'platform' and kind = 'institutional' and agency_id is null and status = 'published' and published_at = now()
+          and starts_at = ((current_date + 10)::timestamp at time zone 'America/Sao_Paulo') and ends_at = ((current_date + 11)::timestamp at time zone 'America/Sao_Paulo')
+          and hashtags = array['DiaDaTerra','Planeta'] and highlight and source = 'manual' and source_key like 'manual:%'
+     from public.calendar_events where id = (select v::uuid from t_s105 where k = 'pub'))
+  and (select status = 'draft' and published_at is null from public.calendar_events where id = (select v::uuid from t_s105 where k = 'draft'))
+  and (select status = 'scheduled' and published_at > now() from public.calendar_events where id = (select v::uuid from t_s105 where k = 'fut'))
+  and (select not all_day and timezone = 'America/Manaus' and ends_at - starts_at = interval '3 hours' from public.calendar_events where id = (select v::uuid from t_s105 where k = 'past')));
+select tests.expect_error('S105 território fora da lista é recusado', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01","territory":"politica"}')$q$, 'invalid_input');
+select tests.expect_error('S105 fuso inválido é recusado', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01","timezone":"Marte/Base"}')$q$, 'invalid_input');
+select tests.expect_error('S105 data final antes da inicial é recusada', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-05","end_date":"2026-12-01"}')$q$, 'invalid_input');
+select tests.expect_error('S105 evento de mais de um ano é recusado', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-01-01","end_date":"2027-03-01"}')$q$, 'invalid_input');
+select tests.expect_error('S105 programado sem data de publicação é recusado', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01","status":"scheduled"}')$q$, 'invalid_input');
+select tests.expect_error('S105 título vazio é recusado', $q$select public.platform_event_save(null, '{"title":"   ","start_date":"2026-12-01"}')$q$, 'invalid_input');
+select tests.ok('S105 evento da agência continua exigindo agência (check de escopo)',
+  exists (select 1 from pg_constraint where conname = 'calendar_events_platform_check'));
+
+-- importação: 3 linhas (uma rascunho por incerteza), reimportação idempotente e atualização
+insert into t_s105 values ('lote', jsonb_build_array(
+  jsonb_build_object('source_key','gc:teste-s105:2026-12-25:natal-s105','action','create','title','Natal S105','start_date','2026-12-25','territory','feriados','status','published','hashtags',jsonb_build_array('Natal'),'extra',jsonb_build_object('source_page',3)),
+  jsonb_build_object('source_key','gc:teste-s105:2026-12-31:reveillon-s105','action','create','title','Réveillon S105','start_date','2026-12-31','end_date','2027-01-01','territory','entretenimento','status','published','tentative',true,'category','Pra você','collection','sustentabilidade-em-campo'),
+  jsonb_build_object('source_key','gc:teste-s105:2026-03-01:temporada-s105','action','create','title','Temporada S105','start_date','2026-03-01','end_date','2026-12-06','territory','futebol','status','draft'),
+  jsonb_build_object('source_key','gc:teste-s105:2026-12-10:incerto-s105','action','create','title','Incerto S105','start_date','2026-12-10','status','draft','extra',jsonb_build_object('uncertain',true,'note','data a confirmar')))::text);
+insert into t_s105 values ('imp1', public.platform_events_import('{"source_name":"Teste S105","file_name":"teste-s105.json","format":"json","year":2026,"meta":{"months":[{"month":12,"theme":"x"}]}}', (select v::jsonb from t_s105 where k = 'lote'))::text);
+select tests.ok('S105 importação cria 4 (2 rascunhos; temporada longa aceita; data a confirmar, categoria e coleção guardadas), registra o cronograma de origem com contagens e metadados',
+  (select (v::jsonb ->> 'created')::int = 4 and (v::jsonb ->> 'drafts')::int = 2 from t_s105 where k = 'imp1')
+  and (select count(*) from public.calendar_events where import_id = (select (v::jsonb ->> 'import_id')::uuid from t_s105 where k = 'imp1') and source = 'import') = 4
+  and (select tentative and status = 'published' and category = 'Pra você' and collection = 'sustentabilidade-em-campo' from public.calendar_events where source_key = 'gc:teste-s105:2026-12-31:reveillon-s105')
+  and (select counts ->> 'created' = '4' and meta -> 'months' -> 0 ->> 'theme' = 'x' and imported_by = 'a1050000-0000-4000-8000-000000000001' and year = 2026
+       from public.calendar_imports where id = (select (v::jsonb ->> 'import_id')::uuid from t_s105 where k = 'imp1')));
+insert into t_s105 values ('imp2', public.platform_events_import('{"source_name":"Teste S105","file_name":"teste-s105.json","format":"json","year":2026}', (select v::jsonb from t_s105 where k = 'lote'))::text);
+select tests.ok('S105 reimportar o mesmo arquivo não duplica (4 ignoradas)',
+  (select (v::jsonb ->> 'created')::int = 0 and (v::jsonb ->> 'skipped')::int = 4 from t_s105 where k = 'imp2')
+  and (select count(*) from public.calendar_events where source_key like 'gc:teste-s105:%') = 4);
+insert into t_s105 values ('imp3', public.platform_events_import('{"source_name":"Teste S105","format":"csv"}',
+  jsonb_build_array(jsonb_build_object('source_key','gc:teste-s105:2026-12-25:natal-s105','action','update','title','Natal S105 (revisado)','start_date','2026-12-25','territory','feriados'),
+                    jsonb_build_object('source_key','gc:teste-s105:2026-12-25:natal-s105','action','create','title','Natal repetido','start_date','2026-12-25')))::text);
+select tests.ok('S105 atualizar pela chave muda o conteúdo e mantém estado e chave; a mesma chave repetida é ignorada',
+  (select (v::jsonb ->> 'updated')::int = 1 and (v::jsonb ->> 'skipped')::int = 1 and (v::jsonb ->> 'created')::int = 0 from t_s105 where k = 'imp3')
+  and (select title = 'Natal S105 (revisado)' and status = 'published' and import_id = (select (v::jsonb ->> 'import_id')::uuid from t_s105 where k = 'imp3')
+       from public.calendar_events where source_key = 'gc:teste-s105:2026-12-25:natal-s105'));
+select tests.expect_error('S105 importação com linha inválida falha inteira (nada entra)', $q$select public.platform_events_import('{"source_name":"Ruim S105"}',
+  '[{"source_key":"gc:ruim-s105:a","title":"Boa","start_date":"2026-11-30","status":"published"},{"source_key":"gc:ruim-s105:b","title":"Ruim","start_date":"2026-13-40"}]')$q$, 'invalid_input');
+select tests.ok('S105 lote inválido não deixou nada', not exists (select 1 from public.calendar_events where source_key like 'gc:ruim-s105:%')
+  and not exists (select 1 from public.calendar_imports where source_name = 'Ruim S105'));
+select tests.expect_error('S105 chave fora do formato é recusada', $q$select public.platform_events_import('{"source_name":"x"}', '[{"source_key":"Chave Ruim!","title":"x","start_date":"2026-12-01"}]')$q$, 'invalid_input');
+insert into t_s105 values ('natal', (select id::text from public.calendar_events where source_key = 'gc:teste-s105:2026-12-25:natal-s105'));
+
+-- cancelar e excluir
+select public.platform_event_cancel((select v::uuid from t_s105 where k = 'natal'), 'Mudou a data');
+select tests.ok('S105 cancelar mantém o evento (marcado) com motivo e data', (select status = 'cancelled' and cancelled_at is not null and cancel_reason = 'Mudou a data' and published_at is not null
+  from public.calendar_events where id = (select v::uuid from t_s105 where k = 'natal')));
+select tests.expect_error('S105 rascunho não se cancela (exclui)', $q$select public.platform_event_cancel((select v::uuid from t_s105 where k = 'draft'), '')$q$, 'invalid_state');
+select tests.expect_error('S105 publicado não se exclui (cancela)', $q$select public.platform_event_delete((select v::uuid from t_s105 where k = 'pub'))$q$, 'invalid_state');
+insert into t_s105 values ('tmp', public.platform_event_save(null, '{"title":"Apagar S105","start_date":"2026-12-02"}')::text);
+select public.platform_event_delete((select v::uuid from t_s105 where k = 'tmp'));
+select tests.ok('S105 rascunho se exclui', not exists (select 1 from public.calendar_events where id = (select v::uuid from t_s105 where k = 'tmp')));
+select tests.ok('S105 admin vê tudo da plataforma (rascunhos e programados também) e as importações',
+  (select count(*) from public.calendar_events where scope = 'platform' and (title like '%S105%')) = 8 and (select count(*) from public.calendar_imports where source_name = 'Teste S105') = 3);
+select tests.su();
+select tests.ok('S105 calendar_events_for_user do admin não traz a plataforma', not exists (select 1 from public.calendar_events_for_user('a1050000-0000-4000-8000-000000000001') where scope = 'platform'));
+
+-- leitores: publicados (pub, past, Réveillon) + cancelado (Natal) = 4; nunca rascunho nem programado futuro
+select tests.login('a1050000-0000-4000-8000-000000000002','s105-gestor-a@test.local');
+select tests.ok('S105 gestor de agência lê 4 (publicados, programado vencido e cancelado), sem rascunho nem programado futuro e sem importações',
+  (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4
+  and not exists (select 1 from public.calendar_events where title in ('Rascunho S105', 'Programado S105', 'Incerto S105'))
+  and (select count(*) from public.calendar_imports) = 0);
+select tests.login('a1050000-0000-4000-8000-000000000003','s105-colab-a@test.local');
+select tests.ok('S105 colaborador de agência lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.login('a1050000-0000-4000-8000-000000000005','s105-dono-marca@test.local');
+select tests.ok('S105 marca (com agência) lê os 4, com o cancelado marcado', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4
+  and (select status from public.calendar_events where id = (select v::uuid from t_s105 where k = 'natal')) = 'cancelled');
+select tests.login('a1050000-0000-4000-8000-000000000006','s105-equipe-marca2@test.local');
+select tests.ok('S105 equipe de marca sem agência lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
+select tests.ok('S105 herói titular (casting) lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.login('a1050000-0000-4000-8000-000000000008','s105-heroi-membro@test.local');
+select tests.ok('S105 membro da equipe do herói lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.login('a1050000-0000-4000-8000-000000000009','s105-heroi-livre@test.local');
+select tests.ok('S105 herói sem agência lê os 4', (select count(*) from public.calendar_events where scope = 'platform' and title like '%S105%') = 4);
+select tests.login('a1050000-0000-4000-8000-00000000000b','s105-consumidor@test.local');
+select tests.ok('S105 pessoa sem portal não lê a plataforma', (select count(*) from public.calendar_events where scope = 'platform') = 0);
+
+-- interesse
+select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
+select tests.ok('S105 herói titular manifesta interesse', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true) = 'interested');
+select tests.ok('S105 manifestar de novo não duplica nem gera histórico', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true) = 'interested'
+  and (select count(*) from public.calendar_event_interest_log) = 1);
+select tests.expect_error('S105 herói não manifesta por outro herói', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c2', true)$q$, 'forbidden');
+select tests.expect_error('S105 herói não manifesta como marca', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'brand', 'a1050000-0000-4000-8000-0000000000b1', true)$q$, 'forbidden');
+select tests.expect_error('S105 rascunho não aceita interesse (não existe para quem lê)', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'draft'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true)$q$, 'not_found');
+select tests.expect_error('S105 cancelado não aceita interesse novo', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'natal'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true)$q$, 'invalid_state');
+select tests.login('a1050000-0000-4000-8000-000000000008','s105-heroi-membro@test.local');
+select tests.expect_error('S105 membro da equipe não manifesta', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', true)$q$, 'forbidden');
+select tests.ok('S105 membro vê o interesse do herói dele', (select count(*) from public.calendar_event_interests) = 1);
+select tests.login('a1050000-0000-4000-8000-000000000009','s105-heroi-livre@test.local');
+select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c2', true);
+select tests.ok('S105 herói sem agência manifesta e só vê o dele', (select count(*) from public.calendar_event_interests) = 1);
+select tests.login('a1050000-0000-4000-8000-00000000000a','s105-heroi-b@test.local');
+select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c3', true);
+select tests.login('a1050000-0000-4000-8000-000000000005','s105-dono-marca@test.local');
+select tests.ok('S105 marca manifesta interesse', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'brand', 'a1050000-0000-4000-8000-0000000000b1', true) = 'interested');
+select tests.ok('S105 marca NÃO vê heróis interessados (só o dela) e vê as contagens',
+  (select count(*) from public.calendar_event_interests) = 1 and not exists (select 1 from public.calendar_event_interests where party = 'hero')
+  and public.platform_event_interest_summary((select v::uuid from t_s105 where k = 'pub')) = '{"heroes": 3, "brands": 1}'::jsonb);
+select tests.expect_error('S105 marca não manifesta por outra marca', $q$select public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'brand', 'a1050000-0000-4000-8000-0000000000b2', true)$q$, 'forbidden');
+select tests.login('a1050000-0000-4000-8000-000000000006','s105-equipe-marca2@test.local');
+select tests.ok('S105 equipe da marca sem agência manifesta', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'past'), 'brand', 'a1050000-0000-4000-8000-0000000000b2', true) = 'interested');
+select tests.login('a1050000-0000-4000-8000-000000000002','s105-gestor-a@test.local');
+select tests.ok('S105 gestor da agência A vê só o herói do próprio casting e a marca que atende',
+  (select count(*) from public.calendar_event_interests) = 2
+  and exists (select 1 from public.calendar_event_interests where creator_profile_id = 'a1050000-0000-4000-8000-0000000000c1')
+  and exists (select 1 from public.calendar_event_interests where brand_id = 'a1050000-0000-4000-8000-0000000000b1')
+  and (select count(*) from public.calendar_event_interest_log) = 2);
+select tests.login('a1050000-0000-4000-8000-000000000003','s105-colab-a@test.local');
+select tests.ok('S105 colaborador da agência não vê a lista de interessados', (select count(*) from public.calendar_event_interests) = 0);
+select tests.login('a1050000-0000-4000-8000-000000000004','s105-gestor-b@test.local');
+select tests.ok('S105 gestor da agência B vê só o herói dele', (select count(*) from public.calendar_event_interests) = 1
+  and (select creator_profile_id from public.calendar_event_interests) = 'a1050000-0000-4000-8000-0000000000c3');
+select tests.login('a1050000-0000-4000-8000-00000000000b','s105-consumidor@test.local');
+select tests.expect_error('S105 pessoa sem portal não vê contagens', $q$select public.platform_event_interest_summary((select v::uuid from t_s105 where k = 'pub'))$q$, 'not_found');
+select tests.login('a1050000-0000-4000-8000-000000000007','s105-heroi-titular@test.local');
+insert into t_s105 values ('wd', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'pub'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', false));
+select tests.ok('S105 herói retira o interesse (histórico guarda as duas mudanças, interesse não vira negócio)',
+  (select v from t_s105 where k = 'wd') = 'withdrawn'
+  and (select array_agg(state order by at, id) from public.calendar_event_interest_log) = array['interested','withdrawn']
+  and not exists (select 1 from public.deals where agency_id = 'a1050000-0000-4000-8000-0000000000a1'));
+select tests.ok('S105 retirar sem ter manifestado não cria linha', public.platform_event_set_interest((select v::uuid from t_s105 where k = 'past'), 'hero', 'a1050000-0000-4000-8000-0000000000c1', false) = 'none');
+select tests.login('a1050000-0000-4000-8000-000000000001','s105-admin@test.local');
+select tests.ok('S105 admin vê todos os interessados e o histórico', (select count(*) from public.calendar_event_interests where event_id in (select v::uuid from t_s105 where k in ('pub','past'))) = 5
+  and public.platform_event_interest_summary((select v::uuid from t_s105 where k = 'pub')) = '{"heroes": 2, "brands": 1}'::jsonb);
+
+-- co-edição: só com a flag ligada pelo admin
+select public.admin_set_platform_calendar_editor('a1050000-0000-4000-8000-0000000000a1', true);
+select tests.login('a1050000-0000-4000-8000-000000000002','s105-gestor-a@test.local');
+insert into t_s105 values ('co', public.platform_event_save(null, '{"title":"Co-edição S105","start_date":"2026-12-03","status":"published"}')::text);
+select tests.ok('S105 gestor de agência co-editora cria e vê rascunhos', (select count(*) from public.calendar_events where title = 'Rascunho S105') = 1);
+select tests.login('a1050000-0000-4000-8000-000000000003','s105-colab-a@test.local');
+select tests.expect_error('S105 colaborador da co-editora não escreve', $q$select public.platform_event_save(null, '{"title":"x","start_date":"2026-12-01"}')$q$, 'forbidden');
+select tests.login('a1050000-0000-4000-8000-000000000001','s105-admin@test.local');
+select public.admin_set_platform_calendar_editor('a1050000-0000-4000-8000-0000000000a1', false);
+
+-- feed .ics: a plataforma entra para quem lê (com o cancelado marcado)
+select tests.login('a1050000-0000-4000-8000-000000000009','s105-heroi-livre@test.local');
+insert into t_s105 values ('tok', public.calendar_feed_create());
+select tests.su();
+insert into t_s105 values ('feed', public.calendar_feed_resolve((select v from t_s105 where k = 'tok'))::text);
+select tests.ok('S105 feed .ics do herói traz o Calendário Groscove (cancelado com status), sem rascunho',
+  (select count(*) from jsonb_array_elements((select v::jsonb -> 'events' from t_s105 where k = 'feed')) x where x ->> 'kind' = 'institutional' and x ->> 'title' like '%S105%') >= 3
+  and exists (select 1 from jsonb_array_elements((select v::jsonb -> 'events' from t_s105 where k = 'feed')) x where x ->> 'title' = 'Natal S105 (revisado)' and x ->> 'status' = 'cancelled')
+  and not exists (select 1 from jsonb_array_elements((select v::jsonb -> 'events' from t_s105 where k = 'feed')) x where x ->> 'title' in ('Rascunho S105', 'Programado S105', 'Incerto S105')));
+
+-- limpeza
+select tests.su();
+delete from public.calendar_feeds where user_id::text like 'a1050000-%';
+delete from public.calendar_events where scope = 'platform' and (title like '%S105%' or source_key like 'gc:teste-s105:%');
+delete from public.calendar_imports where source_name in ('Teste S105', 'Ruim S105');
+delete from public.admin_audit where resource_type in ('calendar_event', 'calendar_import', 'agency') and actor_id::text like 'a1050000-%';
+delete from public.talent_profiles where id::text like 'a1050000-%';
+delete from public.creator_team_members where creator_profile_id::text like 'a1050000-%';
+delete from public.creator_profiles where id::text like 'a1050000-%';
+delete from public.brand_members where brand_id::text like 'a1050000-%';
+delete from public.agency_brands where agency_id::text like 'a1050000-%';
+delete from public.brands where id::text like 'a1050000-%';
+delete from public.agency_members where agency_id::text like 'a1050000-%';
+delete from public.agencies where id::text like 'a1050000-%';
+delete from public.role_assignments where user_id::text like 'a1050000-%';
+delete from auth.users where id::text like 'a1050000-%';
+drop table t_s105;
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

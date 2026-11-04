@@ -13,10 +13,13 @@ import { parseMonth } from "@/lib/calendar/ics";
 import { listEvents, myFeedState } from "@/lib/calendar/queries";
 import { listTalentSponsorships } from "@/lib/sponsorship/queries";
 import { getTalentContext } from "@/lib/talent/server";
+import type { CalendarEvent } from "@/lib/calendar/queries";
+import { mergeWithGroscove } from "@/lib/platform-calendar/agenda";
+import { agendaFilterParams, type AgendaFilters } from "@/lib/platform-calendar/vocab";
 
 // Agenda da agência no Portal do Herói (web e app): campanhas confirmadas, prazos de resposta, entregas e gravações
 // que a agência marcou como visíveis para o herói, e os patrocínios dele. O feed .ics leva tudo ao celular.
-export async function AgencyAgenda({ sp }: { sp: { mes?: string; dia?: string } }) {
+export async function AgencyAgenda({ sp, groscove, filters }: { sp: { mes?: string; dia?: string }; groscove: CalendarEvent[]; filters: AgendaFilters }) {
   const ctx = await getTalentContext();
   if (ctx.state !== "ok") return null;
   const tz = defaultTimeZone;
@@ -42,7 +45,16 @@ export async function AgencyAgenda({ sp }: { sp: { mes?: string; dia?: string } 
   return (
     <div className="flex flex-col gap-5" data-testid="office-agenda">
       <p className="type-body-sm text-fg-muted">{t("intro")}</p>
-      <AgendaCalendar events={list.items} timeZone={tz} portal="office" year={year} month={month} today={zonedDayKey(new Date(), tz)} base="/heroi/agenda" requestedDay={sp.dia} emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
+      <AgendaCalendar
+        events={mergeWithGroscove(list.items, groscove, filters)}
+        timeZone={tz}
+        portal="office"
+        year={year}
+        month={month}
+        today={zonedDayKey(new Date(), tz)}
+        base="/heroi/agenda"
+        extraParams={agendaFilterParams(filters)}
+        requestedDay={sp.dia} emptyTitle={t("empty")} emptyHint={t("emptyHint")} />
       {/* 0085: situações suas que a agência ofereceu às marcas; se patrocinada, por quem (nunca quem recusou); 0088: + público e o combinado */}
       {sponsorships.items.length > 0 ? (
         <section aria-labelledby="office-sponsorships" className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4" data-testid="office-sponsorships">

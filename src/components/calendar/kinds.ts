@@ -14,6 +14,8 @@ export const KIND_VARIANT: Record<EventKind, BadgeVariant> = {
   brand_call: "training",
   hero_event: "nutrition",
   hero_service: "warning",
+  // 0098: Calendário Groscove (a cor do território aparece no selo próprio e no ponto da grade)
+  institutional: "accent",
   other: "neutral",
 };
 
@@ -29,5 +31,6 @@ export const KIND_DOT: Record<EventKind, string> = {
   brand_call: "bg-pillar-training",
   hero_event: "bg-pillar-nutrition",
   hero_service: "bg-warning",
+  institutional: "bg-accent",
   other: "bg-fg-subtle",
 };

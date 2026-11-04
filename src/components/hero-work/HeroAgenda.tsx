@@ -15,7 +15,10 @@ import { HeroEventDialog, type ServiceOption } from "./HeroEventDialog";
 
 type Props = {
   creatorId: string;
-  events: HeroCalendarEvent[];
+  /** 0098: + itens do Calendário Groscove (sem `hero`: só leitura, abrem o detalhe). */
+  events: CalendarEvent[];
+  /** Filtros que acompanham a troca de mês (Calendário Groscove). */
+  extraParams?: Record<string, string | undefined>;
   /** Compromissos crus (para editar: o formulário parte do que está salvo). */
   editable: HeroEvent[];
   services: ServiceOption[];
@@ -31,7 +34,7 @@ type Props = {
 
 // Agenda do herói: a grade mensal e a lista do dia da agenda das agências (AgendaCalendar), com o que o herói precisa
 // executar em cada item (contratante, local, observações, checklist). O titular cria, edita e exclui; a equipe lê.
-export function HeroAgenda({ creatorId, events, editable, services, timeZone, year, month, today, requestedDay, canWrite, canSeeFinance }: Props) {
+export function HeroAgenda({ creatorId, events, extraParams, editable, services, timeZone, year, month, today, requestedDay, canWrite, canSeeFinance }: Props) {
   const t = useTranslations("heroWork.agenda");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -67,7 +70,7 @@ export function HeroAgenda({ creatorId, events, editable, services, timeZone, ye
     });
   }
 
-  const heroOf = (e: CalendarEvent) => (e as HeroCalendarEvent).hero;
+  const heroOf = (e: CalendarEvent) => (e as Partial<HeroCalendarEvent>).hero;
 
   return (
     <div className="flex flex-col gap-4">
@@ -84,6 +87,7 @@ export function HeroAgenda({ creatorId, events, editable, services, timeZone, ye
         month={month}
         today={today}
         base="/heroi/agenda"
+        extraParams={extraParams}
         requestedDay={requestedDay}
         emptyTitle={t("empty")}
         emptyHint={canWrite ? t("emptyHint") : t("emptyHintMember")}
