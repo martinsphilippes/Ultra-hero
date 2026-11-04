@@ -1,15 +1,10 @@
 "use client";
 
-import { Printer } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui";
+import { PrintButton as DownloadPdfButton } from "@/components/media/PrintButton";
 
-/** "Baixar PDF": abre a impressão do navegador (Salvar como PDF); a página tem estilos de impressão. */
+/** "Baixar PDF" do clipping, das estratégias e do relatório do casting: gera o PDF da página. */
 export function PrintButton() {
   const t = useTranslations("projectRoom.clipping");
-  return (
-    <Button type="button" leadingIcon={<Printer />} onClick={() => window.print()} data-testid="clipping-print">
-      {t("print")}
-    </Button>
-  );
+  return <DownloadPdfButton label={t("print")} testId="clipping-print" />;
 }

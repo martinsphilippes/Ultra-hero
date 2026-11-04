@@ -1,12 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui";
+import { downloadPagePdf } from "@/lib/pdf/download-page";
 
-// "Baixar PDF": abre a impressão do navegador (escolher "Salvar como PDF"); o CSS de impressão monta a página A4.
-export function PrintButton({ label }: { label: string }) {
+// "Baixar PDF": gera o arquivo A4 do conteúdo da página (tema claro). Se a geração falhar, cai na impressão do
+// navegador ("Salvar como PDF"), que usa o CSS de impressão da página.
+export function PrintButton({ label, fileName, testId = "report-print" }: { label: string; fileName?: string; testId?: string }) {
+  const [busy, setBusy] = useState(false);
+  async function run() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await downloadPagePdf(fileName ?? document.title);
+    } catch {
+      window.print();
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
-    <Button type="button" leadingIcon={<Printer />} onClick={() => window.print()} className="print:hidden" data-testid="report-print">
+    <Button type="button" leadingIcon={<Printer />} onClick={run} loading={busy} className="print:hidden" data-testid={testId}>
       {label}
     </Button>
   );
