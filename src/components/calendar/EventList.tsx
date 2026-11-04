@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { PlatformBadges, useCollectionLabel } from "@/components/platform-calendar/PlatformBadges";
-import { Badge, Button, EmptyState } from "@/components/ui";
+import { Badge, EmptyState } from "@/components/ui";
 import type { Locale } from "@/i18n/config";
 import { formatDate } from "@/i18n/format";
 import { eventDays, zonedDayKey } from "@/lib/calendar/grid";
@@ -68,13 +68,14 @@ export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, fla
     const cancelled = p.status === "cancelled";
     const href = `${PLATFORM_DETAIL_BASE[portal]}/${e.id}`;
     return (
-      <li key={e.id} className="flex flex-wrap items-start gap-3 border-l-4 border-accent bg-accent-soft/40 p-3 first:rounded-t-2xl last:rounded-b-2xl" data-testid="event-item" data-kind={e.kind} data-platform="true" data-status={p.status}>
+      <li key={e.id} className="relative flex flex-wrap items-start gap-3 border-l-4 border-accent bg-accent-soft/40 p-3 transition-colors first:rounded-t-2xl last:rounded-b-2xl hover:bg-accent-soft/70 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-focus" data-testid="event-item" data-kind={e.kind} data-platform="true" data-status={p.status}>
         <span className="w-24 shrink-0 font-mono text-sm text-fg-muted">
           {e.allDay ? t("allDay") : `${timeOf(e.startsAt)}${e.endsAt !== e.startsAt ? `–${timeOf(e.endsAt)}` : ""}`}
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <PlatformBadges info={p} showStatus={portal === "admin"} />
-          <Link href={href} className={`text-sm font-semibold text-fg underline-offset-2 hover:underline ${cancelled ? "line-through decoration-2 opacity-70" : ""}`}>
+          {/* o cartão inteiro abre o evento: o link do título se estende por cima do cartão (after:inset-0) */}
+          <Link href={href} data-testid="platform-open" aria-label={tg("openLabel", { title: e.title })} className={`text-sm font-semibold text-fg underline-offset-2 outline-none after:absolute after:inset-0 after:content-[''] hover:underline ${cancelled ? "line-through decoration-2 opacity-70" : ""}`}>
             {e.title}
           </Link>
           {p.collection || p.category ? (
@@ -87,11 +88,10 @@ export function EventList({ events, timeZone, portal, emptyTitle, emptyHint, fla
             <span className="type-caption text-fg-subtle">{t("until", { date: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, undefined, timeZone) })}</span>
           ) : null}
         </span>
-        <Button asChild size="sm" variant="ghost" trailingIcon={<ChevronRight />}>
-          <Link href={href} aria-label={tg("openLabel", { title: e.title })} data-testid="platform-open">
-            <span className="sr-only sm:not-sr-only">{tg("open")}</span>
-          </Link>
-        </Button>
+        <span className="inline-flex min-h-9 items-center gap-1 self-center text-sm font-medium text-fg-muted" aria-hidden="true">
+          <span className="hidden sm:inline">{tg("open")}</span>
+          <ChevronRight className="size-4" />
+        </span>
       </li>
     );
   };

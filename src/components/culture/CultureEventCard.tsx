@@ -39,9 +39,10 @@ export async function CultureEventCard({ event: e, actions, interest = null, opp
   const closed = new Date(e.endsAt).getTime() < Date.now();
   const when = season ? t("card.until", { date: formatDate(new Date(new Date(e.endsAt).getTime() - 60_000), locale, { day: "numeric", month: "short" }, e.timezone) }) : eventWhen(e, locale);
   return (
-    <li className="flex flex-col gap-2 rounded-2xl border border-border bg-surface p-3" data-testid="culture-card" data-event={e.id}>
+    <li className="relative flex flex-col gap-2 rounded-2xl border border-border bg-surface p-3 transition-colors hover:bg-surface-hover has-[a[data-card-link]:focus-visible]:outline-2 has-[a[data-card-link]:focus-visible]:outline-focus" data-testid="culture-card" data-event={e.id}>
       <PlatformBadges info={info} />
-      <Link href={href} className="group flex items-start justify-between gap-2" aria-label={t("card.open", { title: e.title })}>
+      {/* o cartão inteiro abre o evento (link estendido); os botões de ação ficam por cima (relative z-10) */}
+      <Link href={href} data-card-link className="group flex items-start justify-between gap-2 outline-none after:absolute after:inset-0 after:rounded-2xl after:content-['']" aria-label={t("card.open", { title: e.title })}>
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="text-sm font-semibold text-fg group-hover:underline">{e.title}</span>
           <span className="type-caption text-fg-muted">{when}</span>
@@ -49,7 +50,7 @@ export async function CultureEventCard({ event: e, actions, interest = null, opp
         <ChevronRight className="mt-0.5 size-4 shrink-0 text-fg-subtle" aria-hidden="true" />
       </Link>
       {opportunities ? (
-        <p className="flex flex-wrap gap-x-3 type-caption font-medium text-accent-text" data-testid="culture-opportunities">
+        <p className="relative z-10 flex flex-wrap gap-x-3 type-caption font-medium text-accent-text" data-testid="culture-opportunities">
           {opportunities.sponsorships > 0 ? <span>{t("card.sponsorships", { count: opportunities.sponsorships })}</span> : null}
           {opportunities.calls > 0 ? <span>{t("card.calls", { count: opportunities.calls })}</span> : null}
         </p>
@@ -64,7 +65,7 @@ async function CardActions({ eventId, actions, interest, closed }: { eventId: st
   if (actions.portal === "hero") {
     if (!actions.canAct || !actions.ownerId) return null;
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="relative z-10 flex flex-wrap gap-2">
         <InterestButton compact eventId={eventId} party="hero" ownerId={actions.ownerId} state={interest ?? "none"} closed={closed} />
       </div>
     );
@@ -72,7 +73,7 @@ async function CardActions({ eventId, actions, interest, closed }: { eventId: st
   if (actions.portal === "brand") {
     if (!actions.canAct) return null;
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="relative z-10 flex flex-wrap gap-2">
         <InterestButton compact eventId={eventId} party="brand" ownerId={actions.ownerId} state={interest ?? "none"} closed={closed} />
         {actions.canCampaign && !closed ? (
           <Button asChild size="sm" variant="secondary" leadingIcon={<Megaphone />}>
@@ -87,7 +88,7 @@ async function CardActions({ eventId, actions, interest, closed }: { eventId: st
   if (actions.portal === "agency") {
     if (!actions.canCreate || closed) return null;
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="relative z-10 flex flex-wrap gap-2">
         <Button asChild size="sm" variant="secondary" leadingIcon={<Handshake />}>
           <Link href={newSponsorshipHref(eventId)} data-testid="culture-create-opportunity">
             {t("createOpportunity")}
@@ -97,7 +98,7 @@ async function CardActions({ eventId, actions, interest, closed }: { eventId: st
     );
   }
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="relative z-10 flex flex-wrap gap-2">
       <Button asChild size="sm" variant="ghost" leadingIcon={<Pencil />}>
         <Link href={`/admin/agenda/${eventId}`}>{t("edit")}</Link>
       </Button>
