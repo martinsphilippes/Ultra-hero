@@ -1,0 +1,76 @@
+{
+  "agencyTitle": "Proposta da marca",
+  "brandTitle": "Negociação com a agência",
+  "brandCounterTitle": "Contraproposta da agência",
+  "agreedTitle": "Termos acordados",
+  "status": {
+    "agency": {
+      "brand_proposal": "A marca enviou a proposta: aceite ou faça uma contraproposta.",
+      "brand_countered": "A marca contrapropôs: responda.",
+      "brand_declined": "A marca recusou sua contraproposta. Aceite a proposta dela, faça outra ou encerre o negócio.",
+      "agency_countered": "Contraproposta enviada. Aguardando a marca.",
+      "agreed": "Termos acordados com a marca.",
+      "closed": "A negociação não vale mais nesta etapa do negócio."
+    },
+    "brand": {
+      "brand_proposal": "Aguardando a agência responder à sua proposta.",
+      "brand_countered": "Sua contraproposta foi enviada. Aguardando a agência.",
+      "brand_declined": "Você recusou a contraproposta. Aguardando a agência.",
+      "agency_countered": "A agência fez uma contraproposta: aceite, contraproponha ou recuse.",
+      "agreed": "Termos acordados com a agência.",
+      "closed": "A negociação não vale mais nesta etapa da campanha."
+    }
+  },
+  "terms": {
+    "value": "Valor",
+    "period": "Período",
+    "periodOpen": "Período da campanha",
+    "noValue": "A marca não informou valor.",
+    "source": {
+      "request": "Proposta original da marca",
+      "counter": "Última contraproposta da marca"
+    }
+  },
+  "actions": {
+    "accept": "Aceitar proposta",
+    "acceptShort": "Aceitar",
+    "counter": "Fazer contraproposta",
+    "counterShort": "Contrapropor",
+    "decline": "Recusar",
+    "back": "Voltar",
+    "send": "Enviar contraproposta"
+  },
+  "acceptDialog": {
+    "title": "Aceitar estes termos?",
+    "hint": "Eles viram o valor acordado da campanha. Depois do acordo, mudar a verba é pelo pedido de alteração."
+  },
+  "counterDialog": {
+    "title": "Fazer contraproposta",
+    "hint": "A outra parte recebe um aviso e pode aceitar ou responder.",
+    "periodHint": "Vazio mantém o período da campanha.",
+    "note": "Mensagem (opcional)"
+  },
+  "declineDialog": {
+    "title": "Recusar a contraproposta?",
+    "hint": "A campanha segue aberta: a agência pode mandar outra proposta.",
+    "reason": "Motivo (opcional)"
+  },
+  "noValueHint": "Sem valor da marca para aceitar: faça uma contraproposta.",
+  "ownerOnly": "Só o dono da marca responde à agência.",
+  "confirmNext": "Agora é só confirmar a campanha no card “Confirmar campanha”.",
+  "history": {
+    "title": "Histórico",
+    "agency": "Agência",
+    "brand": "Marca",
+    "action": {
+      "accept": "Aceitou",
+      "counter": "Contraproposta",
+      "decline": "Recusou"
+    }
+  },
+  "done": {
+    "agreed": "Proposta aceita. Termos acordados.",
+    "countered": "Contraproposta enviada.",
+    "declined": "Contraproposta recusada."
+  }
+}

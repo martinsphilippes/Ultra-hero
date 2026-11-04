@@ -656,7 +656,10 @@
       "counteroffer_date_rejected": "Date counteroffer declined ({param}).",
       "contract_confirmed": "Hiring confirmed.",
       "deal_created": "Deal created.",
-      "brief_updated": "Brief updated."
+      "brief_updated": "Brief updated.",
+      "offer_accepted": "{param, select, brand {The brand accepted the counteroffer. Terms agreed.} other {The agency accepted the brand's proposal. Terms agreed.}}",
+      "offer_countered": "{param, select, brand {The brand made a counteroffer.} other {The agency made a counteroffer.}}",
+      "offer_declined": "The brand declined the counteroffer."
     },
     "stageHint": "Moving stages is manual; going back needs a note. Proposal, confirmation and contract have their own action.",
     "form": {

@@ -1,0 +1,76 @@
+{
+  "agencyTitle": "Brand proposal",
+  "brandTitle": "Negotiation with the agency",
+  "brandCounterTitle": "Agency counteroffer",
+  "agreedTitle": "Agreed terms",
+  "status": {
+    "agency": {
+      "brand_proposal": "The brand sent its proposal: accept it or make a counteroffer.",
+      "brand_countered": "The brand made a counteroffer: reply.",
+      "brand_declined": "The brand declined your counteroffer. Accept its proposal, make another one or close the deal.",
+      "agency_countered": "Counteroffer sent. Waiting for the brand.",
+      "agreed": "Terms agreed with the brand.",
+      "closed": "Negotiation is no longer available at this deal stage."
+    },
+    "brand": {
+      "brand_proposal": "Waiting for the agency to answer your proposal.",
+      "brand_countered": "Your counteroffer was sent. Waiting for the agency.",
+      "brand_declined": "You declined the counteroffer. Waiting for the agency.",
+      "agency_countered": "The agency made a counteroffer: accept, counter or decline.",
+      "agreed": "Terms agreed with the agency.",
+      "closed": "Negotiation is no longer available at this campaign stage."
+    }
+  },
+  "terms": {
+    "value": "Value",
+    "period": "Period",
+    "periodOpen": "Campaign period",
+    "noValue": "The brand did not set a value.",
+    "source": {
+      "request": "Brand's original proposal",
+      "counter": "Brand's latest counteroffer"
+    }
+  },
+  "actions": {
+    "accept": "Accept proposal",
+    "acceptShort": "Accept",
+    "counter": "Make a counteroffer",
+    "counterShort": "Counter",
+    "decline": "Decline",
+    "back": "Back",
+    "send": "Send counteroffer"
+  },
+  "acceptDialog": {
+    "title": "Accept these terms?",
+    "hint": "They become the campaign's agreed value. After the agreement, budget changes go through a change request."
+  },
+  "counterDialog": {
+    "title": "Make a counteroffer",
+    "hint": "The other party gets a notification and can accept or reply.",
+    "periodHint": "Leave empty to keep the campaign period.",
+    "note": "Message (optional)"
+  },
+  "declineDialog": {
+    "title": "Decline the counteroffer?",
+    "hint": "The campaign stays open: the agency can send another proposal.",
+    "reason": "Reason (optional)"
+  },
+  "noValueHint": "No brand value to accept: make a counteroffer.",
+  "ownerOnly": "Only the brand owner replies to the agency.",
+  "confirmNext": "Now just confirm the campaign in the “Confirm campaign” card.",
+  "history": {
+    "title": "History",
+    "agency": "Agency",
+    "brand": "Brand",
+    "action": {
+      "accept": "Accepted",
+      "counter": "Counteroffer",
+      "decline": "Declined"
+    }
+  },
+  "done": {
+    "agreed": "Proposal accepted. Terms agreed.",
+    "countered": "Counteroffer sent.",
+    "declined": "Counteroffer declined."
+  }
+}

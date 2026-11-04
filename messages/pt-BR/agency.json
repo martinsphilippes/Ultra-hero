@@ -656,7 +656,10 @@
       "counteroffer_date_rejected": "Contraproposta de data recusada ({param}).",
       "contract_confirmed": "Contratação confirmada.",
       "deal_created": "Negócio criado.",
-      "brief_updated": "Briefing atualizado."
+      "brief_updated": "Briefing atualizado.",
+      "offer_accepted": "{param, select, brand {A marca aceitou a contraproposta. Termos acordados.} other {A agência aceitou a proposta da marca. Termos acordados.}}",
+      "offer_countered": "{param, select, brand {A marca fez uma contraproposta.} other {A agência fez uma contraproposta.}}",
+      "offer_declined": "A marca recusou a contraproposta."
     },
     "stageHint": "Mover de etapa é manual; voltar pede uma nota. Proposta, confirmação e contrato têm ação própria.",
     "form": {

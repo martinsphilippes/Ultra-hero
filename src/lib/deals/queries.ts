@@ -3,6 +3,7 @@ import { toBrief, type Brief } from "@/lib/brief/brief";
 import type { ValueModel } from "@/lib/value-model/model";
 import { isMissingSchema } from "@/lib/supabase/helpers";
 import { createClient } from "@/lib/supabase/server";
+import { toOfferView, type OfferView } from "./offer";
 import { BRAND_STATUSES, isDealStage, type BrandStatus, type DealOutcome, type DealStage } from "./stages";
 import { REASON_CODES, type DealTalentStatus, type DeliverableKind, type DeliverableStatus, type Reason } from "./vocab";
 
@@ -326,6 +327,15 @@ export async function getDealValueTerms(dealId: string): Promise<DealValueTerms 
 }
 
 // ---------------------------------------------------------------- marca
+/** 0106: negociação da proposta da marca (agência e marca; valores e notas só para o Adm e a marca). */
+export async function getDealOffer(dealId: string): Promise<OfferView | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(dealId)) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("deal_offer_rounds_json", { p_deal: dealId });
+  if (error) return null;
+  return toOfferView(data);
+}
+
 export type BrandCampaignItem = {
   requestId: string;
   title: string;

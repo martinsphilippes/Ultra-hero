@@ -5,6 +5,7 @@ import { EventList } from "@/components/calendar/EventList";
 import { ActivityForm, ConfirmCard, DealForm, MoveForm, TeamPicker } from "@/components/deals/DealForms";
 import { BriefView } from "@/components/brief/BriefView";
 import { DealBriefCard } from "@/components/brief/DealBriefCard";
+import { DealOffer } from "@/components/deals/DealOffer";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { AgencyBudgetChange } from "@/components/finance/AgencyBudgetChange";
 import { DealFinanceCard } from "@/components/finance/DealFinanceCard";
@@ -13,7 +14,7 @@ import { formatDateTime } from "@/i18n/format";
 import { listTeam } from "@/lib/agency/queries";
 import { zonedDayKey } from "@/lib/calendar/grid";
 import { listDealEvents } from "@/lib/calendar/queries";
-import { getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
+import { getDealOffer, getRequest, getRequestBudget, listActivities, listDealFees, listDealTalents } from "@/lib/deals/queries";
 import { splitSystemBody } from "@/lib/deals/vocab";
 import { agencyBudgetChanges, agencyRates, dealEntries } from "@/lib/finance/queries";
 import { requestDeliverablesSchema } from "@/lib/deals/schemas";
@@ -28,14 +29,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { params: Promise<{ id: string }> };
 
-// Visão geral: briefing da marca (com o valor oferecido só para o Adm), briefing estruturado (0080; editável por
+// Visão geral: proposta da marca (aceitar/contrapropor, 0106), briefing da marca (com o valor oferecido só para o Adm), briefing estruturado (0080; editável por
 // quem mexe no negócio), dados do negócio, etapa,
 // confirmação (Adm), equipe e linha do tempo de contatos.
 export default async function DealOverviewPage({ params }: Props) {
   const { id } = await params;
   const { ctx, deal, isOwner, canEdit, isManager, isAdmin } = await loadDeal(id);
   const tz = ctx.agency.timezone || "America/Sao_Paulo";
-  const [t, tc, tb, locale, team, request, budget, activities, talents, events, changes, tpay] = await Promise.all([
+  const [t, tc, tb, locale, team, request, budget, activities, talents, events, changes, tpay, offer] = await Promise.all([
     getTranslations("agency.deal"),
     getTranslations("brief"),
     getTranslations("commercial"),
@@ -49,6 +50,8 @@ export default async function DealOverviewPage({ params }: Props) {
     // 0090: pedido de alteração de verba (Adm com valores; gestor e equipe do negócio só a situação)
     agencyBudgetChanges(deal.id),
     getTranslations("payments.change"),
+    // 0106: proposta da marca (Adm aceita/contrapropõe; gestor e equipe só a situação)
+    getDealOffer(deal.id),
   ]);
   // financeiro simulado (0069), só para o Adm: taxa, prévia e lançamentos; sem a migração, a seção some
   const [fees, rates, entries] = isAdmin
@@ -60,6 +63,11 @@ export default async function DealOverviewPage({ params }: Props) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+      {offer && offer.enabled && (offer.open || offer.rounds.length > 0) ? (
+        <div className="lg:col-span-2">
+          <DealOffer portal="agency" dealId={deal.id} requestId={deal.requestId} view={offer} />
+        </div>
+      ) : null}
       <div className="flex flex-col gap-5">
         {request && request.origin === "brand" ? (
           <section className={card} aria-labelledby="deal-request">

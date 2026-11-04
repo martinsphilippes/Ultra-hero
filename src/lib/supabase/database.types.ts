@@ -332,6 +332,68 @@ export type Database = {
         };
         Relationships: [];
       };
+      // 0106: rodadas da proposta da marca no negócio (só leitura; escrita pelas RPCs)
+      deal_offer_rounds: {
+        Row: {
+          action: string;
+          actor_id: string | null;
+          actor_label: string;
+          agency_id: string;
+          amount_cents: number | null;
+          brand_id: string;
+          created_at: string;
+          deal_id: string;
+          id: string;
+          max_heroes: number | null;
+          note: string;
+          period_end: string | null;
+          period_start: string | null;
+          request_id: string | null;
+          seq: number;
+          side: string;
+          value_model: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          action: string;
+          actor_id?: string | null;
+          actor_label?: string;
+          agency_id: string;
+          amount_cents?: number | null;
+          brand_id: string;
+          created_at?: string;
+          deal_id: string;
+          id?: string;
+          max_heroes?: number | null;
+          note?: string;
+          period_end?: string | null;
+          period_start?: string | null;
+          request_id?: string | null;
+          seq: number;
+          side: string;
+          value_model?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string | null;
+          actor_label?: string;
+          agency_id?: string;
+          amount_cents?: number | null;
+          brand_id?: string;
+          created_at?: string;
+          deal_id?: string;
+          id?: string;
+          max_heroes?: number | null;
+          note?: string;
+          period_end?: string | null;
+          period_start?: string | null;
+          request_id?: string | null;
+          seq?: number;
+          side?: string;
+          value_model?: string | null;
+        };
+        Relationships: [];
+      };
       brand_call_rounds: {
         Row: {
           max_heroes: number | null;
@@ -10816,6 +10878,9 @@ isOneToOne: false
       agency_brand_call_proposal_send: { Args: { p_proposal: string }; Returns: string };
       agency_brand_call_proposal_discard: { Args: { p_proposal: string }; Returns: undefined };
       deal_value_terms: { Args: { p_deal: string }; Returns: Json };
+      agency_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null }; Returns: string };
+      brand_deal_offer_reply: { Args: { p_deal: string; p_action: string; p_amount_cents?: number | null; p_value_model?: string | null; p_max_heroes?: number | null; p_period_start?: string | null; p_period_end?: string | null; p_note?: string | null }; Returns: string };
+      deal_offer_rounds_json: { Args: { p_deal: string }; Returns: Json };
       agency_cast_inputs: { Args: { p_agency: string; p_deal?: string | null; p_call?: string | null }; Returns: Json };
       agency_deal_cast_apply: { Args: { p_deal: string; p_items: Json }; Returns: Json };
       agency_brand_call_reply: { Args: { p_proposal: string; p_action: string; p_amount_cents: number | null; p_deliverables: Json | null; p_deliver_by: string | null; p_note: string; p_value_model?: string | null; p_max_heroes?: number | null }; Returns: string };

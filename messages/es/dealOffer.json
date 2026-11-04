@@ -1,0 +1,76 @@
+{
+  "agencyTitle": "Propuesta de la marca",
+  "brandTitle": "Negociación con la agencia",
+  "brandCounterTitle": "Contrapropuesta de la agencia",
+  "agreedTitle": "Términos acordados",
+  "status": {
+    "agency": {
+      "brand_proposal": "La marca envió la propuesta: acéptala o haz una contrapropuesta.",
+      "brand_countered": "La marca hizo una contrapropuesta: responde.",
+      "brand_declined": "La marca rechazó tu contrapropuesta. Acepta su propuesta, haz otra o cierra el negocio.",
+      "agency_countered": "Contrapropuesta enviada. Esperando a la marca.",
+      "agreed": "Términos acordados con la marca.",
+      "closed": "La negociación ya no vale en esta etapa del negocio."
+    },
+    "brand": {
+      "brand_proposal": "Esperando que la agencia responda a tu propuesta.",
+      "brand_countered": "Tu contrapropuesta fue enviada. Esperando a la agencia.",
+      "brand_declined": "Rechazaste la contrapropuesta. Esperando a la agencia.",
+      "agency_countered": "La agencia hizo una contrapropuesta: acepta, contrapropón o rechaza.",
+      "agreed": "Términos acordados con la agencia.",
+      "closed": "La negociación ya no vale en esta etapa de la campaña."
+    }
+  },
+  "terms": {
+    "value": "Valor",
+    "period": "Período",
+    "periodOpen": "Período de la campaña",
+    "noValue": "La marca no informó valor.",
+    "source": {
+      "request": "Propuesta original de la marca",
+      "counter": "Última contrapropuesta de la marca"
+    }
+  },
+  "actions": {
+    "accept": "Aceptar propuesta",
+    "acceptShort": "Aceptar",
+    "counter": "Hacer contrapropuesta",
+    "counterShort": "Contraproponer",
+    "decline": "Rechazar",
+    "back": "Volver",
+    "send": "Enviar contrapropuesta"
+  },
+  "acceptDialog": {
+    "title": "¿Aceptar estos términos?",
+    "hint": "Pasan a ser el valor acordado de la campaña. Después del acuerdo, cambiar el presupuesto es con la solicitud de cambio."
+  },
+  "counterDialog": {
+    "title": "Hacer contrapropuesta",
+    "hint": "La otra parte recibe un aviso y puede aceptar o responder.",
+    "periodHint": "Vacío mantiene el período de la campaña.",
+    "note": "Mensaje (opcional)"
+  },
+  "declineDialog": {
+    "title": "¿Rechazar la contrapropuesta?",
+    "hint": "La campaña sigue abierta: la agencia puede enviar otra propuesta.",
+    "reason": "Motivo (opcional)"
+  },
+  "noValueHint": "La marca no informó valor para aceptar: haz una contrapropuesta.",
+  "ownerOnly": "Solo el dueño de la marca responde a la agencia.",
+  "confirmNext": "Ahora solo confirma la campaña en la tarjeta “Confirmar campaña”.",
+  "history": {
+    "title": "Historial",
+    "agency": "Agencia",
+    "brand": "Marca",
+    "action": {
+      "accept": "Aceptó",
+      "counter": "Contrapropuesta",
+      "decline": "Rechazó"
+    }
+  },
+  "done": {
+    "agreed": "Propuesta aceptada. Términos acordados.",
+    "countered": "Contrapropuesta enviada.",
+    "declined": "Contrapropuesta rechazada."
+  }
+}

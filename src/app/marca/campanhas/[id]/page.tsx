@@ -8,6 +8,7 @@ import { BriefView } from "@/components/brief/BriefView";
 import { CampaignTools } from "@/components/brief/CampaignTools";
 import { CancelCampaignButton } from "@/components/brand-portal/CancelCampaignButton";
 import { TalentCardCompact } from "@/components/brand-portal/TalentCardView";
+import { DealOffer } from "@/components/deals/DealOffer";
 import { MessageThread } from "@/components/deals/MessageThread";
 import { RequestSummary } from "@/components/deals/RequestSummary";
 import { BrandStatusBadge, DeliverableStatusBadge } from "@/components/deals/StatusBadges";
@@ -27,7 +28,7 @@ import { getOrigin } from "@/lib/auth/origin";
 import { getUser } from "@/lib/auth/session";
 import { getBrandContext } from "@/lib/brand-portal/server";
 import { briefDefined, briefToDraft } from "@/lib/brief/brief";
-import { getBrandCampaign, getRequestBudget, listMessages } from "@/lib/deals/queries";
+import { getBrandCampaign, getDealOffer, getRequestBudget, listMessages } from "@/lib/deals/queries";
 import { BRAND_STATUSES } from "@/lib/deals/stages";
 import { centsToBrl } from "@/lib/money/brl-input";
 import type { DeliverableStatus } from "@/lib/deals/vocab";
@@ -79,7 +80,7 @@ export default async function BrandCampaignPage({ params }: Props) {
   const stepIndex = BRAND_STATUSES.indexOf(detail.brandStatus);
   const steps = BRAND_STATUSES.filter((s) => s !== "cancelled");
   const inExecution = deal !== null && ["contracting", "running", "done"].includes(detail.brandStatus);
-  const [messages, docs, exec, budgetPanel, media, tm, origin, user, sponsorships, brandCalls, tbc, changes] = await Promise.all([
+  const [messages, docs, exec, budgetPanel, media, tm, origin, user, sponsorships, brandCalls, tbc, changes, offer] = await Promise.all([
     deal ? listMessages(deal.id, "brand_agency") : Promise.resolve([]),
     (async () => {
       const supabase = await createClient();
@@ -101,6 +102,8 @@ export default async function BrandCampaignPage({ params }: Props) {
     getTranslations("brandCall.brand"),
     // 0090: pedido de alteração de verba (só com a campanha já enviada; rascunho segue livre)
     !isDraft && detail.brandStatus !== "cancelled" ? brandBudgetChanges(request.id) : Promise.resolve(null),
+    // 0106: contraproposta da agência (o dono aceita, contrapropõe ou recusa)
+    deal ? getDealOffer(deal.id) : Promise.resolve(null),
   ]);
   const mediaData = media?.available ? media.data : null;
   const today = localDay(new Date(), "America/Sao_Paulo");
@@ -228,6 +231,7 @@ export default async function BrandCampaignPage({ params }: Props) {
           ))}
         </ol>
       ) : null}
+      {deal && offer && offer.enabled && offer.rounds.length > 0 ? <DealOffer portal="brand" dealId={deal.id} requestId={request.id} view={offer} /> : null}
       <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <div className="flex flex-col gap-5">
           <section className={card} aria-labelledby="camp-summary">

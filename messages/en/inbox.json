@@ -44,12 +44,12 @@
       "body": "{deal} has a new status."
     },
     "proposal_received": {
-      "title": "Proposal received",
-      "body": "The agency sent the proposal for {deal}."
+      "title": "{status, select, accepted {Proposal accepted} countered {Agency counteroffer} other {Proposal received}}",
+      "body": "{status, select, accepted {The agency accepted your proposal for {deal}. Terms agreed.} countered {The agency made a counteroffer for {deal}: accept, counter or decline.} other {The agency sent the proposal for {deal}.}}"
     },
     "proposal_decided": {
-      "title": "Brand response",
-      "body": "{brand} answered the proposal for {deal}."
+      "title": "{status, select, accepted {Brand accepted} countered {Brand counteroffer} declined {Brand declined} other {Brand response}}",
+      "body": "{status, select, accepted {{brand} accepted the counteroffer for {deal}. Terms agreed.} countered {{brand} made a counteroffer for {deal}: reply.} declined {{brand} declined the counteroffer for {deal}.} other {{brand} answered the proposal for {deal}.}}"
     },
     "message_received": {
       "title": "New message",

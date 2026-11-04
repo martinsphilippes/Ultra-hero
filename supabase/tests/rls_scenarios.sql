@@ -15983,5 +15983,216 @@ select tests.ok('S111 teto de redes passou para 12', (select count(*) from pg_co
 select tests.ok('S111 validação de entregáveis conhece groscove_ultra',
   (select prosrc like '%''groscove_ultra''%' from pg_proc where proname = 'campaign_deliverables_valid'));
 
+
+-- ================================================================ S112 · Aceitar ou contrapropor a proposta da marca no negócio (0106)
+-- Rodadas no negócio (deal_offer_rounds): só o Adm da agência aceita/contrapropõe (gestor não; colaborador fora do
+-- negócio nem lê); a marca (só o dono) responde à contraproposta: aceita, contrapropõe ou recusa. Aceite grava o valor
+-- oferecido (por herói sem dividir pelo máximo) e o período, e leva o negócio a 'negotiation'. Gestor lê só a
+-- situação (sem valor nem nota); outra marca, quem não é de nada e o visitante não leem. S14 segue 18.
+\ir ../migrations/0106_negociacao_proposta_marca.sql
+select tests.su();
+insert into auth.users (id, email) values
+  ('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local'),
+  ('a1120000-0000-4000-8000-000000000002', 's112-gestor@test.local'),
+  ('a1120000-0000-4000-8000-000000000003', 's112-colab@test.local'),
+  ('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local'),
+  ('a1120000-0000-4000-8000-000000000005', 's112-equipe@test.local'),
+  ('a1120000-0000-4000-8000-000000000006', 's112-outra@test.local'),
+  ('a1120000-0000-4000-8000-000000000007', 's112-comum@test.local');
+insert into public.agencies (id, slug, name) values ('a1120000-0000-4000-8000-0000000000a1', 's112-agencia', 'Agência S112');
+insert into public.agency_members (agency_id, user_id, role, display_name) values
+  ('a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-000000000001', 'admin', 'Ana Adm S112'),
+  ('a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-000000000002', 'manager', 'Gil Gestor S112'),
+  ('a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-000000000003', 'staff', 'Caio Colab S112');
+insert into public.brands (id, slug, name, site_url) values
+  ('a1120000-0000-4000-8000-0000000000b1', 's112-marca', 'Marca S112', 'https://m.s112.test'),
+  ('a1120000-0000-4000-8000-0000000000b2', 's112-outra', 'Outra S112', 'https://o.s112.test');
+insert into public.agency_brands (agency_id, brand_id) values
+  ('a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1'),
+  ('a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b2');
+insert into public.brand_members (brand_id, user_id, role, display_name) values
+  ('a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-000000000004', 'owner', 'Dona S112'),
+  ('a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-000000000005', 'staff', 'Equipe S112'),
+  ('a1120000-0000-4000-8000-0000000000b2', 'a1120000-0000-4000-8000-000000000006', 'owner', 'Dono Outra S112');
+insert into public.talent_profiles (id, agency_id, display_name) values
+  ('a1120000-0000-4000-8000-0000000000c1', 'a1120000-0000-4000-8000-0000000000a1', 'Herói Um S112'),
+  ('a1120000-0000-4000-8000-0000000000c2', 'a1120000-0000-4000-8000-0000000000a1', 'Herói Dois S112');
+insert into public.campaign_requests (id, agency_id, brand_id, origin, title, status, submitted_at, deliverables, period_start, period_end) values
+  ('a1120000-0000-4000-8000-0000000000d1', 'a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'brand', 'Campanha S112', 'converted', now() - interval '3 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20),
+  ('a1120000-0000-4000-8000-0000000000d2', 'a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'brand', 'Campanha Dois S112', 'converted', now() - interval '3 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20),
+  ('a1120000-0000-4000-8000-0000000000d3', 'a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'brand', 'Campanha Três S112', 'converted', now() - interval '3 days',
+   '[{"kind": "reels", "quantity": 1, "network": "instagram"}]', current_date + 10, current_date + 20);
+insert into public.campaign_request_budgets (agency_id, brand_id, request_id, budget_min_cents, budget_max_cents) values
+  ('a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-0000000000d1', 200000, 300000),
+  ('a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-0000000000d2', 200000, 300000);
+insert into public.deals (id, agency_id, brand_id, request_id, title, stage, brand_visible, owner_id) values
+  ('a1120000-0000-4000-8000-0000000000e1', 'a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-0000000000d1', 'Negócio S112', 'consultation', true, 'a1120000-0000-4000-8000-000000000002'),
+  ('a1120000-0000-4000-8000-0000000000e2', 'a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-0000000000d2', 'Negócio Dois S112', 'shortlist', true, null),
+  ('a1120000-0000-4000-8000-0000000000e3', 'a1120000-0000-4000-8000-0000000000a1', 'a1120000-0000-4000-8000-0000000000b1', 'a1120000-0000-4000-8000-0000000000d3', 'Negócio Três S112', 'approved', true, null);
+insert into public.deal_talents (deal_id, talent_id, status, consulted_at) values
+  ('a1120000-0000-4000-8000-0000000000e1', 'a1120000-0000-4000-8000-0000000000c1', 'interested', now() - interval '1 day'),
+  ('a1120000-0000-4000-8000-0000000000e1', 'a1120000-0000-4000-8000-0000000000c2', 'interested', now() - interval '1 day');
+
+select tests.ok('S112 estrutura: RLS ligada, só leitura, internas fechadas, nada para visitante, sem sobrecarga, search_path fixo; S14 segue 18',
+  (select relrowsecurity from pg_class where oid = 'public.deal_offer_rounds'::regclass)
+  and not has_table_privilege('anon', 'public.deal_offer_rounds', 'select')
+  and not has_table_privilege('authenticated', 'public.deal_offer_rounds', 'insert')
+  and not has_table_privilege('authenticated', 'public.deal_offer_rounds', 'update')
+  and not has_table_privilege('authenticated', 'public.deal_offer_rounds', 'delete')
+  and not has_function_privilege('authenticated', 'public.deal_offer_record(uuid, text, text, bigint, text, int, date, date, text)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_offer_state(uuid)', 'execute')
+  and not has_function_privilege('authenticated', 'public.deal_offer_brand_terms(uuid)', 'execute')
+  and not has_function_privilege('anon', 'public.agency_deal_offer_reply(uuid, text, bigint, text, int, date, date, text)', 'execute')
+  and not has_function_privilege('anon', 'public.brand_deal_offer_reply(uuid, text, bigint, text, int, date, date, text)', 'execute')
+  and not has_function_privilege('anon', 'public.deal_offer_rounds_json(uuid)', 'execute')
+  and has_function_privilege('authenticated', 'public.deal_offer_rounds_json(uuid)', 'execute')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace
+       and p.proname in ('agency_deal_offer_reply', 'brand_deal_offer_reply', 'deal_offer_rounds_json', 'deal_offer_record')) = 4
+  and not exists (select 1 from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proconfig is null and p.proname like '%deal_offer%')
+  and (select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')) = 18);
+
+-- visitante
+select tests.anon();
+select tests.expect_error('S112 visitante não lê rodadas', $q$select count(*) from public.deal_offer_rounds$q$, 'permission denied');
+select tests.expect_error('S112 visitante não lê a situação', $q$select public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1')$q$, 'permission denied');
+select tests.expect_error('S112 visitante não responde', $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept')$q$, 'permission denied');
+
+-- gestor: só a situação, não responde; colaborador fora do negócio nem lê
+select tests.login('a1120000-0000-4000-8000-000000000002', 's112-gestor@test.local');
+select tests.ok('S112 gestor lê a situação sem valor (vez da agência, sem resposta)',
+  public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"viewer": "agency", "values": false, "can_reply": false, "turn": "agency", "agreed": false, "enabled": true}'
+  and not (public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') -> 'brand_terms' ? 'amount_cents'));
+select tests.expect_error('S112 gestor não contrapropõe',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 350000, 'fixo', null, null, null, 'x')$q$, 'forbidden');
+select tests.expect_error('S112 gestor não aceita', $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept')$q$, 'forbidden');
+select tests.login('a1120000-0000-4000-8000-000000000003', 's112-colab@test.local');
+select tests.expect_error('S112 colaborador fora do negócio não lê', $q$select public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1')$q$, 'not_found');
+select tests.expect_error('S112 colaborador não responde', $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept')$q$, 'forbidden');
+
+-- marca não responde antes da agência
+select tests.login('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local');
+select tests.ok('S112 dono vê a própria proposta e a vez da agência',
+  public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"viewer": "brand", "values": true, "can_reply": false, "turn": "agency", "brand_terms": {"source": "request", "amount_cents": 300000, "value_model": "fixo"}}');
+select tests.expect_error('S112 marca não responde na vez da agência',
+  $q$select public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept')$q$, 'invalid_state');
+
+-- Adm contrapropõe
+select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local');
+select tests.ok('S112 Adm vê valores e pode responder', public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"values": true, "can_reply": true, "turn": "agency"}');
+select tests.expect_error('S112 agência não recusa (encerra o negócio se quiser)',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'decline', null, null, null, null, null, 'não')$q$, 'invalid_input');
+select tests.expect_error('S112 por herói sem máximo é recusado',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 100000, 'por_heroi', null, null, null, null)$q$, 'max_heroes_required');
+select tests.expect_error('S112 contraproposta sem valor é recusada',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', null, 'fixo', null, null, null, null)$q$, 'invalid_input');
+select tests.expect_error('S112 período invertido é recusado',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 350000, 'fixo', null, current_date + 20, current_date + 10, null)$q$, 'invalid_input');
+select tests.ok('S112 Adm contrapropõe (fixo, período novo)',
+  public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 350000, 'fixo', null, current_date + 12, current_date + 25, 'Inclui 2 heróis') = 'countered');
+select tests.ok('S112 contraproposta leva a etapa a proposta enviada',
+  (select stage from public.deals where id = 'a1120000-0000-4000-8000-0000000000e1') = 'proposal_sent');
+select tests.expect_error('S112 Adm não responde de novo na vez da marca',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 360000, 'fixo', null, null, null, null)$q$, 'invalid_state');
+
+-- marca vê a contraproposta
+select tests.login('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local');
+select tests.ok('S112 dono lê a contraproposta com valor e nota e é a vez dele',
+  (select count(*) from public.deal_offer_rounds where deal_id = 'a1120000-0000-4000-8000-0000000000e1' and side = 'agency' and amount_cents = 350000 and note = 'Inclui 2 heróis') = 1
+  and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"can_reply": true, "turn": "brand"}');
+select tests.ok('S112 dono recebeu o aviso sem valor',
+  (select count(*) from public.inbox_notifications where user_id = 'a1120000-0000-4000-8000-000000000004' and kind = 'proposal_received' and params ->> 'status' = 'countered'
+     and params::text not like '%350000%') = 1);
+select tests.login('a1120000-0000-4000-8000-000000000005', 's112-equipe@test.local');
+select tests.ok('S112 equipe da marca lê, mas não responde', (select count(*) from public.deal_offer_rounds where deal_id = 'a1120000-0000-4000-8000-0000000000e1') = 1
+  and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"can_reply": false, "turn": "brand"}');
+select tests.expect_error('S112 equipe da marca não aceita', $q$select public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept')$q$, 'forbidden');
+select tests.login('a1120000-0000-4000-8000-000000000006', 's112-outra@test.local');
+select tests.ok('S112 outra marca não lê rodadas', (select count(*) from public.deal_offer_rounds) = 0);
+select tests.expect_error('S112 outra marca não lê a situação', $q$select public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1')$q$, 'not_found');
+select tests.expect_error('S112 outra marca não responde', $q$select public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept')$q$, 'not_found');
+select tests.login('a1120000-0000-4000-8000-000000000007', 's112-comum@test.local');
+select tests.ok('S112 quem não é de nada não lê rodadas', (select count(*) from public.deal_offer_rounds) = 0);
+select tests.expect_error('S112 quem não é de nada não lê a situação', $q$select public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1')$q$, 'not_found');
+select tests.login('a1120000-0000-4000-8000-000000000002', 's112-gestor@test.local');
+select tests.ok('S112 gestor não lê a tabela e a situação vem sem valor nem nota',
+  (select count(*) from public.deal_offer_rounds) = 0
+  and (public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') -> 'rounds' -> 0) @> '{"amount_cents": null, "note": "", "action": "counter"}'
+  and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"turn": "brand"}');
+
+-- marca contrapropõe por herói → Adm aceita: valor oferecido, período e etapa
+select tests.login('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local');
+select tests.ok('S112 dono contrapropõe por herói (R$ 1.200,00 × 2)',
+  public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 120000, 'por_heroi', 2, current_date + 15, current_date + 30, 'Por herói') = 'countered');
+select tests.ok('S112 contraproposta da marca leva a negociação', (select count(*) from public.deal_offer_rounds where deal_id = 'a1120000-0000-4000-8000-0000000000e1') = 2);
+select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local');
+select tests.ok('S112 Adm recebeu o aviso e vê os termos da marca',
+  (select count(*) from public.inbox_notifications where user_id = 'a1120000-0000-4000-8000-000000000001' and kind = 'proposal_decided' and params ->> 'status' = 'countered') = 1
+  and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1') @> '{"can_reply": true, "turn": "agency", "brand_terms": {"source": "counter", "amount_cents": 120000, "value_model": "por_heroi", "max_heroes": 2}}');
+select tests.ok('S112 Adm aceita a contraproposta da marca', public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'accept') = 'agreed');
+select tests.su();
+select tests.ok('S112 aceite grava o valor por herói sem dividir, o máximo, o período e a etapa negociação',
+  (select value_model = 'por_heroi' and budget_max_cents = 120000 and budget_min_cents is null and max_heroes = 2
+   from public.campaign_request_budgets where request_id = 'a1120000-0000-4000-8000-0000000000d1')
+  and (select period_start = current_date + 15 and period_end = current_date + 30 from public.campaign_requests where id = 'a1120000-0000-4000-8000-0000000000d1')
+  and (select stage = 'negotiation' and expected_start = current_date + 15 and expected_end = current_date + 30 from public.deals where id = 'a1120000-0000-4000-8000-0000000000e1')
+  and (select array_agg(body order by occurred_at, body) from public.activities where deal_id = 'a1120000-0000-4000-8000-0000000000e1' and kind = 'system')
+      @> array['offer_countered|agency', 'offer_countered|brand', 'offer_accepted|agency']
+  and (select count(*) from public.inbox_notifications where user_id = 'a1120000-0000-4000-8000-000000000004' and kind = 'proposal_received' and params ->> 'status' = 'accepted') = 1);
+select tests.login('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local');
+select tests.ok('S112 marca vê os termos acordados', public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e1')
+  @> '{"agreed": true, "turn": null, "can_reply": false, "agreed_terms": {"amount_cents": 120000, "value_model": "por_heroi", "max_heroes": 2}}');
+select tests.expect_error('S112 depois do acordo a marca não responde', $q$select public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'decline')$q$, 'invalid_state');
+select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local');
+select tests.expect_error('S112 depois do acordo a agência não contrapropõe',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e1', 'counter', 130000, 'fixo', null, null, null, null)$q$, 'invalid_state');
+select tests.ok('S112 confirmação segue disponível (negociação < aprovado)', (select stage from public.deals where id = 'a1120000-0000-4000-8000-0000000000e1') = 'negotiation');
+
+-- recusa da marca: negócio segue aberto, a agência aceita a proposta original
+select tests.ok('S112 Adm contrapropõe no segundo negócio',
+  public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e2', 'counter', 400000, 'fixo', null, null, null, null) = 'countered');
+select tests.login('a1120000-0000-4000-8000-000000000004', 's112-dono@test.local');
+select tests.ok('S112 dono recusa com motivo', public.brand_deal_offer_reply('a1120000-0000-4000-8000-0000000000e2', 'decline', null, null, null, null, null, 'Acima da verba') = 'declined');
+select tests.ok('S112 recusa registrada sem valor; vez volta à agência',
+  (select count(*) from public.deal_offer_rounds where deal_id = 'a1120000-0000-4000-8000-0000000000e2' and action = 'decline' and amount_cents is null and note = 'Acima da verba') = 1
+  and public.deal_offer_rounds_json('a1120000-0000-4000-8000-0000000000e2') @> '{"turn": "agency", "agreed": false, "last_action": "decline"}');
+select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local');
+select tests.ok('S112 Adm recebe a recusa e aceita a proposta original', 
+  (select count(*) from public.inbox_notifications where user_id = 'a1120000-0000-4000-8000-000000000001' and kind = 'proposal_decided' and params ->> 'status' = 'declined') = 1
+  and public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e2', 'accept') = 'agreed');
+select tests.su();
+select tests.ok('S112 aceite da original grava mínimo = máximo = R$ 3.000,00 e etapa negociação',
+  (select value_model = 'fixo' and budget_min_cents = 300000 and budget_max_cents = 300000 and max_heroes is null
+   from public.campaign_request_budgets where request_id = 'a1120000-0000-4000-8000-0000000000d2')
+  and (select stage from public.deals where id = 'a1120000-0000-4000-8000-0000000000e2') = 'negotiation');
+
+-- negócio já confirmado e sem valor da marca
+select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local');
+select tests.expect_error('S112 negócio confirmado não negocia',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e3', 'counter', 100000, 'fixo', null, null, null, null)$q$, 'invalid_stage');
+select tests.su();
+update public.deals set stage = 'proposal_prep' where id = 'a1120000-0000-4000-8000-0000000000e3';
+select tests.login('a1120000-0000-4000-8000-000000000001', 's112-adm@test.local');
+select tests.expect_error('S112 sem valor da marca não há o que aceitar',
+  $q$select public.agency_deal_offer_reply('a1120000-0000-4000-8000-0000000000e3', 'accept')$q$, 'invalid_state');
+
+select tests.su();
+delete from public.inbox_notifications where user_id::text like 'a1120000-%';
+delete from public.activities where deal_id::text like 'a1120000-%';
+delete from public.deal_offer_rounds where deal_id::text like 'a1120000-%';
+delete from public.deal_talents where deal_id::text like 'a1120000-%';
+delete from public.deals where id::text like 'a1120000-%';
+delete from public.campaign_request_budgets where request_id::text like 'a1120000-%';
+delete from public.campaign_requests where id::text like 'a1120000-%';
+delete from public.talent_profiles where id::text like 'a1120000-%';
+delete from public.brand_members where brand_id::text like 'a1120000-%';
+delete from public.agency_brands where agency_id::text like 'a1120000-%';
+delete from public.brands where id::text like 'a1120000-%';
+delete from public.agency_members where agency_id::text like 'a1120000-%';
+delete from public.agencies where id::text like 'a1120000-%';
+delete from auth.users where id::text like 'a1120000-%';
+
+
 do $$ begin raise notice 'PASS cenários concluídos — transação será desfeita (rollback)'; end $$;
 rollback;

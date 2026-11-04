@@ -44,12 +44,12 @@
       "body": "{deal} cambió de estado."
     },
     "proposal_received": {
-      "title": "Propuesta recibida",
-      "body": "La agencia envió la propuesta de {deal}."
+      "title": "{status, select, accepted {Propuesta aceptada} countered {Contrapropuesta de la agencia} other {Propuesta recibida}}",
+      "body": "{status, select, accepted {La agencia aceptó tu propuesta de {deal}. Términos acordados.} countered {La agencia hizo una contrapropuesta para {deal}: acepta, contrapropón o rechaza.} other {La agencia envió la propuesta de {deal}.}}"
     },
     "proposal_decided": {
-      "title": "Respuesta de la marca",
-      "body": "{brand} respondió a la propuesta de {deal}."
+      "title": "{status, select, accepted {La marca aceptó} countered {Contrapropuesta de la marca} declined {La marca rechazó} other {Respuesta de la marca}}",
+      "body": "{status, select, accepted {{brand} aceptó la contrapropuesta de {deal}. Términos acordados.} countered {{brand} hizo una contrapropuesta para {deal}: responde.} declined {{brand} rechazó la contrapropuesta de {deal}.} other {{brand} respondió a la propuesta de {deal}.}}"
     },
     "message_received": {
       "title": "Nuevo mensaje",
