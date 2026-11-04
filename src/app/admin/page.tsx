@@ -1,6 +1,5 @@
 import { ArrowRight, Settings2 } from "lucide-react";
 import type { Metadata } from "next";
-import { CultureHome } from "@/components/culture/CultureHomeCard";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -33,9 +32,6 @@ export default async function AdminHomePage({ searchParams }: { searchParams: Se
     <div className="flex flex-col gap-8">
       <PageHeader title={t("title")} description={t("description")} eyebrow={(await getTranslations("nav"))("portals.admin")} actions={<PeriodSelector value={days} />} />
       <HeroPublishingSection initialCard={isHeroCard(heroi) ? heroi : null} />
-      <Suspense fallback={null}>
-        <CultureHome portal="admin" />
-      </Suspense>
       <Suspense key={days} fallback={<DashboardSkeleton />}>
         <DashboardContent days={Number(days)} />
       </Suspense>
